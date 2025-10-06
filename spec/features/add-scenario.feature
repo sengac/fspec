@@ -10,6 +10,12 @@ Feature: Add Scenario to Existing Feature File
   - Reads existing feature file and parses with @cucumber/gherkin
   - Validates feature file exists and has valid syntax before modification
   - Inserts new scenario at the end of the feature (before any existing Scenario
+
+
+
+
+
+
   Outline)
   - Scenario template includes Given/When/Then placeholders
   - Preserves existing formatting and structure

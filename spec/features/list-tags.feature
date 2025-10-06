@@ -11,6 +11,12 @@ Feature: List Registered Tags from Registry
   - Supports filtering by category (--category option)
   - Shows tag name, category, and description in organized format
   - Lists categories in standard order: Phase, Component, Feature Group, Technical,
+
+
+
+
+
+
   etc.
   - Handles missing TAGS.md with helpful error message
 
@@ -23,7 +29,8 @@ Feature: List Registered Tags from Registry
 
   References:
   - TAGS.md structure: spec/TAGS.md
-  - Tag categories: Phase, Component, Feature Group, Technical, Platform, Priority,
+  - Tag categories: Phase, Component, Feature Group, Technical, Platform,
+  Priority,
   Status, Testing, CAGE
   """
 

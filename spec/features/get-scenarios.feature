@@ -10,6 +10,12 @@ Feature: Get Scenarios by Tag
   - Reads all feature files and parses with @cucumber/gherkin
   - Filters scenarios based on feature-level tags (scenarios inherit feature tags)
 
+
+
+
+
+
+
   - Supports multiple tag filtering with AND logic (all tags must match)
   - Returns scenario names, feature file paths, and line numbers
   - Useful for finding scenarios to review, update, or delete
@@ -18,6 +24,12 @@ Feature: Get Scenarios by Tag
   Critical implementation requirements:
   - MUST parse all feature files in spec/features/
   - MUST match scenarios by feature-level tags (scenarios don't have own tags in
+
+
+
+
+
+
   Gherkin)
   - MUST support multiple --tag flags with AND logic
   - MUST return feature path, scenario name, and line number

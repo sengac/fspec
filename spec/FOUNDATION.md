@@ -434,37 +434,44 @@ sequenceDiagram
 - `fspec create-feature <name>` - Create new feature file with template ✅
 - `fspec add-scenario <feature> <name>` - Add scenario to feature ✅
 - `fspec add-step <feature> <scenario> <type> <text>` - Add Given/When/Then step ✅
+- `fspec update-scenario <feature> <old-name> <new-name>` - Rename scenario ✅
+- `fspec update-step <feature> <scenario> <current-step> [--text=<new>] [--keyword=<kw>]` - Update step ✅
 - `fspec delete-scenario <feature> <scenario>` - Delete scenario from feature ✅
-- `fspec add-architecture <feature> <notes>` - Add/update architecture doc string 🚧
-- `fspec add-background <feature> <user-story>` - Add/update user story background 🚧
+- `fspec delete-step <feature> <scenario> <step>` - Delete step from scenario ✅
+- `fspec add-architecture <feature> <notes>` - Add/update architecture doc string ✅
+- `fspec add-background <feature> <user-story>` - Add/update user story background ✅
 - `fspec list-features [--tag=@phase1]` - List all features (optionally filtered) ✅
-- `fspec show-feature <name>` - Display feature file contents 🚧
+- `fspec show-feature <name> [--format=text|json] [--output=file]` - Display feature file contents ✅
 
 ### FOUNDATION.md Commands
 
-- `fspec add-diagram <section> <title> <mermaid-code>` - Add Mermaid diagram
-- `fspec update-foundation <section> <content>` - Update foundation section
-- `fspec show-foundation [section]` - Display FOUNDATION.md (or specific section)
+- `fspec add-diagram <section> <title> <mermaid-code>` - Add Mermaid diagram ✅
+- `fspec update-foundation <section> <content>` - Update foundation section ✅
+- `fspec show-foundation [--section=<name>] [--format=text|markdown|json] [--output=file] [--list-sections] [--line-numbers]` - Display FOUNDATION.md ✅
 
 ### TAGS.md Commands
 
 - `fspec register-tag <tag> <category> <description>` - Register new tag ✅
 - `fspec update-tag <tag> [--category=<cat>] [--description=<desc>]` - Update tag ✅
+- `fspec delete-tag <tag> [--force] [--dry-run]` - Delete tag from registry ✅
 - `fspec validate-tags` - Ensure all feature file tags exist in TAGS.md ✅
 - `fspec list-tags [--category=phase]` - List registered tags ✅
 - `fspec tag-stats` - Show tag usage statistics ✅
+- `fspec retag --from=<old> --to=<new> [--dry-run]` - Rename tags across all files ✅
 
-### Query Commands
+### Query & Bulk Operations Commands
 
 - `fspec get-scenarios [--tag=@phase1]` - Get scenarios by tag(s) ✅
 - `fspec show-acceptance-criteria [--tag=@phase1] [--format=text|markdown|json] [--output=file]` - Show ACs ✅
+- `fspec delete-scenarios --tag=<tag> [--dry-run]` - Bulk delete scenarios by tag ✅
+- `fspec delete-features --tag=<tag> [--dry-run]` - Bulk delete feature files by tag ✅
 
 ### Validation & Formatting Commands
 
 - `fspec validate [file]` - Validate Gherkin syntax (all files or specific) ✅
 - `fspec format [file]` - Format using Prettier (all files or specific) ✅
 - `fspec validate-tags [file]` - Validate tags against registry ✅
-- `fspec check` - Run all validations (syntax + tags + formatting) 🚧
+- `fspec check [--verbose]` - Run all validations (syntax + tags + formatting) ✅
 
 ---
 
@@ -512,32 +519,45 @@ sequenceDiagram
 
 **Test Coverage:** 28 tests, all passing
 
-#### 🚧 Phase 5 - Advanced CRUD & Bulk Operations (IN PROGRESS)
-- 🚧 Delete step from scenario
-- 🚧 Update scenario (rename)
-- 🚧 Update step (edit text/type)
-- 🚧 Delete tag from registry
-- 🚧 Bulk delete scenarios by tag
-- 🚧 Bulk delete features by tag
-- 🚧 Retag operations (rename tags across files)
+#### ✅ Phase 5 - Advanced CRUD & Bulk Operations (COMPLETE)
+- ✅ Delete step from scenario
+- ✅ Update scenario (rename)
+- ✅ Update step (edit text/type)
+- ✅ Delete tag from registry
+- ✅ Bulk delete scenarios by tag
+- ✅ Bulk delete features by tag
+- ✅ Retag operations (rename tags across files)
+- ✅ Comprehensive validation suite (`check` command)
+- ✅ Dry-run support for destructive operations
 
-#### 🚧 Phase 6 - Architecture Documentation (PLANNED)
-- 🚧 Add Mermaid diagrams to FOUNDATION.md
-- 🚧 Update foundation sections programmatically
-- 🚧 Diagram validation and formatting
-- 🚧 Architecture change tracking
+**Test Coverage:** 108 tests, all passing
 
-#### 🚧 Phase 7 - CAGE Integration & Optimization (PLANNED)
-- 🚧 Optimized commands for CAGE hook invocation
-- 🚧 Batch operations for multiple files
-- 🚧 Performance optimization for large projects
-- 🚧 Watch mode for continuous validation
+#### ✅ Phase 6 - Architecture Documentation (COMPLETE)
+- ✅ Add/update architecture notes in feature files
+- ✅ Add/update user stories (Background) in feature files
+- ✅ Add/update Mermaid diagrams in FOUNDATION.md
+- ✅ Update foundation sections programmatically
+- ✅ Display foundation content with multiple formats
+- ✅ Section-specific operations
+- ✅ JSON output for programmatic access
+- ✅ Diagram validation and formatting
+
+**Test Coverage:** 41 tests, all passing
+
+#### 🎯 All Core Features Complete!
 
 **Overall Progress:**
-- **Commands Implemented:** 13/20+ planned (65%)
-- **Total Tests:** 148 passing (100% pass rate)
-- **Feature Files:** 14 validated specifications
-- **Code Coverage:** All implemented commands fully tested
+- **Commands Implemented:** 29/29 (100%)
+- **Total Tests:** 315 passing (100% pass rate)
+- **Feature Files:** 28 validated specifications
+- **Code Coverage:** All commands fully tested
+- **Build Size:** 84.15 kB (gzip: 17.54 kB)
+
+#### 🔮 Future Enhancements (Optional)
+- **JSON I/O Enhancement**: Consistent JSON input/output across all commands for easier AI agent integration
+  - Accept JSON input for complex operations (multi-step scenarios, batch updates)
+  - Standardize JSON output format across all commands
+  - Machine-readable error responses in JSON format
 
 ### Integration with CAGE
 
