@@ -1,0 +1,15 @@
+{
+  "semi": true,
+  "singleQuote": true,
+  "tabWidth": 2,
+  "useTabs": false,
+  "overrides": [
+    {
+      "files": "*.feature",
+      "options": {
+        "parser": "gherkin",
+        "printWidth": 80
+      }
+    }
+  ]
+}
