@@ -76,6 +76,9 @@ fspec add-scenario user-authentication "Login with valid credentials"
 # Add step to existing scenario
 fspec add-step user-authentication "Login with valid credentials" given "I am on the login page"
 
+# Delete scenario from feature
+fspec delete-scenario user-authentication "Login with valid credentials"
+
 # List all features
 fspec list-features
 
@@ -87,7 +90,12 @@ fspec list-features --tag=@phase1
 
 ```bash
 # Register new tag
-fspec register-tag @performance "Technical Tags" "Performance-critical features"
+fspec register-tag @performance "Tag Categories" "Performance-critical features"
+
+# Update existing tag
+fspec update-tag @performance --description="Updated description"
+fspec update-tag @performance --category="Tag Categories"
+fspec update-tag @performance --category="Tag Categories" --description="New description"
 
 # Validate all tags are registered
 fspec validate-tags
@@ -96,10 +104,24 @@ fspec validate-tags
 fspec list-tags
 
 # Filter tags by category
-fspec list-tags --category "Phase Tags"
+fspec list-tags --category "Tag Categories"
 
 # Show tag usage statistics
 fspec tag-stats
+```
+
+### Query Operations
+
+```bash
+# Get all scenarios matching tags
+fspec get-scenarios --tag=@phase1
+fspec get-scenarios --tag=@phase1 --tag=@critical
+fspec get-scenarios --format=json
+
+# Show acceptance criteria for features
+fspec show-acceptance-criteria --tag=@phase1
+fspec show-acceptance-criteria --tag=@phase1 --format=markdown
+fspec show-acceptance-criteria --tag=@phase1 --format=json --output=phase1-acs.md
 ```
 
 ### Formatting
@@ -149,27 +171,31 @@ fspec is designed as a companion tool to [CAGE](https://github.com/sengac/cage):
 ```
 fspec/
 ├── src/
-│   ├── index.ts                 # CLI entry point
-│   ├── commands/                # Command implementations
-│   │   ├── validate.ts          # Gherkin validation ✅
-│   │   ├── create-feature.ts    # Feature creation ✅
-│   │   ├── list-features.ts     # Feature listing ✅
-│   │   ├── format.ts            # Prettier formatting ✅
-│   │   ├── validate-tags.ts     # Tag validation ✅
-│   │   ├── register-tag.ts      # Tag registration ✅
-│   │   ├── list-tags.ts         # Tag listing ✅
-│   │   ├── tag-stats.ts         # Tag statistics ✅
-│   │   ├── add-scenario.ts      # Scenario addition ✅
-│   │   └── add-step.ts          # Step addition ✅
-│   └── utils/                   # Shared utilities
-├── spec/                        # fspec's own specifications
-│   ├── FOUNDATION.md            # Project vision and architecture
-│   ├── TAGS.md                  # Tag registry
-│   ├── CLAUDE.md                # Specification process guide
-│   └── features/                # Gherkin feature files (9 files)
+│   ├── index.ts                        # CLI entry point
+│   ├── commands/                       # Command implementations
+│   │   ├── validate.ts                 # Gherkin validation ✅
+│   │   ├── create-feature.ts           # Feature creation ✅
+│   │   ├── list-features.ts            # Feature listing ✅
+│   │   ├── format.ts                   # Prettier formatting ✅
+│   │   ├── validate-tags.ts            # Tag validation ✅
+│   │   ├── register-tag.ts             # Tag registration ✅
+│   │   ├── update-tag.ts               # Tag updating ✅
+│   │   ├── list-tags.ts                # Tag listing ✅
+│   │   ├── tag-stats.ts                # Tag statistics ✅
+│   │   ├── add-scenario.ts             # Scenario addition ✅
+│   │   ├── add-step.ts                 # Step addition ✅
+│   │   ├── delete-scenario.ts          # Scenario deletion ✅
+│   │   ├── get-scenarios.ts            # Query scenarios by tag ✅
+│   │   └── show-acceptance-criteria.ts # Show ACs by tag ✅
+│   └── utils/                          # Shared utilities
+├── spec/                               # fspec's own specifications
+│   ├── FOUNDATION.md                   # Project vision and architecture
+│   ├── TAGS.md                         # Tag registry
+│   ├── CLAUDE.md                       # Specification process guide
+│   └── features/                       # Gherkin feature files (14 files)
 ├── scripts/
-│   └── install-local.sh         # Installation script
-├── dist/                        # Build output
+│   └── install-local.sh                # Installation script
+├── dist/                               # Build output
 ├── package.json
 ├── tsconfig.json
 ├── vite.config.ts
@@ -267,21 +293,40 @@ See [spec/CLAUDE.md](./spec/CLAUDE.md) for detailed process guidelines.
 
 **Test Coverage:** 27 tests, all passing
 
-### 🚧 Phase 4: Architecture Documentation (PLANNED)
+### ✅ Phase 4: CRUD Operations & Tag-Based Queries (COMPLETE)
+- ✅ Query scenarios by tag(s) with AND logic
+- ✅ Show acceptance criteria by tag with multiple formats (text, markdown, JSON)
+- ✅ Export acceptance criteria to file
+- ✅ Update tag definitions (category and/or description)
+- ✅ Delete scenarios from feature files
+- ✅ Preserve feature structure during deletions
+- ✅ Complete tag-based filtering foundation
+
+**Test Coverage:** 28 tests, all passing
+
+### 🚧 Phase 5: Advanced CRUD & Bulk Operations (IN PROGRESS)
+- 🚧 Delete step from scenario
+- 🚧 Update scenario (rename)
+- 🚧 Update step (edit text/type)
+- 🚧 Delete tag from registry
+- 🚧 Bulk delete scenarios by tag
+- 🚧 Bulk delete features by tag
+- 🚧 Retag operations (rename tags across files)
+
+### 🚧 Phase 6: Architecture Documentation (PLANNED)
 - 🚧 Add Mermaid diagrams to FOUNDATION.md
 - 🚧 Update foundation sections
 - 🚧 Diagram validation and formatting
 
-### 🚧 Phase 5: CAGE Integration & Optimization (PLANNED)
+### 🚧 Phase 7: CAGE Integration & Optimization (PLANNED)
 - 🚧 Optimized commands for CAGE hooks
 - 🚧 Batch operations for multiple files
-- 🚧 Advanced querying and filtering
 - 🚧 Performance optimization for large projects
 
 ### Summary
-- **Total Commands:** 10 implemented
-- **Total Tests:** 110 passing (100% pass rate)
-- **Feature Files:** 9 validated specifications
+- **Total Commands:** 13 implemented
+- **Total Tests:** 148 passing (100% pass rate)
+- **Feature Files:** 14 validated specifications
 - **Code Coverage:** All commands fully tested
 
 ## Contributing

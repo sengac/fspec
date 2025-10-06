@@ -11,6 +11,10 @@ import { listTagsCommand } from './commands/list-tags';
 import { tagStatsCommand } from './commands/tag-stats';
 import { addScenarioCommand } from './commands/add-scenario';
 import { addStepCommand } from './commands/add-step';
+import { getScenariosCommand } from './commands/get-scenarios';
+import { showAcceptanceCriteriaCommand } from './commands/show-acceptance-criteria';
+import { updateTagCommand } from './commands/update-tag';
+import { deleteScenarioCommand } from './commands/delete-scenario';
 
 const program = new Command();
 
@@ -94,6 +98,44 @@ program
   .argument('<type>', 'Step type: given, when, then, and, but')
   .argument('<text>', 'Step text')
   .action(addStepCommand);
+
+// Get scenarios command
+program
+  .command('get-scenarios')
+  .description('Get all scenarios matching specified tags')
+  .option('--tag <tag>', 'Filter by tag (can specify multiple times)', (value, previous) => {
+    return previous ? [...previous, value] : [value];
+  })
+  .option('--format <format>', 'Output format: text or json', 'text')
+  .action(getScenariosCommand);
+
+// Show acceptance criteria command
+program
+  .command('show-acceptance-criteria')
+  .description('Show acceptance criteria for features matching tags')
+  .option('--tag <tag>', 'Filter by tag (can specify multiple times)', (value, previous) => {
+    return previous ? [...previous, value] : [value];
+  })
+  .option('--format <format>', 'Output format: text, markdown, or json', 'text')
+  .option('--output <file>', 'Write output to file')
+  .action(showAcceptanceCriteriaCommand);
+
+// Update tag command
+program
+  .command('update-tag')
+  .description('Update an existing tag in TAGS.md registry')
+  .argument('<tag>', 'Tag name (e.g., "@phase1")')
+  .option('--category <category>', 'New category name')
+  .option('--description <description>', 'New description')
+  .action(updateTagCommand);
+
+// Delete scenario command
+program
+  .command('delete-scenario')
+  .description('Delete a scenario from a feature file')
+  .argument('<feature>', 'Feature file name or path (e.g., "login" or "spec/features/login.feature")')
+  .argument('<scenario>', 'Scenario name to delete')
+  .action(deleteScenarioCommand);
 
 // TODO: Add more commands
 // - create-feature

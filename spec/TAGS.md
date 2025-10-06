@@ -10,6 +10,7 @@ Tags that identify which development phase a feature belongs to (from FOUNDATION
 
 | Tag | Description | Usage |
 |-----|-------------|
+| `@documentation` | Features related to documentation generation and display |
 | `@modification` | Feature modification and editing operations |-------|
 | `@phase1` | Phase 1: Core Validation & Feature Management | Features: Gherkin syntax validation, feature file creation, scenario/step addition, basic tag validation |
 | `@phase2` | Phase 2: Tag Registry & FOUNDATION.md | Features: TAGS.md management, FOUNDATION.md Mermaid diagrams, tag statistics, consistency checks |
@@ -25,7 +26,8 @@ Tags that identify which architectural component a feature belongs to.
 |-----|-------------|-------|
 | `@cli` | Command-Line Interface | All CLI commands, argument parsing, command handlers, user-facing terminal interactions |
 | `@parser` | Gherkin Parser Integration | @cucumber/gherkin-parser usage, syntax validation, AST processing |
-| `@generator` | Template Generation | Feature file templates, scaffolding, boilerplate generation |
+| `@generator` | Template Generation |
+| `@phase4` | Phase 4 - Complete CRUD operations and tag-based queries | Feature file templates, scaffolding, boilerplate generation |
 | `@validator` | Validation Logic | Syntax validation, tag validation, consistency checks |
 | `@formatter` | Formatting & Prettification | Prettier integration, Gherkin formatting, code style enforcement |
 | `@file-ops` | File Operations | Reading/writing feature files, FOUNDATION.md, TAGS.md management |
