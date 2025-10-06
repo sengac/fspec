@@ -15,6 +15,20 @@ import { getScenariosCommand } from './commands/get-scenarios';
 import { showAcceptanceCriteriaCommand } from './commands/show-acceptance-criteria';
 import { updateTagCommand } from './commands/update-tag';
 import { deleteScenarioCommand } from './commands/delete-scenario';
+import { deleteStepCommand } from './commands/delete-step';
+import { updateScenarioCommand } from './commands/update-scenario';
+import { updateStepCommand } from './commands/update-step';
+import { deleteTagCommand } from './commands/delete-tag';
+import { deleteScenariosByTagCommand } from './commands/delete-scenarios-by-tag';
+import { deleteFeaturesByTagCommand } from './commands/delete-features-by-tag';
+import { retagCommand } from './commands/retag';
+import { addArchitectureCommand } from './commands/add-architecture';
+import { addBackgroundCommand } from './commands/add-background';
+import { showFeatureCommand } from './commands/show-feature';
+import { checkCommand } from './commands/check';
+import { addDiagramCommand } from './commands/add-diagram';
+import { updateFoundationCommand } from './commands/update-foundation';
+import { showFoundationCommand } from './commands/show-foundation';
 
 const program = new Command();
 
@@ -136,6 +150,133 @@ program
   .argument('<feature>', 'Feature file name or path (e.g., "login" or "spec/features/login.feature")')
   .argument('<scenario>', 'Scenario name to delete')
   .action(deleteScenarioCommand);
+
+// Delete step command
+program
+  .command('delete-step')
+  .description('Delete a step from a scenario')
+  .argument('<feature>', 'Feature file name or path')
+  .argument('<scenario>', 'Scenario name')
+  .argument('<step>', 'Step text to delete (with or without keyword)')
+  .action(deleteStepCommand);
+
+// Update scenario command
+program
+  .command('update-scenario')
+  .description('Rename a scenario in a feature file')
+  .argument('<feature>', 'Feature file name or path')
+  .argument('<old-name>', 'Current scenario name')
+  .argument('<new-name>', 'New scenario name')
+  .action(updateScenarioCommand);
+
+// Update step command
+program
+  .command('update-step')
+  .description('Update step text or keyword in a scenario')
+  .argument('<feature>', 'Feature file name or path')
+  .argument('<scenario>', 'Scenario name')
+  .argument('<current-step>', 'Current step text (with or without keyword)')
+  .option('--text <text>', 'New step text')
+  .option('--keyword <keyword>', 'New step keyword (Given, When, Then, And, But)')
+  .action(updateStepCommand);
+
+// Delete tag command
+program
+  .command('delete-tag')
+  .description('Delete a tag from TAGS.md registry')
+  .argument('<tag>', 'Tag name (e.g., "@deprecated")')
+  .option('--force', 'Delete tag even if used in feature files')
+  .option('--dry-run', 'Show what would be deleted without making changes')
+  .action(deleteTagCommand);
+
+// Delete scenarios by tag command
+program
+  .command('delete-scenarios')
+  .description('Bulk delete scenarios by tag across multiple files')
+  .option('--tag <tag>', 'Filter by tag (can specify multiple times for AND logic)', (value, previous) => {
+    return previous ? [...previous, value] : [value];
+  })
+  .option('--dry-run', 'Preview deletions without making changes')
+  .action(deleteScenariosByTagCommand);
+
+// Delete features by tag command
+program
+  .command('delete-features')
+  .description('Bulk delete feature files by tag')
+  .option('--tag <tag>', 'Filter by tag (can specify multiple times for AND logic)', (value, previous) => {
+    return previous ? [...previous, value] : [value];
+  })
+  .option('--dry-run', 'Preview deletions without making changes')
+  .action(deleteFeaturesByTagCommand);
+
+// Retag command
+program
+  .command('retag')
+  .description('Bulk rename tags across all feature files')
+  .option('--from <tag>', 'Tag to rename from (e.g., @old-tag)')
+  .option('--to <tag>', 'Tag to rename to (e.g., @new-tag)')
+  .option('--dry-run', 'Preview changes without making modifications')
+  .action(retagCommand);
+
+// Add architecture command
+program
+  .command('add-architecture')
+  .description('Add or update architecture documentation in a feature file')
+  .argument('<feature>', 'Feature file name or path (e.g., "login" or "spec/features/login.feature")')
+  .argument('<text>', 'Architecture documentation text (can be multi-line)')
+  .action(addArchitectureCommand);
+
+// Add background command
+program
+  .command('add-background')
+  .description('Add or update Background (user story) section in a feature file')
+  .argument('<feature>', 'Feature file name or path (e.g., "login" or "spec/features/login.feature")')
+  .argument('<text>', 'User story text (As a... I want to... So that...)')
+  .action(addBackgroundCommand);
+
+// Show feature command
+program
+  .command('show-feature')
+  .description('Display feature file contents')
+  .argument('<feature>', 'Feature file name or path (e.g., "login" or "spec/features/login.feature")')
+  .option('--format <format>', 'Output format: text or json', 'text')
+  .option('--output <file>', 'Write output to file')
+  .action(showFeatureCommand);
+
+// Check command
+program
+  .command('check')
+  .description('Run all validation checks (Gherkin syntax, tags, formatting)')
+  .option('-v, --verbose', 'Show detailed validation output', false)
+  .action(checkCommand);
+
+// Add diagram command
+program
+  .command('add-diagram')
+  .description('Add or update Mermaid diagram in FOUNDATION.md')
+  .argument('<section>', 'Section name (e.g., "Architecture", "Data Flow")')
+  .argument('<title>', 'Diagram title')
+  .argument('<code>', 'Mermaid diagram code')
+  .action(addDiagramCommand);
+
+// Update foundation command
+program
+  .command('update-foundation')
+  .description('Update section content in FOUNDATION.md')
+  .argument('<section>', 'Section name (e.g., "What We Are Building", "Why")')
+  .argument('<content>', 'Section content (can be multi-line)')
+  .action(updateFoundationCommand);
+
+// Show foundation command
+program
+  .command('show-foundation')
+  .description('Display FOUNDATION.md content')
+  .option('--section <section>', 'Show specific section only')
+  .option('--format <format>', 'Output format: text, markdown, or json', 'text')
+  .option('--output <file>', 'Write output to file')
+  .option('--list-sections', 'List section names only', false)
+  .option('--line-numbers', 'Show line numbers', false)
+  .action(showFoundationCommand);
 
 // TODO: Add more commands
 // - create-feature

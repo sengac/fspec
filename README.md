@@ -76,6 +76,16 @@ fspec add-scenario user-authentication "Login with valid credentials"
 # Add step to existing scenario
 fspec add-step user-authentication "Login with valid credentials" given "I am on the login page"
 
+# Update scenario name
+fspec update-scenario user-authentication "Old Name" "New Name"
+
+# Update step in scenario
+fspec update-step user-authentication "Login with valid credentials" "I am on the login page" --text "I navigate to the login page"
+fspec update-step user-authentication "Login with valid credentials" "I am on the login page" --keyword When
+
+# Delete step from scenario
+fspec delete-step user-authentication "Login with valid credentials" "I am on the login page"
+
 # Delete scenario from feature
 fspec delete-scenario user-authentication "Login with valid credentials"
 
@@ -84,6 +94,11 @@ fspec list-features
 
 # Filter by tag
 fspec list-features --tag=@phase1
+
+# Show specific feature
+fspec show-feature user-authentication
+fspec show-feature user-authentication --format=json
+fspec show-feature user-authentication --output=feature.json
 ```
 
 ### Tag Management
@@ -108,6 +123,15 @@ fspec list-tags --category "Tag Categories"
 
 # Show tag usage statistics
 fspec tag-stats
+
+# Delete tag from registry
+fspec delete-tag @deprecated
+fspec delete-tag @deprecated --force  # Delete even if used in features
+fspec delete-tag @deprecated --dry-run  # Preview what would be deleted
+
+# Rename tags across all files
+fspec retag --from=@old-tag --to=@new-tag
+fspec retag --from=@old-tag --to=@new-tag --dry-run
 ```
 
 ### Query Operations
@@ -122,9 +146,19 @@ fspec get-scenarios --format=json
 fspec show-acceptance-criteria --tag=@phase1
 fspec show-acceptance-criteria --tag=@phase1 --format=markdown
 fspec show-acceptance-criteria --tag=@phase1 --format=json --output=phase1-acs.md
+
+# Bulk delete scenarios by tag
+fspec delete-scenarios --tag=@deprecated
+fspec delete-scenarios --tag=@phase1 --tag=@wip  # AND logic
+fspec delete-scenarios --tag=@deprecated --dry-run  # Preview deletions
+
+# Bulk delete feature files by tag
+fspec delete-features --tag=@deprecated
+fspec delete-features --tag=@phase1 --tag=@wip  # AND logic
+fspec delete-features --tag=@deprecated --dry-run  # Preview deletions
 ```
 
-### Formatting
+### Formatting & Validation
 
 ```bash
 # Format all feature files
@@ -132,16 +166,34 @@ fspec format
 
 # Format specific file
 fspec format spec/features/login.feature
+
+# Run all validation checks (Gherkin syntax, tags, formatting)
+fspec check
+fspec check --verbose
 ```
 
-### Architecture Documentation (Coming Soon)
+### Architecture Documentation
 
 ```bash
-# Add Mermaid diagram to FOUNDATION.md
-fspec add-diagram "Architecture" "System Context" "<mermaid-code>"
+# Add or update architecture notes in feature file
+fspec add-architecture user-authentication "Uses JWT tokens for session management"
 
-# Update foundation section
-fspec update-foundation "Problem Definition" "<content>"
+# Add or update user story (Background) in feature file
+fspec add-background user-authentication "As a user\nI want to log in securely\nSo that I can access my account"
+
+# Add or update Mermaid diagram in FOUNDATION.md
+fspec add-diagram "Architecture" "System Context" "graph TD\n  A[User] --> B[API]\n  B --> C[Database]"
+
+# Update foundation section content
+fspec update-foundation "What We Are Building" "A CLI tool for managing Gherkin specifications"
+
+# Display FOUNDATION.md content
+fspec show-foundation
+fspec show-foundation --section "What We Are Building"
+fspec show-foundation --format=json
+fspec show-foundation --format=markdown --output=foundation-copy.md
+fspec show-foundation --list-sections
+fspec show-foundation --line-numbers
 ```
 
 ## Requirements
@@ -176,23 +228,37 @@ fspec/
 │   │   ├── validate.ts                 # Gherkin validation ✅
 │   │   ├── create-feature.ts           # Feature creation ✅
 │   │   ├── list-features.ts            # Feature listing ✅
+│   │   ├── show-feature.ts             # Feature display ✅
 │   │   ├── format.ts                   # Prettier formatting ✅
+│   │   ├── check.ts                    # Complete validation suite ✅
 │   │   ├── validate-tags.ts            # Tag validation ✅
 │   │   ├── register-tag.ts             # Tag registration ✅
 │   │   ├── update-tag.ts               # Tag updating ✅
+│   │   ├── delete-tag.ts               # Tag deletion ✅
 │   │   ├── list-tags.ts                # Tag listing ✅
 │   │   ├── tag-stats.ts                # Tag statistics ✅
+│   │   ├── retag.ts                    # Bulk tag renaming ✅
 │   │   ├── add-scenario.ts             # Scenario addition ✅
 │   │   ├── add-step.ts                 # Step addition ✅
+│   │   ├── update-scenario.ts          # Scenario renaming ✅
+│   │   ├── update-step.ts              # Step updating ✅
 │   │   ├── delete-scenario.ts          # Scenario deletion ✅
+│   │   ├── delete-step.ts              # Step deletion ✅
+│   │   ├── delete-scenarios-by-tag.ts  # Bulk scenario deletion ✅
+│   │   ├── delete-features-by-tag.ts   # Bulk feature deletion ✅
 │   │   ├── get-scenarios.ts            # Query scenarios by tag ✅
-│   │   └── show-acceptance-criteria.ts # Show ACs by tag ✅
+│   │   ├── show-acceptance-criteria.ts # Show ACs by tag ✅
+│   │   ├── add-architecture.ts         # Add architecture docs ✅
+│   │   ├── add-background.ts           # Add user story ✅
+│   │   ├── add-diagram.ts              # Add Mermaid diagrams ✅
+│   │   ├── update-foundation.ts        # Update foundation sections ✅
+│   │   └── show-foundation.ts          # Display foundation ✅
 │   └── utils/                          # Shared utilities
 ├── spec/                               # fspec's own specifications
 │   ├── FOUNDATION.md                   # Project vision and architecture
 │   ├── TAGS.md                         # Tag registry
 │   ├── CLAUDE.md                       # Specification process guide
-│   └── features/                       # Gherkin feature files (14 files)
+│   └── features/                       # Gherkin feature files (28 files)
 ├── scripts/
 │   └── install-local.sh                # Installation script
 ├── dist/                               # Build output
@@ -270,64 +336,88 @@ See [spec/CLAUDE.md](./spec/CLAUDE.md) for detailed process guidelines.
 - ✅ Verbose mode for debugging
 - ✅ Feature file creation with templates
 - ✅ List features with tag filtering
+- ✅ Display feature files in multiple formats
 - ✅ Prettier formatting integration
 
-**Test Coverage:** 42 tests, all passing
+**Commands:** `validate`, `create-feature`, `list-features`, `show-feature`, `format`
 
 ### ✅ Phase 2: Tag Registry & Management (COMPLETE)
 - ✅ Tag validation against TAGS.md registry
 - ✅ Register new tags with categories
+- ✅ Update existing tags (category and/or description)
+- ✅ Delete tags from registry with safety checks
 - ✅ List registered tags with filtering
 - ✅ Tag usage statistics and reporting
 - ✅ Identify unused registered tags
 - ✅ Detect unregistered tags in features
+- ✅ Bulk rename tags across all files
 
-**Test Coverage:** 41 tests, all passing
+**Commands:** `validate-tags`, `register-tag`, `update-tag`, `delete-tag`, `list-tags`, `tag-stats`, `retag`
 
 ### ✅ Phase 3: Advanced Feature Editing (COMPLETE)
 - ✅ Add scenarios to existing features
 - ✅ Add steps to existing scenarios
+- ✅ Update scenario names
+- ✅ Update step text and/or keywords
+- ✅ Delete steps from scenarios
+- ✅ Delete scenarios from features
 - ✅ Preserve formatting and indentation
 - ✅ Handle data tables and doc strings
 - ✅ Validate after modifications
 
-**Test Coverage:** 27 tests, all passing
+**Commands:** `add-scenario`, `add-step`, `update-scenario`, `update-step`, `delete-scenario`, `delete-step`
 
 ### ✅ Phase 4: CRUD Operations & Tag-Based Queries (COMPLETE)
 - ✅ Query scenarios by tag(s) with AND logic
 - ✅ Show acceptance criteria by tag with multiple formats (text, markdown, JSON)
 - ✅ Export acceptance criteria to file
-- ✅ Update tag definitions (category and/or description)
-- ✅ Delete scenarios from feature files
+- ✅ Bulk delete scenarios by tag across multiple files
+- ✅ Bulk delete feature files by tag
+- ✅ Dry-run mode for previewing deletions
 - ✅ Preserve feature structure during deletions
 - ✅ Complete tag-based filtering foundation
 
-**Test Coverage:** 28 tests, all passing
+**Commands:** `get-scenarios`, `show-acceptance-criteria`, `delete-scenarios`, `delete-features`
 
-### 🚧 Phase 5: Advanced CRUD & Bulk Operations (IN PROGRESS)
-- 🚧 Delete step from scenario
-- 🚧 Update scenario (rename)
-- 🚧 Update step (edit text/type)
-- 🚧 Delete tag from registry
-- 🚧 Bulk delete scenarios by tag
-- 🚧 Bulk delete features by tag
-- 🚧 Retag operations (rename tags across files)
+### ✅ Phase 5: Advanced CRUD & Bulk Operations (COMPLETE)
+- ✅ Delete step from scenario
+- ✅ Update scenario (rename)
+- ✅ Update step (edit text/type)
+- ✅ Delete tag from registry
+- ✅ Bulk delete scenarios by tag
+- ✅ Bulk delete features by tag
+- ✅ Retag operations (rename tags across files)
+- ✅ Comprehensive validation suite
+- ✅ Dry-run support for destructive operations
 
-### 🚧 Phase 6: Architecture Documentation (PLANNED)
-- 🚧 Add Mermaid diagrams to FOUNDATION.md
-- 🚧 Update foundation sections
-- 🚧 Diagram validation and formatting
+**Commands:** `delete-step`, `update-step`, `update-scenario`, `delete-tag`, `delete-scenarios`, `delete-features`, `retag`, `check`
 
-### 🚧 Phase 7: CAGE Integration & Optimization (PLANNED)
-- 🚧 Optimized commands for CAGE hooks
-- 🚧 Batch operations for multiple files
-- 🚧 Performance optimization for large projects
+### ✅ Phase 6: Architecture Documentation (COMPLETE)
+- ✅ Add/update architecture notes in feature files
+- ✅ Add/update user stories (Background) in feature files
+- ✅ Add/update Mermaid diagrams in FOUNDATION.md
+- ✅ Update foundation sections
+- ✅ Display foundation content with multiple formats
+- ✅ Section-specific operations
+- ✅ JSON output for programmatic access
+- ✅ Diagram validation and formatting
 
-### Summary
-- **Total Commands:** 13 implemented
-- **Total Tests:** 148 passing (100% pass rate)
-- **Feature Files:** 14 validated specifications
+**Commands:** `add-architecture`, `add-background`, `add-diagram`, `update-foundation`, `show-foundation`
+
+### 🎯 All Core Features Complete!
+
+**Summary:**
+- **Total Commands:** 29 implemented
+- **Total Tests:** 315 passing (100% pass rate)
+- **Feature Files:** 28 validated specifications
 - **Code Coverage:** All commands fully tested
+- **Build Size:** 84.15 kB (gzip: 17.54 kB)
+
+### 🔮 Future Enhancements (Optional)
+- **JSON I/O Enhancement**: Consistent JSON input/output across all commands for easier AI agent integration
+  - Accept JSON input for complex operations (multi-step scenarios, batch updates)
+  - Standardize JSON output format across all commands
+  - Machine-readable error responses in JSON format
 
 ## Contributing
 

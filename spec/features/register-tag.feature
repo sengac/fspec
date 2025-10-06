@@ -14,6 +14,12 @@ Feature: Register New Tag in Tag Registry
   - Supports all tag categories: phase, component, feature-group, technical, platform,
 
 
+
+
+
+
+
+
   priority, status, testing, CAGE
 
   Critical implementation requirements:

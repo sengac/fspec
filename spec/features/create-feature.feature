@@ -21,7 +21,8 @@ Feature: Create Feature File with Template
   - MUST create valid Gherkin syntax files
   - MUST use kebab-case for file names (e.g., "User Login" →
   "user-login.feature")
-  - MUST include template tags (@phase1, @component, @feature-group placeholders)
+  - MUST include template tags (@phase1, @component, @feature-group
+  placeholders)
 
   - MUST include Background section with user story template
   - MUST include one example Scenario with Given/When/Then
