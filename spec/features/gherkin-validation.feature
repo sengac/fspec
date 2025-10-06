@@ -1,13 +1,22 @@
-@phase1 @cli @parser @validation @gherkin @cucumber-parser @cross-platform @critical @integration-test @cage-hook
+@phase1
+@cli
+@parser
+@validation
+@gherkin
+@cucumber-parser
+@cross-platform
+@critical
+@integration-test
+@cage-hook
 Feature: Gherkin Syntax Validation
-
   """
   Architecture notes:
   - This feature uses @cucumber/gherkin-parser for official Gherkin validation
   - Parser returns AST (Abstract Syntax Tree) or syntax errors
   - Validation is synchronous and fast (no async operations needed)
   - Error messages are formatted for AI agent comprehension
-  - Supports all Gherkin keywords: Feature, Background, Scenario, Given, When, Then, And, But
+  - Supports all Gherkin keywords: Feature, Background, Scenario, Given, When,
+  Then, And, But
   - Validates doc strings ("""), data tables (|), and tags (@)
 
   Critical implementation requirements:
@@ -33,6 +42,8 @@ Feature: Gherkin Syntax Validation
     As an AI agent writing Gherkin specifications
     I want immediate syntax validation feedback
     So that I can correct errors before committing malformed feature files
+
+
 
   Scenario: Validate a syntactically correct feature file
     Given I have a feature file "spec/features/login.feature" with valid Gherkin syntax
@@ -131,10 +142,10 @@ Feature: Gherkin Syntax Validation
 
   Scenario: Validate multiple files and report first error
     Given I have feature files:
-      | file                     | status  |
-      | spec/features/valid1.feature   | valid   |
-      | spec/features/broken.feature   | invalid |
-      | spec/features/valid2.feature   | valid   |
+      | file                         | status  |
+      | spec/features/valid1.feature | valid   |
+      | spec/features/broken.feature | invalid |
+      | spec/features/valid2.feature | valid   |
     When I run `fspec validate`
     Then the command should exit with code 1
     And the output should contain "✓ spec/features/valid1.feature is valid"

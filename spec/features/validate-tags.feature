@@ -1,6 +1,12 @@
-@phase2 @validator @tag-management @validation @error-handling @high @integration-test @cage-hook
+@phase2
+@validator
+@tag-management
+@validation
+@error-handling
+@high
+@integration-test
+@cage-hook
 Feature: Validate Feature File Tags Against Registry
-
   """
   Architecture notes:
   - Validates all tags in feature files exist in spec/TAGS.md
@@ -39,6 +45,8 @@ Feature: Validate Feature File Tags Against Registry
     As a developer maintaining specification tag discipline
     I want to ensure all tags are registered in TAGS.md
     So that tags remain meaningful and searchable across the project
+
+
 
   Scenario: Validate tags in a compliant feature file
     Given I have a feature file "spec/features/auth.feature" with tags "@phase1 @cli @authentication"

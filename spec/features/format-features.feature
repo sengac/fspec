@@ -1,6 +1,13 @@
-@phase1 @cli @formatter @formatting @prettier @cross-platform @medium @integration-test @e2e-test
+@phase1
+@cli
+@formatter
+@formatting
+@prettier
+@cross-platform
+@medium
+@integration-test
+@e2e-test
 Feature: Format Feature Files with Prettier
-
   """
   Architecture notes:
   - Uses Prettier with prettier-plugin-gherkin for formatting
@@ -35,6 +42,8 @@ Feature: Format Feature Files with Prettier
     As a developer using AI agents for spec-driven development
     I want to automatically format feature files
     So that all specifications have consistent style
+
+
 
   Scenario: Format a single feature file
     Given I have a feature file "spec/features/login.feature" with inconsistent formatting

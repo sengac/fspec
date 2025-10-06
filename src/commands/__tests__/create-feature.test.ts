@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdtemp, rm, readFile, mkdir, writeFile, access } from 'fs/promises';
 import { tmpdir } from 'os';
 import { join } from 'path';
-import { createFeature } from '../create-feature.js';
+import { createFeature } from '../create-feature';
 import * as Gherkin from '@cucumber/gherkin';
 import * as Messages from '@cucumber/messages';
 

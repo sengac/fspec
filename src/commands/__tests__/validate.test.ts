@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdtemp, rm, mkdir, writeFile } from 'fs/promises';
 import { tmpdir } from 'os';
 import { join } from 'path';
-import { validateFile } from '../validate.js';
+import { validateFile } from '../validate';
 
 // Helper function to validate a file (extracted from validateCommand)
 async function validateFile(filePath: string, verbose?: boolean): Promise<{

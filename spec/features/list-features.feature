@@ -1,6 +1,13 @@
-@phase1 @cli @querying @feature-management @gherkin @cross-platform @high @unit-test @integration-test
+@phase1
+@cli
+@querying
+@feature-management
+@gherkin
+@cross-platform
+@high
+@unit-test
+@integration-test
 Feature: List Feature Files
-
   """
   Architecture notes:
   - Lists all .feature files in spec/features/ directory
@@ -35,12 +42,14 @@ Feature: List Feature Files
     I want to see all existing feature files
     So that I understand what specifications already exist and avoid duplicates
 
+
+
   Scenario: List all feature files
     Given I have feature files in "spec/features/":
-      | file                          | feature name            | scenarios |
-      | gherkin-validation.feature    | Gherkin Syntax Validation | 14       |
-      | create-feature.feature        | Create Feature File     | 10        |
-      | list-features.feature         | List Feature Files      | 8         |
+      | file                       | feature name              | scenarios |
+      | gherkin-validation.feature | Gherkin Syntax Validation | 14        |
+      | create-feature.feature     | Create Feature File       | 10        |
+      | list-features.feature      | List Feature Files        | 8         |
     When I run `fspec list-features`
     Then the command should exit with code 0
     And the output should list all 3 feature files
@@ -69,10 +78,10 @@ Feature: List Feature Files
 
   Scenario: Filter features by single tag
     Given I have feature files with tags:
-      | file               | tags                    |
-      | auth.feature       | @phase1 @security       |
-      | api.feature        | @phase2 @api            |
-      | validation.feature | @phase1 @validation     |
+      | file               | tags                |
+      | auth.feature       | @phase1 @security   |
+      | api.feature        | @phase2 @api        |
+      | validation.feature | @phase1 @validation |
     When I run `fspec list-features --tag=@phase1`
     Then the command should exit with code 0
     And the output should list 2 feature files
@@ -83,10 +92,10 @@ Feature: List Feature Files
 
   Scenario: Filter features by multiple tags (AND logic)
     Given I have feature files with tags:
-      | file               | tags                       |
-      | auth.feature       | @phase1 @security @cli     |
-      | api.feature        | @phase1 @api @backend      |
-      | validation.feature | @phase1 @validation @cli   |
+      | file               | tags                     |
+      | auth.feature       | @phase1 @security @cli   |
+      | api.feature        | @phase1 @api @backend    |
+      | validation.feature | @phase1 @validation @cli |
     When I run `fspec list-features --tag=@phase1 --tag=@cli`
     Then the output should list 2 feature files
     And the output should contain "auth.feature"
@@ -106,10 +115,10 @@ Feature: List Feature Files
 
   Scenario: List features in alphabetical order
     Given I have feature files:
-      | file            |
-      | zebra.feature   |
-      | alpha.feature   |
-      | beta.feature    |
+      | file          |
+      | zebra.feature |
+      | alpha.feature |
+      | beta.feature  |
     When I run `fspec list-features`
     Then the output should list files in order:
       | spec/features/alpha.feature |

@@ -9,9 +9,11 @@ import { glob } from 'tinyglobby';
 const execAsync = promisify(exec);
 
 // Get the project root (where package.json is located)
+// When built: dist/index.js -> dist -> project root
+// When in source: src/commands/format.ts -> src/commands -> src -> project root
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const projectRoot = join(__dirname, '..', '..');
+const projectRoot = __dirname.includes('/dist') ? join(__dirname, '..') : join(__dirname, '..', '..');
 
 export interface FormatOptions {
   cwd?: string;
