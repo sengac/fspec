@@ -431,13 +431,14 @@ sequenceDiagram
 
 ### Feature File Commands
 
-- `fspec create-feature <name>` - Create new feature file with template
-- `fspec add-scenario <feature> <name>` - Add scenario to feature
-- `fspec add-step <feature> <scenario> <type> <text>` - Add Given/When/Then step
-- `fspec add-architecture <feature> <notes>` - Add/update architecture doc string
-- `fspec add-background <feature> <user-story>` - Add/update user story background
-- `fspec list-features [--tag=@phase1]` - List all features (optionally filtered)
-- `fspec show-feature <name>` - Display feature file contents
+- `fspec create-feature <name>` - Create new feature file with template ✅
+- `fspec add-scenario <feature> <name>` - Add scenario to feature ✅
+- `fspec add-step <feature> <scenario> <type> <text>` - Add Given/When/Then step ✅
+- `fspec delete-scenario <feature> <scenario>` - Delete scenario from feature ✅
+- `fspec add-architecture <feature> <notes>` - Add/update architecture doc string 🚧
+- `fspec add-background <feature> <user-story>` - Add/update user story background 🚧
+- `fspec list-features [--tag=@phase1]` - List all features (optionally filtered) ✅
+- `fspec show-feature <name>` - Display feature file contents 🚧
 
 ### FOUNDATION.md Commands
 
@@ -447,16 +448,23 @@ sequenceDiagram
 
 ### TAGS.md Commands
 
-- `fspec register-tag <tag> <category> <description>` - Register new tag
-- `fspec validate-tags` - Ensure all feature file tags exist in TAGS.md
-- `fspec list-tags [--category=phase]` - List registered tags
-- `fspec tag-stats` - Show tag usage statistics
+- `fspec register-tag <tag> <category> <description>` - Register new tag ✅
+- `fspec update-tag <tag> [--category=<cat>] [--description=<desc>]` - Update tag ✅
+- `fspec validate-tags` - Ensure all feature file tags exist in TAGS.md ✅
+- `fspec list-tags [--category=phase]` - List registered tags ✅
+- `fspec tag-stats` - Show tag usage statistics ✅
+
+### Query Commands
+
+- `fspec get-scenarios [--tag=@phase1]` - Get scenarios by tag(s) ✅
+- `fspec show-acceptance-criteria [--tag=@phase1] [--format=text|markdown|json] [--output=file]` - Show ACs ✅
 
 ### Validation & Formatting Commands
 
-- `fspec validate [file]` - Validate Gherkin syntax (all files or specific)
-- `fspec format [file]` - Format using Prettier (all files or specific)
-- `fspec check` - Run all validations (syntax + tags + formatting)
+- `fspec validate [file]` - Validate Gherkin syntax (all files or specific) ✅
+- `fspec format [file]` - Format using Prettier (all files or specific) ✅
+- `fspec validate-tags [file]` - Validate tags against registry ✅
+- `fspec check` - Run all validations (syntax + tags + formatting) 🚧
 
 ---
 
@@ -493,23 +501,42 @@ sequenceDiagram
 
 **Test Coverage:** 27 tests, all passing
 
-#### 🚧 Phase 4 - Architecture Documentation (PLANNED)
+#### ✅ Phase 4 - CRUD Operations & Tag-Based Queries (COMPLETE)
+- ✅ Query scenarios by tag(s) with AND logic
+- ✅ Show acceptance criteria by tag with multiple formats (text, markdown, JSON)
+- ✅ Export acceptance criteria to file
+- ✅ Update tag definitions (category and/or description)
+- ✅ Delete scenarios from feature files
+- ✅ Preserve feature structure during deletions
+- ✅ Complete tag-based filtering foundation
+
+**Test Coverage:** 28 tests, all passing
+
+#### 🚧 Phase 5 - Advanced CRUD & Bulk Operations (IN PROGRESS)
+- 🚧 Delete step from scenario
+- 🚧 Update scenario (rename)
+- 🚧 Update step (edit text/type)
+- 🚧 Delete tag from registry
+- 🚧 Bulk delete scenarios by tag
+- 🚧 Bulk delete features by tag
+- 🚧 Retag operations (rename tags across files)
+
+#### 🚧 Phase 6 - Architecture Documentation (PLANNED)
 - 🚧 Add Mermaid diagrams to FOUNDATION.md
 - 🚧 Update foundation sections programmatically
 - 🚧 Diagram validation and formatting
 - 🚧 Architecture change tracking
 
-#### 🚧 Phase 5 - CAGE Integration & Optimization (PLANNED)
+#### 🚧 Phase 7 - CAGE Integration & Optimization (PLANNED)
 - 🚧 Optimized commands for CAGE hook invocation
 - 🚧 Batch operations for multiple files
-- 🚧 Advanced querying (find scenarios, search steps)
 - 🚧 Performance optimization for large projects
 - 🚧 Watch mode for continuous validation
 
 **Overall Progress:**
-- **Commands Implemented:** 10/15 planned (67%)
-- **Total Tests:** 110 passing (100% pass rate)
-- **Feature Files:** 9 validated specifications
+- **Commands Implemented:** 13/20+ planned (65%)
+- **Total Tests:** 148 passing (100% pass rate)
+- **Feature Files:** 14 validated specifications
 - **Code Coverage:** All implemented commands fully tested
 
 ### Integration with CAGE
