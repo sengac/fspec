@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdtemp, rm, mkdir, writeFile, readFile } from 'fs/promises';
 import { tmpdir } from 'os';
 import { join } from 'path';
-import { formatFeatures } from '../format.js';
+import { formatFeatures } from '../format';
 
 describe('Feature: Format Feature Files with Prettier', () => {
   let testDir: string;

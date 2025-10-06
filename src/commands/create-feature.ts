@@ -1,8 +1,8 @@
 import { mkdir, writeFile, access } from 'fs/promises';
 import { join } from 'path';
 import chalk from 'chalk';
-import { toKebabCase } from '../utils/file-helpers.js';
-import { generateFeatureTemplate } from '../utils/templates.js';
+import { toKebabCase } from '../utils/file-helpers';
+import { generateFeatureTemplate } from '../utils/templates';
 
 export async function createFeature(name: string, cwd: string = process.cwd()): Promise<string> {
   const featuresDir = join(cwd, 'spec', 'features');

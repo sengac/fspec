@@ -1,6 +1,14 @@
-@phase1 @cli @generator @feature-management @gherkin @template @cross-platform @critical @unit-test @integration-test
+@phase1
+@cli
+@generator
+@feature-management
+@gherkin
+@template
+@cross-platform
+@critical
+@unit-test
+@integration-test
 Feature: Create Feature File with Template
-
   """
   Architecture notes:
   - Generates new .feature files in spec/features/ directory
@@ -11,8 +19,10 @@ Feature: Create Feature File with Template
 
   Critical implementation requirements:
   - MUST create valid Gherkin syntax files
-  - MUST use kebab-case for file names (e.g., "User Login" → "user-login.feature")
+  - MUST use kebab-case for file names (e.g., "User Login" →
+  "user-login.feature")
   - MUST include template tags (@phase1, @component, @feature-group placeholders)
+
   - MUST include Background section with user story template
   - MUST include one example Scenario with Given/When/Then
   - MUST NOT overwrite existing files without confirmation
@@ -35,6 +45,8 @@ Feature: Create Feature File with Template
     As a developer using AI agents for spec-driven development
     I want to create new feature files with proper Gherkin structure
     So that AI can write valid specifications without manual setup
+
+
 
   Scenario: Create feature file with valid name
     Given I am in a project with a spec/features/ directory

@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdtemp, rm, mkdir, writeFile } from 'fs/promises';
 import { tmpdir } from 'os';
 import { join } from 'path';
-import { listFeatures } from '../list-features.js';
+import { listFeatures } from '../list-features';
 
 describe('Feature: List Feature Files', () => {
   let testDir: string;

@@ -9,7 +9,8 @@ This document defines all tags used in Gherkin feature files. All tags MUST be d
 Tags that identify which development phase a feature belongs to (from FOUNDATION.md).
 
 | Tag | Description | Usage |
-|-----|-------------|-------|
+|-----|-------------|
+| `@modification` | Feature modification and editing operations |-------|
 | `@phase1` | Phase 1: Core Validation & Feature Management | Features: Gherkin syntax validation, feature file creation, scenario/step addition, basic tag validation |
 | `@phase2` | Phase 2: Tag Registry & FOUNDATION.md | Features: TAGS.md management, FOUNDATION.md Mermaid diagrams, tag statistics, consistency checks |
 | `@phase3` | Phase 3: CAGE Integration & Advanced Features | Features: CAGE hook optimization, batch operations, advanced querying, auto-formatting integration |
