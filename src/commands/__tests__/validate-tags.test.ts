@@ -427,7 +427,7 @@ Feature: Test Feature
 
       // And report unregistered tags with file locations
       const invalidResult = result.results.find(r =>
-        r.file.includes('invalid.feature')
+        r.file === 'spec/features/invalid.feature'
       );
       expect(invalidResult).toBeDefined();
       expect(invalidResult!.valid).toBe(false);
@@ -437,7 +437,7 @@ Feature: Test Feature
       // And check for required tag categories (phase, component, feature-group)
       // (both files have phase and component tags, so they pass those checks)
       const validResult = result.results.find(r =>
-        r.file.includes('valid.feature')
+        r.file === 'spec/features/valid.feature'
       );
       expect(validResult).toBeDefined();
       expect(validResult!.valid).toBe(true);

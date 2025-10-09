@@ -2,6 +2,8 @@ import Ajv, { type ErrorObject } from 'ajv';
 import addFormats from 'ajv-formats';
 import { readFile } from 'fs/promises';
 import { join } from 'path';
+import foundationSchema from '../schemas/foundation.schema.json';
+import tagsSchema from '../schemas/tags.schema.json';
 
 export interface ValidationResult {
   valid: boolean;
@@ -19,7 +21,7 @@ export interface ValidationResults {
  */
 async function validateJsonFile(
   jsonPath: string,
-  schemaPath: string
+  schema: object
 ): Promise<ValidationResult> {
   const ajv = new Ajv({ allErrors: true, verbose: true });
   addFormats(ajv); // Add format validation (uri, date-time, etc.)
@@ -27,10 +29,6 @@ async function validateJsonFile(
   // Read JSON file
   const jsonContent = await readFile(jsonPath, 'utf-8');
   const jsonData = JSON.parse(jsonContent);
-
-  // Read schema file
-  const schemaContent = await readFile(schemaPath, 'utf-8');
-  const schema = JSON.parse(schemaContent);
 
   // Validate
   const validate = ajv.compile(schema);
@@ -44,32 +42,24 @@ async function validateJsonFile(
 
 /**
  * Validate foundation.json against foundation.schema.json
- * Schema is bundled in src/schemas/
+ * Schema is bundled into the application at build time
  */
 export async function validateFoundationJson(
-  jsonPath?: string,
-  schemaPath?: string
+  jsonPath?: string
 ): Promise<ValidationResult> {
   const foundationJsonPath = jsonPath || 'spec/foundation.json';
-  // Schema is bundled with the application in src/schemas/
-  const foundationSchemaPath = schemaPath || join(import.meta.dirname, '../schemas/foundation.schema.json');
-
-  return validateJsonFile(foundationJsonPath, foundationSchemaPath);
+  return validateJsonFile(foundationJsonPath, foundationSchema);
 }
 
 /**
  * Validate tags.json against tags.schema.json
- * Schema is bundled in src/schemas/
+ * Schema is bundled into the application at build time
  */
 export async function validateTagsJson(
-  jsonPath?: string,
-  schemaPath?: string
+  jsonPath?: string
 ): Promise<ValidationResult> {
   const tagsJsonPath = jsonPath || 'spec/tags.json';
-  // Schema is bundled with the application in src/schemas/
-  const tagsSchemaPath = schemaPath || join(import.meta.dirname, '../schemas/tags.schema.json');
-
-  return validateJsonFile(tagsJsonPath, tagsSchemaPath);
+  return validateJsonFile(tagsJsonPath, tagsSchema);
 }
 
 /**

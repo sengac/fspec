@@ -1,6 +1,11 @@
-@phase7 @cli @foundation-management @modification @json-backed @high @integration-test
+@phase7
+@cli
+@foundation-management
+@modification
+@json-backed
+@high
+@integration-test
 Feature: Add Diagram to JSON-Backed Foundation
-
   """
   Architecture notes:
   - Updates existing `fspec add-diagram` command to use foundation.json

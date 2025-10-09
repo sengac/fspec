@@ -22,9 +22,11 @@ fspec provides AI agents with:
 
 - 📋 **Gherkin Validation** - Validate syntax using official Cucumber parser
 - 🏗️ **Feature Management** - Create and manage .feature files with proper structure
-- 🏷️ **Tag Registry** - Enforce tag discipline with TAGS.md registry
-- 📐 **Architecture Docs** - Maintain FOUNDATION.md with Mermaid diagrams
-- 🎨 **Auto-Formatting** - Prettier integration for consistent formatting
+- 🏷️ **JSON-Backed Tag Registry** - Single source of truth in tags.json with auto-generated TAGS.md
+- 📐 **JSON-Backed Foundation** - Single source of truth in foundation.json with auto-generated FOUNDATION.md
+- 🎯 **Full CRUD Operations** - Complete Create, Read, Update, Delete for tags and diagrams
+- 🎨 **Auto-Formatting** - Custom AST-based formatter for Gherkin files
+- 🤖 **AI Agent Friendly** - Machine-readable JSON format with structured commands
 - 🔗 **CAGE Integration** - Designed to work with CAGE for code-spec alignment
 
 ## Installation
@@ -101,16 +103,18 @@ fspec show-feature user-authentication --format=json
 fspec show-feature user-authentication --output=feature.json
 ```
 
-### Tag Management
+### Tag Management (JSON-Backed)
+
+All tag operations work with `spec/tags.json` and automatically regenerate `spec/TAGS.md`:
 
 ```bash
 # Register new tag
-fspec register-tag @performance "Tag Categories" "Performance-critical features"
+fspec register-tag @performance "Technical Tags" "Performance-critical features"
 
 # Update existing tag
 fspec update-tag @performance --description="Updated description"
-fspec update-tag @performance --category="Tag Categories"
-fspec update-tag @performance --category="Tag Categories" --description="New description"
+fspec update-tag @performance --category="Technical Tags"
+fspec update-tag @performance --category="Technical Tags" --description="New description"
 
 # Validate all tags are registered
 fspec validate-tags
@@ -119,7 +123,7 @@ fspec validate-tags
 fspec list-tags
 
 # Filter tags by category
-fspec list-tags --category "Tag Categories"
+fspec list-tags --category "Technical Tags"
 
 # Show tag usage statistics
 fspec tag-stats
@@ -133,6 +137,8 @@ fspec delete-tag @deprecated --dry-run  # Preview what would be deleted
 fspec retag --from=@old-tag --to=@new-tag
 fspec retag --from=@old-tag --to=@new-tag --dry-run
 ```
+
+**Note:** All tag write operations (register-tag, update-tag, delete-tag) modify `spec/tags.json` and automatically regenerate `spec/TAGS.md`. Never edit the markdown files directly.
 
 ### Query Operations
 
@@ -174,20 +180,33 @@ fspec check --verbose
 
 ### Architecture Documentation
 
+fspec uses **JSON-backed documentation** where `spec/foundation.json` and `spec/tags.json` serve as the single source of truth. The `FOUNDATION.md` and `TAGS.md` files are automatically generated from their JSON counterparts.
+
+#### Feature File Documentation
+
 ```bash
 # Add or update architecture notes in feature file
 fspec add-architecture user-authentication "Uses JWT tokens for session management"
 
 # Add or update user story (Background) in feature file
 fspec add-background user-authentication "As a user\nI want to log in securely\nSo that I can access my account"
+```
 
-# Add or update Mermaid diagram in FOUNDATION.md
-fspec add-diagram "Architecture" "System Context" "graph TD\n  A[User] --> B[API]\n  B --> C[Database]"
+#### Foundation Management (JSON-Backed)
+
+All foundation operations work with `spec/foundation.json` and automatically regenerate `spec/FOUNDATION.md`:
+
+```bash
+# Add or update Mermaid diagram
+fspec add-diagram "Architecture Diagrams" "System Context" "graph TD\n  A[User] --> B[API]\n  B --> C[Database]"
+
+# Delete Mermaid diagram
+fspec delete-diagram "Architecture Diagrams" "System Context"
 
 # Update foundation section content
 fspec update-foundation "What We Are Building" "A CLI tool for managing Gherkin specifications"
 
-# Display FOUNDATION.md content
+# Display foundation content
 fspec show-foundation
 fspec show-foundation --section "What We Are Building"
 fspec show-foundation --format=json
@@ -196,11 +215,36 @@ fspec show-foundation --list-sections
 fspec show-foundation --line-numbers
 ```
 
+**Note:** All write operations (add-diagram, delete-diagram, update-foundation) modify `spec/foundation.json` and automatically regenerate `spec/FOUNDATION.md`. Never edit the markdown files directly.
+
 ## Requirements
 
 - Node.js >= 18.0.0
 
 ## How It Works
+
+### JSON-Backed Documentation Architecture
+
+fspec uses a **JSON-first approach** for managing tags and foundation documentation:
+
+**Tags System:**
+- `spec/tags.json` - Single source of truth for all registered tags
+- `spec/TAGS.md` - Auto-generated markdown documentation
+- All tag commands (register, update, delete, list, validate) read from JSON
+- Write commands automatically regenerate the markdown file
+
+**Foundation System:**
+- `spec/foundation.json` - Single source of truth for project foundation
+- `spec/FOUNDATION.md` - Auto-generated markdown documentation
+- All foundation commands (add-diagram, delete-diagram, update-foundation) modify JSON
+- Write commands automatically regenerate the markdown file
+
+**Benefits:**
+- ✅ Machine-readable format for AI agents and tooling
+- ✅ Consistent structure with JSON schema validation
+- ✅ No manual markdown editing required
+- ✅ Automatic synchronization between JSON and markdown
+- ✅ Easy programmatic access via show commands with --format=json
 
 ### Validation Workflow
 
@@ -251,14 +295,17 @@ fspec/
 │   │   ├── add-architecture.ts         # Add architecture docs ✅
 │   │   ├── add-background.ts           # Add user story ✅
 │   │   ├── add-diagram.ts              # Add Mermaid diagrams ✅
+│   │   ├── delete-diagram.ts           # Delete Mermaid diagrams ✅
 │   │   ├── update-foundation.ts        # Update foundation sections ✅
 │   │   └── show-foundation.ts          # Display foundation ✅
 │   └── utils/                          # Shared utilities
 ├── spec/                               # fspec's own specifications
-│   ├── FOUNDATION.md                   # Project vision and architecture
-│   ├── TAGS.md                         # Tag registry
+│   ├── foundation.json                 # Project foundation (source of truth)
+│   ├── FOUNDATION.md                   # Auto-generated from foundation.json
+│   ├── tags.json                       # Tag registry (source of truth)
+│   ├── TAGS.md                         # Auto-generated from tags.json
 │   ├── CLAUDE.md                       # Specification process guide
-│   └── features/                       # Gherkin feature files (28 files)
+│   └── features/                       # Gherkin feature files (29 files)
 ├── scripts/
 │   └── install-local.sh                # Installation script
 ├── dist/                               # Build output
@@ -322,10 +369,14 @@ See [spec/CLAUDE.md](./spec/CLAUDE.md) for detailed process guidelines.
 
 ## Documentation
 
-- **[FOUNDATION.md](./spec/FOUNDATION.md)** - Project vision, architecture, and success criteria
-- **[TAGS.md](./spec/TAGS.md)** - Tag registry and guidelines
+- **[foundation.json](./spec/foundation.json)** - Project foundation (source of truth)
+- **[FOUNDATION.md](./spec/FOUNDATION.md)** - Auto-generated project vision and architecture
+- **[tags.json](./spec/tags.json)** - Tag registry (source of truth)
+- **[TAGS.md](./spec/TAGS.md)** - Auto-generated tag documentation
 - **[CLAUDE.md](./spec/CLAUDE.md)** - Specification management process
 - **[Gherkin Reference](https://cucumber.io/docs/gherkin/reference)** - Official Gherkin syntax
+
+**Important:** The `.json` files are the single source of truth. The `.md` files are auto-generated and should never be edited manually.
 
 ## Current Status
 
@@ -392,26 +443,31 @@ See [spec/CLAUDE.md](./spec/CLAUDE.md) for detailed process guidelines.
 
 **Commands:** `delete-step`, `update-step`, `update-scenario`, `delete-tag`, `delete-scenarios`, `delete-features`, `retag`, `check`
 
-### ✅ Phase 6: Architecture Documentation (COMPLETE)
+### ✅ Phase 6: Architecture Documentation & JSON-Backed System (COMPLETE)
 - ✅ Add/update architecture notes in feature files
 - ✅ Add/update user stories (Background) in feature files
-- ✅ Add/update Mermaid diagrams in FOUNDATION.md
-- ✅ Update foundation sections
+- ✅ JSON-backed foundation system (foundation.json as source of truth)
+- ✅ JSON-backed tag system (tags.json as source of truth)
+- ✅ Add/update Mermaid diagrams (JSON-backed)
+- ✅ Delete Mermaid diagrams (JSON-backed)
+- ✅ Update foundation sections (JSON-backed)
+- ✅ Auto-generate FOUNDATION.md and TAGS.md from JSON
 - ✅ Display foundation content with multiple formats
 - ✅ Section-specific operations
 - ✅ JSON output for programmatic access
-- ✅ Diagram validation and formatting
+- ✅ Full CRUD operations on both tags.json and foundation.json
 
-**Commands:** `add-architecture`, `add-background`, `add-diagram`, `update-foundation`, `show-foundation`
+**Commands:** `add-architecture`, `add-background`, `add-diagram`, `delete-diagram`, `update-foundation`, `show-foundation`
 
 ### 🎯 All Core Features Complete!
 
 **Summary:**
-- **Total Commands:** 29 implemented
-- **Total Tests:** 315 passing (100% pass rate)
-- **Feature Files:** 28 validated specifications
+- **Total Commands:** 30 implemented
+- **Total Tests:** 321 passing (100% pass rate)
+- **Feature Files:** 29 validated specifications
 - **Code Coverage:** All commands fully tested
-- **Build Size:** 84.15 kB (gzip: 17.54 kB)
+- **Build Size:** 286.92 kB (gzip: 68.34 kB)
+- **Architecture:** JSON-backed documentation system with auto-generated markdown
 
 ### 🔮 Future Enhancements (Optional)
 - **JSON I/O Enhancement**: Consistent JSON input/output across all commands for easier AI agent integration

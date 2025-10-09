@@ -145,6 +145,7 @@ export async function addDiagram(
     );
 
     const newDiagram = {
+      section,
       title,
       mermaidCode: code,
     };

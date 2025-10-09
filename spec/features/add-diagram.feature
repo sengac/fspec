@@ -146,7 +146,8 @@ Feature: Add Mermaid Diagram to FOUNDATION.md
     Then the foundation.json file should be updated with the new diagram
     And the foundation.json should validate against foundation.schema.json
     And the new diagram should be in the architectureDiagrams array
-    And the diagram object should have title and mermaidCode fields
+    And the diagram object should have section, title, and mermaidCode fields
+    And the diagram section field should be "Architecture Diagrams"
     And FOUNDATION.md should be regenerated from foundation.json
     And FOUNDATION.md should contain the new diagram in a mermaid code block
     And FOUNDATION.md should have the auto-generation warning header

@@ -1,6 +1,11 @@
-@phase7 @cli @generator @foundation-management @documentation @critical @integration-test
+@phase7
+@cli
+@generator
+@foundation-management
+@documentation
+@critical
+@integration-test
 Feature: Generate FOUNDATION.md from foundation.json
-
   """
   Architecture notes:
   - Reads foundation.json and validates against schema

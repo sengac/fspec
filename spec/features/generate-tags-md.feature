@@ -1,6 +1,11 @@
-@phase7 @cli @generator @tag-management @documentation @critical @integration-test
+@phase7
+@cli
+@generator
+@tag-management
+@documentation
+@critical
+@integration-test
 Feature: Generate TAGS.md from tags.json
-
   """
   Architecture notes:
   - Reads tags.json and validates against schema
