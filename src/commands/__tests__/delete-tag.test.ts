@@ -44,7 +44,10 @@ Deprecated features
       expect(result.success).toBe(true);
 
       // And the tag @deprecated should be removed from TAGS.md
-      const updatedContent = await readFile(join(testDir, 'spec/TAGS.md'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/TAGS.md'),
+        'utf-8'
+      );
       expect(updatedContent).not.toContain('@deprecated');
 
       // And the TAGS.md structure should be preserved
@@ -97,7 +100,10 @@ Phase 1 features
       expect(result.error).toContain('test5.feature');
 
       // And the tag should remain in TAGS.md
-      const updatedContent = await readFile(join(testDir, 'spec/TAGS.md'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/TAGS.md'),
+        'utf-8'
+      );
       expect(updatedContent).toContain('@phase1');
 
       // And the output should suggest using --force to delete anyway
@@ -139,7 +145,10 @@ Deprecated features
       expect(result.success).toBe(true);
 
       // And the tag @deprecated should be removed from TAGS.md
-      const updatedContent = await readFile(join(testDir, 'spec/TAGS.md'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/TAGS.md'),
+        'utf-8'
+      );
       expect(updatedContent).not.toContain('@deprecated');
 
       // And the output should show warning about files still using the tag
@@ -179,7 +188,10 @@ Phase 1 features
       expect(result.error).toContain('@nonexistent');
 
       // And TAGS.md should remain unchanged
-      const updatedContent = await readFile(join(testDir, 'spec/TAGS.md'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/TAGS.md'),
+        'utf-8'
+      );
       expect(updatedContent).toBe(originalContent);
     });
   });
@@ -211,7 +223,10 @@ Phase 3 features
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const updatedContent = await readFile(join(testDir, 'spec/TAGS.md'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/TAGS.md'),
+        'utf-8'
+      );
 
       // And @phase1 and @phase3 should remain in TAGS.md
       expect(updatedContent).toContain('@phase1');
@@ -251,7 +266,10 @@ Custom technical tag
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const updatedContent = await readFile(join(testDir, 'spec/TAGS.md'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/TAGS.md'),
+        'utf-8'
+      );
 
       // And the tag should be removed from "Technical Tags" category
       expect(updatedContent).not.toContain('@custom');
@@ -311,7 +329,10 @@ Obsolete tag
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const updatedContent = await readFile(join(testDir, 'spec/TAGS.md'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/TAGS.md'),
+        'utf-8'
+      );
 
       // And the tag count should be 9
       const tagMatches = updatedContent.match(/^### @/gm);
@@ -344,7 +365,10 @@ No proper headers here
       expect(result.error).toMatch(/not found|parse/i);
 
       // And the file should remain unchanged
-      const updatedContent = await readFile(join(testDir, 'spec/TAGS.md'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/TAGS.md'),
+        'utf-8'
+      );
       expect(updatedContent).toBe(originalContent);
     });
   });
@@ -371,7 +395,10 @@ Lonely tag
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const updatedContent = await readFile(join(testDir, 'spec/TAGS.md'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/TAGS.md'),
+        'utf-8'
+      );
 
       // And the tag should be removed
       expect(updatedContent).not.toContain('@lonely');
@@ -410,7 +437,10 @@ Test tag
       expect(result.message).toContain('@test');
 
       // And the tag should remain in TAGS.md
-      const updatedContent = await readFile(join(testDir, 'spec/TAGS.md'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/TAGS.md'),
+        'utf-8'
+      );
       expect(updatedContent).toBe(originalContent);
 
       // And the output should show the category it would be removed from

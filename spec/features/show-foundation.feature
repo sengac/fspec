@@ -29,8 +29,6 @@ Feature: Display Foundation Documentation
     I want to display FOUNDATION.md content
     So that I can view and extract foundation documentation
 
-
-
   Scenario: Display entire FOUNDATION.md
     Given I have a FOUNDATION.md with multiple sections
     When I run `fspec show-foundation`

@@ -39,7 +39,10 @@ This is the architecture section.
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const updatedContent = await readFile(join(testDir, 'spec/FOUNDATION.md'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/FOUNDATION.md'),
+        'utf-8'
+      );
 
       // And the "Architecture" section should contain a diagram titled "Component Diagram"
       expect(updatedContent).toContain('### Component Diagram');
@@ -77,7 +80,10 @@ Some content.
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const updatedContent = await readFile(join(testDir, 'spec/FOUNDATION.md'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/FOUNDATION.md'),
+        'utf-8'
+      );
 
       // And a new "Data Flow" section should be created
       expect(updatedContent).toContain('## Data Flow');
@@ -116,7 +122,10 @@ graph TD
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const updatedContent = await readFile(join(testDir, 'spec/FOUNDATION.md'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/FOUNDATION.md'),
+        'utf-8'
+      );
 
       // And the "System Overview" diagram should be updated
       expect(updatedContent).toContain('New-->Diagram');
@@ -154,7 +163,10 @@ graph TD
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const updatedContent = await readFile(join(testDir, 'spec/FOUNDATION.md'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/FOUNDATION.md'),
+        'utf-8'
+      );
 
       // And the "Architecture" section should contain both diagrams
       expect(updatedContent).toContain('### Diagram 1');
@@ -166,7 +178,7 @@ graph TD
     });
   });
 
-  describe('Scenario: Create FOUNDATION.md if it doesn\'t exist', () => {
+  describe("Scenario: Create FOUNDATION.md if it doesn't exist", () => {
     it('should create FOUNDATION.md', async () => {
       // Given I have no FOUNDATION.md file
       // When I run `fspec add-diagram Architecture "Initial Diagram" "graph TD\n  Start-->End"`
@@ -181,9 +193,14 @@ graph TD
       expect(result.success).toBe(true);
 
       // And a FOUNDATION.md file should be created
-      await expect(access(join(testDir, 'spec/FOUNDATION.md'))).resolves.toBeUndefined();
+      await expect(
+        access(join(testDir, 'spec/FOUNDATION.md'))
+      ).resolves.toBeUndefined();
 
-      const content = await readFile(join(testDir, 'spec/FOUNDATION.md'), 'utf-8');
+      const content = await readFile(
+        join(testDir, 'spec/FOUNDATION.md'),
+        'utf-8'
+      );
 
       // And it should contain the "Architecture" section with the diagram
       expect(content).toContain('## Architecture');
@@ -218,7 +235,10 @@ This is why.
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const updatedContent = await readFile(join(testDir, 'spec/FOUNDATION.md'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/FOUNDATION.md'),
+        'utf-8'
+      );
 
       // And the "What We Are Building" section should be preserved
       expect(updatedContent).toContain('## What We Are Building');
@@ -249,7 +269,10 @@ This is why.
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const content = await readFile(join(testDir, 'spec/FOUNDATION.md'), 'utf-8');
+      const content = await readFile(
+        join(testDir, 'spec/FOUNDATION.md'),
+        'utf-8'
+      );
 
       // And the diagram should use sequenceDiagram syntax
       expect(content).toContain('sequenceDiagram');
@@ -272,7 +295,10 @@ This is why.
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const content = await readFile(join(testDir, 'spec/FOUNDATION.md'), 'utf-8');
+      const content = await readFile(
+        join(testDir, 'spec/FOUNDATION.md'),
+        'utf-8'
+      );
 
       // And the diagram should use classDiagram syntax
       expect(content).toContain('classDiagram');
@@ -358,7 +384,10 @@ This is why.
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const content = await readFile(join(testDir, 'spec/FOUNDATION.md'), 'utf-8');
+      const content = await readFile(
+        join(testDir, 'spec/FOUNDATION.md'),
+        'utf-8'
+      );
 
       // And the diagram should be formatted properly
       expect(content).toContain('### Flow');
@@ -383,7 +412,10 @@ This is why.
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const content = await readFile(join(testDir, 'spec/FOUNDATION.md'), 'utf-8');
+      const content = await readFile(
+        join(testDir, 'spec/FOUNDATION.md'),
+        'utf-8'
+      );
 
       // And all diagram lines should be preserved
       expect(content).toContain('A-->B');

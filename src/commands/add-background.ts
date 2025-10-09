@@ -17,7 +17,9 @@ interface AddBackgroundResult {
   error?: string;
 }
 
-export async function addBackground(options: AddBackgroundOptions): Promise<AddBackgroundResult> {
+export async function addBackground(
+  options: AddBackgroundOptions
+): Promise<AddBackgroundResult> {
   const { feature, text, cwd = process.cwd() } = options;
 
   // Validate background text
@@ -45,8 +47,11 @@ export async function addBackground(options: AddBackgroundOptions): Promise<AddB
       }
     } else {
       // Search for the feature file by name
-      const files = await glob(['spec/features/**/*.feature'], { cwd, absolute: false });
-      const matchingFile = files.find((f) => {
+      const files = await glob(['spec/features/**/*.feature'], {
+        cwd,
+        absolute: false,
+      });
+      const matchingFile = files.find(f => {
         const basename = f.split('/').pop()?.replace('.feature', '');
         return basename === feature;
       });
@@ -107,7 +112,9 @@ export async function addBackground(options: AddBackgroundOptions): Promise<AddB
       // Stop at Background, Scenario, or tag
       if (
         !inDocString &&
-        (line.startsWith('Background:') || line.startsWith('Scenario:') || line.startsWith('@'))
+        (line.startsWith('Background:') ||
+          line.startsWith('Scenario:') ||
+          line.startsWith('@'))
       ) {
         break;
       }
@@ -132,7 +139,10 @@ export async function addBackground(options: AddBackgroundOptions): Promise<AddB
       const line = lines[i].trim();
 
       // Stop at Scenario or tag (but not if we're inside Background)
-      if (existingBackgroundStart === -1 && (line.startsWith('Scenario:') || line.startsWith('@'))) {
+      if (
+        existingBackgroundStart === -1 &&
+        (line.startsWith('Scenario:') || line.startsWith('@'))
+      ) {
         break;
       }
 
@@ -145,10 +155,17 @@ export async function addBackground(options: AddBackgroundOptions): Promise<AddB
       // If we're in a Background section, find where it ends
       if (existingBackgroundStart !== -1) {
         // Background ends when we hit a Scenario, tag, or another feature element
-        if (line.startsWith('Scenario:') || line.startsWith('@') || line.startsWith('Feature:')) {
+        if (
+          line.startsWith('Scenario:') ||
+          line.startsWith('@') ||
+          line.startsWith('Feature:')
+        ) {
           existingBackgroundEnd = i - 1;
           // Skip back over blank lines
-          while (existingBackgroundEnd > existingBackgroundStart && lines[existingBackgroundEnd].trim() === '') {
+          while (
+            existingBackgroundEnd > existingBackgroundStart &&
+            lines[existingBackgroundEnd].trim() === ''
+          ) {
             existingBackgroundEnd--;
           }
           break;
@@ -159,7 +176,10 @@ export async function addBackground(options: AddBackgroundOptions): Promise<AddB
     // If Background section started but didn't end (goes to end of file)
     if (existingBackgroundStart !== -1 && existingBackgroundEnd === -1) {
       existingBackgroundEnd = lines.length - 1;
-      while (existingBackgroundEnd > existingBackgroundStart && lines[existingBackgroundEnd].trim() === '') {
+      while (
+        existingBackgroundEnd > existingBackgroundStart &&
+        lines[existingBackgroundEnd].trim() === ''
+      ) {
         existingBackgroundEnd--;
       }
     }
@@ -213,7 +233,10 @@ export async function addBackground(options: AddBackgroundOptions): Promise<AddB
   }
 }
 
-export async function addBackgroundCommand(feature: string, text: string): Promise<void> {
+export async function addBackgroundCommand(
+  feature: string,
+  text: string
+): Promise<void> {
   try {
     const result = await addBackground({
       feature,

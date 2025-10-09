@@ -30,8 +30,6 @@ Feature: Add Background Section to Feature Files
     I want to add user story background to feature files
     So that the business context is captured in the specification
 
-
-
   Scenario: Add background to feature without existing background
     Given I have a feature file "login.feature" with no Background section
     When I run `fspec add-background login "As a user\nI want to log in\nSo that I can access my account"`

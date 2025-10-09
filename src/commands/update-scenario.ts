@@ -105,7 +105,9 @@ export async function updateScenario(
 
   // Replace the scenario name while preserving indentation and keyword
   // Match pattern: (optional tags line)(whitespace)Scenario:(whitespace)(old name)
-  const scenarioKeywordMatch = scenarioHeaderLine.match(/^(\s*)(Scenario|Scenario Outline):\s*(.+)$/);
+  const scenarioKeywordMatch = scenarioHeaderLine.match(
+    /^(\s*)(Scenario|Scenario Outline):\s*(.+)$/
+  );
 
   if (!scenarioKeywordMatch) {
     return {

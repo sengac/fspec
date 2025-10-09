@@ -15,7 +15,9 @@ interface UpdateTagResult {
   error?: string;
 }
 
-export async function updateTag(options: UpdateTagOptions): Promise<UpdateTagResult> {
+export async function updateTag(
+  options: UpdateTagOptions
+): Promise<UpdateTagResult> {
   const { tag, category, description, cwd = process.cwd() } = options;
   const tagsPath = join(cwd, 'spec', 'TAGS.md');
 
@@ -63,11 +65,16 @@ export async function updateTag(options: UpdateTagOptions): Promise<UpdateTagRes
 
   // If category is being changed, validate new category
   if (category && category !== currentCategory) {
-    const categoryPattern = new RegExp(`^## ${category.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*$`, 'm');
+    const categoryPattern = new RegExp(
+      `^## ${category.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*$`,
+      'm'
+    );
     if (!categoryPattern.test(content)) {
       // Extract available categories
       const categoryMatches = content.match(/^## (.+)$/gm) || [];
-      const availableCategories = categoryMatches.map(m => m.replace(/^## /, ''));
+      const availableCategories = categoryMatches.map(m =>
+        m.replace(/^## /, '')
+      );
       return {
         success: false,
         error: `Invalid category: ${category}. Available categories: ${availableCategories.join(', ')}`,
@@ -99,7 +106,12 @@ export async function updateTag(options: UpdateTagOptions): Promise<UpdateTagRes
     const contentWithoutTag = beforeRemoval + afterRemoval;
 
     // Insert tag in new category
-    const newContent = insertTagInCategory(contentWithoutTag, category, tag, newDescription);
+    const newContent = insertTagInCategory(
+      contentWithoutTag,
+      category,
+      tag,
+      newDescription
+    );
     await writeFile(tagsPath, newContent, 'utf-8');
 
     return {
@@ -173,7 +185,9 @@ function insertTagInCategory(
 
   // Insert the new tag block
   const newContent =
-    content.substring(0, insertIndex) + newTagBlock + content.substring(insertIndex);
+    content.substring(0, insertIndex) +
+    newTagBlock +
+    content.substring(insertIndex);
 
   return newContent;
 }

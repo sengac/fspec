@@ -35,7 +35,10 @@ export async function deleteScenariosByTag(
 
   try {
     // Get all feature files
-    const files = await glob(['spec/features/**/*.feature'], { cwd, absolute: false });
+    const files = await glob(['spec/features/**/*.feature'], {
+      cwd,
+      absolute: false,
+    });
 
     if (files.length === 0) {
       return {
@@ -77,10 +80,10 @@ export async function deleteScenariosByTag(
         }
 
         const scenario = child.scenario;
-        const scenarioTags = scenario.tags.map((t) => t.name);
+        const scenarioTags = scenario.tags.map(t => t.name);
 
         // Check if scenario has ALL specified tags (AND logic)
-        const hasAllTags = tags.every((tag) => scenarioTags.includes(tag));
+        const hasAllTags = tags.every(tag => scenarioTags.includes(tag));
 
         if (hasAllTags) {
           // Find the line range for this scenario
@@ -91,21 +94,31 @@ export async function deleteScenariosByTag(
           let scenarioLineEnd = lines.length;
 
           // Find the first tag of this scenario (which may be before the scenario keyword)
-          const firstTagLine = scenario.tags.length > 0 ? scenario.tags[0].location.line : scenarioLineStart;
+          const firstTagLine =
+            scenario.tags.length > 0
+              ? scenario.tags[0].location.line
+              : scenarioLineStart;
 
           // Find next scenario or background to determine end
           for (const otherChild of gherkinDocument.feature.children) {
             if (otherChild.scenario && otherChild.scenario !== scenario) {
-              const otherStartLine = otherChild.scenario.tags.length > 0
-                ? otherChild.scenario.tags[0].location.line
-                : otherChild.scenario.location.line;
+              const otherStartLine =
+                otherChild.scenario.tags.length > 0
+                  ? otherChild.scenario.tags[0].location.line
+                  : otherChild.scenario.location.line;
 
-              if (otherStartLine > scenarioLineStart && otherStartLine < scenarioLineEnd) {
+              if (
+                otherStartLine > scenarioLineStart &&
+                otherStartLine < scenarioLineEnd
+              ) {
                 scenarioLineEnd = otherStartLine;
               }
             } else if (otherChild.background) {
               const bgStartLine = otherChild.background.location.line;
-              if (bgStartLine > scenarioLineStart && bgStartLine < scenarioLineEnd) {
+              if (
+                bgStartLine > scenarioLineStart &&
+                bgStartLine < scenarioLineEnd
+              ) {
                 scenarioLineEnd = bgStartLine;
               }
             }
@@ -162,7 +175,9 @@ export async function deleteScenariosByTag(
       const lines = content.split('\n');
 
       // Sort scenarios by line number descending so we can delete from bottom up
-      const sortedScenarios = [...scenarios].sort((a, b) => b.lineStart - a.lineStart);
+      const sortedScenarios = [...scenarios].sort(
+        (a, b) => b.lineStart - a.lineStart
+      );
 
       // Remove each scenario
       for (const scenario of sortedScenarios) {
@@ -244,7 +259,11 @@ export async function deleteScenariosByTagCommand(options: {
 
     if (options.dryRun && result.scenarios) {
       console.log(chalk.yellow('Dry run mode - no files modified'));
-      console.log(chalk.cyan(`\nWould delete ${result.deletedCount} scenario(s) from ${result.fileCount} file(s):\n`));
+      console.log(
+        chalk.cyan(
+          `\nWould delete ${result.deletedCount} scenario(s) from ${result.fileCount} file(s):\n`
+        )
+      );
 
       // Group scenarios by file
       const byFile = new Map<string, ScenarioInfo[]>();
@@ -258,7 +277,9 @@ export async function deleteScenariosByTagCommand(options: {
       for (const [file, scenarios] of byFile.entries()) {
         console.log(chalk.white(`\n${file}:`));
         for (const scenario of scenarios) {
-          console.log(chalk.gray(`  - ${scenario.name} (${scenario.tags.join(' ')})`));
+          console.log(
+            chalk.gray(`  - ${scenario.name} (${scenario.tags.join(' ')})`)
+          );
         }
       }
     } else {

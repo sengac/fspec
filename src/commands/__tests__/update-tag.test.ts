@@ -42,8 +42,13 @@ Phase 2 features
       expect(result.success).toBe(true);
 
       // And the tag @phase1 description should be updated in TAGS.md
-      const updatedContent = await readFile(join(testDir, 'spec/TAGS.md'), 'utf-8');
-      expect(updatedContent).toContain('Phase 1 - Core validation and feature management');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/TAGS.md'),
+        'utf-8'
+      );
+      expect(updatedContent).toContain(
+        'Phase 1 - Core validation and feature management'
+      );
 
       // And the tag @phase1 category should remain unchanged
       expect(updatedContent).toContain('## Tag Categories');
@@ -82,7 +87,10 @@ Deprecated features
       expect(result.success).toBe(true);
 
       // And the tag @deprecated should be moved to category "Tag Categories"
-      const updatedContent = await readFile(join(testDir, 'spec/TAGS.md'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/TAGS.md'),
+        'utf-8'
+      );
       const tagCategoriesSection = updatedContent.split('## Status Tags')[0];
       expect(tagCategoriesSection).toContain('@deprecated');
 
@@ -120,7 +128,10 @@ Other tag
       expect(result.success).toBe(true);
 
       // And the tag @phase1 category should be "Tag Categories"
-      const updatedContent = await readFile(join(testDir, 'spec/TAGS.md'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/TAGS.md'),
+        'utf-8'
+      );
       const tagCategoriesSection = updatedContent.split('## Other Category')[0];
       expect(tagCategoriesSection).toContain('@phase1');
 
@@ -159,7 +170,10 @@ Phase 1 features
       expect(result.error).toContain('@nonexistent');
 
       // And TAGS.md should remain unchanged
-      const updatedContent = await readFile(join(testDir, 'spec/TAGS.md'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/TAGS.md'),
+        'utf-8'
+      );
       expect(updatedContent).toBe(originalContent);
     });
   });
@@ -248,7 +262,10 @@ Phase 3 features
       });
 
       // Then only @phase1 should be modified
-      const updatedContent = await readFile(join(testDir, 'spec/TAGS.md'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/TAGS.md'),
+        'utf-8'
+      );
       expect(updatedContent).toContain('Updated description');
 
       // And all other tags should remain unchanged
@@ -285,12 +302,17 @@ Authentication features
       expect(result.success).toBe(true);
 
       // And the description should contain "&" and "2.0"
-      const updatedContent = await readFile(join(testDir, 'spec/TAGS.md'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/TAGS.md'),
+        'utf-8'
+      );
       expect(updatedContent).toContain('&');
       expect(updatedContent).toContain('2.0');
 
       // And the markdown should be properly escaped
-      expect(updatedContent).toContain('Authentication & authorization with OAuth2.0');
+      expect(updatedContent).toContain(
+        'Authentication & authorization with OAuth2.0'
+      );
     });
   });
 });

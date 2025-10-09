@@ -35,7 +35,10 @@ Feature: Test Feature
       await writeFile(join(testDir, 'spec/features/test.feature'), content);
 
       // When I run `fspec show-acceptance-criteria --tag=@phase1`
-      const result = await showAcceptanceCriteria({ tags: ['@phase1'], cwd: testDir });
+      const result = await showAcceptanceCriteria({
+        tags: ['@phase1'],
+        cwd: testDir,
+      });
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
@@ -176,7 +179,10 @@ Feature: Active
       );
 
       // When I run `fspec show-acceptance-criteria --tag=@deprecated`
-      const result = await showAcceptanceCriteria({ tags: ['@deprecated'], cwd: testDir });
+      const result = await showAcceptanceCriteria({
+        tags: ['@deprecated'],
+        cwd: testDir,
+      });
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
@@ -202,7 +208,10 @@ Feature: Test
       );
 
       // When I run `fspec show-acceptance-criteria --tag=@phase1 --format=text`
-      const result = await showAcceptanceCriteria({ tags: ['@phase1'], cwd: testDir });
+      const result = await showAcceptanceCriteria({
+        tags: ['@phase1'],
+        cwd: testDir,
+      });
 
       // Then the output should show the feature tags
       expect(result.features[0].tags).toBeDefined();
@@ -226,7 +235,10 @@ Feature: No Background
       );
 
       // When I run `fspec show-acceptance-criteria --tag=@test`
-      const result = await showAcceptanceCriteria({ tags: ['@test'], cwd: testDir });
+      const result = await showAcceptanceCriteria({
+        tags: ['@test'],
+        cwd: testDir,
+      });
 
       // Then the output should show the feature
       expect(result.features.length).toBe(1);
@@ -250,7 +262,10 @@ Feature: Empty Feature
       );
 
       // When I run `fspec show-acceptance-criteria --tag=@empty`
-      const result = await showAcceptanceCriteria({ tags: ['@empty'], cwd: testDir });
+      const result = await showAcceptanceCriteria({
+        tags: ['@empty'],
+        cwd: testDir,
+      });
 
       // Then the output should show the feature name
       expect(result.features[0].name).toBe('Empty Feature');
@@ -331,11 +346,17 @@ Feature: With Architecture
         for (let j = 1; j <= 3; j++) {
           content += `  Scenario: Scenario ${j}\n    Given test\n\n`;
         }
-        await writeFile(join(testDir, 'spec/features', `f${i}.feature`), content);
+        await writeFile(
+          join(testDir, 'spec/features', `f${i}.feature`),
+          content
+        );
       }
 
       // When I run `fspec show-acceptance-criteria --tag=@critical`
-      const result = await showAcceptanceCriteria({ tags: ['@critical'], cwd: testDir });
+      const result = await showAcceptanceCriteria({
+        tags: ['@critical'],
+        cwd: testDir,
+      });
 
       // Then the output should show "Showing acceptance criteria for 15 scenarios"
       expect(result.totalScenarios).toBe(15);

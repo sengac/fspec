@@ -30,8 +30,6 @@ Feature: Run All Validations
     I want to run all validation checks at once
     So that I can ensure my feature files are correct
 
-
-
   Scenario: All validation checks pass
     Given I have 3 valid feature files with registered tags
     And all files are properly formatted

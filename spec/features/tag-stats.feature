@@ -33,8 +33,6 @@ Feature: Show Tag Usage Statistics
     I want to see tag usage statistics across all features
     So that I can maintain a clean tag registry and identify unused tags
 
-
-
   Scenario: Show overall tag statistics
     Given I have 5 feature files with various tags
     When I run `fspec tag-stats`

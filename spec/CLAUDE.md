@@ -194,10 +194,7 @@ All `.feature` files MUST be automatically formatted using Prettier.
 }
 ```
 
-**Install Dependencies**:
-```bash
-npm install --save-dev prettier prettier-plugin-gherkin
-```
+**Note**: Feature files are formatted using fspec's built-in custom AST-based formatter. Prettier is only used for TypeScript/JavaScript code formatting.
 
 ### Automated Formatting
 
@@ -481,7 +478,6 @@ fspec check
 - **Gherkin Reference**: https://cucumber.io/docs/gherkin/reference
 - **Gherkin Best Practices**: https://cucumber.io/docs/bdd/better-gherkin
 - **Cucumber Parser**: https://github.com/cucumber/gherkin
-- **Prettier Gherkin Plugin**: https://github.com/mapado/prettier-plugin-gherkin
 - **fspec Foundation**: [spec/FOUNDATION.md](./FOUNDATION.md)
 - **Tag Registry**: [spec/TAGS.md](./TAGS.md)
 

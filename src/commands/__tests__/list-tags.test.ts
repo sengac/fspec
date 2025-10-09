@@ -67,12 +67,17 @@ describe('Feature: List Registered Tags from Registry', () => {
       expect(result.categories).toHaveLength(4);
       expect(result.categories.map(c => c.name)).toContain('Phase Tags');
       expect(result.categories.map(c => c.name)).toContain('Component Tags');
-      expect(result.categories.map(c => c.name)).toContain('Feature Group Tags');
+      expect(result.categories.map(c => c.name)).toContain(
+        'Feature Group Tags'
+      );
 
       // And each tag should be displayed with its description
       const phaseTags = result.categories.find(c => c.name === 'Phase Tags');
       expect(phaseTags?.tags).toHaveLength(3);
-      expect(phaseTags?.tags[0]).toEqual({ tag: '@phase1', description: 'Phase 1: Core features' });
+      expect(phaseTags?.tags[0]).toEqual({
+        tag: '@phase1',
+        description: 'Phase 1: Core features',
+      });
     });
   });
 
@@ -108,7 +113,9 @@ describe('Feature: List Registered Tags from Registry', () => {
 
       // When I run `fspec list-tags`
       // Then it should throw an error
-      await expect(listTags({ cwd: testDir })).rejects.toThrow('TAGS.md not found');
+      await expect(listTags({ cwd: testDir })).rejects.toThrow(
+        'TAGS.md not found'
+      );
 
       try {
         await listTags({ cwd: testDir });
@@ -129,10 +136,14 @@ describe('Feature: List Registered Tags from Registry', () => {
       const phaseTags = result.categories.find(c => c.name === 'Phase Tags');
       expect(phaseTags?.tags).toHaveLength(3);
 
-      const componentTags = result.categories.find(c => c.name === 'Component Tags');
+      const componentTags = result.categories.find(
+        c => c.name === 'Component Tags'
+      );
       expect(componentTags?.tags).toHaveLength(3);
 
-      const featureGroupTags = result.categories.find(c => c.name === 'Feature Group Tags');
+      const featureGroupTags = result.categories.find(
+        c => c.name === 'Feature Group Tags'
+      );
       expect(featureGroupTags?.tags).toHaveLength(3);
     });
   });
@@ -194,10 +205,14 @@ describe('Feature: List Registered Tags from Registry', () => {
       // Then the output should show all category headers
       expect(result.categories.map(c => c.name)).toContain('Phase Tags');
       expect(result.categories.map(c => c.name)).toContain('Component Tags');
-      expect(result.categories.map(c => c.name)).toContain('Feature Group Tags');
+      expect(result.categories.map(c => c.name)).toContain(
+        'Feature Group Tags'
+      );
 
       // And empty categories should show 0 tags
-      const componentTags = result.categories.find(c => c.name === 'Component Tags');
+      const componentTags = result.categories.find(
+        c => c.name === 'Component Tags'
+      );
       expect(componentTags?.tags).toHaveLength(0);
     });
   });
@@ -219,9 +234,13 @@ describe('Feature: List Registered Tags from Registry', () => {
       const result = await listTags({ cwd: testDir });
 
       // Then the description should be displayed without truncation
-      const technicalTags = result.categories.find(c => c.name === 'Technical Tags');
+      const technicalTags = result.categories.find(
+        c => c.name === 'Technical Tags'
+      );
       const longDescTag = technicalTags?.tags.find(t => t.tag === '@long-desc');
-      expect(longDescTag?.description).toBe('This is a very long description that explains the purpose and usage of tag');
+      expect(longDescTag?.description).toBe(
+        'This is a very long description that explains the purpose and usage of tag'
+      );
     });
   });
 
@@ -230,7 +249,10 @@ describe('Feature: List Registered Tags from Registry', () => {
       // Given I am an AI agent working on a new feature specification
       // And I need to know which tags to use
       // When I run `fspec list-tags --category="Feature Group Tags"`
-      const categoryResult = await listTags({ category: 'Feature Group Tags', cwd: testDir });
+      const categoryResult = await listTags({
+        category: 'Feature Group Tags',
+        cwd: testDir,
+      });
 
       // Then I should see all available feature group tags
       expect(categoryResult.categories[0].tags).toHaveLength(3);

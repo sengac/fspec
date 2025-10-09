@@ -19,10 +19,6 @@ Feature: Bulk Delete Scenarios by Tag
   - MUST support multiple tag filters with AND logic (--tag=@phase1 --tag=@critical)
 
 
-
-
-
-
   - MUST preserve feature file structure after scenario deletion
   - MUST validate Gherkin syntax after modifications
   - MUST provide count of scenarios to be deleted before proceeding
@@ -37,8 +33,6 @@ Feature: Bulk Delete Scenarios by Tag
     I want to bulk delete scenarios by tag across multiple files
     So that I can efficiently remove obsolete or deprecated scenarios without
     manual file editing
-
-
 
   Scenario: Delete scenarios by single tag from one feature file
     Given I have a feature file with 5 scenarios

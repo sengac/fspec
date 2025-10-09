@@ -29,8 +29,6 @@ Feature: Display Feature File Contents
     I want to display feature file contents
     So that I can read and review specifications
 
-
-
   Scenario: Show feature file contents in text format
     Given I have a feature file "login.feature" with valid Gherkin
     When I run `fspec show-feature login`

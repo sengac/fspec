@@ -42,7 +42,10 @@ Some reasoning.
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const updatedContent = await readFile(join(testDir, 'spec/FOUNDATION.md'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/FOUNDATION.md'),
+        'utf-8'
+      );
 
       // And the "What We Are Building" section should contain the new content
       expect(updatedContent).toContain('New content for this section');
@@ -56,7 +59,7 @@ Some reasoning.
     });
   });
 
-  describe('Scenario: Create new section if it doesn\'t exist', () => {
+  describe("Scenario: Create new section if it doesn't exist", () => {
     it('should create new section with content', async () => {
       // Given I have a FOUNDATION.md without a "Technical Approach" section
       const content = `# Project Foundation
@@ -78,7 +81,10 @@ Some content.
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const updatedContent = await readFile(join(testDir, 'spec/FOUNDATION.md'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/FOUNDATION.md'),
+        'utf-8'
+      );
 
       // And a new "Technical Approach" section should be created
       expect(updatedContent).toContain('## Technical Approach');
@@ -112,7 +118,10 @@ Original content line 3.
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const updatedContent = await readFile(join(testDir, 'spec/FOUNDATION.md'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/FOUNDATION.md'),
+        'utf-8'
+      );
 
       // And the old content should be completely replaced
       expect(updatedContent).not.toContain('Original content line 1');
@@ -154,7 +163,10 @@ System architecture details.
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const updatedContent = await readFile(join(testDir, 'spec/FOUNDATION.md'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/FOUNDATION.md'),
+        'utf-8'
+      );
 
       // And the "What We Are Building" section should be unchanged
       expect(updatedContent).toContain('Building a CLI tool.');
@@ -168,7 +180,7 @@ System architecture details.
     });
   });
 
-  describe('Scenario: Create FOUNDATION.md if it doesn\'t exist', () => {
+  describe("Scenario: Create FOUNDATION.md if it doesn't exist", () => {
     it('should create FOUNDATION.md with section', async () => {
       // Given I have no FOUNDATION.md file
       // When I run `fspec update-foundation "What We Are Building" "A new CLI tool for specifications"`
@@ -182,9 +194,14 @@ System architecture details.
       expect(result.success).toBe(true);
 
       // And a FOUNDATION.md file should be created
-      await expect(access(join(testDir, 'spec/FOUNDATION.md'))).resolves.toBeUndefined();
+      await expect(
+        access(join(testDir, 'spec/FOUNDATION.md'))
+      ).resolves.toBeUndefined();
 
-      const content = await readFile(join(testDir, 'spec/FOUNDATION.md'), 'utf-8');
+      const content = await readFile(
+        join(testDir, 'spec/FOUNDATION.md'),
+        'utf-8'
+      );
 
       // And it should contain the "What We Are Building" section
       expect(content).toContain('## What We Are Building');
@@ -197,7 +214,10 @@ System architecture details.
   describe('Scenario: Handle multi-line section content', () => {
     it('should preserve all lines in multi-line content', async () => {
       // Given I have a FOUNDATION.md
-      await writeFile(join(testDir, 'spec/FOUNDATION.md'), '# Project Foundation\n');
+      await writeFile(
+        join(testDir, 'spec/FOUNDATION.md'),
+        '# Project Foundation\n'
+      );
 
       // When I run `fspec update-foundation Why "Line 1\nLine 2\nLine 3"`
       const result = await updateFoundation({
@@ -209,7 +229,10 @@ System architecture details.
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const content = await readFile(join(testDir, 'spec/FOUNDATION.md'), 'utf-8');
+      const content = await readFile(
+        join(testDir, 'spec/FOUNDATION.md'),
+        'utf-8'
+      );
 
       // And the "Why" section should contain all three lines
       expect(content).toContain('Line 1');
@@ -252,7 +275,10 @@ Original reasoning.
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const updatedContent = await readFile(join(testDir, 'spec/FOUNDATION.md'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/FOUNDATION.md'),
+        'utf-8'
+      );
 
       // And the "Architecture" section diagrams should be preserved
       expect(updatedContent).toContain('### System Diagram');
@@ -291,7 +317,10 @@ Some details.
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const updatedContent = await readFile(join(testDir, 'spec/FOUNDATION.md'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/FOUNDATION.md'),
+        'utf-8'
+      );
 
       // And the "Overview" section should have the new content
       expect(updatedContent).toContain('Updated overview');
@@ -329,7 +358,10 @@ Original plans.
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const updatedContent = await readFile(join(testDir, 'spec/FOUNDATION.md'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/FOUNDATION.md'),
+        'utf-8'
+      );
 
       // And the "Future Plans" section should have the new content
       expect(updatedContent).toContain('Updated plans');
@@ -344,7 +376,10 @@ Original plans.
   describe('Scenario: Reject empty section name', () => {
     it('should reject empty section name', async () => {
       // Given I have a FOUNDATION.md
-      await writeFile(join(testDir, 'spec/FOUNDATION.md'), '# Project Foundation\n');
+      await writeFile(
+        join(testDir, 'spec/FOUNDATION.md'),
+        '# Project Foundation\n'
+      );
 
       // When I run `fspec update-foundation "" "Some content"`
       const result = await updateFoundation({
@@ -364,7 +399,10 @@ Original plans.
   describe('Scenario: Reject empty content', () => {
     it('should reject empty content', async () => {
       // Given I have a FOUNDATION.md
-      await writeFile(join(testDir, 'spec/FOUNDATION.md'), '# Project Foundation\n');
+      await writeFile(
+        join(testDir, 'spec/FOUNDATION.md'),
+        '# Project Foundation\n'
+      );
 
       // When I run `fspec update-foundation Why ""`
       const result = await updateFoundation({
@@ -384,7 +422,10 @@ Original plans.
   describe('Scenario: Handle special characters in section names', () => {
     it('should handle apostrophes in section names', async () => {
       // Given I have a FOUNDATION.md
-      await writeFile(join(testDir, 'spec/FOUNDATION.md'), '# Project Foundation\n');
+      await writeFile(
+        join(testDir, 'spec/FOUNDATION.md'),
+        '# Project Foundation\n'
+      );
 
       // When I run `fspec update-foundation "What We're Building" "Content with apostrophe"`
       const result = await updateFoundation({
@@ -396,7 +437,10 @@ Original plans.
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const content = await readFile(join(testDir, 'spec/FOUNDATION.md'), 'utf-8');
+      const content = await readFile(
+        join(testDir, 'spec/FOUNDATION.md'),
+        'utf-8'
+      );
 
       // And the section "What We're Building" should be created
       expect(content).toContain("## What We're Building");
@@ -409,7 +453,10 @@ Original plans.
   describe('Scenario: Preserve markdown formatting in content', () => {
     it('should preserve markdown list formatting', async () => {
       // Given I have a FOUNDATION.md
-      await writeFile(join(testDir, 'spec/FOUNDATION.md'), '# Project Foundation\n');
+      await writeFile(
+        join(testDir, 'spec/FOUNDATION.md'),
+        '# Project Foundation\n'
+      );
 
       // When I run `fspec update-foundation Features "- Feature 1\n- Feature 2\n- Feature 3"`
       const result = await updateFoundation({
@@ -421,7 +468,10 @@ Original plans.
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const content = await readFile(join(testDir, 'spec/FOUNDATION.md'), 'utf-8');
+      const content = await readFile(
+        join(testDir, 'spec/FOUNDATION.md'),
+        'utf-8'
+      );
 
       // And the "Features" section should contain a markdown list
       expect(content).toContain('- Feature 1');
@@ -464,7 +514,10 @@ Original
       // Then the command should exit with code 0
       expect(result2.success).toBe(true);
 
-      const updatedContent = await readFile(join(testDir, 'spec/FOUNDATION.md'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/FOUNDATION.md'),
+        'utf-8'
+      );
 
       // And the "Why" section should contain only "Second update"
       expect(updatedContent).toContain('Second update');

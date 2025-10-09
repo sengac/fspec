@@ -61,13 +61,23 @@ Feature: New Feature
       expect(result.success).toBe(true);
 
       // And the 2 @deprecated feature files should be deleted
-      await expect(access(join(testDir, 'spec/features/old1.feature'))).rejects.toThrow();
-      await expect(access(join(testDir, 'spec/features/old2.feature'))).rejects.toThrow();
+      await expect(
+        access(join(testDir, 'spec/features/old1.feature'))
+      ).rejects.toThrow();
+      await expect(
+        access(join(testDir, 'spec/features/old2.feature'))
+      ).rejects.toThrow();
 
       // And the 3 non-tagged feature files should remain
-      await expect(access(join(testDir, 'spec/features/current.feature'))).resolves.toBeUndefined();
-      await expect(access(join(testDir, 'spec/features/active.feature'))).resolves.toBeUndefined();
-      await expect(access(join(testDir, 'spec/features/new.feature'))).resolves.toBeUndefined();
+      await expect(
+        access(join(testDir, 'spec/features/current.feature'))
+      ).resolves.toBeUndefined();
+      await expect(
+        access(join(testDir, 'spec/features/active.feature'))
+      ).resolves.toBeUndefined();
+      await expect(
+        access(join(testDir, 'spec/features/new.feature'))
+      ).resolves.toBeUndefined();
 
       // And the output should show "Deleted 2 feature file(s)"
       expect(result.deletedCount).toBe(2);
@@ -110,10 +120,22 @@ Feature: Only Deprecated
 
       await writeFile(join(testDir, 'spec/features/both1.feature'), bothTags1);
       await writeFile(join(testDir, 'spec/features/both2.feature'), bothTags2);
-      await writeFile(join(testDir, 'spec/features/phase1a.feature'), onlyPhase1_1);
-      await writeFile(join(testDir, 'spec/features/phase1b.feature'), onlyPhase1_2);
-      await writeFile(join(testDir, 'spec/features/phase1c.feature'), onlyPhase1_3);
-      await writeFile(join(testDir, 'spec/features/deprecated.feature'), onlyDeprecated);
+      await writeFile(
+        join(testDir, 'spec/features/phase1a.feature'),
+        onlyPhase1_1
+      );
+      await writeFile(
+        join(testDir, 'spec/features/phase1b.feature'),
+        onlyPhase1_2
+      );
+      await writeFile(
+        join(testDir, 'spec/features/phase1c.feature'),
+        onlyPhase1_3
+      );
+      await writeFile(
+        join(testDir, 'spec/features/deprecated.feature'),
+        onlyDeprecated
+      );
 
       // When I run `fspec delete-features --tag=@phase1 --tag=@deprecated`
       const result = await deleteFeaturesByTag({
@@ -126,14 +148,26 @@ Feature: Only Deprecated
 
       // And only the 2 files with both tags should be deleted
       expect(result.deletedCount).toBe(2);
-      await expect(access(join(testDir, 'spec/features/both1.feature'))).rejects.toThrow();
-      await expect(access(join(testDir, 'spec/features/both2.feature'))).rejects.toThrow();
+      await expect(
+        access(join(testDir, 'spec/features/both1.feature'))
+      ).rejects.toThrow();
+      await expect(
+        access(join(testDir, 'spec/features/both2.feature'))
+      ).rejects.toThrow();
 
       // And the 4 files without both tags should remain
-      await expect(access(join(testDir, 'spec/features/phase1a.feature'))).resolves.toBeUndefined();
-      await expect(access(join(testDir, 'spec/features/phase1b.feature'))).resolves.toBeUndefined();
-      await expect(access(join(testDir, 'spec/features/phase1c.feature'))).resolves.toBeUndefined();
-      await expect(access(join(testDir, 'spec/features/deprecated.feature'))).resolves.toBeUndefined();
+      await expect(
+        access(join(testDir, 'spec/features/phase1a.feature'))
+      ).resolves.toBeUndefined();
+      await expect(
+        access(join(testDir, 'spec/features/phase1b.feature'))
+      ).resolves.toBeUndefined();
+      await expect(
+        access(join(testDir, 'spec/features/phase1c.feature'))
+      ).resolves.toBeUndefined();
+      await expect(
+        access(join(testDir, 'spec/features/deprecated.feature'))
+      ).resolves.toBeUndefined();
 
       // And the output should show "Deleted 2 feature file(s)"
       expect(result.message).toMatch(/deleted.*2.*file/i);
@@ -148,7 +182,10 @@ Feature: Only Deprecated
 Feature: Obsolete ${i}
   Scenario: Test
     Given step`;
-        await writeFile(join(testDir, `spec/features/obsolete${i}.feature`), content);
+        await writeFile(
+          join(testDir, `spec/features/obsolete${i}.feature`),
+          content
+        );
       }
 
       // When I run `fspec delete-features --tag=@obsolete --dry-run`
@@ -210,8 +247,12 @@ Feature: Phase 2
       expect(result.deletedCount).toBe(0);
 
       // And no files should be deleted
-      await expect(access(join(testDir, 'spec/features/phase1.feature'))).resolves.toBeUndefined();
-      await expect(access(join(testDir, 'spec/features/phase2.feature'))).resolves.toBeUndefined();
+      await expect(
+        access(join(testDir, 'spec/features/phase1.feature'))
+      ).resolves.toBeUndefined();
+      await expect(
+        access(join(testDir, 'spec/features/phase2.feature'))
+      ).resolves.toBeUndefined();
     });
   });
 
@@ -223,7 +264,10 @@ Feature: Phase 2
 Feature: Bug ${i}
   Scenario: Test
     Given step`;
-        await writeFile(join(testDir, `spec/features/bug${i}.feature`), content);
+        await writeFile(
+          join(testDir, `spec/features/bug${i}.feature`),
+          content
+        );
       }
 
       // When I run `fspec delete-features --tag=@bug-#123`
@@ -237,9 +281,15 @@ Feature: Bug ${i}
 
       // And the 3 files with @bug-#123 should be deleted
       expect(result.deletedCount).toBe(3);
-      await expect(access(join(testDir, 'spec/features/bug1.feature'))).rejects.toThrow();
-      await expect(access(join(testDir, 'spec/features/bug2.feature'))).rejects.toThrow();
-      await expect(access(join(testDir, 'spec/features/bug3.feature'))).rejects.toThrow();
+      await expect(
+        access(join(testDir, 'spec/features/bug1.feature'))
+      ).rejects.toThrow();
+      await expect(
+        access(join(testDir, 'spec/features/bug2.feature'))
+      ).rejects.toThrow();
+      await expect(
+        access(join(testDir, 'spec/features/bug3.feature'))
+      ).rejects.toThrow();
 
       // And the output should show "Deleted 3 feature file(s)"
       expect(result.message).toMatch(/deleted.*3.*file/i);
@@ -254,7 +304,10 @@ Feature: Bug ${i}
 Feature: Feature ${i}
   Scenario: Test
     Given step`;
-        await writeFile(join(testDir, `spec/features/file${i}.feature`), content);
+        await writeFile(
+          join(testDir, `spec/features/file${i}.feature`),
+          content
+        );
       }
 
       // When I run `fspec delete-features` (no tags)
@@ -285,7 +338,10 @@ Feature: Feature ${i}
 Feature: Remove ${i}
   Scenario: Test
     Given step`;
-        await writeFile(join(testDir, `spec/features/remove${i}.feature`), content);
+        await writeFile(
+          join(testDir, `spec/features/remove${i}.feature`),
+          content
+        );
       }
 
       // When I run `fspec delete-features --tag=@remove-all`
@@ -318,7 +374,10 @@ Feature: Remove ${i}
 Feature: Cleanup ${i}
   Scenario: Test
     Given step`;
-        await writeFile(join(testDir, `spec/features/cleanup${i}.feature`), content);
+        await writeFile(
+          join(testDir, `spec/features/cleanup${i}.feature`),
+          content
+        );
       }
 
       // And the directory contains 12 total files
@@ -327,7 +386,10 @@ Feature: Cleanup ${i}
 Feature: Keep ${i}
   Scenario: Test
     Given step`;
-        await writeFile(join(testDir, `spec/features/keep${i}.feature`), content);
+        await writeFile(
+          join(testDir, `spec/features/keep${i}.feature`),
+          content
+        );
       }
 
       // When I run `fspec delete-features --tag=@cleanup`
@@ -390,12 +452,20 @@ Feature: Keep
 
       // And the 3 @old files should be deleted from spec/features/
       expect(result.deletedCount).toBe(3);
-      await expect(access(join(testDir, 'spec/features/old1.feature'))).rejects.toThrow();
-      await expect(access(join(testDir, 'spec/features/old2.feature'))).rejects.toThrow();
-      await expect(access(join(testDir, 'spec/features/old3.feature'))).rejects.toThrow();
+      await expect(
+        access(join(testDir, 'spec/features/old1.feature'))
+      ).rejects.toThrow();
+      await expect(
+        access(join(testDir, 'spec/features/old2.feature'))
+      ).rejects.toThrow();
+      await expect(
+        access(join(testDir, 'spec/features/old3.feature'))
+      ).rejects.toThrow();
 
       // And the remaining files should be intact
-      await expect(access(join(testDir, 'spec/features/keep.feature'))).resolves.toBeUndefined();
+      await expect(
+        access(join(testDir, 'spec/features/keep.feature'))
+      ).resolves.toBeUndefined();
     });
   });
 
@@ -407,7 +477,10 @@ Feature: Keep
 Feature: Phase 0 Feature ${i}
   Scenario: Test
     Given step`;
-        await writeFile(join(testDir, `spec/features/phase0-${i}.feature`), content);
+        await writeFile(
+          join(testDir, `spec/features/phase0-${i}.feature`),
+          content
+        );
       }
 
       // When I run `fspec delete-features --tag=@phase0`

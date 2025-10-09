@@ -191,7 +191,8 @@ function insertTagInCategory(
   }
 
   // Insert the new tag line
-  const insertIndex = content.indexOf(insertAfterLine, tableStart) + insertAfterLine.length;
+  const insertIndex =
+    content.indexOf(insertAfterLine, tableStart) + insertAfterLine.length;
   const newContent =
     content.substring(0, insertIndex) +
     '\n' +
@@ -214,7 +215,11 @@ export async function registerTagCommand(
     }
 
     if (result.converted) {
-      console.log(chalk.yellow(`Note: Tag converted to lowercase: ${tag} → ${tag.toLowerCase()}`));
+      console.log(
+        chalk.yellow(
+          `Note: Tag converted to lowercase: ${tag} → ${tag.toLowerCase()}`
+        )
+      );
     }
 
     console.log(chalk.green(`✓ ${result.message}`));

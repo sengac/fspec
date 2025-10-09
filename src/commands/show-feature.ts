@@ -20,7 +20,9 @@ interface ShowFeatureResult {
   error?: string;
 }
 
-export async function showFeature(options: ShowFeatureOptions): Promise<ShowFeatureResult> {
+export async function showFeature(
+  options: ShowFeatureOptions
+): Promise<ShowFeatureResult> {
   const { feature, format = 'text', output, cwd = process.cwd() } = options;
 
   try {
@@ -40,8 +42,11 @@ export async function showFeature(options: ShowFeatureOptions): Promise<ShowFeat
       }
     } else {
       // Search for the feature file by name
-      const files = await glob(['spec/features/**/*.feature'], { cwd, absolute: false });
-      const matchingFile = files.find((f) => {
+      const files = await glob(['spec/features/**/*.feature'], {
+        cwd,
+        absolute: false,
+      });
+      const matchingFile = files.find(f => {
         const basename = f.split('/').pop()?.replace('.feature', '');
         return basename === feature;
       });
@@ -127,7 +132,10 @@ export async function showFeatureCommand(
     if (!options.output) {
       console.log(result.content);
     } else {
-      console.log(chalk.green('✓'), `Feature content written to ${options.output}`);
+      console.log(
+        chalk.green('✓'),
+        `Feature content written to ${options.output}`
+      );
     }
 
     process.exit(0);

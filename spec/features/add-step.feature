@@ -36,8 +36,6 @@ Feature: Add Step to Existing Scenario
     I want to add steps to existing scenarios incrementally
     So that I can build acceptance criteria step by step without manual editing
 
-
-
   Scenario: Add Given step to scenario
     Given I have a feature file "spec/features/login.feature" with scenario "User login"
     When I run `fspec add-step login "User login" given "I am on the login page"`

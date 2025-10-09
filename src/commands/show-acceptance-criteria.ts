@@ -63,7 +63,10 @@ export async function showAcceptanceCriteria(
 
   let files: string[];
   try {
-    files = await glob(['spec/features/**/*.feature'], { cwd, absolute: false });
+    files = await glob(['spec/features/**/*.feature'], {
+      cwd,
+      absolute: false,
+    });
   } catch {
     return {
       success: false,
@@ -274,11 +277,19 @@ export async function showAcceptanceCriteriaCommand(options: {
   format?: string;
   output?: string;
 }): Promise<void> {
-  const tags = Array.isArray(options.tag) ? options.tag : options.tag ? [options.tag] : [];
+  const tags = Array.isArray(options.tag)
+    ? options.tag
+    : options.tag
+      ? [options.tag]
+      : [];
   const format = (options.format as 'text' | 'markdown' | 'json') || 'text';
 
   try {
-    const result = await showAcceptanceCriteria({ tags, format, output: options.output });
+    const result = await showAcceptanceCriteria({
+      tags,
+      format,
+      output: options.output,
+    });
 
     if (!result.success) {
       console.error(chalk.red('Error:'), result.error);

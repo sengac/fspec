@@ -47,11 +47,26 @@ Feature: Feature 5
   Scenario: Test
     Given step`;
 
-      await writeFile(join(testDir, 'spec/features/file1.feature'), withPhase1_1);
-      await writeFile(join(testDir, 'spec/features/file2.feature'), withPhase1_2);
-      await writeFile(join(testDir, 'spec/features/file3.feature'), withPhase1_3);
-      await writeFile(join(testDir, 'spec/features/file4.feature'), withoutPhase1_1);
-      await writeFile(join(testDir, 'spec/features/file5.feature'), withoutPhase1_2);
+      await writeFile(
+        join(testDir, 'spec/features/file1.feature'),
+        withPhase1_1
+      );
+      await writeFile(
+        join(testDir, 'spec/features/file2.feature'),
+        withPhase1_2
+      );
+      await writeFile(
+        join(testDir, 'spec/features/file3.feature'),
+        withPhase1_3
+      );
+      await writeFile(
+        join(testDir, 'spec/features/file4.feature'),
+        withoutPhase1_1
+      );
+      await writeFile(
+        join(testDir, 'spec/features/file5.feature'),
+        withoutPhase1_2
+      );
 
       // When I run `fspec retag --from=@phase1 --to=@phase-one`
       const result = await retag({
@@ -64,9 +79,18 @@ Feature: Feature 5
       expect(result.success).toBe(true);
 
       // And all @phase1 tags should be changed to @phase-one
-      const content1 = await readFile(join(testDir, 'spec/features/file1.feature'), 'utf-8');
-      const content2 = await readFile(join(testDir, 'spec/features/file2.feature'), 'utf-8');
-      const content3 = await readFile(join(testDir, 'spec/features/file3.feature'), 'utf-8');
+      const content1 = await readFile(
+        join(testDir, 'spec/features/file1.feature'),
+        'utf-8'
+      );
+      const content2 = await readFile(
+        join(testDir, 'spec/features/file2.feature'),
+        'utf-8'
+      );
+      const content3 = await readFile(
+        join(testDir, 'spec/features/file3.feature'),
+        'utf-8'
+      );
 
       expect(content1).toContain('@phase-one');
       expect(content1).not.toContain('@phase1');
@@ -104,7 +128,10 @@ Feature: Old Feature
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const updatedContent = await readFile(join(testDir, 'spec/features/test.feature'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/features/test.feature'),
+        'utf-8'
+      );
 
       // And the feature-level tag should change from @deprecated to @legacy
       expect(updatedContent).toContain('@legacy');
@@ -147,7 +174,10 @@ Feature: Test Feature
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const updatedContent = await readFile(join(testDir, 'spec/features/test.feature'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/features/test.feature'),
+        'utf-8'
+      );
 
       // And all scenario-level @wip tags should change to @in-progress
       expect(updatedContent).toContain('@in-progress');
@@ -192,8 +222,14 @@ Feature: Stable Feature
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const content1 = await readFile(join(testDir, 'spec/features/file1.feature'), 'utf-8');
-      const content2 = await readFile(join(testDir, 'spec/features/file2.feature'), 'utf-8');
+      const content1 = await readFile(
+        join(testDir, 'spec/features/file1.feature'),
+        'utf-8'
+      );
+      const content2 = await readFile(
+        join(testDir, 'spec/features/file2.feature'),
+        'utf-8'
+      );
 
       // And all @temp tags should change to @temporary at both levels
       expect(content1).toContain('@temporary');
@@ -231,7 +267,10 @@ Feature: Test
       expect(result.error).toMatch(/@nonexistent.*not found/i);
 
       // And no files should be modified
-      const content_after = await readFile(join(testDir, 'spec/features/test.feature'), 'utf-8');
+      const content_after = await readFile(
+        join(testDir, 'spec/features/test.feature'),
+        'utf-8'
+      );
       expect(content_after).toBe(content);
     });
   });
@@ -260,7 +299,10 @@ Feature: Test
       expect(result.error).toMatch(/invalid.*tag.*format/i);
 
       // And no files should be modified
-      const content_after = await readFile(join(testDir, 'spec/features/test.feature'), 'utf-8');
+      const content_after = await readFile(
+        join(testDir, 'spec/features/test.feature'),
+        'utf-8'
+      );
       expect(content_after).toBe(content);
     });
   });
@@ -273,7 +315,10 @@ Feature: Test
 Feature: Feature ${i}
   Scenario: Test
     Given step`;
-        await writeFile(join(testDir, `spec/features/file${i}.feature`), content);
+        await writeFile(
+          join(testDir, `spec/features/file${i}.feature`),
+          content
+        );
       }
 
       // When I run `fspec retag --from=@old-tag --to=@new-tag --dry-run`
@@ -288,7 +333,9 @@ Feature: Feature ${i}
       expect(result.success).toBe(true);
 
       // And the output should show "Would rename @old-tag to @new-tag in 10 file(s)"
-      expect(result.message).toMatch(/would rename.*@old-tag.*@new-tag.*10.*file/i);
+      expect(result.message).toMatch(
+        /would rename.*@old-tag.*@new-tag.*10.*file/i
+      );
       expect(result.fileCount).toBe(10);
 
       // And the output should list affected files
@@ -297,7 +344,10 @@ Feature: Feature ${i}
 
       // And no files should be modified
       for (let i = 1; i <= 10; i++) {
-        const content = await readFile(join(testDir, `spec/features/file${i}.feature`), 'utf-8');
+        const content = await readFile(
+          join(testDir, `spec/features/file${i}.feature`),
+          'utf-8'
+        );
         expect(content).toContain('@old-tag');
         expect(content).not.toContain('@new-tag');
       }
@@ -324,7 +374,10 @@ Feature: Bug Fix
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const updatedContent = await readFile(join(testDir, 'spec/features/test.feature'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/features/test.feature'),
+        'utf-8'
+      );
 
       // And all @bug-#123 tags should change to @issue-123
       expect(updatedContent).toContain('@issue-123');
@@ -358,7 +411,10 @@ Feature: Important Feature
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const updatedContent = await readFile(join(testDir, 'spec/features/test.feature'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/features/test.feature'),
+        'utf-8'
+      );
 
       // And the feature should have tags @v1 @critical @api
       expect(updatedContent).toContain('@v1');
@@ -384,7 +440,10 @@ Feature: Feature ${i}
     Given step 1
     When action
     Then result`;
-        await writeFile(join(testDir, `spec/features/file${i}.feature`), content);
+        await writeFile(
+          join(testDir, `spec/features/file${i}.feature`),
+          content
+        );
       }
 
       // When I run `fspec retag --from=@deprecated --to=@legacy`
@@ -403,7 +462,10 @@ Feature: Feature ${i}
       const parser = new Gherkin.Parser(builder, matcher);
 
       for (let i = 1; i <= 20; i++) {
-        const content = await readFile(join(testDir, `spec/features/file${i}.feature`), 'utf-8');
+        const content = await readFile(
+          join(testDir, `spec/features/file${i}.feature`),
+          'utf-8'
+        );
         expect(() => parser.parse(content)).not.toThrow();
       }
 
@@ -443,7 +505,10 @@ Feature: Temporary Feature
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const updatedContent = await readFile(join(testDir, 'spec/features/test.feature'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/features/test.feature'),
+        'utf-8'
+      );
 
       // And all 4 occurrences should be renamed
       const occurrences = (updatedContent.match(/@temporary/g) || []).length;
@@ -479,7 +544,10 @@ Feature: Test
       expect(result.error).toMatch(/both.*--from.*--to.*required/i);
 
       // And no files should be modified
-      const content_after = await readFile(join(testDir, 'spec/features/test.feature'), 'utf-8');
+      const content_after = await readFile(
+        join(testDir, 'spec/features/test.feature'),
+        'utf-8'
+      );
       expect(content_after).toBe(content);
     });
   });

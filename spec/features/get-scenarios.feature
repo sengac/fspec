@@ -11,11 +11,6 @@ Feature: Get Scenarios by Tag
   - Filters scenarios based on feature-level tags (scenarios inherit feature tags)
 
 
-
-
-
-
-
   - Supports multiple tag filtering with AND logic (all tags must match)
   - Returns scenario names, feature file paths, and line numbers
   - Useful for finding scenarios to review, update, or delete
@@ -24,10 +19,6 @@ Feature: Get Scenarios by Tag
   Critical implementation requirements:
   - MUST parse all feature files in spec/features/
   - MUST match scenarios by feature-level tags (scenarios don't have own tags in
-
-
-
-
 
 
   Gherkin)
@@ -46,8 +37,6 @@ Feature: Get Scenarios by Tag
     As a developer managing feature specifications
     I want to find all scenarios matching specific tags
     So that I can review, update, or delete them in bulk
-
-
 
   Scenario: Get scenarios from features with single tag
     Given I have 3 feature files tagged with @phase1

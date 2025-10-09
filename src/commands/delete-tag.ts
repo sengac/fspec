@@ -17,7 +17,9 @@ interface DeleteTagResult {
   error?: string;
 }
 
-export async function deleteTag(options: DeleteTagOptions): Promise<DeleteTagResult> {
+export async function deleteTag(
+  options: DeleteTagOptions
+): Promise<DeleteTagResult> {
   const { tag, force = false, dryRun = false, cwd = process.cwd() } = options;
   const tagsPath = join(cwd, 'spec', 'TAGS.md');
 
@@ -58,7 +60,10 @@ export async function deleteTag(options: DeleteTagOptions): Promise<DeleteTagRes
   // Check if tag is used in any feature files (unless force or dry run)
   if (!force && !dryRun) {
     try {
-      const files = await glob(['spec/features/**/*.feature'], { cwd, absolute: false });
+      const files = await glob(['spec/features/**/*.feature'], {
+        cwd,
+        absolute: false,
+      });
       const filesUsingTag: string[] = [];
 
       for (const file of files) {
@@ -83,7 +88,10 @@ export async function deleteTag(options: DeleteTagOptions): Promise<DeleteTagRes
   let warning: string | undefined;
   if (force) {
     try {
-      const files = await glob(['spec/features/**/*.feature'], { cwd, absolute: false });
+      const files = await glob(['spec/features/**/*.feature'], {
+        cwd,
+        absolute: false,
+      });
       const filesUsingTag: string[] = [];
 
       for (const file of files) {

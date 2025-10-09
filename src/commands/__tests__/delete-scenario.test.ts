@@ -273,7 +273,9 @@ describe('Feature: Delete Scenario from Feature File', () => {
 
       // And the scenario should be removed
       const updatedContent = await readFile(filePath, 'utf-8');
-      expect(updatedContent).not.toContain("User can't login with @special chars");
+      expect(updatedContent).not.toContain(
+        "User can't login with @special chars"
+      );
     });
   });
 

@@ -18,8 +18,17 @@ interface ShowFoundationResult {
   error?: string;
 }
 
-export async function showFoundation(options: ShowFoundationOptions): Promise<ShowFoundationResult> {
-  const { section, format = 'text', output, listSections = false, lineNumbers = false, cwd = process.cwd() } = options;
+export async function showFoundation(
+  options: ShowFoundationOptions
+): Promise<ShowFoundationResult> {
+  const {
+    section,
+    format = 'text',
+    output,
+    listSections = false,
+    lineNumbers = false,
+    cwd = process.cwd(),
+  } = options;
 
   try {
     const foundationPath = join(cwd, 'spec/FOUNDATION.md');
@@ -73,7 +82,11 @@ export async function showFoundation(options: ShowFoundationOptions): Promise<Sh
 
     if (format === 'json') {
       if (section) {
-        formattedOutput = JSON.stringify({ [section]: displayContent }, null, 2);
+        formattedOutput = JSON.stringify(
+          { [section]: displayContent },
+          null,
+          2
+        );
       } else {
         formattedOutput = JSON.stringify(sections, null, 2);
       }
@@ -84,7 +97,9 @@ export async function showFoundation(options: ShowFoundationOptions): Promise<Sh
       if (section) {
         // Remove the section header itself for text format
         const lines = displayContent.split('\n');
-        const filteredLines = lines.filter(line => !line.trim().startsWith(`## ${section}`));
+        const filteredLines = lines.filter(
+          line => !line.trim().startsWith(`## ${section}`)
+        );
         formattedOutput = filteredLines.join('\n').trim();
       } else {
         formattedOutput = displayContent;
@@ -94,7 +109,9 @@ export async function showFoundation(options: ShowFoundationOptions): Promise<Sh
     // Add line numbers if requested
     if (lineNumbers && format !== 'json') {
       const lines = formattedOutput.split('\n');
-      formattedOutput = lines.map((line, index) => `${index + 1}: ${line}`).join('\n');
+      formattedOutput = lines
+        .map((line, index) => `${index + 1}: ${line}`)
+        .join('\n');
     }
 
     // Write to file if output specified

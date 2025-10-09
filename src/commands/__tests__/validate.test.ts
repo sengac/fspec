@@ -5,7 +5,10 @@ import { join } from 'path';
 import { validateFile } from '../validate';
 
 // Helper function to validate a file (extracted from validateCommand)
-async function validateFile(filePath: string, verbose?: boolean): Promise<{
+async function validateFile(
+  filePath: string,
+  verbose?: boolean
+): Promise<{
   file: string;
   valid: boolean;
   errors: Array<{ line: number; message: string; suggestion?: string }>;

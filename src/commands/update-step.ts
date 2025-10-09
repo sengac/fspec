@@ -19,8 +19,17 @@ interface UpdateStepResult {
   error?: string;
 }
 
-export async function updateStep(options: UpdateStepOptions): Promise<UpdateStepResult> {
-  const { feature, scenario, currentStep, text, keyword, cwd = process.cwd() } = options;
+export async function updateStep(
+  options: UpdateStepOptions
+): Promise<UpdateStepResult> {
+  const {
+    feature,
+    scenario,
+    currentStep,
+    text,
+    keyword,
+    cwd = process.cwd(),
+  } = options;
 
   // Validate that at least one update is specified
   if (!text && !keyword) {
@@ -118,7 +127,9 @@ export async function updateStep(options: UpdateStepOptions): Promise<UpdateStep
   const stepLineContent = lines[lineIndex];
 
   // Parse current step to get indentation and keyword
-  const stepMatch = stepLineContent.match(/^(\s*)(Given|When|Then|And|But)\s+(.+)$/);
+  const stepMatch = stepLineContent.match(
+    /^(\s*)(Given|When|Then|And|But)\s+(.+)$/
+  );
 
   if (!stepMatch) {
     return {

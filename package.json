@@ -11,8 +11,8 @@
     "build": "vite build && chmod +x dist/index.js",
     "dev": "vite build --watch",
     "install:local": "./scripts/install-local.sh",
-    "format:spec": "prettier --write 'spec/**/*.feature'",
-    "lint:spec": "prettier --check 'spec/**/*.feature'",
+    "format": "prettier --write 'src/**/*.ts'",
+    "format:spec": "fspec format",
     "test": "vitest",
     "test:watch": "vitest --watch"
   },
@@ -45,8 +45,7 @@
   },
   "devDependencies": {
     "@types/node": "^24.5.1",
-    "prettier": "^3.4.2",
-    "prettier-plugin-gherkin": "^2.4.0",
+    "prettier": "^3.6.2",
     "typescript": "^5.9.2",
     "vite": "^7.1.5",
     "vitest": "^2.1.8"

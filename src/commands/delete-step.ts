@@ -17,7 +17,9 @@ interface DeleteStepResult {
   error?: string;
 }
 
-export async function deleteStep(options: DeleteStepOptions): Promise<DeleteStepResult> {
+export async function deleteStep(
+  options: DeleteStepOptions
+): Promise<DeleteStepResult> {
   const { feature, scenario, step, cwd = process.cwd() } = options;
 
   // Resolve feature file path
@@ -102,7 +104,10 @@ export async function deleteStep(options: DeleteStepOptions): Promise<DeleteStep
 
   // Remove the step line (convert to 0-indexed)
   const lineIndex = stepLine - 1;
-  const newLines = [...lines.slice(0, lineIndex), ...lines.slice(lineIndex + 1)];
+  const newLines = [
+    ...lines.slice(0, lineIndex),
+    ...lines.slice(lineIndex + 1),
+  ];
 
   // Clean up extra blank lines if created
   const trimmedLines = [];

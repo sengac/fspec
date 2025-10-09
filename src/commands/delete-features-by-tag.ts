@@ -35,7 +35,10 @@ export async function deleteFeaturesByTag(
 
   try {
     // Get all feature files
-    const files = await glob(['spec/features/**/*.feature'], { cwd, absolute: false });
+    const files = await glob(['spec/features/**/*.feature'], {
+      cwd,
+      absolute: false,
+    });
 
     if (files.length === 0) {
       return {
@@ -69,10 +72,10 @@ export async function deleteFeaturesByTag(
       }
 
       // Get feature-level tags
-      const featureTags = gherkinDocument.feature.tags.map((t) => t.name);
+      const featureTags = gherkinDocument.feature.tags.map(t => t.name);
 
       // Check if feature has ALL specified tags (AND logic)
-      const hasAllTags = tags.every((tag) => featureTags.includes(tag));
+      const hasAllTags = tags.every(tag => featureTags.includes(tag));
 
       if (hasAllTags) {
         matchingFiles.push(file);
@@ -146,7 +149,9 @@ export async function deleteFeaturesByTagCommand(options: {
 
     if (options.dryRun && result.files) {
       console.log(chalk.yellow('Dry run mode - no files modified'));
-      console.log(chalk.cyan(`\nWould delete ${result.deletedCount} feature file(s):\n`));
+      console.log(
+        chalk.cyan(`\nWould delete ${result.deletedCount} feature file(s):\n`)
+      );
 
       for (const file of result.files) {
         console.log(chalk.gray(`  - ${file}`));

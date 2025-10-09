@@ -34,14 +34,19 @@ const program = new Command();
 
 program
   .name('fspec')
-  .description('Standardized CLI tool for AI agents to manage Gherkin-based feature specifications')
+  .description(
+    'Standardized CLI tool for AI agents to manage Gherkin-based feature specifications'
+  )
   .version('1.0.0');
 
 // Validate command
 program
   .command('validate')
   .description('Validate Gherkin syntax in feature files')
-  .argument('[file]', 'Feature file to validate (validates all if not specified)')
+  .argument(
+    '[file]',
+    'Feature file to validate (validates all if not specified)'
+  )
   .option('-v, --verbose', 'Show detailed validation output', false)
   .action(validateCommand);
 
@@ -70,7 +75,10 @@ program
 program
   .command('validate-tags')
   .description('Validate feature file tags against TAGS.md registry')
-  .argument('[file]', 'Feature file to validate (validates all if not specified)')
+  .argument(
+    '[file]',
+    'Feature file to validate (validates all if not specified)'
+  )
   .action(validateTagsCommand);
 
 // Register tag command
@@ -99,7 +107,10 @@ program
 program
   .command('add-scenario')
   .description('Add a new scenario to an existing feature file')
-  .argument('<feature>', 'Feature file name or path (e.g., "login" or "spec/features/login.feature")')
+  .argument(
+    '<feature>',
+    'Feature file name or path (e.g., "login" or "spec/features/login.feature")'
+  )
   .argument('<scenario>', 'Scenario name (e.g., "Successful login")')
   .action(addScenarioCommand);
 
@@ -117,9 +128,13 @@ program
 program
   .command('get-scenarios')
   .description('Get all scenarios matching specified tags')
-  .option('--tag <tag>', 'Filter by tag (can specify multiple times)', (value, previous) => {
-    return previous ? [...previous, value] : [value];
-  })
+  .option(
+    '--tag <tag>',
+    'Filter by tag (can specify multiple times)',
+    (value, previous) => {
+      return previous ? [...previous, value] : [value];
+    }
+  )
   .option('--format <format>', 'Output format: text or json', 'text')
   .action(getScenariosCommand);
 
@@ -127,9 +142,13 @@ program
 program
   .command('show-acceptance-criteria')
   .description('Show acceptance criteria for features matching tags')
-  .option('--tag <tag>', 'Filter by tag (can specify multiple times)', (value, previous) => {
-    return previous ? [...previous, value] : [value];
-  })
+  .option(
+    '--tag <tag>',
+    'Filter by tag (can specify multiple times)',
+    (value, previous) => {
+      return previous ? [...previous, value] : [value];
+    }
+  )
   .option('--format <format>', 'Output format: text, markdown, or json', 'text')
   .option('--output <file>', 'Write output to file')
   .action(showAcceptanceCriteriaCommand);
@@ -147,7 +166,10 @@ program
 program
   .command('delete-scenario')
   .description('Delete a scenario from a feature file')
-  .argument('<feature>', 'Feature file name or path (e.g., "login" or "spec/features/login.feature")')
+  .argument(
+    '<feature>',
+    'Feature file name or path (e.g., "login" or "spec/features/login.feature")'
+  )
   .argument('<scenario>', 'Scenario name to delete')
   .action(deleteScenarioCommand);
 
@@ -177,7 +199,10 @@ program
   .argument('<scenario>', 'Scenario name')
   .argument('<current-step>', 'Current step text (with or without keyword)')
   .option('--text <text>', 'New step text')
-  .option('--keyword <keyword>', 'New step keyword (Given, When, Then, And, But)')
+  .option(
+    '--keyword <keyword>',
+    'New step keyword (Given, When, Then, And, But)'
+  )
   .action(updateStepCommand);
 
 // Delete tag command
@@ -193,9 +218,13 @@ program
 program
   .command('delete-scenarios')
   .description('Bulk delete scenarios by tag across multiple files')
-  .option('--tag <tag>', 'Filter by tag (can specify multiple times for AND logic)', (value, previous) => {
-    return previous ? [...previous, value] : [value];
-  })
+  .option(
+    '--tag <tag>',
+    'Filter by tag (can specify multiple times for AND logic)',
+    (value, previous) => {
+      return previous ? [...previous, value] : [value];
+    }
+  )
   .option('--dry-run', 'Preview deletions without making changes')
   .action(deleteScenariosByTagCommand);
 
@@ -203,9 +232,13 @@ program
 program
   .command('delete-features')
   .description('Bulk delete feature files by tag')
-  .option('--tag <tag>', 'Filter by tag (can specify multiple times for AND logic)', (value, previous) => {
-    return previous ? [...previous, value] : [value];
-  })
+  .option(
+    '--tag <tag>',
+    'Filter by tag (can specify multiple times for AND logic)',
+    (value, previous) => {
+      return previous ? [...previous, value] : [value];
+    }
+  )
   .option('--dry-run', 'Preview deletions without making changes')
   .action(deleteFeaturesByTagCommand);
 
@@ -222,15 +255,23 @@ program
 program
   .command('add-architecture')
   .description('Add or update architecture documentation in a feature file')
-  .argument('<feature>', 'Feature file name or path (e.g., "login" or "spec/features/login.feature")')
+  .argument(
+    '<feature>',
+    'Feature file name or path (e.g., "login" or "spec/features/login.feature")'
+  )
   .argument('<text>', 'Architecture documentation text (can be multi-line)')
   .action(addArchitectureCommand);
 
 // Add background command
 program
   .command('add-background')
-  .description('Add or update Background (user story) section in a feature file')
-  .argument('<feature>', 'Feature file name or path (e.g., "login" or "spec/features/login.feature")')
+  .description(
+    'Add or update Background (user story) section in a feature file'
+  )
+  .argument(
+    '<feature>',
+    'Feature file name or path (e.g., "login" or "spec/features/login.feature")'
+  )
   .argument('<text>', 'User story text (As a... I want to... So that...)')
   .action(addBackgroundCommand);
 
@@ -238,7 +279,10 @@ program
 program
   .command('show-feature')
   .description('Display feature file contents')
-  .argument('<feature>', 'Feature file name or path (e.g., "login" or "spec/features/login.feature")')
+  .argument(
+    '<feature>',
+    'Feature file name or path (e.g., "login" or "spec/features/login.feature")'
+  )
   .option('--format <format>', 'Output format: text or json', 'text')
   .option('--output <file>', 'Write output to file')
   .action(showFeatureCommand);

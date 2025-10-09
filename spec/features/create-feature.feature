@@ -32,7 +32,7 @@ Feature: Create Feature File with Template
   Template structure:
   - Tags: @phase1 @component @feature-group
   - Feature: <name>
-  - Doc string (""") with architecture notes placeholder
+  - Doc string (\"\"\") with architecture notes placeholder
   - Background: User Story (As a... I want... So that...)
   - Scenario: Example scenario with Given/When/Then steps
 
@@ -46,8 +46,6 @@ Feature: Create Feature File with Template
     As a developer using AI agents for spec-driven development
     I want to create new feature files with proper Gherkin structure
     So that AI can write valid specifications without manual setup
-
-
 
   Scenario: Create feature file with valid name
     Given I am in a project with a spec/features/ directory

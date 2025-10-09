@@ -29,8 +29,6 @@ Feature: Update Scenario Name
     So that acceptance criteria remain clear and accurate without manually
     editing files
 
-
-
   Scenario: Rename scenario with simple name
     Given I have a scenario named "Old scenario name"
     When I run `fspec update-scenario login "Old scenario name" "New scenario name"`

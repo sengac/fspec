@@ -4,7 +4,7 @@ import * as Gherkin from '@cucumber/gherkin';
 import * as Messages from '@cucumber/messages';
 import { readFile } from 'fs/promises';
 import { join } from 'path';
-import { execSync } from 'child_process';
+import { formatGherkinDocument } from '../utils/gherkin-formatter';
 
 interface CheckOptions {
   verbose?: boolean;
@@ -31,7 +31,10 @@ export async function check(options: CheckOptions = {}): Promise<CheckResult> {
 
   try {
     // Get all feature files
-    const files = await glob(['spec/features/**/*.feature'], { cwd, absolute: false });
+    const files = await glob(['spec/features/**/*.feature'], {
+      cwd,
+      absolute: false,
+    });
 
     if (files.length === 0) {
       return {
@@ -91,7 +94,7 @@ export async function check(options: CheckOptions = {}): Promise<CheckResult> {
           for (const line of lines) {
             const trimmed = line.trim();
             if (trimmed.startsWith('@')) {
-              const tags = trimmed.split(/\s+/).filter((t) => t.startsWith('@'));
+              const tags = trimmed.split(/\s+/).filter(t => t.startsWith('@'));
               for (const tag of tags) {
                 if (!registeredTags.has(tag)) {
                   tagStatus = 'FAIL';
@@ -110,33 +113,39 @@ export async function check(options: CheckOptions = {}): Promise<CheckResult> {
     // 3. Check formatting
     formatStatus = 'PASS';
     try {
-      // Build list of files to check
-      const filePaths = files.map((f) => join(cwd, f));
-      const fileList = filePaths.join(' ');
+      // Create parser for formatting check
+      const uuidFn = Messages.IdGenerator.uuid();
+      const formatBuilder = new Gherkin.AstBuilder(uuidFn);
+      const formatMatcher = new Gherkin.GherkinClassicTokenMatcher();
 
-      try {
-        execSync(`npx prettier --check ${fileList}`, {
-          cwd,
-          stdio: 'pipe',
-          encoding: 'utf-8',
-        });
-      } catch (error: any) {
-        // Check if it's a formatting error or command not found
-        if (error.status === 1) {
-          formatStatus = 'FAIL';
-          errors.push('Formatting check failed: Some files need formatting');
-        } else {
-          // Prettier not found or other error - skip
-          formatStatus = 'SKIP';
+      for (const file of files) {
+        const filePath = join(cwd, file);
+        try {
+          const content = await readFile(filePath, 'utf-8');
+
+          // Parse and format
+          const formatParser = new Gherkin.Parser(formatBuilder, formatMatcher);
+          const gherkinDocument = formatParser.parse(content);
+          const formatted = formatGherkinDocument(gherkinDocument);
+
+          // Compare with original
+          if (content !== formatted) {
+            formatStatus = 'FAIL';
+            errors.push(`Formatting check failed: ${file} needs formatting`);
+          }
+        } catch (error: any) {
+          // Skip files that fail to parse (already caught in Gherkin check)
         }
       }
     } catch (error: any) {
-      // Skip formatting check if prettier fails to run
       formatStatus = 'SKIP';
     }
 
     // Determine overall success
-    const success = gherkinStatus !== 'FAIL' && tagStatus !== 'FAIL' && formatStatus !== 'FAIL';
+    const success =
+      gherkinStatus !== 'FAIL' &&
+      tagStatus !== 'FAIL' &&
+      formatStatus !== 'FAIL';
 
     const result: CheckResult = {
       success,
@@ -170,7 +179,9 @@ export async function check(options: CheckOptions = {}): Promise<CheckResult> {
   }
 }
 
-export async function checkCommand(options: { verbose?: boolean } = {}): Promise<void> {
+export async function checkCommand(
+  options: { verbose?: boolean } = {}
+): Promise<void> {
   try {
     const result = await check({
       verbose: options.verbose,

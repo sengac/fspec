@@ -28,8 +28,6 @@ Feature: Update Step in Scenario
     I want to update step text or keywords
     So that I can improve clarity and accuracy without manually editing files
 
-
-
   Scenario: Update step text only
     Given I have a step "Given I am logged in"
     When I run `fspec update-step login "Login test" "Given I am logged in" --text="Given I am authenticated"`

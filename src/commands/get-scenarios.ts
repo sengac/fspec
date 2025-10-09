@@ -50,7 +50,10 @@ export async function getScenarios(
 
   let files: string[];
   try {
-    files = await glob(['spec/features/**/*.feature'], { cwd, absolute: false });
+    files = await glob(['spec/features/**/*.feature'], {
+      cwd,
+      absolute: false,
+    });
   } catch {
     return {
       success: false,
@@ -145,7 +148,11 @@ export async function getScenariosCommand(options: {
   tag?: string | string[];
   format?: string;
 }): Promise<void> {
-  const tags = Array.isArray(options.tag) ? options.tag : options.tag ? [options.tag] : [];
+  const tags = Array.isArray(options.tag)
+    ? options.tag
+    : options.tag
+      ? [options.tag]
+      : [];
   const format = (options.format as 'text' | 'json') || 'text';
 
   try {

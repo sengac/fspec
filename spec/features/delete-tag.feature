@@ -29,8 +29,6 @@ Feature: Delete Tag from Registry
     So that the tag system stays clean and reflects only tags currently in use
     or planned
 
-
-
   Scenario: Delete unused tag
     Given I have a tag @deprecated registered in TAGS.md
     And the tag @deprecated is not used in any feature files

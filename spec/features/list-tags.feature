@@ -13,10 +13,6 @@ Feature: List Registered Tags from Registry
   - Lists categories in standard order: Phase, Component, Feature Group, Technical,
 
 
-
-
-
-
   etc.
   - Handles missing TAGS.md with helpful error message
 
@@ -38,8 +34,6 @@ Feature: List Registered Tags from Registry
     As a developer working with fspec tag system
     I want to see all registered tags
     So that I know which tags are available for use in feature files
-
-
 
   Scenario: List all registered tags
     Given I have a TAGS.md file with tags in multiple categories

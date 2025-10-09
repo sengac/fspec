@@ -41,7 +41,10 @@ describe('Feature: Bulk Delete Scenarios by Tag', () => {
   Scenario: Scenario 5
     Given step 5
 `;
-      await writeFile(join(testDir, 'spec/features/test.feature'), featureContent);
+      await writeFile(
+        join(testDir, 'spec/features/test.feature'),
+        featureContent
+      );
 
       // When I run `fspec delete-scenarios --tag=@deprecated`
       const result = await deleteScenariosByTag({
@@ -53,7 +56,10 @@ describe('Feature: Bulk Delete Scenarios by Tag', () => {
       expect(result.success).toBe(true);
 
       // And the 2 @deprecated scenarios should be removed
-      const updatedContent = await readFile(join(testDir, 'spec/features/test.feature'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/features/test.feature'),
+        'utf-8'
+      );
       expect(updatedContent).not.toContain('Scenario 2');
       expect(updatedContent).not.toContain('Scenario 4');
 
@@ -134,9 +140,18 @@ describe('Feature: Bulk Delete Scenarios by Tag', () => {
       const matcher = new Gherkin.GherkinClassicTokenMatcher();
       const parser = new Gherkin.Parser(builder, matcher);
 
-      const content1 = await readFile(join(testDir, 'spec/features/file1.feature'), 'utf-8');
-      const content2 = await readFile(join(testDir, 'spec/features/file2.feature'), 'utf-8');
-      const content3 = await readFile(join(testDir, 'spec/features/file3.feature'), 'utf-8');
+      const content1 = await readFile(
+        join(testDir, 'spec/features/file1.feature'),
+        'utf-8'
+      );
+      const content2 = await readFile(
+        join(testDir, 'spec/features/file2.feature'),
+        'utf-8'
+      );
+      const content3 = await readFile(
+        join(testDir, 'spec/features/file3.feature'),
+        'utf-8'
+      );
 
       expect(() => parser.parse(content1)).not.toThrow();
       expect(() => parser.parse(content2)).not.toThrow();
@@ -173,7 +188,10 @@ describe('Feature: Bulk Delete Scenarios by Tag', () => {
   Scenario: Only phase1 third
     Given step 6
 `;
-      await writeFile(join(testDir, 'spec/features/test.feature'), featureContent);
+      await writeFile(
+        join(testDir, 'spec/features/test.feature'),
+        featureContent
+      );
 
       // When I run `fspec delete-scenarios --tag=@phase1 --tag=@deprecated`
       const result = await deleteScenariosByTag({
@@ -187,7 +205,10 @@ describe('Feature: Bulk Delete Scenarios by Tag', () => {
       // And only the 2 scenarios with both tags should be removed
       expect(result.deletedCount).toBe(2);
 
-      const updatedContent = await readFile(join(testDir, 'spec/features/test.feature'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/features/test.feature'),
+        'utf-8'
+      );
       expect(updatedContent).not.toContain('Both tags 1');
       expect(updatedContent).not.toContain('Both tags 2');
 
@@ -213,7 +234,10 @@ describe('Feature: Bulk Delete Scenarios by Tag', () => {
       const featureContent = `Feature: Test Feature
 
 ${scenarios.join('\n')}`;
-      await writeFile(join(testDir, 'spec/features/test.feature'), featureContent);
+      await writeFile(
+        join(testDir, 'spec/features/test.feature'),
+        featureContent
+      );
       const originalContent = featureContent;
 
       // When I run `fspec delete-scenarios --tag=@test --dry-run`
@@ -236,7 +260,10 @@ ${scenarios.join('\n')}`;
       expect(result.scenarios?.length).toBe(10);
 
       // And no files should be modified
-      const currentContent = await readFile(join(testDir, 'spec/features/test.feature'), 'utf-8');
+      const currentContent = await readFile(
+        join(testDir, 'spec/features/test.feature'),
+        'utf-8'
+      );
       expect(currentContent).toBe(originalContent);
 
       // And all 10 scenarios should remain in files
@@ -275,11 +302,26 @@ ${scenarios.join('\n')}`;
     Given step 5
 `;
 
-      await writeFile(join(testDir, 'spec/features/file1.feature'), fileWithOld1);
-      await writeFile(join(testDir, 'spec/features/file2.feature'), fileWithOld2);
-      await writeFile(join(testDir, 'spec/features/file3.feature'), fileWithoutOld1);
-      await writeFile(join(testDir, 'spec/features/file4.feature'), fileWithoutOld2);
-      await writeFile(join(testDir, 'spec/features/file5.feature'), fileWithoutOld3);
+      await writeFile(
+        join(testDir, 'spec/features/file1.feature'),
+        fileWithOld1
+      );
+      await writeFile(
+        join(testDir, 'spec/features/file2.feature'),
+        fileWithOld2
+      );
+      await writeFile(
+        join(testDir, 'spec/features/file3.feature'),
+        fileWithoutOld1
+      );
+      await writeFile(
+        join(testDir, 'spec/features/file4.feature'),
+        fileWithoutOld2
+      );
+      await writeFile(
+        join(testDir, 'spec/features/file5.feature'),
+        fileWithoutOld3
+      );
 
       const contentFile3Before = fileWithoutOld1;
       const contentFile4Before = fileWithoutOld2;
@@ -298,9 +340,18 @@ ${scenarios.join('\n')}`;
       expect(result.fileCount).toBe(2);
 
       // And the 3 files without @old scenarios should remain unchanged
-      const contentFile3After = await readFile(join(testDir, 'spec/features/file3.feature'), 'utf-8');
-      const contentFile4After = await readFile(join(testDir, 'spec/features/file4.feature'), 'utf-8');
-      const contentFile5After = await readFile(join(testDir, 'spec/features/file5.feature'), 'utf-8');
+      const contentFile3After = await readFile(
+        join(testDir, 'spec/features/file3.feature'),
+        'utf-8'
+      );
+      const contentFile4After = await readFile(
+        join(testDir, 'spec/features/file4.feature'),
+        'utf-8'
+      );
+      const contentFile5After = await readFile(
+        join(testDir, 'spec/features/file5.feature'),
+        'utf-8'
+      );
 
       expect(contentFile3After).toBe(contentFile3Before);
       expect(contentFile4After).toBe(contentFile4Before);
@@ -326,7 +377,10 @@ ${scenarios.join('\n')}`;
   Scenario: Remove 3
     Given step 3
 `;
-      await writeFile(join(testDir, 'spec/features/test.feature'), featureContent);
+      await writeFile(
+        join(testDir, 'spec/features/test.feature'),
+        featureContent
+      );
 
       // When I run `fspec delete-scenarios --tag=@remove`
       const result = await deleteScenariosByTag({
@@ -340,7 +394,10 @@ ${scenarios.join('\n')}`;
       // And all 3 scenarios should be removed
       expect(result.deletedCount).toBe(3);
 
-      const updatedContent = await readFile(join(testDir, 'spec/features/test.feature'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/features/test.feature'),
+        'utf-8'
+      );
 
       // And the feature file should contain only the Feature header
       expect(updatedContent).toContain('Feature: Test Feature');
@@ -377,7 +434,10 @@ Feature: Test Feature
   Scenario: Scenario 3
     Given step 3
 `;
-      await writeFile(join(testDir, 'spec/features/test.feature'), featureContent);
+      await writeFile(
+        join(testDir, 'spec/features/test.feature'),
+        featureContent
+      );
 
       // When I run `fspec delete-scenarios --tag=@scenario-tag`
       const result = await deleteScenariosByTag({
@@ -388,7 +448,10 @@ Feature: Test Feature
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const updatedContent = await readFile(join(testDir, 'spec/features/test.feature'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/features/test.feature'),
+        'utf-8'
+      );
 
       // And the @feature-tag should remain on the feature
       expect(updatedContent).toContain('@feature-tag');
@@ -425,7 +488,10 @@ Feature: Test Feature
   Scenario: Cleanup 2
     Given step 3
 `;
-      await writeFile(join(testDir, 'spec/features/test.feature'), featureContent);
+      await writeFile(
+        join(testDir, 'spec/features/test.feature'),
+        featureContent
+      );
 
       // When I run `fspec delete-scenarios --tag=@cleanup`
       const result = await deleteScenariosByTag({
@@ -436,7 +502,10 @@ Feature: Test Feature
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const updatedContent = await readFile(join(testDir, 'spec/features/test.feature'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/features/test.feature'),
+        'utf-8'
+      );
 
       // And the Background section should remain intact
       expect(updatedContent).toContain('Background: User Story');
@@ -469,7 +538,10 @@ Feature: Test Feature
   Scenario: Scenario 2
     Given step 2
 `;
-      await writeFile(join(testDir, 'spec/features/test.feature'), featureContent);
+      await writeFile(
+        join(testDir, 'spec/features/test.feature'),
+        featureContent
+      );
       const originalContent = featureContent;
 
       // And no scenarios are tagged with @nonexistent
@@ -488,7 +560,10 @@ Feature: Test Feature
       expect(result.fileCount).toBe(0);
 
       // And no files should be modified
-      const currentContent = await readFile(join(testDir, 'spec/features/test.feature'), 'utf-8');
+      const currentContent = await readFile(
+        join(testDir, 'spec/features/test.feature'),
+        'utf-8'
+      );
       expect(currentContent).toBe(originalContent);
     });
   });
@@ -506,7 +581,10 @@ Feature: Test Feature
   Scenario: Feature scenario
     Given step 2
 `;
-      await writeFile(join(testDir, 'spec/features/test.feature'), featureContent);
+      await writeFile(
+        join(testDir, 'spec/features/test.feature'),
+        featureContent
+      );
 
       // When I run `fspec delete-scenarios --tag=@bug-#123`
       const result = await deleteScenariosByTag({
@@ -517,7 +595,10 @@ Feature: Test Feature
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const updatedContent = await readFile(join(testDir, 'spec/features/test.feature'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/features/test.feature'),
+        'utf-8'
+      );
 
       // And scenarios with @bug-#123 should be removed
       expect(updatedContent).not.toContain('Bug scenario');
@@ -545,7 +626,10 @@ Feature: Test Feature
         const content = `Feature: File ${fileNum}
 
 ${scenarios.join('\n')}`;
-        await writeFile(join(testDir, `spec/features/file${fileNum}.feature`), content);
+        await writeFile(
+          join(testDir, `spec/features/file${fileNum}.feature`),
+          content
+        );
       }
 
       // When I run `fspec delete-scenarios --tag=@temp`
@@ -565,13 +649,18 @@ ${scenarios.join('\n')}`;
       const parser = new Gherkin.Parser(builder, matcher);
 
       for (let fileNum = 1; fileNum <= 5; fileNum++) {
-        const content = await readFile(join(testDir, `spec/features/file${fileNum}.feature`), 'utf-8');
+        const content = await readFile(
+          join(testDir, `spec/features/file${fileNum}.feature`),
+          'utf-8'
+        );
         // And the Gherkin parser should successfully parse all files
         expect(() => parser.parse(content)).not.toThrow();
       }
 
       // And the output should show "All modified files validated successfully"
-      expect(result.message).toMatch(/validated successfully|deleted.*scenario/i);
+      expect(result.message).toMatch(
+        /validated successfully|deleted.*scenario/i
+      );
     });
   });
 
@@ -603,7 +692,10 @@ ${scenarios.join('\n')}`;
 
 ${scenarios.join('\n')}`;
 
-      await writeFile(join(testDir, 'spec/features/test.feature'), featureContent);
+      await writeFile(
+        join(testDir, 'spec/features/test.feature'),
+        featureContent
+      );
       const originalLineCount = featureContent.split('\n').length;
 
       // When I run `fspec delete-scenarios --tag=@remove`
@@ -616,7 +708,10 @@ ${scenarios.join('\n')}`;
       expect(result.success).toBe(true);
       expect(result.deletedCount).toBe(10);
 
-      const updatedContent = await readFile(join(testDir, 'spec/features/test.feature'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/features/test.feature'),
+        'utf-8'
+      );
       const updatedLineCount = updatedContent.split('\n').length;
 
       // And the file should be approximately 50 lines (removed ~50 lines)

@@ -9,13 +9,13 @@ This document defines all tags used in Gherkin feature files. All tags MUST be d
 Tags that identify which development phase a feature belongs to (from FOUNDATION.md).
 
 | Tag | Description | Usage |
-|-----|-------------|
-| `@bulk-operations` | Bulk operations across multiple files |
-| `@documentation` | Features related to documentation generation and display |
-| `@modification` | Feature modification and editing operations |-------|
-| `@phase1` | Phase 1: Core Validation & Feature Management | Features: Gherkin syntax validation, feature file creation, scenario/step addition, basic tag validation |
-| `@phase2` | Phase 2: Tag Registry & FOUNDATION.md | Features: TAGS.md management, FOUNDATION.md Mermaid diagrams, tag statistics, consistency checks |
-| `@phase3` | Phase 3: CAGE Integration & Advanced Features | Features: CAGE hook optimization, batch operations, advanced querying, auto-formatting integration |
+|-----|-------------|-------|
+| `@phase1` | Phase 1: Core Validation & Feature Management | Features: Gherkin syntax validation, feature file creation, formatting, basic querying (5 files) |
+| `@phase2` | Phase 2: Tag Registry & Management | Features: TAGS.md operations, tag validation, architecture/background documentation (7 files) |
+| `@phase3` | Phase 3: Advanced Feature Editing | Features: Add scenarios and steps to existing features (2 files) |
+| `@phase4` | Phase 4: CRUD Operations & Tag-Based Queries | Features: Query/display scenarios by tag, update/delete operations (4 files) |
+| `@phase5` | Phase 5: Advanced CRUD & Bulk Operations | Features: Update scenarios/steps, bulk delete, retag operations (7 files) |
+| `@phase6` | Phase 6: Architecture Documentation | Features: FOUNDATION.md management, Mermaid diagrams (3 files) |
 
 **Rule**: Every feature file MUST have exactly ONE phase tag.
 
@@ -25,18 +25,13 @@ Tags that identify which architectural component a feature belongs to.
 
 | Tag | Description | Scope |
 |-----|-------------|-------|
-| `@cli` | Command-Line Interface | All CLI commands, argument parsing, command handlers, user-facing terminal interactions |
-| `@parser` | Gherkin Parser Integration | @cucumber/gherkin-parser usage, syntax validation, AST processing |
-| `@generator` | Template Generation |
-| `@phase4` | Phase 4 - Complete CRUD operations and tag-based queries |
-| `@phase5` | Phase 5 - Advanced CRUD and bulk operations |
-| `@phase6` | Phase 6: Architecture Documentation |
-| `@read-only` | Read-only operations that don't modify files |
-| `@utility` | Utility and helper commands | Feature file templates, scaffolding, boilerplate generation |
-| `@validator` | Validation Logic | Syntax validation, tag validation, consistency checks |
-| `@formatter` | Formatting & Prettification | Prettier integration, Gherkin formatting, code style enforcement |
-| `@file-ops` | File Operations | Reading/writing feature files, FOUNDATION.md, TAGS.md management |
-| `@integration` | Cross-Component Integration | Features spanning multiple components, end-to-end flows |
+| `@cli` | Command-Line Interface | All CLI commands, argument parsing, command handlers, user-facing terminal interactions (28 files) |
+| `@parser` | Gherkin Parser Integration | @cucumber/gherkin-parser usage, syntax validation, AST processing (3 files) |
+| `@generator` | Template Generation | Feature file templates, scaffolding, boilerplate generation (1 file) |
+| `@validator` | Validation Logic | Syntax validation, tag validation, consistency checks (1 file) |
+| `@formatter` | Formatting & Prettification | Prettier integration, Gherkin formatting, code style enforcement (1 file) |
+| `@file-ops` | File Operations | Reading/writing feature files, FOUNDATION.md, TAGS.md management (1 file) |
+| `@integration` | Cross-Component Integration | Features spanning multiple components, end-to-end flows (0 files) |
 
 **Rule**: Every feature file MUST have at least ONE component tag (may have multiple if cross-component).
 
@@ -46,13 +41,18 @@ Tags that categorize features by functional area.
 
 | Tag | Description | Examples |
 |-----|-------------|----------|
-| `@feature-management` | Feature File Operations | Create feature, add scenario, add step, add architecture notes |
-| `@foundation-management` | FOUNDATION.md Operations | Add Mermaid diagram, update foundation sections, show foundation |
-| `@tag-management` | TAGS.md Operations | Register tag, validate tags, list tags, tag statistics |
-| `@validation` | Syntax & Structure Validation | Gherkin syntax check, tag compliance, formatting validation |
-| `@querying` | Query & Search Operations | List features, show feature, find by tag, search scenarios |
-| `@formatting` | Auto-Formatting | Prettier execution, Gherkin formatting, consistency enforcement |
-| `@scaffolding` | Project Setup & Templates | Initialize spec directory, create templates, setup structure |
+| `@feature-management` | Feature File Operations | Create feature, add scenario, add step, add architecture notes (11 files) |
+| `@foundation-management` | FOUNDATION.md Operations | Add Mermaid diagram, update foundation sections, show foundation (3 files) |
+| `@tag-management` | TAGS.md Operations | Register tag, validate tags, list tags, tag statistics (7 files) |
+| `@validation` | Syntax & Structure Validation | Gherkin syntax check, tag compliance, formatting validation (3 files) |
+| `@querying` | Query & Search Operations | List features, show feature, find by tag, search scenarios (6 files) |
+| `@formatting` | Auto-Formatting | Prettier execution, Gherkin formatting, consistency enforcement (1 file) |
+| `@modification` | Feature Modification Operations | Update/delete scenarios, steps, tags, retag operations (11 files) |
+| `@bulk-operations` | Bulk Multi-File Operations | Bulk delete scenarios/features by tag (3 files) |
+| `@documentation` | Documentation Display | Show acceptance criteria, show feature, show foundation (2 files) |
+| `@read-only` | Read-Only Operations | Display operations that don't modify files (2 files) |
+| `@utility` | Utility & Helper Commands | Multi-validation commands, aggregate operations (1 file) |
+| `@scaffolding` | Project Setup & Templates | Initialize spec directory, create templates, setup structure (0 files) |
 
 **Rule**: Every feature file MUST have at least ONE feature group tag.
 
@@ -64,9 +64,8 @@ Tags for specific technical concerns or architectural patterns.
 |-----|-------------|-----------|
 | `@gherkin` | Gherkin Specification Compliance | Features ensuring Gherkin spec adherence |
 | `@cucumber-parser` | Cucumber Parser Integration | Direct usage of @cucumber/gherkin-parser |
-| `@prettier` | Prettier Integration | Formatting with prettier-plugin-gherkin |
+| `@ast` | Abstract Syntax Tree | Working with Gherkin AST from parser (custom formatter) |
 | `@mermaid` | Mermaid Diagram Support | Inserting/validating Mermaid diagrams in FOUNDATION.md |
-| `@ast` | Abstract Syntax Tree | Working with Gherkin AST from parser |
 | `@error-handling` | Error Handling | Error scenarios, validation failures, recovery |
 | `@file-system` | File System Operations | Reading/writing files, directory operations, path handling |
 | `@template` | Template System | Template generation, variable substitution, scaffolding |
@@ -306,18 +305,36 @@ fspec list-features --tag=@cli --tag=@cross-platform
 
 | Phase | Total Features | Complete | In Progress | Planned |
 |-------|----------------|----------|-------------|---------|
-| Phase 1 | 0 | 0 | 0 | 0 |
-| Phase 2 | 0 | 0 | 0 | 0 |
-| Phase 3 | 0 | 0 | 0 | 0 |
+| Phase 1 | 5 | 5 | 0 | 0 |
+| Phase 2 | 7 | 7 | 0 | 0 |
+| Phase 3 | 2 | 2 | 0 | 0 |
+| Phase 4 | 4 | 4 | 0 | 0 |
+| Phase 5 | 7 | 7 | 0 | 0 |
+| Phase 6 | 3 | 3 | 0 | 0 |
+| **Total** | **28** | **28** | **0** | **0** |
 
 | Component | Feature Count | Percentage |
 |-----------|---------------|------------|
-| @cli | 0 | 0% |
-| @parser | 0 | 0% |
-| @generator | 0 | 0% |
-| @validator | 0 | 0% |
-| @formatter | 0 | 0% |
-| @file-ops | 0 | 0% |
+| @cli | 28 | 100% |
+| @parser | 3 | 11% |
+| @generator | 1 | 4% |
+| @validator | 1 | 4% |
+| @formatter | 1 | 4% |
+| @file-ops | 1 | 4% |
+
+| Feature Group | Feature Count | Percentage |
+|---------------|---------------|------------|
+| @feature-management | 11 | 39% |
+| @modification | 11 | 39% |
+| @tag-management | 7 | 25% |
+| @querying | 6 | 21% |
+| @foundation-management | 3 | 11% |
+| @bulk-operations | 3 | 11% |
+| @validation | 3 | 11% |
+| @documentation | 2 | 7% |
+| @read-only | 2 | 7% |
+| @formatting | 1 | 4% |
+| @utility | 1 | 4% |
 
 **Update Command**: `fspec tag-stats` (updates this section automatically)
 

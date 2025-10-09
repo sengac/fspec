@@ -52,10 +52,18 @@ describe('Feature: Register New Tag in Tag Registry', () => {
     it('should add tag to Technical Tags table in alphabetical order', async () => {
       // Given I have a TAGS.md file with standard categories
       // When I run `fspec register-tag @api "Technical Tags" "API integration features"`
-      const result = await registerTag('@api', 'Technical Tags', 'API integration features', { cwd: testDir });
+      const result = await registerTag(
+        '@api',
+        'Technical Tags',
+        'API integration features',
+        { cwd: testDir }
+      );
 
       // Then the tag should be added to the Technical Tags table in TAGS.md
-      const tagsContent = await readFile(join(testDir, 'spec', 'TAGS.md'), 'utf-8');
+      const tagsContent = await readFile(
+        join(testDir, 'spec', 'TAGS.md'),
+        'utf-8'
+      );
       expect(tagsContent).toContain('`@api`');
       expect(tagsContent).toContain('API integration features');
 
@@ -80,14 +88,19 @@ describe('Feature: Register New Tag in Tag Registry', () => {
 
       // Then the error message should indicate @cli is already registered
       try {
-        await registerTag('@cli', 'Component Tags', 'CLI component', { cwd: testDir });
+        await registerTag('@cli', 'Component Tags', 'CLI component', {
+          cwd: testDir,
+        });
       } catch (error: any) {
         expect(error.message).toContain('@cli');
         expect(error.message).toContain('already registered');
       }
 
       // And TAGS.md should remain unchanged
-      const originalContent = await readFile(join(testDir, 'spec', 'TAGS.md'), 'utf-8');
+      const originalContent = await readFile(
+        join(testDir, 'spec', 'TAGS.md'),
+        'utf-8'
+      );
       const cliCount = (originalContent.match(/@cli/g) || []).length;
       expect(cliCount).toBe(1); // Only the original occurrence
     });
@@ -98,12 +111,16 @@ describe('Feature: Register New Tag in Tag Registry', () => {
       // Given I have a TAGS.md file
       // When I run `fspec register-tag InvalidTag "Technical Tags" "Invalid format"`
       await expect(
-        registerTag('InvalidTag', 'Technical Tags', 'Invalid format', { cwd: testDir })
+        registerTag('InvalidTag', 'Technical Tags', 'Invalid format', {
+          cwd: testDir,
+        })
       ).rejects.toThrow();
 
       // Then the error message should indicate invalid tag format
       try {
-        await registerTag('InvalidTag', 'Technical Tags', 'Invalid format', { cwd: testDir });
+        await registerTag('InvalidTag', 'Technical Tags', 'Invalid format', {
+          cwd: testDir,
+        });
       } catch (error: any) {
         expect(error.message).toContain('Invalid tag format');
         expect(error.message).toContain('@lowercase-with-hyphens');
@@ -111,16 +128,24 @@ describe('Feature: Register New Tag in Tag Registry', () => {
     });
   });
 
-  describe('Scenario: Create TAGS.md if it doesn\'t exist', () => {
+  describe("Scenario: Create TAGS.md if it doesn't exist", () => {
     it('should create TAGS.md with standard structure and add tag', async () => {
       // Given no TAGS.md file exists in spec/
       await rm(join(testDir, 'spec', 'TAGS.md'));
 
       // When I run `fspec register-tag @custom "Technical Tags" "Custom feature"`
-      const result = await registerTag('@custom', 'Technical Tags', 'Custom feature', { cwd: testDir });
+      const result = await registerTag(
+        '@custom',
+        'Technical Tags',
+        'Custom feature',
+        { cwd: testDir }
+      );
 
       // Then a new TAGS.md file should be created with standard structure
-      const tagsContent = await readFile(join(testDir, 'spec', 'TAGS.md'), 'utf-8');
+      const tagsContent = await readFile(
+        join(testDir, 'spec', 'TAGS.md'),
+        'utf-8'
+      );
       expect(tagsContent).toContain('# Tag Registry');
       expect(tagsContent).toContain('## Phase Tags');
       expect(tagsContent).toContain('## Component Tags');
@@ -140,10 +165,18 @@ describe('Feature: Register New Tag in Tag Registry', () => {
     it('should convert to lowercase and register', async () => {
       // Given I have a TAGS.md file
       // When I run `fspec register-tag @API-Integration "Technical Tags" "API features"`
-      const result = await registerTag('@API-Integration', 'Technical Tags', 'API features', { cwd: testDir });
+      const result = await registerTag(
+        '@API-Integration',
+        'Technical Tags',
+        'API features',
+        { cwd: testDir }
+      );
 
       // Then the tag should be registered as @api-integration (lowercase)
-      const tagsContent = await readFile(join(testDir, 'spec', 'TAGS.md'), 'utf-8');
+      const tagsContent = await readFile(
+        join(testDir, 'spec', 'TAGS.md'),
+        'utf-8'
+      );
       expect(tagsContent).toContain('`@api-integration`');
       expect(tagsContent).not.toContain('@API-Integration');
 
@@ -158,15 +191,21 @@ describe('Feature: Register New Tag in Tag Registry', () => {
       // Given I have a TAGS.md file
       // When I run `fspec register-tag @custom "NonExistent Category" "Description"`
       await expect(
-        registerTag('@custom', 'NonExistent Category', 'Description', { cwd: testDir })
+        registerTag('@custom', 'NonExistent Category', 'Description', {
+          cwd: testDir,
+        })
       ).rejects.toThrow();
 
       // Then the error message should list valid categories
       try {
-        await registerTag('@custom', 'NonExistent Category', 'Description', { cwd: testDir });
+        await registerTag('@custom', 'NonExistent Category', 'Description', {
+          cwd: testDir,
+        });
       } catch (error: any) {
         expect(error.message).toContain('Invalid category');
-        expect(error.message).toMatch(/Phase Tags|Component Tags|Technical Tags/);
+        expect(error.message).toMatch(
+          /Phase Tags|Component Tags|Technical Tags/
+        );
       }
     });
   });
@@ -174,13 +213,21 @@ describe('Feature: Register New Tag in Tag Registry', () => {
   describe('Scenario: Preserve TAGS.md formatting when adding tag', () => {
     it('should maintain formatting and order', async () => {
       // Given I have a TAGS.md file with custom formatting
-      const originalContent = await readFile(join(testDir, 'spec', 'TAGS.md'), 'utf-8');
+      const originalContent = await readFile(
+        join(testDir, 'spec', 'TAGS.md'),
+        'utf-8'
+      );
 
       // When I run `fspec register-tag @new-tag "Technical Tags" "New feature"`
-      await registerTag('@new-tag', 'Technical Tags', 'New feature', { cwd: testDir });
+      await registerTag('@new-tag', 'Technical Tags', 'New feature', {
+        cwd: testDir,
+      });
 
       // Then the tag should be added without affecting other sections
-      const newContent = await readFile(join(testDir, 'spec', 'TAGS.md'), 'utf-8');
+      const newContent = await readFile(
+        join(testDir, 'spec', 'TAGS.md'),
+        'utf-8'
+      );
       expect(newContent).toContain('## Phase Tags');
       expect(newContent).toContain('@phase1');
       expect(newContent).toContain('`@new-tag`');
@@ -196,13 +243,22 @@ describe('Feature: Register New Tag in Tag Registry', () => {
   describe('Scenario: Register tag with long description', () => {
     it('should handle long descriptions properly', async () => {
       // Given I have a TAGS.md file
-      const longDesc = 'This is a very long description that explains the purpose of the tag in detail';
+      const longDesc =
+        'This is a very long description that explains the purpose of the tag in detail';
 
       // When I run `fspec register-tag @long-desc "Technical Tags" "<long description>"`
-      const result = await registerTag('@long-desc', 'Technical Tags', longDesc, { cwd: testDir });
+      const result = await registerTag(
+        '@long-desc',
+        'Technical Tags',
+        longDesc,
+        { cwd: testDir }
+      );
 
       // Then the tag should be registered with the full description
-      const tagsContent = await readFile(join(testDir, 'spec', 'TAGS.md'), 'utf-8');
+      const tagsContent = await readFile(
+        join(testDir, 'spec', 'TAGS.md'),
+        'utf-8'
+      );
       expect(tagsContent).toContain('`@long-desc`');
       expect(tagsContent).toContain(longDesc);
 
@@ -217,12 +273,20 @@ describe('Feature: Register New Tag in Tag Registry', () => {
       // Given I am an AI agent working on a new feature type
       // And I identify a need for tag @websocket
       // When I run `fspec register-tag @websocket "Technical Tags" "WebSocket communication features"`
-      const result = await registerTag('@websocket', 'Technical Tags', 'WebSocket communication features', { cwd: testDir });
+      const result = await registerTag(
+        '@websocket',
+        'Technical Tags',
+        'WebSocket communication features',
+        { cwd: testDir }
+      );
 
       // Then the tag should be successfully registered in TAGS.md
       expect(result.success).toBe(true);
 
-      const tagsContent = await readFile(join(testDir, 'spec', 'TAGS.md'), 'utf-8');
+      const tagsContent = await readFile(
+        join(testDir, 'spec', 'TAGS.md'),
+        'utf-8'
+      );
       expect(tagsContent).toContain('`@websocket`');
 
       // And when I run validate-tags on features using @websocket
@@ -236,21 +300,33 @@ describe('Feature: Register New Tag in Tag Registry', () => {
     it('should register tags in different categories', async () => {
       // Given I have a TAGS.md file
       // When I run `fspec register-tag @phase4 "Phase Tags" "Phase 4: Future features"`
-      await registerTag('@phase4', 'Phase Tags', 'Phase 4: Future features', { cwd: testDir });
+      await registerTag('@phase4', 'Phase Tags', 'Phase 4: Future features', {
+        cwd: testDir,
+      });
 
       // Then the tag should be added to Phase Tags section
-      let tagsContent = await readFile(join(testDir, 'spec', 'TAGS.md'), 'utf-8');
+      let tagsContent = await readFile(
+        join(testDir, 'spec', 'TAGS.md'),
+        'utf-8'
+      );
       expect(tagsContent).toContain('`@phase4`');
 
       // When I run `fspec register-tag @new-component "Component Tags" "New component"`
-      await registerTag('@new-component', 'Component Tags', 'New component', { cwd: testDir });
+      await registerTag('@new-component', 'Component Tags', 'New component', {
+        cwd: testDir,
+      });
 
       // Then the tag should be added to Component Tags section
       tagsContent = await readFile(join(testDir, 'spec', 'TAGS.md'), 'utf-8');
       expect(tagsContent).toContain('`@new-component`');
 
       // When I run `fspec register-tag @new-group "Feature Group Tags" "New feature group"`
-      await registerTag('@new-group', 'Feature Group Tags', 'New feature group', { cwd: testDir });
+      await registerTag(
+        '@new-group',
+        'Feature Group Tags',
+        'New feature group',
+        { cwd: testDir }
+      );
 
       // Then the tag should be added to Feature Group Tags section
       tagsContent = await readFile(join(testDir, 'spec', 'TAGS.md'), 'utf-8');

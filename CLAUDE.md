@@ -191,7 +191,7 @@ describe('Feature: Gherkin Syntax Validation', () => {
 
 - **CLI Framework**: Commander.js for argument parsing
 - **Gherkin Parser**: @cucumber/gherkin for official Gherkin validation
-- **Formatting**: Prettier with prettier-plugin-gherkin
+- **Formatting**: Custom AST-based formatter using @cucumber/gherkin
 - **Testing**: Vitest with globals enabled
 - **File Operations**: fs/promises (Node.js built-in)
 - **Globbing**: tinyglobby for file pattern matching

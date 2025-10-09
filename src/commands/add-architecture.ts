@@ -17,7 +17,9 @@ interface AddArchitectureResult {
   error?: string;
 }
 
-export async function addArchitecture(options: AddArchitectureOptions): Promise<AddArchitectureResult> {
+export async function addArchitecture(
+  options: AddArchitectureOptions
+): Promise<AddArchitectureResult> {
   const { feature, text, cwd = process.cwd() } = options;
 
   // Validate architecture text
@@ -45,8 +47,11 @@ export async function addArchitecture(options: AddArchitectureOptions): Promise<
       }
     } else {
       // Search for the feature file by name
-      const files = await glob(['spec/features/**/*.feature'], { cwd, absolute: false });
-      const matchingFile = files.find((f) => {
+      const files = await glob(['spec/features/**/*.feature'], {
+        cwd,
+        absolute: false,
+      });
+      const matchingFile = files.find(f => {
         const basename = f.split('/').pop()?.replace('.feature', '');
         return basename === feature;
       });
@@ -105,7 +110,11 @@ export async function addArchitecture(options: AddArchitectureOptions): Promise<
       const line = lines[i].trim();
 
       // Stop at Background, Scenario, or tag
-      if (line.startsWith('Background:') || line.startsWith('Scenario:') || line.startsWith('@')) {
+      if (
+        line.startsWith('Background:') ||
+        line.startsWith('Scenario:') ||
+        line.startsWith('@')
+      ) {
         break;
       }
 
@@ -133,7 +142,11 @@ export async function addArchitecture(options: AddArchitectureOptions): Promise<
     // Insert or replace the doc string
     if (existingDocStringStart !== -1 && existingDocStringEnd !== -1) {
       // Replace existing doc string
-      lines.splice(existingDocStringStart, existingDocStringEnd - existingDocStringStart + 1, ...docStringLines);
+      lines.splice(
+        existingDocStringStart,
+        existingDocStringEnd - existingDocStringStart + 1,
+        ...docStringLines
+      );
     } else {
       // Insert new doc string after Feature line
       lines.splice(featureLineIndex + 1, 0, ...docStringLines);
@@ -167,7 +180,10 @@ export async function addArchitecture(options: AddArchitectureOptions): Promise<
   }
 }
 
-export async function addArchitectureCommand(feature: string, text: string): Promise<void> {
+export async function addArchitectureCommand(
+  feature: string,
+  text: string
+): Promise<void> {
   try {
     const result = await addArchitecture({
       feature,

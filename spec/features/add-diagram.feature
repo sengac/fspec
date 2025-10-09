@@ -31,8 +31,6 @@ Feature: Add Mermaid Diagram to FOUNDATION.md
     I want to add Mermaid diagrams to FOUNDATION.md
     So that I can visualize system design and data flow
 
-
-
   Scenario: Add new diagram to existing section
     Given I have a FOUNDATION.md with an "Architecture" section
     When I run `fspec add-diagram Architecture "Component Diagram" "graph TD\n  A-->B"`

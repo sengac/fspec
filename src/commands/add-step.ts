@@ -100,7 +100,9 @@ export async function addStep(
     child => child.scenario && child.scenario.keyword === 'Scenario'
   );
 
-  const targetScenario = scenarios.find(child => child.scenario?.name === scenarioName);
+  const targetScenario = scenarios.find(
+    child => child.scenario?.name === scenarioName
+  );
 
   if (!targetScenario || !targetScenario.scenario) {
     const availableScenarios = scenarios
@@ -124,7 +126,10 @@ export async function addStep(
 
   // Determine indentation from existing steps
   let stepIndentation = '    '; // Default 4 spaces
-  if (targetScenario.scenario.steps && targetScenario.scenario.steps.length > 0) {
+  if (
+    targetScenario.scenario.steps &&
+    targetScenario.scenario.steps.length > 0
+  ) {
     const firstStep = targetScenario.scenario.steps[0];
     const firstStepLineIndex = firstStep.location.line - 1;
     const firstStepLine = lines[firstStepLineIndex];
@@ -138,8 +143,12 @@ export async function addStep(
   let insertIndex = scenarioLineIndex + 1;
 
   // Find the last step of this scenario
-  if (targetScenario.scenario.steps && targetScenario.scenario.steps.length > 0) {
-    const lastStep = targetScenario.scenario.steps[targetScenario.scenario.steps.length - 1];
+  if (
+    targetScenario.scenario.steps &&
+    targetScenario.scenario.steps.length > 0
+  ) {
+    const lastStep =
+      targetScenario.scenario.steps[targetScenario.scenario.steps.length - 1];
     const lastStepLineIndex = lastStep.location.line - 1; // 0-indexed
 
     // Start searching from the line after the last step keyword
@@ -211,7 +220,12 @@ export async function addStepCommand(
   stepText: string
 ): Promise<void> {
   try {
-    const result = await addStep(featureIdentifier, scenarioName, stepType, stepText);
+    const result = await addStep(
+      featureIdentifier,
+      scenarioName,
+      stepType,
+      stepText
+    );
 
     if (!result.success) {
       console.error(chalk.red('Error:'), result.error);
@@ -221,7 +235,9 @@ export async function addStepCommand(
       process.exit(1);
     }
 
-    console.log(chalk.green(`✓ Added ${stepType} step to scenario "${scenarioName}"`));
+    console.log(
+      chalk.green(`✓ Added ${stepType} step to scenario "${scenarioName}"`)
+    );
     process.exit(0);
   } catch (error: any) {
     console.error(chalk.red('Error:'), error.message);

@@ -22,7 +22,9 @@ interface ListTagsResult {
   categories: CategoryEntry[];
 }
 
-export async function listTags(options: ListTagsOptions = {}): Promise<ListTagsResult> {
+export async function listTags(
+  options: ListTagsOptions = {}
+): Promise<ListTagsResult> {
   const cwd = options.cwd || process.cwd();
   const tagsPath = join(cwd, 'spec', 'TAGS.md');
 
@@ -67,7 +69,9 @@ function parseTagsFromContent(content: string): CategoryEntry[] {
     const categoryStart = categoryMatch.index;
 
     // Find the next category or end of file
-    const nextCategoryMatch = content.substring(categoryStart + 1).match(/^## /m);
+    const nextCategoryMatch = content
+      .substring(categoryStart + 1)
+      .match(/^## /m);
     const categoryEnd = nextCategoryMatch
       ? categoryStart + 1 + nextCategoryMatch.index
       : content.length;
@@ -98,13 +102,18 @@ function parseTagsFromContent(content: string): CategoryEntry[] {
   return categories;
 }
 
-export async function listTagsCommand(options: { category?: string } = {}): Promise<void> {
+export async function listTagsCommand(
+  options: { category?: string } = {}
+): Promise<void> {
   try {
     const result = await listTags({ category: options.category });
 
     // Display results
     for (const category of result.categories) {
-      console.log(chalk.bold.blue(`\n${category.name}`) + chalk.gray(` (${category.tags.length} tags)`));
+      console.log(
+        chalk.bold.blue(`\n${category.name}`) +
+          chalk.gray(` (${category.tags.length} tags)`)
+      );
 
       if (category.tags.length === 0) {
         console.log(chalk.gray('  No tags registered'));
@@ -120,7 +129,11 @@ export async function listTagsCommand(options: { category?: string } = {}): Prom
   } catch (error: any) {
     if (error.message.includes('TAGS.md not found')) {
       console.error(chalk.red(error.message));
-      console.log(chalk.yellow('  Suggestion: Create spec/TAGS.md or use "fspec register-tag" to add tags'));
+      console.log(
+        chalk.yellow(
+          '  Suggestion: Create spec/TAGS.md or use "fspec register-tag" to add tags'
+        )
+      );
       process.exit(2);
     }
     console.error(chalk.red('Error:'), error.message);
