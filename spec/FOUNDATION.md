@@ -112,11 +112,11 @@ A CLI tool that provides AI agents (like Claude Code, GitHub Copilot, etc.) with
 
 **Industry Fragmentation in AI-Assisted Specification Management**
 
-Major companies and tools are creating proprietary specification formats (like spec-kit and others) that ignore decades of established BDD practices. This fragmentation forces AI agents to improvise with unstructured markdown or learn multiple proprietary formats, leading to:
+Some tools and approaches rely primarily on AI agents to maintain specifications without providing structured tooling to guide them. While these approaches (like spec-kit and others) offer flexibility, the lack of deterministic tooling can lead to:
 
 1. **No Standard Interface**: AI agents have no consistent way to work with specifications
-2. **Reinventing the Wheel**: Proprietary formats duplicate functionality that Gherkin already provides
-3. **Lost Ecosystem Benefits**: Teams lose access to mature Cucumber tooling, parsers, and reporting
+2. **Inconsistency Risk**: Without structured commands, AI may manage specs differently each time
+3. **Lost Ecosystem Benefits**: Custom formats mean teams lose access to mature Cucumber tooling, parsers, and reporting
 4. **Increased Cognitive Load**: Developers and AI must learn multiple formats instead of one proven standard
 
 **AI Agents Default to Unstructured Specifications**
@@ -176,9 +176,9 @@ Without fspec, AI-assisted specification management looks like this:
    - Cost: Misleading documentation, onboarding confusion, architectural misalignment
 
 5. **Ecosystem Fragmentation:**
-   - Impact: Teams adopt proprietary formats, losing interoperability
-   - Frequency: Industry-wide trend (spec-kit, custom markdown, etc.)
-   - Cost: Reinvented wheels, incompatible tooling, knowledge fragmentation
+   - Impact: Teams use different approaches without structured tooling
+   - Frequency: Industry-wide trend (various tools rely on AI to manage specs directly)
+   - Cost: Inconsistency risk, incompatible tooling, knowledge fragmentation
 
 6. **No AI Guidance for "Right Questions":**
    - Impact: AI captures wrong information (implementation details instead of behavior)
@@ -234,22 +234,21 @@ Without fspec, AI-assisted specification management looks like this:
 
 - **Feasibility:** Easy but ineffective for reliable specification management
 
-#### Solution Approach 3: Proprietary Format (Like spec-kit)
+#### Solution Approach 3: AI-Driven Spec Management Without Structured Tooling
 
-- **Description:** Create new specification format designed specifically for AI agents
+- **Description:** Rely primarily on AI agents to maintain specifications without deterministic commands
 
 - **Pros:**
-  - Could optimize for AI agent interaction patterns
-  - Full control over format evolution
+  - Flexible - AI can adapt to different needs
+  - Quick to get started with minimal tooling
 
 - **Cons:**
-  - **Contributes to fragmentation problem** (the exact issue we're solving!)
-  - Loses Cucumber ecosystem benefits
-  - Requires building entire tooling stack from scratch
-  - No interoperability with existing BDD tools
-  - Ignores 15+ years of Gherkin maturity
+  - **Inconsistency risk**: AI may manage specs differently each time without structured commands
+  - **No deterministic behavior**: Results depend on AI interpretation rather than fixed tool behavior
+  - Less reliable for team collaboration where consistency is critical
+  - Harder to enforce standards and conventions
 
-- **Feasibility:** Feasible but counterproductive - we'd become part of the problem
+- **Feasibility:** Feasible but less deterministic - fspec provides structured tooling to reduce this risk
 
 ### Development Methodology: Acceptance Criteria Driven Development (ACDD)
 
