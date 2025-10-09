@@ -191,11 +191,13 @@ describe('Feature: Gherkin Syntax Validation', () => {
 
 - **CLI Framework**: Commander.js for argument parsing
 - **Gherkin Parser**: @cucumber/gherkin for official Gherkin validation
+- **Mermaid Validation**: mermaid.parse() with jsdom for diagram syntax validation
 - **Formatting**: Custom AST-based formatter using @cucumber/gherkin
 - **Testing**: Vitest with globals enabled
 - **File Operations**: fs/promises (Node.js built-in)
 - **Globbing**: tinyglobby for file pattern matching
 - **Output**: chalk for colored CLI output
+- **JSON Schema**: Ajv for validating foundation.json and tags.json
 
 ## Development Methodology: Acceptance Criteria Driven Development (ACDD)
 

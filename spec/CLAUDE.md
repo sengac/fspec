@@ -111,15 +111,17 @@ Feature: Gherkin Syntax Validation
 ```
 spec/
 ├── CLAUDE.md                    # This file - specification process guide
-├── FOUNDATION.md                # Project foundation, architecture, and phases
-├── TAGS.md                      # Central tag registry and definitions
+├── FOUNDATION.md                # Project foundation, architecture, and phases (human-readable)
+├── foundation.json              # Machine-readable foundation data (diagrams, etc.)
+├── TAGS.md                      # Tag registry documentation (human-readable)
+├── tags.json                    # Machine-readable tag registry (single source of truth)
 └── features/                    # Gherkin feature files (flat structure)
     ├── create-feature.feature
     ├── add-scenario.feature
     ├── add-step.feature
     ├── gherkin-validation.feature
     ├── tag-registry-management.feature
-    ├── foundation-diagram-management.feature
+    ├── add-diagram.feature
     ├── format-feature-files.feature
     ├── list-features.feature
     ├── show-feature.feature
@@ -163,63 +165,39 @@ Feature: [Feature Name]
 
 ## Formatting and Linting
 
-### Prettier Configuration
+### Custom AST-Based Formatter
 
-All `.feature` files MUST be automatically formatted using Prettier.
+All `.feature` files MUST be formatted using fspec's built-in custom AST-based formatter.
 
-**Configuration** (add to `.prettierrc` or `package.json`):
-```json
-{
-  "overrides": [
-    {
-      "files": "*.feature",
-      "options": {
-        "parser": "gherkin",
-        "printWidth": 80,
-        "tabWidth": 2,
-        "useTabs": false
-      }
-    }
-  ]
-}
-```
+**Important**: fspec uses a custom formatter powered by @cucumber/gherkin, NOT Prettier with prettier-plugin-gherkin. This ensures consistent, correct Gherkin formatting without the issues found in prettier-plugin-gherkin.
 
-**Package Scripts** (in `package.json`):
-```json
-{
-  "scripts": {
-    "format:spec": "prettier --write 'spec/**/*.feature'",
-    "lint:spec": "prettier --check 'spec/**/*.feature'"
-  }
-}
-```
+**Formatting Guarantees**:
+- Consistent indentation (2 spaces)
+- Proper spacing around keywords
+- Preserves doc strings (""") and data tables (|)
+- Maintains tag formatting
+- Respects Gherkin AST structure
 
-**Note**: Feature files are formatted using fspec's built-in custom AST-based formatter. Prettier is only used for TypeScript/JavaScript code formatting.
+**Note**: Prettier is only used for TypeScript/JavaScript code formatting, not for .feature files.
 
 ### Automated Formatting
 
 Run these commands regularly:
 
 ```bash
-# Format all feature files
-npm run format:spec
-
-# Check if feature files are formatted correctly
-npm run lint:spec
-
-# Format all code (including feature files)
-npm run format
-```
-
-**Or use fspec commands**:
-```bash
-# Format all feature files
+# Format all feature files using fspec's custom formatter
 fspec format
 
 # Format specific feature file
 fspec format spec/features/gherkin-validation.feature
 
-# Validate and format in one step
+# Validate Gherkin syntax
+fspec validate
+
+# Validate specific feature file
+fspec validate spec/features/gherkin-validation.feature
+
+# Run complete validation (syntax + tags)
 fspec check
 ```
 
@@ -250,18 +228,19 @@ fspec check
    - Use tags (@) at feature and scenario level
 
 5. **Formatting Before Commit**
-   - Run `npm run format:spec` or `fspec format` before committing changes
-   - Feature files that fail `npm run lint:spec` or `fspec validate` will be rejected
+   - Run `fspec format` before committing changes
+   - Feature files that fail `fspec validate` will be rejected
 
 ### Validation Process
 
 Before creating a pull request:
 
-1. **Format Check**: `npm run lint:spec` or `fspec validate` must pass
-2. **Tag Validation**: `fspec validate-tags` must pass (all tags exist in TAGS.md)
-3. **Gherkin Syntax**: All feature files must parse correctly with @cucumber/gherkin-parser
+1. **Format Check**: `fspec format` should be run on all feature files
+2. **Gherkin Syntax**: `fspec validate` must pass (validates Gherkin syntax)
+3. **Tag Validation**: `fspec validate-tags` must pass (all tags exist in spec/TAGS.md or spec/tags.json)
 4. **Test Coverage**: Each scenario must have corresponding test(s)
 5. **Architecture Notes**: Complex features must include architecture documentation
+6. **Build & Tests**: `npm run build` and `npm test` must pass
 
 ## Writing Effective Scenarios
 
@@ -386,16 +365,17 @@ describe('Feature: Create Feature File with Template', () => {
 4. **Architecture Change**: Update architecture notes in doc strings
 5. **Deprecated Behavior**: Mark scenario with `@deprecated` tag and add replacement
 
-### Change Process
+### Change Process (ACDD - Acceptance Criteria Driven Development)
 
 1. **Update Feature File**: Modify `.feature` file with new/changed scenarios
-2. **Update Tags**: Add/modify tags in `spec/TAGS.md` if needed (or use `fspec register-tag`)
+2. **Update Tags**: Add/modify tags using `fspec register-tag` (updates spec/tags.json)
 3. **Write/Update Tests**: Create tests for new scenarios BEFORE implementation
-4. **Format**: Run `npm run format:spec` or `fspec format`
-5. **Validate**: Run `npm run lint:spec` or `fspec validate` and `fspec validate-tags`
+4. **Format**: Run `fspec format` to format feature files
+5. **Validate**: Run `fspec validate` and `fspec validate-tags` to ensure correctness
 6. **Implement**: Write code to make tests pass
-7. **Verify**: Ensure all tests pass
-8. **Commit**: Include both feature file and test changes
+7. **Verify**: Run `npm test` to ensure all tests pass
+8. **Build**: Run `npm run build` to ensure TypeScript compiles
+9. **Commit**: Include feature file, test changes, and implementation
 
 ## Using fspec to Manage Its Own Specifications
 
@@ -428,22 +408,50 @@ fspec add-step advanced-query-operations "Filter features by multiple tags" then
 # Add architecture notes to a feature
 fspec add-architecture gherkin-validation "Uses @cucumber/gherkin-parser for validation. Supports all Gherkin keywords."
 
-# Add Mermaid diagram to FOUNDATION.md
-fspec add-diagram "Architecture" "Command Flow" "graph TB\n  CLI-->Parser\n  Parser-->Validator"
+# Add Mermaid diagram to foundation.json (with automatic syntax validation)
+fspec add-diagram "Architecture Diagrams" "Command Flow" "graph TB\n  CLI-->Parser\n  Parser-->Validator"
+
+# Update existing diagram
+fspec update-diagram "Architecture Diagrams" "Command Flow" "graph TB\n  CLI-->Parser\n  Parser-->Formatter"
+
+# Delete diagram
+fspec delete-diagram "Architecture Diagrams" "Command Flow"
+
+# List all diagrams
+fspec list-diagrams
+
+# Show specific diagram
+fspec show-diagram "Architecture Diagrams" "Command Flow"
 ```
+
+**Note**: All Mermaid diagrams are validated using mermaid.parse() before being added to foundation.json. Invalid syntax will be rejected with detailed error messages including line numbers.
 
 ### Managing Tags
 
 ```bash
-# Register a new tag
+# Register a new tag (adds to spec/tags.json)
 fspec register-tag @performance "Technical Tags" "Performance-critical features requiring optimization"
 
-# Validate all tags are registered
+# Update tag description
+fspec update-tag @performance "Updated description"
+
+# Delete tag
+fspec delete-tag @performance
+
+# List all registered tags
+fspec list-tags
+
+# List tags by category
+fspec list-tags --category "Phase Tags"
+
+# Validate all tags in feature files are registered
 fspec validate-tags
 
 # Show tag statistics
 fspec tag-stats
 ```
+
+**Note**: Tags are stored in spec/tags.json (single source of truth). The spec/TAGS.md file is for human-readable documentation and should be kept in sync with tags.json.
 
 ### Validation Workflow
 
@@ -461,17 +469,45 @@ fspec format
 fspec check
 ```
 
+## JSON-Backed Documentation System
+
+fspec uses a **dual-format documentation system** combining human-readable Markdown with machine-readable JSON:
+
+### Architecture Foundation
+- **spec/FOUNDATION.md**: Human-readable project foundation, architecture, and phase documentation
+- **spec/foundation.json**: Machine-readable data containing:
+  - Mermaid diagrams with automatic syntax validation
+  - Structured metadata for programmatic access
+  - Single source of truth for tooling
+
+### Tag Registry
+- **spec/TAGS.md**: Human-readable tag documentation and guidelines
+- **spec/tags.json**: Machine-readable tag registry containing:
+  - Tag definitions with categories and descriptions
+  - Single source of truth for tag validation
+  - Automatically validated by `fspec validate-tags`
+
+### Benefits of JSON-Backed System
+1. **Dual Format**: Human-readable Markdown + machine-readable JSON
+2. **Validation**: Automatic validation using JSON Schema (Ajv)
+3. **Type Safety**: TypeScript interfaces map to JSON schemas
+4. **Mermaid Validation**: Diagrams validated with mermaid.parse() before storage
+5. **CRUD Operations**: Full create, read, update, delete via fspec commands
+6. **Single Source of Truth**: JSON is authoritative, Markdown is documentation
+7. **Version Control**: Both formats tracked in git for full history
+
 ## Benefits of This Approach
 
-1. **Single Source of Truth**: Feature files are the definitive specification
+1. **Single Source of Truth**: Feature files + JSON data are the definitive specification
 2. **Machine-Readable**: Can generate test skeletons, documentation, and reports
 3. **Executable Documentation**: Scenarios become automated tests
 4. **Traceability**: Tags link scenarios to phases, components, and priorities
 5. **AI-Friendly**: Structured format guides AI agents to capture correct information
 6. **Ecosystem Compatibility**: Works with all Cucumber tooling (parsers, formatters, reporters)
 7. **Version Controlled**: Specifications evolve with code in git
-8. **Quality Enforcement**: fspec validates syntax, tags, and formatting automatically
+8. **Quality Enforcement**: fspec validates syntax, tags, formatting, and data automatically
 9. **Prevents Fragmentation**: Promotes Gherkin standard over proprietary formats
+10. **Data Validation**: JSON Schema ensures data integrity across all documentation
 
 ## References
 
