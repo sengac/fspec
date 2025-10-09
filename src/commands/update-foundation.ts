@@ -1,6 +1,10 @@
-import { readFile, writeFile } from 'fs/promises';
+import { readFile, writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
+import { existsSync } from 'fs';
 import chalk from 'chalk';
+import type { Foundation } from '../types/foundation';
+import { validateFoundationJson } from '../validators/json-schema';
+import { generateFoundationMd } from '../generators/foundation-md';
 
 interface UpdateFoundationOptions {
   section: string;
@@ -13,6 +17,83 @@ interface UpdateFoundationResult {
   message?: string;
   error?: string;
 }
+
+// Minimal foundation.json template
+const FOUNDATION_JSON_TEMPLATE: Foundation = {
+  $schema: '../src/schemas/foundation.schema.json',
+  project: {
+    name: 'Project',
+    description: 'Project description',
+    repository: 'https://github.com/user/repo',
+    license: 'MIT',
+    importantNote: 'Important project note',
+  },
+  whatWeAreBuilding: {
+    projectOverview: 'Project overview',
+    technicalRequirements: {
+      coreTechnologies: [],
+      architecture: {
+        pattern: 'Architecture pattern',
+        fileStructure: 'File structure',
+        deploymentTarget: 'Deployment target',
+        integrationModel: [],
+      },
+      developmentAndOperations: {
+        developmentTools: 'Development tools',
+        testingStrategy: 'Testing strategy',
+        logging: 'Logging approach',
+        validation: 'Validation approach',
+        formatting: 'Formatting approach',
+      },
+      keyLibraries: [],
+    },
+    nonFunctionalRequirements: [],
+  },
+  whyWeAreBuildingIt: {
+    problemDefinition: {
+      primary: {
+        title: 'Primary Problem',
+        description: 'Description',
+        points: [],
+      },
+      secondary: [],
+    },
+    painPoints: {
+      currentState: 'Current state',
+      specific: [],
+    },
+    stakeholderImpact: [],
+    theoreticalSolutions: [],
+    developmentMethodology: {
+      name: 'Methodology',
+      description: 'Description',
+      steps: [],
+      ensures: [],
+    },
+    successCriteria: [],
+    constraintsAndAssumptions: {
+      constraints: [],
+      assumptions: [],
+    },
+  },
+  architectureDiagrams: [],
+  coreCommands: {
+    categories: [],
+  },
+  featureInventory: {
+    phases: [],
+    tagUsageSummary: {
+      phaseDistribution: [],
+      componentDistribution: [],
+      featureGroupDistribution: [],
+      priorityDistribution: [],
+      testingCoverage: [],
+    },
+  },
+  notes: {
+    developmentStatus: [],
+  },
+};
 
 export async function updateFoundation(
   options: UpdateFoundationOptions
@@ -39,80 +120,49 @@ export async function updateFoundation(
   }
 
   try {
-    const foundationPath = join(cwd, 'spec/FOUNDATION.md');
+    const foundationJsonPath = join(cwd, 'spec/foundation.json');
+    const foundationMdPath = join(cwd, 'spec/FOUNDATION.md');
 
-    // Read or create FOUNDATION.md
-    let fileContent = '';
-    try {
-      fileContent = await readFile(foundationPath, 'utf-8');
-    } catch {
-      // File doesn't exist, create new
-      fileContent = '# Project Foundation\n\n';
-    }
+    // Load or create foundation.json
+    let foundationData: Foundation;
 
-    // Split into lines for processing
-    const lines = fileContent.split('\n');
-
-    // Find the section
-    let sectionStartIndex = -1;
-    let sectionEndIndex = -1;
-
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i].trim();
-
-      // Found our section
-      if (line === `## ${section}`) {
-        sectionStartIndex = i;
-
-        // Find where this section ends (next ## or end of file)
-        for (let j = i + 1; j < lines.length; j++) {
-          if (lines[j].trim().startsWith('## ')) {
-            sectionEndIndex = j - 1;
-            break;
-          }
-        }
-
-        // If we didn't find another section, goes to end of file
-        if (sectionEndIndex === -1) {
-          sectionEndIndex = lines.length - 1;
-        }
-
-        break;
-      }
-    }
-
-    // Prepare the new section content
-    const contentLines = content.split('\n');
-
-    if (sectionStartIndex === -1) {
-      // Section doesn't exist, add it at the end
-      if (lines[lines.length - 1].trim() !== '') {
-        lines.push('');
-      }
-      lines.push(`## ${section}`, '', ...contentLines, '');
+    if (existsSync(foundationJsonPath)) {
+      const fileContent = await readFile(foundationJsonPath, 'utf-8');
+      foundationData = JSON.parse(fileContent);
     } else {
-      // Section exists, replace its content
-      // Skip back over empty lines at the end of section
-      while (
-        sectionEndIndex > sectionStartIndex &&
-        lines[sectionEndIndex].trim() === ''
-      ) {
-        sectionEndIndex--;
-      }
-
-      // Replace the section content (keep the ## header, replace everything after)
-      lines.splice(
-        sectionStartIndex + 1,
-        sectionEndIndex - sectionStartIndex,
-        '',
-        ...contentLines,
-        ''
-      );
+      // Create spec directory and foundation.json from template
+      await mkdir(join(cwd, 'spec'), { recursive: true });
+      foundationData = JSON.parse(JSON.stringify(FOUNDATION_JSON_TEMPLATE));
     }
 
-    // Join back and write
-    const newContent = lines.join('\n');
-    await writeFile(foundationPath, newContent, 'utf-8');
+    // Update the JSON field based on section name
+    const updated = updateJsonField(foundationData, section, content);
+    if (!updated) {
+      return {
+        success: false,
+        error: `Unknown section: "${section}". Use field names like: projectOverview, problemDefinition, etc.`,
+      };
+    }
+
+    // Write updated foundation.json
+    await writeFile(
+      foundationJsonPath,
+      JSON.stringify(foundationData, null, 2),
+      'utf-8'
+    );
+
+    // Validate updated JSON against schema
+    const validation = await validateFoundationJson(foundationJsonPath);
+    if (!validation.valid) {
+      return {
+        success: false,
+        error: `Updated foundation.json failed schema validation: ${validation.errors?.join(', ')}`,
+      };
+    }
+
+    // Regenerate FOUNDATION.md from JSON
+    const markdown = await generateFoundationMd(foundationData);
+    await writeFile(foundationMdPath, markdown, 'utf-8');
 
     return {
       success: true,
@@ -123,6 +173,52 @@ export async function updateFoundation(
       success: false,
       error: error.message,
     };
+  }
+}
+
+// Helper function to update JSON field based on section name
+function updateJsonField(
+  foundation: Foundation,
+  section: string,
+  content: string
+): boolean {
+  // Map section names to JSON field paths
+  switch (section) {
+    case 'projectOverview':
+      foundation.whatWeAreBuilding.projectOverview = content;
+      return true;
+
+    case 'problemDefinition':
+      foundation.whyWeAreBuildingIt.problemDefinition.primary.description =
+        content;
+      return true;
+
+    case 'architecturePattern':
+      foundation.whatWeAreBuilding.technicalRequirements.architecture.pattern =
+        content;
+      return true;
+
+    case 'developmentTools':
+      foundation.whatWeAreBuilding.technicalRequirements.developmentAndOperations.developmentTools =
+        content;
+      return true;
+
+    case 'testingStrategy':
+      foundation.whatWeAreBuilding.technicalRequirements.developmentAndOperations.testingStrategy =
+        content;
+      return true;
+
+    case 'painPoints':
+      foundation.whyWeAreBuildingIt.painPoints.currentState = content;
+      return true;
+
+    case 'methodology':
+      foundation.whyWeAreBuildingIt.developmentMethodology.description =
+        content;
+      return true;
+
+    default:
+      return false;
   }
 }
 
@@ -142,6 +238,8 @@ export async function updateFoundationCommand(
     }
 
     console.log(chalk.green('✓'), result.message);
+    console.log(chalk.gray('  Updated: spec/foundation.json'));
+    console.log(chalk.gray('  Regenerated: spec/FOUNDATION.md'));
     process.exit(0);
   } catch (error: any) {
     console.error(chalk.red('Error:'), error.message);

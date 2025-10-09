@@ -1,6 +1,10 @@
-import { readFile, writeFile, access } from 'fs/promises';
+import { readFile, writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
+import { existsSync } from 'fs';
 import chalk from 'chalk';
+import type { Foundation } from '../types/foundation';
+import { validateFoundationJson } from '../validators/json-schema';
+import { generateFoundationMd } from '../generators/foundation-md';
 
 interface AddDiagramOptions {
   section: string;
@@ -14,6 +18,83 @@ interface AddDiagramResult {
   message?: string;
   error?: string;
 }
+
+// Minimal foundation.json template
+const FOUNDATION_JSON_TEMPLATE: Foundation = {
+  $schema: '../src/schemas/foundation.schema.json',
+  project: {
+    name: 'Project',
+    description: 'Project description',
+    repository: 'https://github.com/user/repo',
+    license: 'MIT',
+    importantNote: 'Important project note',
+  },
+  whatWeAreBuilding: {
+    projectOverview: 'Project overview',
+    technicalRequirements: {
+      coreTechnologies: [],
+      architecture: {
+        pattern: 'Architecture pattern',
+        fileStructure: 'File structure',
+        deploymentTarget: 'Deployment target',
+        integrationModel: [],
+      },
+      developmentAndOperations: {
+        developmentTools: 'Development tools',
+        testingStrategy: 'Testing strategy',
+        logging: 'Logging approach',
+        validation: 'Validation approach',
+        formatting: 'Formatting approach',
+      },
+      keyLibraries: [],
+    },
+    nonFunctionalRequirements: [],
+  },
+  whyWeAreBuildingIt: {
+    problemDefinition: {
+      primary: {
+        title: 'Primary Problem',
+        description: 'Description',
+        points: [],
+      },
+      secondary: [],
+    },
+    painPoints: {
+      currentState: 'Current state',
+      specific: [],
+    },
+    stakeholderImpact: [],
+    theoreticalSolutions: [],
+    developmentMethodology: {
+      name: 'Methodology',
+      description: 'Description',
+      steps: [],
+      ensures: [],
+    },
+    successCriteria: [],
+    constraintsAndAssumptions: {
+      constraints: [],
+      assumptions: [],
+    },
+  },
+  architectureDiagrams: [],
+  coreCommands: {
+    categories: [],
+  },
+  featureInventory: {
+    phases: [],
+    tagUsageSummary: {
+      phaseDistribution: [],
+      componentDistribution: [],
+      featureGroupDistribution: [],
+      priorityDistribution: [],
+      testingCoverage: [],
+    },
+  },
+  notes: {
+    developmentStatus: [],
+  },
+};
 
 export async function addDiagram(
   options: AddDiagramOptions
@@ -43,130 +124,64 @@ export async function addDiagram(
   }
 
   try {
-    const foundationPath = join(cwd, 'spec/FOUNDATION.md');
+    const foundationJsonPath = join(cwd, 'spec/foundation.json');
+    const foundationMdPath = join(cwd, 'spec/FOUNDATION.md');
 
-    // Read or create FOUNDATION.md
-    let content = '';
-    try {
-      content = await readFile(foundationPath, 'utf-8');
-    } catch {
-      // File doesn't exist, create new
-      content = '# Project Foundation\n\n';
-    }
+    // Load or create foundation.json
+    let foundationData: Foundation;
 
-    // Split into lines for processing
-    const lines = content.split('\n');
-
-    // Find the section
-    let sectionStartIndex = -1;
-    let sectionEndIndex = -1;
-
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i].trim();
-
-      // Found our section
-      if (line === `## ${section}`) {
-        sectionStartIndex = i;
-
-        // Find where this section ends (next ## or end of file)
-        for (let j = i + 1; j < lines.length; j++) {
-          if (lines[j].trim().startsWith('## ')) {
-            sectionEndIndex = j - 1;
-            break;
-          }
-        }
-
-        // If we didn't find another section, goes to end of file
-        if (sectionEndIndex === -1) {
-          sectionEndIndex = lines.length - 1;
-        }
-
-        break;
-      }
-    }
-
-    // Create the diagram markdown
-    const diagramLines = [
-      `### ${title}`,
-      '',
-      '```mermaid',
-      ...code.split('\n'),
-      '```',
-      '',
-    ];
-
-    if (sectionStartIndex === -1) {
-      // Section doesn't exist, add it at the end
-      if (lines[lines.length - 1].trim() !== '') {
-        lines.push('');
-      }
-      lines.push(`## ${section}`, '', ...diagramLines);
+    if (existsSync(foundationJsonPath)) {
+      const content = await readFile(foundationJsonPath, 'utf-8');
+      foundationData = JSON.parse(content);
     } else {
-      // Section exists, check if diagram with same title exists
-      let diagramStartIndex = -1;
-      let diagramEndIndex = -1;
-
-      for (let i = sectionStartIndex + 1; i <= sectionEndIndex; i++) {
-        const line = lines[i].trim();
-
-        if (line === `### ${title}`) {
-          diagramStartIndex = i;
-
-          // Find the end of this diagram (next ### or next section)
-          for (let j = i + 1; j <= sectionEndIndex; j++) {
-            if (
-              lines[j].trim().startsWith('### ') ||
-              lines[j].trim().startsWith('## ')
-            ) {
-              diagramEndIndex = j - 1;
-              break;
-            }
-          }
-
-          // If we didn't find another subsection, goes to end of section
-          if (diagramEndIndex === -1) {
-            diagramEndIndex = sectionEndIndex;
-          }
-
-          break;
-        }
-      }
-
-      if (diagramStartIndex !== -1) {
-        // Replace existing diagram
-        // Skip back over empty lines at the end
-        while (
-          diagramEndIndex > diagramStartIndex &&
-          lines[diagramEndIndex].trim() === ''
-        ) {
-          diagramEndIndex--;
-        }
-        lines.splice(
-          diagramStartIndex,
-          diagramEndIndex - diagramStartIndex + 1,
-          ...diagramLines
-        );
-      } else {
-        // Add diagram at the end of the section
-        // Find the last non-empty line in the section
-        let insertIndex = sectionEndIndex;
-        while (
-          insertIndex > sectionStartIndex &&
-          lines[insertIndex].trim() === ''
-        ) {
-          insertIndex--;
-        }
-        lines.splice(insertIndex + 1, 0, '', ...diagramLines);
-      }
+      // Create spec directory and foundation.json from template
+      await mkdir(join(cwd, 'spec'), { recursive: true });
+      foundationData = JSON.parse(JSON.stringify(FOUNDATION_JSON_TEMPLATE));
     }
 
-    // Join back and write
-    const newContent = lines.join('\n');
-    await writeFile(foundationPath, newContent, 'utf-8');
+    // Find existing diagram with same title or add new one
+    const existingIndex = foundationData.architectureDiagrams.findIndex(
+      (d) => d.title === title
+    );
+
+    const newDiagram = {
+      title,
+      mermaidCode: code,
+    };
+
+    if (existingIndex !== -1) {
+      // Replace existing diagram
+      foundationData.architectureDiagrams[existingIndex] = newDiagram;
+    } else {
+      // Add new diagram
+      foundationData.architectureDiagrams.push(newDiagram);
+    }
+
+    // Write updated foundation.json
+    await writeFile(
+      foundationJsonPath,
+      JSON.stringify(foundationData, null, 2),
+      'utf-8'
+    );
+
+    // Validate updated JSON against schema
+    const validation = await validateFoundationJson(foundationJsonPath);
+    if (!validation.valid) {
+      return {
+        success: false,
+        error: `Updated foundation.json failed schema validation: ${validation.errors?.join(', ')}`,
+      };
+    }
+
+    // Regenerate FOUNDATION.md from JSON
+    const markdown = await generateFoundationMd(foundationData);
+    await writeFile(foundationMdPath, markdown, 'utf-8');
 
     return {
       success: true,
-      message: `Added diagram "${title}" to ${section} section`,
+      message: existingIndex !== -1
+        ? `Updated diagram "${title}"`
+        : `Added diagram "${title}"`,
     };
   } catch (error: any) {
     return {
@@ -194,6 +209,8 @@ export async function addDiagramCommand(
     }
 
     console.log(chalk.green('✓'), result.message);
+    console.log(chalk.gray('  Updated: spec/foundation.json'));
+    console.log(chalk.gray('  Regenerated: spec/FOUNDATION.md'));
     process.exit(0);
   } catch (error: any) {
     console.error(chalk.red('Error:'), error.message);

@@ -16,6 +16,7 @@ Tags that identify which development phase a feature belongs to (from FOUNDATION
 | `@phase4` | Phase 4: CRUD Operations & Tag-Based Queries | Features: Query/display scenarios by tag, update/delete operations (4 files) |
 | `@phase5` | Phase 5: Advanced CRUD & Bulk Operations | Features: Update scenarios/steps, bulk delete, retag operations (7 files) |
 | `@phase6` | Phase 6: Architecture Documentation | Features: FOUNDATION.md management, Mermaid diagrams (3 files) |
+| `@phase7` | Phase 7: JSON-Backed Documentation | Features: JSON schema validation, MD generation from JSON, migration tools (6 files) |
 
 **Rule**: Every feature file MUST have exactly ONE phase tag.
 
@@ -53,6 +54,7 @@ Tags that categorize features by functional area.
 | `@read-only` | Read-Only Operations | Display operations that don't modify files (2 files) |
 | `@utility` | Utility & Helper Commands | Multi-validation commands, aggregate operations (1 file) |
 | `@scaffolding` | Project Setup & Templates | Initialize spec directory, create templates, setup structure (0 files) |
+| `@migration` | Migration & Data Transformation | One-time migration operations, MD to JSON conversion (1 file) |
 
 **Rule**: Every feature file MUST have at least ONE feature group tag.
 
@@ -69,6 +71,9 @@ Tags for specific technical concerns or architectural patterns.
 | `@error-handling` | Error Handling | Error scenarios, validation failures, recovery |
 | `@file-system` | File System Operations | Reading/writing files, directory operations, path handling |
 | `@template` | Template System | Template generation, variable substitution, scaffolding |
+| `@json-backed` | JSON-Backed Documentation | Features using JSON schemas and auto-generation of markdown |
+| `@json-schema` | JSON Schema Validation | JSON Schema validation using Ajv library |
+| `@internal` | Internal Utility | Internal utilities and helpers, not user-facing commands |
 
 **Rule**: Use technical tags to highlight specific architectural concerns.
 

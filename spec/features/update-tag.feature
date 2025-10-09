@@ -7,19 +7,41 @@
 Feature: Update Tag in Registry
   """
   Architecture notes:
-  - Modifies existing tag entries in spec/TAGS.md registry
+  - Reads spec/tags.json and updates tag definitions
   - Allows updating category and/or description for registered tags
   - Preserves tag name (use retag command to change tag names)
-  - Updates tag definition while maintaining file structure
-  - Validates tag exists before updating
+  - Validates updated JSON against tags.schema.json
+  - Regenerates TAGS.md from updated tags.json using generateTagsMd()
+  - All updates go through JSON, MD is always auto-generated
 
   Critical implementation requirements:
-  - MUST verify tag exists in TAGS.md before updating
+  - MUST load tags.json
+  - MUST verify tag exists in tags.json before updating
   - MUST allow updating category only, description only, or both
-  - MUST preserve markdown formatting and structure
-  - MUST handle tags in any category
+  - MUST validate category name against existing categories
+  - MUST update tag object in tags array (or move to new category)
+  - MUST maintain alphabetical order within categories
+  - MUST validate updated JSON against tags.schema.json
+  - MUST write updated tags.json
+  - MUST regenerate TAGS.md using generateTagsMd()
   - MUST provide clear error messages for non-existent tags
   - Exit code 0 for success, 1 for errors
+
+  Workflow:
+  1. Load spec/tags.json
+  2. Validate at least one update specified (category or description)
+  3. Find tag in categories array
+  4. If category changing, validate new category exists
+  5. Update tag object (description and/or move to new category)
+  6. Sort tags alphabetically within category
+  7. Validate updated JSON against schema
+  8. Write spec/tags.json
+  9. Regenerate spec/TAGS.md from JSON
+  10. Display success message
+
+  References:
+  - tags.schema.json: src/schemas/tags.schema.json
+  - generateTagsMd(): src/generators/tags-md.ts
   """
 
   Background: User Story
@@ -83,3 +105,15 @@ Feature: Update Tag in Registry
     Then the command should exit with code 0
     And the description should contain "&" and "2.0"
     And the markdown should be properly escaped
+
+  Scenario: JSON-backed workflow - modify JSON and regenerate MD
+    Given I have a valid tags.json file with @test-tag in "Technical Tags"
+    When I run `fspec update-tag @test-tag --description="Updated test tag description"`
+    Then the tags.json file should be updated
+    And the tags.json should validate against tags.schema.json
+    And the @test-tag description in tags.json should be "Updated test tag description"
+    And the @test-tag should remain in "Technical Tags" category
+    And other tags in tags.json should be preserved
+    And TAGS.md should be regenerated from tags.json
+    And TAGS.md should contain the updated description
+    And TAGS.md should have the auto-generation warning header

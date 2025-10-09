@@ -9,7 +9,7 @@ Feature: Show Tag Usage Statistics
   Architecture notes:
   - Reads all feature files and extracts tag usage
   - Counts tag occurrences across all feature files
-  - Groups statistics by tag categories (from TAGS.md)
+  - Groups statistics by tag categories (from tags.json)
   - Displays total features, total tags, and per-tag counts
   - Helps identify unused tags and most common tags
   - Useful for maintaining tag registry and identifying orphaned tags
@@ -17,14 +17,26 @@ Feature: Show Tag Usage Statistics
   Critical implementation requirements:
   - MUST parse all feature files in spec/features/
   - MUST count each tag occurrence (features can have multiple tags)
-  - MUST group statistics by category from TAGS.md
+  - MUST load tags.json for category grouping
+  - MUST group statistics by category from tags.json
   - MUST show total count and per-tag breakdown
   - MUST identify registered tags that are never used
   - Output MUST be sorted by count (descending) within each category
   - Exit code 0 for success, 2 for errors
 
+  Workflow:
+  1. Load spec/tags.json (optional, continue if missing)
+  2. Glob all spec/features/**/*.feature files
+  3. Parse each feature file with @cucumber/gherkin
+  4. Extract tags from each feature
+  5. Count tag occurrences
+  6. Group by categories from tags.json
+  7. Identify unused registered tags
+  8. Display formatted statistics
+
   References:
-  - Tag registry: spec/TAGS.md
+  - Tag registry: spec/tags.json
+  - Tags type: src/types/tags.ts
   - Gherkin parser: @cucumber/gherkin
   """
 
@@ -56,7 +68,7 @@ Feature: Show Tag Usage Statistics
     And the count for @phase2 should be 2
 
   Scenario: Identify unused registered tags
-    Given I have TAGS.md with 10 registered tags
+    Given I have tags.json with 10 registered tags
     And only 7 of those tags are used in feature files
     When I run `fspec tag-stats`
     Then the output should show a section for unused tags
@@ -84,17 +96,17 @@ Feature: Show Tag Usage Statistics
     And unregistered tags should be grouped in an "Unregistered" section
     And the count for each unregistered tag should be accurate
 
-  Scenario: Handle TAGS.md not found
-    Given spec/TAGS.md does not exist
+  Scenario: Handle tags.json not found
+    Given spec/tags.json does not exist
     And I have feature files with tags
     When I run `fspec tag-stats`
     Then the command should exit with code 0
-    And the output should show warning that TAGS.md was not found
+    And the output should show warning that tags.json was not found
     And all tags should be shown in "Unregistered" category
     And the statistics should still be accurate
 
   Scenario: Display zero count for categories with no usage
-    Given I have TAGS.md with "Testing Tags" category
+    Given I have tags.json with "Testing Tags" category
     And no feature files use any testing tags
     When I run `fspec tag-stats`
     Then the output should show "Testing Tags" category
@@ -107,3 +119,13 @@ Feature: Show Tag Usage Statistics
     Then the command should exit with code 0
     And the statistics should count tags from the 3 valid files
     And the output should show a warning about the invalid file
+
+  Scenario: JSON-backed workflow - read categories from tags.json
+    Given I have tags.json with multiple tag categories
+    And I have feature files using tags from different categories
+    When I run `fspec tag-stats`
+    Then the command should load tag categories from spec/tags.json
+    And statistics should be grouped by categories from tags.json
+    And each category should show accurate tag counts
+    And unused registered tags should be identified correctly
+    And the command should exit with code 0

@@ -1,9 +1,11 @@
 import { readFile } from 'fs/promises';
 import { join } from 'path';
+import { existsSync } from 'fs';
 import chalk from 'chalk';
 import { glob } from 'tinyglobby';
 import * as Gherkin from '@cucumber/gherkin';
 import * as Messages from '@cucumber/messages';
+import type { Tags } from '../types/tags';
 
 interface TagValidationResult {
   file: string;
@@ -33,7 +35,7 @@ export async function validateTags(
 }> {
   const cwd = options.cwd || process.cwd();
 
-  // Load tag registry from TAGS.md
+  // Load tag registry from tags.json
   const registry = await loadTagRegistry(cwd);
 
   // Get files to validate
@@ -92,10 +94,10 @@ export async function validateTagsCommand(file?: string): Promise<void> {
       process.exit(0);
     }
   } catch (error: any) {
-    if (error.message.includes('TAGS.md not found')) {
+    if (error.message.includes('tags.json not found')) {
       console.error(chalk.red(error.message));
       console.log(
-        chalk.yellow('  Suggestion: Create spec/TAGS.md to track tags')
+        chalk.yellow('  Suggestion: Create spec/tags.json to track tags')
       );
       process.exit(2);
     }
@@ -105,76 +107,36 @@ export async function validateTagsCommand(file?: string): Promise<void> {
 }
 
 async function loadTagRegistry(cwd: string): Promise<TagRegistry> {
-  const tagsPath = join(cwd, 'spec', 'TAGS.md');
+  const tagsJsonPath = join(cwd, 'spec', 'tags.json');
+
+  if (!existsSync(tagsJsonPath)) {
+    throw new Error('tags.json not found: spec/tags.json');
+  }
 
   try {
-    const content = await readFile(tagsPath, 'utf-8');
+    const content = await readFile(tagsJsonPath, 'utf-8');
+    const tagsData: Tags = JSON.parse(content);
 
-    // Extract all tags from TAGS.md (lines starting with | `@tag` |)
-    const tagPattern = /\|\s*`(@[a-z0-9-]+)`\s*\|/g;
+    // Extract all valid tags from categories
     const validTags = new Set<string>();
+    const phaseTags: string[] = [];
+    const componentTags: string[] = [];
+    const featureGroupTags: string[] = [];
 
-    let match;
-    while ((match = tagPattern.exec(content)) !== null) {
-      validTags.add(match[1]);
+    for (const category of tagsData.categories) {
+      for (const tag of category.tags) {
+        validTags.add(tag.name);
+
+        // Categorize tags based on category name
+        if (category.name === 'Phase Tags') {
+          phaseTags.push(tag.name);
+        } else if (category.name === 'Component Tags') {
+          componentTags.push(tag.name);
+        } else if (category.name === 'Feature Group Tags') {
+          featureGroupTags.push(tag.name);
+        }
+      }
     }
-
-    // Define required tag categories - extract from validTags based on patterns
-    // Phase tags: @phase1, @phase2, @phase3
-    const phaseTags = Array.from(validTags).filter(tag =>
-      tag.startsWith('@phase')
-    );
-
-    // Component tags: defined in TAGS.md Component Tags section
-    const componentTags = Array.from(validTags).filter(tag =>
-      [
-        '@cli',
-        '@parser',
-        '@generator',
-        '@validator',
-        '@formatter',
-        '@file-ops',
-        '@integration',
-      ].includes(tag)
-    );
-
-    // Feature group tags: all other registered tags that aren't phase/component/optional
-    const featureGroupTags = Array.from(validTags).filter(
-      tag =>
-        !tag.startsWith('@phase') &&
-        !componentTags.includes(tag) &&
-        ![
-          '@gherkin',
-          '@cucumber-parser',
-          '@prettier',
-          '@mermaid',
-          '@ast',
-          '@error-handling',
-          '@file-system',
-          '@template',
-          '@windows',
-          '@macos',
-          '@linux',
-          '@cross-platform',
-          '@critical',
-          '@high',
-          '@medium',
-          '@low',
-          '@wip',
-          '@todo',
-          '@done',
-          '@deprecated',
-          '@blocked',
-          '@unit-test',
-          '@integration-test',
-          '@e2e-test',
-          '@manual-test',
-          '@cage-hook',
-          '@execa',
-          '@acdd',
-          '@spec-alignment',
-        ].includes(tag)
-    );
 
     const requiredCategories = {
       phase: phaseTags,
@@ -185,7 +147,7 @@ async function loadTagRegistry(cwd: string): Promise<TagRegistry> {
     return { validTags, requiredCategories };
   } catch (error: any) {
     if (error.code === 'ENOENT') {
-      throw new Error('TAGS.md not found: spec/TAGS.md');
+      throw new Error('tags.json not found: spec/tags.json');
     }
     throw error;
   }
@@ -236,13 +198,13 @@ async function validateFileTags(
           result.errors.push({
             tag,
             message: `Placeholder tag: ${tag}`,
-            suggestion: `Replace ${tag} with actual tags from TAGS.md`,
+            suggestion: `Replace ${tag} with actual tags from tags.json`,
           });
         } else {
           result.errors.push({
             tag,
             message: `Unregistered tag: ${tag} in ${filePath}`,
-            suggestion: `Register this tag in spec/TAGS.md or use 'fspec register-tag'`,
+            suggestion: `Register this tag in spec/tags.json or use 'fspec register-tag'`,
           });
         }
       }

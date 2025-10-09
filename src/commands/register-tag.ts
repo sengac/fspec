@@ -1,6 +1,10 @@
 import { readFile, writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
+import { existsSync } from 'fs';
 import chalk from 'chalk';
+import type { Tags, TagCategory } from '../types/tags';
+import { validateTagsJson } from '../validators/json-schema';
+import { generateTagsMd } from '../generators/tags-md';
 
 interface RegisterTagOptions {
   cwd?: string;
@@ -13,44 +17,42 @@ interface RegisterTagResult {
   converted?: boolean;
 }
 
-const TAGS_MD_TEMPLATE = `# Tag Registry
-
-## Phase Tags
-| Tag | Description |
-|-----|-------------|
-
-## Component Tags
-| Tag | Description |
-|-----|-------------|
-
-## Feature Group Tags
-| Tag | Description |
-|-----|-------------|
-
-## Technical Tags
-| Tag | Description |
-|-----|-------------|
-
-## Platform Tags
-| Tag | Description |
-|-----|-------------|
-
-## Priority Tags
-| Tag | Description |
-|-----|-------------|
-
-## Status Tags
-| Tag | Description |
-|-----|-------------|
-
-## Testing Tags
-| Tag | Description |
-|-----|-------------|
-
-## CAGE Integration Tags
-| Tag | Description |
-|-----|-------------|
-`;
+// Minimal tags.json template for creation
+const TAGS_JSON_TEMPLATE: Tags = {
+  $schema: '../src/schemas/tags.schema.json',
+  categories: [
+    { name: 'Phase Tags', description: 'Phase identification tags', required: true, tags: [] },
+    { name: 'Component Tags', description: 'Architectural component tags', required: true, tags: [] },
+    { name: 'Feature Group Tags', description: 'Functional area tags', required: true, tags: [] },
+    { name: 'Technical Tags', description: 'Technical concern tags', required: false, tags: [] },
+    { name: 'Platform Tags', description: 'Platform-specific tags', required: false, tags: [] },
+    { name: 'Priority Tags', description: 'Implementation priority tags', required: false, tags: [] },
+    { name: 'Status Tags', description: 'Development status tags', required: false, tags: [] },
+    { name: 'Testing Tags', description: 'Test-related tags', required: false, tags: [] },
+    { name: 'CAGE Integration Tags', description: 'CAGE-specific tags', required: false, tags: [] },
+  ],
+  combinationExamples: [],
+  usageGuidelines: {
+    requiredCombinations: { title: '', requirements: [], minimumExample: '' },
+    recommendedCombinations: { title: '', includes: [], recommendedExample: '' },
+    orderingConvention: { title: '', order: [], example: '' },
+  },
+  addingNewTags: {
+    process: [],
+    namingConventions: [],
+    antiPatterns: { dont: [], do: [] },
+  },
+  queries: { title: '', examples: [] },
+  statistics: {
+    lastUpdated: new Date().toISOString(),
+    phaseStats: [],
+    componentStats: [],
+    featureGroupStats: [],
+    updateCommand: 'fspec tag-stats',
+  },
+  validation: { rules: [], commands: [] },
+  references: [],
+};
 
 export async function registerTag(
   tag: string,
@@ -59,7 +61,8 @@ export async function registerTag(
   options: RegisterTagOptions = {}
 ): Promise<RegisterTagResult> {
   const cwd = options.cwd || process.cwd();
-  const tagsPath = join(cwd, 'spec', 'TAGS.md');
+  const tagsJsonPath = join(cwd, 'spec', 'tags.json');
+  const tagsMdPath = join(cwd, 'spec', 'TAGS.md');
 
   // Validate and normalize tag format
   let normalizedTag = tag;
@@ -84,46 +87,67 @@ export async function registerTag(
     );
   }
 
-  // Read or create TAGS.md
-  let content: string;
+  // Load or create tags.json
+  let tagsData: Tags;
   let created = false;
 
-  try {
-    content = await readFile(tagsPath, 'utf-8');
-  } catch (error: any) {
-    if (error.code === 'ENOENT') {
-      // Create spec directory and TAGS.md
-      await mkdir(join(cwd, 'spec'), { recursive: true });
-      content = TAGS_MD_TEMPLATE;
-      created = true;
-    } else {
-      throw error;
+  if (existsSync(tagsJsonPath)) {
+    const content = await readFile(tagsJsonPath, 'utf-8');
+    tagsData = JSON.parse(content);
+  } else {
+    // Create spec directory and tags.json from template
+    await mkdir(join(cwd, 'spec'), { recursive: true });
+    tagsData = JSON.parse(JSON.stringify(TAGS_JSON_TEMPLATE));
+    created = true;
+  }
+
+  // Check for duplicate tags across all categories
+  for (const cat of tagsData.categories) {
+    const existingTag = cat.tags.find(t => t.name === normalizedTag);
+    if (existingTag) {
+      throw new Error(
+        `Tag ${normalizedTag} is already registered in ${cat.name}`
+      );
     }
   }
 
-  // Check for duplicate
-  const escapedTag = normalizedTag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const tagPattern = new RegExp(`\\|\\s*\`${escapedTag}\`\\s*\\|`, 'g');
-  if (tagPattern.test(content)) {
-    throw new Error(`Tag ${normalizedTag} is already registered in TAGS.md`);
-  }
+  // Find target category (case-insensitive)
+  const targetCategory = tagsData.categories.find(
+    c => c.name.toLowerCase() === category.toLowerCase()
+  );
 
-  // Find and validate category
-  const categoryPattern = new RegExp(`^## ${category}\\s*$`, 'mi');
-  if (!categoryPattern.test(content)) {
-    // Extract available categories
-    const categoryMatches = content.match(/^## (.+)$/gm) || [];
-    const availableCategories = categoryMatches.map(m => m.replace(/^## /, ''));
+  if (!targetCategory) {
+    const availableCategories = tagsData.categories.map(c => c.name);
     throw new Error(
       `Invalid category: "${category}". Available categories: ${availableCategories.join(', ')}`
     );
   }
 
-  // Insert tag in alphabetical order within the category
-  content = insertTagInCategory(content, category, normalizedTag, description);
+  // Add tag to category in alphabetical order
+  const newTag = {
+    name: normalizedTag,
+    description,
+  };
 
-  // Write updated content
-  await writeFile(tagsPath, content, 'utf-8');
+  targetCategory.tags.push(newTag);
+
+  // Sort tags alphabetically within category
+  targetCategory.tags.sort((a, b) => a.name.localeCompare(b.name));
+
+  // Write updated tags.json
+  await writeFile(tagsJsonPath, JSON.stringify(tagsData, null, 2), 'utf-8');
+
+  // Validate updated JSON against schema
+  const validation = await validateTagsJson(tagsJsonPath);
+  if (!validation.valid) {
+    throw new Error(
+      `Updated tags.json failed schema validation: ${validation.errors?.join(', ')}`
+    );
+  }
+
+  // Regenerate TAGS.md from JSON
+  const markdown = await generateTagsMd(tagsData);
+  await writeFile(tagsMdPath, markdown, 'utf-8');
 
   const message = converted
     ? `Successfully registered ${normalizedTag} (converted from ${tag}) in ${category}`
@@ -137,71 +161,6 @@ export async function registerTag(
   };
 }
 
-function insertTagInCategory(
-  content: string,
-  category: string,
-  tag: string,
-  description: string
-): string {
-  // Find the category section
-  const categoryPattern = new RegExp(`^## ${category}\\s*$`, 'mi');
-  const categoryMatch = content.match(categoryPattern);
-  if (!categoryMatch) {
-    throw new Error(`Category not found: ${category}`);
-  }
-
-  const categoryIndex = categoryMatch.index!;
-
-  // Find the table header (next occurrence of |-----|)
-  const tableStart = content.indexOf('|-----|', categoryIndex);
-  if (tableStart === -1) {
-    throw new Error(`Table not found in category: ${category}`);
-  }
-
-  // Find the end of the category (next ## or end of file)
-  const nextCategoryMatch = content.substring(categoryIndex + 1).match(/^## /m);
-  const categoryEnd = nextCategoryMatch
-    ? categoryIndex + 1 + nextCategoryMatch.index!
-    : content.length;
-
-  // Extract existing tags in this category
-  const categoryContent = content.substring(tableStart, categoryEnd);
-  const tagLines: Array<{ tag: string; line: string }> = [];
-  const tagPattern = /\|\s*`(@[a-z0-9-]+)`\s*\|(.+?)\|/g;
-
-  let match;
-  while ((match = tagPattern.exec(categoryContent)) !== null) {
-    tagLines.push({
-      tag: match[1],
-      line: match[0],
-    });
-  }
-
-  // Create new tag line
-  const newTagLine = `| \`${tag}\` | ${description} |`;
-
-  // Find insertion point (alphabetical order)
-  let insertAfterLine = '|-----|-------------|';
-  for (const tagLine of tagLines) {
-    if (tag.localeCompare(tagLine.tag) > 0) {
-      insertAfterLine = tagLine.line;
-    } else {
-      break;
-    }
-  }
-
-  // Insert the new tag line
-  const insertIndex =
-    content.indexOf(insertAfterLine, tableStart) + insertAfterLine.length;
-  const newContent =
-    content.substring(0, insertIndex) +
-    '\n' +
-    newTagLine +
-    content.substring(insertIndex);
-
-  return newContent;
-}
-
 export async function registerTagCommand(
   tag: string,
   category: string,
@@ -211,7 +170,7 @@ export async function registerTagCommand(
     const result = await registerTag(tag, category, description);
 
     if (result.created) {
-      console.log(chalk.yellow('Created new TAGS.md file'));
+      console.log(chalk.yellow('Created new tags.json and TAGS.md'));
     }
 
     if (result.converted) {
@@ -223,6 +182,8 @@ export async function registerTagCommand(
     }
 
     console.log(chalk.green(`✓ ${result.message}`));
+    console.log(chalk.gray('  Updated: spec/tags.json'));
+    console.log(chalk.gray('  Regenerated: spec/TAGS.md'));
     process.exit(0);
   } catch (error: any) {
     console.error(chalk.red('Error:'), error.message);

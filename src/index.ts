@@ -29,6 +29,7 @@ import { checkCommand } from './commands/check';
 import { addDiagramCommand } from './commands/add-diagram';
 import { updateFoundationCommand } from './commands/update-foundation';
 import { showFoundationCommand } from './commands/show-foundation';
+import { deleteDiagramCommand } from './commands/delete-diagram';
 
 const program = new Command();
 
@@ -321,6 +322,14 @@ program
   .option('--list-sections', 'List section names only', false)
   .option('--line-numbers', 'Show line numbers', false)
   .action(showFoundationCommand);
+
+// Delete diagram command
+program
+  .command('delete-diagram')
+  .description('Delete Mermaid diagram from FOUNDATION.md')
+  .argument('<section>', 'Section name (e.g., "Architecture Diagrams")')
+  .argument('<title>', 'Diagram title to delete')
+  .action(deleteDiagramCommand);
 
 // TODO: Add more commands
 // - create-feature

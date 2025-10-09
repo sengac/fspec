@@ -7,23 +7,37 @@
 Feature: Add Mermaid Diagram to FOUNDATION.md
   """
   Architecture notes:
-  - Adds or updates Mermaid diagrams in FOUNDATION.md
-  - Diagrams are stored in specific sections
-  - Uses Mermaid markdown code block syntax
+  - Reads spec/foundation.json and updates architectureDiagrams array
+  - Diagrams are stored as objects with title, mermaidCode, optional description
+  - Regenerates FOUNDATION.md from updated foundation.json
   - Supports multiple diagram types (flowchart, sequence, class, etc.)
-  - Creates FOUNDATION.md if it doesn't exist
-  - Preserves existing content in other sections
+  - Creates foundation.json if it doesn't exist (with schema validation)
+  - Preserves all other foundation.json content
 
   Critical implementation requirements:
-  - MUST accept section name (e.g., "Architecture", "Data Flow")
+  - MUST load foundation.json (or create from template)
   - MUST accept diagram title
   - MUST accept Mermaid diagram code
-  - MUST use markdown code block with ```mermaid
-  - MUST create section if it doesn't exist
+  - MUST add diagram to architectureDiagrams array
   - MUST replace existing diagram with same title
-  - MUST preserve other diagrams in section
-  - MUST validate Mermaid syntax (basic validation)
+  - MUST validate updated JSON against foundation.schema.json
+  - MUST write updated foundation.json
+  - MUST regenerate FOUNDATION.md using generateFoundationMd()
   - Exit code 0 for success, 1 for errors
+
+  Workflow:
+  1. Load spec/foundation.json (or create from template if missing)
+  2. Validate diagram title and code (not empty)
+  3. Find existing diagram with same title or add new
+  4. Update architectureDiagrams array
+  5. Validate updated JSON against schema
+  6. Write spec/foundation.json
+  7. Regenerate spec/FOUNDATION.md from JSON
+  8. Display success message
+
+  References:
+  - foundation.schema.json: src/schemas/foundation.schema.json
+  - generateFoundationMd(): src/generators/foundation-md.ts
   """
 
   Background: User Story
@@ -125,3 +139,14 @@ Feature: Add Mermaid Diagram to FOUNDATION.md
     Then the command should exit with code 0
     And all diagram lines should be preserved
     And the diagram should be properly indented
+
+  Scenario: JSON-backed workflow - modify JSON and regenerate MD
+    Given I have a valid foundation.json file
+    When I run `fspec add-diagram "Architecture Diagrams" "New System Diagram" "graph TD\n  A-->B"`
+    Then the foundation.json file should be updated with the new diagram
+    And the foundation.json should validate against foundation.schema.json
+    And the new diagram should be in the architectureDiagrams array
+    And the diagram object should have title and mermaidCode fields
+    And FOUNDATION.md should be regenerated from foundation.json
+    And FOUNDATION.md should contain the new diagram in a mermaid code block
+    And FOUNDATION.md should have the auto-generation warning header

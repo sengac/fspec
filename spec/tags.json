@@ -1,0 +1,731 @@
+{
+  "$schema": "../src/schemas/tags.schema.json",
+  "categories": [
+    {
+      "name": "Phase Tags",
+      "description": "Tags that identify which development phase a feature belongs to (from FOUNDATION.md).",
+      "required": true,
+      "tags": [
+        {
+          "name": "@phase1",
+          "description": "Phase 1: Core Validation & Feature Management",
+          "usage": "Features: Gherkin syntax validation, feature file creation, formatting, basic querying (5 files)"
+        },
+        {
+          "name": "@phase2",
+          "description": "Phase 2: Tag Registry & Management",
+          "usage": "Features: TAGS.md operations, tag validation, architecture/background documentation (7 files)"
+        },
+        {
+          "name": "@phase3",
+          "description": "Phase 3: Advanced Feature Editing",
+          "usage": "Features: Add scenarios and steps to existing features (2 files)"
+        },
+        {
+          "name": "@phase4",
+          "description": "Phase 4: CRUD Operations & Tag-Based Queries",
+          "usage": "Features: Query/display scenarios by tag, update/delete operations (4 files)"
+        },
+        {
+          "name": "@phase5",
+          "description": "Phase 5: Advanced CRUD & Bulk Operations",
+          "usage": "Features: Update scenarios/steps, bulk delete, retag operations (7 files)"
+        },
+        {
+          "name": "@phase6",
+          "description": "Phase 6: Architecture Documentation",
+          "usage": "Features: FOUNDATION.md management, Mermaid diagrams (3 files)"
+        },
+        {
+          "name": "@phase7",
+          "description": "Phase 7: JSON-Backed Documentation",
+          "usage": "Features: JSON schema validation, MD generation from JSON, migration tools (6 files)"
+        }
+      ],
+      "rule": "Every feature file MUST have exactly ONE phase tag."
+    },
+    {
+      "name": "Component Tags",
+      "description": "Tags that identify which architectural component a feature belongs to.",
+      "required": true,
+      "tags": [
+        {
+          "name": "@cli",
+          "description": "Command-Line Interface",
+          "scope": "All CLI commands, argument parsing, command handlers, user-facing terminal interactions (28 files)"
+        },
+        {
+          "name": "@parser",
+          "description": "Gherkin Parser Integration",
+          "scope": "@cucumber/gherkin-parser usage, syntax validation, AST processing (3 files)"
+        },
+        {
+          "name": "@generator",
+          "description": "Template Generation",
+          "scope": "Feature file templates, scaffolding, boilerplate generation (1 file)"
+        },
+        {
+          "name": "@validator",
+          "description": "Validation Logic",
+          "scope": "Syntax validation, tag validation, consistency checks (1 file)"
+        },
+        {
+          "name": "@formatter",
+          "description": "Formatting & Prettification",
+          "scope": "Prettier integration, Gherkin formatting, code style enforcement (1 file)"
+        },
+        {
+          "name": "@file-ops",
+          "description": "File Operations",
+          "scope": "Reading/writing feature files, FOUNDATION.md, TAGS.md management (1 file)"
+        },
+        {
+          "name": "@integration",
+          "description": "Cross-Component Integration",
+          "scope": "Features spanning multiple components, end-to-end flows (0 files)"
+        }
+      ],
+      "rule": "Every feature file MUST have at least ONE component tag (may have multiple if cross-component)."
+    },
+    {
+      "name": "Feature Group Tags",
+      "description": "Tags that categorize features by functional area.",
+      "required": true,
+      "tags": [
+        {
+          "name": "@feature-management",
+          "description": "Feature File Operations",
+          "examples": "Create feature, add scenario, add step, add architecture notes (11 files)"
+        },
+        {
+          "name": "@foundation-management",
+          "description": "FOUNDATION.md Operations",
+          "examples": "Add Mermaid diagram, update foundation sections, show foundation (3 files)"
+        },
+        {
+          "name": "@tag-management",
+          "description": "TAGS.md Operations",
+          "examples": "Register tag, validate tags, list tags, tag statistics (7 files)"
+        },
+        {
+          "name": "@validation",
+          "description": "Syntax & Structure Validation",
+          "examples": "Gherkin syntax check, tag compliance, formatting validation (3 files)"
+        },
+        {
+          "name": "@querying",
+          "description": "Query & Search Operations",
+          "examples": "List features, show feature, find by tag, search scenarios (6 files)"
+        },
+        {
+          "name": "@formatting",
+          "description": "Auto-Formatting",
+          "examples": "Prettier execution, Gherkin formatting, consistency enforcement (1 file)"
+        },
+        {
+          "name": "@modification",
+          "description": "Feature Modification Operations",
+          "examples": "Update/delete scenarios, steps, tags, retag operations (11 files)"
+        },
+        {
+          "name": "@bulk-operations",
+          "description": "Bulk Multi-File Operations",
+          "examples": "Bulk delete scenarios/features by tag (3 files)"
+        },
+        {
+          "name": "@documentation",
+          "description": "Documentation Display",
+          "examples": "Show acceptance criteria, show feature, show foundation (2 files)"
+        },
+        {
+          "name": "@read-only",
+          "description": "Read-Only Operations",
+          "examples": "Display operations that don't modify files (2 files)"
+        },
+        {
+          "name": "@utility",
+          "description": "Utility & Helper Commands",
+          "examples": "Multi-validation commands, aggregate operations (1 file)"
+        },
+        {
+          "name": "@scaffolding",
+          "description": "Project Setup & Templates",
+          "examples": "Initialize spec directory, create templates, setup structure (0 files)"
+        },
+        {
+          "name": "@migration",
+          "description": "Migration & Data Transformation",
+          "examples": "One-time migration operations, MD to JSON conversion (1 file)"
+        }
+      ],
+      "rule": "Every feature file MUST have at least ONE feature group tag."
+    },
+    {
+      "name": "Technical Tags",
+      "description": "Tags for specific technical concerns or architectural patterns.",
+      "required": false,
+      "tags": [
+        {
+          "name": "@gherkin",
+          "description": "Gherkin Specification Compliance",
+          "useCases": "Features ensuring Gherkin spec adherence"
+        },
+        {
+          "name": "@cucumber-parser",
+          "description": "Cucumber Parser Integration",
+          "useCases": "Direct usage of @cucumber/gherkin-parser"
+        },
+        {
+          "name": "@ast",
+          "description": "Abstract Syntax Tree",
+          "useCases": "Working with Gherkin AST from parser (custom formatter)"
+        },
+        {
+          "name": "@mermaid",
+          "description": "Mermaid Diagram Support",
+          "useCases": "Inserting/validating Mermaid diagrams in FOUNDATION.md"
+        },
+        {
+          "name": "@error-handling",
+          "description": "Error Handling",
+          "useCases": "Error scenarios, validation failures, recovery"
+        },
+        {
+          "name": "@file-system",
+          "description": "File System Operations",
+          "useCases": "Reading/writing files, directory operations, path handling"
+        },
+        {
+          "name": "@template",
+          "description": "Template System",
+          "useCases": "Template generation, variable substitution, scaffolding"
+        },
+        {
+          "name": "@json-backed",
+          "description": "JSON-Backed Documentation",
+          "useCases": "Features using JSON schemas and auto-generation of markdown"
+        },
+        {
+          "name": "@json-schema",
+          "description": "JSON Schema Validation",
+          "useCases": "JSON Schema validation using Ajv library"
+        },
+        {
+          "name": "@internal",
+          "description": "Internal Utility",
+          "useCases": "Internal utilities and helpers, not user-facing commands"
+        }
+      ],
+      "rule": "Use technical tags to highlight specific architectural concerns."
+    },
+    {
+      "name": "Platform Tags",
+      "description": "Tags for platform-specific scenarios or cross-platform requirements.",
+      "required": false,
+      "tags": [
+        {
+          "name": "@windows",
+          "description": "Windows-Specific",
+          "whenToUse": "Windows paths, PowerShell compatibility, CMD behaviors"
+        },
+        {
+          "name": "@macos",
+          "description": "macOS-Specific",
+          "whenToUse": "Unix paths, macOS-specific behaviors, Darwin platform"
+        },
+        {
+          "name": "@linux",
+          "description": "Linux-Specific",
+          "whenToUse": "Linux distributions, Unix behaviors, shell compatibility"
+        },
+        {
+          "name": "@cross-platform",
+          "description": "Cross-Platform Requirement",
+          "whenToUse": "Features that MUST work on all platforms, path normalization"
+        }
+      ],
+      "rule": "Use platform tags when a scenario has platform-specific behavior or requirements."
+    },
+    {
+      "name": "Priority Tags",
+      "description": "Tags indicating implementation priority or criticality.",
+      "required": false,
+      "tags": [
+        {
+          "name": "@critical",
+          "description": "Critical Priority - Must Have",
+          "criteria": "Core functionality, blocking features, foundation requirements"
+        },
+        {
+          "name": "@high",
+          "description": "High Priority - Should Have",
+          "criteria": "Important features, significant user value, CAGE integration needs"
+        },
+        {
+          "name": "@medium",
+          "description": "Medium Priority - Nice to Have",
+          "criteria": "Enhancements, convenience features, improved UX"
+        },
+        {
+          "name": "@low",
+          "description": "Low Priority - Future Enhancement",
+          "criteria": "Optional features, advanced querying, cosmetic improvements"
+        }
+      ],
+      "rule": "Use priority tags to guide implementation order within a phase."
+    },
+    {
+      "name": "Status Tags",
+      "description": "Tags tracking development status of features.",
+      "required": false,
+      "tags": [
+        {
+          "name": "@wip",
+          "description": "Work In Progress",
+          "meaning": "Feature is currently being implemented, tests may be incomplete"
+        },
+        {
+          "name": "@todo",
+          "description": "To Do",
+          "meaning": "Feature is planned but not started, scenarios defined but no code"
+        },
+        {
+          "name": "@done",
+          "description": "Complete",
+          "meaning": "Feature is fully implemented, all tests passing, documented"
+        },
+        {
+          "name": "@deprecated",
+          "description": "Deprecated",
+          "meaning": "Feature is being phased out, replaced by newer implementation"
+        },
+        {
+          "name": "@blocked",
+          "description": "Blocked",
+          "meaning": "Feature cannot proceed due to dependencies or external factors"
+        }
+      ],
+      "rule": "Update status tags as features progress through development lifecycle."
+    },
+    {
+      "name": "Testing Tags",
+      "description": "Tags for test-related scenarios and requirements.",
+      "required": false,
+      "tags": [
+        {
+          "name": "@unit-test",
+          "description": "Unit Test Coverage Required",
+          "testType": "Tests for individual functions, command handlers, utilities"
+        },
+        {
+          "name": "@integration-test",
+          "description": "Integration Test Required",
+          "testType": "Tests across components, parser integration, file operations"
+        },
+        {
+          "name": "@e2e-test",
+          "description": "End-to-End Test Required",
+          "testType": "Complete command flows, CAGE integration, full scenarios"
+        },
+        {
+          "name": "@manual-test",
+          "description": "Requires Manual Testing",
+          "testType": "Visual verification, platform-specific checks, edge cases"
+        }
+      ],
+      "rule": "Use testing tags to indicate what level of testing is required for a scenario."
+    },
+    {
+      "name": "CAGE Integration Tags",
+      "description": "Tags specific to CAGE integration and agentic coding workflows.",
+      "required": false,
+      "tags": [
+        {
+          "name": "@cage-hook",
+          "description": "CAGE Hook Integration",
+          "useCases": "Features called from CAGE hooks (PreToolUse, PostToolUse, etc.)"
+        },
+        {
+          "name": "@execa",
+          "description": "Execa Child Process",
+          "useCases": "Features invoked via Node.js execa from CAGE"
+        },
+        {
+          "name": "@acdd",
+          "description": "Acceptance Criteria Driven Development",
+          "useCases": "Features following ACDD methodology"
+        },
+        {
+          "name": "@spec-alignment",
+          "description": "Specification Alignment",
+          "useCases": "Features ensuring code-spec synchronization"
+        }
+      ],
+      "rule": "Use CAGE tags to indicate integration points with CAGE system."
+    }
+  ],
+  "combinationExamples": [
+    {
+      "title": "Example 1: Phase 1 Feature File Creation",
+      "tags": "@phase1 @cli @generator @feature-management @gherkin @cross-platform @critical @unit-test @integration-test\nFeature: Create Feature File with Template",
+      "interpretation": [
+        "Phase 1 feature",
+        "Belongs to CLI and generator components",
+        "Part of feature management functionality",
+        "Ensures Gherkin compliance",
+        "Must work on all platforms",
+        "Critical priority (core functionality)",
+        "Requires both unit and integration tests"
+      ]
+    },
+    {
+      "title": "Example 2: Phase 2 Tag Registry Validation",
+      "tags": "@phase2 @validator @tag-management @validation @error-handling @high @integration-test @cage-hook\nFeature: Validate Feature File Tags Against Registry",
+      "interpretation": [
+        "Phase 2 feature",
+        "Belongs to validator component",
+        "Part of tag management functionality",
+        "Includes validation and error handling",
+        "High priority",
+        "Requires integration tests",
+        "Called from CAGE hooks"
+      ]
+    },
+    {
+      "title": "Example 3: Phase 3 Advanced Querying",
+      "tags": "@phase3 @cli @querying @parser @ast @medium @unit-test @e2e-test\nFeature: Advanced Scenario Search and Filtering",
+      "interpretation": [
+        "Phase 3 feature",
+        "Belongs to CLI and querying components",
+        "Uses parser and AST processing",
+        "Medium priority",
+        "Requires unit and end-to-end tests"
+      ]
+    }
+  ],
+  "usageGuidelines": {
+    "requiredCombinations": {
+      "title": "Required Tag Combinations",
+      "requirements": [
+        "One Phase Tag: @phase1, @phase2, or @phase3",
+        "At least One Component Tag: @cli, @parser, @generator, @validator, etc.",
+        "At least One Feature Group Tag: @feature-management, @tag-management, etc."
+      ],
+      "minimumExample": "@phase1 @cli @feature-management\nFeature: Minimal Valid Feature"
+    },
+    "recommendedCombinations": {
+      "title": "Recommended Tag Combinations",
+      "includes": [
+        "Required tags (phase, component, feature group)",
+        "Technical tags for key architectural concerns",
+        "Platform tags if platform-specific",
+        "Priority tag for implementation planning",
+        "Testing tags for test strategy",
+        "CAGE integration tags if applicable"
+      ],
+      "recommendedExample": "@phase1 @cli @parser @validation @gherkin @cucumber-parser @error-handling @cross-platform @critical @integration-test @cage-hook\nFeature: Gherkin Syntax Validation"
+    },
+    "orderingConvention": {
+      "title": "Tag Ordering Convention",
+      "order": [
+        "Phase tag",
+        "Component tag(s)",
+        "Feature group tag(s)",
+        "Technical tags",
+        "Platform tags",
+        "Priority tag",
+        "Status tag",
+        "Testing tags",
+        "CAGE integration tags"
+      ],
+      "example": "@phase2 @cli @validator @tag-management @validation @mermaid @cross-platform @high @wip @integration-test @cage-hook\nFeature: FOUNDATION.md Mermaid Diagram Validation"
+    }
+  },
+  "addingNewTags": {
+    "process": [
+      {
+        "step": "Identify Need",
+        "description": "Determine if existing tags are insufficient"
+      },
+      {
+        "step": "Check Registry",
+        "description": "Verify tag doesn't already exist in this document"
+      },
+      {
+        "step": "Define Tag",
+        "description": "Create clear description and usage guidelines"
+      },
+      {
+        "step": "Update TAGS.md",
+        "description": "Add to appropriate category table"
+      },
+      {
+        "step": "Document Examples",
+        "description": "Show how tag should be used"
+      },
+      {
+        "step": "Use fspec",
+        "description": "Register tag using `fspec register-tag` command"
+      },
+      {
+        "step": "Apply",
+        "description": "Use tag in feature files"
+      }
+    ],
+    "namingConventions": [
+      "Use lowercase",
+      "Use hyphens for multi-word tags (@cross-platform, not @crossplatform)",
+      "Be specific and descriptive (@cucumber-parser not @parser-integration)",
+      "Avoid redundancy (@cli-commands → just @cli)",
+      "Keep concise (prefer @wip over @work-in-progress)"
+    ],
+    "antiPatterns": {
+      "dont": [
+        {
+          "description": "Create overlapping tags",
+          "example": "@validate and @validation → use @validation"
+        },
+        {
+          "description": "Use vague tags",
+          "example": "@important → use @critical, @high, etc."
+        },
+        {
+          "description": "Create single-use tags",
+          "example": "@login-feature → use combination of existing tags"
+        },
+        {
+          "description": "Mix concerns",
+          "example": "@cli-validation → use @cli @validation"
+        }
+      ],
+      "do": [
+        {
+          "description": "Reuse existing tags through combinations"
+        },
+        {
+          "description": "Create specific technical tags",
+          "example": "@gherkin, @mermaid"
+        },
+        {
+          "description": "Document new tags thoroughly"
+        },
+        {
+          "description": "Use tags to enable filtering and reporting"
+        }
+      ]
+    }
+  },
+  "queries": {
+    "title": "Common Tag Queries",
+    "examples": [
+      {
+        "description": "All Phase 1 features",
+        "command": "fspec list-features --tag=@phase1"
+      },
+      {
+        "description": "Critical validation features",
+        "command": "fspec list-features --tag=@validation --tag=@critical"
+      },
+      {
+        "description": "Features requiring integration tests",
+        "command": "fspec list-features --tag=@integration-test"
+      },
+      {
+        "description": "CAGE hook integration points",
+        "command": "fspec list-features --tag=@cage-hook"
+      },
+      {
+        "description": "Cross-platform CLI features",
+        "command": "fspec list-features --tag=@cli --tag=@cross-platform"
+      }
+    ]
+  },
+  "statistics": {
+    "lastUpdated": "2025-10-09T00:00:00Z",
+    "phaseStats": [
+      {
+        "phase": "Phase 1",
+        "total": 5,
+        "complete": 5,
+        "inProgress": 0,
+        "planned": 0
+      },
+      {
+        "phase": "Phase 2",
+        "total": 7,
+        "complete": 7,
+        "inProgress": 0,
+        "planned": 0
+      },
+      {
+        "phase": "Phase 3",
+        "total": 2,
+        "complete": 2,
+        "inProgress": 0,
+        "planned": 0
+      },
+      {
+        "phase": "Phase 4",
+        "total": 4,
+        "complete": 4,
+        "inProgress": 0,
+        "planned": 0
+      },
+      {
+        "phase": "Phase 5",
+        "total": 7,
+        "complete": 7,
+        "inProgress": 0,
+        "planned": 0
+      },
+      {
+        "phase": "Phase 6",
+        "total": 3,
+        "complete": 3,
+        "inProgress": 0,
+        "planned": 0
+      },
+      {
+        "phase": "Total",
+        "total": 28,
+        "complete": 28,
+        "inProgress": 0,
+        "planned": 0
+      }
+    ],
+    "componentStats": [
+      {
+        "component": "@cli",
+        "count": 28,
+        "percentage": "100%"
+      },
+      {
+        "component": "@parser",
+        "count": 3,
+        "percentage": "11%"
+      },
+      {
+        "component": "@generator",
+        "count": 1,
+        "percentage": "4%"
+      },
+      {
+        "component": "@validator",
+        "count": 1,
+        "percentage": "4%"
+      },
+      {
+        "component": "@formatter",
+        "count": 1,
+        "percentage": "4%"
+      },
+      {
+        "component": "@file-ops",
+        "count": 1,
+        "percentage": "4%"
+      }
+    ],
+    "featureGroupStats": [
+      {
+        "featureGroup": "@feature-management",
+        "count": 11,
+        "percentage": "39%"
+      },
+      {
+        "featureGroup": "@modification",
+        "count": 11,
+        "percentage": "39%"
+      },
+      {
+        "featureGroup": "@tag-management",
+        "count": 7,
+        "percentage": "25%"
+      },
+      {
+        "featureGroup": "@querying",
+        "count": 6,
+        "percentage": "21%"
+      },
+      {
+        "featureGroup": "@foundation-management",
+        "count": 3,
+        "percentage": "11%"
+      },
+      {
+        "featureGroup": "@bulk-operations",
+        "count": 3,
+        "percentage": "11%"
+      },
+      {
+        "featureGroup": "@validation",
+        "count": 3,
+        "percentage": "11%"
+      },
+      {
+        "featureGroup": "@documentation",
+        "count": 2,
+        "percentage": "7%"
+      },
+      {
+        "featureGroup": "@read-only",
+        "count": 2,
+        "percentage": "7%"
+      },
+      {
+        "featureGroup": "@formatting",
+        "count": 1,
+        "percentage": "4%"
+      },
+      {
+        "featureGroup": "@utility",
+        "count": 1,
+        "percentage": "4%"
+      }
+    ],
+    "updateCommand": "fspec tag-stats"
+  },
+  "validation": {
+    "rules": [
+      {
+        "rule": "Registry Compliance",
+        "description": "All tags in feature files MUST exist in this TAGS.md"
+      },
+      {
+        "rule": "Required Tags",
+        "description": "Every feature MUST have phase + component + feature group tags"
+      },
+      {
+        "rule": "No Orphans",
+        "description": "Tags in TAGS.md should be used in at least one feature file"
+      },
+      {
+        "rule": "Consistent Naming",
+        "description": "Follow tag naming conventions strictly"
+      }
+    ],
+    "commands": [
+      {
+        "description": "Validate all feature files",
+        "command": "fspec validate-tags"
+      },
+      {
+        "description": "Check for orphaned tags",
+        "command": "fspec tag-stats --show-orphans"
+      },
+      {
+        "description": "Validate specific feature",
+        "command": "fspec validate login.feature"
+      }
+    ]
+  },
+  "references": [
+    {
+      "title": "Gherkin Reference",
+      "url": "https://cucumber.io/docs/gherkin/reference/#tags"
+    },
+    {
+      "title": "Cucumber Tag Expressions",
+      "url": "https://cucumber.io/docs/cucumber/api/#tag-expressions"
+    }
+  ]
+}

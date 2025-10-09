@@ -66,23 +66,26 @@ export async function check(options: CheckOptions = {}): Promise<CheckResult> {
     // 2. Check tag validation
     tagStatus = 'PASS';
     try {
-      // Read TAGS.md
-      const tagsPath = join(cwd, 'spec/TAGS.md');
+      // Read tags.json
+      const tagsJsonPath = join(cwd, 'spec/tags.json');
       let tagsContent = '';
       try {
-        tagsContent = await readFile(tagsPath, 'utf-8');
+        tagsContent = await readFile(tagsJsonPath, 'utf-8');
       } catch {
-        // No TAGS.md file, skip tag validation
+        // No tags.json file, skip tag validation
         tagStatus = 'SKIP';
       }
 
       if (tagStatus !== 'SKIP') {
-        // Extract registered tags from TAGS.md
+        // Extract registered tags from tags.json
+        const tagsData = JSON.parse(tagsContent);
         const registeredTags = new Set<string>();
-        const tagRegex = /^-\s+(@[a-z0-9-#]+)/gm;
-        let match;
-        while ((match = tagRegex.exec(tagsContent)) !== null) {
-          registeredTags.add(match[1]);
+
+        // Extract tags from all categories
+        for (const category of tagsData.categories || []) {
+          for (const tag of category.tags || []) {
+            registeredTags.add(tag.name);
+          }
         }
 
         // Check all tags in feature files

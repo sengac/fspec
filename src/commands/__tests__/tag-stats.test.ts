@@ -54,21 +54,39 @@ describe('Feature: Show Tag Usage Statistics', () => {
   describe('Scenario: Show per-category tag statistics', () => {
     it('should group statistics by category with sorted counts', async () => {
       // Given I have feature files using tags from multiple categories
-      const tagsContent = `# Tag Registry
-
-## Phase Tags
-| Tag | Description |
-|-----|-------------|
-| \`@phase1\` | Phase 1 features |
-| \`@phase2\` | Phase 2 features |
-
-## Component Tags
-| Tag | Description |
-|-----|-------------|
-| \`@cli\` | CLI component |
-| \`@parser\` | Parser component |
-`;
-      await writeFile(join(testDir, 'spec', 'TAGS.md'), tagsContent);
+      const tagsJson = {
+        $schema: '../src/schemas/tags.schema.json',
+        categories: [
+          {
+            name: 'Phase Tags',
+            description: 'Development phase tags',
+            required: false,
+            tags: [
+              { name: '@phase1', description: 'Phase 1 features' },
+              { name: '@phase2', description: 'Phase 2 features' },
+            ],
+          },
+          {
+            name: 'Component Tags',
+            description: 'Architectural components',
+            required: false,
+            tags: [
+              { name: '@cli', description: 'CLI component' },
+              { name: '@parser', description: 'Parser component' },
+            ],
+          },
+        ],
+        combinationExamples: [],
+        usageGuidelines: {
+          minimumTagsPerFeature: 1,
+          recommendedTagsPerFeature: 3,
+          tagNamingConvention: 'kebab-case with @ prefix',
+        },
+      };
+      await writeFile(
+        join(testDir, 'spec', 'tags.json'),
+        JSON.stringify(tagsJson, null, 2)
+      );
 
       await writeFile(
         join(testDir, 'spec/features/f1.feature'),
@@ -115,15 +133,30 @@ describe('Feature: Show Tag Usage Statistics', () => {
   describe('Scenario: Show most used tags', () => {
     it('should sort tags by count in descending order', async () => {
       // Given I have feature files where @phase1 is used 4 times and @phase2 is used 2 times
-      const tagsContent = `# Tag Registry
-
-## Phase Tags
-| Tag | Description |
-|-----|-------------|
-| \`@phase1\` | Phase 1 |
-| \`@phase2\` | Phase 2 |
-`;
-      await writeFile(join(testDir, 'spec', 'TAGS.md'), tagsContent);
+      const tagsJson = {
+        $schema: '../src/schemas/tags.schema.json',
+        categories: [
+          {
+            name: 'Phase Tags',
+            description: 'Development phase tags',
+            required: false,
+            tags: [
+              { name: '@phase1', description: 'Phase 1' },
+              { name: '@phase2', description: 'Phase 2' },
+            ],
+          },
+        ],
+        combinationExamples: [],
+        usageGuidelines: {
+          minimumTagsPerFeature: 1,
+          recommendedTagsPerFeature: 3,
+          tagNamingConvention: 'kebab-case with @ prefix',
+        },
+      };
+      await writeFile(
+        join(testDir, 'spec', 'tags.json'),
+        JSON.stringify(tagsJson, null, 2)
+      );
 
       for (let i = 1; i <= 4; i++) {
         await writeFile(
@@ -165,28 +198,46 @@ describe('Feature: Show Tag Usage Statistics', () => {
 
   describe('Scenario: Identify unused registered tags', () => {
     it('should show unused tags section with tags not in feature files', async () => {
-      // Given I have TAGS.md with 10 registered tags
-      const tagsContent = `# Tag Registry
-
-## Phase Tags
-| Tag | Description |
-|-----|-------------|
-| \`@phase1\` | Phase 1 |
-| \`@phase2\` | Phase 2 |
-| \`@phase3\` | Phase 3 |
-
-## Component Tags
-| Tag | Description |
-|-----|-------------|
-| \`@cli\` | CLI |
-| \`@parser\` | Parser |
-| \`@formatter\` | Formatter |
-| \`@validator\` | Validator |
-| \`@generator\` | Generator |
-| \`@file-ops\` | File ops |
-| \`@integration\` | Integration |
-`;
-      await writeFile(join(testDir, 'spec', 'TAGS.md'), tagsContent);
+      // Given I have tags.json with 10 registered tags
+      const tagsJson = {
+        $schema: '../src/schemas/tags.schema.json',
+        categories: [
+          {
+            name: 'Phase Tags',
+            description: 'Development phase tags',
+            required: false,
+            tags: [
+              { name: '@phase1', description: 'Phase 1' },
+              { name: '@phase2', description: 'Phase 2' },
+              { name: '@phase3', description: 'Phase 3' },
+            ],
+          },
+          {
+            name: 'Component Tags',
+            description: 'Architectural components',
+            required: false,
+            tags: [
+              { name: '@cli', description: 'CLI' },
+              { name: '@parser', description: 'Parser' },
+              { name: '@formatter', description: 'Formatter' },
+              { name: '@validator', description: 'Validator' },
+              { name: '@generator', description: 'Generator' },
+              { name: '@file-ops', description: 'File ops' },
+              { name: '@integration', description: 'Integration' },
+            ],
+          },
+        ],
+        combinationExamples: [],
+        usageGuidelines: {
+          minimumTagsPerFeature: 1,
+          recommendedTagsPerFeature: 3,
+          tagNamingConvention: 'kebab-case with @ prefix',
+        },
+      };
+      await writeFile(
+        join(testDir, 'spec', 'tags.json'),
+        JSON.stringify(tagsJson, null, 2)
+      );
 
       // And only 7 of those tags are used in feature files
       await writeFile(
@@ -259,14 +310,27 @@ describe('Feature: Show Tag Usage Statistics', () => {
   describe('Scenario: Count tags from unregistered tags correctly', () => {
     it('should group unregistered tags separately with accurate counts', async () => {
       // Given I have feature files using both registered and unregistered tags
-      const tagsContent = `# Tag Registry
-
-## Phase Tags
-| Tag | Description |
-|-----|-------------|
-| \`@phase1\` | Phase 1 |
-`;
-      await writeFile(join(testDir, 'spec', 'TAGS.md'), tagsContent);
+      const tagsJson = {
+        $schema: '../src/schemas/tags.schema.json',
+        categories: [
+          {
+            name: 'Phase Tags',
+            description: 'Development phase tags',
+            required: false,
+            tags: [{ name: '@phase1', description: 'Phase 1' }],
+          },
+        ],
+        combinationExamples: [],
+        usageGuidelines: {
+          minimumTagsPerFeature: 1,
+          recommendedTagsPerFeature: 3,
+          tagNamingConvention: 'kebab-case with @ prefix',
+        },
+      };
+      await writeFile(
+        join(testDir, 'spec', 'tags.json'),
+        JSON.stringify(tagsJson, null, 2)
+      );
 
       await writeFile(
         join(testDir, 'spec/features/f1.feature'),
@@ -301,10 +365,10 @@ describe('Feature: Show Tag Usage Statistics', () => {
     });
   });
 
-  describe('Scenario: Handle TAGS.md not found', () => {
+  describe('Scenario: Handle tags.json not found', () => {
     it('should show warning and group all tags as unregistered', async () => {
-      // Given spec/TAGS.md does not exist
-      // (no TAGS.md created in testDir)
+      // Given spec/tags.json does not exist
+      // (no tags.json created in testDir)
 
       // And I have feature files with tags
       await writeFile(
@@ -318,7 +382,7 @@ describe('Feature: Show Tag Usage Statistics', () => {
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      // And the output should show warning that TAGS.md was not found
+      // And the output should show warning that tags.json was not found
       expect(result.tagsFileFound).toBe(false);
 
       // And all tags should be shown in "Unregistered" category
@@ -336,16 +400,31 @@ describe('Feature: Show Tag Usage Statistics', () => {
 
   describe('Scenario: Display zero count for categories with no usage', () => {
     it('should show categories with unused tags', async () => {
-      // Given I have TAGS.md with "Testing Tags" category
-      const tagsContent = `# Tag Registry
-
-## Testing Tags
-| Tag | Description |
-|-----|-------------|
-| \`@unit-test\` | Unit test |
-| \`@integration-test\` | Integration test |
-`;
-      await writeFile(join(testDir, 'spec', 'TAGS.md'), tagsContent);
+      // Given I have tags.json with "Testing Tags" category
+      const tagsJson = {
+        $schema: '../src/schemas/tags.schema.json',
+        categories: [
+          {
+            name: 'Testing Tags',
+            description: 'Testing-related tags',
+            required: false,
+            tags: [
+              { name: '@unit-test', description: 'Unit test' },
+              { name: '@integration-test', description: 'Integration test' },
+            ],
+          },
+        ],
+        combinationExamples: [],
+        usageGuidelines: {
+          minimumTagsPerFeature: 1,
+          recommendedTagsPerFeature: 3,
+          tagNamingConvention: 'kebab-case with @ prefix',
+        },
+      };
+      await writeFile(
+        join(testDir, 'spec', 'tags.json'),
+        JSON.stringify(tagsJson, null, 2)
+      );
 
       // And no feature files use any testing tags
       await writeFile(
@@ -402,6 +481,110 @@ describe('Feature: Show Tag Usage Statistics', () => {
       expect(result.invalidFiles).toBeDefined();
       expect(result.invalidFiles.length).toBe(1);
       expect(result.invalidFiles[0]).toContain('invalid.feature');
+    });
+  });
+
+  describe('Scenario: JSON-backed workflow - read categories from tags.json', () => {
+    it('should load tag categories from tags.json and group statistics', async () => {
+      // Given I have tags.json with multiple tag categories
+      const tagsJson = {
+        $schema: '../src/schemas/tags.schema.json',
+        categories: [
+          {
+            name: 'Phase Tags',
+            description: 'Development phase tags',
+            required: false,
+            tags: [
+              { name: '@phase1', description: 'Phase 1 features' },
+              { name: '@phase2', description: 'Phase 2 features' },
+              { name: '@phase3', description: 'Phase 3 features' },
+            ],
+          },
+          {
+            name: 'Component Tags',
+            description: 'Architectural components',
+            required: false,
+            tags: [
+              { name: '@cli', description: 'CLI component' },
+              { name: '@parser', description: 'Parser component' },
+              { name: '@formatter', description: 'Formatter component' },
+            ],
+          },
+          {
+            name: 'Feature Group Tags',
+            description: 'Functional areas',
+            required: false,
+            tags: [
+              {
+                name: '@feature-management',
+                description: 'Feature management',
+              },
+              { name: '@tag-management', description: 'Tag management' },
+            ],
+          },
+        ],
+        combinationExamples: [],
+        usageGuidelines: {
+          minimumTagsPerFeature: 1,
+          recommendedTagsPerFeature: 3,
+          tagNamingConvention: 'kebab-case with @ prefix',
+        },
+      };
+      await writeFile(
+        join(testDir, 'spec', 'tags.json'),
+        JSON.stringify(tagsJson, null, 2)
+      );
+
+      // And I have feature files using tags from different categories
+      await writeFile(
+        join(testDir, 'spec/features/f1.feature'),
+        '@phase1 @cli @feature-management\nFeature: F1\n  Scenario: Test\n    Given test\n'
+      );
+      await writeFile(
+        join(testDir, 'spec/features/f2.feature'),
+        '@phase2 @parser @tag-management\nFeature: F2\n  Scenario: Test\n    Given test\n'
+      );
+      await writeFile(
+        join(testDir, 'spec/features/f3.feature'),
+        '@phase1 @formatter @feature-management\nFeature: F3\n  Scenario: Test\n    Given test\n'
+      );
+
+      // When I run `fspec tag-stats`
+      const result = await tagStats({ cwd: testDir });
+
+      // Then the command should load tag categories from spec/tags.json
+      expect(result.success).toBe(true);
+      expect(result.tagsFileFound).toBe(true);
+
+      // And statistics should be grouped by categories from tags.json
+      expect(result.categories).toBeDefined();
+      const phaseCategory = result.categories.find(
+        c => c.name === 'Phase Tags'
+      );
+      const componentCategory = result.categories.find(
+        c => c.name === 'Component Tags'
+      );
+      const featureGroupCategory = result.categories.find(
+        c => c.name === 'Feature Group Tags'
+      );
+
+      expect(phaseCategory).toBeDefined();
+      expect(componentCategory).toBeDefined();
+      expect(featureGroupCategory).toBeDefined();
+
+      // And each category should show accurate tag counts
+      expect(phaseCategory!.tags).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ tag: '@phase1', count: 2 }),
+          expect.objectContaining({ tag: '@phase2', count: 1 }),
+        ])
+      );
+
+      // And unused registered tags should be identified correctly
+      expect(result.unusedTags).toContain('@phase3');
+
+      // And the command should exit with code 0
+      expect(result.success).toBe(true);
     });
   });
 });

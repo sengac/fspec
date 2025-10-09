@@ -7,121 +7,85 @@
 Feature: Display Foundation Documentation
   """
   Architecture notes:
-  - Displays content from FOUNDATION.md file
-  - Can show entire file or specific section
+  - Reads spec/foundation.json (source of truth) and displays content
+  - Can show entire foundation or specific field
   - Supports multiple output formats (text, markdown, json)
   - Can write output to a file
-  - Uses standard markdown parsing for sections
+  - Uses Foundation type structure for data access
   - Provides structured data for programmatic access
 
   Critical implementation requirements:
-  - MUST support showing entire FOUNDATION.md
-  - MUST support showing specific section by name
+  - MUST load spec/foundation.json
+  - MUST support showing entire foundation data
+  - MUST support showing specific field by path (e.g., "projectOverview")
   - MUST support output formats: text, markdown, json
   - MUST support --output flag to write to file
-  - MUST handle missing FOUNDATION.md gracefully
-  - MUST handle missing section gracefully
+  - MUST handle missing foundation.json gracefully
+  - MUST handle missing field gracefully
   - Exit code 0 for success, 1 for errors
+
+  Workflow:
+  1. Load spec/foundation.json
+  2. Parse Foundation data structure
+  3. Extract specific field if requested
+  4. Format output based on --format flag
+  5. Display or write to file
+  6. Handle errors with clear messages
+
+  References:
+  - foundation.schema.json: src/schemas/foundation.schema.json
+  - Foundation type: src/types/foundation.ts
   """
 
   Background: User Story
     As a developer reviewing project documentation
-    I want to display FOUNDATION.md content
-    So that I can view and extract foundation documentation
+    I want to display foundation content from JSON
+    So that I can view and extract foundation documentation programmatically
 
-  Scenario: Display entire FOUNDATION.md
-    Given I have a FOUNDATION.md with multiple sections
-    When I run `fspec show-foundation`
-    Then the command should exit with code 0
-    And the output should display all sections
-    And the output should be in text format
-
-  Scenario: Display specific section
-    Given I have a FOUNDATION.md with a "What We Are Building" section
-    When I run `fspec show-foundation --section "What We Are Building"`
-    Then the command should exit with code 0
-    And the output should display only that section
-    And other sections should not be displayed
-
-  Scenario: Display in markdown format
-    Given I have a FOUNDATION.md
-    When I run `fspec show-foundation --format markdown`
-    Then the command should exit with code 0
-    And the output should preserve markdown formatting
-    And section headers should use ## syntax
-
-  Scenario: Display in JSON format
-    Given I have a FOUNDATION.md with "Why" and "Architecture" sections
+  Scenario: Display entire foundation in JSON format
+    Given I have a foundation.json with complete project data
     When I run `fspec show-foundation --format json`
     Then the command should exit with code 0
     And the output should be valid JSON
-    And the JSON should contain section names as keys
-    And the JSON should contain section content as values
+    And the JSON should contain all foundation fields
 
-  Scenario: Write output to file
-    Given I have a FOUNDATION.md
-    When I run `fspec show-foundation --output foundation-copy.md`
+  Scenario: Display specific field
+    Given I have a foundation.json with projectOverview field
+    When I run `fspec show-foundation --field projectOverview`
     Then the command should exit with code 0
-    And a file "foundation-copy.md" should be created
-    And it should contain the FOUNDATION.md content
+    And the output should display only that field content
+    And other fields should not be displayed
 
-  Scenario: Write specific section to file
-    Given I have a FOUNDATION.md with a "Why" section
-    When I run `fspec show-foundation --section Why --output why.txt`
+  Scenario: Display in text format (default)
+    Given I have a foundation.json
+    When I run `fspec show-foundation`
     Then the command should exit with code 0
-    And a file "why.txt" should be created
-    And it should contain only the "Why" section content
+    And the output should display foundation content as readable text
+    And project name and description should be shown
 
-  Scenario: Handle missing FOUNDATION.md
-    Given I have no FOUNDATION.md file
+  Scenario: Write JSON output to file
+    Given I have a foundation.json
+    When I run `fspec show-foundation --format json --output foundation-copy.json`
+    Then the command should exit with code 0
+    And a file "foundation-copy.json" should be created
+    And it should contain valid JSON with foundation data
+
+  Scenario: Handle missing foundation.json
+    Given I have no foundation.json file
     When I run `fspec show-foundation`
     Then the command should exit with code 1
-    And the output should show "FOUNDATION.md not found"
+    And the output should show "foundation.json not found"
 
-  Scenario: Handle missing section
-    Given I have a FOUNDATION.md without a "Missing Section"
-    When I run `fspec show-foundation --section "Missing Section"`
+  Scenario: Handle missing field
+    Given I have a foundation.json
+    When I run `fspec show-foundation --field nonExistentField`
     Then the command should exit with code 1
-    And the output should show "Section 'Missing Section' not found"
+    And the output should show "Field 'nonExistentField' not found"
 
-  Scenario: Display section with subsections
-    Given I have an "Architecture" section with diagrams (### subsections)
-    When I run `fspec show-foundation --section Architecture`
-    Then the command should exit with code 0
-    And the output should include the main section content
-    And the output should include all subsections (### headers)
-    And the output should include diagram content
-
-  Scenario: Display preserves formatting
-    Given I have a "Features" section with markdown lists
-    When I run `fspec show-foundation --section Features`
-    Then the command should exit with code 0
-    And the output should preserve list formatting
-    And the output should preserve indentation
-
-  Scenario: JSON output includes all sections
-    Given I have FOUNDATION.md with 5 sections
+  Scenario: JSON-backed workflow - read from source of truth
+    Given I have a valid foundation.json file
     When I run `fspec show-foundation --format json`
-    Then the command should exit with code 0
-    And the JSON should have 5 top-level keys
-    And each key should correspond to a section name
-
-  Scenario: Display section names only
-    Given I have a FOUNDATION.md with multiple sections
-    When I run `fspec show-foundation --list-sections`
-    Then the command should exit with code 0
-    And the output should list all section names
-    And section content should not be displayed
-
-  Scenario: Display with line numbers
-    Given I have a FOUNDATION.md
-    When I run `fspec show-foundation --line-numbers`
-    Then the command should exit with code 0
-    And the output should include line numbers
-    And the format should be "N: content"
-
-  Scenario: Handle special characters in section names
-    Given I have a section named "What We're Building"
-    When I run `fspec show-foundation --section "What We're Building"`
-    Then the command should exit with code 0
-    And the output should display the section content
+    Then the command should load data from spec/foundation.json
+    And the output should be valid JSON matching the Foundation schema
+    And all top-level fields should be present
+    And the command should exit with code 0
