@@ -29,7 +29,7 @@ Feature: Format Feature Files with Custom AST Formatter
   - MUST use @cucumber/gherkin parser (official Cucumber parser)
   - MUST support ALL Gherkin elements: Feature, Rule, Background, Scenario, Scenario Outline, Examples
   - MUST support all step keywords: Given, When, Then, And, But, *
-  - MUST preserve tags, comments, doc strings, data tables
+  - MUST preserve tags, doc strings, data tables
   - MUST apply consistent indentation
   - MUST align data table columns
   - MUST limit consecutive blank lines to max 2
