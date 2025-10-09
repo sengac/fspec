@@ -23,6 +23,8 @@ export default defineConfig({
         '@cucumber/gherkin',
         '@cucumber/messages',
         'tinyglobby',
+        'jsdom',
+        'mermaid',
       ],
       output: {
         preserveModules: false,

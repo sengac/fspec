@@ -893,4 +893,155 @@ describe('Feature: Add Mermaid Diagram to FOUNDATION.md', () => {
       expect(result.success).toBe(true);
     });
   });
+
+  describe('Scenario: Reject invalid Mermaid syntax', () => {
+    it('should reject diagram with syntax errors', async () => {
+      // Given I have a FOUNDATION.md
+      await writeFile(join(testDir, 'spec/FOUNDATION.md'), '# Foundation\n');
+
+      // When I run `fspec add-diagram Architecture "Bad Diagram" "graph TD\n  A--"`
+      const result = await addDiagram({
+        section: 'Architecture',
+        title: 'Bad Diagram',
+        code: 'graph TD\n  A--',
+        cwd: testDir,
+      });
+
+      // Then the command should exit with code 1
+      expect(result.success).toBe(false);
+
+      // And the output should show "Invalid Mermaid syntax"
+      expect(result.error).toMatch(/invalid mermaid syntax/i);
+
+      // And the output should show the mermaid parse error details from mermaid.parse()
+      expect(result.error).toContain('Parse error');
+      expect(result.error).toBeDefined();
+    });
+  });
+
+  describe('Scenario: Reject diagram with invalid diagram type', () => {
+    it('should reject unknown diagram type', async () => {
+      // Given I have a FOUNDATION.md
+      await writeFile(join(testDir, 'spec/FOUNDATION.md'), '# Foundation\n');
+
+      // When I run `fspec add-diagram Architecture "Invalid Type" "invalidDiagram\n  A-->B"`
+      const result = await addDiagram({
+        section: 'Architecture',
+        title: 'Invalid Type',
+        code: 'invalidDiagram\n  A-->B',
+        cwd: testDir,
+      });
+
+      // Then the command should exit with code 1
+      expect(result.success).toBe(false);
+
+      // And the output should show "Invalid Mermaid syntax"
+      expect(result.error).toMatch(/invalid mermaid syntax/i);
+    });
+  });
+
+  describe('Scenario: Accept valid flowchart diagram', () => {
+    it('should accept valid flowchart', async () => {
+      // Given I have a FOUNDATION.md
+      await writeFile(join(testDir, 'spec/FOUNDATION.md'), '# Foundation\n');
+
+      // When I run `fspec add-diagram Architecture "Valid Flow" "flowchart TD\n  A-->B\n  B-->C"`
+      const result = await addDiagram({
+        section: 'Architecture',
+        title: 'Valid Flow',
+        code: 'flowchart TD\n  A-->B\n  B-->C',
+        cwd: testDir,
+      });
+
+      // Then the command should exit with code 0
+      expect(result.success).toBe(true);
+
+      // And the diagram should be added successfully
+      const foundationJsonPath = join(testDir, 'spec', 'foundation.json');
+      const foundationJson = JSON.parse(
+        await readFile(foundationJsonPath, 'utf-8')
+      );
+      const diagram = foundationJson.architectureDiagrams.find(
+        (d: any) => d.title === 'Valid Flow'
+      );
+      expect(diagram).toBeDefined();
+      expect(diagram.mermaidCode).toBe('flowchart TD\n  A-->B\n  B-->C');
+    });
+  });
+
+  describe('Scenario: Accept valid sequence diagram', () => {
+    it('should accept valid sequence diagram', async () => {
+      // Given I have a FOUNDATION.md
+      await writeFile(join(testDir, 'spec/FOUNDATION.md'), '# Foundation\n');
+
+      // When I run `fspec add-diagram Architecture "Valid Sequence" "sequenceDiagram\n  Alice->>Bob: Hello\n  Bob-->>Alice: Hi"`
+      const result = await addDiagram({
+        section: 'Architecture',
+        title: 'Valid Sequence',
+        code: 'sequenceDiagram\n  Alice->>Bob: Hello\n  Bob-->>Alice: Hi',
+        cwd: testDir,
+      });
+
+      // Then the command should exit with code 0
+      expect(result.success).toBe(true);
+
+      // And the diagram should be added successfully
+      const foundationJsonPath = join(testDir, 'spec', 'foundation.json');
+      const foundationJson = JSON.parse(
+        await readFile(foundationJsonPath, 'utf-8')
+      );
+      const diagram = foundationJson.architectureDiagrams.find(
+        (d: any) => d.title === 'Valid Sequence'
+      );
+      expect(diagram).toBeDefined();
+    });
+  });
+
+  describe('Scenario: Reject malformed graph syntax', () => {
+    it('should reject malformed syntax', async () => {
+      // Given I have a FOUNDATION.md
+      await writeFile(join(testDir, 'spec/FOUNDATION.md'), '# Foundation\n');
+
+      // When I run `fspec add-diagram Architecture "Malformed" "graph TD\n  A->->B"`
+      const result = await addDiagram({
+        section: 'Architecture',
+        title: 'Malformed',
+        code: 'graph TD\n  A->->B',
+        cwd: testDir,
+      });
+
+      // Then the command should exit with code 1
+      expect(result.success).toBe(false);
+
+      // And the output should show "Invalid Mermaid syntax"
+      expect(result.error).toMatch(/invalid mermaid syntax/i);
+    });
+  });
+
+  describe('Scenario: Provide helpful error message for syntax errors', () => {
+    it('should provide error details', async () => {
+      // Given I have a FOUNDATION.md
+      await writeFile(join(testDir, 'spec/FOUNDATION.md'), '# Foundation\n');
+
+      // When I run `fspec add-diagram Architecture "Error Test" "graph TD\n  A[Missing bracket"`
+      const result = await addDiagram({
+        section: 'Architecture',
+        title: 'Error Test',
+        code: 'graph TD\n  A[Missing bracket',
+        cwd: testDir,
+      });
+
+      // Then the command should exit with code 1
+      expect(result.success).toBe(false);
+
+      // And the output should show "Invalid Mermaid syntax"
+      expect(result.error).toMatch(/invalid mermaid syntax/i);
+
+      // And the output should contain the actual mermaid parse error message
+      expect(result.error).toContain('Parse error');
+
+      // And the error message should include line number information if available
+      expect(result.error).toMatch(/line \d+/i);
+    });
+  });
 });

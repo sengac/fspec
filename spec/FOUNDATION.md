@@ -147,13 +147,13 @@ Manual Maintenance: Developers manually fix feature files, update tags, sync doc
 
 ```mermaid
 graph TB
-    AI[AI Agent<br/>Claude Code, Copilot]
-    CAGE[CAGE System<br/>Hooks & Alignment]
+    AI[AI Agent / Claude Code, Copilot]
+    CAGE[CAGE System / Hooks & Alignment]
     FSPEC[fspec CLI]
-    FEATURES[Feature Files<br/>spec/features/*.feature]
-    FOUNDATION[foundation.json<br/>Architecture Data]
-    TAGS[tags.json<br/>Tag Registry]
-    PARSER[@cucumber/gherkin-parser<br/>Validation]
+    FEATURES[Feature Files / spec/features/*.feature]
+    FOUNDATION[foundation.json / Architecture Data]
+    TAGS[tags.json / Tag Registry]
+    PARSER[cucumber/gherkin-parser / Validation]
 
     AI -->|CLI Commands| FSPEC
     CAGE -->|execa calls| FSPEC
@@ -173,15 +173,15 @@ graph TB
 
 ```mermaid
 graph LR
-    CLI[CLI Entry<br/>index.ts]
-    CMD_FEAT[Feature Commands<br/>create, add-scenario, etc.]
-    CMD_FOUND[Foundation Commands<br/>add-diagram, update]
-    CMD_TAGS[Tag Commands<br/>register-tag, validate-tags]
-    CMD_VAL[Validation Commands<br/>validate, format]
+    CLI[CLI Entry / index.ts]
+    CMD_FEAT[Feature Commands / create, add-scenario, etc.]
+    CMD_FOUND[Foundation Commands / add-diagram, update]
+    CMD_TAGS[Tag Commands / register-tag, validate-tags]
+    CMD_VAL[Validation Commands / validate, format]
 
-    PARSER[Gherkin Parser<br/>@cucumber/gherkin]
-    GEN[Template Generator<br/>scaffolding]
-    UTIL[Utilities<br/>file ops, formatting]
+    PARSER[Gherkin Parser / cucumber/gherkin]
+    GEN[Template Generator / scaffolding]
+    UTIL[Utilities / file ops, formatting]
 
     CLI --> CMD_FEAT
     CLI --> CMD_FOUND
