@@ -18,6 +18,8 @@ Feature: Add Mermaid Diagram to FOUNDATION.md
   - MUST load foundation.json (or create from template)
   - MUST accept diagram title
   - MUST accept Mermaid diagram code
+  - MUST validate Mermaid syntax using bundled mermaid.parse()
+  - MUST reject invalid Mermaid syntax with helpful error messages
   - MUST add diagram to architectureDiagrams array
   - MUST replace existing diagram with same title
   - MUST validate updated JSON against foundation.schema.json
@@ -28,12 +30,13 @@ Feature: Add Mermaid Diagram to FOUNDATION.md
   Workflow:
   1. Load spec/foundation.json (or create from template if missing)
   2. Validate diagram title and code (not empty)
-  3. Find existing diagram with same title or add new
-  4. Update architectureDiagrams array
-  5. Validate updated JSON against schema
-  6. Write spec/foundation.json
-  7. Regenerate spec/FOUNDATION.md from JSON
-  8. Display success message
+  3. Validate Mermaid syntax using mermaid.parse()
+  4. Find existing diagram with same title or add new
+  5. Update architectureDiagrams array
+  6. Validate updated JSON against schema
+  7. Write spec/foundation.json
+  8. Regenerate spec/FOUNDATION.md from JSON
+  9. Display success message
 
   References:
   - foundation.schema.json: src/schemas/foundation.schema.json
@@ -151,3 +154,43 @@ Feature: Add Mermaid Diagram to FOUNDATION.md
     And FOUNDATION.md should be regenerated from foundation.json
     And FOUNDATION.md should contain the new diagram in a mermaid code block
     And FOUNDATION.md should have the auto-generation warning header
+
+  Scenario: Reject invalid Mermaid syntax
+    Given I have a FOUNDATION.md
+    When I run `fspec add-diagram Architecture "Bad Diagram" "graph TD\n  A--"`
+    Then the command should exit with code 1
+    And the output should show "Invalid Mermaid syntax"
+    And the output should show the mermaid parse error details from mermaid.parse()
+    And the diagram should not be added to foundation.json
+
+  Scenario: Reject diagram with invalid diagram type
+    Given I have a FOUNDATION.md
+    When I run `fspec add-diagram Architecture "Invalid Type" "invalidDiagram\n  A-->B"`
+    Then the command should exit with code 1
+    And the output should show "Invalid Mermaid syntax"
+
+  Scenario: Accept valid flowchart diagram
+    Given I have a FOUNDATION.md
+    When I run `fspec add-diagram Architecture "Valid Flow" "flowchart TD\n  A-->B\n  B-->C"`
+    Then the command should exit with code 0
+    And the diagram should be added successfully
+
+  Scenario: Accept valid sequence diagram
+    Given I have a FOUNDATION.md
+    When I run `fspec add-diagram Architecture "Valid Sequence" "sequenceDiagram\n  Alice->>Bob: Hello\n  Bob-->>Alice: Hi"`
+    Then the command should exit with code 0
+    And the diagram should be added successfully
+
+  Scenario: Reject malformed graph syntax
+    Given I have a FOUNDATION.md
+    When I run `fspec add-diagram Architecture "Malformed" "graph TD\n  A->->B"`
+    Then the command should exit with code 1
+    And the output should show "Invalid Mermaid syntax"
+
+  Scenario: Provide helpful error message for syntax errors
+    Given I have a FOUNDATION.md
+    When I run `fspec add-diagram Architecture "Error Test" "graph TD\n  A[Missing bracket"`
+    Then the command should exit with code 1
+    And the output should show "Invalid Mermaid syntax"
+    And the output should contain the actual mermaid parse error message
+    And the error message should include line number information if available
