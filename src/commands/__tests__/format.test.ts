@@ -176,7 +176,7 @@ Scenario: Another scenario
     });
   });
 
-  describe('Scenario: Preserve data tables during formatting', () => {
+  describe('Scenario: Preserve data tables', () => {
     it('should maintain data table structure and content', async () => {
       // Given I have a feature file with data tables
       const featuresDir = join(testDir, 'spec', 'features');
@@ -474,6 +474,34 @@ Then I should see an error`;
       expect(content).toMatch(/^\s{4}Given I am logged in$/m);
       expect(content).toMatch(/^\s{4}When I click submit$/m);
       expect(content).toMatch(/^\s{4}Then I should see an error$/m);
+    });
+  });
+
+  describe('Scenario: Format wildcard step keyword', () => {
+    it('should format * steps with consistent indentation', async () => {
+      // Given I have a feature file with * step keyword
+      const featuresDir = join(testDir, 'spec', 'features');
+      await mkdir(featuresDir, { recursive: true });
+
+      const withWildcard = `Feature: Wildcard Steps
+Scenario: Test wildcard
+* I do something
+* I do another thing
+Then result`;
+
+      const filePath = join(featuresDir, 'wildcard.feature');
+      await writeFile(filePath, withWildcard);
+
+      // When I run `fspec format`
+      await formatFeatures({ cwd: testDir, file: 'spec/features/wildcard.feature' });
+
+      // Then the * steps should be formatted correctly
+      const content = await readFile(filePath, 'utf-8');
+      expect(content).toMatch(/^\s{4}\* I do something$/m);
+      expect(content).toMatch(/^\s{4}\* I do another thing$/m);
+
+      // And indentation should match other steps
+      expect(content).toMatch(/^\s{4}Then result$/m);
     });
   });
 
