@@ -7,27 +7,32 @@
 Feature: List Registered Tags from Registry
   """
   Architecture notes:
-  - Reads spec/TAGS.md and displays all registered tags
+  - Reads spec/tags.json (source of truth) and displays all registered tags
   - Supports filtering by category (--category option)
   - Shows tag name, category, and description in organized format
-  - Lists categories in standard order: Phase, Component, Feature Group, Technical,
-
-
-  etc.
-  - Handles missing TAGS.md with helpful error message
+  - Lists categories in standard order from JSON structure
+  - Handles missing tags.json with helpful error message
 
   Critical implementation requirements:
-  - MUST parse TAGS.md to extract all tags
+  - MUST load spec/tags.json
+  - MUST parse categories array from JSON
   - MUST support --category filter (e.g., --category="Phase Tags")
   - MUST display tags grouped by category
   - MUST show tag descriptions
-  - MUST handle missing TAGS.md gracefully
+  - MUST handle missing tags.json gracefully
+  - Exit code 0 for success, 2 for missing file, 1 for errors
+
+  Workflow:
+  1. Load spec/tags.json
+  2. Parse categories array
+  3. Filter by category if --category specified
+  4. Sort tags alphabetically within each category
+  5. Display formatted output with counts
+  6. Handle errors with clear messages
 
   References:
-  - TAGS.md structure: spec/TAGS.md
-  - Tag categories: Phase, Component, Feature Group, Technical, Platform,
-  Priority,
-  Status, Testing, CAGE
+  - tags.schema.json: src/schemas/tags.schema.json
+  - Tags type: src/types/tags.ts
   """
 
   Background: User Story
@@ -36,7 +41,7 @@ Feature: List Registered Tags from Registry
     So that I know which tags are available for use in feature files
 
   Scenario: List all registered tags
-    Given I have a TAGS.md file with tags in multiple categories
+    Given I have a tags.json file with tags in multiple categories
     When I run `fspec list-tags`
     Then the command should exit with code 0
     And the output should display tags grouped by category
@@ -44,22 +49,22 @@ Feature: List Registered Tags from Registry
     And each tag should be displayed with its description
 
   Scenario: Filter tags by category
-    Given I have a TAGS.md file with tags in multiple categories
+    Given I have a tags.json file with tags in multiple categories
     When I run `fspec list-tags --category="Phase Tags"`
     Then the command should exit with code 0
     And the output should only show tags from "Phase Tags" category
     And the output should contain "@phase1", "@phase2", "@phase3"
     And the output should not contain tags from other categories
 
-  Scenario: Handle missing TAGS.md file
-    Given no TAGS.md file exists in spec/
+  Scenario: Handle missing tags.json file
+    Given no tags.json file exists in spec/
     When I run `fspec list-tags`
     Then the command should exit with code 2
-    And the output should contain "TAGS.md not found: spec/TAGS.md"
-    And the output should suggest creating TAGS.md
+    And the output should contain "tags.json not found"
+    And the output should suggest creating tags.json or using fspec register-tag
 
   Scenario: Display tag count per category
-    Given I have a TAGS.md file with tags:
+    Given I have a tags.json file with tags:
       | Category           | Tag Count |
       | Phase Tags         | 3         |
       | Component Tags     | 7         |
@@ -71,7 +76,7 @@ Feature: List Registered Tags from Registry
     And the output should contain "(7 tags)" for Component Tags
 
   Scenario: List tags in alphabetical order within category
-    Given I have Phase Tags: "@phase3", "@phase1", "@phase2"
+    Given I have Phase Tags in tags.json: "@phase3", "@phase1", "@phase2"
     When I run `fspec list-tags --category="Phase Tags"`
     Then the tags should be displayed in alphabetical order:
       | @phase1 |
@@ -79,14 +84,14 @@ Feature: List Registered Tags from Registry
       | @phase3 |
 
   Scenario: Handle invalid category name
-    Given I have a TAGS.md file
+    Given I have a tags.json file
     When I run `fspec list-tags --category="Invalid Category"`
     Then the command should exit with code 1
     And the output should contain "Category not found: Invalid Category"
     And the output should list available categories
 
   Scenario: Show all categories even if empty
-    Given I have a TAGS.md file with only Phase Tags populated
+    Given I have a tags.json file with only Phase Tags populated
     When I run `fspec list-tags`
     Then the output should show all category headers
     And empty categories should show "(0 tags)"
@@ -109,9 +114,18 @@ Feature: List Registered Tags from Registry
     Then I can see the complete tag vocabulary organized by category
 
   Scenario: Compare with validate-tags integration
-    Given I have tags registered in TAGS.md
+    Given I have tags registered in tags.json
     When I run `fspec list-tags` and see tag "@custom-tag"
     And I use "@custom-tag" in a feature file
     And I run `fspec validate-tags`
     Then validation should pass for "@custom-tag"
     And the tag ecosystem remains consistent
+
+  Scenario: JSON-backed workflow - read from source of truth
+    Given I have a valid tags.json file with multiple categories
+    When I run `fspec list-tags`
+    Then the command should load tags from spec/tags.json
+    And tags should be displayed grouped by category
+    And each category should show its tag count
+    And tags should be sorted alphabetically within categories
+    And the command should exit with code 0

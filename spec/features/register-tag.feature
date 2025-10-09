@@ -6,26 +6,39 @@
 Feature: Register New Tag in Tag Registry
   """
   Architecture notes:
-  - Reads spec/TAGS.md and updates the appropriate category table
-  - Validates that tag follows naming conventions (@lowercase-with-hyphens)
+  - Reads spec/tags.json and updates the appropriate category
+  - Validates tag format and checks schema compliance
   - Prevents duplicate tag registration
-  - Maintains table formatting and alphabetical order within categories
-  - Creates TAGS.md if it doesn't exist
+  - Maintains alphabetical order within categories in JSON
+  - Regenerates TAGS.md from updated tags.json
+  - Creates tags.json if it doesn't exist (with schema validation)
   - Supports all tag categories: phase, component, feature-group, technical, platform,
-
-
   priority, status, testing, CAGE
 
   Critical implementation requirements:
+  - MUST load tags.json (or create from template)
   - MUST validate tag format: starts with @, lowercase, hyphens only
   - MUST check for duplicates before adding
-  - MUST preserve existing TAGS.md formatting
-  - MUST add tags in alphabetical order within their category
-  - MUST handle missing TAGS.md gracefully (create with template)
-  - Category names must match TAGS.md sections (case-insensitive)
+  - MUST add tag to correct category array in JSON
+  - MUST maintain alphabetical order within category
+  - MUST validate updated JSON against tags.schema.json
+  - MUST write updated tags.json
+  - MUST regenerate TAGS.md using generateTagsMd()
+  - Category names must match tags.json category names (case-insensitive)
+
+  Workflow:
+  1. Load spec/tags.json (or create from template if missing)
+  2. Validate tag format (@lowercase-with-hyphens)
+  3. Check for duplicates across all categories
+  4. Find target category, add tag in alphabetical order
+  5. Validate updated JSON against schema
+  6. Write spec/tags.json
+  7. Regenerate spec/TAGS.md from JSON
+  8. Display success message
 
   References:
-  - TAGS.md structure: spec/TAGS.md
+  - tags.schema.json: src/schemas/tags.schema.json
+  - generateTagsMd(): src/generators/tags-md.ts
   - Tag naming conventions: spec/TAGS.md#tag-naming-conventions
   """
 
@@ -109,3 +122,14 @@ Feature: Register New Tag in Tag Registry
     When I run `fspec register-tag @new-group "Feature Group Tags" "New feature group"`
     Then the tag should be added to Feature Group Tags section
     And all registrations should maintain proper formatting
+
+  Scenario: JSON-backed workflow - modify JSON and regenerate MD
+    Given I have a valid tags.json file
+    When I run `fspec register-tag @new-tag "Technical Tags" "New technical tag"`
+    Then the tags.json file should be updated with the new tag
+    And the tags.json should validate against tags.schema.json
+    And the new tag should be in the "Technical Tags" category array
+    And the tag should be in alphabetical order within the category
+    And TAGS.md should be regenerated from tags.json
+    And TAGS.md should contain the new tag in the Technical Tags table
+    And TAGS.md should have the auto-generation warning header

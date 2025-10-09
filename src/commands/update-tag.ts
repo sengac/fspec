@@ -1,6 +1,10 @@
 import { readFile, writeFile } from 'fs/promises';
 import { join } from 'path';
+import { existsSync } from 'fs';
 import chalk from 'chalk';
+import type { Tags } from '../types/tags';
+import { validateTagsJson } from '../validators/json-schema';
+import { generateTagsMd } from '../generators/tags-md';
 
 interface UpdateTagOptions {
   tag: string;
@@ -19,7 +23,8 @@ export async function updateTag(
   options: UpdateTagOptions
 ): Promise<UpdateTagResult> {
   const { tag, category, description, cwd = process.cwd() } = options;
-  const tagsPath = join(cwd, 'spec', 'TAGS.md');
+  const tagsJsonPath = join(cwd, 'spec', 'tags.json');
+  const tagsMdPath = join(cwd, 'spec', 'TAGS.md');
 
   // Validate that at least one update is specified
   if (!category && !description) {
@@ -29,167 +34,99 @@ export async function updateTag(
     };
   }
 
-  // Read TAGS.md
-  let content: string;
-  try {
-    content = await readFile(tagsPath, 'utf-8');
-  } catch (error: any) {
-    if (error.code === 'ENOENT') {
-      return {
-        success: false,
-        error: 'spec/TAGS.md not found',
-      };
-    }
-    throw error;
-  }
-
-  // Check if tag exists (look for ### @tag pattern for H3 header format)
-  const escapedTag = tag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const tagHeaderPattern = new RegExp(`^### ${escapedTag}\\s*$`, 'm');
-  const tagMatch = content.match(tagHeaderPattern);
-
-  if (!tagMatch) {
+  // Check if tags.json exists
+  if (!existsSync(tagsJsonPath)) {
     return {
       success: false,
-      error: `Tag ${tag} not found in registry`,
+      error: 'spec/tags.json not found',
     };
   }
 
-  // Find which category the tag is currently in
-  const tagIndex = tagMatch.index!;
-  const beforeTag = content.substring(0, tagIndex);
-  const currentCategoryMatch = beforeTag.match(/^## (.+?)$/gm);
-  const currentCategory = currentCategoryMatch
-    ? currentCategoryMatch[currentCategoryMatch.length - 1].replace(/^## /, '')
-    : null;
+  try {
+    // Read tags.json
+    const content = await readFile(tagsJsonPath, 'utf-8');
+    const tagsData: Tags = JSON.parse(content);
 
-  // If category is being changed, validate new category
-  if (category && category !== currentCategory) {
-    const categoryPattern = new RegExp(
-      `^## ${category.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*$`,
-      'm'
-    );
-    if (!categoryPattern.test(content)) {
-      // Extract available categories
-      const categoryMatches = content.match(/^## (.+)$/gm) || [];
-      const availableCategories = categoryMatches.map(m =>
-        m.replace(/^## /, '')
-      );
+    // Find the tag in categories
+    let currentCategory: any = null;
+    let tagIndex = -1;
+
+    for (const cat of tagsData.categories) {
+      const idx = cat.tags.findIndex((t) => t.name === tag);
+      if (idx !== -1) {
+        currentCategory = cat;
+        tagIndex = idx;
+        break;
+      }
+    }
+
+    if (!currentCategory) {
       return {
         success: false,
-        error: `Invalid category: ${category}. Available categories: ${availableCategories.join(', ')}`,
+        error: `Tag ${tag} not found in registry`,
       };
     }
-  }
 
-  // Find the tag's description (text between ### @tag and next ### or ##)
-  const afterTag = content.substring(tagIndex);
-  const nextHeaderMatch = afterTag.substring(tag.length + 4).match(/^##/m);
-  const tagEnd = nextHeaderMatch
-    ? tagIndex + tag.length + 4 + nextHeaderMatch.index!
-    : content.length;
+    const currentTag = currentCategory.tags[tagIndex];
 
-  const tagSection = content.substring(tagIndex, tagEnd);
-  const descriptionMatch = tagSection.match(/^### .+?\n(.+?)(?=\n###|\n##|$)/s);
-  const currentDescription = descriptionMatch ? descriptionMatch[1].trim() : '';
+    // If category is being changed, validate new category exists
+    if (category && category !== currentCategory.name) {
+      const targetCategory = tagsData.categories.find(
+        (c) => c.name === category
+      );
 
-  // Determine the new description
-  const newDescription = description || currentDescription;
+      if (!targetCategory) {
+        const availableCategories = tagsData.categories.map((c) => c.name);
+        return {
+          success: false,
+          error: `Invalid category: ${category}. Available categories: ${availableCategories.join(', ')}`,
+        };
+      }
 
-  // If category is changing, remove tag from current location and insert in new category
-  if (category && category !== currentCategory) {
-    // Remove tag from current location
-    const tagBlockStart = tagIndex;
-    const tagBlockEnd = tagEnd;
-    const beforeRemoval = content.substring(0, tagBlockStart);
-    const afterRemoval = content.substring(tagBlockEnd);
-    const contentWithoutTag = beforeRemoval + afterRemoval;
+      // Remove tag from current category
+      currentCategory.tags.splice(tagIndex, 1);
 
-    // Insert tag in new category
-    const newContent = insertTagInCategory(
-      contentWithoutTag,
-      category,
-      tag,
-      newDescription
-    );
-    await writeFile(tagsPath, newContent, 'utf-8');
+      // Add tag to new category with updated description (or keep existing)
+      targetCategory.tags.push({
+        name: tag,
+        description: description || currentTag.description,
+      });
 
-    return {
-      success: true,
-      message: `Successfully updated ${tag}`,
-    };
-  } else {
-    // Update description only (tag stays in same category)
-    const tagHeader = `### ${tag}\n`;
-    const newTagBlock = tagHeader + newDescription + '\n';
-
-    const newContent =
-      content.substring(0, tagIndex) + newTagBlock + content.substring(tagEnd);
-
-    await writeFile(tagsPath, newContent, 'utf-8');
-
-    return {
-      success: true,
-      message: `Successfully updated ${tag}`,
-    };
-  }
-}
-
-function insertTagInCategory(
-  content: string,
-  category: string,
-  tag: string,
-  description: string
-): string {
-  // Find the category section
-  const escapedCategory = category.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const categoryPattern = new RegExp(`^## ${escapedCategory}\\s*$`, 'm');
-  const categoryMatch = content.match(categoryPattern);
-  if (!categoryMatch) {
-    throw new Error(`Category not found: ${category}`);
-  }
-
-  const categoryIndex = categoryMatch.index!;
-
-  // Find the end of the category (next ## or end of file)
-  const afterCategory = content.substring(categoryIndex + 1);
-  const nextCategoryMatch = afterCategory.match(/^## /m);
-  const categoryEnd = nextCategoryMatch
-    ? categoryIndex + 1 + nextCategoryMatch.index!
-    : content.length;
-
-  // Extract existing tags in this category (### @tag pattern)
-  const categoryContent = content.substring(categoryIndex, categoryEnd);
-  const tagPattern = /^### (@[a-z0-9-]+)\s*$/gm;
-
-  const tags: Array<{ tag: string; index: number }> = [];
-  let match;
-  while ((match = tagPattern.exec(categoryContent)) !== null) {
-    tags.push({
-      tag: match[1],
-      index: categoryIndex + match.index,
-    });
-  }
-
-  // Find insertion point (alphabetical order)
-  let insertIndex = categoryEnd;
-  for (let i = 0; i < tags.length; i++) {
-    if (tag.localeCompare(tags[i].tag) < 0) {
-      insertIndex = tags[i].index;
-      break;
+      // Sort tags alphabetically within new category
+      targetCategory.tags.sort((a, b) => a.name.localeCompare(b.name));
+    } else {
+      // Update description only (tag stays in same category)
+      if (description) {
+        currentTag.description = description;
+      }
     }
+
+    // Write updated tags.json
+    await writeFile(tagsJsonPath, JSON.stringify(tagsData, null, 2), 'utf-8');
+
+    // Validate updated JSON against schema
+    const validation = await validateTagsJson(tagsJsonPath);
+    if (!validation.valid) {
+      return {
+        success: false,
+        error: `Updated tags.json failed schema validation: ${validation.errors?.join(', ')}`,
+      };
+    }
+
+    // Regenerate TAGS.md from JSON
+    const markdown = await generateTagsMd(tagsData);
+    await writeFile(tagsMdPath, markdown, 'utf-8');
+
+    return {
+      success: true,
+      message: `Successfully updated ${tag}`,
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      error: error.message,
+    };
   }
-
-  // Create new tag block
-  const newTagBlock = `### ${tag}\n${description}\n\n`;
-
-  // Insert the new tag block
-  const newContent =
-    content.substring(0, insertIndex) +
-    newTagBlock +
-    content.substring(insertIndex);
-
-  return newContent;
 }
 
 export async function updateTagCommand(options: {
@@ -206,6 +143,8 @@ export async function updateTagCommand(options: {
     }
 
     console.log(chalk.green(`✓ ${result.message}`));
+    console.log(chalk.gray('  Updated: spec/tags.json'));
+    console.log(chalk.gray('  Regenerated: spec/TAGS.md'));
     process.exit(0);
   } catch (error: any) {
     console.error(chalk.red('Error:'), error.message);

@@ -1,0 +1,1106 @@
+{
+  "$schema": "../src/schemas/foundation.schema.json",
+  "project": {
+    "name": "fspec",
+    "description": "A standardized CLI tool for AI agents to manage Gherkin-based feature specifications using Acceptance Criteria Driven Development (ACDD)",
+    "repository": "https://github.com/rquast/fspec",
+    "license": "MIT",
+    "importantNote": "This is a legitimate developer tool that provides AI agents with a standardized interface for managing Gherkin-based specifications. fspec prevents ecosystem fragmentation by promoting industry-standard BDD practices over proprietary documentation formats. This tool helps AI agents ask the right questions and structure specifications correctly using battle-tested Gherkin/Cucumber conventions."
+  },
+  "whatWeAreBuilding": {
+    "projectOverview": "A CLI tool that provides AI agents (like Claude Code, GitHub Copilot, etc.) with a standardized interface for creating, validating, and managing Gherkin-based feature specifications. fspec acts as the canonical interface between AI agents and BDD specifications, ensuring proper Gherkin syntax, enforcing tag discipline, maintaining architecture documentation (Mermaid diagrams in FOUNDATION.md), and keeping the tag registry (TAGS.md) synchronized with actual usage. It is designed for developers practicing Acceptance Criteria Driven Development (ACDD) with AI assistance, particularly those using CAGE or similar agentic coding systems.",
+    "technicalRequirements": {
+      "coreTechnologies": [
+        {
+          "category": "Programming Language",
+          "name": "TypeScript/Node.js"
+        },
+        {
+          "category": "Build System",
+          "name": "Vite",
+          "description": "for fast bundling and development"
+        },
+        {
+          "category": "CLI Framework",
+          "name": "Commander.js",
+          "description": "argument parsing and command structure"
+        },
+        {
+          "category": "Gherkin Parsing",
+          "name": "@cucumber/gherkin-parser",
+          "description": "official Cucumber parser"
+        },
+        {
+          "category": "Formatting",
+          "name": "Custom AST-based formatter",
+          "description": "using @cucumber/gherkin (replaces Prettier plugin)"
+        },
+        {
+          "category": "Code Quality",
+          "name": "ESLint + Prettier",
+          "description": "for TypeScript/JavaScript only"
+        },
+        {
+          "category": "Testing",
+          "name": "Vitest",
+          "description": "unit and integration tests following ACDD"
+        },
+        {
+          "category": "Storage",
+          "name": "File-based",
+          "description": "manages spec/, spec/features/, FOUNDATION.md, TAGS.md"
+        }
+      ],
+      "architecture": {
+        "pattern": "CLI command dispatcher with modular command handlers",
+        "fileStructure": "fspec/\n├── src/\n│   ├── index.ts                 # CLI entry point\n│   ├── commands/                # Command implementations\n│   │   ├── feature/             # Feature file commands\n│   │   ├── foundation/          # FOUNDATION.md commands\n│   │   ├── tags/                # TAGS.md commands\n│   │   └── validate/            # Validation commands\n│   ├── parsers/                 # Gherkin parsing logic\n│   ├── generators/              # Template generators\n│   └── utils/                   # Shared utilities\n└── spec/                        # fspec's own specifications\n    ├── FOUNDATION.md            # This file\n    ├── TAGS.md                  # Tag registry\n    └── features/                # Gherkin feature files",
+        "deploymentTarget": "Local development machines (invoked by CAGE hooks or directly by AI agents)",
+        "integrationModel": [
+          "CAGE hooks call fspec via `execa` (Node.js child process)",
+          "AI agents can invoke fspec CLI commands directly",
+          "All operations are synchronous (no service/API component)"
+        ]
+      },
+      "developmentAndOperations": {
+        "developmentTools": "Standard TypeScript/Node.js toolchain",
+        "testingStrategy": "ACDD methodology - feature files first, tests second, code last",
+        "logging": "Console output (success/error messages) - verbose mode for debugging",
+        "validation": "Gherkin syntax validation using @cucumber/gherkin-parser",
+        "formatting": "Custom AST-based formatter for consistent Gherkin formatting"
+      },
+      "keyLibraries": [
+        {
+          "category": "Core",
+          "libraries": [
+            {
+              "name": "@cucumber/gherkin-parser",
+              "description": "Official Gherkin parser for syntax validation"
+            },
+            {
+              "name": "@cucumber/messages",
+              "description": "Gherkin AST types and message protocol"
+            },
+            {
+              "name": "commander.js",
+              "description": "CLI argument parsing and command structure"
+            },
+            {
+              "name": "chalk",
+              "description": "Terminal output styling and colored messages"
+            }
+          ]
+        },
+        {
+          "category": "File Operations",
+          "libraries": [
+            {
+              "name": "Node.js fs/promises",
+              "description": "File system operations (read/write feature files, FOUNDATION.md, TAGS.md)"
+            },
+            {
+              "name": "glob/tinyglobby",
+              "description": "Pattern matching for finding feature files"
+            }
+          ]
+        },
+        {
+          "category": "Validation & Formatting",
+          "libraries": [
+            {
+              "name": "prettier",
+              "description": "Code formatter (for TypeScript/JavaScript only)"
+            },
+            {
+              "name": "Custom AST formatter",
+              "description": "Built-in Gherkin formatter using @cucumber/gherkin"
+            },
+            {
+              "name": "zod",
+              "description": "Schema validation for internal data structures"
+            }
+          ]
+        },
+        {
+          "category": "Development",
+          "libraries": [
+            {
+              "name": "vite",
+              "description": "Build system and bundler"
+            },
+            {
+              "name": "vitest",
+              "description": "Testing framework"
+            },
+            {
+              "name": "typescript",
+              "description": "Type checking and compilation"
+            },
+            {
+              "name": "@types/node",
+              "description": "Node.js type definitions"
+            }
+          ]
+        }
+      ]
+    },
+    "nonFunctionalRequirements": [
+      {
+        "category": "Reliability",
+        "requirements": [
+          "Gherkin syntax validation must catch ALL malformed syntax",
+          "Tag validation must ensure 100% registry compliance",
+          "File operations must be atomic (no partial writes)",
+          "Must never corrupt existing feature files"
+        ]
+      },
+      {
+        "category": "Maintainability",
+        "requirements": [
+          "Follows same spec/ structure as CAGE (self-documenting)",
+          "Command handlers are modular and independently testable",
+          "Clear error messages guide AI agents to correct usage",
+          "JSDoc documentation for all public APIs"
+        ]
+      },
+      {
+        "category": "Compatibility",
+        "requirements": [
+          "Node.js: 18+ (matches CAGE requirement)",
+          "OS Support: Cross-platform (Windows, macOS, Linux)",
+          "Gherkin: Follows official Cucumber Gherkin specification",
+          "Integration: Works seamlessly with CAGE hook system"
+        ]
+      },
+      {
+        "category": "Compliance",
+        "requirements": [
+          "MIT License",
+          "Follows Cucumber Gherkin specification: https://cucumber.io/docs/gherkin/reference",
+          "Adheres to BDD best practices",
+          "All data stays local (no external services)"
+        ]
+      }
+    ]
+  },
+  "whyWeAreBuildingIt": {
+    "problemDefinition": {
+      "primary": {
+        "title": "Industry Fragmentation in AI-Assisted Specification Management",
+        "description": "Some tools and approaches rely primarily on AI agents to maintain specifications without providing structured tooling to guide them. While these approaches (like spec-kit and others) offer flexibility, the lack of deterministic tooling can lead to:",
+        "points": [
+          "No Standard Interface: AI agents have no consistent way to work with specifications",
+          "Inconsistency Risk: Without structured commands, AI may manage specs differently each time",
+          "Lost Ecosystem Benefits: Custom formats mean teams lose access to mature Cucumber tooling, parsers, and reporting",
+          "Increased Cognitive Load: Developers and AI must learn multiple formats instead of one proven standard"
+        ]
+      },
+      "secondary": [
+        "Malformed Gherkin: When AI does attempt Gherkin, syntax errors break parsing tools",
+        "Tag Chaos: Tags are created ad-hoc without registry tracking, causing inconsistency",
+        "Lost Context: AI loses track of existing features, creating duplicates or conflicts",
+        "Architecture Drift: Architecture documentation lives in separate files, becoming outdated",
+        "No Enforcement: Without tooling, teams can't enforce Gherkin standards consistently",
+        "Manual Maintenance: Developers manually fix feature files, update tags, sync docs"
+      ]
+    },
+    "painPoints": {
+      "currentState": "Without fspec, AI-assisted specification management looks like this:\n\n- AI agents write specifications in unstructured markdown (`.md` files)\n- Developers manually convert markdown to Gherkin (if they use BDD at all)\n- Gherkin files have syntax errors that break Cucumber tooling\n- Tags are created inconsistently (`@phase1` vs `@phase-1` vs `@p1`)\n- TAGS.md registry diverges from actual feature file tags\n- Architecture diagrams live in scattered documents, becoming stale\n- No automated validation catches problems until tests fail\n- Teams fragment across proprietary formats, losing interoperability",
+      "specific": [
+        {
+          "title": "AI Writes Unstructured Markdown Instead of Gherkin",
+          "impact": "Specifications aren't testable, parseable, or connected to code",
+          "frequency": "Every time AI is asked to write specifications",
+          "cost": "Manual conversion effort, lost BDD benefits, technical debt"
+        },
+        {
+          "title": "Malformed Gherkin Breaks Tooling",
+          "impact": "Cucumber parsers fail, CI pipelines break, reports can't generate",
+          "frequency": "Frequently when AI attempts Gherkin without validation",
+          "cost": "Developer time fixing syntax, broken builds, delayed testing"
+        },
+        {
+          "title": "Tag Discipline Breakdown",
+          "impact": "Cannot filter/query features reliably, tags become meaningless",
+          "frequency": "Progressive degradation as project grows",
+          "cost": "Lost organizational structure, manual tag cleanup, spec chaos"
+        },
+        {
+          "title": "Architecture Documentation Drift",
+          "impact": "FOUNDATION.md becomes outdated, diagrams don't match reality",
+          "frequency": "Continuously as code evolves",
+          "cost": "Misleading documentation, onboarding confusion, architectural misalignment"
+        },
+        {
+          "title": "Ecosystem Fragmentation",
+          "impact": "Teams use different approaches without structured tooling",
+          "frequency": "Industry-wide trend (various tools rely on AI to manage specs directly)",
+          "cost": "Inconsistency risk, incompatible tooling, knowledge fragmentation"
+        },
+        {
+          "title": "No AI Guidance for \"Right Questions\"",
+          "impact": "AI captures wrong information (implementation details instead of behavior)",
+          "frequency": "Consistently without structured prompts",
+          "cost": "Poor specifications, missed acceptance criteria, test gaps"
+        }
+      ]
+    },
+    "stakeholderImpact": [
+      {
+        "stakeholder": "Developers Using AI Pair Programming",
+        "description": "Frustrated by constantly fixing malformed specifications and manually enforcing standards. Time wasted on specification hygiene instead of building features."
+      },
+      {
+        "stakeholder": "Teams Practicing BDD",
+        "description": "Cannot rely on AI to maintain specification quality. Must choose between AI assistance OR specification discipline, not both."
+      },
+      {
+        "stakeholder": "Organizations Adopting ACDD",
+        "description": "Lack tooling to enforce specification-first workflows with AI agents. Risk specification drift and code-spec misalignment."
+      },
+      {
+        "stakeholder": "BDD Community",
+        "description": "Industry fragmentation undermines decades of Cucumber/Gherkin standardization. Proprietary formats fragment ecosystem and knowledge."
+      }
+    ],
+    "theoreticalSolutions": [
+      {
+        "title": "Solution Approach 1: fspec - Standardized AI Interface for Gherkin (Selected Approach)",
+        "selected": true,
+        "description": "CLI tool providing AI agents with structured commands for managing Gherkin specifications. Validates syntax, enforces tag discipline, maintains FOUNDATION.md (with Mermaid diagrams), and keeps TAGS.md synchronized. Prevents fragmentation by promoting industry-standard Gherkin over proprietary formats.",
+        "pros": [
+          "Leverages 15+ years of Gherkin/Cucumber ecosystem maturity",
+          "Validates syntax using official @cucumber/gherkin-parser",
+          "Enforces standards automatically (tags, architecture docs, formatting)",
+          "Guides AI to ask right questions (user stories, acceptance criteria)",
+          "Works with existing Cucumber tooling (parsers, reporters, test frameworks)",
+          "Prevents ecosystem fragmentation through standardization",
+          "Enables CAGE to maintain code-spec alignment"
+        ],
+        "cons": [
+          "Requires AI agents to learn fspec CLI interface",
+          "Adds dependency to development workflow",
+          "Initial setup effort for spec/ directory structure"
+        ],
+        "feasibility": "Highly feasible - builds on proven Cucumber parser, simple CLI architecture"
+      },
+      {
+        "title": "Solution Approach 2: AI Prompt Engineering Only",
+        "selected": false,
+        "description": "Provide AI with detailed prompts teaching Gherkin syntax without tooling",
+        "pros": [
+          "No additional tooling needed",
+          "Simple to implement"
+        ],
+        "cons": [
+          "No validation enforcement",
+          "AI still produces syntax errors",
+          "Cannot maintain tag registry or architecture docs",
+          "No protection against fragmentation",
+          "Doesn't scale across teams"
+        ],
+        "feasibility": "Easy but ineffective for reliable specification management"
+      },
+      {
+        "title": "Solution Approach 3: AI-Driven Spec Management Without Structured Tooling",
+        "selected": false,
+        "description": "Rely primarily on AI agents to maintain specifications without deterministic commands",
+        "pros": [
+          "Flexible - AI can adapt to different needs",
+          "Quick to get started with minimal tooling"
+        ],
+        "cons": [
+          "Inconsistency risk: AI may manage specs differently each time without structured commands",
+          "No deterministic behavior: Results depend on AI interpretation rather than fixed tool behavior",
+          "Less reliable for team collaboration where consistency is critical",
+          "Harder to enforce standards and conventions"
+        ],
+        "feasibility": "Feasible but less deterministic - fspec provides structured tooling to reduce this risk"
+      }
+    ],
+    "developmentMethodology": {
+      "name": "Acceptance Criteria Driven Development (ACDD)",
+      "description": "fspec follows Acceptance Criteria Driven Development",
+      "steps": [
+        "Specification First: Define acceptance criteria in Gherkin format (spec/features/*.feature)",
+        "Test Second: Write tests that implement acceptance criteria (before any code)",
+        "Code Last: Write minimum code to make tests pass"
+      ],
+      "ensures": [
+        "Every feature has clear, testable acceptance criteria",
+        "fspec \"eats its own dog food\" - uses itself to manage its own specifications",
+        "Tests serve as living documentation",
+        "Code directly maps to specified requirements"
+      ]
+    },
+    "successCriteria": [
+      {
+        "title": "Zero Malformed Gherkin",
+        "criteria": [
+          "AI agents produce syntactically valid Gherkin 100% of the time",
+          "All feature files pass `@cucumber/gherkin-parser` validation",
+          "Prettier formatting compliance for all `.feature` files"
+        ]
+      },
+      {
+        "title": "100% Tag Registry Compliance",
+        "criteria": [
+          "Every tag in feature files exists in TAGS.md",
+          "No orphaned tags in TAGS.md (all tags are actually used)",
+          "Tag validation runs automatically via fspec commands"
+        ]
+      },
+      {
+        "title": "Architecture Documentation Synchronization",
+        "criteria": [
+          "FOUNDATION.md contains up-to-date Mermaid diagrams",
+          "Architecture notes in feature files reference FOUNDATION.md",
+          "No stale or contradictory architecture documentation"
+        ]
+      },
+      {
+        "title": "AI Agent Guidance",
+        "criteria": [
+          "AI agents consistently capture user stories (Background section)",
+          "AI agents include architecture notes (\"\"\" doc strings) for complex features",
+          "AI agents apply correct tags (phase, component, feature group)"
+        ]
+      },
+      {
+        "title": "CAGE Integration Success",
+        "criteria": [
+          "CAGE hooks can call fspec commands via execa",
+          "Feature files connect to test files (tracked in CAGE)",
+          "Specifications stay aligned with code throughout development"
+        ]
+      },
+      {
+        "title": "Ecosystem Standardization",
+        "criteria": [
+          "Teams choose Gherkin over proprietary formats",
+          "fspec becomes reference implementation for AI-spec tooling",
+          "Reduces fragmentation in AI-assisted BDD practices"
+        ]
+      },
+      {
+        "title": "Developer Satisfaction",
+        "criteria": [
+          "Developers trust AI-generated specifications",
+          "Minimal manual specification cleanup needed",
+          "Clear error messages guide corrections when needed"
+        ]
+      }
+    ],
+    "constraintsAndAssumptions": {
+      "constraints": [
+        {
+          "category": "Integration Dependency",
+          "items": [
+            "Designed for CAGE integration (execa-based CLI invocation)"
+          ]
+        },
+        {
+          "category": "Technical Constraints",
+          "items": [
+            "Must use official @cucumber/gherkin-parser (syntax compatibility)",
+            "Must follow Cucumber Gherkin specification exactly",
+            "Must work with CAGE's spec/ directory structure"
+          ]
+        },
+        {
+          "category": "Scope Constraints",
+          "items": [
+            "CLI only (no API/service component)",
+            "File-based operations (no database)",
+            "Synchronous execution (CAGE hooks need immediate feedback)"
+          ]
+        }
+      ],
+      "assumptions": [
+        {
+          "category": "AI Agent Capabilities",
+          "items": [
+            "AI agents can execute CLI commands",
+            "AI agents can interpret error messages and correct mistakes",
+            "AI agents will follow structured prompts when guided"
+          ]
+        },
+        {
+          "category": "Gherkin Stability",
+          "items": [
+            "Cucumber Gherkin specification remains stable",
+            "@cucumber/gherkin-parser maintains backward compatibility"
+          ]
+        },
+        {
+          "category": "Developer Environment",
+          "items": [
+            "Node.js 18+ installed",
+            "Git repository with spec/ directory structure",
+            "Prettier and Gherkin plugin available"
+          ]
+        },
+        {
+          "category": "CAGE Integration",
+          "items": [
+            "CAGE hooks provide necessary context for fspec commands",
+            "CAGE manages test-to-feature mapping (fspec only validates feature files)"
+          ]
+        }
+      ]
+    }
+  },
+  "architectureDiagrams": [
+    {
+      "title": "fspec System Context",
+      "mermaidCode": "graph TB\n    AI[AI Agent<br/>Claude Code, Copilot]\n    CAGE[CAGE System<br/>Hooks & Alignment]\n    FSPEC[fspec CLI]\n    FEATURES[Feature Files<br/>spec/features/*.feature]\n    FOUNDATION[FOUNDATION.md<br/>Architecture Docs]\n    TAGS[TAGS.md<br/>Tag Registry]\n    PARSER[@cucumber/gherkin-parser<br/>Validation]\n\n    AI -->|CLI Commands| FSPEC\n    CAGE -->|execa calls| FSPEC\n    FSPEC -->|validate| PARSER\n    FSPEC -->|read/write| FEATURES\n    FSPEC -->|read/write| FOUNDATION\n    FSPEC -->|read/write| TAGS\n    PARSER -->|syntax check| FEATURES\n\n    style FSPEC fill:#4CAF50\n    style FEATURES fill:#2196F3\n    style FOUNDATION fill:#FF9800\n    style TAGS fill:#FF9800"
+    },
+    {
+      "title": "fspec Command Architecture",
+      "mermaidCode": "graph LR\n    CLI[CLI Entry<br/>index.ts]\n    CMD_FEAT[Feature Commands<br/>create, add-scenario, etc.]\n    CMD_FOUND[Foundation Commands<br/>add-diagram, update]\n    CMD_TAGS[Tag Commands<br/>register-tag, validate-tags]\n    CMD_VAL[Validation Commands<br/>validate, format]\n\n    PARSER[Gherkin Parser<br/>@cucumber/gherkin]\n    GEN[Template Generator<br/>scaffolding]\n    UTIL[Utilities<br/>file ops, formatting]\n\n    CLI --> CMD_FEAT\n    CLI --> CMD_FOUND\n    CLI --> CMD_TAGS\n    CLI --> CMD_VAL\n\n    CMD_FEAT --> PARSER\n    CMD_FEAT --> GEN\n    CMD_VAL --> PARSER\n\n    CMD_FEAT --> UTIL\n    CMD_FOUND --> UTIL\n    CMD_TAGS --> UTIL\n    CMD_VAL --> UTIL\n\n    style CLI fill:#4CAF50\n    style PARSER fill:#2196F3"
+    },
+    {
+      "title": "ACDD Workflow with fspec",
+      "mermaidCode": "sequenceDiagram\n    participant AI as AI Agent\n    participant FSPEC as fspec CLI\n    participant FEAT as Feature File\n    participant TEST as Test File\n    participant CODE as Implementation\n\n    Note over AI,CODE: Phase 1: Specification\n    AI->>FSPEC: fspec create-feature \"User Login\"\n    FSPEC->>FEAT: Create login.feature (template)\n    AI->>FSPEC: fspec add-scenario \"login\" \"Successful login\"\n    FSPEC->>FEAT: Add Given/When/Then\n    AI->>FSPEC: fspec validate login.feature\n    FSPEC-->>AI: ✓ Valid Gherkin\n\n    Note over AI,CODE: Phase 2: Testing\n    AI->>TEST: Write test mapping to scenario\n    AI->>TEST: Run test (should fail)\n\n    Note over AI,CODE: Phase 3: Implementation\n    AI->>CODE: Write minimum code\n    AI->>TEST: Run test (should pass)\n\n    Note over AI,CODE: CAGE ensures alignment"
+    }
+  ],
+  "coreCommands": {
+    "categories": [
+      {
+        "title": "Feature File Commands",
+        "commands": [
+          {
+            "command": "fspec create-feature <name>",
+            "description": "Create new feature file with template",
+            "status": "✅"
+          },
+          {
+            "command": "fspec add-scenario <feature> <name>",
+            "description": "Add scenario to feature",
+            "status": "✅"
+          },
+          {
+            "command": "fspec add-step <feature> <scenario> <type> <text>",
+            "description": "Add Given/When/Then step",
+            "status": "✅"
+          },
+          {
+            "command": "fspec update-scenario <feature> <old-name> <new-name>",
+            "description": "Rename scenario",
+            "status": "✅"
+          },
+          {
+            "command": "fspec update-step <feature> <scenario> <current-step> [--text=<new>] [--keyword=<kw>]",
+            "description": "Update step",
+            "status": "✅"
+          },
+          {
+            "command": "fspec delete-scenario <feature> <scenario>",
+            "description": "Delete scenario from feature",
+            "status": "✅"
+          },
+          {
+            "command": "fspec delete-step <feature> <scenario> <step>",
+            "description": "Delete step from scenario",
+            "status": "✅"
+          },
+          {
+            "command": "fspec add-architecture <feature> <notes>",
+            "description": "Add/update architecture doc string",
+            "status": "✅"
+          },
+          {
+            "command": "fspec add-background <feature> <user-story>",
+            "description": "Add/update user story background",
+            "status": "✅"
+          },
+          {
+            "command": "fspec list-features [--tag=@phase1]",
+            "description": "List all features (optionally filtered)",
+            "status": "✅"
+          },
+          {
+            "command": "fspec show-feature <name> [--format=text|json] [--output=file]",
+            "description": "Display feature file contents",
+            "status": "✅"
+          }
+        ]
+      },
+      {
+        "title": "FOUNDATION.md Commands",
+        "commands": [
+          {
+            "command": "fspec add-diagram <section> <title> <mermaid-code>",
+            "description": "Add Mermaid diagram",
+            "status": "✅"
+          },
+          {
+            "command": "fspec update-foundation <section> <content>",
+            "description": "Update foundation section",
+            "status": "✅"
+          },
+          {
+            "command": "fspec show-foundation [--section=<name>] [--format=text|markdown|json] [--output=file] [--list-sections] [--line-numbers]",
+            "description": "Display FOUNDATION.md",
+            "status": "✅"
+          }
+        ]
+      },
+      {
+        "title": "TAGS.md Commands",
+        "commands": [
+          {
+            "command": "fspec register-tag <tag> <category> <description>",
+            "description": "Register new tag",
+            "status": "✅"
+          },
+          {
+            "command": "fspec update-tag <tag> [--category=<cat>] [--description=<desc>]",
+            "description": "Update tag",
+            "status": "✅"
+          },
+          {
+            "command": "fspec delete-tag <tag> [--force] [--dry-run]",
+            "description": "Delete tag from registry",
+            "status": "✅"
+          },
+          {
+            "command": "fspec validate-tags",
+            "description": "Ensure all feature file tags exist in TAGS.md",
+            "status": "✅"
+          },
+          {
+            "command": "fspec list-tags [--category=phase]",
+            "description": "List registered tags",
+            "status": "✅"
+          },
+          {
+            "command": "fspec tag-stats",
+            "description": "Show tag usage statistics",
+            "status": "✅"
+          },
+          {
+            "command": "fspec retag --from=<old> --to=<new> [--dry-run]",
+            "description": "Rename tags across all files",
+            "status": "✅"
+          }
+        ]
+      },
+      {
+        "title": "Query & Bulk Operations Commands",
+        "commands": [
+          {
+            "command": "fspec get-scenarios [--tag=@phase1]",
+            "description": "Get scenarios by tag(s)",
+            "status": "✅"
+          },
+          {
+            "command": "fspec show-acceptance-criteria [--tag=@phase1] [--format=text|markdown|json] [--output=file]",
+            "description": "Show ACs",
+            "status": "✅"
+          },
+          {
+            "command": "fspec delete-scenarios --tag=<tag> [--dry-run]",
+            "description": "Bulk delete scenarios by tag",
+            "status": "✅"
+          },
+          {
+            "command": "fspec delete-features --tag=<tag> [--dry-run]",
+            "description": "Bulk delete feature files by tag",
+            "status": "✅"
+          }
+        ]
+      },
+      {
+        "title": "Validation & Formatting Commands",
+        "commands": [
+          {
+            "command": "fspec validate [file]",
+            "description": "Validate Gherkin syntax (all files or specific)",
+            "status": "✅"
+          },
+          {
+            "command": "fspec format [file]",
+            "description": "Format using Prettier (all files or specific)",
+            "status": "✅"
+          },
+          {
+            "command": "fspec check [--verbose]",
+            "description": "Run all validations (syntax + tags + formatting)",
+            "status": "✅"
+          }
+        ]
+      }
+    ]
+  },
+  "featureInventory": {
+    "phases": [
+      {
+        "phase": "phase1",
+        "title": "Core Validation & Feature Management",
+        "description": "5 features",
+        "features": [
+          {
+            "featureFile": "gherkin-validation.feature",
+            "command": "fspec validate [file]",
+            "description": "Gherkin syntax validation using @cucumber/gherkin-parser"
+          },
+          {
+            "featureFile": "format-features.feature",
+            "command": "fspec format [file]",
+            "description": "Format feature files with Prettier"
+          },
+          {
+            "featureFile": "create-feature.feature",
+            "command": "fspec create-feature <name>",
+            "description": "Create feature file with Gherkin template"
+          },
+          {
+            "featureFile": "list-features.feature",
+            "command": "fspec list-features [--tag]",
+            "description": "List all features with optional tag filtering"
+          },
+          {
+            "featureFile": "check.feature",
+            "command": "fspec check [--verbose]",
+            "description": "Run all validations (syntax + tags + formatting)"
+          }
+        ]
+      },
+      {
+        "phase": "phase2",
+        "title": "Tag Registry & Management",
+        "description": "7 features",
+        "features": [
+          {
+            "featureFile": "validate-tags.feature",
+            "command": "fspec validate-tags [file]",
+            "description": "Validate feature file tags against TAGS.md registry"
+          },
+          {
+            "featureFile": "register-tag.feature",
+            "command": "fspec register-tag <tag> <cat> <desc>",
+            "description": "Register new tag in TAGS.md"
+          },
+          {
+            "featureFile": "list-tags.feature",
+            "command": "fspec list-tags [--category]",
+            "description": "List all registered tags from TAGS.md"
+          },
+          {
+            "featureFile": "tag-stats.feature",
+            "command": "fspec tag-stats",
+            "description": "Show tag usage statistics across all features"
+          },
+          {
+            "featureFile": "update-tag.feature",
+            "command": "fspec update-tag <tag> [--category] [--desc]",
+            "description": "Update tag definition in registry"
+          },
+          {
+            "featureFile": "add-architecture.feature",
+            "command": "fspec add-architecture <feature> <notes>",
+            "description": "Add/update architecture doc string in feature file"
+          },
+          {
+            "featureFile": "add-background.feature",
+            "command": "fspec add-background <feature> <story>",
+            "description": "Add/update user story background section"
+          },
+          {
+            "featureFile": "show-feature.feature",
+            "command": "fspec show-feature <name> [--format] [--output]",
+            "description": "Display feature file contents"
+          }
+        ]
+      },
+      {
+        "phase": "phase3",
+        "title": "Advanced Feature Editing",
+        "description": "2 features",
+        "features": [
+          {
+            "featureFile": "add-scenario.feature",
+            "command": "fspec add-scenario <feature> <name>",
+            "description": "Add new scenario to existing feature file"
+          },
+          {
+            "featureFile": "add-step.feature",
+            "command": "fspec add-step <feature> <scenario> <type> <text>",
+            "description": "Add Given/When/Then step to scenario"
+          }
+        ]
+      },
+      {
+        "phase": "phase4",
+        "title": "CRUD Operations & Tag-Based Queries",
+        "description": "4 features",
+        "features": [
+          {
+            "featureFile": "get-scenarios.feature",
+            "command": "fspec get-scenarios [--tag]",
+            "description": "Query scenarios by tag with AND logic filtering"
+          },
+          {
+            "featureFile": "show-acceptance-criteria.feature",
+            "command": "fspec show-acceptance-criteria [--tag] [--format]",
+            "description": "Display acceptance criteria by tag (text/markdown/JSON)"
+          },
+          {
+            "featureFile": "delete-scenario.feature",
+            "command": "fspec delete-scenario <feature> <scenario>",
+            "description": "Delete scenario from feature file"
+          },
+          {
+            "featureFile": "update-tag.feature",
+            "command": "fspec update-tag <tag> [options]",
+            "description": "Update tag category/description in registry"
+          }
+        ]
+      },
+      {
+        "phase": "phase5",
+        "title": "Advanced CRUD & Bulk Operations",
+        "description": "7 features",
+        "features": [
+          {
+            "featureFile": "update-scenario.feature",
+            "command": "fspec update-scenario <feature> <old> <new>",
+            "description": "Rename scenario in feature file"
+          },
+          {
+            "featureFile": "update-step.feature",
+            "command": "fspec update-step <feature> <scenario> <step> [options]",
+            "description": "Update step text or keyword"
+          },
+          {
+            "featureFile": "delete-step.feature",
+            "command": "fspec delete-step <feature> <scenario> <step>",
+            "description": "Delete step from scenario"
+          },
+          {
+            "featureFile": "delete-tag.feature",
+            "command": "fspec delete-tag <tag> [--force] [--dry-run]",
+            "description": "Delete tag from TAGS.md registry"
+          },
+          {
+            "featureFile": "retag.feature",
+            "command": "fspec retag --from=<old> --to=<new> [--dry-run]",
+            "description": "Bulk rename tags across all feature files"
+          },
+          {
+            "featureFile": "delete-scenarios-by-tag.feature",
+            "command": "fspec delete-scenarios --tag=<tag> [--dry-run]",
+            "description": "Bulk delete scenarios matching tag(s)"
+          },
+          {
+            "featureFile": "delete-features-by-tag.feature",
+            "command": "fspec delete-features --tag=<tag> [--dry-run]",
+            "description": "Bulk delete entire feature files by tag"
+          }
+        ]
+      },
+      {
+        "phase": "phase6",
+        "title": "Architecture Documentation",
+        "description": "3 features",
+        "features": [
+          {
+            "featureFile": "add-diagram.feature",
+            "command": "fspec add-diagram <section> <title> <code>",
+            "description": "Add/update Mermaid diagram in FOUNDATION.md"
+          },
+          {
+            "featureFile": "update-foundation.feature",
+            "command": "fspec update-foundation <section> <content>",
+            "description": "Update FOUNDATION.md section content"
+          },
+          {
+            "featureFile": "show-foundation.feature",
+            "command": "fspec show-foundation [options]",
+            "description": "Display FOUNDATION.md with multiple format options"
+          }
+        ]
+      }
+    ],
+    "tagUsageSummary": {
+      "phaseDistribution": [
+        {
+          "tag": "@phase1",
+          "count": 5,
+          "percentage": "18%"
+        },
+        {
+          "tag": "@phase2",
+          "count": 7,
+          "percentage": "25%"
+        },
+        {
+          "tag": "@phase3",
+          "count": 2,
+          "percentage": "7%"
+        },
+        {
+          "tag": "@phase4",
+          "count": 4,
+          "percentage": "14%"
+        },
+        {
+          "tag": "@phase5",
+          "count": 7,
+          "percentage": "25%"
+        },
+        {
+          "tag": "@phase6",
+          "count": 3,
+          "percentage": "11%"
+        }
+      ],
+      "componentDistribution": [
+        {
+          "tag": "@cli",
+          "count": 28,
+          "percentage": "100%"
+        },
+        {
+          "tag": "@parser",
+          "count": 3,
+          "percentage": "11%"
+        },
+        {
+          "tag": "@generator",
+          "count": 1,
+          "percentage": "4%"
+        },
+        {
+          "tag": "@validator",
+          "count": 1,
+          "percentage": "4%"
+        },
+        {
+          "tag": "@formatter",
+          "count": 1,
+          "percentage": "4%"
+        },
+        {
+          "tag": "@file-ops",
+          "count": 1,
+          "percentage": "4%"
+        }
+      ],
+      "featureGroupDistribution": [
+        {
+          "tag": "@feature-management",
+          "count": 11,
+          "percentage": "39%"
+        },
+        {
+          "tag": "@modification",
+          "count": 11,
+          "percentage": "39%"
+        },
+        {
+          "tag": "@tag-management",
+          "count": 7,
+          "percentage": "25%"
+        },
+        {
+          "tag": "@querying",
+          "count": 6,
+          "percentage": "21%"
+        },
+        {
+          "tag": "@foundation-management",
+          "count": 3,
+          "percentage": "11%"
+        },
+        {
+          "tag": "@bulk-operations",
+          "count": 3,
+          "percentage": "11%"
+        },
+        {
+          "tag": "@validation",
+          "count": 3,
+          "percentage": "11%"
+        },
+        {
+          "tag": "@documentation",
+          "count": 2,
+          "percentage": "7%"
+        },
+        {
+          "tag": "@read-only",
+          "count": 2,
+          "percentage": "7%"
+        },
+        {
+          "tag": "@formatting",
+          "count": 1,
+          "percentage": "4%"
+        },
+        {
+          "tag": "@utility",
+          "count": 1,
+          "percentage": "4%"
+        }
+      ],
+      "priorityDistribution": [
+        {
+          "tag": "@critical",
+          "count": 3,
+          "percentage": "11%"
+        },
+        {
+          "tag": "@high",
+          "count": 5,
+          "percentage": "18%"
+        },
+        {
+          "tag": "@medium",
+          "count": 15,
+          "percentage": "54%"
+        },
+        {
+          "tag": "@low",
+          "count": 5,
+          "percentage": "18%"
+        }
+      ],
+      "testingCoverage": [
+        {
+          "tag": "@unit-test",
+          "count": 27,
+          "percentage": "96%"
+        },
+        {
+          "tag": "@integration-test",
+          "count": 7,
+          "percentage": "25%"
+        },
+        {
+          "tag": "@e2e-test",
+          "count": 1,
+          "percentage": "4%"
+        }
+      ]
+    }
+  },
+  "notes": {
+    "developmentStatus": [
+      {
+        "phase": "phase1",
+        "title": "Core Validation & Feature Management",
+        "status": "COMPLETE",
+        "items": [
+          "Gherkin syntax validation using @cucumber/gherkin-parser",
+          "Feature file creation with templates",
+          "List features with tag filtering",
+          "Prettier formatting integration",
+          "Clear error messages with line numbers",
+          "Batch validation for all feature files"
+        ],
+        "testCoverage": "42 tests, all passing"
+      },
+      {
+        "phase": "phase2",
+        "title": "Tag Registry & Management",
+        "status": "COMPLETE",
+        "items": [
+          "TAGS.md validation and enforcement",
+          "Tag registration with categories",
+          "List registered tags with filtering",
+          "Tag usage statistics and reporting",
+          "Identify unused and unregistered tags",
+          "Cross-file tag consistency checks"
+        ],
+        "testCoverage": "41 tests, all passing"
+      },
+      {
+        "phase": "phase3",
+        "title": "Advanced Feature Editing",
+        "status": "COMPLETE",
+        "items": [
+          "Add scenarios to existing features",
+          "Add steps to existing scenarios",
+          "Preserve formatting and indentation",
+          "Handle data tables and doc strings",
+          "Validate modifications automatically"
+        ],
+        "testCoverage": "27 tests, all passing"
+      },
+      {
+        "phase": "phase4",
+        "title": "CRUD Operations & Tag-Based Queries",
+        "status": "COMPLETE",
+        "items": [
+          "Query scenarios by tag(s) with AND logic",
+          "Show acceptance criteria by tag with multiple formats (text, markdown, JSON)",
+          "Export acceptance criteria to file",
+          "Update tag definitions (category and/or description)",
+          "Delete scenarios from feature files",
+          "Preserve feature structure during deletions",
+          "Complete tag-based filtering foundation"
+        ],
+        "testCoverage": "28 tests, all passing"
+      },
+      {
+        "phase": "phase5",
+        "title": "Advanced CRUD & Bulk Operations",
+        "status": "COMPLETE",
+        "items": [
+          "Delete step from scenario",
+          "Update scenario (rename)",
+          "Update step (edit text/type)",
+          "Delete tag from registry",
+          "Bulk delete scenarios by tag",
+          "Bulk delete features by tag",
+          "Retag operations (rename tags across files)",
+          "Comprehensive validation suite (`check` command)",
+          "Dry-run support for destructive operations"
+        ],
+        "testCoverage": "108 tests, all passing"
+      },
+      {
+        "phase": "phase6",
+        "title": "Architecture Documentation",
+        "status": "COMPLETE",
+        "items": [
+          "Add/update architecture notes in feature files",
+          "Add/update user stories (Background) in feature files",
+          "Add/update Mermaid diagrams in FOUNDATION.md",
+          "Update foundation sections programmatically",
+          "Display foundation content with multiple formats",
+          "Section-specific operations",
+          "JSON output for programmatic access",
+          "Diagram validation and formatting"
+        ],
+        "testCoverage": "41 tests, all passing"
+      }
+    ],
+    "integrationNotes": {
+      "title": "Integration with CAGE",
+      "content": [
+        "fspec is designed as a companion tool to CAGE:",
+        "CAGE Responsibility: Code-spec alignment, test-to-feature mapping, hook orchestration",
+        "fspec Responsibility: Gherkin validation, tag discipline, architecture documentation, specification structure",
+        "CAGE hooks invoke fspec to ensure specifications remain valid and well-organized throughout agentic coding sessions."
+      ]
+    },
+    "projectName": {
+      "name": "fspec",
+      "description": "fspec = feature specification management for AI agents. A standardized CLI tool preventing ecosystem fragmentation by promoting industry-standard Gherkin/BDD practices over proprietary specification formats. fspec ensures AI agents ask the right questions and structure specifications correctly using battle-tested Cucumber conventions.",
+      "repository": "https://github.com/rquast/fspec"
+    },
+    "futureEnhancements": [
+      {
+        "title": "JSON I/O Enhancement",
+        "description": "Consistent JSON input/output across all commands for easier AI agent integration",
+        "details": [
+          "Accept JSON input for complex operations (multi-step scenarios, batch updates)",
+          "Standardize JSON output format across all commands",
+          "Machine-readable error responses in JSON format"
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,416 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://fspec.dev/schemas/tags.schema.json",
+  "title": "fspec Tags Registry Schema",
+  "description": "JSON Schema for fspec tags.json - the source of truth for TAGS.md",
+  "type": "object",
+  "required": [
+    "categories",
+    "combinationExamples",
+    "usageGuidelines",
+    "addingNewTags",
+    "queries",
+    "statistics",
+    "validation",
+    "references"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Path to this schema file"
+    },
+    "categories": {
+      "type": "array",
+      "description": "Tag categories with their tags",
+      "items": {
+        "type": "object",
+        "required": ["name", "description", "required", "tags"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Category name (e.g., 'Phase Tags')"
+          },
+          "description": {
+            "type": "string",
+            "description": "Description of this category"
+          },
+          "required": {
+            "type": "boolean",
+            "description": "Whether tags from this category are required"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["name", "description"],
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "pattern": "^@[a-z0-9-]+$",
+                  "description": "Tag name (must start with @)"
+                },
+                "description": {
+                  "type": "string",
+                  "description": "Tag description"
+                },
+                "usage": {
+                  "type": "string",
+                  "description": "Usage information (for phase tags)"
+                },
+                "scope": {
+                  "type": "string",
+                  "description": "Scope information (for component tags)"
+                },
+                "examples": {
+                  "type": "string",
+                  "description": "Examples (for feature group tags)"
+                },
+                "useCases": {
+                  "type": "string",
+                  "description": "Use cases (for technical tags)"
+                },
+                "whenToUse": {
+                  "type": "string",
+                  "description": "When to use (for platform tags)"
+                },
+                "criteria": {
+                  "type": "string",
+                  "description": "Criteria (for priority tags)"
+                },
+                "meaning": {
+                  "type": "string",
+                  "description": "Meaning (for status tags)"
+                },
+                "testType": {
+                  "type": "string",
+                  "description": "Test type (for testing tags)"
+                }
+              }
+            }
+          },
+          "rule": {
+            "type": "string",
+            "description": "Special rule for this category"
+          }
+        }
+      }
+    },
+    "combinationExamples": {
+      "type": "array",
+      "description": "Examples of tag combinations",
+      "items": {
+        "type": "object",
+        "required": ["title", "tags", "interpretation"],
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "Example title"
+          },
+          "tags": {
+            "type": "string",
+            "description": "Tag combination (as Gherkin tag line)"
+          },
+          "interpretation": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Interpretation of each tag"
+          }
+        }
+      }
+    },
+    "usageGuidelines": {
+      "type": "object",
+      "description": "Guidelines for using tags",
+      "required": ["requiredCombinations", "recommendedCombinations", "orderingConvention"],
+      "properties": {
+        "requiredCombinations": {
+          "type": "object",
+          "required": ["title", "requirements", "minimumExample"],
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "requirements": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "minimumExample": {
+              "type": "string",
+              "description": "Minimum valid tag combination example"
+            }
+          }
+        },
+        "recommendedCombinations": {
+          "type": "object",
+          "required": ["title", "includes", "recommendedExample"],
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "includes": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "recommendedExample": {
+              "type": "string",
+              "description": "Recommended tag combination example"
+            }
+          }
+        },
+        "orderingConvention": {
+          "type": "object",
+          "required": ["title", "order", "example"],
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "order": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Recommended tag order"
+            },
+            "example": {
+              "type": "string",
+              "description": "Example showing proper ordering"
+            }
+          }
+        }
+      }
+    },
+    "addingNewTags": {
+      "type": "object",
+      "description": "Process for adding new tags",
+      "required": ["process", "namingConventions", "antiPatterns"],
+      "properties": {
+        "process": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["step", "description"],
+            "properties": {
+              "step": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "namingConventions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "antiPatterns": {
+          "type": "object",
+          "required": ["dont", "do"],
+          "properties": {
+            "dont": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["description"],
+                "properties": {
+                  "description": {
+                    "type": "string"
+                  },
+                  "example": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "do": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["description"],
+                "properties": {
+                  "description": {
+                    "type": "string"
+                  },
+                  "example": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "queries": {
+      "type": "object",
+      "description": "Common tag query examples",
+      "required": ["title", "examples"],
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "examples": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["description", "command"],
+            "properties": {
+              "description": {
+                "type": "string"
+              },
+              "command": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "statistics": {
+      "type": "object",
+      "description": "Current tag usage statistics",
+      "required": ["lastUpdated", "phaseStats", "componentStats", "featureGroupStats", "updateCommand"],
+      "properties": {
+        "lastUpdated": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 date when stats were last updated"
+        },
+        "phaseStats": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["phase", "total", "complete", "inProgress", "planned"],
+            "properties": {
+              "phase": {
+                "type": "string"
+              },
+              "total": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "complete": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "inProgress": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "planned": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          }
+        },
+        "componentStats": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["component", "count", "percentage"],
+            "properties": {
+              "component": {
+                "type": "string"
+              },
+              "count": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "percentage": {
+                "type": "string",
+                "pattern": "^\\d+%$"
+              }
+            }
+          }
+        },
+        "featureGroupStats": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["featureGroup", "count", "percentage"],
+            "properties": {
+              "featureGroup": {
+                "type": "string"
+              },
+              "count": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "percentage": {
+                "type": "string",
+                "pattern": "^\\d+%$"
+              }
+            }
+          }
+        },
+        "updateCommand": {
+          "type": "string",
+          "description": "Command to update statistics"
+        }
+      }
+    },
+    "validation": {
+      "type": "object",
+      "description": "Validation rules and commands",
+      "required": ["rules", "commands"],
+      "properties": {
+        "rules": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["rule", "description"],
+            "properties": {
+              "rule": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "commands": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["description", "command"],
+            "properties": {
+              "description": {
+                "type": "string"
+              },
+              "command": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "references": {
+      "type": "array",
+      "description": "External references",
+      "items": {
+        "type": "object",
+        "required": ["title", "url"],
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri"
+          }
+        }
+      }
+    }
+  }
+}

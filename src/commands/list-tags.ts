@@ -1,6 +1,8 @@
 import { readFile } from 'fs/promises';
 import { join } from 'path';
+import { existsSync } from 'fs';
 import chalk from 'chalk';
+import type { Tags } from '../types/tags';
 
 interface TagEntry {
   tag: string;
@@ -26,21 +28,39 @@ export async function listTags(
   options: ListTagsOptions = {}
 ): Promise<ListTagsResult> {
   const cwd = options.cwd || process.cwd();
-  const tagsPath = join(cwd, 'spec', 'TAGS.md');
+  const tagsJsonPath = join(cwd, 'spec', 'tags.json');
 
-  // Read TAGS.md
-  let content: string;
-  try {
-    content = await readFile(tagsPath, 'utf-8');
-  } catch (error: any) {
-    if (error.code === 'ENOENT') {
-      throw new Error('TAGS.md not found: spec/TAGS.md');
-    }
-    throw error;
+  // Check if tags.json exists
+  if (!existsSync(tagsJsonPath)) {
+    throw new Error('tags.json not found: spec/tags.json');
   }
 
-  // Parse categories and tags
-  const categories = parseTagsFromContent(content);
+  // Read tags.json
+  let content: string;
+  try {
+    content = await readFile(tagsJsonPath, 'utf-8');
+  } catch (error: any) {
+    throw new Error(`Failed to read tags.json: ${error.message}`);
+  }
+
+  // Parse JSON
+  let tagsData: Tags;
+  try {
+    tagsData = JSON.parse(content);
+  } catch (error: any) {
+    throw new Error(`Failed to parse tags.json: ${error.message}`);
+  }
+
+  // Transform to CategoryEntry format
+  const categories: CategoryEntry[] = tagsData.categories.map(cat => ({
+    name: cat.name,
+    tags: cat.tags
+      .map(t => ({
+        tag: t.name,
+        description: t.description,
+      }))
+      .sort((a, b) => a.tag.localeCompare(b.tag)), // Sort alphabetically
+  }));
 
   // Filter by category if specified
   if (options.category) {
@@ -55,51 +75,6 @@ export async function listTags(
   }
 
   return { success: true, categories };
-}
-
-function parseTagsFromContent(content: string): CategoryEntry[] {
-  const categories: CategoryEntry[] = [];
-
-  // Match category headers: ## Category Name
-  const categoryPattern = /^## (.+)$/gm;
-  let categoryMatch;
-
-  while ((categoryMatch = categoryPattern.exec(content)) !== null) {
-    const categoryName = categoryMatch[1].trim();
-    const categoryStart = categoryMatch.index;
-
-    // Find the next category or end of file
-    const nextCategoryMatch = content
-      .substring(categoryStart + 1)
-      .match(/^## /m);
-    const categoryEnd = nextCategoryMatch
-      ? categoryStart + 1 + nextCategoryMatch.index
-      : content.length;
-
-    const categoryContent = content.substring(categoryStart, categoryEnd);
-
-    // Extract tags from this category
-    const tags: TagEntry[] = [];
-    const tagPattern = /\|\s*`(@[a-z0-9-]+)`\s*\|\s*(.+?)\s*\|/g;
-    let tagMatch;
-
-    while ((tagMatch = tagPattern.exec(categoryContent)) !== null) {
-      tags.push({
-        tag: tagMatch[1],
-        description: tagMatch[2].trim(),
-      });
-    }
-
-    // Sort tags alphabetically
-    tags.sort((a, b) => a.tag.localeCompare(b.tag));
-
-    categories.push({
-      name: categoryName,
-      tags,
-    });
-  }
-
-  return categories;
 }
 
 export async function listTagsCommand(
@@ -127,11 +102,11 @@ export async function listTagsCommand(
     console.log('');
     process.exit(0);
   } catch (error: any) {
-    if (error.message.includes('TAGS.md not found')) {
+    if (error.message.includes('tags.json not found')) {
       console.error(chalk.red(error.message));
       console.log(
         chalk.yellow(
-          '  Suggestion: Create spec/TAGS.md or use "fspec register-tag" to add tags'
+          '  Suggestion: Create spec/tags.json or use "fspec register-tag" to add tags'
         )
       );
       process.exit(2);

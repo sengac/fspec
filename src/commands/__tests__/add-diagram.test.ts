@@ -18,15 +18,74 @@ describe('Feature: Add Mermaid Diagram to FOUNDATION.md', () => {
 
   describe('Scenario: Add new diagram to existing section', () => {
     it('should add diagram to existing section', async () => {
-      // Given I have a FOUNDATION.md with an "Architecture" section
-      const content = `# Project Foundation
+      // Given I have a foundation.json with existing data
+      const foundationJsonPath = join(testDir, 'spec', 'foundation.json');
+      const minimalFoundation = {
+        $schema: '../src/schemas/foundation.schema.json',
+        project: {
+          name: 'Test Project',
+          description: 'Test',
+          repository: 'https://test.com',
+          license: 'MIT',
+          importantNote: 'Test note',
+        },
+        whatWeAreBuilding: {
+          projectOverview: 'Test',
+          technicalRequirements: {
+            coreTechnologies: [],
+            architecture: {
+              pattern: 'CLI',
+              fileStructure: 'test',
+              deploymentTarget: 'local',
+              integrationModel: [],
+            },
+            developmentAndOperations: {
+              developmentTools: 'test',
+              testingStrategy: 'test',
+              logging: 'test',
+              validation: 'test',
+              formatting: 'test',
+            },
+            keyLibraries: [],
+          },
+          nonFunctionalRequirements: [],
+        },
+        whyWeAreBuildingIt: {
+          problemDefinition: {
+            primary: { title: 'Test', description: 'Test', points: [] },
+            secondary: [],
+          },
+          painPoints: { currentState: 'Test', specific: [] },
+          stakeholderImpact: [],
+          theoreticalSolutions: [],
+          developmentMethodology: {
+            name: 'ACDD',
+            description: 'Test',
+            steps: [],
+            ensures: [],
+          },
+          successCriteria: [],
+          constraintsAndAssumptions: { constraints: [], assumptions: [] },
+        },
+        architectureDiagrams: [],
+        coreCommands: { categories: [] },
+        featureInventory: {
+          phases: [],
+          tagUsageSummary: {
+            phaseDistribution: [],
+            componentDistribution: [],
+            featureGroupDistribution: [],
+            priorityDistribution: [],
+            testingCoverage: [],
+          },
+        },
+        notes: { developmentStatus: [] },
+      };
 
-## Architecture
-
-This is the architecture section.
-`;
-
-      await writeFile(join(testDir, 'spec/FOUNDATION.md'), content);
+      await writeFile(
+        foundationJsonPath,
+        JSON.stringify(minimalFoundation, null, 2)
+      );
 
       // When I run `fspec add-diagram Architecture "Component Diagram" "graph TD\n  A-->B"`
       const result = await addDiagram({
@@ -39,35 +98,98 @@ This is the architecture section.
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
+      // And the foundation.json should contain the new diagram
+      const updatedJson = JSON.parse(
+        await readFile(foundationJsonPath, 'utf-8')
+      );
+      const diagram = updatedJson.architectureDiagrams.find(
+        (d: any) => d.title === 'Component Diagram'
+      );
+      expect(diagram).toBeDefined();
+      expect(diagram.mermaidCode).toBe('graph TD\n  A-->B');
+
+      // And FOUNDATION.md should be regenerated with the diagram
       const updatedContent = await readFile(
         join(testDir, 'spec/FOUNDATION.md'),
         'utf-8'
       );
-
-      // And the "Architecture" section should contain a diagram titled "Component Diagram"
-      expect(updatedContent).toContain('### Component Diagram');
-
-      // And the diagram should be in a mermaid code block
+      expect(updatedContent).toContain('Component Diagram');
       expect(updatedContent).toContain('```mermaid');
       expect(updatedContent).toContain('graph TD');
       expect(updatedContent).toContain('A-->B');
-
-      // And other content in the section should be preserved
-      expect(updatedContent).toContain('This is the architecture section.');
     });
   });
 
   describe('Scenario: Add diagram to new section', () => {
-    it('should create new section with diagram', async () => {
-      // Given I have a FOUNDATION.md without a "Data Flow" section
-      const content = `# Project Foundation
+    it('should add diagram to architectureDiagrams array', async () => {
+      // Given I have a foundation.json with existing data
+      const foundationJsonPath = join(testDir, 'spec', 'foundation.json');
+      const minimalFoundation = {
+        $schema: '../src/schemas/foundation.schema.json',
+        project: {
+          name: 'Test Project',
+          description: 'Test',
+          repository: 'https://test.com',
+          license: 'MIT',
+          importantNote: 'Test note',
+        },
+        whatWeAreBuilding: {
+          projectOverview: 'Test',
+          technicalRequirements: {
+            coreTechnologies: [],
+            architecture: {
+              pattern: 'CLI',
+              fileStructure: 'test',
+              deploymentTarget: 'local',
+              integrationModel: [],
+            },
+            developmentAndOperations: {
+              developmentTools: 'test',
+              testingStrategy: 'test',
+              logging: 'test',
+              validation: 'test',
+              formatting: 'test',
+            },
+            keyLibraries: [],
+          },
+          nonFunctionalRequirements: [],
+        },
+        whyWeAreBuildingIt: {
+          problemDefinition: {
+            primary: { title: 'Test', description: 'Test', points: [] },
+            secondary: [],
+          },
+          painPoints: { currentState: 'Test', specific: [] },
+          stakeholderImpact: [],
+          theoreticalSolutions: [],
+          developmentMethodology: {
+            name: 'ACDD',
+            description: 'Test',
+            steps: [],
+            ensures: [],
+          },
+          successCriteria: [],
+          constraintsAndAssumptions: { constraints: [], assumptions: [] },
+        },
+        architectureDiagrams: [],
+        coreCommands: { categories: [] },
+        featureInventory: {
+          phases: [],
+          tagUsageSummary: {
+            phaseDistribution: [],
+            componentDistribution: [],
+            featureGroupDistribution: [],
+            priorityDistribution: [],
+            testingCoverage: [],
+          },
+        },
+        notes: { developmentStatus: [] },
+      };
 
-## Architecture
-
-Some content.
-`;
-
-      await writeFile(join(testDir, 'spec/FOUNDATION.md'), content);
+      await writeFile(
+        foundationJsonPath,
+        JSON.stringify(minimalFoundation, null, 2)
+      );
 
       // When I run `fspec add-diagram "Data Flow" "User Login Flow" "sequenceDiagram\n  User->>Server: Login"`
       const result = await addDiagram({
@@ -80,36 +202,101 @@ Some content.
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
+      // And the foundation.json should contain the new diagram
+      const updatedJson = JSON.parse(
+        await readFile(foundationJsonPath, 'utf-8')
+      );
+      const diagram = updatedJson.architectureDiagrams.find(
+        (d: any) => d.title === 'User Login Flow'
+      );
+      expect(diagram).toBeDefined();
+      expect(diagram.mermaidCode).toBe('sequenceDiagram\n  User->>Server: Login');
+
+      // And FOUNDATION.md should be regenerated with the diagram
       const updatedContent = await readFile(
         join(testDir, 'spec/FOUNDATION.md'),
         'utf-8'
       );
-
-      // And a new "Data Flow" section should be created
-      expect(updatedContent).toContain('## Data Flow');
-
-      // And the section should contain the diagram
-      expect(updatedContent).toContain('### User Login Flow');
+      expect(updatedContent).toContain('User Login Flow');
       expect(updatedContent).toContain('sequenceDiagram');
     });
   });
 
   describe('Scenario: Replace existing diagram with same title', () => {
     it('should replace existing diagram', async () => {
-      // Given I have a diagram titled "System Overview" in the "Architecture" section
-      const content = `# Project Foundation
+      // Given I have a foundation.json with an existing diagram
+      const foundationJsonPath = join(testDir, 'spec', 'foundation.json');
+      const minimalFoundation = {
+        $schema: '../src/schemas/foundation.schema.json',
+        project: {
+          name: 'Test Project',
+          description: 'Test',
+          repository: 'https://test.com',
+          license: 'MIT',
+          importantNote: 'Test note',
+        },
+        whatWeAreBuilding: {
+          projectOverview: 'Test',
+          technicalRequirements: {
+            coreTechnologies: [],
+            architecture: {
+              pattern: 'CLI',
+              fileStructure: 'test',
+              deploymentTarget: 'local',
+              integrationModel: [],
+            },
+            developmentAndOperations: {
+              developmentTools: 'test',
+              testingStrategy: 'test',
+              logging: 'test',
+              validation: 'test',
+              formatting: 'test',
+            },
+            keyLibraries: [],
+          },
+          nonFunctionalRequirements: [],
+        },
+        whyWeAreBuildingIt: {
+          problemDefinition: {
+            primary: { title: 'Test', description: 'Test', points: [] },
+            secondary: [],
+          },
+          painPoints: { currentState: 'Test', specific: [] },
+          stakeholderImpact: [],
+          theoreticalSolutions: [],
+          developmentMethodology: {
+            name: 'ACDD',
+            description: 'Test',
+            steps: [],
+            ensures: [],
+          },
+          successCriteria: [],
+          constraintsAndAssumptions: { constraints: [], assumptions: [] },
+        },
+        architectureDiagrams: [
+          {
+            title: 'System Overview',
+            mermaidCode: 'graph TD\n  Old-->Content',
+          },
+        ],
+        coreCommands: { categories: [] },
+        featureInventory: {
+          phases: [],
+          tagUsageSummary: {
+            phaseDistribution: [],
+            componentDistribution: [],
+            featureGroupDistribution: [],
+            priorityDistribution: [],
+            testingCoverage: [],
+          },
+        },
+        notes: { developmentStatus: [] },
+      };
 
-## Architecture
-
-### System Overview
-
-\`\`\`mermaid
-graph TD
-  Old-->Content
-\`\`\`
-`;
-
-      await writeFile(join(testDir, 'spec/FOUNDATION.md'), content);
+      await writeFile(
+        foundationJsonPath,
+        JSON.stringify(minimalFoundation, null, 2)
+      );
 
       // When I run `fspec add-diagram Architecture "System Overview" "graph LR\n  New-->Diagram"`
       const result = await addDiagram({
@@ -122,35 +309,101 @@ graph TD
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
+      // And the foundation.json should have the updated diagram
+      const updatedJson = JSON.parse(
+        await readFile(foundationJsonPath, 'utf-8')
+      );
+      const diagram = updatedJson.architectureDiagrams.find(
+        (d: any) => d.title === 'System Overview'
+      );
+      expect(diagram).toBeDefined();
+      expect(diagram.mermaidCode).toBe('graph LR\n  New-->Diagram');
+
+      // And FOUNDATION.md should be regenerated with new content
       const updatedContent = await readFile(
         join(testDir, 'spec/FOUNDATION.md'),
         'utf-8'
       );
-
-      // And the "System Overview" diagram should be updated
       expect(updatedContent).toContain('New-->Diagram');
-
-      // And the old diagram content should be replaced
       expect(updatedContent).not.toContain('Old-->Content');
     });
   });
 
   describe('Scenario: Add multiple diagrams to same section', () => {
     it('should add multiple diagrams', async () => {
-      // Given I have a diagram "Diagram 1" in the "Architecture" section
-      const content = `# Project Foundation
+      // Given I have a foundation.json with an existing diagram
+      const foundationJsonPath = join(testDir, 'spec', 'foundation.json');
+      const minimalFoundation = {
+        $schema: '../src/schemas/foundation.schema.json',
+        project: {
+          name: 'Test Project',
+          description: 'Test',
+          repository: 'https://test.com',
+          license: 'MIT',
+          importantNote: 'Test note',
+        },
+        whatWeAreBuilding: {
+          projectOverview: 'Test',
+          technicalRequirements: {
+            coreTechnologies: [],
+            architecture: {
+              pattern: 'CLI',
+              fileStructure: 'test',
+              deploymentTarget: 'local',
+              integrationModel: [],
+            },
+            developmentAndOperations: {
+              developmentTools: 'test',
+              testingStrategy: 'test',
+              logging: 'test',
+              validation: 'test',
+              formatting: 'test',
+            },
+            keyLibraries: [],
+          },
+          nonFunctionalRequirements: [],
+        },
+        whyWeAreBuildingIt: {
+          problemDefinition: {
+            primary: { title: 'Test', description: 'Test', points: [] },
+            secondary: [],
+          },
+          painPoints: { currentState: 'Test', specific: [] },
+          stakeholderImpact: [],
+          theoreticalSolutions: [],
+          developmentMethodology: {
+            name: 'ACDD',
+            description: 'Test',
+            steps: [],
+            ensures: [],
+          },
+          successCriteria: [],
+          constraintsAndAssumptions: { constraints: [], assumptions: [] },
+        },
+        architectureDiagrams: [
+          {
+            title: 'Diagram 1',
+            mermaidCode: 'graph TD\n  A-->B',
+          },
+        ],
+        coreCommands: { categories: [] },
+        featureInventory: {
+          phases: [],
+          tagUsageSummary: {
+            phaseDistribution: [],
+            componentDistribution: [],
+            featureGroupDistribution: [],
+            priorityDistribution: [],
+            testingCoverage: [],
+          },
+        },
+        notes: { developmentStatus: [] },
+      };
 
-## Architecture
-
-### Diagram 1
-
-\`\`\`mermaid
-graph TD
-  A-->B
-\`\`\`
-`;
-
-      await writeFile(join(testDir, 'spec/FOUNDATION.md'), content);
+      await writeFile(
+        foundationJsonPath,
+        JSON.stringify(minimalFoundation, null, 2)
+      );
 
       // When I run `fspec add-diagram Architecture "Diagram 2" "graph TD\n  C-->D"`
       const result = await addDiagram({
@@ -163,17 +416,32 @@ graph TD
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
+      // And the foundation.json should contain both diagrams
+      const updatedJson = JSON.parse(
+        await readFile(foundationJsonPath, 'utf-8')
+      );
+      expect(updatedJson.architectureDiagrams.length).toBe(2);
+
+      const diagram1 = updatedJson.architectureDiagrams.find(
+        (d: any) => d.title === 'Diagram 1'
+      );
+      expect(diagram1).toBeDefined();
+      expect(diagram1.mermaidCode).toBe('graph TD\n  A-->B');
+
+      const diagram2 = updatedJson.architectureDiagrams.find(
+        (d: any) => d.title === 'Diagram 2'
+      );
+      expect(diagram2).toBeDefined();
+      expect(diagram2.mermaidCode).toBe('graph TD\n  C-->D');
+
+      // And FOUNDATION.md should be regenerated with both diagrams
       const updatedContent = await readFile(
         join(testDir, 'spec/FOUNDATION.md'),
         'utf-8'
       );
-
-      // And the "Architecture" section should contain both diagrams
-      expect(updatedContent).toContain('### Diagram 1');
-      expect(updatedContent).toContain('### Diagram 2');
-
-      // And both "Diagram 1" and "Diagram 2" should be present
+      expect(updatedContent).toContain('Diagram 1');
       expect(updatedContent).toContain('A-->B');
+      expect(updatedContent).toContain('Diagram 2');
       expect(updatedContent).toContain('C-->D');
     });
   });
@@ -202,27 +470,86 @@ graph TD
         'utf-8'
       );
 
-      // And it should contain the "Architecture" section with the diagram
-      expect(content).toContain('## Architecture');
+      // And it should contain the "Architecture Diagrams" section with the diagram
+      expect(content).toContain('## 3. Architecture Diagrams');
       expect(content).toContain('### Initial Diagram');
     });
   });
 
   describe('Scenario: Preserve existing FOUNDATION.md sections', () => {
-    it('should preserve other sections', async () => {
-      // Given I have a FOUNDATION.md with sections "What We Are Building" and "Why"
-      const content = `# Project Foundation
+    it('should preserve foundation.json data and add new diagram', async () => {
+      // Given I have a foundation.json with existing content
+      const foundationJsonPath = join(testDir, 'spec', 'foundation.json');
+      const minimalFoundation = {
+        $schema: '../src/schemas/foundation.schema.json',
+        project: {
+          name: 'Test Project',
+          description: 'Test',
+          repository: 'https://test.com',
+          license: 'MIT',
+          importantNote: 'Test note',
+        },
+        whatWeAreBuilding: {
+          projectOverview: 'This is what we are building.',
+          technicalRequirements: {
+            coreTechnologies: [],
+            architecture: {
+              pattern: 'CLI',
+              fileStructure: 'test',
+              deploymentTarget: 'local',
+              integrationModel: [],
+            },
+            developmentAndOperations: {
+              developmentTools: 'test',
+              testingStrategy: 'test',
+              logging: 'test',
+              validation: 'test',
+              formatting: 'test',
+            },
+            keyLibraries: [],
+          },
+          nonFunctionalRequirements: [],
+        },
+        whyWeAreBuildingIt: {
+          problemDefinition: {
+            primary: {
+              title: 'Why Problem',
+              description: 'This is why.',
+              points: [],
+            },
+            secondary: [],
+          },
+          painPoints: { currentState: 'Test', specific: [] },
+          stakeholderImpact: [],
+          theoreticalSolutions: [],
+          developmentMethodology: {
+            name: 'ACDD',
+            description: 'Test',
+            steps: [],
+            ensures: [],
+          },
+          successCriteria: [],
+          constraintsAndAssumptions: { constraints: [], assumptions: [] },
+        },
+        architectureDiagrams: [],
+        coreCommands: { categories: [] },
+        featureInventory: {
+          phases: [],
+          tagUsageSummary: {
+            phaseDistribution: [],
+            componentDistribution: [],
+            featureGroupDistribution: [],
+            priorityDistribution: [],
+            testingCoverage: [],
+          },
+        },
+        notes: { developmentStatus: [] },
+      };
 
-## What We Are Building
-
-This is what we are building.
-
-## Why
-
-This is why.
-`;
-
-      await writeFile(join(testDir, 'spec/FOUNDATION.md'), content);
+      await writeFile(
+        foundationJsonPath,
+        JSON.stringify(minimalFoundation, null, 2)
+      );
 
       // When I run `fspec add-diagram Architecture "Diagram" "graph TD\n  A-->B"`
       const result = await addDiagram({
@@ -235,21 +562,33 @@ This is why.
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
+      // And the foundation.json should preserve existing data and add the new diagram
+      const updatedJson = JSON.parse(
+        await readFile(foundationJsonPath, 'utf-8')
+      );
+      expect(updatedJson.whatWeAreBuilding.projectOverview).toBe(
+        'This is what we are building.'
+      );
+      expect(updatedJson.whyWeAreBuildingIt.problemDefinition.primary.description).toBe(
+        'This is why.'
+      );
+      const diagram = updatedJson.architectureDiagrams.find(
+        (d: any) => d.title === 'Diagram'
+      );
+      expect(diagram).toBeDefined();
+      expect(diagram.mermaidCode).toBe('graph TD\n  A-->B');
+
+      // And FOUNDATION.md should be regenerated with all sections
       const updatedContent = await readFile(
         join(testDir, 'spec/FOUNDATION.md'),
         'utf-8'
       );
-
-      // And the "What We Are Building" section should be preserved
-      expect(updatedContent).toContain('## What We Are Building');
+      expect(updatedContent).toContain('## 1. What We Are Building');
       expect(updatedContent).toContain('This is what we are building.');
-
-      // And the "Why" section should be preserved
-      expect(updatedContent).toContain('## Why');
+      expect(updatedContent).toContain('## 2. Why We Are Building It');
       expect(updatedContent).toContain('This is why.');
-
-      // And the "Architecture" section should be added
-      expect(updatedContent).toContain('## Architecture');
+      expect(updatedContent).toContain('## 3. Architecture Diagrams');
+      expect(updatedContent).toContain('Diagram');
     });
   });
 
@@ -421,6 +760,136 @@ This is why.
       expect(content).toContain('A-->B');
       expect(content).toContain('B-->C');
       expect(content).toContain('C-->D');
+    });
+  });
+
+  describe('Scenario: JSON-backed workflow - modify JSON and regenerate MD', () => {
+    it('should update foundation.json and regenerate FOUNDATION.md', async () => {
+      // Given I have a valid foundation.json file
+      const foundationJsonPath = join(testDir, 'spec', 'foundation.json');
+      const minimalFoundation = {
+        $schema: '../src/schemas/foundation.schema.json',
+        project: {
+          name: 'Test Project',
+          description: 'Test',
+          repository: 'https://test.com',
+          license: 'MIT',
+          importantNote: 'Test note',
+        },
+        whatWeAreBuilding: {
+          projectOverview: 'Test',
+          technicalRequirements: {
+            coreTechnologies: [],
+            architecture: {
+              pattern: 'CLI',
+              fileStructure: 'test',
+              deploymentTarget: 'local',
+              integrationModel: [],
+            },
+            developmentAndOperations: {
+              developmentTools: 'test',
+              testingStrategy: 'test',
+              logging: 'test',
+              validation: 'test',
+              formatting: 'test',
+            },
+            keyLibraries: [],
+          },
+          nonFunctionalRequirements: [],
+        },
+        whyWeAreBuildingIt: {
+          problemDefinition: {
+            primary: { title: 'Test', description: 'Test', points: [] },
+            secondary: [],
+          },
+          painPoints: { currentState: 'Test', specific: [] },
+          stakeholderImpact: [],
+          theoreticalSolutions: [],
+          developmentMethodology: {
+            name: 'ACDD',
+            description: 'Test',
+            steps: [],
+            ensures: [],
+          },
+          successCriteria: [],
+          constraintsAndAssumptions: { constraints: [], assumptions: [] },
+        },
+        architectureDiagrams: [
+          {
+            title: 'Existing Diagram',
+            mermaidCode: 'graph TD\n  X-->Y',
+          },
+        ],
+        coreCommands: { categories: [] },
+        featureInventory: {
+          phases: [],
+          tagUsageSummary: {
+            phaseDistribution: [],
+            componentDistribution: [],
+            featureGroupDistribution: [],
+            priorityDistribution: [],
+            testingCoverage: [],
+          },
+        },
+        notes: { developmentStatus: [] },
+      };
+
+      await writeFile(
+        foundationJsonPath,
+        JSON.stringify(minimalFoundation, null, 2)
+      );
+
+      // When I run `fspec add-diagram "Architecture Diagrams" "New System Diagram" "graph TD\n  A-->B"`
+      const result = await addDiagram({
+        section: 'Architecture Diagrams',
+        title: 'New System Diagram',
+        code: 'graph TD\n  A-->B',
+        cwd: testDir,
+      });
+
+      // Then the foundation.json file should be updated with the new diagram
+      const updatedFoundationJson = JSON.parse(
+        await readFile(foundationJsonPath, 'utf-8')
+      );
+
+      // And the foundation.json should validate against foundation.schema.json
+      expect(updatedFoundationJson.architectureDiagrams).toBeDefined();
+
+      // And the new diagram should be in the architectureDiagrams array
+      const newDiagram = updatedFoundationJson.architectureDiagrams.find(
+        (d: any) => d.title === 'New System Diagram'
+      );
+      expect(newDiagram).toBeDefined();
+
+      // And the diagram object should have title and mermaidCode fields
+      expect(newDiagram.title).toBe('New System Diagram');
+      expect(newDiagram.mermaidCode).toBe('graph TD\n  A-->B');
+
+      // And existing diagrams should be preserved
+      const existingDiagram = updatedFoundationJson.architectureDiagrams.find(
+        (d: any) => d.title === 'Existing Diagram'
+      );
+      expect(existingDiagram).toBeDefined();
+
+      // And FOUNDATION.md should be regenerated from foundation.json
+      const foundationContent = await readFile(
+        join(testDir, 'spec', 'FOUNDATION.md'),
+        'utf-8'
+      );
+
+      // And FOUNDATION.md should contain the new diagram in a mermaid code block
+      expect(foundationContent).toContain('New System Diagram');
+      expect(foundationContent).toContain('```mermaid');
+      expect(foundationContent).toContain('graph TD');
+      expect(foundationContent).toContain('A-->B');
+
+      // And FOUNDATION.md should have the auto-generation warning header
+      expect(foundationContent).toContain(
+        '<!-- THIS FILE IS AUTO-GENERATED FROM spec/foundation.json -->'
+      );
+      expect(foundationContent).toContain('<!-- DO NOT EDIT THIS FILE DIRECTLY -->');
+
+      expect(result.success).toBe(true);
     });
   });
 });

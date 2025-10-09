@@ -1,9 +1,11 @@
 import { readFile } from 'fs/promises';
 import { join } from 'path';
+import { existsSync } from 'fs';
 import chalk from 'chalk';
 import { glob } from 'tinyglobby';
 import * as Gherkin from '@cucumber/gherkin';
 import * as Messages from '@cucumber/messages';
+import type { Tags } from '../types/tags';
 
 interface TagCount {
   tag: string;
@@ -35,11 +37,11 @@ export async function tagStats(
 ): Promise<TagStatsResult> {
   const cwd = options.cwd || process.cwd();
 
-  // Load tag registry from TAGS.md (optional)
-  let registry: Map<string, string> | null = null;
+  // Load tag registry from tags.json (optional)
+  let tagsData: Tags | null = null;
   let tagsFileFound = true;
   try {
-    registry = await loadTagRegistry(cwd);
+    tagsData = await loadTagsJson(cwd);
   } catch {
     tagsFileFound = false;
   }
@@ -108,14 +110,13 @@ export async function tagStats(
   const categories: CategoryStats[] = [];
   const registeredTags = new Set<string>();
 
-  if (registry) {
-    // Group by categories from TAGS.md
-    const categoryMap = await loadCategoryMap(cwd);
-
-    for (const [categoryName, categoryTags] of categoryMap.entries()) {
+  if (tagsData) {
+    // Group by categories from tags.json
+    for (const category of tagsData.categories) {
       const tagStats: TagCount[] = [];
 
-      for (const tag of categoryTags) {
+      for (const tagDef of category.tags) {
+        const tag = tagDef.name;
         registeredTags.add(tag);
         const count = tagCounts.get(tag) || 0;
         if (count > 0) {
@@ -127,7 +128,7 @@ export async function tagStats(
       tagStats.sort((a, b) => b.count - a.count);
 
       if (tagStats.length > 0) {
-        categories.push({ name: categoryName, tags: tagStats });
+        categories.push({ name: category.name, tags: tagStats });
       }
     }
 
@@ -144,7 +145,7 @@ export async function tagStats(
       categories.push({ name: 'Unregistered', tags: unregisteredTags });
     }
   } else {
-    // No TAGS.md - all tags are unregistered
+    // No tags.json - all tags are unregistered
     const allTags: TagCount[] = Array.from(tagCounts.entries()).map(
       ([tag, count]) => ({
         tag,
@@ -157,10 +158,14 @@ export async function tagStats(
 
   // Find unused registered tags
   const unusedTags: string[] = [];
-  if (registry) {
-    for (const tag of registeredTags) {
-      if (!tagCounts.has(tag)) {
-        unusedTags.push(tag);
+  if (tagsData) {
+    for (const category of tagsData.categories) {
+      for (const tagDef of category.tags) {
+        const tag = tagDef.name;
+        registeredTags.add(tag);
+        if (!tagCounts.has(tag)) {
+          unusedTags.push(tag);
+        }
       }
     }
     unusedTags.sort();
@@ -192,7 +197,7 @@ export async function tagStatsCommand(): Promise<void> {
     );
 
     if (!result.tagsFileFound) {
-      console.log(chalk.yellow('\n⚠ Warning: spec/TAGS.md not found'));
+      console.log(chalk.yellow('\n⚠ Warning: spec/tags.json not found'));
     }
 
     if (result.invalidFiles.length > 0) {
@@ -246,58 +251,15 @@ export async function tagStatsCommand(): Promise<void> {
   }
 }
 
-async function loadTagRegistry(cwd: string): Promise<Map<string, string>> {
-  const tagsPath = join(cwd, 'spec', 'TAGS.md');
-  const content = await readFile(tagsPath, 'utf-8');
+async function loadTagsJson(cwd: string): Promise<Tags> {
+  const tagsJsonPath = join(cwd, 'spec', 'tags.json');
 
-  const tagPattern = /\|\s*`(@[a-z0-9-]+)`\s*\|/g;
-  const tags = new Map<string, string>();
-
-  let match;
-  while ((match = tagPattern.exec(content)) !== null) {
-    tags.set(match[1], match[1]);
+  if (!existsSync(tagsJsonPath)) {
+    throw new Error('tags.json not found: spec/tags.json');
   }
 
-  return tags;
-}
+  const content = await readFile(tagsJsonPath, 'utf-8');
+  const tagsData: Tags = JSON.parse(content);
 
-async function loadCategoryMap(cwd: string): Promise<Map<string, string[]>> {
-  const tagsPath = join(cwd, 'spec', 'TAGS.md');
-  const content = await readFile(tagsPath, 'utf-8');
-
-  const categoryMap = new Map<string, string[]>();
-
-  // Match category headers: ## Category Name
-  const categoryPattern = /^## (.+)$/gm;
-  let categoryMatch;
-
-  while ((categoryMatch = categoryPattern.exec(content)) !== null) {
-    const categoryName = categoryMatch[1].trim();
-    const categoryStart = categoryMatch.index;
-
-    // Find the next category or end of file
-    const nextCategoryMatch = content
-      .substring(categoryStart + 1)
-      .match(/^## /m);
-    const categoryEnd = nextCategoryMatch
-      ? categoryStart + 1 + nextCategoryMatch.index
-      : content.length;
-
-    const categoryContent = content.substring(categoryStart, categoryEnd);
-
-    // Extract tags from this category
-    const tags: string[] = [];
-    const tagPattern = /\|\s*`(@[a-z0-9-]+)`\s*\|/g;
-    let tagMatch;
-
-    while ((tagMatch = tagPattern.exec(categoryContent)) !== null) {
-      tags.push(tagMatch[1]);
-    }
-
-    if (tags.length > 0) {
-      categoryMap.set(categoryName, tags);
-    }
-  }
-
-  return categoryMap;
+  return tagsData;
 }

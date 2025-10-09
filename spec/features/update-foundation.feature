@@ -7,22 +7,44 @@
 Feature: Update Foundation Section Content
   """
   Architecture notes:
-  - Updates or creates sections in FOUNDATION.md
-  - Sections are top-level (## headers) in the markdown file
-  - Replaces entire section content while preserving other sections
-  - Creates FOUNDATION.md if it doesn't exist
-  - Preserves diagrams and subsections within replaced section
-  - Uses standard markdown formatting
+  - Reads spec/foundation.json and updates specified fields
+  - Maps section names to JSON structure (e.g., "What We Are Building" -> whatWeAreBuilding.projectOverview)
+  - Validates updated JSON against foundation.schema.json
+  - Regenerates FOUNDATION.md from updated foundation.json using generateFoundationMd()
+  - Creates foundation.json from template if it doesn't exist
+  - All updates go through JSON, MD is always auto-generated
 
   Critical implementation requirements:
-  - MUST accept section name (e.g., "What We Are Building", "Why")
-  - MUST accept section content (multi-line text)
-  - MUST create section if it doesn't exist
-  - MUST replace existing section content completely
-  - MUST preserve other sections in the file
-  - MUST preserve proper markdown structure
-  - MUST handle multi-line content correctly
+  - MUST load foundation.json (or create from template)
+  - MUST accept section name and map to JSON field path
+  - MUST accept section content (string or object depending on field)
+  - MUST update the corresponding JSON field
+  - MUST validate updated JSON against foundation.schema.json
+  - MUST write updated foundation.json
+  - MUST regenerate FOUNDATION.md using generateFoundationMd()
   - Exit code 0 for success, 1 for errors
+
+  Workflow:
+  1. Load spec/foundation.json (or create from template if missing)
+  2. Validate section name is not empty
+  3. Validate content is not empty
+  4. Map section name to JSON field path
+  5. Update the JSON field with new content
+  6. Validate updated JSON against schema
+  7. Write spec/foundation.json
+  8. Regenerate spec/FOUNDATION.md from JSON
+  9. Display success message
+
+  Section name to JSON field mapping:
+  - "projectOverview" -> whatWeAreBuilding.projectOverview
+  - "coreTechnologies" -> whatWeAreBuilding.technicalRequirements.coreTechnologies (array)
+  - "architecture" -> whatWeAreBuilding.technicalRequirements.architecture.pattern
+  - "problemDefinition" -> whyWeAreBuildingIt.problemDefinition.primary.description
+  - Custom sections may be added as needed
+
+  References:
+  - foundation.schema.json: src/schemas/foundation.schema.json
+  - generateFoundationMd(): src/generators/foundation-md.ts
   """
 
   Background: User Story
@@ -128,3 +150,14 @@ Feature: Update Foundation Section Content
     Then the command should exit with code 0
     And the "Why" section should contain only "Second update"
     And previous content should not be present
+
+  Scenario: JSON-backed workflow - modify JSON and regenerate MD
+    Given I have a valid foundation.json file
+    When I run `fspec update-foundation projectOverview "Updated project overview content"`
+    Then the foundation.json file should be updated
+    And the foundation.json should validate against foundation.schema.json
+    And the whatWeAreBuilding.projectOverview field should contain "Updated project overview content"
+    And other foundation.json fields should be preserved
+    And FOUNDATION.md should be regenerated from foundation.json
+    And FOUNDATION.md should contain the updated content
+    And FOUNDATION.md should have the auto-generation warning header

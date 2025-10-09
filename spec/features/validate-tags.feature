@@ -9,17 +9,17 @@
 Feature: Validate Feature File Tags Against Registry
   """
   Architecture notes:
-  - Validates all tags in feature files exist in spec/TAGS.md
+  - Validates all tags in feature files exist in spec/tags.json
   - Parses feature files to extract tags (@tag syntax)
-  - Reads TAGS.md to build registry of valid tags
+  - Reads tags.json to build registry of valid tags
   - Reports unregistered tags with file locations
   - Checks for required tag categories (phase, component, feature-group)
   - Can validate single file or all files
 
   Critical implementation requirements:
-  - MUST read spec/TAGS.md to build tag registry
+  - MUST read spec/tags.json to build tag registry
   - MUST parse all .feature files to extract tags
-  - MUST report any tag not in TAGS.md
+  - MUST report any tag not in tags.json
   - MUST check for required tags (phase, component, feature-group)
   - MUST show file and line number for violations
   - Exit code 0 if all valid, 1 if violations found
@@ -43,23 +43,23 @@ Feature: Validate Feature File Tags Against Registry
 
   Background: User Story
     As a developer maintaining specification tag discipline
-    I want to ensure all tags are registered in TAGS.md
+    I want to ensure all tags are registered in tags.json
     So that tags remain meaningful and searchable across the project
 
   Scenario: Validate tags in a compliant feature file
     Given I have a feature file "spec/features/auth.feature" with tags "@phase1 @cli @authentication"
-    And all tags are registered in "spec/TAGS.md"
+    And all tags are registered in "spec/tags.json"
     When I run `fspec validate-tags spec/features/auth.feature`
     Then the command should exit with code 0
     And the output should contain "✓ All tags in spec/features/auth.feature are registered"
 
   Scenario: Detect unregistered tag
     Given I have a feature file "spec/features/api.feature" with tags "@phase1 @api @custom-tag"
-    And the tag "@custom-tag" is not in "spec/TAGS.md"
+    And the tag "@custom-tag" is not in "spec/tags.json"
     When I run `fspec validate-tags spec/features/api.feature`
     Then the command should exit with code 1
     And the output should contain "Unregistered tag: @custom-tag in spec/features/api.feature"
-    And the output should suggest "Register this tag in spec/TAGS.md or use 'fspec register-tag'"
+    And the output should suggest "Register this tag in spec/tags.json or use 'fspec register-tag'"
 
   Scenario: Validate all feature files
     Given I have feature files with various tags
@@ -92,12 +92,12 @@ Feature: Validate Feature File Tags Against Registry
     Then the command should exit with code 1
     And the output should contain "Missing required feature-group tag"
 
-  Scenario: Handle missing TAGS.md file
-    Given no "spec/TAGS.md" file exists
+  Scenario: Handle missing tags.json file
+    Given no "spec/tags.json" file exists
     When I run `fspec validate-tags`
     Then the command should exit with code 2
-    And the output should contain "TAGS.md not found: spec/TAGS.md"
-    And the output should suggest "Create spec/TAGS.md to track tags"
+    And the output should contain "tags.json not found: spec/tags.json"
+    And the output should suggest "Create spec/tags.json to track tags"
 
   Scenario: Validate tags after creating new feature
     Given I create a new feature with `fspec create-feature "New Feature"`
@@ -129,3 +129,13 @@ Feature: Validate Feature File Tags Against Registry
     Then the hook can warn the AI agent
     And the AI agent can fix tags before proceeding
     And specifications remain compliant with tag registry
+
+  Scenario: JSON-backed workflow - validate against tags.json registry
+    Given I have tags.json with registered tags in multiple categories
+    And I have feature files using both registered and unregistered tags
+    When I run `fspec validate-tags`
+    Then the command should load tag registry from spec/tags.json
+    And validate all tags against the JSON registry
+    And report unregistered tags with file locations
+    And check for required tag categories (phase, component, feature-group)
+    And the command should exit with code 1 if violations found

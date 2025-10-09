@@ -1,13 +1,13 @@
 import { readFile, writeFile } from 'fs/promises';
 import { join } from 'path';
+import { existsSync } from 'fs';
 import chalk from 'chalk';
+import type { Foundation } from '../types/foundation';
 
 interface ShowFoundationOptions {
-  section?: string;
-  format?: 'text' | 'markdown' | 'json';
+  field?: string;
+  format?: 'text' | 'json';
   output?: string;
-  listSections?: boolean;
-  lineNumbers?: boolean;
   cwd?: string;
 }
 
@@ -18,100 +18,70 @@ interface ShowFoundationResult {
   error?: string;
 }
 
+// Map of common field names to JSON paths
+const FIELD_MAP: Record<string, string> = {
+  projectOverview: 'whatWeAreBuilding.projectOverview',
+  problemDefinition: 'whyWeAreBuildingIt.problemDefinition.primary.description',
+  projectName: 'project.name',
+  projectDescription: 'project.description',
+};
+
 export async function showFoundation(
   options: ShowFoundationOptions
 ): Promise<ShowFoundationResult> {
-  const {
-    section,
-    format = 'text',
-    output,
-    listSections = false,
-    lineNumbers = false,
-    cwd = process.cwd(),
-  } = options;
+  const { field, format = 'text', output, cwd = process.cwd() } = options;
+
+  const foundationJsonPath = join(cwd, 'spec/foundation.json');
+
+  // Check if foundation.json exists
+  if (!existsSync(foundationJsonPath)) {
+    return {
+      success: false,
+      error: 'foundation.json not found: spec/foundation.json',
+    };
+  }
 
   try {
-    const foundationPath = join(cwd, 'spec/FOUNDATION.md');
+    // Read foundation.json
+    const content = await readFile(foundationJsonPath, 'utf-8');
+    const foundationData: Foundation = JSON.parse(content);
 
-    // Read FOUNDATION.md
-    let content: string;
-    try {
-      content = await readFile(foundationPath, 'utf-8');
-    } catch {
-      return {
-        success: false,
-        error: 'FOUNDATION.md not found',
-      };
-    }
+    // Get specific field or entire foundation
+    let displayData: any;
 
-    // Parse sections
-    const sections = parseSections(content);
+    if (field) {
+      // Try to get field by direct property name or mapped path
+      const fieldPath = FIELD_MAP[field] || field;
+      displayData = getNestedProperty(foundationData, fieldPath);
 
-    // List sections only
-    if (listSections) {
-      const sectionNames = Object.keys(sections).join('\n');
-
-      if (output) {
-        await writeFile(output, sectionNames, 'utf-8');
-      }
-
-      return {
-        success: true,
-        output: sectionNames,
-        format: 'text',
-      };
-    }
-
-    // Get specific section or all content
-    let displayContent: string;
-
-    if (section) {
-      if (!sections[section]) {
+      if (displayData === undefined) {
         return {
           success: false,
-          error: `Section '${section}' not found`,
+          error: `Field '${field}' not found`,
         };
       }
-      displayContent = sections[section];
     } else {
-      displayContent = content;
+      displayData = foundationData;
     }
 
     // Format output
     let formattedOutput: string;
 
     if (format === 'json') {
-      if (section) {
-        formattedOutput = JSON.stringify(
-          { [section]: displayContent },
-          null,
-          2
-        );
-      } else {
-        formattedOutput = JSON.stringify(sections, null, 2);
-      }
-    } else if (format === 'markdown') {
-      formattedOutput = displayContent;
+      formattedOutput = JSON.stringify(displayData, null, 2);
     } else {
-      // text format - remove markdown headers for cleaner display
-      if (section) {
-        // Remove the section header itself for text format
-        const lines = displayContent.split('\n');
-        const filteredLines = lines.filter(
-          line => !line.trim().startsWith(`## ${section}`)
-        );
-        formattedOutput = filteredLines.join('\n').trim();
+      // text format - convert to readable text
+      if (field) {
+        // For specific field, display as plain text
+        if (typeof displayData === 'string') {
+          formattedOutput = displayData;
+        } else {
+          formattedOutput = JSON.stringify(displayData, null, 2);
+        }
       } else {
-        formattedOutput = displayContent;
+        // For entire foundation, display as readable summary
+        formattedOutput = formatFoundationAsText(foundationData);
       }
-    }
-
-    // Add line numbers if requested
-    if (lineNumbers && format !== 'json') {
-      const lines = formattedOutput.split('\n');
-      formattedOutput = lines
-        .map((line, index) => `${index + 1}: ${line}`)
-        .join('\n');
     }
 
     // Write to file if output specified
@@ -132,55 +102,66 @@ export async function showFoundation(
   }
 }
 
-function parseSections(content: string): Record<string, string> {
-  const sections: Record<string, string> = {};
-  const lines = content.split('\n');
+// Helper function to get nested property by path
+function getNestedProperty(obj: any, path: string): any {
+  const parts = path.split('.');
+  let current = obj;
 
-  let currentSection: string | null = null;
-  let currentContent: string[] = [];
-
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    const trimmed = line.trim();
-
-    // Check if this is a section header (## but not ###)
-    if (trimmed.startsWith('## ') && !trimmed.startsWith('### ')) {
-      // Save previous section if exists
-      if (currentSection !== null) {
-        sections[currentSection] = currentContent.join('\n').trim();
-      }
-
-      // Start new section
-      currentSection = trimmed.substring(3).trim();
-      currentContent = [line]; // Include the header line
-    } else if (currentSection !== null) {
-      // Add line to current section
-      currentContent.push(line);
+  for (const part of parts) {
+    if (current === undefined || current === null) {
+      return undefined;
     }
+    current = current[part];
   }
 
-  // Save last section
-  if (currentSection !== null) {
-    sections[currentSection] = currentContent.join('\n').trim();
+  return current;
+}
+
+// Helper function to format Foundation as readable text
+function formatFoundationAsText(foundation: Foundation): string {
+  const lines: string[] = [];
+
+  lines.push('=== PROJECT ===');
+  lines.push(`Name: ${foundation.project.name}`);
+  lines.push(`Description: ${foundation.project.description}`);
+  lines.push(`Repository: ${foundation.project.repository}`);
+  lines.push(`License: ${foundation.project.license}`);
+  lines.push('');
+
+  lines.push('=== WHAT WE ARE BUILDING ===');
+  lines.push(foundation.whatWeAreBuilding.projectOverview);
+  lines.push('');
+
+  lines.push('=== WHY WE ARE BUILDING IT ===');
+  lines.push(
+    `Problem: ${foundation.whyWeAreBuildingIt.problemDefinition.primary.title}`
+  );
+  lines.push(
+    foundation.whyWeAreBuildingIt.problemDefinition.primary.description
+  );
+  lines.push('');
+
+  if (foundation.architectureDiagrams.length > 0) {
+    lines.push('=== ARCHITECTURE DIAGRAMS ===');
+    foundation.architectureDiagrams.forEach(diagram => {
+      lines.push(`- ${diagram.title}`);
+    });
+    lines.push('');
   }
 
-  return sections;
+  return lines.join('\n');
 }
 
 export async function showFoundationCommand(options: {
-  section?: string;
+  field?: string;
   format?: string;
   output?: string;
-  listSections?: boolean;
-  lineNumbers?: boolean;
 }): Promise<void> {
   try {
     const result = await showFoundation({
-      section: options.section,
-      format: (options.format as 'text' | 'markdown' | 'json') || 'text',
+      field: options.field,
+      format: (options.format as 'text' | 'json') || 'text',
       output: options.output,
-      listSections: options.listSections,
-      lineNumbers: options.lineNumbers,
     });
 
     if (!result.success) {

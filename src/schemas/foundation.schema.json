@@ -1,0 +1,493 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://fspec.dev/schemas/foundation.schema.json",
+  "title": "fspec Foundation Document Schema",
+  "description": "JSON Schema for fspec foundation.json - the source of truth for FOUNDATION.md",
+  "type": "object",
+  "required": [
+    "project",
+    "whatWeAreBuilding",
+    "whyWeAreBuildingIt",
+    "architectureDiagrams",
+    "coreCommands",
+    "featureInventory",
+    "notes"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Path to this schema file"
+    },
+    "project": {
+      "type": "object",
+      "required": ["name", "description", "repository", "license", "importantNote"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Project name"
+        },
+        "description": {
+          "type": "string",
+          "description": "Brief project description"
+        },
+        "repository": {
+          "type": "string",
+          "format": "uri",
+          "description": "GitHub repository URL"
+        },
+        "license": {
+          "type": "string",
+          "description": "License type (e.g., MIT)"
+        },
+        "importantNote": {
+          "type": "string",
+          "description": "Important disclaimer or note about the project"
+        }
+      }
+    },
+    "whatWeAreBuilding": {
+      "type": "object",
+      "required": ["projectOverview", "technicalRequirements", "nonFunctionalRequirements"],
+      "properties": {
+        "projectOverview": {
+          "type": "string",
+          "description": "High-level project overview"
+        },
+        "technicalRequirements": {
+          "type": "object",
+          "required": ["coreTechnologies", "architecture", "developmentAndOperations", "keyLibraries"],
+          "properties": {
+            "coreTechnologies": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["category", "name"],
+                "properties": {
+                  "category": { "type": "string" },
+                  "name": { "type": "string" },
+                  "description": { "type": "string" }
+                }
+              }
+            },
+            "architecture": {
+              "type": "object",
+              "required": ["pattern", "fileStructure", "deploymentTarget", "integrationModel"],
+              "properties": {
+                "pattern": { "type": "string" },
+                "fileStructure": { "type": "string" },
+                "deploymentTarget": { "type": "string" },
+                "integrationModel": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                }
+              }
+            },
+            "developmentAndOperations": {
+              "type": "object",
+              "required": ["developmentTools", "testingStrategy", "logging", "validation", "formatting"],
+              "properties": {
+                "developmentTools": { "type": "string" },
+                "testingStrategy": { "type": "string" },
+                "logging": { "type": "string" },
+                "validation": { "type": "string" },
+                "formatting": { "type": "string" }
+              }
+            },
+            "keyLibraries": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["category", "libraries"],
+                "properties": {
+                  "category": { "type": "string" },
+                  "libraries": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": ["name", "description"],
+                      "properties": {
+                        "name": { "type": "string" },
+                        "description": { "type": "string" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "nonFunctionalRequirements": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["category", "requirements"],
+            "properties": {
+              "category": { "type": "string" },
+              "requirements": {
+                "type": "array",
+                "items": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "whyWeAreBuildingIt": {
+      "type": "object",
+      "required": [
+        "problemDefinition",
+        "painPoints",
+        "stakeholderImpact",
+        "theoreticalSolutions",
+        "developmentMethodology",
+        "successCriteria",
+        "constraintsAndAssumptions"
+      ],
+      "properties": {
+        "problemDefinition": {
+          "type": "object",
+          "required": ["primary", "secondary"],
+          "properties": {
+            "primary": {
+              "type": "object",
+              "required": ["title", "description", "points"],
+              "properties": {
+                "title": { "type": "string" },
+                "description": { "type": "string" },
+                "points": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                }
+              }
+            },
+            "secondary": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        },
+        "painPoints": {
+          "type": "object",
+          "required": ["currentState", "specific"],
+          "properties": {
+            "currentState": { "type": "string" },
+            "specific": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["title", "impact", "frequency", "cost"],
+                "properties": {
+                  "title": { "type": "string" },
+                  "impact": { "type": "string" },
+                  "frequency": { "type": "string" },
+                  "cost": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "stakeholderImpact": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["stakeholder", "description"],
+            "properties": {
+              "stakeholder": { "type": "string" },
+              "description": { "type": "string" }
+            }
+          }
+        },
+        "theoreticalSolutions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["title", "selected", "description", "pros", "cons", "feasibility"],
+            "properties": {
+              "title": { "type": "string" },
+              "selected": { "type": "boolean" },
+              "description": { "type": "string" },
+              "pros": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "cons": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "feasibility": { "type": "string" }
+            }
+          }
+        },
+        "developmentMethodology": {
+          "type": "object",
+          "required": ["name", "description", "steps", "ensures"],
+          "properties": {
+            "name": { "type": "string" },
+            "description": { "type": "string" },
+            "steps": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "ensures": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        },
+        "successCriteria": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["title", "criteria"],
+            "properties": {
+              "title": { "type": "string" },
+              "criteria": {
+                "type": "array",
+                "items": { "type": "string" }
+              }
+            }
+          }
+        },
+        "constraintsAndAssumptions": {
+          "type": "object",
+          "required": ["constraints", "assumptions"],
+          "properties": {
+            "constraints": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["category", "items"],
+                "properties": {
+                  "category": { "type": "string" },
+                  "items": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                  }
+                }
+              }
+            },
+            "assumptions": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["category", "items"],
+                "properties": {
+                  "category": { "type": "string" },
+                  "items": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "architectureDiagrams": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["title", "mermaidCode"],
+        "properties": {
+          "title": { "type": "string" },
+          "mermaidCode": { "type": "string" },
+          "description": { "type": "string" }
+        }
+      }
+    },
+    "coreCommands": {
+      "type": "object",
+      "required": ["categories"],
+      "properties": {
+        "categories": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["title", "commands"],
+            "properties": {
+              "title": { "type": "string" },
+              "commands": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["command", "description", "status"],
+                  "properties": {
+                    "command": { "type": "string" },
+                    "description": { "type": "string" },
+                    "status": {
+                      "type": "string",
+                      "enum": ["✅", "🚧", "📋"]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "featureInventory": {
+      "type": "object",
+      "required": ["phases", "tagUsageSummary"],
+      "properties": {
+        "phases": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["phase", "title", "description", "features"],
+            "properties": {
+              "phase": { "type": "string" },
+              "title": { "type": "string" },
+              "description": { "type": "string" },
+              "features": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["featureFile", "command", "description"],
+                  "properties": {
+                    "featureFile": { "type": "string" },
+                    "command": { "type": "string" },
+                    "description": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tagUsageSummary": {
+          "type": "object",
+          "required": [
+            "phaseDistribution",
+            "componentDistribution",
+            "featureGroupDistribution",
+            "priorityDistribution",
+            "testingCoverage"
+          ],
+          "properties": {
+            "phaseDistribution": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["tag", "count", "percentage"],
+                "properties": {
+                  "tag": { "type": "string" },
+                  "count": { "type": "integer" },
+                  "percentage": { "type": "string" }
+                }
+              }
+            },
+            "componentDistribution": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["tag", "count", "percentage"],
+                "properties": {
+                  "tag": { "type": "string" },
+                  "count": { "type": "integer" },
+                  "percentage": { "type": "string" }
+                }
+              }
+            },
+            "featureGroupDistribution": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["tag", "count", "percentage"],
+                "properties": {
+                  "tag": { "type": "string" },
+                  "count": { "type": "integer" },
+                  "percentage": { "type": "string" }
+                }
+              }
+            },
+            "priorityDistribution": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["tag", "count", "percentage"],
+                "properties": {
+                  "tag": { "type": "string" },
+                  "count": { "type": "integer" },
+                  "percentage": { "type": "string" }
+                }
+              }
+            },
+            "testingCoverage": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["tag", "count", "percentage"],
+                "properties": {
+                  "tag": { "type": "string" },
+                  "count": { "type": "integer" },
+                  "percentage": { "type": "string" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "notes": {
+      "type": "object",
+      "required": ["developmentStatus"],
+      "properties": {
+        "developmentStatus": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["phase", "title", "status", "items"],
+            "properties": {
+              "phase": { "type": "string" },
+              "title": { "type": "string" },
+              "status": {
+                "type": "string",
+                "enum": ["COMPLETE", "IN_PROGRESS", "PLANNED"]
+              },
+              "items": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "testCoverage": { "type": "string" },
+              "progress": { "type": "string" }
+            }
+          }
+        },
+        "integrationNotes": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string" },
+            "content": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        },
+        "projectName": {
+          "type": "object",
+          "properties": {
+            "name": { "type": "string" },
+            "description": { "type": "string" },
+            "repository": { "type": "string" }
+          }
+        },
+        "futureEnhancements": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["title", "description"],
+            "properties": {
+              "title": { "type": "string" },
+              "description": { "type": "string" },
+              "details": {
+                "type": "array",
+                "items": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -9,7 +9,7 @@ Feature: Run All Validations
   Architecture notes:
   - Runs all validation checks in one command
   - Validates Gherkin syntax in all feature files
-  - Validates tags against TAGS.md registry
+  - Validates tags against tags.json registry
   - Checks formatting with Prettier
   - Combines validate, validate-tags, and format --check
   - Returns aggregate status of all checks
