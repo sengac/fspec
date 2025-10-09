@@ -6,7 +6,7 @@ A standardized CLI tool that provides AI agents with a structured interface for 
 
 **The Problem:**
 - AI agents default to unstructured markdown for specifications
-- Companies create proprietary spec formats (like spec-kit) ignoring 15+ years of BDD maturity
+- Some tools (like spec-kit) rely on AI to maintain specs rather than providing structured tooling, which can lead to inconsistency
 - No standard interface guides AI to capture the right information (user stories, acceptance criteria, architecture)
 - Malformed Gherkin breaks Cucumber tooling and testing workflows
 
