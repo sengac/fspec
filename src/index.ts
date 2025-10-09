@@ -394,10 +394,13 @@ program
     helpWidth: 100
   })
   .addHelpCommand(false)
-  .helpOption('-h, --help', 'Display help information')
-  .on('--help', () => {
-    displayCustomHelp();
-  });
+  .helpOption(false); // Disable default help
+
+// Override help handling completely
+program.on('option:help', () => {
+  displayCustomHelp();
+  process.exit(0);
+});
 
 // Add custom help command
 program
@@ -405,6 +408,22 @@ program
   .description('Display help for command groups')
   .argument('[group]', 'Help topic: spec, tags, foundation, query, project')
   .action(handleHelpCommand);
+
+// Handle -h and --help flags manually
+const args = process.argv;
+if (args.includes('-h') || args.includes('--help')) {
+  if (args.length === 3) {
+    // Just "fspec --help" or "fspec -h"
+    displayCustomHelp();
+    process.exit(0);
+  }
+}
+
+// Show custom help when no command is provided
+if (args.length === 2) {
+  displayCustomHelp();
+  process.exit(0);
+}
 
 // Validate command
 program
