@@ -44,19 +44,20 @@ Tags that categorize features by functional area.
 
 | Tag | Description | Usage |
 |-----|-------------|-------|
-| `@feature-management` | Feature File Operations |  |
-| `@foundation-management` | FOUNDATION.md Operations |  |
-| `@tag-management` | TAGS.md Operations |  |
-| `@validation` | Syntax & Structure Validation |  |
-| `@querying` | Query & Search Operations |  |
-| `@formatting` | Auto-Formatting |  |
-| `@modification` | Feature Modification Operations |  |
+| `@authentication` | Authentication and authorization functionality |  |
 | `@bulk-operations` | Bulk Multi-File Operations |  |
 | `@documentation` | Documentation Display |  |
-| `@read-only` | Read-Only Operations |  |
-| `@utility` | Utility & Helper Commands |  |
-| `@scaffolding` | Project Setup & Templates |  |
+| `@feature-management` | Feature File Operations |  |
+| `@formatting` | Auto-Formatting |  |
+| `@foundation-management` | FOUNDATION.md Operations |  |
 | `@migration` | Migration & Data Transformation |  |
+| `@modification` | Feature Modification Operations |  |
+| `@querying` | Query & Search Operations |  |
+| `@read-only` | Read-Only Operations |  |
+| `@scaffolding` | Project Setup & Templates |  |
+| `@tag-management` | TAGS.md Operations |  |
+| `@utility` | Utility & Helper Commands |  |
+| `@validation` | Syntax & Structure Validation |  |
 
 **Rule**: Every feature file MUST have at least ONE feature group tag.
 
@@ -66,16 +67,19 @@ Tags for specific technical concerns or architectural patterns.
 
 | Tag | Description | Usage |
 |-----|-------------|-------|
-| `@gherkin` | Gherkin Specification Compliance |  |
-| `@cucumber-parser` | Cucumber Parser Integration |  |
 | `@ast` | Abstract Syntax Tree |  |
-| `@mermaid` | Mermaid Diagram Support |  |
+| `@cucumber-parser` | Cucumber Parser Integration |  |
+| `@email` | Email-related functionality |  |
 | `@error-handling` | Error Handling |  |
 | `@file-system` | File System Operations |  |
-| `@template` | Template System |  |
+| `@gherkin` | Gherkin Specification Compliance |  |
+| `@internal` | Internal Utility |  |
 | `@json-backed` | JSON-Backed Documentation |  |
 | `@json-schema` | JSON Schema Validation |  |
-| `@internal` | Internal Utility |  |
+| `@mermaid` | Mermaid Diagram Support |  |
+| `@push` | Push notification functionality |  |
+| `@sms` | SMS-related functionality |  |
+| `@template` | Template System |  |
 
 **Rule**: Use technical tags to highlight specific architectural concerns.
 
@@ -125,10 +129,16 @@ Tags for test-related scenarios and requirements.
 
 | Tag | Description | Usage |
 |-----|-------------|-------|
-| `@unit-test` | Unit Test Coverage Required |  |
-| `@integration-test` | Integration Test Required |  |
 | `@e2e-test` | End-to-End Test Required |  |
+| `@edge-case` | Edge case tests - validation of boundary conditions and unusual scenarios |  |
+| `@integration-test` | Integration Test Required |  |
 | `@manual-test` | Requires Manual Testing |  |
+| `@regression` | Regression tests - comprehensive validation of existing functionality |  |
+| `@smoke` | Smoke tests - quick validation of critical functionality |  |
+| `@unit-test` | Unit Test Coverage Required |  |
+| `@unregistered-scenario-tag` | Example tag used in test scenarios to demonstrate error handling |  |
+| `@unregistered-tag1` | Example tag used in test scenarios to demonstrate error handling |  |
+| `@unregistered-tag2` | Example tag used in test scenarios to demonstrate error handling |  |
 
 **Rule**: Use testing tags to indicate what level of testing is required for a scenario.
 

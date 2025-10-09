@@ -79,7 +79,11 @@ Feature: Gherkin Syntax Validation
 
 ### 4. Tags MUST Be Used for Organization
 
-Every feature file MUST have tags at the top following the `@tag` syntax.
+Tags can be applied at both **feature level** and **scenario level** following the `@tag` syntax.
+
+#### Feature-Level Tags (Required)
+
+Every feature file MUST have these tags at the top:
 
 **Required Tags**:
 - **Phase Tag**: `@phase1`, `@phase2`, `@phase3` (from FOUNDATION.md phases)
@@ -94,13 +98,51 @@ Every feature file MUST have tags at the top following the `@tag` syntax.
 - **Testing Tags**: `@unit-test`, `@integration-test`, `@e2e-test`, `@manual-test`
 - **CAGE Integration Tags**: `@cage-hook`, `@execa`, `@acdd`, `@spec-alignment`
 
-**Tag Registry**: All tags MUST be documented in `spec/TAGS.md` with their purpose and usage guidelines.
-
-**Example**:
+**Feature-Level Example**:
 ```gherkin
 @phase1 @cli @parser @validation @gherkin @cucumber-parser @cross-platform @critical @integration-test
 Feature: Gherkin Syntax Validation
 ```
+
+#### Scenario-Level Tags (Optional)
+
+Individual scenarios can have their own tags for more granular organization:
+
+**Common Scenario Tags**:
+- **Test Type**: `@smoke`, `@regression`, `@sanity`, `@acceptance`
+- **Test Scope**: `@edge-case`, `@happy-path`, `@error-handling`
+- **Environment**: `@local`, `@staging`, `@production`
+- **Work Units**: `@AUTH-001`, `@DASH-002` (as defined in project-management.md)
+
+**Scenario-Level Example**:
+```gherkin
+@phase1
+@authentication
+@cli
+Feature: User Login
+
+  @smoke
+  @critical
+  Scenario: Successful login with valid credentials
+    Given I am on the login page
+    When I enter valid credentials
+    Then I should be logged in
+
+  @regression
+  @edge-case
+  Scenario: Login with expired session
+    Given I have an expired session
+    When I attempt to login
+    Then I should be prompted to re-authenticate
+```
+
+**Important Notes**:
+- Scenarios **inherit** all feature-level tags automatically
+- Scenario-level tags are **optional** and used for fine-grained filtering
+- Required tags (phase, component, feature-group) only apply to feature-level tags
+- All tags (feature-level and scenario-level) MUST be registered in `spec/tags.json`
+
+**Tag Registry**: All tags MUST be documented in `spec/TAGS.md` with their purpose and usage guidelines.
 
 ## File Structure and Organization
 
@@ -222,10 +264,12 @@ fspec check
 
 4. **Proper Gherkin Syntax**
    - Use only valid Gherkin keywords: Feature, Background, Scenario, Scenario Outline, Given, When, Then, And, But, Examples
-   - Follow indentation conventions (2 spaces)
+   - Follow indentation conventions (2 spaces for scenarios, 4 spaces for steps)
    - Use doc strings (""") for multi-line text blocks
    - Use data tables (|) for tabular data if needed
-   - Use tags (@) at feature and scenario level
+   - Use tags (@) at **both feature level and scenario level**
+   - Feature-level tags have zero indentation
+   - Scenario-level tags have 2-space indentation (same as scenario keyword)
 
 5. **Formatting Before Commit**
    - Run `fspec format` before committing changes
