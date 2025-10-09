@@ -4,13 +4,13 @@
 
 # fspec Project Foundation Document
 
-**IMPORTANT NOTE:** This is a legitimate developer tool that provides AI agents with a standardized interface for managing Gherkin-based specifications. fspec prevents ecosystem fragmentation by promoting industry-standard BDD practices over proprietary documentation formats. This tool helps AI agents ask the right questions and structure specifications correctly using battle-tested Gherkin/Cucumber conventions.
+**IMPORTANT NOTE:** This is a legitimate developer tool that provides AI agents with a standardized interface for managing Gherkin-based specifications and project management. fspec prevents ecosystem fragmentation by promoting industry-standard BDD practices over proprietary documentation formats. This tool helps AI agents ask the right questions and structure specifications correctly using battle-tested Gherkin/Cucumber conventions.
 
 ## 1. What We Are Building
 
 ### Project Overview
 
-A CLI tool that provides AI agents (like Claude Code, GitHub Copilot, etc.) with a standardized interface for creating, validating, and managing Gherkin-based feature specifications. fspec acts as the canonical interface between AI agents and BDD specifications, ensuring proper Gherkin syntax, enforcing tag discipline, maintaining architecture documentation (Mermaid diagrams in FOUNDATION.md), and keeping the tag registry (TAGS.md) synchronized with actual usage. It is designed for developers practicing Acceptance Criteria Driven Development (ACDD) with AI assistance, particularly those using CAGE or similar agentic coding systems.
+A CLI tool that provides AI agents (like Claude Code, GitHub Copilot, etc.) with a standardized interface for creating, validating, and managing Gherkin-based feature specifications and project work units. fspec has two main purposes: (1) Specification Management - acts as the canonical interface between AI agents and BDD specifications, ensuring proper Gherkin syntax, enforcing tag discipline, maintaining architecture documentation (Mermaid diagrams), and keeping the tag registry synchronized; (2) Project Management - provides tag-based work unit tracking with Kanban workflow (backlog → specifying → testing → implementing → validating → done), example mapping support, dependency management, and estimation/metrics tracking. It is designed for developers practicing Acceptance Criteria Driven Development (ACDD) with AI assistance, particularly those using CAGE or similar agentic coding systems.
 
 ### Technical Requirements
 
@@ -277,6 +277,17 @@ sequenceDiagram
 - `fspec format [file]` - Format using Prettier (all files or specific) ✅
 - `fspec check [--verbose]` - Run all validations (syntax + tags + formatting) ✅
 
+### Project Management Commands (Phase 7 - Planned)
+
+- `fspec create-work-unit <tag> <title>` - Create work unit with PM metadata 📋
+- `fspec move-work <tag> <status>` - Move through Kanban workflow 📋
+- `fspec add-example-map <tag>` - Add example mapping 📋
+- `fspec link-work <tag> --blocks=<tag>` - Manage dependencies 📋
+- `fspec estimate <tag> --points=<num>` - Add estimation/metrics 📋
+- `fspec create-epic <tag> <title>` - Create epic 📋
+- `fspec project-status` - Generate project reports 📋
+- `fspec cage-sync` - Sync with CAGE 📋
+
 ---
 
 ## 5. Feature File Inventory
@@ -351,6 +362,21 @@ sequenceDiagram
 | add-diagram.feature | `fspec add-diagram <section> <title> <code>` | Add/update Mermaid diagram in FOUNDATION.md |
 | update-foundation.feature | `fspec update-foundation <section> <content>` | Update FOUNDATION.md section content |
 | show-foundation.feature | `fspec show-foundation [options]` | Display FOUNDATION.md with multiple format options |
+
+### Project Management & Work Units (8 features)
+
+Tag-based project management with Kanban workflow
+
+| Feature File | Command | Description |
+|--------------|---------|-------------|
+| work-unit-management.feature | `fspec create-work-unit <tag> <title>` | Create work unit (scenario) with project management metadata |
+| kanban-workflow.feature | `fspec move-work <tag> <status>` | Move work unit through Kanban workflow (backlog → specifying → testing → implementing → validating → done) |
+| example-mapping.feature | `fspec add-example-map <tag>` | Add example mapping (rules, examples, questions, assumptions) to work unit |
+| work-dependencies.feature | `fspec link-work <tag> --blocks=<tag>` | Manage work unit dependencies (blocks, blockedBy, dependsOn, relatesTo) |
+| work-estimation.feature | `fspec estimate <tag> --points=<num>` | Add estimation and track metrics (story points, actual tokens, iterations) |
+| epic-management.feature | `fspec create-epic <tag> <title>` | Create and manage epics (collections of related work units) |
+| project-reporting.feature | `fspec project-status` | Generate project reports (burndown, velocity, work breakdown) |
+| cage-integration-pm.feature | `fspec cage-sync` | Sync project state with CAGE for AI-driven workflow automation |
 
 ### Tag Usage Summary
 
@@ -440,6 +466,18 @@ sequenceDiagram
 - Diagram validation and formatting
 
 **Test Coverage:** 41 tests, all passing
+
+#### 📋 Project Management & Work Units (PLANNED)
+- Tag-based work unit management
+- Kanban workflow (backlog → specifying → testing → implementing → validating → done)
+- Example mapping integration (rules, examples, questions, assumptions)
+- Dependency tracking (blocks, blockedBy, dependsOn, relatesTo)
+- Estimation & metrics (story points, actual tokens, iterations)
+- Epic management (collections of related work units)
+- Project reporting (burndown, velocity, work breakdown)
+- CAGE integration for AI-driven workflow automation
+
+**Test Coverage:** Not yet implemented
 
 ### Project Name: fspec
 

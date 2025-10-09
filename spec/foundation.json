@@ -2,13 +2,13 @@
   "$schema": "../src/schemas/foundation.schema.json",
   "project": {
     "name": "fspec",
-    "description": "A standardized CLI tool for AI agents to manage Gherkin-based feature specifications using Acceptance Criteria Driven Development (ACDD)",
+    "description": "A standardized CLI tool for AI agents to manage Gherkin-based feature specifications and project work units using Acceptance Criteria Driven Development (ACDD)",
     "repository": "https://github.com/rquast/fspec",
     "license": "MIT",
-    "importantNote": "This is a legitimate developer tool that provides AI agents with a standardized interface for managing Gherkin-based specifications. fspec prevents ecosystem fragmentation by promoting industry-standard BDD practices over proprietary documentation formats. This tool helps AI agents ask the right questions and structure specifications correctly using battle-tested Gherkin/Cucumber conventions."
+    "importantNote": "This is a legitimate developer tool that provides AI agents with a standardized interface for managing Gherkin-based specifications and project management. fspec prevents ecosystem fragmentation by promoting industry-standard BDD practices over proprietary documentation formats. This tool helps AI agents ask the right questions and structure specifications correctly using battle-tested Gherkin/Cucumber conventions."
   },
   "whatWeAreBuilding": {
-    "projectOverview": "A CLI tool that provides AI agents (like Claude Code, GitHub Copilot, etc.) with a standardized interface for creating, validating, and managing Gherkin-based feature specifications. fspec acts as the canonical interface between AI agents and BDD specifications, ensuring proper Gherkin syntax, enforcing tag discipline, maintaining architecture documentation (Mermaid diagrams in FOUNDATION.md), and keeping the tag registry (TAGS.md) synchronized with actual usage. It is designed for developers practicing Acceptance Criteria Driven Development (ACDD) with AI assistance, particularly those using CAGE or similar agentic coding systems.",
+    "projectOverview": "A CLI tool that provides AI agents (like Claude Code, GitHub Copilot, etc.) with a standardized interface for creating, validating, and managing Gherkin-based feature specifications and project work units. fspec has two main purposes: (1) Specification Management - acts as the canonical interface between AI agents and BDD specifications, ensuring proper Gherkin syntax, enforcing tag discipline, maintaining architecture documentation (Mermaid diagrams), and keeping the tag registry synchronized; (2) Project Management - provides tag-based work unit tracking with Kanban workflow (backlog → specifying → testing → implementing → validating → done), example mapping support, dependency management, and estimation/metrics tracking. It is designed for developers practicing Acceptance Criteria Driven Development (ACDD) with AI assistance, particularly those using CAGE or similar agentic coding systems.",
     "technicalRequirements": {
       "coreTechnologies": [
         {
@@ -632,6 +632,51 @@
             "status": "✅"
           }
         ]
+      },
+      {
+        "title": "Project Management Commands (Phase 7 - Planned)",
+        "commands": [
+          {
+            "command": "fspec create-work-unit <tag> <title>",
+            "description": "Create work unit with PM metadata",
+            "status": "📋"
+          },
+          {
+            "command": "fspec move-work <tag> <status>",
+            "description": "Move through Kanban workflow",
+            "status": "📋"
+          },
+          {
+            "command": "fspec add-example-map <tag>",
+            "description": "Add example mapping",
+            "status": "📋"
+          },
+          {
+            "command": "fspec link-work <tag> --blocks=<tag>",
+            "description": "Manage dependencies",
+            "status": "📋"
+          },
+          {
+            "command": "fspec estimate <tag> --points=<num>",
+            "description": "Add estimation/metrics",
+            "status": "📋"
+          },
+          {
+            "command": "fspec create-epic <tag> <title>",
+            "description": "Create epic",
+            "status": "📋"
+          },
+          {
+            "command": "fspec project-status",
+            "description": "Generate project reports",
+            "status": "📋"
+          },
+          {
+            "command": "fspec cage-sync",
+            "description": "Sync with CAGE",
+            "status": "📋"
+          }
+        ]
       }
     ]
   },
@@ -821,6 +866,61 @@
             "featureFile": "show-foundation.feature",
             "command": "fspec show-foundation [options]",
             "description": "Display FOUNDATION.md with multiple format options"
+          }
+        ]
+      },
+      {
+        "phase": "phase7",
+        "title": "Project Management & Work Units",
+        "description": "Tag-based project management with Kanban workflow",
+        "features": [
+          {
+            "featureFile": "work-unit-management.feature",
+            "command": "fspec create-work-unit <tag> <title>",
+            "description": "Create work unit (scenario) with project management metadata",
+            "status": "📋 PLANNED"
+          },
+          {
+            "featureFile": "kanban-workflow.feature",
+            "command": "fspec move-work <tag> <status>",
+            "description": "Move work unit through Kanban workflow (backlog → specifying → testing → implementing → validating → done)",
+            "status": "📋 PLANNED"
+          },
+          {
+            "featureFile": "example-mapping.feature",
+            "command": "fspec add-example-map <tag>",
+            "description": "Add example mapping (rules, examples, questions, assumptions) to work unit",
+            "status": "📋 PLANNED"
+          },
+          {
+            "featureFile": "work-dependencies.feature",
+            "command": "fspec link-work <tag> --blocks=<tag>",
+            "description": "Manage work unit dependencies (blocks, blockedBy, dependsOn, relatesTo)",
+            "status": "📋 PLANNED"
+          },
+          {
+            "featureFile": "work-estimation.feature",
+            "command": "fspec estimate <tag> --points=<num>",
+            "description": "Add estimation and track metrics (story points, actual tokens, iterations)",
+            "status": "📋 PLANNED"
+          },
+          {
+            "featureFile": "epic-management.feature",
+            "command": "fspec create-epic <tag> <title>",
+            "description": "Create and manage epics (collections of related work units)",
+            "status": "📋 PLANNED"
+          },
+          {
+            "featureFile": "project-reporting.feature",
+            "command": "fspec project-status",
+            "description": "Generate project reports (burndown, velocity, work breakdown)",
+            "status": "📋 PLANNED"
+          },
+          {
+            "featureFile": "cage-integration-pm.feature",
+            "command": "fspec cage-sync",
+            "description": "Sync project state with CAGE for AI-driven workflow automation",
+            "status": "📋 PLANNED"
           }
         ]
       }
@@ -1078,6 +1178,22 @@
           "Diagram validation and formatting"
         ],
         "testCoverage": "41 tests, all passing"
+      },
+      {
+        "phase": "phase7",
+        "title": "Project Management & Work Units",
+        "status": "PLANNED",
+        "items": [
+          "Tag-based work unit management",
+          "Kanban workflow (backlog → specifying → testing → implementing → validating → done)",
+          "Example mapping integration (rules, examples, questions, assumptions)",
+          "Dependency tracking (blocks, blockedBy, dependsOn, relatesTo)",
+          "Estimation & metrics (story points, actual tokens, iterations)",
+          "Epic management (collections of related work units)",
+          "Project reporting (burndown, velocity, work breakdown)",
+          "CAGE integration for AI-driven workflow automation"
+        ],
+        "testCoverage": "Not yet implemented"
       }
     ],
     "integrationNotes": {
