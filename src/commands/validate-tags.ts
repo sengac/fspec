@@ -186,10 +186,22 @@ async function validateFileTags(
     }
 
     // Extract tags from feature
-    const tags = gherkinDocument.feature.tags.map(t => t.name);
+    const featureTags = gherkinDocument.feature.tags.map(t => t.name);
 
-    // Check for unregistered tags
-    const unregisteredTags = tags.filter(tag => !registry.validTags.has(tag));
+    // Extract tags from scenarios
+    const scenarioTags: string[] = [];
+    for (const child of gherkinDocument.feature.children) {
+      if (child.scenario) {
+        scenarioTags.push(...child.scenario.tags.map(t => t.name));
+      }
+    }
+
+    // Combine all tags for validation (feature tags + scenario tags)
+    const allTags = [...featureTags, ...scenarioTags];
+    const tags = featureTags; // Only feature tags for required category checks
+
+    // Check for unregistered tags (both feature and scenario level)
+    const unregisteredTags = allTags.filter(tag => !registry.validTags.has(tag));
     if (unregisteredTags.length > 0) {
       result.valid = false;
       for (const tag of unregisteredTags) {

@@ -8,9 +8,9 @@ Feature: Get Scenarios by Tag
   """
   Architecture notes:
   - Reads all feature files and parses with @cucumber/gherkin
-  - Filters scenarios based on feature-level tags (scenarios inherit feature tags)
-
-
+  - Filters scenarios based on BOTH feature-level tags AND scenario-level tags
+  - Scenarios inherit feature tags AND can have their own scenario-level tags
+  - Tag matching checks both feature tags and scenario tags
   - Supports multiple tag filtering with AND logic (all tags must match)
   - Returns scenario names, feature file paths, and line numbers
   - Useful for finding scenarios to review, update, or delete
@@ -18,10 +18,8 @@ Feature: Get Scenarios by Tag
 
   Critical implementation requirements:
   - MUST parse all feature files in spec/features/
-  - MUST match scenarios by feature-level tags (scenarios don't have own tags in
-
-
-  Gherkin)
+  - MUST match scenarios by BOTH feature-level AND scenario-level tags
+  - MUST support filtering by scenario-specific tags (e.g., @smoke, @regression)
   - MUST support multiple --tag flags with AND logic
   - MUST return feature path, scenario name, and line number
   - MUST handle missing spec/features/ directory gracefully
@@ -30,7 +28,7 @@ Feature: Get Scenarios by Tag
 
   References:
   - Gherkin parser: @cucumber/gherkin
-  - Tag filtering: Same logic as list-features
+  - Tag filtering: Checks both feature.tags and scenario.tags
   """
 
   Background: User Story
@@ -116,3 +114,123 @@ Feature: Get Scenarios by Tag
     And 6 of them are in features tagged @critical
     When I run `fspec get-scenarios --tag=@critical`
     Then the output should show "Found 6 scenarios matching tags: @critical"
+
+  Scenario: Filter scenarios by scenario-level tags
+    Given I have a feature file with scenario-level tags:
+      """
+      Feature: User Authentication
+
+        @smoke
+        Scenario: Quick login test
+          Given I am on the login page
+          When I enter credentials
+          Then I am logged in
+
+        @regression
+        @edge-case
+        Scenario: Login with expired session
+          Given I have an expired session
+          When I attempt to login
+          Then I am prompted to re-authenticate
+
+        Scenario: Standard login
+          Given I am on the login page
+          When I enter valid credentials
+          Then I should be logged in
+      """
+    When I run `fspec get-scenarios --tag=@smoke`
+    Then the command should exit with code 0
+    And the output should show only the "Quick login test" scenario
+    And the output should not show "Login with expired session"
+    And the output should not show "Standard login"
+
+  Scenario: Filter scenarios by multiple scenario-level tags with AND logic
+    Given I have a feature file with multiple scenario tags:
+      """
+      Feature: User Authentication
+
+        @smoke
+        @critical
+        Scenario: Critical smoke test
+          Given a step
+          When another step
+          Then result
+
+        @smoke
+        Scenario: Regular smoke test
+          Given a step
+          When another step
+          Then result
+
+        @regression
+        @critical
+        Scenario: Critical regression test
+          Given a step
+          When another step
+          Then result
+      """
+    When I run `fspec get-scenarios --tag=@smoke --tag=@critical`
+    Then the output should show only "Critical smoke test"
+    And the output should not show "Regular smoke test"
+    And the output should not show "Critical regression test"
+
+  Scenario: Match scenarios with inherited feature tags
+    Given I have a feature file with feature-level tags:
+      """
+      @phase1
+      @authentication
+      Feature: User Login
+
+        Scenario: Basic login
+          Given I am on the login page
+          When I enter credentials
+          Then I am logged in
+
+        @smoke
+        Scenario: Quick test
+          Given a quick test
+          When I run it
+          Then it passes
+      """
+    When I run `fspec get-scenarios --tag=@phase1`
+    Then the output should show both scenarios
+    And both scenarios inherit the @phase1 tag from the feature
+
+  Scenario: Filter scenarios combining feature tags and scenario tags
+    Given I have a feature file with both feature and scenario tags:
+      """
+      @phase1
+      @authentication
+      Feature: User Login
+
+        @smoke
+        Scenario: Smoke test login
+          Given I am on the login page
+          When I enter credentials
+          Then I am logged in
+
+        @regression
+        Scenario: Regression test login
+          Given I am on the login page
+          When I enter different credentials
+          Then I am logged in
+      """
+    When I run `fspec get-scenarios --tag=@authentication --tag=@smoke`
+    Then the output should show only "Smoke test login"
+    And the scenario matches both feature tag (@authentication) and scenario tag (@smoke)
+
+  Scenario: Show scenario tags in output
+    Given I have a feature file with scenario-level tags:
+      """
+      Feature: Testing
+
+        @smoke
+        @critical
+        Scenario: Important test
+          Given a step
+          When another step
+          Then result
+      """
+    When I run `fspec get-scenarios --tag=@smoke`
+    Then the output should show scenario tags in the output
+    And the output should display "[@smoke @critical]" next to the scenario name

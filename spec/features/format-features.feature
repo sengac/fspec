@@ -141,12 +141,87 @@ Feature: Format Feature Files with Custom AST Formatter
     And the content should be preserved exactly
     And both """ and ``` delimiters should be supported
 
-  Scenario: Format multiple tags
+  Scenario: Format multiple feature-level tags
     Given I have a feature with tags @phase1 @cli @formatter
     When I run `fspec format spec/features/tags.feature`
     Then each tag should be on its own line
     And tags should have zero indentation
     And tag order should be preserved
+
+  Scenario: Format scenario-level tags
+    Given I have a feature file with scenario-level tags:
+      """
+      Feature: User Authentication
+        @smoke @regression
+        Scenario: Login with valid credentials
+          Given I am on the login page
+          When I enter valid credentials
+          Then I should be logged in
+      """
+    When I run `fspec format spec/features/authentication.feature`
+    Then scenario tags should be on separate lines
+    And scenario tags should be indented by 2 spaces
+    And tag order should be preserved
+    And the formatted output should be:
+      """
+      Feature: User Authentication
+
+        @smoke
+        @regression
+        Scenario: Login with valid credentials
+          Given I am on the login page
+          When I enter valid credentials
+          Then I should be logged in
+      """
+
+  Scenario: Format both feature-level and scenario-level tags
+    Given I have a feature file with tags at both levels:
+      """
+      @phase1 @authentication
+      Feature: User Authentication
+        @smoke
+        Scenario: Login with valid credentials
+          Given I am on the login page
+          When I enter valid credentials
+          Then I should be logged in
+        @regression @edge-case
+        Scenario: Login with expired session
+          Given I have an expired session
+          When I attempt to login
+          Then I should be prompted to re-authenticate
+      """
+    When I run `fspec format spec/features/authentication.feature`
+    Then feature-level tags should have zero indentation
+    And scenario-level tags should be indented by 2 spaces
+    And each tag should be on its own line
+    And the formatted output should preserve tag hierarchy
+
+  Scenario: Format multiple scenario tags on same line
+    Given I have a feature file with multiple scenario tags on one line:
+      """
+      Feature: Notifications
+
+        @email @sms @push
+        Scenario: Send multi-channel notification
+          Given I have a message
+          When I send notification
+          Then user receives it via all channels
+      """
+    When I run `fspec format spec/features/notifications.feature`
+    Then each scenario tag should be separated onto its own line
+    And all scenario tags should be indented by 2 spaces
+    And the formatted output should be:
+      """
+      Feature: Notifications
+
+        @email
+        @sms
+        @push
+        Scenario: Send multi-channel notification
+          Given I have a message
+          When I send notification
+          Then user receives it via all channels
+      """
 
   Scenario: Format And/But step keywords
     Given I have a feature file with And and But steps

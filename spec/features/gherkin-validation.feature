@@ -126,11 +126,85 @@ Feature: Gherkin Syntax Validation
     Then the command should exit with code 0
     And the data tables should be recognized as valid
 
-  Scenario: Validate feature file with tags
-    Given I have a feature file with tags at feature and scenario level
+  Scenario: Validate feature file with feature-level tags
+    Given I have a feature file with tags at feature level:
+      """
+      @phase1
+      @authentication
+      @critical
+      Feature: User Login
+        Scenario: Successful login
+          Given I am on the login page
+          When I enter valid credentials
+          Then I should be logged in
+      """
     When I run `fspec validate spec/features/login.feature`
     Then the command should exit with code 0
-    And the tags should be recognized as valid
+    And the feature-level tags should be recognized as valid
+
+  Scenario: Validate feature file with scenario-level tags
+    Given I have a feature file with tags at scenario level:
+      """
+      Feature: User Login
+
+        @smoke
+        @regression
+        Scenario: Successful login
+          Given I am on the login page
+          When I enter valid credentials
+          Then I should be logged in
+
+        @edge-case
+        Scenario: Login with expired session
+          Given I have an expired session
+          When I attempt to login
+          Then I should be prompted to re-authenticate
+      """
+    When I run `fspec validate spec/features/login.feature`
+    Then the command should exit with code 0
+    And the scenario-level tags should be recognized as valid
+    And each scenario should have its own tags
+
+  Scenario: Validate feature file with both feature-level and scenario-level tags
+    Given I have a feature file with tags at both feature and scenario levels:
+      """
+      @phase1
+      @authentication
+      Feature: User Login
+
+        @smoke
+        Scenario: Successful login
+          Given I am on the login page
+          When I enter valid credentials
+          Then I should be logged in
+
+        @regression
+        @edge-case
+        Scenario: Login with expired session
+          Given I have an expired session
+          When I attempt to login
+          Then I should be prompted to re-authenticate
+      """
+    When I run `fspec validate spec/features/login.feature`
+    Then the command should exit with code 0
+    And both feature-level and scenario-level tags should be recognized as valid
+    And tags should be properly associated with their respective elements
+
+  Scenario: Validate scenario-level tags with proper indentation
+    Given I have a feature file with scenario tags properly indented:
+      """
+      Feature: Notifications
+
+        @email
+        @sms
+        Scenario: Send notification
+          Given I have a message
+          When I send notification
+          Then user receives it
+      """
+    When I run `fspec validate spec/features/notifications.feature`
+    Then the command should exit with code 0
+    And the indented scenario tags should be recognized as valid
 
   Scenario: Detect file not found
     Given no file exists at "spec/features/nonexistent.feature"

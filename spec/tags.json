@@ -93,39 +93,8 @@
       "required": true,
       "tags": [
         {
-          "name": "@feature-management",
-          "description": "Feature File Operations",
-          "examples": "Create feature, add scenario, add step, add architecture notes (11 files)"
-        },
-        {
-          "name": "@foundation-management",
-          "description": "FOUNDATION.md Operations",
-          "examples": "Add Mermaid diagram, update foundation sections, show foundation (3 files)"
-        },
-        {
-          "name": "@tag-management",
-          "description": "TAGS.md Operations",
-          "examples": "Register tag, validate tags, list tags, tag statistics (7 files)"
-        },
-        {
-          "name": "@validation",
-          "description": "Syntax & Structure Validation",
-          "examples": "Gherkin syntax check, tag compliance, formatting validation (3 files)"
-        },
-        {
-          "name": "@querying",
-          "description": "Query & Search Operations",
-          "examples": "List features, show feature, find by tag, search scenarios (6 files)"
-        },
-        {
-          "name": "@formatting",
-          "description": "Auto-Formatting",
-          "examples": "Prettier execution, Gherkin formatting, consistency enforcement (1 file)"
-        },
-        {
-          "name": "@modification",
-          "description": "Feature Modification Operations",
-          "examples": "Update/delete scenarios, steps, tags, retag operations (11 files)"
+          "name": "@authentication",
+          "description": "Authentication and authorization functionality"
         },
         {
           "name": "@bulk-operations",
@@ -138,14 +107,39 @@
           "examples": "Show acceptance criteria, show feature, show foundation (2 files)"
         },
         {
+          "name": "@feature-management",
+          "description": "Feature File Operations",
+          "examples": "Create feature, add scenario, add step, add architecture notes (11 files)"
+        },
+        {
+          "name": "@formatting",
+          "description": "Auto-Formatting",
+          "examples": "Prettier execution, Gherkin formatting, consistency enforcement (1 file)"
+        },
+        {
+          "name": "@foundation-management",
+          "description": "FOUNDATION.md Operations",
+          "examples": "Add Mermaid diagram, update foundation sections, show foundation (3 files)"
+        },
+        {
+          "name": "@migration",
+          "description": "Migration & Data Transformation",
+          "examples": "One-time migration operations, MD to JSON conversion (1 file)"
+        },
+        {
+          "name": "@modification",
+          "description": "Feature Modification Operations",
+          "examples": "Update/delete scenarios, steps, tags, retag operations (11 files)"
+        },
+        {
+          "name": "@querying",
+          "description": "Query & Search Operations",
+          "examples": "List features, show feature, find by tag, search scenarios (6 files)"
+        },
+        {
           "name": "@read-only",
           "description": "Read-Only Operations",
           "examples": "Display operations that don't modify files (2 files)"
-        },
-        {
-          "name": "@utility",
-          "description": "Utility & Helper Commands",
-          "examples": "Multi-validation commands, aggregate operations (1 file)"
         },
         {
           "name": "@scaffolding",
@@ -153,9 +147,19 @@
           "examples": "Initialize spec directory, create templates, setup structure (0 files)"
         },
         {
-          "name": "@migration",
-          "description": "Migration & Data Transformation",
-          "examples": "One-time migration operations, MD to JSON conversion (1 file)"
+          "name": "@tag-management",
+          "description": "TAGS.md Operations",
+          "examples": "Register tag, validate tags, list tags, tag statistics (7 files)"
+        },
+        {
+          "name": "@utility",
+          "description": "Utility & Helper Commands",
+          "examples": "Multi-validation commands, aggregate operations (1 file)"
+        },
+        {
+          "name": "@validation",
+          "description": "Syntax & Structure Validation",
+          "examples": "Gherkin syntax check, tag compliance, formatting validation (3 files)"
         }
       ],
       "rule": "Every feature file MUST have at least ONE feature group tag."
@@ -166,9 +170,9 @@
       "required": false,
       "tags": [
         {
-          "name": "@gherkin",
-          "description": "Gherkin Specification Compliance",
-          "useCases": "Features ensuring Gherkin spec adherence"
+          "name": "@ast",
+          "description": "Abstract Syntax Tree",
+          "useCases": "Working with Gherkin AST from parser (custom formatter)"
         },
         {
           "name": "@cucumber-parser",
@@ -176,14 +180,8 @@
           "useCases": "Direct usage of @cucumber/gherkin-parser"
         },
         {
-          "name": "@ast",
-          "description": "Abstract Syntax Tree",
-          "useCases": "Working with Gherkin AST from parser (custom formatter)"
-        },
-        {
-          "name": "@mermaid",
-          "description": "Mermaid Diagram Support",
-          "useCases": "Inserting/validating Mermaid diagrams in FOUNDATION.md"
+          "name": "@email",
+          "description": "Email-related functionality"
         },
         {
           "name": "@error-handling",
@@ -196,9 +194,14 @@
           "useCases": "Reading/writing files, directory operations, path handling"
         },
         {
-          "name": "@template",
-          "description": "Template System",
-          "useCases": "Template generation, variable substitution, scaffolding"
+          "name": "@gherkin",
+          "description": "Gherkin Specification Compliance",
+          "useCases": "Features ensuring Gherkin spec adherence"
+        },
+        {
+          "name": "@internal",
+          "description": "Internal Utility",
+          "useCases": "Internal utilities and helpers, not user-facing commands"
         },
         {
           "name": "@json-backed",
@@ -211,9 +214,22 @@
           "useCases": "JSON Schema validation using Ajv library"
         },
         {
-          "name": "@internal",
-          "description": "Internal Utility",
-          "useCases": "Internal utilities and helpers, not user-facing commands"
+          "name": "@mermaid",
+          "description": "Mermaid Diagram Support",
+          "useCases": "Inserting/validating Mermaid diagrams in FOUNDATION.md"
+        },
+        {
+          "name": "@push",
+          "description": "Push notification functionality"
+        },
+        {
+          "name": "@sms",
+          "description": "SMS-related functionality"
+        },
+        {
+          "name": "@template",
+          "description": "Template System",
+          "useCases": "Template generation, variable substitution, scaffolding"
         }
       ],
       "rule": "Use technical tags to highlight specific architectural concerns."
@@ -313,9 +329,13 @@
       "required": false,
       "tags": [
         {
-          "name": "@unit-test",
-          "description": "Unit Test Coverage Required",
-          "testType": "Tests for individual functions, command handlers, utilities"
+          "name": "@e2e-test",
+          "description": "End-to-End Test Required",
+          "testType": "Complete command flows, CAGE integration, full scenarios"
+        },
+        {
+          "name": "@edge-case",
+          "description": "Edge case tests - validation of boundary conditions and unusual scenarios"
         },
         {
           "name": "@integration-test",
@@ -323,14 +343,34 @@
           "testType": "Tests across components, parser integration, file operations"
         },
         {
-          "name": "@e2e-test",
-          "description": "End-to-End Test Required",
-          "testType": "Complete command flows, CAGE integration, full scenarios"
-        },
-        {
           "name": "@manual-test",
           "description": "Requires Manual Testing",
           "testType": "Visual verification, platform-specific checks, edge cases"
+        },
+        {
+          "name": "@regression",
+          "description": "Regression tests - comprehensive validation of existing functionality"
+        },
+        {
+          "name": "@smoke",
+          "description": "Smoke tests - quick validation of critical functionality"
+        },
+        {
+          "name": "@unit-test",
+          "description": "Unit Test Coverage Required",
+          "testType": "Tests for individual functions, command handlers, utilities"
+        },
+        {
+          "name": "@unregistered-scenario-tag",
+          "description": "Example tag used in test scenarios to demonstrate error handling"
+        },
+        {
+          "name": "@unregistered-tag1",
+          "description": "Example tag used in test scenarios to demonstrate error handling"
+        },
+        {
+          "name": "@unregistered-tag2",
+          "description": "Example tag used in test scenarios to demonstrate error handling"
         }
       ],
       "rule": "Use testing tags to indicate what level of testing is required for a scenario."

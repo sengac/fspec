@@ -139,3 +139,116 @@ Feature: Validate Feature File Tags Against Registry
     And report unregistered tags with file locations
     And check for required tag categories (phase, component, feature-group)
     And the command should exit with code 1 if violations found
+
+  Scenario: Validate scenario-level tags are registered
+    Given I have a feature file with scenario-level tags:
+      """
+      @phase1
+      @cli
+      @authentication
+      Feature: User Login
+
+        @smoke
+        @regression
+        Scenario: Successful login
+          Given I am on the login page
+          When I enter valid credentials
+          Then I should be logged in
+      """
+    And the tags "@smoke" and "@regression" are registered in spec/tags.json
+    When I run `fspec validate-tags spec/features/login.feature`
+    Then the command should exit with code 0
+    And scenario-level tags should be validated against the registry
+
+  Scenario: Detect unregistered scenario-level tag
+    Given I have a feature file with an unregistered scenario tag:
+      """
+      @phase1
+      @cli
+      @authentication
+      Feature: User Login
+
+        @smoke
+        @unregistered-scenario-tag
+        Scenario: Test scenario
+          Given a step
+          When another step
+          Then result
+      """
+    And the tag "@unregistered-scenario-tag" is not in spec/tags.json
+    When I run `fspec validate-tags spec/features/login.feature`
+    Then the command should exit with code 1
+    And the output should contain "Unregistered tag: @unregistered-scenario-tag"
+    And the output should show the scenario name where the tag was found
+
+  Scenario: Validate both feature-level and scenario-level tags
+    Given I have a feature file with tags at both levels:
+      """
+      @phase1
+      @cli
+      @authentication
+      Feature: User Login
+
+        @smoke
+        Scenario: Basic login
+          Given I am on the login page
+          When I enter credentials
+          Then I am logged in
+
+        @regression
+        @edge-case
+        Scenario: Login with expired session
+          Given I have an expired session
+          When I attempt to login
+          Then I am prompted to re-authenticate
+      """
+    And all feature-level and scenario-level tags are registered
+    When I run `fspec validate-tags spec/features/login.feature`
+    Then the command should exit with code 0
+    And all tags at all levels should be validated
+
+  Scenario: Detect mix of registered and unregistered scenario tags
+    Given I have a feature file with multiple scenarios:
+      """
+      @phase1
+      @cli
+      @authentication
+      Feature: User Login
+
+        @smoke
+        Scenario: Valid scenario
+          Given a step
+          When another step
+          Then result
+
+        @unregistered-tag1
+        @unregistered-tag2
+        Scenario: Invalid scenario
+          Given a step
+          When another step
+          Then result
+      """
+    And "@smoke" is registered but "@unregistered-tag1" and "@unregistered-tag2" are not
+    When I run `fspec validate-tags spec/features/login.feature`
+    Then the command should exit with code 1
+    And the output should list both unregistered tags
+    And the output should specify which scenarios contain the invalid tags
+
+  Scenario: Validate scenario tags do not require phase/component/feature-group tags
+    Given I have a feature file with properly tagged feature and minimal scenario tags:
+      """
+      @phase1
+      @cli
+      @authentication
+      Feature: User Login
+
+        @smoke
+        Scenario: Quick test
+          Given a step
+          When another step
+          Then result
+      """
+    When I run `fspec validate-tags spec/features/login.feature`
+    Then the command should exit with code 0
+    And scenario tags should not be required to have phase/component/feature-group tags
+    And only feature-level tags should be checked for required categories
