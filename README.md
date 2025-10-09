@@ -15,7 +15,7 @@ fspec provides AI agents with:
 - ✅ **Structured Commands** - Clear interface for creating and managing Gherkin specs
 - ✅ **Syntax Validation** - Official @cucumber/gherkin-parser ensures valid syntax
 - ✅ **Tag Discipline** - Registry-based tag management prevents chaos
-- ✅ **Architecture Docs** - Mermaid diagrams and doc strings keep architecture synchronized
+- ✅ **Architecture Docs** - Mermaid diagrams with syntax validation and doc strings keep architecture synchronized
 - ✅ **Ecosystem Compatibility** - Works with all Cucumber tooling (parsers, formatters, reporters)
 
 ## Features
@@ -197,8 +197,11 @@ fspec add-background user-authentication "As a user\nI want to log in securely\n
 All foundation operations work with `spec/foundation.json` and automatically regenerate `spec/FOUNDATION.md`:
 
 ```bash
-# Add or update Mermaid diagram
+# Add or update Mermaid diagram (with automatic syntax validation)
 fspec add-diagram "Architecture Diagrams" "System Context" "graph TD\n  A[User] --> B[API]\n  B --> C[Database]"
+
+# Mermaid validation catches syntax errors before adding
+# Example error: "Invalid Mermaid syntax: Parse error on line 3..."
 
 # Delete Mermaid diagram
 fspec delete-diagram "Architecture Diagrams" "System Context"
@@ -448,7 +451,8 @@ See [spec/CLAUDE.md](./spec/CLAUDE.md) for detailed process guidelines.
 - ✅ Add/update user stories (Background) in feature files
 - ✅ JSON-backed foundation system (foundation.json as source of truth)
 - ✅ JSON-backed tag system (tags.json as source of truth)
-- ✅ Add/update Mermaid diagrams (JSON-backed)
+- ✅ Add/update Mermaid diagrams with automatic syntax validation (JSON-backed)
+- ✅ Mermaid validation using mermaid.parse() with detailed error messages
 - ✅ Delete Mermaid diagrams (JSON-backed)
 - ✅ Update foundation sections (JSON-backed)
 - ✅ Auto-generate FOUNDATION.md and TAGS.md from JSON
@@ -463,11 +467,12 @@ See [spec/CLAUDE.md](./spec/CLAUDE.md) for detailed process guidelines.
 
 **Summary:**
 - **Total Commands:** 30 implemented
-- **Total Tests:** 321 passing (100% pass rate)
+- **Total Tests:** 324 passing (100% pass rate)
 - **Feature Files:** 29 validated specifications
 - **Code Coverage:** All commands fully tested
-- **Build Size:** 286.92 kB (gzip: 68.34 kB)
+- **Build Size:** 304.99 kB (gzip: 71.33 kB)
 - **Architecture:** JSON-backed documentation system with auto-generated markdown
+- **Mermaid Validation:** Bundled mermaid.parse() with jsdom for diagram syntax validation
 
 ### 🔮 Future Enhancements (Optional)
 - **JSON I/O Enhancement**: Consistent JSON input/output across all commands for easier AI agent integration
