@@ -4,7 +4,7 @@ This document provides guidelines for AI assistants (particularly Claude) workin
 
 ## Project Overview
 
-**fspec** is a standardized CLI tool for AI agents to manage Gherkin-based feature specifications using Acceptance Criteria Driven Development (ACDD).
+**fspec** is a standardized CLI tool for AI agents to manage Gherkin-based feature specifications and project work units using Acceptance Criteria Driven Development (ACDD).
 
 - **Repository**: https://github.com/rquast/fspec
 - **License**: MIT
@@ -348,4 +348,4 @@ When contributing to fspec:
 6. Update specifications when behavior changes
 7. Register new tags in spec/TAGS.md
 
-Remember: The goal is to create a CLI tool that helps AI agents manage Gherkin specifications using ACDD. Every line of code should contribute to this goal.
+Remember: The goal is to create a CLI tool that helps AI agents manage Gherkin specifications and project work units using ACDD. Every line of code should contribute to this goal.

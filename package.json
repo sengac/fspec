@@ -1,7 +1,7 @@
 {
   "name": "fspec",
-  "version": "1.0.0",
-  "description": "Standardized CLI tool for AI agents to manage Gherkin-based feature specifications",
+  "version": "0.0.1",
+  "description": "Feature Specification & Project Management for AI Agents - Manage Gherkin specs and work units with ACDD workflow",
   "type": "module",
   "main": "./dist/index.js",
   "bin": {

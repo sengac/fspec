@@ -1,6 +1,6 @@
-# fspec - Feature Specification Management for AI Agents
+# fspec - Feature Specification & Project Management for AI Agents
 
-A standardized CLI tool that provides AI agents with a structured interface for managing Gherkin-based feature specifications. fspec prevents ecosystem fragmentation by promoting industry-standard BDD practices over proprietary documentation formats.
+A standardized CLI tool that provides AI agents with a structured interface for managing Gherkin-based feature specifications and project work units. fspec prevents ecosystem fragmentation by promoting industry-standard BDD practices over proprietary documentation formats.
 
 ## Why fspec?
 
@@ -52,6 +52,37 @@ npm unlink -g fspec
 ```
 
 ## Usage
+
+### Getting Help
+
+fspec has a comprehensive, hierarchical help system organized by area of responsibility:
+
+```bash
+# Main help - shows command groups and quick start
+fspec --help
+fspec help
+
+# Group-specific help with all commands, options, and examples
+fspec help spec        # Specification management (features, scenarios, steps)
+fspec help tags        # Tag registry & management
+fspec help foundation  # Foundation & architecture documentation
+fspec help query       # Query & reporting commands
+fspec help project     # Project management (coming soon)
+
+# Command-specific help
+fspec <command> --help
+fspec validate --help
+fspec list-features --help
+```
+
+**Command Groups:**
+- **spec** - Gherkin validation, feature/scenario/step CRUD, bulk operations
+- **tags** - Tag registration, validation, updates, statistics, bulk rename
+- **foundation** - Foundation content, Mermaid diagrams, architecture docs
+- **query** - Query scenarios by tag, show acceptance criteria
+- **project** - Work units, Kanban workflow, metrics (planned)
+
+**Note:** All commands include complete option documentation and practical examples in the help system. You no longer need to refer to this README for basic usage.
 
 ### Validate Gherkin Syntax
 

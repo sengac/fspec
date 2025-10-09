@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { Command } from 'commander';
+import chalk from 'chalk';
 import { validateCommand } from './commands/validate';
 import { createFeatureCommand } from './commands/create-feature';
 import { listFeaturesCommand } from './commands/list-features';
@@ -35,12 +36,375 @@ import { generateTagsMdCommandCLI } from './commands/generate-tags-md';
 
 const program = new Command();
 
+// Custom help display
+function displayCustomHelp(): void {
+  console.log(chalk.bold('\nfspec - Feature Specification & Project Management for AI Agents'));
+  console.log(chalk.dim('Version 0.0.1\n'));
+
+  console.log(chalk.bold('USAGE'));
+  console.log('  fspec [command] [options]\n');
+
+  console.log(chalk.bold('COMMAND GROUPS'));
+  console.log('  Use ' + chalk.cyan('fspec help <group>') + ' for detailed help on a specific area:\n');
+  console.log('  ' + chalk.cyan('spec') + '        - Specification Management (Gherkin features, scenarios, validation)');
+  console.log('  ' + chalk.cyan('tags') + '        - Tag Registry & Management');
+  console.log('  ' + chalk.cyan('foundation') + '   - Foundation & Architecture Documentation');
+  console.log('  ' + chalk.cyan('query') + '       - Query & Reporting');
+  console.log('  ' + chalk.cyan('project') + '     - Project Management (Coming Soon)');
+  console.log('');
+
+  console.log(chalk.bold('QUICK START'));
+  console.log('  ' + chalk.cyan('fspec validate') + '              - Validate all Gherkin feature files');
+  console.log('  ' + chalk.cyan('fspec create-feature NAME') + '   - Create a new feature file');
+  console.log('  ' + chalk.cyan('fspec list-features') + '         - List all feature files');
+  console.log('  ' + chalk.cyan('fspec check') + '                 - Run all validation checks\n');
+
+  console.log(chalk.bold('GET HELP'));
+  console.log('  ' + chalk.cyan('fspec --help') + '          - Show this help');
+  console.log('  ' + chalk.cyan('fspec help spec') + '       - Specification management commands');
+  console.log('  ' + chalk.cyan('fspec help tags') + '       - Tag management commands');
+  console.log('  ' + chalk.cyan('fspec help foundation') + ' - Foundation documentation commands');
+  console.log('  ' + chalk.cyan('fspec help query') + '      - Query and reporting commands');
+  console.log('  ' + chalk.cyan('fspec <command> --help') + ' - Detailed help for specific command\n');
+
+  console.log(chalk.bold('EXAMPLES'));
+  console.log('  # Validate specific feature file');
+  console.log('  ' + chalk.dim('$ fspec validate spec/features/login.feature'));
+  console.log('');
+  console.log('  # Filter features by tag');
+  console.log('  ' + chalk.dim('$ fspec list-features --tag=@phase1'));
+  console.log('');
+  console.log('  # Add scenario to feature');
+  console.log('  ' + chalk.dim('$ fspec add-scenario user-authentication "Login with valid credentials"'));
+  console.log('');
+  console.log('  # Query scenarios by tags');
+  console.log('  ' + chalk.dim('$ fspec get-scenarios --tag=@phase1 --tag=@critical --format=json'));
+  console.log('');
+
+  console.log(chalk.bold('DOCUMENTATION'));
+  console.log('  GitHub: ' + chalk.cyan('https://github.com/rquast/fspec'));
+  console.log('  README: ' + chalk.dim('See README.md for detailed usage examples'));
+  console.log('');
+}
+
+function displaySpecHelp(): void {
+  console.log(chalk.bold('\nSPECIFICATION MANAGEMENT\n'));
+
+  console.log(chalk.bold('VALIDATION & CHECKING'));
+  console.log('  ' + chalk.cyan('fspec validate [file]') + '             Validate Gherkin syntax');
+  console.log('    Options:');
+  console.log('      -v, --verbose                    Show detailed validation output');
+  console.log('    Examples:');
+  console.log('      fspec validate                   Validate all feature files');
+  console.log('      fspec validate spec/features/login.feature');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec check') + '                        Run all validation checks');
+  console.log('    Options:');
+  console.log('      -v, --verbose                    Show detailed output');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec format [file]') + '                Format feature files with Prettier');
+  console.log('    Examples:');
+  console.log('      fspec format                     Format all feature files');
+  console.log('      fspec format spec/features/login.feature');
+  console.log('');
+
+  console.log(chalk.bold('FEATURE FILE MANAGEMENT'));
+  console.log('  ' + chalk.cyan('fspec create-feature <name>') + '       Create new feature file');
+  console.log('    Examples:');
+  console.log('      fspec create-feature "User Authentication"');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec list-features') + '                List all feature files');
+  console.log('    Options:');
+  console.log('      --tag=<tag>                      Filter by tag');
+  console.log('    Examples:');
+  console.log('      fspec list-features --tag=@phase1');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec show-feature <feature>') + '      Display feature file contents');
+  console.log('    Options:');
+  console.log('      --format=<format>                Output format: text or json (default: text)');
+  console.log('      --output=<file>                  Write output to file');
+  console.log('    Examples:');
+  console.log('      fspec show-feature user-authentication');
+  console.log('      fspec show-feature login --format=json --output=login.json');
+  console.log('');
+
+  console.log(chalk.bold('SCENARIO MANAGEMENT'));
+  console.log('  ' + chalk.cyan('fspec add-scenario <feature> <scenario>') + ' Add scenario to feature');
+  console.log('    Examples:');
+  console.log('      fspec add-scenario login "Successful login"');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec update-scenario <feature> <old> <new>') + ' Rename scenario');
+  console.log('    Examples:');
+  console.log('      fspec update-scenario login "Old Name" "New Name"');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec delete-scenario <feature> <scenario>') + ' Delete scenario');
+  console.log('    Examples:');
+  console.log('      fspec delete-scenario login "Obsolete scenario"');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec delete-scenarios') + '             Bulk delete scenarios by tag');
+  console.log('    Options:');
+  console.log('      --tag=<tag>                      Filter by tag (multiple allowed, AND logic)');
+  console.log('      --dry-run                        Preview without making changes');
+  console.log('    Examples:');
+  console.log('      fspec delete-scenarios --tag=@deprecated --dry-run');
+  console.log('      fspec delete-scenarios --tag=@phase1 --tag=@wip');
+  console.log('');
+
+  console.log(chalk.bold('STEP MANAGEMENT'));
+  console.log('  ' + chalk.cyan('fspec add-step <feature> <scenario> <type> <text>') + ' Add step');
+  console.log('    Step types: given, when, then, and, but');
+  console.log('    Examples:');
+  console.log('      fspec add-step login "Login" given "I am on the login page"');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec update-step <feature> <scenario> <step>') + ' Update step');
+  console.log('    Options:');
+  console.log('      --text=<text>                    New step text');
+  console.log('      --keyword=<keyword>              New keyword (Given, When, Then, And, But)');
+  console.log('    Examples:');
+  console.log('      fspec update-step login "Login" "I am on page" --text "I navigate to page"');
+  console.log('      fspec update-step login "Login" "I am on page" --keyword=When');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec delete-step <feature> <scenario> <step>') + ' Delete step');
+  console.log('    Examples:');
+  console.log('      fspec delete-step login "Login" "I am on the login page"');
+  console.log('');
+
+  console.log(chalk.bold('DOCUMENTATION IN FEATURES'));
+  console.log('  ' + chalk.cyan('fspec add-architecture <feature> <text>') + ' Add architecture docs');
+  console.log('    Examples:');
+  console.log('      fspec add-architecture login "Uses JWT tokens for sessions"');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec add-background <feature> <text>') + ' Add user story');
+  console.log('    Examples:');
+  console.log('      fspec add-background login "As a user\\nI want to log in\\nSo that..."');
+  console.log('');
+
+  console.log(chalk.bold('BULK OPERATIONS'));
+  console.log('  ' + chalk.cyan('fspec delete-features') + '              Delete feature files by tag');
+  console.log('    Options:');
+  console.log('      --tag=<tag>                      Filter by tag (multiple allowed, AND logic)');
+  console.log('      --dry-run                        Preview without making changes');
+  console.log('    Examples:');
+  console.log('      fspec delete-features --tag=@deprecated --dry-run');
+  console.log('');
+}
+
+function displayTagsHelp(): void {
+  console.log(chalk.bold('\nTAG REGISTRY & MANAGEMENT\n'));
+  console.log(chalk.dim('Tags are managed in spec/tags.json with auto-generated spec/TAGS.md\n'));
+
+  console.log(chalk.bold('TAG VALIDATION'));
+  console.log('  ' + chalk.cyan('fspec validate-tags [file]') + '        Validate tags against registry');
+  console.log('    Examples:');
+  console.log('      fspec validate-tags              Check all feature files');
+  console.log('      fspec validate-tags spec/features/login.feature');
+  console.log('');
+
+  console.log(chalk.bold('TAG REGISTRY MANAGEMENT'));
+  console.log('  ' + chalk.cyan('fspec register-tag <tag> <category> <desc>') + ' Register new tag');
+  console.log('    Examples:');
+  console.log('      fspec register-tag @performance "Technical Tags" "Performance features"');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec update-tag <tag>') + '             Update existing tag');
+  console.log('    Options:');
+  console.log('      --category=<category>            New category name');
+  console.log('      --description=<desc>             New description');
+  console.log('    Examples:');
+  console.log('      fspec update-tag @performance --description="Updated description"');
+  console.log('      fspec update-tag @performance --category="Technical Tags"');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec delete-tag <tag>') + '             Delete tag from registry');
+  console.log('    Options:');
+  console.log('      --force                          Delete even if used in features');
+  console.log('      --dry-run                        Preview without making changes');
+  console.log('    Examples:');
+  console.log('      fspec delete-tag @deprecated --dry-run');
+  console.log('      fspec delete-tag @old --force');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec list-tags') + '                   List all registered tags');
+  console.log('    Options:');
+  console.log('      --category=<category>            Filter by category');
+  console.log('    Examples:');
+  console.log('      fspec list-tags');
+  console.log('      fspec list-tags --category="Technical Tags"');
+  console.log('');
+
+  console.log(chalk.bold('TAG OPERATIONS'));
+  console.log('  ' + chalk.cyan('fspec retag') + '                       Rename tags across all files');
+  console.log('    Options:');
+  console.log('      --from=<tag>                     Tag to rename from');
+  console.log('      --to=<tag>                       Tag to rename to');
+  console.log('      --dry-run                        Preview without making changes');
+  console.log('    Examples:');
+  console.log('      fspec retag --from=@old-tag --to=@new-tag --dry-run');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec tag-stats') + '                   Show tag usage statistics');
+  console.log('    Examples:');
+  console.log('      fspec tag-stats');
+  console.log('');
+
+  console.log(chalk.bold('NOTES'));
+  console.log('  - All tag write operations modify spec/tags.json');
+  console.log('  - spec/TAGS.md is auto-generated - never edit manually');
+  console.log('  - Regenerate TAGS.md: ' + chalk.cyan('fspec generate-tags-md'));
+  console.log('');
+}
+
+function displayFoundationHelp(): void {
+  console.log(chalk.bold('\nFOUNDATION & ARCHITECTURE DOCUMENTATION\n'));
+  console.log(chalk.dim('Foundation is managed in spec/foundation.json with auto-generated spec/FOUNDATION.md\n'));
+
+  console.log(chalk.bold('VIEW FOUNDATION'));
+  console.log('  ' + chalk.cyan('fspec show-foundation') + '              Display foundation content');
+  console.log('    Options:');
+  console.log('      --section=<section>              Show specific section only');
+  console.log('      --format=<format>                Output: text, markdown, json (default: text)');
+  console.log('      --output=<file>                  Write output to file');
+  console.log('      --list-sections                  List section names only');
+  console.log('      --line-numbers                   Show line numbers');
+  console.log('    Examples:');
+  console.log('      fspec show-foundation');
+  console.log('      fspec show-foundation --section "What We Are Building"');
+  console.log('      fspec show-foundation --format=json --output=foundation.json');
+  console.log('      fspec show-foundation --list-sections');
+  console.log('');
+
+  console.log(chalk.bold('UPDATE FOUNDATION'));
+  console.log('  ' + chalk.cyan('fspec update-foundation <section> <content>') + ' Update section');
+  console.log('    Examples:');
+  console.log('      fspec update-foundation "What We Are Building" "A CLI tool for..."');
+  console.log('');
+
+  console.log(chalk.bold('MERMAID DIAGRAM MANAGEMENT'));
+  console.log('  ' + chalk.cyan('fspec add-diagram <section> <title> <code>') + ' Add/update diagram');
+  console.log('    Note: Automatically validates Mermaid syntax before adding');
+  console.log('    Examples:');
+  console.log('      fspec add-diagram "Architecture" "System Context" "graph TD\\n  A-->B"');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec delete-diagram <section> <title>') + ' Delete diagram');
+  console.log('    Examples:');
+  console.log('      fspec delete-diagram "Architecture Diagrams" "System Context"');
+  console.log('');
+
+  console.log(chalk.bold('GENERATION'));
+  console.log('  ' + chalk.cyan('fspec generate-foundation-md') + '      Generate FOUNDATION.md from JSON');
+  console.log('    Examples:');
+  console.log('      fspec generate-foundation-md');
+  console.log('');
+
+  console.log(chalk.bold('NOTES'));
+  console.log('  - All write operations modify spec/foundation.json');
+  console.log('  - spec/FOUNDATION.md is auto-generated - never edit manually');
+  console.log('  - Mermaid diagrams are validated with mermaid.parse() before adding');
+  console.log('');
+}
+
+function displayQueryHelp(): void {
+  console.log(chalk.bold('\nQUERY & REPORTING\n'));
+
+  console.log(chalk.bold('QUERY SCENARIOS'));
+  console.log('  ' + chalk.cyan('fspec get-scenarios') + '                Get scenarios by tag');
+  console.log('    Options:');
+  console.log('      --tag=<tag>                      Filter by tag (multiple allowed, AND logic)');
+  console.log('      --format=<format>                Output: text or json (default: text)');
+  console.log('    Examples:');
+  console.log('      fspec get-scenarios --tag=@phase1');
+  console.log('      fspec get-scenarios --tag=@phase1 --tag=@critical --format=json');
+  console.log('');
+
+  console.log(chalk.bold('ACCEPTANCE CRITERIA'));
+  console.log('  ' + chalk.cyan('fspec show-acceptance-criteria') + '    Show acceptance criteria by tag');
+  console.log('    Options:');
+  console.log('      --tag=<tag>                      Filter by tag (multiple allowed, AND logic)');
+  console.log('      --format=<format>                Output: text, markdown, json (default: text)');
+  console.log('      --output=<file>                  Write output to file');
+  console.log('    Examples:');
+  console.log('      fspec show-acceptance-criteria --tag=@phase1');
+  console.log('      fspec show-acceptance-criteria --tag=@phase1 --format=markdown');
+  console.log('      fspec show-acceptance-criteria --tag=@critical --format=json --output=acs.json');
+  console.log('');
+
+  console.log(chalk.bold('NOTES'));
+  console.log('  - Multiple --tag options use AND logic (all tags must match)');
+  console.log('  - JSON output is ideal for programmatic access and AI agent integration');
+  console.log('');
+}
+
+function displayProjectHelp(): void {
+  console.log(chalk.bold('\nPROJECT MANAGEMENT\n'));
+  console.log(chalk.yellow('Coming Soon!\n'));
+  console.log('Project management features are planned for future releases.\n');
+  console.log(chalk.bold('PLANNED FEATURES'));
+  console.log('  - Work unit management (tag-based)');
+  console.log('  - Kanban workflow (backlog → specifying → testing → implementing → validating → done)');
+  console.log('  - Example mapping integration (rules, examples, questions, assumptions)');
+  console.log('  - Dependency tracking (blocks, blockedBy, dependsOn, relatesTo)');
+  console.log('  - Estimation & metrics (story points, actual tokens, iterations)');
+  console.log('  - Epic management');
+  console.log('  - CAGE integration for AI-driven workflow');
+  console.log('');
+  console.log('See project-management.md for design documentation.\n');
+}
+
+// Custom help command handler
+function handleHelpCommand(group?: string): void {
+  if (!group) {
+    displayCustomHelp();
+    return;
+  }
+
+  switch (group.toLowerCase()) {
+    case 'spec':
+    case 'specification':
+      displaySpecHelp();
+      break;
+    case 'tags':
+    case 'tag':
+      displayTagsHelp();
+      break;
+    case 'foundation':
+    case 'arch':
+    case 'architecture':
+      displayFoundationHelp();
+      break;
+    case 'query':
+    case 'report':
+    case 'reporting':
+      displayQueryHelp();
+      break;
+    case 'project':
+    case 'pm':
+    case 'work':
+      displayProjectHelp();
+      break;
+    default:
+      console.log(chalk.red(`Unknown help topic: ${group}`));
+      console.log('Valid topics: spec, tags, foundation, query, project');
+      console.log('Use ' + chalk.cyan('fspec --help') + ' for main help\n');
+  }
+}
+
 program
   .name('fspec')
   .description(
-    'Standardized CLI tool for AI agents to manage Gherkin-based feature specifications'
+    'Feature Specification & Project Management for AI Agents'
   )
-  .version('1.0.0');
+  .version('0.0.1')
+  .configureHelp({
+    helpWidth: 100
+  })
+  .addHelpCommand(false)
+  .helpOption('-h, --help', 'Display help information')
+  .on('--help', () => {
+    displayCustomHelp();
+  });
+
+// Add custom help command
+program
+  .command('help')
+  .description('Display help for command groups')
+  .argument('[group]', 'Help topic: spec, tags, foundation, query, project')
+  .action(handleHelpCommand);
 
 // Validate command
 program
