@@ -1,6 +1,11 @@
-@phase7 @cli @tag-management @modification @json-backed @high @integration-test
+@phase7
+@cli
+@tag-management
+@modification
+@json-backed
+@high
+@integration-test
 Feature: Register Tag in JSON-Backed Registry
-
   """
   Architecture notes:
   - Updates existing `fspec register-tag` command to use tags.json

@@ -19,12 +19,18 @@ describe('Feature: Run All Validations', () => {
   describe('Scenario: All validation checks pass', () => {
     it('should pass all checks', async () => {
       // Given I have 3 valid feature files with registered tags
-      const tagsContent = `# Tag Registry
+      const tagsData = {
+        categories: [
+          {
+            title: 'Phase Tags',
+            tags: [
+              { name: '@phase1', description: 'Phase 1 features' }
+            ]
+          }
+        ]
+      };
 
-## Phase Tags
-- @phase1 - Phase 1 features`;
-
-      await writeFile(join(testDir, 'spec/TAGS.md'), tagsContent);
+      await writeFile(join(testDir, 'spec/tags.json'), JSON.stringify(tagsData, null, 2));
 
       const feature1 = `@phase1
 Feature: Feature 1
@@ -115,12 +121,18 @@ Feature: Broken
   describe('Scenario: Tag validation fails', () => {
     it('should fail on unregistered tags', async () => {
       // Given I have a feature file with unregistered tag "@unknown-tag"
-      const tagsContent = `# Tag Registry
+      const tagsData = {
+        categories: [
+          {
+            title: 'Phase Tags',
+            tags: [
+              { name: '@phase1', description: 'Phase 1 features' }
+            ]
+          }
+        ]
+      };
 
-## Phase Tags
-- @phase1 - Phase 1 features`;
-
-      await writeFile(join(testDir, 'spec/TAGS.md'), tagsContent);
+      await writeFile(join(testDir, 'spec/tags.json'), JSON.stringify(tagsData, null, 2));
 
       const feature = `@unknown-tag
 Feature: Test Feature
@@ -188,12 +200,18 @@ Feature: Broken
       );
 
       // And I have a feature file with unregistered tag "@bad-tag"
-      const tagsContent = `# Tag Registry
+      const tagsData = {
+        categories: [
+          {
+            title: 'Phase Tags',
+            tags: [
+              { name: '@phase1', description: 'Phase 1 features' }
+            ]
+          }
+        ]
+      };
 
-## Phase Tags
-- @phase1 - Phase 1 features`;
-
-      await writeFile(join(testDir, 'spec/TAGS.md'), tagsContent);
+      await writeFile(join(testDir, 'spec/tags.json'), JSON.stringify(tagsData, null, 2));
 
       const badTag = `@bad-tag
 Feature: Bad Tag
@@ -254,12 +272,18 @@ Given step`;
   describe('Scenario: Check reports file counts', () => {
     it('should show file count', async () => {
       // Given I have 10 valid feature files
-      const tagsContent = `# Tag Registry
+      const tagsData = {
+        categories: [
+          {
+            title: 'Phase Tags',
+            tags: [
+              { name: '@phase1', description: 'Phase 1 features' }
+            ]
+          }
+        ]
+      };
 
-## Phase Tags
-- @phase1 - Phase 1 features`;
-
-      await writeFile(join(testDir, 'spec/TAGS.md'), tagsContent);
+      await writeFile(join(testDir, 'spec/tags.json'), JSON.stringify(tagsData, null, 2));
 
       for (let i = 1; i <= 10; i++) {
         const feature = `@phase1
@@ -327,12 +351,18 @@ Feature: Feature 5
   describe('Scenario: Check with verbose output', () => {
     it('should show detailed results', async () => {
       // Given I have 3 valid feature files
-      const tagsContent = `# Tag Registry
+      const tagsData = {
+        categories: [
+          {
+            title: 'Phase Tags',
+            tags: [
+              { name: '@phase1', description: 'Phase 1 features' }
+            ]
+          }
+        ]
+      };
 
-## Phase Tags
-- @phase1 - Phase 1 features`;
-
-      await writeFile(join(testDir, 'spec/TAGS.md'), tagsContent);
+      await writeFile(join(testDir, 'spec/tags.json'), JSON.stringify(tagsData, null, 2));
 
       for (let i = 1; i <= 3; i++) {
         const feature = `@phase1
@@ -364,12 +394,18 @@ Feature: Feature ${i}
   describe('Scenario: Check runs quickly on large repositories', () => {
     it('should complete in reasonable time', async () => {
       // Given I have 100 valid feature files
-      const tagsContent = `# Tag Registry
+      const tagsData = {
+        categories: [
+          {
+            title: 'Phase Tags',
+            tags: [
+              { name: '@phase1', description: 'Phase 1 features' }
+            ]
+          }
+        ]
+      };
 
-## Phase Tags
-- @phase1 - Phase 1 features`;
-
-      await writeFile(join(testDir, 'spec/TAGS.md'), tagsContent);
+      await writeFile(join(testDir, 'spec/tags.json'), JSON.stringify(tagsData, null, 2));
 
       for (let i = 1; i <= 100; i++) {
         const feature = `@phase1

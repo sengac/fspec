@@ -30,6 +30,8 @@ import { addDiagramCommand } from './commands/add-diagram';
 import { updateFoundationCommand } from './commands/update-foundation';
 import { showFoundationCommand } from './commands/show-foundation';
 import { deleteDiagramCommand } from './commands/delete-diagram';
+import { generateFoundationMdCommandCLI } from './commands/generate-foundation-md';
+import { generateTagsMdCommandCLI } from './commands/generate-tags-md';
 
 const program = new Command();
 
@@ -330,6 +332,18 @@ program
   .argument('<section>', 'Section name (e.g., "Architecture Diagrams")')
   .argument('<title>', 'Diagram title to delete')
   .action(deleteDiagramCommand);
+
+// Generate foundation-md command
+program
+  .command('generate-foundation-md')
+  .description('Generate FOUNDATION.md from foundation.json')
+  .action(generateFoundationMdCommandCLI);
+
+// Generate tags-md command
+program
+  .command('generate-tags-md')
+  .description('Generate TAGS.md from tags.json')
+  .action(generateTagsMdCommandCLI);
 
 // TODO: Add more commands
 // - create-feature

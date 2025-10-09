@@ -861,7 +861,8 @@ describe('Feature: Add Mermaid Diagram to FOUNDATION.md', () => {
       );
       expect(newDiagram).toBeDefined();
 
-      // And the diagram object should have title and mermaidCode fields
+      // And the diagram object should have section, title, and mermaidCode fields
+      expect(newDiagram.section).toBe('Architecture Diagrams');
       expect(newDiagram.title).toBe('New System Diagram');
       expect(newDiagram.mermaidCode).toBe('graph TD\n  A-->B');
 

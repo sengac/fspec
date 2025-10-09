@@ -1,6 +1,11 @@
-@phase7 @validator @validation @json-schema @internal @critical @unit-test
+@phase7
+@validator
+@validation
+@json-schema
+@internal
+@critical
+@unit-test
 Feature: Internal JSON Schema Validation
-
   """
   Architecture notes:
   - INTERNAL UTILITY - NOT a user-facing CLI command
@@ -9,9 +14,9 @@ Feature: Internal JSON Schema Validation
   - Validates foundation.json against src/schemas/foundation.schema.json
   - Validates tags.json against src/schemas/tags.schema.json
   - Called automatically by:
-    * generate-foundation command (before generating FOUNDATION.md)
-    * generate-tags command (before generating TAGS.md)
-    * Any command that modifies foundation.json or tags.json
+  * generate-foundation command (before generating FOUNDATION.md)
+  * generate-tags command (before generating TAGS.md)
+  * Any command that modifies foundation.json or tags.json
   - Provides detailed validation errors with JSON paths for debugging
   - Throws errors if validation fails (prevents corrupt JSON files)
 

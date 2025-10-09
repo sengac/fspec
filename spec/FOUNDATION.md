@@ -151,8 +151,8 @@ graph TB
     CAGE[CAGE System<br/>Hooks & Alignment]
     FSPEC[fspec CLI]
     FEATURES[Feature Files<br/>spec/features/*.feature]
-    FOUNDATION[FOUNDATION.md<br/>Architecture Docs]
-    TAGS[TAGS.md<br/>Tag Registry]
+    FOUNDATION[foundation.json<br/>Architecture Data]
+    TAGS[tags.json<br/>Tag Registry]
     PARSER[@cucumber/gherkin-parser<br/>Validation]
 
     AI -->|CLI Commands| FSPEC
