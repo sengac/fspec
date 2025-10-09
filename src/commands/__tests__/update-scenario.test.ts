@@ -106,7 +106,9 @@ describe('Feature: Update Scenario Name', () => {
 
       // And step order should be preserved
       const lines = updatedContent.split('\n');
-      const stepLines = lines.filter(l => l.trim().match(/^(Given|When|And|Then)/));
+      const stepLines = lines.filter(l =>
+        l.trim().match(/^(Given|When|And|Then)/)
+      );
       expect(stepLines[0]).toContain('Given I am on the login page');
       expect(stepLines[4]).toContain('Then I should be logged in');
     });
@@ -284,7 +286,9 @@ describe('Feature: Update Scenario Name', () => {
       const updatedContent = await readFile(filePath, 'utf-8');
 
       // And the scenario name should contain apostrophe and special characters
-      expect(updatedContent).toContain("User can't login with invalid credentials");
+      expect(updatedContent).toContain(
+        "User can't login with invalid credentials"
+      );
 
       // And the feature file should be valid Gherkin
       const uuidFn = Messages.IdGenerator.uuid();

@@ -241,7 +241,9 @@ describe('Feature: Update Step in Scenario', () => {
       const updatedContent = await readFile(filePath, 'utf-8');
 
       // And the step should contain apostrophe and special characters
-      expect(updatedContent).toContain("Given I can't login with @invalid credentials");
+      expect(updatedContent).toContain(
+        "Given I can't login with @invalid credentials"
+      );
 
       // And the feature file should be valid Gherkin
       const uuidFn = Messages.IdGenerator.uuid();

@@ -30,8 +30,6 @@ Feature: Delete Step from Scenario
     So that I can remove outdated or incorrect steps without manually editing
     files
 
-
-
   Scenario: Delete step by exact text
     Given I have a scenario "Login" with steps:
       | Given I am on the login page   |

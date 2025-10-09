@@ -113,11 +113,15 @@ Feature: User Login
 
       // And the JSON should contain the background section
       expect(parsed.feature.children).toBeDefined();
-      const background = parsed.feature.children.find((child: any) => child.background);
+      const background = parsed.feature.children.find(
+        (child: any) => child.background
+      );
       expect(background).toBeDefined();
 
       // And the JSON should contain 2 scenarios
-      const scenarios = parsed.feature.children.filter((child: any) => child.scenario);
+      const scenarios = parsed.feature.children.filter(
+        (child: any) => child.scenario
+      );
       expect(scenarios.length).toBe(2);
     });
   });
@@ -144,10 +148,15 @@ Feature: User Login
       expect(result.success).toBe(true);
 
       // And the file "feature-copy.txt" should exist
-      await expect(access(join(testDir, 'feature-copy.txt'))).resolves.toBeUndefined();
+      await expect(
+        access(join(testDir, 'feature-copy.txt'))
+      ).resolves.toBeUndefined();
 
       // And "feature-copy.txt" should contain the feature file contents
-      const outputContent = await readFile(join(testDir, 'feature-copy.txt'), 'utf-8');
+      const outputContent = await readFile(
+        join(testDir, 'feature-copy.txt'),
+        'utf-8'
+      );
       expect(outputContent).toContain('Feature: Payment Processing');
     });
   });
@@ -236,7 +245,10 @@ Feature: Search Functionality
     When I view dashboard
     Then I see overview`;
 
-      await writeFile(join(testDir, 'spec/features/dashboard.feature'), content);
+      await writeFile(
+        join(testDir, 'spec/features/dashboard.feature'),
+        content
+      );
 
       // When I run `fspec show-feature dashboard`
       const result = await showFeature({
@@ -263,7 +275,10 @@ Feature: Search Functionality
     When I send notification
     Then user receives it`;
 
-      await writeFile(join(testDir, 'spec/features/notifications.feature'), content);
+      await writeFile(
+        join(testDir, 'spec/features/notifications.feature'),
+        content
+      );
 
       // When I run `fspec show-feature notifications`
       const result = await showFeature({
@@ -298,7 +313,10 @@ Feature: System Integration
     When connects to B
     Then integrated`;
 
-      await writeFile(join(testDir, 'spec/features/integration.feature'), content);
+      await writeFile(
+        join(testDir, 'spec/features/integration.feature'),
+        content
+      );
 
       // When I run `fspec show-feature integration --format=json`
       const result = await showFeature({
@@ -320,11 +338,15 @@ Feature: System Integration
       expect(parsed.feature.description).toContain('Integration architecture');
 
       // And the JSON should contain the Background section
-      const background = parsed.feature.children.find((child: any) => child.background);
+      const background = parsed.feature.children.find(
+        (child: any) => child.background
+      );
       expect(background).toBeDefined();
 
       // And the JSON should contain all scenarios
-      const scenarios = parsed.feature.children.filter((child: any) => child.scenario);
+      const scenarios = parsed.feature.children.filter(
+        (child: any) => child.scenario
+      );
       expect(scenarios.length).toBeGreaterThan(0);
 
       // And the JSON should contain all steps
@@ -341,7 +363,10 @@ Feature: System Integration
     When I generate report
     Then report created`;
 
-      await writeFile(join(testDir, 'spec/features/reporting.feature'), content);
+      await writeFile(
+        join(testDir, 'spec/features/reporting.feature'),
+        content
+      );
 
       // When I run `fspec show-feature reporting --format=json --output=report.json`
       const result = await showFeature({
@@ -355,10 +380,15 @@ Feature: System Integration
       expect(result.success).toBe(true);
 
       // And the file "report.json" should exist
-      await expect(access(join(testDir, 'report.json'))).resolves.toBeUndefined();
+      await expect(
+        access(join(testDir, 'report.json'))
+      ).resolves.toBeUndefined();
 
       // And "report.json" should contain valid JSON
-      const outputContent = await readFile(join(testDir, 'report.json'), 'utf-8');
+      const outputContent = await readFile(
+        join(testDir, 'report.json'),
+        'utf-8'
+      );
       const parsed = JSON.parse(outputContent);
       expect(parsed).toBeDefined();
     });

@@ -4,7 +4,10 @@ import chalk from 'chalk';
 import { toKebabCase } from '../utils/file-helpers';
 import { generateFeatureTemplate } from '../utils/templates';
 
-export async function createFeature(name: string, cwd: string = process.cwd()): Promise<string> {
+export async function createFeature(
+  name: string,
+  cwd: string = process.cwd()
+): Promise<string> {
   const featuresDir = join(cwd, 'spec', 'features');
   const fileName = `${toKebabCase(name)}.feature`;
   const filePath = join(featuresDir, fileName);
@@ -12,7 +15,9 @@ export async function createFeature(name: string, cwd: string = process.cwd()): 
   // Check if file already exists
   try {
     await access(filePath);
-    throw new Error(`File already exists: spec/features/${fileName}\nSuggestion: Use a different name or delete the existing file`);
+    throw new Error(
+      `File already exists: spec/features/${fileName}\nSuggestion: Use a different name or delete the existing file`
+    );
   } catch (error: any) {
     if (error.code !== 'ENOENT') {
       throw error; // File exists or other error

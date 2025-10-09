@@ -14,12 +14,6 @@ Feature: Register New Tag in Tag Registry
   - Supports all tag categories: phase, component, feature-group, technical, platform,
 
 
-
-
-
-
-
-
   priority, status, testing, CAGE
 
   Critical implementation requirements:
@@ -40,8 +34,6 @@ Feature: Register New Tag in Tag Registry
     I want to register new tags programmatically
     So that I can document and validate custom tags without manual TAGS.md
     editing
-
-
 
   Scenario: Register a new tag in an existing category
     Given I have a TAGS.md file with standard categories

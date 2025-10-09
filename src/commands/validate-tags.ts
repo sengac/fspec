@@ -24,7 +24,9 @@ interface TagRegistry {
   };
 }
 
-export async function validateTags(options: { file?: string; cwd?: string } = {}): Promise<{
+export async function validateTags(
+  options: { file?: string; cwd?: string } = {}
+): Promise<{
   results: TagValidationResult[];
   validCount: number;
   invalidCount: number;
@@ -92,7 +94,9 @@ export async function validateTagsCommand(file?: string): Promise<void> {
   } catch (error: any) {
     if (error.message.includes('TAGS.md not found')) {
       console.error(chalk.red(error.message));
-      console.log(chalk.yellow('  Suggestion: Create spec/TAGS.md to track tags'));
+      console.log(
+        chalk.yellow('  Suggestion: Create spec/TAGS.md to track tags')
+      );
       process.exit(2);
     }
     console.error(chalk.red('Error:'), error.message);
@@ -117,22 +121,59 @@ async function loadTagRegistry(cwd: string): Promise<TagRegistry> {
 
     // Define required tag categories - extract from validTags based on patterns
     // Phase tags: @phase1, @phase2, @phase3
-    const phaseTags = Array.from(validTags).filter(tag => tag.startsWith('@phase'));
+    const phaseTags = Array.from(validTags).filter(tag =>
+      tag.startsWith('@phase')
+    );
 
     // Component tags: defined in TAGS.md Component Tags section
     const componentTags = Array.from(validTags).filter(tag =>
-      ['@cli', '@parser', '@generator', '@validator', '@formatter', '@file-ops', '@integration'].includes(tag)
+      [
+        '@cli',
+        '@parser',
+        '@generator',
+        '@validator',
+        '@formatter',
+        '@file-ops',
+        '@integration',
+      ].includes(tag)
     );
 
     // Feature group tags: all other registered tags that aren't phase/component/optional
-    const featureGroupTags = Array.from(validTags).filter(tag =>
-      !tag.startsWith('@phase') &&
-      !componentTags.includes(tag) &&
-      !['@gherkin', '@cucumber-parser', '@prettier', '@mermaid', '@ast', '@error-handling',
-        '@file-system', '@template', '@windows', '@macos', '@linux', '@cross-platform',
-        '@critical', '@high', '@medium', '@low', '@wip', '@todo', '@done', '@deprecated', '@blocked',
-        '@unit-test', '@integration-test', '@e2e-test', '@manual-test',
-        '@cage-hook', '@execa', '@acdd', '@spec-alignment'].includes(tag)
+    const featureGroupTags = Array.from(validTags).filter(
+      tag =>
+        !tag.startsWith('@phase') &&
+        !componentTags.includes(tag) &&
+        ![
+          '@gherkin',
+          '@cucumber-parser',
+          '@prettier',
+          '@mermaid',
+          '@ast',
+          '@error-handling',
+          '@file-system',
+          '@template',
+          '@windows',
+          '@macos',
+          '@linux',
+          '@cross-platform',
+          '@critical',
+          '@high',
+          '@medium',
+          '@low',
+          '@wip',
+          '@todo',
+          '@done',
+          '@deprecated',
+          '@blocked',
+          '@unit-test',
+          '@integration-test',
+          '@e2e-test',
+          '@manual-test',
+          '@cage-hook',
+          '@execa',
+          '@acdd',
+          '@spec-alignment',
+        ].includes(tag)
     );
 
     const requiredCategories = {
@@ -208,7 +249,9 @@ async function validateFileTags(
     }
 
     // Check for required phase tag
-    const hasPhaseTag = tags.some(tag => registry.requiredCategories.phase.includes(tag));
+    const hasPhaseTag = tags.some(tag =>
+      registry.requiredCategories.phase.includes(tag)
+    );
     if (!hasPhaseTag) {
       result.valid = false;
       result.errors.push({
@@ -219,7 +262,9 @@ async function validateFileTags(
     }
 
     // Check for required component tag
-    const hasComponentTag = tags.some(tag => registry.requiredCategories.component.includes(tag));
+    const hasComponentTag = tags.some(tag =>
+      registry.requiredCategories.component.includes(tag)
+    );
     if (!hasComponentTag && !tags.includes('@component')) {
       result.valid = false;
       result.errors.push({
@@ -230,7 +275,9 @@ async function validateFileTags(
     }
 
     // Check for required feature-group tag
-    const hasFeatureGroupTag = tags.some(tag => registry.requiredCategories.featureGroup.includes(tag));
+    const hasFeatureGroupTag = tags.some(tag =>
+      registry.requiredCategories.featureGroup.includes(tag)
+    );
     if (!hasFeatureGroupTag && !tags.includes('@feature-group')) {
       result.valid = false;
       result.errors.push({
@@ -239,7 +286,6 @@ async function validateFileTags(
         suggestion: `Add one of: ${registry.requiredCategories.featureGroup.join(', ')}`,
       });
     }
-
   } catch (error: any) {
     result.valid = false;
     result.errors.push({

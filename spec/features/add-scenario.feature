@@ -12,10 +12,6 @@ Feature: Add Scenario to Existing Feature File
   - Inserts new scenario at the end of the feature (before any existing Scenario
 
 
-
-
-
-
   Outline)
   - Scenario template includes Given/When/Then placeholders
   - Preserves existing formatting and structure
@@ -42,9 +38,6 @@ Feature: Add Scenario to Existing Feature File
     As a developer using AI agents for spec-driven development
     I want to add new scenarios to existing feature files
     So that I can incrementally build acceptance criteria without manual editing
-
-
-
 
   Scenario: Add scenario to feature file with template
     Given I have a feature file "spec/features/login.feature"

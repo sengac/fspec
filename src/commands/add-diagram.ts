@@ -15,7 +15,9 @@ interface AddDiagramResult {
   error?: string;
 }
 
-export async function addDiagram(options: AddDiagramOptions): Promise<AddDiagramResult> {
+export async function addDiagram(
+  options: AddDiagramOptions
+): Promise<AddDiagramResult> {
   const { section, title, code, cwd = process.cwd() } = options;
 
   // Validate inputs
@@ -112,7 +114,10 @@ export async function addDiagram(options: AddDiagramOptions): Promise<AddDiagram
 
           // Find the end of this diagram (next ### or next section)
           for (let j = i + 1; j <= sectionEndIndex; j++) {
-            if (lines[j].trim().startsWith('### ') || lines[j].trim().startsWith('## ')) {
+            if (
+              lines[j].trim().startsWith('### ') ||
+              lines[j].trim().startsWith('## ')
+            ) {
               diagramEndIndex = j - 1;
               break;
             }
@@ -130,15 +135,25 @@ export async function addDiagram(options: AddDiagramOptions): Promise<AddDiagram
       if (diagramStartIndex !== -1) {
         // Replace existing diagram
         // Skip back over empty lines at the end
-        while (diagramEndIndex > diagramStartIndex && lines[diagramEndIndex].trim() === '') {
+        while (
+          diagramEndIndex > diagramStartIndex &&
+          lines[diagramEndIndex].trim() === ''
+        ) {
           diagramEndIndex--;
         }
-        lines.splice(diagramStartIndex, diagramEndIndex - diagramStartIndex + 1, ...diagramLines);
+        lines.splice(
+          diagramStartIndex,
+          diagramEndIndex - diagramStartIndex + 1,
+          ...diagramLines
+        );
       } else {
         // Add diagram at the end of the section
         // Find the last non-empty line in the section
         let insertIndex = sectionEndIndex;
-        while (insertIndex > sectionStartIndex && lines[insertIndex].trim() === '') {
+        while (
+          insertIndex > sectionStartIndex &&
+          lines[insertIndex].trim() === ''
+        ) {
           insertIndex--;
         }
         lines.splice(insertIndex + 1, 0, '', ...diagramLines);

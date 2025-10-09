@@ -47,9 +47,18 @@ Feature: Feature 3
     Given step
 `;
 
-      await writeFile(join(testDir, 'spec/features/feature1.feature'), feature1);
-      await writeFile(join(testDir, 'spec/features/feature2.feature'), feature2);
-      await writeFile(join(testDir, 'spec/features/feature3.feature'), feature3);
+      await writeFile(
+        join(testDir, 'spec/features/feature1.feature'),
+        feature1
+      );
+      await writeFile(
+        join(testDir, 'spec/features/feature2.feature'),
+        feature2
+      );
+      await writeFile(
+        join(testDir, 'spec/features/feature3.feature'),
+        feature3
+      );
 
       // When I run `fspec check`
       const result = await check({
@@ -81,7 +90,10 @@ Feature: Broken
   Scenario: Test
     Given step`;
 
-      await writeFile(join(testDir, 'spec/features/broken.feature'), invalidFeature);
+      await writeFile(
+        join(testDir, 'spec/features/broken.feature'),
+        invalidFeature
+      );
 
       // When I run `fspec check`
       const result = await check({
@@ -141,7 +153,10 @@ Feature: Test Feature
 Scenario: Test
 Given step`;
 
-      await writeFile(join(testDir, 'spec/features/unformatted.feature'), unformatted);
+      await writeFile(
+        join(testDir, 'spec/features/unformatted.feature'),
+        unformatted
+      );
 
       // When I run `fspec check`
       const result = await check({
@@ -167,7 +182,10 @@ Feature: Broken
   Scenario: Test
     Given step`;
 
-      await writeFile(join(testDir, 'spec/features/broken.feature'), invalidGherkin);
+      await writeFile(
+        join(testDir, 'spec/features/broken.feature'),
+        invalidGherkin
+      );
 
       // And I have a feature file with unregistered tag "@bad-tag"
       const tagsContent = `# Tag Registry
@@ -189,7 +207,10 @@ Feature: Bad Tag
 Scenario: Test
 Given step`;
 
-      await writeFile(join(testDir, 'spec/features/unformatted.feature'), unformatted);
+      await writeFile(
+        join(testDir, 'spec/features/unformatted.feature'),
+        unformatted
+      );
 
       // When I run `fspec check`
       const result = await check({
@@ -247,7 +268,10 @@ Feature: Feature ${i}
   Scenario: Test
     Given step
 `;
-        await writeFile(join(testDir, `spec/features/feature${i}.feature`), feature);
+        await writeFile(
+          join(testDir, `spec/features/feature${i}.feature`),
+          feature
+        );
       }
 
       // When I run `fspec check`
@@ -271,14 +295,20 @@ Feature: Feature ${i}
         const feature = `Feature: Feature ${i}
   Scenario: Test
     Given step`;
-        await writeFile(join(testDir, `spec/features/feature${i}.feature`), feature);
+        await writeFile(
+          join(testDir, `spec/features/feature${i}.feature`),
+          feature
+        );
       }
 
       const invalidFeature = `Invalid line
 Feature: Feature 5
   Scenario: Test
     Given step`;
-      await writeFile(join(testDir, 'spec/features/feature5.feature'), invalidFeature);
+      await writeFile(
+        join(testDir, 'spec/features/feature5.feature'),
+        invalidFeature
+      );
 
       // When I run `fspec check`
       const result = await check({
@@ -311,7 +341,10 @@ Feature: Feature ${i}
   Scenario: Test
     Given step
 `;
-        await writeFile(join(testDir, `spec/features/feature${i}.feature`), feature);
+        await writeFile(
+          join(testDir, `spec/features/feature${i}.feature`),
+          feature
+        );
       }
 
       // When I run `fspec check --verbose`
@@ -345,7 +378,10 @@ Feature: Feature ${i}
   Scenario: Test
     Given step
 `;
-        await writeFile(join(testDir, `spec/features/feature${i}.feature`), feature);
+        await writeFile(
+          join(testDir, `spec/features/feature${i}.feature`),
+          feature
+        );
       }
 
       // When I run `fspec check`
@@ -371,7 +407,10 @@ Feature: Broken
   Scenario: Test
     Given step`;
 
-      await writeFile(join(testDir, 'spec/features/broken.feature'), invalidFeature);
+      await writeFile(
+        join(testDir, 'spec/features/broken.feature'),
+        invalidFeature
+      );
 
       // When I run `fspec check` in a CI environment
       const result = await check({

@@ -2,48 +2,51 @@
 @cli
 @formatter
 @formatting
-@prettier
+@ast
+@gherkin
 @cross-platform
 @medium
 @integration-test
-@e2e-test
-Feature: Format Feature Files with Prettier
+Feature: Format Feature Files with Custom AST Formatter
   """
   Architecture notes:
-  - Uses Prettier with prettier-plugin-gherkin for formatting
+  - Uses @cucumber/gherkin parser to generate AST (Abstract Syntax Tree)
+  - Custom formatter walks AST and outputs formatted Gherkin
   - Formats all .feature files or specific file
-  - Applies consistent indentation (2 spaces)
-  - Wraps long lines at 80 characters
-  - Preserves doc strings and data tables
+  - Applies consistent indentation (tags: 0, feature: 0, scenarios: 2, steps: 4, tables: 6)
+  - Preserves all Gherkin elements exactly from AST
+  - Data table columns are aligned with padding
+  - No line wrapping - steps stay on one line
+  - Limits consecutive blank lines to maximum 2
   - Writes formatted content back to file
 
+  Core principle: STABILITY
+  - Formatting same AST twice produces identical output
+  - No "smart" wrapping that causes problems
+  - Preserves all content from AST exactly
+
   Critical implementation requirements:
-  - MUST use prettier with prettier-plugin-gherkin
-  - MUST NOT break valid Gherkin syntax
-  - MUST preserve doc strings (""")
-  - MUST preserve data tables (|)
+  - MUST use @cucumber/gherkin parser (official Cucumber parser)
+  - MUST support ALL Gherkin elements: Feature, Rule, Background, Scenario, Scenario Outline, Examples
+  - MUST support all step keywords: Given, When, Then, And, But, *
+  - MUST preserve tags, comments, doc strings, data tables
   - MUST apply consistent indentation
+  - MUST align data table columns
+  - MUST limit consecutive blank lines to max 2
+  - MUST NOT break valid Gherkin syntax
   - SHOULD show which files were formatted
   - Exit code 0 if successful, 1 if errors
-
-  Prettier configuration (from .prettierrc):
-  - parser: gherkin
-  - printWidth: 80
-  - tabWidth: 2
-  - useTabs: false
 
   Integration points:
   - CLI command: `fspec format [file]`
   - Can be called before validation/commit
-  - Integrates with npm run format:spec script
+  - Replaces Prettier dependency (bundle size reduction: 199KB → 90KB)
   """
 
   Background: User Story
     As a developer using AI agents for spec-driven development
     I want to automatically format feature files
     So that all specifications have consistent style
-
-
 
   Scenario: Format a single feature file
     Given I have a feature file "spec/features/login.feature" with inconsistent formatting
@@ -114,3 +117,52 @@ Feature: Format Feature Files with Prettier
     Then the file should be properly formatted
     And when I run `fspec validate spec/features/data-export.feature`
     Then the validation should pass
+
+  Scenario: Format Scenario Outline with Examples
+    Given I have a feature file with Scenario Outline and Examples table
+    When I run `fspec format spec/features/outline.feature`
+    Then the Scenario Outline should be indented by 2 spaces
+    And the Examples section should be indented by 4 spaces
+    And the Examples table should be indented by 6 spaces
+    And table columns should be aligned with padding
+
+  Scenario: Format Rule keyword
+    Given I have a feature file with Rule containing nested Background and Scenarios
+    When I run `fspec format spec/features/rules.feature`
+    Then the Rule should be indented by 2 spaces
+    And nested Background should be indented by 4 spaces
+    And nested Scenarios should be indented by 4 spaces
+    And steps should be indented by 6 spaces
+
+  Scenario: Format DocStrings with content types
+    Given I have a feature file with DocStrings marked as """ json
+    When I run `fspec format spec/features/docstrings.feature`
+    Then the DocString delimiter should include the content type
+    And the content should be preserved exactly
+    And both """ and ``` delimiters should be supported
+
+  Scenario: Format multiple tags
+    Given I have a feature with tags @phase1 @cli @formatter
+    When I run `fspec format spec/features/tags.feature`
+    Then each tag should be on its own line
+    And tags should have zero indentation
+    And tag order should be preserved
+
+  Scenario: Format And/But step keywords
+    Given I have a feature file with And and But steps
+    When I run `fspec format spec/features/steps.feature`
+    Then And steps should be formatted like other steps
+    And But steps should be formatted like other steps
+    And all steps should be indented by 4 spaces
+
+  Scenario: Format wildcard step keyword
+    Given I have a feature file with * step keyword
+    When I run `fspec format spec/features/wildcard.feature`
+    Then the * steps should be formatted correctly
+    And indentation should match other steps
+
+  Scenario: Limit excessive blank lines
+    Given I have a feature file with 6 consecutive blank lines in description
+    When I run `fspec format spec/features/excessive.feature`
+    Then consecutive blank lines should be limited to maximum 2
+    And the file should pass validation

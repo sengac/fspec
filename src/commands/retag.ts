@@ -55,7 +55,10 @@ export async function retag(options: RetagOptions): Promise<RetagResult> {
 
   try {
     // Get all feature files
-    const files = await glob(['spec/features/**/*.feature'], { cwd, absolute: false });
+    const files = await glob(['spec/features/**/*.feature'], {
+      cwd,
+      absolute: false,
+    });
 
     if (files.length === 0) {
       return {
@@ -97,7 +100,10 @@ export async function retag(options: RetagOptions): Promise<RetagResult> {
       };
     }
 
-    const totalOccurrences = matchingFiles.reduce((sum, f) => sum + f.occurrences, 0);
+    const totalOccurrences = matchingFiles.reduce(
+      (sum, f) => sum + f.occurrences,
+      0
+    );
 
     // Dry run - just report what would happen
     if (dryRun) {
@@ -106,7 +112,7 @@ export async function retag(options: RetagOptions): Promise<RetagResult> {
         fileCount: matchingFiles.length,
         occurrenceCount: totalOccurrences,
         message: `Would rename ${from} to ${to} in ${matchingFiles.length} file(s) (${totalOccurrences} occurrence(s))`,
-        files: matchingFiles.map((f) => f.file),
+        files: matchingFiles.map(f => f.file),
       };
     }
 
@@ -146,7 +152,7 @@ export async function retag(options: RetagOptions): Promise<RetagResult> {
       fileCount: matchingFiles.length,
       occurrenceCount: totalOccurrences,
       message: `Renamed ${from} to ${to} in ${matchingFiles.length} file(s) (${totalOccurrences} occurrence(s)). All modified files validated successfully.`,
-      files: matchingFiles.map((f) => f.file),
+      files: matchingFiles.map(f => f.file),
     };
   } catch (error: any) {
     return {

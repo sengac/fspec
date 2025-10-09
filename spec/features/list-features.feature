@@ -42,8 +42,6 @@ Feature: List Feature Files
     I want to see all existing feature files
     So that I understand what specifications already exist and avoid duplicates
 
-
-
   Scenario: List all feature files
     Given I have feature files in "spec/features/":
       | file                       | feature name              | scenarios |

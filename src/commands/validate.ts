@@ -15,7 +15,10 @@ interface ValidationResult {
   }>;
 }
 
-export async function validateCommand(file?: string, options?: { verbose?: boolean }): Promise<void> {
+export async function validateCommand(
+  file?: string,
+  options?: { verbose?: boolean }
+): Promise<void> {
   try {
     const files = file ? [file] : await findAllFeatureFiles();
 
@@ -24,7 +27,9 @@ export async function validateCommand(file?: string, options?: { verbose?: boole
       process.exit(2);
     }
 
-    const results = await Promise.all(files.map(f => validateFile(f, options?.verbose)));
+    const results = await Promise.all(
+      files.map(f => validateFile(f, options?.verbose))
+    );
 
     // Display results
     for (const result of results) {
@@ -48,9 +53,15 @@ export async function validateCommand(file?: string, options?: { verbose?: boole
     if (results.length > 1) {
       console.log('');
       if (invalidCount === 0) {
-        console.log(chalk.green(`✓ All ${results.length} feature files are valid`));
+        console.log(
+          chalk.green(`✓ All ${results.length} feature files are valid`)
+        );
       } else {
-        console.log(chalk.yellow(`Validated ${results.length} files: ${validCount} valid, ${invalidCount} invalid`));
+        console.log(
+          chalk.yellow(
+            `Validated ${results.length} files: ${validCount} valid, ${invalidCount} invalid`
+          )
+        );
       }
     }
 
@@ -64,7 +75,10 @@ export async function validateCommand(file?: string, options?: { verbose?: boole
   }
 }
 
-async function validateFile(filePath: string, verbose?: boolean): Promise<ValidationResult> {
+async function validateFile(
+  filePath: string,
+  verbose?: boolean
+): Promise<ValidationResult> {
   const result: ValidationResult = {
     file: filePath,
     valid: true,
@@ -99,15 +113,23 @@ async function validateFile(filePath: string, verbose?: boolean): Promise<Valida
       return result;
     }
 
+    // Additional validation checks
+    const additionalErrors = checkForCommonIssues(content);
+    if (additionalErrors.length > 0) {
+      result.valid = false;
+      result.errors.push(...additionalErrors);
+    }
+
     // Validation successful
     if (verbose) {
       console.log(chalk.blue('  AST generated successfully'));
       if (gherkinDocument.feature) {
         console.log(chalk.blue(`  Feature: ${gherkinDocument.feature.name}`));
-        console.log(chalk.blue(`  Scenarios: ${gherkinDocument.feature.children.length}`));
+        console.log(
+          chalk.blue(`  Scenarios: ${gherkinDocument.feature.children.length}`)
+        );
       }
     }
-
   } catch (error: any) {
     if (error.code === 'ENOENT') {
       result.valid = false;
@@ -137,6 +159,69 @@ async function findAllFeatureFiles(): Promise<string[]> {
   });
 
   return files;
+}
+
+function checkForCommonIssues(
+  content: string
+): Array<{ line: number; message: string; suggestion?: string }> {
+  const errors: Array<{ line: number; message: string; suggestion?: string }> =
+    [];
+  const lines = content.split('\n');
+
+  let inDocString = false;
+  let docStringStartLine = 0;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const lineNum = i + 1;
+
+    // Track DocString boundaries
+    if (line.trim() === '"""' || line.trim().startsWith('"""')) {
+      if (inDocString) {
+        inDocString = false;
+      } else {
+        inDocString = true;
+        docStringStartLine = lineNum;
+      }
+      continue;
+    }
+
+    // Check for unescaped triple quotes inside DocStrings
+    if (inDocString && line.includes('"""') && !line.includes('\\"""')) {
+      errors.push({
+        line: lineNum,
+        message: 'Unescaped triple quotes (""") found inside DocString',
+        suggestion:
+          'Escape triple quotes with backslashes: \\"\\"\\", or use triple backticks (```) as DocString delimiters instead',
+      });
+    }
+
+    // Check for excessive consecutive blank lines (more than 2)
+    if (
+      i >= 2 &&
+      lines[i].trim() === '' &&
+      lines[i - 1].trim() === '' &&
+      lines[i - 2].trim() === ''
+    ) {
+      // Count how many consecutive blank lines
+      let blankCount = 3;
+      for (let j = i + 1; j < lines.length && lines[j].trim() === ''; j++) {
+        blankCount++;
+      }
+      if (blankCount >= 3) {
+        errors.push({
+          line: lineNum,
+          message: `Excessive blank lines detected (${blankCount} consecutive blank lines)`,
+          suggestion:
+            'Remove excess blank lines - Gherkin files should have at most 2 consecutive blank lines',
+        });
+        // Skip ahead to avoid duplicate errors
+        i += blankCount - 3;
+      }
+    }
+  }
+
+  return errors;
 }
 
 function getSuggestion(errorMessage: string): string | undefined {

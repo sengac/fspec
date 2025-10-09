@@ -56,7 +56,9 @@ Feature: Create Feature File
       // Then the command should list all feature files
       expect(result.features).toHaveLength(2);
       expect(result.features[0].name).toBe('Create Feature File');
-      expect(result.features[0].file).toBe('spec/features/create-feature.feature');
+      expect(result.features[0].file).toBe(
+        'spec/features/create-feature.feature'
+      );
       expect(result.features[0].scenarioCount).toBe(1);
       expect(result.features[1].name).toBe('Gherkin Syntax Validation');
       expect(result.features[1].scenarioCount).toBe(2);
@@ -129,7 +131,9 @@ Feature: Create Feature File
       // Given no "spec/features/" directory exists
       // When I run `fspec list-features`
       // Then it should throw an error
-      await expect(listFeatures({ cwd: testDir })).rejects.toThrow('Directory not found');
+      await expect(listFeatures({ cwd: testDir })).rejects.toThrow(
+        'Directory not found'
+      );
     });
   });
 
@@ -299,7 +303,9 @@ Feature: Validation
       expect(resultCli.features).toHaveLength(2);
       expect(resultCli.features.map(f => f.name)).toContain('Authentication');
       expect(resultCli.features.map(f => f.name)).toContain('Validation');
-      expect(resultCli.features.map(f => f.name)).not.toContain('API Endpoints');
+      expect(resultCli.features.map(f => f.name)).not.toContain(
+        'API Endpoints'
+      );
     });
   });
 
@@ -370,7 +376,10 @@ Feature: API Endpoints
       );
 
       // When I run `fspec list-features --tag=@authentication`
-      const result = await listFeatures({ cwd: testDir, tag: '@authentication' });
+      const result = await listFeatures({
+        cwd: testDir,
+        tag: '@authentication',
+      });
 
       // Then I can see all existing authentication-related features
       expect(result.features).toHaveLength(2);
@@ -378,7 +387,9 @@ Feature: API Endpoints
       expect(result.features.map(f => f.name)).toContain('User Signup');
 
       // And I can determine if my new feature would be a duplicate
-      const hasLoginFeature = result.features.some(f => f.name.includes('Login'));
+      const hasLoginFeature = result.features.some(f =>
+        f.name.includes('Login')
+      );
       expect(hasLoginFeature).toBe(true);
 
       // And I can understand the existing specification landscape

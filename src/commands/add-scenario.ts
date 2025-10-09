@@ -104,7 +104,10 @@ export async function addScenario(
   // Look for Scenario Outline
   for (let i = 0; i < lines.length; i++) {
     const trimmed = lines[i].trim();
-    if (trimmed.startsWith('Scenario Outline:') || trimmed.startsWith('Scenario Template:')) {
+    if (
+      trimmed.startsWith('Scenario Outline:') ||
+      trimmed.startsWith('Scenario Template:')
+    ) {
       insertIndex = i;
       break;
     }

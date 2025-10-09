@@ -32,12 +32,19 @@ Feature: User Login
     When I enter credentials
     Then I should be logged in
 `;
-      await writeFile(join(testDir, 'spec/features/login.feature'), featureContent);
+      await writeFile(
+        join(testDir, 'spec/features/login.feature'),
+        featureContent
+      );
 
       // When I run `fspec add-scenario login "Successful login with valid credentials"`
-      const result = await addScenario('login', 'Successful login with valid credentials', {
-        cwd: testDir,
-      });
+      const result = await addScenario(
+        'login',
+        'Successful login with valid credentials',
+        {
+          cwd: testDir,
+        }
+      );
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
@@ -47,7 +54,9 @@ Feature: User Login
         join(testDir, 'spec/features/login.feature'),
         'utf-8'
       );
-      expect(updatedContent).toContain('Scenario: Successful login with valid credentials');
+      expect(updatedContent).toContain(
+        'Scenario: Successful login with valid credentials'
+      );
 
       // And the scenario should have Given/When/Then placeholders
       expect(updatedContent).toContain('Given [precondition]');
@@ -67,10 +76,15 @@ Feature: User Login
   Scenario: Login
     Given test
 `;
-      await writeFile(join(testDir, 'spec/features/user-auth.feature'), featureContent);
+      await writeFile(
+        join(testDir, 'spec/features/user-auth.feature'),
+        featureContent
+      );
 
       // When I run `fspec add-scenario user-auth "Password reset"`
-      const result = await addScenario('user-auth', 'Password reset', { cwd: testDir });
+      const result = await addScenario('user-auth', 'Password reset', {
+        cwd: testDir,
+      });
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
@@ -92,7 +106,10 @@ Feature: User Login
   Scenario: View cart
     Given test
 `;
-      await writeFile(join(testDir, 'spec/features/shopping-cart.feature'), featureContent);
+      await writeFile(
+        join(testDir, 'spec/features/shopping-cart.feature'),
+        featureContent
+      );
 
       // When I run `fspec add-scenario spec/features/shopping-cart.feature "Add item to cart"`
       const result = await addScenario(
@@ -121,7 +138,10 @@ Feature: User Login
   Scenario: Cash payment
     Given test
 `;
-      await writeFile(join(testDir, 'spec/features/payment.feature'), featureContent);
+      await writeFile(
+        join(testDir, 'spec/features/payment.feature'),
+        featureContent
+      );
 
       // When I run `fspec add-scenario payment "Credit card payment"`
       await addScenario('payment', 'Credit card payment', { cwd: testDir });
@@ -140,13 +160,18 @@ Feature: User Login
 
       // And all scenarios should be in the order they were added
       const cashIndex = updatedContent.indexOf('Scenario: Cash payment');
-      const creditIndex = updatedContent.indexOf('Scenario: Credit card payment');
+      const creditIndex = updatedContent.indexOf(
+        'Scenario: Credit card payment'
+      );
       const paypalIndex = updatedContent.indexOf('Scenario: PayPal payment');
       expect(cashIndex).toBeLessThan(creditIndex);
       expect(creditIndex).toBeLessThan(paypalIndex);
 
       // And the file should remain valid Gherkin syntax
-      const result = await addScenario('payment', 'Test', { cwd: testDir, dryRun: true });
+      const result = await addScenario('payment', 'Test', {
+        cwd: testDir,
+        dryRun: true,
+      });
       expect(result.valid).toBe(true);
     });
   });
@@ -163,7 +188,10 @@ Feature: My Feature
   Scenario: First scenario
     Given test
 `;
-      await writeFile(join(testDir, 'spec/features/my-feature.feature'), featureContent);
+      await writeFile(
+        join(testDir, 'spec/features/my-feature.feature'),
+        featureContent
+      );
 
       // When I run `fspec add-scenario my-feature "New scenario"`
       await addScenario('my-feature', 'New scenario', { cwd: testDir });
@@ -210,7 +238,10 @@ Feature: My Feature
       | param |
       | value |
 `;
-      await writeFile(join(testDir, 'spec/features/my-feature.feature'), featureContent);
+      await writeFile(
+        join(testDir, 'spec/features/my-feature.feature'),
+        featureContent
+      );
 
       // When I run `fspec add-scenario my-feature "New scenario"`
       await addScenario('my-feature', 'New scenario', { cwd: testDir });
@@ -232,7 +263,10 @@ Feature: My Feature
       expect(newIndex).toBeLessThan(outlineIndex);
 
       // And the file should remain valid Gherkin syntax
-      const result = await addScenario('my-feature', 'Test', { cwd: testDir, dryRun: true });
+      const result = await addScenario('my-feature', 'Test', {
+        cwd: testDir,
+        dryRun: true,
+      });
       expect(result.valid).toBe(true);
     });
   });
@@ -243,7 +277,9 @@ Feature: My Feature
       // (file does not exist)
 
       // When I run `fspec add-scenario missing "New scenario"`
-      const result = await addScenario('missing', 'New scenario', { cwd: testDir });
+      const result = await addScenario('missing', 'New scenario', {
+        cwd: testDir,
+      });
 
       // Then the command should exit with code 1
       expect(result.success).toBe(false);
@@ -260,10 +296,15 @@ Feature: My Feature
     it('should show error and not modify file', async () => {
       // Given I have a feature file "spec/features/broken.feature" with invalid syntax
       const invalidContent = 'This is not valid Gherkin syntax';
-      await writeFile(join(testDir, 'spec/features/broken.feature'), invalidContent);
+      await writeFile(
+        join(testDir, 'spec/features/broken.feature'),
+        invalidContent
+      );
 
       // When I run `fspec add-scenario broken "New scenario"`
-      const result = await addScenario('broken', 'New scenario', { cwd: testDir });
+      const result = await addScenario('broken', 'New scenario', {
+        cwd: testDir,
+      });
 
       // Then the command should exit with code 1
       expect(result.success).toBe(false);
@@ -275,7 +316,10 @@ Feature: My Feature
       expect(result.suggestion).toContain('validate');
 
       // And the file should not be modified
-      const fileContent = await readFile(join(testDir, 'spec/features/broken.feature'), 'utf-8');
+      const fileContent = await readFile(
+        join(testDir, 'spec/features/broken.feature'),
+        'utf-8'
+      );
       expect(fileContent).toBe(invalidContent);
     });
   });
@@ -288,10 +332,15 @@ Feature: My Feature
   Scenario: Login with email
     Given test
 `;
-      await writeFile(join(testDir, 'spec/features/my-feature.feature'), featureContent);
+      await writeFile(
+        join(testDir, 'spec/features/my-feature.feature'),
+        featureContent
+      );
 
       // When I run `fspec add-scenario my-feature "Login with email"`
-      const result = await addScenario('my-feature', 'Login with email', { cwd: testDir });
+      const result = await addScenario('my-feature', 'Login with email', {
+        cwd: testDir,
+      });
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
@@ -304,7 +353,9 @@ Feature: My Feature
         join(testDir, 'spec/features/my-feature.feature'),
         'utf-8'
       );
-      const scenarioMatches = updatedContent.match(/Scenario: Login with email/g);
+      const scenarioMatches = updatedContent.match(
+        /Scenario: Login with email/g
+      );
       expect(scenarioMatches?.length).toBe(2);
     });
   });
@@ -319,7 +370,10 @@ Feature: My Feature
     When step two
     Then step three
 `;
-      await writeFile(join(testDir, 'spec/features/my-feature.feature'), featureContent);
+      await writeFile(
+        join(testDir, 'spec/features/my-feature.feature'),
+        featureContent
+      );
 
       // When I run `fspec add-scenario my-feature "New scenario"`
       await addScenario('my-feature', 'New scenario', { cwd: testDir });
@@ -340,7 +394,9 @@ Feature: My Feature
       // And the indentation should match existing scenarios
       const lines = updatedContent.split('\n');
       const scenarioLines = lines.filter(line => line.includes('Scenario:'));
-      const allHaveSameIndent = scenarioLines.every(line => line.startsWith('  Scenario:'));
+      const allHaveSameIndent = scenarioLines.every(line =>
+        line.startsWith('  Scenario:')
+      );
       expect(allHaveSameIndent).toBe(true);
     });
   });
@@ -353,12 +409,18 @@ Feature: My Feature
   Scenario: Existing
     Given test
 `;
-      await writeFile(join(testDir, 'spec/features/test.feature'), featureContent);
+      await writeFile(
+        join(testDir, 'spec/features/test.feature'),
+        featureContent
+      );
 
       // When I run `fspec add-scenario test "Test scenario"`
       await addScenario('test', 'Test scenario', { cwd: testDir });
 
-      const updatedContent = await readFile(join(testDir, 'spec/features/test.feature'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/features/test.feature'),
+        'utf-8'
+      );
 
       // Then the scenario should contain "Given [precondition]"
       expect(updatedContent).toContain('Given [precondition]');

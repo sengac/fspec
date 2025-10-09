@@ -31,8 +31,6 @@ Feature: Bulk Rename Tags Across Files
     I want to bulk rename tags across all feature files
     So that I can refactor tag naming without manual file editing
 
-
-
   Scenario: Rename tag across multiple feature files
     Given I have 5 feature files
     And 3 files use the tag @phase1

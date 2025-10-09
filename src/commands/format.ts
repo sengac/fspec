@@ -1,19 +1,10 @@
-import { exec } from 'child_process';
-import { promisify } from 'util';
-import { access } from 'fs/promises';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { access, readFile, writeFile } from 'fs/promises';
+import { join } from 'path';
 import chalk from 'chalk';
 import { glob } from 'tinyglobby';
-
-const execAsync = promisify(exec);
-
-// Get the project root (where package.json is located)
-// When built: dist/index.js -> dist -> project root
-// When in source: src/commands/format.ts -> src/commands -> src -> project root
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const projectRoot = __dirname.includes('/dist') ? join(__dirname, '..') : join(__dirname, '..', '..');
+import * as Gherkin from '@cucumber/gherkin';
+import * as Messages from '@cucumber/messages';
+import { formatGherkinDocument } from '../utils/gherkin-formatter';
 
 export interface FormatOptions {
   cwd?: string;
@@ -24,7 +15,9 @@ export interface FormatResult {
   formattedCount: number;
 }
 
-export async function formatFeatures(options: FormatOptions = {}): Promise<FormatResult> {
+export async function formatFeatures(
+  options: FormatOptions = {}
+): Promise<FormatResult> {
   const cwd = options.cwd || process.cwd();
 
   let files: string[];
@@ -51,18 +44,39 @@ export async function formatFeatures(options: FormatOptions = {}): Promise<Forma
   }
 
   try {
+    // Create Gherkin parser
+    const uuidFn = Messages.IdGenerator.uuid();
+    const builder = new Gherkin.AstBuilder(uuidFn);
+    const matcher = new Gherkin.GherkinClassicTokenMatcher();
+
     // Format each file individually to ensure consistent counting
     let formattedCount = 0;
 
     for (const file of files) {
-      // Use prettier from project's node_modules directly
-      const prettierBin = join(projectRoot, 'node_modules', '.bin', 'prettier');
       const absoluteFilePath = join(cwd, file);
-      await execAsync(
-        `"${prettierBin}" --write --parser gherkin "${absoluteFilePath}"`,
-        { cwd: projectRoot } // Run from project root so prettier can find its config and plugins
-      );
-      formattedCount++;
+
+      try {
+        // Read file content
+        const content = await readFile(absoluteFilePath, 'utf-8');
+
+        // Parse Gherkin to AST
+        const parser = new Gherkin.Parser(builder, matcher);
+        const gherkinDocument = parser.parse(content);
+
+        // Format using custom formatter
+        const formatted = formatGherkinDocument(gherkinDocument);
+
+        // Write formatted content back
+        await writeFile(absoluteFilePath, formatted, 'utf-8');
+
+        formattedCount++;
+      } catch (parseError: any) {
+        // If parsing fails, skip this file and continue
+        console.error(
+          chalk.yellow(`Warning: Skipped ${file} due to parse error:`)
+        );
+        console.error(chalk.gray(parseError.message));
+      }
     }
 
     return { formattedCount };
@@ -83,7 +97,9 @@ export async function formatCommand(file?: string): Promise<void> {
     if (file) {
       console.log(chalk.green(`✓ Formatted ${file}`));
     } else {
-      console.log(chalk.green(`✓ Formatted ${result.formattedCount} feature files`));
+      console.log(
+        chalk.green(`✓ Formatted ${result.formattedCount} feature files`)
+      );
     }
 
     process.exit(0);

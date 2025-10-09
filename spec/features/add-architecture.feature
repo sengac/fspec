@@ -8,7 +8,7 @@ Feature: Add Architecture Documentation to Feature Files
   """
   Architecture notes:
   - Adds or updates architecture doc string in feature files
-  - Doc strings use Gherkin triple-quote (""") syntax
+  - Doc strings use Gherkin triple-quote (\"\"\") syntax
   - Inserted after Feature line, before Background section
   - If architecture doc string exists, it is replaced
   - Preserves existing scenarios and structure
@@ -17,7 +17,7 @@ Feature: Add Architecture Documentation to Feature Files
   Critical implementation requirements:
   - MUST accept feature file name or path
   - MUST accept architecture text (can be multi-line)
-  - MUST use Gherkin doc string syntax (""")
+  - MUST use Gherkin doc string syntax (\"\"\")
   - MUST insert after Feature line
   - MUST preserve indentation (2 spaces for doc string content)
   - MUST replace existing architecture doc string if present
@@ -29,8 +29,6 @@ Feature: Add Architecture Documentation to Feature Files
     As a developer documenting feature specifications
     I want to add architecture notes to feature files
     So that implementation details are captured in the specification
-
-
 
   Scenario: Add architecture notes to feature without existing doc string
     Given I have a feature file "login.feature" with no doc string

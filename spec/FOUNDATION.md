@@ -16,7 +16,8 @@ A CLI tool that provides AI agents (like Claude Code, GitHub Copilot, etc.) with
 - **Build System:** Vite (for fast bundling and development)
 - **CLI Framework:** Commander.js (argument parsing and command structure)
 - **Gherkin Parsing:** @cucumber/gherkin-parser (official Cucumber parser)
-- **Code Quality:** ESLint + Prettier (with prettier-plugin-gherkin)
+- **Formatting:** Custom AST-based formatter using @cucumber/gherkin (replaces Prettier plugin)
+- **Code Quality:** ESLint + Prettier (for TypeScript/JavaScript only)
 - **Testing:** Vitest (unit and integration tests following ACDD)
 - **Storage:** File-based (manages spec/, spec/features/, FOUNDATION.md, TAGS.md)
 
@@ -53,7 +54,7 @@ A CLI tool that provides AI agents (like Claude Code, GitHub Copilot, etc.) with
 - **Testing Strategy:** ACDD methodology - feature files first, tests second, code last
 - **Logging:** Console output (success/error messages) - verbose mode for debugging
 - **Validation:** Gherkin syntax validation using @cucumber/gherkin-parser
-- **Formatting:** Prettier with prettier-plugin-gherkin for consistent formatting
+- **Formatting:** Custom AST-based formatter for consistent Gherkin formatting
 
 #### Key Libraries & Dependencies
 
@@ -68,8 +69,8 @@ A CLI tool that provides AI agents (like Claude Code, GitHub Copilot, etc.) with
 - **glob/tinyglobby**: Pattern matching for finding feature files
 
 **Validation & Formatting:**
-- **prettier**: Code formatter
-- **prettier-plugin-gherkin**: Gherkin-specific formatting rules
+- **prettier**: Code formatter (for TypeScript/JavaScript only)
+- **Custom AST formatter**: Built-in Gherkin formatter using @cucumber/gherkin
 - **zod**: Schema validation for internal data structures
 
 **Development:**
@@ -470,8 +471,114 @@ sequenceDiagram
 
 - `fspec validate [file]` - Validate Gherkin syntax (all files or specific) ✅
 - `fspec format [file]` - Format using Prettier (all files or specific) ✅
-- `fspec validate-tags [file]` - Validate tags against registry ✅
 - `fspec check [--verbose]` - Run all validations (syntax + tags + formatting) ✅
+
+---
+
+## 5. Feature File Inventory
+
+### Phase 1: Core Validation & Feature Management (5 features)
+
+| Feature File | Command | Description |
+|--------------|---------|-------------|
+| gherkin-validation.feature | `fspec validate [file]` | Gherkin syntax validation using @cucumber/gherkin-parser |
+| format-features.feature | `fspec format [file]` | Format feature files with Prettier |
+| create-feature.feature | `fspec create-feature <name>` | Create feature file with Gherkin template |
+| list-features.feature | `fspec list-features [--tag]` | List all features with optional tag filtering |
+| check.feature | `fspec check [--verbose]` | Run all validations (syntax + tags + formatting) |
+
+### Phase 2: Tag Registry & Management (7 features)
+
+| Feature File | Command | Description |
+|--------------|---------|-------------|
+| validate-tags.feature | `fspec validate-tags [file]` | Validate feature file tags against TAGS.md registry |
+| register-tag.feature | `fspec register-tag <tag> <cat> <desc>` | Register new tag in TAGS.md |
+| list-tags.feature | `fspec list-tags [--category]` | List all registered tags from TAGS.md |
+| tag-stats.feature | `fspec tag-stats` | Show tag usage statistics across all features |
+| update-tag.feature | `fspec update-tag <tag> [--category] [--desc]` | Update tag definition in registry |
+| add-architecture.feature | `fspec add-architecture <feature> <notes>` | Add/update architecture doc string in feature file |
+| add-background.feature | `fspec add-background <feature> <story>` | Add/update user story background section |
+| show-feature.feature | `fspec show-feature <name> [--format] [--output]` | Display feature file contents |
+
+### Phase 3: Advanced Feature Editing (2 features)
+
+| Feature File | Command | Description |
+|--------------|---------|-------------|
+| add-scenario.feature | `fspec add-scenario <feature> <name>` | Add new scenario to existing feature file |
+| add-step.feature | `fspec add-step <feature> <scenario> <type> <text>` | Add Given/When/Then step to scenario |
+
+### Phase 4: CRUD Operations & Tag-Based Queries (4 features)
+
+| Feature File | Command | Description |
+|--------------|---------|-------------|
+| get-scenarios.feature | `fspec get-scenarios [--tag]` | Query scenarios by tag with AND logic filtering |
+| show-acceptance-criteria.feature | `fspec show-acceptance-criteria [--tag] [--format]` | Display acceptance criteria by tag (text/markdown/JSON) |
+| delete-scenario.feature | `fspec delete-scenario <feature> <scenario>` | Delete scenario from feature file |
+| update-tag.feature | `fspec update-tag <tag> [options]` | Update tag category/description in registry |
+
+### Phase 5: Advanced CRUD & Bulk Operations (7 features)
+
+| Feature File | Command | Description |
+|--------------|---------|-------------|
+| update-scenario.feature | `fspec update-scenario <feature> <old> <new>` | Rename scenario in feature file |
+| update-step.feature | `fspec update-step <feature> <scenario> <step> [options]` | Update step text or keyword |
+| delete-step.feature | `fspec delete-step <feature> <scenario> <step>` | Delete step from scenario |
+| delete-tag.feature | `fspec delete-tag <tag> [--force] [--dry-run]` | Delete tag from TAGS.md registry |
+| retag.feature | `fspec retag --from=<old> --to=<new> [--dry-run]` | Bulk rename tags across all feature files |
+| delete-scenarios-by-tag.feature | `fspec delete-scenarios --tag=<tag> [--dry-run]` | Bulk delete scenarios matching tag(s) |
+| delete-features-by-tag.feature | `fspec delete-features --tag=<tag> [--dry-run]` | Bulk delete entire feature files by tag |
+
+### Phase 6: Architecture Documentation (3 features)
+
+| Feature File | Command | Description |
+|--------------|---------|-------------|
+| add-diagram.feature | `fspec add-diagram <section> <title> <code>` | Add/update Mermaid diagram in FOUNDATION.md |
+| update-foundation.feature | `fspec update-foundation <section> <content>` | Update FOUNDATION.md section content |
+| show-foundation.feature | `fspec show-foundation [options]` | Display FOUNDATION.md with multiple format options |
+
+**Total: 28 feature files implementing 28 unique commands across 6 development phases**
+
+### Tag Usage Summary
+
+**Phase Distribution:**
+- @phase1: 5 files (18%)
+- @phase2: 7 files (25%)
+- @phase3: 2 files (7%)
+- @phase4: 4 files (14%)
+- @phase5: 7 files (25%)
+- @phase6: 3 files (11%)
+
+**Component Distribution:**
+- @cli: 28 files (100%) - All commands are CLI-based
+- @parser: 3 files (11%) - Gherkin parsing operations
+- @generator: 1 file (4%) - Template generation
+- @validator: 1 file (4%) - Validation logic
+- @formatter: 1 file (4%) - Formatting operations
+- @file-ops: 1 file (4%) - File operations
+
+**Feature Group Distribution:**
+- @feature-management: 11 files (39%) - Feature file CRUD operations
+- @modification: 11 files (39%) - Update/delete operations
+- @tag-management: 7 files (25%) - TAGS.md operations
+- @querying: 6 files (21%) - List/search/filter operations
+- @foundation-management: 3 files (11%) - FOUNDATION.md operations
+- @bulk-operations: 3 files (11%) - Multi-file operations
+- @validation: 3 files (11%) - Validation checks
+- @documentation: 2 files (7%) - Documentation display
+- @read-only: 2 files (7%) - Read-only queries
+- @formatting: 1 file (4%) - Prettier integration
+- @utility: 1 file (4%) - Utility commands
+
+**Priority Distribution:**
+- @critical: 3 files (11%)
+- @high: 5 files (18%)
+- @medium: 15 files (54%)
+- @low: 5 files (18%)
+
+**Testing Coverage:**
+- @unit-test: 27 files (96%)
+- @integration-test: 7 files (25%)
+- @e2e-test: 1 file (4%)
 
 ---
 

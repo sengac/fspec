@@ -338,7 +338,9 @@ describe('Feature: Delete Step from Scenario', () => {
 
       // And the step should be removed
       const updatedContent = await readFile(filePath, 'utf-8');
-      expect(updatedContent).not.toContain("Given I can't access @admin features");
+      expect(updatedContent).not.toContain(
+        "Given I can't access @admin features"
+      );
     });
   });
 

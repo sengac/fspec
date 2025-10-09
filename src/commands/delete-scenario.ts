@@ -87,7 +87,8 @@ export async function deleteScenario(
   // Find the end line of the scenario (last step or scenario line if no steps)
   let scenarioEndLine = scenarioStartLine;
   if (scenarioChild.scenario.steps && scenarioChild.scenario.steps.length > 0) {
-    const lastStep = scenarioChild.scenario.steps[scenarioChild.scenario.steps.length - 1];
+    const lastStep =
+      scenarioChild.scenario.steps[scenarioChild.scenario.steps.length - 1];
     scenarioEndLine = lastStep.location.line;
   }
 
@@ -121,7 +122,10 @@ export async function deleteScenario(
   const startIndex = scenarioStartLine - 1;
   const endIndex = actualEndLine; // Remove through this line (inclusive)
 
-  const newLines = [...lines.slice(0, startIndex), ...lines.slice(endIndex + 1)];
+  const newLines = [
+    ...lines.slice(0, startIndex),
+    ...lines.slice(endIndex + 1),
+  ];
 
   // Remove extra blank lines if we created them
   const trimmedLines = [];

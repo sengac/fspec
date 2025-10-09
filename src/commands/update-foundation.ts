@@ -14,7 +14,9 @@ interface UpdateFoundationResult {
   error?: string;
 }
 
-export async function updateFoundation(options: UpdateFoundationOptions): Promise<UpdateFoundationResult> {
+export async function updateFoundation(
+  options: UpdateFoundationOptions
+): Promise<UpdateFoundationResult> {
   const { section, content, cwd = process.cwd() } = options;
 
   // Validate inputs
@@ -25,7 +27,11 @@ export async function updateFoundation(options: UpdateFoundationOptions): Promis
     };
   }
 
-  if (content === undefined || content === null || content.trim().length === 0) {
+  if (
+    content === undefined ||
+    content === null ||
+    content.trim().length === 0
+  ) {
     return {
       success: false,
       error: 'Section content cannot be empty',
@@ -87,12 +93,21 @@ export async function updateFoundation(options: UpdateFoundationOptions): Promis
     } else {
       // Section exists, replace its content
       // Skip back over empty lines at the end of section
-      while (sectionEndIndex > sectionStartIndex && lines[sectionEndIndex].trim() === '') {
+      while (
+        sectionEndIndex > sectionStartIndex &&
+        lines[sectionEndIndex].trim() === ''
+      ) {
         sectionEndIndex--;
       }
 
       // Replace the section content (keep the ## header, replace everything after)
-      lines.splice(sectionStartIndex + 1, sectionEndIndex - sectionStartIndex, '', ...contentLines, '');
+      lines.splice(
+        sectionStartIndex + 1,
+        sectionEndIndex - sectionStartIndex,
+        '',
+        ...contentLines,
+        ''
+      );
     }
 
     // Join back and write
@@ -111,7 +126,10 @@ export async function updateFoundation(options: UpdateFoundationOptions): Promis
   }
 }
 
-export async function updateFoundationCommand(section: string, content: string): Promise<void> {
+export async function updateFoundationCommand(
+  section: string,
+  content: string
+): Promise<void> {
   try {
     const result = await updateFoundation({
       section,

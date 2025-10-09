@@ -29,7 +29,10 @@ Feature: Feature ${i}
   Scenario: Second scenario
     Given test
 `;
-        await writeFile(join(testDir, 'spec/features', `f${i}.feature`), content);
+        await writeFile(
+          join(testDir, 'spec/features', `f${i}.feature`),
+          content
+        );
       }
 
       // When I run `fspec get-scenarios --tag=@phase1`
@@ -84,15 +87,22 @@ Feature: Critical Only
       );
 
       // When I run `fspec get-scenarios --tag=@phase1 --tag=@critical`
-      const result = await getScenarios({ tags: ['@phase1', '@critical'], cwd: testDir });
+      const result = await getScenarios({
+        tags: ['@phase1', '@critical'],
+        cwd: testDir,
+      });
 
       // Then the output should only show scenarios from features with both tags
       expect(result.scenarios.length).toBe(1);
       expect(result.scenarios[0].feature).toContain('both.feature');
 
       // And features with only one of the tags should be excluded
-      expect(result.scenarios.every(s => !s.feature.includes('phase1-only'))).toBe(true);
-      expect(result.scenarios.every(s => !s.feature.includes('critical-only'))).toBe(true);
+      expect(
+        result.scenarios.every(s => !s.feature.includes('phase1-only'))
+      ).toBe(true);
+      expect(
+        result.scenarios.every(s => !s.feature.includes('critical-only'))
+      ).toBe(true);
     });
   });
 
@@ -110,7 +120,10 @@ Feature: Active
       );
 
       // When I run `fspec get-scenarios --tag=@deprecated`
-      const result = await getScenarios({ tags: ['@deprecated'], cwd: testDir });
+      const result = await getScenarios({
+        tags: ['@deprecated'],
+        cwd: testDir,
+      });
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
@@ -140,13 +153,17 @@ Feature: Login
       const result = await getScenarios({ tags: ['@auth'], cwd: testDir });
 
       // Then the output should show "login.feature:15 - Successful login"
-      const successScenario = result.scenarios.find(s => s.name === 'Successful login');
+      const successScenario = result.scenarios.find(
+        s => s.name === 'Successful login'
+      );
       expect(successScenario).toBeDefined();
       expect(successScenario!.feature).toContain('login.feature');
       expect(successScenario!.line).toBeGreaterThan(0);
 
       // And the output should show "login.feature:25 - Failed login"
-      const failScenario = result.scenarios.find(s => s.name === 'Failed login');
+      const failScenario = result.scenarios.find(
+        s => s.name === 'Failed login'
+      );
       expect(failScenario).toBeDefined();
       expect(failScenario!.feature).toContain('login.feature');
       expect(failScenario!.line).toBeGreaterThan(successScenario!.line);
@@ -224,7 +241,10 @@ Feature: Feature ${i}
   Scenario: Scenario ${i}
     Given test
 `;
-        await writeFile(join(testDir, 'spec/features', `f${i}.feature`), content);
+        await writeFile(
+          join(testDir, 'spec/features', `f${i}.feature`),
+          content
+        );
       }
 
       // When I run `fspec get-scenarios`
@@ -275,7 +295,9 @@ Feature: With Scenarios
       expect(result.scenarios.length).toBe(3);
 
       // And the empty feature should not appear in output
-      expect(result.scenarios.every(s => !s.feature.includes('empty.feature'))).toBe(true);
+      expect(
+        result.scenarios.every(s => !s.feature.includes('empty.feature'))
+      ).toBe(true);
     });
   });
 
@@ -293,7 +315,11 @@ Feature: Test
       );
 
       // When I run `fspec get-scenarios --tag=@phase1 --format=json`
-      const result = await getScenarios({ tags: ['@phase1'], format: 'json', cwd: testDir });
+      const result = await getScenarios({
+        tags: ['@phase1'],
+        format: 'json',
+        cwd: testDir,
+      });
 
       // Then the output should be valid JSON
       expect(result.success).toBe(true);
@@ -350,8 +376,12 @@ Feature: Signup
       expect(result.success).toBe(true);
 
       // And each group should show the feature name as a header
-      const loginScenarios = result.scenarios.filter(s => s.feature.includes('login.feature'));
-      const signupScenarios = result.scenarios.filter(s => s.feature.includes('signup.feature'));
+      const loginScenarios = result.scenarios.filter(s =>
+        s.feature.includes('login.feature')
+      );
+      const signupScenarios = result.scenarios.filter(s =>
+        s.feature.includes('signup.feature')
+      );
 
       expect(loginScenarios.length).toBe(3);
       expect(signupScenarios.length).toBe(2);
@@ -368,7 +398,10 @@ Feature: Signup
         for (let j = 1; j <= scenarioCount; j++) {
           content += `  Scenario: Scenario ${j}\n    Given test\n\n`;
         }
-        await writeFile(join(testDir, 'spec/features', `f${i}.feature`), content);
+        await writeFile(
+          join(testDir, 'spec/features', `f${i}.feature`),
+          content
+        );
       }
 
       // When I run `fspec get-scenarios --tag=@critical`

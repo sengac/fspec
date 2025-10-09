@@ -88,8 +88,12 @@ describe('Feature: Show Tag Usage Statistics', () => {
 
       // Then the output should group statistics by category
       expect(result.categories).toBeDefined();
-      const phaseCategory = result.categories.find(c => c.name === 'Phase Tags');
-      const componentCategory = result.categories.find(c => c.name === 'Component Tags');
+      const phaseCategory = result.categories.find(
+        c => c.name === 'Phase Tags'
+      );
+      const componentCategory = result.categories.find(
+        c => c.name === 'Component Tags'
+      );
 
       expect(phaseCategory).toBeDefined();
       expect(componentCategory).toBeDefined();
@@ -101,7 +105,9 @@ describe('Feature: Show Tag Usage Statistics', () => {
       // And tags should be sorted by count in descending order within each category
       const phaseTags = phaseCategory!.tags;
       for (let i = 0; i < phaseTags.length - 1; i++) {
-        expect(phaseTags[i].count).toBeGreaterThanOrEqual(phaseTags[i + 1].count);
+        expect(phaseTags[i].count).toBeGreaterThanOrEqual(
+          phaseTags[i + 1].count
+        );
       }
     });
   });
@@ -136,11 +142,17 @@ describe('Feature: Show Tag Usage Statistics', () => {
       // When I run `fspec tag-stats`
       const result = await tagStats({ cwd: testDir });
 
-      const phaseCategory = result.categories.find(c => c.name === 'Phase Tags');
+      const phaseCategory = result.categories.find(
+        c => c.name === 'Phase Tags'
+      );
 
       // Then @phase1 should appear before @phase2 in the output
-      const phase1Index = phaseCategory!.tags.findIndex(t => t.tag === '@phase1');
-      const phase2Index = phaseCategory!.tags.findIndex(t => t.tag === '@phase2');
+      const phase1Index = phaseCategory!.tags.findIndex(
+        t => t.tag === '@phase1'
+      );
+      const phase2Index = phaseCategory!.tags.findIndex(
+        t => t.tag === '@phase2'
+      );
       expect(phase1Index).toBeLessThan(phase2Index);
 
       // And the count for @phase1 should be 4
@@ -272,12 +284,18 @@ describe('Feature: Show Tag Usage Statistics', () => {
       expect(result.uniqueTags).toBe(3);
 
       // And unregistered tags should be grouped in an "Unregistered" section
-      const unregisteredCategory = result.categories.find(c => c.name === 'Unregistered');
+      const unregisteredCategory = result.categories.find(
+        c => c.name === 'Unregistered'
+      );
       expect(unregisteredCategory).toBeDefined();
 
       // And the count for each unregistered tag should be accurate
-      const customTag = unregisteredCategory!.tags.find(t => t.tag === '@custom-tag');
-      const anotherTag = unregisteredCategory!.tags.find(t => t.tag === '@another-tag');
+      const customTag = unregisteredCategory!.tags.find(
+        t => t.tag === '@custom-tag'
+      );
+      const anotherTag = unregisteredCategory!.tags.find(
+        t => t.tag === '@another-tag'
+      );
       expect(customTag!.count).toBe(2);
       expect(anotherTag!.count).toBe(1);
     });
@@ -304,7 +322,9 @@ describe('Feature: Show Tag Usage Statistics', () => {
       expect(result.tagsFileFound).toBe(false);
 
       // And all tags should be shown in "Unregistered" category
-      const unregisteredCategory = result.categories.find(c => c.name === 'Unregistered');
+      const unregisteredCategory = result.categories.find(
+        c => c.name === 'Unregistered'
+      );
       expect(unregisteredCategory).toBeDefined();
       expect(unregisteredCategory!.tags.length).toBe(2);
 

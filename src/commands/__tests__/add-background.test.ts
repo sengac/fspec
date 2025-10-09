@@ -41,7 +41,10 @@ Feature: User Login
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const updatedContent = await readFile(join(testDir, 'spec/features/login.feature'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/features/login.feature'),
+        'utf-8'
+      );
 
       // And the feature file should contain "Background: User Story"
       expect(updatedContent).toContain('Background: User Story');
@@ -61,7 +64,9 @@ Feature: User Login
       expect(backgroundIndex).toBeGreaterThan(featureIndex);
 
       // And the Background should be before the first Scenario
-      const scenarioIndex = updatedContent.indexOf('Scenario: Successful login');
+      const scenarioIndex = updatedContent.indexOf(
+        'Scenario: Successful login'
+      );
       expect(backgroundIndex).toBeLessThan(scenarioIndex);
 
       // And the file should have valid Gherkin syntax
@@ -91,7 +96,10 @@ Feature: User Login
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const updatedContent = await readFile(join(testDir, 'spec/features/search.feature'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/features/search.feature'),
+        'utf-8'
+      );
 
       // And the background should follow the "As a... I want to... So that..." format
       expect(updatedContent).toContain('As a customer');
@@ -129,7 +137,10 @@ Feature: User Login
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const updatedContent = await readFile(join(testDir, 'spec/features/checkout.feature'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/features/checkout.feature'),
+        'utf-8'
+      );
 
       // And the background should contain "As a buyer"
       expect(updatedContent).toContain('As a buyer');
@@ -177,7 +188,10 @@ Feature: User Login
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const updatedContent = await readFile(join(testDir, 'spec/features/payment.feature'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/features/payment.feature'),
+        'utf-8'
+      );
 
       // And the feature file should still have 3 scenarios
       const scenarioCount = (updatedContent.match(/Scenario:/g) || []).length;
@@ -222,7 +236,10 @@ Feature: User Login
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const updatedContent = await readFile(join(testDir, 'spec/features/api.feature'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/features/api.feature'),
+        'utf-8'
+      );
 
       // And the architecture doc string should be preserved
       expect(updatedContent).toContain('Architecture notes:');
@@ -264,7 +281,10 @@ Feature: Authentication
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const updatedContent = await readFile(join(testDir, 'spec/features/auth.feature'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/features/auth.feature'),
+        'utf-8'
+      );
 
       // And the feature tags "@security @critical" should be preserved
       expect(updatedContent).toContain('@security @critical');
@@ -307,7 +327,10 @@ Feature: Authentication
   Scenario: Test
     Given step`;
 
-      await writeFile(join(testDir, 'spec/features/dashboard.feature'), content);
+      await writeFile(
+        join(testDir, 'spec/features/dashboard.feature'),
+        content
+      );
 
       // When I run `fspec add-background dashboard "As a user\nI want to view dashboard\nSo that I see overview"`
       const result = await addBackground({
@@ -320,7 +343,10 @@ Feature: Authentication
       expect(result.success).toBe(true);
 
       // And the file "spec/features/dashboard.feature" should contain the Background
-      const updatedContent = await readFile(join(testDir, 'spec/features/dashboard.feature'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/features/dashboard.feature'),
+        'utf-8'
+      );
       expect(updatedContent).toContain('Background: User Story');
       expect(updatedContent).toContain('As a user');
     });
@@ -333,7 +359,10 @@ Feature: Authentication
   Scenario: Test
     Given step`;
 
-      await writeFile(join(testDir, 'spec/features/reporting.feature'), content);
+      await writeFile(
+        join(testDir, 'spec/features/reporting.feature'),
+        content
+      );
 
       // When I run `fspec add-background spec/features/reporting.feature "As a manager\nI want reports\nSo that I track progress"`
       const result = await addBackground({
@@ -346,7 +375,10 @@ Feature: Authentication
       expect(result.success).toBe(true);
 
       // And the file should contain the Background with "As a manager"
-      const updatedContent = await readFile(join(testDir, 'spec/features/reporting.feature'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/features/reporting.feature'),
+        'utf-8'
+      );
       expect(updatedContent).toContain('As a manager');
     });
   });
@@ -358,7 +390,10 @@ Feature: Authentication
   Scenario: Test
     Given step`;
 
-      await writeFile(join(testDir, 'spec/features/notifications.feature'), content);
+      await writeFile(
+        join(testDir, 'spec/features/notifications.feature'),
+        content
+      );
 
       // When I run `fspec add-background notifications "As a user\nI want notifications\nSo that I stay informed"`
       const result = await addBackground({
@@ -377,7 +412,9 @@ Feature: Authentication
 
       // And the Background keyword should not be indented
       const lines = updatedContent.split('\n');
-      const backgroundLine = lines.find((line) => line.includes('Background: User Story'));
+      const backgroundLine = lines.find(line =>
+        line.includes('Background: User Story')
+      );
       expect(backgroundLine?.startsWith('  Background:')).toBe(true);
 
       // And the Background content should be indented with 4 spaces
@@ -416,7 +453,10 @@ Feature: Authentication
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const updatedContent = await readFile(join(testDir, 'spec/features/orders.feature'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/features/orders.feature'),
+        'utf-8'
+      );
 
       // And the scenario tags "@smoke @regression" should be preserved
       expect(updatedContent).toContain('@smoke @regression');
@@ -471,7 +511,10 @@ Feature: Authentication
     When connects to D
     Then integrated`;
 
-      await writeFile(join(testDir, 'spec/features/integration.feature'), content);
+      await writeFile(
+        join(testDir, 'spec/features/integration.feature'),
+        content
+      );
 
       // When I run `fspec add-background integration "As a developer\nI want integration\nSo that systems connect"`
       const result = await addBackground({
@@ -483,7 +526,10 @@ Feature: Authentication
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const updatedContent = await readFile(join(testDir, 'spec/features/integration.feature'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/features/integration.feature'),
+        'utf-8'
+      );
 
       // And the Background should be after the architecture doc string
       const docStringEnd = updatedContent.lastIndexOf('"""');
@@ -491,7 +537,9 @@ Feature: Authentication
       expect(backgroundIndex).toBeGreaterThan(docStringEnd);
 
       // And the Background should be before the first Scenario
-      const scenarioIndex = updatedContent.indexOf('Scenario: First integration');
+      const scenarioIndex = updatedContent.indexOf(
+        'Scenario: First integration'
+      );
       expect(backgroundIndex).toBeLessThan(scenarioIndex);
 
       // And the file should have valid Gherkin syntax

@@ -176,10 +176,15 @@ Test content.
       expect(result.success).toBe(true);
 
       // And a file "foundation-copy.md" should be created
-      await expect(access(join(testDir, 'foundation-copy.md'))).resolves.toBeUndefined();
+      await expect(
+        access(join(testDir, 'foundation-copy.md'))
+      ).resolves.toBeUndefined();
 
       // And it should contain the FOUNDATION.md content
-      const copiedContent = await readFile(join(testDir, 'foundation-copy.md'), 'utf-8');
+      const copiedContent = await readFile(
+        join(testDir, 'foundation-copy.md'),
+        'utf-8'
+      );
       expect(copiedContent).toContain('Project Foundation');
       expect(copiedContent).toContain('Why');
     });

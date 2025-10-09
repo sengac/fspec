@@ -28,8 +28,6 @@ Feature: Update Tag in Registry
     So that I can refine tag organization and documentation without deleting
     and re-creating tags
 
-
-
   Scenario: Update tag description only
     Given I have a tag @phase1 registered in TAGS.md with description "Phase 1 features"
     When I run `fspec update-tag @phase1 --description="Phase 1 - Core validation and feature management"`

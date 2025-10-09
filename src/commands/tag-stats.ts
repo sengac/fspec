@@ -30,7 +30,9 @@ interface TagStatsResult {
   invalidFiles: string[];
 }
 
-export async function tagStats(options: TagStatsOptions = {}): Promise<TagStatsResult> {
+export async function tagStats(
+  options: TagStatsOptions = {}
+): Promise<TagStatsResult> {
   const cwd = options.cwd || process.cwd();
 
   // Load tag registry from TAGS.md (optional)
@@ -43,7 +45,10 @@ export async function tagStats(options: TagStatsOptions = {}): Promise<TagStatsR
   }
 
   // Get all feature files
-  const files = await glob(['spec/features/**/*.feature'], { cwd, absolute: false });
+  const files = await glob(['spec/features/**/*.feature'], {
+    cwd,
+    absolute: false,
+  });
 
   if (files.length === 0) {
     return {
@@ -94,7 +99,10 @@ export async function tagStats(options: TagStatsOptions = {}): Promise<TagStatsR
   }
 
   const uniqueTags = tagCounts.size;
-  const totalOccurrences = Array.from(tagCounts.values()).reduce((sum, count) => sum + count, 0);
+  const totalOccurrences = Array.from(tagCounts.values()).reduce(
+    (sum, count) => sum + count,
+    0
+  );
 
   // Build statistics by category
   const categories: CategoryStats[] = [];
@@ -137,10 +145,12 @@ export async function tagStats(options: TagStatsOptions = {}): Promise<TagStatsR
     }
   } else {
     // No TAGS.md - all tags are unregistered
-    const allTags: TagCount[] = Array.from(tagCounts.entries()).map(([tag, count]) => ({
-      tag,
-      count,
-    }));
+    const allTags: TagCount[] = Array.from(tagCounts.entries()).map(
+      ([tag, count]) => ({
+        tag,
+        count,
+      })
+    );
     allTags.sort((a, b) => b.count - a.count);
     categories.push({ name: 'Unregistered', tags: allTags });
   }
@@ -177,14 +187,20 @@ export async function tagStatsCommand(): Promise<void> {
     console.log(chalk.gray('─'.repeat(50)));
     console.log(`Total feature files: ${chalk.cyan(result.totalFiles)}`);
     console.log(`Unique tags used: ${chalk.cyan(result.uniqueTags)}`);
-    console.log(`Total tag occurrences: ${chalk.cyan(result.totalOccurrences)}`);
+    console.log(
+      `Total tag occurrences: ${chalk.cyan(result.totalOccurrences)}`
+    );
 
     if (!result.tagsFileFound) {
       console.log(chalk.yellow('\n⚠ Warning: spec/TAGS.md not found'));
     }
 
     if (result.invalidFiles.length > 0) {
-      console.log(chalk.yellow(`\n⚠ Warning: ${result.invalidFiles.length} file(s) with invalid syntax skipped:`));
+      console.log(
+        chalk.yellow(
+          `\n⚠ Warning: ${result.invalidFiles.length} file(s) with invalid syntax skipped:`
+        )
+      );
       for (const file of result.invalidFiles) {
         console.log(chalk.yellow(`  - ${file}`));
       }
@@ -196,9 +212,14 @@ export async function tagStatsCommand(): Promise<void> {
       console.log(chalk.gray('─'.repeat(50)));
 
       for (const category of result.categories) {
-        console.log(chalk.bold(`\n${category.name}`) + chalk.gray(` (${category.tags.length} tags)`));
+        console.log(
+          chalk.bold(`\n${category.name}`) +
+            chalk.gray(` (${category.tags.length} tags)`)
+        );
         for (const tagCount of category.tags) {
-          console.log(`  ${chalk.green(tagCount.tag.padEnd(30))} ${chalk.cyan(tagCount.count)}`);
+          console.log(
+            `  ${chalk.green(tagCount.tag.padEnd(30))} ${chalk.cyan(tagCount.count)}`
+          );
         }
       }
     }
@@ -207,7 +228,11 @@ export async function tagStatsCommand(): Promise<void> {
     if (result.unusedTags.length > 0) {
       console.log(chalk.bold.blue('\n\nUnused Registered Tags'));
       console.log(chalk.gray('─'.repeat(50)));
-      console.log(chalk.yellow(`${result.unusedTags.length} registered tag(s) not used in any feature file:\n`));
+      console.log(
+        chalk.yellow(
+          `${result.unusedTags.length} registered tag(s) not used in any feature file:\n`
+        )
+      );
       for (const tag of result.unusedTags) {
         console.log(chalk.yellow(`  ${tag}`));
       }
@@ -251,7 +276,9 @@ async function loadCategoryMap(cwd: string): Promise<Map<string, string[]>> {
     const categoryStart = categoryMatch.index;
 
     // Find the next category or end of file
-    const nextCategoryMatch = content.substring(categoryStart + 1).match(/^## /m);
+    const nextCategoryMatch = content
+      .substring(categoryStart + 1)
+      .match(/^## /m);
     const categoryEnd = nextCategoryMatch
       ? categoryStart + 1 + nextCategoryMatch.index
       : content.length;

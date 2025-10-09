@@ -46,8 +46,6 @@ Feature: Validate Feature File Tags Against Registry
     I want to ensure all tags are registered in TAGS.md
     So that tags remain meaningful and searchable across the project
 
-
-
   Scenario: Validate tags in a compliant feature file
     Given I have a feature file "spec/features/auth.feature" with tags "@phase1 @cli @authentication"
     And all tags are registered in "spec/TAGS.md"

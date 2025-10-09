@@ -45,7 +45,10 @@ Feature: User Login
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const updatedContent = await readFile(join(testDir, 'spec/features/login.feature'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/features/login.feature'),
+        'utf-8'
+      );
 
       // And the feature file should contain a doc string with "Uses JWT for authentication"
       expect(updatedContent).toContain('"""');
@@ -87,7 +90,10 @@ Feature: User Login
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const updatedContent = await readFile(join(testDir, 'spec/features/api.feature'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/features/api.feature'),
+        'utf-8'
+      );
 
       // And the doc string should contain "Architecture notes:"
       expect(updatedContent).toContain('Architecture notes:');
@@ -129,7 +135,10 @@ Feature: User Login
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const updatedContent = await readFile(join(testDir, 'spec/features/payment.feature'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/features/payment.feature'),
+        'utf-8'
+      );
 
       // And the doc string should contain "New architecture notes"
       expect(updatedContent).toContain('New architecture notes');
@@ -177,7 +186,10 @@ Feature: User Login
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const updatedContent = await readFile(join(testDir, 'spec/features/checkout.feature'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/features/checkout.feature'),
+        'utf-8'
+      );
 
       // And the feature file should still have 3 scenarios
       const scenarioCount = (updatedContent.match(/Scenario:/g) || []).length;
@@ -223,7 +235,10 @@ Feature: User Login
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const updatedContent = await readFile(join(testDir, 'spec/features/auth.feature'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/features/auth.feature'),
+        'utf-8'
+      );
 
       // And the Background section should be preserved
       expect(updatedContent).toContain('Background: User Story');
@@ -265,13 +280,18 @@ Feature: Search Functionality
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const updatedContent = await readFile(join(testDir, 'spec/features/search.feature'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/features/search.feature'),
+        'utf-8'
+      );
 
       // And the feature tags "@api @critical" should be preserved
       expect(updatedContent).toContain('@api @critical');
 
       // And the doc string should be after the Feature line
-      const featureIndex = updatedContent.indexOf('Feature: Search Functionality');
+      const featureIndex = updatedContent.indexOf(
+        'Feature: Search Functionality'
+      );
       const docStringIndex = updatedContent.indexOf('"""');
       expect(docStringIndex).toBeGreaterThan(featureIndex);
 
@@ -321,7 +341,10 @@ Feature: Search Functionality
       expect(result.success).toBe(true);
 
       // And the file "spec/features/login.feature" should contain the doc string
-      const updatedContent = await readFile(join(testDir, 'spec/features/login.feature'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/features/login.feature'),
+        'utf-8'
+      );
       expect(updatedContent).toContain('Authentication notes');
     });
   });
@@ -333,7 +356,10 @@ Feature: Search Functionality
   Scenario: Test
     Given step`;
 
-      await writeFile(join(testDir, 'spec/features/user-management.feature'), content);
+      await writeFile(
+        join(testDir, 'spec/features/user-management.feature'),
+        content
+      );
 
       // When I run `fspec add-architecture spec/features/user-management.feature "User CRUD operations"`
       const result = await addArchitecture({
@@ -361,7 +387,10 @@ Feature: Search Functionality
   Scenario: Test
     Given step`;
 
-      await writeFile(join(testDir, 'spec/features/reporting.feature'), content);
+      await writeFile(
+        join(testDir, 'spec/features/reporting.feature'),
+        content
+      );
 
       // When I run `fspec add-architecture reporting "Line 1\nLine 2\nLine 3"`
       const result = await addArchitecture({
@@ -373,7 +402,10 @@ Feature: Search Functionality
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const updatedContent = await readFile(join(testDir, 'spec/features/reporting.feature'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/features/reporting.feature'),
+        'utf-8'
+      );
 
       // And the doc string content should be indented with 2 spaces
       expect(updatedContent).toContain('  Line 1');
@@ -382,7 +414,9 @@ Feature: Search Functionality
 
       // And the opening and closing triple quotes should not be indented
       const lines = updatedContent.split('\n');
-      const openingQuoteLine = lines.find((line) => line.trim().startsWith('"""') && line.trim() === '"""');
+      const openingQuoteLine = lines.find(
+        line => line.trim().startsWith('"""') && line.trim() === '"""'
+      );
       expect(openingQuoteLine).toBeDefined();
       expect(openingQuoteLine?.startsWith('  """')).toBe(true);
 
@@ -405,7 +439,10 @@ Feature: Search Functionality
     When I send notification
     Then user receives it`;
 
-      await writeFile(join(testDir, 'spec/features/notifications.feature'), content);
+      await writeFile(
+        join(testDir, 'spec/features/notifications.feature'),
+        content
+      );
 
       // When I run `fspec add-architecture notifications "Notification service architecture"`
       const result = await addArchitecture({
@@ -440,7 +477,10 @@ Feature: Search Functionality
   Scenario: Test
     Given step`;
 
-      await writeFile(join(testDir, 'spec/features/dashboard.feature'), content);
+      await writeFile(
+        join(testDir, 'spec/features/dashboard.feature'),
+        content
+      );
 
       // When I run `fspec add-architecture dashboard ""`
       const result = await addArchitecture({

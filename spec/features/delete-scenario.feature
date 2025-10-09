@@ -30,8 +30,6 @@ Feature: Delete Scenario from Feature File
     So that I can keep specifications clean and relevant without manually
     editing files
 
-
-
   Scenario: Delete scenario by exact name
     Given I have a feature file "login.feature" with 3 scenarios
     And one scenario is named "Invalid password"

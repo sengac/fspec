@@ -19,9 +19,6 @@ Feature: Bulk Delete Feature Files by Tag
   - MUST support multiple tag filters with AND logic (--tag=@phase1 --tag=@deprecated)
 
 
-
-
-
   - MUST delete entire feature files (not just scenarios)
   - MUST provide count of files to be deleted before proceeding
   - MUST support --dry-run flag for preview without changes
@@ -36,8 +33,6 @@ Feature: Bulk Delete Feature Files by Tag
     I want to bulk delete entire feature files by tag
     So that I can efficiently remove obsolete feature areas without manual file
     deletion
-
-
 
   Scenario: Delete feature files by single tag
     Given I have 5 feature files

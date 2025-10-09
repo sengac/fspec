@@ -17,7 +17,7 @@ Feature: Gherkin Syntax Validation
   - Error messages are formatted for AI agent comprehension
   - Supports all Gherkin keywords: Feature, Background, Scenario, Given, When,
   Then, And, But
-  - Validates doc strings ("""), data tables (|), and tags (@)
+  - Validates doc strings (\"\"\"), data tables (|), and tags (@)
 
   Critical implementation requirements:
   - MUST use @cucumber/gherkin-parser (official Cucumber parser)
@@ -42,8 +42,6 @@ Feature: Gherkin Syntax Validation
     As an AI agent writing Gherkin specifications
     I want immediate syntax validation feedback
     So that I can correct errors before committing malformed feature files
-
-
 
   Scenario: Validate a syntactically correct feature file
     Given I have a feature file "spec/features/login.feature" with valid Gherkin syntax

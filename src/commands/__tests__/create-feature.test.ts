@@ -54,12 +54,16 @@ describe('Feature: Create Feature File with Template', () => {
       expect(tags).toContain('@feature-group');
 
       // And it should have a Background section
-      const backgrounds = gherkinDocument.feature!.children.filter(c => c.background);
+      const backgrounds = gherkinDocument.feature!.children.filter(
+        c => c.background
+      );
       expect(backgrounds).toHaveLength(1);
       expect(backgrounds[0].background!.name).toBe('User Story');
 
       // And it should have a Scenario section
-      const scenarios = gherkinDocument.feature!.children.filter(c => c.scenario);
+      const scenarios = gherkinDocument.feature!.children.filter(
+        c => c.scenario
+      );
       expect(scenarios).toHaveLength(1);
 
       // And the scenario should have Given/When/Then steps
@@ -80,29 +84,32 @@ describe('Feature: Create Feature File with Template', () => {
       // When I run `fspec create-feature "Real Time Event Monitoring"`
       await createFeature('Real Time Event Monitoring', testDir);
 
-        // Then a file "spec/features/real-time-event-monitoring.feature" should be created
-        const featureFile = join(featuresDir, 'real-time-event-monitoring.feature');
-        await access(featureFile); // Throws if file doesn't exist
+      // Then a file "spec/features/real-time-event-monitoring.feature" should be created
+      const featureFile = join(
+        featuresDir,
+        'real-time-event-monitoring.feature'
+      );
+      await access(featureFile); // Throws if file doesn't exist
 
-        // And the file should contain "Feature: Real Time Event Monitoring"
-        const content = await readFile(featureFile, 'utf-8');
-        expect(content).toContain('Feature: Real Time Event Monitoring');
+      // And the file should contain "Feature: Real Time Event Monitoring"
+      const content = await readFile(featureFile, 'utf-8');
+      expect(content).toContain('Feature: Real Time Event Monitoring');
     });
   });
 
-  describe('Scenario: Create spec/features/ directory if it doesn\'t exist', () => {
+  describe("Scenario: Create spec/features/ directory if it doesn't exist", () => {
     it('should create directory structure automatically', async () => {
       // Given I am in a project without a spec/features/ directory
       // When I run `fspec create-feature "New Feature"`
       await createFeature('New Feature', testDir);
 
-        // Then the directory "spec/features/" should be created
-        const featuresDir = join(testDir, 'spec', 'features');
-        await access(featuresDir);
+      // Then the directory "spec/features/" should be created
+      const featuresDir = join(testDir, 'spec', 'features');
+      await access(featuresDir);
 
-        // And a file "spec/features/new-feature.feature" should be created
-        const featureFile = join(featuresDir, 'new-feature.feature');
-        await access(featureFile);
+      // And a file "spec/features/new-feature.feature" should be created
+      const featureFile = join(featuresDir, 'new-feature.feature');
+      await access(featureFile);
     });
   });
 
@@ -117,11 +124,13 @@ describe('Feature: Create Feature File with Template', () => {
 
       // When I run `fspec create-feature "User Login"`
       // Then the command should exit with code 1
-      await expect(createFeature('User Login', testDir)).rejects.toThrow('already exists');
+      await expect(createFeature('User Login', testDir)).rejects.toThrow(
+        'already exists'
+      );
 
-        // And the existing file should not be modified
-        const content = await readFile(existingFile, 'utf-8');
-        expect(content).toBe(originalContent);
+      // And the existing file should not be modified
+      const content = await readFile(existingFile, 'utf-8');
+      expect(content).toBe(originalContent);
     });
   });
 

@@ -65,7 +65,10 @@ Feature: User Authentication
       await writeFile(join(featuresDir, 'auth.feature'), validContent);
 
       // When I run validate-tags
-      const result = await validateTags({ file: 'spec/features/auth.feature', cwd: testDir });
+      const result = await validateTags({
+        file: 'spec/features/auth.feature',
+        cwd: testDir,
+      });
 
       // Then it should pass
       expect(result.results).toHaveLength(1);
@@ -91,13 +94,18 @@ Feature: API Endpoints
       await writeFile(join(featuresDir, 'api.feature'), invalidContent);
 
       // When I run validate-tags
-      const result = await validateTags({ file: 'spec/features/api.feature', cwd: testDir });
+      const result = await validateTags({
+        file: 'spec/features/api.feature',
+        cwd: testDir,
+      });
 
       // Then it should report the unregistered tag
       expect(result.results[0].valid).toBe(false);
       expect(result.results[0].errors).toHaveLength(1);
       expect(result.results[0].errors[0].tag).toBe('@custom-tag');
-      expect(result.results[0].errors[0].message).toContain('Unregistered tag: @custom-tag');
+      expect(result.results[0].errors[0].message).toContain(
+        'Unregistered tag: @custom-tag'
+      );
       expect(result.results[0].errors[0].suggestion).toContain('TAGS.md');
     });
   });
@@ -143,11 +151,16 @@ Feature: Broken Feature
       await writeFile(join(featuresDir, 'broken.feature'), noPhaseContent);
 
       // When I run validate-tags
-      const result = await validateTags({ file: 'spec/features/broken.feature', cwd: testDir });
+      const result = await validateTags({
+        file: 'spec/features/broken.feature',
+        cwd: testDir,
+      });
 
       // Then it should report missing phase tag
       expect(result.results[0].valid).toBe(false);
-      const phaseError = result.results[0].errors.find(e => e.message.includes('phase tag'));
+      const phaseError = result.results[0].errors.find(e =>
+        e.message.includes('phase tag')
+      );
       expect(phaseError).toBeDefined();
       expect(phaseError!.suggestion).toContain('Add a phase tag');
     });
@@ -168,11 +181,16 @@ Feature: Broken Feature
       await writeFile(join(featuresDir, 'broken.feature'), noComponentContent);
 
       // When I run validate-tags
-      const result = await validateTags({ file: 'spec/features/broken.feature', cwd: testDir });
+      const result = await validateTags({
+        file: 'spec/features/broken.feature',
+        cwd: testDir,
+      });
 
       // Then it should report missing component tag
       expect(result.results[0].valid).toBe(false);
-      const componentError = result.results[0].errors.find(e => e.message.includes('component tag'));
+      const componentError = result.results[0].errors.find(e =>
+        e.message.includes('component tag')
+      );
       expect(componentError).toBeDefined();
     });
   });
@@ -189,14 +207,22 @@ Feature: Broken Feature
   Scenario: Test
     Given something`;
 
-      await writeFile(join(featuresDir, 'broken.feature'), noFeatureGroupContent);
+      await writeFile(
+        join(featuresDir, 'broken.feature'),
+        noFeatureGroupContent
+      );
 
       // When I run validate-tags
-      const result = await validateTags({ file: 'spec/features/broken.feature', cwd: testDir });
+      const result = await validateTags({
+        file: 'spec/features/broken.feature',
+        cwd: testDir,
+      });
 
       // Then it should report missing feature-group tag
       expect(result.results[0].valid).toBe(false);
-      const featureGroupError = result.results[0].errors.find(e => e.message.includes('feature-group tag'));
+      const featureGroupError = result.results[0].errors.find(e =>
+        e.message.includes('feature-group tag')
+      );
       expect(featureGroupError).toBeDefined();
     });
   });
@@ -208,7 +234,9 @@ Feature: Broken Feature
 
       // When I run validate-tags
       // Then it should throw an error
-      await expect(validateTags({ cwd: testDir })).rejects.toThrow('TAGS.md not found');
+      await expect(validateTags({ cwd: testDir })).rejects.toThrow(
+        'TAGS.md not found'
+      );
     });
   });
 
@@ -224,14 +252,22 @@ Feature: New Feature
   Scenario: Test
     Given something`;
 
-      await writeFile(join(featuresDir, 'new-feature.feature'), placeholderContent);
+      await writeFile(
+        join(featuresDir, 'new-feature.feature'),
+        placeholderContent
+      );
 
       // When I run validate-tags
-      const result = await validateTags({ file: 'spec/features/new-feature.feature', cwd: testDir });
+      const result = await validateTags({
+        file: 'spec/features/new-feature.feature',
+        cwd: testDir,
+      });
 
       // Then it should warn about placeholders
       expect(result.results[0].valid).toBe(false);
-      const placeholderErrors = result.results[0].errors.filter(e => e.message.includes('Placeholder'));
+      const placeholderErrors = result.results[0].errors.filter(e =>
+        e.message.includes('Placeholder')
+      );
       expect(placeholderErrors.length).toBeGreaterThan(0);
       expect(placeholderErrors[0].suggestion).toContain('Replace');
     });
@@ -249,14 +285,22 @@ Feature: Multi Error Feature
   Scenario: Test
     Given something`;
 
-      await writeFile(join(featuresDir, 'multi.feature'), multipleErrorsContent);
+      await writeFile(
+        join(featuresDir, 'multi.feature'),
+        multipleErrorsContent
+      );
 
       // When I run validate-tags
-      const result = await validateTags({ file: 'spec/features/multi.feature', cwd: testDir });
+      const result = await validateTags({
+        file: 'spec/features/multi.feature',
+        cwd: testDir,
+      });
 
       // Then it should list both unregistered tags
       expect(result.results[0].valid).toBe(false);
-      const unregisteredErrors = result.results[0].errors.filter(e => e.message.includes('Unregistered'));
+      const unregisteredErrors = result.results[0].errors.filter(e =>
+        e.message.includes('Unregistered')
+      );
       expect(unregisteredErrors.length).toBeGreaterThanOrEqual(2);
     });
   });
@@ -267,15 +311,20 @@ Feature: Multi Error Feature
       const featuresDir = join(testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
-      const validFeature = '@phase1 @cli @authentication\nFeature: Valid\n  Scenario: Test\n    Given test';
-      const invalidFeature = '@phase1 @cli @validation @invalid-tag\nFeature: Invalid\n  Scenario: Test\n    Given test';
+      const validFeature =
+        '@phase1 @cli @authentication\nFeature: Valid\n  Scenario: Test\n    Given test';
+      const invalidFeature =
+        '@phase1 @cli @validation @invalid-tag\nFeature: Invalid\n  Scenario: Test\n    Given test';
 
       for (let i = 1; i <= 8; i++) {
         await writeFile(join(featuresDir, `valid${i}.feature`), validFeature);
       }
 
       for (let i = 1; i <= 2; i++) {
-        await writeFile(join(featuresDir, `invalid${i}.feature`), invalidFeature);
+        await writeFile(
+          join(featuresDir, `invalid${i}.feature`),
+          invalidFeature
+        );
       }
 
       // When I run validate-tags

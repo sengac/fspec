@@ -24,12 +24,21 @@ describe('Feature: Add Step to Existing Scenario', () => {
   Scenario: User login
     Given I have an account
 `;
-      await writeFile(join(testDir, 'spec/features/login.feature'), featureContent);
+      await writeFile(
+        join(testDir, 'spec/features/login.feature'),
+        featureContent
+      );
 
       // When I run `fspec add-step login "User login" given "I am on the login page"`
-      const result = await addStep('login', 'User login', 'given', 'I am on the login page', {
-        cwd: testDir,
-      });
+      const result = await addStep(
+        'login',
+        'User login',
+        'given',
+        'I am on the login page',
+        {
+          cwd: testDir,
+        }
+      );
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
@@ -54,12 +63,21 @@ describe('Feature: Add Step to Existing Scenario', () => {
   Scenario: Submit form
     Given I am on the form page
 `;
-      await writeFile(join(testDir, 'spec/features/my-feature.feature'), featureContent);
+      await writeFile(
+        join(testDir, 'spec/features/my-feature.feature'),
+        featureContent
+      );
 
       // When I run `fspec add-step my-feature "Submit form" when "I click the submit button"`
-      const result = await addStep('my-feature', 'Submit form', 'when', 'I click the submit button', {
-        cwd: testDir,
-      });
+      const result = await addStep(
+        'my-feature',
+        'Submit form',
+        'when',
+        'I click the submit button',
+        {
+          cwd: testDir,
+        }
+      );
 
       const updatedContent = await readFile(
         join(testDir, 'spec/features/my-feature.feature'),
@@ -83,12 +101,21 @@ describe('Feature: Add Step to Existing Scenario', () => {
     Given test
     When test
 `;
-      await writeFile(join(testDir, 'spec/features/my-feature.feature'), featureContent);
+      await writeFile(
+        join(testDir, 'spec/features/my-feature.feature'),
+        featureContent
+      );
 
       // When I run `fspec add-step my-feature "Validation" then "I should see a success message"`
-      await addStep('my-feature', 'Validation', 'then', 'I should see a success message', {
-        cwd: testDir,
-      });
+      await addStep(
+        'my-feature',
+        'Validation',
+        'then',
+        'I should see a success message',
+        {
+          cwd: testDir,
+        }
+      );
 
       const updatedContent = await readFile(
         join(testDir, 'spec/features/my-feature.feature'),
@@ -108,12 +135,21 @@ describe('Feature: Add Step to Existing Scenario', () => {
   Scenario: Multiple steps
     Given test
 `;
-      await writeFile(join(testDir, 'spec/features/my-feature.feature'), featureContent);
+      await writeFile(
+        join(testDir, 'spec/features/my-feature.feature'),
+        featureContent
+      );
 
       // When I run `fspec add-step my-feature "Multiple steps" and "I fill in the email field"`
-      await addStep('my-feature', 'Multiple steps', 'and', 'I fill in the email field', {
-        cwd: testDir,
-      });
+      await addStep(
+        'my-feature',
+        'Multiple steps',
+        'and',
+        'I fill in the email field',
+        {
+          cwd: testDir,
+        }
+      );
 
       const updatedContent = await readFile(
         join(testDir, 'spec/features/my-feature.feature'),
@@ -133,12 +169,21 @@ describe('Feature: Add Step to Existing Scenario', () => {
   Scenario: Edge case
     Given test
 `;
-      await writeFile(join(testDir, 'spec/features/my-feature.feature'), featureContent);
+      await writeFile(
+        join(testDir, 'spec/features/my-feature.feature'),
+        featureContent
+      );
 
       // When I run `fspec add-step my-feature "Edge case" but "I should not see an error"`
-      await addStep('my-feature', 'Edge case', 'but', 'I should not see an error', {
-        cwd: testDir,
-      });
+      await addStep(
+        'my-feature',
+        'Edge case',
+        'but',
+        'I should not see an error',
+        {
+          cwd: testDir,
+        }
+      );
 
       const updatedContent = await readFile(
         join(testDir, 'spec/features/my-feature.feature'),
@@ -158,17 +203,32 @@ describe('Feature: Add Step to Existing Scenario', () => {
   Scenario: Complex workflow
     Given I am logged in
 `;
-      await writeFile(join(testDir, 'spec/features/my-feature.feature'), featureContent);
+      await writeFile(
+        join(testDir, 'spec/features/my-feature.feature'),
+        featureContent
+      );
 
       // When I run `fspec add-step my-feature "Complex workflow" when "I enter my password"`
-      await addStep('my-feature', 'Complex workflow', 'when', 'I enter my password', {
-        cwd: testDir,
-      });
+      await addStep(
+        'my-feature',
+        'Complex workflow',
+        'when',
+        'I enter my password',
+        {
+          cwd: testDir,
+        }
+      );
 
       // And I run `fspec add-step my-feature "Complex workflow" then "I should be logged in"`
-      await addStep('my-feature', 'Complex workflow', 'then', 'I should be logged in', {
-        cwd: testDir,
-      });
+      await addStep(
+        'my-feature',
+        'Complex workflow',
+        'then',
+        'I should be logged in',
+        {
+          cwd: testDir,
+        }
+      );
 
       const updatedContent = await readFile(
         join(testDir, 'spec/features/my-feature.feature'),
@@ -176,7 +236,9 @@ describe('Feature: Add Step to Existing Scenario', () => {
       );
 
       // Then the scenario should have 3 steps total
-      const stepMatches = updatedContent.match(/^\s+(Given|When|Then|And|But) /gm);
+      const stepMatches = updatedContent.match(
+        /^\s+(Given|When|Then|And|But) /gm
+      );
       expect(stepMatches?.length).toBe(3);
 
       // And all steps should be in the order they were added
@@ -187,10 +249,16 @@ describe('Feature: Add Step to Existing Scenario', () => {
       expect(whenIndex).toBeLessThan(thenIndex);
 
       // And the file should remain valid Gherkin syntax
-      const result = await addStep('my-feature', 'Complex workflow', 'and', 'test', {
-        cwd: testDir,
-        dryRun: true,
-      });
+      const result = await addStep(
+        'my-feature',
+        'Complex workflow',
+        'and',
+        'test',
+        {
+          cwd: testDir,
+          dryRun: true,
+        }
+      );
       expect(result.valid).toBe(true);
     });
   });
@@ -204,10 +272,15 @@ describe('Feature: Add Step to Existing Scenario', () => {
     Given existing step
     When another step
 `;
-      await writeFile(join(testDir, 'spec/features/my-feature.feature'), featureContent);
+      await writeFile(
+        join(testDir, 'spec/features/my-feature.feature'),
+        featureContent
+      );
 
       // When I run `fspec add-step my-feature "Test" given "new step"`
-      await addStep('my-feature', 'Test', 'given', 'new step', { cwd: testDir });
+      await addStep('my-feature', 'Test', 'given', 'new step', {
+        cwd: testDir,
+      });
 
       const updatedContent = await readFile(
         join(testDir, 'spec/features/my-feature.feature'),
@@ -216,9 +289,15 @@ describe('Feature: Add Step to Existing Scenario', () => {
 
       // Then the new step should have the same indentation as existing steps
       const lines = updatedContent.split('\n');
-      const stepLines = lines.filter(line => /^\s+(Given|When|Then) /.test(line));
-      const indentations = stepLines.map(line => line.match(/^(\s+)/)?.[1].length);
-      const allSameIndent = indentations.every(indent => indent === indentations[0]);
+      const stepLines = lines.filter(line =>
+        /^\s+(Given|When|Then) /.test(line)
+      );
+      const indentations = stepLines.map(
+        line => line.match(/^(\s+)/)?.[1].length
+      );
+      const allSameIndent = indentations.every(
+        indent => indent === indentations[0]
+      );
       expect(allSameIndent).toBe(true);
 
       // And the indentation should be 4 spaces from feature level
@@ -232,7 +311,9 @@ describe('Feature: Add Step to Existing Scenario', () => {
       // (file does not exist)
 
       // When I run `fspec add-step missing "Scenario" given "step"`
-      const result = await addStep('missing', 'Scenario', 'given', 'step', { cwd: testDir });
+      const result = await addStep('missing', 'Scenario', 'given', 'step', {
+        cwd: testDir,
+      });
 
       // Then the command should exit with code 1
       expect(result.success).toBe(false);
@@ -256,24 +337,37 @@ describe('Feature: Add Step to Existing Scenario', () => {
   Scenario: Another scenario
     Given test
 `;
-      await writeFile(join(testDir, 'spec/features/test.feature'), featureContent);
+      await writeFile(
+        join(testDir, 'spec/features/test.feature'),
+        featureContent
+      );
 
       // And the file does not have a scenario named "Missing scenario"
       // When I run `fspec add-step test "Missing scenario" given "step"`
-      const result = await addStep('test', 'Missing scenario', 'given', 'step', { cwd: testDir });
+      const result = await addStep(
+        'test',
+        'Missing scenario',
+        'given',
+        'step',
+        { cwd: testDir }
+      );
 
       // Then the command should exit with code 1
       expect(result.success).toBe(false);
 
       // And the output should show error that scenario was not found
-      expect(result.error).toContain('not found') || expect(result.error).toContain('Missing scenario');
+      expect(result.error).toContain('not found') ||
+        expect(result.error).toContain('Missing scenario');
 
       // And the output should list available scenarios
       expect(result.suggestion).toContain('Existing scenario');
       expect(result.suggestion).toContain('Another scenario');
 
       // And the file should not be modified
-      const fileContent = await readFile(join(testDir, 'spec/features/test.feature'), 'utf-8');
+      const fileContent = await readFile(
+        join(testDir, 'spec/features/test.feature'),
+        'utf-8'
+      );
       expect(fileContent).toBe(featureContent);
     });
   });
@@ -282,10 +376,15 @@ describe('Feature: Add Step to Existing Scenario', () => {
     it('should show error and not modify file', async () => {
       // Given I have a feature file with invalid Gherkin syntax
       const invalidContent = 'This is not valid Gherkin';
-      await writeFile(join(testDir, 'spec/features/broken.feature'), invalidContent);
+      await writeFile(
+        join(testDir, 'spec/features/broken.feature'),
+        invalidContent
+      );
 
       // When I run `fspec add-step broken "Scenario" given "step"`
-      const result = await addStep('broken', 'Scenario', 'given', 'step', { cwd: testDir });
+      const result = await addStep('broken', 'Scenario', 'given', 'step', {
+        cwd: testDir,
+      });
 
       // Then the command should exit with code 1
       expect(result.success).toBe(false);
@@ -297,7 +396,10 @@ describe('Feature: Add Step to Existing Scenario', () => {
       expect(result.suggestion).toContain('validate');
 
       // And the file should not be modified
-      const fileContent = await readFile(join(testDir, 'spec/features/broken.feature'), 'utf-8');
+      const fileContent = await readFile(
+        join(testDir, 'spec/features/broken.feature'),
+        'utf-8'
+      );
       expect(fileContent).toBe(invalidContent);
     });
   });
@@ -310,18 +412,28 @@ describe('Feature: Add Step to Existing Scenario', () => {
   Scenario: Test
     Given test
 `;
-      await writeFile(join(testDir, 'spec/features/my-feature.feature'), featureContent);
+      await writeFile(
+        join(testDir, 'spec/features/my-feature.feature'),
+        featureContent
+      );
 
       // When I run `fspec add-step my-feature "Test" invalid "step text"`
-      const result = await addStep('my-feature', 'Test', 'invalid', 'step text', {
-        cwd: testDir,
-      });
+      const result = await addStep(
+        'my-feature',
+        'Test',
+        'invalid',
+        'step text',
+        {
+          cwd: testDir,
+        }
+      );
 
       // Then the command should exit with code 1
       expect(result.success).toBe(false);
 
       // And the output should show error about invalid step type
-      expect(result.error).toContain('invalid') || expect(result.error).toContain('step type');
+      expect(result.error).toContain('invalid') ||
+        expect(result.error).toContain('step type');
 
       // And the output should list valid step types: given, when, then, and, but
       expect(result.suggestion).toContain('given');
@@ -340,12 +452,21 @@ describe('Feature: Add Step to Existing Scenario', () => {
   Scenario: Login
     Given test
 `;
-      await writeFile(join(testDir, 'spec/features/user-auth.feature'), featureContent);
+      await writeFile(
+        join(testDir, 'spec/features/user-auth.feature'),
+        featureContent
+      );
 
       // When I run `fspec add-step user-auth "Login" given "I am logged out"`
-      const result = await addStep('user-auth', 'Login', 'given', 'I am logged out', {
-        cwd: testDir,
-      });
+      const result = await addStep(
+        'user-auth',
+        'Login',
+        'given',
+        'I am logged out',
+        {
+          cwd: testDir,
+        }
+      );
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
@@ -367,7 +488,10 @@ describe('Feature: Add Step to Existing Scenario', () => {
   Scenario: Payment
     Given test
 `;
-      await writeFile(join(testDir, 'spec/features/checkout.feature'), featureContent);
+      await writeFile(
+        join(testDir, 'spec/features/checkout.feature'),
+        featureContent
+      );
 
       // When I run `fspec add-step spec/features/checkout.feature "Payment" when "I enter card details"`
       const result = await addStep(
@@ -398,10 +522,15 @@ describe('Feature: Add Step to Existing Scenario', () => {
   Scenario: Test
     When test
 `;
-      await writeFile(join(testDir, 'spec/features/my-feature.feature'), featureContent);
+      await writeFile(
+        join(testDir, 'spec/features/my-feature.feature'),
+        featureContent
+      );
 
       // When I run `fspec add-step my-feature "Test" GIVEN "step text"`
-      const result = await addStep('my-feature', 'Test', 'GIVEN', 'step text', { cwd: testDir });
+      const result = await addStep('my-feature', 'Test', 'GIVEN', 'step text', {
+        cwd: testDir,
+      });
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
@@ -426,10 +555,15 @@ describe('Feature: Add Step to Existing Scenario', () => {
       | name  | email         |
       | Alice | alice@test.com |
 `;
-      await writeFile(join(testDir, 'spec/features/my-feature.feature'), featureContent);
+      await writeFile(
+        join(testDir, 'spec/features/my-feature.feature'),
+        featureContent
+      );
 
       // When I run `fspec add-step my-feature "Scenario" and "another step"`
-      await addStep('my-feature', 'Scenario', 'and', 'another step', { cwd: testDir });
+      await addStep('my-feature', 'Scenario', 'and', 'another step', {
+        cwd: testDir,
+      });
 
       const updatedContent = await readFile(
         join(testDir, 'spec/features/my-feature.feature'),
@@ -464,10 +598,15 @@ describe('Feature: Add Step to Existing Scenario', () => {
       This is a doc string
       """
 `;
-      await writeFile(join(testDir, 'spec/features/my-feature.feature'), featureContent);
+      await writeFile(
+        join(testDir, 'spec/features/my-feature.feature'),
+        featureContent
+      );
 
       // When I run `fspec add-step my-feature "Scenario" and "another step"`
-      await addStep('my-feature', 'Scenario', 'and', 'another step', { cwd: testDir });
+      await addStep('my-feature', 'Scenario', 'and', 'another step', {
+        cwd: testDir,
+      });
 
       const updatedContent = await readFile(
         join(testDir, 'spec/features/my-feature.feature'),

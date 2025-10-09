@@ -33,8 +33,6 @@ Feature: Show Acceptance Criteria by Tag
     So that I can review requirements, generate documentation, or export to
     other tools
 
-
-
   Scenario: Show acceptance criteria for single tag
     Given I have feature files tagged @phase1
     And each feature has background and scenarios

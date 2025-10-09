@@ -21,7 +21,9 @@ export interface ListFeaturesResult {
   features: FeatureInfo[];
 }
 
-export async function listFeatures(options: ListFeaturesOptions = {}): Promise<ListFeaturesResult> {
+export async function listFeatures(
+  options: ListFeaturesOptions = {}
+): Promise<ListFeaturesResult> {
   const cwd = options.cwd || process.cwd();
   const featuresDir = join(cwd, 'spec', 'features');
 
@@ -58,7 +60,7 @@ export async function listFeatures(options: ListFeaturesOptions = {}): Promise<L
       const gherkinDocument = parser.parse(content);
 
       if (gherkinDocument.feature) {
-        const tags = gherkinDocument.feature.tags.map((tag) => tag.name);
+        const tags = gherkinDocument.feature.tags.map(tag => tag.name);
 
         // Filter by tag if specified
         if (options.tag && !tags.includes(options.tag)) {
@@ -67,7 +69,7 @@ export async function listFeatures(options: ListFeaturesOptions = {}): Promise<L
 
         // Count scenarios
         const scenarioCount = gherkinDocument.feature.children.filter(
-          (child) => child.scenario !== undefined
+          child => child.scenario !== undefined
         ).length;
 
         features.push({
@@ -89,7 +91,9 @@ export async function listFeatures(options: ListFeaturesOptions = {}): Promise<L
   return { features };
 }
 
-export async function listFeaturesCommand(options?: { tag?: string }): Promise<void> {
+export async function listFeaturesCommand(options?: {
+  tag?: string;
+}): Promise<void> {
   try {
     const result = await listFeatures({ tag: options?.tag });
 
@@ -100,7 +104,8 @@ export async function listFeaturesCommand(options?: { tag?: string }): Promise<v
 
     // Display features
     for (const feature of result.features) {
-      const tagsStr = feature.tags.length > 0 ? ` [${feature.tags.join(' ')}]` : '';
+      const tagsStr =
+        feature.tags.length > 0 ? ` [${feature.tags.join(' ')}]` : '';
       console.log(
         `  ${chalk.blue(feature.file)} - ${feature.name} ${chalk.gray(`(${feature.scenarioCount} scenarios)`)}${chalk.gray(tagsStr)}`
       );
@@ -109,7 +114,11 @@ export async function listFeaturesCommand(options?: { tag?: string }): Promise<v
     // Summary
     console.log('');
     if (options?.tag) {
-      console.log(chalk.green(`Found ${result.features.length} feature files matching ${options.tag}`));
+      console.log(
+        chalk.green(
+          `Found ${result.features.length} feature files matching ${options.tag}`
+        )
+      );
     } else {
       console.log(chalk.green(`Found ${result.features.length} feature files`));
     }
@@ -118,7 +127,11 @@ export async function listFeaturesCommand(options?: { tag?: string }): Promise<v
   } catch (error: any) {
     if (error.message.includes('Directory not found')) {
       console.error(chalk.red(error.message));
-      console.log(chalk.gray("  Suggestion: Run 'fspec create-feature' to create your first feature"));
+      console.log(
+        chalk.gray(
+          "  Suggestion: Run 'fspec create-feature' to create your first feature"
+        )
+      );
       process.exit(2);
     }
     console.error(chalk.red('Error:'), error.message);

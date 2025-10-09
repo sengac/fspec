@@ -30,8 +30,6 @@ Feature: Update Foundation Section Content
     I want to update section content in FOUNDATION.md
     So that I can maintain up-to-date project documentation
 
-
-
   Scenario: Update existing section content
     Given I have a FOUNDATION.md with a "What We Are Building" section
     When I run `fspec update-foundation "What We Are Building" "New content for this section"`
