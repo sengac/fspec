@@ -33,6 +33,12 @@ import { showFoundationCommand } from './commands/show-foundation';
 import { deleteDiagramCommand } from './commands/delete-diagram';
 import { generateFoundationMdCommandCLI } from './commands/generate-foundation-md';
 import { generateTagsMdCommandCLI } from './commands/generate-tags-md';
+import { addTagToFeatureCommand } from './commands/add-tag-to-feature';
+import { removeTagFromFeatureCommand } from './commands/remove-tag-from-feature';
+import { listFeatureTagsCommand } from './commands/list-feature-tags';
+import { addTagToScenarioCommand } from './commands/add-tag-to-scenario';
+import { removeTagFromScenarioCommand } from './commands/remove-tag-from-scenario';
+import { listScenarioTagsCommand } from './commands/list-scenario-tags';
 // Project management commands
 import { createWorkUnitCommand } from './commands/create-work-unit-command';
 import { listWorkUnitsCommand } from './commands/list-work-units-command';
@@ -248,6 +254,48 @@ function displayTagsHelp(): void {
   console.log('  ' + chalk.cyan('fspec tag-stats') + '                   Show tag usage statistics');
   console.log('    Examples:');
   console.log('      fspec tag-stats');
+  console.log('');
+
+  console.log(chalk.bold('FEATURE-LEVEL TAG MANAGEMENT'));
+  console.log('  ' + chalk.cyan('fspec add-tag-to-feature <file> <tags...>') + ' Add tags to feature');
+  console.log('    Options:');
+  console.log('      --validate-registry              Validate against spec/tags.json');
+  console.log('    Examples:');
+  console.log('      fspec add-tag-to-feature spec/features/login.feature @critical');
+  console.log('      fspec add-tag-to-feature login.feature @critical @security');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec remove-tag-from-feature <file> <tags...>') + ' Remove tags');
+  console.log('    Examples:');
+  console.log('      fspec remove-tag-from-feature spec/features/login.feature @wip');
+  console.log('      fspec remove-tag-from-feature login.feature @wip @deprecated');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec list-feature-tags <file>') + '   List tags on feature');
+  console.log('    Options:');
+  console.log('      --show-categories                Show tag categories from registry');
+  console.log('    Examples:');
+  console.log('      fspec list-feature-tags spec/features/login.feature');
+  console.log('      fspec list-feature-tags login.feature --show-categories');
+  console.log('');
+
+  console.log(chalk.bold('SCENARIO-LEVEL TAG MANAGEMENT'));
+  console.log('  ' + chalk.cyan('fspec add-tag-to-scenario <file> <scenario> <tags...>') + ' Add tags to scenario');
+  console.log('    Options:');
+  console.log('      --validate-registry              Validate against spec/tags.json');
+  console.log('    Examples:');
+  console.log('      fspec add-tag-to-scenario login.feature "Login" @smoke');
+  console.log('      fspec add-tag-to-scenario login.feature "Login" @smoke @critical');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec remove-tag-from-scenario <file> <scenario> <tags...>') + ' Remove tags');
+  console.log('    Examples:');
+  console.log('      fspec remove-tag-from-scenario login.feature "Login" @wip');
+  console.log('      fspec remove-tag-from-scenario login.feature "Login" @wip @deprecated');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec list-scenario-tags <file> <scenario>') + ' List tags on scenario');
+  console.log('    Options:');
+  console.log('      --show-categories                Show tag categories from registry');
+  console.log('    Examples:');
+  console.log('      fspec list-scenario-tags login.feature "Login"');
+  console.log('      fspec list-scenario-tags login.feature "Login" --show-categories');
   console.log('');
 
   console.log(chalk.bold('NOTES'));
@@ -553,6 +601,71 @@ program
   .command('tag-stats')
   .description('Show tag usage statistics across all feature files')
   .action(tagStatsCommand);
+
+// Add tag to feature command
+program
+  .command('add-tag-to-feature')
+  .description('Add one or more tags to a feature file')
+  .argument('<file>', 'Feature file path (e.g., spec/features/login.feature)')
+  .argument('<tags...>', 'Tag(s) to add (e.g., @critical @security)')
+  .option('--validate-registry', 'Validate tags against spec/tags.json')
+  .action(async (file: string, tags: string[], options: { validateRegistry?: boolean }) => {
+    await addTagToFeatureCommand(file, tags, options);
+  });
+
+// Remove tag from feature command
+program
+  .command('remove-tag-from-feature')
+  .description('Remove one or more tags from a feature file')
+  .argument('<file>', 'Feature file path (e.g., spec/features/login.feature)')
+  .argument('<tags...>', 'Tag(s) to remove (e.g., @deprecated @wip)')
+  .action(async (file: string, tags: string[]) => {
+    await removeTagFromFeatureCommand(file, tags);
+  });
+
+// List feature tags command
+program
+  .command('list-feature-tags')
+  .description('List all tags on a specific feature file')
+  .argument('<file>', 'Feature file path (e.g., spec/features/login.feature)')
+  .option('--show-categories', 'Show tag categories from registry')
+  .action(async (file: string, options: { showCategories?: boolean }) => {
+    await listFeatureTagsCommand(file, options);
+  });
+
+// Add tag to scenario command
+program
+  .command('add-tag-to-scenario')
+  .description('Add one or more tags to a specific scenario')
+  .argument('<file>', 'Feature file path (e.g., spec/features/login.feature)')
+  .argument('<scenario>', 'Scenario name (e.g., "Login with valid credentials")')
+  .argument('<tags...>', 'Tag(s) to add (e.g., @smoke @critical)')
+  .option('--validate-registry', 'Validate tags against spec/tags.json')
+  .action(async (file: string, scenario: string, tags: string[], options: { validateRegistry?: boolean }) => {
+    await addTagToScenarioCommand(file, scenario, tags, options);
+  });
+
+// Remove tag from scenario command
+program
+  .command('remove-tag-from-scenario')
+  .description('Remove one or more tags from a specific scenario')
+  .argument('<file>', 'Feature file path (e.g., spec/features/login.feature)')
+  .argument('<scenario>', 'Scenario name (e.g., "Login with valid credentials")')
+  .argument('<tags...>', 'Tag(s) to remove (e.g., @wip @deprecated)')
+  .action(async (file: string, scenario: string, tags: string[]) => {
+    await removeTagFromScenarioCommand(file, scenario, tags);
+  });
+
+// List scenario tags command
+program
+  .command('list-scenario-tags')
+  .description('List all tags on a specific scenario')
+  .argument('<file>', 'Feature file path (e.g., spec/features/login.feature)')
+  .argument('<scenario>', 'Scenario name (e.g., "Login with valid credentials")')
+  .option('--show-categories', 'Show tag categories from registry')
+  .action(async (file: string, scenario: string, options: { showCategories?: boolean }) => {
+    await listScenarioTagsCommand(file, scenario, options);
+  });
 
 // Add scenario command
 program
