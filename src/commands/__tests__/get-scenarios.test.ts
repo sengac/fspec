@@ -413,4 +413,196 @@ Feature: Signup
       expect(result.message).toContain('@critical');
     });
   });
+
+  describe('Scenario: Filter scenarios by scenario-level tags', () => {
+    it('should filter scenarios by tags at scenario level', async () => {
+      // Given I have a feature file with scenario-level tags
+      const content = `Feature: User Authentication
+
+  @smoke
+  Scenario: Quick login test
+    Given I am on the login page
+    When I enter credentials
+    Then I am logged in
+
+  @regression
+  @edge-case
+  Scenario: Login with expired session
+    Given I have an expired session
+    When I attempt to login
+    Then I am prompted to re-authenticate
+
+  Scenario: Standard login
+    Given I am on the login page
+    When I enter valid credentials
+    Then I should be logged in
+`;
+      await writeFile(join(testDir, 'spec/features/auth.feature'), content);
+
+      // When I run `fspec get-scenarios --tag=@smoke`
+      const result = await getScenarios({ tags: ['@smoke'], cwd: testDir });
+
+      // Then the command should exit with code 0
+      expect(result.success).toBe(true);
+
+      // And the output should show only the "Quick login test" scenario
+      expect(result.scenarios.length).toBe(1);
+      expect(result.scenarios[0].name).toBe('Quick login test');
+
+      // And the output should not show "Login with expired session"
+      expect(
+        result.scenarios.find(s => s.name === 'Login with expired session')
+      ).toBeUndefined();
+
+      // And the output should not show "Standard login"
+      expect(
+        result.scenarios.find(s => s.name === 'Standard login')
+      ).toBeUndefined();
+    });
+  });
+
+  describe('Scenario: Filter scenarios by multiple scenario-level tags with AND logic', () => {
+    it('should match scenarios with all specified scenario tags', async () => {
+      // Given I have a feature file with multiple scenario tags
+      const content = `Feature: User Authentication
+
+  @smoke
+  @critical
+  Scenario: Critical smoke test
+    Given a step
+    When another step
+    Then result
+
+  @smoke
+  Scenario: Regular smoke test
+    Given a step
+    When another step
+    Then result
+
+  @regression
+  @critical
+  Scenario: Critical regression test
+    Given a step
+    When another step
+    Then result
+`;
+      await writeFile(join(testDir, 'spec/features/auth.feature'), content);
+
+      // When I run `fspec get-scenarios --tag=@smoke --tag=@critical`
+      const result = await getScenarios({
+        tags: ['@smoke', '@critical'],
+        cwd: testDir,
+      });
+
+      // Then the output should show only "Critical smoke test"
+      expect(result.scenarios.length).toBe(1);
+      expect(result.scenarios[0].name).toBe('Critical smoke test');
+
+      // And the output should not show "Regular smoke test"
+      expect(
+        result.scenarios.find(s => s.name === 'Regular smoke test')
+      ).toBeUndefined();
+
+      // And the output should not show "Critical regression test"
+      expect(
+        result.scenarios.find(s => s.name === 'Critical regression test')
+      ).toBeUndefined();
+    });
+  });
+
+  describe('Scenario: Match scenarios with inherited feature tags', () => {
+    it('should match scenarios that inherit feature-level tags', async () => {
+      // Given I have a feature file with feature-level tags
+      const content = `@phase1
+@authentication
+Feature: User Login
+
+  Scenario: Basic login
+    Given I am on the login page
+    When I enter credentials
+    Then I am logged in
+
+  @smoke
+  Scenario: Quick test
+    Given a quick test
+    When I run it
+    Then it passes
+`;
+      await writeFile(join(testDir, 'spec/features/login.feature'), content);
+
+      // When I run `fspec get-scenarios --tag=@phase1`
+      const result = await getScenarios({ tags: ['@phase1'], cwd: testDir });
+
+      // Then the output should show both scenarios
+      expect(result.scenarios.length).toBe(2);
+      expect(result.scenarios.find(s => s.name === 'Basic login')).toBeDefined();
+      expect(result.scenarios.find(s => s.name === 'Quick test')).toBeDefined();
+
+      // And both scenarios inherit the @phase1 tag from the feature
+      expect(result.success).toBe(true);
+    });
+  });
+
+  describe('Scenario: Filter scenarios combining feature tags and scenario tags', () => {
+    it('should filter using both feature and scenario level tags', async () => {
+      // Given I have a feature file with both feature and scenario tags
+      const content = `@phase1
+@authentication
+Feature: User Login
+
+  @smoke
+  Scenario: Smoke test login
+    Given I am on the login page
+    When I enter credentials
+    Then I am logged in
+
+  @regression
+  Scenario: Regression test login
+    Given I am on the login page
+    When I enter different credentials
+    Then I am logged in
+`;
+      await writeFile(join(testDir, 'spec/features/login.feature'), content);
+
+      // When I run `fspec get-scenarios --tag=@authentication --tag=@smoke`
+      const result = await getScenarios({
+        tags: ['@authentication', '@smoke'],
+        cwd: testDir,
+      });
+
+      // Then the output should show only "Smoke test login"
+      expect(result.scenarios.length).toBe(1);
+      expect(result.scenarios[0].name).toBe('Smoke test login');
+
+      // And the scenario matches both feature tag (@authentication) and scenario tag (@smoke)
+      expect(result.success).toBe(true);
+    });
+  });
+
+  describe('Scenario: Show scenario tags in output', () => {
+    it('should display scenario-level tags in output', async () => {
+      // Given I have a feature file with scenario-level tags
+      const content = `Feature: Testing
+
+  @smoke
+  @critical
+  Scenario: Important test
+    Given a step
+    When another step
+    Then result
+`;
+      await writeFile(join(testDir, 'spec/features/test.feature'), content);
+
+      // When I run `fspec get-scenarios --tag=@smoke`
+      const result = await getScenarios({ tags: ['@smoke'], cwd: testDir });
+
+      // Then the output should show scenario tags in the output
+      expect(result.success).toBe(true);
+      expect(result.scenarios.length).toBe(1);
+
+      // And the output should display "[@smoke @critical]" next to the scenario name
+      expect(result.scenarios[0]).toHaveProperty('tags');
+      expect(result.scenarios[0].tags).toEqual(['@smoke', '@critical']);
+    });
+  });
 });

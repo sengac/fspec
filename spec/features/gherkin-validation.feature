@@ -7,7 +7,6 @@
 @cross-platform
 @critical
 @integration-test
-@cage-hook
 Feature: Gherkin Syntax Validation
   """
   Architecture notes:

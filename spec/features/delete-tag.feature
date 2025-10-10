@@ -1,4 +1,5 @@
 @phase5
+@phase8
 @cli
 @tag-management
 @modification

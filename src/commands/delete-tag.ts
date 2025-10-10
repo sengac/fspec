@@ -4,7 +4,7 @@ import { existsSync } from 'fs';
 import chalk from 'chalk';
 import { glob } from 'tinyglobby';
 import type { Tags } from '../types/tags';
-import { validateTagsJson } from '../validators/json-schema';
+import { validateTagsJson } from '../validators/validate-json-schema';
 import { generateTagsMd } from '../generators/tags-md';
 
 interface DeleteTagOptions {
@@ -124,17 +124,18 @@ export async function deleteTag(
     // Remove tag from category
     currentCategory.tags.splice(tagIndex, 1);
 
-    // Write updated tags.json
-    await writeFile(tagsJsonPath, JSON.stringify(tagsData, null, 2), 'utf-8');
-
     // Validate updated JSON against schema
-    const validation = await validateTagsJson(tagsJsonPath);
+    const validation = validateTagsJson(tagsData);
     if (!validation.valid) {
+      const errorMessages = validation.errors?.map(e => e.message).join(', ') || 'Unknown validation error';
       return {
         success: false,
-        error: `Updated tags.json failed schema validation: ${validation.errors?.join(', ')}`,
+        error: `Updated tags.json failed schema validation: ${errorMessages}`,
       };
     }
+
+    // Write updated tags.json
+    await writeFile(tagsJsonPath, JSON.stringify(tagsData, null, 2), 'utf-8');
 
     // Regenerate TAGS.md from JSON
     const markdown = await generateTagsMd(tagsData);

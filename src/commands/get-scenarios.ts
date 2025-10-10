@@ -9,6 +9,7 @@ interface ScenarioInfo {
   feature: string;
   name: string;
   line: number;
+  tags?: string[];
 }
 
 interface GetScenariosOptions {
@@ -97,23 +98,31 @@ export async function getScenarios(
         continue;
       }
 
-      // Check if feature matches tags (if tags specified)
-      if (tags.length > 0) {
-        const featureTags = gherkinDocument.feature.tags.map(t => t.name);
-        const matchesAllTags = tags.every(tag => featureTags.includes(tag));
-
-        if (!matchesAllTags) {
-          continue;
-        }
-      }
+      // Get feature-level tags
+      const featureTags = gherkinDocument.feature.tags.map(t => t.name);
 
       // Extract scenarios from this feature
       for (const child of gherkinDocument.feature.children) {
         if (child.scenario && child.scenario.keyword === 'Scenario') {
+          // Get scenario-level tags
+          const scenarioTags = child.scenario.tags.map(t => t.name);
+
+          // Combine feature tags and scenario tags for matching
+          const allTags = [...new Set([...featureTags, ...scenarioTags])];
+
+          // Check if scenario matches all specified tags (AND logic)
+          if (tags.length > 0) {
+            const matchesAllTags = tags.every(tag => allTags.includes(tag));
+            if (!matchesAllTags) {
+              continue;
+            }
+          }
+
           scenarios.push({
             feature: file,
             name: child.scenario.name,
             line: child.scenario.location.line,
+            tags: scenarioTags.length > 0 ? scenarioTags : undefined,
           });
         }
       }
@@ -189,7 +198,13 @@ export async function getScenariosCommand(options: {
         for (const [feature, scenarios] of byFeature.entries()) {
           console.log(chalk.bold.green(feature));
           for (const scenario of scenarios) {
-            console.log(chalk.gray(`  ${scenario.line}:`), scenario.name);
+            const tagsDisplay = scenario.tags
+              ? chalk.cyan(` [${scenario.tags.join(' ')}]`)
+              : '';
+            console.log(
+              chalk.gray(`  ${scenario.line}:`),
+              scenario.name + tagsDisplay
+            );
           }
           console.log('');
         }

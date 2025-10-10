@@ -289,8 +289,8 @@ Then I should be logged in`;
     });
   });
 
-  describe('Scenario: Validate feature file with tags', () => {
-    it('should accept tags at feature and scenario level', async () => {
+  describe('Scenario: Validate feature file with feature-level tags', () => {
+    it('should accept tags at feature level', async () => {
       // Given I have a feature file with tags
       const featuresDir = join(testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
@@ -311,6 +311,104 @@ Feature: Tagged Feature
 
       // Then tags should be recognized as valid
       expect(result.valid).toBe(true);
+    });
+  });
+
+  describe('Scenario: Validate feature file with scenario-level tags', () => {
+    it('should accept tags at scenario level', async () => {
+      // Given I have a feature file with scenario-level tags only
+      const featuresDir = join(testDir, 'spec', 'features');
+      await mkdir(featuresDir, { recursive: true });
+
+      const validContent = `Feature: User Login
+
+  @smoke
+  Scenario: Quick smoke test
+    Given I am on the login page
+    When I enter credentials
+    Then I should be logged in
+
+  @regression
+  @edge-case
+  Scenario: Test with multiple scenario tags
+    Given I have an expired session
+    When I attempt to login
+    Then I am prompted to re-authenticate`;
+
+      await writeFile(join(featuresDir, 'login.feature'), validContent);
+
+      // When I run validation
+      const result = await validateFile('spec/features/login.feature');
+
+      // Then tags at scenario level should be recognized as valid
+      expect(result.valid).toBe(true);
+      expect(result.errors).toHaveLength(0);
+    });
+  });
+
+  describe('Scenario: Validate feature file with both feature-level and scenario-level tags', () => {
+    it('should accept tags at both feature and scenario levels', async () => {
+      // Given I have a feature file with tags at both levels
+      const featuresDir = join(testDir, 'spec', 'features');
+      await mkdir(featuresDir, { recursive: true });
+
+      const validContent = `@phase1
+@authentication
+Feature: User Login
+
+  @smoke
+  @critical
+  Scenario: Critical smoke test
+    Given I am on the login page
+    When I enter valid credentials
+    Then I should be logged in
+
+  @regression
+  Scenario: Standard regression test
+    Given I am on the login page
+    When I enter different credentials
+    Then I should be logged in`;
+
+      await writeFile(join(featuresDir, 'login.feature'), validContent);
+
+      // When I run validation
+      const result = await validateFile('spec/features/login.feature');
+
+      // Then both feature-level and scenario-level tags should be valid
+      expect(result.valid).toBe(true);
+      expect(result.errors).toHaveLength(0);
+    });
+  });
+
+  describe('Scenario: Validate scenario-level tags with proper indentation', () => {
+    it('should validate scenario tag indentation', async () => {
+      // Given I have a feature file with scenario tags at proper indentation (2 spaces)
+      const featuresDir = join(testDir, 'spec', 'features');
+      await mkdir(featuresDir, { recursive: true });
+
+      const validContent = `Feature: Testing
+
+  @smoke
+  @critical
+  Scenario: Properly indented scenario tags
+    Given a step
+    When another step
+    Then result
+
+  @regression
+  Scenario: Another scenario with tag
+    Given a step
+    When another step
+    Then result`;
+
+      await writeFile(join(featuresDir, 'test.feature'), validContent);
+
+      // When I run validation
+      const result = await validateFile('spec/features/test.feature');
+
+      // Then properly indented scenario tags should be valid
+      expect(result.valid).toBe(true);
+      expect(result.errors).toHaveLength(0);
     });
   });
 

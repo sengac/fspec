@@ -1,11 +1,11 @@
 @phase2
+@phase8
 @validator
 @tag-management
 @validation
 @error-handling
 @high
 @integration-test
-@cage-hook
 Feature: Validate Feature File Tags Against Registry
   """
   Architecture notes:
