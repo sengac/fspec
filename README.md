@@ -4,19 +4,171 @@ A standardized CLI tool that provides AI agents with a structured interface for 
 
 ## Why fspec?
 
-**The Problem:**
-- AI agents default to unstructured markdown for specifications
-- Some tools (like spec-kit) rely on AI to maintain specs rather than providing structured tooling, which can lead to inconsistency
-- No standard interface guides AI to capture the right information (user stories, acceptance criteria, architecture)
-- Malformed Gherkin breaks Cucumber tooling and testing workflows
+AI agents (like Claude Code, GitHub Copilot) excel at writing code but struggle to build quality software reliably. They lack the structure needed to follow Acceptance Criteria Driven Development (ACDD) and build the **right software** - not just build software right.
 
-**The Solution:**
-fspec provides AI agents with:
-- ✅ **Structured Commands** - Clear interface for creating and managing Gherkin specs
-- ✅ **Syntax Validation** - Official @cucumber/gherkin-parser ensures valid syntax
-- ✅ **Tag Discipline** - Registry-based tag management prevents chaos
-- ✅ **Architecture Docs** - Mermaid diagrams with syntax validation and doc strings keep architecture synchronized
+### The Core Problems
+
+**1. Context Fragility**
+- AI agents rely on conversation context (prompts, summaries, edited history) to remember what to do
+- Context gets compacted/edited between sessions - meaning is lost
+- AI must reconstruct "what's next" from imperfect context rather than querying explicit state
+- Flat TODO lists don't help - they show "done" or "not done" but no workflow state, dependencies, or relationships
+
+**2. Workflow Chaos**
+- Without enforced Kanban workflow, AI agents jump straight to implementation
+- They skip discovery (figuring out what to build), skip specs, or write code before tests
+- No guardrails prevent skipping from "specifying" → "implementing" without "testing" phase
+- ACDD methodology (specs → tests → code) easily violated when AI gets sidetracked
+
+**3. No Collaborative Discovery**
+- AI agents lack structured tools for **example mapping** - the discovery phase before writing specs
+- They jump to Gherkin scenarios without gathering rules, examples, questions, and assumptions
+- No way for AI to ask clarifying questions and get human answers in structured data
+- Result: AI builds what IT thinks is needed, not what human actually needs
+
+**4. Specification Quality Issues**
+- Malformed Gherkin breaks Cucumber tooling and testing workflows
+- Tags created inconsistently (@phase1 vs @phase-1 vs @p1)
+- Architecture docs drift out of sync with code
+- No validation until specs are written and tests fail
+
+### The Solution: Integrated Specification + Project Management
+
+fspec provides **two integrated systems** that work together to enable reliable AI-driven ACDD development:
+
+#### 1. Specification Management
+Ensures specs are valid, concrete (Specification by Example), and follow BDD conventions:
+
+- ✅ **Gherkin Validation** - Official @cucumber/gherkin-parser ensures valid syntax every time
+- ✅ **Tag Discipline** - JSON-backed registry (tags.json) prevents tag chaos
+- ✅ **Architecture Docs** - Mermaid diagrams with syntax validation keep architecture synchronized
 - ✅ **Ecosystem Compatibility** - Works with all Cucumber tooling (parsers, formatters, reporters)
+
+#### 2. Project Management
+Provides persistent queryable state, workflow enforcement, and collaborative discovery:
+
+- ✅ **Work Units** - Persistent project state (not TODO lists) with status, dependencies, epic relationships, example mapping
+- ✅ **Kanban Workflow** - Enforces ACDD phases: backlog → specifying → testing → implementing → validating → done
+- ✅ **Example Mapping** - Structured discovery where AI adds rules/examples/questions and human provides clarifying answers
+- ✅ **Queryable State** - AI runs `fspec list-work-units --status=specifying` to see what's in flight - doesn't rely on conversation context
+
+### Why ACDD? (Acceptance Criteria Driven Development)
+
+ACDD builds on **Specification by Example** and **Behavior-Driven Development (BDD)** by enforcing a rigorous workflow:
+
+**Specification by Example:**
+- Use concrete examples instead of abstract requirements
+- "Login succeeds with email user@example.com and password 12345678"
+- NOT "The system shall authenticate users"
+
+**BDD (Behavior-Driven Development):**
+- Adds Given/When/Then structure in Gherkin format
+- Scenarios become both documentation AND automated tests
+- Shared language between stakeholders and developers
+
+**ACDD (Acceptance Criteria Driven Development):**
+- Enforces the ORDER: Acceptance Criteria (specs) FIRST → Tests SECOND → Code LAST
+- AI agents build exactly what's specified - no more, no less
+- Prevents over-implementation (features not specified) and under-implementation (missing criteria)
+
+**The Challenge:** AI agents naturally violate ACDD workflow without tooling enforcement - they get sidetracked, lose context, skip discovery, and jump to implementation.
+
+**The fspec Solution:** Workflow enforcement + persistent state + collaborative discovery = Reliable ACDD.
+
+### How It Works Together
+
+**The ACDD Workflow with fspec:**
+
+1. **Discovery (Example Mapping)**
+   - Create work unit: `fspec create-work-unit AUTH "User login"`
+   - Enter "specifying" phase
+   - AI adds rules, examples, asks questions collaboratively with human
+   - Human answers questions to clarify requirements
+
+2. **Specification (Gherkin)**
+   - Convert examples → validated Gherkin scenarios
+   - `fspec create-feature "User Authentication"`
+   - `fspec add-scenario` with Given/When/Then from examples
+   - `fspec validate` ensures syntax is correct
+
+3. **Testing Phase**
+   - Move work unit to "testing" status
+   - Write tests mapping to Gherkin scenarios BEFORE any code
+   - Tests fail (expected)
+
+4. **Implementation Phase**
+   - Move work unit to "implementing" status (can't skip testing!)
+   - Write minimum code to make tests pass
+   - Refactor while keeping tests green
+
+5. **Validation & Done**
+   - Verify acceptance criteria met
+   - Move to "done" - feature complete
+
+**Example:**
+```bash
+# AI can query state across sessions:
+$ fspec show-work-unit AUTH-001
+Work Unit: AUTH-001
+Status: specifying
+Epic: user-management
+Examples:
+  1. User logs in with valid email
+  2. User logs in with Google OAuth
+Questions:
+  1. Should we support OAuth 2.0? (@bob)
+Blocked By: []
+
+# AI knows: still in discovery, questions need answering
+# Human answers question, AI continues
+# Can't move to "testing" until specs complete
+# Can't move to "implementing" until tests written
+# No skipping phases, no lost context, builds RIGHT features
+```
+
+### Before vs. After fspec
+
+**Without fspec:**
+- ❌ AI jumps straight to code without discovery or specification
+- ❌ TODO lists provide no workflow state or relationships
+- ❌ Context lost between sessions - AI reconstructs intent from conversation
+- ❌ Specifications in unstructured markdown, not testable Gherkin
+- ❌ Tags inconsistent, architecture docs drift
+- ❌ AI builds what IT thinks is needed
+- ❌ No collaborative discovery - AI guesses examples
+- ❌ ACDD workflow not enforced
+
+**With fspec:**
+- ✅ AI follows explicit Kanban workflow: discovery → specification → testing → implementation
+- ✅ Work units provide queryable state that persists across sessions
+- ✅ Example mapping enables AI-human collaboration through questions/answers
+- ✅ Specifications in validated Gherkin (Specification by Example + BDD)
+- ✅ Enforced ACDD workflow - cannot skip phases
+- ✅ AI builds exactly what's specified
+- ✅ Clear visibility into progress, blockers, next actions
+- ✅ Context engineering supplements persistent state
+
+### Who Benefits?
+
+**Developers Using AI Coding Agents**
+- Reliable ACDD workflow with persistent state
+- Collaborative discovery through example mapping
+- Confidence AI is building the right thing
+
+**Teams Practicing BDD/ACDD**
+- AI agents that follow methodology rigorously
+- Enforced workflow, validated Gherkin, structured discovery
+- Can trust AI assistance without sacrificing discipline
+
+**Product Owners & Stakeholders**
+- Clear visibility through work units and Kanban
+- Collaborative discovery ensures right features built
+- Acceptance criteria prevent scope creep
+
+**BDD/Cucumber Ecosystem**
+- Promotes standard Gherkin over proprietary formats
+- Works with existing Cucumber tooling
+- Prevents ecosystem fragmentation
 
 ## Features
 

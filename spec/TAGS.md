@@ -127,6 +127,7 @@ Tags for specific technical concerns or architectural patterns.
 | Tag | Description | Usage |
 |-----|-------------|-------|
 | `@ast` | Abstract Syntax Tree |  |
+| `@auth-001` | Work unit identifier for authentication features (example in example-mapping feature) |  |
 | `@automation` | Automated workflow operations and state transitions |  |
 | `@bdd` | Behavior-Driven Development methodology |  |
 | `@cucumber-parser` | Cucumber Parser Integration |  |

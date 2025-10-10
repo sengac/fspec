@@ -138,23 +138,24 @@
         "problemDefinition",
         "painPoints",
         "stakeholderImpact",
-        "theoreticalSolutions",
-        "developmentMethodology",
-        "successCriteria",
-        "constraintsAndAssumptions"
+        "successCriteria"
       ],
       "properties": {
         "problemDefinition": {
           "type": "object",
-          "required": ["primary", "secondary"],
+          "required": ["primary"],
           "properties": {
             "primary": {
               "type": "object",
-              "required": ["title", "description", "points"],
+              "required": ["title", "description"],
               "properties": {
                 "title": { "type": "string" },
                 "description": { "type": "string" },
                 "points": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                },
+                "coreProblems": {
                   "type": "array",
                   "items": { "type": "string" }
                 }
@@ -163,12 +164,31 @@
             "secondary": {
               "type": "array",
               "items": { "type": "string" }
+            },
+            "specification": {
+              "type": "object",
+              "properties": {
+                "title": { "type": "string" },
+                "problems": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                }
+              }
+            },
+            "projectManagement": {
+              "type": "object",
+              "properties": {
+                "title": { "type": "string" },
+                "problems": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                }
+              }
             }
           }
         },
         "painPoints": {
           "type": "object",
-          "required": ["currentState", "specific"],
           "properties": {
             "currentState": { "type": "string" },
             "specific": {
@@ -183,17 +203,102 @@
                   "cost": { "type": "string" }
                 }
               }
-            }
+            },
+            "beforeFspec": { "type": "string" },
+            "afterFspec": { "type": "string" }
           }
         },
         "stakeholderImpact": {
           "type": "array",
           "items": {
             "type": "object",
-            "required": ["stakeholder", "description"],
+            "required": ["stakeholder"],
             "properties": {
               "stakeholder": { "type": "string" },
-              "description": { "type": "string" }
+              "description": { "type": "string" },
+              "currentPain": { "type": "string" },
+              "benefit": { "type": "string" }
+            }
+          }
+        },
+        "whyACDD": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string" },
+            "description": { "type": "string" },
+            "specificationByExample": {
+              "type": "object",
+              "properties": {
+                "principle": { "type": "string" },
+                "benefit": { "type": "string" }
+              }
+            },
+            "bdd": {
+              "type": "object",
+              "properties": {
+                "principle": { "type": "string" },
+                "benefit": { "type": "string" }
+              }
+            },
+            "acdd": {
+              "type": "object",
+              "properties": {
+                "principle": { "type": "string" },
+                "benefit": { "type": "string" },
+                "challenge": { "type": "string" }
+              }
+            }
+          }
+        },
+        "theIntegratedSolution": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string" },
+            "description": { "type": "string" },
+            "specificationManagement": {
+              "type": "object",
+              "properties": {
+                "purpose": { "type": "string" },
+                "tools": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                },
+                "impact": { "type": "string" }
+              }
+            },
+            "projectManagement": {
+              "type": "object",
+              "properties": {
+                "purpose": { "type": "string" },
+                "tools": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                },
+                "impact": { "type": "string" }
+              }
+            },
+            "integration": {
+              "type": "object",
+              "properties": {
+                "workflow": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                },
+                "benefitExample": { "type": "string" }
+              }
+            }
+          }
+        },
+        "whyNotAlternatives": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "alternative": { "type": "string" },
+              "limitations": {
+                "type": "array",
+                "items": { "type": "string" }
+              }
             }
           }
         },
@@ -220,7 +325,6 @@
         },
         "developmentMethodology": {
           "type": "object",
-          "required": ["name", "description", "steps", "ensures"],
           "properties": {
             "name": { "type": "string" },
             "description": { "type": "string" },
@@ -231,6 +335,39 @@
             "ensures": {
               "type": "array",
               "items": { "type": "string" }
+            }
+          }
+        },
+        "constraintsAndAssumptions": {
+          "type": "object",
+          "properties": {
+            "constraints": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["category", "items"],
+                "properties": {
+                  "category": { "type": "string" },
+                  "items": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                  }
+                }
+              }
+            },
+            "assumptions": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["category", "items"],
+                "properties": {
+                  "category": { "type": "string" },
+                  "items": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                  }
+                }
+              }
             }
           }
         },
