@@ -237,10 +237,9 @@ Feature: Login
       // Then the command should exit with code 1
       expect(result.success).toBe(false);
 
-      // And the output should show "Invalid tag format. Tags must start with @ and use lowercase-with-hyphens"
+      // And the output should show "Invalid tag format. Tags must start with @"
       expect(result.error).toContain('Invalid tag format');
-      expect(result.error).toContain('@');
-      expect(result.error).toContain('lowercase');
+      expect(result.error).toContain('Tags must start with @');
 
       // And the feature tags should remain unchanged
       const unchangedContent = await readFile(

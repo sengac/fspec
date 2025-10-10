@@ -1,3 +1,4 @@
+@TEST-001
 @phase2
 @phase8
 @validator
@@ -15,6 +16,8 @@ Feature: Validate Feature File Tags Against Registry
   - Reports unregistered tags with file locations
   - Checks for required tag categories (phase, component, feature-group)
   - Can validate single file or all files
+  - Validates work unit tags (@WORK-001) against spec/work-units.json
+  - Distinguishes work unit tags from regular tags by pattern
 
   Critical implementation requirements:
   - MUST read spec/tags.json to build tag registry
@@ -24,16 +27,26 @@ Feature: Validate Feature File Tags Against Registry
   - MUST show file and line number for violations
   - Exit code 0 if all valid, 1 if violations found
   - SHOULD suggest registering unregistered tags
+  - MUST validate work unit tags (pattern: @[A-Z]{2,6}-\\d+) against work-units.json
+  - MUST check work unit IDs exist when work unit tags are used
+  - MUST validate both feature-level and scenario-level work unit tags
 
   Tag extraction:
   - Parse tags from feature-level (@phase1 @cli @validation)
   - Parse tags from scenario-level (less common but valid)
   - Skip tags in comments or doc strings
+  - Detect work unit tags by pattern: @[A-Z]{2,6}-\\d+
 
   Required tag validation:
   - Every feature MUST have one @phase tag
   - Every feature MUST have at least one component tag
   - Every feature MUST have at least one feature-group tag
+
+  Work unit tag validation:
+  - Tags matching @[A-Z]{2,6}-\\d+ are work unit tags
+  - Work unit tags validated against spec/work-units.json
+  - Regular tags validated against spec/tags.json
+  - Invalid work unit format reported as validation error
 
   Integration points:
   - CLI command: `fspec validate-tags [file]`
@@ -252,3 +265,99 @@ Feature: Validate Feature File Tags Against Registry
     Then the command should exit with code 0
     And scenario tags should not be required to have phase/component/feature-group tags
     And only feature-level tags should be checked for required categories
+
+  @work-unit-linking
+  Scenario: Validate work unit tag exists in work-units.json
+    Given I have a feature file tagged with "@AUTH-001"
+    And work unit "AUTH-001" exists in spec/work-units.json
+    When I run `fspec validate-tags spec/features/auth.feature`
+    Then the command should exit with code 0
+    And work unit tags should be validated against work-units.json
+
+  @work-unit-linking
+  Scenario: Detect non-existent work unit tag
+    Given I have a feature file tagged with "@AUTH-999"
+    And work unit "AUTH-999" does not exist in spec/work-units.json
+    When I run `fspec validate-tags spec/features/auth.feature`
+    Then the command should exit with code 1
+    And the output should contain "Work unit @AUTH-999 not found in spec/work-units.json"
+    And the output should suggest "Create work unit with: fspec create-work-unit AUTH 'Title'"
+
+  @work-unit-linking
+  Scenario: Validate scenario-level work unit tags
+    Given I have a feature file with scenario-level work unit tag:
+      """
+      @phase1
+      @cli
+      @authentication
+      Feature: User Login
+
+        @AUTH-001
+        Scenario: Login with Google
+          Given I am on the login page
+          When I click Google login
+          Then I am logged in
+
+        @AUTH-002
+        Scenario: Login with GitHub
+          Given I am on the login page
+          When I click GitHub login
+          Then I am logged in
+      """
+    And work units "AUTH-001" and "AUTH-002" exist in spec/work-units.json
+    When I run `fspec validate-tags spec/features/login.feature`
+    Then the command should exit with code 0
+    And all work unit tags should be validated
+
+  @work-unit-linking
+  Scenario: Detect multiple invalid work unit tags
+    Given I have a feature file with work unit tags:
+      """
+      @AUTH-001
+      @phase1
+      @cli
+      Feature: OAuth Login
+
+        @AUTH-002
+        Scenario: Login with Google
+          Given I am logged out
+          When I click Google
+          Then I am logged in
+
+        @AUTH-999
+        Scenario: Invalid work unit
+          Given a step
+          When another step
+          Then result
+      """
+    And work units "AUTH-001" and "AUTH-002" exist
+    And work unit "AUTH-999" does not exist
+    When I run `fspec validate-tags spec/features/oauth.feature`
+    Then the command should exit with code 1
+    And the output should contain "Work unit @AUTH-999 not found"
+    And the output should specify the scenario containing the invalid tag
+
+  @work-unit-linking
+  Scenario: Validate work unit tag format
+    Given I have a feature file with malformed work unit tag "@auth-001"
+    When I run `fspec validate-tags spec/features/auth.feature`
+    Then the command should exit with code 1
+    And the output should contain "Invalid work unit tag format: @auth-001"
+    And the output should suggest "Work unit tags must match pattern: @[A-Z]{2,6}-\\d+"
+
+  @work-unit-linking
+  Scenario: Distinguish work unit tags from regular tags
+    Given I have a feature file with mixed tags:
+      """
+      @AUTH-001
+      @phase1
+      @cli
+      @authentication
+      Feature: User Login
+      """
+    And work unit "AUTH-001" exists
+    And all other tags are registered in spec/tags.json
+    When I run `fspec validate-tags spec/features/login.feature`
+    Then the command should exit with code 0
+    And work unit tags matching pattern @[A-Z]{2,6}-\\d+ should be validated against work-units.json
+    And other tags should be validated against tags.json

@@ -6,6 +6,8 @@ import { glob } from 'tinyglobby';
 import * as Gherkin from '@cucumber/gherkin';
 import * as Messages from '@cucumber/messages';
 import type { Tags } from '../types/tags';
+import { isWorkUnitTag, looksLikeWorkUnitTag, extractWorkUnitId, loadWorkUnitsData } from '../utils/work-unit-tags';
+import type { WorkUnitsData } from '../types';
 
 interface TagValidationResult {
   file: string;
@@ -38,6 +40,9 @@ export async function validateTags(
   // Load tag registry from tags.json
   const registry = await loadTagRegistry(cwd);
 
+  // Load work units data from work-units.json (optional)
+  const workUnitsData = await loadWorkUnitsData(cwd);
+
   // Get files to validate
   const files = options.file
     ? [options.file]
@@ -49,7 +54,7 @@ export async function validateTags(
 
   // Validate each file
   const results = await Promise.all(
-    files.map(file => validateFileTags(file, registry, cwd))
+    files.map(file => validateFileTags(file, registry, workUnitsData, cwd))
   );
 
   const validCount = results.filter(r => r.valid).length;
@@ -156,6 +161,7 @@ async function loadTagRegistry(cwd: string): Promise<TagRegistry> {
 async function validateFileTags(
   filePath: string,
   registry: TagRegistry,
+  workUnitsData: WorkUnitsData | null,
   cwd: string
 ): Promise<TagValidationResult> {
   const result: TagValidationResult = {
@@ -203,16 +209,56 @@ async function validateFileTags(
     // Check for unregistered tags (both feature and scenario level)
     const unregisteredTags = allTags.filter(tag => !registry.validTags.has(tag));
     if (unregisteredTags.length > 0) {
-      result.valid = false;
       for (const tag of unregisteredTags) {
-        // Check if it's a placeholder tag
-        if (tag === '@component' || tag === '@feature-group') {
+        // Check if it's a valid work unit tag
+        if (isWorkUnitTag(tag)) {
+          const workUnitId = extractWorkUnitId(tag);
+
+          if (!workUnitId) {
+            // Invalid work unit tag format (this shouldn't happen if isWorkUnitTag returns true)
+            result.valid = false;
+            result.errors.push({
+              tag,
+              message: `Invalid work unit tag format: ${tag}`,
+              suggestion: 'Work unit tags must match pattern @[A-Z]{2,6}-\\d+ (e.g., @AUTH-001, @BACK-123)',
+            });
+          } else if (!workUnitsData) {
+            // No work-units.json file
+            result.valid = false;
+            result.errors.push({
+              tag,
+              message: `Work unit ${tag} found but spec/work-units.json does not exist`,
+              suggestion: 'Create spec/work-units.json to define work units',
+            });
+          } else if (!workUnitsData.workUnits[workUnitId]) {
+            // Work unit doesn't exist
+            result.valid = false;
+            result.errors.push({
+              tag,
+              message: `Work unit ${tag} not found in spec/work-units.json`,
+              suggestion: `Add work unit ${workUnitId} to spec/work-units.json or use 'fspec create-work-unit'`,
+            });
+          }
+          // If work unit exists and format is valid, it's valid - no error
+        } else if (looksLikeWorkUnitTag(tag)) {
+          // Tag looks like work unit tag but has invalid format (e.g., lowercase)
+          result.valid = false;
+          result.errors.push({
+            tag,
+            message: `Invalid work unit tag format: ${tag}`,
+            suggestion: 'Work unit tags must match pattern @[A-Z]{2,6}-\\d+ (e.g., @AUTH-001, @BACK-123)',
+          });
+        } else if (tag === '@component' || tag === '@feature-group') {
+          // Check if it's a placeholder tag
+          result.valid = false;
           result.errors.push({
             tag,
             message: `Placeholder tag: ${tag}`,
             suggestion: `Replace ${tag} with actual tags from tags.json`,
           });
         } else {
+          // Regular unregistered tag
+          result.valid = false;
           result.errors.push({
             tag,
             message: `Unregistered tag: ${tag} in ${filePath}`,

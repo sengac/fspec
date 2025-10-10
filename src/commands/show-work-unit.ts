@@ -1,11 +1,24 @@
 import { readFile } from 'fs/promises';
 import { join } from 'path';
+import { glob } from 'tinyglobby';
+import * as Gherkin from '@cucumber/gherkin';
+import * as Messages from '@cucumber/messages';
 import type { WorkUnitsData } from '../types';
+import { extractWorkUnitTags } from '../utils/work-unit-tags';
 
 interface ShowWorkUnitOptions {
   workUnitId: string;
   output?: 'json' | 'text';
   cwd?: string;
+}
+
+interface LinkedFeature {
+  file: string;
+  scenarios: Array<{
+    name: string;
+    line: number;
+    file: string;
+  }>;
 }
 
 interface WorkUnitDetails {
@@ -24,6 +37,7 @@ interface WorkUnitDetails {
   assumptions?: string[];
   createdAt: string;
   updatedAt: string;
+  linkedFeatures?: LinkedFeature[];
   [key: string]: unknown;
 }
 
@@ -42,6 +56,55 @@ export async function showWorkUnit(options: ShowWorkUnitOptions): Promise<WorkUn
 
   const workUnit = workUnitsData.workUnits[options.workUnitId];
 
+  // Scan feature files for linked scenarios
+  const linkedFeatures: LinkedFeature[] = [];
+
+  try {
+    // Find all feature files
+    const featureFiles = await glob(['spec/features/**/*.feature'], {
+      cwd,
+      absolute: false,
+    });
+
+    // Parse each feature file and check for work unit tags
+    for (const featureFile of featureFiles) {
+      const featurePath = join(cwd, featureFile);
+      const featureContent = await readFile(featurePath, 'utf-8');
+
+      // Parse Gherkin
+      const builder = new Gherkin.AstBuilder(Messages.IdGenerator.uuid());
+      const matcher = new Gherkin.GherkinClassicTokenMatcher();
+      const parser = new Gherkin.Parser(builder, matcher);
+
+      let gherkinDocument;
+      try {
+        gherkinDocument = parser.parse(featureContent);
+      } catch {
+        // Skip invalid feature files
+        continue;
+      }
+
+      // Extract work unit tags
+      const workUnitTags = extractWorkUnitTags(gherkinDocument);
+
+      // Find scenarios for this work unit
+      const matchingTag = workUnitTags.find(tag => tag.id === options.workUnitId);
+
+      if (matchingTag && matchingTag.scenarios.length > 0) {
+        linkedFeatures.push({
+          file: featureFile,
+          scenarios: matchingTag.scenarios.map(scenario => ({
+            name: scenario.name,
+            line: scenario.line,
+            file: featureFile,
+          })),
+        });
+      }
+    }
+  } catch {
+    // If features directory doesn't exist, just return empty linked features
+  }
+
   return {
     id: workUnit.id,
     title: workUnit.title,
@@ -58,5 +121,6 @@ export async function showWorkUnit(options: ShowWorkUnitOptions): Promise<WorkUn
     ...(workUnit.assumptions && { assumptions: workUnit.assumptions }),
     createdAt: workUnit.createdAt,
     updatedAt: workUnit.updatedAt,
+    linkedFeatures,
   };
 }

@@ -16,11 +16,14 @@ Feature: Get Scenarios by Tag
   - Returns scenario names, feature file paths, and line numbers
   - Useful for finding scenarios to review, update, or delete
   - Foundation for bulk operations like delete-scenarios --tag
+  - Works with work unit tags (@WORK-001) just like regular tags
+  - Enables querying scenarios by work unit for ACDD workflow
 
   Critical implementation requirements:
   - MUST parse all feature files in spec/features/
   - MUST match scenarios by BOTH feature-level AND scenario-level tags
   - MUST support filtering by scenario-specific tags (e.g., @smoke, @regression)
+  - MUST support filtering by work unit tags (e.g., @AUTH-001, @DASH-002)
   - MUST support multiple --tag flags with AND logic
   - MUST return feature path, scenario name, and line number
   - MUST handle missing spec/features/ directory gracefully
@@ -30,6 +33,7 @@ Feature: Get Scenarios by Tag
   References:
   - Gherkin parser: @cucumber/gherkin
   - Tag filtering: Checks both feature.tags and scenario.tags
+  - Work unit linking: Enables finding scenarios by work unit ID
   """
 
   Background: User Story
@@ -235,3 +239,90 @@ Feature: Get Scenarios by Tag
     When I run `fspec get-scenarios --tag=@smoke`
     Then the output should show scenario tags in the output
     And the output should display "[@smoke @critical]" next to the scenario name
+
+  @work-unit-linking
+  Scenario: Filter scenarios by work unit tag (feature-level)
+    Given I have a feature file with work unit tag:
+      """
+      @AUTH-001
+      @phase1
+      @authentication
+      Feature: OAuth Login
+
+        Scenario: Login with Google
+          Given I am on login page
+          When I click Google
+          Then I am logged in
+
+        Scenario: Login with GitHub
+          Given I am on login page
+          When I click GitHub
+          Then I am logged in
+      """
+    When I run `fspec get-scenarios --tag=@AUTH-001`
+    Then the command should exit with code 0
+    And the output should show both scenarios
+    And both scenarios should inherit the @AUTH-001 tag
+
+  @work-unit-linking
+  Scenario: Filter scenarios by work unit tag (scenario-level)
+    Given I have a feature file with scenario-level work unit tags:
+      """
+      @phase1
+      @authentication
+      Feature: OAuth Login
+
+        @AUTH-001
+        Scenario: Login with Google
+          Given I am on login page
+          When I click Google
+          Then I am logged in
+
+        @AUTH-002
+        Scenario: Add refresh tokens
+          Given I have a token
+          When it expires
+          Then refresh it
+
+        Scenario: Standard login
+          Given I am on login page
+          When I login
+          Then I am authenticated
+      """
+    When I run `fspec get-scenarios --tag=@AUTH-001`
+    Then the output should show only "Login with Google"
+    And the output should not show "Add refresh tokens"
+    And the output should not show "Standard login"
+
+  @work-unit-linking
+  Scenario: Filter scenarios combining work unit and regular tags
+    Given I have a feature file:
+      """
+      @AUTH-001
+      @phase1
+      @authentication
+      Feature: OAuth Login
+
+        @smoke
+        Scenario: Quick smoke test
+          Given a test
+          When I run it
+          Then it passes
+
+        @regression
+        Scenario: Full regression test
+          Given a test
+          When I run it
+          Then it passes
+      """
+    When I run `fspec get-scenarios --tag=@AUTH-001 --tag=@smoke`
+    Then the output should show only "Quick smoke test"
+    And the scenario matches both work unit tag and test type tag
+
+  @work-unit-linking
+  Scenario: List all scenarios for multiple work units
+    Given I have feature files with work unit tags "@AUTH-001" and "@AUTH-002"
+    When I run `fspec get-scenarios --tag=@AUTH-001`
+    Then the output should show only scenarios tagged with @AUTH-001
+    When I run `fspec get-scenarios --tag=@AUTH-002`
+    Then the output should show only scenarios tagged with @AUTH-002

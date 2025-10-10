@@ -71,6 +71,16 @@ export async function showWorkUnitCommand(
         });
       }
 
+      if (result.linkedFeatures && result.linkedFeatures.length > 0) {
+        console.log(chalk.cyan('\nLinked Features:'));
+        for (const feature of result.linkedFeatures) {
+          console.log(`\n  ${chalk.bold(feature.file)}`);
+          for (const scenario of feature.scenarios) {
+            console.log(`    ${chalk.gray(`${scenario.file}:${scenario.line}`)} - ${scenario.name}`);
+          }
+        }
+      }
+
       console.log('');
       console.log(chalk.gray('Created:'), new Date(result.createdAt).toLocaleString());
       console.log(chalk.gray('Updated:'), new Date(result.updatedAt).toLocaleString());

@@ -1,5 +1,4 @@
 {
-  "$schema": "../src/schemas/foundation.schema.json",
   "project": {
     "name": "fspec",
     "description": "A standardized CLI tool for AI agents to manage Gherkin-based feature specifications and project work units using Acceptance Criteria Driven Development (ACDD)",

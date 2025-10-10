@@ -4,6 +4,12 @@ import chalk from 'chalk';
 import { glob } from 'tinyglobby';
 import * as Gherkin from '@cucumber/gherkin';
 import * as Messages from '@cucumber/messages';
+import {
+  extractWorkUnitTags,
+  loadWorkUnitsData,
+  enrichWorkUnitTags,
+  type WorkUnitInfo,
+} from '../utils/work-unit-tags';
 
 interface ShowFeatureOptions {
   feature: string;
@@ -18,6 +24,7 @@ interface ShowFeatureResult {
   format?: 'text' | 'json';
   validated?: boolean;
   error?: string;
+  workUnits?: WorkUnitInfo[];
 }
 
 export async function showFeature(
@@ -79,15 +86,48 @@ export async function showFeature(
       };
     }
 
+    // Extract work unit tags
+    const workUnitTags = extractWorkUnitTags(gherkinDocument);
+    const workUnitsData = await loadWorkUnitsData(cwd);
+    const workUnits = enrichWorkUnitTags(workUnitTags, workUnitsData);
+
     // Format output
     let outputContent: string;
 
     if (format === 'json') {
-      // Output as JSON
-      outputContent = JSON.stringify(gherkinDocument, null, 2);
+      // Output as JSON with work units
+      const jsonOutput = {
+        ...gherkinDocument,
+        workUnits: workUnits.map(wu => ({
+          id: wu.id,
+          title: wu.title,
+          status: wu.status,
+          level: wu.level,
+          scenarios: wu.scenarios,
+        })),
+      };
+      outputContent = JSON.stringify(jsonOutput, null, 2);
     } else {
-      // Output as plain text (original content)
-      outputContent = content;
+      // Output as plain text with work units section
+      let textOutput = content;
+
+      if (workUnits.length > 0) {
+        textOutput += '\n\n';
+        textOutput += chalk.bold('Work Units:') + '\n';
+        for (const wu of workUnits) {
+          const levelText = wu.level === 'feature' ? 'feature-level' : 'scenario-level';
+          textOutput += `\n  ${chalk.cyan(wu.id)} (${levelText}) - ${wu.title}\n`;
+          for (const scenario of wu.scenarios) {
+            const fileName = featurePath.split('/').pop() || '';
+            textOutput += `    ${chalk.gray(`${fileName}:${scenario.line}`)} - ${scenario.name}\n`;
+          }
+        }
+      } else {
+        textOutput += '\n\n';
+        textOutput += chalk.bold('Work Units:') + ' None\n';
+      }
+
+      outputContent = textOutput;
     }
 
     // Write to file if output specified
@@ -100,6 +140,7 @@ export async function showFeature(
       content: outputContent,
       format,
       validated: true,
+      workUnits,
     };
   } catch (error: any) {
     return {

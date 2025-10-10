@@ -14,6 +14,9 @@ Feature: Work Unit Management
   - Status defaults to 'backlog' when created
   - Prefixes are configured in spec/prefixes.json
   - JSON Schema validation ensures data integrity
+  - Work units link to feature files via tags (@WORK-001) in feature files
+  - Feature-level tags apply to all scenarios, scenario-level tags override
+  - fspec show-work-unit scans feature files to display linked scenarios
 
   Critical implementation requirements:
   - MUST validate work unit ID format: [A-Z]{2,6}-\d+
@@ -23,15 +26,20 @@ Feature: Work Unit Management
   - MUST update timestamps (createdAt, updatedAt) automatically
   - MUST maintain states index for fast queries
   - DELETE operations must check for dependencies and children
+  - show-work-unit MUST scan all feature files for work unit tags
+  - MUST support hybrid tag inheritance (feature-level + scenario-level)
+  - MUST display linked scenarios with file path and line numbers
 
   Data model:
   - spec/work-units.json: Main work unit data with states index
   - spec/prefixes.json: Prefix definitions and configuration
   - spec/epics.json: Epic definitions
+  - Work unit linking: Tags in feature files (@WORK-001) - NO storage in JSON
 
   References:
   - Project Management Design: project-management.md
   - ACDD Workflow: spec/CLAUDE.md
+  - Work Unit Linking: Tags in feature files (scan-based, not stored)
   """
 
   Background: User Story
@@ -191,6 +199,73 @@ Feature: Work Unit Management
     And the JSON should have field "id" with value "AUTH-001"
     And the JSON should have field "title"
     And the JSON should have field "status"
+
+  @read
+  @work-unit-linking
+  Scenario: Show work unit with linked feature files and scenarios
+    Given I have a project with spec directory
+    And a work unit "AUTH-001" exists with title "OAuth Login Implementation"
+    And a feature file "oauth-login.feature" is tagged with "@AUTH-001"
+    And the feature has 3 scenarios at lines 15, 25, and 35
+    When I run "fspec show-work-unit AUTH-001"
+    Then the command should succeed
+    And the output should show "Linked Features & Scenarios:"
+    And the output should show "oauth-login.feature:15 - Login with Google"
+    And the output should show "oauth-login.feature:25 - Login with GitHub"
+    And the output should show "oauth-login.feature:35 - Handle OAuth errors"
+    And the output should show "Total: 3 scenarios"
+
+  @read
+  @work-unit-linking
+  Scenario: Show work unit with scenario-level tags
+    Given I have a project with spec directory
+    And a work unit "AUTH-001" exists
+    And a work unit "AUTH-002" exists
+    And a feature file "oauth.feature" has feature-level tag "@AUTH-001"
+    And the feature has a scenario "Login" inheriting @AUTH-001
+    And the feature has a scenario "Refresh tokens" with tag "@AUTH-002"
+    When I run "fspec show-work-unit AUTH-001"
+    Then the command should succeed
+    And the output should show scenario "Login" under AUTH-001
+    And the output should not show scenario "Refresh tokens"
+    When I run "fspec show-work-unit AUTH-002"
+    Then the output should show only scenario "Refresh tokens"
+
+  @read
+  @work-unit-linking
+  Scenario: Show work unit with no linked features
+    Given I have a project with spec directory
+    And a work unit "AUTH-001" exists
+    And no feature files are tagged with "@AUTH-001"
+    When I run "fspec show-work-unit AUTH-001"
+    Then the command should succeed
+    And the output should show "Linked Features & Scenarios: None"
+
+  @read
+  @work-unit-linking
+  Scenario: Show work unit with JSON output including linked features
+    Given I have a project with spec directory
+    And a work unit "AUTH-001" exists
+    And a feature file "oauth.feature" is tagged with "@AUTH-001"
+    And the feature has 2 scenarios
+    When I run "fspec show-work-unit AUTH-001 --output=json"
+    Then the command should succeed
+    And the JSON should have "linkedFeatures" array
+    And the linkedFeatures array should contain "oauth.feature"
+    And the JSON should have "linkedScenarios" array with 2 items
+    And each scenario should have "file", "line", and "name" fields
+
+  @read
+  @work-unit-linking
+  Scenario: Show work unit with multiple feature files
+    Given I have a project with spec directory
+    And a work unit "AUTH-001" exists
+    And feature file "oauth-login.feature" is tagged with "@AUTH-001"
+    And feature file "oauth-refresh.feature" is tagged with "@AUTH-001"
+    When I run "fspec show-work-unit AUTH-001"
+    Then the command should succeed
+    And the output should show both feature files
+    And scenarios should be grouped by feature file
 
   @read
   @happy-path
@@ -394,3 +469,48 @@ Feature: Work Unit Management
     Then the command should fail
     And the error should contain "Epic 'epic-auth' does not exist"
     And the file "spec/epics.json" should be created with empty structure
+
+  @work-unit-linking
+  @e2e
+  @critical
+  Scenario: Complete end-to-end work unit to feature linking workflow
+    Given I have a project with spec directory
+    And the prefix "AUTH" is registered in spec/prefixes.json
+    And a feature file "oauth-login.feature" exists without work unit tags
+    When I run "fspec create-work-unit AUTH 'OAuth Login Implementation'"
+    Then the command should succeed
+    And a work unit "AUTH-001" should be created with title "OAuth Login Implementation"
+    When I run "fspec add-tag-to-feature oauth-login.feature @AUTH-001"
+    Then the command should succeed
+    And the feature file should contain tag "@AUTH-001"
+    When I run "fspec show-work-unit AUTH-001"
+    Then the command should succeed
+    And the output should show linked feature "oauth-login.feature"
+    And the output should list all scenarios from the feature
+    When I run "fspec show-feature oauth-login.feature"
+    Then the command should succeed
+    And the output should show work unit "AUTH-001" linked to this feature
+    When I run "fspec validate-tags oauth-login.feature"
+    Then the command should succeed
+    And work unit tag "@AUTH-001" should be validated against spec/work-units.json
+
+  @work-unit-linking
+  @e2e
+  @critical
+  Scenario: Remove work unit tag from feature and verify unlinking
+    Given I have a project with spec directory
+    And the prefix "AUTH" is registered in spec/prefixes.json
+    And a work unit "AUTH-001" exists with title "OAuth Login Implementation"
+    And a feature file "oauth-login.feature" is tagged with "@AUTH-001"
+    When I run "fspec show-work-unit AUTH-001"
+    Then the command should succeed
+    And the output should show linked feature "oauth-login.feature"
+    When I run "fspec remove-tag-from-feature oauth-login.feature @AUTH-001"
+    Then the command should succeed
+    And the feature file should not contain tag "@AUTH-001"
+    When I run "fspec show-work-unit AUTH-001"
+    Then the command should succeed
+    And the output should show "Linked Features & Scenarios: None"
+    When I run "fspec show-feature oauth-login.feature"
+    Then the command should succeed
+    And the output should not show work unit "AUTH-001"

@@ -19,7 +19,6 @@ interface RegisterTagResult {
 
 // Minimal tags.json template for creation
 const TAGS_JSON_TEMPLATE: Tags = {
-  $schema: '../src/schemas/tags.schema.json',
   categories: [
     { name: 'Phase Tags', description: 'Phase identification tags', required: true, tags: [] },
     { name: 'Component Tags', description: 'Architectural component tags', required: true, tags: [] },

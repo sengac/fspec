@@ -666,3 +666,285 @@ Feature: User Login
     });
   });
 });
+
+describe('Feature: Validate Work Unit Tags Against work-units.json', () => {
+  let testDir: string;
+  let originalCwd: string;
+
+  beforeEach(async () => {
+    testDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
+    originalCwd = process.cwd();
+    process.chdir(testDir);
+
+    // Create tags.json with standard tags
+    const specDir = join(testDir, 'spec');
+    await mkdir(specDir, { recursive: true });
+
+    const tagsJson = {
+      $schema: '../src/schemas/tags.schema.json',
+      categories: [
+        {
+          name: 'Phase Tags',
+          description: 'Development phase tags',
+          required: false,
+          tags: [
+            { name: '@phase1', description: 'Phase 1' },
+            { name: '@phase2', description: 'Phase 2' },
+          ],
+        },
+        {
+          name: 'Component Tags',
+          description: 'Architectural components',
+          required: false,
+          tags: [
+            { name: '@cli', description: 'CLI' },
+            { name: '@parser', description: 'Parser' },
+          ],
+        },
+        {
+          name: 'Feature Group Tags',
+          description: 'Functional areas',
+          required: false,
+          tags: [
+            { name: '@feature-management', description: 'Feature Management' },
+            { name: '@tag-management', description: 'Tag Management' },
+            { name: '@validation', description: 'Validation' },
+            { name: '@authentication', description: 'Authentication' },
+          ],
+        },
+      ],
+      combinationExamples: [],
+      usageGuidelines: {
+        minimumTagsPerFeature: 1,
+        recommendedTagsPerFeature: 3,
+        tagNamingConvention: 'kebab-case with @ prefix',
+      },
+    };
+
+    await writeFile(
+      join(specDir, 'tags.json'),
+      JSON.stringify(tagsJson, null, 2)
+    );
+  });
+
+  afterEach(async () => {
+    process.chdir(originalCwd);
+    await rm(testDir, { recursive: true, force: true });
+  });
+
+  describe('Scenario: Validate work unit tag exists in work-units.json', () => {
+    it('should pass when work unit exists', async () => {
+      const featuresDir = join(testDir, 'spec', 'features');
+      await mkdir(featuresDir, { recursive: true });
+
+      // Create work-units.json
+      const workUnits = {
+        workUnits: {
+          'AUTH-001': {
+            id: 'AUTH-001',
+            title: 'OAuth Login',
+            status: 'implementing',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+        },
+        states: { implementing: ['AUTH-001'] },
+      };
+      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+
+      const featureContent = `@AUTH-001
+@phase1
+@cli
+@authentication
+Feature: OAuth Login
+  Scenario: Test
+    Given test`;
+
+      await writeFile(join(featuresDir, 'auth.feature'), featureContent);
+
+      const result = await validateTags({
+        file: 'spec/features/auth.feature',
+        cwd: testDir,
+      });
+
+      expect(result.results[0].valid).toBe(true);
+      expect(result.results[0].errors).toHaveLength(0);
+    });
+  });
+
+  describe('Scenario: Detect non-existent work unit tag', () => {
+    it('should report work unit that does not exist', async () => {
+      const featuresDir = join(testDir, 'spec', 'features');
+      await mkdir(featuresDir, { recursive: true});
+
+      const workUnits = {
+        workUnits: {},
+        states: {},
+      };
+      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+
+      const featureContent = `@AUTH-999
+@phase1
+@cli
+@authentication
+Feature: Test
+  Scenario: Test
+    Given test`;
+
+      await writeFile(join(featuresDir, 'auth.feature'), featureContent);
+
+      const result = await validateTags({
+        file: 'spec/features/auth.feature',
+        cwd: testDir,
+      });
+
+      expect(result.results[0].valid).toBe(false);
+      const workUnitError = result.results[0].errors.find(e => e.tag === '@AUTH-999');
+      expect(workUnitError).toBeDefined();
+      expect(workUnitError!.message).toContain('Work unit @AUTH-999 not found');
+      expect(workUnitError!.suggestion).toContain('fspec create-work-unit');
+    });
+  });
+
+  describe('Scenario: Validate scenario-level work unit tags', () => {
+    it('should validate work unit tags at scenario level', async () => {
+      const featuresDir = join(testDir, 'spec', 'features');
+      await mkdir(featuresDir, { recursive: true });
+
+      const workUnits = {
+        workUnits: {
+          'AUTH-001': { id: 'AUTH-001', title: 'Test 1', status: 'backlog', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+          'AUTH-002': { id: 'AUTH-002', title: 'Test 2', status: 'backlog', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+        },
+        states: {},
+      };
+      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+
+      const featureContent = `@phase1
+@cli
+@authentication
+Feature: Test
+
+  @AUTH-001
+  Scenario: Test 1
+    Given test
+
+  @AUTH-002
+  Scenario: Test 2
+    Given test`;
+
+      await writeFile(join(featuresDir, 'test.feature'), featureContent);
+
+      const result = await validateTags({
+        file: 'spec/features/test.feature',
+        cwd: testDir,
+      });
+
+      expect(result.results[0].valid).toBe(true);
+    });
+  });
+
+  describe('Scenario: Detect multiple invalid work unit tags', () => {
+    it('should report all invalid work unit tags', async () => {
+      const featuresDir = join(testDir, 'spec', 'features');
+      await mkdir(featuresDir, { recursive: true });
+
+      const workUnits = {
+        workUnits: {
+          'AUTH-001': { id: 'AUTH-001', title: 'Test', status: 'backlog', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+          'AUTH-002': { id: 'AUTH-002', title: 'Test', status: 'backlog', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+        },
+        states: {},
+      };
+      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+
+      const featureContent = `@AUTH-001
+@phase1
+@cli
+Feature: Test
+
+  @AUTH-002
+  Scenario: Valid
+    Given test
+
+  @AUTH-999
+  Scenario: Invalid
+    Given test`;
+
+      await writeFile(join(featuresDir, 'test.feature'), featureContent);
+
+      const result = await validateTags({
+        file: 'spec/features/test.feature',
+        cwd: testDir,
+      });
+
+      expect(result.results[0].valid).toBe(false);
+      const workUnitError = result.results[0].errors.find(e => e.tag === '@AUTH-999');
+      expect(workUnitError).toBeDefined();
+      expect(workUnitError!.message).toContain('@AUTH-999');
+    });
+  });
+
+  describe('Scenario: Validate work unit tag format', () => {
+    it('should report invalid work unit tag format', async () => {
+      const featuresDir = join(testDir, 'spec', 'features');
+      await mkdir(featuresDir, { recursive: true });
+
+      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify({ workUnits: {}, states: {} }, null, 2));
+
+      const featureContent = `@auth-001
+@phase1
+@cli
+@authentication
+Feature: Test
+  Scenario: Test
+    Given test`;
+
+      await writeFile(join(featuresDir, 'test.feature'), featureContent);
+
+      const result = await validateTags({
+        file: 'spec/features/test.feature',
+        cwd: testDir,
+      });
+
+      expect(result.results[0].valid).toBe(false);
+      const formatError = result.results[0].errors.find(e => e.tag === '@auth-001');
+      expect(formatError).toBeDefined();
+      expect(formatError!.message).toContain('Invalid work unit tag format');
+      expect(formatError!.suggestion).toContain('@[A-Z]{2,6}-\\d+');
+    });
+  });
+
+  describe('Scenario: Distinguish work unit tags from regular tags', () => {
+    it('should validate work unit tags separately from regular tags', async () => {
+      const featuresDir = join(testDir, 'spec', 'features');
+      await mkdir(featuresDir, { recursive: true });
+
+      const workUnits = {
+        workUnits: {
+          'AUTH-001': { id: 'AUTH-001', title: 'Test', status: 'backlog', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+        },
+        states: {},
+      };
+      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+
+      const featureContent = `@AUTH-001
+@phase1
+@cli
+@authentication
+Feature: Test
+  Scenario: Test
+    Given test`;
+
+      await writeFile(join(featuresDir, 'test.feature'), featureContent);
+
+      const result = await validateTags({
+        file: 'spec/features/test.feature',
+        cwd: testDir,
+      });
+
+      expect(result.results[0].valid).toBe(true);
+      expect(result.results[0].errors).toHaveLength(0);
+    });
+  });
+});

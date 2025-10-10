@@ -1644,4 +1644,600 @@ describe('Feature: Work Unit Management', () => {
       expect(data.epics).toBeDefined();
     });
   });
+
+  // Work Unit Linking Tests
+  describe('Scenario: Show work unit with linked feature files and scenarios', () => {
+    it('should display linked feature files and scenarios with line numbers', async () => {
+      // Given I have a project with spec directory
+      await mkdir(join(testDir, 'spec/features'), { recursive: true });
+
+      // And a work unit "AUTH-001" exists with title "OAuth Login Implementation"
+      const workUnits: WorkUnitsData = {
+        workUnits: {
+          'AUTH-001': {
+            id: 'AUTH-001',
+            title: 'OAuth Login Implementation',
+            status: 'implementing',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+        },
+        states: {
+          backlog: [],
+          specifying: [],
+          testing: [],
+          implementing: ['AUTH-001'],
+          validating: [],
+          done: [],
+          blocked: [],
+        },
+      };
+      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+
+      // And a feature file "oauth-login.feature" is tagged with "@AUTH-001"
+      const featureContent = `@AUTH-001
+@phase1
+@authentication
+Feature: OAuth Login
+
+  Scenario: Login with Google
+    Given I am on login page
+    When I click Google
+    Then I am logged in
+
+  Scenario: Login with GitHub
+    Given I am on login page
+    When I click GitHub
+    Then I am logged in
+
+  Scenario: Handle OAuth errors
+    Given invalid credentials
+    When I attempt login
+    Then I see error`;
+
+      await writeFile(join(testDir, 'spec/features/oauth-login.feature'), featureContent);
+
+      // When I run "fspec show-work-unit AUTH-001"
+      const result = await showWorkUnit({
+        workUnitId: 'AUTH-001',
+        cwd: testDir,
+      });
+
+      // Then the command should succeed
+      expect(result).toBeDefined();
+
+      // And the output should show "Linked Features & Scenarios:"
+      expect(result.linkedFeatures).toBeDefined();
+
+      // And the output should show "oauth-login.feature:6 - Login with Google"
+      const scenarios = result.linkedFeatures?.flatMap((f: any) => f.scenarios) || [];
+      expect(scenarios.some((s: any) => s.name === 'Login with Google' && s.line === 6)).toBe(true);
+
+      // And the output should show "oauth-login.feature:11 - Login with GitHub"
+      expect(scenarios.some((s: any) => s.name === 'Login with GitHub' && s.line === 11)).toBe(true);
+
+      // And the output should show "oauth-login.feature:16 - Handle OAuth errors"
+      expect(scenarios.some((s: any) => s.name === 'Handle OAuth errors' && s.line === 16)).toBe(true);
+
+      // And the output should show "Total: 3 scenarios"
+      expect(scenarios.length).toBe(3);
+    });
+  });
+
+  describe('Scenario: Show work unit with scenario-level tags', () => {
+    it('should only show scenarios with matching work unit tag', async () => {
+      // Given I have a project with spec directory
+      await mkdir(join(testDir, 'spec/features'), { recursive: true });
+
+      // And work units exist
+      const workUnits: WorkUnitsData = {
+        workUnits: {
+          'AUTH-001': {
+            id: 'AUTH-001',
+            title: 'OAuth Login',
+            status: 'implementing',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+          'AUTH-002': {
+            id: 'AUTH-002',
+            title: 'Token Refresh',
+            status: 'specifying',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+        },
+        states: {
+          backlog: [],
+          specifying: ['AUTH-002'],
+          testing: [],
+          implementing: ['AUTH-001'],
+          validating: [],
+          done: [],
+          blocked: [],
+        },
+      };
+      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+
+      // And a feature file has feature-level tag "@AUTH-001" and scenario with "@AUTH-002"
+      const featureContent = `@AUTH-001
+@phase1
+Feature: OAuth
+
+  Scenario: Login
+    Given I login
+    When I authenticate
+    Then I am logged in
+
+  @AUTH-002
+  Scenario: Refresh tokens
+    Given I have a token
+    When it expires
+    Then refresh it`;
+
+      await writeFile(join(testDir, 'spec/features/oauth.feature'), featureContent);
+
+      // When I run "fspec show-work-unit AUTH-001"
+      const result1 = await showWorkUnit({
+        workUnitId: 'AUTH-001',
+        cwd: testDir,
+      });
+
+      // Then the output should show scenario "Login" under AUTH-001
+      const scenarios1 = result1.linkedFeatures?.flatMap((f: any) => f.scenarios) || [];
+      expect(scenarios1.some((s: any) => s.name === 'Login')).toBe(true);
+
+      // And the output should not show scenario "Refresh tokens"
+      expect(scenarios1.some((s: any) => s.name === 'Refresh tokens')).toBe(false);
+
+      // When I run "fspec show-work-unit AUTH-002"
+      const result2 = await showWorkUnit({
+        workUnitId: 'AUTH-002',
+        cwd: testDir,
+      });
+
+      // Then the output should show only scenario "Refresh tokens"
+      const scenarios2 = result2.linkedFeatures?.flatMap((f: any) => f.scenarios) || [];
+      expect(scenarios2.some((s: any) => s.name === 'Refresh tokens')).toBe(true);
+      expect(scenarios2.some((s: any) => s.name === 'Login')).toBe(false);
+    });
+  });
+
+  describe('Scenario: Show work unit with no linked features', () => {
+    it('should show "Linked Features & Scenarios: None"', async () => {
+      // Given I have a project with spec directory
+      await mkdir(join(testDir, 'spec/features'), { recursive: true });
+
+      // And a work unit "AUTH-001" exists
+      const workUnits: WorkUnitsData = {
+        workUnits: {
+          'AUTH-001': {
+            id: 'AUTH-001',
+            title: 'OAuth Login',
+            status: 'backlog',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+        },
+        states: {
+          backlog: ['AUTH-001'],
+          specifying: [],
+          testing: [],
+          implementing: [],
+          validating: [],
+          done: [],
+          blocked: [],
+        },
+      };
+      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+
+      // And no feature files are tagged with "@AUTH-001"
+      // (don't create any feature files)
+
+      // When I run "fspec show-work-unit AUTH-001"
+      const result = await showWorkUnit({
+        workUnitId: 'AUTH-001',
+        cwd: testDir,
+      });
+
+      // Then the command should succeed
+      expect(result).toBeDefined();
+
+      // And the output should show "Linked Features & Scenarios: None"
+      expect(result.linkedFeatures).toBeDefined();
+      expect(result.linkedFeatures?.length).toBe(0);
+    });
+  });
+
+  describe('Scenario: Show work unit with JSON output including linked features', () => {
+    it('should include linkedFeatures in JSON output', async () => {
+      // Given I have a project with spec directory
+      await mkdir(join(testDir, 'spec/features'), { recursive: true });
+
+      // And a work unit "AUTH-001" exists
+      const workUnits: WorkUnitsData = {
+        workUnits: {
+          'AUTH-001': {
+            id: 'AUTH-001',
+            title: 'OAuth Work',
+            status: 'testing',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+        },
+        states: {
+          backlog: [],
+          specifying: [],
+          testing: ['AUTH-001'],
+          implementing: [],
+          validating: [],
+          done: [],
+          blocked: [],
+        },
+      };
+      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+
+      // And a feature file "oauth.feature" is tagged with "@AUTH-001" and has 2 scenarios
+      const featureContent = `@AUTH-001
+@phase1
+Feature: OAuth
+
+  Scenario: First scenario
+    Given a step
+    When another step
+    Then result
+
+  Scenario: Second scenario
+    Given a step
+    When another step
+    Then result`;
+
+      await writeFile(join(testDir, 'spec/features/oauth.feature'), featureContent);
+
+      // When I run "fspec show-work-unit AUTH-001 --output=json"
+      const result = await showWorkUnit({
+        workUnitId: 'AUTH-001',
+        output: 'json',
+        cwd: testDir,
+      });
+
+      // Then the JSON should have "linkedFeatures" array
+      expect(result.linkedFeatures).toBeDefined();
+      expect(Array.isArray(result.linkedFeatures)).toBe(true);
+
+      // And the linkedFeatures array should contain "oauth.feature"
+      expect(result.linkedFeatures?.some((f: any) => f.file.includes('oauth.feature'))).toBe(true);
+
+      // And the JSON should have "linkedScenarios" array with 2 items
+      const scenarios = result.linkedFeatures?.flatMap((f: any) => f.scenarios) || [];
+      expect(scenarios.length).toBe(2);
+
+      // And each scenario should have "file", "line", and "name" fields
+      expect(scenarios[0].file).toBeDefined();
+      expect(scenarios[0].line).toBeDefined();
+      expect(scenarios[0].name).toBeDefined();
+    });
+  });
+
+  describe('Scenario: Show work unit with multiple feature files', () => {
+    it('should show all linked feature files grouped', async () => {
+      // Given I have a project with spec directory
+      await mkdir(join(testDir, 'spec/features'), { recursive: true });
+
+      // And a work unit "AUTH-001" exists
+      const workUnits: WorkUnitsData = {
+        workUnits: {
+          'AUTH-001': {
+            id: 'AUTH-001',
+            title: 'OAuth System',
+            status: 'implementing',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+        },
+        states: {
+          backlog: [],
+          specifying: [],
+          testing: [],
+          implementing: ['AUTH-001'],
+          validating: [],
+          done: [],
+          blocked: [],
+        },
+      };
+      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+
+      // And feature file "oauth-login.feature" is tagged with "@AUTH-001"
+      const feature1 = `@AUTH-001
+Feature: OAuth Login
+  Scenario: Login with Google
+    Given I login
+    When I use Google
+    Then I am authenticated`;
+      await writeFile(join(testDir, 'spec/features/oauth-login.feature'), feature1);
+
+      // And feature file "oauth-refresh.feature" is tagged with "@AUTH-001"
+      const feature2 = `@AUTH-001
+Feature: OAuth Refresh
+  Scenario: Refresh expired tokens
+    Given I have expired token
+    When I refresh
+    Then I get new token`;
+      await writeFile(join(testDir, 'spec/features/oauth-refresh.feature'), feature2);
+
+      // When I run "fspec show-work-unit AUTH-001"
+      const result = await showWorkUnit({
+        workUnitId: 'AUTH-001',
+        cwd: testDir,
+      });
+
+      // Then the output should show both feature files
+      expect(result.linkedFeatures?.length).toBe(2);
+
+      // And scenarios should be grouped by feature file
+      const loginFeature = result.linkedFeatures?.find((f: any) => f.file.includes('oauth-login.feature'));
+      const refreshFeature = result.linkedFeatures?.find((f: any) => f.file.includes('oauth-refresh.feature'));
+
+      expect(loginFeature).toBeDefined();
+      expect(refreshFeature).toBeDefined();
+
+      expect(loginFeature?.scenarios.some((s: any) => s.name === 'Login with Google')).toBe(true);
+      expect(refreshFeature?.scenarios.some((s: any) => s.name === 'Refresh expired tokens')).toBe(true);
+    });
+  });
+
+  describe('Scenario: Complete end-to-end work unit to feature linking workflow', () => {
+    it('should create work unit, link to feature, and validate bidirectional linking', async () => {
+      // Given I have a project with spec directory
+      await mkdir(join(testDir, 'spec/features'), { recursive: true });
+
+      // And the prefix "AUTH" is registered in spec/prefixes.json
+      const prefixes: PrefixesData = {
+        prefixes: {
+          AUTH: {
+            prefix: 'AUTH',
+            description: 'Authentication features',
+            createdAt: new Date().toISOString(),
+          },
+        },
+      };
+      await writeFile(join(testDir, 'spec/prefixes.json'), JSON.stringify(prefixes, null, 2));
+
+      // Initialize work-units.json
+      const workUnits: WorkUnitsData = {
+        workUnits: {},
+        states: {
+          backlog: [],
+          specifying: [],
+          testing: [],
+          implementing: [],
+          validating: [],
+          done: [],
+          blocked: [],
+        },
+      };
+      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+
+      // Initialize tags.json with required tags
+      const tagsJson = {
+        $schema: '../src/schemas/tags.schema.json',
+        categories: [
+          {
+            name: 'Phase Tags',
+            description: 'Development phase tags',
+            required: false,
+            tags: [{ name: '@phase1', description: 'Phase 1' }],
+          },
+          {
+            name: 'Component Tags',
+            description: 'Architectural components',
+            required: false,
+            tags: [{ name: '@authentication', description: 'Authentication' }],
+          },
+          {
+            name: 'Feature Group Tags',
+            description: 'Functional areas',
+            required: false,
+            tags: [{ name: '@feature-management', description: 'Feature Management' }],
+          },
+        ],
+        combinationExamples: [],
+        usageGuidelines: {
+          minimumTagsPerFeature: 1,
+          recommendedTagsPerFeature: 3,
+          tagNamingConvention: 'kebab-case with @ prefix',
+        },
+      };
+      await writeFile(join(testDir, 'spec/tags.json'), JSON.stringify(tagsJson, null, 2));
+
+      // And a feature file "oauth-login.feature" exists without work unit tags
+      const featureContent = `@phase1
+@authentication
+@feature-management
+Feature: OAuth Login
+
+  Scenario: Login with Google
+    Given I am on login page
+    When I click Google
+    Then I am logged in
+
+  Scenario: Login with GitHub
+    Given I am on login page
+    When I click GitHub
+    Then I am logged in`;
+
+      await writeFile(join(testDir, 'spec/features/oauth-login.feature'), featureContent);
+
+      // When I run "fspec create-work-unit AUTH 'OAuth Login Implementation'"
+      const createResult = await createWorkUnit({
+        prefix: 'AUTH',
+        title: 'OAuth Login Implementation',
+        cwd: testDir,
+      });
+
+      // Then the command should succeed
+      expect(createResult.success).toBe(true);
+
+      // And a work unit "AUTH-001" should be created with title "OAuth Login Implementation"
+      const workUnitsContent = await readFile(join(testDir, 'spec/work-units.json'), 'utf-8');
+      const workUnitsData: WorkUnitsData = JSON.parse(workUnitsContent);
+      expect(workUnitsData.workUnits['AUTH-001']).toBeDefined();
+      expect(workUnitsData.workUnits['AUTH-001'].title).toBe('OAuth Login Implementation');
+
+      // When I run "fspec add-tag-to-feature oauth-login.feature @AUTH-001"
+      // Import the add-tag-to-feature command
+      const { addTagToFeature } = await import('../add-tag-to-feature');
+
+      await addTagToFeature('spec/features/oauth-login.feature', ['@AUTH-001'], { cwd: testDir });
+
+      // Then the command should succeed
+      // And the feature file should contain tag "@AUTH-001"
+      const updatedFeatureContent = await readFile(join(testDir, 'spec/features/oauth-login.feature'), 'utf-8');
+      expect(updatedFeatureContent).toContain('@AUTH-001');
+
+      // When I run "fspec show-work-unit AUTH-001"
+      const showWorkUnitResult = await showWorkUnit({
+        workUnitId: 'AUTH-001',
+        cwd: testDir,
+      });
+
+      // Then the command should succeed
+      expect(showWorkUnitResult).toBeDefined();
+
+      // And the output should show linked feature "oauth-login.feature"
+      expect(showWorkUnitResult.linkedFeatures).toBeDefined();
+      expect(showWorkUnitResult.linkedFeatures?.some((f: any) => f.file.includes('oauth-login.feature'))).toBe(true);
+
+      // And the output should list all scenarios from the feature
+      const scenarios = showWorkUnitResult.linkedFeatures?.flatMap((f: any) => f.scenarios) || [];
+      expect(scenarios.some((s: any) => s.name === 'Login with Google')).toBe(true);
+      expect(scenarios.some((s: any) => s.name === 'Login with GitHub')).toBe(true);
+
+      // When I run "fspec show-feature oauth-login.feature"
+      const { showFeature } = await import('../show-feature');
+      const showFeatureResult = await showFeature({
+        feature: 'spec/features/oauth-login.feature',
+        cwd: testDir,
+      });
+
+      // Then the command should succeed
+      expect(showFeatureResult).toBeDefined();
+
+      // And the output should show work unit "AUTH-001" linked to this feature
+      expect(showFeatureResult.workUnits).toBeDefined();
+      expect(showFeatureResult.workUnits?.some((wu: any) => wu.id === 'AUTH-001')).toBe(true);
+
+      // When I run "fspec validate-tags oauth-login.feature"
+      const { validateTags } = await import('../validate-tags');
+      const validateResult = await validateTags({
+        file: 'spec/features/oauth-login.feature',
+        cwd: testDir,
+      });
+
+      // Then the command should succeed
+      // And work unit tag "@AUTH-001" should be validated against spec/work-units.json
+      expect(validateResult.validCount).toBe(1);
+      expect(validateResult.invalidCount).toBe(0);
+    });
+  });
+
+  describe('Scenario: Remove work unit tag from feature and verify unlinking', () => {
+    it('should remove work unit tag and verify feature is no longer linked', async () => {
+      // Given I have a project with spec directory
+      await mkdir(join(testDir, 'spec/features'), { recursive: true });
+
+      // And the prefix "AUTH" is registered in spec/prefixes.json
+      const prefixes: PrefixesData = {
+        prefixes: {
+          AUTH: {
+            prefix: 'AUTH',
+            description: 'Authentication features',
+            createdAt: new Date().toISOString(),
+          },
+        },
+      };
+      await writeFile(join(testDir, 'spec/prefixes.json'), JSON.stringify(prefixes, null, 2));
+
+      // And a work unit "AUTH-001" exists with title "OAuth Login Implementation"
+      const workUnits: WorkUnitsData = {
+        workUnits: {
+          'AUTH-001': {
+            id: 'AUTH-001',
+            title: 'OAuth Login Implementation',
+            status: 'implementing',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+        },
+        states: {
+          backlog: [],
+          specifying: [],
+          testing: [],
+          implementing: ['AUTH-001'],
+          validating: [],
+          done: [],
+          blocked: [],
+        },
+      };
+      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+
+      // And a feature file "oauth-login.feature" is tagged with "@AUTH-001"
+      const featureContent = `@AUTH-001
+@phase1
+@authentication
+Feature: OAuth Login
+
+  Scenario: Login with Google
+    Given I am on login page
+    When I click Google
+    Then I am logged in`;
+
+      await writeFile(join(testDir, 'spec/features/oauth-login.feature'), featureContent);
+
+      // When I run "fspec show-work-unit AUTH-001"
+      const showResult1 = await showWorkUnit({
+        workUnitId: 'AUTH-001',
+        cwd: testDir,
+      });
+
+      // Then the command should succeed
+      // And the output should show linked feature "oauth-login.feature"
+      expect(showResult1.linkedFeatures).toBeDefined();
+      expect(showResult1.linkedFeatures?.some((f: any) => f.file.includes('oauth-login.feature'))).toBe(true);
+
+      // When I run "fspec remove-tag-from-feature oauth-login.feature @AUTH-001"
+      const { removeTagFromFeature } = await import('../remove-tag-from-feature');
+      const removeResult = await removeTagFromFeature('spec/features/oauth-login.feature', ['@AUTH-001'], { cwd: testDir });
+
+      // Then the command should succeed
+      expect(removeResult.success).toBe(true);
+
+      // And the feature file should not contain tag "@AUTH-001"
+      const updatedFeatureContent = await readFile(join(testDir, 'spec/features/oauth-login.feature'), 'utf-8');
+      expect(updatedFeatureContent).not.toContain('@AUTH-001');
+
+      // When I run "fspec show-work-unit AUTH-001"
+      const showResult2 = await showWorkUnit({
+        workUnitId: 'AUTH-001',
+        cwd: testDir,
+      });
+
+      // Then the command should succeed
+      // And the output should show "Linked Features & Scenarios: None"
+      expect(showResult2.linkedFeatures).toBeDefined();
+      expect(showResult2.linkedFeatures?.length).toBe(0);
+
+      // When I run "fspec show-feature oauth-login.feature"
+      const { showFeature } = await import('../show-feature');
+      const showFeatureResult = await showFeature({
+        feature: 'spec/features/oauth-login.feature',
+        cwd: testDir,
+      });
+
+      // Then the command should succeed
+      // And the output should not show work unit "AUTH-001"
+      expect(showFeatureResult.workUnits).toBeDefined();
+      expect(showFeatureResult.workUnits?.some((wu: any) => wu.id === 'AUTH-001')).toBe(false);
+    });
+  });
 });
