@@ -411,6 +411,10 @@
           "useCases": "Working with Gherkin AST from parser (custom formatter)"
         },
         {
+          "name": "@auth-001",
+          "description": "Work unit identifier for authentication features (example in example-mapping feature)"
+        },
+        {
           "name": "@automation",
           "description": "Automated workflow operations and state transitions"
         },

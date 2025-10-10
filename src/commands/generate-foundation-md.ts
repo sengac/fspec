@@ -36,9 +36,12 @@ export async function generateFoundationMdCommand(
     // Validate foundation.json against schema
     const validation = await validateFoundationJson(foundationJsonPath);
     if (!validation.valid) {
+      const errorMessages = validation.errors?.map(err =>
+        `${err.instancePath}: ${err.message}`
+      ).join('; ') || 'Unknown errors';
       return {
         success: false,
-        error: `foundation.json has validation errors: ${validation.errors?.join(', ')}`,
+        error: `foundation.json has validation errors: ${errorMessages}`,
       };
     }
 

@@ -240,7 +240,7 @@ Feature: Example Mapping Integration
     And a feature file should be created or updated
     And the feature file should contain 3 scenarios
     And each scenario title should match an example
-    And each scenario should be tagged with "@AUTH-001"
+    And each scenario should be tagged with "@auth-001"
     And the work unit examples should still be preserved
 
   @generate-scenarios
@@ -252,7 +252,7 @@ Feature: Example Mapping Integration
     When I run "fspec generate-scenarios AUTH-001"
     Then the generated scenario should have structure:
       """
-      @AUTH-001
+      @auth-001
       Scenario: User logs in with valid credentials
         Given [precondition to be filled in]
         When [action to be filled in]
@@ -268,7 +268,7 @@ Feature: Example Mapping Integration
       | User logs in with Google |
     When I run "fspec generate-scenarios AUTH-001 --feature=authentication"
     Then the scenarios should be appended to "spec/features/authentication.feature"
-    And the scenarios should be tagged with "@AUTH-001"
+    And the scenarios should be tagged with "@auth-001"
 
   @generate-scenarios
   @happy-path
@@ -280,7 +280,7 @@ Feature: Example Mapping Integration
     When I run "fspec generate-scenarios AUTH-001 --feature=oauth-login"
     Then a new feature file "spec/features/oauth-login.feature" should be created
     And the file should contain the generated scenario
-    And the scenario should be tagged with "@AUTH-001"
+    And the scenario should be tagged with "@auth-001"
 
   @validation
   @blocking
@@ -400,7 +400,7 @@ Feature: Example Mapping Integration
     And the scenario has placeholder steps
     When AI agent refines the scenario with:
       """
-      @AUTH-001
+      @auth-001
       Scenario: User logs in with Google account
         Given the user is not authenticated
         When the user clicks "Login with Google"
@@ -409,7 +409,7 @@ Feature: Example Mapping Integration
         And a session token should be created
       """
     Then the scenario should be properly specified
-    And the scenario should remain tagged with "@AUTH-001"
+    And the scenario should remain tagged with "@auth-001"
 
   @reporting
   @metrics

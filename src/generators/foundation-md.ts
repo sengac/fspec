@@ -112,6 +112,202 @@ export async function generateFoundationMd(foundation: Foundation): Promise<stri
         }
         sections.push('');
       }
+
+      // Specification Management Problems
+      if (foundation.whyWeAreBuildingIt.problemDefinition.specification) {
+        const spec = foundation.whyWeAreBuildingIt.problemDefinition.specification;
+        sections.push(`#### ${spec.title}`);
+        sections.push('');
+        if (spec.problems && spec.problems.length > 0) {
+          for (const problem of spec.problems) {
+            sections.push(`- ${problem}`);
+          }
+          sections.push('');
+        }
+      }
+
+      // Project Management Problems
+      if (foundation.whyWeAreBuildingIt.problemDefinition.projectManagement) {
+        const pm = foundation.whyWeAreBuildingIt.problemDefinition.projectManagement;
+        sections.push(`#### ${pm.title}`);
+        sections.push('');
+        if (pm.problems && pm.problems.length > 0) {
+          for (const problem of pm.problems) {
+            sections.push(`- ${problem}`);
+          }
+          sections.push('');
+        }
+      }
+    }
+
+    // Why ACDD section
+    if (foundation.whyWeAreBuildingIt.whyACDD) {
+      const acdd = foundation.whyWeAreBuildingIt.whyACDD;
+      sections.push(`### ${acdd.title}`);
+      sections.push('');
+      if (acdd.description) {
+        sections.push(acdd.description);
+        sections.push('');
+      }
+
+      if (acdd.specificationByExample) {
+        sections.push('**Specification by Example:**');
+        sections.push('');
+        sections.push(`- **Principle:** ${acdd.specificationByExample.principle}`);
+        sections.push(`- **Benefit:** ${acdd.specificationByExample.benefit}`);
+        sections.push('');
+      }
+
+      if (acdd.bdd) {
+        sections.push('**BDD (Behavior-Driven Development):**');
+        sections.push('');
+        sections.push(`- **Principle:** ${acdd.bdd.principle}`);
+        sections.push(`- **Benefit:** ${acdd.bdd.benefit}`);
+        sections.push('');
+      }
+
+      if (acdd.acdd) {
+        sections.push('**ACDD (Acceptance Criteria Driven Development):**');
+        sections.push('');
+        sections.push(`- **Principle:** ${acdd.acdd.principle}`);
+        sections.push(`- **Benefit:** ${acdd.acdd.benefit}`);
+        if (acdd.acdd.challenge) {
+          sections.push(`- **Challenge:** ${acdd.acdd.challenge}`);
+        }
+        sections.push('');
+      }
+    }
+
+    // The Integrated Solution
+    if (foundation.whyWeAreBuildingIt.theIntegratedSolution) {
+      const solution = foundation.whyWeAreBuildingIt.theIntegratedSolution;
+      sections.push(`### ${solution.title}`);
+      sections.push('');
+      if (solution.description) {
+        sections.push(solution.description);
+        sections.push('');
+      }
+
+      if (solution.specificationManagement) {
+        const sm = solution.specificationManagement;
+        sections.push('**Specification Management:**');
+        sections.push('');
+        if (sm.purpose) {
+          sections.push(`*Purpose:* ${sm.purpose}`);
+          sections.push('');
+        }
+        if (sm.tools && sm.tools.length > 0) {
+          sections.push('*Tools:*');
+          for (const tool of sm.tools) {
+            sections.push(`- ${tool}`);
+          }
+          sections.push('');
+        }
+        if (sm.impact) {
+          sections.push(`*Impact:* ${sm.impact}`);
+          sections.push('');
+        }
+      }
+
+      if (solution.projectManagement) {
+        const pm = solution.projectManagement;
+        sections.push('**Project Management:**');
+        sections.push('');
+        if (pm.purpose) {
+          sections.push(`*Purpose:* ${pm.purpose}`);
+          sections.push('');
+        }
+        if (pm.tools && pm.tools.length > 0) {
+          sections.push('*Tools:*');
+          for (const tool of pm.tools) {
+            sections.push(`- ${tool}`);
+          }
+          sections.push('');
+        }
+        if (pm.impact) {
+          sections.push(`*Impact:* ${pm.impact}`);
+          sections.push('');
+        }
+      }
+
+      if (solution.integration) {
+        const integration = solution.integration;
+        if (integration.workflow && integration.workflow.length > 0) {
+          sections.push('**Integrated Workflow:**');
+          sections.push('');
+          for (const step of integration.workflow) {
+            sections.push(`- ${step}`);
+          }
+          sections.push('');
+        }
+        if (integration.benefitExample) {
+          sections.push('**Example:**');
+          sections.push('');
+          sections.push(integration.benefitExample);
+          sections.push('');
+        }
+      }
+    }
+
+    // Pain Points
+    if (foundation.whyWeAreBuildingIt.painPoints) {
+      const painPoints = foundation.whyWeAreBuildingIt.painPoints;
+
+      if (painPoints.beforeFspec || painPoints.afterFspec) {
+        sections.push('### Before vs. After fspec');
+        sections.push('');
+
+        if (painPoints.beforeFspec) {
+          sections.push('**Before fspec:**');
+          sections.push('');
+          sections.push(painPoints.beforeFspec);
+          sections.push('');
+        }
+
+        if (painPoints.afterFspec) {
+          sections.push('**After fspec:**');
+          sections.push('');
+          sections.push(painPoints.afterFspec);
+          sections.push('');
+        }
+      }
+    }
+
+    // Stakeholder Impact
+    if (foundation.whyWeAreBuildingIt.stakeholderImpact && foundation.whyWeAreBuildingIt.stakeholderImpact.length > 0) {
+      sections.push('### Stakeholder Impact');
+      sections.push('');
+
+      for (const stakeholder of foundation.whyWeAreBuildingIt.stakeholderImpact) {
+        sections.push(`**${stakeholder.stakeholder}:**`);
+        sections.push('');
+
+        if (stakeholder.description) {
+          sections.push(stakeholder.description);
+          sections.push('');
+        } else if (stakeholder.currentPain && stakeholder.benefit) {
+          sections.push(`- **Current Pain:** ${stakeholder.currentPain}`);
+          sections.push(`- **Benefit:** ${stakeholder.benefit}`);
+          sections.push('');
+        }
+      }
+    }
+
+    // Why Not Alternatives
+    if (foundation.whyWeAreBuildingIt.whyNotAlternatives && foundation.whyWeAreBuildingIt.whyNotAlternatives.length > 0) {
+      sections.push('### Why Not Alternative Approaches?');
+      sections.push('');
+
+      for (const alt of foundation.whyWeAreBuildingIt.whyNotAlternatives) {
+        sections.push(`**${alt.alternative}:**`);
+        sections.push('');
+        if (alt.limitations && alt.limitations.length > 0) {
+          for (const limitation of alt.limitations) {
+            sections.push(`- ${limitation}`);
+          }
+          sections.push('');
+        }
+      }
     }
 
     // Success Criteria
