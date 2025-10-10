@@ -46,6 +46,56 @@ import { showWorkUnitCommand } from './commands/show-work-unit-command';
 import { createEpicCommand } from './commands/create-epic-command';
 import { listEpicsCommand } from './commands/list-epics-command';
 import { showEpicCommand } from './commands/show-epic-command';
+// Additional work unit management commands
+import { prioritizeWorkUnit } from './commands/prioritize-work-unit';
+import { updateWorkUnit } from './commands/update-work-unit';
+import { deleteWorkUnit } from './commands/delete-work-unit';
+import { updateWorkUnitStatus } from './commands/update-work-unit-status';
+import { updateWorkUnitEstimate } from './commands/update-work-unit-estimate';
+import { validateWorkUnits } from './commands/validate-work-units';
+import { repairWorkUnits } from './commands/repair-work-units';
+import { exportWorkUnits } from './commands/export-work-units';
+// Dependency management commands
+import { addDependency } from './commands/add-dependency';
+import { addDependencies } from './commands/add-dependencies';
+import { removeDependency } from './commands/remove-dependency';
+import { clearDependencies } from './commands/clear-dependencies';
+import { exportDependencies } from './commands/export-dependencies';
+// Prefix and epic management commands
+import { createPrefix } from './commands/create-prefix';
+import { updatePrefix } from './commands/update-prefix';
+import { deleteEpic } from './commands/delete-epic';
+// Example mapping commands
+import { addExample } from './commands/add-example';
+import { addQuestion } from './commands/add-question';
+import { addRule } from './commands/add-rule';
+import { removeExample } from './commands/remove-example';
+import { removeQuestion } from './commands/remove-question';
+import { removeRule } from './commands/remove-rule';
+import { answerQuestion } from './commands/answer-question';
+import { importExampleMap } from './commands/import-example-map';
+import { exportExampleMap } from './commands/export-example-map';
+import { generateScenarios } from './commands/generate-scenarios';
+// Feature documentation commands
+import { addAssumption } from './commands/add-assumption';
+// Workflow and automation commands
+import { autoAdvance } from './commands/auto-advance';
+import { displayBoard } from './commands/display-board';
+// Query and metrics commands
+import { queryWorkUnits } from './commands/query-work-units';
+import { queryDependencyStats } from './commands/query-dependency-stats';
+import { queryExampleMappingStats } from './commands/query-example-mapping-stats';
+import { queryMetrics } from './commands/query-metrics';
+import { queryEstimateAccuracy } from './commands/query-estimate-accuracy';
+import { queryEstimationGuide } from './commands/query-estimation-guide';
+import { recordMetric } from './commands/record-metric';
+import { recordTokens } from './commands/record-tokens';
+import { recordIteration } from './commands/record-iteration';
+import { generateSummaryReport } from './commands/generate-summary-report';
+// Validation commands
+import { validateSpecAlignment } from './commands/validate-spec-alignment';
+// Dependencies command (display/show)
+import { showDependencies } from './commands/dependencies';
 
 const program = new Command();
 
@@ -427,9 +477,120 @@ function displayProjectHelp(): void {
   console.log('      fspec show-work-unit AUTH-001');
   console.log('      fspec show-work-unit AUTH-001 -f json');
   console.log('');
+  console.log('  ' + chalk.cyan('fspec prioritize-work-unit <id>') + '   Change work unit priority in backlog');
+  console.log('    Options:');
+  console.log('      --position <position>            Position: top, bottom, or numeric index');
+  console.log('      --before <workUnitId>            Place before this work unit');
+  console.log('      --after <workUnitId>             Place after this work unit');
+  console.log('    Examples:');
+  console.log('      fspec prioritize-work-unit AUTH-001 --position=top');
+  console.log('      fspec prioritize-work-unit AUTH-002 --before=AUTH-001');
+  console.log('      fspec prioritize-work-unit AUTH-003 --position=5');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec update-work-unit <id>') + '        Update work unit properties');
+  console.log('    Options:');
+  console.log('      -t, --title <title>              New title');
+  console.log('      -d, --description <desc>         New description');
+  console.log('      -e, --epic <epic>                Epic ID');
+  console.log('      -p, --parent <parent>            Parent work unit ID');
+  console.log('    Examples:');
+  console.log('      fspec update-work-unit AUTH-001 -t "New title"');
+  console.log('      fspec update-work-unit AUTH-001 -e user-management');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec update-work-unit-status <id> <status>') + ' Update status (ACDD workflow)');
+  console.log('    Status values: backlog, specifying, testing, implementing, validating, done, blocked');
+  console.log('    Options:');
+  console.log('      --blocked-reason <reason>        Required when status is blocked');
+  console.log('      --reason <reason>                Optional reason for change');
+  console.log('    Examples:');
+  console.log('      fspec update-work-unit-status AUTH-001 implementing');
+  console.log('      fspec update-work-unit-status AUTH-001 blocked --blocked-reason "API not ready"');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec update-work-unit-estimate <id> <points>') + ' Set Fibonacci estimate');
+  console.log('    Valid estimates: 1, 2, 3, 5, 8, 13, 21 (Fibonacci numbers)');
+  console.log('    Examples:');
+  console.log('      fspec update-work-unit-estimate AUTH-001 5');
+  console.log('      fspec update-work-unit-estimate AUTH-002 13');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec delete-work-unit <id>') + '        Delete a work unit');
+  console.log('    Options:');
+  console.log('      --force                          Force deletion without checks');
+  console.log('      --skip-confirmation              Skip confirmation prompt');
+  console.log('      --cascade-dependencies           Remove all dependencies first');
+  console.log('    Examples:');
+  console.log('      fspec delete-work-unit AUTH-001');
+  console.log('      fspec delete-work-unit AUTH-001 --force --cascade-dependencies');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec validate-work-units') + '          Validate work units data integrity');
+  console.log('    Examples:');
+  console.log('      fspec validate-work-units');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec repair-work-units') + '            Repair data integrity issues');
+  console.log('    Options:');
+  console.log('      --dry-run                        Show what would be repaired');
+  console.log('    Examples:');
+  console.log('      fspec repair-work-units --dry-run');
+  console.log('      fspec repair-work-units');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec export-work-units <format> <output>') + ' Export to JSON or CSV');
+  console.log('    Options:');
+  console.log('      --status <status>                Filter by status');
+  console.log('    Examples:');
+  console.log('      fspec export-work-units json work-units.json');
+  console.log('      fspec export-work-units csv backlog.csv --status=backlog');
+  console.log('');
 
-  console.log(chalk.bold('EPIC MANAGEMENT'));
+  console.log(chalk.bold('DEPENDENCY MANAGEMENT'));
+  console.log('  ' + chalk.cyan('fspec add-dependency <id>') + '         Add dependency relationship between work units');
+  console.log('    Relationship types:');
+  console.log('      --blocks <id>                    This work blocks another work unit');
+  console.log('      --blocked-by <id>                This work is blocked by another work unit');
+  console.log('      --depends-on <id>                Soft dependency (can start but should wait)');
+  console.log('      --relates-to <id>                Related work unit (informational)');
+  console.log('    Examples:');
+  console.log('      fspec add-dependency AUTH-001 --blocks API-001');
+  console.log('      fspec add-dependency UI-001 --blocked-by API-001');
+  console.log('      fspec add-dependency DASH-001 --depends-on AUTH-001');
+  console.log('      fspec add-dependency AUTH-001 --relates-to SEC-001');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec add-dependencies <id>') + '        Add multiple dependencies at once');
+  console.log('    Options: accepts comma-separated lists for each relationship type');
+  console.log('    Examples:');
+  console.log('      fspec add-dependencies AUTH-001 --blocks API-001,UI-001 --depends-on DB-001');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec remove-dependency <id>') + '      Remove a dependency relationship');
+  console.log('    Options: same as add-dependency (--blocks, --blocked-by, --depends-on, --relates-to)');
+  console.log('    Examples:');
+  console.log('      fspec remove-dependency AUTH-001 --blocks API-001');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec clear-dependencies <id>') + '     Remove all dependencies from work unit');
+  console.log('    Options:');
+  console.log('      --confirm                        Confirm clearing all dependencies');
+  console.log('    Examples:');
+  console.log('      fspec clear-dependencies AUTH-001 --confirm');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec export-dependencies <format> <output>') + ' Export dependency graph');
+  console.log('    Formats: mermaid (visualization), json (data)');
+  console.log('    Examples:');
+  console.log('      fspec export-dependencies mermaid deps.mmd');
+  console.log('      fspec export-dependencies json deps.json');
+  console.log('');
+
+  console.log(chalk.bold('PREFIX AND EPIC MANAGEMENT'));
+  console.log('  ' + chalk.cyan('fspec create-prefix <code> <description>') + ' Register new work unit prefix');
+  console.log('    Prefix codes: 2-6 uppercase letters (e.g., AUTH, DASH, API)');
+  console.log('    Examples:');
+  console.log('      fspec create-prefix AUTH "Authentication features"');
+  console.log('      fspec create-prefix PERF "Performance optimization"');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec update-prefix <code>') + '        Update prefix description');
+  console.log('    Options:');
+  console.log('      -d, --description <desc>         New description');
+  console.log('    Examples:');
+  console.log('      fspec update-prefix AUTH -d "Updated description"');
+  console.log('');
   console.log('  ' + chalk.cyan('fspec create-epic <id> <title>') + '      Create new epic');
+  console.log('    Epic IDs: lowercase-with-hyphens (e.g., user-management)');
   console.log('    Options:');
   console.log('      -d, --description <desc>         Epic description');
   console.log('    Examples:');
@@ -445,6 +606,145 @@ function displayProjectHelp(): void {
   console.log('    Examples:');
   console.log('      fspec show-epic user-management');
   console.log('      fspec show-epic user-management -f json');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec delete-epic <id>') + '              Delete an epic');
+  console.log('    Options:');
+  console.log('      --force                          Force deletion even if work units associated');
+  console.log('    Examples:');
+  console.log('      fspec delete-epic old-epic --force');
+  console.log('');
+
+  console.log(chalk.bold('EXAMPLE MAPPING'));
+  console.log('  Example Mapping is a collaborative technique for exploring and understanding requirements.');
+  console.log('  Add examples, questions, and business rules to scenarios before implementation.');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec add-example <feature> <scenario> <example>') + ' Add concrete example');
+  console.log('    Examples:');
+  console.log('      fspec add-example login "Successful login" "user: alice@example.com, pwd: secret123"');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec add-question <feature> <scenario> <question>') + ' Add unanswered question');
+  console.log('    Examples:');
+  console.log('      fspec add-question login "Login" "What happens if password is expired?"');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec add-rule <feature> <scenario> <rule>') + ' Add business rule');
+  console.log('    Examples:');
+  console.log('      fspec add-rule login "Login" "Password must be at least 8 characters"');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec answer-question <feature> <scenario> <question> <answer>') + ' Answer question');
+  console.log('    Examples:');
+  console.log('      fspec answer-question login "Login" "What about 2FA?" "2FA is required for admins"');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec remove-example <feature> <scenario> <example>') + ' Remove example');
+  console.log('  ' + chalk.cyan('fspec remove-question <feature> <scenario> <question>') + ' Remove question');
+  console.log('  ' + chalk.cyan('fspec remove-rule <feature> <scenario> <rule>') + ' Remove rule');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec export-example-map <feature> <output>') + ' Export to JSON');
+  console.log('    Examples:');
+  console.log('      fspec export-example-map login example-map.json');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec import-example-map <feature> <input>') + ' Import from JSON');
+  console.log('    Examples:');
+  console.log('      fspec import-example-map login example-map.json');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec generate-scenarios <feature>') + ' Generate scenarios from examples');
+  console.log('    Examples:');
+  console.log('      fspec generate-scenarios login');
+  console.log('');
+
+  console.log(chalk.bold('WORKFLOW AUTOMATION'));
+  console.log('  ' + chalk.cyan('fspec auto-advance') + '                  Automatically advance ready work units');
+  console.log('    Options:');
+  console.log('      --dry-run                        Show what would be advanced');
+  console.log('    Examples:');
+  console.log('      fspec auto-advance --dry-run');
+  console.log('      fspec auto-advance');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec display-board') + '                 Display Kanban board of all work');
+  console.log('    Options:');
+  console.log('      --format <format>                Output: text or json (default: text)');
+  console.log('    Examples:');
+  console.log('      fspec display-board');
+  console.log('      fspec display-board --format=json');
+  console.log('');
+
+  console.log(chalk.bold('QUERY AND REPORTING'));
+  console.log('  ' + chalk.cyan('fspec query-work-units') + '             Query work units with filters');
+  console.log('    Options:');
+  console.log('      --status <status>                Filter by status');
+  console.log('      --prefix <prefix>                Filter by prefix');
+  console.log('      --epic <epic>                    Filter by epic');
+  console.log('      --format <format>                Output: text or json (default: text)');
+  console.log('    Examples:');
+  console.log('      fspec query-work-units --status implementing --format json');
+  console.log('      fspec query-work-units --prefix AUTH --epic user-management');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec query-dependency-stats') + '       Show dependency statistics');
+  console.log('    Options:');
+  console.log('      --format <format>                Output: text or json (default: text)');
+  console.log('    Examples:');
+  console.log('      fspec query-dependency-stats');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec query-example-mapping-stats') + '  Show example mapping coverage');
+  console.log('    Examples:');
+  console.log('      fspec query-example-mapping-stats');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec query-metrics') + '                Query project metrics');
+  console.log('    Options:');
+  console.log('      --metric <metric>                Specific metric to query');
+  console.log('      --format <format>                Output: text or json (default: text)');
+  console.log('    Examples:');
+  console.log('      fspec query-metrics --format json');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec query-estimate-accuracy') + '      Show estimation accuracy');
+  console.log('    Examples:');
+  console.log('      fspec query-estimate-accuracy');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec query-estimation-guide <id>') + '  Get estimation guidance');
+  console.log('    Examples:');
+  console.log('      fspec query-estimation-guide AUTH-001');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec generate-summary-report') + '      Generate comprehensive project report');
+  console.log('    Options:');
+  console.log('      --format <format>                Output: markdown, json, or html (default: markdown)');
+  console.log('      --output <file>                  Output file path');
+  console.log('    Examples:');
+  console.log('      fspec generate-summary-report --format markdown --output report.md');
+  console.log('');
+
+  console.log(chalk.bold('METRICS TRACKING'));
+  console.log('  ' + chalk.cyan('fspec record-metric <metric> <value>') + ' Record a project metric');
+  console.log('    Options:');
+  console.log('      --unit <unit>                    Unit of measurement');
+  console.log('    Examples:');
+  console.log('      fspec record-metric build-time 45.2 --unit seconds');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec record-tokens <id> <tokens>') + '  Record AI token usage');
+  console.log('    Options:');
+  console.log('      --operation <operation>          Operation type (e.g., specification, implementation)');
+  console.log('    Examples:');
+  console.log('      fspec record-tokens AUTH-001 45000 --operation implementation');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec record-iteration <name>') + '     Record iteration or sprint');
+  console.log('    Options:');
+  console.log('      --start <date>                   Start date');
+  console.log('      --end <date>                     End date');
+  console.log('    Examples:');
+  console.log('      fspec record-iteration "Sprint 1" --start 2025-01-01 --end 2025-01-14');
+  console.log('');
+
+  console.log(chalk.bold('VALIDATION'));
+  console.log('  ' + chalk.cyan('fspec validate-spec-alignment') + '     Validate specs align with tests and code');
+  console.log('    Options:');
+  console.log('      --fix                            Attempt to fix alignment issues');
+  console.log('    Examples:');
+  console.log('      fspec validate-spec-alignment');
+  console.log('      fspec validate-spec-alignment --fix');
+  console.log('');
+
+  console.log(chalk.bold('FEATURE DOCUMENTATION'));
+  console.log('  ' + chalk.cyan('fspec add-assumption <feature> <assumption>') + ' Add assumption to feature');
+  console.log('    Examples:');
+  console.log('      fspec add-assumption login "Users have verified email addresses"');
   console.log('');
 
   console.log(chalk.bold('WORK UNIT LINKING WITH FEATURES'));
@@ -479,6 +779,10 @@ function displayProjectHelp(): void {
   console.log('  - Feature-level work unit tags apply to all scenarios by default');
   console.log('  - Scenario-level work unit tags override feature-level tags');
   console.log('  - All commands follow ACDD (Acceptance Criteria Driven Development)');
+  console.log('  - Dependency types: blocks (hard blocker), blocked-by (inverse), depends-on (soft), relates-to (info)');
+  console.log('  - Story point estimates use Fibonacci sequence: 1, 2, 3, 5, 8, 13, 21');
+  console.log('  - Example Mapping helps explore requirements before writing scenarios');
+  console.log('  - AI agents should use query commands to understand project state');
   console.log('  - See spec/features/ for full specification of project management features');
   console.log('');
 }
@@ -984,5 +1288,841 @@ program
   .argument('<epicId>', 'Epic ID')
   .option('-f, --format <format>', 'Output format: text or json', 'text')
   .action(showEpicCommand);
+
+// ============================================================================
+// ADDITIONAL WORK UNIT MANAGEMENT COMMANDS
+// ============================================================================
+
+// Prioritize work unit command
+program
+  .command('prioritize-work-unit')
+  .description('Change the priority order of a work unit in the backlog')
+  .argument('<workUnitId>', 'Work unit ID to prioritize')
+  .option('--position <position>', 'Position: top, bottom, or numeric index')
+  .option('--before <workUnitId>', 'Place before this work unit')
+  .option('--after <workUnitId>', 'Place after this work unit')
+  .action(async (workUnitId: string, options: { position?: string; before?: string; after?: string }) => {
+    try {
+      const parsedPosition = options.position === 'top' ? 'top'
+        : options.position === 'bottom' ? 'bottom'
+        : options.position ? parseInt(options.position, 10)
+        : undefined;
+
+      await prioritizeWorkUnit({
+        workUnitId,
+        position: parsedPosition as 'top' | 'bottom' | number | undefined,
+        before: options.before,
+        after: options.after,
+      });
+      console.log(chalk.green(`✓ Work unit ${workUnitId} prioritized successfully`));
+    } catch (error: any) {
+      console.error(chalk.red('✗ Failed to prioritize work unit:'), error.message);
+      process.exit(1);
+    }
+  });
+
+// Update work unit command
+program
+  .command('update-work-unit')
+  .description('Update work unit properties')
+  .argument('<workUnitId>', 'Work unit ID to update')
+  .option('-t, --title <title>', 'New title')
+  .option('-d, --description <description>', 'New description')
+  .option('-e, --epic <epic>', 'Epic ID')
+  .option('-p, --parent <parent>', 'Parent work unit ID')
+  .action(async (workUnitId: string, options: { title?: string; description?: string; epic?: string; parent?: string }) => {
+    try {
+      await updateWorkUnit({
+        workUnitId,
+        ...options,
+      });
+      console.log(chalk.green(`✓ Work unit ${workUnitId} updated successfully`));
+    } catch (error: any) {
+      console.error(chalk.red('✗ Failed to update work unit:'), error.message);
+      process.exit(1);
+    }
+  });
+
+// Delete work unit command
+program
+  .command('delete-work-unit')
+  .description('Delete a work unit')
+  .argument('<workUnitId>', 'Work unit ID to delete')
+  .option('--force', 'Force deletion without checks')
+  .option('--skip-confirmation', 'Skip confirmation prompt')
+  .option('--cascade-dependencies', 'Remove all dependencies before deleting')
+  .action(async (workUnitId: string, options: { force?: boolean; skipConfirmation?: boolean; cascadeDependencies?: boolean }) => {
+    try {
+      const result = await deleteWorkUnit({
+        workUnitId,
+        ...options,
+      });
+      console.log(chalk.green(`✓ Work unit ${workUnitId} deleted successfully`));
+      if (result.warnings && result.warnings.length > 0) {
+        result.warnings.forEach((warning: string) => console.log(chalk.yellow(`⚠ ${warning}`)));
+      }
+    } catch (error: any) {
+      console.error(chalk.red('✗ Failed to delete work unit:'), error.message);
+      process.exit(1);
+    }
+  });
+
+// Update work unit status command
+program
+  .command('update-work-unit-status')
+  .description('Update work unit status (follows ACDD workflow)')
+  .argument('<workUnitId>', 'Work unit ID')
+  .argument('<status>', 'New status: backlog, specifying, testing, implementing, validating, done, blocked')
+  .option('--blocked-reason <reason>', 'Reason for blocked status (required if status is blocked)')
+  .option('--reason <reason>', 'Reason for status change')
+  .action(async (workUnitId: string, status: string, options: { blockedReason?: string; reason?: string }) => {
+    try {
+      const result = await updateWorkUnitStatus({
+        workUnitId,
+        status: status as 'backlog' | 'specifying' | 'testing' | 'implementing' | 'validating' | 'done' | 'blocked',
+        blockedReason: options.blockedReason,
+        reason: options.reason,
+      });
+      console.log(chalk.green(`✓ Work unit ${workUnitId} status updated to ${status}`));
+      if (result.warnings && result.warnings.length > 0) {
+        result.warnings.forEach((warning: string) => console.log(chalk.yellow(`⚠ ${warning}`)));
+      }
+    } catch (error: any) {
+      console.error(chalk.red('✗ Failed to update work unit status:'), error.message);
+      process.exit(1);
+    }
+  });
+
+// Update work unit estimate command
+program
+  .command('update-work-unit-estimate')
+  .description('Update work unit estimate (Fibonacci: 1,2,3,5,8,13,21)')
+  .argument('<workUnitId>', 'Work unit ID')
+  .argument('<estimate>', 'Story points estimate (Fibonacci number)')
+  .action(async (workUnitId: string, estimate: string) => {
+    try {
+      await updateWorkUnitEstimate({
+        workUnitId,
+        estimate: parseInt(estimate, 10),
+      });
+      console.log(chalk.green(`✓ Work unit ${workUnitId} estimate set to ${estimate}`));
+    } catch (error: any) {
+      console.error(chalk.red('✗ Failed to update estimate:'), error.message);
+      process.exit(1);
+    }
+  });
+
+// Validate work units command
+program
+  .command('validate-work-units')
+  .description('Validate work units data integrity')
+  .action(async () => {
+    try {
+      const result = await validateWorkUnits({});
+      if (result.valid) {
+        console.log(chalk.green(`✓ All work units are valid`));
+      } else {
+        console.error(chalk.red(`✗ Found ${result.errors.length} validation errors`));
+        result.errors.forEach((error: string) => console.error(chalk.red(`  - ${error}`)));
+        process.exit(1);
+      }
+    } catch (error: any) {
+      console.error(chalk.red('✗ Failed to validate work units:'), error.message);
+      process.exit(1);
+    }
+  });
+
+// Repair work units command
+program
+  .command('repair-work-units')
+  .description('Repair work units data integrity issues')
+  .option('--dry-run', 'Show what would be repaired without making changes')
+  .action(async (options: { dryRun?: boolean }) => {
+    try {
+      const result = await repairWorkUnits({
+        dryRun: options.dryRun,
+      });
+      console.log(chalk.green(`✓ Repaired ${result.repaired} issues`));
+      if (result.details && result.details.length > 0) {
+        result.details.forEach((detail: string) => console.log(chalk.cyan(`  - ${detail}`)));
+      }
+    } catch (error: any) {
+      console.error(chalk.red('✗ Failed to repair work units:'), error.message);
+      process.exit(1);
+    }
+  });
+
+// Export work units command
+program
+  .command('export-work-units')
+  .description('Export work units to JSON or CSV')
+  .argument('<format>', 'Output format: json or csv')
+  .argument('<output>', 'Output file path')
+  .option('--status <status>', 'Filter by status')
+  .action(async (format: string, output: string, options: { status?: string }) => {
+    try {
+      const result = await exportWorkUnits({
+        format: format as 'json' | 'csv',
+        output,
+        status: options.status as any,
+      });
+      console.log(chalk.green(`✓ Exported ${result.count} work units to ${result.outputFile}`));
+    } catch (error: any) {
+      console.error(chalk.red('✗ Failed to export work units:'), error.message);
+      process.exit(1);
+    }
+  });
+
+// ============================================================================
+// DEPENDENCY MANAGEMENT COMMANDS
+// ============================================================================
+
+// Add dependency command
+program
+  .command('add-dependency')
+  .description('Add a dependency relationship between work units')
+  .argument('<workUnitId>', 'Work unit ID')
+  .option('--blocks <targetId>', 'Work unit that this blocks')
+  .option('--blocked-by <targetId>', 'Work unit that blocks this')
+  .option('--depends-on <targetId>', 'Work unit this depends on (soft dependency)')
+  .option('--relates-to <targetId>', 'Related work unit')
+  .action(async (workUnitId: string, options: { blocks?: string; blockedBy?: string; dependsOn?: string; relatesTo?: string }) => {
+    try {
+      await addDependency({
+        workUnitId,
+        blocks: options.blocks,
+        blockedBy: options.blockedBy,
+        dependsOn: options.dependsOn,
+        relatesTo: options.relatesTo,
+      });
+      console.log(chalk.green(`✓ Dependency added successfully`));
+    } catch (error: any) {
+      console.error(chalk.red('✗ Failed to add dependency:'), error.message);
+      process.exit(1);
+    }
+  });
+
+// Add dependencies (plural) command
+program
+  .command('add-dependencies')
+  .description('Add multiple dependency relationships at once')
+  .argument('<workUnitId>', 'Work unit ID')
+  .option('--blocks <ids...>', 'Work unit IDs that this blocks')
+  .option('--blocked-by <ids...>', 'Work unit IDs that block this')
+  .option('--depends-on <ids...>', 'Work unit IDs this depends on')
+  .option('--relates-to <ids...>', 'Related work unit IDs')
+  .action(async (workUnitId: string, options: { blocks?: string[]; blockedBy?: string[]; dependsOn?: string[]; relatesTo?: string[] }) => {
+    try {
+      const result = await addDependencies({
+        workUnitId,
+        dependencies: {
+          blocks: options.blocks,
+          blockedBy: options.blockedBy,
+          dependsOn: options.dependsOn,
+          relatesTo: options.relatesTo,
+        },
+      });
+      console.log(chalk.green(`✓ Added ${result.added} dependencies successfully`));
+    } catch (error: any) {
+      console.error(chalk.red('✗ Failed to add dependencies:'), error.message);
+      process.exit(1);
+    }
+  });
+
+// Remove dependency command
+program
+  .command('remove-dependency')
+  .description('Remove a dependency relationship between work units')
+  .argument('<workUnitId>', 'Work unit ID')
+  .option('--blocks <targetId>', 'Remove blocks relationship')
+  .option('--blocked-by <targetId>', 'Remove blockedBy relationship')
+  .option('--depends-on <targetId>', 'Remove dependsOn relationship')
+  .option('--relates-to <targetId>', 'Remove relatesTo relationship')
+  .action(async (workUnitId: string, options: { blocks?: string; blockedBy?: string; dependsOn?: string; relatesTo?: string }) => {
+    try {
+      await removeDependency({
+        workUnitId,
+        blocks: options.blocks,
+        blockedBy: options.blockedBy,
+        dependsOn: options.dependsOn,
+        relatesTo: options.relatesTo,
+      });
+      console.log(chalk.green(`✓ Dependency removed successfully`));
+    } catch (error: any) {
+      console.error(chalk.red('✗ Failed to remove dependency:'), error.message);
+      process.exit(1);
+    }
+  });
+
+// Clear dependencies command
+program
+  .command('clear-dependencies')
+  .description('Remove all dependencies from a work unit')
+  .argument('<workUnitId>', 'Work unit ID')
+  .option('--confirm', 'Confirm clearing all dependencies')
+  .action(async (workUnitId: string, options: { confirm?: boolean }) => {
+    try {
+      await clearDependencies({
+        workUnitId,
+        confirm: options.confirm,
+      });
+      console.log(chalk.green(`✓ All dependencies cleared from ${workUnitId}`));
+    } catch (error: any) {
+      console.error(chalk.red('✗ Failed to clear dependencies:'), error.message);
+      process.exit(1);
+    }
+  });
+
+// Export dependencies command
+program
+  .command('export-dependencies')
+  .description('Export dependency graph visualization')
+  .argument('<format>', 'Output format: mermaid or json')
+  .argument('<output>', 'Output file path')
+  .action(async (format: string, output: string) => {
+    try {
+      const result = await exportDependencies({
+        format: format as 'mermaid' | 'json',
+        output,
+      });
+      console.log(chalk.green(`✓ Dependencies exported to ${result.outputFile}`));
+    } catch (error: any) {
+      console.error(chalk.red('✗ Failed to export dependencies:'), error.message);
+      process.exit(1);
+    }
+  });
+
+// ============================================================================
+// PREFIX AND EPIC MANAGEMENT COMMANDS
+// ============================================================================
+
+// Create prefix command
+program
+  .command('create-prefix')
+  .description('Register a new work unit prefix')
+  .argument('<prefix>', 'Prefix code (2-6 uppercase letters, e.g., AUTH, DASH)')
+  .argument('<description>', 'Prefix description')
+  .action(async (prefix: string, description: string) => {
+    try {
+      await createPrefix({
+        prefix,
+        description,
+      });
+      console.log(chalk.green(`✓ Prefix ${prefix} created successfully`));
+    } catch (error: any) {
+      console.error(chalk.red('✗ Failed to create prefix:'), error.message);
+      process.exit(1);
+    }
+  });
+
+// Update prefix command
+program
+  .command('update-prefix')
+  .description('Update an existing work unit prefix')
+  .argument('<prefix>', 'Prefix code to update')
+  .option('-d, --description <description>', 'New description')
+  .action(async (prefix: string, options: { description?: string }) => {
+    try {
+      await updatePrefix({
+        prefix,
+        description: options.description,
+      });
+      console.log(chalk.green(`✓ Prefix ${prefix} updated successfully`));
+    } catch (error: any) {
+      console.error(chalk.red('✗ Failed to update prefix:'), error.message);
+      process.exit(1);
+    }
+  });
+
+// Delete epic command
+program
+  .command('delete-epic')
+  .description('Delete an epic')
+  .argument('<epicId>', 'Epic ID to delete')
+  .option('--force', 'Force deletion even if work units are associated')
+  .action(async (epicId: string, options: { force?: boolean }) => {
+    try {
+      await deleteEpic({
+        epicId,
+        force: options.force,
+      });
+      console.log(chalk.green(`✓ Epic ${epicId} deleted successfully`));
+    } catch (error: any) {
+      console.error(chalk.red('✗ Failed to delete epic:'), error.message);
+      process.exit(1);
+    }
+  });
+
+// ============================================================================
+// EXAMPLE MAPPING COMMANDS
+// ============================================================================
+
+// Add example command
+program
+  .command('add-example')
+  .description('Add an example to a scenario for example mapping')
+  .argument('<feature>', 'Feature file name or path')
+  .argument('<scenario>', 'Scenario name')
+  .argument('<example>', 'Example description')
+  .action(async (feature: string, scenario: string, example: string) => {
+    try {
+      await addExample({ feature, scenario, example });
+      console.log(chalk.green(`✓ Example added successfully`));
+    } catch (error: any) {
+      console.error(chalk.red('✗ Failed to add example:'), error.message);
+      process.exit(1);
+    }
+  });
+
+// Add question command
+program
+  .command('add-question')
+  .description('Add a question to a scenario for example mapping')
+  .argument('<feature>', 'Feature file name or path')
+  .argument('<scenario>', 'Scenario name')
+  .argument('<question>', 'Question text')
+  .action(async (feature: string, scenario: string, question: string) => {
+    try {
+      await addQuestion({ feature, scenario, question });
+      console.log(chalk.green(`✓ Question added successfully`));
+    } catch (error: any) {
+      console.error(chalk.red('✗ Failed to add question:'), error.message);
+      process.exit(1);
+    }
+  });
+
+// Add rule command
+program
+  .command('add-rule')
+  .description('Add a business rule to a scenario for example mapping')
+  .argument('<feature>', 'Feature file name or path')
+  .argument('<scenario>', 'Scenario name')
+  .argument('<rule>', 'Business rule description')
+  .action(async (feature: string, scenario: string, rule: string) => {
+    try {
+      await addRule({ feature, scenario, rule });
+      console.log(chalk.green(`✓ Rule added successfully`));
+    } catch (error: any) {
+      console.error(chalk.red('✗ Failed to add rule:'), error.message);
+      process.exit(1);
+    }
+  });
+
+// Remove example command
+program
+  .command('remove-example')
+  .description('Remove an example from a scenario')
+  .argument('<feature>', 'Feature file name or path')
+  .argument('<scenario>', 'Scenario name')
+  .argument('<example>', 'Example description to remove')
+  .action(async (feature: string, scenario: string, example: string) => {
+    try {
+      await removeExample({ feature, scenario, example });
+      console.log(chalk.green(`✓ Example removed successfully`));
+    } catch (error: any) {
+      console.error(chalk.red('✗ Failed to remove example:'), error.message);
+      process.exit(1);
+    }
+  });
+
+// Remove question command
+program
+  .command('remove-question')
+  .description('Remove a question from a scenario')
+  .argument('<feature>', 'Feature file name or path')
+  .argument('<scenario>', 'Scenario name')
+  .argument('<question>', 'Question text to remove')
+  .action(async (feature: string, scenario: string, question: string) => {
+    try {
+      await removeQuestion({ feature, scenario, question });
+      console.log(chalk.green(`✓ Question removed successfully`));
+    } catch (error: any) {
+      console.error(chalk.red('✗ Failed to remove question:'), error.message);
+      process.exit(1);
+    }
+  });
+
+// Remove rule command
+program
+  .command('remove-rule')
+  .description('Remove a business rule from a scenario')
+  .argument('<feature>', 'Feature file name or path')
+  .argument('<scenario>', 'Scenario name')
+  .argument('<rule>', 'Rule description to remove')
+  .action(async (feature: string, scenario: string, rule: string) => {
+    try {
+      await removeRule({ feature, scenario, rule });
+      console.log(chalk.green(`✓ Rule removed successfully`));
+    } catch (error: any) {
+      console.error(chalk.red('✗ Failed to remove rule:'), error.message);
+      process.exit(1);
+    }
+  });
+
+// Answer question command
+program
+  .command('answer-question')
+  .description('Answer a question from example mapping session')
+  .argument('<feature>', 'Feature file name or path')
+  .argument('<scenario>', 'Scenario name')
+  .argument('<question>', 'Question text')
+  .argument('<answer>', 'Answer text')
+  .action(async (feature: string, scenario: string, question: string, answer: string) => {
+    try {
+      await answerQuestion({ feature, scenario, question, answer });
+      console.log(chalk.green(`✓ Question answered successfully`));
+    } catch (error: any) {
+      console.error(chalk.red('✗ Failed to answer question:'), error.message);
+      process.exit(1);
+    }
+  });
+
+// Import example map command
+program
+  .command('import-example-map')
+  .description('Import example mapping data from JSON file')
+  .argument('<feature>', 'Feature file name or path')
+  .argument('<input>', 'Input JSON file path')
+  .action(async (feature: string, input: string) => {
+    try {
+      const result = await importExampleMap({ feature, input });
+      console.log(chalk.green(`✓ Imported ${result.imported} items successfully`));
+    } catch (error: any) {
+      console.error(chalk.red('✗ Failed to import example map:'), error.message);
+      process.exit(1);
+    }
+  });
+
+// Export example map command
+program
+  .command('export-example-map')
+  .description('Export example mapping data to JSON file')
+  .argument('<feature>', 'Feature file name or path')
+  .argument('<output>', 'Output JSON file path')
+  .action(async (feature: string, output: string) => {
+    try {
+      const result = await exportExampleMap({ feature, output });
+      console.log(chalk.green(`✓ Exported to ${result.outputFile}`));
+    } catch (error: any) {
+      console.error(chalk.red('✗ Failed to export example map:'), error.message);
+      process.exit(1);
+    }
+  });
+
+// Generate scenarios command
+program
+  .command('generate-scenarios')
+  .description('Generate Gherkin scenarios from example mapping')
+  .argument('<feature>', 'Feature file name or path')
+  .action(async (feature: string) => {
+    try {
+      const result = await generateScenarios({ feature });
+      console.log(chalk.green(`✓ Generated ${result.generated} scenarios`));
+    } catch (error: any) {
+      console.error(chalk.red('✗ Failed to generate scenarios:'), error.message);
+      process.exit(1);
+    }
+  });
+
+// ============================================================================
+// FEATURE DOCUMENTATION COMMANDS
+// ============================================================================
+
+// Add assumption command
+program
+  .command('add-assumption')
+  .description('Add an assumption to a feature file')
+  .argument('<feature>', 'Feature file name or path')
+  .argument('<assumption>', 'Assumption text')
+  .action(async (feature: string, assumption: string) => {
+    try {
+      await addAssumption({ feature, assumption });
+      console.log(chalk.green(`✓ Assumption added successfully`));
+    } catch (error: any) {
+      console.error(chalk.red('✗ Failed to add assumption:'), error.message);
+      process.exit(1);
+    }
+  });
+
+// ============================================================================
+// WORKFLOW AND AUTOMATION COMMANDS
+// ============================================================================
+
+// Auto-advance command
+program
+  .command('auto-advance')
+  .description('Automatically advance work units through workflow states')
+  .option('--dry-run', 'Show what would be advanced without making changes')
+  .action(async (options: { dryRun?: boolean }) => {
+    try {
+      const result = await autoAdvance({ dryRun: options.dryRun });
+      console.log(chalk.green(`✓ Advanced ${result.advanced} work units`));
+      if (result.details && result.details.length > 0) {
+        result.details.forEach((detail: string) => console.log(chalk.cyan(`  - ${detail}`)));
+      }
+    } catch (error: any) {
+      console.error(chalk.red('✗ Failed to auto-advance:'), error.message);
+      process.exit(1);
+    }
+  });
+
+// Display board command
+program
+  .command('display-board')
+  .description('Display Kanban board of work units')
+  .option('--format <format>', 'Output format: text or json', 'text')
+  .action(async (options: { format?: string }) => {
+    try {
+      const result = await displayBoard({ format: options.format as 'text' | 'json' });
+      if (options.format === 'json') {
+        console.log(JSON.stringify(result, null, 2));
+      }
+    } catch (error: any) {
+      console.error(chalk.red('✗ Failed to display board:'), error.message);
+      process.exit(1);
+    }
+  });
+
+// Note: workflow-automation functionality is internal and used by other commands
+
+// ============================================================================
+// QUERY AND METRICS COMMANDS
+// ============================================================================
+
+// Note: General query command not implemented yet - use specific query commands below
+
+// Query work units command
+program
+  .command('query-work-units')
+  .description('Query work units with advanced filters')
+  .option('--status <status>', 'Filter by status')
+  .option('--prefix <prefix>', 'Filter by prefix')
+  .option('--epic <epic>', 'Filter by epic')
+  .option('--format <format>', 'Output format: text or json', 'text')
+  .action(async (options: { status?: string; prefix?: string; epic?: string; format?: string }) => {
+    try {
+      const result = await queryWorkUnits({
+        status: options.status as any,
+        prefix: options.prefix,
+        epic: options.epic,
+        format: options.format as 'text' | 'json',
+      });
+      if (options.format === 'json') {
+        console.log(JSON.stringify(result, null, 2));
+      }
+    } catch (error: any) {
+      console.error(chalk.red('✗ Query failed:'), error.message);
+      process.exit(1);
+    }
+  });
+
+// Query dependency stats command
+program
+  .command('query-dependency-stats')
+  .description('Show dependency statistics and potential blockers')
+  .option('--format <format>', 'Output format: text or json', 'text')
+  .action(async (options: { format?: string }) => {
+    try {
+      const result = await queryDependencyStats({ format: options.format as 'text' | 'json' });
+      if (options.format === 'json') {
+        console.log(JSON.stringify(result, null, 2));
+      }
+    } catch (error: any) {
+      console.error(chalk.red('✗ Query failed:'), error.message);
+      process.exit(1);
+    }
+  });
+
+// Query example mapping stats command
+program
+  .command('query-example-mapping-stats')
+  .description('Show example mapping coverage statistics')
+  .option('--format <format>', 'Output format: text or json', 'text')
+  .action(async (options: { format?: string }) => {
+    try {
+      const result = await queryExampleMappingStats({ format: options.format as 'text' | 'json' });
+      if (options.format === 'json') {
+        console.log(JSON.stringify(result, null, 2));
+      }
+    } catch (error: any) {
+      console.error(chalk.red('✗ Query failed:'), error.message);
+      process.exit(1);
+    }
+  });
+
+// Query metrics command
+program
+  .command('query-metrics')
+  .description('Query project metrics and statistics')
+  .option('--metric <metric>', 'Specific metric to query')
+  .option('--format <format>', 'Output format: text or json', 'text')
+  .action(async (options: { metric?: string; format?: string }) => {
+    try {
+      const result = await queryMetrics({
+        metric: options.metric,
+        format: options.format as 'text' | 'json',
+      });
+      if (options.format === 'json') {
+        console.log(JSON.stringify(result, null, 2));
+      }
+    } catch (error: any) {
+      console.error(chalk.red('✗ Query failed:'), error.message);
+      process.exit(1);
+    }
+  });
+
+// Query estimate accuracy command
+program
+  .command('query-estimate-accuracy')
+  .description('Show estimation accuracy metrics')
+  .option('--format <format>', 'Output format: text or json', 'text')
+  .action(async (options: { format?: string }) => {
+    try {
+      const result = await queryEstimateAccuracy({ format: options.format as 'text' | 'json' });
+      if (options.format === 'json') {
+        console.log(JSON.stringify(result, null, 2));
+      }
+    } catch (error: any) {
+      console.error(chalk.red('✗ Query failed:'), error.message);
+      process.exit(1);
+    }
+  });
+
+// Query estimation guide command
+program
+  .command('query-estimation-guide')
+  .description('Get estimation guidance based on historical data')
+  .argument('<workUnitId>', 'Work unit ID')
+  .option('--format <format>', 'Output format: text or json', 'text')
+  .action(async (workUnitId: string, options: { format?: string }) => {
+    try {
+      const result = await queryEstimationGuide({
+        workUnitId,
+        format: options.format as 'text' | 'json',
+      });
+      if (options.format === 'json') {
+        console.log(JSON.stringify(result, null, 2));
+      }
+    } catch (error: any) {
+      console.error(chalk.red('✗ Query failed:'), error.message);
+      process.exit(1);
+    }
+  });
+
+// Record metric command
+program
+  .command('record-metric')
+  .description('Record a project metric')
+  .argument('<metric>', 'Metric name')
+  .argument('<value>', 'Metric value')
+  .option('--unit <unit>', 'Unit of measurement')
+  .action(async (metric: string, value: string, options: { unit?: string }) => {
+    try {
+      await recordMetric({
+        metric,
+        value: parseFloat(value),
+        unit: options.unit,
+      });
+      console.log(chalk.green(`✓ Metric recorded successfully`));
+    } catch (error: any) {
+      console.error(chalk.red('✗ Failed to record metric:'), error.message);
+      process.exit(1);
+    }
+  });
+
+// Record tokens command
+program
+  .command('record-tokens')
+  .description('Record token usage for AI operations')
+  .argument('<workUnitId>', 'Work unit ID')
+  .argument('<tokens>', 'Number of tokens used')
+  .option('--operation <operation>', 'Operation type (e.g., specification, implementation)')
+  .action(async (workUnitId: string, tokens: string, options: { operation?: string }) => {
+    try {
+      await recordTokens({
+        workUnitId,
+        tokens: parseInt(tokens, 10),
+        operation: options.operation,
+      });
+      console.log(chalk.green(`✓ Token usage recorded successfully`));
+    } catch (error: any) {
+      console.error(chalk.red('✗ Failed to record tokens:'), error.message);
+      process.exit(1);
+    }
+  });
+
+// Record iteration command
+program
+  .command('record-iteration')
+  .description('Record an iteration or sprint')
+  .argument('<name>', 'Iteration name')
+  .option('--start <date>', 'Start date')
+  .option('--end <date>', 'End date')
+  .action(async (name: string, options: { start?: string; end?: string }) => {
+    try {
+      await recordIteration({
+        name,
+        start: options.start,
+        end: options.end,
+      });
+      console.log(chalk.green(`✓ Iteration recorded successfully`));
+    } catch (error: any) {
+      console.error(chalk.red('✗ Failed to record iteration:'), error.message);
+      process.exit(1);
+    }
+  });
+
+// Note: General estimation command not implemented yet - use update-work-unit-estimate instead
+
+// Generate summary report command
+program
+  .command('generate-summary-report')
+  .description('Generate a comprehensive project summary report')
+  .option('--format <format>', 'Output format: markdown, json, or html', 'markdown')
+  .option('--output <file>', 'Output file path')
+  .action(async (options: { format?: string; output?: string }) => {
+    try {
+      const result = await generateSummaryReport({
+        format: options.format as 'markdown' | 'json' | 'html',
+        output: options.output,
+      });
+      console.log(chalk.green(`✓ Report generated: ${result.outputFile}`));
+    } catch (error: any) {
+      console.error(chalk.red('✗ Failed to generate report:'), error.message);
+      process.exit(1);
+    }
+  });
+
+// ============================================================================
+// VALIDATION COMMANDS
+// ============================================================================
+
+// Validate spec alignment command
+program
+  .command('validate-spec-alignment')
+  .description('Validate alignment between specs, tests, and implementation')
+  .option('--fix', 'Attempt to fix alignment issues')
+  .action(async (options: { fix?: boolean }) => {
+    try {
+      const result = await validateSpecAlignment({ fix: options.fix });
+      if (result.aligned) {
+        console.log(chalk.green(`✓ All specs are aligned with tests and implementation`));
+      } else {
+        console.error(chalk.red(`✗ Found ${result.issues.length} alignment issues`));
+        result.issues.forEach((issue: string) => console.error(chalk.red(`  - ${issue}`)));
+        process.exit(1);
+      }
+    } catch (error: any) {
+      console.error(chalk.red('✗ Validation failed:'), error.message);
+      process.exit(1);
+    }
+  });
+
+// ============================================================================
+// DEPENDENCY DISPLAY COMMAND
+// ============================================================================
+
+// Note: General dependencies display command not implemented yet
+// Use query-dependency-stats or show-work-unit to view dependencies
 
 program.parse();
