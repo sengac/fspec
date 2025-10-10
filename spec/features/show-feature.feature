@@ -12,6 +12,8 @@ Feature: Display Feature File Contents
   - Outputs to stdout or file
   - Optionally formats output as JSON
   - Read-only operation, no modifications
+  - Scans for work unit tags (@WORK-001) in feature and scenarios
+  - Displays linked work units with scenario breakdown
 
   Critical implementation requirements:
   - MUST accept feature file name or path
@@ -21,6 +23,11 @@ Feature: Display Feature File Contents
   - MUST parse Gherkin to validate syntax
   - Text format outputs file contents as-is
   - JSON format outputs parsed Gherkin structure
+  - MUST scan for work unit tags (pattern: @[A-Z]{2,6}-\d+)
+  - MUST display work units section showing linked work units
+  - MUST distinguish feature-level vs scenario-level work unit tags
+  - MUST validate work unit IDs exist in spec/work-units.json
+  - MUST show scenario line numbers for each linked work unit
   - Exit code 0 for success, 1 for errors
   """
 
@@ -116,3 +123,59 @@ Feature: Display Feature File Contents
     When I run `fspec show-feature broken`
     Then the command should exit with code 1
     And the output should show "Invalid Gherkin syntax"
+
+  @work-unit-linking
+  Scenario: Display work units linked to feature (feature-level tags)
+    Given I have a feature file "oauth-login.feature" tagged with "@AUTH-001"
+    And work unit "AUTH-001" exists with title "OAuth Login Implementation"
+    And the feature has 3 scenarios
+    When I run `fspec show-feature oauth-login`
+    Then the command should exit with code 0
+    And the output should show "Work Units:"
+    And the output should show "AUTH-001 (feature-level) - OAuth Login Implementation"
+    And the output should list all 3 scenarios under AUTH-001
+    And each scenario should show line number
+
+  @work-unit-linking
+  Scenario: Display multiple work units from scenario-level tags
+    Given I have a feature file "oauth-login.feature" with:
+      """
+      @AUTH-001
+      Feature: OAuth Login
+
+        Scenario: Login with Google
+          Given I am on login page
+          When I click Google
+          Then I am logged in
+
+        @AUTH-002
+        Scenario: Add refresh tokens
+          Given I have a token
+          When it expires
+          Then refresh it
+      """
+    And work unit "AUTH-001" exists with title "OAuth Login Implementation"
+    And work unit "AUTH-002" exists with title "Token Refresh"
+    When I run `fspec show-feature oauth-login`
+    Then the command should exit with code 0
+    And the output should show "AUTH-001 (feature-level) - OAuth Login Implementation"
+    And the output should show "oauth-login.feature:5 - Login with Google"
+    And the output should show "AUTH-002 (scenario-level) - Token Refresh"
+    And the output should show "oauth-login.feature:11 - Add refresh tokens"
+
+  @work-unit-linking
+  Scenario: Display work units when feature has no work unit tag
+    Given I have a feature file "untagged.feature" without work unit tags
+    When I run `fspec show-feature untagged`
+    Then the command should exit with code 0
+    And the output should show "Work Units: None"
+
+  @work-unit-linking
+  Scenario: Display work units with JSON output format
+    Given I have a feature file "api.feature" tagged with "@API-001"
+    And work unit "API-001" exists
+    When I run `fspec show-feature api --format=json`
+    Then the command should exit with code 0
+    And the JSON should contain "workUnits" array
+    And the workUnits array should contain object with id "API-001"
+    And each work unit should include linked scenarios with line numbers

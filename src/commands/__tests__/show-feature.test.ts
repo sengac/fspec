@@ -442,4 +442,261 @@ Feature: Broken Feature
       expect(result.error).toMatch(/invalid gherkin syntax/i);
     });
   });
+
+  describe('Scenario: Display work units linked to feature (feature-level tags)', () => {
+    it('should display linked work units from feature-level tags', async () => {
+      // Given I have a feature file "oauth-login.feature" tagged with "@AUTH-001"
+      const featureContent = `@AUTH-001
+@phase1
+@authentication
+Feature: OAuth Login
+
+  Scenario: Login with Google
+    Given I am on login page
+    When I click Google
+    Then I am logged in
+
+  Scenario: Login with GitHub
+    Given I am on login page
+    When I click GitHub
+    Then I am logged in
+
+  Scenario: Handle OAuth errors
+    Given invalid credentials
+    When I attempt login
+    Then I see error`;
+
+      await writeFile(
+        join(testDir, 'spec/features/oauth-login.feature'),
+        featureContent
+      );
+
+      // And work unit "AUTH-001" exists with title "OAuth Login Implementation"
+      const workUnitsData = {
+        meta: { version: '1.0.0', lastUpdated: new Date().toISOString() },
+        workUnits: {
+          'AUTH-001': {
+            id: 'AUTH-001',
+            title: 'OAuth Login Implementation',
+            status: 'implementing',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+        },
+        states: {
+          implementing: ['AUTH-001'],
+        },
+      };
+
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnitsData, null, 2)
+      );
+
+      // When I run `fspec show-feature oauth-login`
+      const result = await showFeature({
+        feature: 'oauth-login',
+        cwd: testDir,
+      });
+
+      // Then the command should exit with code 0
+      expect(result.success).toBe(true);
+
+      // And the output should show "Work Units:"
+      expect(result.content).toContain('Work Units:');
+
+      // And the output should show "AUTH-001 (feature-level) - OAuth Login Implementation"
+      expect(result.content).toContain('AUTH-001 (feature-level)');
+      expect(result.content).toContain('OAuth Login Implementation');
+
+      // And the output should list all 3 scenarios under AUTH-001
+      expect(result.content).toContain('Login with Google');
+      expect(result.content).toContain('Login with GitHub');
+      expect(result.content).toContain('Handle OAuth errors');
+
+      // And each scenario should show line number
+      expect(result.content).toMatch(/\d+.*Login with Google/);
+      expect(result.content).toMatch(/\d+.*Login with GitHub/);
+      expect(result.content).toMatch(/\d+.*Handle OAuth errors/);
+    });
+  });
+
+  describe('Scenario: Display multiple work units from scenario-level tags', () => {
+    it('should display work units from both feature and scenario tags', async () => {
+      // Given I have a feature file with mixed tags
+      const featureContent = `@AUTH-001
+@phase1
+@authentication
+Feature: OAuth Login
+
+  Scenario: Login with Google
+    Given I am on login page
+    When I click Google
+    Then I am logged in
+
+  @AUTH-002
+  Scenario: Add refresh tokens
+    Given I have a token
+    When it expires
+    Then refresh it`;
+
+      await writeFile(
+        join(testDir, 'spec/features/oauth-login.feature'),
+        featureContent
+      );
+
+      // And work units exist
+      const workUnitsData = {
+        meta: { version: '1.0.0', lastUpdated: new Date().toISOString() },
+        workUnits: {
+          'AUTH-001': {
+            id: 'AUTH-001',
+            title: 'OAuth Login Implementation',
+            status: 'implementing',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+          'AUTH-002': {
+            id: 'AUTH-002',
+            title: 'Token Refresh',
+            status: 'specifying',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+        },
+        states: {
+          implementing: ['AUTH-001'],
+          specifying: ['AUTH-002'],
+        },
+      };
+
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnitsData, null, 2)
+      );
+
+      // When I run `fspec show-feature oauth-login`
+      const result = await showFeature({
+        feature: 'oauth-login',
+        cwd: testDir,
+      });
+
+      // Then the command should exit with code 0
+      expect(result.success).toBe(true);
+
+      // And the output should show "AUTH-001 (feature-level) - OAuth Login Implementation"
+      expect(result.content).toContain('AUTH-001 (feature-level)');
+      expect(result.content).toContain('OAuth Login Implementation');
+
+      // And the output should show "oauth-login.feature:6 - Login with Google"
+      expect(result.content).toMatch(/6.*Login with Google/);
+
+      // And the output should show "AUTH-002 (scenario-level) - Token Refresh"
+      expect(result.content).toContain('AUTH-002 (scenario-level)');
+      expect(result.content).toContain('Token Refresh');
+
+      // And the output should show "oauth-login.feature:12 - Add refresh tokens"
+      expect(result.content).toMatch(/12.*Add refresh tokens/);
+    });
+  });
+
+  describe('Scenario: Display work units when feature has no work unit tag', () => {
+    it('should show "Work Units: None" when no work unit tags present', async () => {
+      // Given I have a feature file without work unit tags
+      const featureContent = `@phase1
+@cli
+Feature: Untagged Feature
+
+  Scenario: Some scenario
+    Given a step
+    When another step
+    Then result`;
+
+      await writeFile(
+        join(testDir, 'spec/features/untagged.feature'),
+        featureContent
+      );
+
+      // When I run `fspec show-feature untagged`
+      const result = await showFeature({
+        feature: 'untagged',
+        cwd: testDir,
+      });
+
+      // Then the command should exit with code 0
+      expect(result.success).toBe(true);
+
+      // And the output should show "Work Units: None"
+      expect(result.content).toContain('Work Units: None');
+    });
+  });
+
+  describe('Scenario: Display work units with JSON output format', () => {
+    it('should include work units in JSON output', async () => {
+      // Given I have a feature file tagged with "@API-001"
+      const featureContent = `@API-001
+@phase1
+@api
+Feature: API Integration
+
+  Scenario: Test API endpoint
+    Given I have endpoint
+    When I call it
+    Then response received`;
+
+      await writeFile(
+        join(testDir, 'spec/features/api.feature'),
+        featureContent
+      );
+
+      // And work unit "API-001" exists
+      const workUnitsData = {
+        meta: { version: '1.0.0', lastUpdated: new Date().toISOString() },
+        workUnits: {
+          'API-001': {
+            id: 'API-001',
+            title: 'API Integration Work',
+            status: 'testing',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+        },
+        states: {
+          testing: ['API-001'],
+        },
+      };
+
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnitsData, null, 2)
+      );
+
+      // When I run `fspec show-feature api --format=json`
+      const result = await showFeature({
+        feature: 'api',
+        format: 'json',
+        cwd: testDir,
+      });
+
+      // Then the command should exit with code 0
+      expect(result.success).toBe(true);
+
+      const parsed = JSON.parse(result.content!);
+
+      // And the JSON should contain "workUnits" array
+      expect(parsed.workUnits).toBeDefined();
+      expect(Array.isArray(parsed.workUnits)).toBe(true);
+
+      // And the workUnits array should contain object with id "API-001"
+      const apiWorkUnit = parsed.workUnits.find((wu: any) => wu.id === 'API-001');
+      expect(apiWorkUnit).toBeDefined();
+      expect(apiWorkUnit.title).toBe('API Integration Work');
+
+      // And each work unit should include linked scenarios with line numbers
+      expect(apiWorkUnit.scenarios).toBeDefined();
+      expect(Array.isArray(apiWorkUnit.scenarios)).toBe(true);
+      expect(apiWorkUnit.scenarios[0].line).toBeDefined();
+      expect(apiWorkUnit.scenarios[0].name).toBe('Test API endpoint');
+    });
+  });
 });

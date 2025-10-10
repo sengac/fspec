@@ -22,7 +22,6 @@ interface AddDiagramResult {
 
 // Minimal foundation.json template
 const FOUNDATION_JSON_TEMPLATE: Foundation = {
-  $schema: '../src/schemas/foundation.schema.json',
   project: {
     name: 'Project',
     description: 'Project description',

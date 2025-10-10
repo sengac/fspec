@@ -1,5 +1,4 @@
 {
-  "$schema": "../src/schemas/tags.schema.json",
   "categories": [
     {
       "name": "Phase Tags",
@@ -384,6 +383,10 @@
         {
           "name": "@visualization",
           "description": "Data visualization"
+        },
+        {
+          "name": "@work-unit-linking",
+          "description": "Scenarios related to work unit and feature file linking functionality"
         },
         {
           "name": "@work-units",

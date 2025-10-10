@@ -302,6 +302,8 @@ function displayTagsHelp(): void {
   console.log('  - All tag write operations modify spec/tags.json');
   console.log('  - spec/TAGS.md is auto-generated - never edit manually');
   console.log('  - Regenerate TAGS.md: ' + chalk.cyan('fspec generate-tags-md'));
+  console.log('  - Work unit tags (@AUTH-001, @DASH-012) are validated against spec/work-units.json');
+  console.log('  - Work unit tags link features to project management (see ' + chalk.cyan('fspec help project') + ')');
   console.log('');
 }
 
@@ -445,6 +447,25 @@ function displayProjectHelp(): void {
   console.log('      fspec show-epic user-management -f json');
   console.log('');
 
+  console.log(chalk.bold('WORK UNIT LINKING WITH FEATURES'));
+  console.log('  Link work units to feature files using tags with pattern: ' + chalk.cyan('@[A-Z]{2,6}-\\d+'));
+  console.log('  Examples: @AUTH-001, @DASH-012, @API-123');
+  console.log('');
+  console.log('  ' + chalk.dim('Add work unit tags to feature files:'));
+  console.log('    ' + chalk.cyan('@AUTH-001') + '           # Feature-level tag (applies to all scenarios)');
+  console.log('    ' + chalk.cyan('@DASH-012') + '           # Scenario-level tag (overrides feature-level)');
+  console.log('');
+  console.log('  ' + chalk.dim('Query linked features and scenarios:'));
+  console.log('    ' + chalk.cyan('fspec show-feature <file>') + '            # Shows work units linked to feature');
+  console.log('    ' + chalk.cyan('fspec show-work-unit AUTH-001') + '        # Shows features/scenarios linked to work unit');
+  console.log('    ' + chalk.cyan('fspec get-scenarios --tag=@AUTH-001') + '  # Filter scenarios by work unit');
+  console.log('');
+  console.log('  ' + chalk.dim('Validation:'));
+  console.log('    ' + chalk.cyan('fspec validate-tags') + '                  # Validates work unit tags exist in work-units.json');
+  console.log('    All work unit tags are validated against spec/work-units.json');
+  console.log('    Invalid work unit IDs or formats will be reported as errors');
+  console.log('');
+
   console.log(chalk.bold('WORKFLOW STATES'));
   console.log('  Work units progress through Kanban states:');
   console.log('  backlog → specifying → testing → implementing → validating → done');
@@ -454,6 +475,9 @@ function displayProjectHelp(): void {
   console.log(chalk.bold('NOTES'));
   console.log('  - Work units are stored in spec/work-units.json');
   console.log('  - Epics are stored in spec/epics.json');
+  console.log('  - Work unit tags (@WORK-001) are distinct from regular tags (@phase1)');
+  console.log('  - Feature-level work unit tags apply to all scenarios by default');
+  console.log('  - Scenario-level work unit tags override feature-level tags');
   console.log('  - All commands follow ACDD (Acceptance Criteria Driven Development)');
   console.log('  - See spec/features/ for full specification of project management features');
   console.log('');

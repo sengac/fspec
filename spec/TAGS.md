@@ -114,6 +114,7 @@ Tags that categorize features by functional area.
 | `@validation` | Syntax & Structure Validation |  |
 | `@velocity` | Velocity calculation |  |
 | `@visualization` | Data visualization |  |
+| `@work-unit-linking` | Scenarios related to work unit and feature file linking functionality |  |
 | `@work-units` | Work unit CRUD operations |  |
 | `@workflow` | Workflow and state transition features |  |
 | `@workflow-automation` | Workflow automation and lifecycle integration utilities |  |
