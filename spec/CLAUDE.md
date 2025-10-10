@@ -1,14 +1,72 @@
-# Specification Management Guidelines for fspec
+# Project Management and Specification Guidelines for fspec
 
-This document defines the process for managing user stories, acceptance criteria, and their associated tests using Gherkin feature files.
+This document defines the complete workflow for managing work (project management) and specifications (Gherkin features) when building this project.
 
-## Core Principles
+## CRITICAL: Project Management FIRST, Specifications SECOND
 
-**CRITICAL**: This project uses **Acceptance Criteria Driven Development (ACDD)** where:
+**Before writing any Gherkin specifications or code, you MUST manage work using fspec's project management system.**
 
-1. **Specifications come first** - Define acceptance criteria in Gherkin format
-2. **Tests come second** - Write tests that map to Gherkin scenarios BEFORE any code
-3. **Code comes last** - Implement just enough code to make tests pass
+### The Complete Workflow
+
+1. **Project Management FIRST** - Break down work into manageable units
+2. **Specifications SECOND** - Define acceptance criteria for each work unit
+3. **Tests THIRD** - Write tests that map to Gherkin scenarios
+4. **Code LAST** - Implement just enough code to make tests pass
+
+## Project Management Workflow (STEP 1)
+
+### Understanding Work Organization
+
+fspec uses a Kanban-based project management system with:
+
+- **Work Units**: Discrete pieces of work (e.g., AUTH-001, DASH-002)
+- **Prefixes**: Short codes namespacing work unit IDs (AUTH, DASH, API, SEC, PERF)
+- **Epics**: High-level business initiatives containing multiple work units
+- **Kanban States**: backlog → specifying → testing → implementing → validating → done (+ blocked)
+
+### Before Starting ANY Work
+
+1. **Check what needs to be done**: `fspec list-work-units --status=backlog`
+2. **Pick a work unit**: Review the backlog and choose the next highest priority item
+3. **Move to specifying**: `fspec move-work-unit WORK-001 specifying`
+4. **Now proceed to write specifications** (see Specification Workflow below)
+
+### Managing Your Work Units
+
+```bash
+# List all work units
+fspec list-work-units
+
+# Show details of a specific work unit
+fspec show-work-unit WORK-001
+
+# Create a new work unit (if planning new work)
+fspec create-work-unit PREFIX "Title" --description "Details" --epic=epic-name
+
+# Move work unit through Kanban workflow
+fspec move-work-unit WORK-001 specifying   # Writing specs
+fspec move-work-unit WORK-001 testing      # Writing tests
+fspec move-work-unit WORK-001 implementing # Writing code
+fspec move-work-unit WORK-001 validating   # Code review/testing
+fspec move-work-unit WORK-001 done         # Completed
+
+# Mark work unit as blocked (with reason)
+fspec block-work-unit WORK-001 "Waiting for external API documentation"
+```
+
+### ACDD with Project Management
+
+**Acceptance Criteria Driven Development (ACDD)** combined with project management:
+
+1. **Pick work unit** from backlog → move to `specifying`
+2. **Write specifications** (Gherkin feature files) → move to `testing`
+3. **Write tests** that map to scenarios → move to `implementing`
+4. **Write code** to make tests pass → move to `validating`
+5. **Review/validate** code and specs → move to `done`
+
+## Specification Workflow (STEP 2)
+
+Once you have a work unit in `specifying` state, create the Gherkin feature file.
 
 ## Gherkin Feature File Requirements
 

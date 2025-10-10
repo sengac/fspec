@@ -355,3 +355,42 @@ Feature: Work Unit Management
     When I run "fspec show-work-unit AUTH-999"
     Then the command should fail
     And the error should contain "Work unit 'AUTH-999' does not exist"
+
+  @auto-create
+  @file-initialization
+  @critical
+  Scenario: Auto-create work-units.json when missing
+    Given I have a project with spec directory
+    And the file "spec/work-units.json" does not exist
+    And the prefix "HOOK" is registered in spec/prefixes.json
+    When I run "fspec create-work-unit HOOK 'Hook Handler'"
+    Then the command should succeed
+    And the file "spec/work-units.json" should be created with initial structure
+    And the structure should include meta section with version and lastUpdated
+    And the structure should include states: backlog, specifying, testing, implementing, validating, done, blocked
+    And the structure should include workUnits object
+    And the work unit "HOOK-001" should be created successfully
+    And "HOOK-001" should be in the backlog state array
+
+  @auto-create
+  @file-initialization
+  Scenario: Auto-create prefixes.json when reading work units
+    Given I have a project with spec directory
+    And the file "spec/prefixes.json" does not exist
+    And the file "spec/work-units.json" exists with work unit data
+    When I run "fspec list-work-units"
+    Then the command should succeed
+    And the file "spec/prefixes.json" should be created with empty structure
+    And the command should list all work units
+
+  @auto-create
+  @file-initialization
+  Scenario: Auto-create epics.json when needed for work unit operations
+    Given I have a project with spec directory
+    And the file "spec/epics.json" does not exist
+    And the prefix "AUTH" is registered
+    And spec/work-units.json exists
+    When I run "fspec create-work-unit AUTH 'Login feature' --epic=epic-auth"
+    Then the command should fail
+    And the error should contain "Epic 'epic-auth' does not exist"
+    And the file "spec/epics.json" should be created with empty structure

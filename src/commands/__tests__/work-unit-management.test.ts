@@ -1488,4 +1488,160 @@ describe('Feature: Work Unit Management', () => {
       ).rejects.toThrow("Work unit 'AUTH-999' does not exist");
     });
   });
+
+  describe('Scenario: Auto-create work-units.json when missing', () => {
+    it('should automatically create work-units.json with initial structure', async () => {
+      // Given I have a project with spec directory
+      // And the file "spec/work-units.json" does not exist
+      // NOTE: We don't create work-units.json
+
+      // And the prefix "HOOK" is registered in spec/prefixes.json
+      const prefixes: PrefixesData = {
+        prefixes: {
+          HOOK: {
+            prefix: 'HOOK',
+            description: 'Hook features',
+            createdAt: new Date().toISOString(),
+          },
+        },
+      };
+      await writeFile(join(testDir, 'spec/prefixes.json'), JSON.stringify(prefixes, null, 2));
+
+      // When I run "fspec create-work-unit HOOK 'Hook Handler'"
+      const result = await createWorkUnit({
+        prefix: 'HOOK',
+        title: 'Hook Handler',
+        cwd: testDir,
+      });
+
+      // Then the command should succeed
+      expect(result.success).toBe(true);
+
+      // And the file "spec/work-units.json" should be created with initial structure
+      const content = await readFile(join(testDir, 'spec/work-units.json'), 'utf-8');
+      const data: WorkUnitsData = JSON.parse(content);
+
+      // And the structure should include meta section with version and lastUpdated
+      expect(data.meta).toBeDefined();
+      expect(data.meta?.version).toBeDefined();
+      expect(data.meta?.lastUpdated).toBeDefined();
+
+      // And the structure should include states
+      expect(data.states).toBeDefined();
+      expect(data.states.backlog).toBeDefined();
+      expect(data.states.specifying).toBeDefined();
+      expect(data.states.testing).toBeDefined();
+      expect(data.states.implementing).toBeDefined();
+      expect(data.states.validating).toBeDefined();
+      expect(data.states.done).toBeDefined();
+      expect(data.states.blocked).toBeDefined();
+
+      // And the structure should include workUnits object
+      expect(data.workUnits).toBeDefined();
+
+      // And the work unit "HOOK-001" should be created successfully
+      expect(data.workUnits['HOOK-001']).toBeDefined();
+
+      // And "HOOK-001" should be in the backlog state array
+      expect(data.states.backlog).toContain('HOOK-001');
+    });
+  });
+
+  describe('Scenario: Auto-create prefixes.json when reading work units', () => {
+    it('should automatically create prefixes.json when listing work units', async () => {
+      // Given I have a project with spec directory
+      // And the file "spec/prefixes.json" does not exist
+      // NOTE: We don't create prefixes.json
+
+      // And the file "spec/work-units.json" exists with work unit data
+      const workUnits: WorkUnitsData = {
+        workUnits: {
+          'TEST-001': {
+            id: 'TEST-001',
+            title: 'Test work',
+            status: 'backlog',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+        },
+        states: {
+          backlog: ['TEST-001'],
+          specifying: [],
+          testing: [],
+          implementing: [],
+          validating: [],
+          done: [],
+          blocked: [],
+        },
+      };
+      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+
+      // When I run "fspec list-work-units"
+      const result = await listWorkUnits({
+        cwd: testDir,
+      });
+
+      // Then the command should succeed
+      expect(result).toBeDefined();
+
+      // And the file "spec/prefixes.json" should be created with empty structure
+      const content = await readFile(join(testDir, 'spec/prefixes.json'), 'utf-8');
+      const data: PrefixesData = JSON.parse(content);
+      expect(data.prefixes).toBeDefined();
+
+      // And the command should list all work units
+      expect(result.workUnits.some(wu => wu.id === 'TEST-001')).toBe(true);
+    });
+  });
+
+  describe('Scenario: Auto-create epics.json when needed for work unit operations', () => {
+    it('should automatically create epics.json but still fail if epic does not exist', async () => {
+      // Given I have a project with spec directory
+      // And the file "spec/epics.json" does not exist
+      // NOTE: We don't create epics.json
+
+      // And the prefix "AUTH" is registered
+      const prefixes: PrefixesData = {
+        prefixes: {
+          AUTH: {
+            prefix: 'AUTH',
+            description: 'Auth features',
+            createdAt: new Date().toISOString(),
+          },
+        },
+      };
+      await writeFile(join(testDir, 'spec/prefixes.json'), JSON.stringify(prefixes, null, 2));
+
+      // And spec/work-units.json exists
+      const workUnits: WorkUnitsData = {
+        workUnits: {},
+        states: {
+          backlog: [],
+          specifying: [],
+          testing: [],
+          implementing: [],
+          validating: [],
+          done: [],
+          blocked: [],
+        },
+      };
+      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+
+      // When I run "fspec create-work-unit AUTH 'Login feature' --epic=epic-auth"
+      // Then the command should fail
+      await expect(
+        createWorkUnit({
+          prefix: 'AUTH',
+          title: 'Login feature',
+          epic: 'epic-auth',
+          cwd: testDir,
+        })
+      ).rejects.toThrow("Epic 'epic-auth' does not exist");
+
+      // And the file "spec/epics.json" should be created with empty structure
+      const content = await readFile(join(testDir, 'spec/epics.json'), 'utf-8');
+      const data: EpicsData = JSON.parse(content);
+      expect(data.epics).toBeDefined();
+    });
+  });
 });

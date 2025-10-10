@@ -204,7 +204,7 @@ Feature: Work Unit Dependency Management
     Given I have a project with spec directory
     And work unit "UI-001" is blocked by "API-001"
     And work unit "UI-001" has status "blocked"
-    And work unit "API-001" has status "implementing"
+    And work unit "API-001" has status "validating"
     When I run "fspec update-work-unit API-001 --status=done"
     Then the command should succeed
     And work unit "UI-001" status should remain "blocked"

@@ -128,11 +128,13 @@ Tags for specific technical concerns or architectural patterns.
 |-----|-------------|-------|
 | `@ast` | Abstract Syntax Tree |  |
 | `@auth-001` | Work unit identifier for authentication features (example in example-mapping feature) |  |
+| `@auto-create` | Scenarios testing automatic file creation when files are missing |  |
 | `@automation` | Automated workflow operations and state transitions |  |
 | `@bdd` | Behavior-Driven Development methodology |  |
 | `@cucumber-parser` | Cucumber Parser Integration |  |
 | `@email` | Email-related functionality |  |
 | `@error-handling` | Error Handling |  |
+| `@file-initialization` | Scenarios testing initialization of project files |  |
 | `@file-system` | File System Operations |  |
 | `@gherkin` | Gherkin Specification Compliance |  |
 | `@internal` | Internal Utility |  |
