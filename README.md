@@ -175,9 +175,10 @@ Blocked By: []
 - 📋 **Gherkin Validation** - Validate syntax using official Cucumber parser
 - 🏗️ **Feature Management** - Create and manage .feature files with proper structure
 - 🏷️ **JSON-Backed Tag Registry** - Single source of truth in tags.json with auto-generated TAGS.md
+- 🔖 **Feature & Scenario Tag Management** - CRUD operations for tags at both feature and scenario levels
 - 📐 **JSON-Backed Foundation** - Single source of truth in foundation.json with auto-generated FOUNDATION.md
 - 📊 **Project Management** - Work units, epics, and Kanban workflow for ACDD development
-- 🎯 **Full CRUD Operations** - Complete Create, Read, Update, Delete for features, tags, diagrams, work units, and epics
+- 🎯 **Full CRUD Operations** - Complete Create, Read, Update, Delete for features, scenarios, tags, diagrams, work units, and epics
 - 🎨 **Auto-Formatting** - Custom AST-based formatter for Gherkin files
 - 🤖 **AI Agent Friendly** - Machine-readable JSON format with structured commands
 - 🔗 **CAGE Integration** - Designed to work with CAGE for code-spec alignment
@@ -291,6 +292,8 @@ fspec show-feature user-authentication --output=feature.json
 
 All tag operations work with `spec/tags.json` and automatically regenerate `spec/TAGS.md`:
 
+#### Tag Registry Management
+
 ```bash
 # Register new tag
 fspec register-tag @performance "Technical Tags" "Performance-critical features"
@@ -322,7 +325,51 @@ fspec retag --from=@old-tag --to=@new-tag
 fspec retag --from=@old-tag --to=@new-tag --dry-run
 ```
 
-**Note:** All tag write operations (register-tag, update-tag, delete-tag) modify `spec/tags.json` and automatically regenerate `spec/TAGS.md`. Never edit the markdown files directly.
+#### Feature-Level Tag Management
+
+Manage tags directly on feature files:
+
+```bash
+# Add tags to a feature file
+fspec add-tag-to-feature spec/features/login.feature @critical
+fspec add-tag-to-feature spec/features/login.feature @critical @security
+fspec add-tag-to-feature spec/features/login.feature @custom-tag --validate-registry
+
+# Remove tags from a feature file
+fspec remove-tag-from-feature spec/features/login.feature @wip
+fspec remove-tag-from-feature spec/features/login.feature @wip @deprecated
+
+# List tags on a feature file
+fspec list-feature-tags spec/features/login.feature
+fspec list-feature-tags spec/features/login.feature --show-categories
+```
+
+#### Scenario-Level Tag Management
+
+Manage tags on individual scenarios within feature files:
+
+```bash
+# Add tags to a specific scenario
+fspec add-tag-to-scenario spec/features/login.feature "Login with valid credentials" @smoke
+fspec add-tag-to-scenario spec/features/login.feature "Login with valid credentials" @smoke @regression
+fspec add-tag-to-scenario spec/features/login.feature "Login" @custom-tag --validate-registry
+
+# Remove tags from a specific scenario
+fspec remove-tag-from-scenario spec/features/login.feature "Login with valid credentials" @wip
+fspec remove-tag-from-scenario spec/features/login.feature "Login" @wip @deprecated
+
+# List tags on a specific scenario
+fspec list-scenario-tags spec/features/login.feature "Login with valid credentials"
+fspec list-scenario-tags spec/features/login.feature "Login" --show-categories
+```
+
+**Notes:**
+- All tag write operations (register-tag, update-tag, delete-tag) modify `spec/tags.json` and automatically regenerate `spec/TAGS.md`
+- Feature-level tags apply to the entire feature
+- Scenario-level tags apply only to specific scenarios
+- Scenarios inherit feature-level tags when queried
+- `--validate-registry` ensures tags exist in spec/tags.json before adding
+- Never edit the markdown files directly
 
 ### Query Operations
 
@@ -537,15 +584,17 @@ See [spec/CLAUDE.md](./spec/CLAUDE.md) for detailed process guidelines.
 ## Project Statistics
 
 **Current Release:**
-- **Commands Implemented:** 41 (specification + project management)
-- **Feature Files:** 42 validated Gherkin specifications
-- **Test Coverage:** 100% (all scenarios have tests)
-- **Build Size:** 338.43 kB (gzip: 77.67 kB)
+- **Commands Implemented:** 47 (specification + tag management + project management)
+- **Feature Files:** 44 validated Gherkin specifications
+- **Test Coverage:** 100% (all scenarios have tests - 731 tests passing)
+- **Build Size:** 366.20 kB (gzip: 81.78 kB)
 - **Architecture:** JSON-backed documentation with auto-generated markdown
 - **Validation:** Gherkin syntax + tag registry + Mermaid diagram validation
 
 **Key Features:**
-- ✅ Complete CRUD operations for features, scenarios, steps, tags, and diagrams
+- ✅ Complete CRUD operations for features, scenarios, and diagrams
+- ✅ Tag registry management with full CRUD operations
+- ✅ Feature-level and scenario-level tag management (add, remove, list)
 - ✅ Work unit and epic management with Kanban workflow
 - ✅ Scenario-level tag support with inheritance from feature tags
 - ✅ JSON-backed tag registry (tags.json) with auto-generated TAGS.md
