@@ -1,6 +1,7 @@
 import { readFile, writeFile } from 'fs/promises';
 import { join } from 'path';
 import type { WorkUnitsData, PrefixesData, EpicsData } from '../types';
+import { ensureWorkUnitsFile, ensurePrefixesFile, ensureEpicsFile } from '../utils/ensure-files';
 
 const WORK_UNIT_ID_REGEX = /^[A-Z]{2,6}-\d+$/;
 const MAX_NESTING_DEPTH = 3;
@@ -27,10 +28,8 @@ export async function createWorkUnit(options: CreateWorkUnitOptions): Promise<Cr
     throw new Error('Title is required');
   }
 
-  // Read prefixes
-  const prefixesFile = join(cwd, 'spec/prefixes.json');
-  const prefixesContent = await readFile(prefixesFile, 'utf-8');
-  const prefixesData: PrefixesData = JSON.parse(prefixesContent);
+  // Read prefixes (auto-create if missing)
+  const prefixesData = await ensurePrefixesFile(cwd);
 
   // Validate prefix is registered
   if (!prefixesData.prefixes[options.prefix]) {
@@ -39,10 +38,8 @@ export async function createWorkUnit(options: CreateWorkUnitOptions): Promise<Cr
     );
   }
 
-  // Read work units
-  const workUnitsFile = join(cwd, 'spec/work-units.json');
-  const workUnitsContent = await readFile(workUnitsFile, 'utf-8');
-  const workUnitsData: WorkUnitsData = JSON.parse(workUnitsContent);
+  // Read work units (auto-create if missing)
+  const workUnitsData = await ensureWorkUnitsFile(cwd);
 
   // Validate parent if provided
   if (options.parent) {
@@ -59,9 +56,7 @@ export async function createWorkUnit(options: CreateWorkUnitOptions): Promise<Cr
 
   // Validate epic if provided
   if (options.epic) {
-    const epicsFile = join(cwd, 'spec/epics.json');
-    const epicsContent = await readFile(epicsFile, 'utf-8');
-    const epicsData: EpicsData = JSON.parse(epicsContent);
+    const epicsData = await ensureEpicsFile(cwd);
 
     if (!epicsData.epics[options.epic]) {
       throw new Error(`Epic '${options.epic}' does not exist`);
@@ -102,13 +97,13 @@ export async function createWorkUnit(options: CreateWorkUnitOptions): Promise<Cr
   }
 
   // Write updated work units
+  const workUnitsFile = join(cwd, 'spec/work-units.json');
   await writeFile(workUnitsFile, JSON.stringify(workUnitsData, null, 2));
 
   // Update epic if provided
   if (options.epic) {
     const epicsFile = join(cwd, 'spec/epics.json');
-    const epicsContent = await readFile(epicsFile, 'utf-8');
-    const epicsData: EpicsData = JSON.parse(epicsContent);
+    const epicsData = await ensureEpicsFile(cwd);
 
     if (!epicsData.epics[options.epic].workUnits) {
       epicsData.epics[options.epic].workUnits = [];

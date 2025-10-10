@@ -415,6 +415,10 @@
           "description": "Work unit identifier for authentication features (example in example-mapping feature)"
         },
         {
+          "name": "@auto-create",
+          "description": "Scenarios testing automatic file creation when files are missing"
+        },
+        {
           "name": "@automation",
           "description": "Automated workflow operations and state transitions"
         },
@@ -435,6 +439,10 @@
           "name": "@error-handling",
           "description": "Error Handling",
           "useCases": "Error scenarios, validation failures, recovery"
+        },
+        {
+          "name": "@file-initialization",
+          "description": "Scenarios testing initialization of project files"
         },
         {
           "name": "@file-system",

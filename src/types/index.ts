@@ -28,6 +28,10 @@ export interface WorkUnit {
 }
 
 export interface WorkUnitsData {
+  meta?: {
+    version: string;
+    lastUpdated: string;
+  };
   workUnits: Record<string, WorkUnit>;
   states: Record<string, string[]>;
 }

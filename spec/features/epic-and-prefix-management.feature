@@ -114,3 +114,46 @@ Feature: Epic and Prefix Management
     Then the command should succeed
     And the epic should not exist
     And work units should have epic field cleared
+
+  @auto-create
+  @file-initialization
+  @critical
+  Scenario: Auto-create prefixes.json when creating first prefix
+    Given I have a project with spec directory
+    And the file "spec/prefixes.json" does not exist
+    When I run "fspec create-prefix HOOK 'Hooks System' --description='Claude Code hook implementations'"
+    Then the command should succeed
+    And the file "spec/prefixes.json" should be created
+    And the prefix "HOOK" should exist in prefixes.json
+    And the prefix should have description "Claude Code hook implementations"
+
+  @auto-create
+  @file-initialization
+  @critical
+  Scenario: Auto-create epics.json when creating first epic
+    Given I have a project with spec directory
+    And the file "spec/epics.json" does not exist
+    When I run "fspec create-epic epic-user-management 'User Management'"
+    Then the command should succeed
+    And the file "spec/epics.json" should be created
+    And the epic "epic-user-management" should exist in epics.json
+
+  @auto-create
+  @file-initialization
+  Scenario: Auto-create epics.json when listing epics
+    Given I have a project with spec directory
+    And the file "spec/epics.json" does not exist
+    When I run "fspec list-epics"
+    Then the command should succeed
+    And the file "spec/epics.json" should be created with empty structure
+    And the output should indicate no epics found
+
+  @auto-create
+  @file-initialization
+  Scenario: Auto-create prefixes.json when listing prefixes
+    Given I have a project with spec directory
+    And the file "spec/prefixes.json" does not exist
+    When I run "fspec list-prefixes"
+    Then the command should succeed
+    And the file "spec/prefixes.json" should be created with empty structure
+    And the output should indicate no prefixes found

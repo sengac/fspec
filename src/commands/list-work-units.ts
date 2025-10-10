@@ -1,6 +1,7 @@
 import { readFile } from 'fs/promises';
 import { join } from 'path';
 import type { WorkUnitsData } from '../types';
+import { ensureWorkUnitsFile, ensurePrefixesFile } from '../utils/ensure-files';
 
 interface ListWorkUnitsOptions {
   status?: string;
@@ -24,10 +25,11 @@ interface ListWorkUnitsResult {
 export async function listWorkUnits(options: ListWorkUnitsOptions = {}): Promise<ListWorkUnitsResult> {
   const cwd = options.cwd || process.cwd();
 
-  // Read work units
-  const workUnitsFile = join(cwd, 'spec/work-units.json');
-  const workUnitsContent = await readFile(workUnitsFile, 'utf-8');
-  const workUnitsData: WorkUnitsData = JSON.parse(workUnitsContent);
+  // Read work units (auto-create if missing)
+  const workUnitsData = await ensureWorkUnitsFile(cwd);
+
+  // Ensure prefixes file exists too (for consistency)
+  await ensurePrefixesFile(cwd);
 
   // Get all work units
   let workUnits = Object.values(workUnitsData.workUnits);
