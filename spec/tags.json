@@ -40,6 +40,10 @@
           "name": "@phase7",
           "description": "Phase 7: JSON-Backed Documentation",
           "usage": "Features: JSON schema validation, MD generation from JSON, migration tools (6 files)"
+        },
+        {
+          "name": "@phase8",
+          "description": "Phase 8: Incomplete Features - missed functionality that needs implementation"
         }
       ],
       "rule": "Every feature file MUST have exactly ONE phase tag."
@@ -93,8 +97,48 @@
       "required": true,
       "tags": [
         {
+          "name": "@accuracy",
+          "description": "Accuracy measurement"
+        },
+        {
+          "name": "@answer-question",
+          "description": "Question answering operations"
+        },
+        {
           "name": "@authentication",
           "description": "Authentication and authorization functionality"
+        },
+        {
+          "name": "@auto-blocking",
+          "description": "Automatic blocking state transitions"
+        },
+        {
+          "name": "@auto-transition",
+          "description": "Automatic state transitions"
+        },
+        {
+          "name": "@blocked-state",
+          "description": "Blocked state handling"
+        },
+        {
+          "name": "@board",
+          "description": "Kanban board operations"
+        },
+        {
+          "name": "@board-view",
+          "description": "Kanban board visualization"
+        },
+        {
+          "name": "@bulk",
+          "description": "Bulk operations"
+        },
+        {
+          "name": "@bulk-add",
+          "description": "Bulk add operations"
+        },
+        {
+          "name": "@bulk-export",
+          "description": "Bulk export operations"
         },
         {
           "name": "@bulk-operations",
@@ -102,14 +146,82 @@
           "examples": "Bulk delete scenarios/features by tag (3 files)"
         },
         {
+          "name": "@burndown",
+          "description": "Burndown chart generation"
+        },
+        {
+          "name": "@by-prefix",
+          "description": "Querying or filtering work units by prefix (e.g., AUTH-, DASH-)"
+        },
+        {
+          "name": "@calculation",
+          "description": "Calculation operations"
+        },
+        {
+          "name": "@cascade",
+          "description": "Cascade operations"
+        },
+        {
+          "name": "@comparison",
+          "description": "Comparison operations"
+        },
+        {
+          "name": "@completion",
+          "description": "Completion operations"
+        },
+        {
+          "name": "@compound",
+          "description": "Compound query operations"
+        },
+        {
+          "name": "@critical-path",
+          "description": "Critical path analysis"
+        },
+        {
+          "name": "@crud",
+          "description": "Create, Read, Update, Delete operations"
+        },
+        {
+          "name": "@delete",
+          "description": "Delete operations"
+        },
+        {
+          "name": "@dependencies",
+          "description": "Dependency management between work units"
+        },
+        {
           "name": "@documentation",
           "description": "Documentation Display",
           "examples": "Show acceptance criteria, show feature, show foundation (2 files)"
         },
         {
+          "name": "@epics",
+          "description": "Epic management and high-level work grouping"
+        },
+        {
+          "name": "@estimation",
+          "description": "Estimation operations"
+        },
+        {
+          "name": "@example-mapping",
+          "description": "Example mapping for BDD discovery (rules, examples, questions, assumptions)"
+        },
+        {
+          "name": "@export",
+          "description": "Export operations"
+        },
+        {
           "name": "@feature-management",
           "description": "Feature File Operations",
           "examples": "Create feature, add scenario, add step, add architecture notes (11 files)"
+        },
+        {
+          "name": "@filtering",
+          "description": "Filtering and query operations"
+        },
+        {
+          "name": "@forecasting",
+          "description": "Forecasting and predictions"
         },
         {
           "name": "@formatting",
@@ -122,6 +234,26 @@
           "examples": "Add Mermaid diagram, update foundation sections, show foundation (3 files)"
         },
         {
+          "name": "@generate-scenarios",
+          "description": "Scenario generation from examples"
+        },
+        {
+          "name": "@impact-analysis",
+          "description": "Impact analysis and dependency chains"
+        },
+        {
+          "name": "@kanban",
+          "description": "Kanban board and workflow management"
+        },
+        {
+          "name": "@list",
+          "description": "List operations"
+        },
+        {
+          "name": "@metrics",
+          "description": "Metrics and measurements"
+        },
+        {
           "name": "@migration",
           "description": "Migration & Data Transformation",
           "examples": "One-time migration operations, MD to JSON conversion (1 file)"
@@ -132,9 +264,45 @@
           "examples": "Update/delete scenarios, steps, tags, retag operations (11 files)"
         },
         {
+          "name": "@operations",
+          "description": "General operations"
+        },
+        {
+          "name": "@parent-child",
+          "description": "Parent-child work unit relationships"
+        },
+        {
+          "name": "@prediction",
+          "description": "Prediction operations"
+        },
+        {
+          "name": "@prefixes",
+          "description": "Work unit ID prefix management"
+        },
+        {
+          "name": "@priority",
+          "description": "Priority management and reordering"
+        },
+        {
+          "name": "@progress",
+          "description": "Progress tracking and reporting"
+        },
+        {
+          "name": "@project-management",
+          "description": "Project management features including work units, epics, and workflow"
+        },
+        {
+          "name": "@query",
+          "description": "Query operations for searching and filtering"
+        },
+        {
           "name": "@querying",
           "description": "Query & Search Operations",
           "examples": "List features, show feature, find by tag, search scenarios (6 files)"
+        },
+        {
+          "name": "@read",
+          "description": "Read operations"
         },
         {
           "name": "@read-only",
@@ -142,14 +310,62 @@
           "examples": "Display operations that don't modify files (2 files)"
         },
         {
+          "name": "@recommendations",
+          "description": "Recommendation features providing suggestions based on historical data"
+        },
+        {
+          "name": "@remove",
+          "description": "Remove operations"
+        },
+        {
+          "name": "@repair",
+          "description": "Data repair operations"
+        },
+        {
+          "name": "@reporting",
+          "description": "Reporting and statistics"
+        },
+        {
           "name": "@scaffolding",
           "description": "Project Setup & Templates",
           "examples": "Initialize spec directory, create templates, setup structure (0 files)"
         },
         {
+          "name": "@soft-dependency",
+          "description": "Soft dependency relationships"
+        },
+        {
+          "name": "@state-enforcement",
+          "description": "State transition enforcement"
+        },
+        {
+          "name": "@state-history",
+          "description": "State history tracking"
+        },
+        {
+          "name": "@state-transition",
+          "description": "State transition operations"
+        },
+        {
+          "name": "@statistics",
+          "description": "Statistical analysis"
+        },
+        {
           "name": "@tag-management",
           "description": "TAGS.md Operations",
           "examples": "Register tag, validate tags, list tags, tag statistics (7 files)"
+        },
+        {
+          "name": "@tracking",
+          "description": "Metric tracking operations"
+        },
+        {
+          "name": "@ui-refinement",
+          "description": "UI refinement and enhancement operations"
+        },
+        {
+          "name": "@update",
+          "description": "Update operations"
         },
         {
           "name": "@utility",
@@ -160,6 +376,26 @@
           "name": "@validation",
           "description": "Syntax & Structure Validation",
           "examples": "Gherkin syntax check, tag compliance, formatting validation (3 files)"
+        },
+        {
+          "name": "@velocity",
+          "description": "Velocity calculation"
+        },
+        {
+          "name": "@visualization",
+          "description": "Data visualization"
+        },
+        {
+          "name": "@work-units",
+          "description": "Work unit CRUD operations"
+        },
+        {
+          "name": "@workflow",
+          "description": "Workflow and state transition features"
+        },
+        {
+          "name": "@workflow-automation",
+          "description": "Workflow automation and lifecycle integration utilities"
         }
       ],
       "rule": "Every feature file MUST have at least ONE feature group tag."
@@ -173,6 +409,14 @@
           "name": "@ast",
           "description": "Abstract Syntax Tree",
           "useCases": "Working with Gherkin AST from parser (custom formatter)"
+        },
+        {
+          "name": "@automation",
+          "description": "Automated workflow operations and state transitions"
+        },
+        {
+          "name": "@bdd",
+          "description": "Behavior-Driven Development methodology"
         },
         {
           "name": "@cucumber-parser",
@@ -214,9 +458,17 @@
           "useCases": "JSON Schema validation using Ajv library"
         },
         {
+          "name": "@learning",
+          "description": "Machine learning and adaptive features based on usage patterns"
+        },
+        {
           "name": "@mermaid",
           "description": "Mermaid Diagram Support",
           "useCases": "Inserting/validating Mermaid diagrams in FOUNDATION.md"
+        },
+        {
+          "name": "@pattern-detection",
+          "description": "Features involving pattern detection and analysis from historical data"
         },
         {
           "name": "@push",
@@ -329,6 +581,22 @@
       "required": false,
       "tags": [
         {
+          "name": "@blocking",
+          "description": "Operations that block workflow progression"
+        },
+        {
+          "name": "@circular-dependency",
+          "description": "Circular dependency detection tests"
+        },
+        {
+          "name": "@consistency",
+          "description": "Data consistency validation"
+        },
+        {
+          "name": "@duplicate",
+          "description": "Duplicate detection tests"
+        },
+        {
           "name": "@e2e-test",
           "description": "End-to-End Test Required",
           "testType": "Complete command flows, CAGE integration, full scenarios"
@@ -336,6 +604,10 @@
         {
           "name": "@edge-case",
           "description": "Edge case tests - validation of boundary conditions and unusual scenarios"
+        },
+        {
+          "name": "@happy-path",
+          "description": "Happy path test scenarios"
         },
         {
           "name": "@integration-test",
@@ -346,6 +618,10 @@
           "name": "@manual-test",
           "description": "Requires Manual Testing",
           "testType": "Visual verification, platform-specific checks, edge cases"
+        },
+        {
+          "name": "@prerequisites",
+          "description": "Prerequisite validation scenarios"
         },
         {
           "name": "@regression",
@@ -371,6 +647,10 @@
         {
           "name": "@unregistered-tag2",
           "description": "Example tag used in test scenarios to demonstrate error handling"
+        },
+        {
+          "name": "@warning",
+          "description": "Operations that produce warnings"
         }
       ],
       "rule": "Use testing tags to indicate what level of testing is required for a scenario."
@@ -380,11 +660,6 @@
       "description": "Tags specific to CAGE integration and agentic coding workflows.",
       "required": false,
       "tags": [
-        {
-          "name": "@cage-hook",
-          "description": "CAGE Hook Integration",
-          "useCases": "Features called from CAGE hooks (PreToolUse, PostToolUse, etc.)"
-        },
         {
           "name": "@execa",
           "description": "Execa Child Process",

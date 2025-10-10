@@ -770,6 +770,7 @@ any state → backlog (work doesn't go back to backlog)
 5 points - Cross-feature work, integration needed
 8 points - Significant feature, architectural considerations
 13 points - Epic-level work, should be broken down
+21 points - Too large, must be broken down before starting
 ```
 
 **Factors to consider:**
@@ -779,89 +780,107 @@ any state → backlog (work doesn't go back to backlog)
 - Test complexity
 - Unknowns/risks
 
+**Purpose of story points:**
+Story points enable AI agents to **compare estimated complexity vs actual effort**, helping improve future estimates. This is NOT about velocity or burndown charts (which are sprint-based concepts). Instead, it's about learning patterns like "5-point work typically consumes 100k tokens" so estimates get more accurate over time.
+
 ### Actual Metrics Tracked
 
 **Token consumption:**
 ```json
 {
-  "actualTokens": 125000,
-  "tokenBreakdown": {
-    "specifying": 15000,
-    "testing": 35000,
-    "implementing": 60000,
-    "validating": 15000
-  }
+  "actualTokens": 125000
 }
 ```
 
 **Iteration count:**
 ```json
 {
-  "iterations": 3,
-  "iterationDetails": [
-    { "attempt": 1, "state": "implementing", "result": "test failure" },
-    { "attempt": 2, "state": "implementing", "result": "test failure" },
-    { "attempt": 3, "state": "implementing", "result": "success" }
-  ]
+  "iterations": 3
 }
 ```
 
-**Validation failures:**
-```json
-{
-  "failedValidations": 2,
-  "validationHistory": [
-    { "timestamp": "...", "result": "failed", "reason": "Gherkin syntax error" },
-    { "timestamp": "...", "result": "failed", "reason": "Test coverage below threshold" },
-    { "timestamp": "...", "result": "passed" }
-  ]
-}
-```
+**Cycle time:**
+Calculated from `stateHistory` - time from backlog to done
 
-### Learning from Metrics
+### Learning from Estimate vs Actual Comparison
 
-**Pattern detection:**
-- "5-point API work consistently uses 80k-120k tokens"
-- "Security features (SEC prefix) take 2x iterations vs estimates"
-- "Most failures happen in validating state (suggests integration issues)"
+**The core value:**
+After completing work, compare the estimated story points against actual tokens consumed and iterations needed. This builds a knowledge base of patterns.
 
-**Velocity tracking:**
-- "Completed 25 points this week (5 work units)"
-- "Average cycle time: 2.5 hours from backlog to done"
-- "Bottleneck: 40% of time spent in validating state"
+**Pattern detection examples:**
+- "1-point work: avg 25k tokens, 1-2 iterations"
+- "3-point work: avg 75k tokens, 2-3 iterations"
+- "5-point work: avg 110k tokens, 3-4 iterations"
+- "8-point work: avg 180k tokens, 4-6 iterations"
 
-**Estimation improvement:**
-- "Our estimates are 30% low on average → adjust upward"
-- "Cross-feature work (relatesTo > 2) needs +3 points buffer"
-- "Work with questions.length > 0 takes 50% longer"
+**Estimation improvement examples:**
+- "SEC prefix work uses 1.5x more tokens than estimate suggests"
+- "Work with parent/child relationships adds 20k tokens overhead"
+- "Work with 3+ dependencies takes 1 extra iteration on average"
 
-### Queries for Analysis
+**Bottleneck detection:**
+- "Most time spent in validating state (not estimation issue, process issue)"
+- "Work with questions averages 50% more iterations (discovery problem)"
+
+### Queries for Estimate vs Actual Analysis
 
 ```bash
 # Compare estimated vs actual for completed work
-fspec query metrics --type=estimate-accuracy --output=json
+fspec query estimate-accuracy --output=json
 
 # Returns:
 {
-  "1-point": { "avgTokens": 25000, "samples": 12 },
-  "2-point": { "avgTokens": 45000, "samples": 8 },
-  "3-point": { "avgTokens": 75000, "samples": 15 },
-  "5-point": { "avgTokens": 110000, "samples": 6 },
-  "8-point": { "avgTokens": 180000, "samples": 3 }
+  "1-point": {
+    "avgTokens": 25000,
+    "avgIterations": 1.5,
+    "samples": 12
+  },
+  "2-point": {
+    "avgTokens": 45000,
+    "avgIterations": 2.1,
+    "samples": 8
+  },
+  "3-point": {
+    "avgTokens": 75000,
+    "avgIterations": 2.8,
+    "samples": 15
+  },
+  "5-point": {
+    "avgTokens": 110000,
+    "avgIterations": 3.5,
+    "samples": 6
+  },
+  "8-point": {
+    "avgTokens": 180000,
+    "avgIterations": 5.2,
+    "samples": 3
+  }
 }
 
-# Find bottlenecks
-fspec query metrics --type=cycle-time --output=json
+# Show estimation accuracy by prefix
+fspec query estimate-accuracy --by-prefix --output=json
 
 # Returns:
 {
-  "avgTimeInBacklog": "2.5 hours",
-  "avgTimeInSpecifying": "1.2 hours",
-  "avgTimeInTesting": "0.8 hours",
-  "avgTimeInImplementing": "1.5 hours",
-  "avgTimeInValidating": "3.2 hours",  // BOTTLENECK!
-  "avgTimeBlocked": "4.5 hours"
+  "AUTH": {
+    "avgAccuracy": "estimates 15% low",
+    "recommendation": "increase estimates by 1-2 points"
+  },
+  "SEC": {
+    "avgAccuracy": "estimates 35% low",
+    "recommendation": "increase estimates by 2-3 points"
+  }
 }
+
+# Show specific work unit estimate vs actual
+fspec query estimate-accuracy AUTH-001
+
+# Returns:
+AUTH-001: Implement OAuth login
+  Estimated: 5 points
+  Actual: 95000 tokens, 2 iterations, 4.5 hours
+  Comparison: Within expected range for 5-point work
+  Pattern: Typical for AUTH prefix work
 ```
 
 ---

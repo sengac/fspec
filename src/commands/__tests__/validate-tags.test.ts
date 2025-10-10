@@ -49,6 +49,16 @@ describe('Feature: Validate Feature File Tags Against Registry', () => {
             { name: '@authentication', description: 'Authentication' },
           ],
         },
+        {
+          name: 'Testing Tags',
+          description: 'Test-related tags',
+          required: false,
+          tags: [
+            { name: '@smoke', description: 'Smoke tests' },
+            { name: '@regression', description: 'Regression tests' },
+            { name: '@edge-case', description: 'Edge case tests' },
+          ],
+        },
       ],
       combinationExamples: [],
       usageGuidelines: {
@@ -395,6 +405,214 @@ Feature: Test Feature
       // And specifications remain compliant with tag registry
       expect(fixedResult.invalidCount).toBe(0);
       expect(fixedResult.validCount).toBe(1);
+    });
+  });
+
+  describe('Scenario: Validate scenario-level tags are registered', () => {
+    it('should validate scenario-level tags against registry', async () => {
+      // Given I have a feature file with scenario-level tags
+      const featuresDir = join(testDir, 'spec', 'features');
+      await mkdir(featuresDir, { recursive: true });
+
+      const featureWithScenarioTags = `@phase1
+@cli
+@authentication
+Feature: User Login
+
+  @smoke
+  @regression
+  Scenario: Successful login
+    Given I am on the login page
+    When I enter valid credentials
+    Then I should be logged in`;
+
+      await writeFile(
+        join(featuresDir, 'login.feature'),
+        featureWithScenarioTags
+      );
+
+      // When I run validate-tags
+      const result = await validateTags({
+        file: 'spec/features/login.feature',
+        cwd: testDir,
+      });
+
+      // Then it should exit with code 0 (all tags registered)
+      expect(result.results[0].valid).toBe(true);
+      expect(result.results[0].errors).toHaveLength(0);
+      expect(result.validCount).toBe(1);
+      expect(result.invalidCount).toBe(0);
+    });
+  });
+
+  describe('Scenario: Detect unregistered scenario-level tag', () => {
+    it('should report unregistered scenario-level tags', async () => {
+      // Given I have a feature file with an unregistered scenario tag
+      const featuresDir = join(testDir, 'spec', 'features');
+      await mkdir(featuresDir, { recursive: true });
+
+      const featureWithUnregisteredTag = `@phase1
+@cli
+@authentication
+Feature: User Login
+
+  @smoke
+  @unregistered-scenario-tag
+  Scenario: Test scenario
+    Given a step
+    When another step
+    Then result`;
+
+      await writeFile(
+        join(featuresDir, 'login.feature'),
+        featureWithUnregisteredTag
+      );
+
+      // When I run validate-tags
+      const result = await validateTags({
+        file: 'spec/features/login.feature',
+        cwd: testDir,
+      });
+
+      // Then it should exit with code 1
+      expect(result.results[0].valid).toBe(false);
+
+      // And the output should contain the unregistered tag
+      const unregisteredError = result.results[0].errors.find(e =>
+        e.tag === '@unregistered-scenario-tag'
+      );
+      expect(unregisteredError).toBeDefined();
+      expect(unregisteredError!.message).toContain('Unregistered tag: @unregistered-scenario-tag');
+    });
+  });
+
+  describe('Scenario: Validate both feature-level and scenario-level tags', () => {
+    it('should validate tags at both levels', async () => {
+      // Given I have a feature file with tags at both levels
+      const featuresDir = join(testDir, 'spec', 'features');
+      await mkdir(featuresDir, { recursive: true });
+
+      const featureWithBothLevels = `@phase1
+@cli
+@authentication
+Feature: User Login
+
+  @smoke
+  Scenario: Basic login
+    Given I am on the login page
+    When I enter credentials
+    Then I am logged in
+
+  @regression
+  @edge-case
+  Scenario: Login with expired session
+    Given I have an expired session
+    When I attempt to login
+    Then I am prompted to re-authenticate`;
+
+      await writeFile(
+        join(featuresDir, 'login.feature'),
+        featureWithBothLevels
+      );
+
+      // When I run validate-tags
+      const result = await validateTags({
+        file: 'spec/features/login.feature',
+        cwd: testDir,
+      });
+
+      // Then all tags at all levels should be validated
+      expect(result.results[0].valid).toBe(true);
+      expect(result.results[0].errors).toHaveLength(0);
+      expect(result.validCount).toBe(1);
+      expect(result.invalidCount).toBe(0);
+    });
+  });
+
+  describe('Scenario: Detect mix of registered and unregistered scenario tags', () => {
+    it('should report mix of valid and invalid scenario tags', async () => {
+      // Given I have a feature file with multiple scenarios
+      const featuresDir = join(testDir, 'spec', 'features');
+      await mkdir(featuresDir, { recursive: true });
+
+      const featureWithMixedTags = `@phase1
+@cli
+@authentication
+Feature: User Login
+
+  @smoke
+  Scenario: Valid scenario
+    Given a step
+    When another step
+    Then result
+
+  @unregistered-tag1
+  @unregistered-tag2
+  Scenario: Invalid scenario
+    Given a step
+    When another step
+    Then result`;
+
+      await writeFile(
+        join(featuresDir, 'login.feature'),
+        featureWithMixedTags
+      );
+
+      // When I run validate-tags
+      const result = await validateTags({
+        file: 'spec/features/login.feature',
+        cwd: testDir,
+      });
+
+      // Then it should exit with code 1
+      expect(result.results[0].valid).toBe(false);
+
+      // And the output should list both unregistered tags
+      const unregisteredErrors = result.results[0].errors.filter(e =>
+        e.tag === '@unregistered-tag1' || e.tag === '@unregistered-tag2'
+      );
+      expect(unregisteredErrors).toHaveLength(2);
+
+      // And the output should specify the tags are unregistered
+      expect(unregisteredErrors[0].message).toContain('Unregistered tag');
+      expect(unregisteredErrors[1].message).toContain('Unregistered tag');
+    });
+  });
+
+  describe('Scenario: Validate scenario tags do not require phase/component/feature-group tags', () => {
+    it('should allow scenario tags without required categories', async () => {
+      // Given I have a feature file with properly tagged feature and minimal scenario tags
+      const featuresDir = join(testDir, 'spec', 'features');
+      await mkdir(featuresDir, { recursive: true });
+
+      const featureWithMinimalScenarioTags = `@phase1
+@cli
+@authentication
+Feature: User Login
+
+  @smoke
+  Scenario: Quick test
+    Given a step
+    When another step
+    Then result`;
+
+      await writeFile(
+        join(featuresDir, 'login.feature'),
+        featureWithMinimalScenarioTags
+      );
+
+      // When I run validate-tags
+      const result = await validateTags({
+        file: 'spec/features/login.feature',
+        cwd: testDir,
+      });
+
+      // Then scenario tags should not be required to have phase/component/feature-group tags
+      // And only feature-level tags should be checked for required categories
+      expect(result.results[0].valid).toBe(true);
+      expect(result.results[0].errors).toHaveLength(0);
+      expect(result.validCount).toBe(1);
+      expect(result.invalidCount).toBe(0);
     });
   });
 

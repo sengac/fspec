@@ -234,6 +234,14 @@ describe('Feature: Generate FOUNDATION.md from foundation.json', () => {
     });
   });
 
+  describe('Scenario: Command tables are generated with proper markdown syntax', () => {
+    it.todo('should format command tables with proper markdown');
+  });
+
+  describe('Scenario: Fail if foundation.json is invalid', () => {
+    it.todo('should reject invalid foundation.json schema');
+  });
+
   describe('Scenario: Regeneration is idempotent', () => {
     it('should produce identical output on multiple generations', async () => {
       // Given I have a valid file "spec/foundation.json"
@@ -301,5 +309,9 @@ describe('Feature: Generate FOUNDATION.md from foundation.json', () => {
       // Then both outputs should be identical
       expect(markdown1).toBe(markdown2);
     });
+  });
+
+  describe('Scenario: Support custom output path', () => {
+    it.todo('should support generating to custom output path');
   });
 });

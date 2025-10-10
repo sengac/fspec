@@ -1,4 +1,5 @@
 @phase4
+@phase8
 @cli
 @querying
 @tag-management

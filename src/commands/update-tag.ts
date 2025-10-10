@@ -129,13 +129,19 @@ export async function updateTag(
   }
 }
 
-export async function updateTagCommand(options: {
-  tag: string;
-  category?: string;
-  description?: string;
-}): Promise<void> {
+export async function updateTagCommand(
+  tag: string,
+  options: {
+    category?: string;
+    description?: string;
+  }
+): Promise<void> {
   try {
-    const result = await updateTag(options);
+    const result = await updateTag({
+      tag,
+      category: options.category,
+      description: options.description,
+    });
 
     if (!result.success) {
       console.error(chalk.red('Error:'), result.error);

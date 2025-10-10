@@ -1,0 +1,116 @@
+@phase7
+@cli
+@project-management
+@epics
+@prefixes
+Feature: Epic and Prefix Management
+  """
+  Architecture notes:
+  - Epics group related work units for high-level tracking
+  - Prefixes determine work unit ID format (AUTH-001, DASH-002)
+  - Epics stored in spec/epics.json
+  - Prefixes stored in spec/prefixes.json
+  - Work units reference epic by ID
+  - Epic tracks total estimate and completion percentage
+
+  Critical implementation requirements:
+  - MUST validate epic ID format (lowercase-with-hyphens)
+  - MUST validate prefix format (2-6 uppercase letters)
+  - MUST prevent duplicate epic IDs
+  - MUST prevent duplicate prefix values
+  - MUST track work units per epic
+  - MUST calculate epic progress from work unit states
+  - MUST support epic hierarchies (optional)
+
+  Data model:
+  - epics.json: {id, title, description, workUnits[], totalEstimate, completedEstimate}
+  - prefixes.json: {prefix, description, nextId, epic?}
+  - work-units.json: Each work unit has optional epic field
+
+  References:
+  - Project Management Design: project-management.md (section 12: Epics)
+  """
+
+  Background: User Story
+    As an AI agent organizing work
+    I want to group work units into epics and manage ID prefixes
+    So that I can track high-level progress and maintain consistent naming
+
+  @critical
+  @happy-path
+  Scenario: Create epic
+    Given I have a project with spec directory
+    When I run "fspec create-epic epic-user-management 'User Management' --description='All user-related features'"
+    Then the command should succeed
+    And an epic "epic-user-management" should be created in spec/epics.json
+    And the epic should have title "User Management"
+
+  @happy-path
+  Scenario: Create prefix for work unit IDs
+    Given I have a project with spec directory
+    When I run "fspec create-prefix AUTH 'Authentication work units'"
+    Then the command should succeed
+    And a prefix "AUTH" should be created in spec/prefixes.json
+    And the prefix should have nextId of 1
+
+  @happy-path
+  Scenario: Link prefix to epic
+    Given I have a project with spec directory
+    And an epic "epic-auth" exists
+    And a prefix "AUTH" exists
+    When I run "fspec update-prefix AUTH --epic=epic-auth"
+    Then the command should succeed
+    And the prefix should be linked to epic "epic-auth"
+
+  @query
+  @progress
+  Scenario: Show epic progress
+    Given I have a project with spec directory
+    And an epic "epic-auth" exists
+    And work units in epic:
+      | id       | status       | estimate |
+      | AUTH-001 | done         | 8        |
+      | AUTH-002 | done         | 5        |
+      | AUTH-003 | implementing | 3        |
+    When I run "fspec show-epic epic-auth"
+    Then the output should show total estimate: 16 points
+    And the output should show completed: 13 points
+    And the output should show progress: 81%
+
+  @validation
+  @error-handling
+  Scenario: Reject invalid epic ID format
+    Given I have a project with spec directory
+    When I run "fspec create-epic InvalidEpic 'Title'"
+    Then the command should fail
+    And the error should contain "Epic ID must be lowercase with hyphens"
+
+  @validation
+  @error-handling
+  Scenario: Reject invalid prefix format
+    Given I have a project with spec directory
+    When I run "fspec create-prefix auth 'Description'"
+    Then the command should fail
+    And the error should contain "Prefix must be 2-6 uppercase letters"
+
+  @list
+  @query
+  Scenario: List all epics with progress
+    Given I have a project with spec directory
+    And epics exist:
+      | id             | total | completed |
+      | epic-auth      | 20    | 15        |
+      | epic-dashboard | 30    | 10        |
+    When I run "fspec list-epics"
+    Then the output should show both epics with progress percentages
+
+  @delete
+  @cascade
+  Scenario: Delete epic and unlink work units
+    Given I have a project with spec directory
+    And an epic "epic-auth" exists
+    And work units "AUTH-001", "AUTH-002" are in epic "epic-auth"
+    When I run "fspec delete-epic epic-auth --force"
+    Then the command should succeed
+    And the epic should not exist
+    And work units should have epic field cleared

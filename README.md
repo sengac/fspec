@@ -24,7 +24,8 @@ fspec provides AI agents with:
 - 🏗️ **Feature Management** - Create and manage .feature files with proper structure
 - 🏷️ **JSON-Backed Tag Registry** - Single source of truth in tags.json with auto-generated TAGS.md
 - 📐 **JSON-Backed Foundation** - Single source of truth in foundation.json with auto-generated FOUNDATION.md
-- 🎯 **Full CRUD Operations** - Complete Create, Read, Update, Delete for tags and diagrams
+- 📊 **Project Management** - Work units, epics, and Kanban workflow for ACDD development
+- 🎯 **Full CRUD Operations** - Complete Create, Read, Update, Delete for features, tags, diagrams, work units, and epics
 - 🎨 **Auto-Formatting** - Custom AST-based formatter for Gherkin files
 - 🤖 **AI Agent Friendly** - Machine-readable JSON format with structured commands
 - 🔗 **CAGE Integration** - Designed to work with CAGE for code-spec alignment
@@ -67,7 +68,7 @@ fspec help spec        # Specification management (features, scenarios, steps)
 fspec help tags        # Tag registry & management
 fspec help foundation  # Foundation & architecture documentation
 fspec help query       # Query & reporting commands
-fspec help project     # Project management (coming soon)
+fspec help project     # Project management (work units, epics, Kanban workflow)
 
 # Command-specific help
 fspec <command> --help
@@ -80,7 +81,7 @@ fspec list-features --help
 - **tags** - Tag registration, validation, updates, statistics, bulk rename
 - **foundation** - Foundation content, Mermaid diagrams, architecture docs
 - **query** - Query scenarios by tag, show acceptance criteria
-- **project** - Work units, Kanban workflow, metrics (planned)
+- **project** - Work units, epics, Kanban workflow
 
 **Note:** All commands include complete option documentation and practical examples in the help system. You no longer need to refer to this README for basic usage.
 
@@ -174,10 +175,14 @@ fspec retag --from=@old-tag --to=@new-tag --dry-run
 ### Query Operations
 
 ```bash
-# Get all scenarios matching tags
+# Get all scenarios matching tags (supports feature-level AND scenario-level tags)
 fspec get-scenarios --tag=@phase1
-fspec get-scenarios --tag=@phase1 --tag=@critical
+fspec get-scenarios --tag=@phase1 --tag=@critical  # AND logic
+fspec get-scenarios --tag=@smoke  # Matches scenario-level tags
 fspec get-scenarios --format=json
+
+# Scenarios inherit feature tags AND can have their own scenario-level tags
+# Example: Feature tagged @auth + Scenario tagged @smoke matches both @auth and @smoke
 
 # Show acceptance criteria for features
 fspec show-acceptance-criteria --tag=@phase1
@@ -251,6 +256,35 @@ fspec show-foundation --line-numbers
 
 **Note:** All write operations (add-diagram, delete-diagram, update-foundation) modify `spec/foundation.json` and automatically regenerate `spec/FOUNDATION.md`. Never edit the markdown files directly.
 
+### Project Management
+
+fspec provides work unit and epic management for ACDD (Acceptance Criteria Driven Development) workflows:
+
+```bash
+# Create and manage work units
+fspec create-work-unit AUTH "User login feature"
+fspec create-work-unit DASH "Dashboard view" -e user-management
+fspec list-work-units
+fspec list-work-units -s specifying
+fspec show-work-unit AUTH-001
+
+# Create and manage epics
+fspec create-epic user-management "User Management Features"
+fspec list-epics
+fspec show-epic user-management
+```
+
+**Work Unit Workflow:**
+Work units progress through Kanban states:
+- `backlog` → `specifying` → `testing` → `implementing` → `validating` → `done`
+- `blocked` state can occur at any point
+
+**Data Storage:**
+- Work units are stored in `spec/work-units.json`
+- Epics are stored in `spec/epics.json`
+
+For complete documentation: `fspec help project`
+
 ## Requirements
 
 - Node.js >= 18.0.0
@@ -295,59 +329,6 @@ fspec is designed as a companion tool to [CAGE](https://github.com/sengac/cage):
 - **PreToolUse hooks** validate specs before AI makes code changes
 - **PostToolUse hooks** validate specs after AI modifications
 - **CAGE tracks** test-to-feature mapping for code-spec alignment
-
-## Project Structure
-
-```
-fspec/
-├── src/
-│   ├── index.ts                        # CLI entry point
-│   ├── commands/                       # Command implementations
-│   │   ├── validate.ts                 # Gherkin validation ✅
-│   │   ├── create-feature.ts           # Feature creation ✅
-│   │   ├── list-features.ts            # Feature listing ✅
-│   │   ├── show-feature.ts             # Feature display ✅
-│   │   ├── format.ts                   # Prettier formatting ✅
-│   │   ├── check.ts                    # Complete validation suite ✅
-│   │   ├── validate-tags.ts            # Tag validation ✅
-│   │   ├── register-tag.ts             # Tag registration ✅
-│   │   ├── update-tag.ts               # Tag updating ✅
-│   │   ├── delete-tag.ts               # Tag deletion ✅
-│   │   ├── list-tags.ts                # Tag listing ✅
-│   │   ├── tag-stats.ts                # Tag statistics ✅
-│   │   ├── retag.ts                    # Bulk tag renaming ✅
-│   │   ├── add-scenario.ts             # Scenario addition ✅
-│   │   ├── add-step.ts                 # Step addition ✅
-│   │   ├── update-scenario.ts          # Scenario renaming ✅
-│   │   ├── update-step.ts              # Step updating ✅
-│   │   ├── delete-scenario.ts          # Scenario deletion ✅
-│   │   ├── delete-step.ts              # Step deletion ✅
-│   │   ├── delete-scenarios-by-tag.ts  # Bulk scenario deletion ✅
-│   │   ├── delete-features-by-tag.ts   # Bulk feature deletion ✅
-│   │   ├── get-scenarios.ts            # Query scenarios by tag ✅
-│   │   ├── show-acceptance-criteria.ts # Show ACs by tag ✅
-│   │   ├── add-architecture.ts         # Add architecture docs ✅
-│   │   ├── add-background.ts           # Add user story ✅
-│   │   ├── add-diagram.ts              # Add Mermaid diagrams ✅
-│   │   ├── delete-diagram.ts           # Delete Mermaid diagrams ✅
-│   │   ├── update-foundation.ts        # Update foundation sections ✅
-│   │   └── show-foundation.ts          # Display foundation ✅
-│   └── utils/                          # Shared utilities
-├── spec/                               # fspec's own specifications
-│   ├── foundation.json                 # Project foundation (source of truth)
-│   ├── FOUNDATION.md                   # Auto-generated from foundation.json
-│   ├── tags.json                       # Tag registry (source of truth)
-│   ├── TAGS.md                         # Auto-generated from tags.json
-│   ├── CLAUDE.md                       # Specification process guide
-│   └── features/                       # Gherkin feature files (29 files)
-├── scripts/
-│   └── install-local.sh                # Installation script
-├── dist/                               # Build output
-├── package.json
-├── tsconfig.json
-├── vite.config.ts
-└── README.md
-```
 
 ## Development
 
@@ -401,6 +382,26 @@ fspec follows ACDD methodology:
 
 See [spec/CLAUDE.md](./spec/CLAUDE.md) for detailed process guidelines.
 
+## Project Statistics
+
+**Current Release:**
+- **Commands Implemented:** 41 (specification + project management)
+- **Feature Files:** 42 validated Gherkin specifications
+- **Test Coverage:** 100% (all scenarios have tests)
+- **Build Size:** 338.43 kB (gzip: 77.67 kB)
+- **Architecture:** JSON-backed documentation with auto-generated markdown
+- **Validation:** Gherkin syntax + tag registry + Mermaid diagram validation
+
+**Key Features:**
+- ✅ Complete CRUD operations for features, scenarios, steps, tags, and diagrams
+- ✅ Work unit and epic management with Kanban workflow
+- ✅ Scenario-level tag support with inheritance from feature tags
+- ✅ JSON-backed tag registry (tags.json) with auto-generated TAGS.md
+- ✅ JSON-backed foundation (foundation.json) with auto-generated FOUNDATION.md
+- ✅ Mermaid diagram validation using bundled mermaid.parse()
+- ✅ Comprehensive query operations with tag filtering (AND logic)
+- ✅ Bulk operations with dry-run support
+
 ## Documentation
 
 - **[foundation.json](./spec/foundation.json)** - Project foundation (source of truth)
@@ -411,105 +412,6 @@ See [spec/CLAUDE.md](./spec/CLAUDE.md) for detailed process guidelines.
 - **[Gherkin Reference](https://cucumber.io/docs/gherkin/reference)** - Official Gherkin syntax
 
 **Important:** The `.json` files are the single source of truth. The `.md` files are auto-generated and should never be edited manually.
-
-## Current Status
-
-### ✅ Phase 1: Core Validation & Feature Management (COMPLETE)
-- ✅ Gherkin syntax validation with @cucumber/gherkin-parser
-- ✅ Clear error messages with line numbers and suggestions
-- ✅ Batch validation for all feature files
-- ✅ Verbose mode for debugging
-- ✅ Feature file creation with templates
-- ✅ List features with tag filtering
-- ✅ Display feature files in multiple formats
-- ✅ Prettier formatting integration
-
-**Commands:** `validate`, `create-feature`, `list-features`, `show-feature`, `format`
-
-### ✅ Phase 2: Tag Registry & Management (COMPLETE)
-- ✅ Tag validation against TAGS.md registry
-- ✅ Register new tags with categories
-- ✅ Update existing tags (category and/or description)
-- ✅ Delete tags from registry with safety checks
-- ✅ List registered tags with filtering
-- ✅ Tag usage statistics and reporting
-- ✅ Identify unused registered tags
-- ✅ Detect unregistered tags in features
-- ✅ Bulk rename tags across all files
-
-**Commands:** `validate-tags`, `register-tag`, `update-tag`, `delete-tag`, `list-tags`, `tag-stats`, `retag`
-
-### ✅ Phase 3: Advanced Feature Editing (COMPLETE)
-- ✅ Add scenarios to existing features
-- ✅ Add steps to existing scenarios
-- ✅ Update scenario names
-- ✅ Update step text and/or keywords
-- ✅ Delete steps from scenarios
-- ✅ Delete scenarios from features
-- ✅ Preserve formatting and indentation
-- ✅ Handle data tables and doc strings
-- ✅ Validate after modifications
-
-**Commands:** `add-scenario`, `add-step`, `update-scenario`, `update-step`, `delete-scenario`, `delete-step`
-
-### ✅ Phase 4: CRUD Operations & Tag-Based Queries (COMPLETE)
-- ✅ Query scenarios by tag(s) with AND logic
-- ✅ Show acceptance criteria by tag with multiple formats (text, markdown, JSON)
-- ✅ Export acceptance criteria to file
-- ✅ Bulk delete scenarios by tag across multiple files
-- ✅ Bulk delete feature files by tag
-- ✅ Dry-run mode for previewing deletions
-- ✅ Preserve feature structure during deletions
-- ✅ Complete tag-based filtering foundation
-
-**Commands:** `get-scenarios`, `show-acceptance-criteria`, `delete-scenarios`, `delete-features`
-
-### ✅ Phase 5: Advanced CRUD & Bulk Operations (COMPLETE)
-- ✅ Delete step from scenario
-- ✅ Update scenario (rename)
-- ✅ Update step (edit text/type)
-- ✅ Delete tag from registry
-- ✅ Bulk delete scenarios by tag
-- ✅ Bulk delete features by tag
-- ✅ Retag operations (rename tags across files)
-- ✅ Comprehensive validation suite
-- ✅ Dry-run support for destructive operations
-
-**Commands:** `delete-step`, `update-step`, `update-scenario`, `delete-tag`, `delete-scenarios`, `delete-features`, `retag`, `check`
-
-### ✅ Phase 6: Architecture Documentation & JSON-Backed System (COMPLETE)
-- ✅ Add/update architecture notes in feature files
-- ✅ Add/update user stories (Background) in feature files
-- ✅ JSON-backed foundation system (foundation.json as source of truth)
-- ✅ JSON-backed tag system (tags.json as source of truth)
-- ✅ Add/update Mermaid diagrams with automatic syntax validation (JSON-backed)
-- ✅ Mermaid validation using mermaid.parse() with detailed error messages
-- ✅ Delete Mermaid diagrams (JSON-backed)
-- ✅ Update foundation sections (JSON-backed)
-- ✅ Auto-generate FOUNDATION.md and TAGS.md from JSON
-- ✅ Display foundation content with multiple formats
-- ✅ Section-specific operations
-- ✅ JSON output for programmatic access
-- ✅ Full CRUD operations on both tags.json and foundation.json
-
-**Commands:** `add-architecture`, `add-background`, `add-diagram`, `delete-diagram`, `update-foundation`, `show-foundation`
-
-### 🎯 All Core Features Complete!
-
-**Summary:**
-- **Total Commands:** 30 implemented
-- **Total Tests:** 324 passing (100% pass rate)
-- **Feature Files:** 29 validated specifications
-- **Code Coverage:** All commands fully tested
-- **Build Size:** 304.99 kB (gzip: 71.33 kB)
-- **Architecture:** JSON-backed documentation system with auto-generated markdown
-- **Mermaid Validation:** Bundled mermaid.parse() with jsdom for diagram syntax validation
-
-### 🔮 Future Enhancements (Optional)
-- **JSON I/O Enhancement**: Consistent JSON input/output across all commands for easier AI agent integration
-  - Accept JSON input for complex operations (multi-step scenarios, batch updates)
-  - Standardize JSON output format across all commands
-  - Machine-readable error responses in JSON format
 
 ## Contributing
 

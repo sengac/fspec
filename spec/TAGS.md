@@ -19,6 +19,7 @@ Tags that identify which development phase a feature belongs to (from FOUNDATION
 | `@phase5` | Phase 5: Advanced CRUD & Bulk Operations | Features: Update scenarios/steps, bulk delete, retag operations (7 files) |
 | `@phase6` | Phase 6: Architecture Documentation | Features: FOUNDATION.md management, Mermaid diagrams (3 files) |
 | `@phase7` | Phase 7: JSON-Backed Documentation | Features: JSON schema validation, MD generation from JSON, migration tools (6 files) |
+| `@phase8` | Phase 8: Incomplete Features - missed functionality that needs implementation |  |
 
 **Rule**: Every feature file MUST have exactly ONE phase tag.
 
@@ -44,20 +45,78 @@ Tags that categorize features by functional area.
 
 | Tag | Description | Usage |
 |-----|-------------|-------|
+| `@accuracy` | Accuracy measurement |  |
+| `@answer-question` | Question answering operations |  |
 | `@authentication` | Authentication and authorization functionality |  |
+| `@auto-blocking` | Automatic blocking state transitions |  |
+| `@auto-transition` | Automatic state transitions |  |
+| `@blocked-state` | Blocked state handling |  |
+| `@board` | Kanban board operations |  |
+| `@board-view` | Kanban board visualization |  |
+| `@bulk` | Bulk operations |  |
+| `@bulk-add` | Bulk add operations |  |
+| `@bulk-export` | Bulk export operations |  |
 | `@bulk-operations` | Bulk Multi-File Operations |  |
+| `@burndown` | Burndown chart generation |  |
+| `@by-prefix` | Querying or filtering work units by prefix (e.g., AUTH-, DASH-) |  |
+| `@calculation` | Calculation operations |  |
+| `@cascade` | Cascade operations |  |
+| `@comparison` | Comparison operations |  |
+| `@completion` | Completion operations |  |
+| `@compound` | Compound query operations |  |
+| `@critical-path` | Critical path analysis |  |
+| `@crud` | Create, Read, Update, Delete operations |  |
+| `@delete` | Delete operations |  |
+| `@dependencies` | Dependency management between work units |  |
 | `@documentation` | Documentation Display |  |
+| `@epics` | Epic management and high-level work grouping |  |
+| `@estimation` | Estimation operations |  |
+| `@example-mapping` | Example mapping for BDD discovery (rules, examples, questions, assumptions) |  |
+| `@export` | Export operations |  |
 | `@feature-management` | Feature File Operations |  |
+| `@filtering` | Filtering and query operations |  |
+| `@forecasting` | Forecasting and predictions |  |
 | `@formatting` | Auto-Formatting |  |
 | `@foundation-management` | FOUNDATION.md Operations |  |
+| `@generate-scenarios` | Scenario generation from examples |  |
+| `@impact-analysis` | Impact analysis and dependency chains |  |
+| `@kanban` | Kanban board and workflow management |  |
+| `@list` | List operations |  |
+| `@metrics` | Metrics and measurements |  |
 | `@migration` | Migration & Data Transformation |  |
 | `@modification` | Feature Modification Operations |  |
+| `@operations` | General operations |  |
+| `@parent-child` | Parent-child work unit relationships |  |
+| `@prediction` | Prediction operations |  |
+| `@prefixes` | Work unit ID prefix management |  |
+| `@priority` | Priority management and reordering |  |
+| `@progress` | Progress tracking and reporting |  |
+| `@project-management` | Project management features including work units, epics, and workflow |  |
+| `@query` | Query operations for searching and filtering |  |
 | `@querying` | Query & Search Operations |  |
+| `@read` | Read operations |  |
 | `@read-only` | Read-Only Operations |  |
+| `@recommendations` | Recommendation features providing suggestions based on historical data |  |
+| `@remove` | Remove operations |  |
+| `@repair` | Data repair operations |  |
+| `@reporting` | Reporting and statistics |  |
 | `@scaffolding` | Project Setup & Templates |  |
+| `@soft-dependency` | Soft dependency relationships |  |
+| `@state-enforcement` | State transition enforcement |  |
+| `@state-history` | State history tracking |  |
+| `@state-transition` | State transition operations |  |
+| `@statistics` | Statistical analysis |  |
 | `@tag-management` | TAGS.md Operations |  |
+| `@tracking` | Metric tracking operations |  |
+| `@ui-refinement` | UI refinement and enhancement operations |  |
+| `@update` | Update operations |  |
 | `@utility` | Utility & Helper Commands |  |
 | `@validation` | Syntax & Structure Validation |  |
+| `@velocity` | Velocity calculation |  |
+| `@visualization` | Data visualization |  |
+| `@work-units` | Work unit CRUD operations |  |
+| `@workflow` | Workflow and state transition features |  |
+| `@workflow-automation` | Workflow automation and lifecycle integration utilities |  |
 
 **Rule**: Every feature file MUST have at least ONE feature group tag.
 
@@ -68,6 +127,8 @@ Tags for specific technical concerns or architectural patterns.
 | Tag | Description | Usage |
 |-----|-------------|-------|
 | `@ast` | Abstract Syntax Tree |  |
+| `@automation` | Automated workflow operations and state transitions |  |
+| `@bdd` | Behavior-Driven Development methodology |  |
 | `@cucumber-parser` | Cucumber Parser Integration |  |
 | `@email` | Email-related functionality |  |
 | `@error-handling` | Error Handling |  |
@@ -76,7 +137,9 @@ Tags for specific technical concerns or architectural patterns.
 | `@internal` | Internal Utility |  |
 | `@json-backed` | JSON-Backed Documentation |  |
 | `@json-schema` | JSON Schema Validation |  |
+| `@learning` | Machine learning and adaptive features based on usage patterns |  |
 | `@mermaid` | Mermaid Diagram Support |  |
+| `@pattern-detection` | Features involving pattern detection and analysis from historical data |  |
 | `@push` | Push notification functionality |  |
 | `@sms` | SMS-related functionality |  |
 | `@template` | Template System |  |
@@ -129,16 +192,23 @@ Tags for test-related scenarios and requirements.
 
 | Tag | Description | Usage |
 |-----|-------------|-------|
+| `@blocking` | Operations that block workflow progression |  |
+| `@circular-dependency` | Circular dependency detection tests |  |
+| `@consistency` | Data consistency validation |  |
+| `@duplicate` | Duplicate detection tests |  |
 | `@e2e-test` | End-to-End Test Required |  |
 | `@edge-case` | Edge case tests - validation of boundary conditions and unusual scenarios |  |
+| `@happy-path` | Happy path test scenarios |  |
 | `@integration-test` | Integration Test Required |  |
 | `@manual-test` | Requires Manual Testing |  |
+| `@prerequisites` | Prerequisite validation scenarios |  |
 | `@regression` | Regression tests - comprehensive validation of existing functionality |  |
 | `@smoke` | Smoke tests - quick validation of critical functionality |  |
 | `@unit-test` | Unit Test Coverage Required |  |
 | `@unregistered-scenario-tag` | Example tag used in test scenarios to demonstrate error handling |  |
 | `@unregistered-tag1` | Example tag used in test scenarios to demonstrate error handling |  |
 | `@unregistered-tag2` | Example tag used in test scenarios to demonstrate error handling |  |
+| `@warning` | Operations that produce warnings |  |
 
 **Rule**: Use testing tags to indicate what level of testing is required for a scenario.
 
@@ -148,7 +218,6 @@ Tags specific to CAGE integration and agentic coding workflows.
 
 | Tag | Description | Usage |
 |-----|-------------|-------|
-| `@cage-hook` | CAGE Hook Integration |  |
 | `@execa` | Execa Child Process |  |
 | `@acdd` | Acceptance Criteria Driven Development |  |
 | `@spec-alignment` | Specification Alignment |  |

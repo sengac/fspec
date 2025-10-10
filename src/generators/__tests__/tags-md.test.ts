@@ -249,6 +249,10 @@ describe('Feature: Generate TAGS.md from tags.json', () => {
     });
   });
 
+  describe('Scenario: Fail if tags.json is invalid', () => {
+    it.todo('should reject invalid tags.json schema');
+  });
+
   describe('Scenario: Regeneration is idempotent', () => {
     it('should produce identical output on multiple generations', async () => {
       const tags: Tags = {
@@ -277,5 +281,9 @@ describe('Feature: Generate TAGS.md from tags.json', () => {
 
       expect(markdown1).toBe(markdown2);
     });
+  });
+
+  describe('Scenario: Support custom output path', () => {
+    it.todo('should support generating to custom output path');
   });
 });

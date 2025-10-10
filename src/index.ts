@@ -33,6 +33,13 @@ import { showFoundationCommand } from './commands/show-foundation';
 import { deleteDiagramCommand } from './commands/delete-diagram';
 import { generateFoundationMdCommandCLI } from './commands/generate-foundation-md';
 import { generateTagsMdCommandCLI } from './commands/generate-tags-md';
+// Project management commands
+import { createWorkUnitCommand } from './commands/create-work-unit-command';
+import { listWorkUnitsCommand } from './commands/list-work-units-command';
+import { showWorkUnitCommand } from './commands/show-work-unit-command';
+import { createEpicCommand } from './commands/create-epic-command';
+import { listEpicsCommand } from './commands/list-epics-command';
+import { showEpicCommand } from './commands/show-epic-command';
 
 const program = new Command();
 
@@ -49,8 +56,8 @@ function displayCustomHelp(): void {
   console.log('  ' + chalk.cyan('spec') + '        - Specification Management (Gherkin features, scenarios, validation)');
   console.log('  ' + chalk.cyan('tags') + '        - Tag Registry & Management');
   console.log('  ' + chalk.cyan('foundation') + '   - Foundation & Architecture Documentation');
-  console.log('  ' + chalk.cyan('query') + '       - Query & Reporting');
-  console.log('  ' + chalk.cyan('project') + '     - Project Management (Coming Soon)');
+  console.log('  ' + chalk.cyan('query') + '       - Query & Reporting (supports scenario-level tags)');
+  console.log('  ' + chalk.cyan('project') + '     - Project Management (work units, epics, Kanban workflow)');
   console.log('');
 
   console.log(chalk.bold('QUICK START'));
@@ -310,6 +317,7 @@ function displayQueryHelp(): void {
   console.log('    Examples:');
   console.log('      fspec get-scenarios --tag=@phase1');
   console.log('      fspec get-scenarios --tag=@phase1 --tag=@critical --format=json');
+  console.log('      fspec get-scenarios --tag=@smoke  # Matches scenario-level tags');
   console.log('');
 
   console.log(chalk.bold('ACCEPTANCE CRITERIA'));
@@ -324,26 +332,83 @@ function displayQueryHelp(): void {
   console.log('      fspec show-acceptance-criteria --tag=@critical --format=json --output=acs.json');
   console.log('');
 
-  console.log(chalk.bold('NOTES'));
+  console.log(chalk.bold('TAG MATCHING'));
+  console.log('  - Scenarios inherit feature-level tags');
+  console.log('  - Scenarios can have their own scenario-level tags (@smoke, @regression, etc.)');
+  console.log('  - Tag matching checks BOTH feature tags AND scenario tags');
   console.log('  - Multiple --tag options use AND logic (all tags must match)');
+  console.log('  - Example: Feature @auth + Scenario @smoke matches both @auth and @smoke');
+  console.log('');
+
+  console.log(chalk.bold('NOTES'));
   console.log('  - JSON output is ideal for programmatic access and AI agent integration');
+  console.log('  - Scenario tags are displayed in output (e.g., [@smoke @critical])');
   console.log('');
 }
 
 function displayProjectHelp(): void {
   console.log(chalk.bold('\nPROJECT MANAGEMENT\n'));
-  console.log(chalk.yellow('Coming Soon!\n'));
-  console.log('Project management features are planned for future releases.\n');
-  console.log(chalk.bold('PLANNED FEATURES'));
-  console.log('  - Work unit management (tag-based)');
-  console.log('  - Kanban workflow (backlog → specifying → testing → implementing → validating → done)');
-  console.log('  - Example mapping integration (rules, examples, questions, assumptions)');
-  console.log('  - Dependency tracking (blocks, blockedBy, dependsOn, relatesTo)');
-  console.log('  - Estimation & metrics (story points, actual tokens, iterations)');
-  console.log('  - Epic management');
-  console.log('  - CAGE integration for AI-driven workflow');
+  console.log(chalk.dim('Manage work units, epics, and Kanban workflow for ACDD development\n'));
+
+  console.log(chalk.bold('WORK UNIT MANAGEMENT'));
+  console.log('  ' + chalk.cyan('fspec create-work-unit <prefix> <title>') + ' Create new work unit');
+  console.log('    Options:');
+  console.log('      -d, --description <desc>         Work unit description');
+  console.log('      -e, --epic <epic>                Epic ID to associate with');
+  console.log('      -p, --parent <parent>            Parent work unit ID');
+  console.log('    Examples:');
+  console.log('      fspec create-work-unit AUTH "User login feature"');
+  console.log('      fspec create-work-unit DASH "Dashboard view" -e user-management');
   console.log('');
-  console.log('See project-management.md for design documentation.\n');
+  console.log('  ' + chalk.cyan('fspec list-work-units') + '                List all work units');
+  console.log('    Options:');
+  console.log('      -s, --status <status>            Filter by status');
+  console.log('      -p, --prefix <prefix>            Filter by prefix');
+  console.log('      -e, --epic <epic>                Filter by epic');
+  console.log('    Examples:');
+  console.log('      fspec list-work-units');
+  console.log('      fspec list-work-units -s specifying');
+  console.log('      fspec list-work-units -p AUTH -e user-management');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec show-work-unit <id>') + '            Display work unit details');
+  console.log('    Options:');
+  console.log('      -f, --format <format>            Output: text or json (default: text)');
+  console.log('    Examples:');
+  console.log('      fspec show-work-unit AUTH-001');
+  console.log('      fspec show-work-unit AUTH-001 -f json');
+  console.log('');
+
+  console.log(chalk.bold('EPIC MANAGEMENT'));
+  console.log('  ' + chalk.cyan('fspec create-epic <id> <title>') + '      Create new epic');
+  console.log('    Options:');
+  console.log('      -d, --description <desc>         Epic description');
+  console.log('    Examples:');
+  console.log('      fspec create-epic user-management "User Management Features"');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec list-epics') + '                     List all epics');
+  console.log('    Examples:');
+  console.log('      fspec list-epics');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec show-epic <id>') + '                 Display epic details');
+  console.log('    Options:');
+  console.log('      -f, --format <format>            Output: text or json (default: text)');
+  console.log('    Examples:');
+  console.log('      fspec show-epic user-management');
+  console.log('      fspec show-epic user-management -f json');
+  console.log('');
+
+  console.log(chalk.bold('WORKFLOW STATES'));
+  console.log('  Work units progress through Kanban states:');
+  console.log('  backlog → specifying → testing → implementing → validating → done');
+  console.log('  (blocked state can occur at any point)');
+  console.log('');
+
+  console.log(chalk.bold('NOTES'));
+  console.log('  - Work units are stored in spec/work-units.json');
+  console.log('  - Epics are stored in spec/epics.json');
+  console.log('  - All commands follow ACDD (Acceptance Criteria Driven Development)');
+  console.log('  - See spec/features/ for full specification of project management features');
+  console.log('');
 }
 
 // Custom help command handler
@@ -728,22 +793,59 @@ program
   .description('Generate TAGS.md from tags.json')
   .action(generateTagsMdCommandCLI);
 
-// TODO: Add more commands
-// - create-feature
-// - add-scenario
-// - add-step
-// - add-architecture
-// - add-background
-// - list-features
-// - show-feature
-// - add-diagram
-// - update-foundation
-// - show-foundation
-// - register-tag
-// - validate-tags
-// - list-tags
-// - tag-stats
-// - format
-// - check
+// ============================================================================
+// PROJECT MANAGEMENT COMMANDS
+// ============================================================================
+
+// Create work unit command
+program
+  .command('create-work-unit')
+  .description('Create a new work unit')
+  .argument('<prefix>', 'Work unit prefix (e.g., AUTH, DASH)')
+  .argument('<title>', 'Work unit title')
+  .option('-d, --description <description>', 'Work unit description')
+  .option('-e, --epic <epic>', 'Epic ID to associate with')
+  .option('-p, --parent <parent>', 'Parent work unit ID')
+  .action(createWorkUnitCommand);
+
+// List work units command
+program
+  .command('list-work-units')
+  .description('List all work units')
+  .option('-s, --status <status>', 'Filter by status')
+  .option('-p, --prefix <prefix>', 'Filter by prefix')
+  .option('-e, --epic <epic>', 'Filter by epic')
+  .action(listWorkUnitsCommand);
+
+// Show work unit command
+program
+  .command('show-work-unit')
+  .description('Display work unit details')
+  .argument('<workUnitId>', 'Work unit ID (e.g., AUTH-001)')
+  .option('-f, --format <format>', 'Output format: text or json', 'text')
+  .action(showWorkUnitCommand);
+
+// Create epic command
+program
+  .command('create-epic')
+  .description('Create a new epic')
+  .argument('<epicId>', 'Epic ID (lowercase-with-hyphens, e.g., user-management)')
+  .argument('<title>', 'Epic title')
+  .option('-d, --description <description>', 'Epic description')
+  .action(createEpicCommand);
+
+// List epics command
+program
+  .command('list-epics')
+  .description('List all epics')
+  .action(listEpicsCommand);
+
+// Show epic command
+program
+  .command('show-epic')
+  .description('Display epic details')
+  .argument('<epicId>', 'Epic ID')
+  .option('-f, --format <format>', 'Output format: text or json', 'text')
+  .action(showEpicCommand);
 
 program.parse();
