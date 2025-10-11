@@ -391,19 +391,20 @@ describe('Feature: Display Foundation Documentation', () => {
     });
   });
 
-  describe('Scenario: Handle missing foundation.json', () => {
-    it('should error when foundation.json not found', async () => {
+  describe('Scenario: Auto-create foundation.json when missing', () => {
+    it('should auto-create foundation.json with default structure when missing', async () => {
       // Given I have no foundation.json file
       // When I run `fspec show-foundation`
       const result = await showFoundation({
         cwd: testDir,
       });
 
-      // Then the command should exit with code 1
-      expect(result.success).toBe(false);
+      // Then it should succeed
+      expect(result.success).toBe(true);
 
-      // And the output should show "foundation.json not found"
-      expect(result.error).toMatch(/foundation\.json not found/i);
+      // And foundation.json should be auto-created with default structure
+      expect(result.output).toContain('PROJECT');
+      expect(result.output).toContain('Project'); // Default name
     });
   });
 

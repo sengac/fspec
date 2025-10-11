@@ -1,8 +1,7 @@
-import { readFile, writeFile } from 'fs/promises';
-import { join } from 'path';
-import { existsSync } from 'fs';
+import { writeFile } from 'fs/promises';
 import chalk from 'chalk';
 import type { Foundation } from '../types/foundation';
+import { ensureFoundationFile } from '../utils/ensure-files';
 
 interface ShowFoundationOptions {
   field?: string;
@@ -31,20 +30,9 @@ export async function showFoundation(
 ): Promise<ShowFoundationResult> {
   const { field, format = 'text', output, cwd = process.cwd() } = options;
 
-  const foundationJsonPath = join(cwd, 'spec/foundation.json');
-
-  // Check if foundation.json exists
-  if (!existsSync(foundationJsonPath)) {
-    return {
-      success: false,
-      error: 'foundation.json not found: spec/foundation.json',
-    };
-  }
-
   try {
-    // Read foundation.json
-    const content = await readFile(foundationJsonPath, 'utf-8');
-    const foundationData: Foundation = JSON.parse(content);
+    // Load or create foundation.json using ensureFoundationFile
+    const foundationData: Foundation = await ensureFoundationFile(cwd);
 
     // Get specific field or entire foundation
     let displayData: any;

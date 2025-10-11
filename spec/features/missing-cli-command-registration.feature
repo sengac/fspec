@@ -24,7 +24,7 @@ Feature: Complete CLI Command Registration
   - Example Mapping (add-example, add-question, add-rule, remove, answer, import, export, generate)
   - Dependencies (add-dependency, add-dependencies, remove, clear, export, query)
   - Metrics & Estimation (record-metric, record-tokens, record-iteration, query commands)
-  - Workflow & Automation (auto-advance, display-board, workflow-automation)
+  - Workflow & Automation (auto-advance, board, workflow-automation)
   - Prefix & Epic Management (create-prefix, update-prefix, delete-epic)
   - Validation (validate-spec-alignment, validate-work-units)
   - Query & Reporting (query, generate-summary-report)
@@ -116,7 +116,7 @@ Feature: Complete CLI Command Registration
     Given workflow functions exist in src/commands/
     When I check if workflow commands are registered
     Then "fspec auto-advance" should be registered
-    And "fspec display-board" should be registered
+    And "fspec board" should be registered
     And "fspec workflow-automation" should be registered
 
   @prefix-epic

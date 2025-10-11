@@ -31,11 +31,11 @@ describe('Feature: Complete CLI Command Registration', () => {
         'add-rule',
         'answer-question',
         'auto-advance',
+        'board',
         'clear-dependencies',
         'create-prefix',
         'delete-epic',
         'delete-work-unit',
-        'display-board',
         'export-dependencies',
         'export-example-map',
         'export-work-units',
@@ -66,7 +66,7 @@ describe('Feature: Complete CLI Command Registration', () => {
       ];
 
       // When I check src/index.ts for command registrations
-      // Then all 46 commands should be registered
+      // Then all commands should be registered
       const registeredCommands: string[] = [];
       const unregisteredCommands: string[] = [];
 

@@ -54,6 +54,11 @@
       "prefix": "CLEAN",
       "description": "Code cleanup and refactoring",
       "createdAt": "2025-10-11T03:20:26.058Z"
+    },
+    "BOARD": {
+      "prefix": "BOARD",
+      "description": "Kanban board and workflow visualization features",
+      "createdAt": "2025-10-11T04:32:24.570Z"
     }
   }
 }

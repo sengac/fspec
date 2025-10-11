@@ -86,6 +86,14 @@
             {
               "name": "chalk",
               "description": "Terminal output styling and colored messages"
+            },
+            {
+              "name": "ink",
+              "description": "React renderer for building rich, interactive CLI interfaces (used for board display and other UI-heavy commands)"
+            },
+            {
+              "name": "react",
+              "description": "Component library for building terminal UI with Ink"
             }
           ]
         },
@@ -137,6 +145,10 @@
             {
               "name": "@types/node",
               "description": "Node.js type definitions"
+            },
+            {
+              "name": "ink-testing-library",
+              "description": "Testing utilities for Ink applications (render(), lastFrame())"
             }
           ]
         }

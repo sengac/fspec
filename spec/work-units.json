@@ -575,6 +575,77 @@
         "Update Then step text",
         "Update step preserving position"
       ]
+    },
+    "INIT-002": {
+      "id": "INIT-002",
+      "title": "Add ensureFoundationFile and ensureTagsFile with proper auto-initialization",
+      "status": "done",
+      "createdAt": "2025-10-11T03:55:06.491Z",
+      "updatedAt": "2025-10-11T04:29:23.795Z",
+      "description": "Add ensureFoundationFile() and ensureTagsFile() functions to src/utils/ensure-files.ts and update ALL commands that read foundation.json or tags.json to use these functions instead of manual file checks",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-11T03:55:27.686Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-11T04:00:53.724Z",
+          "reason": "Feature file tagged with @INIT-002, ready to write tests"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-11T04:12:03.024Z",
+          "reason": "Tests written, ready to implement ensureFoundationFile and ensureTagsFile"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-11T04:25:49.608Z",
+          "reason": "All commands updated to use ensure functions, tests passing"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-11T04:29:23.795Z",
+          "reason": "Implementation complete: ensureFoundationFile() and ensureTagsFile() added, all commands updated, all tests passing"
+        }
+      ]
+    },
+    "BOARD-001": {
+      "id": "BOARD-001",
+      "title": "Implement board command with Ink + React visualization",
+      "status": "done",
+      "createdAt": "2025-10-11T04:32:31.325Z",
+      "updatedAt": "2025-10-11T05:18:44.997Z",
+      "description": "Create a Kanban board visualization using Ink + React that displays all work units across 7 workflow states. The board command replaces the old display-board implementation with a responsive terminal UI following CAGE patterns.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-11T04:32:38.196Z",
+          "reason": "Analyzing feature file scenarios and current broken implementation"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-11T04:43:24.069Z",
+          "reason": "Example mapping complete, design agreed: box-drawing columns, 3-item limit, BLOCKED highlighted, all columns shown"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-11T04:44:20.798Z",
+          "reason": "Tests written and passing for data structure, now implementing visual output"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-11T05:11:08.352Z",
+          "reason": "Implementation complete: BoardDisplay component using Ink + React, architecture docs updated, component follows CAGE patterns with useStdout, ready for validation"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-11T05:13:08.776Z",
+          "reason": "Implementation validated: board command displays Kanban board correctly using Ink + React, all tests pass, follows CAGE patterns, architecture docs updated, no issues found"
+        }
+      ]
     }
   },
   "states": {
@@ -596,7 +667,9 @@
       "FEAT-003",
       "FEAT-004",
       "FEAT-005",
-      "TEST-001"
+      "TEST-001",
+      "INIT-002",
+      "BOARD-001"
     ],
     "blocked": []
   }

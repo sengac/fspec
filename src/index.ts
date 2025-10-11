@@ -659,12 +659,14 @@ function displayProjectHelp(): void {
   console.log('      fspec auto-advance --dry-run');
   console.log('      fspec auto-advance');
   console.log('');
-  console.log('  ' + chalk.cyan('fspec display-board') + '                 Display Kanban board of all work');
+  console.log('  ' + chalk.cyan('fspec board') + '                          Display Kanban board of all work');
   console.log('    Options:');
   console.log('      --format <format>                Output: text or json (default: text)');
+  console.log('      --limit <limit>                  Max items per column (default: 3)');
   console.log('    Examples:');
-  console.log('      fspec display-board');
-  console.log('      fspec display-board --format=json');
+  console.log('      fspec board');
+  console.log('      fspec board --format=json');
+  console.log('      fspec board --limit=5');
   console.log('');
 
   console.log(chalk.bold('QUERY AND REPORTING'));
@@ -1868,14 +1870,31 @@ program
 
 // Display board command
 program
-  .command('display-board')
+  .command('board')
   .description('Display Kanban board of work units')
   .option('--format <format>', 'Output format: text or json', 'text')
-  .action(async (options: { format?: string }) => {
+  .option('--limit <limit>', 'Max items per column', '3')
+  .action(async (options: { format?: string; limit?: string }) => {
     try {
-      const result = await displayBoard({ format: options.format as 'text' | 'json' });
+      const result = await displayBoard({ cwd: process.cwd() });
+
       if (options.format === 'json') {
         console.log(JSON.stringify(result, null, 2));
+      } else {
+        // Display text format board using Ink
+        const limit = parseInt(options.limit || '3', 10);
+        const { render } = await import('ink');
+        const React = await import('react');
+        const { BoardDisplay } = await import('./components/BoardDisplay.js');
+
+        render(
+          React.createElement(BoardDisplay, {
+            columns: result.columns,
+            board: result.board,
+            summary: result.summary,
+            limit,
+          })
+        );
       }
     } catch (error: any) {
       console.error(chalk.red('✗ Failed to display board:'), error.message);

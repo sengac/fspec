@@ -32,6 +32,8 @@ A CLI tool that provides AI agents (like Claude Code, GitHub Copilot, etc.) with
 - **@cucumber/messages**: Gherkin AST types and message protocol
 - **commander.js**: CLI argument parsing and command structure
 - **chalk**: Terminal output styling and colored messages
+- **ink**: React renderer for building rich, interactive CLI interfaces (used for board display and other UI-heavy commands)
+- **react**: Component library for building terminal UI with Ink
 
 **File Operations:**
 - **Node.js fs/promises**: File system operations (read/write feature files, FOUNDATION.md, TAGS.md)
@@ -47,6 +49,7 @@ A CLI tool that provides AI agents (like Claude Code, GitHub Copilot, etc.) with
 - **vitest**: Testing framework
 - **typescript**: Type checking and compilation
 - **@types/node**: Node.js type definitions
+- **ink-testing-library**: Testing utilities for Ink applications (render(), lastFrame())
 
 ### Non-Functional Requirements
 
