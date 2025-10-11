@@ -109,11 +109,11 @@ function displayCustomHelp(): void {
 
   console.log(chalk.bold('COMMAND GROUPS'));
   console.log('  Use ' + chalk.cyan('fspec help <group>') + ' for detailed help on a specific area:\n');
-  console.log('  ' + chalk.cyan('spec') + '        - Specification Management (Gherkin features, scenarios, validation)');
-  console.log('  ' + chalk.cyan('tags') + '        - Tag Registry & Management');
-  console.log('  ' + chalk.cyan('foundation') + '   - Foundation & Architecture Documentation');
-  console.log('  ' + chalk.cyan('query') + '       - Query & Reporting (supports scenario-level tags)');
-  console.log('  ' + chalk.cyan('project') + '     - Project Management (work units, epics, Kanban workflow)');
+  console.log('  ' + chalk.cyan('specs') + '     - Write and manage Gherkin feature files (create, edit, validate)');
+  console.log('  ' + chalk.cyan('work') + '      - Track work units through ACDD workflow (Kanban, dependencies, board)');
+  console.log('  ' + chalk.cyan('discovery') + ' - Collaborative discovery with example mapping (questions, rules, examples)');
+  console.log('  ' + chalk.cyan('metrics') + '   - Track progress and quality (estimates, metrics, reports, statistics)');
+  console.log('  ' + chalk.cyan('setup') + '     - Configure project structure (tags, epics, prefixes, foundation docs)');
   console.log('');
 
   console.log(chalk.bold('QUICK START'));
@@ -123,12 +123,13 @@ function displayCustomHelp(): void {
   console.log('  ' + chalk.cyan('fspec check') + '                 - Run all validation checks\n');
 
   console.log(chalk.bold('GET HELP'));
-  console.log('  ' + chalk.cyan('fspec --help') + '          - Show this help');
-  console.log('  ' + chalk.cyan('fspec help spec') + '       - Specification management commands');
-  console.log('  ' + chalk.cyan('fspec help tags') + '       - Tag management commands');
-  console.log('  ' + chalk.cyan('fspec help foundation') + ' - Foundation documentation commands');
-  console.log('  ' + chalk.cyan('fspec help query') + '      - Query and reporting commands');
-  console.log('  ' + chalk.cyan('fspec <command> --help') + ' - Detailed help for specific command\n');
+  console.log('  ' + chalk.cyan('fspec --help') + '            - Show this help');
+  console.log('  ' + chalk.cyan('fspec help specs') + '        - Gherkin feature file commands');
+  console.log('  ' + chalk.cyan('fspec help work') + '         - Work unit and Kanban workflow commands');
+  console.log('  ' + chalk.cyan('fspec help discovery') + '    - Example mapping commands');
+  console.log('  ' + chalk.cyan('fspec help metrics') + '      - Progress tracking and reporting commands');
+  console.log('  ' + chalk.cyan('fspec help setup') + '        - Configuration and setup commands');
+  console.log('  ' + chalk.cyan('fspec <command> --help') + '  - Detailed help for specific command\n');
 
   console.log(chalk.bold('EXAMPLES'));
   console.log('  # Validate specific feature file');
@@ -150,644 +151,592 @@ function displayCustomHelp(): void {
   console.log('');
 }
 
-function displaySpecHelp(): void {
-  console.log(chalk.bold('\nSPECIFICATION MANAGEMENT\n'));
+// ===== SPECS HELP =====
+function displaySpecsHelp(): void {
+  console.log(chalk.bold('\nGHERKIN SPECIFICATIONS'));
+  console.log(chalk.dim('Write and manage Gherkin feature files\n'));
 
-  console.log(chalk.bold('VALIDATION & CHECKING'));
-  console.log('  ' + chalk.cyan('fspec validate [file]') + '             Validate Gherkin syntax');
-  console.log('    Options:');
-  console.log('      -v, --verbose                    Show detailed validation output');
-  console.log('    Examples:');
-  console.log('      fspec validate                   Validate all feature files');
-  console.log('      fspec validate spec/features/login.feature');
-  console.log('');
-  console.log('  ' + chalk.cyan('fspec check') + '                        Run all validation checks');
-  console.log('    Options:');
-  console.log('      -v, --verbose                    Show detailed output');
-  console.log('');
-  console.log('  ' + chalk.cyan('fspec format [file]') + '                Format feature files with Prettier');
-  console.log('    Examples:');
-  console.log('      fspec format                     Format all feature files');
-  console.log('      fspec format spec/features/login.feature');
-  console.log('');
+  console.log('Use this when you need to:');
+  console.log('  • Create new feature files with proper Gherkin structure');
+  console.log('  • Add, edit, or delete scenarios and steps');
+  console.log('  • Add background stories and architecture notes');
+  console.log('  • Validate Gherkin syntax using official Cucumber parser');
+  console.log('  • Format feature files for consistency');
+  console.log('  • List and show features with filtering by tags');
+  console.log('  • Bulk operations on features and scenarios\n');
 
-  console.log(chalk.bold('FEATURE FILE MANAGEMENT'));
-  console.log('  ' + chalk.cyan('fspec create-feature <name>') + '       Create new feature file');
+  console.log(chalk.bold('FEATURES'));
+  console.log('  ' + chalk.cyan('fspec create-feature <name>') + '      Create new feature file');
   console.log('    Examples:');
   console.log('      fspec create-feature "User Authentication"');
   console.log('');
-  console.log('  ' + chalk.cyan('fspec list-features') + '                List all feature files');
+  console.log('  ' + chalk.cyan('fspec list-features') + '              List all feature files');
   console.log('    Options:');
   console.log('      --tag=<tag>                      Filter by tag');
   console.log('    Examples:');
   console.log('      fspec list-features --tag=@phase1');
   console.log('');
-  console.log('  ' + chalk.cyan('fspec show-feature <feature>') + '      Display feature file contents');
+  console.log('  ' + chalk.cyan('fspec show-feature <name>') + '         Show feature details');
   console.log('    Options:');
-  console.log('      --format=<format>                Output format: text or json (default: text)');
-  console.log('      --output=<file>                  Write output to file');
+  console.log('      --format <format>                Output: text or json');
+  console.log('      --output <file>                  Write to file');
   console.log('    Examples:');
   console.log('      fspec show-feature user-authentication');
-  console.log('      fspec show-feature login --format=json --output=login.json');
+  console.log('      fspec show-feature login --format=json');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec delete-features-by-tag') + '      Delete features by tag');
+  console.log('    Options:');
+  console.log('      --tag=<tag>                      Tag to match (required)');
+  console.log('      --dry-run                        Preview without deleting');
+  console.log('    Examples:');
+  console.log('      fspec delete-features-by-tag --tag=@deprecated --dry-run');
   console.log('');
 
-  console.log(chalk.bold('SCENARIO MANAGEMENT'));
-  console.log('  ' + chalk.cyan('fspec add-scenario <feature> <scenario>') + ' Add scenario to feature');
+  console.log(chalk.bold('SCENARIOS'));
+  console.log('  ' + chalk.cyan('fspec add-scenario <feature> <title>') + ' Add scenario to feature');
   console.log('    Examples:');
-  console.log('      fspec add-scenario login "Successful login"');
+  console.log('      fspec add-scenario login "Login with valid credentials"');
   console.log('');
-  console.log('  ' + chalk.cyan('fspec update-scenario <feature> <old> <new>') + ' Rename scenario');
+  console.log('  ' + chalk.cyan('fspec update-scenario <feature> <old> <new>') + ' Update scenario name');
   console.log('    Examples:');
   console.log('      fspec update-scenario login "Old Name" "New Name"');
   console.log('');
-  console.log('  ' + chalk.cyan('fspec delete-scenario <feature> <scenario>') + ' Delete scenario');
+  console.log('  ' + chalk.cyan('fspec delete-scenario <feature> <title>') + ' Delete scenario');
   console.log('    Examples:');
-  console.log('      fspec delete-scenario login "Obsolete scenario"');
+  console.log('      fspec delete-scenario login "Deprecated scenario"');
   console.log('');
-  console.log('  ' + chalk.cyan('fspec delete-scenarios') + '             Bulk delete scenarios by tag');
+  console.log('  ' + chalk.cyan('fspec get-scenarios') + '               Query scenarios by tag');
   console.log('    Options:');
-  console.log('      --tag=<tag>                      Filter by tag (multiple allowed, AND logic)');
-  console.log('      --dry-run                        Preview without making changes');
+  console.log('      --tag=<tag>                      Filter by tag (AND logic)');
+  console.log('      --format=<format>                Output: text or json');
   console.log('    Examples:');
-  console.log('      fspec delete-scenarios --tag=@deprecated --dry-run');
-  console.log('      fspec delete-scenarios --tag=@phase1 --tag=@wip');
+  console.log('      fspec get-scenarios --tag=@phase1 --tag=@critical');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec show-acceptance-criteria') + '    Show acceptance criteria');
+  console.log('    Options:');
+  console.log('      --tag=<tag>                      Filter by tag');
+  console.log('      --format=<format>                Output: text, markdown, json');
+  console.log('      --output=<file>                  Write to file');
+  console.log('    Examples:');
+  console.log('      fspec show-acceptance-criteria --tag=@phase1 --format=markdown');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec delete-scenarios-by-tag') + '     Delete scenarios by tag');
+  console.log('    Options:');
+  console.log('      --tag=<tag>                      Tag to match');
+  console.log('      --dry-run                        Preview without deleting');
   console.log('');
 
-  console.log(chalk.bold('STEP MANAGEMENT'));
-  console.log('  ' + chalk.cyan('fspec add-step <feature> <scenario> <type> <text>') + ' Add step');
-  console.log('    Step types: given, when, then, and, but');
+  console.log(chalk.bold('STEPS'));
+  console.log('  ' + chalk.cyan('fspec add-step <feature> <scenario> <keyword> <text>'));
   console.log('    Examples:');
-  console.log('      fspec add-step login "Login" given "I am on the login page"');
+  console.log('      fspec add-step login "Valid login" given "I am on the login page"');
   console.log('');
-  console.log('  ' + chalk.cyan('fspec update-step <feature> <scenario> <step>') + ' Update step');
+  console.log('  ' + chalk.cyan('fspec update-step <feature> <scenario> <old-text>'));
   console.log('    Options:');
-  console.log('      --text=<text>                    New step text');
-  console.log('      --keyword=<keyword>              New keyword (Given, When, Then, And, But)');
+  console.log('      --text <new-text>                New step text');
+  console.log('      --keyword <keyword>              New keyword (Given/When/Then/And/But)');
   console.log('    Examples:');
-  console.log('      fspec update-step login "Login" "I am on page" --text "I navigate to page"');
-  console.log('      fspec update-step login "Login" "I am on page" --keyword=When');
+  console.log('      fspec update-step login "Valid" "old step" --text "new step"');
   console.log('');
-  console.log('  ' + chalk.cyan('fspec delete-step <feature> <scenario> <step>') + ' Delete step');
+  console.log('  ' + chalk.cyan('fspec delete-step <feature> <scenario> <text>'));
   console.log('    Examples:');
-  console.log('      fspec delete-step login "Login" "I am on the login page"');
+  console.log('      fspec delete-step login "Valid login" "I am on the login page"');
   console.log('');
 
-  console.log(chalk.bold('DOCUMENTATION IN FEATURES'));
-  console.log('  ' + chalk.cyan('fspec add-architecture <feature> <text>') + ' Add architecture docs');
+  console.log(chalk.bold('CONTENT'));
+  console.log('  ' + chalk.cyan('fspec add-background <feature> <text>') + ' Add/update background story');
   console.log('    Examples:');
-  console.log('      fspec add-architecture login "Uses JWT tokens for sessions"');
+  console.log('      fspec add-background login "As a user\\nI want to log in"');
   console.log('');
-  console.log('  ' + chalk.cyan('fspec add-background <feature> <text>') + ' Add user story');
+  console.log('  ' + chalk.cyan('fspec add-architecture <feature> <text>') + ' Add architecture notes');
   console.log('    Examples:');
-  console.log('      fspec add-background login "As a user\\nI want to log in\\nSo that..."');
-  console.log('');
-
-  console.log(chalk.bold('BULK OPERATIONS'));
-  console.log('  ' + chalk.cyan('fspec delete-features') + '              Delete feature files by tag');
-  console.log('    Options:');
-  console.log('      --tag=<tag>                      Filter by tag (multiple allowed, AND logic)');
-  console.log('      --dry-run                        Preview without making changes');
-  console.log('    Examples:');
-  console.log('      fspec delete-features --tag=@deprecated --dry-run');
-  console.log('');
-}
-
-function displayTagsHelp(): void {
-  console.log(chalk.bold('\nTAG REGISTRY & MANAGEMENT\n'));
-  console.log(chalk.dim('Tags are managed in spec/tags.json with auto-generated spec/TAGS.md\n'));
-
-  console.log(chalk.bold('TAG VALIDATION'));
-  console.log('  ' + chalk.cyan('fspec validate-tags [file]') + '        Validate tags against registry');
-  console.log('    Examples:');
-  console.log('      fspec validate-tags              Check all feature files');
-  console.log('      fspec validate-tags spec/features/login.feature');
+  console.log('      fspec add-architecture login "Uses JWT tokens"');
   console.log('');
 
-  console.log(chalk.bold('TAG REGISTRY MANAGEMENT'));
-  console.log('  ' + chalk.cyan('fspec register-tag <tag> <category> <desc>') + ' Register new tag');
-  console.log('    Examples:');
-  console.log('      fspec register-tag @performance "Technical Tags" "Performance features"');
-  console.log('');
-  console.log('  ' + chalk.cyan('fspec update-tag <tag>') + '             Update existing tag');
+  console.log(chalk.bold('VALIDATION & FORMATTING'));
+  console.log('  ' + chalk.cyan('fspec validate') + '                   Validate Gherkin syntax');
   console.log('    Options:');
-  console.log('      --category=<category>            New category name');
-  console.log('      --description=<desc>             New description');
+  console.log('      --verbose                        Show detailed output');
   console.log('    Examples:');
-  console.log('      fspec update-tag @performance --description="Updated description"');
-  console.log('      fspec update-tag @performance --category="Technical Tags"');
+  console.log('      fspec validate');
+  console.log('      fspec validate spec/features/login.feature');
   console.log('');
-  console.log('  ' + chalk.cyan('fspec delete-tag <tag>') + '             Delete tag from registry');
-  console.log('    Options:');
-  console.log('      --force                          Delete even if used in features');
-  console.log('      --dry-run                        Preview without making changes');
+  console.log('  ' + chalk.cyan('fspec format') + '                     Format feature files');
   console.log('    Examples:');
-  console.log('      fspec delete-tag @deprecated --dry-run');
-  console.log('      fspec delete-tag @old --force');
+  console.log('      fspec format');
+  console.log('      fspec format spec/features/login.feature');
   console.log('');
-  console.log('  ' + chalk.cyan('fspec list-tags') + '                   List all registered tags');
+  console.log('  ' + chalk.cyan('fspec check') + '                      Run all validation checks');
   console.log('    Options:');
-  console.log('      --category=<category>            Filter by category');
+  console.log('      --verbose                        Show detailed output');
   console.log('    Examples:');
-  console.log('      fspec list-tags');
-  console.log('      fspec list-tags --category="Technical Tags"');
+  console.log('      fspec check --verbose');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec validate-tags') + '              Validate tag usage');
+  console.log('    Examples:');
+  console.log('      fspec validate-tags');
   console.log('');
 
-  console.log(chalk.bold('TAG OPERATIONS'));
-  console.log('  ' + chalk.cyan('fspec retag') + '                       Rename tags across all files');
+  console.log(chalk.bold('TAG MANAGEMENT (Feature/Scenario Level)'));
+  console.log('  ' + chalk.cyan('fspec add-tag-to-feature <file> <tag>'));
   console.log('    Options:');
-  console.log('      --from=<tag>                     Tag to rename from');
-  console.log('      --to=<tag>                       Tag to rename to');
-  console.log('      --dry-run                        Preview without making changes');
-  console.log('    Examples:');
-  console.log('      fspec retag --from=@old-tag --to=@new-tag --dry-run');
-  console.log('');
-  console.log('  ' + chalk.cyan('fspec tag-stats') + '                   Show tag usage statistics');
-  console.log('    Examples:');
-  console.log('      fspec tag-stats');
-  console.log('');
-
-  console.log(chalk.bold('FEATURE-LEVEL TAG MANAGEMENT'));
-  console.log('  ' + chalk.cyan('fspec add-tag-to-feature <file> <tags...>') + ' Add tags to feature');
-  console.log('    Options:');
-  console.log('      --validate-registry              Validate against spec/tags.json');
+  console.log('      --validate-registry              Check tag exists in registry');
   console.log('    Examples:');
   console.log('      fspec add-tag-to-feature spec/features/login.feature @critical');
-  console.log('      fspec add-tag-to-feature login.feature @critical @security');
   console.log('');
-  console.log('  ' + chalk.cyan('fspec remove-tag-from-feature <file> <tags...>') + ' Remove tags');
+  console.log('  ' + chalk.cyan('fspec remove-tag-from-feature <file> <tag>'));
   console.log('    Examples:');
   console.log('      fspec remove-tag-from-feature spec/features/login.feature @wip');
-  console.log('      fspec remove-tag-from-feature login.feature @wip @deprecated');
   console.log('');
-  console.log('  ' + chalk.cyan('fspec list-feature-tags <file>') + '   List tags on feature');
+  console.log('  ' + chalk.cyan('fspec list-feature-tags <file>'));
   console.log('    Options:');
-  console.log('      --show-categories                Show tag categories from registry');
-  console.log('    Examples:');
-  console.log('      fspec list-feature-tags spec/features/login.feature');
-  console.log('      fspec list-feature-tags login.feature --show-categories');
+  console.log('      --show-categories                Show tag categories');
   console.log('');
-
-  console.log(chalk.bold('SCENARIO-LEVEL TAG MANAGEMENT'));
-  console.log('  ' + chalk.cyan('fspec add-tag-to-scenario <file> <scenario> <tags...>') + ' Add tags to scenario');
-  console.log('    Options:');
-  console.log('      --validate-registry              Validate against spec/tags.json');
+  console.log('  ' + chalk.cyan('fspec add-tag-to-scenario <file> <scenario> <tag>'));
   console.log('    Examples:');
-  console.log('      fspec add-tag-to-scenario login.feature "Login" @smoke');
-  console.log('      fspec add-tag-to-scenario login.feature "Login" @smoke @critical');
+  console.log('      fspec add-tag-to-scenario login.feature "Valid login" @smoke');
   console.log('');
-  console.log('  ' + chalk.cyan('fspec remove-tag-from-scenario <file> <scenario> <tags...>') + ' Remove tags');
-  console.log('    Examples:');
-  console.log('      fspec remove-tag-from-scenario login.feature "Login" @wip');
-  console.log('      fspec remove-tag-from-scenario login.feature "Login" @wip @deprecated');
-  console.log('');
-  console.log('  ' + chalk.cyan('fspec list-scenario-tags <file> <scenario>') + ' List tags on scenario');
-  console.log('    Options:');
-  console.log('      --show-categories                Show tag categories from registry');
-  console.log('    Examples:');
-  console.log('      fspec list-scenario-tags login.feature "Login"');
-  console.log('      fspec list-scenario-tags login.feature "Login" --show-categories');
-  console.log('');
-
-  console.log(chalk.bold('NOTES'));
-  console.log('  - All tag write operations modify spec/tags.json');
-  console.log('  - spec/TAGS.md is auto-generated - never edit manually');
-  console.log('  - Regenerate TAGS.md: ' + chalk.cyan('fspec generate-tags-md'));
-  console.log('  - Work unit tags (@AUTH-001, @DASH-012) are validated against spec/work-units.json');
-  console.log('  - Work unit tags link features to project management (see ' + chalk.cyan('fspec help project') + ')');
+  console.log('  ' + chalk.cyan('fspec remove-tag-from-scenario <file> <scenario> <tag>'));
+  console.log('  ' + chalk.cyan('fspec list-scenario-tags <file> <scenario>'));
   console.log('');
 }
 
-function displayFoundationHelp(): void {
-  console.log(chalk.bold('\nFOUNDATION & ARCHITECTURE DOCUMENTATION\n'));
-  console.log(chalk.dim('Foundation is managed in spec/foundation.json with auto-generated spec/FOUNDATION.md\n'));
+function displayWorkHelp(): void {
+  console.log(chalk.bold('\nWORK UNIT MANAGEMENT'));
+  console.log(chalk.dim('Track work units through ACDD workflow\n'));
 
-  console.log(chalk.bold('VIEW FOUNDATION'));
-  console.log('  ' + chalk.cyan('fspec show-foundation') + '              Display foundation content');
+  console.log('Use this when you need to:');
+  console.log('  • Create and organize work units into a backlog');
+  console.log('  • Move work through Kanban states (backlog → specifying → testing → implementing → validating → done)');
+  console.log('  • Prioritize work in the backlog');
+  console.log('  • Manage dependencies between work units');
+  console.log('  • Block work units when progress is prevented');
+  console.log('  • Display the Kanban board showing current state');
+  console.log('  • Auto-advance ready work units through workflow');
+  console.log('  • Update work unit details (title, description, estimates)\n');
+
+  console.log(chalk.bold('WORK UNITS'));
+  console.log('  ' + chalk.cyan('fspec create-work-unit <prefix> <title>'));
   console.log('    Options:');
-  console.log('      --section=<section>              Show specific section only');
-  console.log('      --format=<format>                Output: text, markdown, json (default: text)');
-  console.log('      --output=<file>                  Write output to file');
-  console.log('      --list-sections                  List section names only');
-  console.log('      --line-numbers                   Show line numbers');
-  console.log('    Examples:');
-  console.log('      fspec show-foundation');
-  console.log('      fspec show-foundation --section "What We Are Building"');
-  console.log('      fspec show-foundation --format=json --output=foundation.json');
-  console.log('      fspec show-foundation --list-sections');
-  console.log('');
-
-  console.log(chalk.bold('UPDATE FOUNDATION'));
-  console.log('  ' + chalk.cyan('fspec update-foundation <section> <content>') + ' Update section');
-  console.log('    Examples:');
-  console.log('      fspec update-foundation "What We Are Building" "A CLI tool for..."');
-  console.log('');
-
-  console.log(chalk.bold('MERMAID DIAGRAM MANAGEMENT'));
-  console.log('  ' + chalk.cyan('fspec add-diagram <section> <title> <code>') + ' Add/update diagram');
-  console.log('    Note: Automatically validates Mermaid syntax before adding');
-  console.log('    Examples:');
-  console.log('      fspec add-diagram "Architecture" "System Context" "graph TD\\n  A-->B"');
-  console.log('');
-  console.log('  ' + chalk.cyan('fspec delete-diagram <section> <title>') + ' Delete diagram');
-  console.log('    Examples:');
-  console.log('      fspec delete-diagram "Architecture Diagrams" "System Context"');
-  console.log('');
-
-  console.log(chalk.bold('GENERATION'));
-  console.log('  ' + chalk.cyan('fspec generate-foundation-md') + '      Generate FOUNDATION.md from JSON');
-  console.log('    Examples:');
-  console.log('      fspec generate-foundation-md');
-  console.log('');
-
-  console.log(chalk.bold('NOTES'));
-  console.log('  - All write operations modify spec/foundation.json');
-  console.log('  - spec/FOUNDATION.md is auto-generated - never edit manually');
-  console.log('  - Mermaid diagrams are validated with mermaid.parse() before adding');
-  console.log('');
-}
-
-function displayQueryHelp(): void {
-  console.log(chalk.bold('\nQUERY & REPORTING\n'));
-
-  console.log(chalk.bold('QUERY SCENARIOS'));
-  console.log('  ' + chalk.cyan('fspec get-scenarios') + '                Get scenarios by tag');
-  console.log('    Options:');
-  console.log('      --tag=<tag>                      Filter by tag (multiple allowed, AND logic)');
-  console.log('      --format=<format>                Output: text or json (default: text)');
-  console.log('    Examples:');
-  console.log('      fspec get-scenarios --tag=@phase1');
-  console.log('      fspec get-scenarios --tag=@phase1 --tag=@critical --format=json');
-  console.log('      fspec get-scenarios --tag=@smoke  # Matches scenario-level tags');
-  console.log('');
-
-  console.log(chalk.bold('ACCEPTANCE CRITERIA'));
-  console.log('  ' + chalk.cyan('fspec show-acceptance-criteria') + '    Show acceptance criteria by tag');
-  console.log('    Options:');
-  console.log('      --tag=<tag>                      Filter by tag (multiple allowed, AND logic)');
-  console.log('      --format=<format>                Output: text, markdown, json (default: text)');
-  console.log('      --output=<file>                  Write output to file');
-  console.log('    Examples:');
-  console.log('      fspec show-acceptance-criteria --tag=@phase1');
-  console.log('      fspec show-acceptance-criteria --tag=@phase1 --format=markdown');
-  console.log('      fspec show-acceptance-criteria --tag=@critical --format=json --output=acs.json');
-  console.log('');
-
-  console.log(chalk.bold('TAG MATCHING'));
-  console.log('  - Scenarios inherit feature-level tags');
-  console.log('  - Scenarios can have their own scenario-level tags (@smoke, @regression, etc.)');
-  console.log('  - Tag matching checks BOTH feature tags AND scenario tags');
-  console.log('  - Multiple --tag options use AND logic (all tags must match)');
-  console.log('  - Example: Feature @auth + Scenario @smoke matches both @auth and @smoke');
-  console.log('');
-
-  console.log(chalk.bold('NOTES'));
-  console.log('  - JSON output is ideal for programmatic access and AI agent integration');
-  console.log('  - Scenario tags are displayed in output (e.g., [@smoke @critical])');
-  console.log('');
-}
-
-function displayProjectHelp(): void {
-  console.log(chalk.bold('\nPROJECT MANAGEMENT\n'));
-  console.log(chalk.dim('Manage work units, epics, and Kanban workflow for ACDD development\n'));
-
-  console.log(chalk.bold('WORK UNIT MANAGEMENT'));
-  console.log('  ' + chalk.cyan('fspec create-work-unit <prefix> <title>') + ' Create new work unit');
-  console.log('    Options:');
-  console.log('      -d, --description <desc>         Work unit description');
-  console.log('      -e, --epic <epic>                Epic ID to associate with');
-  console.log('      -p, --parent <parent>            Parent work unit ID');
+  console.log('      -e, --epic <epic>                Associate with epic');
+  console.log('      --description <desc>             Work unit description');
   console.log('    Examples:');
   console.log('      fspec create-work-unit AUTH "User login feature"');
-  console.log('      fspec create-work-unit DASH "Dashboard view" -e user-management');
+  console.log('      fspec create-work-unit DASH "Dashboard" -e user-management');
   console.log('');
-  console.log('  ' + chalk.cyan('fspec list-work-units') + '                List all work units');
+  console.log('  ' + chalk.cyan('fspec list-work-units'));
   console.log('    Options:');
   console.log('      -s, --status <status>            Filter by status');
-  console.log('      -p, --prefix <prefix>            Filter by prefix');
-  console.log('      -e, --epic <epic>                Filter by epic');
+  console.log('      --prefix <prefix>                Filter by prefix');
+  console.log('      --epic <epic>                    Filter by epic');
   console.log('    Examples:');
   console.log('      fspec list-work-units');
   console.log('      fspec list-work-units -s specifying');
-  console.log('      fspec list-work-units -p AUTH -e user-management');
   console.log('');
-  console.log('  ' + chalk.cyan('fspec show-work-unit <id>') + '            Display work unit details');
-  console.log('    Options:');
-  console.log('      -f, --format <format>            Output: text or json (default: text)');
+  console.log('  ' + chalk.cyan('fspec show-work-unit <id>'));
   console.log('    Examples:');
   console.log('      fspec show-work-unit AUTH-001');
-  console.log('      fspec show-work-unit AUTH-001 -f json');
   console.log('');
-  console.log('  ' + chalk.cyan('fspec prioritize-work-unit <id>') + '   Change work unit priority in backlog');
+  console.log('  ' + chalk.cyan('fspec update-work-unit <id>'));
   console.log('    Options:');
-  console.log('      --position <position>            Position: top, bottom, or numeric index');
-  console.log('      --before <workUnitId>            Place before this work unit');
-  console.log('      --after <workUnitId>             Place after this work unit');
+  console.log('      --title <title>                  Update title');
+  console.log('      --description <desc>             Update description');
+  console.log('      --epic <epic>                    Update epic');
+  console.log('      --parent <parent-id>             Set parent work unit');
   console.log('    Examples:');
-  console.log('      fspec prioritize-work-unit AUTH-001 --position=top');
-  console.log('      fspec prioritize-work-unit AUTH-002 --before=AUTH-001');
-  console.log('      fspec prioritize-work-unit AUTH-003 --position=5');
+  console.log('      fspec update-work-unit AUTH-001 --title "New Title"');
   console.log('');
-  console.log('  ' + chalk.cyan('fspec update-work-unit <id>') + '        Update work unit properties');
-  console.log('    Options:');
-  console.log('      -t, --title <title>              New title');
-  console.log('      -d, --description <desc>         New description');
-  console.log('      -e, --epic <epic>                Epic ID');
-  console.log('      -p, --parent <parent>            Parent work unit ID');
+  console.log('  ' + chalk.cyan('fspec update-work-unit-status <id> <status>'));
   console.log('    Examples:');
-  console.log('      fspec update-work-unit AUTH-001 -t "New title"');
-  console.log('      fspec update-work-unit AUTH-001 -e user-management');
-  console.log('');
-  console.log('  ' + chalk.cyan('fspec update-work-unit-status <id> <status>') + ' Update status (ACDD workflow)');
-  console.log('    Status values: backlog, specifying, testing, implementing, validating, done, blocked');
-  console.log('    Options:');
-  console.log('      --blocked-reason <reason>        Required when status is blocked');
-  console.log('      --reason <reason>                Optional reason for change');
-  console.log('    Examples:');
+  console.log('      fspec update-work-unit-status AUTH-001 specifying');
   console.log('      fspec update-work-unit-status AUTH-001 implementing');
-  console.log('      fspec update-work-unit-status AUTH-001 blocked --blocked-reason "API not ready"');
   console.log('');
-  console.log('  ' + chalk.cyan('fspec update-work-unit-estimate <id> <points>') + ' Set Fibonacci estimate');
-  console.log('    Valid estimates: 1, 2, 3, 5, 8, 13, 21 (Fibonacci numbers)');
+  console.log('  ' + chalk.cyan('fspec update-work-unit-estimate <id> <estimate>'));
   console.log('    Examples:');
   console.log('      fspec update-work-unit-estimate AUTH-001 5');
-  console.log('      fspec update-work-unit-estimate AUTH-002 13');
   console.log('');
-  console.log('  ' + chalk.cyan('fspec delete-work-unit <id>') + '        Delete a work unit');
+  console.log('  ' + chalk.cyan('fspec prioritize-work-unit <id>'));
   console.log('    Options:');
-  console.log('      --force                          Force deletion without checks');
-  console.log('      --skip-confirmation              Skip confirmation prompt');
-  console.log('      --cascade-dependencies           Remove all dependencies first');
+  console.log('      --position <position>            Position: top, bottom, or number');
+  console.log('      --before <id>                    Place before this work unit');
+  console.log('      --after <id>                     Place after this work unit');
+  console.log('    Examples:');
+  console.log('      fspec prioritize-work-unit AUTH-003 --position=top');
+  console.log('      fspec prioritize-work-unit AUTH-001 --before=AUTH-002');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec delete-work-unit <id>'));
   console.log('    Examples:');
   console.log('      fspec delete-work-unit AUTH-001');
-  console.log('      fspec delete-work-unit AUTH-001 --force --cascade-dependencies');
   console.log('');
-  console.log('  ' + chalk.cyan('fspec validate-work-units') + '          Validate work units data integrity');
+  console.log('  ' + chalk.cyan('fspec repair-work-units'));
+  console.log('    Description: Fix work unit state inconsistencies');
+  console.log('    Examples:');
+  console.log('      fspec repair-work-units');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec validate-work-units'));
+  console.log('    Description: Validate work units against schema');
   console.log('    Examples:');
   console.log('      fspec validate-work-units');
   console.log('');
-  console.log('  ' + chalk.cyan('fspec repair-work-units') + '            Repair data integrity issues');
+  console.log('  ' + chalk.cyan('fspec export-work-units'));
   console.log('    Options:');
-  console.log('      --dry-run                        Show what would be repaired');
+  console.log('      --format <format>                Output: json or csv');
+  console.log('      --output <file>                  Output file path');
   console.log('    Examples:');
-  console.log('      fspec repair-work-units --dry-run');
-  console.log('      fspec repair-work-units');
+  console.log('      fspec export-work-units --format=json --output=work.json');
   console.log('');
-  console.log('  ' + chalk.cyan('fspec export-work-units <format> <output>') + ' Export to JSON or CSV');
+  console.log('  ' + chalk.cyan('fspec query-work-units'));
   console.log('    Options:');
   console.log('      --status <status>                Filter by status');
+  console.log('      --prefix <prefix>                Filter by prefix');
+  console.log('      --epic <epic>                    Filter by epic');
+  console.log('      --format <format>                Output: text or json');
   console.log('    Examples:');
-  console.log('      fspec export-work-units json work-units.json');
-  console.log('      fspec export-work-units csv backlog.csv --status=backlog');
+  console.log('      fspec query-work-units --status=implementing --format=json');
   console.log('');
 
-  console.log(chalk.bold('DEPENDENCY MANAGEMENT'));
-  console.log('  ' + chalk.cyan('fspec add-dependency <id>') + '         Add dependency relationship between work units');
-  console.log('    Relationship types:');
-  console.log('      --blocks <id>                    This work blocks another work unit');
-  console.log('      --blocked-by <id>                This work is blocked by another work unit');
-  console.log('      --depends-on <id>                Soft dependency (can start but should wait)');
-  console.log('      --relates-to <id>                Related work unit (informational)');
+  console.log(chalk.bold('DEPENDENCIES'));
+  console.log('  ' + chalk.cyan('fspec add-dependency <id> <depends-on-id>'));
   console.log('    Examples:');
-  console.log('      fspec add-dependency AUTH-001 --blocks API-001');
-  console.log('      fspec add-dependency UI-001 --blocked-by API-001');
-  console.log('      fspec add-dependency DASH-001 --depends-on AUTH-001');
-  console.log('      fspec add-dependency AUTH-001 --relates-to SEC-001');
+  console.log('      fspec add-dependency AUTH-002 AUTH-001');
   console.log('');
-  console.log('  ' + chalk.cyan('fspec add-dependencies <id>') + '        Add multiple dependencies at once');
-  console.log('    Options: accepts comma-separated lists for each relationship type');
+  console.log('  ' + chalk.cyan('fspec add-dependencies <id> <dep1> <dep2>...'));
   console.log('    Examples:');
-  console.log('      fspec add-dependencies AUTH-001 --blocks API-001,UI-001 --depends-on DB-001');
+  console.log('      fspec add-dependencies DASH-001 AUTH-001 AUTH-002');
   console.log('');
-  console.log('  ' + chalk.cyan('fspec remove-dependency <id>') + '      Remove a dependency relationship');
-  console.log('    Options: same as add-dependency (--blocks, --blocked-by, --depends-on, --relates-to)');
+  console.log('  ' + chalk.cyan('fspec remove-dependency <id> <depends-on-id>'));
   console.log('    Examples:');
-  console.log('      fspec remove-dependency AUTH-001 --blocks API-001');
+  console.log('      fspec remove-dependency AUTH-002 AUTH-001');
   console.log('');
-  console.log('  ' + chalk.cyan('fspec clear-dependencies <id>') + '     Remove all dependencies from work unit');
+  console.log('  ' + chalk.cyan('fspec clear-dependencies <id>'));
+  console.log('    Examples:');
+  console.log('      fspec clear-dependencies AUTH-002');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec dependencies <id>'));
+  console.log('    Description: Show dependencies for a work unit');
+  console.log('    Examples:');
+  console.log('      fspec dependencies AUTH-002');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec export-dependencies'));
   console.log('    Options:');
-  console.log('      --confirm                        Confirm clearing all dependencies');
+  console.log('      --format <format>                Output: json or mermaid');
+  console.log('      --output <file>                  Output file path');
   console.log('    Examples:');
-  console.log('      fspec clear-dependencies AUTH-001 --confirm');
+  console.log('      fspec export-dependencies --format=mermaid');
   console.log('');
-  console.log('  ' + chalk.cyan('fspec export-dependencies <format> <output>') + ' Export dependency graph');
-  console.log('    Formats: mermaid (visualization), json (data)');
-  console.log('    Examples:');
-  console.log('      fspec export-dependencies mermaid deps.mmd');
-  console.log('      fspec export-dependencies json deps.json');
-  console.log('');
-
-  console.log(chalk.bold('PREFIX AND EPIC MANAGEMENT'));
-  console.log('  ' + chalk.cyan('fspec create-prefix <code> <description>') + ' Register new work unit prefix');
-  console.log('    Prefix codes: 2-6 uppercase letters (e.g., AUTH, DASH, API)');
-  console.log('    Examples:');
-  console.log('      fspec create-prefix AUTH "Authentication features"');
-  console.log('      fspec create-prefix PERF "Performance optimization"');
-  console.log('');
-  console.log('  ' + chalk.cyan('fspec update-prefix <code>') + '        Update prefix description');
+  console.log('  ' + chalk.cyan('fspec query-dependency-stats'));
   console.log('    Options:');
-  console.log('      -d, --description <desc>         New description');
+  console.log('      --format <format>                Output: text or json');
   console.log('    Examples:');
-  console.log('      fspec update-prefix AUTH -d "Updated description"');
-  console.log('');
-  console.log('  ' + chalk.cyan('fspec create-epic <id> <title>') + '      Create new epic');
-  console.log('    Epic IDs: lowercase-with-hyphens (e.g., user-management)');
-  console.log('    Options:');
-  console.log('      -d, --description <desc>         Epic description');
-  console.log('    Examples:');
-  console.log('      fspec create-epic user-management "User Management Features"');
-  console.log('');
-  console.log('  ' + chalk.cyan('fspec list-epics') + '                     List all epics');
-  console.log('    Examples:');
-  console.log('      fspec list-epics');
-  console.log('');
-  console.log('  ' + chalk.cyan('fspec show-epic <id>') + '                 Display epic details');
-  console.log('    Options:');
-  console.log('      -f, --format <format>            Output: text or json (default: text)');
-  console.log('    Examples:');
-  console.log('      fspec show-epic user-management');
-  console.log('      fspec show-epic user-management -f json');
-  console.log('');
-  console.log('  ' + chalk.cyan('fspec delete-epic <id>') + '              Delete an epic');
-  console.log('    Options:');
-  console.log('      --force                          Force deletion even if work units associated');
-  console.log('    Examples:');
-  console.log('      fspec delete-epic old-epic --force');
-  console.log('');
-
-  console.log(chalk.bold('EXAMPLE MAPPING'));
-  console.log('  Example Mapping is a collaborative technique for exploring and understanding requirements.');
-  console.log('  Add examples, questions, and business rules to scenarios before implementation.');
-  console.log('');
-  console.log('  ' + chalk.cyan('fspec add-example <feature> <scenario> <example>') + ' Add concrete example');
-  console.log('    Examples:');
-  console.log('      fspec add-example login "Successful login" "user: alice@example.com, pwd: secret123"');
-  console.log('');
-  console.log('  ' + chalk.cyan('fspec add-question <feature> <scenario> <question>') + ' Add unanswered question');
-  console.log('    Examples:');
-  console.log('      fspec add-question login "Login" "What happens if password is expired?"');
-  console.log('');
-  console.log('  ' + chalk.cyan('fspec add-rule <feature> <scenario> <rule>') + ' Add business rule');
-  console.log('    Examples:');
-  console.log('      fspec add-rule login "Login" "Password must be at least 8 characters"');
-  console.log('');
-  console.log('  ' + chalk.cyan('fspec answer-question <feature> <scenario> <question> <answer>') + ' Answer question');
-  console.log('    Examples:');
-  console.log('      fspec answer-question login "Login" "What about 2FA?" "2FA is required for admins"');
-  console.log('');
-  console.log('  ' + chalk.cyan('fspec remove-example <feature> <scenario> <example>') + ' Remove example');
-  console.log('  ' + chalk.cyan('fspec remove-question <feature> <scenario> <question>') + ' Remove question');
-  console.log('  ' + chalk.cyan('fspec remove-rule <feature> <scenario> <rule>') + ' Remove rule');
-  console.log('');
-  console.log('  ' + chalk.cyan('fspec export-example-map <feature> <output>') + ' Export to JSON');
-  console.log('    Examples:');
-  console.log('      fspec export-example-map login example-map.json');
-  console.log('');
-  console.log('  ' + chalk.cyan('fspec import-example-map <feature> <input>') + ' Import from JSON');
-  console.log('    Examples:');
-  console.log('      fspec import-example-map login example-map.json');
-  console.log('');
-  console.log('  ' + chalk.cyan('fspec generate-scenarios <feature>') + ' Generate scenarios from examples');
-  console.log('    Examples:');
-  console.log('      fspec generate-scenarios login');
+  console.log('      fspec query-dependency-stats');
   console.log('');
 
   console.log(chalk.bold('WORKFLOW AUTOMATION'));
-  console.log('  ' + chalk.cyan('fspec auto-advance') + '                  Automatically advance ready work units');
+  console.log('  ' + chalk.cyan('fspec auto-advance'));
+  console.log('    Description: Automatically advance ready work units');
   console.log('    Options:');
   console.log('      --dry-run                        Show what would be advanced');
   console.log('    Examples:');
   console.log('      fspec auto-advance --dry-run');
   console.log('      fspec auto-advance');
   console.log('');
-  console.log('  ' + chalk.cyan('fspec board') + '                          Display Kanban board of all work');
+  console.log('  ' + chalk.cyan('fspec board'));
+  console.log('    Description: Display Kanban board of all work');
   console.log('    Options:');
   console.log('      --format <format>                Output: text or json (default: text)');
-  console.log('      --limit <limit>                  Max items per column (default: 3)');
+  console.log('      --limit <limit>                  Max items per column (default: 25)');
   console.log('    Examples:');
   console.log('      fspec board');
   console.log('      fspec board --format=json');
-  console.log('      fspec board --limit=5');
+  console.log('      fspec board --limit=50');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec workflow-automation <id>'));
+  console.log('    Description: Check if work unit can auto-advance');
+  console.log('    Examples:');
+  console.log('      fspec workflow-automation AUTH-001');
+  console.log('');
+}
+
+// ===== DISCOVERY HELP =====
+function displayDiscoveryHelp(): void {
+  console.log(chalk.bold('\nEXAMPLE MAPPING'));
+  console.log(chalk.dim('Collaborative discovery with example mapping\n'));
+
+  console.log('Use this when you need to:');
+  console.log('  • Add concrete examples to explore behavior');
+  console.log('  • Add questions that need answers before implementation');
+  console.log('  • Add business rules that govern the feature');
+  console.log('  • Add assumptions about requirements or constraints');
+  console.log('  • Answer questions collaboratively (AI asks, human answers)');
+  console.log('  • Generate Gherkin scenarios from examples');
+  console.log('  • Import/export example maps for collaboration');
+  console.log('  • Query example mapping coverage statistics\n');
+
+  console.log(chalk.bold('EXAMPLES'));
+  console.log('  ' + chalk.cyan('fspec add-example <feature> <example>'));
+  console.log('    Examples:');
+  console.log('      fspec add-example AUTH-001 "User logs in with valid email"');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec remove-example <feature> <index>'));
+  console.log('    Examples:');
+  console.log('      fspec remove-example AUTH-001 1');
   console.log('');
 
-  console.log(chalk.bold('QUERY AND REPORTING'));
-  console.log('  ' + chalk.cyan('fspec query-work-units') + '             Query work units with filters');
-  console.log('    Options:');
-  console.log('      --status <status>                Filter by status');
-  console.log('      --prefix <prefix>                Filter by prefix');
-  console.log('      --epic <epic>                    Filter by epic');
-  console.log('      --format <format>                Output: text or json (default: text)');
+  console.log(chalk.bold('QUESTIONS'));
+  console.log('  ' + chalk.cyan('fspec add-question <feature> <question>'));
   console.log('    Examples:');
-  console.log('      fspec query-work-units --status implementing --format json');
-  console.log('      fspec query-work-units --prefix AUTH --epic user-management');
+  console.log('      fspec add-question AUTH-001 "Should we support OAuth?"');
   console.log('');
-  console.log('  ' + chalk.cyan('fspec query-dependency-stats') + '       Show dependency statistics');
-  console.log('    Options:');
-  console.log('      --format <format>                Output: text or json (default: text)');
+  console.log('  ' + chalk.cyan('fspec answer-question <feature> <index> <answer>'));
   console.log('    Examples:');
-  console.log('      fspec query-dependency-stats');
+  console.log('      fspec answer-question AUTH-001 1 "Yes, Google and GitHub OAuth"');
   console.log('');
-  console.log('  ' + chalk.cyan('fspec query-example-mapping-stats') + '  Show example mapping coverage');
+  console.log('  ' + chalk.cyan('fspec remove-question <feature> <index>'));
+  console.log('    Examples:');
+  console.log('      fspec remove-question AUTH-001 1');
+  console.log('');
+
+  console.log(chalk.bold('RULES'));
+  console.log('  ' + chalk.cyan('fspec add-rule <feature> <rule>'));
+  console.log('    Examples:');
+  console.log('      fspec add-rule AUTH-001 "Password must be 8+ characters"');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec remove-rule <feature> <index>'));
+  console.log('    Examples:');
+  console.log('      fspec remove-rule AUTH-001 1');
+  console.log('');
+
+  console.log(chalk.bold('ASSUMPTIONS'));
+  console.log('  ' + chalk.cyan('fspec add-assumption <feature> <assumption>'));
+  console.log('    Examples:');
+  console.log('      fspec add-assumption AUTH-001 "Email verification is handled externally"');
+  console.log('');
+
+  console.log(chalk.bold('IMPORT/EXPORT'));
+  console.log('  ' + chalk.cyan('fspec import-example-map <feature> <file>'));
+  console.log('    Examples:');
+  console.log('      fspec import-example-map AUTH-001 examples.json');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec export-example-map <feature>'));
+  console.log('    Options:');
+  console.log('      --output <file>                  Output file path');
+  console.log('    Examples:');
+  console.log('      fspec export-example-map AUTH-001 --output=examples.json');
+  console.log('');
+
+  console.log(chalk.bold('GENERATION'));
+  console.log('  ' + chalk.cyan('fspec generate-scenarios <feature>'));
+  console.log('    Description: Generate Gherkin scenarios from example map');
+  console.log('    Examples:');
+  console.log('      fspec generate-scenarios AUTH-001');
+  console.log('');
+
+  console.log(chalk.bold('STATISTICS'));
+  console.log('  ' + chalk.cyan('fspec query-example-mapping-stats'));
+  console.log('    Description: Show example mapping coverage');
   console.log('    Examples:');
   console.log('      fspec query-example-mapping-stats');
   console.log('');
-  console.log('  ' + chalk.cyan('fspec query-metrics') + '                Query project metrics');
+}
+
+// ===== METRICS HELP =====
+function displayMetricsHelp(): void {
+  console.log(chalk.bold('\nPROGRESS TRACKING & METRICS'));
+  console.log(chalk.dim('Track progress and quality\n'));
+
+  console.log('Use this when you need to:');
+  console.log('  • Record time spent, tokens used, iterations completed');
+  console.log('  • Update and track work unit estimates');
+  console.log('  • Query estimation accuracy (actual vs estimated)');
+  console.log('  • Get estimation guidance based on historical data');
+  console.log('  • Query project metrics and trends');
+  console.log('  • Generate comprehensive summary reports');
+  console.log('  • Export work units for external analysis');
+  console.log('  • Query dependency statistics and bottlenecks\n');
+
+  console.log(chalk.bold('RECORDING METRICS'));
+  console.log('  ' + chalk.cyan('fspec record-metric <id> <name> <value>'));
+  console.log('    Examples:');
+  console.log('      fspec record-metric AUTH-001 time-spent 120');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec record-tokens <id> <tokens>'));
+  console.log('    Examples:');
+  console.log('      fspec record-tokens AUTH-001 15000');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec record-iteration <id>'));
+  console.log('    Description: Increment iteration count');
+  console.log('    Examples:');
+  console.log('      fspec record-iteration AUTH-001');
+  console.log('');
+
+  console.log(chalk.bold('QUERYING METRICS'));
+  console.log('  ' + chalk.cyan('fspec query-metrics'));
   console.log('    Options:');
   console.log('      --metric <metric>                Specific metric to query');
   console.log('      --format <format>                Output: text or json (default: text)');
   console.log('    Examples:');
-  console.log('      fspec query-metrics --format json');
+  console.log('      fspec query-metrics --format=json');
   console.log('');
-  console.log('  ' + chalk.cyan('fspec query-estimate-accuracy') + '      Show estimation accuracy');
+  console.log('  ' + chalk.cyan('fspec query-estimate-accuracy'));
+  console.log('    Description: Show estimation accuracy');
   console.log('    Examples:');
   console.log('      fspec query-estimate-accuracy');
   console.log('');
-  console.log('  ' + chalk.cyan('fspec query-estimation-guide <id>') + '  Get estimation guidance');
+  console.log('  ' + chalk.cyan('fspec query-estimation-guide <id>'));
+  console.log('    Description: Get estimation guidance');
   console.log('    Examples:');
   console.log('      fspec query-estimation-guide AUTH-001');
   console.log('');
-  console.log('  ' + chalk.cyan('fspec generate-summary-report') + '      Generate comprehensive project report');
+
+  console.log(chalk.bold('REPORTING'));
+  console.log('  ' + chalk.cyan('fspec generate-summary-report'));
+  console.log('    Description: Generate comprehensive project report');
   console.log('    Options:');
   console.log('      --format <format>                Output: markdown, json, or html (default: markdown)');
   console.log('      --output <file>                  Output file path');
   console.log('    Examples:');
-  console.log('      fspec generate-summary-report --format markdown --output report.md');
-  console.log('');
-
-  console.log(chalk.bold('METRICS TRACKING'));
-  console.log('  ' + chalk.cyan('fspec record-metric <metric> <value>') + ' Record a project metric');
-  console.log('    Options:');
-  console.log('      --unit <unit>                    Unit of measurement');
-  console.log('    Examples:');
-  console.log('      fspec record-metric build-time 45.2 --unit seconds');
-  console.log('');
-  console.log('  ' + chalk.cyan('fspec record-tokens <id> <tokens>') + '  Record AI token usage');
-  console.log('    Options:');
-  console.log('      --operation <operation>          Operation type (e.g., specification, implementation)');
-  console.log('    Examples:');
-  console.log('      fspec record-tokens AUTH-001 45000 --operation implementation');
-  console.log('');
-  console.log('  ' + chalk.cyan('fspec record-iteration <name>') + '     Record iteration or sprint');
-  console.log('    Options:');
-  console.log('      --start <date>                   Start date');
-  console.log('      --end <date>                     End date');
-  console.log('    Examples:');
-  console.log('      fspec record-iteration "Sprint 1" --start 2025-01-01 --end 2025-01-14');
-  console.log('');
-
-  console.log(chalk.bold('VALIDATION'));
-  console.log('  ' + chalk.cyan('fspec validate-spec-alignment') + '     Validate specs align with tests and code');
-  console.log('    Options:');
-  console.log('      --fix                            Attempt to fix alignment issues');
-  console.log('    Examples:');
-  console.log('      fspec validate-spec-alignment');
-  console.log('      fspec validate-spec-alignment --fix');
-  console.log('');
-
-  console.log(chalk.bold('FEATURE DOCUMENTATION'));
-  console.log('  ' + chalk.cyan('fspec add-assumption <feature> <assumption>') + ' Add assumption to feature');
-  console.log('    Examples:');
-  console.log('      fspec add-assumption login "Users have verified email addresses"');
-  console.log('');
-
-  console.log(chalk.bold('WORK UNIT LINKING WITH FEATURES'));
-  console.log('  Link work units to feature files using tags with pattern: ' + chalk.cyan('@[A-Z]{2,6}-\\d+'));
-  console.log('  Examples: @AUTH-001, @DASH-012, @API-123');
-  console.log('');
-  console.log('  ' + chalk.dim('Add work unit tags to feature files:'));
-  console.log('    ' + chalk.cyan('@AUTH-001') + '           # Feature-level tag (applies to all scenarios)');
-  console.log('    ' + chalk.cyan('@DASH-012') + '           # Scenario-level tag (overrides feature-level)');
-  console.log('');
-  console.log('  ' + chalk.dim('Query linked features and scenarios:'));
-  console.log('    ' + chalk.cyan('fspec show-feature <file>') + '            # Shows work units linked to feature');
-  console.log('    ' + chalk.cyan('fspec show-work-unit AUTH-001') + '        # Shows features/scenarios linked to work unit');
-  console.log('    ' + chalk.cyan('fspec get-scenarios --tag=@AUTH-001') + '  # Filter scenarios by work unit');
-  console.log('');
-  console.log('  ' + chalk.dim('Validation:'));
-  console.log('    ' + chalk.cyan('fspec validate-tags') + '                  # Validates work unit tags exist in work-units.json');
-  console.log('    All work unit tags are validated against spec/work-units.json');
-  console.log('    Invalid work unit IDs or formats will be reported as errors');
-  console.log('');
-
-  console.log(chalk.bold('WORKFLOW STATES'));
-  console.log('  Work units progress through Kanban states:');
-  console.log('  backlog → specifying → testing → implementing → validating → done');
-  console.log('  (blocked state can occur at any point)');
-  console.log('');
-
-  console.log(chalk.bold('NOTES'));
-  console.log('  - Work units are stored in spec/work-units.json');
-  console.log('  - Epics are stored in spec/epics.json');
-  console.log('  - Work unit tags (@WORK-001) are distinct from regular tags (@phase1)');
-  console.log('  - Feature-level work unit tags apply to all scenarios by default');
-  console.log('  - Scenario-level work unit tags override feature-level tags');
-  console.log('  - All commands follow ACDD (Acceptance Criteria Driven Development)');
-  console.log('  - Dependency types: blocks (hard blocker), blocked-by (inverse), depends-on (soft), relates-to (info)');
-  console.log('  - Story point estimates use Fibonacci sequence: 1, 2, 3, 5, 8, 13, 21');
-  console.log('  - Example Mapping helps explore requirements before writing scenarios');
-  console.log('  - AI agents should use query commands to understand project state');
-  console.log('  - See spec/features/ for full specification of project management features');
+  console.log('      fspec generate-summary-report --format=markdown --output=report.md');
   console.log('');
 }
+
+// ===== SETUP HELP =====
+function displaySetupHelp(): void {
+  console.log(chalk.bold('\nCONFIGURATION & SETUP'));
+  console.log(chalk.dim('Configure project structure\n'));
+
+  console.log('Use this when you need to:');
+  console.log('  • Register tags in the centralized registry');
+  console.log('  • Update or delete tags across all files');
+  console.log('  • Bulk rename tags (retag operations)');
+  console.log('  • Create and manage epics (high-level initiatives)');
+  console.log('  • Create and manage prefixes (namespaces for work unit IDs)');
+  console.log('  • Add and validate Mermaid architecture diagrams');
+  console.log('  • Update foundation documentation');
+  console.log('  • Manage feature-level and scenario-level tags');
+  console.log('  • Validate tag usage across the project\n');
+
+  console.log(chalk.bold('TAG REGISTRY'));
+  console.log('  ' + chalk.cyan('fspec register-tag <tag> <category> <description>'));
+  console.log('    Examples:');
+  console.log('      fspec register-tag @performance "Technical Tags" "Performance-critical"');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec update-tag <tag>'));
+  console.log('    Options:');
+  console.log('      --description <desc>             New description');
+  console.log('      --category <category>            New category');
+  console.log('    Examples:');
+  console.log('      fspec update-tag @performance --description="New description"');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec delete-tag <tag>'));
+  console.log('    Options:');
+  console.log('      --force                          Delete even if used');
+  console.log('      --dry-run                        Preview deletion');
+  console.log('    Examples:');
+  console.log('      fspec delete-tag @deprecated --dry-run');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec list-tags'));
+  console.log('    Options:');
+  console.log('      --category <category>            Filter by category');
+  console.log('    Examples:');
+  console.log('      fspec list-tags --category="Technical Tags"');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec tag-stats'));
+  console.log('    Description: Show tag usage statistics');
+  console.log('    Examples:');
+  console.log('      fspec tag-stats');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec retag'));
+  console.log('    Options:');
+  console.log('      --from=<tag>                     Old tag');
+  console.log('      --to=<tag>                       New tag');
+  console.log('      --dry-run                        Preview changes');
+  console.log('    Examples:');
+  console.log('      fspec retag --from=@old-tag --to=@new-tag --dry-run');
+  console.log('');
+
+  console.log(chalk.bold('EPICS & PREFIXES'));
+  console.log('  ' + chalk.cyan('fspec create-epic <name> <title>'));
+  console.log('    Examples:');
+  console.log('      fspec create-epic user-management "User Management Features"');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec list-epics'));
+  console.log('    Examples:');
+  console.log('      fspec list-epics');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec show-epic <name>'));
+  console.log('    Examples:');
+  console.log('      fspec show-epic user-management');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec delete-epic <name>'));
+  console.log('    Examples:');
+  console.log('      fspec delete-epic old-epic');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec create-prefix <prefix> <description>'));
+  console.log('    Examples:');
+  console.log('      fspec create-prefix AUTH "Authentication features"');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec update-prefix <prefix> <description>'));
+  console.log('    Examples:');
+  console.log('      fspec update-prefix AUTH "Updated description"');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec list-prefixes'));
+  console.log('    Examples:');
+  console.log('      fspec list-prefixes');
+  console.log('');
+
+  console.log(chalk.bold('FOUNDATION & DOCUMENTATION'));
+  console.log('  ' + chalk.cyan('fspec add-diagram <section> <title> <content>'));
+  console.log('    Description: Add Mermaid diagram with validation');
+  console.log('    Examples:');
+  console.log('      fspec add-diagram "Architecture" "System" "graph TD\\n  A-->B"');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec update-diagram <section> <title> <content>'));
+  console.log('    Examples:');
+  console.log('      fspec update-diagram "Architecture" "System" "graph TB\\n  A-->B"');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec delete-diagram <section> <title>'));
+  console.log('    Examples:');
+  console.log('      fspec delete-diagram "Architecture" "System"');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec list-diagrams'));
+  console.log('    Examples:');
+  console.log('      fspec list-diagrams');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec show-diagram <section> <title>'));
+  console.log('    Examples:');
+  console.log('      fspec show-diagram "Architecture" "System"');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec update-foundation <section> <content>'));
+  console.log('    Examples:');
+  console.log('      fspec update-foundation "What We Are Building" "A CLI tool..."');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec show-foundation'));
+  console.log('    Options:');
+  console.log('      --section <section>              Show specific section');
+  console.log('      --format <format>                Output: text, json, or markdown');
+  console.log('      --output <file>                  Write to file');
+  console.log('      --list-sections                  List all sections');
+  console.log('      --line-numbers                   Show line numbers');
+  console.log('    Examples:');
+  console.log('      fspec show-foundation --section "What We Are Building"');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec generate-foundation-md'));
+  console.log('    Description: Regenerate FOUNDATION.md from foundation.json');
+  console.log('    Examples:');
+  console.log('      fspec generate-foundation-md');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec generate-tags-md'));
+  console.log('    Description: Regenerate TAGS.md from tags.json');
+  console.log('    Examples:');
+  console.log('      fspec generate-tags-md');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec validate-json-schema'));
+  console.log('    Description: Validate JSON schema compliance');
+  console.log('    Examples:');
+  console.log('      fspec validate-json-schema');
+  console.log('');
+}
+
 
 // Custom help command handler
 function handleHelpCommand(group?: string): void {
@@ -797,32 +746,39 @@ function handleHelpCommand(group?: string): void {
   }
 
   switch (group.toLowerCase()) {
+    case 'specs':
     case 'spec':
-    case 'specification':
-      displaySpecHelp();
+    case 'features':
+    case 'gherkin':
+      displaySpecsHelp();
       break;
-    case 'tags':
-    case 'tag':
-      displayTagsHelp();
-      break;
-    case 'foundation':
-    case 'arch':
-    case 'architecture':
-      displayFoundationHelp();
-      break;
-    case 'query':
-    case 'report':
-    case 'reporting':
-      displayQueryHelp();
-      break;
-    case 'project':
-    case 'pm':
     case 'work':
-      displayProjectHelp();
+    case 'workflow':
+    case 'kanban':
+    case 'units':
+      displayWorkHelp();
+      break;
+    case 'discovery':
+    case 'example-mapping':
+    case 'examples':
+      displayDiscoveryHelp();
+      break;
+    case 'metrics':
+    case 'reports':
+    case 'reporting':
+    case 'stats':
+      displayMetricsHelp();
+      break;
+    case 'setup':
+    case 'config':
+    case 'configuration':
+    case 'tags':
+    case 'foundation':
+      displaySetupHelp();
       break;
     default:
       console.log(chalk.red(`Unknown help topic: ${group}`));
-      console.log('Valid topics: spec, tags, foundation, query, project');
+      console.log('Valid topics: specs, work, discovery, metrics, setup');
       console.log('Use ' + chalk.cyan('fspec --help') + ' for main help\n');
   }
 }
@@ -1873,7 +1829,7 @@ program
   .command('board')
   .description('Display Kanban board of work units')
   .option('--format <format>', 'Output format: text or json', 'text')
-  .option('--limit <limit>', 'Max items per column', '3')
+  .option('--limit <limit>', 'Max items per column', '25')
   .action(async (options: { format?: string; limit?: string }) => {
     try {
       const result = await displayBoard({ cwd: process.cwd() });
@@ -1882,7 +1838,7 @@ program
         console.log(JSON.stringify(result, null, 2));
       } else {
         // Display text format board using Ink
-        const limit = parseInt(options.limit || '3', 10);
+        const limit = parseInt(options.limit || '25', 10);
         const { render } = await import('ink');
         const React = await import('react');
         const { BoardDisplay } = await import('./components/BoardDisplay.js');
