@@ -217,11 +217,11 @@ fspec --help
 fspec help
 
 # Group-specific help with all commands, options, and examples
-fspec help spec        # Specification management (features, scenarios, steps)
-fspec help tags        # Tag registry & management
-fspec help foundation  # Foundation & architecture documentation
-fspec help query       # Query & reporting commands
-fspec help project     # Project management (work units, epics, Kanban workflow)
+fspec help specs       # Write and manage Gherkin feature files (create, edit, validate)
+fspec help work        # Track work units through ACDD workflow (Kanban, dependencies, board)
+fspec help discovery   # Collaborative discovery with example mapping (questions, rules, examples)
+fspec help metrics     # Track progress and quality (estimates, metrics, reports, statistics)
+fspec help setup       # Configure project structure (tags, epics, prefixes, foundation docs)
 
 # Command-specific help
 fspec <command> --help
@@ -230,11 +230,11 @@ fspec list-features --help
 ```
 
 **Command Groups:**
-- **spec** - Gherkin validation, feature/scenario/step CRUD, bulk operations
-- **tags** - Tag registration, validation, updates, statistics, bulk rename
-- **foundation** - Foundation content, Mermaid diagrams, architecture docs
-- **query** - Query scenarios by tag, show acceptance criteria
-- **project** - Work units, epics, Kanban workflow
+- **specs** - Gherkin validation, feature/scenario/step CRUD, bulk operations, formatting
+- **work** - Work units, epics, Kanban workflow, dependencies, board visualization
+- **discovery** - Example mapping for collaborative discovery (questions, rules, examples, assumptions)
+- **metrics** - Progress tracking, estimation, reports, token/time recording
+- **setup** - Tag registry, foundation docs, Mermaid diagrams, prefixes, epics
 
 **Note:** All commands include complete option documentation and practical examples in the help system. You no longer need to refer to this README for basic usage.
 
@@ -483,8 +483,8 @@ Work units progress through Kanban states:
 # Display Kanban board showing all work units across states
 fspec board
 
-# Display board with custom item limit per column (default: 3)
-fspec board --limit=5
+# Display board with custom item limit per column (default: 25)
+fspec board --limit=50
 
 # Export board as JSON for programmatic access
 fspec board --format=json
@@ -494,7 +494,7 @@ fspec board --format=json
 - Work units are stored in `spec/work-units.json`
 - Epics are stored in `spec/epics.json`
 
-For complete documentation: `fspec help project`
+For complete documentation: `fspec help work`
 
 ## Requirements
 
