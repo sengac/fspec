@@ -437,3 +437,60 @@ Feature: Work Unit Dependency Management
     Then the command should display warning "Dependency API-001 not yet complete"
     But the transition should succeed
     And the warning should be informational only
+
+  @DEP-001
+  Scenario: Add blocks relationship creates bidirectional link
+    Given I have a project with spec directory
+    And work unit "AUTH-001" exists with title "Build OAuth"
+    And work unit "API-001" exists with title "Build API"
+    When I run "fspec add-dependency AUTH-001 --blocks=API-001"
+    Then the command should succeed
+    And work unit "AUTH-001" blocks array should contain "API-001"
+    And work unit "API-001" blockedBy array should contain "AUTH-001"
+    And the bidirectional relationship should be maintained
+
+  @DEP-001
+  Scenario: Remove dependency cleans up both sides of relationship
+    Given I have a project with spec directory
+    And work unit "AUTH-001" blocks "API-001"
+    And work unit "API-001" blockedBy contains "AUTH-001"
+    When I run "fspec remove-dependency AUTH-001 --blocks=API-001"
+    Then the command should succeed
+    And work unit "AUTH-001" blocks array should not contain "API-001"
+    And work unit "API-001" blockedBy array should not contain "AUTH-001"
+    And both sides of the relationship should be cleaned up
+
+  @DEP-001
+  Scenario: Circular dependency detection prevents A→B→A loops
+    Given I have a project with spec directory
+    And work unit "AUTH-001" blocks "API-001"
+    When I run "fspec add-dependency API-001 --blocks=AUTH-001"
+    Then the command should fail
+    And the error should contain "Circular dependency detected"
+    And the error should show cycle: "AUTH-001 → API-001 → AUTH-001"
+    And no circular dependency should be created
+
+  @DEP-001
+  Scenario: Adding blockedBy dependency auto-sets work unit to blocked state
+    Given I have a project with spec directory
+    And work unit "UI-001" exists with status "backlog"
+    And work unit "API-001" exists with status "implementing"
+    When I run "fspec add-dependency UI-001 --blocked-by=API-001"
+    Then the command should succeed
+    And work unit "UI-001" status should automatically change to "blocked"
+    And work unit "UI-001" blockedReason should be "Blocked by API-001"
+    And work unit "API-001" blocks array should contain "UI-001"
+
+  @DEP-001
+  Scenario: Query dependency stats shows metrics across all work units
+    Given I have a project with spec directory
+    And multiple work units exist with various dependencies
+    And 5 work units have blockers
+    And 3 work units are blocking others
+    And 8 work units have soft dependencies
+    When I run "fspec query dependency-stats --output=json"
+    Then the output should show "work units with blockers: 5"
+    And the output should show "work units blocking others: 3"
+    And the output should show "work units with soft dependencies: 8"
+    And the output should show average dependencies per unit
+    And the output should show max dependency chain depth

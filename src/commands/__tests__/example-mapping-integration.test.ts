@@ -724,7 +724,7 @@ describe('Feature: Example Mapping Integration', () => {
       });
 
       expect(result.success).toBe(true);
-      expect(result.scenariosGenerated).toBe(3);
+      expect(result.scenariosCount).toBe(3);
 
       // Check feature file was created
       const featureFiles = await readFile(join(testDir, 'spec/features/auth-001.feature'), 'utf-8');
@@ -1046,7 +1046,7 @@ Scenario: Existing scenario
 
       const result = await exportExampleMap({
         workUnitId: 'AUTH-001',
-        output: join(testDir, 'auth-example-map.json'),
+        file: join(testDir, 'auth-example-map.json'),
         cwd: testDir,
       });
 

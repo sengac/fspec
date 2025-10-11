@@ -1,6 +1,7 @@
-import { readFile, writeFile } from 'fs/promises';
+import { writeFile } from 'fs/promises';
 import { join } from 'path';
 import type { WorkUnitsData } from '../types';
+import { ensureWorkUnitsFile } from '../utils/ensure-files';
 
 interface ClearDependenciesOptions {
   workUnitId: string;
@@ -14,14 +15,13 @@ interface ClearDependenciesResult {
 
 export async function clearDependencies(options: ClearDependenciesOptions): Promise<ClearDependenciesResult> {
   const cwd = options.cwd || process.cwd();
-  const workUnitsFile = join(cwd, 'spec/work-units.json');
 
   if (!options.confirm) {
     throw new Error('Must confirm clearing all dependencies with --confirm flag');
   }
 
-  const content = await readFile(workUnitsFile, 'utf-8');
-  const data: WorkUnitsData = JSON.parse(content);
+  const data: WorkUnitsData = await ensureWorkUnitsFile(cwd);
+  const workUnitsFile = join(cwd, 'spec/work-units.json');
 
   if (!data.workUnits[options.workUnitId]) {
     throw new Error(`Work unit '${options.workUnitId}' does not exist`);

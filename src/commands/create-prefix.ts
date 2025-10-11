@@ -1,5 +1,6 @@
-import { readFile, writeFile, mkdir } from 'fs/promises';
+import { writeFile } from 'fs/promises';
 import { join } from 'path';
+import { ensurePrefixesFile } from '../utils/ensure-files';
 
 interface Prefix {
   prefix: string;
@@ -20,7 +21,6 @@ export async function createPrefix(options: {
   cwd?: string;
 }): Promise<{ success: boolean }> {
   const cwd = options.cwd || process.cwd();
-  const prefixesFile = join(cwd, 'spec', 'prefixes.json');
 
   // Validate prefix format: 2-6 uppercase letters
   if (!PREFIX_REGEX.test(options.prefix)) {
@@ -28,17 +28,9 @@ export async function createPrefix(options: {
   }
 
   try {
-    // Ensure spec directory exists
-    await mkdir(join(cwd, 'spec'), { recursive: true });
-
     // Read existing prefixes or initialize
-    let data: PrefixesData;
-    try {
-      const content = await readFile(prefixesFile, 'utf-8');
-      data = JSON.parse(content);
-    } catch {
-      data = { prefixes: {} };
-    }
+    const data: PrefixesData = await ensurePrefixesFile(cwd);
+    const prefixesFile = join(cwd, 'spec', 'prefixes.json');
 
     // Check if prefix already exists
     if (data.prefixes[options.prefix]) {

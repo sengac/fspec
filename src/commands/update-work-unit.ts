@@ -1,6 +1,7 @@
-import { readFile, writeFile } from 'fs/promises';
+import { writeFile } from 'fs/promises';
 import { join } from 'path';
 import type { WorkUnitsData, EpicsData } from '../types';
+import { ensureWorkUnitsFile, ensureEpicsFile } from '../utils/ensure-files';
 
 interface UpdateWorkUnitOptions {
   workUnitId: string;
@@ -19,9 +20,8 @@ export async function updateWorkUnit(options: UpdateWorkUnitOptions): Promise<Up
   const cwd = options.cwd || process.cwd();
 
   // Read work units
+  const workUnitsData: WorkUnitsData = await ensureWorkUnitsFile(cwd);
   const workUnitsFile = join(cwd, 'spec/work-units.json');
-  const workUnitsContent = await readFile(workUnitsFile, 'utf-8');
-  const workUnitsData: WorkUnitsData = JSON.parse(workUnitsContent);
 
   // Check if work unit exists
   if (!workUnitsData.workUnits[options.workUnitId]) {
@@ -42,9 +42,7 @@ export async function updateWorkUnit(options: UpdateWorkUnitOptions): Promise<Up
 
   // Validate epic if provided
   if (options.epic !== undefined) {
-    const epicsFile = join(cwd, 'spec/epics.json');
-    const epicsContent = await readFile(epicsFile, 'utf-8');
-    const epicsData: EpicsData = JSON.parse(epicsContent);
+    const epicsData: EpicsData = await ensureEpicsFile(cwd);
 
     if (!epicsData.epics[options.epic]) {
       throw new Error(`Epic '${options.epic}' does not exist`);
@@ -65,9 +63,8 @@ export async function updateWorkUnit(options: UpdateWorkUnitOptions): Promise<Up
     workUnitsData.workUnits[options.workUnitId].epic = options.epic;
 
     // Update epic references
+    const epicsData: EpicsData = await ensureEpicsFile(cwd);
     const epicsFile = join(cwd, 'spec/epics.json');
-    const epicsContent = await readFile(epicsFile, 'utf-8');
-    const epicsData: EpicsData = JSON.parse(epicsContent);
 
     // Remove from old epic if exists
     if (oldEpic && epicsData.epics[oldEpic] && epicsData.epics[oldEpic].workUnits) {

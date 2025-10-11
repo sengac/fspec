@@ -1,6 +1,5 @@
-import { readFile } from 'fs/promises';
-import { join } from 'path';
 import type { WorkUnitsData, WorkUnit } from '../types';
+import { ensureWorkUnitsFile } from '../utils/ensure-files';
 
 interface QueryExampleMappingStatsOptions {
   workUnitId?: string;
@@ -55,11 +54,9 @@ export async function queryExampleMappingStats(
   options: QueryExampleMappingStatsOptions = {}
 ): Promise<QueryExampleMappingStatsResult> {
   const cwd = options.cwd || process.cwd();
-  const workUnitsFile = join(cwd, 'spec/work-units.json');
 
   // Read work units
-  const content = await readFile(workUnitsFile, 'utf-8');
-  const data: WorkUnitsData = JSON.parse(content);
+  const data: WorkUnitsData = await ensureWorkUnitsFile(cwd);
 
   let workUnits = Object.values(data.workUnits);
 

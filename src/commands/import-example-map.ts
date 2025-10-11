@@ -1,6 +1,7 @@
 import { readFile, writeFile } from 'fs/promises';
 import { join } from 'path';
 import type { WorkUnitsData } from '../types';
+import { ensureWorkUnitsFile } from '../utils/ensure-files';
 
 interface ExampleMapData {
   rules?: string[];
@@ -17,12 +18,10 @@ interface ImportExampleMapOptions {
 
 interface ImportExampleMapResult {
   success: boolean;
-  imported: {
-    rules: number;
-    examples: number;
-    questions: number;
-    assumptions: number;
-  };
+  rulesCount: number;
+  examplesCount: number;
+  questionsCount: number;
+  assumptionsCount: number;
 }
 
 export async function importExampleMap(
@@ -32,9 +31,8 @@ export async function importExampleMap(
   const workUnitsFile = join(cwd, 'spec/work-units.json');
   const jsonFilePath = options.file;
 
-  // Read work units
-  const workUnitsContent = await readFile(workUnitsFile, 'utf-8');
-  const data: WorkUnitsData = JSON.parse(workUnitsContent);
+  // Read work units (auto-creates file if missing)
+  const data: WorkUnitsData = await ensureWorkUnitsFile(cwd);
 
   // Validate work unit exists
   if (!data.workUnits[options.workUnitId]) {
@@ -90,6 +88,9 @@ export async function importExampleMap(
 
   return {
     success: true,
-    imported,
+    rulesCount: imported.rules,
+    examplesCount: imported.examples,
+    questionsCount: imported.questions,
+    assumptionsCount: imported.assumptions,
   };
 }

@@ -1,6 +1,5 @@
-import { readFile } from 'fs/promises';
-import { join } from 'path';
 import type { WorkUnitsData } from '../types';
+import { ensureWorkUnitsFile } from '../utils/ensure-files';
 
 interface QueryDependencyStatsOptions {
   cwd?: string;
@@ -18,10 +17,8 @@ export async function queryDependencyStats(
   options: QueryDependencyStatsOptions = {}
 ): Promise<QueryDependencyStatsResult> {
   const cwd = options.cwd || process.cwd();
-  const workUnitsFile = join(cwd, 'spec/work-units.json');
 
-  const content = await readFile(workUnitsFile, 'utf-8');
-  const data: WorkUnitsData = JSON.parse(content);
+  const data: WorkUnitsData = await ensureWorkUnitsFile(cwd);
 
   let totalBlocks = 0;
   let totalBlockedBy = 0;

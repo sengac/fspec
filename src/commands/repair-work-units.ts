@@ -1,6 +1,7 @@
-import { readFile, writeFile } from 'fs/promises';
+import { writeFile } from 'fs/promises';
 import { join } from 'path';
 import type { WorkUnitsData } from '../types';
+import { ensureWorkUnitsFile } from '../utils/ensure-files';
 
 interface RepairWorkUnitsOptions {
   cwd?: string;
@@ -17,9 +18,8 @@ export async function repairWorkUnits(options: RepairWorkUnitsOptions = {}): Pro
   const repairs: string[] = [];
 
   // Read work units
+  const workUnitsData: WorkUnitsData = await ensureWorkUnitsFile(cwd);
   const workUnitsFile = join(cwd, 'spec/work-units.json');
-  const workUnitsContent = await readFile(workUnitsFile, 'utf-8');
-  const workUnitsData: WorkUnitsData = JSON.parse(workUnitsContent);
 
   // Rebuild states index from scratch
   const newStates: Record<string, string[]> = {

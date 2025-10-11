@@ -104,6 +104,10 @@
           "description": "Question answering operations"
         },
         {
+          "name": "@assumption-management",
+          "description": "Assumption tracking in Example Mapping"
+        },
+        {
           "name": "@authentication",
           "description": "Authentication and authorization functionality"
         },
@@ -189,6 +193,10 @@
           "description": "Dependency management between work units"
         },
         {
+          "name": "@dependency-management",
+          "description": "Work unit dependency tracking"
+        },
+        {
           "name": "@documentation",
           "description": "Documentation Display",
           "examples": "Show acceptance criteria, show feature, show foundation (2 files)"
@@ -237,6 +245,10 @@
           "description": "Scenario generation from examples"
         },
         {
+          "name": "@help-text",
+          "description": "Help and documentation features"
+        },
+        {
           "name": "@impact-analysis",
           "description": "Impact analysis and dependency chains"
         },
@@ -251,6 +263,10 @@
         {
           "name": "@metrics",
           "description": "Metrics and measurements"
+        },
+        {
+          "name": "@metrics-estimation",
+          "description": "Metrics and estimation tracking"
         },
         {
           "name": "@migration",
@@ -275,6 +291,10 @@
           "description": "Prediction operations"
         },
         {
+          "name": "@prefix-epic",
+          "description": "Prefix and epic management"
+        },
+        {
           "name": "@prefixes",
           "description": "Work unit ID prefix management"
         },
@@ -293,6 +313,10 @@
         {
           "name": "@query",
           "description": "Query operations for searching and filtering"
+        },
+        {
+          "name": "@query-reporting",
+          "description": "Query and reporting features"
         },
         {
           "name": "@querying",
@@ -389,6 +413,10 @@
           "description": "Scenarios related to work unit and feature file linking functionality"
         },
         {
+          "name": "@work-unit-management",
+          "description": "Work unit lifecycle and status management"
+        },
+        {
           "name": "@work-units",
           "description": "Work unit CRUD operations"
         },
@@ -430,9 +458,17 @@
           "description": "Behavior-Driven Development methodology"
         },
         {
+          "name": "@command-registration",
+          "description": "CLI command registration features"
+        },
+        {
           "name": "@cucumber-parser",
           "description": "Cucumber Parser Integration",
           "useCases": "Direct usage of @cucumber/gherkin-parser"
+        },
+        {
+          "name": "@discovery",
+          "description": "BDD discovery technique used before writing Gherkin scenarios"
         },
         {
           "name": "@email",
@@ -448,6 +484,10 @@
           "description": "Scenarios testing initialization of project files"
         },
         {
+          "name": "@file-structure",
+          "description": "File and directory structure validation"
+        },
+        {
           "name": "@file-system",
           "description": "File System Operations",
           "useCases": "Reading/writing files, directory operations, path handling"
@@ -456,6 +496,14 @@
           "name": "@gherkin",
           "description": "Gherkin Specification Compliance",
           "useCases": "Features ensuring Gherkin spec adherence"
+        },
+        {
+          "name": "@idempotent",
+          "description": "Operations that can be safely repeated without changing results"
+        },
+        {
+          "name": "@initialization",
+          "description": "File and system initialization features"
         },
         {
           "name": "@internal",
@@ -563,19 +611,17 @@
       "required": false,
       "tags": [
         {
-          "name": "@wip",
-          "description": "Work In Progress",
-          "meaning": "Feature is currently being implemented, tests may be incomplete"
+          "name": "@auth-002",
+          "description": "Example work unit for authentication testing"
         },
         {
-          "name": "@todo",
-          "description": "To Do",
-          "meaning": "Feature is planned but not started, scenarios defined but no code"
+          "name": "@auth-999",
+          "description": "Non-existent work unit for testing error handling"
         },
         {
-          "name": "@done",
-          "description": "Complete",
-          "meaning": "Feature is fully implemented, all tests passing, documented"
+          "name": "@blocked",
+          "description": "Blocked",
+          "meaning": "Feature cannot proceed due to dependencies or external factors"
         },
         {
           "name": "@deprecated",
@@ -583,9 +629,39 @@
           "meaning": "Feature is being phased out, replaced by newer implementation"
         },
         {
-          "name": "@blocked",
-          "description": "Blocked",
-          "meaning": "Feature cannot proceed due to dependencies or external factors"
+          "name": "@done",
+          "description": "Complete",
+          "meaning": "Feature is fully implemented, all tests passing, documented"
+        },
+        {
+          "name": "@exmap-001",
+          "description": "Work unit: Redesign Example Mapping to match BDD technique"
+        },
+        {
+          "name": "@init-001",
+          "description": "Work unit: Add ensureWorkUnitsFile to ALL 48+ commands"
+        },
+        {
+          "name": "@refactoring",
+          "description": "Code that needs refactoring"
+        },
+        {
+          "name": "@technical-debt",
+          "description": "Technical debt that should be addressed"
+        },
+        {
+          "name": "@test-001",
+          "description": "Example test work unit"
+        },
+        {
+          "name": "@todo",
+          "description": "To Do",
+          "meaning": "Feature is planned but not started, scenarios defined but no code"
+        },
+        {
+          "name": "@wip",
+          "description": "Work In Progress",
+          "meaning": "Feature is currently being implemented, tests may be incomplete"
         }
       ],
       "rule": "Update status tags as features progress through development lifecycle."
@@ -610,6 +686,10 @@
         {
           "name": "@duplicate",
           "description": "Duplicate detection tests"
+        },
+        {
+          "name": "@e2e",
+          "description": "End-to-end integration tests"
         },
         {
           "name": "@e2e-test",

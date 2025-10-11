@@ -1,4 +1,4 @@
-@TEST-001
+@test-001
 @phase2
 @phase8
 @validator
@@ -268,7 +268,7 @@ Feature: Validate Feature File Tags Against Registry
 
   @work-unit-linking
   Scenario: Validate work unit tag exists in work-units.json
-    Given I have a feature file tagged with "@AUTH-001"
+    Given I have a feature file tagged with "@auth-001"
     And work unit "AUTH-001" exists in spec/work-units.json
     When I run `fspec validate-tags spec/features/auth.feature`
     Then the command should exit with code 0
@@ -276,11 +276,11 @@ Feature: Validate Feature File Tags Against Registry
 
   @work-unit-linking
   Scenario: Detect non-existent work unit tag
-    Given I have a feature file tagged with "@AUTH-999"
+    Given I have a feature file tagged with "@auth-999"
     And work unit "AUTH-999" does not exist in spec/work-units.json
     When I run `fspec validate-tags spec/features/auth.feature`
     Then the command should exit with code 1
-    And the output should contain "Work unit @AUTH-999 not found in spec/work-units.json"
+    And the output should contain "Work unit @auth-999 not found in spec/work-units.json"
     And the output should suggest "Create work unit with: fspec create-work-unit AUTH 'Title'"
 
   @work-unit-linking
@@ -292,13 +292,13 @@ Feature: Validate Feature File Tags Against Registry
       @authentication
       Feature: User Login
 
-        @AUTH-001
+        @auth-001
         Scenario: Login with Google
           Given I am on the login page
           When I click Google login
           Then I am logged in
 
-        @AUTH-002
+        @auth-002
         Scenario: Login with GitHub
           Given I am on the login page
           When I click GitHub login
@@ -313,18 +313,18 @@ Feature: Validate Feature File Tags Against Registry
   Scenario: Detect multiple invalid work unit tags
     Given I have a feature file with work unit tags:
       """
-      @AUTH-001
+      @auth-001
       @phase1
       @cli
       Feature: OAuth Login
 
-        @AUTH-002
+        @auth-002
         Scenario: Login with Google
           Given I am logged out
           When I click Google
           Then I am logged in
 
-        @AUTH-999
+        @auth-999
         Scenario: Invalid work unit
           Given a step
           When another step
@@ -334,7 +334,7 @@ Feature: Validate Feature File Tags Against Registry
     And work unit "AUTH-999" does not exist
     When I run `fspec validate-tags spec/features/oauth.feature`
     Then the command should exit with code 1
-    And the output should contain "Work unit @AUTH-999 not found"
+    And the output should contain "Work unit @auth-999 not found"
     And the output should specify the scenario containing the invalid tag
 
   @work-unit-linking
@@ -349,7 +349,7 @@ Feature: Validate Feature File Tags Against Registry
   Scenario: Distinguish work unit tags from regular tags
     Given I have a feature file with mixed tags:
       """
-      @AUTH-001
+      @auth-001
       @phase1
       @cli
       @authentication

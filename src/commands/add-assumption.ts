@@ -1,6 +1,7 @@
-import { readFile, writeFile } from 'fs/promises';
+import { writeFile } from 'fs/promises';
 import { join } from 'path';
 import type { WorkUnitsData } from '../types';
+import { ensureWorkUnitsFile } from '../utils/ensure-files';
 
 interface AddAssumptionOptions {
   workUnitId: string;
@@ -15,11 +16,10 @@ interface AddAssumptionResult {
 
 export async function addAssumption(options: AddAssumptionOptions): Promise<AddAssumptionResult> {
   const cwd = options.cwd || process.cwd();
-  const workUnitsFile = join(cwd, 'spec/work-units.json');
 
   // Read work units
-  const content = await readFile(workUnitsFile, 'utf-8');
-  const data: WorkUnitsData = JSON.parse(content);
+  const data: WorkUnitsData = await ensureWorkUnitsFile(cwd);
+  const workUnitsFile = join(cwd, 'spec/work-units.json');
 
   // Validate work unit exists
   if (!data.workUnits[options.workUnitId]) {

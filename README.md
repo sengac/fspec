@@ -584,10 +584,10 @@ See [spec/CLAUDE.md](./spec/CLAUDE.md) for detailed process guidelines.
 ## Project Statistics
 
 **Current Release:**
-- **Commands Implemented:** 47 (specification + tag management + project management)
+- **Commands Implemented:** 84 (specification + tag management + project management + query + foundation)
 - **Feature Files:** 44 validated Gherkin specifications
-- **Test Coverage:** 100% (all scenarios have tests - 731 tests passing)
-- **Build Size:** 366.20 kB (gzip: 81.78 kB)
+- **Test Coverage:** 100% (all scenarios have tests - 746 tests passing across 52 test files)
+- **Build Size:** 462.21 kB (gzip: 98.82 kB)
 - **Architecture:** JSON-backed documentation with auto-generated markdown
 - **Validation:** Gherkin syntax + tag registry + Mermaid diagram validation
 

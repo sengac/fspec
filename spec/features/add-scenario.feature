@@ -117,3 +117,34 @@ Feature: Add Scenario to Existing Feature File
     Then the scenario should contain "Given [precondition]"
     And the scenario should contain "When [action]"
     And the scenario should contain "Then [expected outcome]"
+
+  @FEAT-001
+  Scenario: Add scenario to feature file
+    Given [precondition]
+    When [action]
+    Then [expected outcome]
+
+  @FEAT-001
+  Scenario: Add Given step to scenario
+    Given [precondition]
+    When [action]
+    Then [expected outcome]
+
+  @FEAT-001
+  Scenario: Add When step to scenario
+    Given [precondition]
+    When [action]
+    Then [expected outcome]
+
+  @FEAT-001
+  Scenario: Add Then step to scenario
+    Given [precondition]
+    When [action]
+    Then [expected outcome]
+
+  @FEAT-001
+  Scenario: Add scenario with tags
+    Given [precondition]
+    When [action]
+    Then [expected outcome]
+

@@ -2,6 +2,7 @@
 @cli
 @command-registration
 @critical
+@project-management
 Feature: Complete CLI Command Registration
   """
   Architecture notes:
@@ -174,3 +175,35 @@ Feature: Complete CLI Command Registration
     And each command should have proper argument/option definitions
     And each command should import the correct command function
     And the help system should document all commands
+
+  @CLI-001
+  Scenario: All commands registered and accessible
+    Given I have the fspec CLI built and ready
+    And all command functions exist in src/commands/
+    When I check the CLI registration in src/index.ts
+    Then all 84 command functions should be registered
+    And each command should have proper Commander.js registration
+    And each command should be accessible via "fspec <command-name>"
+    And no implemented functionality should be missing from the CLI
+
+  @CLI-001
+  Scenario: Help system shows all commands
+    Given I have the fspec CLI built and ready
+    And all commands are registered in src/index.ts
+    When I run "fspec --help"
+    Then the help output should list all available commands
+    And the help should be organized by category
+    And each command should have a clear description
+    And the help should include commands for: spec, tags, foundation, query, project management
+    And no registered command should be missing from help output
+
+  @CLI-001
+  Scenario: Build succeeds with no errors
+    Given I have made changes to command registration in src/index.ts
+    And all command imports are correct
+    And all TypeScript types are properly defined
+    When I run "npm run build"
+    Then the build should succeed with exit code 0
+    And no TypeScript compilation errors should occur
+    And the dist/index.js file should be created
+    And all command registrations should be included in the bundle

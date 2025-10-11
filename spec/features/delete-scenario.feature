@@ -90,3 +90,34 @@ Feature: Delete Scenario from Feature File
     Then the command should exit with code 1
     And the output should show "Invalid Gherkin syntax"
     And the file should remain unchanged
+
+  @FEAT-002
+  Scenario: Delete scenario by name
+    Given [precondition]
+    When [action]
+    Then [expected outcome]
+
+  @FEAT-002
+  Scenario: Delete scenario by index
+    Given [precondition]
+    When [action]
+    Then [expected outcome]
+
+  @FEAT-002
+  Scenario: Delete multiple scenarios by tag
+    Given [precondition]
+    When [action]
+    Then [expected outcome]
+
+  @FEAT-002
+  Scenario: Confirm before deletion
+    Given [precondition]
+    When [action]
+    Then [expected outcome]
+
+  @FEAT-002
+  Scenario: Preserve remaining scenarios intact
+    Given [precondition]
+    When [action]
+    Then [expected outcome]
+

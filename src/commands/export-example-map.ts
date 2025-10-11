@@ -1,34 +1,31 @@
-import { readFile, writeFile, mkdir } from 'fs/promises';
+import { writeFile, mkdir } from 'fs/promises';
 import { join, dirname } from 'path';
 import type { WorkUnitsData } from '../types';
+import { ensureWorkUnitsFile } from '../utils/ensure-files';
 
 interface ExportExampleMapOptions {
   workUnitId: string;
-  output: string;
+  file: string;
   cwd?: string;
 }
 
 interface ExportExampleMapResult {
   success: boolean;
   outputFile: string;
-  exported: {
-    rules: number;
-    examples: number;
-    questions: number;
-    assumptions: number;
-  };
+  rulesCount: number;
+  examplesCount: number;
+  questionsCount: number;
+  assumptionsCount: number;
 }
 
 export async function exportExampleMap(
   options: ExportExampleMapOptions
 ): Promise<ExportExampleMapResult> {
   const cwd = options.cwd || process.cwd();
-  const workUnitsFile = join(cwd, 'spec/work-units.json');
-  const outputFilePath = options.output;
+  const outputFilePath = options.file;
 
-  // Read work units
-  const content = await readFile(workUnitsFile, 'utf-8');
-  const data: WorkUnitsData = JSON.parse(content);
+  // Read work units (auto-creates file if missing)
+  const data: WorkUnitsData = await ensureWorkUnitsFile(cwd);
 
   // Validate work unit exists
   if (!data.workUnits[options.workUnitId]) {
@@ -63,6 +60,9 @@ export async function exportExampleMap(
   return {
     success: true,
     outputFile: outputFilePath,
-    exported,
+    rulesCount: exported.rules,
+    examplesCount: exported.examples,
+    questionsCount: exported.questions,
+    assumptionsCount: exported.assumptions,
   };
 }

@@ -124,3 +124,90 @@ export async function showWorkUnit(options: ShowWorkUnitOptions): Promise<WorkUn
     linkedFeatures,
   };
 }
+
+// CLI wrapper function for Commander.js
+export async function showWorkUnitCommand(
+  workUnitId: string,
+  options: { format?: string }
+): Promise<void> {
+  const chalk = await import('chalk').then(m => m.default);
+  try {
+    const result = await showWorkUnit({ workUnitId, format: options.format });
+
+    if (options.format === 'json') {
+      console.log(JSON.stringify(result, null, 2));
+    } else {
+      console.log(chalk.bold(`\n${result.id}`));
+      console.log(chalk.gray(`Status: ${result.status}`));
+      console.log('');
+      console.log(chalk.bold(result.title));
+      if (result.description) {
+        console.log(chalk.gray(result.description));
+      }
+      console.log('');
+      
+      if (result.epic) {
+        console.log(chalk.gray('Epic:'), result.epic);
+      }
+      if (result.parent) {
+        console.log(chalk.gray('Parent:'), result.parent);
+      }
+      if (result.children && result.children.length > 0) {
+        console.log(chalk.gray('Children:'), result.children.join(', '));
+      }
+
+      if (result.rules && result.rules.length > 0) {
+        console.log(chalk.cyan('\nRules:'));
+        result.rules.forEach((rule, idx) => {
+          console.log(`  ${idx + 1}. ${rule}`);
+        });
+      }
+
+      if (result.examples && result.examples.length > 0) {
+        console.log(chalk.cyan('\nExamples:'));
+        result.examples.forEach((example, idx) => {
+          console.log(`  ${idx + 1}. ${example}`);
+        });
+      }
+
+      if (result.questions && result.questions.length > 0) {
+        console.log(chalk.cyan('\nQuestions:'));
+        result.questions.forEach((question, idx) => {
+          console.log(`  ${idx + 1}. ${question}`);
+        });
+      }
+
+      if (result.assumptions && result.assumptions.length > 0) {
+        console.log(chalk.cyan('\nAssumptions:'));
+        result.assumptions.forEach((assumption, idx) => {
+          console.log(`  ${idx + 1}. ${assumption}`);
+        });
+      }
+
+      if (result.linkedFeatures && result.linkedFeatures.length > 0) {
+        console.log(chalk.cyan('\nLinked Features:'));
+        for (const feature of result.linkedFeatures) {
+          console.log(`\n  ${chalk.bold(feature.file)}`);
+          for (const scenario of feature.scenarios) {
+            console.log(`    ${chalk.gray(`${scenario.file}:${scenario.line}`)} - ${scenario.name}`);
+          }
+        }
+      }
+
+      console.log('');
+      console.log(chalk.gray('Created:'), new Date(result.createdAt).toLocaleString());
+      console.log(chalk.gray('Updated:'), new Date(result.updatedAt).toLocaleString());
+      console.log('');
+    }
+
+    process.exit(0);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error(chalk.red('Error:'), error.message);
+    } else {
+      console.error(chalk.red('Error: Unknown error occurred'));
+    }
+    process.exit(1);
+  }
+}
+

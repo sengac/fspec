@@ -1,6 +1,5 @@
-import { readFile } from 'fs/promises';
-import { join } from 'path';
 import type { WorkUnitsData } from '../types';
+import { ensureWorkUnitsFile } from '../utils/ensure-files';
 
 interface ValidateWorkUnitsOptions {
   cwd?: string;
@@ -18,9 +17,7 @@ export async function validateWorkUnits(options: ValidateWorkUnitsOptions = {}):
   const checks: string[] = [];
 
   // Read work units
-  const workUnitsFile = join(cwd, 'spec/work-units.json');
-  const workUnitsContent = await readFile(workUnitsFile, 'utf-8');
-  const workUnitsData: WorkUnitsData = JSON.parse(workUnitsContent);
+  const workUnitsData: WorkUnitsData = await ensureWorkUnitsFile(cwd);
 
   // Check 1: JSON schema compliance
   checks.push('schema');
