@@ -1,8 +1,6 @@
-import { readFile } from 'fs/promises';
-import { join } from 'path';
-import { existsSync } from 'fs';
 import chalk from 'chalk';
 import type { Tags } from '../types/tags';
+import { ensureTagsFile } from '../utils/ensure-files';
 
 interface TagEntry {
   tag: string;
@@ -28,28 +26,9 @@ export async function listTags(
   options: ListTagsOptions = {}
 ): Promise<ListTagsResult> {
   const cwd = options.cwd || process.cwd();
-  const tagsJsonPath = join(cwd, 'spec', 'tags.json');
 
-  // Check if tags.json exists
-  if (!existsSync(tagsJsonPath)) {
-    throw new Error('tags.json not found: spec/tags.json');
-  }
-
-  // Read tags.json
-  let content: string;
-  try {
-    content = await readFile(tagsJsonPath, 'utf-8');
-  } catch (error: any) {
-    throw new Error(`Failed to read tags.json: ${error.message}`);
-  }
-
-  // Parse JSON
-  let tagsData: Tags;
-  try {
-    tagsData = JSON.parse(content);
-  } catch (error: any) {
-    throw new Error(`Failed to parse tags.json: ${error.message}`);
-  }
+  // Load or create tags.json using ensureTagsFile
+  const tagsData: Tags = await ensureTagsFile(cwd);
 
   // Transform to CategoryEntry format
   const categories: CategoryEntry[] = tagsData.categories.map(cat => ({

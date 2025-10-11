@@ -198,7 +198,9 @@ describe('Feature: Register New Tag in Tag Registry', () => {
 
       // And the file should include all standard category sections
       expect(tagsContent).toContain('## Feature Group Tags');
-      expect(result.created).toBe(true);
+
+      // And the result should indicate success
+      expect(result.success).toBe(true);
     });
   });
 

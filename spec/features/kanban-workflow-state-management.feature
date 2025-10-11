@@ -1,3 +1,4 @@
+@BOARD-001
 @phase7
 @cli
 @project-management
@@ -379,6 +380,44 @@ Feature: Kanban Workflow State Management
     And the validating column should show "API-001 [5 pts]"
     And the done column should show "SEC-001 [3 pts]"
     And the summary should show "26 points in progress" and "3 points completed"
+
+  @query
+  @board-view
+  Scenario: Limit displayed work units per column with --limit option
+    Given I have a project with spec directory
+    And work units exist in backlog:
+      | id       | estimate |
+      | AUTH-001 | 5        |
+      | AUTH-002 | 3        |
+      | AUTH-003 | 8        |
+      | AUTH-004 | 5        |
+      | AUTH-005 | 2        |
+    When I run "fspec board --limit=2"
+    Then the backlog column should show first 2 work units
+    And the backlog column should show "AUTH-001 [5 pts]"
+    And the backlog column should show "AUTH-002 [3 pts]"
+    And the backlog column should show "... 3 more"
+    And the other empty columns should not show overflow indicators
+
+  @query
+  @board-view
+  @json-output
+  Scenario: Export Kanban board as JSON for programmatic access
+    Given I have a project with spec directory
+    And work units exist:
+      | id       | status       | estimate |
+      | AUTH-001 | backlog      | 5        |
+      | AUTH-002 | specifying   | 8        |
+      | DASH-001 | implementing | 5        |
+    When I run "fspec board --format=json"
+    Then the output should be valid JSON
+    And the JSON should have a "columns" object
+    And the JSON should have a "board" object
+    And the JSON should have a "summary" string
+    And the columns.backlog array should contain work unit with id "AUTH-001"
+    And the columns.specifying array should contain work unit with id "AUTH-002"
+    And the board.backlog array should contain "AUTH-001"
+    And the board.specifying array should contain "AUTH-002"
 
   @validation
   @json-schema

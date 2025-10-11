@@ -1,3 +1,4 @@
+@INIT-002
 @phase1
 @critical
 @cli
@@ -167,3 +168,36 @@ Feature: Automatic JSON File Initialization
     Then it should return the existing data each time
     And the work unit title should still be "Original Title"
     And the file should not be modified or overwritten
+
+  Scenario: Register tag command auto-creates spec/tags.json when missing
+    Given I have a fresh project with spec/ directory
+    Given spec/tags.json does not exist
+    When I run "fspec register-tag @my-tag 'Phase Tags' 'My custom tag'"
+    Then the command should succeed
+    And spec/tags.json should be created
+    And the file should contain valid Tags JSON structure with default categories
+    And the tag @my-tag should be added to the Phase Tags category
+
+  Scenario: Update foundation command auto-creates spec/foundation.json when missing
+    Given I have a fresh project with spec/ directory
+    Given spec/foundation.json does not exist
+    When I run "fspec update-foundation projectOverview 'My project overview'"
+    Then the command should succeed
+    And spec/foundation.json should be created
+    And the file should contain valid Foundation JSON structure
+
+  Scenario: List tags command auto-creates spec/tags.json instead of throwing error
+    Given I have a fresh project with spec/ directory
+    Given spec/tags.json does not exist
+    When I run "fspec list-tags"
+    Then the command should not throw "tags.json not found" error
+    And the command should succeed
+    And spec/tags.json should be auto-created with default structure
+
+  Scenario: Show foundation command auto-creates spec/foundation.json instead of returning error
+    Given I have a fresh project with spec/ directory
+    Given spec/foundation.json does not exist
+    When I run "fspec show-foundation"
+    Then the command should not return "foundation.json not found" error
+    And the command should succeed
+    And spec/foundation.json should be auto-created with default structure

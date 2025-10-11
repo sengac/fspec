@@ -25,6 +25,8 @@ export default defineConfig({
         'tinyglobby',
         'jsdom',
         'mermaid',
+        'ink',
+        'react',
       ],
       output: {
         preserveModules: false,

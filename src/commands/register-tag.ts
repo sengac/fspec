@@ -1,10 +1,10 @@
-import { readFile, writeFile, mkdir } from 'fs/promises';
+import { writeFile } from 'fs/promises';
 import { join } from 'path';
-import { existsSync } from 'fs';
 import chalk from 'chalk';
 import type { Tags, TagCategory } from '../types/tags';
 import { validateTagsJson } from '../validators/json-schema';
 import { generateTagsMd } from '../generators/tags-md';
+import { ensureTagsFile } from '../utils/ensure-files';
 
 interface RegisterTagOptions {
   cwd?: string;
@@ -16,42 +16,6 @@ interface RegisterTagResult {
   created?: boolean;
   converted?: boolean;
 }
-
-// Minimal tags.json template for creation
-const TAGS_JSON_TEMPLATE: Tags = {
-  categories: [
-    { name: 'Phase Tags', description: 'Phase identification tags', required: true, tags: [] },
-    { name: 'Component Tags', description: 'Architectural component tags', required: true, tags: [] },
-    { name: 'Feature Group Tags', description: 'Functional area tags', required: true, tags: [] },
-    { name: 'Technical Tags', description: 'Technical concern tags', required: false, tags: [] },
-    { name: 'Platform Tags', description: 'Platform-specific tags', required: false, tags: [] },
-    { name: 'Priority Tags', description: 'Implementation priority tags', required: false, tags: [] },
-    { name: 'Status Tags', description: 'Development status tags', required: false, tags: [] },
-    { name: 'Testing Tags', description: 'Test-related tags', required: false, tags: [] },
-    { name: 'CAGE Integration Tags', description: 'CAGE-specific tags', required: false, tags: [] },
-  ],
-  combinationExamples: [],
-  usageGuidelines: {
-    requiredCombinations: { title: '', requirements: [], minimumExample: '' },
-    recommendedCombinations: { title: '', includes: [], recommendedExample: '' },
-    orderingConvention: { title: '', order: [], example: '' },
-  },
-  addingNewTags: {
-    process: [],
-    namingConventions: [],
-    antiPatterns: { dont: [], do: [] },
-  },
-  queries: { title: '', examples: [] },
-  statistics: {
-    lastUpdated: new Date().toISOString(),
-    phaseStats: [],
-    componentStats: [],
-    featureGroupStats: [],
-    updateCommand: 'fspec tag-stats',
-  },
-  validation: { rules: [], commands: [] },
-  references: [],
-};
 
 export async function registerTag(
   tag: string,
@@ -86,19 +50,9 @@ export async function registerTag(
     );
   }
 
-  // Load or create tags.json
-  let tagsData: Tags;
-  let created = false;
-
-  if (existsSync(tagsJsonPath)) {
-    const content = await readFile(tagsJsonPath, 'utf-8');
-    tagsData = JSON.parse(content);
-  } else {
-    // Create spec directory and tags.json from template
-    await mkdir(join(cwd, 'spec'), { recursive: true });
-    tagsData = JSON.parse(JSON.stringify(TAGS_JSON_TEMPLATE));
-    created = true;
-  }
+  // Load or create tags.json using ensureTagsFile
+  const tagsData: Tags = await ensureTagsFile(cwd);
+  const created = false; // ensureTagsFile handles creation
 
   // Check for duplicate tags across all categories
   for (const cat of tagsData.categories) {

@@ -478,6 +478,18 @@ Work units progress through Kanban states:
 - `backlog` → `specifying` → `testing` → `implementing` → `validating` → `done`
 - `blocked` state can occur at any point
 
+**Visualize Work:**
+```bash
+# Display Kanban board showing all work units across states
+fspec board
+
+# Display board with custom item limit per column (default: 3)
+fspec board --limit=5
+
+# Export board as JSON for programmatic access
+fspec board --format=json
+```
+
 **Data Storage:**
 - Work units are stored in `spec/work-units.json`
 - Epics are stored in `spec/epics.json`

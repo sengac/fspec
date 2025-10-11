@@ -1,10 +1,10 @@
-import { readFile, writeFile, mkdir } from 'fs/promises';
+import { writeFile } from 'fs/promises';
 import { join } from 'path';
-import { existsSync } from 'fs';
 import chalk from 'chalk';
 import type { Foundation } from '../types/foundation';
 import { validateFoundationJson } from '../validators/json-schema';
 import { generateFoundationMd } from '../generators/foundation-md';
+import { ensureFoundationFile } from '../utils/ensure-files';
 
 interface UpdateFoundationOptions {
   section: string;
@@ -17,82 +17,6 @@ interface UpdateFoundationResult {
   message?: string;
   error?: string;
 }
-
-// Minimal foundation.json template
-const FOUNDATION_JSON_TEMPLATE: Foundation = {
-  project: {
-    name: 'Project',
-    description: 'Project description',
-    repository: 'https://github.com/user/repo',
-    license: 'MIT',
-    importantNote: 'Important project note',
-  },
-  whatWeAreBuilding: {
-    projectOverview: 'Project overview',
-    technicalRequirements: {
-      coreTechnologies: [],
-      architecture: {
-        pattern: 'Architecture pattern',
-        fileStructure: 'File structure',
-        deploymentTarget: 'Deployment target',
-        integrationModel: [],
-      },
-      developmentAndOperations: {
-        developmentTools: 'Development tools',
-        testingStrategy: 'Testing strategy',
-        logging: 'Logging approach',
-        validation: 'Validation approach',
-        formatting: 'Formatting approach',
-      },
-      keyLibraries: [],
-    },
-    nonFunctionalRequirements: [],
-  },
-  whyWeAreBuildingIt: {
-    problemDefinition: {
-      primary: {
-        title: 'Primary Problem',
-        description: 'Description',
-        points: [],
-      },
-      secondary: [],
-    },
-    painPoints: {
-      currentState: 'Current state',
-      specific: [],
-    },
-    stakeholderImpact: [],
-    theoreticalSolutions: [],
-    developmentMethodology: {
-      name: 'Methodology',
-      description: 'Description',
-      steps: [],
-      ensures: [],
-    },
-    successCriteria: [],
-    constraintsAndAssumptions: {
-      constraints: [],
-      assumptions: [],
-    },
-  },
-  architectureDiagrams: [],
-  coreCommands: {
-    categories: [],
-  },
-  featureInventory: {
-    phases: [],
-    tagUsageSummary: {
-      phaseDistribution: [],
-      componentDistribution: [],
-      featureGroupDistribution: [],
-      priorityDistribution: [],
-      testingCoverage: [],
-    },
-  },
-  notes: {
-    developmentStatus: [],
-  },
-};
 
 export async function updateFoundation(
   options: UpdateFoundationOptions
@@ -122,17 +46,8 @@ export async function updateFoundation(
     const foundationJsonPath = join(cwd, 'spec/foundation.json');
     const foundationMdPath = join(cwd, 'spec/FOUNDATION.md');
 
-    // Load or create foundation.json
-    let foundationData: Foundation;
-
-    if (existsSync(foundationJsonPath)) {
-      const fileContent = await readFile(foundationJsonPath, 'utf-8');
-      foundationData = JSON.parse(fileContent);
-    } else {
-      // Create spec directory and foundation.json from template
-      await mkdir(join(cwd, 'spec'), { recursive: true });
-      foundationData = JSON.parse(JSON.stringify(FOUNDATION_JSON_TEMPLATE));
-    }
+    // Load or create foundation.json using ensureFoundationFile
+    const foundationData: Foundation = await ensureFoundationFile(cwd);
 
     // Update the JSON field based on section name
     const updated = updateJsonField(foundationData, section, content);

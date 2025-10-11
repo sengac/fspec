@@ -1,6 +1,5 @@
 import { readFile } from 'fs/promises';
 import { join } from 'path';
-import { existsSync } from 'fs';
 import chalk from 'chalk';
 import { glob } from 'tinyglobby';
 import * as Gherkin from '@cucumber/gherkin';
@@ -8,6 +7,7 @@ import * as Messages from '@cucumber/messages';
 import type { Tags } from '../types/tags';
 import { isWorkUnitTag, looksLikeWorkUnitTag, extractWorkUnitId, loadWorkUnitsData } from '../utils/work-unit-tags';
 import type { WorkUnitsData } from '../types';
+import { ensureTagsFile } from '../utils/ensure-files';
 
 interface TagValidationResult {
   file: string;
@@ -99,63 +99,43 @@ export async function validateTagsCommand(file?: string): Promise<void> {
       process.exit(0);
     }
   } catch (error: any) {
-    if (error.message.includes('tags.json not found')) {
-      console.error(chalk.red(error.message));
-      console.log(
-        chalk.yellow('  Suggestion: Create spec/tags.json to track tags')
-      );
-      process.exit(2);
-    }
     console.error(chalk.red('Error:'), error.message);
     process.exit(2);
   }
 }
 
 async function loadTagRegistry(cwd: string): Promise<TagRegistry> {
-  const tagsJsonPath = join(cwd, 'spec', 'tags.json');
+  // Load or create tags.json using ensureTagsFile
+  const tagsData: Tags = await ensureTagsFile(cwd);
 
-  if (!existsSync(tagsJsonPath)) {
-    throw new Error('tags.json not found: spec/tags.json');
-  }
+  // Extract all valid tags from categories
+  const validTags = new Set<string>();
+  const phaseTags: string[] = [];
+  const componentTags: string[] = [];
+  const featureGroupTags: string[] = [];
 
-  try {
-    const content = await readFile(tagsJsonPath, 'utf-8');
-    const tagsData: Tags = JSON.parse(content);
+  for (const category of tagsData.categories) {
+    for (const tag of category.tags) {
+      validTags.add(tag.name);
 
-    // Extract all valid tags from categories
-    const validTags = new Set<string>();
-    const phaseTags: string[] = [];
-    const componentTags: string[] = [];
-    const featureGroupTags: string[] = [];
-
-    for (const category of tagsData.categories) {
-      for (const tag of category.tags) {
-        validTags.add(tag.name);
-
-        // Categorize tags based on category name
-        if (category.name === 'Phase Tags') {
-          phaseTags.push(tag.name);
-        } else if (category.name === 'Component Tags') {
-          componentTags.push(tag.name);
-        } else if (category.name === 'Feature Group Tags') {
-          featureGroupTags.push(tag.name);
-        }
+      // Categorize tags based on category name
+      if (category.name === 'Phase Tags') {
+        phaseTags.push(tag.name);
+      } else if (category.name === 'Component Tags') {
+        componentTags.push(tag.name);
+      } else if (category.name === 'Feature Group Tags') {
+        featureGroupTags.push(tag.name);
       }
     }
-
-    const requiredCategories = {
-      phase: phaseTags,
-      component: componentTags,
-      featureGroup: featureGroupTags,
-    };
-
-    return { validTags, requiredCategories };
-  } catch (error: any) {
-    if (error.code === 'ENOENT') {
-      throw new Error('tags.json not found: spec/tags.json');
-    }
-    throw error;
   }
+
+  const requiredCategories = {
+    phase: phaseTags,
+    component: componentTags,
+    featureGroup: featureGroupTags,
+  };
+
+  return { validTags, requiredCategories };
 }
 
 async function validateFileTags(

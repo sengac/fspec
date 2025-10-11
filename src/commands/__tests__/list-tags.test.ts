@@ -143,23 +143,22 @@ describe('Feature: List Registered Tags from Registry', () => {
     });
   });
 
-  describe('Scenario: Handle missing tags.json file', () => {
-    it('should error when tags.json does not exist', async () => {
+  describe('Scenario: Auto-create tags.json when missing', () => {
+    it('should auto-create tags.json with default structure when missing', async () => {
       // Given no tags.json file exists in spec/
       await rm(join(testDir, 'spec', 'tags.json'));
 
       // When I run `fspec list-tags`
-      // Then it should throw an error
-      await expect(listTags({ cwd: testDir })).rejects.toThrow(
-        'tags.json not found'
-      );
+      const result = await listTags({ cwd: testDir });
 
-      try {
-        await listTags({ cwd: testDir });
-      } catch (error: any) {
-        // And the output should suggest creating tags.json
-        expect(error.message).toContain('spec/tags.json');
-      }
+      // Then it should succeed
+      expect(result.success).toBe(true);
+
+      // And tags.json should be auto-created with default categories
+      expect(result.categories).toHaveLength(9); // 9 default categories
+      expect(result.categories.map(c => c.name)).toContain('Phase Tags');
+      expect(result.categories.map(c => c.name)).toContain('Component Tags');
+      expect(result.categories.map(c => c.name)).toContain('Feature Group Tags');
     });
   });
 

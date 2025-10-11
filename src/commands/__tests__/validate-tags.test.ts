@@ -258,16 +258,19 @@ Feature: Broken Feature
     });
   });
 
-  describe('Scenario: Handle missing tags.json file', () => {
-    it('should error when tags.json does not exist', async () => {
+  describe('Scenario: Auto-create tags.json when missing', () => {
+    it('should auto-create tags.json when it does not exist', async () => {
       // Given no tags.json exists
       await rm(join(testDir, 'spec', 'tags.json'));
 
       // When I run validate-tags
-      // Then it should throw an error
-      await expect(validateTags({ cwd: testDir })).rejects.toThrow(
-        'tags.json not found'
-      );
+      const result = await validateTags({ cwd: testDir });
+
+      // Then it should succeed and auto-create tags.json
+      expect(result).toBeDefined();
+      expect(result.results).toEqual([]);
+      expect(result.validCount).toBe(0);
+      expect(result.invalidCount).toBe(0);
     });
   });
 
