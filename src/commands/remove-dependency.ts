@@ -1,6 +1,7 @@
-import { readFile, writeFile } from 'fs/promises';
+import { writeFile } from 'fs/promises';
 import { join } from 'path';
 import type { WorkUnitsData } from '../types';
+import { ensureWorkUnitsFile } from '../utils/ensure-files';
 
 interface RemoveDependencyOptions {
   workUnitId: string;
@@ -17,10 +18,9 @@ interface RemoveDependencyResult {
 
 export async function removeDependency(options: RemoveDependencyOptions): Promise<RemoveDependencyResult> {
   const cwd = options.cwd || process.cwd();
-  const workUnitsFile = join(cwd, 'spec/work-units.json');
 
-  const content = await readFile(workUnitsFile, 'utf-8');
-  const data: WorkUnitsData = JSON.parse(content);
+  const data: WorkUnitsData = await ensureWorkUnitsFile(cwd);
+  const workUnitsFile = join(cwd, 'spec/work-units.json');
 
   if (!data.workUnits[options.workUnitId]) {
     throw new Error(`Work unit '${options.workUnitId}' does not exist`);

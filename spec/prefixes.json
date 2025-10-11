@@ -1,3 +1,59 @@
 {
-  "prefixes": {}
+  "prefixes": {
+    "QUERY": {
+      "prefix": "QUERY",
+      "description": "Query and reporting features",
+      "createdAt": "2025-10-10T12:02:21.710Z"
+    },
+    "EXMAP": {
+      "prefix": "EXMAP",
+      "description": "Example Mapping features",
+      "createdAt": "2025-10-10T22:58:22.998Z"
+    },
+    "INIT": {
+      "prefix": "INIT",
+      "description": "Initialization and setup",
+      "createdAt": "2025-10-10T23:22:58.889Z"
+    },
+    "CLI": {
+      "prefix": "CLI",
+      "description": "CLI and command registration",
+      "createdAt": "2025-10-10T23:34:12.904Z"
+    },
+    "DEP": {
+      "prefix": "DEP",
+      "description": "Dependency management",
+      "createdAt": "2025-10-10T23:39:08.825Z"
+    },
+    "EST": {
+      "prefix": "EST",
+      "description": "Estimation and metrics",
+      "createdAt": "2025-10-10T23:39:10.457Z"
+    },
+    "QRY": {
+      "prefix": "QRY",
+      "description": "Query and reporting",
+      "createdAt": "2025-10-10T23:39:12.195Z"
+    },
+    "SPEC": {
+      "prefix": "SPEC",
+      "description": "Specification refinement and completion",
+      "createdAt": "2025-10-11T02:11:19.533Z"
+    },
+    "TEST": {
+      "prefix": "TEST",
+      "description": "Testing and quality assurance",
+      "createdAt": "2025-10-11T02:25:05.112Z"
+    },
+    "FEAT": {
+      "prefix": "FEAT",
+      "description": "Feature file operations",
+      "createdAt": "2025-10-11T02:25:05.386Z"
+    },
+    "CLEAN": {
+      "prefix": "CLEAN",
+      "description": "Code cleanup and refactoring",
+      "createdAt": "2025-10-11T03:20:26.058Z"
+    }
+  }
 }

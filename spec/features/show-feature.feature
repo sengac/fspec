@@ -126,7 +126,7 @@ Feature: Display Feature File Contents
 
   @work-unit-linking
   Scenario: Display work units linked to feature (feature-level tags)
-    Given I have a feature file "oauth-login.feature" tagged with "@AUTH-001"
+    Given I have a feature file "oauth-login.feature" tagged with "@auth-001"
     And work unit "AUTH-001" exists with title "OAuth Login Implementation"
     And the feature has 3 scenarios
     When I run `fspec show-feature oauth-login`
@@ -140,7 +140,7 @@ Feature: Display Feature File Contents
   Scenario: Display multiple work units from scenario-level tags
     Given I have a feature file "oauth-login.feature" with:
       """
-      @AUTH-001
+      @auth-001
       Feature: OAuth Login
 
         Scenario: Login with Google
@@ -148,7 +148,7 @@ Feature: Display Feature File Contents
           When I click Google
           Then I am logged in
 
-        @AUTH-002
+        @auth-002
         Scenario: Add refresh tokens
           Given I have a token
           When it expires

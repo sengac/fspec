@@ -47,6 +47,7 @@ Tags that categorize features by functional area.
 |-----|-------------|-------|
 | `@accuracy` | Accuracy measurement |  |
 | `@answer-question` | Question answering operations |  |
+| `@assumption-management` | Assumption tracking in Example Mapping |  |
 | `@authentication` | Authentication and authorization functionality |  |
 | `@auto-blocking` | Automatic blocking state transitions |  |
 | `@auto-transition` | Automatic state transitions |  |
@@ -68,6 +69,7 @@ Tags that categorize features by functional area.
 | `@crud` | Create, Read, Update, Delete operations |  |
 | `@delete` | Delete operations |  |
 | `@dependencies` | Dependency management between work units |  |
+| `@dependency-management` | Work unit dependency tracking |  |
 | `@documentation` | Documentation Display |  |
 | `@epics` | Epic management and high-level work grouping |  |
 | `@estimation` | Estimation operations |  |
@@ -79,20 +81,24 @@ Tags that categorize features by functional area.
 | `@formatting` | Auto-Formatting |  |
 | `@foundation-management` | FOUNDATION.md Operations |  |
 | `@generate-scenarios` | Scenario generation from examples |  |
+| `@help-text` | Help and documentation features |  |
 | `@impact-analysis` | Impact analysis and dependency chains |  |
 | `@kanban` | Kanban board and workflow management |  |
 | `@list` | List operations |  |
 | `@metrics` | Metrics and measurements |  |
+| `@metrics-estimation` | Metrics and estimation tracking |  |
 | `@migration` | Migration & Data Transformation |  |
 | `@modification` | Feature Modification Operations |  |
 | `@operations` | General operations |  |
 | `@parent-child` | Parent-child work unit relationships |  |
 | `@prediction` | Prediction operations |  |
+| `@prefix-epic` | Prefix and epic management |  |
 | `@prefixes` | Work unit ID prefix management |  |
 | `@priority` | Priority management and reordering |  |
 | `@progress` | Progress tracking and reporting |  |
 | `@project-management` | Project management features including work units, epics, and workflow |  |
 | `@query` | Query operations for searching and filtering |  |
+| `@query-reporting` | Query and reporting features |  |
 | `@querying` | Query & Search Operations |  |
 | `@read` | Read operations |  |
 | `@read-only` | Read-Only Operations |  |
@@ -115,6 +121,7 @@ Tags that categorize features by functional area.
 | `@velocity` | Velocity calculation |  |
 | `@visualization` | Data visualization |  |
 | `@work-unit-linking` | Scenarios related to work unit and feature file linking functionality |  |
+| `@work-unit-management` | Work unit lifecycle and status management |  |
 | `@work-units` | Work unit CRUD operations |  |
 | `@workflow` | Workflow and state transition features |  |
 | `@workflow-automation` | Workflow automation and lifecycle integration utilities |  |
@@ -132,12 +139,17 @@ Tags for specific technical concerns or architectural patterns.
 | `@auto-create` | Scenarios testing automatic file creation when files are missing |  |
 | `@automation` | Automated workflow operations and state transitions |  |
 | `@bdd` | Behavior-Driven Development methodology |  |
+| `@command-registration` | CLI command registration features |  |
 | `@cucumber-parser` | Cucumber Parser Integration |  |
+| `@discovery` | BDD discovery technique used before writing Gherkin scenarios |  |
 | `@email` | Email-related functionality |  |
 | `@error-handling` | Error Handling |  |
 | `@file-initialization` | Scenarios testing initialization of project files |  |
+| `@file-structure` | File and directory structure validation |  |
 | `@file-system` | File System Operations |  |
 | `@gherkin` | Gherkin Specification Compliance |  |
+| `@idempotent` | Operations that can be safely repeated without changing results |  |
+| `@initialization` | File and system initialization features |  |
 | `@internal` | Internal Utility |  |
 | `@json-backed` | JSON-Backed Documentation |  |
 | `@json-schema` | JSON Schema Validation |  |
@@ -182,11 +194,18 @@ Tags tracking development status of features.
 
 | Tag | Description | Usage |
 |-----|-------------|-------|
-| `@wip` | Work In Progress |  |
-| `@todo` | To Do |  |
-| `@done` | Complete |  |
-| `@deprecated` | Deprecated |  |
+| `@auth-002` | Example work unit for authentication testing |  |
+| `@auth-999` | Non-existent work unit for testing error handling |  |
 | `@blocked` | Blocked |  |
+| `@deprecated` | Deprecated |  |
+| `@done` | Complete |  |
+| `@exmap-001` | Work unit: Redesign Example Mapping to match BDD technique |  |
+| `@init-001` | Work unit: Add ensureWorkUnitsFile to ALL 48+ commands |  |
+| `@refactoring` | Code that needs refactoring |  |
+| `@technical-debt` | Technical debt that should be addressed |  |
+| `@test-001` | Example test work unit |  |
+| `@todo` | To Do |  |
+| `@wip` | Work In Progress |  |
 
 **Rule**: Update status tags as features progress through development lifecycle.
 
@@ -200,6 +219,7 @@ Tags for test-related scenarios and requirements.
 | `@circular-dependency` | Circular dependency detection tests |  |
 | `@consistency` | Data consistency validation |  |
 | `@duplicate` | Duplicate detection tests |  |
+| `@e2e` | End-to-end integration tests |  |
 | `@e2e-test` | End-to-End Test Required |  |
 | `@edge-case` | Edge case tests - validation of boundary conditions and unusual scenarios |  |
 | `@happy-path` | Happy path test scenarios |  |

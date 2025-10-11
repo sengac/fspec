@@ -1,7 +1,9 @@
-import { readFile, writeFile, mkdir } from 'fs/promises';
+import { writeFile, mkdir } from 'fs/promises';
 import { join, dirname } from 'path';
 import { existsSync } from 'fs';
 import type { WorkUnitsData } from '../types';
+import { ensureWorkUnitsFile } from '../utils/ensure-files';
+import { readFile } from 'fs/promises';
 
 interface GenerateScenariosOptions {
   workUnitId: string;
@@ -13,7 +15,7 @@ interface GenerateScenariosOptions {
 interface GenerateScenariosResult {
   success: boolean;
   featureFile: string;
-  scenariosGenerated: number;
+  scenariosCount: number;
 }
 
 function generateBasicScenario(workUnitId: string, example: string, index: number): string {
@@ -44,11 +46,9 @@ export async function generateScenarios(
   options: GenerateScenariosOptions
 ): Promise<GenerateScenariosResult> {
   const cwd = options.cwd || process.cwd();
-  const workUnitsFile = join(cwd, 'spec/work-units.json');
 
-  // Read work units
-  const content = await readFile(workUnitsFile, 'utf-8');
-  const data: WorkUnitsData = JSON.parse(content);
+  // Read work units (auto-creates file if missing)
+  const data: WorkUnitsData = await ensureWorkUnitsFile(cwd);
 
   // Validate work unit exists
   if (!data.workUnits[options.workUnitId]) {
@@ -111,6 +111,6 @@ ${scenarios.join('\n')}`;
   return {
     success: true,
     featureFile,
-    scenariosGenerated: scenarios.length,
+    scenariosCount: scenarios.length,
   };
 }

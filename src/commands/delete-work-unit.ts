@@ -1,6 +1,7 @@
-import { readFile, writeFile } from 'fs/promises';
+import { writeFile } from 'fs/promises';
 import { join } from 'path';
 import type { WorkUnitsData } from '../types';
+import { ensureWorkUnitsFile } from '../utils/ensure-files';
 
 interface DeleteWorkUnitOptions {
   workUnitId: string;
@@ -20,9 +21,8 @@ export async function deleteWorkUnit(options: DeleteWorkUnitOptions): Promise<De
   const warnings: string[] = [];
 
   // Read work units
+  const workUnitsData: WorkUnitsData = await ensureWorkUnitsFile(cwd);
   const workUnitsFile = join(cwd, 'spec/work-units.json');
-  const workUnitsContent = await readFile(workUnitsFile, 'utf-8');
-  const workUnitsData: WorkUnitsData = JSON.parse(workUnitsContent);
 
   // Check if work unit exists
   if (!workUnitsData.workUnits[options.workUnitId]) {

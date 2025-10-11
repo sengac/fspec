@@ -23,7 +23,7 @@ Feature: Get Scenarios by Tag
   - MUST parse all feature files in spec/features/
   - MUST match scenarios by BOTH feature-level AND scenario-level tags
   - MUST support filtering by scenario-specific tags (e.g., @smoke, @regression)
-  - MUST support filtering by work unit tags (e.g., @AUTH-001, @DASH-002)
+  - MUST support filtering by work unit tags (e.g., @auth-001, @DASH-002)
   - MUST support multiple --tag flags with AND logic
   - MUST return feature path, scenario name, and line number
   - MUST handle missing spec/features/ directory gracefully
@@ -244,7 +244,7 @@ Feature: Get Scenarios by Tag
   Scenario: Filter scenarios by work unit tag (feature-level)
     Given I have a feature file with work unit tag:
       """
-      @AUTH-001
+      @auth-001
       @phase1
       @authentication
       Feature: OAuth Login
@@ -259,10 +259,10 @@ Feature: Get Scenarios by Tag
           When I click GitHub
           Then I am logged in
       """
-    When I run `fspec get-scenarios --tag=@AUTH-001`
+    When I run `fspec get-scenarios --tag=@auth-001`
     Then the command should exit with code 0
     And the output should show both scenarios
-    And both scenarios should inherit the @AUTH-001 tag
+    And both scenarios should inherit the @auth-001 tag
 
   @work-unit-linking
   Scenario: Filter scenarios by work unit tag (scenario-level)
@@ -272,13 +272,13 @@ Feature: Get Scenarios by Tag
       @authentication
       Feature: OAuth Login
 
-        @AUTH-001
+        @auth-001
         Scenario: Login with Google
           Given I am on login page
           When I click Google
           Then I am logged in
 
-        @AUTH-002
+        @auth-002
         Scenario: Add refresh tokens
           Given I have a token
           When it expires
@@ -289,7 +289,7 @@ Feature: Get Scenarios by Tag
           When I login
           Then I am authenticated
       """
-    When I run `fspec get-scenarios --tag=@AUTH-001`
+    When I run `fspec get-scenarios --tag=@auth-001`
     Then the output should show only "Login with Google"
     And the output should not show "Add refresh tokens"
     And the output should not show "Standard login"
@@ -298,7 +298,7 @@ Feature: Get Scenarios by Tag
   Scenario: Filter scenarios combining work unit and regular tags
     Given I have a feature file:
       """
-      @AUTH-001
+      @auth-001
       @phase1
       @authentication
       Feature: OAuth Login
@@ -315,14 +315,45 @@ Feature: Get Scenarios by Tag
           When I run it
           Then it passes
       """
-    When I run `fspec get-scenarios --tag=@AUTH-001 --tag=@smoke`
+    When I run `fspec get-scenarios --tag=@auth-001 --tag=@smoke`
     Then the output should show only "Quick smoke test"
     And the scenario matches both work unit tag and test type tag
 
   @work-unit-linking
   Scenario: List all scenarios for multiple work units
-    Given I have feature files with work unit tags "@AUTH-001" and "@AUTH-002"
-    When I run `fspec get-scenarios --tag=@AUTH-001`
-    Then the output should show only scenarios tagged with @AUTH-001
-    When I run `fspec get-scenarios --tag=@AUTH-002`
-    Then the output should show only scenarios tagged with @AUTH-002
+    Given I have feature files with work unit tags "@auth-001" and "@auth-002"
+    When I run `fspec get-scenarios --tag=@auth-001`
+    Then the output should show only scenarios tagged with @auth-001
+    When I run `fspec get-scenarios --tag=@auth-002`
+    Then the output should show only scenarios tagged with @auth-002
+
+  @FEAT-003
+  Scenario: Get scenarios by single tag
+    Given [precondition]
+    When [action]
+    Then [expected outcome]
+
+  @FEAT-003
+  Scenario: Get scenarios by multiple tags (AND logic)
+    Given [precondition]
+    When [action]
+    Then [expected outcome]
+
+  @FEAT-003
+  Scenario: Show acceptance criteria for tag
+    Given [precondition]
+    When [action]
+    Then [expected outcome]
+
+  @FEAT-003
+  Scenario: Output scenarios as JSON
+    Given [precondition]
+    When [action]
+    Then [expected outcome]
+
+  @FEAT-003
+  Scenario: Query with tag matching pattern
+    Given [precondition]
+    When [action]
+    Then [expected outcome]
+

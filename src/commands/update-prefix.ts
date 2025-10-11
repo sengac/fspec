@@ -1,5 +1,6 @@
-import { readFile, writeFile } from 'fs/promises';
+import { writeFile } from 'fs/promises';
 import { join } from 'path';
+import { ensurePrefixesFile, ensureEpicsFile } from '../utils/ensure-files';
 
 interface Prefix {
   prefix: string;
@@ -24,12 +25,11 @@ export async function updatePrefix(options: {
   cwd?: string;
 }): Promise<{ success: boolean }> {
   const cwd = options.cwd || process.cwd();
-  const prefixesFile = join(cwd, 'spec', 'prefixes.json');
 
   try {
     // Read existing prefixes
-    const content = await readFile(prefixesFile, 'utf-8');
-    const data: PrefixesData = JSON.parse(content);
+    const data: PrefixesData = await ensurePrefixesFile(cwd);
+    const prefixesFile = join(cwd, 'spec', 'prefixes.json');
 
     // Check if prefix exists
     if (!data.prefixes[options.prefix]) {
@@ -38,17 +38,8 @@ export async function updatePrefix(options: {
 
     // If epicId is provided, verify it exists
     if (options.epicId) {
-      const epicsFile = join(cwd, 'spec', 'epics.json');
-      try {
-        const epicsContent = await readFile(epicsFile, 'utf-8');
-        const epicsData: EpicsData = JSON.parse(epicsContent);
-        if (!epicsData.epics[options.epicId]) {
-          throw new Error(`Epic ${options.epicId} not found`);
-        }
-      } catch (error: unknown) {
-        if (error instanceof Error && error.message.includes('not found')) {
-          throw error;
-        }
+      const epicsData: EpicsData = await ensureEpicsFile(cwd);
+      if (!epicsData.epics[options.epicId]) {
         throw new Error(`Epic ${options.epicId} not found`);
       }
     }

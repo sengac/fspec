@@ -40,12 +40,12 @@ import { addTagToScenarioCommand } from './commands/add-tag-to-scenario';
 import { removeTagFromScenarioCommand } from './commands/remove-tag-from-scenario';
 import { listScenarioTagsCommand } from './commands/list-scenario-tags';
 // Project management commands
-import { createWorkUnitCommand } from './commands/create-work-unit-command';
-import { listWorkUnitsCommand } from './commands/list-work-units-command';
-import { showWorkUnitCommand } from './commands/show-work-unit-command';
-import { createEpicCommand } from './commands/create-epic-command';
-import { listEpicsCommand } from './commands/list-epics-command';
-import { showEpicCommand } from './commands/show-epic-command';
+import { createWorkUnitCommand } from './commands/create-work-unit';
+import { listWorkUnitsCommand } from './commands/list-work-units';
+import { showWorkUnitCommand } from './commands/show-work-unit';
+import { createEpicCommand } from './commands/create-epic';
+import { listEpicsCommand } from './commands/list-epics';
+import { showEpicCommand } from './commands/show-epic';
 // Additional work unit management commands
 import { prioritizeWorkUnit } from './commands/prioritize-work-unit';
 import { updateWorkUnit } from './commands/update-work-unit';

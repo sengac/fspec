@@ -1,0 +1,603 @@
+{
+  "meta": {
+    "version": "1.0.0",
+    "lastUpdated": "2025-10-10T22:58:36.525Z"
+  },
+  "workUnits": {
+    "EXMAP-001": {
+      "id": "EXMAP-001",
+      "title": "Redesign Example Mapping to match BDD technique",
+      "status": "done",
+      "createdAt": "2025-10-10T22:58:36.526Z",
+      "updatedAt": "2025-10-10T23:20:00.252Z",
+      "description": "Current implementation is wrong - operates on work units instead of stories. Need to redesign to follow 4-card system (yellow story, blue rules, green examples, red questions) that happens BEFORE writing feature files. Example Mapping should help discover what scenarios to write, not modify existing ones.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-10T22:58:42.985Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-10T23:05:16.853Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-10T23:19:16.805Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-10T23:19:26.991Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-10T23:20:00.252Z"
+        }
+      ]
+    },
+    "INIT-001": {
+      "id": "INIT-001",
+      "title": "Add ensureWorkUnitsFile to ALL 48+ commands",
+      "status": "done",
+      "createdAt": "2025-10-10T23:23:00.738Z",
+      "updatedAt": "2025-10-10T23:30:22.581Z",
+      "description": "Following EXMAP-001 pattern, add ensureWorkUnitsFile/ensurePrefixesFile/ensureEpicsFile utilities to ALL commands that read JSON files. This prevents ENOENT errors and improves first-time user experience.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-10T23:23:13.046Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-10T23:24:25.195Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-10T23:30:08.298Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-10T23:30:09.868Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-10T23:30:22.581Z"
+        }
+      ],
+      "rules": [
+        "ALL commands that read spec/work-units.json MUST use ensureWorkUnitsFile",
+        "ALL commands that read spec/prefixes.json MUST use ensurePrefixesFile",
+        "ALL commands that read spec/epics.json MUST use ensureEpicsFile",
+        "Ensure utilities MUST be idempotent - safe to call multiple times",
+        "NO command should fail with ENOENT errors when JSON files missing"
+      ],
+      "examples": [
+        "Create epic command auto-creates spec/epics.json when missing",
+        "Create prefix command auto-creates spec/prefixes.json when missing",
+        "List work units command auto-creates spec/work-units.json when missing",
+        "Update work unit command uses ensureWorkUnitsFile instead of direct readFile",
+        "Calling ensureWorkUnitsFile multiple times returns same data without overwriting"
+      ],
+      "questions": [],
+      "assumptions": [
+        "No - tags.json and foundation.json already auto-create via register-tag and add-diagram commands"
+      ]
+    },
+    "CLI-001": {
+      "id": "CLI-001",
+      "title": "Verify all CLI commands and help system complete",
+      "status": "done",
+      "createdAt": "2025-10-10T23:34:14.426Z",
+      "updatedAt": "2025-10-11T02:09:46.737Z",
+      "description": "VERIFIED: 84 commands registered, help system comprehensive and accurate, all validation checks passing",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-11T02:09:01.564Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-11T02:09:45.913Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-11T02:09:46.189Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-11T02:09:46.463Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-11T02:09:46.737Z"
+        }
+      ],
+      "rules": [
+        "ALL 84 commands MUST be registered in src/index.ts with proper CLI bindings",
+        "MUST have comprehensive help text for each command",
+        "MUST pass all validation checks (build, validate, validate-tags)"
+      ],
+      "examples": [
+        "All commands registered and accessible",
+        "Help system shows all commands",
+        "Build succeeds with no errors"
+      ]
+    },
+    "DEP-001": {
+      "id": "DEP-001",
+      "title": "Work Unit Dependency Management",
+      "status": "done",
+      "createdAt": "2025-10-10T23:39:22.582Z",
+      "updatedAt": "2025-10-10T23:47:00.473Z",
+      "description": "Implement dependency tracking between work units including add-dependency, remove-dependency, and dependency validation",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-10T23:39:38.913Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-10T23:42:11.831Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-10T23:46:12.749Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-10T23:46:19.691Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-10T23:47:00.473Z"
+        }
+      ],
+      "rules": [
+        "MUST maintain bidirectional consistency (if A blocks B, then B blockedBy A)",
+        "MUST detect circular dependencies before creating relationships",
+        "MUST prevent deletion of work units that block other work",
+        "MUST auto-transition to blocked state when blockedBy work exists",
+        "Work units can have 4 relationship types: blocks, blockedBy, dependsOn, relatesTo"
+      ],
+      "examples": [
+        "Add blocks relationship creates bidirectional link",
+        "Remove dependency cleans up both sides of relationship",
+        "Circular dependency detection prevents A→B→A loops",
+        "Adding blockedBy dependency auto-sets work unit to blocked state",
+        "Query dependency stats shows metrics across all work units"
+      ]
+    },
+    "EST-001": {
+      "id": "EST-001",
+      "title": "Work Unit Estimation and Metrics",
+      "status": "done",
+      "createdAt": "2025-10-10T23:39:24.324Z",
+      "updatedAt": "2025-10-10T23:51:10.655Z",
+      "description": "Implement estimation and metrics tracking including assign estimates, record tokens, calculate cycle time",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-10T23:47:18.974Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-10T23:48:44.204Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-10T23:51:10.109Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-10T23:51:10.383Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-10T23:51:10.655Z"
+        }
+      ],
+      "rules": [
+        "MUST support Fibonacci story points (1,2,3,5,8,13,21) for estimation",
+        "MUST track AI-specific metrics: actualTokens and iterations",
+        "MUST calculate cycle time from stateHistory timestamps",
+        "MUST compare estimate vs actual to provide accuracy feedback",
+        "MUST provide pattern-based estimation recommendations"
+      ],
+      "examples": [
+        "Update work unit with 5-point estimate",
+        "Record 45k tokens consumed",
+        "Increment iteration count",
+        "Query estimate accuracy for work unit",
+        "Get estimation guide with patterns"
+      ]
+    },
+    "QRY-001": {
+      "id": "QRY-001",
+      "title": "Work Unit Query and Reporting",
+      "status": "done",
+      "createdAt": "2025-10-10T23:39:26.221Z",
+      "updatedAt": "2025-10-10T23:52:11.901Z",
+      "description": "Implement query and reporting features including compound queries, statistical reports, and data export",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-10T23:51:24.531Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-10T23:52:11.067Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-10T23:52:11.346Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-10T23:52:11.624Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-10T23:52:11.901Z"
+        }
+      ],
+      "rules": [
+        "MUST support compound queries combining multiple filters (status, prefix, epic, tags)",
+        "MUST export query results to JSON, CSV, or Markdown formats",
+        "MUST generate statistical summary reports across work units",
+        "MUST support sorting and pagination for large result sets",
+        "MUST provide machine-readable output for CI/CD integration"
+      ],
+      "examples": [
+        "Query by status and prefix",
+        "Export work units to JSON",
+        "Generate summary report with statistics",
+        "Query with sorting by updated date",
+        "Export filtered results to CSV"
+      ]
+    },
+    "SPEC-001": {
+      "id": "SPEC-001",
+      "title": "Complete placeholder scenarios with proper Given/When/Then",
+      "status": "done",
+      "createdAt": "2025-10-11T02:11:53.337Z",
+      "updatedAt": "2025-10-11T02:18:27.489Z",
+      "description": "Fill in 24 placeholder scenarios across 6 feature files with concrete Given/When/Then steps",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-11T02:12:07.366Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-11T02:13:37.952Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-11T02:18:26.932Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-11T02:18:27.212Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-11T02:18:27.489Z"
+        }
+      ],
+      "rules": [
+        "Each placeholder scenario MUST have concrete Given/When/Then steps",
+        "Steps MUST be specific and testable (no vague descriptions)",
+        "Scenarios MUST align with their example mapping source",
+        "All scenarios MUST follow Gherkin best practices",
+        "Completed scenarios MUST pass validation"
+      ],
+      "examples": [
+        "Fill INIT-001 scenarios (5 scenarios)",
+        "Fill DEP-001 scenarios (5 scenarios)",
+        "Fill EST-001 scenarios (5 scenarios)",
+        "Fill QRY-001 scenarios (5 scenarios)",
+        "Fill CLI-001 scenarios (3 scenarios)",
+        "Fill add-scenario scenarios (1 scenario)"
+      ]
+    },
+    "TEST-001": {
+      "id": "TEST-001",
+      "title": "Implement comprehensive test coverage for all commands",
+      "status": "done",
+      "createdAt": "2025-10-11T02:25:37.571Z",
+      "updatedAt": "2025-10-11T03:07:49.878Z",
+      "description": "Write tests for remaining untested commands to achieve near-100% test coverage across the CLI",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-11T03:05:37.421Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-11T03:06:54.869Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-11T03:07:39.735Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-11T03:07:44.751Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-11T03:07:49.878Z"
+        }
+      ],
+      "rules": [
+        "MUST test all CLI commands with valid inputs",
+        "MUST test error handling and edge cases",
+        "MUST achieve 90%+ code coverage on critical commands",
+        "MUST validate file operations (read, write, delete)",
+        "MUST test integration points (parser, formatter, validator)"
+      ],
+      "examples": [
+        "Test create-feature with all template variations",
+        "Test validation with invalid Gherkin syntax",
+        "Test format preserves content and fixes indentation",
+        "Test file operations handle missing directories",
+        "Test tag registry operations (add, update, delete)"
+      ]
+    },
+    "FEAT-001": {
+      "id": "FEAT-001",
+      "title": "Implement add-scenario and add-step commands",
+      "status": "done",
+      "createdAt": "2025-10-11T02:26:06.358Z",
+      "updatedAt": "2025-10-11T02:34:00.512Z",
+      "description": "Complete implementation of add-scenario and add-step commands for modifying feature files programmatically (phase3)",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-11T02:26:56.216Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-11T02:28:39.953Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-11T02:33:59.946Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-11T02:34:00.227Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-11T02:34:00.512Z"
+        }
+      ],
+      "rules": [
+        "MUST parse existing feature file without corrupting content",
+        "MUST maintain proper Gherkin formatting and indentation",
+        "MUST validate scenario/step syntax before adding",
+        "MUST preserve existing tags and metadata",
+        "MUST support adding to any position (append, prepend, after scenario)"
+      ],
+      "examples": [
+        "Add scenario to feature file",
+        "Add Given step to scenario",
+        "Add When step to scenario",
+        "Add Then step to scenario",
+        "Add scenario with tags"
+      ]
+    },
+    "FEAT-002": {
+      "id": "FEAT-002",
+      "title": "Implement delete-scenario command",
+      "status": "done",
+      "createdAt": "2025-10-11T02:37:12.464Z",
+      "updatedAt": "2025-10-11T02:43:37.355Z",
+      "description": "Complete implementation of delete-scenario command for removing scenarios from feature files (phase4)",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-11T02:37:48.826Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-11T02:40:58.673Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-11T02:43:36.723Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-11T02:43:37.047Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-11T02:43:37.355Z"
+        }
+      ],
+      "rules": [
+        "MUST safely delete scenario without corrupting file",
+        "MUST preserve other scenarios and structure",
+        "MUST support deletion by scenario name or index",
+        "MUST handle scenario tags properly during deletion",
+        "MUST provide confirmation before deleting"
+      ],
+      "examples": [
+        "Delete scenario by name",
+        "Delete scenario by index",
+        "Delete multiple scenarios by tag",
+        "Confirm before deletion",
+        "Preserve remaining scenarios intact"
+      ]
+    },
+    "FEAT-003": {
+      "id": "FEAT-003",
+      "title": "Implement scenario querying and filtering",
+      "status": "done",
+      "createdAt": "2025-10-11T02:37:12.740Z",
+      "updatedAt": "2025-10-11T02:47:04.736Z",
+      "description": "Implement get-scenarios and show-acceptance-criteria commands for querying scenarios by tag (phase4)",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-11T02:43:45.616Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-11T02:44:45.290Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-11T02:47:04.171Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-11T02:47:04.451Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-11T02:47:04.736Z"
+        }
+      ],
+      "rules": [
+        "MUST support querying scenarios by single or multiple tags",
+        "MUST output scenario list with metadata (feature, tags, steps)",
+        "MUST support JSON and plain text output formats",
+        "MUST handle AND/OR logic for multiple tags",
+        "MUST show acceptance criteria in readable format"
+      ],
+      "examples": [
+        "Get scenarios by single tag",
+        "Get scenarios by multiple tags (AND logic)",
+        "Show acceptance criteria for tag",
+        "Output scenarios as JSON",
+        "Query with tag matching pattern"
+      ]
+    },
+    "FEAT-004": {
+      "id": "FEAT-004",
+      "title": "Implement bulk operations (delete-by-tag, retag)",
+      "status": "done",
+      "createdAt": "2025-10-11T02:49:30.896Z",
+      "updatedAt": "2025-10-11T02:57:58.944Z",
+      "description": "Implement bulk delete features/scenarios by tag and bulk retag operations (phase5 high priority)",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-11T02:50:54.242Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-11T02:52:40.455Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-11T02:57:58.367Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-11T02:57:58.656Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-11T02:57:58.944Z"
+        }
+      ],
+      "rules": [
+        "MUST support bulk deletion across multiple files",
+        "MUST preview changes before executing bulk operations",
+        "MUST handle tag renaming with bidirectional updates",
+        "MUST preserve file structure during bulk operations",
+        "MUST provide detailed summary of changes made"
+      ],
+      "examples": [
+        "Delete all scenarios with @deprecated tag",
+        "Delete feature files tagged @phase1",
+        "Rename tag from @old-tag to @new-tag",
+        "Preview bulk delete before confirmation",
+        "Show summary of bulk changes"
+      ]
+    },
+    "FEAT-005": {
+      "id": "FEAT-005",
+      "title": "Implement update operations (scenario, step)",
+      "status": "done",
+      "createdAt": "2025-10-11T02:49:31.178Z",
+      "updatedAt": "2025-10-11T03:01:38.306Z",
+      "description": "Implement update-scenario and update-step commands for modifying existing content (phase5)",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-11T02:58:07.304Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-11T03:00:04.811Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-11T03:01:27.456Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-11T03:01:32.883Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-11T03:01:38.306Z"
+        }
+      ],
+      "rules": [
+        "MUST support updating scenario name/title",
+        "MUST support updating step text",
+        "MUST preserve tags and metadata during updates",
+        "MUST validate new content before applying",
+        "MUST maintain proper Gherkin syntax"
+      ],
+      "examples": [
+        "Update scenario name",
+        "Update Given step text",
+        "Update When step text",
+        "Update Then step text",
+        "Update step preserving position"
+      ]
+    }
+  },
+  "states": {
+    "backlog": [],
+    "specifying": [],
+    "testing": [],
+    "implementing": [],
+    "validating": [],
+    "done": [
+      "EXMAP-001",
+      "INIT-001",
+      "DEP-001",
+      "EST-001",
+      "QRY-001",
+      "CLI-001",
+      "SPEC-001",
+      "FEAT-001",
+      "FEAT-002",
+      "FEAT-003",
+      "FEAT-004",
+      "FEAT-005",
+      "TEST-001"
+    ],
+    "blocked": []
+  }
+}

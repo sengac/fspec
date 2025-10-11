@@ -1,6 +1,7 @@
-import { readFile, writeFile } from 'fs/promises';
+import { writeFile } from 'fs/promises';
 import { join } from 'path';
 import type { WorkUnitsData } from '../types';
+import { ensureWorkUnitsFile } from '../utils/ensure-files';
 
 interface AddDependencyOptions {
   workUnitId: string;
@@ -50,10 +51,9 @@ function detectCircularDependency(
 
 export async function addDependency(options: AddDependencyOptions): Promise<AddDependencyResult> {
   const cwd = options.cwd || process.cwd();
-  const workUnitsFile = join(cwd, 'spec/work-units.json');
 
-  const content = await readFile(workUnitsFile, 'utf-8');
-  const data: WorkUnitsData = JSON.parse(content);
+  const data: WorkUnitsData = await ensureWorkUnitsFile(cwd);
+  const workUnitsFile = join(cwd, 'spec/work-units.json');
 
   // Validate work unit exists
   if (!data.workUnits[options.workUnitId]) {

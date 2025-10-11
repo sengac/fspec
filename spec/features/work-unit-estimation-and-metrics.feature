@@ -165,3 +165,54 @@ Feature: Work Unit Estimation and Metrics
       | 1      | 20k-30k        | 1-2                | high       |
       | 3      | 60k-90k        | 2-3                | high       |
       | 5      | 90k-130k       | 2-4                | medium     |
+
+  @EST-001
+  Scenario: Update work unit with 5-point estimate
+    Given I have a project with spec directory
+    And a work unit "AUTH-001" exists
+    When I run "fspec update-work-unit AUTH-001 --estimate=5"
+    Then the command should succeed
+    And the work unit should have estimate of 5 story points
+    And the estimate should be a valid Fibonacci number
+
+  @EST-001
+  Scenario: Record 45k tokens consumed
+    Given I have a project with spec directory
+    And a work unit "AUTH-001" exists with status "implementing"
+    When I run "fspec record-metric AUTH-001 --tokens=45000"
+    Then the command should succeed
+    And the work unit should have actualTokens of 45000
+    And the metric should be tracked for future analysis
+
+  @EST-001
+  Scenario: Increment iteration count
+    Given I have a project with spec directory
+    And a work unit "AUTH-001" exists with iterations 2
+    When I run "fspec record-iteration AUTH-001"
+    Then the command should succeed
+    And the work unit should have iterations of 3
+    And the iteration count should be incremented by 1
+
+  @EST-001
+  Scenario: Query estimate accuracy for work unit
+    Given I have a project with spec directory
+    And a completed work unit "AUTH-001" with estimate 5
+    And the work unit has actualTokens 95000
+    And the work unit has iterations 2
+    When I run "fspec query estimate-accuracy AUTH-001"
+    Then the output should show estimated: "5 points"
+    And the output should show actual: "95000 tokens, 2 iterations"
+    And the output should show comparison and accuracy assessment
+
+  @EST-001
+  Scenario: Get estimation guide with patterns
+    Given I have a project with spec directory
+    And completed work units with established patterns exist
+    And historical data shows 1-point = 20k-30k tokens
+    And historical data shows 3-point = 60k-90k tokens
+    And historical data shows 5-point = 90k-130k tokens
+    When I run "fspec query estimation-guide"
+    Then the output should show recommended patterns by story points
+    And the output should show expected token ranges
+    And the output should show expected iteration counts
+    And the output should show confidence levels for each pattern

@@ -1,6 +1,7 @@
-import { readFile, writeFile, mkdir } from 'fs/promises';
-import { join, dirname } from 'path';
+import { writeFile, mkdir } from 'fs/promises';
+import { dirname } from 'path';
 import type { WorkUnitsData } from '../types';
+import { ensureWorkUnitsFile } from '../utils/ensure-files';
 
 interface ExportDependenciesOptions {
   format: 'mermaid' | 'json';
@@ -74,10 +75,8 @@ export async function exportDependencies(
   options: ExportDependenciesOptions
 ): Promise<ExportDependenciesResult> {
   const cwd = options.cwd || process.cwd();
-  const workUnitsFile = join(cwd, 'spec/work-units.json');
 
-  const content = await readFile(workUnitsFile, 'utf-8');
-  const data: WorkUnitsData = JSON.parse(content);
+  const data: WorkUnitsData = await ensureWorkUnitsFile(cwd);
 
   let outputContent: string;
 
