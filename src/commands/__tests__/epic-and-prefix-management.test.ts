@@ -344,6 +344,30 @@ describe('Feature: Epic and Prefix Management', () => {
     });
   });
 
+  describe('Scenario: List epics when epics.json does not exist', () => {
+    it('should return empty list when epics.json does not exist', async () => {
+      // Given I have a project with spec directory
+      // (created in beforeEach)
+
+      // And the file "spec/epics.json" does not exist
+      // (it doesn't exist by default)
+
+      // When I run "fspec list-epics"
+      const result = await listEpics({ cwd: testDir });
+
+      // Then the command should succeed
+      expect(result).toBeDefined();
+
+      // And the output should indicate no epics found
+      expect(result.epics).toHaveLength(0);
+
+      // And the file "spec/epics.json" should NOT be created
+      const { access } = await import('fs/promises');
+      const epicsFile = join(testDir, 'spec', 'epics.json');
+      await expect(access(epicsFile)).rejects.toThrow();
+    });
+  });
+
   describe('Scenario: Delete epic and unlink work units', () => {
     it('should delete epic and clear work unit references', async () => {
       // Given I have an epic with linked work units

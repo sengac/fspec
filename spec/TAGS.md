@@ -148,6 +148,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@file-structure` | File and directory structure validation |  |
 | `@file-system` | File System Operations |  |
 | `@gherkin` | Gherkin Specification Compliance |  |
+| `@graceful-degradation` | Features that gracefully handle missing or invalid data |  |
 | `@idempotent` | Operations that can be safely repeated without changing results |  |
 | `@initialization` | File and system initialization features |  |
 | `@internal` | Internal Utility |  |
