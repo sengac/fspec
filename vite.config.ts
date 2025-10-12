@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite';
 import { resolve } from 'path';
-import { copyFileSync, mkdirSync } from 'fs';
+import { cpSync } from 'fs';
 
 export default defineConfig({
   build: {
@@ -40,13 +40,18 @@ export default defineConfig({
   },
   plugins: [
     {
-      name: 'copy-templates',
+      name: 'copy-bundled-files',
       closeBundle() {
-        const templatesDir = resolve(__dirname, 'dist', 'templates');
-        mkdirSync(templatesDir, { recursive: true });
-        copyFileSync(
-          resolve(__dirname, 'templates', 'CLAUDE.md'),
-          resolve(templatesDir, 'CLAUDE.md')
+        // Bundle entire spec/ directory (all .md, .json, .feature files)
+        cpSync(resolve(__dirname, 'spec'), resolve(__dirname, 'dist', 'spec'), {
+          recursive: true,
+        });
+
+        // Bundle entire .claude/ directory
+        cpSync(
+          resolve(__dirname, '.claude'),
+          resolve(__dirname, 'dist', '.claude'),
+          { recursive: true }
         );
       },
     },

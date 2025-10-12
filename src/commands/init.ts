@@ -205,20 +205,20 @@ async function generateTemplate(): Promise<string> {
  * Always overwrites existing CLAUDE.md without prompting.
  */
 async function copyClaudeTemplate(cwd: string): Promise<void> {
-  // Resolve template path from package installation
+  // Resolve CLAUDE.md path from package installation
   // Try multiple paths to support different execution contexts:
-  // 1. dist/templates/CLAUDE.md (production)
-  // 2. templates/CLAUDE.md (development/test from project root)
+  // 1. dist/spec/CLAUDE.md (production - bundled from spec/)
+  // 2. spec/CLAUDE.md (development/test from project root)
   const possiblePaths = [
-    join(__dirname, '..', 'templates', 'CLAUDE.md'), // From dist/
-    join(__dirname, '..', '..', 'templates', 'CLAUDE.md'), // From src/commands/
+    join(__dirname, '..', 'spec', 'CLAUDE.md'), // From dist/
+    join(__dirname, '..', '..', 'spec', 'CLAUDE.md'), // From src/commands/
   ];
 
-  let templatePath: string | null = null;
+  let sourcePath: string | null = null;
   for (const path of possiblePaths) {
     try {
       await access(path);
-      templatePath = path;
+      sourcePath = path;
       break;
     } catch {
       // Try next path
@@ -226,10 +226,9 @@ async function copyClaudeTemplate(cwd: string): Promise<void> {
     }
   }
 
-  if (!templatePath) {
+  if (!sourcePath) {
     throw new Error(
-      'Could not find CLAUDE.md template. Tried paths: ' +
-        possiblePaths.join(', ')
+      'Could not find spec/CLAUDE.md. Tried paths: ' + possiblePaths.join(', ')
     );
   }
 
@@ -240,6 +239,6 @@ async function copyClaudeTemplate(cwd: string): Promise<void> {
   // Create spec/ directory if it doesn't exist
   await mkdir(specDir, { recursive: true });
 
-  // Copy template (overwrites if exists)
-  await copyFile(templatePath, targetPath);
+  // Copy CLAUDE.md (overwrites if exists)
+  await copyFile(sourcePath, targetPath);
 }
