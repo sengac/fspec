@@ -3,6 +3,7 @@ import { join } from 'path';
 import chalk from 'chalk';
 import * as Gherkin from '@cucumber/gherkin';
 import * as Messages from '@cucumber/messages';
+import { isWorkUnitTag } from '../utils/work-unit-tags';
 
 interface AddTagToScenarioOptions {
   cwd?: string;
@@ -46,14 +47,18 @@ export async function addTagToScenario(
       return {
         success: false,
         valid: false,
-        error: `Invalid tag format. Tags must start with @ and use lowercase-with-hyphens`,
+        error: `Invalid tag format. Tags must start with @`,
       };
     }
-    if (!/^@[a-z0-9-#]+$/.test(tag)) {
+    // Allow work unit tags (@AUTH-001) or regular tags (@lowercase-with-hyphens)
+    const isWorkUnit = isWorkUnitTag(tag);
+    const isRegularTag = /^@[a-z0-9-#]+$/.test(tag);
+
+    if (!isWorkUnit && !isRegularTag) {
       return {
         success: false,
         valid: false,
-        error: `Invalid tag format. Tags must start with @ and use lowercase-with-hyphens`,
+        error: `Invalid tag format. Regular tags must use lowercase-with-hyphens, work unit tags must match @[A-Z]{2,6}-\\d+ (e.g., @AUTH-001)`,
       };
     }
   }

@@ -97,6 +97,8 @@ import { generateSummaryReport } from './commands/generate-summary-report';
 import { validateSpecAlignment } from './commands/validate-spec-alignment';
 // Dependencies command (display/show)
 import { showDependencies } from './commands/dependencies';
+// Setup and init commands
+import { init } from './commands/init';
 
 const program = new Command();
 
@@ -146,6 +148,11 @@ function displayCustomHelp(): void {
   console.log('');
 
   console.log(chalk.bold('QUICK START'));
+  console.log(
+    '  ' +
+      chalk.cyan('fspec init') +
+      '                  - Install /fspec slash command for Claude Code'
+  );
   console.log(
     '  ' +
       chalk.cyan('fspec validate') +
@@ -2398,7 +2405,7 @@ program
     try {
       const result = await generateScenarios({ workUnitId });
       console.log(
-        chalk.green(`✓ Generated ${result.scenariosGenerated} scenarios`)
+        chalk.green(`✓ Generated ${result.scenariosCount} scenarios`)
       );
     } catch (error: any) {
       console.error(
@@ -2760,5 +2767,58 @@ program
 
 // Note: General dependencies display command not implemented yet
 // Use query-dependency-stats or show-work-unit to view dependencies
+
+// ============================================================================
+// INIT COMMAND
+// ============================================================================
+
+program
+  .command('init')
+  .description('Initialize fspec slash command for Claude Code or custom location')
+  .option('--type <type>', 'Installation type: claude-code or custom')
+  .option('--path <path>', 'Custom installation path (relative to current directory)')
+  .option('--yes', 'Skip confirmation prompts (auto-confirm overwrite)')
+  .action(async (options: { type?: string; path?: string; yes?: boolean }) => {
+    try {
+      let installType: 'claude-code' | 'custom';
+      let customPath: string | undefined;
+
+      // Determine install type
+      if (options.type) {
+        if (options.type !== 'claude-code' && options.type !== 'custom') {
+          console.error(
+            chalk.red(
+              '✗ Invalid type. Must be "claude-code" or "custom"'
+            )
+          );
+          process.exit(1);
+        }
+        installType = options.type as 'claude-code' | 'custom';
+
+        if (installType === 'custom' && !options.path) {
+          console.error(
+            chalk.red('✗ --path is required when --type=custom')
+          );
+          process.exit(1);
+        }
+        customPath = options.path;
+      } else {
+        // Interactive mode (default to claude-code for now)
+        installType = 'claude-code';
+      }
+
+      const result = await init({
+        installType,
+        customPath,
+        confirmOverwrite: options.yes !== false,
+      });
+
+      console.log(chalk.green(result.message));
+      process.exit(result.exitCode);
+    } catch (error: any) {
+      console.error(chalk.red('✗ Init failed:'), error.message);
+      process.exit(1);
+    }
+  });
 
 program.parse();

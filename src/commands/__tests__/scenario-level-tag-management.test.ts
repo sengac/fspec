@@ -245,8 +245,7 @@ Feature: User Login
 
       // And error should mention invalid format
       expect(result.error).toContain('Invalid tag format');
-      expect(result.error).toContain('@');
-      expect(result.error).toContain('lowercase');
+      expect(result.error).toContain('Tags must start with @');
     });
   });
 
@@ -614,6 +613,46 @@ Feature: User Login
 
       // And the file should remain valid Gherkin
       expect(result.valid).toBe(true);
+    });
+  });
+
+  describe('Scenario: Accept work unit tags in scenario tagging', () => {
+    it('should accept work unit tags like @CLI-004, @AUTH-001, @BUG-001', async () => {
+      // Given I have a feature file with a scenario
+      const featureContent = `Feature: User Login
+
+  Scenario: Login with valid credentials
+    Given I am on the login page
+    When I enter valid credentials
+    Then I should be logged in
+`;
+      await writeFile(
+        join(testDir, 'spec/features/login.feature'),
+        featureContent
+      );
+
+      // When I run add-tag-to-scenario with work unit tags
+      const result = await addTagToScenario(
+        'spec/features/login.feature',
+        'Login with valid credentials',
+        ['@CLI-004', '@AUTH-001', '@BUG-001'],
+        { cwd: testDir }
+      );
+
+      // Then the command should succeed
+      expect(result.success).toBe(true);
+
+      // And the scenario should have the work unit tags
+      const updatedContent = await readFile(
+        join(testDir, 'spec/features/login.feature'),
+        'utf-8'
+      );
+      expect(updatedContent).toContain('@CLI-004');
+      expect(updatedContent).toContain('@AUTH-001');
+      expect(updatedContent).toContain('@BUG-001');
+
+      // And the output should show successful addition
+      expect(result.message).toContain('Added @CLI-004, @AUTH-001, @BUG-001');
     });
   });
 });

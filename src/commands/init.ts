@@ -126,10 +126,10 @@ async function checkFileExists(filePath: string): Promise<boolean> {
  * examples with generic placeholders (example-project style).
  */
 async function generateTemplate(): Promise<string> {
-  // Read the fspec.md template
+  // Read the fspec.md template from the installed package location
+  // When built, __dirname will be dist/, so we need to go up and find .claude/commands/fspec.md
   const templatePath = join(
     __dirname,
-    '..',
     '..',
     '.claude',
     'commands',

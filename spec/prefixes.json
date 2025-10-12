@@ -74,6 +74,11 @@
       "prefix": "REMIND",
       "description": "System reminder and anti-drift features",
       "createdAt": "2025-10-12T05:13:23.082Z"
+    },
+    "BUG": {
+      "prefix": "BUG",
+      "description": "Bug fixes and patches",
+      "createdAt": "2025-10-12T07:13:53.107Z"
     }
   }
 }

@@ -1,3 +1,4 @@
+@CLI-004
 @DOC-001
 @done
 @scaffolding
@@ -109,3 +110,12 @@ Feature: fspec Slash Command Installation
     And the template should include all ACDD workflow sections
     And the template should include example mapping guidance
     And the template should include story point estimation guidance
+
+  @CLI-004
+  Scenario: CLI registration allows running fspec init command
+    Given I have fspec installed
+    When I run 'fspec init --help'
+    Then the command should show init command help
+    And the command should not show 'unknown command' error
+    And 'fspec --help' output should list init command
+

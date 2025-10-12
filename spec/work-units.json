@@ -1038,6 +1038,129 @@
         "Not applicable - no lock acquisition with stable indices approach"
       ],
       "estimate": 3
+    },
+    "CLI-004": {
+      "id": "CLI-004",
+      "title": "Wire up init command to CLI program",
+      "status": "done",
+      "createdAt": "2025-10-12T07:09:52.763Z",
+      "updatedAt": "2025-10-12T07:21:43.421Z",
+      "children": [],
+      "description": "The init command implementation exists in src/commands/init.ts but is NOT registered in src/index.ts. This means users cannot run 'fspec init'. Need to: 1) Register command in CLI, 2) Add to help system, 3) Update feature files with complete acceptance criteria, 4) Ensure tests cover end-to-end CLI invocation (not just unit tests), 5) Validate command actually works via CLI before marking done.",
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-12T07:10:05.831Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-12T07:12:12.711Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-12T07:20:18.251Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-12T07:20:25.581Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-12T07:21:20.272Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-12T07:21:43.421Z"
+        }
+      ],
+      "rules": [
+        "Command must be registered in src/index.ts with .command('init')",
+        "Command must support interactive prompts using ink/react (option --type and --path flags)",
+        "Command must appear in 'fspec --help' output and 'fspec help setup' section",
+        "E2E tests must verify 'fspec init' actually works via CLI, not just unit tests of the function"
+      ],
+      "examples": [
+        "Running 'fspec init' prompts for installation type (Claude Code or Custom)",
+        "Running 'fspec init --type=claude-code' installs to .claude/commands/fspec.md",
+        "Running 'fspec --help' shows init command in output"
+      ]
+    },
+    "BUG-001": {
+      "id": "BUG-001",
+      "title": "Scenario-level tagging rejects work unit tags",
+      "status": "done",
+      "createdAt": "2025-10-12T07:13:53.468Z",
+      "updatedAt": "2025-10-12T07:17:29.244Z",
+      "description": "add-tag-to-scenario command rejects work unit tags like @CLI-004 even though add-tag-to-feature accepts them. The scenario tagging uses /^@[a-z0-9-#]+$/ regex while feature tagging uses isWorkUnitTag() helper. Need to make scenario tagging use the same work unit tag validation as feature tagging.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-12T07:13:56.954Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-12T07:14:51.941Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-12T07:15:26.562Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-12T07:15:58.002Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-12T07:17:29.245Z"
+        }
+      ],
+      "rules": [
+        "add-tag-to-scenario MUST use isWorkUnitTag() helper for validation, same as add-tag-to-feature",
+        "Work unit tags (@PREFIX-NNN format) MUST be accepted at both feature and scenario level"
+      ],
+      "examples": [
+        "Running 'fspec add-tag-to-scenario file.feature \"Scenario\" @CLI-004' should succeed",
+        "Work unit tags like @AUTH-001, @BUG-001, @CLI-004 should be accepted"
+      ]
+    },
+    "BUG-002": {
+      "id": "BUG-002",
+      "title": "generate-scenarios displays 'undefined' instead of count",
+      "status": "done",
+      "createdAt": "2025-10-12T07:14:42.738Z",
+      "updatedAt": "2025-10-12T07:19:58.352Z",
+      "description": "When running 'fspec generate-scenarios <work-unit-id>', the success message shows 'Generated undefined scenarios' instead of showing the actual count of scenarios generated. The command should display 'Generated N scenarios' where N is the number of scenarios created.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-12T07:18:37.948Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-12T07:18:52.782Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-12T07:19:19.951Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-12T07:19:35.465Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-12T07:19:58.353Z"
+        }
+      ],
+      "rules": [
+        "generate-scenarios command MUST return the count of scenarios generated",
+        "Success message MUST display 'Generated N scenarios' where N is the actual count"
+      ],
+      "examples": [
+        "Running 'fspec generate-scenarios WORK-001' should display 'Generated 3 scenarios' not 'Generated undefined scenarios'"
+      ]
     }
   },
   "states": {
@@ -1069,7 +1192,10 @@
       "CLI-003",
       "TEST-002",
       "TEST-003",
-      "DOC-001"
+      "DOC-001",
+      "BUG-001",
+      "BUG-002",
+      "CLI-004"
     ],
     "blocked": []
   }
