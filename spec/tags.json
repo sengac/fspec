@@ -498,6 +498,10 @@
           "useCases": "Features ensuring Gherkin spec adherence"
         },
         {
+          "name": "@graceful-degradation",
+          "description": "Features that gracefully handle missing or invalid data"
+        },
+        {
           "name": "@idempotent",
           "description": "Operations that can be safely repeated without changing results"
         },

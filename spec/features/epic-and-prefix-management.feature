@@ -97,12 +97,17 @@ Feature: Epic and Prefix Management
   @query
   Scenario: List all epics with progress
     Given I have a project with spec directory
-    And epics exist:
-      | id             | total | completed |
-      | epic-auth      | 20    | 15        |
-      | epic-dashboard | 30    | 10        |
+    And epic "epic-auth" exists with title "Authentication"
+    And epic "epic-dashboard" exists with title "Dashboard"
+    And work units exist in epics:
+      | id       | epic           | status       |
+      | AUTH-001 | epic-auth      | done         |
+      | AUTH-002 | epic-auth      | implementing |
+      | DASH-001 | epic-dashboard | done         |
     When I run "fspec list-epics"
-    Then the output should show both epics with progress percentages
+    Then the output should list 2 epics
+    And the output should show epic "epic-auth" with completion 1/2 (50%)
+    And the output should show epic "epic-dashboard" with completion 1/1 (100%)
 
   @delete
   @cascade
@@ -138,15 +143,15 @@ Feature: Epic and Prefix Management
     And the file "spec/epics.json" should be created
     And the epic "epic-user-management" should exist in epics.json
 
-  @auto-create
-  @file-initialization
-  Scenario: Auto-create epics.json when listing epics
+  @graceful-degradation
+  @error-handling
+  Scenario: List epics when epics.json does not exist
     Given I have a project with spec directory
     And the file "spec/epics.json" does not exist
     When I run "fspec list-epics"
     Then the command should succeed
-    And the file "spec/epics.json" should be created with empty structure
     And the output should indicate no epics found
+    And the file "spec/epics.json" should NOT be created
 
   @auto-create
   @file-initialization
