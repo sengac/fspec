@@ -18,7 +18,11 @@ interface GenerateScenariosResult {
   scenariosCount: number;
 }
 
-function generateBasicScenario(workUnitId: string, example: string, index: number): string {
+function generateBasicScenario(
+  workUnitId: string,
+  example: string,
+  index: number
+): string {
   return `  @${workUnitId}
   Scenario: ${example}
     Given [precondition]
@@ -59,7 +63,9 @@ export async function generateScenarios(
 
   // Validate examples exist
   if (!workUnit.examples || workUnit.examples.length === 0) {
-    throw new Error(`Work unit ${options.workUnitId} has no examples to generate scenarios from`);
+    throw new Error(
+      `Work unit ${options.workUnitId} has no examples to generate scenarios from`
+    );
   }
 
   // Determine feature file path
@@ -92,7 +98,8 @@ export async function generateScenarios(
   if (fileExists) {
     // Append to existing feature file
     const existingContent = await readFile(featureFile, 'utf-8');
-    const updatedContent = existingContent.trimEnd() + '\n\n' + scenarios.join('\n') + '\n';
+    const updatedContent =
+      existingContent.trimEnd() + '\n\n' + scenarios.join('\n') + '\n';
     await writeFile(featureFile, updatedContent);
   } else {
     // Create new feature file

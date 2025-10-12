@@ -5,7 +5,12 @@ import { glob } from 'tinyglobby';
 import * as Gherkin from '@cucumber/gherkin';
 import * as Messages from '@cucumber/messages';
 import type { Tags } from '../types/tags';
-import { isWorkUnitTag, looksLikeWorkUnitTag, extractWorkUnitId, loadWorkUnitsData } from '../utils/work-unit-tags';
+import {
+  isWorkUnitTag,
+  looksLikeWorkUnitTag,
+  extractWorkUnitId,
+  loadWorkUnitsData,
+} from '../utils/work-unit-tags';
 import type { WorkUnitsData } from '../types';
 import { ensureTagsFile } from '../utils/ensure-files';
 
@@ -186,10 +191,12 @@ async function validateFileTags(
     const allTags = [...featureTags, ...scenarioTags];
     const tags = featureTags; // Only feature tags for required category checks
 
-    // Check for unregistered tags (both feature and scenario level)
-    const unregisteredTags = allTags.filter(tag => !registry.validTags.has(tag));
-    if (unregisteredTags.length > 0) {
-      for (const tag of unregisteredTags) {
+    // Check for unregistered FEATURE-LEVEL tags (strict validation)
+    const unregisteredFeatureTags = featureTags.filter(
+      tag => !registry.validTags.has(tag)
+    );
+    if (unregisteredFeatureTags.length > 0) {
+      for (const tag of unregisteredFeatureTags) {
         // Check if it's a valid work unit tag
         if (isWorkUnitTag(tag)) {
           const workUnitId = extractWorkUnitId(tag);
@@ -200,7 +207,8 @@ async function validateFileTags(
             result.errors.push({
               tag,
               message: `Invalid work unit tag format: ${tag}`,
-              suggestion: 'Work unit tags must match pattern @[A-Z]{2,6}-\\d+ (e.g., @AUTH-001, @BACK-123)',
+              suggestion:
+                'Work unit tags must match pattern @[A-Z]{2,6}-\\d+ (e.g., @AUTH-001, @BACK-123)',
             });
           } else if (!workUnitsData) {
             // No work-units.json file
@@ -226,7 +234,8 @@ async function validateFileTags(
           result.errors.push({
             tag,
             message: `Invalid work unit tag format: ${tag}`,
-            suggestion: 'Work unit tags must match pattern @[A-Z]{2,6}-\\d+ (e.g., @AUTH-001, @BACK-123)',
+            suggestion:
+              'Work unit tags must match pattern @[A-Z]{2,6}-\\d+ (e.g., @AUTH-001, @BACK-123)',
           });
         } else if (tag === '@component' || tag === '@feature-group') {
           // Check if it's a placeholder tag
@@ -238,6 +247,37 @@ async function validateFileTags(
           });
         } else {
           // Regular unregistered tag
+          result.valid = false;
+          result.errors.push({
+            tag,
+            message: `Unregistered tag: ${tag} in ${filePath}`,
+            suggestion: `Register this tag in spec/tags.json or use 'fspec register-tag'`,
+          });
+        }
+      }
+    }
+
+    // Check SCENARIO-LEVEL tags (lenient validation - allow work unit tags for traceability)
+    const unregisteredScenarioTags = scenarioTags.filter(
+      tag => !registry.validTags.has(tag)
+    );
+    if (unregisteredScenarioTags.length > 0) {
+      for (const tag of unregisteredScenarioTags) {
+        // Scenario-level work unit tags are ALLOWED for traceability (no validation needed)
+        if (isWorkUnitTag(tag)) {
+          // Valid work unit tag format - allow it (no error)
+          continue;
+        } else if (looksLikeWorkUnitTag(tag)) {
+          // Tag looks like work unit tag but has invalid format
+          result.valid = false;
+          result.errors.push({
+            tag,
+            message: `Invalid work unit tag format: ${tag}`,
+            suggestion:
+              'Work unit tags must match pattern @[A-Z]{2,6}-\\d+ (e.g., @AUTH-001, @BACK-123)',
+          });
+        } else {
+          // Regular unregistered tag at scenario level
           result.valid = false;
           result.errors.push({
             tag,
