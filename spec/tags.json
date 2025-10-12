@@ -441,6 +441,14 @@
       "required": false,
       "tags": [
         {
+          "name": "@ai-guidance",
+          "description": "Features that provide contextual guidance to AI agents"
+        },
+        {
+          "name": "@anti-drift",
+          "description": "Features that prevent AI drift and maintain workflow discipline"
+        },
+        {
           "name": "@ast",
           "description": "Abstract Syntax Tree",
           "useCases": "Working with Gherkin AST from parser (custom formatter)"

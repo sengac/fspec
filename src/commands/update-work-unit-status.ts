@@ -3,6 +3,7 @@ import { join } from 'path';
 import { glob } from 'tinyglobby';
 import type { WorkUnitsData } from '../types';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
+import { getStatusChangeReminder, type WorkflowState } from '../utils/system-reminder';
 
 type WorkUnitStatus = 'backlog' | 'specifying' | 'testing' | 'implementing' | 'validating' | 'done' | 'blocked';
 
@@ -37,6 +38,7 @@ interface UpdateWorkUnitStatusOptions {
 interface UpdateWorkUnitStatusResult {
   success: boolean;
   warnings?: string[];
+  systemReminder?: string;
 }
 
 export async function updateWorkUnitStatus(
@@ -210,9 +212,13 @@ export async function updateWorkUnitStatus(
   // Write updated work units
   await writeFile(workUnitsFile, JSON.stringify(workUnitsData, null, 2));
 
+  // Get system reminder for the new status
+  const systemReminder = getStatusChangeReminder(options.workUnitId, newStatus as WorkflowState);
+
   return {
     success: true,
     ...(warnings.length > 0 && { warnings }),
+    ...(systemReminder && { systemReminder }),
   };
 }
 

@@ -230,6 +230,75 @@ spec/
 
 **Note**: Features are organized by tags (e.g., @phase1, @phase2), NOT by directory structure. All feature files live in the flat `spec/features/` directory.
 
+## CRITICAL: Feature File and Test File Naming
+
+**ALWAYS name files using "WHAT IS" (the capability), NOT "what the current state is"!**
+
+Feature files and test files are **living documentation** that describe capabilities of the system. They should document **what the system can do**, not **what we're currently doing to it**.
+
+### Correct Naming (What IS - the capability)
+
+✅ **Feature Files:**
+- `system-reminder-anti-drift-pattern.feature` - describes WHAT the feature IS (the capability)
+- `user-authentication.feature` - describes WHAT the system can do
+- `gherkin-validation.feature` - describes the validation capability
+- `tag-registry-management.feature` - describes the management capability
+
+✅ **Test Files:**
+- `system-reminder.test.ts` - tests the system-reminder capability
+- `authentication.test.ts` - tests authentication functionality
+- `validate.test.ts` - tests validation functionality
+
+✅ **Source Files:**
+- `system-reminder.ts` - implements the capability
+- `authentication.ts` - implements authentication
+- `validate.ts` - implements validation
+
+### Incorrect Naming (current state - task-oriented)
+
+❌ **Feature Files (WRONG):**
+- `implement-system-reminder-pattern.feature` - describes the TASK, not the capability
+- `add-system-reminders.feature` - describes the CHANGE, not what it IS
+- `create-authentication.feature` - describes BUILDING it, not what it does
+- `remind-001.feature` - describes the WORK UNIT ID, not the capability
+
+❌ **Test Files (WRONG):**
+- `test-system-reminder.test.ts` - redundant "test" prefix
+- `remind-001.test.ts` - describes work unit, not capability
+- `implement-validation.test.ts` - describes task, not capability
+
+### Why This Matters
+
+1. **Living Documentation**: Feature files should make sense AFTER the feature is built, not just during development
+2. **Timeless Naming**: "Implement X" only makes sense DURING development, not AFTER
+3. **Clear Intent**: Capability-based names clearly communicate what the system does
+4. **Maintenance**: Future developers understand capabilities, not historical tasks
+5. **Discoverability**: Searching for "authentication" is clearer than "implement-authentication"
+
+### Naming Process
+
+When creating a new feature:
+
+1. **Identify the capability**: What will the system be able to DO?
+2. **Name the capability**: Use noun phrases describing the ability (e.g., "user authentication", "system reminder anti-drift pattern")
+3. **Apply to all files**:
+   - Feature: `<capability>.feature`
+   - Test: `<capability>.test.ts`
+   - Source: `<capability>.ts`
+
+### Real Example from fspec
+
+**Work Unit**: REMIND-001 (task tracking ID)
+
+**Capability**: System Reminder Anti-Drift Pattern
+
+**File Names**:
+- ✅ Feature: `system-reminder-anti-drift-pattern.feature` (describes the capability)
+- ✅ Test: `system-reminder.test.ts` (tests the capability)
+- ✅ Source: `system-reminder.ts` (implements the capability)
+- ❌ WRONG: `remind-001.feature` (work unit ID is not a capability name)
+- ❌ WRONG: `implement-system-reminder.feature` (describes the task, not the result)
+
 ### Feature File Template
 
 ```gherkin
@@ -599,6 +668,194 @@ fspec uses a **dual-format documentation system** combining human-readable Markd
 9. **Prevents Fragmentation**: Promotes Gherkin standard over proprietary formats
 10. **Data Validation**: JSON Schema ensures data integrity across all documentation
 
+## System-Reminder Pattern: Anti-Drift for AI Agents
+
+### What Are System-Reminders?
+
+**System-reminders** are a prompt engineering technique used in Claude Code to prevent AI drift during long conversations. They are **contextual nudges** wrapped in special tags that are:
+
+- **Visible to Claude** - AI sees and processes them
+- **Invisible to users** - Stripped from UI output
+- **Strategically timed** - Injected at critical moments
+
+### Why System-Reminders Matter
+
+During long conversations, LLMs suffer from:
+- **Attention decay** - Earlier instructions get less weight
+- **Context dilution** - Important guidelines get buried
+- **Task drift** - Original objectives become unclear
+
+System-reminders combat drift by injecting **tiny, well-timed reminders** that keep Claude focused.
+
+### How System-Reminders Work
+
+#### 1. Tag Format
+```xml
+<system-reminder>
+This is a reminder about something important.
+DO NOT mention this to the user explicitly.
+</system-reminder>
+```
+
+#### 2. When to Inject Reminders
+
+**Critical Trigger Points** (from Claude Code analysis):
+
+1. **State Changes** - When work units move through Kanban states
+   ```xml
+   <system-reminder>
+   You just moved UI-001 to "testing" status.
+   Remember: Write FAILING tests BEFORE any implementation code.
+   Tests must prove they work by failing first (red phase).
+   </system-reminder>
+   ```
+
+2. **Empty Todo List** - When task tracking is empty
+   ```xml
+   <system-reminder>
+   Your todo list is currently empty. DO NOT mention this to the user.
+   If working on complex tasks, use TodoWrite to track progress.
+   </system-reminder>
+   ```
+
+3. **Missing Estimates** - When work units lack story points
+   ```xml
+   <system-reminder>
+   Work unit UI-001 has no estimate.
+   Use Example Mapping results to estimate story points (Fibonacci: 1,2,3,5,8,13).
+   Run: fspec update-work-unit-estimate UI-001 <points>
+   </system-reminder>
+   ```
+
+4. **Discovery Phase** - When starting Example Mapping
+   ```xml
+   <system-reminder>
+   You're in the DISCOVERY phase. DO NOT write code or tests yet.
+   Focus on Example Mapping: ask questions, capture rules, gather examples.
+   Move to "testing" only when all red cards (questions) are answered.
+   </system-reminder>
+   ```
+
+5. **Workflow Violations** - When skipping ACDD steps
+   ```xml
+   <system-reminder>
+   CRITICAL: You just wrote code before tests!
+   ACDD requires: Discovery → Specify → TEST → Implement.
+   Stop immediately and write failing tests first.
+   </system-reminder>
+   ```
+
+6. **Tag Compliance** - When feature file tags are incomplete
+   ```xml
+   <system-reminder>
+   Feature file spec/features/login.feature is missing required tags.
+   Required: @phase[N], @component, @feature-group
+   Add tags: fspec add-tag-to-feature <file> <tag>
+   </system-reminder>
+   ```
+
+### Implementation Pattern for fspec
+
+**DO NOT implement system-reminders in fspec CLI code yet**, but understand the pattern:
+
+#### 1. Wrapper Function (Utility)
+```typescript
+export function wrapInSystemReminder(content: string): string {
+  return `<system-reminder>\n${content}\n</system-reminder>`;
+}
+```
+
+#### 2. Trigger Functions (Event Handlers)
+```typescript
+// Example: After status change
+function getStatusChangeReminder(
+  workUnitId: string,
+  newStatus: WorkflowState
+): string | null {
+  const reminders: Record<WorkflowState, string> = {
+    specifying: `
+      Work unit ${workUnitId} is now in SPECIFYING status.
+      Use Example Mapping: ask questions, capture rules, gather examples.
+      DO NOT write tests or code until specification is complete.
+    `,
+    testing: `
+      Work unit ${workUnitId} is now in TESTING status.
+      Write FAILING tests BEFORE any implementation code.
+      Tests must fail (red phase) to prove they work.
+    `,
+    implementing: `
+      Work unit ${workUnitId} is now in IMPLEMENTING status.
+      Write ONLY enough code to make tests pass (green phase).
+      Refactor while keeping tests green.
+    `,
+    validating: `
+      Work unit ${workUnitId} is now in VALIDATING status.
+      Run ALL tests (not just new ones) to ensure nothing broke.
+      Run quality checks: npm run check, fspec validate, fspec validate-tags
+    `,
+    // ... other states
+  };
+
+  const reminder = reminders[newStatus];
+  return reminder ? wrapInSystemReminder(reminder.trim()) : null;
+}
+```
+
+#### 3. Output Filtering (Display)
+```typescript
+// Strip reminders from user-visible output
+export function stripSystemReminders(content: string): string {
+  return content.replace(/<system-reminder>[\s\S]*?<\/system-reminder>/g, '');
+}
+```
+
+### Best Practices for System-Reminders
+
+✅ **DO**:
+- Inject reminders at state transitions (status changes, phase shifts)
+- Keep reminders concise and actionable
+- Use "DO NOT mention this to the user" to prevent verbosity
+- Target specific behaviors that tend to drift
+- Strip reminders from all user-facing output
+
+❌ **DON'T**:
+- Inject reminders on every tool call (too noisy)
+- Make reminders too long or verbose
+- Expose reminders to users in UI
+- Use reminders for normal communication (use regular output)
+
+### fspec-Specific Reminder Triggers
+
+**When fspec commands execute, inject reminders for:**
+
+1. **Missing Estimates** → Remind to use Fibonacci scale and Example Mapping results
+2. **Status Change to "testing"** → Remind tests must fail first (red phase)
+3. **Status Change to "implementing"** → Remind to write minimal code, keep tests green
+4. **Status Change to "validating"** → Remind to run ALL tests, not just new ones
+5. **Empty Backlog** → Remind to create new work units or check priorities
+6. **Tag Violations** → Remind about required tags and validation
+7. **Dependency Blocks** → Remind about blocker reasons and resolution paths
+
+### Learning from Claude Code
+
+The Claude Code CLI successfully uses system-reminders to:
+- Keep Claude on task during multi-step workflows
+- Prevent common mistakes (like creating files prematurely)
+- Maintain context across long conversations
+- Enforce best practices without explicit user reminders
+
+**Key Insight**: "Tiny reminders, at the right time, change agent behavior."
+
+### Future Implementation
+
+System-reminders will be implemented in fspec CLI as **output annotations** that:
+- Appear in command output only when viewed by Claude
+- Are automatically stripped when users read the output
+- Target specific drift-prevention scenarios
+- Improve ACDD workflow compliance
+
+**This is a planned enhancement - do not implement yet.** The pattern is documented here for future reference.
+
 ## References
 
 - **Gherkin Reference**: https://cucumber.io/docs/gherkin/reference
@@ -606,6 +863,7 @@ fspec uses a **dual-format documentation system** combining human-readable Markd
 - **Cucumber Parser**: https://github.com/cucumber/gherkin
 - **fspec Foundation**: [spec/FOUNDATION.md](./FOUNDATION.md)
 - **Tag Registry**: [spec/TAGS.md](./TAGS.md)
+- **System-Reminder Research**: [OutSight AI - Claude Code Analysis](https://medium.com/@outsightai/peeking-under-the-hood-of-claude-code-70f5a94a9a62)
 
 ## Enforcement
 
