@@ -47,8 +47,8 @@ describe('Feature: Stable Question Indices for Concurrent Answers', () => {
             implementing: [],
             validating: [],
             done: [],
-            blocked: []
-          }
+            blocked: [],
+          },
         },
         null,
         2
@@ -71,20 +71,27 @@ describe('Feature: Stable Question Indices for Concurrent Answers', () => {
         status: 'specifying',
         questions: [],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.specifying.push('WORK-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       // When I run `fspec add-question WORK-001 "@human: Should we use option A?"`
-      await addQuestion('WORK-001', '@human: Should we use option A?', { cwd: testDir });
+      await addQuestion('WORK-001', '@human: Should we use option A?', {
+        cwd: testDir,
+      });
 
       // Then the question should be added as {text: "@human: Should we use option A?", selected: false}
-      const updatedWorkUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const updatedWorkUnits = JSON.parse(
+        await readFile(workUnitsFile, 'utf-8')
+      );
       expect(updatedWorkUnits.workUnits['WORK-001'].questions).toHaveLength(1);
 
       const question = updatedWorkUnits.workUnits['WORK-001'].questions[0];
-      expect(question).toHaveProperty('text', '@human: Should we use option A?');
+      expect(question).toHaveProperty(
+        'text',
+        '@human: Should we use option A?'
+      );
       expect(question).toHaveProperty('selected', false);
     });
   });
@@ -101,11 +108,11 @@ describe('Feature: Stable Question Indices for Concurrent Answers', () => {
         questions: [
           { text: '@human: Question 0?', selected: false },
           { text: '@human: Question 1?', selected: false },
-          { text: '@human: Question 2?', selected: false }
+          { text: '@human: Question 2?', selected: false },
         ],
         rules: [],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.specifying.push('WORK-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
@@ -116,19 +123,29 @@ describe('Feature: Stable Question Indices for Concurrent Answers', () => {
         index: 1,
         answer: 'Use option B',
         addTo: 'rule',
-        cwd: testDir
+        cwd: testDir,
       });
 
       // Then question at index 1 should have selected: true
-      const updatedWorkUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
-      expect(updatedWorkUnits.workUnits['WORK-001'].questions[1].selected).toBe(true);
+      const updatedWorkUnits = JSON.parse(
+        await readFile(workUnitsFile, 'utf-8')
+      );
+      expect(updatedWorkUnits.workUnits['WORK-001'].questions[1].selected).toBe(
+        true
+      );
 
       // And question at index 1 should have answer: "Use option B"
-      expect(updatedWorkUnits.workUnits['WORK-001'].questions[1].answer).toBe('Use option B');
+      expect(updatedWorkUnits.workUnits['WORK-001'].questions[1].answer).toBe(
+        'Use option B'
+      );
 
       // And questions at indices 0 and 2 should still have selected: false
-      expect(updatedWorkUnits.workUnits['WORK-001'].questions[0].selected).toBe(false);
-      expect(updatedWorkUnits.workUnits['WORK-001'].questions[2].selected).toBe(false);
+      expect(updatedWorkUnits.workUnits['WORK-001'].questions[0].selected).toBe(
+        false
+      );
+      expect(updatedWorkUnits.workUnits['WORK-001'].questions[2].selected).toBe(
+        false
+      );
 
       // And all 3 indices should remain in the array (0, 1, 2)
       expect(updatedWorkUnits.workUnits['WORK-001'].questions).toHaveLength(3);
@@ -147,11 +164,11 @@ describe('Feature: Stable Question Indices for Concurrent Answers', () => {
         questions: [
           { text: '@human: Question 0?', selected: false },
           { text: '@human: Question 1?', selected: false },
-          { text: '@human: Question 2?', selected: false }
+          { text: '@human: Question 2?', selected: false },
         ],
         rules: [],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.specifying.push('WORK-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
@@ -163,40 +180,60 @@ describe('Feature: Stable Question Indices for Concurrent Answers', () => {
           index: 0,
           answer: 'Answer 0',
           addTo: 'rule',
-          cwd: testDir
+          cwd: testDir,
         }),
         answerQuestion({
           workUnitId: 'WORK-001',
           index: 1,
           answer: 'Answer 1',
           addTo: 'rule',
-          cwd: testDir
+          cwd: testDir,
         }),
         answerQuestion({
           workUnitId: 'WORK-001',
           index: 2,
           answer: 'Answer 2',
           addTo: 'rule',
-          cwd: testDir
-        })
+          cwd: testDir,
+        }),
       ]);
 
       // Then all 3 questions should have selected: true
-      const updatedWorkUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
-      expect(updatedWorkUnits.workUnits['WORK-001'].questions[0].selected).toBe(true);
-      expect(updatedWorkUnits.workUnits['WORK-001'].questions[1].selected).toBe(true);
-      expect(updatedWorkUnits.workUnits['WORK-001'].questions[2].selected).toBe(true);
+      const updatedWorkUnits = JSON.parse(
+        await readFile(workUnitsFile, 'utf-8')
+      );
+      expect(updatedWorkUnits.workUnits['WORK-001'].questions[0].selected).toBe(
+        true
+      );
+      expect(updatedWorkUnits.workUnits['WORK-001'].questions[1].selected).toBe(
+        true
+      );
+      expect(updatedWorkUnits.workUnits['WORK-001'].questions[2].selected).toBe(
+        true
+      );
 
       // And all 3 answers should be saved in their respective questions
-      expect(updatedWorkUnits.workUnits['WORK-001'].questions[0].answer).toBe('Answer 0');
-      expect(updatedWorkUnits.workUnits['WORK-001'].questions[1].answer).toBe('Answer 1');
-      expect(updatedWorkUnits.workUnits['WORK-001'].questions[2].answer).toBe('Answer 2');
+      expect(updatedWorkUnits.workUnits['WORK-001'].questions[0].answer).toBe(
+        'Answer 0'
+      );
+      expect(updatedWorkUnits.workUnits['WORK-001'].questions[1].answer).toBe(
+        'Answer 1'
+      );
+      expect(updatedWorkUnits.workUnits['WORK-001'].questions[2].answer).toBe(
+        'Answer 2'
+      );
 
       // And all 3 rules should be added to the work unit rules array
       expect(updatedWorkUnits.workUnits['WORK-001'].rules).toHaveLength(3);
-      expect(updatedWorkUnits.workUnits['WORK-001'].rules).toContain('Answer 0');
-      expect(updatedWorkUnits.workUnits['WORK-001'].rules).toContain('Answer 1');
-      expect(updatedWorkUnits.workUnits['WORK-001'].rules).toContain('Answer 2');
+      expect(updatedWorkUnits.workUnits['WORK-001'].rules).toContain(
+        'Answer 0'
+      );
+      expect(updatedWorkUnits.workUnits['WORK-001'].rules).toContain(
+        'Answer 1'
+      );
+      expect(updatedWorkUnits.workUnits['WORK-001'].rules).toContain(
+        'Answer 2'
+      );
 
       // And no data loss should occur (all questions still present)
       expect(updatedWorkUnits.workUnits['WORK-001'].questions).toHaveLength(3);
@@ -217,10 +254,10 @@ describe('Feature: Stable Question Indices for Concurrent Answers', () => {
           { text: '@human: Question 1?', selected: true, answer: 'Answer 1' },
           { text: '@human: Question 2?', selected: false },
           { text: '@human: Question 3?', selected: true, answer: 'Answer 3' },
-          { text: '@human: Question 4?', selected: false }
+          { text: '@human: Question 4?', selected: false },
         ],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.specifying.push('WORK-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
@@ -253,10 +290,10 @@ describe('Feature: Stable Question Indices for Concurrent Answers', () => {
         questions: [
           { text: '@human: Question 0?', selected: false },
           { text: '@human: Question 1?', selected: true, answer: 'Answer 1' },
-          { text: '@human: Question 2?', selected: false }
+          { text: '@human: Question 2?', selected: false },
         ],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.specifying.push('WORK-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
@@ -267,7 +304,7 @@ describe('Feature: Stable Question Indices for Concurrent Answers', () => {
         updateWorkUnitStatus({
           workUnitId: 'WORK-001',
           status: 'testing',
-          cwd: testDir
+          cwd: testDir,
         })
       ).rejects.toThrow('Unanswered questions prevent state transition');
 
@@ -276,7 +313,7 @@ describe('Feature: Stable Question Indices for Concurrent Answers', () => {
         updateWorkUnitStatus({
           workUnitId: 'WORK-001',
           status: 'testing',
-          cwd: testDir
+          cwd: testDir,
         })
       ).rejects.toThrow('Question 0?');
 
@@ -284,7 +321,7 @@ describe('Feature: Stable Question Indices for Concurrent Answers', () => {
         updateWorkUnitStatus({
           workUnitId: 'WORK-001',
           status: 'testing',
-          cwd: testDir
+          cwd: testDir,
         })
       ).rejects.toThrow('Question 2?');
     });
@@ -302,7 +339,7 @@ describe('Feature: Stable Question Indices for Concurrent Answers', () => {
         questions: [{ text: '@human: Question?', selected: false }],
         rules: [],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.specifying.push('WORK-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
@@ -313,7 +350,7 @@ describe('Feature: Stable Question Indices for Concurrent Answers', () => {
         index: 0,
         answer: 'Answer A',
         addTo: 'rule',
-        cwd: testDir
+        cwd: testDir,
       });
 
       // And I run `fspec answer-question WORK-001 0 --answer "Answer B" --add-to rule`
@@ -322,20 +359,30 @@ describe('Feature: Stable Question Indices for Concurrent Answers', () => {
         index: 0,
         answer: 'Answer B',
         addTo: 'rule',
-        cwd: testDir
+        cwd: testDir,
       });
 
       // Then question 0 should have selected: true
-      const updatedWorkUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
-      expect(updatedWorkUnits.workUnits['WORK-001'].questions[0].selected).toBe(true);
+      const updatedWorkUnits = JSON.parse(
+        await readFile(workUnitsFile, 'utf-8')
+      );
+      expect(updatedWorkUnits.workUnits['WORK-001'].questions[0].selected).toBe(
+        true
+      );
 
       // And question 0 should have answer: "Answer B" (last write wins)
-      expect(updatedWorkUnits.workUnits['WORK-001'].questions[0].answer).toBe('Answer B');
+      expect(updatedWorkUnits.workUnits['WORK-001'].questions[0].answer).toBe(
+        'Answer B'
+      );
 
       // And both rules "Answer A" and "Answer B" should be added
       expect(updatedWorkUnits.workUnits['WORK-001'].rules).toHaveLength(2);
-      expect(updatedWorkUnits.workUnits['WORK-001'].rules).toContain('Answer A');
-      expect(updatedWorkUnits.workUnits['WORK-001'].rules).toContain('Answer B');
+      expect(updatedWorkUnits.workUnits['WORK-001'].rules).toContain(
+        'Answer A'
+      );
+      expect(updatedWorkUnits.workUnits['WORK-001'].rules).toContain(
+        'Answer B'
+      );
     });
   });
 });

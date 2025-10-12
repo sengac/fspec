@@ -81,9 +81,7 @@ export async function formatFeatures(
       } catch (parseError: any) {
         // Handle file system errors
         if (parseError.code === 'EACCES') {
-          console.error(
-            chalk.yellow(`Warning: Permission denied for ${file}`)
-          );
+          console.error(chalk.yellow(`Warning: Permission denied for ${file}`));
           continue;
         }
         if (parseError.code === 'ENOENT') {

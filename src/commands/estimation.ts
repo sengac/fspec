@@ -70,7 +70,9 @@ export async function recordTokens(
     throw new Error(`Work unit '${workUnitId}' does not exist`);
   }
 
-  const workUnit = workUnitsData.workUnits[workUnitId] as WorkUnit & { metrics?: { actualTokens?: number } };
+  const workUnit = workUnitsData.workUnits[workUnitId] as WorkUnit & {
+    metrics?: { actualTokens?: number };
+  };
 
   // Store in metrics.actualTokens to match test expectations
   if (!workUnit.metrics) {
@@ -98,7 +100,9 @@ export async function incrementIteration(
     throw new Error(`Work unit '${workUnitId}' does not exist`);
   }
 
-  const workUnit = workUnitsData.workUnits[workUnitId] as WorkUnit & { metrics?: { iterations?: number } };
+  const workUnit = workUnitsData.workUnits[workUnitId] as WorkUnit & {
+    metrics?: { iterations?: number };
+  };
 
   // Store in metrics.iterations to match test expectations
   if (!workUnit.metrics) {
@@ -136,7 +140,8 @@ export async function calculateCycleTime(
   const firstTimestamp = workUnit.stateHistory[0].timestamp;
 
   // Find last timestamp (current state)
-  const lastTimestamp = workUnit.stateHistory[workUnit.stateHistory.length - 1].timestamp;
+  const lastTimestamp =
+    workUnit.stateHistory[workUnit.stateHistory.length - 1].timestamp;
 
   // Calculate hours between
   const startTime = new Date(firstTimestamp).getTime();
@@ -149,7 +154,15 @@ export async function calculateCycleTime(
 export async function queryEstimateAccuracy(
   workUnitId: string | null,
   options: { cwd: string; output?: string }
-): Promise<string | { estimated: number; actualTokens: number; iterations: number; comparison: string }> {
+): Promise<
+  | string
+  | {
+      estimated: number;
+      actualTokens: number;
+      iterations: number;
+      comparison: string;
+    }
+> {
   const { cwd, output } = options;
   const workUnitsData = await loadWorkUnits(cwd);
 
@@ -171,14 +184,16 @@ export async function queryEstimateAccuracy(
 
     // Determine if within expected range (rough heuristic)
     const expectedTokens = workUnit.estimate * 20000; // ~20k tokens per point
-    const variance = Math.abs(workUnit.actualTokens - expectedTokens) / expectedTokens;
-    const comparison = variance < 0.3 ? 'Within expected range' : 'Outside expected range';
+    const variance =
+      Math.abs(workUnit.actualTokens - expectedTokens) / expectedTokens;
+    const comparison =
+      variance < 0.3 ? 'Within expected range' : 'Outside expected range';
 
     return {
       estimated: workUnit.estimate,
       actualTokens: workUnit.actualTokens,
       iterations: workUnit.iterations || 0,
-      comparison
+      comparison,
     };
   }
 
@@ -187,7 +202,10 @@ export async function queryEstimateAccuracy(
     wu => wu.status === 'done' && wu.estimate && wu.actualTokens
   );
 
-  const byPoints: Record<string, { totalTokens: number; totalIterations: number; count: number }> = {};
+  const byPoints: Record<
+    string,
+    { totalTokens: number; totalIterations: number; count: number }
+  > = {};
 
   for (const wu of completedWorkUnits) {
     const key = `${wu.estimate}-point`;
@@ -199,13 +217,17 @@ export async function queryEstimateAccuracy(
     byPoints[key].count += 1;
   }
 
-  const result: Record<string, { avgTokens: number; avgIterations: number; samples: number }> = {};
+  const result: Record<
+    string,
+    { avgTokens: number; avgIterations: number; samples: number }
+  > = {};
 
   for (const [key, stats] of Object.entries(byPoints)) {
     result[key] = {
       avgTokens: Math.round(stats.totalTokens / stats.count),
-      avgIterations: Math.round((stats.totalIterations / stats.count) * 10) / 10,
-      samples: stats.count
+      avgIterations:
+        Math.round((stats.totalIterations / stats.count) * 10) / 10,
+      samples: stats.count,
     };
   }
 
@@ -256,7 +278,10 @@ export async function queryEstimateAccuracyByPrefix(options: {
     byPrefix[prefix].count += 1;
   }
 
-  const result: Record<string, { avgAccuracy: string; recommendation: string }> = {};
+  const result: Record<
+    string,
+    { avgAccuracy: string; recommendation: string }
+  > = {};
 
   for (const [prefix, stats] of Object.entries(byPrefix)) {
     const accuracyRatio = stats.totalActual / stats.totalEstimated;
@@ -298,15 +323,22 @@ export async function queryEstimateAccuracyByPrefix(options: {
   return text;
 }
 
-export async function queryEstimationGuide(options: { cwd: string }): Promise<string> {
+export async function queryEstimationGuide(options: {
+  cwd: string;
+}): Promise<string> {
   const { cwd } = options;
   const workUnitsData = await loadWorkUnits(cwd);
 
-  const completedWorkUnits = Object.values(workUnitsData.workUnits).filter(wu => {
-    // Check both actualTokens and metrics.actualTokens
-    const hasTokens = wu.actualTokens || (wu as WorkUnit & { metrics?: { actualTokens?: number } }).metrics?.actualTokens;
-    return wu.status === 'done' && wu.estimate && hasTokens;
-  });
+  const completedWorkUnits = Object.values(workUnitsData.workUnits).filter(
+    wu => {
+      // Check both actualTokens and metrics.actualTokens
+      const hasTokens =
+        wu.actualTokens ||
+        (wu as WorkUnit & { metrics?: { actualTokens?: number } }).metrics
+          ?.actualTokens;
+      return wu.status === 'done' && wu.estimate && hasTokens;
+    }
+  );
 
   if (completedWorkUnits.length < 3) {
     return 'Insufficient data. Complete at least 3 work units with estimates to generate guidance.';
@@ -319,13 +351,17 @@ export async function queryEstimationGuide(options: { cwd: string }): Promise<st
 
   for (const wu of completedWorkUnits) {
     const points = wu.estimate!;
-    const tokens = wu.actualTokens || (wu as WorkUnit & { metrics?: { actualTokens?: number } }).metrics?.actualTokens || 0;
+    const tokens =
+      wu.actualTokens ||
+      (wu as WorkUnit & { metrics?: { actualTokens?: number } }).metrics
+        ?.actualTokens ||
+      0;
     const iters = wu.iterations || 0;
 
     if (!byPoints[points]) {
       byPoints[points] = {
         tokenValues: [],
-        iterationValues: []
+        iterationValues: [],
       };
     }
 
@@ -342,10 +378,17 @@ export async function queryEstimationGuide(options: { cwd: string }): Promise<st
     const stats = byPoints[points];
     const minTokens = Math.min(...stats.tokenValues);
     const maxTokens = Math.max(...stats.tokenValues);
-    const avgIter = stats.iterationValues.reduce((a, b) => a + b, 0) / stats.iterationValues.length;
+    const avgIter =
+      stats.iterationValues.reduce((a, b) => a + b, 0) /
+      stats.iterationValues.length;
     const minIter = Math.min(...stats.iterationValues);
     const maxIter = Math.max(...stats.iterationValues);
-    const confidence = stats.tokenValues.length >= 3 ? 'high' : stats.tokenValues.length >= 2 ? 'medium' : 'low';
+    const confidence =
+      stats.tokenValues.length >= 3
+        ? 'high'
+        : stats.tokenValues.length >= 2
+          ? 'medium'
+          : 'low';
 
     text += `${points} point${points > 1 ? 's' : ''}:\n`;
     text += `  Expected tokens: ${Math.round(minTokens / 1000)}k-${Math.round(maxTokens / 1000)}k\n`;

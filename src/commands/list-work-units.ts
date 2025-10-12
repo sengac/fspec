@@ -22,7 +22,9 @@ interface ListWorkUnitsResult {
   workUnits: WorkUnitSummary[];
 }
 
-export async function listWorkUnits(options: ListWorkUnitsOptions = {}): Promise<ListWorkUnitsResult> {
+export async function listWorkUnits(
+  options: ListWorkUnitsOptions = {}
+): Promise<ListWorkUnitsResult> {
   const cwd = options.cwd || process.cwd();
 
   // Read work units (auto-create if missing)

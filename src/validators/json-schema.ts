@@ -109,7 +109,7 @@ export async function validateJson(cwd?: string): Promise<ValidationResults[]> {
  * Format validation errors for display
  */
 export function formatValidationErrors(errors: ErrorObject[]): string[] {
-  return errors.map((error) => {
+  return errors.map(error => {
     const path = error.instancePath || '/';
     const message = error.message || 'Unknown error';
     const params = error.params ? ` (${JSON.stringify(error.params)})` : '';

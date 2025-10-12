@@ -26,7 +26,9 @@ export async function createEpic(options: {
 
   // Validate epic ID format: lowercase-with-hyphens
   if (!EPIC_ID_REGEX.test(options.epicId)) {
-    throw new Error('Epic ID must be lowercase-with-hyphens format (e.g., epic-user-management)');
+    throw new Error(
+      'Epic ID must be lowercase-with-hyphens format (e.g., epic-user-management)'
+    );
   }
 
   try {

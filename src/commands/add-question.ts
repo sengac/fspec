@@ -15,7 +15,9 @@ interface AddQuestionResult {
   mentionedPeople?: string[];
 }
 
-export async function addQuestion(options: AddQuestionOptions): Promise<AddQuestionResult> {
+export async function addQuestion(
+  options: AddQuestionOptions
+): Promise<AddQuestionResult> {
   const cwd = options.cwd || process.cwd();
   const workUnitsFile = join(cwd, 'spec/work-units.json');
 
@@ -45,7 +47,9 @@ export async function addQuestion(options: AddQuestionOptions): Promise<AddQuest
   workUnit.questions.push({ text: options.question, selected: false });
 
   // Extract mentioned people (@mentions)
-  const mentionedPeople = (options.question.match(/@\w+/g) || []).map(mention => mention.slice(1));
+  const mentionedPeople = (options.question.match(/@\w+/g) || []).map(mention =>
+    mention.slice(1)
+  );
 
   // Update timestamp
   workUnit.updatedAt = new Date().toISOString();

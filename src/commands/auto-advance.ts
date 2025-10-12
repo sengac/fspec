@@ -23,7 +23,12 @@ interface StateTransition {
 
 const STATE_TRANSITIONS: StateTransition[] = [
   { from: 'testing', event: 'tests-pass', to: 'implementing' },
-  { from: 'validating', event: 'validation-pass', to: 'done', recordCompletion: true },
+  {
+    from: 'validating',
+    event: 'validation-pass',
+    to: 'done',
+    recordCompletion: true,
+  },
 ];
 
 export async function autoAdvance(options: {
@@ -53,7 +58,9 @@ export async function autoAdvance(options: {
     );
 
     if (!transition) {
-      throw new Error(`No transition defined for ${options.from} + ${options.event}`);
+      throw new Error(
+        `No transition defined for ${options.from} + ${options.event}`
+      );
     }
 
     // Verify current state matches

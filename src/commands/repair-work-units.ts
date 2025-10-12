@@ -13,7 +13,9 @@ interface RepairWorkUnitsResult {
   repaired: number;
 }
 
-export async function repairWorkUnits(options: RepairWorkUnitsOptions = {}): Promise<RepairWorkUnitsResult> {
+export async function repairWorkUnits(
+  options: RepairWorkUnitsOptions = {}
+): Promise<RepairWorkUnitsResult> {
   const cwd = options.cwd || process.cwd();
   const repairs: string[] = [];
 
@@ -63,7 +65,9 @@ export async function repairWorkUnits(options: RepairWorkUnitsOptions = {}): Pro
           }
           if (!target.blockedBy.includes(id)) {
             target.blockedBy.push(id);
-            repairs.push(`Repaired bidirectional link: ${id} blocks ${targetId}`);
+            repairs.push(
+              `Repaired bidirectional link: ${id} blocks ${targetId}`
+            );
           }
         }
       }
@@ -79,7 +83,9 @@ export async function repairWorkUnits(options: RepairWorkUnitsOptions = {}): Pro
           }
           if (!target.blocks.includes(id)) {
             target.blocks.push(id);
-            repairs.push(`Repaired bidirectional link: ${targetId} blocks ${id}`);
+            repairs.push(
+              `Repaired bidirectional link: ${targetId} blocks ${id}`
+            );
           }
         }
       }
@@ -95,7 +101,9 @@ export async function repairWorkUnits(options: RepairWorkUnitsOptions = {}): Pro
           }
           if (!target.relatesTo.includes(id)) {
             target.relatesTo.push(id);
-            repairs.push(`Repaired bidirectional link: ${id} relates to ${targetId}`);
+            repairs.push(
+              `Repaired bidirectional link: ${id} relates to ${targetId}`
+            );
           }
         }
       }

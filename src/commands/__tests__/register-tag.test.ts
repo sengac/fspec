@@ -47,8 +47,16 @@ describe('Feature: Register New Tag in Tag Registry', () => {
       ],
       combinationExamples: [],
       usageGuidelines: {
-        requiredCombinations: { title: '', requirements: [], minimumExample: '' },
-        recommendedCombinations: { title: '', includes: [], recommendedExample: '' },
+        requiredCombinations: {
+          title: '',
+          requirements: [],
+          minimumExample: '',
+        },
+        recommendedCombinations: {
+          title: '',
+          includes: [],
+          recommendedExample: '',
+        },
         orderingConvention: { title: '', order: [], example: '' },
       },
       addingNewTags: {
@@ -272,7 +280,9 @@ describe('Feature: Register New Tag in Tag Registry', () => {
       const technicalCat = newJson.categories.find(
         (c: any) => c.name === 'Technical Tags'
       );
-      expect(technicalCat.tags.find((t: any) => t.name === '@new-tag')).toBeDefined();
+      expect(
+        technicalCat.tags.find((t: any) => t.name === '@new-tag')
+      ).toBeDefined();
 
       // And TAGS.md should be regenerated with all tags
       const newContent = await readFile(
@@ -408,8 +418,16 @@ describe('Feature: Register New Tag in Tag Registry', () => {
         ],
         combinationExamples: [],
         usageGuidelines: {
-          requiredCombinations: { title: '', requirements: [], minimumExample: '' },
-          recommendedCombinations: { title: '', includes: [], recommendedExample: '' },
+          requiredCombinations: {
+            title: '',
+            requirements: [],
+            minimumExample: '',
+          },
+          recommendedCombinations: {
+            title: '',
+            includes: [],
+            recommendedExample: '',
+          },
           orderingConvention: { title: '', order: [], example: '' },
         },
         addingNewTags: {
@@ -440,9 +458,7 @@ describe('Feature: Register New Tag in Tag Registry', () => {
       );
 
       // Then the tags.json file should be updated with the new tag
-      const updatedTagsJson = JSON.parse(
-        await readFile(tagsJsonPath, 'utf-8')
-      );
+      const updatedTagsJson = JSON.parse(await readFile(tagsJsonPath, 'utf-8'));
 
       // And the tags.json should validate against tags.schema.json
       expect(updatedTagsJson.categories).toBeDefined();

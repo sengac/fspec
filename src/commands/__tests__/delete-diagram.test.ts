@@ -510,9 +510,9 @@ describe('Feature: Delete Architecture Diagram from Foundation', () => {
       expect(updatedData.whatWeAreBuilding.projectOverview).toBe(
         'Important overview'
       );
-      expect(updatedData.whyWeAreBuildingIt.problemDefinition.primary.title).toBe(
-        'Important problem'
-      );
+      expect(
+        updatedData.whyWeAreBuildingIt.problemDefinition.primary.title
+      ).toBe('Important problem');
     });
   });
 

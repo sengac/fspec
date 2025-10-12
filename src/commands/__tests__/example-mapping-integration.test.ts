@@ -55,7 +55,10 @@ describe('Feature: Example Mapping Integration', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       // When I run "fspec add-rule AUTH-001 'Users must authenticate before accessing protected resources'"
       const result = await addRule({
@@ -67,13 +70,17 @@ describe('Feature: Example Mapping Integration', () => {
       // Then the command should succeed
       expect(result.success).toBe(true);
 
-      const updated = JSON.parse(await readFile(join(testDir, 'spec/work-units.json'), 'utf-8'));
+      const updated = JSON.parse(
+        await readFile(join(testDir, 'spec/work-units.json'), 'utf-8')
+      );
 
       // And the work unit should have 1 rule
       expect(updated.workUnits['AUTH-001'].rules).toHaveLength(1);
 
       // And the rule should be "Users must authenticate before accessing protected resources"
-      expect(updated.workUnits['AUTH-001'].rules[0]).toBe('Users must authenticate before accessing protected resources');
+      expect(updated.workUnits['AUTH-001'].rules[0]).toBe(
+        'Users must authenticate before accessing protected resources'
+      );
     });
   });
 
@@ -99,21 +106,44 @@ describe('Feature: Example Mapping Integration', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
-      await addRule({ workUnitId: 'AUTH-001', rule: 'OAuth tokens expire after 1 hour', cwd: testDir });
-      await addRule({ workUnitId: 'AUTH-001', rule: 'Refresh tokens valid for 30 days', cwd: testDir });
-      await addRule({ workUnitId: 'AUTH-001', rule: 'Only one active session per user', cwd: testDir });
+      await addRule({
+        workUnitId: 'AUTH-001',
+        rule: 'OAuth tokens expire after 1 hour',
+        cwd: testDir,
+      });
+      await addRule({
+        workUnitId: 'AUTH-001',
+        rule: 'Refresh tokens valid for 30 days',
+        cwd: testDir,
+      });
+      await addRule({
+        workUnitId: 'AUTH-001',
+        rule: 'Only one active session per user',
+        cwd: testDir,
+      });
 
-      const updated = JSON.parse(await readFile(join(testDir, 'spec/work-units.json'), 'utf-8'));
+      const updated = JSON.parse(
+        await readFile(join(testDir, 'spec/work-units.json'), 'utf-8')
+      );
 
       // Then the work unit should have 3 rules
       expect(updated.workUnits['AUTH-001'].rules).toHaveLength(3);
 
       // And the rules should be in order
-      expect(updated.workUnits['AUTH-001'].rules[0]).toBe('OAuth tokens expire after 1 hour');
-      expect(updated.workUnits['AUTH-001'].rules[1]).toBe('Refresh tokens valid for 30 days');
-      expect(updated.workUnits['AUTH-001'].rules[2]).toBe('Only one active session per user');
+      expect(updated.workUnits['AUTH-001'].rules[0]).toBe(
+        'OAuth tokens expire after 1 hour'
+      );
+      expect(updated.workUnits['AUTH-001'].rules[1]).toBe(
+        'Refresh tokens valid for 30 days'
+      );
+      expect(updated.workUnits['AUTH-001'].rules[2]).toBe(
+        'Only one active session per user'
+      );
     });
   });
 
@@ -139,7 +169,10 @@ describe('Feature: Example Mapping Integration', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       const result = await addExample({
         workUnitId: 'AUTH-001',
@@ -149,10 +182,14 @@ describe('Feature: Example Mapping Integration', () => {
 
       expect(result.success).toBe(true);
 
-      const updated = JSON.parse(await readFile(join(testDir, 'spec/work-units.json'), 'utf-8'));
+      const updated = JSON.parse(
+        await readFile(join(testDir, 'spec/work-units.json'), 'utf-8')
+      );
 
       expect(updated.workUnits['AUTH-001'].examples).toHaveLength(1);
-      expect(updated.workUnits['AUTH-001'].examples[0]).toBe('User logs in with Google account');
+      expect(updated.workUnits['AUTH-001'].examples[0]).toBe(
+        'User logs in with Google account'
+      );
     });
   });
 
@@ -178,14 +215,35 @@ describe('Feature: Example Mapping Integration', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
-      await addExample({ workUnitId: 'AUTH-001', example: 'User logs in with valid credentials', cwd: testDir });
-      await addExample({ workUnitId: 'AUTH-001', example: 'User logs in with expired token', cwd: testDir });
-      await addExample({ workUnitId: 'AUTH-001', example: 'User token auto-refreshes before expiry', cwd: testDir });
-      await addExample({ workUnitId: 'AUTH-001', example: 'User logs out and token is invalidated', cwd: testDir });
+      await addExample({
+        workUnitId: 'AUTH-001',
+        example: 'User logs in with valid credentials',
+        cwd: testDir,
+      });
+      await addExample({
+        workUnitId: 'AUTH-001',
+        example: 'User logs in with expired token',
+        cwd: testDir,
+      });
+      await addExample({
+        workUnitId: 'AUTH-001',
+        example: 'User token auto-refreshes before expiry',
+        cwd: testDir,
+      });
+      await addExample({
+        workUnitId: 'AUTH-001',
+        example: 'User logs out and token is invalidated',
+        cwd: testDir,
+      });
 
-      const updated = JSON.parse(await readFile(join(testDir, 'spec/work-units.json'), 'utf-8'));
+      const updated = JSON.parse(
+        await readFile(join(testDir, 'spec/work-units.json'), 'utf-8')
+      );
 
       expect(updated.workUnits['AUTH-001'].examples).toHaveLength(4);
     });
@@ -213,7 +271,10 @@ describe('Feature: Example Mapping Integration', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       const result = await addQuestion({
         workUnitId: 'AUTH-001',
@@ -223,12 +284,14 @@ describe('Feature: Example Mapping Integration', () => {
 
       expect(result.success).toBe(true);
 
-      const updated = JSON.parse(await readFile(join(testDir, 'spec/work-units.json'), 'utf-8'));
+      const updated = JSON.parse(
+        await readFile(join(testDir, 'spec/work-units.json'), 'utf-8')
+      );
 
       expect(updated.workUnits['AUTH-001'].questions).toHaveLength(1);
       expect(updated.workUnits['AUTH-001'].questions[0]).toEqual({
         text: 'Should we support GitHub Enterprise?',
-        selected: false
+        selected: false,
       });
     });
   });
@@ -255,7 +318,10 @@ describe('Feature: Example Mapping Integration', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       const result = await addQuestion({
         workUnitId: 'AUTH-001',
@@ -265,10 +331,16 @@ describe('Feature: Example Mapping Integration', () => {
 
       expect(result.success).toBe(true);
 
-      const updated = JSON.parse(await readFile(join(testDir, 'spec/work-units.json'), 'utf-8'));
+      const updated = JSON.parse(
+        await readFile(join(testDir, 'spec/work-units.json'), 'utf-8')
+      );
 
-      expect(updated.workUnits['AUTH-001'].questions[0].text).toContain('@bob:');
-      expect(updated.workUnits['AUTH-001'].questions[0].text).toBe('@bob: What is the token expiry policy?');
+      expect(updated.workUnits['AUTH-001'].questions[0].text).toContain(
+        '@bob:'
+      );
+      expect(updated.workUnits['AUTH-001'].questions[0].text).toBe(
+        '@bob: What is the token expiry policy?'
+      );
     });
   });
 
@@ -294,7 +366,10 @@ describe('Feature: Example Mapping Integration', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       const result = await addAssumption({
         workUnitId: 'AUTH-001',
@@ -304,10 +379,14 @@ describe('Feature: Example Mapping Integration', () => {
 
       expect(result.success).toBe(true);
 
-      const updated = JSON.parse(await readFile(join(testDir, 'spec/work-units.json'), 'utf-8'));
+      const updated = JSON.parse(
+        await readFile(join(testDir, 'spec/work-units.json'), 'utf-8')
+      );
 
       expect(updated.workUnits['AUTH-001'].assumptions).toHaveLength(1);
-      expect(updated.workUnits['AUTH-001'].assumptions[0]).toBe('Users have valid OAuth accounts');
+      expect(updated.workUnits['AUTH-001'].assumptions[0]).toBe(
+        'Users have valid OAuth accounts'
+      );
     });
   });
 
@@ -333,16 +412,45 @@ describe('Feature: Example Mapping Integration', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
-      await addRule({ workUnitId: 'AUTH-001', rule: 'OAuth tokens expire after 1 hour', cwd: testDir });
-      await addRule({ workUnitId: 'AUTH-001', rule: 'Users must authenticate before accessing protected resources', cwd: testDir });
-      await addExample({ workUnitId: 'AUTH-001', example: 'User logs in with Google', cwd: testDir });
-      await addExample({ workUnitId: 'AUTH-001', example: 'User logs in with expired token', cwd: testDir });
-      await addQuestion({ workUnitId: 'AUTH-001', question: '@security-team: Do we need PKCE flow?', cwd: testDir });
-      await addAssumption({ workUnitId: 'AUTH-001', assumption: 'Users have valid email addresses', cwd: testDir });
+      await addRule({
+        workUnitId: 'AUTH-001',
+        rule: 'OAuth tokens expire after 1 hour',
+        cwd: testDir,
+      });
+      await addRule({
+        workUnitId: 'AUTH-001',
+        rule: 'Users must authenticate before accessing protected resources',
+        cwd: testDir,
+      });
+      await addExample({
+        workUnitId: 'AUTH-001',
+        example: 'User logs in with Google',
+        cwd: testDir,
+      });
+      await addExample({
+        workUnitId: 'AUTH-001',
+        example: 'User logs in with expired token',
+        cwd: testDir,
+      });
+      await addQuestion({
+        workUnitId: 'AUTH-001',
+        question: '@security-team: Do we need PKCE flow?',
+        cwd: testDir,
+      });
+      await addAssumption({
+        workUnitId: 'AUTH-001',
+        assumption: 'Users have valid email addresses',
+        cwd: testDir,
+      });
 
-      const updated = JSON.parse(await readFile(join(testDir, 'spec/work-units.json'), 'utf-8'));
+      const updated = JSON.parse(
+        await readFile(join(testDir, 'spec/work-units.json'), 'utf-8')
+      );
 
       expect(updated.workUnits['AUTH-001'].rules).toHaveLength(2);
       expect(updated.workUnits['AUTH-001'].examples).toHaveLength(2);
@@ -359,9 +467,17 @@ describe('Feature: Example Mapping Integration', () => {
             id: 'AUTH-001',
             title: 'OAuth login',
             status: 'specifying',
-            rules: ['OAuth tokens expire after 1 hour', 'Users must authenticate first'],
-            examples: ['User logs in with Google', 'User logs in with expired token'],
-            questions: [{ text: '@bob: Support GitHub Enterprise?', selected: false }],
+            rules: [
+              'OAuth tokens expire after 1 hour',
+              'Users must authenticate first',
+            ],
+            examples: [
+              'User logs in with Google',
+              'User logs in with expired token',
+            ],
+            questions: [
+              { text: '@bob: Support GitHub Enterprise?', selected: false },
+            ],
             assumptions: ['Users have valid OAuth accounts'],
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
@@ -377,7 +493,10 @@ describe('Feature: Example Mapping Integration', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       const { showWorkUnit } = await import('../show-work-unit');
       const result = await showWorkUnit({
@@ -421,7 +540,10 @@ describe('Feature: Example Mapping Integration', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       const result = await removeRule({
         workUnitId: 'AUTH-001',
@@ -431,10 +553,14 @@ describe('Feature: Example Mapping Integration', () => {
 
       expect(result.success).toBe(true);
 
-      const updated = JSON.parse(await readFile(join(testDir, 'spec/work-units.json'), 'utf-8'));
+      const updated = JSON.parse(
+        await readFile(join(testDir, 'spec/work-units.json'), 'utf-8')
+      );
 
       expect(updated.workUnits['AUTH-001'].rules).toHaveLength(2);
-      expect(updated.workUnits['AUTH-001'].rules[1]).toBe('Refresh tokens valid for 30 days');
+      expect(updated.workUnits['AUTH-001'].rules[1]).toBe(
+        'Refresh tokens valid for 30 days'
+      );
     });
   });
 
@@ -465,7 +591,10 @@ describe('Feature: Example Mapping Integration', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       const result = await removeExample({
         workUnitId: 'AUTH-001',
@@ -475,10 +604,14 @@ describe('Feature: Example Mapping Integration', () => {
 
       expect(result.success).toBe(true);
 
-      const updated = JSON.parse(await readFile(join(testDir, 'spec/work-units.json'), 'utf-8'));
+      const updated = JSON.parse(
+        await readFile(join(testDir, 'spec/work-units.json'), 'utf-8')
+      );
 
       expect(updated.workUnits['AUTH-001'].examples).toHaveLength(2);
-      expect(updated.workUnits['AUTH-001'].examples[0]).toBe('User logs in with expired token');
+      expect(updated.workUnits['AUTH-001'].examples[0]).toBe(
+        'User logs in with expired token'
+      );
     });
   });
 
@@ -508,7 +641,10 @@ describe('Feature: Example Mapping Integration', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       const result = await removeQuestion({
         workUnitId: 'AUTH-001',
@@ -518,7 +654,9 @@ describe('Feature: Example Mapping Integration', () => {
 
       expect(result.success).toBe(true);
 
-      const updated = JSON.parse(await readFile(join(testDir, 'spec/work-units.json'), 'utf-8'));
+      const updated = JSON.parse(
+        await readFile(join(testDir, 'spec/work-units.json'), 'utf-8')
+      );
 
       expect(updated.workUnits['AUTH-001'].questions).toHaveLength(1);
     });
@@ -547,7 +685,10 @@ describe('Feature: Example Mapping Integration', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       const error = await removeRule({
         workUnitId: 'AUTH-001',
@@ -571,7 +712,12 @@ describe('Feature: Example Mapping Integration', () => {
             id: 'AUTH-001',
             title: 'OAuth login',
             status: 'specifying',
-            questions: [{ text: '@bob: Should we support GitHub Enterprise?', selected: false }],
+            questions: [
+              {
+                text: '@bob: Should we support GitHub Enterprise?',
+                selected: false,
+              },
+            ],
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           },
@@ -586,7 +732,10 @@ describe('Feature: Example Mapping Integration', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       const result = await answerQuestion({
         workUnitId: 'AUTH-001',
@@ -598,11 +747,15 @@ describe('Feature: Example Mapping Integration', () => {
 
       expect(result.success).toBe(true);
 
-      const updated = JSON.parse(await readFile(join(testDir, 'spec/work-units.json'), 'utf-8'));
+      const updated = JSON.parse(
+        await readFile(join(testDir, 'spec/work-units.json'), 'utf-8')
+      );
 
       expect(updated.workUnits['AUTH-001'].questions[0].selected).toBe(true);
       expect(updated.workUnits['AUTH-001'].assumptions).toHaveLength(1);
-      expect(updated.workUnits['AUTH-001'].assumptions[0]).toContain('GitHub.com supported');
+      expect(updated.workUnits['AUTH-001'].assumptions[0]).toContain(
+        'GitHub.com supported'
+      );
     });
   });
 
@@ -614,7 +767,9 @@ describe('Feature: Example Mapping Integration', () => {
             id: 'AUTH-001',
             title: 'OAuth login',
             status: 'specifying',
-            questions: [{ text: 'What is the maximum session length?', selected: false }],
+            questions: [
+              { text: 'What is the maximum session length?', selected: false },
+            ],
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           },
@@ -629,7 +784,10 @@ describe('Feature: Example Mapping Integration', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       const result = await answerQuestion({
         workUnitId: 'AUTH-001',
@@ -641,7 +799,9 @@ describe('Feature: Example Mapping Integration', () => {
 
       expect(result.success).toBe(true);
 
-      const updated = JSON.parse(await readFile(join(testDir, 'spec/work-units.json'), 'utf-8'));
+      const updated = JSON.parse(
+        await readFile(join(testDir, 'spec/work-units.json'), 'utf-8')
+      );
 
       expect(updated.workUnits['AUTH-001'].questions[0].selected).toBe(true);
       expect(updated.workUnits['AUTH-001'].rules).toHaveLength(1);
@@ -672,7 +832,10 @@ describe('Feature: Example Mapping Integration', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       const result = await answerQuestion({
         workUnitId: 'AUTH-001',
@@ -684,7 +847,9 @@ describe('Feature: Example Mapping Integration', () => {
 
       expect(result.success).toBe(true);
 
-      const updated = JSON.parse(await readFile(join(testDir, 'spec/work-units.json'), 'utf-8'));
+      const updated = JSON.parse(
+        await readFile(join(testDir, 'spec/work-units.json'), 'utf-8')
+      );
 
       expect(updated.workUnits['AUTH-001'].questions[0].selected).toBe(true);
       expect(updated.workUnits['AUTH-001'].rules || []).toHaveLength(0);
@@ -719,7 +884,10 @@ describe('Feature: Example Mapping Integration', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       const result = await generateScenarios({
         workUnitId: 'AUTH-001',
@@ -730,14 +898,19 @@ describe('Feature: Example Mapping Integration', () => {
       expect(result.scenariosCount).toBe(3);
 
       // Check feature file was created
-      const featureFiles = await readFile(join(testDir, 'spec/features/auth-001.feature'), 'utf-8');
+      const featureFiles = await readFile(
+        join(testDir, 'spec/features/auth-001.feature'),
+        'utf-8'
+      );
       expect(featureFiles).toContain('@AUTH-001');
       expect(featureFiles).toContain('User logs in with Google account');
       expect(featureFiles).toContain('User logs in with expired token');
       expect(featureFiles).toContain('User token auto-refreshes');
 
       // Check examples are preserved
-      const updated = JSON.parse(await readFile(join(testDir, 'spec/work-units.json'), 'utf-8'));
+      const updated = JSON.parse(
+        await readFile(join(testDir, 'spec/work-units.json'), 'utf-8')
+      );
       expect(updated.workUnits['AUTH-001'].examples).toHaveLength(3);
     });
   });
@@ -765,7 +938,10 @@ describe('Feature: Example Mapping Integration', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       const result = await generateScenarios({
         workUnitId: 'AUTH-001',
@@ -774,9 +950,14 @@ describe('Feature: Example Mapping Integration', () => {
 
       expect(result.success).toBe(true);
 
-      const featureContent = await readFile(join(testDir, 'spec/features/auth-001.feature'), 'utf-8');
+      const featureContent = await readFile(
+        join(testDir, 'spec/features/auth-001.feature'),
+        'utf-8'
+      );
       expect(featureContent).toContain('@AUTH-001');
-      expect(featureContent).toContain('Scenario: User logs in with valid credentials');
+      expect(featureContent).toContain(
+        'Scenario: User logs in with valid credentials'
+      );
       expect(featureContent).toContain('Given');
       expect(featureContent).toContain('When');
       expect(featureContent).toContain('Then');
@@ -806,7 +987,10 @@ describe('Feature: Example Mapping Integration', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       // Create existing feature file
       const existingFeature = `Feature: Authentication
@@ -816,7 +1000,10 @@ Scenario: Existing scenario
   When something happens
   Then result occurs
 `;
-      await writeFile(join(testDir, 'spec/features/authentication.feature'), existingFeature);
+      await writeFile(
+        join(testDir, 'spec/features/authentication.feature'),
+        existingFeature
+      );
 
       const result = await generateScenarios({
         workUnitId: 'AUTH-001',
@@ -826,7 +1013,10 @@ Scenario: Existing scenario
 
       expect(result.success).toBe(true);
 
-      const featureContent = await readFile(join(testDir, 'spec/features/authentication.feature'), 'utf-8');
+      const featureContent = await readFile(
+        join(testDir, 'spec/features/authentication.feature'),
+        'utf-8'
+      );
       expect(featureContent).toContain('Existing scenario');
       expect(featureContent).toContain('@AUTH-001');
       expect(featureContent).toContain('User logs in with Google');
@@ -856,7 +1046,10 @@ Scenario: Existing scenario
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       const result = await generateScenarios({
         workUnitId: 'AUTH-001',
@@ -866,7 +1059,10 @@ Scenario: Existing scenario
 
       expect(result.success).toBe(true);
 
-      const featureContent = await readFile(join(testDir, 'spec/features/oauth-login.feature'), 'utf-8');
+      const featureContent = await readFile(
+        join(testDir, 'spec/features/oauth-login.feature'),
+        'utf-8'
+      );
       expect(featureContent).toContain('Feature:');
       expect(featureContent).toContain('@AUTH-001');
       expect(featureContent).toContain('User logs in with OAuth');
@@ -881,7 +1077,9 @@ Scenario: Existing scenario
             id: 'AUTH-001',
             title: 'OAuth login',
             status: 'specifying',
-            questions: [{ text: '@bob: Should we support OAuth 2.0?', selected: false }],
+            questions: [
+              { text: '@bob: Should we support OAuth 2.0?', selected: false },
+            ],
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           },
@@ -896,13 +1094,22 @@ Scenario: Existing scenario
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       // Create feature file so scenario check passes
-      const featureContent = '@AUTH-001\nFeature: Auth\nScenario: Login\n  Given x';
-      await writeFile(join(testDir, 'spec/features/auth.feature'), featureContent);
+      const featureContent =
+        '@AUTH-001\nFeature: Auth\nScenario: Login\n  Given x';
+      await writeFile(
+        join(testDir, 'spec/features/auth.feature'),
+        featureContent
+      );
 
-      const { updateWorkUnitStatus } = await import('../update-work-unit-status');
+      const { updateWorkUnitStatus } = await import(
+        '../update-work-unit-status'
+      );
       const error = await updateWorkUnitStatus({
         workUnitId: 'AUTH-001',
         status: 'testing',
@@ -911,9 +1118,13 @@ Scenario: Existing scenario
 
       expect(error).toBeInstanceOf(Error);
       if (error instanceof Error) {
-        expect(error.message).toContain('Unanswered questions prevent state transition');
+        expect(error.message).toContain(
+          'Unanswered questions prevent state transition'
+        );
         expect(error.message).toContain('@bob: Should we support OAuth 2.0?');
-        expect(error.message).toContain("Answer questions with 'fspec answer-question AUTH-001");
+        expect(error.message).toContain(
+          "Answer questions with 'fspec answer-question AUTH-001"
+        );
       }
     });
   });
@@ -941,13 +1152,22 @@ Scenario: Existing scenario
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       // Create feature file
-      const featureContent = '@AUTH-001\nFeature: Auth\nScenario: Login\n  Given x';
-      await writeFile(join(testDir, 'spec/features/auth.feature'), featureContent);
+      const featureContent =
+        '@AUTH-001\nFeature: Auth\nScenario: Login\n  Given x';
+      await writeFile(
+        join(testDir, 'spec/features/auth.feature'),
+        featureContent
+      );
 
-      const { updateWorkUnitStatus } = await import('../update-work-unit-status');
+      const { updateWorkUnitStatus } = await import(
+        '../update-work-unit-status'
+      );
       const result = await updateWorkUnitStatus({
         workUnitId: 'AUTH-001',
         status: 'testing',
@@ -956,7 +1176,9 @@ Scenario: Existing scenario
 
       expect(result.success).toBe(true);
       expect(result.warnings).toBeDefined();
-      expect(result.warnings?.some(w => w.includes('No examples captured'))).toBe(true);
+      expect(
+        result.warnings?.some(w => w.includes('No examples captured'))
+      ).toBe(true);
     });
   });
 
@@ -982,7 +1204,10 @@ Scenario: Existing scenario
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       const exampleMapping = {
         rules: [
@@ -993,14 +1218,13 @@ Scenario: Existing scenario
           'User logs in with Google',
           'User logs in with expired token',
         ],
-        questions: [
-          '@bob: Support GitHub Enterprise?',
-        ],
-        assumptions: [
-          'Users have valid OAuth accounts',
-        ],
+        questions: ['@bob: Support GitHub Enterprise?'],
+        assumptions: ['Users have valid OAuth accounts'],
       };
-      await writeFile(join(testDir, 'example-mapping.json'), JSON.stringify(exampleMapping, null, 2));
+      await writeFile(
+        join(testDir, 'example-mapping.json'),
+        JSON.stringify(exampleMapping, null, 2)
+      );
 
       const result = await importExampleMap({
         workUnitId: 'AUTH-001',
@@ -1010,7 +1234,9 @@ Scenario: Existing scenario
 
       expect(result.success).toBe(true);
 
-      const updated = JSON.parse(await readFile(join(testDir, 'spec/work-units.json'), 'utf-8'));
+      const updated = JSON.parse(
+        await readFile(join(testDir, 'spec/work-units.json'), 'utf-8')
+      );
 
       expect(updated.workUnits['AUTH-001'].rules).toHaveLength(2);
       expect(updated.workUnits['AUTH-001'].examples).toHaveLength(2);
@@ -1045,7 +1271,10 @@ Scenario: Existing scenario
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       const result = await exportExampleMap({
         workUnitId: 'AUTH-001',
@@ -1055,7 +1284,9 @@ Scenario: Existing scenario
 
       expect(result.success).toBe(true);
 
-      const exported = JSON.parse(await readFile(join(testDir, 'auth-example-map.json'), 'utf-8'));
+      const exported = JSON.parse(
+        await readFile(join(testDir, 'auth-example-map.json'), 'utf-8')
+      );
 
       expect(exported.rules).toBeDefined();
       expect(exported.examples).toBeDefined();
@@ -1109,7 +1340,10 @@ Scenario: Existing scenario
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       const { queryWorkUnits } = await import('../query-work-units');
       const result = await queryWorkUnits({
@@ -1140,7 +1374,9 @@ Scenario: Existing scenario
             id: 'AUTH-002',
             title: 'Work 2',
             status: 'specifying',
-            questions: [{ text: '@alice: What is the timeout?', selected: false }],
+            questions: [
+              { text: '@alice: What is the timeout?', selected: false },
+            ],
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           },
@@ -1163,7 +1399,10 @@ Scenario: Existing scenario
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       const { queryWorkUnits } = await import('../query-work-units');
       const result = await queryWorkUnits({
@@ -1201,7 +1440,10 @@ Scenario: Existing scenario
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       const { validateWorkUnits } = await import('../validate-work-units');
       const result = await validateWorkUnits({ cwd: testDir });
@@ -1236,7 +1478,10 @@ Scenario: Existing scenario
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       // Generate initial scenario
       await generateScenarios({
@@ -1246,7 +1491,10 @@ Scenario: Existing scenario
 
       // AI can now edit the file manually or programmatically
       // Just verify the tag is preserved
-      const featureContent = await readFile(join(testDir, 'spec/features/auth-001.feature'), 'utf-8');
+      const featureContent = await readFile(
+        join(testDir, 'spec/features/auth-001.feature'),
+        'utf-8'
+      );
       expect(featureContent).toContain('@AUTH-001');
     });
   });
@@ -1272,7 +1520,7 @@ Scenario: Existing scenario
             questions: [
               { text: 'Q1', selected: false },
               { text: 'Q2', selected: false },
-              { text: 'Q3', selected: false }
+              { text: 'Q3', selected: false },
             ],
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
@@ -1299,7 +1547,10 @@ Scenario: Existing scenario
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       const result = await queryExampleMappingStats({
         output: 'json',
@@ -1329,7 +1580,10 @@ Scenario: Existing scenario
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       const error = await addRule({
         workUnitId: 'AUTH-999',

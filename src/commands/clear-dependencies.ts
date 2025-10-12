@@ -13,11 +13,15 @@ interface ClearDependenciesResult {
   success: boolean;
 }
 
-export async function clearDependencies(options: ClearDependenciesOptions): Promise<ClearDependenciesResult> {
+export async function clearDependencies(
+  options: ClearDependenciesOptions
+): Promise<ClearDependenciesResult> {
   const cwd = options.cwd || process.cwd();
 
   if (!options.confirm) {
-    throw new Error('Must confirm clearing all dependencies with --confirm flag');
+    throw new Error(
+      'Must confirm clearing all dependencies with --confirm flag'
+    );
   }
 
   const data: WorkUnitsData = await ensureWorkUnitsFile(cwd);
@@ -33,9 +37,9 @@ export async function clearDependencies(options: ClearDependenciesOptions): Prom
   if (workUnit.blocks) {
     for (const targetId of workUnit.blocks) {
       if (data.workUnits[targetId]?.blockedBy) {
-        data.workUnits[targetId].blockedBy = data.workUnits[targetId].blockedBy!.filter(
-          id => id !== options.workUnitId
-        );
+        data.workUnits[targetId].blockedBy = data.workUnits[
+          targetId
+        ].blockedBy!.filter(id => id !== options.workUnitId);
         if (data.workUnits[targetId].blockedBy!.length === 0) {
           delete data.workUnits[targetId].blockedBy;
         }
@@ -48,9 +52,9 @@ export async function clearDependencies(options: ClearDependenciesOptions): Prom
   if (workUnit.blockedBy) {
     for (const targetId of workUnit.blockedBy) {
       if (data.workUnits[targetId]?.blocks) {
-        data.workUnits[targetId].blocks = data.workUnits[targetId].blocks!.filter(
-          id => id !== options.workUnitId
-        );
+        data.workUnits[targetId].blocks = data.workUnits[
+          targetId
+        ].blocks!.filter(id => id !== options.workUnitId);
         if (data.workUnits[targetId].blocks!.length === 0) {
           delete data.workUnits[targetId].blocks;
         }
@@ -68,9 +72,9 @@ export async function clearDependencies(options: ClearDependenciesOptions): Prom
   if (workUnit.relatesTo) {
     for (const targetId of workUnit.relatesTo) {
       if (data.workUnits[targetId]?.relatesTo) {
-        data.workUnits[targetId].relatesTo = data.workUnits[targetId].relatesTo!.filter(
-          id => id !== options.workUnitId
-        );
+        data.workUnits[targetId].relatesTo = data.workUnits[
+          targetId
+        ].relatesTo!.filter(id => id !== options.workUnitId);
         if (data.workUnits[targetId].relatesTo!.length === 0) {
           delete data.workUnits[targetId].relatesTo;
         }

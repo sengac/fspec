@@ -14,7 +14,7 @@ import {
   generateScenarios,
   importExampleMap,
   exportExampleMap,
-  queryExampleMappingStats
+  queryExampleMappingStats,
 } from '../example-mapping';
 import { showWorkUnit } from '../work-unit';
 import { queryWorkUnit } from '../work-unit';
@@ -38,18 +38,25 @@ describe('Feature: Example Mapping Integration', () => {
     await mkdir(featuresDir, { recursive: true });
 
     // Initialize work units file
-    await writeFile(workUnitsFile, JSON.stringify({
-      workUnits: {},
-      states: {
-        backlog: [],
-        specifying: [],
-        testing: [],
-        implementing: [],
-        validating: [],
-        done: [],
-        blocked: []
-      }
-    }, null, 2));
+    await writeFile(
+      workUnitsFile,
+      JSON.stringify(
+        {
+          workUnits: {},
+          states: {
+            backlog: [],
+            specifying: [],
+            testing: [],
+            implementing: [],
+            validating: [],
+            done: [],
+            blocked: [],
+          },
+        },
+        null,
+        2
+      )
+    );
   });
 
   afterEach(async () => {
@@ -68,17 +75,23 @@ describe('Feature: Example Mapping Integration', () => {
         status: 'specifying',
         rules: [],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.specifying.push('AUTH-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       // When I run "fspec add-rule AUTH-001 'Users must authenticate before accessing protected resources'"
-      await addRule('AUTH-001', 'Users must authenticate before accessing protected resources', { cwd: testDir });
+      await addRule(
+        'AUTH-001',
+        'Users must authenticate before accessing protected resources',
+        { cwd: testDir }
+      );
 
       // Then the command should succeed
       // And the work unit should have 1 rule
-      const updatedWorkUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const updatedWorkUnits = JSON.parse(
+        await readFile(workUnitsFile, 'utf-8')
+      );
       expect(updatedWorkUnits.workUnits['AUTH-001'].rules).toHaveLength(1);
 
       // And the rule should be correct
@@ -99,22 +112,36 @@ describe('Feature: Example Mapping Integration', () => {
         status: 'specifying',
         rules: [],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.specifying.push('AUTH-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       // When I add multiple rules
-      await addRule('AUTH-001', 'OAuth tokens expire after 1 hour', { cwd: testDir });
-      await addRule('AUTH-001', 'Refresh tokens valid for 30 days', { cwd: testDir });
-      await addRule('AUTH-001', 'Only one active session per user', { cwd: testDir });
+      await addRule('AUTH-001', 'OAuth tokens expire after 1 hour', {
+        cwd: testDir,
+      });
+      await addRule('AUTH-001', 'Refresh tokens valid for 30 days', {
+        cwd: testDir,
+      });
+      await addRule('AUTH-001', 'Only one active session per user', {
+        cwd: testDir,
+      });
 
       // Then the work unit should have 3 rules in order
-      const updatedWorkUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const updatedWorkUnits = JSON.parse(
+        await readFile(workUnitsFile, 'utf-8')
+      );
       expect(updatedWorkUnits.workUnits['AUTH-001'].rules).toHaveLength(3);
-      expect(updatedWorkUnits.workUnits['AUTH-001'].rules[0]).toBe('OAuth tokens expire after 1 hour');
-      expect(updatedWorkUnits.workUnits['AUTH-001'].rules[1]).toBe('Refresh tokens valid for 30 days');
-      expect(updatedWorkUnits.workUnits['AUTH-001'].rules[2]).toBe('Only one active session per user');
+      expect(updatedWorkUnits.workUnits['AUTH-001'].rules[0]).toBe(
+        'OAuth tokens expire after 1 hour'
+      );
+      expect(updatedWorkUnits.workUnits['AUTH-001'].rules[1]).toBe(
+        'Refresh tokens valid for 30 days'
+      );
+      expect(updatedWorkUnits.workUnits['AUTH-001'].rules[2]).toBe(
+        'Only one active session per user'
+      );
     });
   });
 
@@ -129,19 +156,25 @@ describe('Feature: Example Mapping Integration', () => {
         status: 'specifying',
         examples: [],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.specifying.push('AUTH-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       // When I run "fspec add-example AUTH-001 'User logs in with Google account'"
-      await addExample('AUTH-001', 'User logs in with Google account', { cwd: testDir });
+      await addExample('AUTH-001', 'User logs in with Google account', {
+        cwd: testDir,
+      });
 
       // Then the command should succeed
       // And the work unit should have 1 example
-      const updatedWorkUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const updatedWorkUnits = JSON.parse(
+        await readFile(workUnitsFile, 'utf-8')
+      );
       expect(updatedWorkUnits.workUnits['AUTH-001'].examples).toHaveLength(1);
-      expect(updatedWorkUnits.workUnits['AUTH-001'].examples[0]).toBe('User logs in with Google account');
+      expect(updatedWorkUnits.workUnits['AUTH-001'].examples[0]).toBe(
+        'User logs in with Google account'
+      );
     });
   });
 
@@ -156,19 +189,29 @@ describe('Feature: Example Mapping Integration', () => {
         status: 'specifying',
         examples: [],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.specifying.push('AUTH-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       // When I add multiple examples
-      await addExample('AUTH-001', 'User logs in with valid credentials', { cwd: testDir });
-      await addExample('AUTH-001', 'User logs in with expired token', { cwd: testDir });
-      await addExample('AUTH-001', 'User token auto-refreshes before expiry', { cwd: testDir });
-      await addExample('AUTH-001', 'User logs out and token is invalidated', { cwd: testDir });
+      await addExample('AUTH-001', 'User logs in with valid credentials', {
+        cwd: testDir,
+      });
+      await addExample('AUTH-001', 'User logs in with expired token', {
+        cwd: testDir,
+      });
+      await addExample('AUTH-001', 'User token auto-refreshes before expiry', {
+        cwd: testDir,
+      });
+      await addExample('AUTH-001', 'User logs out and token is invalidated', {
+        cwd: testDir,
+      });
 
       // Then the work unit should have 4 examples
-      const updatedWorkUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const updatedWorkUnits = JSON.parse(
+        await readFile(workUnitsFile, 'utf-8')
+      );
       expect(updatedWorkUnits.workUnits['AUTH-001'].examples).toHaveLength(4);
     });
   });
@@ -184,21 +227,25 @@ describe('Feature: Example Mapping Integration', () => {
         status: 'specifying',
         questions: [],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.specifying.push('AUTH-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       // When I run "fspec add-question AUTH-001 'Should we support GitHub Enterprise?'"
-      await addQuestion('AUTH-001', 'Should we support GitHub Enterprise?', { cwd: testDir });
+      await addQuestion('AUTH-001', 'Should we support GitHub Enterprise?', {
+        cwd: testDir,
+      });
 
       // Then the command should succeed
       // And the work unit should have 1 question
-      const updatedWorkUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const updatedWorkUnits = JSON.parse(
+        await readFile(workUnitsFile, 'utf-8')
+      );
       expect(updatedWorkUnits.workUnits['AUTH-001'].questions).toHaveLength(1);
       expect(updatedWorkUnits.workUnits['AUTH-001'].questions[0]).toEqual({
         text: 'Should we support GitHub Enterprise?',
-        selected: false
+        selected: false,
       });
     });
   });
@@ -214,18 +261,24 @@ describe('Feature: Example Mapping Integration', () => {
         status: 'specifying',
         questions: [],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.specifying.push('AUTH-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       // When I run "fspec add-question AUTH-001 '@bob: What is the token expiry policy?'"
-      await addQuestion('AUTH-001', '@bob: What is the token expiry policy?', { cwd: testDir });
+      await addQuestion('AUTH-001', '@bob: What is the token expiry policy?', {
+        cwd: testDir,
+      });
 
       // Then the command should succeed
       // And the question should contain "@bob:"
-      const updatedWorkUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
-      expect(updatedWorkUnits.workUnits['AUTH-001'].questions[0].text).toContain('@bob:');
+      const updatedWorkUnits = JSON.parse(
+        await readFile(workUnitsFile, 'utf-8')
+      );
+      expect(
+        updatedWorkUnits.workUnits['AUTH-001'].questions[0].text
+      ).toContain('@bob:');
 
       // And the question should be parseable for notifications
       const question = updatedWorkUnits.workUnits['AUTH-001'].questions[0].text;
@@ -246,19 +299,27 @@ describe('Feature: Example Mapping Integration', () => {
         status: 'specifying',
         assumptions: [],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.specifying.push('AUTH-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       // When I run "fspec add-assumption AUTH-001 'Users have valid OAuth accounts'"
-      await addAssumption('AUTH-001', 'Users have valid OAuth accounts', { cwd: testDir });
+      await addAssumption('AUTH-001', 'Users have valid OAuth accounts', {
+        cwd: testDir,
+      });
 
       // Then the command should succeed
       // And the work unit should have 1 assumption
-      const updatedWorkUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
-      expect(updatedWorkUnits.workUnits['AUTH-001'].assumptions).toHaveLength(1);
-      expect(updatedWorkUnits.workUnits['AUTH-001'].assumptions[0]).toBe('Users have valid OAuth accounts');
+      const updatedWorkUnits = JSON.parse(
+        await readFile(workUnitsFile, 'utf-8')
+      );
+      expect(updatedWorkUnits.workUnits['AUTH-001'].assumptions).toHaveLength(
+        1
+      );
+      expect(updatedWorkUnits.workUnits['AUTH-001'].assumptions[0]).toBe(
+        'Users have valid OAuth accounts'
+      );
     });
   });
 
@@ -276,25 +337,43 @@ describe('Feature: Example Mapping Integration', () => {
         questions: [],
         assumptions: [],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.specifying.push('AUTH-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       // When I add all four types of artifacts
-      await addRule('AUTH-001', 'OAuth tokens expire after 1 hour', { cwd: testDir });
-      await addRule('AUTH-001', 'Users must authenticate before accessing protected resources', { cwd: testDir });
-      await addExample('AUTH-001', 'User logs in with Google', { cwd: testDir });
-      await addExample('AUTH-001', 'User logs in with expired token', { cwd: testDir });
-      await addQuestion('AUTH-001', '@security-team: Do we need PKCE flow?', { cwd: testDir });
-      await addAssumption('AUTH-001', 'Users have valid email addresses', { cwd: testDir });
+      await addRule('AUTH-001', 'OAuth tokens expire after 1 hour', {
+        cwd: testDir,
+      });
+      await addRule(
+        'AUTH-001',
+        'Users must authenticate before accessing protected resources',
+        { cwd: testDir }
+      );
+      await addExample('AUTH-001', 'User logs in with Google', {
+        cwd: testDir,
+      });
+      await addExample('AUTH-001', 'User logs in with expired token', {
+        cwd: testDir,
+      });
+      await addQuestion('AUTH-001', '@security-team: Do we need PKCE flow?', {
+        cwd: testDir,
+      });
+      await addAssumption('AUTH-001', 'Users have valid email addresses', {
+        cwd: testDir,
+      });
 
       // Then the work unit should have all artifacts
-      const updatedWorkUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const updatedWorkUnits = JSON.parse(
+        await readFile(workUnitsFile, 'utf-8')
+      );
       expect(updatedWorkUnits.workUnits['AUTH-001'].rules).toHaveLength(2);
       expect(updatedWorkUnits.workUnits['AUTH-001'].examples).toHaveLength(2);
       expect(updatedWorkUnits.workUnits['AUTH-001'].questions).toHaveLength(1);
-      expect(updatedWorkUnits.workUnits['AUTH-001'].assumptions).toHaveLength(1);
+      expect(updatedWorkUnits.workUnits['AUTH-001'].assumptions).toHaveLength(
+        1
+      );
     });
   });
 
@@ -307,12 +386,20 @@ describe('Feature: Example Mapping Integration', () => {
         id: 'AUTH-001',
         title: 'OAuth',
         status: 'specifying',
-        rules: ['OAuth tokens expire after 1 hour', 'Users must authenticate first'],
-        examples: ['User logs in with Google', 'User logs in with expired token'],
-        questions: [{ text: '@bob: Support GitHub Enterprise?', selected: false }],
+        rules: [
+          'OAuth tokens expire after 1 hour',
+          'Users must authenticate first',
+        ],
+        examples: [
+          'User logs in with Google',
+          'User logs in with expired token',
+        ],
+        questions: [
+          { text: '@bob: Support GitHub Enterprise?', selected: false },
+        ],
         assumptions: ['Users have valid OAuth accounts'],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.specifying.push('AUTH-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
@@ -342,10 +429,10 @@ describe('Feature: Example Mapping Integration', () => {
         rules: [
           'OAuth tokens expire after 1 hour',
           'Users must authenticate first',
-          'Refresh tokens valid for 30 days'
+          'Refresh tokens valid for 30 days',
         ],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.specifying.push('AUTH-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
@@ -355,11 +442,15 @@ describe('Feature: Example Mapping Integration', () => {
 
       // Then the command should succeed
       // And the work unit should have 2 rules
-      const updatedWorkUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const updatedWorkUnits = JSON.parse(
+        await readFile(workUnitsFile, 'utf-8')
+      );
       expect(updatedWorkUnits.workUnits['AUTH-001'].rules).toHaveLength(2);
 
       // And the second rule should now be "Refresh tokens valid for 30 days"
-      expect(updatedWorkUnits.workUnits['AUTH-001'].rules[1]).toBe('Refresh tokens valid for 30 days');
+      expect(updatedWorkUnits.workUnits['AUTH-001'].rules[1]).toBe(
+        'Refresh tokens valid for 30 days'
+      );
     });
   });
 
@@ -375,10 +466,10 @@ describe('Feature: Example Mapping Integration', () => {
         examples: [
           'User logs in with Google',
           'User logs in with expired token',
-          'User logs out'
+          'User logs out',
         ],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.specifying.push('AUTH-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
@@ -388,11 +479,15 @@ describe('Feature: Example Mapping Integration', () => {
 
       // Then the command should succeed
       // And the work unit should have 2 examples
-      const updatedWorkUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const updatedWorkUnits = JSON.parse(
+        await readFile(workUnitsFile, 'utf-8')
+      );
       expect(updatedWorkUnits.workUnits['AUTH-001'].examples).toHaveLength(2);
 
       // And the first example should be "User logs in with expired token"
-      expect(updatedWorkUnits.workUnits['AUTH-001'].examples[0]).toBe('User logs in with expired token');
+      expect(updatedWorkUnits.workUnits['AUTH-001'].examples[0]).toBe(
+        'User logs in with expired token'
+      );
     });
   });
 
@@ -407,10 +502,10 @@ describe('Feature: Example Mapping Integration', () => {
         status: 'specifying',
         questions: [
           { text: '@bob: Support GitHub Enterprise?', selected: false },
-          { text: 'What is the token expiry policy?', selected: false }
+          { text: 'What is the token expiry policy?', selected: false },
         ],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.specifying.push('AUTH-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
@@ -420,7 +515,9 @@ describe('Feature: Example Mapping Integration', () => {
 
       // Then the command should succeed
       // And the work unit should have 1 question
-      const updatedWorkUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const updatedWorkUnits = JSON.parse(
+        await readFile(workUnitsFile, 'utf-8')
+      );
       expect(updatedWorkUnits.workUnits['AUTH-001'].questions).toHaveLength(1);
     });
   });
@@ -436,21 +533,21 @@ describe('Feature: Example Mapping Integration', () => {
         status: 'specifying',
         rules: ['Rule 1', 'Rule 2'],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.specifying.push('AUTH-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       // When I run "fspec remove-rule AUTH-001 5"
       // Then the command should fail
-      await expect(
-        removeRule('AUTH-001', 5, { cwd: testDir })
-      ).rejects.toThrow('Index 5 out of range');
+      await expect(removeRule('AUTH-001', 5, { cwd: testDir })).rejects.toThrow(
+        'Index 5 out of range'
+      );
 
       // And the error should show valid range
-      await expect(
-        removeRule('AUTH-001', 5, { cwd: testDir })
-      ).rejects.toThrow('Valid indices: 0-1');
+      await expect(removeRule('AUTH-001', 5, { cwd: testDir })).rejects.toThrow(
+        'Valid indices: 0-1'
+      );
     });
   });
 
@@ -463,10 +560,15 @@ describe('Feature: Example Mapping Integration', () => {
         id: 'AUTH-001',
         title: 'OAuth',
         status: 'specifying',
-        questions: [{ text: '@bob: Should we support GitHub Enterprise?', selected: false }],
+        questions: [
+          {
+            text: '@bob: Should we support GitHub Enterprise?',
+            selected: false,
+          },
+        ],
         assumptions: [],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.specifying.push('AUTH-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
@@ -474,17 +576,25 @@ describe('Feature: Example Mapping Integration', () => {
       // When I run "fspec answer-question AUTH-001 0 'No, only GitHub.com supported' --add-to=assumptions"
       await answerQuestion('AUTH-001', 0, 'No, only GitHub.com supported', {
         cwd: testDir,
-        addTo: 'assumptions'
+        addTo: 'assumptions',
       });
 
       // Then the command should succeed
       // And the question should be marked as selected
-      const updatedWorkUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
-      expect(updatedWorkUnits.workUnits['AUTH-001'].questions[0].selected).toBe(true);
+      const updatedWorkUnits = JSON.parse(
+        await readFile(workUnitsFile, 'utf-8')
+      );
+      expect(updatedWorkUnits.workUnits['AUTH-001'].questions[0].selected).toBe(
+        true
+      );
 
       // And the work unit should have 1 assumption
-      expect(updatedWorkUnits.workUnits['AUTH-001'].assumptions).toHaveLength(1);
-      expect(updatedWorkUnits.workUnits['AUTH-001'].assumptions[0]).toContain('GitHub.com');
+      expect(updatedWorkUnits.workUnits['AUTH-001'].assumptions).toHaveLength(
+        1
+      );
+      expect(updatedWorkUnits.workUnits['AUTH-001'].assumptions[0]).toContain(
+        'GitHub.com'
+      );
     });
   });
 
@@ -497,10 +607,12 @@ describe('Feature: Example Mapping Integration', () => {
         id: 'AUTH-001',
         title: 'OAuth',
         status: 'specifying',
-        questions: [{ text: 'What is the maximum session length?', selected: false }],
+        questions: [
+          { text: 'What is the maximum session length?', selected: false },
+        ],
         rules: [],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.specifying.push('AUTH-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
@@ -508,17 +620,23 @@ describe('Feature: Example Mapping Integration', () => {
       // When I run "fspec answer-question AUTH-001 0 '24 hours' --add-to=rules"
       await answerQuestion('AUTH-001', 0, '24 hours', {
         cwd: testDir,
-        addTo: 'rules'
+        addTo: 'rules',
       });
 
       // Then the command should succeed
       // And the question should be marked as selected
-      const updatedWorkUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
-      expect(updatedWorkUnits.workUnits['AUTH-001'].questions[0].selected).toBe(true);
+      const updatedWorkUnits = JSON.parse(
+        await readFile(workUnitsFile, 'utf-8')
+      );
+      expect(updatedWorkUnits.workUnits['AUTH-001'].questions[0].selected).toBe(
+        true
+      );
 
       // And the work unit should have 1 rule
       expect(updatedWorkUnits.workUnits['AUTH-001'].rules).toHaveLength(1);
-      expect(updatedWorkUnits.workUnits['AUTH-001'].rules[0]).toContain('24 hours');
+      expect(updatedWorkUnits.workUnits['AUTH-001'].rules[0]).toContain(
+        '24 hours'
+      );
     });
   });
 
@@ -535,7 +653,7 @@ describe('Feature: Example Mapping Integration', () => {
         rules: [],
         assumptions: [],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.specifying.push('AUTH-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
@@ -543,17 +661,23 @@ describe('Feature: Example Mapping Integration', () => {
       // When I run "fspec answer-question AUTH-001 0 'No, descoping' --add-to=none"
       await answerQuestion('AUTH-001', 0, 'No, descoping', {
         cwd: testDir,
-        addTo: 'none'
+        addTo: 'none',
       });
 
       // Then the command should succeed
       // And the question should be marked as selected
-      const updatedWorkUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
-      expect(updatedWorkUnits.workUnits['AUTH-001'].questions[0].selected).toBe(true);
+      const updatedWorkUnits = JSON.parse(
+        await readFile(workUnitsFile, 'utf-8')
+      );
+      expect(updatedWorkUnits.workUnits['AUTH-001'].questions[0].selected).toBe(
+        true
+      );
 
       // And no rules or assumptions added
       expect(updatedWorkUnits.workUnits['AUTH-001'].rules).toHaveLength(0);
-      expect(updatedWorkUnits.workUnits['AUTH-001'].assumptions).toHaveLength(0);
+      expect(updatedWorkUnits.workUnits['AUTH-001'].assumptions).toHaveLength(
+        0
+      );
     });
   });
 
@@ -569,10 +693,10 @@ describe('Feature: Example Mapping Integration', () => {
         examples: [
           'User logs in with Google account',
           'User logs in with expired token',
-          'User token auto-refreshes'
+          'User token auto-refreshes',
         ],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.specifying.push('AUTH-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
@@ -587,13 +711,18 @@ describe('Feature: Example Mapping Integration', () => {
       expect(result.featureFile).toBeTruthy();
 
       // And the feature file should contain 3 scenarios tagged with @AUTH-001
-      const featureContent = await readFile(join(featuresDir, result.featureFile), 'utf-8');
+      const featureContent = await readFile(
+        join(featuresDir, result.featureFile),
+        'utf-8'
+      );
       const scenarioMatches = featureContent.match(/Scenario:/g);
       expect(scenarioMatches).toHaveLength(3);
       expect(featureContent).toContain('@AUTH-001');
 
       // And the work unit examples should still be preserved
-      const updatedWorkUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const updatedWorkUnits = JSON.parse(
+        await readFile(workUnitsFile, 'utf-8')
+      );
       expect(updatedWorkUnits.workUnits['AUTH-001'].examples).toHaveLength(3);
     });
   });
@@ -609,7 +738,7 @@ describe('Feature: Example Mapping Integration', () => {
         status: 'specifying',
         examples: ['User logs in with valid credentials'],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.specifying.push('AUTH-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
@@ -618,9 +747,14 @@ describe('Feature: Example Mapping Integration', () => {
       const result = await generateScenarios('AUTH-001', { cwd: testDir });
 
       // Then the generated scenario should have Given/When/Then structure
-      const featureContent = await readFile(join(featuresDir, result.featureFile), 'utf-8');
+      const featureContent = await readFile(
+        join(featuresDir, result.featureFile),
+        'utf-8'
+      );
       expect(featureContent).toContain('@AUTH-001');
-      expect(featureContent).toContain('Scenario: User logs in with valid credentials');
+      expect(featureContent).toContain(
+        'Scenario: User logs in with valid credentials'
+      );
       expect(featureContent).toContain('Given');
       expect(featureContent).toContain('When');
       expect(featureContent).toContain('Then');
@@ -632,7 +766,10 @@ describe('Feature: Example Mapping Integration', () => {
       // Given I have a project with spec directory
       // And a feature file exists
       const existingFeature = `@auth\nFeature: Authentication\n\nScenario: Existing scenario\n  Given existing\n  When existing\n  Then existing`;
-      await writeFile(join(featuresDir, 'authentication.feature'), existingFeature);
+      await writeFile(
+        join(featuresDir, 'authentication.feature'),
+        existingFeature
+      );
 
       // And a work unit has examples
       const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
@@ -642,16 +779,22 @@ describe('Feature: Example Mapping Integration', () => {
         status: 'specifying',
         examples: ['User logs in with Google'],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.specifying.push('AUTH-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       // When I run "fspec generate-scenarios AUTH-001 --feature=authentication"
-      await generateScenarios('AUTH-001', { cwd: testDir, feature: 'authentication' });
+      await generateScenarios('AUTH-001', {
+        cwd: testDir,
+        feature: 'authentication',
+      });
 
       // Then scenarios should be appended to existing file
-      const featureContent = await readFile(join(featuresDir, 'authentication.feature'), 'utf-8');
+      const featureContent = await readFile(
+        join(featuresDir, 'authentication.feature'),
+        'utf-8'
+      );
       expect(featureContent).toContain('Existing scenario');
       expect(featureContent).toContain('User logs in with Google');
       expect(featureContent).toContain('@AUTH-001');
@@ -670,13 +813,16 @@ describe('Feature: Example Mapping Integration', () => {
         status: 'specifying',
         examples: ['User logs in with OAuth'],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.specifying.push('AUTH-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       // When I run "fspec generate-scenarios AUTH-001 --feature=oauth-login"
-      const result = await generateScenarios('AUTH-001', { cwd: testDir, feature: 'oauth-login' });
+      const result = await generateScenarios('AUTH-001', {
+        cwd: testDir,
+        feature: 'oauth-login',
+      });
 
       // Then a new feature file should be created
       const featurePath = join(featuresDir, 'oauth-login.feature');
@@ -697,9 +843,11 @@ describe('Feature: Example Mapping Integration', () => {
         id: 'AUTH-001',
         title: 'OAuth',
         status: 'specifying',
-        questions: [{ text: '@bob: Should we support OAuth 2.0?', selected: false }],
+        questions: [
+          { text: '@bob: Should we support OAuth 2.0?', selected: false },
+        ],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.specifying.push('AUTH-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
@@ -721,7 +869,9 @@ describe('Feature: Example Mapping Integration', () => {
       // And the error should suggest solution
       await expect(
         updateWorkUnit('AUTH-001', { status: 'testing' }, { cwd: testDir })
-      ).rejects.toThrow("Answer questions with 'fspec answer-question' or remove them");
+      ).rejects.toThrow(
+        "Answer questions with 'fspec answer-question' or remove them"
+      );
     });
   });
 
@@ -736,7 +886,7 @@ describe('Feature: Example Mapping Integration', () => {
         status: 'specifying',
         examples: [],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.specifying.push('AUTH-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
@@ -751,10 +901,16 @@ describe('Feature: Example Mapping Integration', () => {
       const { updateWorkUnit } = await import('../work-unit');
 
       // When I run "fspec update-work-unit AUTH-001 --status=testing"
-      const result = await updateWorkUnit('AUTH-001', { status: 'testing' }, { cwd: testDir });
+      const result = await updateWorkUnit(
+        'AUTH-001',
+        { status: 'testing' },
+        { cwd: testDir }
+      );
 
       // Then the transition should succeed (warnings may be in result.warnings)
-      const updatedWorkUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const updatedWorkUnits = JSON.parse(
+        await readFile(workUnitsFile, 'utf-8')
+      );
       expect(updatedWorkUnits.workUnits['AUTH-001'].status).toBe('testing');
     });
   });
@@ -773,7 +929,7 @@ describe('Feature: Example Mapping Integration', () => {
         questions: [],
         assumptions: [],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.specifying.push('AUTH-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
@@ -782,18 +938,14 @@ describe('Feature: Example Mapping Integration', () => {
       const exampleMapData = {
         rules: [
           'OAuth tokens expire after 1 hour',
-          'Users must authenticate first'
+          'Users must authenticate first',
         ],
         examples: [
           'User logs in with Google',
-          'User logs in with expired token'
+          'User logs in with expired token',
         ],
-        questions: [
-          '@bob: Support GitHub Enterprise?'
-        ],
-        assumptions: [
-          'Users have valid OAuth accounts'
-        ]
+        questions: ['@bob: Support GitHub Enterprise?'],
+        assumptions: ['Users have valid OAuth accounts'],
       };
       const jsonPath = join(testDir, 'example-mapping.json');
       await writeFile(jsonPath, JSON.stringify(exampleMapData, null, 2));
@@ -802,11 +954,15 @@ describe('Feature: Example Mapping Integration', () => {
       await importExampleMap('AUTH-001', jsonPath, { cwd: testDir });
 
       // Then the work unit should have all artifacts
-      const updatedWorkUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const updatedWorkUnits = JSON.parse(
+        await readFile(workUnitsFile, 'utf-8')
+      );
       expect(updatedWorkUnits.workUnits['AUTH-001'].rules).toHaveLength(2);
       expect(updatedWorkUnits.workUnits['AUTH-001'].examples).toHaveLength(2);
       expect(updatedWorkUnits.workUnits['AUTH-001'].questions).toHaveLength(1);
-      expect(updatedWorkUnits.workUnits['AUTH-001'].assumptions).toHaveLength(1);
+      expect(updatedWorkUnits.workUnits['AUTH-001'].assumptions).toHaveLength(
+        1
+      );
     });
   });
 
@@ -824,7 +980,7 @@ describe('Feature: Example Mapping Integration', () => {
         questions: ['@bob: Support GitHub Enterprise?'],
         assumptions: ['Users have valid OAuth accounts'],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.specifying.push('AUTH-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
@@ -855,7 +1011,7 @@ describe('Feature: Example Mapping Integration', () => {
         status: 'specifying',
         questions: [{ text: '@bob: Support OAuth?', selected: false }],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['AUTH-002'] = {
         id: 'AUTH-002',
@@ -863,7 +1019,7 @@ describe('Feature: Example Mapping Integration', () => {
         status: 'specifying',
         questions: [],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['DASH-001'] = {
         id: 'DASH-001',
@@ -871,7 +1027,7 @@ describe('Feature: Example Mapping Integration', () => {
         status: 'specifying',
         questions: [{ text: 'What should timeout be?', selected: false }],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['API-001'] = {
         id: 'API-001',
@@ -879,12 +1035,16 @@ describe('Feature: Example Mapping Integration', () => {
         status: 'specifying',
         questions: [],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       // When I run "fspec query work-units --has-questions --output=json"
-      const result = await queryWorkUnit(null, { hasQuestions: true, output: 'json', cwd: testDir });
+      const result = await queryWorkUnit(null, {
+        hasQuestions: true,
+        output: 'json',
+        cwd: testDir,
+      });
 
       // Then the output should contain 2 work units
       const json = JSON.parse(result);
@@ -908,7 +1068,7 @@ describe('Feature: Example Mapping Integration', () => {
         status: 'specifying',
         questions: [{ text: '@bob: Support GitHub?', selected: false }],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['AUTH-002'] = {
         id: 'AUTH-002',
@@ -916,7 +1076,7 @@ describe('Feature: Example Mapping Integration', () => {
         status: 'specifying',
         questions: [{ text: '@alice: What is the timeout?', selected: false }],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['DASH-001'] = {
         id: 'DASH-001',
@@ -924,12 +1084,16 @@ describe('Feature: Example Mapping Integration', () => {
         status: 'specifying',
         questions: [{ text: '@bob: Show user metrics?', selected: false }],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       // When I run "fspec query work-units --questions-for=@bob --output=json"
-      const result = await queryWorkUnit(null, { questionsFor: '@bob', output: 'json', cwd: testDir });
+      const result = await queryWorkUnit(null, {
+        questionsFor: '@bob',
+        output: 'json',
+        cwd: testDir,
+      });
 
       // Then the output should contain 2 work units
       const json = JSON.parse(result);
@@ -956,7 +1120,7 @@ describe('Feature: Example Mapping Integration', () => {
         questions: [{ text: 'Valid question', selected: false }],
         assumptions: ['Valid assumption'],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
@@ -986,7 +1150,7 @@ describe('Feature: Example Mapping Integration', () => {
         questions: [],
         assumptions: ['a1', 'a2'],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['AUTH-002'] = {
         id: 'AUTH-002',
@@ -997,11 +1161,11 @@ describe('Feature: Example Mapping Integration', () => {
         questions: [
           { text: 'q1', selected: false },
           { text: 'q2', selected: false },
-          { text: 'q3', selected: false }
+          { text: 'q3', selected: false },
         ],
         assumptions: [],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['DASH-001'] = {
         id: 'DASH-001',
@@ -1012,12 +1176,15 @@ describe('Feature: Example Mapping Integration', () => {
         questions: [{ text: 'q1', selected: false }],
         assumptions: ['a1'],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       // When I run "fspec query example-mapping-stats --output=json"
-      const result = await queryExampleMappingStats({ cwd: testDir, output: 'json' });
+      const result = await queryExampleMappingStats({
+        cwd: testDir,
+        output: 'json',
+      });
 
       // Then the output should show statistics
       const stats = JSON.parse(result);

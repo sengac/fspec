@@ -66,17 +66,26 @@ export async function importExampleMap(
   }
 
   if (exampleMapData.examples && Array.isArray(exampleMapData.examples)) {
-    workUnit.examples = [...(workUnit.examples || []), ...exampleMapData.examples];
+    workUnit.examples = [
+      ...(workUnit.examples || []),
+      ...exampleMapData.examples,
+    ];
     imported.examples = exampleMapData.examples.length;
   }
 
   if (exampleMapData.questions && Array.isArray(exampleMapData.questions)) {
-    workUnit.questions = [...(workUnit.questions || []), ...exampleMapData.questions];
+    workUnit.questions = [
+      ...(workUnit.questions || []),
+      ...exampleMapData.questions,
+    ];
     imported.questions = exampleMapData.questions.length;
   }
 
   if (exampleMapData.assumptions && Array.isArray(exampleMapData.assumptions)) {
-    workUnit.assumptions = [...(workUnit.assumptions || []), ...exampleMapData.assumptions];
+    workUnit.assumptions = [
+      ...(workUnit.assumptions || []),
+      ...exampleMapData.assumptions,
+    ];
     imported.assumptions = exampleMapData.assumptions.length;
   }
 

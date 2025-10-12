@@ -43,9 +43,15 @@ describe('Feature: Epic and Prefix Management', () => {
       const data = JSON.parse(content);
 
       expect(data.epics['epic-user-management']).toBeDefined();
-      expect(data.epics['epic-user-management'].id).toBe('epic-user-management');
-      expect(data.epics['epic-user-management'].title).toBe('User Management Epic');
-      expect(data.epics['epic-user-management'].description).toBe('All features related to user management');
+      expect(data.epics['epic-user-management'].id).toBe(
+        'epic-user-management'
+      );
+      expect(data.epics['epic-user-management'].title).toBe(
+        'User Management Epic'
+      );
+      expect(data.epics['epic-user-management'].description).toBe(
+        'All features related to user management'
+      );
     });
   });
 
@@ -71,7 +77,9 @@ describe('Feature: Epic and Prefix Management', () => {
 
       expect(data.prefixes['AUTH']).toBeDefined();
       expect(data.prefixes['AUTH'].prefix).toBe('AUTH');
-      expect(data.prefixes['AUTH'].description).toBe('Authentication work units');
+      expect(data.prefixes['AUTH'].description).toBe(
+        'Authentication work units'
+      );
     });
   });
 
@@ -116,60 +124,72 @@ describe('Feature: Epic and Prefix Management', () => {
       const epicsFile = join(testDir, 'spec', 'epics.json');
       await writeFile(
         epicsFile,
-        JSON.stringify({
-          epics: {
-            'epic-auth': {
-              id: 'epic-auth',
-              title: 'Authentication',
-              description: 'Auth features',
+        JSON.stringify(
+          {
+            epics: {
+              'epic-auth': {
+                id: 'epic-auth',
+                title: 'Authentication',
+                description: 'Auth features',
+              },
             },
           },
-        }, null, 2)
+          null,
+          2
+        )
       );
 
       const prefixesFile = join(testDir, 'spec', 'prefixes.json');
       await writeFile(
         prefixesFile,
-        JSON.stringify({
-          prefixes: {
-            'AUTH': {
-              prefix: 'AUTH',
-              description: 'Auth work units',
-              epicId: 'epic-auth',
+        JSON.stringify(
+          {
+            prefixes: {
+              AUTH: {
+                prefix: 'AUTH',
+                description: 'Auth work units',
+                epicId: 'epic-auth',
+              },
             },
           },
-        }, null, 2)
+          null,
+          2
+        )
       );
 
       const workUnitsFile = join(testDir, 'spec', 'work-units.json');
       await writeFile(
         workUnitsFile,
-        JSON.stringify({
-          workUnits: {
-            'AUTH-001': {
-              id: 'AUTH-001',
-              title: 'Login',
-              status: 'done',
-              epic: 'epic-auth',
+        JSON.stringify(
+          {
+            workUnits: {
+              'AUTH-001': {
+                id: 'AUTH-001',
+                title: 'Login',
+                status: 'done',
+                epic: 'epic-auth',
+              },
+              'AUTH-002': {
+                id: 'AUTH-002',
+                title: 'Logout',
+                status: 'implementing',
+                epic: 'epic-auth',
+              },
+              'AUTH-003': {
+                id: 'AUTH-003',
+                title: 'Register',
+                status: 'done',
+                epic: 'epic-auth',
+              },
             },
-            'AUTH-002': {
-              id: 'AUTH-002',
-              title: 'Logout',
-              status: 'implementing',
-              epic: 'epic-auth',
-            },
-            'AUTH-003': {
-              id: 'AUTH-003',
-              title: 'Register',
-              status: 'done',
-              epic: 'epic-auth',
+            states: {
+              done: ['AUTH-001', 'AUTH-003'],
+              implementing: ['AUTH-002'],
             },
           },
-          states: {
-            done: ['AUTH-001', 'AUTH-003'],
-            implementing: ['AUTH-002'],
-          },
-        }, null, 2)
+          null,
+          2
+        )
       );
 
       // When I run "fspec show-epic epic-auth"
@@ -281,46 +301,54 @@ describe('Feature: Epic and Prefix Management', () => {
       const epicsFile = join(testDir, 'spec', 'epics.json');
       await writeFile(
         epicsFile,
-        JSON.stringify({
-          epics: {
-            'epic-auth': {
-              id: 'epic-auth',
-              title: 'Authentication',
-            },
-            'epic-dashboard': {
-              id: 'epic-dashboard',
-              title: 'Dashboard',
+        JSON.stringify(
+          {
+            epics: {
+              'epic-auth': {
+                id: 'epic-auth',
+                title: 'Authentication',
+              },
+              'epic-dashboard': {
+                id: 'epic-dashboard',
+                title: 'Dashboard',
+              },
             },
           },
-        }, null, 2)
+          null,
+          2
+        )
       );
 
       const workUnitsFile = join(testDir, 'spec', 'work-units.json');
       await writeFile(
         workUnitsFile,
-        JSON.stringify({
-          workUnits: {
-            'AUTH-001': {
-              id: 'AUTH-001',
-              status: 'done',
-              epic: 'epic-auth',
+        JSON.stringify(
+          {
+            workUnits: {
+              'AUTH-001': {
+                id: 'AUTH-001',
+                status: 'done',
+                epic: 'epic-auth',
+              },
+              'AUTH-002': {
+                id: 'AUTH-002',
+                status: 'implementing',
+                epic: 'epic-auth',
+              },
+              'DASH-001': {
+                id: 'DASH-001',
+                status: 'done',
+                epic: 'epic-dashboard',
+              },
             },
-            'AUTH-002': {
-              id: 'AUTH-002',
-              status: 'implementing',
-              epic: 'epic-auth',
-            },
-            'DASH-001': {
-              id: 'DASH-001',
-              status: 'done',
-              epic: 'epic-dashboard',
+            states: {
+              done: ['AUTH-001', 'DASH-001'],
+              implementing: ['AUTH-002'],
             },
           },
-          states: {
-            done: ['AUTH-001', 'DASH-001'],
-            implementing: ['AUTH-002'],
-          },
-        }, null, 2)
+          null,
+          2
+        )
       );
 
       // When I run "fspec list-epics"
@@ -374,44 +402,56 @@ describe('Feature: Epic and Prefix Management', () => {
       const epicsFile = join(testDir, 'spec', 'epics.json');
       await writeFile(
         epicsFile,
-        JSON.stringify({
-          epics: {
-            'epic-auth': {
-              id: 'epic-auth',
-              title: 'Authentication',
+        JSON.stringify(
+          {
+            epics: {
+              'epic-auth': {
+                id: 'epic-auth',
+                title: 'Authentication',
+              },
             },
           },
-        }, null, 2)
+          null,
+          2
+        )
       );
 
       const prefixesFile = join(testDir, 'spec', 'prefixes.json');
       await writeFile(
         prefixesFile,
-        JSON.stringify({
-          prefixes: {
-            'AUTH': {
-              prefix: 'AUTH',
-              description: 'Auth',
-              epicId: 'epic-auth',
+        JSON.stringify(
+          {
+            prefixes: {
+              AUTH: {
+                prefix: 'AUTH',
+                description: 'Auth',
+                epicId: 'epic-auth',
+              },
             },
           },
-        }, null, 2)
+          null,
+          2
+        )
       );
 
       const workUnitsFile = join(testDir, 'spec', 'work-units.json');
       await writeFile(
         workUnitsFile,
-        JSON.stringify({
-          workUnits: {
-            'AUTH-001': {
-              id: 'AUTH-001',
-              epic: 'epic-auth',
+        JSON.stringify(
+          {
+            workUnits: {
+              'AUTH-001': {
+                id: 'AUTH-001',
+                epic: 'epic-auth',
+              },
+            },
+            states: {
+              implementing: ['AUTH-001'],
             },
           },
-          states: {
-            implementing: ['AUTH-001'],
-          },
-        }, null, 2)
+          null,
+          2
+        )
       );
 
       // When I run "fspec delete-epic epic-auth"

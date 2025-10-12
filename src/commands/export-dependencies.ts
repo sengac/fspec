@@ -19,7 +19,12 @@ function generateMermaidDiagram(data: WorkUnitsData): string {
 
   // Add all work units as nodes
   for (const [id, workUnit] of Object.entries(data.workUnits)) {
-    const statusClass = workUnit.status === 'done' ? ':::done' : workUnit.status === 'blocked' ? ':::blocked' : '';
+    const statusClass =
+      workUnit.status === 'done'
+        ? ':::done'
+        : workUnit.status === 'blocked'
+          ? ':::blocked'
+          : '';
     lines.push(`  ${id}["${workUnit.title || id}"]${statusClass}`);
   }
 

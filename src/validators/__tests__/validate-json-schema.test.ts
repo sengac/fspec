@@ -1,7 +1,12 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdir, writeFile, rm } from 'fs/promises';
 import { join } from 'path';
-import { validateFoundationJson, validateTagsJson, validateFromFile, formatValidationErrors } from '../validate-json-schema';
+import {
+  validateFoundationJson,
+  validateTagsJson,
+  validateFromFile,
+  formatValidationErrors,
+} from '../validate-json-schema';
 import type { Foundation } from '../../types/foundation';
 import type { Tags } from '../../types/tags';
 
@@ -59,7 +64,12 @@ describe('Feature: Internal JSON Schema Validation', () => {
           painPoints: { currentState: 'Test', specific: [] },
           stakeholderImpact: [],
           theoreticalSolutions: [],
-          developmentMethodology: { name: 'ACDD', description: 'Test', steps: [], ensures: [] },
+          developmentMethodology: {
+            name: 'ACDD',
+            description: 'Test',
+            steps: [],
+            ensures: [],
+          },
           successCriteria: [],
           constraintsAndAssumptions: { constraints: [], assumptions: [] },
         },
@@ -103,7 +113,9 @@ describe('Feature: Internal JSON Schema Validation', () => {
       };
 
       // When the validation utility validates it against foundation.schema.json
-      const result = validateFoundationJson(invalidFoundation as unknown as Foundation);
+      const result = validateFoundationJson(
+        invalidFoundation as unknown as Foundation
+      );
 
       // Then the validation should fail
       expect(result.valid).toBe(false);
@@ -115,7 +127,9 @@ describe('Feature: Internal JSON Schema Validation', () => {
       // AJV reports first error which could be missing root fields
       const errors = result.errors!;
       const hasRootError = errors.some(e => e.path === '/');
-      const hasProjectError = errors.some(e => e.path === '/project' && e.message.includes('name'));
+      const hasProjectError = errors.some(
+        e => e.path === '/project' && e.message.includes('name')
+      );
 
       // Either root-level missing fields OR missing project.name should be reported
       expect(hasRootError || hasProjectError).toBe(true);
@@ -137,8 +151,16 @@ describe('Feature: Internal JSON Schema Validation', () => {
         ],
         combinationExamples: [],
         usageGuidelines: {
-          requiredCombinations: { title: '', requirements: [], minimumExample: '' },
-          recommendedCombinations: { title: '', includes: [], recommendedExample: '' },
+          requiredCombinations: {
+            title: '',
+            requirements: [],
+            minimumExample: '',
+          },
+          recommendedCombinations: {
+            title: '',
+            includes: [],
+            recommendedExample: '',
+          },
           orderingConvention: { title: '', order: [], example: '' },
         },
         addingNewTags: {
@@ -184,8 +206,16 @@ describe('Feature: Internal JSON Schema Validation', () => {
         ],
         combinationExamples: [],
         usageGuidelines: {
-          requiredCombinations: { title: '', requirements: [], minimumExample: '' },
-          recommendedCombinations: { title: '', includes: [], recommendedExample: '' },
+          requiredCombinations: {
+            title: '',
+            requirements: [],
+            minimumExample: '',
+          },
+          recommendedCombinations: {
+            title: '',
+            includes: [],
+            recommendedExample: '',
+          },
           orderingConvention: { title: '', order: [], example: '' },
         },
         addingNewTags: {
@@ -262,7 +292,12 @@ describe('Feature: Internal JSON Schema Validation', () => {
           painPoints: { currentState: 'Test', specific: [] },
           stakeholderImpact: [],
           theoreticalSolutions: [],
-          developmentMethodology: { name: 'Test', description: 'Test', steps: [], ensures: [] },
+          developmentMethodology: {
+            name: 'Test',
+            description: 'Test',
+            steps: [],
+            ensures: [],
+          },
           successCriteria: [],
           constraintsAndAssumptions: { constraints: [], assumptions: [] },
         },
@@ -344,7 +379,9 @@ describe('Feature: Internal JSON Schema Validation', () => {
 
       // And each error should show the validation rule violated
       expect(formatted[0].message).toContain('must be string');
-      expect(formatted[1].message).toContain("must have required property 'description'");
+      expect(formatted[1].message).toContain(
+        "must have required property 'description'"
+      );
 
       // And each error should be human-readable
       expect(formatted[0]).toHaveProperty('path');

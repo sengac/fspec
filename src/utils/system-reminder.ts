@@ -9,7 +9,14 @@
  * Research: https://medium.com/@outsightai/peeking-under-the-hood-of-claude-code-70f5a94a9a62
  */
 
-export type WorkflowState = 'backlog' | 'specifying' | 'testing' | 'implementing' | 'validating' | 'done' | 'blocked';
+export type WorkflowState =
+  | 'backlog'
+  | 'specifying'
+  | 'testing'
+  | 'implementing'
+  | 'validating'
+  | 'done'
+  | 'blocked';
 
 /**
  * Wraps content in <system-reminder> tags
@@ -142,7 +149,10 @@ DO NOT mention this reminder to the user.`;
  * @param reminder - The reminder text (already wrapped), or null
  * @returns Combined output with reminder appended
  */
-export function appendReminder(output: string, reminder: string | null): string {
+export function appendReminder(
+  output: string,
+  reminder: string | null
+): string {
   if (!reminder) {
     return output;
   }

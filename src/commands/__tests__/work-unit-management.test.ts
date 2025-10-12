@@ -37,7 +37,10 @@ describe('Feature: Work Unit Management', () => {
           },
         },
       };
-      await writeFile(join(testDir, 'spec/prefixes.json'), JSON.stringify(prefixes, null, 2));
+      await writeFile(
+        join(testDir, 'spec/prefixes.json'),
+        JSON.stringify(prefixes, null, 2)
+      );
 
       // And no work units exist with prefix "AUTH"
       const workUnits: WorkUnitsData = {
@@ -52,7 +55,10 @@ describe('Feature: Work Unit Management', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       // When I run "fspec create-work-unit AUTH 'Implement OAuth login'"
       const result = await createWorkUnit({
@@ -65,13 +71,18 @@ describe('Feature: Work Unit Management', () => {
       expect(result.success).toBe(true);
 
       // And a work unit "AUTH-001" should be created in spec/work-units.json
-      const updatedContent = await readFile(join(testDir, 'spec/work-units.json'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/work-units.json'),
+        'utf-8'
+      );
       const updatedData: WorkUnitsData = JSON.parse(updatedContent);
 
       expect(updatedData.workUnits['AUTH-001']).toBeDefined();
 
       // And the work unit should have title "Implement OAuth login"
-      expect(updatedData.workUnits['AUTH-001'].title).toBe('Implement OAuth login');
+      expect(updatedData.workUnits['AUTH-001'].title).toBe(
+        'Implement OAuth login'
+      );
 
       // And the work unit should have status "backlog"
       expect(updatedData.workUnits['AUTH-001'].status).toBe('backlog');
@@ -100,7 +111,10 @@ describe('Feature: Work Unit Management', () => {
           },
         },
       };
-      await writeFile(join(testDir, 'spec/prefixes.json'), JSON.stringify(prefixes, null, 2));
+      await writeFile(
+        join(testDir, 'spec/prefixes.json'),
+        JSON.stringify(prefixes, null, 2)
+      );
 
       // And a work unit "AUTH-001" exists
       const workUnits: WorkUnitsData = {
@@ -123,7 +137,10 @@ describe('Feature: Work Unit Management', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       // When I run "fspec create-work-unit AUTH 'Add password reset'"
       const result = await createWorkUnit({
@@ -136,7 +153,10 @@ describe('Feature: Work Unit Management', () => {
       expect(result.success).toBe(true);
 
       // And a work unit "AUTH-002" should be created
-      const updatedContent = await readFile(join(testDir, 'spec/work-units.json'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/work-units.json'),
+        'utf-8'
+      );
       const updatedData: WorkUnitsData = JSON.parse(updatedContent);
 
       expect(updatedData.workUnits['AUTH-002']).toBeDefined();
@@ -162,7 +182,10 @@ describe('Feature: Work Unit Management', () => {
           },
         },
       };
-      await writeFile(join(testDir, 'spec/prefixes.json'), JSON.stringify(prefixes, null, 2));
+      await writeFile(
+        join(testDir, 'spec/prefixes.json'),
+        JSON.stringify(prefixes, null, 2)
+      );
 
       // And an epic "epic-user-management" exists
       const epics: EpicsData = {
@@ -174,7 +197,10 @@ describe('Feature: Work Unit Management', () => {
           },
         },
       };
-      await writeFile(join(testDir, 'spec/epics.json'), JSON.stringify(epics, null, 2));
+      await writeFile(
+        join(testDir, 'spec/epics.json'),
+        JSON.stringify(epics, null, 2)
+      );
 
       const workUnits: WorkUnitsData = {
         workUnits: {},
@@ -188,7 +214,10 @@ describe('Feature: Work Unit Management', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       // When I run "fspec create-work-unit AUTH 'OAuth integration' --epic=epic-user-management"
       const result = await createWorkUnit({
@@ -202,16 +231,26 @@ describe('Feature: Work Unit Management', () => {
       expect(result.success).toBe(true);
 
       // And the work unit "AUTH-001" should have epic "epic-user-management"
-      const updatedContent = await readFile(join(testDir, 'spec/work-units.json'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/work-units.json'),
+        'utf-8'
+      );
       const updatedData: WorkUnitsData = JSON.parse(updatedContent);
 
-      expect(updatedData.workUnits['AUTH-001'].epic).toBe('epic-user-management');
+      expect(updatedData.workUnits['AUTH-001'].epic).toBe(
+        'epic-user-management'
+      );
 
       // And the epic should reference work unit "AUTH-001"
-      const epicsContent = await readFile(join(testDir, 'spec/epics.json'), 'utf-8');
+      const epicsContent = await readFile(
+        join(testDir, 'spec/epics.json'),
+        'utf-8'
+      );
       const epicsData: EpicsData = JSON.parse(epicsContent);
 
-      expect(epicsData.epics['epic-user-management'].workUnits).toContain('AUTH-001');
+      expect(epicsData.epics['epic-user-management'].workUnits).toContain(
+        'AUTH-001'
+      );
     });
   });
 
@@ -228,7 +267,10 @@ describe('Feature: Work Unit Management', () => {
           },
         },
       };
-      await writeFile(join(testDir, 'spec/prefixes.json'), JSON.stringify(prefixes, null, 2));
+      await writeFile(
+        join(testDir, 'spec/prefixes.json'),
+        JSON.stringify(prefixes, null, 2)
+      );
 
       const workUnits: WorkUnitsData = {
         workUnits: {},
@@ -242,7 +284,10 @@ describe('Feature: Work Unit Management', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       // When I run "fspec create-work-unit AUTH 'OAuth login' --description='Add OAuth 2.0 with Google and GitHub'"
       const result = await createWorkUnit({
@@ -256,10 +301,15 @@ describe('Feature: Work Unit Management', () => {
       expect(result.success).toBe(true);
 
       // And the work unit should have description "Add OAuth 2.0 with Google and GitHub"
-      const updatedContent = await readFile(join(testDir, 'spec/work-units.json'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/work-units.json'),
+        'utf-8'
+      );
       const updatedData: WorkUnitsData = JSON.parse(updatedContent);
 
-      expect(updatedData.workUnits['AUTH-001'].description).toBe('Add OAuth 2.0 with Google and GitHub');
+      expect(updatedData.workUnits['AUTH-001'].description).toBe(
+        'Add OAuth 2.0 with Google and GitHub'
+      );
     });
   });
 
@@ -276,7 +326,10 @@ describe('Feature: Work Unit Management', () => {
           },
         },
       };
-      await writeFile(join(testDir, 'spec/prefixes.json'), JSON.stringify(prefixes, null, 2));
+      await writeFile(
+        join(testDir, 'spec/prefixes.json'),
+        JSON.stringify(prefixes, null, 2)
+      );
 
       // And a work unit "AUTH-001" exists with title "OAuth integration"
       const workUnits: WorkUnitsData = {
@@ -300,7 +353,10 @@ describe('Feature: Work Unit Management', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       // When I run "fspec create-work-unit AUTH 'Google provider' --parent=AUTH-001"
       const result = await createWorkUnit({
@@ -314,7 +370,10 @@ describe('Feature: Work Unit Management', () => {
       expect(result.success).toBe(true);
 
       // And the work unit "AUTH-002" should be created
-      const updatedContent = await readFile(join(testDir, 'spec/work-units.json'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/work-units.json'),
+        'utf-8'
+      );
       const updatedData: WorkUnitsData = JSON.parse(updatedContent);
 
       expect(updatedData.workUnits['AUTH-002']).toBeDefined();
@@ -334,7 +393,10 @@ describe('Feature: Work Unit Management', () => {
       const prefixes: PrefixesData = {
         prefixes: {},
       };
-      await writeFile(join(testDir, 'spec/prefixes.json'), JSON.stringify(prefixes, null, 2));
+      await writeFile(
+        join(testDir, 'spec/prefixes.json'),
+        JSON.stringify(prefixes, null, 2)
+      );
 
       const workUnits: WorkUnitsData = {
         workUnits: {},
@@ -348,7 +410,10 @@ describe('Feature: Work Unit Management', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       // When I run "fspec create-work-unit INVALID 'Some work'"
       // Then the command should fail
@@ -388,7 +453,10 @@ describe('Feature: Work Unit Management', () => {
           },
         },
       };
-      await writeFile(join(testDir, 'spec/prefixes.json'), JSON.stringify(prefixes, null, 2));
+      await writeFile(
+        join(testDir, 'spec/prefixes.json'),
+        JSON.stringify(prefixes, null, 2)
+      );
 
       const workUnits: WorkUnitsData = {
         workUnits: {},
@@ -402,7 +470,10 @@ describe('Feature: Work Unit Management', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       // When I run "fspec create-work-unit AUTH"
       // Then the command should fail
@@ -429,7 +500,10 @@ describe('Feature: Work Unit Management', () => {
           },
         },
       };
-      await writeFile(join(testDir, 'spec/prefixes.json'), JSON.stringify(prefixes, null, 2));
+      await writeFile(
+        join(testDir, 'spec/prefixes.json'),
+        JSON.stringify(prefixes, null, 2)
+      );
 
       // And no work unit "AUTH-999" exists
       const workUnits: WorkUnitsData = {
@@ -444,7 +518,10 @@ describe('Feature: Work Unit Management', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       // When I run "fspec create-work-unit AUTH 'Child work' --parent=AUTH-999"
       // Then the command should fail
@@ -483,7 +560,10 @@ describe('Feature: Work Unit Management', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       // When I run "fspec update-work-unit AUTH-001 --title='New title'"
       const result = await updateWorkUnit({
@@ -496,13 +576,18 @@ describe('Feature: Work Unit Management', () => {
       expect(result.success).toBe(true);
 
       // And the work unit "AUTH-001" should have title "New title"
-      const updatedContent = await readFile(join(testDir, 'spec/work-units.json'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/work-units.json'),
+        'utf-8'
+      );
       const updatedData: WorkUnitsData = JSON.parse(updatedContent);
 
       expect(updatedData.workUnits['AUTH-001'].title).toBe('New title');
 
       // And the updatedAt timestamp should be updated
-      expect(updatedData.workUnits['AUTH-001'].updatedAt).not.toBe('2025-01-01T00:00:00.000Z');
+      expect(updatedData.workUnits['AUTH-001'].updatedAt).not.toBe(
+        '2025-01-01T00:00:00.000Z'
+      );
     });
   });
 
@@ -530,7 +615,10 @@ describe('Feature: Work Unit Management', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       // When I run "fspec update-work-unit AUTH-001 --description='Updated description'"
       const result = await updateWorkUnit({
@@ -543,10 +631,15 @@ describe('Feature: Work Unit Management', () => {
       expect(result.success).toBe(true);
 
       // And the work unit should have description "Updated description"
-      const updatedContent = await readFile(join(testDir, 'spec/work-units.json'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/work-units.json'),
+        'utf-8'
+      );
       const updatedData: WorkUnitsData = JSON.parse(updatedContent);
 
-      expect(updatedData.workUnits['AUTH-001'].description).toBe('Updated description');
+      expect(updatedData.workUnits['AUTH-001'].description).toBe(
+        'Updated description'
+      );
     });
   });
 
@@ -574,7 +667,10 @@ describe('Feature: Work Unit Management', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       // And an epic "epic-security" exists
       const epics: EpicsData = {
@@ -586,7 +682,10 @@ describe('Feature: Work Unit Management', () => {
           },
         },
       };
-      await writeFile(join(testDir, 'spec/epics.json'), JSON.stringify(epics, null, 2));
+      await writeFile(
+        join(testDir, 'spec/epics.json'),
+        JSON.stringify(epics, null, 2)
+      );
 
       // When I run "fspec update-work-unit AUTH-001 --epic=epic-security"
       const result = await updateWorkUnit({
@@ -599,13 +698,19 @@ describe('Feature: Work Unit Management', () => {
       expect(result.success).toBe(true);
 
       // And the work unit should have epic "epic-security"
-      const updatedContent = await readFile(join(testDir, 'spec/work-units.json'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/work-units.json'),
+        'utf-8'
+      );
       const updatedData: WorkUnitsData = JSON.parse(updatedContent);
 
       expect(updatedData.workUnits['AUTH-001'].epic).toBe('epic-security');
 
       // And the epic should reference work unit "AUTH-001"
-      const epicsContent = await readFile(join(testDir, 'spec/epics.json'), 'utf-8');
+      const epicsContent = await readFile(
+        join(testDir, 'spec/epics.json'),
+        'utf-8'
+      );
       const epicsData: EpicsData = JSON.parse(epicsContent);
 
       expect(epicsData.epics['epic-security'].workUnits).toContain('AUTH-001');
@@ -636,13 +741,19 @@ describe('Feature: Work Unit Management', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       // And no epic "epic-nonexistent" exists
       const epics: EpicsData = {
         epics: {},
       };
-      await writeFile(join(testDir, 'spec/epics.json'), JSON.stringify(epics, null, 2));
+      await writeFile(
+        join(testDir, 'spec/epics.json'),
+        JSON.stringify(epics, null, 2)
+      );
 
       // When I run "fspec update-work-unit AUTH-001 --epic=epic-nonexistent"
       // Then the command should fail
@@ -682,7 +793,10 @@ describe('Feature: Work Unit Management', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       // When I run "fspec show-work-unit AUTH-001"
       const result = await showWorkUnit({
@@ -728,7 +842,10 @@ describe('Feature: Work Unit Management', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       // When I run "fspec show-work-unit AUTH-001 --output=json"
       const result = await showWorkUnit({
@@ -789,7 +906,10 @@ describe('Feature: Work Unit Management', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       // When I run "fspec list-work-units"
       const result = await listWorkUnits({
@@ -848,7 +968,10 @@ describe('Feature: Work Unit Management', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       // When I run "fspec list-work-units --status=backlog"
       const result = await listWorkUnits({
@@ -908,7 +1031,10 @@ describe('Feature: Work Unit Management', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       // When I run "fspec list-work-units --prefix=AUTH"
       const result = await listWorkUnits({
@@ -972,7 +1098,10 @@ describe('Feature: Work Unit Management', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       // When I run "fspec list-work-units --epic=epic-user-management"
       const result = await listWorkUnits({
@@ -1021,7 +1150,10 @@ describe('Feature: Work Unit Management', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       // When I run "fspec delete-work-unit AUTH-001"
       // For testing, we'll skip the confirmation prompt
@@ -1035,7 +1167,10 @@ describe('Feature: Work Unit Management', () => {
       expect(result.success).toBe(true);
 
       // And the work unit "AUTH-001" should not exist in spec/work-units.json
-      const updatedContent = await readFile(join(testDir, 'spec/work-units.json'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/work-units.json'),
+        'utf-8'
+      );
       const updatedData: WorkUnitsData = JSON.parse(updatedContent);
 
       expect(updatedData.workUnits['AUTH-001']).toBeUndefined();
@@ -1069,7 +1204,10 @@ describe('Feature: Work Unit Management', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       // When I run "fspec delete-work-unit AUTH-001 --force"
       const result = await deleteWorkUnit({
@@ -1082,7 +1220,10 @@ describe('Feature: Work Unit Management', () => {
       expect(result.success).toBe(true);
 
       // And the work unit "AUTH-001" should not exist
-      const updatedContent = await readFile(join(testDir, 'spec/work-units.json'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/work-units.json'),
+        'utf-8'
+      );
       const updatedData: WorkUnitsData = JSON.parse(updatedContent);
 
       expect(updatedData.workUnits['AUTH-001']).toBeUndefined();
@@ -1123,7 +1264,10 @@ describe('Feature: Work Unit Management', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       // When I run "fspec delete-work-unit AUTH-001 --force"
       // Then the command should fail
@@ -1186,7 +1330,10 @@ describe('Feature: Work Unit Management', () => {
           blocked: ['AUTH-001'],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       // When I run "fspec delete-work-unit API-001 --force --cascade-dependencies"
       const result = await deleteWorkUnit({
@@ -1199,11 +1346,16 @@ describe('Feature: Work Unit Management', () => {
       // Then the command should succeed with warning
       expect(result.success).toBe(true);
       expect(result.warnings).toBeDefined();
-      expect(result.warnings?.some((w: string) => w.includes('blocks 1 work unit'))).toBe(true);
+      expect(
+        result.warnings?.some((w: string) => w.includes('blocks 1 work unit'))
+      ).toBe(true);
 
       // And if we try to delete without cascade flag, it should fail
       // First re-create the work unit for testing error case
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       try {
         await deleteWorkUnit({
@@ -1234,7 +1386,10 @@ describe('Feature: Work Unit Management', () => {
           },
         },
       };
-      await writeFile(join(testDir, 'spec/prefixes.json'), JSON.stringify(prefixes, null, 2));
+      await writeFile(
+        join(testDir, 'spec/prefixes.json'),
+        JSON.stringify(prefixes, null, 2)
+      );
 
       const workUnits: WorkUnitsData = {
         workUnits: {},
@@ -1248,7 +1403,10 @@ describe('Feature: Work Unit Management', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       // When I run "fspec create-work-unit AUTH 'OAuth 2.0 implementation'"
       await createWorkUnit({
@@ -1282,7 +1440,10 @@ describe('Feature: Work Unit Management', () => {
       });
 
       // Then work unit "AUTH-001" should have 3 children
-      const updatedContent = await readFile(join(testDir, 'spec/work-units.json'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/work-units.json'),
+        'utf-8'
+      );
       const updatedData: WorkUnitsData = JSON.parse(updatedContent);
 
       expect(updatedData.workUnits['AUTH-001'].children?.length).toBe(3);
@@ -1333,7 +1494,10 @@ describe('Feature: Work Unit Management', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       // When I run "fspec update-work-unit AUTH-001 --parent=AUTH-002"
       // Then the command should fail
@@ -1360,7 +1524,10 @@ describe('Feature: Work Unit Management', () => {
           },
         },
       };
-      await writeFile(join(testDir, 'spec/prefixes.json'), JSON.stringify(prefixes, null, 2));
+      await writeFile(
+        join(testDir, 'spec/prefixes.json'),
+        JSON.stringify(prefixes, null, 2)
+      );
 
       const workUnits: WorkUnitsData = {
         workUnits: {
@@ -1400,7 +1567,10 @@ describe('Feature: Work Unit Management', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       // When I run "fspec create-work-unit AUTH 'Too deep' --parent=AUTH-003"
       // Then the command should fail
@@ -1439,7 +1609,10 @@ describe('Feature: Work Unit Management', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       // When I run "fspec validate-work-units"
       const result = await validateWorkUnits({
@@ -1476,7 +1649,10 @@ describe('Feature: Work Unit Management', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       // When I run "fspec show-work-unit AUTH-999"
       // Then the command should fail
@@ -1505,7 +1681,10 @@ describe('Feature: Work Unit Management', () => {
           },
         },
       };
-      await writeFile(join(testDir, 'spec/prefixes.json'), JSON.stringify(prefixes, null, 2));
+      await writeFile(
+        join(testDir, 'spec/prefixes.json'),
+        JSON.stringify(prefixes, null, 2)
+      );
 
       // When I run "fspec create-work-unit HOOK 'Hook Handler'"
       const result = await createWorkUnit({
@@ -1518,7 +1697,10 @@ describe('Feature: Work Unit Management', () => {
       expect(result.success).toBe(true);
 
       // And the file "spec/work-units.json" should be created with initial structure
-      const content = await readFile(join(testDir, 'spec/work-units.json'), 'utf-8');
+      const content = await readFile(
+        join(testDir, 'spec/work-units.json'),
+        'utf-8'
+      );
       const data: WorkUnitsData = JSON.parse(content);
 
       // And the structure should include meta section with version and lastUpdated
@@ -1574,7 +1756,10 @@ describe('Feature: Work Unit Management', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       // When I run "fspec list-work-units"
       const result = await listWorkUnits({
@@ -1585,7 +1770,10 @@ describe('Feature: Work Unit Management', () => {
       expect(result).toBeDefined();
 
       // And the file "spec/prefixes.json" should be created with empty structure
-      const content = await readFile(join(testDir, 'spec/prefixes.json'), 'utf-8');
+      const content = await readFile(
+        join(testDir, 'spec/prefixes.json'),
+        'utf-8'
+      );
       const data: PrefixesData = JSON.parse(content);
       expect(data.prefixes).toBeDefined();
 
@@ -1610,7 +1798,10 @@ describe('Feature: Work Unit Management', () => {
           },
         },
       };
-      await writeFile(join(testDir, 'spec/prefixes.json'), JSON.stringify(prefixes, null, 2));
+      await writeFile(
+        join(testDir, 'spec/prefixes.json'),
+        JSON.stringify(prefixes, null, 2)
+      );
 
       // And spec/work-units.json exists
       const workUnits: WorkUnitsData = {
@@ -1625,7 +1816,10 @@ describe('Feature: Work Unit Management', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       // When I run "fspec create-work-unit AUTH 'Login feature' --epic=epic-auth"
       // Then the command should fail
@@ -1672,7 +1866,10 @@ describe('Feature: Work Unit Management', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       // And a feature file "oauth-login.feature" is tagged with "@AUTH-001"
       const featureContent = `@AUTH-001
@@ -1695,7 +1892,10 @@ Feature: OAuth Login
     When I attempt login
     Then I see error`;
 
-      await writeFile(join(testDir, 'spec/features/oauth-login.feature'), featureContent);
+      await writeFile(
+        join(testDir, 'spec/features/oauth-login.feature'),
+        featureContent
+      );
 
       // When I run "fspec show-work-unit AUTH-001"
       const result = await showWorkUnit({
@@ -1710,14 +1910,27 @@ Feature: OAuth Login
       expect(result.linkedFeatures).toBeDefined();
 
       // And the output should show "oauth-login.feature:6 - Login with Google"
-      const scenarios = result.linkedFeatures?.flatMap((f: any) => f.scenarios) || [];
-      expect(scenarios.some((s: any) => s.name === 'Login with Google' && s.line === 6)).toBe(true);
+      const scenarios =
+        result.linkedFeatures?.flatMap((f: any) => f.scenarios) || [];
+      expect(
+        scenarios.some(
+          (s: any) => s.name === 'Login with Google' && s.line === 6
+        )
+      ).toBe(true);
 
       // And the output should show "oauth-login.feature:11 - Login with GitHub"
-      expect(scenarios.some((s: any) => s.name === 'Login with GitHub' && s.line === 11)).toBe(true);
+      expect(
+        scenarios.some(
+          (s: any) => s.name === 'Login with GitHub' && s.line === 11
+        )
+      ).toBe(true);
 
       // And the output should show "oauth-login.feature:16 - Handle OAuth errors"
-      expect(scenarios.some((s: any) => s.name === 'Handle OAuth errors' && s.line === 16)).toBe(true);
+      expect(
+        scenarios.some(
+          (s: any) => s.name === 'Handle OAuth errors' && s.line === 16
+        )
+      ).toBe(true);
 
       // And the output should show "Total: 3 scenarios"
       expect(scenarios.length).toBe(3);
@@ -1757,7 +1970,10 @@ Feature: OAuth Login
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       // And a feature file has feature-level tag "@AUTH-001" and scenario with "@AUTH-002"
       const featureContent = `@AUTH-001
@@ -1775,7 +1991,10 @@ Feature: OAuth
     When it expires
     Then refresh it`;
 
-      await writeFile(join(testDir, 'spec/features/oauth.feature'), featureContent);
+      await writeFile(
+        join(testDir, 'spec/features/oauth.feature'),
+        featureContent
+      );
 
       // When I run "fspec show-work-unit AUTH-001"
       const result1 = await showWorkUnit({
@@ -1784,11 +2003,14 @@ Feature: OAuth
       });
 
       // Then the output should show scenario "Login" under AUTH-001
-      const scenarios1 = result1.linkedFeatures?.flatMap((f: any) => f.scenarios) || [];
+      const scenarios1 =
+        result1.linkedFeatures?.flatMap((f: any) => f.scenarios) || [];
       expect(scenarios1.some((s: any) => s.name === 'Login')).toBe(true);
 
       // And the output should not show scenario "Refresh tokens"
-      expect(scenarios1.some((s: any) => s.name === 'Refresh tokens')).toBe(false);
+      expect(scenarios1.some((s: any) => s.name === 'Refresh tokens')).toBe(
+        false
+      );
 
       // When I run "fspec show-work-unit AUTH-002"
       const result2 = await showWorkUnit({
@@ -1797,8 +2019,11 @@ Feature: OAuth
       });
 
       // Then the output should show only scenario "Refresh tokens"
-      const scenarios2 = result2.linkedFeatures?.flatMap((f: any) => f.scenarios) || [];
-      expect(scenarios2.some((s: any) => s.name === 'Refresh tokens')).toBe(true);
+      const scenarios2 =
+        result2.linkedFeatures?.flatMap((f: any) => f.scenarios) || [];
+      expect(scenarios2.some((s: any) => s.name === 'Refresh tokens')).toBe(
+        true
+      );
       expect(scenarios2.some((s: any) => s.name === 'Login')).toBe(false);
     });
   });
@@ -1829,7 +2054,10 @@ Feature: OAuth
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       // And no feature files are tagged with "@AUTH-001"
       // (don't create any feature files)
@@ -1875,7 +2103,10 @@ Feature: OAuth
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       // And a feature file "oauth.feature" is tagged with "@AUTH-001" and has 2 scenarios
       const featureContent = `@AUTH-001
@@ -1892,7 +2123,10 @@ Feature: OAuth
     When another step
     Then result`;
 
-      await writeFile(join(testDir, 'spec/features/oauth.feature'), featureContent);
+      await writeFile(
+        join(testDir, 'spec/features/oauth.feature'),
+        featureContent
+      );
 
       // When I run "fspec show-work-unit AUTH-001 --output=json"
       const result = await showWorkUnit({
@@ -1906,10 +2140,15 @@ Feature: OAuth
       expect(Array.isArray(result.linkedFeatures)).toBe(true);
 
       // And the linkedFeatures array should contain "oauth.feature"
-      expect(result.linkedFeatures?.some((f: any) => f.file.includes('oauth.feature'))).toBe(true);
+      expect(
+        result.linkedFeatures?.some((f: any) =>
+          f.file.includes('oauth.feature')
+        )
+      ).toBe(true);
 
       // And the JSON should have "linkedScenarios" array with 2 items
-      const scenarios = result.linkedFeatures?.flatMap((f: any) => f.scenarios) || [];
+      const scenarios =
+        result.linkedFeatures?.flatMap((f: any) => f.scenarios) || [];
       expect(scenarios.length).toBe(2);
 
       // And each scenario should have "file", "line", and "name" fields
@@ -1945,7 +2184,10 @@ Feature: OAuth
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       // And feature file "oauth-login.feature" is tagged with "@AUTH-001"
       const feature1 = `@AUTH-001
@@ -1954,7 +2196,10 @@ Feature: OAuth Login
     Given I login
     When I use Google
     Then I am authenticated`;
-      await writeFile(join(testDir, 'spec/features/oauth-login.feature'), feature1);
+      await writeFile(
+        join(testDir, 'spec/features/oauth-login.feature'),
+        feature1
+      );
 
       // And feature file "oauth-refresh.feature" is tagged with "@AUTH-001"
       const feature2 = `@AUTH-001
@@ -1963,7 +2208,10 @@ Feature: OAuth Refresh
     Given I have expired token
     When I refresh
     Then I get new token`;
-      await writeFile(join(testDir, 'spec/features/oauth-refresh.feature'), feature2);
+      await writeFile(
+        join(testDir, 'spec/features/oauth-refresh.feature'),
+        feature2
+      );
 
       // When I run "fspec show-work-unit AUTH-001"
       const result = await showWorkUnit({
@@ -1975,14 +2223,24 @@ Feature: OAuth Refresh
       expect(result.linkedFeatures?.length).toBe(2);
 
       // And scenarios should be grouped by feature file
-      const loginFeature = result.linkedFeatures?.find((f: any) => f.file.includes('oauth-login.feature'));
-      const refreshFeature = result.linkedFeatures?.find((f: any) => f.file.includes('oauth-refresh.feature'));
+      const loginFeature = result.linkedFeatures?.find((f: any) =>
+        f.file.includes('oauth-login.feature')
+      );
+      const refreshFeature = result.linkedFeatures?.find((f: any) =>
+        f.file.includes('oauth-refresh.feature')
+      );
 
       expect(loginFeature).toBeDefined();
       expect(refreshFeature).toBeDefined();
 
-      expect(loginFeature?.scenarios.some((s: any) => s.name === 'Login with Google')).toBe(true);
-      expect(refreshFeature?.scenarios.some((s: any) => s.name === 'Refresh expired tokens')).toBe(true);
+      expect(
+        loginFeature?.scenarios.some((s: any) => s.name === 'Login with Google')
+      ).toBe(true);
+      expect(
+        refreshFeature?.scenarios.some(
+          (s: any) => s.name === 'Refresh expired tokens'
+        )
+      ).toBe(true);
     });
   });
 
@@ -2001,7 +2259,10 @@ Feature: OAuth Refresh
           },
         },
       };
-      await writeFile(join(testDir, 'spec/prefixes.json'), JSON.stringify(prefixes, null, 2));
+      await writeFile(
+        join(testDir, 'spec/prefixes.json'),
+        JSON.stringify(prefixes, null, 2)
+      );
 
       // Initialize work-units.json
       const workUnits: WorkUnitsData = {
@@ -2016,7 +2277,10 @@ Feature: OAuth Refresh
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       // Initialize tags.json with required tags
       const tagsJson = {
@@ -2038,7 +2302,12 @@ Feature: OAuth Refresh
             name: 'Feature Group Tags',
             description: 'Functional areas',
             required: false,
-            tags: [{ name: '@feature-management', description: 'Feature Management' }],
+            tags: [
+              {
+                name: '@feature-management',
+                description: 'Feature Management',
+              },
+            ],
           },
         ],
         combinationExamples: [],
@@ -2048,7 +2317,10 @@ Feature: OAuth Refresh
           tagNamingConvention: 'kebab-case with @ prefix',
         },
       };
-      await writeFile(join(testDir, 'spec/tags.json'), JSON.stringify(tagsJson, null, 2));
+      await writeFile(
+        join(testDir, 'spec/tags.json'),
+        JSON.stringify(tagsJson, null, 2)
+      );
 
       // And a feature file "oauth-login.feature" exists without work unit tags
       const featureContent = `@phase1
@@ -2066,7 +2338,10 @@ Feature: OAuth Login
     When I click GitHub
     Then I am logged in`;
 
-      await writeFile(join(testDir, 'spec/features/oauth-login.feature'), featureContent);
+      await writeFile(
+        join(testDir, 'spec/features/oauth-login.feature'),
+        featureContent
+      );
 
       // When I run "fspec create-work-unit AUTH 'OAuth Login Implementation'"
       const createResult = await createWorkUnit({
@@ -2079,20 +2354,32 @@ Feature: OAuth Login
       expect(createResult.success).toBe(true);
 
       // And a work unit "AUTH-001" should be created with title "OAuth Login Implementation"
-      const workUnitsContent = await readFile(join(testDir, 'spec/work-units.json'), 'utf-8');
+      const workUnitsContent = await readFile(
+        join(testDir, 'spec/work-units.json'),
+        'utf-8'
+      );
       const workUnitsData: WorkUnitsData = JSON.parse(workUnitsContent);
       expect(workUnitsData.workUnits['AUTH-001']).toBeDefined();
-      expect(workUnitsData.workUnits['AUTH-001'].title).toBe('OAuth Login Implementation');
+      expect(workUnitsData.workUnits['AUTH-001'].title).toBe(
+        'OAuth Login Implementation'
+      );
 
       // When I run "fspec add-tag-to-feature oauth-login.feature @AUTH-001"
       // Import the add-tag-to-feature command
       const { addTagToFeature } = await import('../add-tag-to-feature');
 
-      await addTagToFeature('spec/features/oauth-login.feature', ['@AUTH-001'], { cwd: testDir });
+      await addTagToFeature(
+        'spec/features/oauth-login.feature',
+        ['@AUTH-001'],
+        { cwd: testDir }
+      );
 
       // Then the command should succeed
       // And the feature file should contain tag "@AUTH-001"
-      const updatedFeatureContent = await readFile(join(testDir, 'spec/features/oauth-login.feature'), 'utf-8');
+      const updatedFeatureContent = await readFile(
+        join(testDir, 'spec/features/oauth-login.feature'),
+        'utf-8'
+      );
       expect(updatedFeatureContent).toContain('@AUTH-001');
 
       // When I run "fspec show-work-unit AUTH-001"
@@ -2106,12 +2393,22 @@ Feature: OAuth Login
 
       // And the output should show linked feature "oauth-login.feature"
       expect(showWorkUnitResult.linkedFeatures).toBeDefined();
-      expect(showWorkUnitResult.linkedFeatures?.some((f: any) => f.file.includes('oauth-login.feature'))).toBe(true);
+      expect(
+        showWorkUnitResult.linkedFeatures?.some((f: any) =>
+          f.file.includes('oauth-login.feature')
+        )
+      ).toBe(true);
 
       // And the output should list all scenarios from the feature
-      const scenarios = showWorkUnitResult.linkedFeatures?.flatMap((f: any) => f.scenarios) || [];
-      expect(scenarios.some((s: any) => s.name === 'Login with Google')).toBe(true);
-      expect(scenarios.some((s: any) => s.name === 'Login with GitHub')).toBe(true);
+      const scenarios =
+        showWorkUnitResult.linkedFeatures?.flatMap((f: any) => f.scenarios) ||
+        [];
+      expect(scenarios.some((s: any) => s.name === 'Login with Google')).toBe(
+        true
+      );
+      expect(scenarios.some((s: any) => s.name === 'Login with GitHub')).toBe(
+        true
+      );
 
       // When I run "fspec show-feature oauth-login.feature"
       const { showFeature } = await import('../show-feature');
@@ -2125,7 +2422,9 @@ Feature: OAuth Login
 
       // And the output should show work unit "AUTH-001" linked to this feature
       expect(showFeatureResult.workUnits).toBeDefined();
-      expect(showFeatureResult.workUnits?.some((wu: any) => wu.id === 'AUTH-001')).toBe(true);
+      expect(
+        showFeatureResult.workUnits?.some((wu: any) => wu.id === 'AUTH-001')
+      ).toBe(true);
 
       // When I run "fspec validate-tags oauth-login.feature"
       const { validateTags } = await import('../validate-tags');
@@ -2156,7 +2455,10 @@ Feature: OAuth Login
           },
         },
       };
-      await writeFile(join(testDir, 'spec/prefixes.json'), JSON.stringify(prefixes, null, 2));
+      await writeFile(
+        join(testDir, 'spec/prefixes.json'),
+        JSON.stringify(prefixes, null, 2)
+      );
 
       // And a work unit "AUTH-001" exists with title "OAuth Login Implementation"
       const workUnits: WorkUnitsData = {
@@ -2179,7 +2481,10 @@ Feature: OAuth Login
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       // And a feature file "oauth-login.feature" is tagged with "@AUTH-001"
       const featureContent = `@AUTH-001
@@ -2192,7 +2497,10 @@ Feature: OAuth Login
     When I click Google
     Then I am logged in`;
 
-      await writeFile(join(testDir, 'spec/features/oauth-login.feature'), featureContent);
+      await writeFile(
+        join(testDir, 'spec/features/oauth-login.feature'),
+        featureContent
+      );
 
       // When I run "fspec show-work-unit AUTH-001"
       const showResult1 = await showWorkUnit({
@@ -2203,17 +2511,30 @@ Feature: OAuth Login
       // Then the command should succeed
       // And the output should show linked feature "oauth-login.feature"
       expect(showResult1.linkedFeatures).toBeDefined();
-      expect(showResult1.linkedFeatures?.some((f: any) => f.file.includes('oauth-login.feature'))).toBe(true);
+      expect(
+        showResult1.linkedFeatures?.some((f: any) =>
+          f.file.includes('oauth-login.feature')
+        )
+      ).toBe(true);
 
       // When I run "fspec remove-tag-from-feature oauth-login.feature @AUTH-001"
-      const { removeTagFromFeature } = await import('../remove-tag-from-feature');
-      const removeResult = await removeTagFromFeature('spec/features/oauth-login.feature', ['@AUTH-001'], { cwd: testDir });
+      const { removeTagFromFeature } = await import(
+        '../remove-tag-from-feature'
+      );
+      const removeResult = await removeTagFromFeature(
+        'spec/features/oauth-login.feature',
+        ['@AUTH-001'],
+        { cwd: testDir }
+      );
 
       // Then the command should succeed
       expect(removeResult.success).toBe(true);
 
       // And the feature file should not contain tag "@AUTH-001"
-      const updatedFeatureContent = await readFile(join(testDir, 'spec/features/oauth-login.feature'), 'utf-8');
+      const updatedFeatureContent = await readFile(
+        join(testDir, 'spec/features/oauth-login.feature'),
+        'utf-8'
+      );
       expect(updatedFeatureContent).not.toContain('@AUTH-001');
 
       // When I run "fspec show-work-unit AUTH-001"
@@ -2237,7 +2558,9 @@ Feature: OAuth Login
       // Then the command should succeed
       // And the output should not show work unit "AUTH-001"
       expect(showFeatureResult.workUnits).toBeDefined();
-      expect(showFeatureResult.workUnits?.some((wu: any) => wu.id === 'AUTH-001')).toBe(false);
+      expect(
+        showFeatureResult.workUnits?.some((wu: any) => wu.id === 'AUTH-001')
+      ).toBe(false);
     });
   });
 });

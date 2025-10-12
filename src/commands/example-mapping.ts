@@ -134,7 +134,9 @@ export async function removeRule(
   const workUnit = workUnitsData.workUnits[workUnitId];
   if (!workUnit.rules || index < 0 || index >= workUnit.rules.length) {
     const maxIndex = (workUnit.rules?.length || 0) - 1;
-    throw new Error(`Index ${index} out of range. Valid indices: 0-${maxIndex}`);
+    throw new Error(
+      `Index ${index} out of range. Valid indices: 0-${maxIndex}`
+    );
   }
 
   workUnit.rules.splice(index, 1);
@@ -158,7 +160,9 @@ export async function removeExample(
   const workUnit = workUnitsData.workUnits[workUnitId];
   if (!workUnit.examples || index < 0 || index >= workUnit.examples.length) {
     const maxIndex = (workUnit.examples?.length || 0) - 1;
-    throw new Error(`Index ${index} out of range. Valid indices: 0-${maxIndex}`);
+    throw new Error(
+      `Index ${index} out of range. Valid indices: 0-${maxIndex}`
+    );
   }
 
   workUnit.examples.splice(index, 1);
@@ -182,7 +186,9 @@ export async function removeQuestion(
   const workUnit = workUnitsData.workUnits[workUnitId];
   if (!workUnit.questions || index < 0 || index >= workUnit.questions.length) {
     const maxIndex = (workUnit.questions?.length || 0) - 1;
-    throw new Error(`Index ${index} out of range. Valid indices: 0-${maxIndex}`);
+    throw new Error(
+      `Index ${index} out of range. Valid indices: 0-${maxIndex}`
+    );
   }
 
   workUnit.questions.splice(index, 1);
@@ -205,14 +211,20 @@ export async function answerQuestion(
   }
 
   const workUnit = workUnitsData.workUnits[workUnitId];
-  if (!workUnit.questions || questionIndex < 0 || questionIndex >= workUnit.questions.length) {
+  if (
+    !workUnit.questions ||
+    questionIndex < 0 ||
+    questionIndex >= workUnit.questions.length
+  ) {
     throw new Error(`Question index ${questionIndex} out of range`);
   }
 
   // Get the question as QuestionItem
   const question = workUnit.questions[questionIndex];
   if (typeof question === 'string') {
-    throw new Error('Invalid question format. Questions must be QuestionItem objects.');
+    throw new Error(
+      'Invalid question format. Questions must be QuestionItem objects.'
+    );
   }
 
   // Mark question as selected instead of removing it (stable indices)
@@ -283,7 +295,7 @@ export async function generateScenarios(
 
   return {
     success: true,
-    featureFile: featureFileName
+    featureFile: featureFileName,
   };
 }
 
@@ -348,33 +360,43 @@ export async function exportExampleMap(
     rules: workUnit.rules || [],
     examples: workUnit.examples || [],
     questions: workUnit.questions || [],
-    assumptions: workUnit.assumptions || []
+    assumptions: workUnit.assumptions || [],
   };
 
   await writeFile(output, JSON.stringify(exportData, null, 2));
 }
 
-export async function queryExampleMappingStats(
-  options: { cwd: string; output?: string }
-): Promise<string> {
+export async function queryExampleMappingStats(options: {
+  cwd: string;
+  output?: string;
+}): Promise<string> {
   const { cwd, output } = options;
   const workUnitsData = await loadWorkUnits(cwd);
 
   const workUnits = Object.values(workUnitsData.workUnits);
 
   const stats = {
-    workUnitsWithRules: workUnits.filter(wu => wu.rules && wu.rules.length > 0).length,
-    workUnitsWithExamples: workUnits.filter(wu => wu.examples && wu.examples.length > 0).length,
-    workUnitsWithQuestions: workUnits.filter(wu => wu.questions && wu.questions.length > 0).length,
-    workUnitsWithAssumptions: workUnits.filter(wu => wu.assumptions && wu.assumptions.length > 0).length
+    workUnitsWithRules: workUnits.filter(wu => wu.rules && wu.rules.length > 0)
+      .length,
+    workUnitsWithExamples: workUnits.filter(
+      wu => wu.examples && wu.examples.length > 0
+    ).length,
+    workUnitsWithQuestions: workUnits.filter(
+      wu => wu.questions && wu.questions.length > 0
+    ).length,
+    workUnitsWithAssumptions: workUnits.filter(
+      wu => wu.assumptions && wu.assumptions.length > 0
+    ).length,
   };
 
   if (output === 'json') {
     return JSON.stringify(stats, null, 2);
   }
 
-  return `Work units with rules: ${stats.workUnitsWithRules}\n` +
-         `Work units with examples: ${stats.workUnitsWithExamples}\n` +
-         `Work units with questions: ${stats.workUnitsWithQuestions}\n` +
-         `Work units with assumptions: ${stats.workUnitsWithAssumptions}`;
+  return (
+    `Work units with rules: ${stats.workUnitsWithRules}\n` +
+    `Work units with examples: ${stats.workUnitsWithExamples}\n` +
+    `Work units with questions: ${stats.workUnitsWithQuestions}\n` +
+    `Work units with assumptions: ${stats.workUnitsWithAssumptions}`
+  );
 }

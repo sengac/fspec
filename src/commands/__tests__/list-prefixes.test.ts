@@ -41,19 +41,19 @@ describe('Feature: List Prefixes Command', () => {
           SAFE: {
             prefix: 'SAFE',
             description: 'Safety and validation features',
-            createdAt: '2025-10-12T03:27:56.701Z'
+            createdAt: '2025-10-12T03:27:56.701Z',
           },
           CLI: {
             prefix: 'CLI',
             description: 'CLI and command registration',
-            createdAt: '2025-10-10T23:34:12.904Z'
+            createdAt: '2025-10-10T23:34:12.904Z',
           },
           TEST: {
             prefix: 'TEST',
             description: 'Testing and quality assurance',
-            createdAt: '2025-10-11T02:25:05.112Z'
-          }
-        }
+            createdAt: '2025-10-11T02:25:05.112Z',
+          },
+        },
       };
       await writeFile(prefixesFile, JSON.stringify(prefixesData, null, 2));
 
@@ -82,14 +82,14 @@ describe('Feature: List Prefixes Command', () => {
           SAFE: {
             prefix: 'SAFE',
             description: 'Safety features',
-            createdAt: '2025-10-12T03:27:56.701Z'
+            createdAt: '2025-10-12T03:27:56.701Z',
           },
           CLI: {
             prefix: 'CLI',
             description: 'CLI features',
-            createdAt: '2025-10-10T23:34:12.904Z'
-          }
-        }
+            createdAt: '2025-10-10T23:34:12.904Z',
+          },
+        },
       };
       await writeFile(prefixesFile, JSON.stringify(prefixesData, null, 2));
 
@@ -102,22 +102,22 @@ describe('Feature: List Prefixes Command', () => {
             title: 'Safety validation',
             status: 'done',
             createdAt: '2025-10-12T03:27:56.701Z',
-            updatedAt: '2025-10-12T03:27:56.701Z'
+            updatedAt: '2025-10-12T03:27:56.701Z',
           },
           'CLI-001': {
             id: 'CLI-001',
             title: 'Command registration',
             status: 'done',
             createdAt: '2025-10-12T03:27:56.701Z',
-            updatedAt: '2025-10-12T03:27:56.701Z'
+            updatedAt: '2025-10-12T03:27:56.701Z',
           },
           'CLI-002': {
             id: 'CLI-002',
             title: 'List prefixes',
             status: 'testing',
             createdAt: '2025-10-12T03:27:56.701Z',
-            updatedAt: '2025-10-12T03:27:56.701Z'
-          }
+            updatedAt: '2025-10-12T03:27:56.701Z',
+          },
         },
         states: {
           backlog: [],
@@ -126,8 +126,8 @@ describe('Feature: List Prefixes Command', () => {
           implementing: [],
           validating: [],
           done: ['SAFE-001', 'CLI-001'],
-          blocked: []
-        }
+          blocked: [],
+        },
       };
       await writeFile(workUnitsFile, JSON.stringify(workUnitsData, null, 2));
 

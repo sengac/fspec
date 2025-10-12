@@ -11,7 +11,14 @@ interface WorkUnit {
   id: string;
   title: string;
   description?: string;
-  status: 'backlog' | 'specifying' | 'testing' | 'implementing' | 'validating' | 'done' | 'blocked';
+  status:
+    | 'backlog'
+    | 'specifying'
+    | 'testing'
+    | 'implementing'
+    | 'validating'
+    | 'done'
+    | 'blocked';
   epic?: string;
   parent?: string;
   children?: string[];
@@ -85,7 +92,10 @@ async function saveEpics(data: EpicsData, cwd: string): Promise<void> {
   await writeFile(epicsFile, JSON.stringify(data, null, 2));
 }
 
-function getNextWorkUnitId(prefix: string, workUnits: Record<string, WorkUnit>): string {
+function getNextWorkUnitId(
+  prefix: string,
+  workUnits: Record<string, WorkUnit>
+): string {
   const existingIds = Object.keys(workUnits)
     .filter(id => id.startsWith(prefix + '-'))
     .map(id => {
@@ -99,7 +109,10 @@ function getNextWorkUnitId(prefix: string, workUnits: Record<string, WorkUnit>):
   return `${prefix}-${String(nextId).padStart(3, '0')}`;
 }
 
-function calculateNestingDepth(workUnitId: string, workUnits: Record<string, WorkUnit>): number {
+function calculateNestingDepth(
+  workUnitId: string,
+  workUnits: Record<string, WorkUnit>
+): number {
   let depth = 0;
   let currentId: string | undefined = workUnitId;
 
@@ -132,7 +145,9 @@ export async function createWorkUnit(
   // Load data
   const prefixes = await loadPrefixes(cwd);
   if (!prefixes.prefixes[prefix]) {
-    throw new Error(`Prefix '${prefix}' is not registered. Run 'fspec create-prefix ${prefix}' first`);
+    throw new Error(
+      `Prefix '${prefix}' is not registered. Run 'fspec create-prefix ${prefix}' first`
+    );
   }
 
   const workUnitsData = await loadWorkUnits(cwd);
@@ -170,7 +185,7 @@ export async function createWorkUnit(
     status: 'backlog',
     createdAt: now,
     updatedAt: now,
-    stateHistory: [{ state: 'backlog', timestamp: now }]
+    stateHistory: [{ state: 'backlog', timestamp: now }],
   };
 
   if (description) workUnit.description = description;
@@ -285,7 +300,7 @@ export async function updateWorkUnit(
     await updateWorkUnitStatus(workUnitId, updates.status, {
       cwd,
       blockedReason: updates.blockedReason,
-      reason: updates.reason
+      reason: updates.reason,
     });
     return { warnings };
   }
@@ -316,36 +331,50 @@ async function updateWorkUnitStatus(
     implementing: ['validating', 'blocked', 'testing', 'specifying'],
     validating: ['done', 'blocked', 'implementing', 'specifying'],
     done: [],
-    blocked: ['backlog', 'specifying', 'testing', 'implementing', 'validating']
+    blocked: ['backlog', 'specifying', 'testing', 'implementing', 'validating'],
   };
 
   if (!validTransitions[oldStatus]?.includes(newStatus)) {
     if (newStatus === 'backlog' && oldStatus !== 'backlog') {
-      throw new Error("Cannot move work back to backlog. Use 'blocked' state if work cannot progress");
+      throw new Error(
+        "Cannot move work back to backlog. Use 'blocked' state if work cannot progress"
+      );
     }
 
     if (oldStatus === 'backlog' && newStatus === 'testing') {
-      throw new Error("Invalid state transition. Must move to 'specifying' state first. ACDD requires specification before testing");
+      throw new Error(
+        "Invalid state transition. Must move to 'specifying' state first. ACDD requires specification before testing"
+      );
     }
 
     if (oldStatus === 'backlog' && newStatus === 'implementing') {
-      throw new Error("Invalid state transition. Must move to 'specifying' state first. ACDD requires specification before testing");
+      throw new Error(
+        "Invalid state transition. Must move to 'specifying' state first. ACDD requires specification before testing"
+      );
     }
 
     if (oldStatus === 'specifying' && newStatus === 'implementing') {
-      throw new Error("Invalid state transition. Must move to 'testing' state first. ACDD requires tests before implementation");
+      throw new Error(
+        "Invalid state transition. Must move to 'testing' state first. ACDD requires tests before implementation"
+      );
     }
 
     if (oldStatus === 'done') {
-      throw new Error('Cannot change status of completed work unit. Create a new work unit for additional work');
+      throw new Error(
+        'Cannot change status of completed work unit. Create a new work unit for additional work'
+      );
     }
 
-    throw new Error(`Invalid state transition from ${oldStatus} to ${newStatus}`);
+    throw new Error(
+      `Invalid state transition from ${oldStatus} to ${newStatus}`
+    );
   }
 
   // Validate blocked state requires reason
   if (newStatus === 'blocked' && !blockedReason) {
-    throw new Error("Blocked reason is required. Use --blocked-reason='description of blocker'");
+    throw new Error(
+      "Blocked reason is required. Use --blocked-reason='description of blocker'"
+    );
   }
 
   // Check for unanswered questions before moving to testing
@@ -354,19 +383,25 @@ async function updateWorkUnitStatus(
       // Filter for unselected questions only
       const unansweredQuestions = workUnit.questions.filter(q => {
         if (typeof q === 'string') {
-          throw new Error('Invalid question format. Questions must be QuestionItem objects.');
+          throw new Error(
+            'Invalid question format. Questions must be QuestionItem objects.'
+          );
         }
         return !q.selected;
       });
 
       if (unansweredQuestions.length > 0) {
-        const questionList = unansweredQuestions.map((q, i) => {
-          const questionItem = q as QuestionItem;
-          const originalIndex = workUnit.questions!.indexOf(q);
-          return `\n  ${originalIndex}. ${questionItem.text}`;
-        }).join('');
+        const questionList = unansweredQuestions
+          .map((q, i) => {
+            const questionItem = q as QuestionItem;
+            const originalIndex = workUnit.questions!.indexOf(q);
+            return `\n  ${originalIndex}. ${questionItem.text}`;
+          })
+          .join('');
 
-        throw new Error(`Unanswered questions prevent state transition to testing. ${unansweredQuestions.length} question(s) must be answered first.${questionList}\n\nAnswer questions with 'fspec answer-question' or remove them using 'fspec remove-question'`);
+        throw new Error(
+          `Unanswered questions prevent state transition to testing. ${unansweredQuestions.length} question(s) must be answered first.${questionList}\n\nAnswer questions with 'fspec answer-question' or remove them using 'fspec remove-question'`
+        );
       }
     }
 
@@ -385,12 +420,18 @@ async function updateWorkUnitStatus(
     }
 
     if (!hasScenarios) {
-      throw new Error(`No Gherkin scenarios found. At least one scenario must be tagged with @${workUnitId}. Use 'fspec generate-scenarios ${workUnitId}' or manually tag scenarios`);
+      throw new Error(
+        `No Gherkin scenarios found. At least one scenario must be tagged with @${workUnitId}. Use 'fspec generate-scenarios ${workUnitId}' or manually tag scenarios`
+      );
     }
   }
 
   // Check parent cannot be done with incomplete children
-  if (newStatus === 'done' && workUnit.children && workUnit.children.length > 0) {
+  if (
+    newStatus === 'done' &&
+    workUnit.children &&
+    workUnit.children.length > 0
+  ) {
     const incompleteChildren = workUnit.children.filter(
       childId => workUnitsData.workUnits[childId]?.status !== 'done'
     );
@@ -406,14 +447,16 @@ async function updateWorkUnitStatus(
   }
 
   // Remove from old state array
-  const oldStateArray = workUnitsData.states[oldStatus as keyof typeof workUnitsData.states];
+  const oldStateArray =
+    workUnitsData.states[oldStatus as keyof typeof workUnitsData.states];
   const index = oldStateArray.indexOf(workUnitId);
   if (index > -1) {
     oldStateArray.splice(index, 1);
   }
 
   // Add to new state array
-  const newStateArray = workUnitsData.states[newStatus as keyof typeof workUnitsData.states];
+  const newStateArray =
+    workUnitsData.states[newStatus as keyof typeof workUnitsData.states];
   if (newStateArray && !newStateArray.includes(workUnitId)) {
     newStateArray.push(workUnitId);
   }
@@ -429,7 +472,7 @@ async function updateWorkUnitStatus(
   workUnit.stateHistory.push({
     state: newStatus,
     timestamp: workUnit.updatedAt,
-    reason
+    reason,
   });
 
   // Handle blocked state
@@ -494,7 +537,10 @@ export async function deleteWorkUnit(
   }
 
   // Check if blocking other work
-  if (workUnit.relationships?.blocks && workUnit.relationships.blocks.length > 0) {
+  if (
+    workUnit.relationships?.blocks &&
+    workUnit.relationships.blocks.length > 0
+  ) {
     if (!cascadeDependencies) {
       throw new Error(
         `Cannot delete work unit that blocks other work: ${workUnit.relationships.blocks.join(', ')}. Remove blocking relationships first`
@@ -504,7 +550,8 @@ export async function deleteWorkUnit(
 
   // Remove from states index
   for (const state of Object.keys(workUnitsData.states)) {
-    const stateArray = workUnitsData.states[state as keyof typeof workUnitsData.states];
+    const stateArray =
+      workUnitsData.states[state as keyof typeof workUnitsData.states];
     const index = stateArray.indexOf(workUnitId);
     if (index > -1) {
       stateArray.splice(index, 1);
@@ -517,9 +564,8 @@ export async function deleteWorkUnit(
       for (const blockedId of workUnit.relationships.blocks) {
         const blocked = workUnitsData.workUnits[blockedId];
         if (blocked?.relationships?.blockedBy) {
-          blocked.relationships.blockedBy = blocked.relationships.blockedBy.filter(
-            id => id !== workUnitId
-          );
+          blocked.relationships.blockedBy =
+            blocked.relationships.blockedBy.filter(id => id !== workUnitId);
         }
       }
     }
@@ -562,13 +608,22 @@ export async function showWorkUnit(
 
   // Show relationships
   if (workUnit.relationships) {
-    if (workUnit.relationships.blocks && workUnit.relationships.blocks.length > 0) {
+    if (
+      workUnit.relationships.blocks &&
+      workUnit.relationships.blocks.length > 0
+    ) {
       result += `Blocks: ${workUnit.relationships.blocks.join(', ')}\n`;
     }
-    if (workUnit.relationships.dependsOn && workUnit.relationships.dependsOn.length > 0) {
+    if (
+      workUnit.relationships.dependsOn &&
+      workUnit.relationships.dependsOn.length > 0
+    ) {
       result += `Depends On: ${workUnit.relationships.dependsOn.join(', ')}\n`;
     }
-    if (workUnit.relationships.relatesTo && workUnit.relationships.relatesTo.length > 0) {
+    if (
+      workUnit.relationships.relatesTo &&
+      workUnit.relationships.relatesTo.length > 0
+    ) {
       result += `Related To: ${workUnit.relationships.relatesTo.join(', ')}\n`;
     }
   }
@@ -585,7 +640,9 @@ export async function showWorkUnit(
     const unselectedQuestions = workUnit.questions
       .map((q, index) => {
         if (typeof q === 'string') {
-          throw new Error('Invalid question format. Questions must be QuestionItem objects.');
+          throw new Error(
+            'Invalid question format. Questions must be QuestionItem objects.'
+          );
         }
         return { index, ...q };
       })
@@ -602,14 +659,12 @@ export async function showWorkUnit(
   return result;
 }
 
-export async function listWorkUnits(
-  options: {
-    cwd: string;
-    status?: string;
-    prefix?: string;
-    epic?: string;
-  }
-): Promise<string> {
+export async function listWorkUnits(options: {
+  cwd: string;
+  status?: string;
+  prefix?: string;
+  epic?: string;
+}): Promise<string> {
   const { cwd, status, prefix, epic } = options;
   const workUnitsData = await loadWorkUnits(cwd);
 
@@ -639,9 +694,9 @@ export async function listWorkUnits(
   return result;
 }
 
-export async function validateWorkUnits(
-  options: { cwd: string }
-): Promise<{ valid: boolean; errors: string; checks: string[] }> {
+export async function validateWorkUnits(options: {
+  cwd: string;
+}): Promise<{ valid: boolean; errors: string; checks: string[] }> {
   const { cwd } = options;
   const workUnitsData = await loadWorkUnits(cwd);
 
@@ -654,7 +709,7 @@ export async function validateWorkUnits(
     'rules are strings',
     'examples are strings',
     'questions are QuestionItem objects',
-    'assumptions are strings'
+    'assumptions are strings',
   ];
 
   const errors: string[] = [];
@@ -663,9 +718,19 @@ export async function validateWorkUnits(
   for (const [id, wu] of Object.entries(workUnitsData.workUnits)) {
     // Validate status (only if present)
     if (wu.status) {
-      const validStatuses = ['backlog', 'specifying', 'testing', 'implementing', 'validating', 'done', 'blocked'];
+      const validStatuses = [
+        'backlog',
+        'specifying',
+        'testing',
+        'implementing',
+        'validating',
+        'done',
+        'blocked',
+      ];
       if (!validStatuses.includes(wu.status)) {
-        errors.push(`Invalid status value for ${id}: ${wu.status}. Valid values: ${validStatuses.join(', ')}`);
+        errors.push(
+          `Invalid status value for ${id}: ${wu.status}. Valid values: ${validStatuses.join(', ')}`
+        );
       }
 
       // Validate state consistency
@@ -673,7 +738,9 @@ export async function validateWorkUnits(
       for (const [state, ids] of Object.entries(workUnitsData.states)) {
         if (ids.includes(id)) {
           if (state !== wu.status) {
-            errors.push(`State consistency error: ${id} has status '${wu.status}' but is in '${state}' array. Run 'fspec repair-work-units' to fix inconsistencies`);
+            errors.push(
+              `State consistency error: ${id} has status '${wu.status}' but is in '${state}' array. Run 'fspec repair-work-units' to fix inconsistencies`
+            );
           }
           foundInState = true;
         }
@@ -682,13 +749,20 @@ export async function validateWorkUnits(
 
     // Validate dependency arrays contain valid work unit IDs
     if (wu.relationships) {
-      const relationshipTypes = ['blocks', 'blockedBy', 'dependsOn', 'relatesTo'] as const;
+      const relationshipTypes = [
+        'blocks',
+        'blockedBy',
+        'dependsOn',
+        'relatesTo',
+      ] as const;
       for (const relType of relationshipTypes) {
         const deps = wu.relationships[relType];
         if (deps) {
           for (const depId of deps) {
             if (!workUnitsData.workUnits[depId]) {
-              errors.push(`Dependency validation error: ${id} has ${relType} relationship with non-existent work unit '${depId}'`);
+              errors.push(
+                `Dependency validation error: ${id} has ${relType} relationship with non-existent work unit '${depId}'`
+              );
             }
           }
         }
@@ -700,10 +774,14 @@ export async function validateWorkUnits(
           const blockedUnit = workUnitsData.workUnits[blockedId];
           if (blockedUnit && blockedUnit.relationships?.blockedBy) {
             if (!blockedUnit.relationships.blockedBy.includes(id)) {
-              errors.push(`Bidirectional consistency error: ${id} blocks ${blockedId} but ${blockedId} does not list ${id} in blockedBy`);
+              errors.push(
+                `Bidirectional consistency error: ${id} blocks ${blockedId} but ${blockedId} does not list ${id} in blockedBy`
+              );
             }
           } else if (blockedUnit) {
-            errors.push(`Bidirectional consistency error: ${id} blocks ${blockedId} but ${blockedId} has no blockedBy relationship`);
+            errors.push(
+              `Bidirectional consistency error: ${id} blocks ${blockedId} but ${blockedId} has no blockedBy relationship`
+            );
           }
         }
       }
@@ -713,10 +791,14 @@ export async function validateWorkUnits(
           const blockerUnit = workUnitsData.workUnits[blockerId];
           if (blockerUnit && blockerUnit.relationships?.blocks) {
             if (!blockerUnit.relationships.blocks.includes(id)) {
-              errors.push(`Bidirectional consistency error: ${id} blockedBy ${blockerId} but ${blockerId} does not list ${id} in blocks`);
+              errors.push(
+                `Bidirectional consistency error: ${id} blockedBy ${blockerId} but ${blockerId} does not list ${id} in blocks`
+              );
             }
           } else if (blockerUnit) {
-            errors.push(`Bidirectional consistency error: ${id} blockedBy ${blockerId} but ${blockerId} has no blocks relationship`);
+            errors.push(
+              `Bidirectional consistency error: ${id} blockedBy ${blockerId} but ${blockerId} has no blocks relationship`
+            );
           }
         }
       }
@@ -726,13 +808,13 @@ export async function validateWorkUnits(
   return {
     valid: errors.length === 0,
     errors: errors.join('\n'),
-    checks
+    checks,
   };
 }
 
-export async function repairWorkUnits(
-  options: { cwd: string }
-): Promise<{ success: boolean; message: string }> {
+export async function repairWorkUnits(options: {
+  cwd: string;
+}): Promise<{ success: boolean; message: string }> {
   const { cwd } = options;
   const workUnitsData = await loadWorkUnits(cwd);
 
@@ -765,7 +847,8 @@ export async function repairWorkUnits(
         const blocked = workUnitsData.workUnits[blockedId];
         if (blocked) {
           if (!blocked.relationships) blocked.relationships = {};
-          if (!blocked.relationships.blockedBy) blocked.relationships.blockedBy = [];
+          if (!blocked.relationships.blockedBy)
+            blocked.relationships.blockedBy = [];
           if (!blocked.relationships.blockedBy.includes(id)) {
             blocked.relationships.blockedBy.push(id);
             repairs.push(`Repaired 1 bidirectional dependency`);
@@ -779,7 +862,7 @@ export async function repairWorkUnits(
 
   return {
     success: true,
-    message: repairs.length > 0 ? repairs.join(', ') : 'No repairs needed'
+    message: repairs.length > 0 ? repairs.join(', ') : 'No repairs needed',
   };
 }
 
@@ -794,14 +877,17 @@ export async function queryWorkUnit(
     output?: string;
   }
 ): Promise<string> {
-  const { cwd, status, hasQuestions, questionsFor, showCycleTime, output } = options;
+  const { cwd, status, hasQuestions, questionsFor, showCycleTime, output } =
+    options;
   const workUnitsData = await loadWorkUnits(cwd);
 
   // Query specific work unit
   if (workUnitId && showCycleTime) {
     const wu = workUnitsData.workUnits[workUnitId];
     if (!wu || !wu.stateHistory) {
-      throw new Error(`Work unit '${workUnitId}' does not exist or has no state history`);
+      throw new Error(
+        `Work unit '${workUnitId}' does not exist or has no state history`
+      );
     }
 
     let result = 'State Durations:\n';
@@ -810,7 +896,10 @@ export async function queryWorkUnit(
     for (let i = 0; i < wu.stateHistory.length - 1; i++) {
       const current = wu.stateHistory[i];
       const next = wu.stateHistory[i + 1];
-      const duration = (new Date(next.timestamp).getTime() - new Date(current.timestamp).getTime()) / (1000 * 60 * 60);
+      const duration =
+        (new Date(next.timestamp).getTime() -
+          new Date(current.timestamp).getTime()) /
+        (1000 * 60 * 60);
       result += `${current.state}: ${duration} hour${duration !== 1 ? 's' : ''}\n`;
       totalHours += duration;
     }
@@ -831,11 +920,15 @@ export async function queryWorkUnit(
   }
 
   if (questionsFor) {
-    const mention = questionsFor.startsWith('@') ? questionsFor : `@${questionsFor}`;
+    const mention = questionsFor.startsWith('@')
+      ? questionsFor
+      : `@${questionsFor}`;
     workUnits = workUnits.filter(wu =>
       wu.questions?.some(q => {
         if (typeof q === 'string') {
-          throw new Error('Invalid question format. Questions must be QuestionItem objects.');
+          throw new Error(
+            'Invalid question format. Questions must be QuestionItem objects.'
+          );
         }
         return q.text.includes(mention);
       })
@@ -867,7 +960,9 @@ export async function prioritizeWorkUnit(
   // If work unit object exists, validate it's in backlog status first
   const workUnit = workUnitsData.workUnits[workUnitId];
   if (workUnit && workUnit.status !== 'backlog') {
-    throw new Error(`Can only prioritize work units in backlog state. ${workUnitId} is in '${workUnit.status}' state`);
+    throw new Error(
+      `Can only prioritize work units in backlog state. ${workUnitId} is in '${workUnit.status}' state`
+    );
   }
 
   const currentIndex = backlog.indexOf(workUnitId);
@@ -914,7 +1009,14 @@ export async function displayBoard(options: { cwd: string }): Promise<string> {
   const { cwd } = options;
   const workUnitsData = await loadWorkUnits(cwd);
 
-  const stateOrder = ['backlog', 'specifying', 'testing', 'implementing', 'validating', 'done'] as const;
+  const stateOrder = [
+    'backlog',
+    'specifying',
+    'testing',
+    'implementing',
+    'validating',
+    'done',
+  ] as const;
   let output = '';
 
   let totalInProgress = 0;

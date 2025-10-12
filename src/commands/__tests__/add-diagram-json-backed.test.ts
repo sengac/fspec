@@ -95,7 +95,10 @@ describe('Feature: Add Diagram to JSON-Backed Foundation', () => {
           developmentStatus: [],
         },
       };
-      await writeFile(foundationFile, JSON.stringify(initialFoundation, null, 2));
+      await writeFile(
+        foundationFile,
+        JSON.stringify(initialFoundation, null, 2)
+      );
 
       // When I run add-diagram command
       const result = await addDiagramJsonBacked({
@@ -112,7 +115,9 @@ describe('Feature: Add Diagram to JSON-Backed Foundation', () => {
       const updatedData = JSON.parse(updatedContent);
       expect(updatedData.architectureDiagrams).toHaveLength(1);
       expect(updatedData.architectureDiagrams[0].title).toBe('New System Flow');
-      expect(updatedData.architectureDiagrams[0].mermaidCode).toBe('graph TB\n  A[Start]\n  B[End]\n  A-->B');
+      expect(updatedData.architectureDiagrams[0].mermaidCode).toBe(
+        'graph TB\n  A[Start]\n  B[End]\n  A-->B'
+      );
 
       // And "spec/FOUNDATION.md" should be regenerated
       const foundationMd = join(testDir, 'spec', 'FOUNDATION.md');
@@ -201,7 +206,10 @@ describe('Feature: Add Diagram to JSON-Backed Foundation', () => {
         },
         notes: { developmentStatus: [] },
       };
-      await writeFile(foundationFile, JSON.stringify(initialFoundation, null, 2));
+      await writeFile(
+        foundationFile,
+        JSON.stringify(initialFoundation, null, 2)
+      );
 
       // When I run add-diagram with same title
       const result = await addDiagramJsonBacked({
@@ -217,8 +225,12 @@ describe('Feature: Add Diagram to JSON-Backed Foundation', () => {
       const updatedContent = await readFile(foundationFile, 'utf-8');
       const updatedData = JSON.parse(updatedContent);
       expect(updatedData.architectureDiagrams).toHaveLength(1);
-      expect(updatedData.architectureDiagrams[0].title).toBe('fspec System Context');
-      expect(updatedData.architectureDiagrams[0].mermaidCode).toBe('graph TB\n  NEW[Updated]');
+      expect(updatedData.architectureDiagrams[0].title).toBe(
+        'fspec System Context'
+      );
+      expect(updatedData.architectureDiagrams[0].mermaidCode).toBe(
+        'graph TB\n  NEW[Updated]'
+      );
     });
   });
 
@@ -287,7 +299,10 @@ describe('Feature: Add Diagram to JSON-Backed Foundation', () => {
         },
         notes: { developmentStatus: [] },
       };
-      await writeFile(foundationFile, JSON.stringify(minimalFoundation, null, 2));
+      await writeFile(
+        foundationFile,
+        JSON.stringify(minimalFoundation, null, 2)
+      );
 
       // When I run add-diagram with description
       const result = await addDiagramJsonBacked({
@@ -301,7 +316,9 @@ describe('Feature: Add Diagram to JSON-Backed Foundation', () => {
       expect(result.success).toBe(true);
       const content = await readFile(foundationFile, 'utf-8');
       const data = JSON.parse(content);
-      expect(data.architectureDiagrams[0].description).toBe('Shows data flow between components');
+      expect(data.architectureDiagrams[0].description).toBe(
+        'Shows data flow between components'
+      );
     });
   });
 
@@ -309,7 +326,10 @@ describe('Feature: Add Diagram to JSON-Backed Foundation', () => {
     it('should read diagram code from external file', async () => {
       // Given I have a file "diagram.mmd" containing Mermaid code
       const diagramFile = join(testDir, 'diagram.mmd');
-      await writeFile(diagramFile, 'graph TB\n  Complex[Diagram]\n  From[File]');
+      await writeFile(
+        diagramFile,
+        'graph TB\n  Complex[Diagram]\n  From[File]'
+      );
 
       const foundationFile = join(testDir, 'spec', 'foundation.json');
       const minimalFoundation = {
@@ -373,7 +393,10 @@ describe('Feature: Add Diagram to JSON-Backed Foundation', () => {
         },
         notes: { developmentStatus: [] },
       };
-      await writeFile(foundationFile, JSON.stringify(minimalFoundation, null, 2));
+      await writeFile(
+        foundationFile,
+        JSON.stringify(minimalFoundation, null, 2)
+      );
 
       // When I run add-diagram with file parameter
       const result = await addDiagramJsonBacked({
@@ -388,7 +411,9 @@ describe('Feature: Add Diagram to JSON-Backed Foundation', () => {
       // And it should be added to "spec/foundation.json"
       const content = await readFile(foundationFile, 'utf-8');
       const data = JSON.parse(content);
-      expect(data.architectureDiagrams[0].mermaidCode).toBe('graph TB\n  Complex[Diagram]\n  From[File]');
+      expect(data.architectureDiagrams[0].mermaidCode).toBe(
+        'graph TB\n  Complex[Diagram]\n  From[File]'
+      );
     });
   });
 
@@ -457,7 +482,10 @@ describe('Feature: Add Diagram to JSON-Backed Foundation', () => {
         },
         notes: { developmentStatus: [] },
       };
-      await writeFile(foundationFile, JSON.stringify(minimalFoundation, null, 2));
+      await writeFile(
+        foundationFile,
+        JSON.stringify(minimalFoundation, null, 2)
+      );
 
       // When I run add-diagram with invalid Mermaid syntax
       const result = await addDiagramJsonBacked({
@@ -473,7 +501,9 @@ describe('Feature: Add Diagram to JSON-Backed Foundation', () => {
       expect(result.success).toBe(true);
       const content = await readFile(foundationFile, 'utf-8');
       const data = JSON.parse(content);
-      expect(data.architectureDiagrams[0].mermaidCode).toBe('invalid mermaid syntax');
+      expect(data.architectureDiagrams[0].mermaidCode).toBe(
+        'invalid mermaid syntax'
+      );
     });
   });
 
@@ -542,7 +572,10 @@ describe('Feature: Add Diagram to JSON-Backed Foundation', () => {
         },
         notes: { developmentStatus: [] },
       };
-      await writeFile(foundationFile, JSON.stringify(minimalFoundation, null, 2));
+      await writeFile(
+        foundationFile,
+        JSON.stringify(minimalFoundation, null, 2)
+      );
 
       const originalContent = await readFile(foundationFile, 'utf-8');
 
@@ -628,7 +661,10 @@ describe('Feature: Add Diagram to JSON-Backed Foundation', () => {
         },
         notes: { developmentStatus: [] },
       };
-      await writeFile(foundationFile, JSON.stringify(minimalFoundation, null, 2));
+      await writeFile(
+        foundationFile,
+        JSON.stringify(minimalFoundation, null, 2)
+      );
 
       const originalContent = await readFile(foundationFile, 'utf-8');
 
@@ -716,7 +752,10 @@ describe('Feature: Add Diagram to JSON-Backed Foundation', () => {
         },
         notes: { developmentStatus: [] },
       };
-      await writeFile(foundationFile, JSON.stringify(foundationWithSections, null, 2));
+      await writeFile(
+        foundationFile,
+        JSON.stringify(foundationWithSections, null, 2)
+      );
 
       // When I run add-diagram to specific section
       const result = await addDiagramJsonBacked({

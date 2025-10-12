@@ -81,7 +81,9 @@ export async function createEpic(
 
   // Validate epic ID format (lowercase-with-hyphens)
   if (!/^[a-z][a-z0-9-]*$/.test(epicId)) {
-    throw new Error('Epic ID must be lowercase with hyphens (e.g., epic-user-management)');
+    throw new Error(
+      'Epic ID must be lowercase with hyphens (e.g., epic-user-management)'
+    );
   }
 
   const epicsData = await loadEpics(cwd);
@@ -96,7 +98,7 @@ export async function createEpic(
     description,
     workUnits: [],
     createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
+    updatedAt: new Date().toISOString(),
   };
 
   await saveEpics(epicsData, cwd);
@@ -111,7 +113,9 @@ export async function createPrefix(
 
   // Validate prefix format (2-6 uppercase letters)
   if (!/^[A-Z]{2,6}$/.test(prefix)) {
-    throw new Error('Prefix must be 2-6 uppercase letters (e.g., AUTH, DASH, API)');
+    throw new Error(
+      'Prefix must be 2-6 uppercase letters (e.g., AUTH, DASH, API)'
+    );
   }
 
   const prefixesData = await loadPrefixes(cwd);
@@ -123,7 +127,7 @@ export async function createPrefix(
   prefixesData.prefixes[prefix] = {
     name: prefix,
     description,
-    color
+    color,
   };
 
   await savePrefixes(prefixesData, cwd);
@@ -141,7 +145,9 @@ export async function updatePrefix(
     throw new Error(`Prefix '${prefix}' does not exist`);
   }
 
-  const prefixData = prefixesData.prefixes[prefix] as Prefix & { epic?: string };
+  const prefixData = prefixesData.prefixes[prefix] as Prefix & {
+    epic?: string;
+  };
 
   if (updates.epic !== undefined) {
     prefixData.epic = updates.epic;
@@ -173,15 +179,19 @@ export async function showEpicProgress(
   const workUnitsData = await loadWorkUnits(cwd);
 
   // Get work units for this epic - check epic field OR epic's workUnits array
-  const epicWorkUnits = Object.values(workUnitsData.workUnits).filter(wu =>
-    wu.epic === epicId || (epic.workUnits && epic.workUnits.includes(wu.id))
+  const epicWorkUnits = Object.values(workUnitsData.workUnits).filter(
+    wu =>
+      wu.epic === epicId || (epic.workUnits && epic.workUnits.includes(wu.id))
   );
 
   const total = epicWorkUnits.length;
   const completed = epicWorkUnits.filter(wu => wu.status === 'done').length;
   const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
 
-  const totalPoints = epicWorkUnits.reduce((sum, wu) => sum + (wu.estimate || 0), 0);
+  const totalPoints = epicWorkUnits.reduce(
+    (sum, wu) => sum + (wu.estimate || 0),
+    0
+  );
   const completedPoints = epicWorkUnits
     .filter(wu => wu.status === 'done')
     .reduce((sum, wu) => sum + (wu.estimate || 0), 0);
@@ -205,7 +215,10 @@ export async function showEpicProgress(
   return output;
 }
 
-export async function listEpics(options: { cwd: string; output?: string }): Promise<string> {
+export async function listEpics(options: {
+  cwd: string;
+  output?: string;
+}): Promise<string> {
   const { cwd, output } = options;
   const epicsData = await loadEpics(cwd);
 
@@ -231,8 +244,8 @@ export async function listEpics(options: { cwd: string; output?: string }): Prom
 
   for (const [id, epic] of Object.entries(epicsData.epics)) {
     // Get work units for this epic - check epic field OR epic's workUnits array
-    const workUnits = Object.values(workUnitsData.workUnits).filter(wu =>
-      wu.epic === id || (epic.workUnits && epic.workUnits.includes(wu.id))
+    const workUnits = Object.values(workUnitsData.workUnits).filter(
+      wu => wu.epic === id || (epic.workUnits && epic.workUnits.includes(wu.id))
     );
     const completed = workUnits.filter(wu => wu.status === 'done').length;
 

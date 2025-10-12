@@ -78,9 +78,10 @@ export async function listPrefixes(options: {
       }
     }
 
-    const completionPercentage = totalWorkUnits > 0
-      ? Math.round((completedWorkUnits / totalWorkUnits) * 100)
-      : 0;
+    const completionPercentage =
+      totalWorkUnits > 0
+        ? Math.round((completedWorkUnits / totalWorkUnits) * 100)
+        : 0;
 
     prefixes.push({
       prefix: prefix.prefix,

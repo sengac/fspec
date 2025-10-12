@@ -16,7 +16,9 @@ interface DeleteWorkUnitResult {
   warnings?: string[];
 }
 
-export async function deleteWorkUnit(options: DeleteWorkUnitOptions): Promise<DeleteWorkUnitResult> {
+export async function deleteWorkUnit(
+  options: DeleteWorkUnitOptions
+): Promise<DeleteWorkUnitResult> {
   const cwd = options.cwd || process.cwd();
   const warnings: string[] = [];
 
@@ -53,7 +55,9 @@ export async function deleteWorkUnit(options: DeleteWorkUnitOptions): Promise<De
 
   // Warn if work unit blocks other work
   if (workUnit.blocks && workUnit.blocks.length > 0) {
-    warnings.push(`This work unit blocks ${workUnit.blocks.length} work unit(s): ${workUnit.blocks.join(', ')}`);
+    warnings.push(
+      `This work unit blocks ${workUnit.blocks.length} work unit(s): ${workUnit.blocks.join(', ')}`
+    );
   }
 
   // Clean up bidirectional dependencies if cascading
@@ -62,9 +66,9 @@ export async function deleteWorkUnit(options: DeleteWorkUnitOptions): Promise<De
     if (workUnit.blocks) {
       for (const targetId of workUnit.blocks) {
         if (workUnitsData.workUnits[targetId]?.blockedBy) {
-          workUnitsData.workUnits[targetId].blockedBy = workUnitsData.workUnits[targetId].blockedBy!.filter(
-            id => id !== options.workUnitId
-          );
+          workUnitsData.workUnits[targetId].blockedBy = workUnitsData.workUnits[
+            targetId
+          ].blockedBy!.filter(id => id !== options.workUnitId);
           if (workUnitsData.workUnits[targetId].blockedBy!.length === 0) {
             delete workUnitsData.workUnits[targetId].blockedBy;
           }
@@ -76,9 +80,9 @@ export async function deleteWorkUnit(options: DeleteWorkUnitOptions): Promise<De
     if (workUnit.blockedBy) {
       for (const targetId of workUnit.blockedBy) {
         if (workUnitsData.workUnits[targetId]?.blocks) {
-          workUnitsData.workUnits[targetId].blocks = workUnitsData.workUnits[targetId].blocks!.filter(
-            id => id !== options.workUnitId
-          );
+          workUnitsData.workUnits[targetId].blocks = workUnitsData.workUnits[
+            targetId
+          ].blocks!.filter(id => id !== options.workUnitId);
           if (workUnitsData.workUnits[targetId].blocks!.length === 0) {
             delete workUnitsData.workUnits[targetId].blocks;
           }
@@ -90,9 +94,9 @@ export async function deleteWorkUnit(options: DeleteWorkUnitOptions): Promise<De
     if (workUnit.relatesTo) {
       for (const targetId of workUnit.relatesTo) {
         if (workUnitsData.workUnits[targetId]?.relatesTo) {
-          workUnitsData.workUnits[targetId].relatesTo = workUnitsData.workUnits[targetId].relatesTo!.filter(
-            id => id !== options.workUnitId
-          );
+          workUnitsData.workUnits[targetId].relatesTo = workUnitsData.workUnits[
+            targetId
+          ].relatesTo!.filter(id => id !== options.workUnitId);
           if (workUnitsData.workUnits[targetId].relatesTo!.length === 0) {
             delete workUnitsData.workUnits[targetId].relatesTo;
           }
@@ -112,7 +116,9 @@ export async function deleteWorkUnit(options: DeleteWorkUnitOptions): Promise<De
   // Remove from states index
   for (const state of Object.keys(workUnitsData.states)) {
     if (workUnitsData.states[state]) {
-      workUnitsData.states[state] = workUnitsData.states[state].filter(id => id !== options.workUnitId);
+      workUnitsData.states[state] = workUnitsData.states[state].filter(
+        id => id !== options.workUnitId
+      );
     }
   }
 

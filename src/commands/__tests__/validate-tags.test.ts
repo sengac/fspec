@@ -481,11 +481,13 @@ Feature: User Login
       expect(result.results[0].valid).toBe(false);
 
       // And the output should contain the unregistered tag
-      const unregisteredError = result.results[0].errors.find(e =>
-        e.tag === '@unregistered-scenario-tag'
+      const unregisteredError = result.results[0].errors.find(
+        e => e.tag === '@unregistered-scenario-tag'
       );
       expect(unregisteredError).toBeDefined();
-      expect(unregisteredError!.message).toContain('Unregistered tag: @unregistered-scenario-tag');
+      expect(unregisteredError!.message).toContain(
+        'Unregistered tag: @unregistered-scenario-tag'
+      );
     });
   });
 
@@ -556,10 +558,7 @@ Feature: User Login
     When another step
     Then result`;
 
-      await writeFile(
-        join(featuresDir, 'login.feature'),
-        featureWithMixedTags
-      );
+      await writeFile(join(featuresDir, 'login.feature'), featureWithMixedTags);
 
       // When I run validate-tags
       const result = await validateTags({
@@ -571,8 +570,8 @@ Feature: User Login
       expect(result.results[0].valid).toBe(false);
 
       // And the output should list both unregistered tags
-      const unregisteredErrors = result.results[0].errors.filter(e =>
-        e.tag === '@unregistered-tag1' || e.tag === '@unregistered-tag2'
+      const unregisteredErrors = result.results[0].errors.filter(
+        e => e.tag === '@unregistered-tag1' || e.tag === '@unregistered-tag2'
       );
       expect(unregisteredErrors).toHaveLength(2);
 
@@ -647,8 +646,8 @@ Feature: User Login
       expect(result.results).toHaveLength(2);
 
       // And report unregistered tags with file locations
-      const invalidResult = result.results.find(r =>
-        r.file === 'spec/features/invalid.feature'
+      const invalidResult = result.results.find(
+        r => r.file === 'spec/features/invalid.feature'
       );
       expect(invalidResult).toBeDefined();
       expect(invalidResult!.valid).toBe(false);
@@ -657,8 +656,8 @@ Feature: User Login
 
       // And check for required tag categories (phase, component, feature-group)
       // (both files have phase and component tags, so they pass those checks)
-      const validResult = result.results.find(r =>
-        r.file === 'spec/features/valid.feature'
+      const validResult = result.results.find(
+        r => r.file === 'spec/features/valid.feature'
       );
       expect(validResult).toBeDefined();
       expect(validResult!.valid).toBe(true);
@@ -753,7 +752,10 @@ describe('Feature: Validate Work Unit Tags Against work-units.json', () => {
         },
         states: { implementing: ['AUTH-001'] },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       const featureContent = `@AUTH-001
 @phase1
@@ -778,13 +780,16 @@ Feature: OAuth Login
   describe('Scenario: Detect non-existent work unit tag', () => {
     it('should report work unit that does not exist', async () => {
       const featuresDir = join(testDir, 'spec', 'features');
-      await mkdir(featuresDir, { recursive: true});
+      await mkdir(featuresDir, { recursive: true });
 
       const workUnits = {
         workUnits: {},
         states: {},
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       const featureContent = `@AUTH-999
 @phase1
@@ -802,7 +807,9 @@ Feature: Test
       });
 
       expect(result.results[0].valid).toBe(false);
-      const workUnitError = result.results[0].errors.find(e => e.tag === '@AUTH-999');
+      const workUnitError = result.results[0].errors.find(
+        e => e.tag === '@AUTH-999'
+      );
       expect(workUnitError).toBeDefined();
       expect(workUnitError!.message).toContain('Work unit @AUTH-999 not found');
       expect(workUnitError!.suggestion).toContain('fspec create-work-unit');
@@ -816,12 +823,27 @@ Feature: Test
 
       const workUnits = {
         workUnits: {
-          'AUTH-001': { id: 'AUTH-001', title: 'Test 1', status: 'backlog', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-          'AUTH-002': { id: 'AUTH-002', title: 'Test 2', status: 'backlog', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+          'AUTH-001': {
+            id: 'AUTH-001',
+            title: 'Test 1',
+            status: 'backlog',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+          'AUTH-002': {
+            id: 'AUTH-002',
+            title: 'Test 2',
+            status: 'backlog',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
         },
         states: {},
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       const featureContent = `@phase1
 @cli
@@ -854,12 +876,27 @@ Feature: Test
 
       const workUnits = {
         workUnits: {
-          'AUTH-001': { id: 'AUTH-001', title: 'Test', status: 'backlog', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-          'AUTH-002': { id: 'AUTH-002', title: 'Test', status: 'backlog', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+          'AUTH-001': {
+            id: 'AUTH-001',
+            title: 'Test',
+            status: 'backlog',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+          'AUTH-002': {
+            id: 'AUTH-002',
+            title: 'Test',
+            status: 'backlog',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
         },
         states: {},
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       const featureContent = `@AUTH-001
 @phase1
@@ -883,7 +920,9 @@ Feature: Test
       });
 
       expect(result.results[0].valid).toBe(false);
-      const workUnitError = result.results[0].errors.find(e => e.tag === '@AUTH-999');
+      const workUnitError = result.results[0].errors.find(
+        e => e.tag === '@AUTH-999'
+      );
       expect(workUnitError).toBeDefined();
       expect(workUnitError!.message).toContain('@AUTH-999');
     });
@@ -894,7 +933,10 @@ Feature: Test
       const featuresDir = join(testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify({ workUnits: {}, states: {} }, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify({ workUnits: {}, states: {} }, null, 2)
+      );
 
       const featureContent = `@auth-001
 @phase1
@@ -912,7 +954,9 @@ Feature: Test
       });
 
       expect(result.results[0].valid).toBe(false);
-      const formatError = result.results[0].errors.find(e => e.tag === '@auth-001');
+      const formatError = result.results[0].errors.find(
+        e => e.tag === '@auth-001'
+      );
       expect(formatError).toBeDefined();
       expect(formatError!.message).toContain('Invalid work unit tag format');
       expect(formatError!.suggestion).toContain('@[A-Z]{2,6}-\\d+');
@@ -926,11 +970,20 @@ Feature: Test
 
       const workUnits = {
         workUnits: {
-          'AUTH-001': { id: 'AUTH-001', title: 'Test', status: 'backlog', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+          'AUTH-001': {
+            id: 'AUTH-001',
+            title: 'Test',
+            status: 'backlog',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
         },
         states: {},
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       const featureContent = `@AUTH-001
 @phase1

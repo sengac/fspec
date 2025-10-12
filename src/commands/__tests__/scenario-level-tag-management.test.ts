@@ -59,7 +59,11 @@ describe('Feature: Scenario-Level Tag Management', () => {
       ],
       combinationExamples: [],
       usageGuidelines: {
-        requiredCombinations: { title: '', requirements: [], minimumExample: '' },
+        requiredCombinations: {
+          title: '',
+          requirements: [],
+          minimumExample: '',
+        },
         recommendedCombinations: {
           title: '',
           includes: [],
@@ -128,7 +132,9 @@ Feature: User Login
         'utf-8'
       );
       expect(updatedContent).toContain('@smoke');
-      expect(updatedContent).toContain('Scenario: Login with valid credentials');
+      expect(updatedContent).toContain(
+        'Scenario: Login with valid credentials'
+      );
 
       // And the file should remain valid Gherkin
       expect(result.valid).toBe(true);
@@ -474,7 +480,7 @@ Feature: User Login
     });
   });
 
-  describe('Scenario: Preserve other scenarios when modifying one scenario\'s tags', () => {
+  describe("Scenario: Preserve other scenarios when modifying one scenario's tags", () => {
     it('should preserve other scenario tags unchanged', async () => {
       // Given I have a feature with two scenarios
       const featureContent = `Feature: Authentication

@@ -19,7 +19,9 @@ interface AddDependenciesResult {
   added: number;
 }
 
-export async function addDependencies(options: AddDependenciesOptions): Promise<AddDependenciesResult> {
+export async function addDependencies(
+  options: AddDependenciesOptions
+): Promise<AddDependenciesResult> {
   const cwd = options.cwd || process.cwd();
   let added = 0;
 

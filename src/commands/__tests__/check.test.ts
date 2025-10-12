@@ -23,14 +23,15 @@ describe('Feature: Run All Validations', () => {
         categories: [
           {
             title: 'Phase Tags',
-            tags: [
-              { name: '@phase1', description: 'Phase 1 features' }
-            ]
-          }
-        ]
+            tags: [{ name: '@phase1', description: 'Phase 1 features' }],
+          },
+        ],
       };
 
-      await writeFile(join(testDir, 'spec/tags.json'), JSON.stringify(tagsData, null, 2));
+      await writeFile(
+        join(testDir, 'spec/tags.json'),
+        JSON.stringify(tagsData, null, 2)
+      );
 
       const feature1 = `@phase1
 Feature: Feature 1
@@ -125,14 +126,15 @@ Feature: Broken
         categories: [
           {
             title: 'Phase Tags',
-            tags: [
-              { name: '@phase1', description: 'Phase 1 features' }
-            ]
-          }
-        ]
+            tags: [{ name: '@phase1', description: 'Phase 1 features' }],
+          },
+        ],
       };
 
-      await writeFile(join(testDir, 'spec/tags.json'), JSON.stringify(tagsData, null, 2));
+      await writeFile(
+        join(testDir, 'spec/tags.json'),
+        JSON.stringify(tagsData, null, 2)
+      );
 
       const feature = `@unknown-tag
 Feature: Test Feature
@@ -204,14 +206,15 @@ Feature: Broken
         categories: [
           {
             title: 'Phase Tags',
-            tags: [
-              { name: '@phase1', description: 'Phase 1 features' }
-            ]
-          }
-        ]
+            tags: [{ name: '@phase1', description: 'Phase 1 features' }],
+          },
+        ],
       };
 
-      await writeFile(join(testDir, 'spec/tags.json'), JSON.stringify(tagsData, null, 2));
+      await writeFile(
+        join(testDir, 'spec/tags.json'),
+        JSON.stringify(tagsData, null, 2)
+      );
 
       const badTag = `@bad-tag
 Feature: Bad Tag
@@ -276,14 +279,15 @@ Given step`;
         categories: [
           {
             title: 'Phase Tags',
-            tags: [
-              { name: '@phase1', description: 'Phase 1 features' }
-            ]
-          }
-        ]
+            tags: [{ name: '@phase1', description: 'Phase 1 features' }],
+          },
+        ],
       };
 
-      await writeFile(join(testDir, 'spec/tags.json'), JSON.stringify(tagsData, null, 2));
+      await writeFile(
+        join(testDir, 'spec/tags.json'),
+        JSON.stringify(tagsData, null, 2)
+      );
 
       for (let i = 1; i <= 10; i++) {
         const feature = `@phase1
@@ -355,14 +359,15 @@ Feature: Feature 5
         categories: [
           {
             title: 'Phase Tags',
-            tags: [
-              { name: '@phase1', description: 'Phase 1 features' }
-            ]
-          }
-        ]
+            tags: [{ name: '@phase1', description: 'Phase 1 features' }],
+          },
+        ],
       };
 
-      await writeFile(join(testDir, 'spec/tags.json'), JSON.stringify(tagsData, null, 2));
+      await writeFile(
+        join(testDir, 'spec/tags.json'),
+        JSON.stringify(tagsData, null, 2)
+      );
 
       for (let i = 1; i <= 3; i++) {
         const feature = `@phase1
@@ -398,14 +403,15 @@ Feature: Feature ${i}
         categories: [
           {
             title: 'Phase Tags',
-            tags: [
-              { name: '@phase1', description: 'Phase 1 features' }
-            ]
-          }
-        ]
+            tags: [{ name: '@phase1', description: 'Phase 1 features' }],
+          },
+        ],
       };
 
-      await writeFile(join(testDir, 'spec/tags.json'), JSON.stringify(tagsData, null, 2));
+      await writeFile(
+        join(testDir, 'spec/tags.json'),
+        JSON.stringify(tagsData, null, 2)
+      );
 
       for (let i = 1; i <= 100; i++) {
         const feature = `@phase1

@@ -11,7 +11,9 @@ interface ValidateWorkUnitsResult {
   errors?: string[];
 }
 
-export async function validateWorkUnits(options: ValidateWorkUnitsOptions = {}): Promise<ValidateWorkUnitsResult> {
+export async function validateWorkUnits(
+  options: ValidateWorkUnitsOptions = {}
+): Promise<ValidateWorkUnitsResult> {
   const cwd = options.cwd || process.cwd();
   const errors: string[] = [];
   const checks: string[] = [];
@@ -22,10 +24,14 @@ export async function validateWorkUnits(options: ValidateWorkUnitsOptions = {}):
   // Check 1: JSON schema compliance
   checks.push('schema');
   if (!workUnitsData.workUnits || typeof workUnitsData.workUnits !== 'object') {
-    errors.push('Invalid work units data structure: missing or invalid workUnits field');
+    errors.push(
+      'Invalid work units data structure: missing or invalid workUnits field'
+    );
   }
   if (!workUnitsData.states || typeof workUnitsData.states !== 'object') {
-    errors.push('Invalid work units data structure: missing or invalid states field');
+    errors.push(
+      'Invalid work units data structure: missing or invalid states field'
+    );
   }
 
   // Check 2: Unique IDs
@@ -41,14 +47,18 @@ export async function validateWorkUnits(options: ValidateWorkUnitsOptions = {}):
   for (const [id, workUnit] of Object.entries(workUnitsData.workUnits)) {
     // Check if parent exists
     if (workUnit.parent && !workUnitsData.workUnits[workUnit.parent]) {
-      errors.push(`Work unit ${id} references non-existent parent: ${workUnit.parent}`);
+      errors.push(
+        `Work unit ${id} references non-existent parent: ${workUnit.parent}`
+      );
     }
 
     // Check if parent has this work unit as a child
     if (workUnit.parent) {
       const parent = workUnitsData.workUnits[workUnit.parent];
       if (!parent.children || !parent.children.includes(id)) {
-        errors.push(`Work unit ${id} has parent ${workUnit.parent}, but parent doesn't list it as a child`);
+        errors.push(
+          `Work unit ${id} has parent ${workUnit.parent}, but parent doesn't list it as a child`
+        );
       }
     }
 
@@ -56,12 +66,16 @@ export async function validateWorkUnits(options: ValidateWorkUnitsOptions = {}):
     if (workUnit.children) {
       for (const childId of workUnit.children) {
         if (!workUnitsData.workUnits[childId]) {
-          errors.push(`Work unit ${id} references non-existent child: ${childId}`);
+          errors.push(
+            `Work unit ${id} references non-existent child: ${childId}`
+          );
         } else {
           // Check if child has this work unit as parent
           const child = workUnitsData.workUnits[childId];
           if (child.parent !== id) {
-            errors.push(`Work unit ${id} lists ${childId} as child, but child doesn't have it as parent`);
+            errors.push(
+              `Work unit ${id} lists ${childId} as child, but child doesn't have it as parent`
+            );
           }
         }
       }
@@ -69,7 +83,15 @@ export async function validateWorkUnits(options: ValidateWorkUnitsOptions = {}):
   }
 
   // Check 4: Valid state values
-  const allowedStates = ['backlog', 'specifying', 'testing', 'implementing', 'validating', 'done', 'blocked'];
+  const allowedStates = [
+    'backlog',
+    'specifying',
+    'testing',
+    'implementing',
+    'validating',
+    'done',
+    'blocked',
+  ];
   for (const [id, workUnit] of Object.entries(workUnitsData.workUnits)) {
     if (!allowedStates.includes(workUnit.status)) {
       errors.push(
@@ -108,8 +130,13 @@ export async function validateWorkUnits(options: ValidateWorkUnitsOptions = {}):
         errors.push(`Work unit ${id}: rules must be an array`);
       } else {
         for (let i = 0; i < workUnit.rules.length; i++) {
-          if (typeof workUnit.rules[i] !== 'string' || workUnit.rules[i].trim() === '') {
-            errors.push(`Work unit ${id}: rules array contains empty strings or non-strings at index ${i}`);
+          if (
+            typeof workUnit.rules[i] !== 'string' ||
+            workUnit.rules[i].trim() === ''
+          ) {
+            errors.push(
+              `Work unit ${id}: rules array contains empty strings or non-strings at index ${i}`
+            );
           }
         }
       }
@@ -121,8 +148,13 @@ export async function validateWorkUnits(options: ValidateWorkUnitsOptions = {}):
         errors.push(`Work unit ${id}: examples must be an array`);
       } else {
         for (let i = 0; i < workUnit.examples.length; i++) {
-          if (typeof workUnit.examples[i] !== 'string' || workUnit.examples[i].trim() === '') {
-            errors.push(`Work unit ${id}: examples array contains empty strings or non-strings at index ${i}`);
+          if (
+            typeof workUnit.examples[i] !== 'string' ||
+            workUnit.examples[i].trim() === ''
+          ) {
+            errors.push(
+              `Work unit ${id}: examples array contains empty strings or non-strings at index ${i}`
+            );
           }
         }
       }
@@ -138,22 +170,37 @@ export async function validateWorkUnits(options: ValidateWorkUnitsOptions = {}):
 
           // Must be an object (QuestionItem format)
           if (typeof question !== 'object' || question === null) {
-            errors.push(`Work unit ${id}: questions[${i}] must be a QuestionItem object with {text, selected, answer?}, got ${typeof question}`);
+            errors.push(
+              `Work unit ${id}: questions[${i}] must be a QuestionItem object with {text, selected, answer?}, got ${typeof question}`
+            );
             continue;
           }
 
           // Must have required fields
-          if (typeof question.text !== 'string' || question.text.trim() === '') {
-            errors.push(`Work unit ${id}: questions[${i}].text must be a non-empty string`);
+          if (
+            typeof question.text !== 'string' ||
+            question.text.trim() === ''
+          ) {
+            errors.push(
+              `Work unit ${id}: questions[${i}].text must be a non-empty string`
+            );
           }
 
           if (typeof question.selected !== 'boolean') {
-            errors.push(`Work unit ${id}: questions[${i}].selected must be a boolean`);
+            errors.push(
+              `Work unit ${id}: questions[${i}].selected must be a boolean`
+            );
           }
 
           // Optional answer field
-          if (question.answer !== undefined && (typeof question.answer !== 'string' || question.answer.trim() === '')) {
-            errors.push(`Work unit ${id}: questions[${i}].answer must be a non-empty string if provided`);
+          if (
+            question.answer !== undefined &&
+            (typeof question.answer !== 'string' ||
+              question.answer.trim() === '')
+          ) {
+            errors.push(
+              `Work unit ${id}: questions[${i}].answer must be a non-empty string if provided`
+            );
           }
         }
       }
@@ -169,7 +216,9 @@ export async function validateWorkUnits(options: ValidateWorkUnitsOptions = {}):
             typeof workUnit.assumptions[i] !== 'string' ||
             workUnit.assumptions[i].trim() === ''
           ) {
-            errors.push(`Work unit ${id}: assumptions array contains empty strings or non-strings at index ${i}`);
+            errors.push(
+              `Work unit ${id}: assumptions array contains empty strings or non-strings at index ${i}`
+            );
           }
         }
       }
@@ -185,8 +234,13 @@ export async function validateWorkUnits(options: ValidateWorkUnitsOptions = {}):
         errors.push(`Work unit ${id}: blocks must be an array`);
       } else {
         for (let i = 0; i < workUnit.blocks.length; i++) {
-          if (typeof workUnit.blocks[i] !== 'string' || workUnit.blocks[i].trim() === '') {
-            errors.push(`Work unit ${id}: blocks array contains empty strings or non-strings at index ${i}`);
+          if (
+            typeof workUnit.blocks[i] !== 'string' ||
+            workUnit.blocks[i].trim() === ''
+          ) {
+            errors.push(
+              `Work unit ${id}: blocks array contains empty strings or non-strings at index ${i}`
+            );
           }
         }
       }
@@ -198,8 +252,13 @@ export async function validateWorkUnits(options: ValidateWorkUnitsOptions = {}):
         errors.push(`Work unit ${id}: blockedBy must be an array`);
       } else {
         for (let i = 0; i < workUnit.blockedBy.length; i++) {
-          if (typeof workUnit.blockedBy[i] !== 'string' || workUnit.blockedBy[i].trim() === '') {
-            errors.push(`Work unit ${id}: blockedBy array contains empty strings or non-strings at index ${i}`);
+          if (
+            typeof workUnit.blockedBy[i] !== 'string' ||
+            workUnit.blockedBy[i].trim() === ''
+          ) {
+            errors.push(
+              `Work unit ${id}: blockedBy array contains empty strings or non-strings at index ${i}`
+            );
           }
         }
       }
@@ -211,8 +270,13 @@ export async function validateWorkUnits(options: ValidateWorkUnitsOptions = {}):
         errors.push(`Work unit ${id}: dependsOn must be an array`);
       } else {
         for (let i = 0; i < workUnit.dependsOn.length; i++) {
-          if (typeof workUnit.dependsOn[i] !== 'string' || workUnit.dependsOn[i].trim() === '') {
-            errors.push(`Work unit ${id}: dependsOn array contains empty strings or non-strings at index ${i}`);
+          if (
+            typeof workUnit.dependsOn[i] !== 'string' ||
+            workUnit.dependsOn[i].trim() === ''
+          ) {
+            errors.push(
+              `Work unit ${id}: dependsOn array contains empty strings or non-strings at index ${i}`
+            );
           }
         }
       }
@@ -224,8 +288,13 @@ export async function validateWorkUnits(options: ValidateWorkUnitsOptions = {}):
         errors.push(`Work unit ${id}: relatesTo must be an array`);
       } else {
         for (let i = 0; i < workUnit.relatesTo.length; i++) {
-          if (typeof workUnit.relatesTo[i] !== 'string' || workUnit.relatesTo[i].trim() === '') {
-            errors.push(`Work unit ${id}: relatesTo array contains empty strings or non-strings at index ${i}`);
+          if (
+            typeof workUnit.relatesTo[i] !== 'string' ||
+            workUnit.relatesTo[i].trim() === ''
+          ) {
+            errors.push(
+              `Work unit ${id}: relatesTo array contains empty strings or non-strings at index ${i}`
+            );
           }
         }
       }

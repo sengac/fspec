@@ -16,7 +16,9 @@ interface RemoveDependencyResult {
   success: boolean;
 }
 
-export async function removeDependency(options: RemoveDependencyOptions): Promise<RemoveDependencyResult> {
+export async function removeDependency(
+  options: RemoveDependencyOptions
+): Promise<RemoveDependencyResult> {
   const cwd = options.cwd || process.cwd();
 
   const data: WorkUnitsData = await ensureWorkUnitsFile(cwd);
@@ -41,7 +43,9 @@ export async function removeDependency(options: RemoveDependencyOptions): Promis
     if (data.workUnits[options.blocks]) {
       const targetWorkUnit = data.workUnits[options.blocks];
       if (targetWorkUnit.blockedBy) {
-        targetWorkUnit.blockedBy = targetWorkUnit.blockedBy.filter(id => id !== options.workUnitId);
+        targetWorkUnit.blockedBy = targetWorkUnit.blockedBy.filter(
+          id => id !== options.workUnitId
+        );
         if (targetWorkUnit.blockedBy.length === 0) {
           delete targetWorkUnit.blockedBy;
         }
@@ -52,7 +56,9 @@ export async function removeDependency(options: RemoveDependencyOptions): Promis
   // Remove blockedBy relationship (bidirectional cleanup)
   if (options.blockedBy) {
     if (workUnit.blockedBy) {
-      workUnit.blockedBy = workUnit.blockedBy.filter(id => id !== options.blockedBy);
+      workUnit.blockedBy = workUnit.blockedBy.filter(
+        id => id !== options.blockedBy
+      );
       if (workUnit.blockedBy.length === 0) {
         delete workUnit.blockedBy;
       }
@@ -62,7 +68,9 @@ export async function removeDependency(options: RemoveDependencyOptions): Promis
     if (data.workUnits[options.blockedBy]) {
       const targetWorkUnit = data.workUnits[options.blockedBy];
       if (targetWorkUnit.blocks) {
-        targetWorkUnit.blocks = targetWorkUnit.blocks.filter(id => id !== options.workUnitId);
+        targetWorkUnit.blocks = targetWorkUnit.blocks.filter(
+          id => id !== options.workUnitId
+        );
         if (targetWorkUnit.blocks.length === 0) {
           delete targetWorkUnit.blocks;
         }
@@ -73,7 +81,9 @@ export async function removeDependency(options: RemoveDependencyOptions): Promis
   // Remove dependsOn relationship (unidirectional)
   if (options.dependsOn) {
     if (workUnit.dependsOn) {
-      workUnit.dependsOn = workUnit.dependsOn.filter(id => id !== options.dependsOn);
+      workUnit.dependsOn = workUnit.dependsOn.filter(
+        id => id !== options.dependsOn
+      );
       if (workUnit.dependsOn.length === 0) {
         delete workUnit.dependsOn;
       }
@@ -83,7 +93,9 @@ export async function removeDependency(options: RemoveDependencyOptions): Promis
   // Remove relatesTo relationship (bidirectional cleanup)
   if (options.relatesTo) {
     if (workUnit.relatesTo) {
-      workUnit.relatesTo = workUnit.relatesTo.filter(id => id !== options.relatesTo);
+      workUnit.relatesTo = workUnit.relatesTo.filter(
+        id => id !== options.relatesTo
+      );
       if (workUnit.relatesTo.length === 0) {
         delete workUnit.relatesTo;
       }
@@ -93,7 +105,9 @@ export async function removeDependency(options: RemoveDependencyOptions): Promis
     if (data.workUnits[options.relatesTo]) {
       const targetWorkUnit = data.workUnits[options.relatesTo];
       if (targetWorkUnit.relatesTo) {
-        targetWorkUnit.relatesTo = targetWorkUnit.relatesTo.filter(id => id !== options.workUnitId);
+        targetWorkUnit.relatesTo = targetWorkUnit.relatesTo.filter(
+          id => id !== options.workUnitId
+        );
         if (targetWorkUnit.relatesTo.length === 0) {
           delete targetWorkUnit.relatesTo;
         }

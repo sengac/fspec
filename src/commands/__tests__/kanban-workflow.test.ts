@@ -26,18 +26,25 @@ describe('Feature: Kanban Workflow State Management', () => {
     await mkdir(featuresDir, { recursive: true });
 
     // Initialize work units file with states index
-    await writeFile(workUnitsFile, JSON.stringify({
-      workUnits: {},
-      states: {
-        backlog: [],
-        specifying: [],
-        testing: [],
-        implementing: [],
-        validating: [],
-        done: [],
-        blocked: []
-      }
-    }, null, 2));
+    await writeFile(
+      workUnitsFile,
+      JSON.stringify(
+        {
+          workUnits: {},
+          states: {
+            backlog: [],
+            specifying: [],
+            testing: [],
+            implementing: [],
+            validating: [],
+            done: [],
+            blocked: [],
+          },
+        },
+        null,
+        2
+      )
+    );
   });
 
   afterEach(async () => {
@@ -57,17 +64,23 @@ describe('Feature: Kanban Workflow State Management', () => {
         status: 'backlog',
         stateHistory: [{ state: 'backlog', timestamp: oldTimestamp }],
         createdAt: oldTimestamp,
-        updatedAt: oldTimestamp
+        updatedAt: oldTimestamp,
       };
       workUnits.states.backlog.push('AUTH-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       // When I run "fspec update-work-unit AUTH-001 --status=specifying"
-      await updateWorkUnit('AUTH-001', { status: 'specifying' }, { cwd: testDir });
+      await updateWorkUnit(
+        'AUTH-001',
+        { status: 'specifying' },
+        { cwd: testDir }
+      );
 
       // Then the command should succeed
       // And the work unit "AUTH-001" status should be "specifying"
-      const updatedWorkUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const updatedWorkUnits = JSON.parse(
+        await readFile(workUnitsFile, 'utf-8')
+      );
       expect(updatedWorkUnits.workUnits['AUTH-001'].status).toBe('specifying');
 
       // And the states.backlog array should not contain "AUTH-001"
@@ -77,11 +90,17 @@ describe('Feature: Kanban Workflow State Management', () => {
       expect(updatedWorkUnits.states.specifying).toContain('AUTH-001');
 
       // And the stateHistory should include transition from "backlog" to "specifying"
-      expect(updatedWorkUnits.workUnits['AUTH-001'].stateHistory).toHaveLength(2);
-      expect(updatedWorkUnits.workUnits['AUTH-001'].stateHistory[1].state).toBe('specifying');
+      expect(updatedWorkUnits.workUnits['AUTH-001'].stateHistory).toHaveLength(
+        2
+      );
+      expect(updatedWorkUnits.workUnits['AUTH-001'].stateHistory[1].state).toBe(
+        'specifying'
+      );
 
       // And the updatedAt timestamp should be updated
-      expect(updatedWorkUnits.workUnits['AUTH-001'].updatedAt).not.toBe(oldTimestamp);
+      expect(updatedWorkUnits.workUnits['AUTH-001'].updatedAt).not.toBe(
+        oldTimestamp
+      );
     });
   });
 
@@ -94,9 +113,11 @@ describe('Feature: Kanban Workflow State Management', () => {
         id: 'AUTH-001',
         title: 'OAuth login',
         status: 'backlog',
-        stateHistory: [{ state: 'backlog', timestamp: new Date().toISOString() }],
+        stateHistory: [
+          { state: 'backlog', timestamp: new Date().toISOString() },
+        ],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.backlog.push('AUTH-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
@@ -108,25 +129,50 @@ describe('Feature: Kanban Workflow State Management', () => {
       );
 
       // When I run state transitions through ACDD workflow
-      await updateWorkUnit('AUTH-001', { status: 'specifying' }, { cwd: testDir });
+      await updateWorkUnit(
+        'AUTH-001',
+        { status: 'specifying' },
+        { cwd: testDir }
+      );
       await updateWorkUnit('AUTH-001', { status: 'testing' }, { cwd: testDir });
-      await updateWorkUnit('AUTH-001', { status: 'implementing' }, { cwd: testDir });
-      await updateWorkUnit('AUTH-001', { status: 'validating' }, { cwd: testDir });
+      await updateWorkUnit(
+        'AUTH-001',
+        { status: 'implementing' },
+        { cwd: testDir }
+      );
+      await updateWorkUnit(
+        'AUTH-001',
+        { status: 'validating' },
+        { cwd: testDir }
+      );
       await updateWorkUnit('AUTH-001', { status: 'done' }, { cwd: testDir });
 
       // Then the work unit status should be "done"
-      const updatedWorkUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const updatedWorkUnits = JSON.parse(
+        await readFile(workUnitsFile, 'utf-8')
+      );
       expect(updatedWorkUnits.workUnits['AUTH-001'].status).toBe('done');
 
       // And the states.done array should contain "AUTH-001"
       expect(updatedWorkUnits.states.done).toContain('AUTH-001');
 
       // And the stateHistory should have 6 entries (initial + 5 transitions)
-      expect(updatedWorkUnits.workUnits['AUTH-001'].stateHistory).toHaveLength(6);
+      expect(updatedWorkUnits.workUnits['AUTH-001'].stateHistory).toHaveLength(
+        6
+      );
 
       // And the stateHistory should show ACDD progression
-      const states = updatedWorkUnits.workUnits['AUTH-001'].stateHistory.map((h: { state: string }) => h.state);
-      expect(states).toEqual(['backlog', 'specifying', 'testing', 'implementing', 'validating', 'done']);
+      const states = updatedWorkUnits.workUnits['AUTH-001'].stateHistory.map(
+        (h: { state: string }) => h.state
+      );
+      expect(states).toEqual([
+        'backlog',
+        'specifying',
+        'testing',
+        'implementing',
+        'validating',
+        'done',
+      ]);
     });
   });
 
@@ -139,9 +185,11 @@ describe('Feature: Kanban Workflow State Management', () => {
         id: 'AUTH-001',
         title: 'OAuth login',
         status: 'backlog',
-        stateHistory: [{ state: 'backlog', timestamp: new Date().toISOString() }],
+        stateHistory: [
+          { state: 'backlog', timestamp: new Date().toISOString() },
+        ],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.backlog.push('AUTH-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
@@ -174,10 +222,10 @@ describe('Feature: Kanban Workflow State Management', () => {
         status: 'specifying',
         stateHistory: [
           { state: 'backlog', timestamp: new Date().toISOString() },
-          { state: 'specifying', timestamp: new Date().toISOString() }
+          { state: 'specifying', timestamp: new Date().toISOString() },
         ],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.specifying.push('AUTH-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
@@ -212,10 +260,10 @@ describe('Feature: Kanban Workflow State Management', () => {
           { state: 'backlog', timestamp: new Date().toISOString() },
           { state: 'specifying', timestamp: new Date().toISOString() },
           { state: 'testing', timestamp: new Date().toISOString() },
-          { state: 'implementing', timestamp: new Date().toISOString() }
+          { state: 'implementing', timestamp: new Date().toISOString() },
         ],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.implementing.push('AUTH-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
@@ -244,23 +292,29 @@ describe('Feature: Kanban Workflow State Management', () => {
         status: 'implementing',
         stateHistory: [
           { state: 'backlog', timestamp: new Date().toISOString() },
-          { state: 'implementing', timestamp: new Date().toISOString() }
+          { state: 'implementing', timestamp: new Date().toISOString() },
         ],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.implementing.push('AUTH-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       // When I run "fspec update-work-unit AUTH-001 --status=blocked --blocked-reason='Waiting for API endpoint'"
-      await updateWorkUnit('AUTH-001', {
-        status: 'blocked',
-        blockedReason: 'Waiting for API endpoint'
-      }, { cwd: testDir });
+      await updateWorkUnit(
+        'AUTH-001',
+        {
+          status: 'blocked',
+          blockedReason: 'Waiting for API endpoint',
+        },
+        { cwd: testDir }
+      );
 
       // Then the command should succeed
       // And the work unit status should be "blocked"
-      const updatedWorkUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const updatedWorkUnits = JSON.parse(
+        await readFile(workUnitsFile, 'utf-8')
+      );
       expect(updatedWorkUnits.workUnits['AUTH-001'].status).toBe('blocked');
 
       // And the states.implementing array should not contain "AUTH-001"
@@ -270,12 +324,15 @@ describe('Feature: Kanban Workflow State Management', () => {
       expect(updatedWorkUnits.states.blocked).toContain('AUTH-001');
 
       // And the work unit should have blockedReason
-      expect(updatedWorkUnits.workUnits['AUTH-001'].blockedReason).toBe('Waiting for API endpoint');
+      expect(updatedWorkUnits.workUnits['AUTH-001'].blockedReason).toBe(
+        'Waiting for API endpoint'
+      );
 
       // And the stateHistory should record the blocked transition
-      const lastState = updatedWorkUnits.workUnits['AUTH-001'].stateHistory[
-        updatedWorkUnits.workUnits['AUTH-001'].stateHistory.length - 1
-      ];
+      const lastState =
+        updatedWorkUnits.workUnits['AUTH-001'].stateHistory[
+          updatedWorkUnits.workUnits['AUTH-001'].stateHistory.length - 1
+        ];
       expect(lastState.state).toBe('blocked');
     });
   });
@@ -293,24 +350,32 @@ describe('Feature: Kanban Workflow State Management', () => {
         stateHistory: [
           { state: 'backlog', timestamp: '2025-01-15T10:00:00Z' },
           { state: 'specifying', timestamp: '2025-01-15T11:00:00Z' },
-          { state: 'blocked', timestamp: '2025-01-15T12:00:00Z' }
+          { state: 'blocked', timestamp: '2025-01-15T12:00:00Z' },
         ],
         createdAt: '2025-01-15T10:00:00Z',
-        updatedAt: '2025-01-15T12:00:00Z'
+        updatedAt: '2025-01-15T12:00:00Z',
       };
       workUnits.states.blocked.push('AUTH-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       // When I run "fspec update-work-unit AUTH-001 --status=specifying"
-      await updateWorkUnit('AUTH-001', { status: 'specifying' }, { cwd: testDir });
+      await updateWorkUnit(
+        'AUTH-001',
+        { status: 'specifying' },
+        { cwd: testDir }
+      );
 
       // Then the command should succeed
       // And the work unit status should be "specifying"
-      const updatedWorkUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const updatedWorkUnits = JSON.parse(
+        await readFile(workUnitsFile, 'utf-8')
+      );
       expect(updatedWorkUnits.workUnits['AUTH-001'].status).toBe('specifying');
 
       // And the work unit blockedReason should be cleared
-      expect(updatedWorkUnits.workUnits['AUTH-001'].blockedReason).toBeUndefined();
+      expect(
+        updatedWorkUnits.workUnits['AUTH-001'].blockedReason
+      ).toBeUndefined();
 
       // And the states.blocked array should not contain "AUTH-001"
       expect(updatedWorkUnits.states.blocked).not.toContain('AUTH-001');
@@ -329,9 +394,11 @@ describe('Feature: Kanban Workflow State Management', () => {
         id: 'AUTH-001',
         title: 'OAuth login',
         status: 'implementing',
-        stateHistory: [{ state: 'implementing', timestamp: new Date().toISOString() }],
+        stateHistory: [
+          { state: 'implementing', timestamp: new Date().toISOString() },
+        ],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.implementing.push('AUTH-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
@@ -360,10 +427,10 @@ describe('Feature: Kanban Workflow State Management', () => {
         status: 'specifying',
         stateHistory: [
           { state: 'backlog', timestamp: new Date().toISOString() },
-          { state: 'specifying', timestamp: new Date().toISOString() }
+          { state: 'specifying', timestamp: new Date().toISOString() },
         ],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.specifying.push('AUTH-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
@@ -385,7 +452,9 @@ describe('Feature: Kanban Workflow State Management', () => {
       // And the error should suggest solution
       await expect(
         updateWorkUnit('AUTH-001', { status: 'testing' }, { cwd: testDir })
-      ).rejects.toThrow("Use 'fspec generate-scenarios AUTH-001' or manually tag scenarios");
+      ).rejects.toThrow(
+        "Use 'fspec generate-scenarios AUTH-001' or manually tag scenarios"
+      );
     });
   });
 
@@ -400,10 +469,10 @@ describe('Feature: Kanban Workflow State Management', () => {
         status: 'specifying',
         stateHistory: [
           { state: 'backlog', timestamp: new Date().toISOString() },
-          { state: 'specifying', timestamp: new Date().toISOString() }
+          { state: 'specifying', timestamp: new Date().toISOString() },
         ],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.specifying.push('AUTH-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
@@ -419,7 +488,9 @@ describe('Feature: Kanban Workflow State Management', () => {
 
       // Then the command should succeed
       // And the work unit status should be "testing"
-      const updatedWorkUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const updatedWorkUnits = JSON.parse(
+        await readFile(workUnitsFile, 'utf-8')
+      );
       expect(updatedWorkUnits.workUnits['AUTH-001'].status).toBe('testing');
     });
   });
@@ -435,10 +506,10 @@ describe('Feature: Kanban Workflow State Management', () => {
         status: 'specifying',
         stateHistory: [
           { state: 'backlog', timestamp: new Date().toISOString() },
-          { state: 'specifying', timestamp: new Date().toISOString() }
+          { state: 'specifying', timestamp: new Date().toISOString() },
         ],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.specifying.push('AUTH-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
@@ -450,11 +521,17 @@ describe('Feature: Kanban Workflow State Management', () => {
       );
 
       // When I run "fspec update-work-unit AUTH-001 --status=testing"
-      const result = await updateWorkUnit('AUTH-001', { status: 'testing' }, { cwd: testDir });
+      const result = await updateWorkUnit(
+        'AUTH-001',
+        { status: 'testing' },
+        { cwd: testDir }
+      );
 
       // Then the command should display warning (in result.warnings if returned)
       // But the transition should succeed
-      const updatedWorkUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const updatedWorkUnits = JSON.parse(
+        await readFile(workUnitsFile, 'utf-8')
+      );
       expect(updatedWorkUnits.workUnits['AUTH-001'].status).toBe('testing');
     });
   });
@@ -470,18 +547,22 @@ describe('Feature: Kanban Workflow State Management', () => {
         title: 'OAuth',
         status: 'validating',
         children: ['AUTH-002'],
-        stateHistory: [{ state: 'validating', timestamp: new Date().toISOString() }],
+        stateHistory: [
+          { state: 'validating', timestamp: new Date().toISOString() },
+        ],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['AUTH-002'] = {
         id: 'AUTH-002',
         title: 'Google provider',
         status: 'implementing',
         parent: 'AUTH-001',
-        stateHistory: [{ state: 'implementing', timestamp: new Date().toISOString() }],
+        stateHistory: [
+          { state: 'implementing', timestamp: new Date().toISOString() },
+        ],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.validating.push('AUTH-001');
       workUnits.states.implementing.push('AUTH-002');
@@ -519,9 +600,11 @@ describe('Feature: Kanban Workflow State Management', () => {
         title: 'OAuth',
         status: 'validating',
         children: ['AUTH-002', 'AUTH-003'],
-        stateHistory: [{ state: 'validating', timestamp: new Date().toISOString() }],
+        stateHistory: [
+          { state: 'validating', timestamp: new Date().toISOString() },
+        ],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['AUTH-002'] = {
         id: 'AUTH-002',
@@ -530,7 +613,7 @@ describe('Feature: Kanban Workflow State Management', () => {
         parent: 'AUTH-001',
         stateHistory: [{ state: 'done', timestamp: new Date().toISOString() }],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['AUTH-003'] = {
         id: 'AUTH-003',
@@ -539,7 +622,7 @@ describe('Feature: Kanban Workflow State Management', () => {
         parent: 'AUTH-001',
         stateHistory: [{ state: 'done', timestamp: new Date().toISOString() }],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.validating.push('AUTH-001');
       workUnits.states.done.push('AUTH-002', 'AUTH-003');
@@ -550,7 +633,9 @@ describe('Feature: Kanban Workflow State Management', () => {
 
       // Then the command should succeed
       // And the work unit "AUTH-001" status should be "done"
-      const updatedWorkUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const updatedWorkUnits = JSON.parse(
+        await readFile(workUnitsFile, 'utf-8')
+      );
       expect(updatedWorkUnits.workUnits['AUTH-001'].status).toBe('done');
     });
   });
@@ -564,12 +649,22 @@ describe('Feature: Kanban Workflow State Management', () => {
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       // When I run "fspec prioritize AUTH-003 --position=top"
-      await prioritizeWorkUnit('AUTH-003', { position: 'top' }, { cwd: testDir });
+      await prioritizeWorkUnit(
+        'AUTH-003',
+        { position: 'top' },
+        { cwd: testDir }
+      );
 
       // Then the command should succeed
       // And the states.backlog array should be reordered
-      const updatedWorkUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
-      expect(updatedWorkUnits.states.backlog).toEqual(['AUTH-003', 'AUTH-001', 'AUTH-002']);
+      const updatedWorkUnits = JSON.parse(
+        await readFile(workUnitsFile, 'utf-8')
+      );
+      expect(updatedWorkUnits.states.backlog).toEqual([
+        'AUTH-003',
+        'AUTH-001',
+        'AUTH-002',
+      ]);
     });
   });
 
@@ -582,12 +677,22 @@ describe('Feature: Kanban Workflow State Management', () => {
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       // When I run "fspec prioritize AUTH-001 --position=bottom"
-      await prioritizeWorkUnit('AUTH-001', { position: 'bottom' }, { cwd: testDir });
+      await prioritizeWorkUnit(
+        'AUTH-001',
+        { position: 'bottom' },
+        { cwd: testDir }
+      );
 
       // Then the command should succeed
       // And the states.backlog array should be reordered
-      const updatedWorkUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
-      expect(updatedWorkUnits.states.backlog).toEqual(['AUTH-002', 'AUTH-003', 'AUTH-001']);
+      const updatedWorkUnits = JSON.parse(
+        await readFile(workUnitsFile, 'utf-8')
+      );
+      expect(updatedWorkUnits.states.backlog).toEqual([
+        'AUTH-002',
+        'AUTH-003',
+        'AUTH-001',
+      ]);
     });
   });
 
@@ -600,12 +705,22 @@ describe('Feature: Kanban Workflow State Management', () => {
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       // When I run "fspec prioritize AUTH-003 --before=AUTH-002"
-      await prioritizeWorkUnit('AUTH-003', { before: 'AUTH-002' }, { cwd: testDir });
+      await prioritizeWorkUnit(
+        'AUTH-003',
+        { before: 'AUTH-002' },
+        { cwd: testDir }
+      );
 
       // Then the command should succeed
       // And the states.backlog array should be reordered
-      const updatedWorkUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
-      expect(updatedWorkUnits.states.backlog).toEqual(['AUTH-001', 'AUTH-003', 'AUTH-002']);
+      const updatedWorkUnits = JSON.parse(
+        await readFile(workUnitsFile, 'utf-8')
+      );
+      expect(updatedWorkUnits.states.backlog).toEqual([
+        'AUTH-001',
+        'AUTH-003',
+        'AUTH-002',
+      ]);
     });
   });
 
@@ -618,12 +733,22 @@ describe('Feature: Kanban Workflow State Management', () => {
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       // When I run "fspec prioritize AUTH-001 --after=AUTH-003"
-      await prioritizeWorkUnit('AUTH-001', { after: 'AUTH-003' }, { cwd: testDir });
+      await prioritizeWorkUnit(
+        'AUTH-001',
+        { after: 'AUTH-003' },
+        { cwd: testDir }
+      );
 
       // Then the command should succeed
       // And the states.backlog array should be reordered
-      const updatedWorkUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
-      expect(updatedWorkUnits.states.backlog).toEqual(['AUTH-002', 'AUTH-003', 'AUTH-001']);
+      const updatedWorkUnits = JSON.parse(
+        await readFile(workUnitsFile, 'utf-8')
+      );
+      expect(updatedWorkUnits.states.backlog).toEqual([
+        'AUTH-002',
+        'AUTH-003',
+        'AUTH-001',
+      ]);
     });
   });
 
@@ -632,7 +757,12 @@ describe('Feature: Kanban Workflow State Management', () => {
       // Given I have a project with spec directory
       // And the states.backlog array contains in order: "AUTH-001", "AUTH-002", "AUTH-003", "AUTH-004"
       const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
-      workUnits.states.backlog = ['AUTH-001', 'AUTH-002', 'AUTH-003', 'AUTH-004'];
+      workUnits.states.backlog = [
+        'AUTH-001',
+        'AUTH-002',
+        'AUTH-003',
+        'AUTH-004',
+      ];
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       // When I run "fspec prioritize AUTH-004 --position=1"
@@ -640,8 +770,15 @@ describe('Feature: Kanban Workflow State Management', () => {
 
       // Then the command should succeed
       // And the states.backlog array should be reordered
-      const updatedWorkUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
-      expect(updatedWorkUnits.states.backlog).toEqual(['AUTH-001', 'AUTH-004', 'AUTH-002', 'AUTH-003']);
+      const updatedWorkUnits = JSON.parse(
+        await readFile(workUnitsFile, 'utf-8')
+      );
+      expect(updatedWorkUnits.states.backlog).toEqual([
+        'AUTH-001',
+        'AUTH-004',
+        'AUTH-002',
+        'AUTH-003',
+      ]);
     });
   });
 
@@ -654,9 +791,11 @@ describe('Feature: Kanban Workflow State Management', () => {
         id: 'AUTH-001',
         title: 'OAuth',
         status: 'implementing',
-        stateHistory: [{ state: 'implementing', timestamp: new Date().toISOString() }],
+        stateHistory: [
+          { state: 'implementing', timestamp: new Date().toISOString() },
+        ],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.implementing.push('AUTH-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
@@ -682,9 +821,11 @@ describe('Feature: Kanban Workflow State Management', () => {
         id: 'AUTH-001',
         title: 'OAuth',
         status: 'backlog',
-        stateHistory: [{ state: 'backlog', timestamp: new Date().toISOString() }],
+        stateHistory: [
+          { state: 'backlog', timestamp: new Date().toISOString() },
+        ],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.backlog.push('AUTH-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
@@ -708,35 +849,48 @@ describe('Feature: Kanban Workflow State Management', () => {
         id: 'AUTH-001',
         title: 'OAuth',
         status: 'backlog',
-        stateHistory: [
-          { state: 'backlog', timestamp: '2025-01-15T10:00:00Z' }
-        ],
+        stateHistory: [{ state: 'backlog', timestamp: '2025-01-15T10:00:00Z' }],
         createdAt: '2025-01-15T10:00:00Z',
-        updatedAt: '2025-01-15T10:00:00Z'
+        updatedAt: '2025-01-15T10:00:00Z',
       };
       workUnits.states.backlog.push('AUTH-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       // Simulate multiple transitions (in real implementation, these would respect timestamps)
-      await updateWorkUnit('AUTH-001', { status: 'specifying' }, { cwd: testDir });
+      await updateWorkUnit(
+        'AUTH-001',
+        { status: 'specifying' },
+        { cwd: testDir }
+      );
 
       let updated = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
-      updated.workUnits['AUTH-001'].stateHistory[1].timestamp = '2025-01-15T11:00:00Z';
+      updated.workUnits['AUTH-001'].stateHistory[1].timestamp =
+        '2025-01-15T11:00:00Z';
       await writeFile(workUnitsFile, JSON.stringify(updated, null, 2));
 
-      await updateWorkUnit('AUTH-001', {
-        status: 'blocked',
-        blockedReason: 'Question'
-      }, { cwd: testDir });
+      await updateWorkUnit(
+        'AUTH-001',
+        {
+          status: 'blocked',
+          blockedReason: 'Question',
+        },
+        { cwd: testDir }
+      );
 
       updated = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
-      updated.workUnits['AUTH-001'].stateHistory[2].timestamp = '2025-01-15T12:00:00Z';
+      updated.workUnits['AUTH-001'].stateHistory[2].timestamp =
+        '2025-01-15T12:00:00Z';
       await writeFile(workUnitsFile, JSON.stringify(updated, null, 2));
 
-      await updateWorkUnit('AUTH-001', { status: 'specifying' }, { cwd: testDir });
+      await updateWorkUnit(
+        'AUTH-001',
+        { status: 'specifying' },
+        { cwd: testDir }
+      );
 
       updated = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
-      updated.workUnits['AUTH-001'].stateHistory[3].timestamp = '2025-01-15T14:00:00Z';
+      updated.workUnits['AUTH-001'].stateHistory[3].timestamp =
+        '2025-01-15T14:00:00Z';
       await writeFile(workUnitsFile, JSON.stringify(updated, null, 2));
 
       // Create scenario for testing transition
@@ -748,7 +902,8 @@ describe('Feature: Kanban Workflow State Management', () => {
       await updateWorkUnit('AUTH-001', { status: 'testing' }, { cwd: testDir });
 
       updated = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
-      updated.workUnits['AUTH-001'].stateHistory[4].timestamp = '2025-01-15T15:00:00Z';
+      updated.workUnits['AUTH-001'].stateHistory[4].timestamp =
+        '2025-01-15T15:00:00Z';
       await writeFile(workUnitsFile, JSON.stringify(updated, null, 2));
 
       // Then the stateHistory should have 5 entries
@@ -780,16 +935,19 @@ describe('Feature: Kanban Workflow State Management', () => {
           { state: 'testing', timestamp: '2025-01-15T13:00:00Z' },
           { state: 'implementing', timestamp: '2025-01-15T14:00:00Z' },
           { state: 'validating', timestamp: '2025-01-15T17:00:00Z' },
-          { state: 'done', timestamp: '2025-01-15T18:00:00Z' }
+          { state: 'done', timestamp: '2025-01-15T18:00:00Z' },
         ],
         createdAt: '2025-01-15T10:00:00Z',
-        updatedAt: '2025-01-15T18:00:00Z'
+        updatedAt: '2025-01-15T18:00:00Z',
       };
       workUnits.states.done.push('AUTH-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       // When I run "fspec query work-unit AUTH-001 --show-cycle-time"
-      const result = await queryWorkUnit('AUTH-001', { showCycleTime: true, cwd: testDir });
+      const result = await queryWorkUnit('AUTH-001', {
+        showCycleTime: true,
+        cwd: testDir,
+      });
 
       // Then the output should show duration for each state
       expect(result).toContain('backlog');
@@ -815,28 +973,39 @@ describe('Feature: Kanban Workflow State Management', () => {
         id: 'AUTH-001',
         title: 'OAuth',
         status: 'validating',
-        stateHistory: [{ state: 'validating', timestamp: new Date().toISOString() }],
+        stateHistory: [
+          { state: 'validating', timestamp: new Date().toISOString() },
+        ],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.validating.push('AUTH-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       // When I run "fspec update-work-unit AUTH-001 --status=implementing --reason='Test failures'"
-      await updateWorkUnit('AUTH-001', {
-        status: 'implementing',
-        reason: 'Test failures'
-      }, { cwd: testDir });
+      await updateWorkUnit(
+        'AUTH-001',
+        {
+          status: 'implementing',
+          reason: 'Test failures',
+        },
+        { cwd: testDir }
+      );
 
       // Then the command should succeed
       // And the work unit status should be "implementing"
-      const updatedWorkUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
-      expect(updatedWorkUnits.workUnits['AUTH-001'].status).toBe('implementing');
+      const updatedWorkUnits = JSON.parse(
+        await readFile(workUnitsFile, 'utf-8')
+      );
+      expect(updatedWorkUnits.workUnits['AUTH-001'].status).toBe(
+        'implementing'
+      );
 
       // And the stateHistory should record the reason
-      const lastEntry = updatedWorkUnits.workUnits['AUTH-001'].stateHistory[
-        updatedWorkUnits.workUnits['AUTH-001'].stateHistory.length - 1
-      ];
+      const lastEntry =
+        updatedWorkUnits.workUnits['AUTH-001'].stateHistory[
+          updatedWorkUnits.workUnits['AUTH-001'].stateHistory.length - 1
+        ];
       expect(lastEntry.reason).toBe('Test failures');
     });
   });
@@ -850,22 +1019,30 @@ describe('Feature: Kanban Workflow State Management', () => {
         id: 'AUTH-001',
         title: 'OAuth',
         status: 'validating',
-        stateHistory: [{ state: 'validating', timestamp: new Date().toISOString() }],
+        stateHistory: [
+          { state: 'validating', timestamp: new Date().toISOString() },
+        ],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.validating.push('AUTH-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       // When I run "fspec update-work-unit AUTH-001 --status=specifying --reason='Acceptance criteria incomplete'"
-      await updateWorkUnit('AUTH-001', {
-        status: 'specifying',
-        reason: 'Acceptance criteria incomplete'
-      }, { cwd: testDir });
+      await updateWorkUnit(
+        'AUTH-001',
+        {
+          status: 'specifying',
+          reason: 'Acceptance criteria incomplete',
+        },
+        { cwd: testDir }
+      );
 
       // Then the command should succeed
       // And the work unit status should be "specifying"
-      const updatedWorkUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const updatedWorkUnits = JSON.parse(
+        await readFile(workUnitsFile, 'utf-8')
+      );
       expect(updatedWorkUnits.workUnits['AUTH-001'].status).toBe('specifying');
     });
   });
@@ -881,10 +1058,10 @@ describe('Feature: Kanban Workflow State Management', () => {
         status: 'done',
         stateHistory: [
           { state: 'backlog', timestamp: new Date().toISOString() },
-          { state: 'done', timestamp: new Date().toISOString() }
+          { state: 'done', timestamp: new Date().toISOString() },
         ],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.done.push('AUTH-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
@@ -907,11 +1084,41 @@ describe('Feature: Kanban Workflow State Management', () => {
       // Given I have a project with spec directory
       // And work units exist in various states
       const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
-      workUnits.workUnits['AUTH-001'] = { id: 'AUTH-001', status: 'backlog', title: 'Auth 1', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
-      workUnits.workUnits['AUTH-002'] = { id: 'AUTH-002', status: 'specifying', title: 'Auth 2', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
-      workUnits.workUnits['AUTH-003'] = { id: 'AUTH-003', status: 'implementing', title: 'Auth 3', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
-      workUnits.workUnits['DASH-001'] = { id: 'DASH-001', status: 'implementing', title: 'Dash 1', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
-      workUnits.workUnits['API-001'] = { id: 'API-001', status: 'done', title: 'API 1', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+      workUnits.workUnits['AUTH-001'] = {
+        id: 'AUTH-001',
+        status: 'backlog',
+        title: 'Auth 1',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      workUnits.workUnits['AUTH-002'] = {
+        id: 'AUTH-002',
+        status: 'specifying',
+        title: 'Auth 2',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      workUnits.workUnits['AUTH-003'] = {
+        id: 'AUTH-003',
+        status: 'implementing',
+        title: 'Auth 3',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      workUnits.workUnits['DASH-001'] = {
+        id: 'DASH-001',
+        status: 'implementing',
+        title: 'Dash 1',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      workUnits.workUnits['API-001'] = {
+        id: 'API-001',
+        status: 'done',
+        title: 'API 1',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
       workUnits.states.backlog.push('AUTH-001');
       workUnits.states.specifying.push('AUTH-002');
       workUnits.states.implementing.push('AUTH-003', 'DASH-001');
@@ -919,7 +1126,11 @@ describe('Feature: Kanban Workflow State Management', () => {
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       // When I run "fspec query work-units --status=implementing --output=json"
-      const result = await queryWorkUnit(null, { status: 'implementing', output: 'json', cwd: testDir });
+      const result = await queryWorkUnit(null, {
+        status: 'implementing',
+        output: 'json',
+        cwd: testDir,
+      });
 
       // Then the output should be valid JSON
       const json = JSON.parse(result);
@@ -939,12 +1150,54 @@ describe('Feature: Kanban Workflow State Management', () => {
       // Given I have a project with spec directory
       // And work units exist across all states
       const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
-      workUnits.workUnits['AUTH-001'] = { id: 'AUTH-001', status: 'backlog', title: 'Auth 1', estimate: 5, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
-      workUnits.workUnits['AUTH-002'] = { id: 'AUTH-002', status: 'specifying', title: 'Auth 2', estimate: 8, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
-      workUnits.workUnits['AUTH-003'] = { id: 'AUTH-003', status: 'testing', title: 'Auth 3', estimate: 3, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
-      workUnits.workUnits['DASH-001'] = { id: 'DASH-001', status: 'implementing', title: 'Dash', estimate: 5, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
-      workUnits.workUnits['API-001'] = { id: 'API-001', status: 'validating', title: 'API', estimate: 5, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
-      workUnits.workUnits['SEC-001'] = { id: 'SEC-001', status: 'done', title: 'Security', estimate: 3, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+      workUnits.workUnits['AUTH-001'] = {
+        id: 'AUTH-001',
+        status: 'backlog',
+        title: 'Auth 1',
+        estimate: 5,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      workUnits.workUnits['AUTH-002'] = {
+        id: 'AUTH-002',
+        status: 'specifying',
+        title: 'Auth 2',
+        estimate: 8,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      workUnits.workUnits['AUTH-003'] = {
+        id: 'AUTH-003',
+        status: 'testing',
+        title: 'Auth 3',
+        estimate: 3,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      workUnits.workUnits['DASH-001'] = {
+        id: 'DASH-001',
+        status: 'implementing',
+        title: 'Dash',
+        estimate: 5,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      workUnits.workUnits['API-001'] = {
+        id: 'API-001',
+        status: 'validating',
+        title: 'API',
+        estimate: 5,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      workUnits.workUnits['SEC-001'] = {
+        id: 'SEC-001',
+        status: 'done',
+        title: 'Security',
+        estimate: 3,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
       workUnits.states.backlog.push('AUTH-001');
       workUnits.states.specifying.push('AUTH-002');
       workUnits.states.testing.push('AUTH-003');
@@ -991,7 +1244,7 @@ describe('Feature: Kanban Workflow State Management', () => {
         title: 'OAuth',
         status: 'invalid-state', // Invalid!
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
@@ -1023,7 +1276,7 @@ describe('Feature: Kanban Workflow State Management', () => {
         title: 'OAuth',
         status: 'implementing',
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.backlog.push('AUTH-001'); // Wrong array!
       // Note: states.implementing should contain AUTH-001 but doesn't
@@ -1037,10 +1290,14 @@ describe('Feature: Kanban Workflow State Management', () => {
 
       // And the error should explain the inconsistency
       expect(result.errors).toContain('State consistency error');
-      expect(result.errors).toContain("AUTH-001 has status 'implementing' but is in 'backlog' array");
+      expect(result.errors).toContain(
+        "AUTH-001 has status 'implementing' but is in 'backlog' array"
+      );
 
       // And the error should suggest repair
-      expect(result.errors).toContain("Run 'fspec repair-work-units' to fix inconsistencies");
+      expect(result.errors).toContain(
+        "Run 'fspec repair-work-units' to fix inconsistencies"
+      );
     });
   });
 
@@ -1054,7 +1311,7 @@ describe('Feature: Kanban Workflow State Management', () => {
         title: 'OAuth',
         status: 'implementing',
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.backlog.push('AUTH-001'); // Wrong!
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
@@ -1066,10 +1323,14 @@ describe('Feature: Kanban Workflow State Management', () => {
       expect(result.success).toBe(true);
 
       // And the command should report the fix
-      expect(result.message).toContain('Moved AUTH-001 from backlog to implementing');
+      expect(result.message).toContain(
+        'Moved AUTH-001 from backlog to implementing'
+      );
 
       // And the states should be corrected
-      const repairedWorkUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const repairedWorkUnits = JSON.parse(
+        await readFile(workUnitsFile, 'utf-8')
+      );
       expect(repairedWorkUnits.states.implementing).toContain('AUTH-001');
       expect(repairedWorkUnits.states.backlog).not.toContain('AUTH-001');
     });

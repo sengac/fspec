@@ -12,7 +12,7 @@ import {
   queryDependencyChain,
   queryCriticalPath,
   queryDependencyStats,
-  exportDependencies
+  exportDependencies,
 } from '../dependencies';
 import { validateWorkUnits, repairWorkUnits } from '../work-unit';
 import { queryWorkUnit } from '../work-unit';
@@ -29,18 +29,25 @@ describe('Feature: Work Unit Dependency Management', () => {
 
     await mkdir(specDir, { recursive: true });
 
-    await writeFile(workUnitsFile, JSON.stringify({
-      workUnits: {},
-      states: {
-        backlog: [],
-        specifying: [],
-        testing: [],
-        implementing: [],
-        validating: [],
-        done: [],
-        blocked: []
-      }
-    }, null, 2));
+    await writeFile(
+      workUnitsFile,
+      JSON.stringify(
+        {
+          workUnits: {},
+          states: {
+            backlog: [],
+            specifying: [],
+            testing: [],
+            implementing: [],
+            validating: [],
+            done: [],
+            blocked: [],
+          },
+        },
+        null,
+        2
+      )
+    );
   });
 
   afterEach(async () => {
@@ -56,7 +63,7 @@ describe('Feature: Work Unit Dependency Management', () => {
         status: 'backlog',
         relationships: {},
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
@@ -64,15 +71,19 @@ describe('Feature: Work Unit Dependency Management', () => {
         status: 'backlog',
         relationships: {},
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       await addDependency('AUTH-001', { blocks: 'API-001' }, { cwd: testDir });
 
       const updated = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
-      expect(updated.workUnits['AUTH-001'].relationships.blocks).toContain('API-001');
-      expect(updated.workUnits['API-001'].relationships.blockedBy).toContain('AUTH-001');
+      expect(updated.workUnits['AUTH-001'].relationships.blocks).toContain(
+        'API-001'
+      );
+      expect(updated.workUnits['API-001'].relationships.blockedBy).toContain(
+        'AUTH-001'
+      );
     });
   });
 
@@ -84,22 +95,26 @@ describe('Feature: Work Unit Dependency Management', () => {
         status: 'backlog',
         relationships: {},
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['API-001'] = {
         id: 'API-001',
         status: 'backlog',
         relationships: {},
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       await addDependency('UI-001', { blockedBy: 'API-001' }, { cwd: testDir });
 
       const updated = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
-      expect(updated.workUnits['UI-001'].relationships.blockedBy).toContain('API-001');
-      expect(updated.workUnits['API-001'].relationships.blocks).toContain('UI-001');
+      expect(updated.workUnits['UI-001'].relationships.blockedBy).toContain(
+        'API-001'
+      );
+      expect(updated.workUnits['API-001'].relationships.blocks).toContain(
+        'UI-001'
+      );
     });
   });
 
@@ -112,7 +127,7 @@ describe('Feature: Work Unit Dependency Management', () => {
         status: 'backlog',
         relationships: {},
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
@@ -120,15 +135,23 @@ describe('Feature: Work Unit Dependency Management', () => {
         status: 'backlog',
         relationships: {},
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
-      await addDependency('DASH-001', { dependsOn: 'AUTH-001' }, { cwd: testDir });
+      await addDependency(
+        'DASH-001',
+        { dependsOn: 'AUTH-001' },
+        { cwd: testDir }
+      );
 
       const updated = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
-      expect(updated.workUnits['DASH-001'].relationships.dependsOn).toContain('AUTH-001');
-      expect(updated.workUnits['AUTH-001'].relationships).not.toHaveProperty('dependedOnBy');
+      expect(updated.workUnits['DASH-001'].relationships.dependsOn).toContain(
+        'AUTH-001'
+      );
+      expect(updated.workUnits['AUTH-001'].relationships).not.toHaveProperty(
+        'dependedOnBy'
+      );
     });
   });
 
@@ -140,7 +163,7 @@ describe('Feature: Work Unit Dependency Management', () => {
         status: 'backlog',
         relationships: {},
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['SEC-001'] = {
         id: 'SEC-001',
@@ -148,14 +171,20 @@ describe('Feature: Work Unit Dependency Management', () => {
         status: 'backlog',
         relationships: {},
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
-      await addDependency('AUTH-001', { relatesTo: 'SEC-001' }, { cwd: testDir });
+      await addDependency(
+        'AUTH-001',
+        { relatesTo: 'SEC-001' },
+        { cwd: testDir }
+      );
 
       const updated = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
-      expect(updated.workUnits['AUTH-001'].relationships.relatesTo).toContain('SEC-001');
+      expect(updated.workUnits['AUTH-001'].relationships.relatesTo).toContain(
+        'SEC-001'
+      );
     });
   });
 
@@ -167,14 +196,14 @@ describe('Feature: Work Unit Dependency Management', () => {
         status: 'backlog',
         relationships: { blocks: ['B'] },
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['B'] = {
         id: 'B',
         status: 'backlog',
         relationships: { blockedBy: ['A'] },
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
@@ -196,21 +225,21 @@ describe('Feature: Work Unit Dependency Management', () => {
         status: 'backlog',
         relationships: { blocks: ['B'] },
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['B'] = {
         id: 'B',
         status: 'backlog',
         relationships: { blockedBy: ['A'], blocks: ['C'] },
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['C'] = {
         id: 'C',
         status: 'backlog',
         relationships: { blockedBy: ['B'] },
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
@@ -232,7 +261,7 @@ describe('Feature: Work Unit Dependency Management', () => {
         status: 'backlog',
         relationships: {},
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
@@ -250,7 +279,7 @@ describe('Feature: Work Unit Dependency Management', () => {
         status: 'backlog',
         relationships: {},
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
@@ -268,14 +297,14 @@ describe('Feature: Work Unit Dependency Management', () => {
         status: 'backlog',
         relationships: { blocks: ['API-001'] },
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['API-001'] = {
         id: 'API-001',
         status: 'backlog',
         relationships: { blockedBy: ['AUTH-001'] },
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
@@ -293,14 +322,14 @@ describe('Feature: Work Unit Dependency Management', () => {
         status: 'backlog',
         relationships: {},
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['API-001'] = {
         id: 'API-001',
         status: 'implementing',
         relationships: {},
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.backlog.push('UI-001');
       workUnits.states.implementing.push('API-001');
@@ -310,7 +339,9 @@ describe('Feature: Work Unit Dependency Management', () => {
 
       const updated = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
       expect(updated.workUnits['UI-001'].status).toBe('blocked');
-      expect(updated.workUnits['UI-001'].blockedReason).toContain('Blocked by API-001');
+      expect(updated.workUnits['UI-001'].blockedReason).toContain(
+        'Blocked by API-001'
+      );
     });
   });
 
@@ -322,22 +353,30 @@ describe('Feature: Work Unit Dependency Management', () => {
         status: 'backlog',
         relationships: { blocks: ['API-001'] },
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['API-001'] = {
         id: 'API-001',
         status: 'backlog',
         relationships: { blockedBy: ['AUTH-001'] },
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
-      await removeDependency('AUTH-001', { blocks: 'API-001' }, { cwd: testDir });
+      await removeDependency(
+        'AUTH-001',
+        { blocks: 'API-001' },
+        { cwd: testDir }
+      );
 
       const updated = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
-      expect(updated.workUnits['AUTH-001'].relationships.blocks).not.toContain('API-001');
-      expect(updated.workUnits['API-001'].relationships.blockedBy).not.toContain('AUTH-001');
+      expect(updated.workUnits['AUTH-001'].relationships.blocks).not.toContain(
+        'API-001'
+      );
+      expect(
+        updated.workUnits['API-001'].relationships.blockedBy
+      ).not.toContain('AUTH-001');
     });
   });
 
@@ -351,10 +390,10 @@ describe('Feature: Work Unit Dependency Management', () => {
         relationships: {
           blocks: ['API-001', 'UI-001'],
           dependsOn: ['DB-001'],
-          relatesTo: ['SEC-001']
+          relatesTo: ['SEC-001'],
         },
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
@@ -374,29 +413,33 @@ describe('Feature: Work Unit Dependency Management', () => {
         id: 'AUTH-001',
         relationships: { blocks: ['API-001', 'UI-001'] },
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['API-001'] = {
         id: 'API-001',
         relationships: { blocks: ['CACHE-001'] },
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['UI-001'] = {
         id: 'UI-001',
         relationships: {},
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['CACHE-001'] = {
         id: 'CACHE-001',
         relationships: {},
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
-      const output = await showDependencies('AUTH-001', { graph: true }, { cwd: testDir });
+      const output = await showDependencies(
+        'AUTH-001',
+        { graph: true },
+        { cwd: testDir }
+      );
 
       expect(output).toContain('AUTH-001');
       expect(output).toContain('API-001');
@@ -414,7 +457,7 @@ describe('Feature: Work Unit Dependency Management', () => {
         id: 'API-001',
         relationships: { blocks: ['UI-001', 'DASH-001', 'MOBILE-001'] },
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
@@ -435,25 +478,25 @@ describe('Feature: Work Unit Dependency Management', () => {
         id: 'AUTH-001',
         relationships: { blocks: ['API-001'] },
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['API-001'] = {
         id: 'API-001',
         relationships: { blocks: ['UI-001'] },
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['UI-001'] = {
         id: 'UI-001',
         relationships: { blocks: ['MOBILE-001'] },
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['MOBILE-001'] = {
         id: 'MOBILE-001',
         relationships: {},
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
@@ -472,39 +515,42 @@ describe('Feature: Work Unit Dependency Management', () => {
         estimate: 8,
         relationships: { blocks: ['API-001'] },
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['API-001'] = {
         id: 'API-001',
         estimate: 5,
         relationships: { blocks: ['UI-001'] },
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['UI-001'] = {
         id: 'UI-001',
         estimate: 3,
         relationships: { blocks: ['DEPLOY-1'] },
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['DB-001'] = {
         id: 'DB-001',
         estimate: 2,
         relationships: { blocks: ['DEPLOY-1'] },
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['DEPLOY-1'] = {
         id: 'DEPLOY-1',
         estimate: 0,
         relationships: {},
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
-      const output = await queryCriticalPath({ from: 'AUTH-001', to: 'DEPLOY-1' }, { cwd: testDir });
+      const output = await queryCriticalPath(
+        { from: 'AUTH-001', to: 'DEPLOY-1' },
+        { cwd: testDir }
+      );
 
       expect(output).toContain('AUTH-001 → API-001 → UI-001 → DEPLOY-1');
       expect(output).toContain('16 story points');
@@ -518,20 +564,22 @@ describe('Feature: Work Unit Dependency Management', () => {
         id: 'AUTH-001',
         relationships: { blocks: ['API-001'] },
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['API-001'] = {
         id: 'API-001',
         relationships: { blockedBy: ['AUTH-001'] },
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       const result = await validateWorkUnits({ cwd: testDir });
 
       expect(result.valid).toBe(true);
-      expect(result.checks).toContain('dependency arrays contain valid work unit IDs');
+      expect(result.checks).toContain(
+        'dependency arrays contain valid work unit IDs'
+      );
       expect(result.checks).toContain('bidirectional consistency');
     });
   });
@@ -543,13 +591,13 @@ describe('Feature: Work Unit Dependency Management', () => {
         id: 'AUTH-001',
         relationships: { blocks: ['API-001'] },
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['API-001'] = {
         id: 'API-001',
         relationships: {},
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
@@ -559,7 +607,9 @@ describe('Feature: Work Unit Dependency Management', () => {
       expect(result.message).toContain('Repaired 1 bidirectional dependency');
 
       const repaired = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
-      expect(repaired.workUnits['API-001'].relationships.blockedBy).toContain('AUTH-001');
+      expect(repaired.workUnits['API-001'].relationships.blockedBy).toContain(
+        'AUTH-001'
+      );
     });
   });
 
@@ -570,30 +620,33 @@ describe('Feature: Work Unit Dependency Management', () => {
         id: 'AUTH-001',
         relationships: { blocks: ['API-001'] },
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['API-001'] = {
         id: 'API-001',
         relationships: { blocks: ['UI-001'] },
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['DB-001'] = {
         id: 'DB-001',
         relationships: { blocks: ['API-001'] },
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['UI-001'] = {
         id: 'UI-001',
         relationships: {},
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       const outputPath = join(testDir, 'deps.mmd');
-      await exportDependencies({ format: 'mermaid', output: outputPath }, { cwd: testDir });
+      await exportDependencies(
+        { format: 'mermaid', output: outputPath },
+        { cwd: testDir }
+      );
 
       const mermaidContent = await readFile(outputPath, 'utf-8');
       expect(mermaidContent).toContain('graph TD');
@@ -613,21 +666,21 @@ describe('Feature: Work Unit Dependency Management', () => {
         status: 'backlog',
         relationships: {},
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['API-001'] = {
         id: 'API-001',
         status: 'backlog',
         relationships: {},
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['UI-001'] = {
         id: 'UI-001',
         status: 'backlog',
         relationships: {},
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
@@ -635,9 +688,15 @@ describe('Feature: Work Unit Dependency Management', () => {
       await addDependency('AUTH-001', { blocks: 'UI-001' }, { cwd: testDir });
 
       const updated = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
-      expect(updated.workUnits['AUTH-001'].relationships.blocks).toContain('API-001');
-      expect(updated.workUnits['AUTH-001'].relationships.blocks).toContain('UI-001');
-      expect(updated.workUnits['AUTH-001'].relationships.blocks).toHaveLength(2);
+      expect(updated.workUnits['AUTH-001'].relationships.blocks).toContain(
+        'API-001'
+      );
+      expect(updated.workUnits['AUTH-001'].relationships.blocks).toContain(
+        'UI-001'
+      );
+      expect(updated.workUnits['AUTH-001'].relationships.blocks).toHaveLength(
+        2
+      );
     });
   });
 
@@ -649,39 +708,53 @@ describe('Feature: Work Unit Dependency Management', () => {
         status: 'backlog',
         relationships: {},
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['API-001'] = {
         id: 'API-001',
         status: 'backlog',
         relationships: {},
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['DB-001'] = {
         id: 'DB-001',
         status: 'backlog',
         relationships: {},
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['SEC-001'] = {
         id: 'SEC-001',
         status: 'backlog',
         relationships: {},
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       await addDependency('AUTH-001', { blocks: 'API-001' }, { cwd: testDir });
-      await addDependency('AUTH-001', { dependsOn: 'DB-001' }, { cwd: testDir });
-      await addDependency('AUTH-001', { relatesTo: 'SEC-001' }, { cwd: testDir });
+      await addDependency(
+        'AUTH-001',
+        { dependsOn: 'DB-001' },
+        { cwd: testDir }
+      );
+      await addDependency(
+        'AUTH-001',
+        { relatesTo: 'SEC-001' },
+        { cwd: testDir }
+      );
 
       const updated = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
-      expect(updated.workUnits['AUTH-001'].relationships.blocks).toContain('API-001');
-      expect(updated.workUnits['AUTH-001'].relationships.dependsOn).toContain('DB-001');
-      expect(updated.workUnits['AUTH-001'].relationships.relatesTo).toContain('SEC-001');
+      expect(updated.workUnits['AUTH-001'].relationships.blocks).toContain(
+        'API-001'
+      );
+      expect(updated.workUnits['AUTH-001'].relationships.dependsOn).toContain(
+        'DB-001'
+      );
+      expect(updated.workUnits['AUTH-001'].relationships.relatesTo).toContain(
+        'SEC-001'
+      );
     });
   });
 
@@ -693,21 +766,27 @@ describe('Feature: Work Unit Dependency Management', () => {
         status: 'backlog',
         relationships: { dependsOn: ['AUTH-001'] },
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         status: 'backlog',
         relationships: {},
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
-      await removeDependency('DASH-001', { dependsOn: 'AUTH-001' }, { cwd: testDir });
+      await removeDependency(
+        'DASH-001',
+        { dependsOn: 'AUTH-001' },
+        { cwd: testDir }
+      );
 
       const updated = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
-      expect(updated.workUnits['DASH-001'].relationships.dependsOn || []).not.toContain('AUTH-001');
+      expect(
+        updated.workUnits['DASH-001'].relationships.dependsOn || []
+      ).not.toContain('AUTH-001');
     });
   });
 
@@ -719,28 +798,28 @@ describe('Feature: Work Unit Dependency Management', () => {
         status: 'backlog',
         relationships: { blocks: ['B'] },
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['B'] = {
         id: 'B',
         status: 'backlog',
         relationships: { blockedBy: ['A'], blocks: ['C'] },
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['C'] = {
         id: 'C',
         status: 'backlog',
         relationships: { blockedBy: ['B'], blocks: ['D'] },
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['D'] = {
         id: 'D',
         status: 'backlog',
         relationships: { blockedBy: ['C'] },
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
@@ -765,7 +844,7 @@ describe('Feature: Work Unit Dependency Management', () => {
         blockedReason: 'Blocked by API-001',
         relationships: { blockedBy: ['API-001'] },
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['API-001'] = {
         id: 'API-001',
@@ -773,7 +852,7 @@ describe('Feature: Work Unit Dependency Management', () => {
         status: 'validating',
         relationships: { blocks: ['UI-001'] },
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.blocked.push('UI-001');
       workUnits.states.validating.push('API-001');
@@ -798,7 +877,7 @@ describe('Feature: Work Unit Dependency Management', () => {
         blockedReason: 'Waiting on API',
         relationships: {},
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.blocked.push('UI-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
@@ -818,19 +897,19 @@ describe('Feature: Work Unit Dependency Management', () => {
         id: 'API-001',
         relationships: { blocks: ['UI-001', 'MOBILE-001'] },
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['UI-001'] = {
         id: 'UI-001',
         relationships: { blockedBy: ['API-001'] },
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['MOBILE-001'] = {
         id: 'MOBILE-001',
         relationships: { blockedBy: ['API-001'] },
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
@@ -850,7 +929,7 @@ describe('Feature: Work Unit Dependency Management', () => {
         status: 'blocked',
         relationships: {},
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['MOBILE-001'] = {
         id: 'MOBILE-001',
@@ -858,7 +937,7 @@ describe('Feature: Work Unit Dependency Management', () => {
         status: 'blocked',
         relationships: {},
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['API-001'] = {
         id: 'API-001',
@@ -866,13 +945,16 @@ describe('Feature: Work Unit Dependency Management', () => {
         status: 'implementing',
         relationships: {},
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.blocked.push('UI-001', 'MOBILE-001');
       workUnits.states.implementing.push('API-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
-      const output = await queryWorkUnit(null, { status: 'blocked', cwd: testDir });
+      const output = await queryWorkUnit(null, {
+        status: 'blocked',
+        cwd: testDir,
+      });
 
       expect(output).toContain('UI-001');
       expect(output).toContain('MOBILE-001');
@@ -891,7 +973,7 @@ describe('Feature: Work Unit Dependency Management', () => {
         blockedReason: 'Waiting on API',
         relationships: {},
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.blocked.push('UI-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
@@ -915,7 +997,7 @@ describe('Feature: Work Unit Dependency Management', () => {
         status: 'backlog',
         relationships: { blocks: ['API-001'] },
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['API-001'] = {
         id: 'API-001',
@@ -923,7 +1005,7 @@ describe('Feature: Work Unit Dependency Management', () => {
         status: 'backlog',
         relationships: { blockedBy: ['AUTH-001'] },
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.backlog.push('AUTH-001', 'API-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
@@ -944,7 +1026,7 @@ describe('Feature: Work Unit Dependency Management', () => {
         status: 'backlog',
         relationships: { blocks: ['API-001'] },
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['API-001'] = {
         id: 'API-001',
@@ -952,16 +1034,21 @@ describe('Feature: Work Unit Dependency Management', () => {
         status: 'backlog',
         relationships: { blockedBy: ['AUTH-001'] },
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.backlog.push('AUTH-001', 'API-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
-      await deleteWorkUnit('AUTH-001', { cwd: testDir, cascadeDependencies: true });
+      await deleteWorkUnit('AUTH-001', {
+        cwd: testDir,
+        cascadeDependencies: true,
+      });
 
       const updated = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
       expect(updated.workUnits['AUTH-001']).toBeUndefined();
-      expect(updated.workUnits['API-001'].relationships.blockedBy || []).not.toContain('AUTH-001');
+      expect(
+        updated.workUnits['API-001'].relationships.blockedBy || []
+      ).not.toContain('AUTH-001');
     });
   });
 
@@ -973,32 +1060,37 @@ describe('Feature: Work Unit Dependency Management', () => {
         status: 'backlog',
         relationships: {},
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['API-001'] = {
         id: 'API-001',
         status: 'backlog',
         relationships: {},
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['UI-001'] = {
         id: 'UI-001',
         status: 'backlog',
         relationships: {},
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
-      await addDependencies('AUTH-001', [
-        { blocks: 'API-001' },
-        { blocks: 'UI-001' }
-      ], { cwd: testDir });
+      await addDependencies(
+        'AUTH-001',
+        [{ blocks: 'API-001' }, { blocks: 'UI-001' }],
+        { cwd: testDir }
+      );
 
       const updated = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
-      expect(updated.workUnits['AUTH-001'].relationships.blocks).toContain('API-001');
-      expect(updated.workUnits['AUTH-001'].relationships.blocks).toContain('UI-001');
+      expect(updated.workUnits['AUTH-001'].relationships.blocks).toContain(
+        'API-001'
+      );
+      expect(updated.workUnits['AUTH-001'].relationships.blocks).toContain(
+        'UI-001'
+      );
     });
   });
 
@@ -1011,27 +1103,35 @@ describe('Feature: Work Unit Dependency Management', () => {
         relationships: {
           blocks: ['API-001'],
           dependsOn: ['DB-001'],
-          relatesTo: ['SEC-001']
+          relatesTo: ['SEC-001'],
         },
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['API-001'] = {
         id: 'API-001',
         status: 'backlog',
         relationships: { blockedBy: ['AUTH-001'] },
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       await clearDependencies('AUTH-001', { cwd: testDir });
 
       const updated = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
-      expect(updated.workUnits['AUTH-001'].relationships.blocks || []).toHaveLength(0);
-      expect(updated.workUnits['AUTH-001'].relationships.dependsOn || []).toHaveLength(0);
-      expect(updated.workUnits['AUTH-001'].relationships.relatesTo || []).toHaveLength(0);
-      expect(updated.workUnits['API-001'].relationships.blockedBy || []).not.toContain('AUTH-001');
+      expect(
+        updated.workUnits['AUTH-001'].relationships.blocks || []
+      ).toHaveLength(0);
+      expect(
+        updated.workUnits['AUTH-001'].relationships.dependsOn || []
+      ).toHaveLength(0);
+      expect(
+        updated.workUnits['AUTH-001'].relationships.relatesTo || []
+      ).toHaveLength(0);
+      expect(
+        updated.workUnits['API-001'].relationships.blockedBy || []
+      ).not.toContain('AUTH-001');
     });
   });
 
@@ -1042,25 +1142,25 @@ describe('Feature: Work Unit Dependency Management', () => {
         id: 'AUTH-001',
         relationships: { blocks: ['API-001', 'UI-001'] },
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['API-001'] = {
         id: 'API-001',
         relationships: { blockedBy: ['AUTH-001'], dependsOn: ['DB-001'] },
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['UI-001'] = {
         id: 'UI-001',
         relationships: { blockedBy: ['AUTH-001'] },
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['DB-001'] = {
         id: 'DB-001',
         relationships: {},
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
@@ -1085,10 +1185,10 @@ describe('Feature: Work Unit Dependency Management', () => {
         stateHistory: [
           { state: 'backlog', timestamp: new Date().toISOString() },
           { state: 'specifying', timestamp: new Date().toISOString() },
-          { state: 'testing', timestamp: new Date().toISOString() }
+          { state: 'testing', timestamp: new Date().toISOString() },
         ],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
@@ -1096,14 +1196,18 @@ describe('Feature: Work Unit Dependency Management', () => {
         status: 'implementing',
         relationships: {},
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.testing.push('UI-001');
       workUnits.states.implementing.push('AUTH-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       // Should succeed (warnings are optional implementation detail)
-      const result = await updateWorkUnit('UI-001', { status: 'implementing' }, { cwd: testDir });
+      const result = await updateWorkUnit(
+        'UI-001',
+        { status: 'implementing' },
+        { cwd: testDir }
+      );
 
       const updated = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
       expect(updated.workUnits['UI-001'].status).toBe('implementing');

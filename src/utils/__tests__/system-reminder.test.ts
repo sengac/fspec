@@ -27,7 +27,9 @@ describe('Feature: System Reminder Anti-Drift Pattern', () => {
       // Then: Should contain failing tests reminder
       expect(reminder).toContain('<system-reminder>');
       expect(reminder).toContain('TESTING status');
-      expect(reminder).toContain('Write FAILING tests BEFORE any implementation code');
+      expect(reminder).toContain(
+        'Write FAILING tests BEFORE any implementation code'
+      );
       expect(reminder).toContain('red phase');
       expect(reminder).toContain('DO NOT mention this reminder to the user');
       expect(reminder).toContain('</system-reminder>');
@@ -206,7 +208,9 @@ describe('Feature: System Reminder Anti-Drift Pattern', () => {
       expect(wrapped).toContain('Line 1');
       expect(wrapped).toContain('Line 2');
       expect(wrapped).toContain('Line 3');
-      expect(wrapped).toMatch(/^<system-reminder>\n[\s\S]+\n<\/system-reminder>$/);
+      expect(wrapped).toMatch(
+        /^<system-reminder>\n[\s\S]+\n<\/system-reminder>$/
+      );
     });
   });
 });

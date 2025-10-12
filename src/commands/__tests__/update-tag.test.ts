@@ -37,8 +37,16 @@ describe('Feature: Update Tag in Registry', () => {
         ],
         combinationExamples: [],
         usageGuidelines: {
-          requiredCombinations: { title: '', requirements: [], minimumExample: '' },
-          recommendedCombinations: { title: '', includes: [], recommendedExample: '' },
+          requiredCombinations: {
+            title: '',
+            requirements: [],
+            minimumExample: '',
+          },
+          recommendedCombinations: {
+            title: '',
+            includes: [],
+            recommendedExample: '',
+          },
           orderingConvention: { title: '', order: [], example: '' },
         },
         addingNewTags: {
@@ -73,9 +81,7 @@ describe('Feature: Update Tag in Registry', () => {
       // And the output should show "Successfully updated @phase1"
       expect(result.message).toContain('Successfully updated @phase1');
 
-      const updatedTagsJson = JSON.parse(
-        await readFile(tagsJsonPath, 'utf-8')
-      );
+      const updatedTagsJson = JSON.parse(await readFile(tagsJsonPath, 'utf-8'));
 
       // And the tag @phase1 description should be updated in TAGS.md
       const phaseCategory = updatedTagsJson.categories.find(
@@ -84,7 +90,9 @@ describe('Feature: Update Tag in Registry', () => {
       const phase1Tag = phaseCategory.tags.find(
         (t: any) => t.name === '@phase1'
       );
-      expect(phase1Tag.description).toBe('Phase 1 - Core validation and feature management');
+      expect(phase1Tag.description).toBe(
+        'Phase 1 - Core validation and feature management'
+      );
 
       // And the tag @phase1 category should remain unchanged
       expect(phaseCategory.name).toBe('Phase Tags');
@@ -118,8 +126,16 @@ describe('Feature: Update Tag in Registry', () => {
         ],
         combinationExamples: [],
         usageGuidelines: {
-          requiredCombinations: { title: '', requirements: [], minimumExample: '' },
-          recommendedCombinations: { title: '', includes: [], recommendedExample: '' },
+          requiredCombinations: {
+            title: '',
+            requirements: [],
+            minimumExample: '',
+          },
+          recommendedCombinations: {
+            title: '',
+            includes: [],
+            recommendedExample: '',
+          },
           orderingConvention: { title: '', order: [], example: '' },
         },
         addingNewTags: {
@@ -151,9 +167,7 @@ describe('Feature: Update Tag in Registry', () => {
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const updatedTagsJson = JSON.parse(
-        await readFile(tagsJsonPath, 'utf-8')
-      );
+      const updatedTagsJson = JSON.parse(await readFile(tagsJsonPath, 'utf-8'));
 
       // And the tag @deprecated should be moved to category "Tag Categories"
       const tagCategoriesCategory = updatedTagsJson.categories.find(
@@ -197,8 +211,16 @@ describe('Feature: Update Tag in Registry', () => {
         ],
         combinationExamples: [],
         usageGuidelines: {
-          requiredCombinations: { title: '', requirements: [], minimumExample: '' },
-          recommendedCombinations: { title: '', includes: [], recommendedExample: '' },
+          requiredCombinations: {
+            title: '',
+            requirements: [],
+            minimumExample: '',
+          },
+          recommendedCombinations: {
+            title: '',
+            includes: [],
+            recommendedExample: '',
+          },
           orderingConvention: { title: '', order: [], example: '' },
         },
         addingNewTags: {
@@ -231,9 +253,7 @@ describe('Feature: Update Tag in Registry', () => {
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const updatedTagsJson = JSON.parse(
-        await readFile(tagsJsonPath, 'utf-8')
-      );
+      const updatedTagsJson = JSON.parse(await readFile(tagsJsonPath, 'utf-8'));
 
       // And the tag @phase1 category should be "Tag Categories"
       const tagCategoriesCategory = updatedTagsJson.categories.find(
@@ -246,7 +266,9 @@ describe('Feature: Update Tag in Registry', () => {
         (t: any) => t.name === '@phase1'
       );
       expect(phase1Tag).toBeDefined();
-      expect(phase1Tag.description).toBe('Phase 1 - Core validation and feature management');
+      expect(phase1Tag.description).toBe(
+        'Phase 1 - Core validation and feature management'
+      );
     });
   });
 
@@ -266,8 +288,16 @@ describe('Feature: Update Tag in Registry', () => {
         ],
         combinationExamples: [],
         usageGuidelines: {
-          requiredCombinations: { title: '', requirements: [], minimumExample: '' },
-          recommendedCombinations: { title: '', includes: [], recommendedExample: '' },
+          requiredCombinations: {
+            title: '',
+            requirements: [],
+            minimumExample: '',
+          },
+          recommendedCombinations: {
+            title: '',
+            includes: [],
+            recommendedExample: '',
+          },
           orderingConvention: { title: '', order: [], example: '' },
         },
         addingNewTags: {
@@ -325,8 +355,16 @@ describe('Feature: Update Tag in Registry', () => {
         ],
         combinationExamples: [],
         usageGuidelines: {
-          requiredCombinations: { title: '', requirements: [], minimumExample: '' },
-          recommendedCombinations: { title: '', includes: [], recommendedExample: '' },
+          requiredCombinations: {
+            title: '',
+            requirements: [],
+            minimumExample: '',
+          },
+          recommendedCombinations: {
+            title: '',
+            includes: [],
+            recommendedExample: '',
+          },
           orderingConvention: { title: '', order: [], example: '' },
         },
         addingNewTags: {
@@ -388,8 +426,16 @@ describe('Feature: Update Tag in Registry', () => {
         ],
         combinationExamples: [],
         usageGuidelines: {
-          requiredCombinations: { title: '', requirements: [], minimumExample: '' },
-          recommendedCombinations: { title: '', includes: [], recommendedExample: '' },
+          requiredCombinations: {
+            title: '',
+            requirements: [],
+            minimumExample: '',
+          },
+          recommendedCombinations: {
+            title: '',
+            includes: [],
+            recommendedExample: '',
+          },
           orderingConvention: { title: '', order: [], example: '' },
         },
         addingNewTags: {
@@ -421,7 +467,9 @@ describe('Feature: Update Tag in Registry', () => {
       expect(result.success).toBe(false);
 
       // And the output should show "No updates specified. Use --category and/or --description"
-      expect(result.error).toContain('No updates specified. Use --category and/or --description');
+      expect(result.error).toContain(
+        'No updates specified. Use --category and/or --description'
+      );
     });
   });
 
@@ -461,8 +509,16 @@ describe('Feature: Update Tag in Registry', () => {
         ],
         combinationExamples: [],
         usageGuidelines: {
-          requiredCombinations: { title: '', requirements: [], minimumExample: '' },
-          recommendedCombinations: { title: '', includes: [], recommendedExample: '' },
+          requiredCombinations: {
+            title: '',
+            requirements: [],
+            minimumExample: '',
+          },
+          recommendedCombinations: {
+            title: '',
+            includes: [],
+            recommendedExample: '',
+          },
           orderingConvention: { title: '', order: [], example: '' },
         },
         addingNewTags: {
@@ -494,9 +550,7 @@ describe('Feature: Update Tag in Registry', () => {
       // Then only @phase1 should be modified
       expect(result.success).toBe(true);
 
-      const updatedTagsJson = JSON.parse(
-        await readFile(tagsJsonPath, 'utf-8')
-      );
+      const updatedTagsJson = JSON.parse(await readFile(tagsJsonPath, 'utf-8'));
 
       const phaseCategory = updatedTagsJson.categories.find(
         (c: any) => c.name === 'Phase Tags'
@@ -546,8 +600,16 @@ describe('Feature: Update Tag in Registry', () => {
         ],
         combinationExamples: [],
         usageGuidelines: {
-          requiredCombinations: { title: '', requirements: [], minimumExample: '' },
-          recommendedCombinations: { title: '', includes: [], recommendedExample: '' },
+          requiredCombinations: {
+            title: '',
+            requirements: [],
+            minimumExample: '',
+          },
+          recommendedCombinations: {
+            title: '',
+            includes: [],
+            recommendedExample: '',
+          },
           orderingConvention: { title: '', order: [], example: '' },
         },
         addingNewTags: {
@@ -579,19 +641,17 @@ describe('Feature: Update Tag in Registry', () => {
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const updatedTagsJson = JSON.parse(
-        await readFile(tagsJsonPath, 'utf-8')
-      );
+      const updatedTagsJson = JSON.parse(await readFile(tagsJsonPath, 'utf-8'));
 
       const featureCategory = updatedTagsJson.categories.find(
         (c: any) => c.name === 'Feature Tags'
       );
-      const authTag = featureCategory.tags.find(
-        (t: any) => t.name === '@auth'
-      );
+      const authTag = featureCategory.tags.find((t: any) => t.name === '@auth');
 
       // And the description should contain "&" and "2.0"
-      expect(authTag.description).toBe('Authentication & authorization with OAuth2.0');
+      expect(authTag.description).toBe(
+        'Authentication & authorization with OAuth2.0'
+      );
       expect(authTag.description).toContain('&');
       expect(authTag.description).toContain('2.0');
 
@@ -600,7 +660,9 @@ describe('Feature: Update Tag in Registry', () => {
         join(testDir, 'spec', 'TAGS.md'),
         'utf-8'
       );
-      expect(tagsMdContent).toContain('Authentication & authorization with OAuth2.0');
+      expect(tagsMdContent).toContain(
+        'Authentication & authorization with OAuth2.0'
+      );
     });
   });
 
@@ -629,8 +691,16 @@ describe('Feature: Update Tag in Registry', () => {
         ],
         combinationExamples: [],
         usageGuidelines: {
-          requiredCombinations: { title: '', requirements: [], minimumExample: '' },
-          recommendedCombinations: { title: '', includes: [], recommendedExample: '' },
+          requiredCombinations: {
+            title: '',
+            requirements: [],
+            minimumExample: '',
+          },
+          recommendedCombinations: {
+            title: '',
+            includes: [],
+            recommendedExample: '',
+          },
           orderingConvention: { title: '', order: [], example: '' },
         },
         addingNewTags: {
@@ -662,9 +732,7 @@ describe('Feature: Update Tag in Registry', () => {
       // Then the tags.json file should be updated
       expect(result.success).toBe(true);
 
-      const updatedTagsJson = JSON.parse(
-        await readFile(tagsJsonPath, 'utf-8')
-      );
+      const updatedTagsJson = JSON.parse(await readFile(tagsJsonPath, 'utf-8'));
 
       // And the tags.json should validate against tags.schema.json
       expect(updatedTagsJson.categories).toBeDefined();

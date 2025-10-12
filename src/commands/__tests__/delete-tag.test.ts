@@ -35,8 +35,16 @@ describe('Feature: Delete Tag from Registry', () => {
         ],
         combinationExamples: [],
         usageGuidelines: {
-          requiredCombinations: { title: '', requirements: [], minimumExample: '' },
-          recommendedCombinations: { title: '', includes: [], recommendedExample: '' },
+          requiredCombinations: {
+            title: '',
+            requirements: [],
+            minimumExample: '',
+          },
+          recommendedCombinations: {
+            title: '',
+            includes: [],
+            recommendedExample: '',
+          },
           orderingConvention: { title: '', order: [], example: '' },
         },
         addingNewTags: {
@@ -72,7 +80,9 @@ describe('Feature: Delete Tag from Registry', () => {
       const statusTags = updatedTags.categories.find(
         (c: any) => c.name === 'Status Tags'
       );
-      expect(statusTags.tags.find((t: any) => t.name === '@deprecated')).toBeUndefined();
+      expect(
+        statusTags.tags.find((t: any) => t.name === '@deprecated')
+      ).toBeUndefined();
 
       // And the TAGS.md structure should be preserved
       expect(statusTags.tags.find((t: any) => t.name === '@wip')).toBeDefined();
@@ -93,15 +103,21 @@ describe('Feature: Delete Tag from Registry', () => {
             name: 'Phase Tags',
             description: 'Phase tags',
             required: false,
-            tags: [
-              { name: '@phase1', description: 'Phase 1' },
-            ],
+            tags: [{ name: '@phase1', description: 'Phase 1' }],
           },
         ],
         combinationExamples: [],
         usageGuidelines: {
-          requiredCombinations: { title: '', requirements: [], minimumExample: '' },
-          recommendedCombinations: { title: '', includes: [], recommendedExample: '' },
+          requiredCombinations: {
+            title: '',
+            requirements: [],
+            minimumExample: '',
+          },
+          recommendedCombinations: {
+            title: '',
+            includes: [],
+            recommendedExample: '',
+          },
           orderingConvention: { title: '', order: [], example: '' },
         },
         addingNewTags: {
@@ -139,7 +155,9 @@ describe('Feature: Delete Tag from Registry', () => {
       expect(result.success).toBe(false);
 
       // And the output should show "Tag @phase1 is used in 5 feature file(s)"
-      expect(result.error).toContain('Tag @phase1 is used in 5 feature file(s)');
+      expect(result.error).toContain(
+        'Tag @phase1 is used in 5 feature file(s)'
+      );
 
       // And the output should list the feature files using the tag
       expect(result.error).toContain('feature1.feature');
@@ -149,7 +167,9 @@ describe('Feature: Delete Tag from Registry', () => {
       const phaseTags = updatedTags.categories.find(
         (c: any) => c.name === 'Phase Tags'
       );
-      expect(phaseTags.tags.find((t: any) => t.name === '@phase1')).toBeDefined();
+      expect(
+        phaseTags.tags.find((t: any) => t.name === '@phase1')
+      ).toBeDefined();
 
       // And the output should suggest using --force to delete anyway
       expect(result.error).toContain('--force');
@@ -167,15 +187,21 @@ describe('Feature: Delete Tag from Registry', () => {
             name: 'Status Tags',
             description: 'Status tags',
             required: false,
-            tags: [
-              { name: '@deprecated', description: 'Deprecated' },
-            ],
+            tags: [{ name: '@deprecated', description: 'Deprecated' }],
           },
         ],
         combinationExamples: [],
         usageGuidelines: {
-          requiredCombinations: { title: '', requirements: [], minimumExample: '' },
-          recommendedCombinations: { title: '', includes: [], recommendedExample: '' },
+          requiredCombinations: {
+            title: '',
+            requirements: [],
+            minimumExample: '',
+          },
+          recommendedCombinations: {
+            title: '',
+            includes: [],
+            recommendedExample: '',
+          },
           orderingConvention: { title: '', order: [], example: '' },
         },
         addingNewTags: {
@@ -223,10 +249,14 @@ describe('Feature: Delete Tag from Registry', () => {
       const statusTags = updatedTags.categories.find(
         (c: any) => c.name === 'Status Tags'
       );
-      expect(statusTags.tags.find((t: any) => t.name === '@deprecated')).toBeUndefined();
+      expect(
+        statusTags.tags.find((t: any) => t.name === '@deprecated')
+      ).toBeUndefined();
 
       // And the output should show warning about files still using the tag
-      expect(result.warning).toContain('Warning: Tag @deprecated is still used');
+      expect(result.warning).toContain(
+        'Warning: Tag @deprecated is still used'
+      );
 
       // And the output should list the 2 feature files
       expect(result.warning).toContain('old1.feature');
@@ -250,8 +280,16 @@ describe('Feature: Delete Tag from Registry', () => {
         ],
         combinationExamples: [],
         usageGuidelines: {
-          requiredCombinations: { title: '', requirements: [], minimumExample: '' },
-          recommendedCombinations: { title: '', includes: [], recommendedExample: '' },
+          requiredCombinations: {
+            title: '',
+            requirements: [],
+            minimumExample: '',
+          },
+          recommendedCombinations: {
+            title: '',
+            includes: [],
+            recommendedExample: '',
+          },
           orderingConvention: { title: '', order: [], example: '' },
         },
         addingNewTags: {
@@ -308,8 +346,16 @@ describe('Feature: Delete Tag from Registry', () => {
         ],
         combinationExamples: [],
         usageGuidelines: {
-          requiredCombinations: { title: '', requirements: [], minimumExample: '' },
-          recommendedCombinations: { title: '', includes: [], recommendedExample: '' },
+          requiredCombinations: {
+            title: '',
+            requirements: [],
+            minimumExample: '',
+          },
+          recommendedCombinations: {
+            title: '',
+            includes: [],
+            recommendedExample: '',
+          },
           orderingConvention: { title: '', order: [], example: '' },
         },
         addingNewTags: {
@@ -342,8 +388,12 @@ describe('Feature: Delete Tag from Registry', () => {
       const tagCategory = updatedTags.categories.find(
         (c: any) => c.name === 'Tag Categories'
       );
-      expect(tagCategory.tags.find((t: any) => t.name === '@phase1')).toBeDefined();
-      expect(tagCategory.tags.find((t: any) => t.name === '@phase3')).toBeDefined();
+      expect(
+        tagCategory.tags.find((t: any) => t.name === '@phase1')
+      ).toBeDefined();
+      expect(
+        tagCategory.tags.find((t: any) => t.name === '@phase3')
+      ).toBeDefined();
 
       // And the category "Tag Categories" should remain intact
       expect(tagCategory).toBeDefined();
@@ -370,8 +420,16 @@ describe('Feature: Delete Tag from Registry', () => {
         ],
         combinationExamples: [],
         usageGuidelines: {
-          requiredCombinations: { title: '', requirements: [], minimumExample: '' },
-          recommendedCombinations: { title: '', includes: [], recommendedExample: '' },
+          requiredCombinations: {
+            title: '',
+            requirements: [],
+            minimumExample: '',
+          },
+          recommendedCombinations: {
+            title: '',
+            includes: [],
+            recommendedExample: '',
+          },
           orderingConvention: { title: '', order: [], example: '' },
         },
         addingNewTags: {
@@ -407,10 +465,14 @@ describe('Feature: Delete Tag from Registry', () => {
       const technicalTags = updatedTags.categories.find(
         (c: any) => c.name === 'Technical Tags'
       );
-      expect(technicalTags.tags.find((t: any) => t.name === '@custom')).toBeUndefined();
+      expect(
+        technicalTags.tags.find((t: any) => t.name === '@custom')
+      ).toBeUndefined();
 
       // And other tags in "Technical Tags" should remain
-      expect(technicalTags.tags.find((t: any) => t.name === '@other')).toBeDefined();
+      expect(
+        technicalTags.tags.find((t: any) => t.name === '@other')
+      ).toBeDefined();
     });
   });
 
@@ -435,8 +497,16 @@ describe('Feature: Delete Tag from Registry', () => {
         ],
         combinationExamples: [],
         usageGuidelines: {
-          requiredCombinations: { title: '', requirements: [], minimumExample: '' },
-          recommendedCombinations: { title: '', includes: [], recommendedExample: '' },
+          requiredCombinations: {
+            title: '',
+            requirements: [],
+            minimumExample: '',
+          },
+          recommendedCombinations: {
+            title: '',
+            includes: [],
+            recommendedExample: '',
+          },
           orderingConvention: { title: '', order: [], example: '' },
         },
         addingNewTags: {
@@ -475,7 +545,9 @@ describe('Feature: Delete Tag from Registry', () => {
       expect(testTags.tags.length).toBe(9);
 
       // And the tag should not appear in tag statistics
-      expect(testTags.tags.find((t: any) => t.name === '@tag5')).toBeUndefined();
+      expect(
+        testTags.tags.find((t: any) => t.name === '@tag5')
+      ).toBeUndefined();
     });
   });
 
@@ -513,15 +585,21 @@ describe('Feature: Delete Tag from Registry', () => {
             name: 'Custom Category',
             description: 'Custom category',
             required: false,
-            tags: [
-              { name: '@lonely', description: 'Lonely tag' },
-            ],
+            tags: [{ name: '@lonely', description: 'Lonely tag' }],
           },
         ],
         combinationExamples: [],
         usageGuidelines: {
-          requiredCombinations: { title: '', requirements: [], minimumExample: '' },
-          recommendedCombinations: { title: '', includes: [], recommendedExample: '' },
+          requiredCombinations: {
+            title: '',
+            requirements: [],
+            minimumExample: '',
+          },
+          recommendedCombinations: {
+            title: '',
+            includes: [],
+            recommendedExample: '',
+          },
           orderingConvention: { title: '', order: [], example: '' },
         },
         addingNewTags: {
@@ -557,7 +635,9 @@ describe('Feature: Delete Tag from Registry', () => {
       const customCategory = updatedTags.categories.find(
         (c: any) => c.name === 'Custom Category'
       );
-      expect(customCategory.tags.find((t: any) => t.name === '@lonely')).toBeUndefined();
+      expect(
+        customCategory.tags.find((t: any) => t.name === '@lonely')
+      ).toBeUndefined();
 
       // And the category "Custom Category" should remain (empty)
       expect(customCategory).toBeDefined();
@@ -577,15 +657,21 @@ describe('Feature: Delete Tag from Registry', () => {
             name: 'Test Tags',
             description: 'Test tags',
             required: false,
-            tags: [
-              { name: '@test', description: 'Test tag' },
-            ],
+            tags: [{ name: '@test', description: 'Test tag' }],
           },
         ],
         combinationExamples: [],
         usageGuidelines: {
-          requiredCombinations: { title: '', requirements: [], minimumExample: '' },
-          recommendedCombinations: { title: '', includes: [], recommendedExample: '' },
+          requiredCombinations: {
+            title: '',
+            requirements: [],
+            minimumExample: '',
+          },
+          recommendedCombinations: {
+            title: '',
+            includes: [],
+            recommendedExample: '',
+          },
           orderingConvention: { title: '', order: [], example: '' },
         },
         addingNewTags: {
@@ -611,7 +697,11 @@ describe('Feature: Delete Tag from Registry', () => {
       await mkdir(join(testDir, 'spec', 'features'), { recursive: true });
 
       // When I run `fspec delete-tag @test --dry-run`
-      const result = await deleteTag({ tag: '@test', dryRun: true, cwd: testDir });
+      const result = await deleteTag({
+        tag: '@test',
+        dryRun: true,
+        cwd: testDir,
+      });
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
@@ -656,8 +746,16 @@ describe('Feature: Delete Tag from Registry', () => {
         ],
         combinationExamples: [],
         usageGuidelines: {
-          requiredCombinations: { title: '', requirements: [], minimumExample: '' },
-          recommendedCombinations: { title: '', includes: [], recommendedExample: '' },
+          requiredCombinations: {
+            title: '',
+            requirements: [],
+            minimumExample: '',
+          },
+          recommendedCombinations: {
+            title: '',
+            includes: [],
+            recommendedExample: '',
+          },
           orderingConvention: { title: '', order: [], example: '' },
         },
         addingNewTags: {
@@ -691,9 +789,7 @@ describe('Feature: Delete Tag from Registry', () => {
       // Then the tags.json file should be updated
       expect(result.success).toBe(true);
 
-      const updatedTagsJson = JSON.parse(
-        await readFile(tagsJsonPath, 'utf-8')
-      );
+      const updatedTagsJson = JSON.parse(await readFile(tagsJsonPath, 'utf-8'));
 
       // And the tags.json should validate against tags.schema.json
       expect(updatedTagsJson.categories).toBeDefined();

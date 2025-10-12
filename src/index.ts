@@ -102,35 +102,103 @@ const program = new Command();
 
 // Custom help display
 function displayCustomHelp(): void {
-  console.log(chalk.bold('\nfspec - Feature Specification & Project Management for AI Agents'));
+  console.log(
+    chalk.bold(
+      '\nfspec - Feature Specification & Project Management for AI Agents'
+    )
+  );
   console.log(chalk.dim('Version 0.0.1\n'));
 
   console.log(chalk.bold('USAGE'));
   console.log('  fspec [command] [options]\n');
 
   console.log(chalk.bold('COMMAND GROUPS'));
-  console.log('  Use ' + chalk.cyan('fspec help <group>') + ' for detailed help on a specific area:\n');
-  console.log('  ' + chalk.cyan('specs') + '     - Write and manage Gherkin feature files (create, edit, validate)');
-  console.log('  ' + chalk.cyan('work') + '      - Track work units through ACDD workflow (Kanban, dependencies, board)');
-  console.log('  ' + chalk.cyan('discovery') + ' - Collaborative discovery with example mapping (questions, rules, examples)');
-  console.log('  ' + chalk.cyan('metrics') + '   - Track progress and quality (estimates, metrics, reports, statistics)');
-  console.log('  ' + chalk.cyan('setup') + '     - Configure project structure (tags, epics, prefixes, foundation docs)');
+  console.log(
+    '  Use ' +
+      chalk.cyan('fspec help <group>') +
+      ' for detailed help on a specific area:\n'
+  );
+  console.log(
+    '  ' +
+      chalk.cyan('specs') +
+      '     - Write and manage Gherkin feature files (create, edit, validate)'
+  );
+  console.log(
+    '  ' +
+      chalk.cyan('work') +
+      '      - Track work units through ACDD workflow (Kanban, dependencies, board)'
+  );
+  console.log(
+    '  ' +
+      chalk.cyan('discovery') +
+      ' - Collaborative discovery with example mapping (questions, rules, examples)'
+  );
+  console.log(
+    '  ' +
+      chalk.cyan('metrics') +
+      '   - Track progress and quality (estimates, metrics, reports, statistics)'
+  );
+  console.log(
+    '  ' +
+      chalk.cyan('setup') +
+      '     - Configure project structure (tags, epics, prefixes, foundation docs)'
+  );
   console.log('');
 
   console.log(chalk.bold('QUICK START'));
-  console.log('  ' + chalk.cyan('fspec validate') + '              - Validate all Gherkin feature files');
-  console.log('  ' + chalk.cyan('fspec create-feature NAME') + '   - Create a new feature file');
-  console.log('  ' + chalk.cyan('fspec list-features') + '         - List all feature files');
-  console.log('  ' + chalk.cyan('fspec check') + '                 - Run all validation checks\n');
+  console.log(
+    '  ' +
+      chalk.cyan('fspec validate') +
+      '              - Validate all Gherkin feature files'
+  );
+  console.log(
+    '  ' +
+      chalk.cyan('fspec create-feature NAME') +
+      '   - Create a new feature file'
+  );
+  console.log(
+    '  ' +
+      chalk.cyan('fspec list-features') +
+      '         - List all feature files'
+  );
+  console.log(
+    '  ' +
+      chalk.cyan('fspec check') +
+      '                 - Run all validation checks\n'
+  );
 
   console.log(chalk.bold('GET HELP'));
-  console.log('  ' + chalk.cyan('fspec --help') + '            - Show this help');
-  console.log('  ' + chalk.cyan('fspec help specs') + '        - Gherkin feature file commands');
-  console.log('  ' + chalk.cyan('fspec help work') + '         - Work unit and Kanban workflow commands');
-  console.log('  ' + chalk.cyan('fspec help discovery') + '    - Example mapping commands');
-  console.log('  ' + chalk.cyan('fspec help metrics') + '      - Progress tracking and reporting commands');
-  console.log('  ' + chalk.cyan('fspec help setup') + '        - Configuration and setup commands');
-  console.log('  ' + chalk.cyan('fspec <command> --help') + '  - Detailed help for specific command\n');
+  console.log(
+    '  ' + chalk.cyan('fspec --help') + '            - Show this help'
+  );
+  console.log(
+    '  ' +
+      chalk.cyan('fspec help specs') +
+      '        - Gherkin feature file commands'
+  );
+  console.log(
+    '  ' +
+      chalk.cyan('fspec help work') +
+      '         - Work unit and Kanban workflow commands'
+  );
+  console.log(
+    '  ' + chalk.cyan('fspec help discovery') + '    - Example mapping commands'
+  );
+  console.log(
+    '  ' +
+      chalk.cyan('fspec help metrics') +
+      '      - Progress tracking and reporting commands'
+  );
+  console.log(
+    '  ' +
+      chalk.cyan('fspec help setup') +
+      '        - Configuration and setup commands'
+  );
+  console.log(
+    '  ' +
+      chalk.cyan('fspec <command> --help') +
+      '  - Detailed help for specific command\n'
+  );
 
   console.log(chalk.bold('EXAMPLES'));
   console.log('  # Validate specific feature file');
@@ -140,15 +208,27 @@ function displayCustomHelp(): void {
   console.log('  ' + chalk.dim('$ fspec list-features --tag=@phase1'));
   console.log('');
   console.log('  # Add scenario to feature');
-  console.log('  ' + chalk.dim('$ fspec add-scenario user-authentication "Login with valid credentials"'));
+  console.log(
+    '  ' +
+      chalk.dim(
+        '$ fspec add-scenario user-authentication "Login with valid credentials"'
+      )
+  );
   console.log('');
   console.log('  # Query scenarios by tags');
-  console.log('  ' + chalk.dim('$ fspec get-scenarios --tag=@phase1 --tag=@critical --format=json'));
+  console.log(
+    '  ' +
+      chalk.dim(
+        '$ fspec get-scenarios --tag=@phase1 --tag=@critical --format=json'
+      )
+  );
   console.log('');
 
   console.log(chalk.bold('DOCUMENTATION'));
   console.log('  GitHub: ' + chalk.cyan('https://github.com/rquast/fspec'));
-  console.log('  README: ' + chalk.dim('See README.md for detailed usage examples'));
+  console.log(
+    '  README: ' + chalk.dim('See README.md for detailed usage examples')
+  );
   console.log('');
 }
 
@@ -167,17 +247,29 @@ function displaySpecsHelp(): void {
   console.log('  • Bulk operations on features and scenarios\n');
 
   console.log(chalk.bold('FEATURES'));
-  console.log('  ' + chalk.cyan('fspec create-feature <name>') + '      Create new feature file');
+  console.log(
+    '  ' +
+      chalk.cyan('fspec create-feature <name>') +
+      '      Create new feature file'
+  );
   console.log('    Examples:');
   console.log('      fspec create-feature "User Authentication"');
   console.log('');
-  console.log('  ' + chalk.cyan('fspec list-features') + '              List all feature files');
+  console.log(
+    '  ' +
+      chalk.cyan('fspec list-features') +
+      '              List all feature files'
+  );
   console.log('    Options:');
   console.log('      --tag=<tag>                      Filter by tag');
   console.log('    Examples:');
   console.log('      fspec list-features --tag=@phase1');
   console.log('');
-  console.log('  ' + chalk.cyan('fspec show-feature <name>') + '         Show feature details');
+  console.log(
+    '  ' +
+      chalk.cyan('fspec show-feature <name>') +
+      '         Show feature details'
+  );
   console.log('    Options:');
   console.log('      --format <format>                Output: text or json');
   console.log('      --output <file>                  Write to file');
@@ -185,95 +277,173 @@ function displaySpecsHelp(): void {
   console.log('      fspec show-feature user-authentication');
   console.log('      fspec show-feature login --format=json');
   console.log('');
-  console.log('  ' + chalk.cyan('fspec delete-features-by-tag') + '      Delete features by tag');
+  console.log(
+    '  ' +
+      chalk.cyan('fspec delete-features-by-tag') +
+      '      Delete features by tag'
+  );
   console.log('    Options:');
   console.log('      --tag=<tag>                      Tag to match (required)');
-  console.log('      --dry-run                        Preview without deleting');
+  console.log(
+    '      --dry-run                        Preview without deleting'
+  );
   console.log('    Examples:');
   console.log('      fspec delete-features-by-tag --tag=@deprecated --dry-run');
   console.log('');
 
   console.log(chalk.bold('SCENARIOS'));
-  console.log('  ' + chalk.cyan('fspec add-scenario <feature> <title>') + ' Add scenario to feature');
+  console.log(
+    '  ' +
+      chalk.cyan('fspec add-scenario <feature> <title>') +
+      ' Add scenario to feature'
+  );
   console.log('    Examples:');
   console.log('      fspec add-scenario login "Login with valid credentials"');
   console.log('');
-  console.log('  ' + chalk.cyan('fspec update-scenario <feature> <old> <new>') + ' Update scenario name');
+  console.log(
+    '  ' +
+      chalk.cyan('fspec update-scenario <feature> <old> <new>') +
+      ' Update scenario name'
+  );
   console.log('    Examples:');
   console.log('      fspec update-scenario login "Old Name" "New Name"');
   console.log('');
-  console.log('  ' + chalk.cyan('fspec delete-scenario <feature> <title>') + ' Delete scenario');
+  console.log(
+    '  ' +
+      chalk.cyan('fspec delete-scenario <feature> <title>') +
+      ' Delete scenario'
+  );
   console.log('    Examples:');
   console.log('      fspec delete-scenario login "Deprecated scenario"');
   console.log('');
-  console.log('  ' + chalk.cyan('fspec get-scenarios') + '               Query scenarios by tag');
+  console.log(
+    '  ' +
+      chalk.cyan('fspec get-scenarios') +
+      '               Query scenarios by tag'
+  );
   console.log('    Options:');
-  console.log('      --tag=<tag>                      Filter by tag (AND logic)');
+  console.log(
+    '      --tag=<tag>                      Filter by tag (AND logic)'
+  );
   console.log('      --format=<format>                Output: text or json');
   console.log('    Examples:');
   console.log('      fspec get-scenarios --tag=@phase1 --tag=@critical');
   console.log('');
-  console.log('  ' + chalk.cyan('fspec show-acceptance-criteria') + '    Show acceptance criteria');
+  console.log(
+    '  ' +
+      chalk.cyan('fspec show-acceptance-criteria') +
+      '    Show acceptance criteria'
+  );
   console.log('    Options:');
   console.log('      --tag=<tag>                      Filter by tag');
-  console.log('      --format=<format>                Output: text, markdown, json');
+  console.log(
+    '      --format=<format>                Output: text, markdown, json'
+  );
   console.log('      --output=<file>                  Write to file');
   console.log('    Examples:');
-  console.log('      fspec show-acceptance-criteria --tag=@phase1 --format=markdown');
+  console.log(
+    '      fspec show-acceptance-criteria --tag=@phase1 --format=markdown'
+  );
   console.log('');
-  console.log('  ' + chalk.cyan('fspec delete-scenarios-by-tag') + '     Delete scenarios by tag');
+  console.log(
+    '  ' +
+      chalk.cyan('fspec delete-scenarios-by-tag') +
+      '     Delete scenarios by tag'
+  );
   console.log('    Options:');
   console.log('      --tag=<tag>                      Tag to match');
-  console.log('      --dry-run                        Preview without deleting');
+  console.log(
+    '      --dry-run                        Preview without deleting'
+  );
   console.log('');
 
   console.log(chalk.bold('STEPS'));
-  console.log('  ' + chalk.cyan('fspec add-step <feature> <scenario> <keyword> <text>'));
+  console.log(
+    '  ' + chalk.cyan('fspec add-step <feature> <scenario> <keyword> <text>')
+  );
   console.log('    Examples:');
-  console.log('      fspec add-step login "Valid login" given "I am on the login page"');
+  console.log(
+    '      fspec add-step login "Valid login" given "I am on the login page"'
+  );
   console.log('');
-  console.log('  ' + chalk.cyan('fspec update-step <feature> <scenario> <old-text>'));
+  console.log(
+    '  ' + chalk.cyan('fspec update-step <feature> <scenario> <old-text>')
+  );
   console.log('    Options:');
   console.log('      --text <new-text>                New step text');
-  console.log('      --keyword <keyword>              New keyword (Given/When/Then/And/But)');
+  console.log(
+    '      --keyword <keyword>              New keyword (Given/When/Then/And/But)'
+  );
   console.log('    Examples:');
-  console.log('      fspec update-step login "Valid" "old step" --text "new step"');
+  console.log(
+    '      fspec update-step login "Valid" "old step" --text "new step"'
+  );
   console.log('');
-  console.log('  ' + chalk.cyan('fspec delete-step <feature> <scenario> <text>'));
+  console.log(
+    '  ' + chalk.cyan('fspec delete-step <feature> <scenario> <text>')
+  );
   console.log('    Examples:');
-  console.log('      fspec delete-step login "Valid login" "I am on the login page"');
+  console.log(
+    '      fspec delete-step login "Valid login" "I am on the login page"'
+  );
   console.log('');
 
   console.log(chalk.bold('CONTENT'));
-  console.log('  ' + chalk.cyan('fspec add-background <feature> <text>') + ' Add/update background story');
+  console.log(
+    '  ' +
+      chalk.cyan('fspec add-background <feature> <text>') +
+      ' Add/update background story'
+  );
   console.log('    Examples:');
-  console.log('      fspec add-background login "As a user\\nI want to log in"');
+  console.log(
+    '      fspec add-background login "As a user\\nI want to log in"'
+  );
   console.log('');
-  console.log('  ' + chalk.cyan('fspec add-architecture <feature> <text>') + ' Add architecture notes');
+  console.log(
+    '  ' +
+      chalk.cyan('fspec add-architecture <feature> <text>') +
+      ' Add architecture notes'
+  );
   console.log('    Examples:');
   console.log('      fspec add-architecture login "Uses JWT tokens"');
   console.log('');
 
   console.log(chalk.bold('VALIDATION & FORMATTING'));
-  console.log('  ' + chalk.cyan('fspec validate') + '                   Validate Gherkin syntax');
+  console.log(
+    '  ' +
+      chalk.cyan('fspec validate') +
+      '                   Validate Gherkin syntax'
+  );
   console.log('    Options:');
   console.log('      --verbose                        Show detailed output');
   console.log('    Examples:');
   console.log('      fspec validate');
   console.log('      fspec validate spec/features/login.feature');
   console.log('');
-  console.log('  ' + chalk.cyan('fspec format') + '                     Format feature files');
+  console.log(
+    '  ' +
+      chalk.cyan('fspec format') +
+      '                     Format feature files'
+  );
   console.log('    Examples:');
   console.log('      fspec format');
   console.log('      fspec format spec/features/login.feature');
   console.log('');
-  console.log('  ' + chalk.cyan('fspec check') + '                      Run all validation checks');
+  console.log(
+    '  ' +
+      chalk.cyan('fspec check') +
+      '                      Run all validation checks'
+  );
   console.log('    Options:');
   console.log('      --verbose                        Show detailed output');
   console.log('    Examples:');
   console.log('      fspec check --verbose');
   console.log('');
-  console.log('  ' + chalk.cyan('fspec validate-tags') + '              Validate tag usage');
+  console.log(
+    '  ' +
+      chalk.cyan('fspec validate-tags') +
+      '              Validate tag usage'
+  );
   console.log('    Examples:');
   console.log('      fspec validate-tags');
   console.log('');
@@ -281,23 +451,35 @@ function displaySpecsHelp(): void {
   console.log(chalk.bold('TAG MANAGEMENT (Feature/Scenario Level)'));
   console.log('  ' + chalk.cyan('fspec add-tag-to-feature <file> <tag>'));
   console.log('    Options:');
-  console.log('      --validate-registry              Check tag exists in registry');
+  console.log(
+    '      --validate-registry              Check tag exists in registry'
+  );
   console.log('    Examples:');
-  console.log('      fspec add-tag-to-feature spec/features/login.feature @critical');
+  console.log(
+    '      fspec add-tag-to-feature spec/features/login.feature @critical'
+  );
   console.log('');
   console.log('  ' + chalk.cyan('fspec remove-tag-from-feature <file> <tag>'));
   console.log('    Examples:');
-  console.log('      fspec remove-tag-from-feature spec/features/login.feature @wip');
+  console.log(
+    '      fspec remove-tag-from-feature spec/features/login.feature @wip'
+  );
   console.log('');
   console.log('  ' + chalk.cyan('fspec list-feature-tags <file>'));
   console.log('    Options:');
   console.log('      --show-categories                Show tag categories');
   console.log('');
-  console.log('  ' + chalk.cyan('fspec add-tag-to-scenario <file> <scenario> <tag>'));
+  console.log(
+    '  ' + chalk.cyan('fspec add-tag-to-scenario <file> <scenario> <tag>')
+  );
   console.log('    Examples:');
-  console.log('      fspec add-tag-to-scenario login.feature "Valid login" @smoke');
+  console.log(
+    '      fspec add-tag-to-scenario login.feature "Valid login" @smoke'
+  );
   console.log('');
-  console.log('  ' + chalk.cyan('fspec remove-tag-from-scenario <file> <scenario> <tag>'));
+  console.log(
+    '  ' + chalk.cyan('fspec remove-tag-from-scenario <file> <scenario> <tag>')
+  );
   console.log('  ' + chalk.cyan('fspec list-scenario-tags <file> <scenario>'));
   console.log('');
 }
@@ -308,7 +490,9 @@ function displayWorkHelp(): void {
 
   console.log('Use this when you need to:');
   console.log('  • Create and organize work units into a backlog');
-  console.log('  • Move work through Kanban states (backlog → specifying → testing → implementing → validating → done)');
+  console.log(
+    '  • Move work through Kanban states (backlog → specifying → testing → implementing → validating → done)'
+  );
   console.log('  • Prioritize work in the backlog');
   console.log('  • Manage dependencies between work units');
   console.log('  • Block work units when progress is prevented');
@@ -323,7 +507,9 @@ function displayWorkHelp(): void {
   console.log('      --description <desc>             Work unit description');
   console.log('    Examples:');
   console.log('      fspec create-work-unit AUTH "User login feature"');
-  console.log('      fspec create-work-unit DASH "Dashboard" -e user-management');
+  console.log(
+    '      fspec create-work-unit DASH "Dashboard" -e user-management'
+  );
   console.log('');
   console.log('  ' + chalk.cyan('fspec list-work-units'));
   console.log('    Options:');
@@ -352,15 +538,23 @@ function displayWorkHelp(): void {
   console.log('      fspec update-work-unit-status AUTH-001 specifying');
   console.log('      fspec update-work-unit-status AUTH-001 implementing');
   console.log('');
-  console.log('  ' + chalk.cyan('fspec update-work-unit-estimate <id> <estimate>'));
+  console.log(
+    '  ' + chalk.cyan('fspec update-work-unit-estimate <id> <estimate>')
+  );
   console.log('    Examples:');
   console.log('      fspec update-work-unit-estimate AUTH-001 5');
   console.log('');
   console.log('  ' + chalk.cyan('fspec prioritize-work-unit <id>'));
   console.log('    Options:');
-  console.log('      --position <position>            Position: top, bottom, or number');
-  console.log('      --before <id>                    Place before this work unit');
-  console.log('      --after <id>                     Place after this work unit');
+  console.log(
+    '      --position <position>            Position: top, bottom, or number'
+  );
+  console.log(
+    '      --before <id>                    Place before this work unit'
+  );
+  console.log(
+    '      --after <id>                     Place after this work unit'
+  );
   console.log('    Examples:');
   console.log('      fspec prioritize-work-unit AUTH-003 --position=top');
   console.log('      fspec prioritize-work-unit AUTH-001 --before=AUTH-002');
@@ -393,35 +587,67 @@ function displayWorkHelp(): void {
   console.log('      --epic <epic>                    Filter by epic');
   console.log('      --format <format>                Output: text or json');
   console.log('    Examples:');
-  console.log('      fspec query-work-units --status=implementing --format=json');
+  console.log(
+    '      fspec query-work-units --status=implementing --format=json'
+  );
   console.log('');
 
   console.log(chalk.bold('DEPENDENCIES'));
   console.log('  ' + chalk.cyan('fspec add-dependency <id> [depends-on-id]'));
-  console.log('    Description: Add dependency relationship (shorthand or options)');
+  console.log(
+    '    Description: Add dependency relationship (shorthand or options)'
+  );
   console.log('    Options:');
-  console.log('      --blocks <id>                    Work unit that this blocks');
-  console.log('      --blocked-by <id>                Work unit that blocks this');
-  console.log('      --depends-on <id>                Work unit this depends on');
+  console.log(
+    '      --blocks <id>                    Work unit that this blocks'
+  );
+  console.log(
+    '      --blocked-by <id>                Work unit that blocks this'
+  );
+  console.log(
+    '      --depends-on <id>                Work unit this depends on'
+  );
   console.log('      --relates-to <id>                Related work unit');
   console.log('    Examples:');
-  console.log('      fspec add-dependency AUTH-002 AUTH-001              # Shorthand: AUTH-002 depends on AUTH-001');
-  console.log('      fspec add-dependency AUTH-002 --blocks=API-001      # AUTH-002 blocks API-001');
-  console.log('      fspec add-dependency UI-001 --blocked-by=API-001    # UI-001 is blocked by API-001');
+  console.log(
+    '      fspec add-dependency AUTH-002 AUTH-001              # Shorthand: AUTH-002 depends on AUTH-001'
+  );
+  console.log(
+    '      fspec add-dependency AUTH-002 --blocks=API-001      # AUTH-002 blocks API-001'
+  );
+  console.log(
+    '      fspec add-dependency UI-001 --blocked-by=API-001    # UI-001 is blocked by API-001'
+  );
   console.log('');
-  console.log('  ' + chalk.cyan('fspec add-dependencies <id> <dep1> <dep2>...'));
+  console.log(
+    '  ' + chalk.cyan('fspec add-dependencies <id> <dep1> <dep2>...')
+  );
   console.log('    Examples:');
   console.log('      fspec add-dependencies DASH-001 AUTH-001 AUTH-002');
   console.log('');
-  console.log('  ' + chalk.cyan('fspec remove-dependency <id> [depends-on-id]'));
+  console.log(
+    '  ' + chalk.cyan('fspec remove-dependency <id> [depends-on-id]')
+  );
   console.log('    Options:');
-  console.log('      --blocks <id>                    Remove blocks relationship');
-  console.log('      --blocked-by <id>                Remove blockedBy relationship');
-  console.log('      --depends-on <id>                Remove dependsOn relationship');
-  console.log('      --relates-to <id>                Remove relatesTo relationship');
+  console.log(
+    '      --blocks <id>                    Remove blocks relationship'
+  );
+  console.log(
+    '      --blocked-by <id>                Remove blockedBy relationship'
+  );
+  console.log(
+    '      --depends-on <id>                Remove dependsOn relationship'
+  );
+  console.log(
+    '      --relates-to <id>                Remove relatesTo relationship'
+  );
   console.log('    Examples:');
-  console.log('      fspec remove-dependency AUTH-002 AUTH-001           # Remove dependsOn');
-  console.log('      fspec remove-dependency AUTH-002 --blocks=API-001   # Remove blocks');
+  console.log(
+    '      fspec remove-dependency AUTH-002 AUTH-001           # Remove dependsOn'
+  );
+  console.log(
+    '      fspec remove-dependency AUTH-002 --blocks=API-001   # Remove blocks'
+  );
   console.log('');
   console.log('  ' + chalk.cyan('fspec clear-dependencies <id>'));
   console.log('    Examples:');
@@ -450,7 +676,9 @@ function displayWorkHelp(): void {
   console.log('  ' + chalk.cyan('fspec auto-advance'));
   console.log('    Description: Automatically advance ready work units');
   console.log('    Options:');
-  console.log('      --dry-run                        Show what would be advanced');
+  console.log(
+    '      --dry-run                        Show what would be advanced'
+  );
   console.log('    Examples:');
   console.log('      fspec auto-advance --dry-run');
   console.log('      fspec auto-advance');
@@ -458,8 +686,12 @@ function displayWorkHelp(): void {
   console.log('  ' + chalk.cyan('fspec board'));
   console.log('    Description: Display Kanban board of all work');
   console.log('    Options:');
-  console.log('      --format <format>                Output: text or json (default: text)');
-  console.log('      --limit <limit>                  Max items per column (default: 25)');
+  console.log(
+    '      --format <format>                Output: text or json (default: text)'
+  );
+  console.log(
+    '      --limit <limit>                  Max items per column (default: 25)'
+  );
   console.log('    Examples:');
   console.log('      fspec board');
   console.log('      fspec board --format=json');
@@ -491,7 +723,9 @@ function displayDiscoveryHelp(): void {
   console.log('  ' + chalk.cyan('fspec add-example <work-unit-id> <example>'));
   console.log('    Description: Add example to work unit during specification');
   console.log('    Examples:');
-  console.log('      fspec add-example AUTH-001 "User logs in with valid email"');
+  console.log(
+    '      fspec add-example AUTH-001 "User logs in with valid email"'
+  );
   console.log('');
   console.log('  ' + chalk.cyan('fspec remove-example <work-unit-id> <index>'));
   console.log('    Description: Remove example by index (0-based)');
@@ -500,19 +734,31 @@ function displayDiscoveryHelp(): void {
   console.log('');
 
   console.log(chalk.bold('QUESTIONS'));
-  console.log('  ' + chalk.cyan('fspec add-question <work-unit-id> <question>'));
-  console.log('    Description: Add question to work unit during specification');
+  console.log(
+    '  ' + chalk.cyan('fspec add-question <work-unit-id> <question>')
+  );
+  console.log(
+    '    Description: Add question to work unit during specification'
+  );
   console.log('    Examples:');
   console.log('      fspec add-question AUTH-001 "Should we support OAuth?"');
   console.log('');
-  console.log('  ' + chalk.cyan('fspec answer-question <work-unit-id> <index>'));
+  console.log(
+    '  ' + chalk.cyan('fspec answer-question <work-unit-id> <index>')
+  );
   console.log('    Options:');
   console.log('      --answer <answer>                Answer text');
-  console.log('      --add-to <type>                  Add to: rule, assumption, or none (default: none)');
+  console.log(
+    '      --add-to <type>                  Add to: rule, assumption, or none (default: none)'
+  );
   console.log('    Examples:');
-  console.log('      fspec answer-question AUTH-001 0 --answer "Yes" --add-to rule');
+  console.log(
+    '      fspec answer-question AUTH-001 0 --answer "Yes" --add-to rule'
+  );
   console.log('');
-  console.log('  ' + chalk.cyan('fspec remove-question <work-unit-id> <index>'));
+  console.log(
+    '  ' + chalk.cyan('fspec remove-question <work-unit-id> <index>')
+  );
   console.log('    Description: Remove question by index (0-based)');
   console.log('    Examples:');
   console.log('      fspec remove-question AUTH-001 0');
@@ -520,7 +766,9 @@ function displayDiscoveryHelp(): void {
 
   console.log(chalk.bold('RULES'));
   console.log('  ' + chalk.cyan('fspec add-rule <work-unit-id> <rule>'));
-  console.log('    Description: Add business rule to work unit during specification');
+  console.log(
+    '    Description: Add business rule to work unit during specification'
+  );
   console.log('    Examples:');
   console.log('      fspec add-rule AUTH-001 "Password must be 8+ characters"');
   console.log('');
@@ -531,19 +779,29 @@ function displayDiscoveryHelp(): void {
   console.log('');
 
   console.log(chalk.bold('ASSUMPTIONS'));
-  console.log('  ' + chalk.cyan('fspec add-assumption <work-unit-id> <assumption>'));
-  console.log('    Description: Add assumption to work unit during specification');
+  console.log(
+    '  ' + chalk.cyan('fspec add-assumption <work-unit-id> <assumption>')
+  );
+  console.log(
+    '    Description: Add assumption to work unit during specification'
+  );
   console.log('    Examples:');
-  console.log('      fspec add-assumption AUTH-001 "Email verification is handled externally"');
+  console.log(
+    '      fspec add-assumption AUTH-001 "Email verification is handled externally"'
+  );
   console.log('');
 
   console.log(chalk.bold('IMPORT/EXPORT'));
-  console.log('  ' + chalk.cyan('fspec import-example-map <work-unit-id> <file>'));
+  console.log(
+    '  ' + chalk.cyan('fspec import-example-map <work-unit-id> <file>')
+  );
   console.log('    Description: Import examples, rules, questions from JSON');
   console.log('    Examples:');
   console.log('      fspec import-example-map AUTH-001 examples.json');
   console.log('');
-  console.log('  ' + chalk.cyan('fspec export-example-map <work-unit-id> <file>'));
+  console.log(
+    '  ' + chalk.cyan('fspec export-example-map <work-unit-id> <file>')
+  );
   console.log('    Description: Export examples, rules, questions to JSON');
   console.log('    Examples:');
   console.log('      fspec export-example-map AUTH-001 examples.json');
@@ -551,7 +809,9 @@ function displayDiscoveryHelp(): void {
 
   console.log(chalk.bold('GENERATION'));
   console.log('  ' + chalk.cyan('fspec generate-scenarios <work-unit-id>'));
-  console.log('    Description: Generate Gherkin scenarios from example mapping data');
+  console.log(
+    '    Description: Generate Gherkin scenarios from example mapping data'
+  );
   console.log('    Examples:');
   console.log('      fspec generate-scenarios AUTH-001');
   console.log('');
@@ -597,8 +857,12 @@ function displayMetricsHelp(): void {
   console.log(chalk.bold('QUERYING METRICS'));
   console.log('  ' + chalk.cyan('fspec query-metrics'));
   console.log('    Options:');
-  console.log('      --metric <metric>                Specific metric to query');
-  console.log('      --format <format>                Output: text or json (default: text)');
+  console.log(
+    '      --metric <metric>                Specific metric to query'
+  );
+  console.log(
+    '      --format <format>                Output: text or json (default: text)'
+  );
   console.log('    Examples:');
   console.log('      fspec query-metrics --format=json');
   console.log('');
@@ -617,10 +881,14 @@ function displayMetricsHelp(): void {
   console.log('  ' + chalk.cyan('fspec generate-summary-report'));
   console.log('    Description: Generate comprehensive project report');
   console.log('    Options:');
-  console.log('      --format <format>                Output: markdown, json, or html (default: markdown)');
+  console.log(
+    '      --format <format>                Output: markdown, json, or html (default: markdown)'
+  );
   console.log('      --output <file>                  Output file path');
   console.log('    Examples:');
-  console.log('      fspec generate-summary-report --format=markdown --output=report.md');
+  console.log(
+    '      fspec generate-summary-report --format=markdown --output=report.md'
+  );
   console.log('');
 }
 
@@ -641,16 +909,22 @@ function displaySetupHelp(): void {
   console.log('  • Validate tag usage across the project\n');
 
   console.log(chalk.bold('TAG REGISTRY'));
-  console.log('  ' + chalk.cyan('fspec register-tag <tag> <category> <description>'));
+  console.log(
+    '  ' + chalk.cyan('fspec register-tag <tag> <category> <description>')
+  );
   console.log('    Examples:');
-  console.log('      fspec register-tag @performance "Technical Tags" "Performance-critical"');
+  console.log(
+    '      fspec register-tag @performance "Technical Tags" "Performance-critical"'
+  );
   console.log('');
   console.log('  ' + chalk.cyan('fspec update-tag <tag>'));
   console.log('    Options:');
   console.log('      --description <desc>             New description');
   console.log('      --category <category>            New category');
   console.log('    Examples:');
-  console.log('      fspec update-tag @performance --description="New description"');
+  console.log(
+    '      fspec update-tag @performance --description="New description"'
+  );
   console.log('');
   console.log('  ' + chalk.cyan('fspec delete-tag <tag>'));
   console.log('    Options:');
@@ -682,7 +956,9 @@ function displaySetupHelp(): void {
   console.log(chalk.bold('EPICS & PREFIXES'));
   console.log('  ' + chalk.cyan('fspec create-epic <name> <title>'));
   console.log('    Examples:');
-  console.log('      fspec create-epic user-management "User Management Features"');
+  console.log(
+    '      fspec create-epic user-management "User Management Features"'
+  );
   console.log('');
   console.log('  ' + chalk.cyan('fspec list-epics'));
   console.log('    Examples:');
@@ -710,14 +986,22 @@ function displaySetupHelp(): void {
   console.log('');
 
   console.log(chalk.bold('FOUNDATION & DOCUMENTATION'));
-  console.log('  ' + chalk.cyan('fspec add-diagram <section> <title> <content>'));
+  console.log(
+    '  ' + chalk.cyan('fspec add-diagram <section> <title> <content>')
+  );
   console.log('    Description: Add Mermaid diagram with validation');
   console.log('    Examples:');
-  console.log('      fspec add-diagram "Architecture" "System" "graph TD\\n  A-->B"');
+  console.log(
+    '      fspec add-diagram "Architecture" "System" "graph TD\\n  A-->B"'
+  );
   console.log('');
-  console.log('  ' + chalk.cyan('fspec update-diagram <section> <title> <content>'));
+  console.log(
+    '  ' + chalk.cyan('fspec update-diagram <section> <title> <content>')
+  );
   console.log('    Examples:');
-  console.log('      fspec update-diagram "Architecture" "System" "graph TB\\n  A-->B"');
+  console.log(
+    '      fspec update-diagram "Architecture" "System" "graph TB\\n  A-->B"'
+  );
   console.log('');
   console.log('  ' + chalk.cyan('fspec delete-diagram <section> <title>'));
   console.log('    Examples:');
@@ -733,12 +1017,16 @@ function displaySetupHelp(): void {
   console.log('');
   console.log('  ' + chalk.cyan('fspec update-foundation <section> <content>'));
   console.log('    Examples:');
-  console.log('      fspec update-foundation "What We Are Building" "A CLI tool..."');
+  console.log(
+    '      fspec update-foundation "What We Are Building" "A CLI tool..."'
+  );
   console.log('');
   console.log('  ' + chalk.cyan('fspec show-foundation'));
   console.log('    Options:');
   console.log('      --section <section>              Show specific section');
-  console.log('      --format <format>                Output: text, json, or markdown');
+  console.log(
+    '      --format <format>                Output: text, json, or markdown'
+  );
   console.log('      --output <file>                  Write to file');
   console.log('      --list-sections                  List all sections');
   console.log('      --line-numbers                   Show line numbers');
@@ -761,7 +1049,6 @@ function displaySetupHelp(): void {
   console.log('      fspec validate-json-schema');
   console.log('');
 }
-
 
 // Custom help command handler
 function handleHelpCommand(group?: string): void {
@@ -810,12 +1097,10 @@ function handleHelpCommand(group?: string): void {
 
 program
   .name('fspec')
-  .description(
-    'Feature Specification & Project Management for AI Agents'
-  )
+  .description('Feature Specification & Project Management for AI Agents')
   .version('0.0.1')
   .configureHelp({
-    helpWidth: 100
+    helpWidth: 100,
   })
   .addHelpCommand(false)
   .helpOption(false); // Disable default help
@@ -920,9 +1205,15 @@ program
   .argument('<file>', 'Feature file path (e.g., spec/features/login.feature)')
   .argument('<tags...>', 'Tag(s) to add (e.g., @critical @security)')
   .option('--validate-registry', 'Validate tags against spec/tags.json')
-  .action(async (file: string, tags: string[], options: { validateRegistry?: boolean }) => {
-    await addTagToFeatureCommand(file, tags, options);
-  });
+  .action(
+    async (
+      file: string,
+      tags: string[],
+      options: { validateRegistry?: boolean }
+    ) => {
+      await addTagToFeatureCommand(file, tags, options);
+    }
+  );
 
 // Remove tag from feature command
 program
@@ -949,19 +1240,32 @@ program
   .command('add-tag-to-scenario')
   .description('Add one or more tags to a specific scenario')
   .argument('<file>', 'Feature file path (e.g., spec/features/login.feature)')
-  .argument('<scenario>', 'Scenario name (e.g., "Login with valid credentials")')
+  .argument(
+    '<scenario>',
+    'Scenario name (e.g., "Login with valid credentials")'
+  )
   .argument('<tags...>', 'Tag(s) to add (e.g., @smoke @critical)')
   .option('--validate-registry', 'Validate tags against spec/tags.json')
-  .action(async (file: string, scenario: string, tags: string[], options: { validateRegistry?: boolean }) => {
-    await addTagToScenarioCommand(file, scenario, tags, options);
-  });
+  .action(
+    async (
+      file: string,
+      scenario: string,
+      tags: string[],
+      options: { validateRegistry?: boolean }
+    ) => {
+      await addTagToScenarioCommand(file, scenario, tags, options);
+    }
+  );
 
 // Remove tag from scenario command
 program
   .command('remove-tag-from-scenario')
   .description('Remove one or more tags from a specific scenario')
   .argument('<file>', 'Feature file path (e.g., spec/features/login.feature)')
-  .argument('<scenario>', 'Scenario name (e.g., "Login with valid credentials")')
+  .argument(
+    '<scenario>',
+    'Scenario name (e.g., "Login with valid credentials")'
+  )
   .argument('<tags...>', 'Tag(s) to remove (e.g., @wip @deprecated)')
   .action(async (file: string, scenario: string, tags: string[]) => {
     await removeTagFromScenarioCommand(file, scenario, tags);
@@ -972,11 +1276,20 @@ program
   .command('list-scenario-tags')
   .description('List all tags on a specific scenario')
   .argument('<file>', 'Feature file path (e.g., spec/features/login.feature)')
-  .argument('<scenario>', 'Scenario name (e.g., "Login with valid credentials")')
+  .argument(
+    '<scenario>',
+    'Scenario name (e.g., "Login with valid credentials")'
+  )
   .option('--show-categories', 'Show tag categories from registry')
-  .action(async (file: string, scenario: string, options: { showCategories?: boolean }) => {
-    await listScenarioTagsCommand(file, scenario, options);
-  });
+  .action(
+    async (
+      file: string,
+      scenario: string,
+      options: { showCategories?: boolean }
+    ) => {
+      await listScenarioTagsCommand(file, scenario, options);
+    }
+  );
 
 // Add scenario command
 program
@@ -1253,7 +1566,10 @@ program
 program
   .command('create-epic')
   .description('Create a new epic')
-  .argument('<epicId>', 'Epic ID (lowercase-with-hyphens, e.g., user-management)')
+  .argument(
+    '<epicId>',
+    'Epic ID (lowercase-with-hyphens, e.g., user-management)'
+  )
   .argument('<title>', 'Epic title')
   .option('-d, --description <description>', 'Epic description')
   .action(createEpicCommand);
@@ -1281,7 +1597,11 @@ program
         console.log(chalk.cyan(prefix.prefix));
         console.log(chalk.gray(`  ${prefix.description}`));
         if (prefix.totalWorkUnits > 0) {
-          console.log(chalk.gray(`  Work Units: ${prefix.completedWorkUnits}/${prefix.totalWorkUnits} (${prefix.completionPercentage}%)`));
+          console.log(
+            chalk.gray(
+              `  Work Units: ${prefix.completedWorkUnits}/${prefix.totalWorkUnits} (${prefix.completionPercentage}%)`
+            )
+          );
         }
         console.log('');
       }
@@ -1316,25 +1636,39 @@ program
   .option('--position <position>', 'Position: top, bottom, or numeric index')
   .option('--before <workUnitId>', 'Place before this work unit')
   .option('--after <workUnitId>', 'Place after this work unit')
-  .action(async (workUnitId: string, options: { position?: string; before?: string; after?: string }) => {
-    try {
-      const parsedPosition = options.position === 'top' ? 'top'
-        : options.position === 'bottom' ? 'bottom'
-        : options.position ? parseInt(options.position, 10)
-        : undefined;
+  .action(
+    async (
+      workUnitId: string,
+      options: { position?: string; before?: string; after?: string }
+    ) => {
+      try {
+        const parsedPosition =
+          options.position === 'top'
+            ? 'top'
+            : options.position === 'bottom'
+              ? 'bottom'
+              : options.position
+                ? parseInt(options.position, 10)
+                : undefined;
 
-      await prioritizeWorkUnit({
-        workUnitId,
-        position: parsedPosition as 'top' | 'bottom' | number | undefined,
-        before: options.before,
-        after: options.after,
-      });
-      console.log(chalk.green(`✓ Work unit ${workUnitId} prioritized successfully`));
-    } catch (error: any) {
-      console.error(chalk.red('✗ Failed to prioritize work unit:'), error.message);
-      process.exit(1);
+        await prioritizeWorkUnit({
+          workUnitId,
+          position: parsedPosition as 'top' | 'bottom' | number | undefined,
+          before: options.before,
+          after: options.after,
+        });
+        console.log(
+          chalk.green(`✓ Work unit ${workUnitId} prioritized successfully`)
+        );
+      } catch (error: any) {
+        console.error(
+          chalk.red('✗ Failed to prioritize work unit:'),
+          error.message
+        );
+        process.exit(1);
+      }
     }
-  });
+  );
 
 // Update work unit command
 program
@@ -1345,18 +1679,33 @@ program
   .option('-d, --description <description>', 'New description')
   .option('-e, --epic <epic>', 'Epic ID')
   .option('-p, --parent <parent>', 'Parent work unit ID')
-  .action(async (workUnitId: string, options: { title?: string; description?: string; epic?: string; parent?: string }) => {
-    try {
-      await updateWorkUnit({
-        workUnitId,
-        ...options,
-      });
-      console.log(chalk.green(`✓ Work unit ${workUnitId} updated successfully`));
-    } catch (error: any) {
-      console.error(chalk.red('✗ Failed to update work unit:'), error.message);
-      process.exit(1);
+  .action(
+    async (
+      workUnitId: string,
+      options: {
+        title?: string;
+        description?: string;
+        epic?: string;
+        parent?: string;
+      }
+    ) => {
+      try {
+        await updateWorkUnit({
+          workUnitId,
+          ...options,
+        });
+        console.log(
+          chalk.green(`✓ Work unit ${workUnitId} updated successfully`)
+        );
+      } catch (error: any) {
+        console.error(
+          chalk.red('✗ Failed to update work unit:'),
+          error.message
+        );
+        process.exit(1);
+      }
     }
-  });
+  );
 
 // Delete work unit command
 program
@@ -1366,51 +1715,93 @@ program
   .option('--force', 'Force deletion without checks')
   .option('--skip-confirmation', 'Skip confirmation prompt')
   .option('--cascade-dependencies', 'Remove all dependencies before deleting')
-  .action(async (workUnitId: string, options: { force?: boolean; skipConfirmation?: boolean; cascadeDependencies?: boolean }) => {
-    try {
-      const result = await deleteWorkUnit({
-        workUnitId,
-        ...options,
-      });
-      console.log(chalk.green(`✓ Work unit ${workUnitId} deleted successfully`));
-      if (result.warnings && result.warnings.length > 0) {
-        result.warnings.forEach((warning: string) => console.log(chalk.yellow(`⚠ ${warning}`)));
+  .action(
+    async (
+      workUnitId: string,
+      options: {
+        force?: boolean;
+        skipConfirmation?: boolean;
+        cascadeDependencies?: boolean;
       }
-    } catch (error: any) {
-      console.error(chalk.red('✗ Failed to delete work unit:'), error.message);
-      process.exit(1);
+    ) => {
+      try {
+        const result = await deleteWorkUnit({
+          workUnitId,
+          ...options,
+        });
+        console.log(
+          chalk.green(`✓ Work unit ${workUnitId} deleted successfully`)
+        );
+        if (result.warnings && result.warnings.length > 0) {
+          result.warnings.forEach((warning: string) =>
+            console.log(chalk.yellow(`⚠ ${warning}`))
+          );
+        }
+      } catch (error: any) {
+        console.error(
+          chalk.red('✗ Failed to delete work unit:'),
+          error.message
+        );
+        process.exit(1);
+      }
     }
-  });
+  );
 
 // Update work unit status command
 program
   .command('update-work-unit-status')
   .description('Update work unit status (follows ACDD workflow)')
   .argument('<workUnitId>', 'Work unit ID')
-  .argument('<status>', 'New status: backlog, specifying, testing, implementing, validating, done, blocked')
-  .option('--blocked-reason <reason>', 'Reason for blocked status (required if status is blocked)')
+  .argument(
+    '<status>',
+    'New status: backlog, specifying, testing, implementing, validating, done, blocked'
+  )
+  .option(
+    '--blocked-reason <reason>',
+    'Reason for blocked status (required if status is blocked)'
+  )
   .option('--reason <reason>', 'Reason for status change')
-  .action(async (workUnitId: string, status: string, options: { blockedReason?: string; reason?: string }) => {
-    try {
-      const result = await updateWorkUnitStatus({
-        workUnitId,
-        status: status as 'backlog' | 'specifying' | 'testing' | 'implementing' | 'validating' | 'done' | 'blocked',
-        blockedReason: options.blockedReason,
-        reason: options.reason,
-      });
-      console.log(chalk.green(`✓ Work unit ${workUnitId} status updated to ${status}`));
-      if (result.warnings && result.warnings.length > 0) {
-        result.warnings.forEach((warning: string) => console.log(chalk.yellow(`⚠ ${warning}`)));
+  .action(
+    async (
+      workUnitId: string,
+      status: string,
+      options: { blockedReason?: string; reason?: string }
+    ) => {
+      try {
+        const result = await updateWorkUnitStatus({
+          workUnitId,
+          status: status as
+            | 'backlog'
+            | 'specifying'
+            | 'testing'
+            | 'implementing'
+            | 'validating'
+            | 'done'
+            | 'blocked',
+          blockedReason: options.blockedReason,
+          reason: options.reason,
+        });
+        console.log(
+          chalk.green(`✓ Work unit ${workUnitId} status updated to ${status}`)
+        );
+        if (result.warnings && result.warnings.length > 0) {
+          result.warnings.forEach((warning: string) =>
+            console.log(chalk.yellow(`⚠ ${warning}`))
+          );
+        }
+        // Output system reminder (visible to AI, invisible to users)
+        if (result.systemReminder) {
+          console.log('\n' + result.systemReminder);
+        }
+      } catch (error: any) {
+        console.error(
+          chalk.red('✗ Failed to update work unit status:'),
+          error.message
+        );
+        process.exit(1);
       }
-      // Output system reminder (visible to AI, invisible to users)
-      if (result.systemReminder) {
-        console.log('\n' + result.systemReminder);
-      }
-    } catch (error: any) {
-      console.error(chalk.red('✗ Failed to update work unit status:'), error.message);
-      process.exit(1);
     }
-  });
+  );
 
 // Update work unit estimate command
 program
@@ -1424,7 +1815,9 @@ program
         workUnitId,
         estimate: parseInt(estimate, 10),
       });
-      console.log(chalk.green(`✓ Work unit ${workUnitId} estimate set to ${estimate}`));
+      console.log(
+        chalk.green(`✓ Work unit ${workUnitId} estimate set to ${estimate}`)
+      );
     } catch (error: any) {
       console.error(chalk.red('✗ Failed to update estimate:'), error.message);
       process.exit(1);
@@ -1441,12 +1834,19 @@ program
       if (result.valid) {
         console.log(chalk.green(`✓ All work units are valid`));
       } else {
-        console.error(chalk.red(`✗ Found ${result.errors.length} validation errors`));
-        result.errors.forEach((error: string) => console.error(chalk.red(`  - ${error}`)));
+        console.error(
+          chalk.red(`✗ Found ${result.errors.length} validation errors`)
+        );
+        result.errors.forEach((error: string) =>
+          console.error(chalk.red(`  - ${error}`))
+        );
         process.exit(1);
       }
     } catch (error: any) {
-      console.error(chalk.red('✗ Failed to validate work units:'), error.message);
+      console.error(
+        chalk.red('✗ Failed to validate work units:'),
+        error.message
+      );
       process.exit(1);
     }
   });
@@ -1463,7 +1863,9 @@ program
       });
       console.log(chalk.green(`✓ Repaired ${result.repaired} issues`));
       if (result.details && result.details.length > 0) {
-        result.details.forEach((detail: string) => console.log(chalk.cyan(`  - ${detail}`)));
+        result.details.forEach((detail: string) =>
+          console.log(chalk.cyan(`  - ${detail}`))
+        );
       }
     } catch (error: any) {
       console.error(chalk.red('✗ Failed to repair work units:'), error.message);
@@ -1478,19 +1880,28 @@ program
   .argument('<format>', 'Output format: json or csv')
   .argument('<output>', 'Output file path')
   .option('--status <status>', 'Filter by status')
-  .action(async (format: string, output: string, options: { status?: string }) => {
-    try {
-      const result = await exportWorkUnits({
-        format: format as 'json' | 'csv',
-        output,
-        status: options.status as any,
-      });
-      console.log(chalk.green(`✓ Exported ${result.count} work units to ${result.outputFile}`));
-    } catch (error: any) {
-      console.error(chalk.red('✗ Failed to export work units:'), error.message);
-      process.exit(1);
+  .action(
+    async (format: string, output: string, options: { status?: string }) => {
+      try {
+        const result = await exportWorkUnits({
+          format: format as 'json' | 'csv',
+          output,
+          status: options.status as any,
+        });
+        console.log(
+          chalk.green(
+            `✓ Exported ${result.count} work units to ${result.outputFile}`
+          )
+        );
+      } catch (error: any) {
+        console.error(
+          chalk.red('✗ Failed to export work units:'),
+          error.message
+        );
+        process.exit(1);
+      }
     }
-  });
+  );
 
 // ============================================================================
 // DEPENDENCY MANAGEMENT COMMANDS
@@ -1501,39 +1912,69 @@ program
   .command('add-dependency')
   .description('Add a dependency relationship between work units')
   .argument('<workUnitId>', 'Work unit ID')
-  .argument('[dependsOnId]', 'Work unit ID that this depends on (shorthand for --depends-on)')
+  .argument(
+    '[dependsOnId]',
+    'Work unit ID that this depends on (shorthand for --depends-on)'
+  )
   .option('--blocks <targetId>', 'Work unit that this blocks')
   .option('--blocked-by <targetId>', 'Work unit that blocks this')
-  .option('--depends-on <targetId>', 'Work unit this depends on (soft dependency)')
+  .option(
+    '--depends-on <targetId>',
+    'Work unit this depends on (soft dependency)'
+  )
   .option('--relates-to <targetId>', 'Related work unit')
-  .action(async (workUnitId: string, dependsOnId: string | undefined, options: { blocks?: string; blockedBy?: string; dependsOn?: string; relatesTo?: string }) => {
-    try {
-      // If second argument provided, use it as --depends-on (shorthand syntax)
-      const finalDependsOn = dependsOnId || options.dependsOn;
-
-      // Check if user provided both shorthand and option (conflict)
-      if (dependsOnId && options.dependsOn && dependsOnId !== options.dependsOn) {
-        throw new Error('Cannot specify dependency both as argument and --depends-on option');
+  .action(
+    async (
+      workUnitId: string,
+      dependsOnId: string | undefined,
+      options: {
+        blocks?: string;
+        blockedBy?: string;
+        dependsOn?: string;
+        relatesTo?: string;
       }
+    ) => {
+      try {
+        // If second argument provided, use it as --depends-on (shorthand syntax)
+        const finalDependsOn = dependsOnId || options.dependsOn;
 
-      // Require at least one relationship type
-      if (!finalDependsOn && !options.blocks && !options.blockedBy && !options.relatesTo) {
-        throw new Error('Must specify at least one relationship: <depends-on-id> or --blocks/--blocked-by/--depends-on/--relates-to');
+        // Check if user provided both shorthand and option (conflict)
+        if (
+          dependsOnId &&
+          options.dependsOn &&
+          dependsOnId !== options.dependsOn
+        ) {
+          throw new Error(
+            'Cannot specify dependency both as argument and --depends-on option'
+          );
+        }
+
+        // Require at least one relationship type
+        if (
+          !finalDependsOn &&
+          !options.blocks &&
+          !options.blockedBy &&
+          !options.relatesTo
+        ) {
+          throw new Error(
+            'Must specify at least one relationship: <depends-on-id> or --blocks/--blocked-by/--depends-on/--relates-to'
+          );
+        }
+
+        await addDependency({
+          workUnitId,
+          blocks: options.blocks,
+          blockedBy: options.blockedBy,
+          dependsOn: finalDependsOn,
+          relatesTo: options.relatesTo,
+        });
+        console.log(chalk.green(`✓ Dependency added successfully`));
+      } catch (error: any) {
+        console.error(chalk.red('✗ Failed to add dependency:'), error.message);
+        process.exit(1);
       }
-
-      await addDependency({
-        workUnitId,
-        blocks: options.blocks,
-        blockedBy: options.blockedBy,
-        dependsOn: finalDependsOn,
-        relatesTo: options.relatesTo,
-      });
-      console.log(chalk.green(`✓ Dependency added successfully`));
-    } catch (error: any) {
-      console.error(chalk.red('✗ Failed to add dependency:'), error.message);
-      process.exit(1);
     }
-  });
+  );
 
 // Add dependencies (plural) command
 program
@@ -1544,62 +1985,107 @@ program
   .option('--blocked-by <ids...>', 'Work unit IDs that block this')
   .option('--depends-on <ids...>', 'Work unit IDs this depends on')
   .option('--relates-to <ids...>', 'Related work unit IDs')
-  .action(async (workUnitId: string, options: { blocks?: string[]; blockedBy?: string[]; dependsOn?: string[]; relatesTo?: string[] }) => {
-    try {
-      const result = await addDependencies({
-        workUnitId,
-        dependencies: {
-          blocks: options.blocks,
-          blockedBy: options.blockedBy,
-          dependsOn: options.dependsOn,
-          relatesTo: options.relatesTo,
-        },
-      });
-      console.log(chalk.green(`✓ Added ${result.added} dependencies successfully`));
-    } catch (error: any) {
-      console.error(chalk.red('✗ Failed to add dependencies:'), error.message);
-      process.exit(1);
+  .action(
+    async (
+      workUnitId: string,
+      options: {
+        blocks?: string[];
+        blockedBy?: string[];
+        dependsOn?: string[];
+        relatesTo?: string[];
+      }
+    ) => {
+      try {
+        const result = await addDependencies({
+          workUnitId,
+          dependencies: {
+            blocks: options.blocks,
+            blockedBy: options.blockedBy,
+            dependsOn: options.dependsOn,
+            relatesTo: options.relatesTo,
+          },
+        });
+        console.log(
+          chalk.green(`✓ Added ${result.added} dependencies successfully`)
+        );
+      } catch (error: any) {
+        console.error(
+          chalk.red('✗ Failed to add dependencies:'),
+          error.message
+        );
+        process.exit(1);
+      }
     }
-  });
+  );
 
 // Remove dependency command
 program
   .command('remove-dependency')
   .description('Remove a dependency relationship between work units')
   .argument('<workUnitId>', 'Work unit ID')
-  .argument('[dependsOnId]', 'Work unit ID to remove from dependsOn (shorthand for --depends-on)')
+  .argument(
+    '[dependsOnId]',
+    'Work unit ID to remove from dependsOn (shorthand for --depends-on)'
+  )
   .option('--blocks <targetId>', 'Remove blocks relationship')
   .option('--blocked-by <targetId>', 'Remove blockedBy relationship')
   .option('--depends-on <targetId>', 'Remove dependsOn relationship')
   .option('--relates-to <targetId>', 'Remove relatesTo relationship')
-  .action(async (workUnitId: string, dependsOnId: string | undefined, options: { blocks?: string; blockedBy?: string; dependsOn?: string; relatesTo?: string }) => {
-    try {
-      // If second argument provided, use it as --depends-on (shorthand syntax)
-      const finalDependsOn = dependsOnId || options.dependsOn;
-
-      // Check if user provided both shorthand and option (conflict)
-      if (dependsOnId && options.dependsOn && dependsOnId !== options.dependsOn) {
-        throw new Error('Cannot specify dependency both as argument and --depends-on option');
+  .action(
+    async (
+      workUnitId: string,
+      dependsOnId: string | undefined,
+      options: {
+        blocks?: string;
+        blockedBy?: string;
+        dependsOn?: string;
+        relatesTo?: string;
       }
+    ) => {
+      try {
+        // If second argument provided, use it as --depends-on (shorthand syntax)
+        const finalDependsOn = dependsOnId || options.dependsOn;
 
-      // Require at least one relationship type
-      if (!finalDependsOn && !options.blocks && !options.blockedBy && !options.relatesTo) {
-        throw new Error('Must specify at least one relationship to remove: <depends-on-id> or --blocks/--blocked-by/--depends-on/--relates-to');
+        // Check if user provided both shorthand and option (conflict)
+        if (
+          dependsOnId &&
+          options.dependsOn &&
+          dependsOnId !== options.dependsOn
+        ) {
+          throw new Error(
+            'Cannot specify dependency both as argument and --depends-on option'
+          );
+        }
+
+        // Require at least one relationship type
+        if (
+          !finalDependsOn &&
+          !options.blocks &&
+          !options.blockedBy &&
+          !options.relatesTo
+        ) {
+          throw new Error(
+            'Must specify at least one relationship to remove: <depends-on-id> or --blocks/--blocked-by/--depends-on/--relates-to'
+          );
+        }
+
+        await removeDependency({
+          workUnitId,
+          blocks: options.blocks,
+          blockedBy: options.blockedBy,
+          dependsOn: finalDependsOn,
+          relatesTo: options.relatesTo,
+        });
+        console.log(chalk.green(`✓ Dependency removed successfully`));
+      } catch (error: any) {
+        console.error(
+          chalk.red('✗ Failed to remove dependency:'),
+          error.message
+        );
+        process.exit(1);
       }
-
-      await removeDependency({
-        workUnitId,
-        blocks: options.blocks,
-        blockedBy: options.blockedBy,
-        dependsOn: finalDependsOn,
-        relatesTo: options.relatesTo,
-      });
-      console.log(chalk.green(`✓ Dependency removed successfully`));
-    } catch (error: any) {
-      console.error(chalk.red('✗ Failed to remove dependency:'), error.message);
-      process.exit(1);
     }
-  });
+  );
 
 // Clear dependencies command
 program
@@ -1615,7 +2101,10 @@ program
       });
       console.log(chalk.green(`✓ All dependencies cleared from ${workUnitId}`));
     } catch (error: any) {
-      console.error(chalk.red('✗ Failed to clear dependencies:'), error.message);
+      console.error(
+        chalk.red('✗ Failed to clear dependencies:'),
+        error.message
+      );
       process.exit(1);
     }
   });
@@ -1632,9 +2121,14 @@ program
         format: format as 'mermaid' | 'json',
         output,
       });
-      console.log(chalk.green(`✓ Dependencies exported to ${result.outputFile}`));
+      console.log(
+        chalk.green(`✓ Dependencies exported to ${result.outputFile}`)
+      );
     } catch (error: any) {
-      console.error(chalk.red('✗ Failed to export dependencies:'), error.message);
+      console.error(
+        chalk.red('✗ Failed to export dependencies:'),
+        error.message
+      );
       process.exit(1);
     }
   });
@@ -1760,7 +2254,10 @@ program
   .argument('<index>', 'Example index (0-based)')
   .action(async (workUnitId: string, index: string) => {
     try {
-      const result = await removeExample({ workUnitId, index: parseInt(index, 10) });
+      const result = await removeExample({
+        workUnitId,
+        index: parseInt(index, 10),
+      });
       console.log(chalk.green(`✓ Removed example: "${result.removedExample}"`));
     } catch (error: any) {
       console.error(chalk.red('✗ Failed to remove example:'), error.message);
@@ -1776,8 +2273,13 @@ program
   .argument('<index>', 'Question index (0-based)')
   .action(async (workUnitId: string, index: string) => {
     try {
-      const result = await removeQuestion({ workUnitId, index: parseInt(index, 10) });
-      console.log(chalk.green(`✓ Removed question: "${result.removedQuestion}"`));
+      const result = await removeQuestion({
+        workUnitId,
+        index: parseInt(index, 10),
+      });
+      console.log(
+        chalk.green(`✓ Removed question: "${result.removedQuestion}"`)
+      );
     } catch (error: any) {
       console.error(chalk.red('✗ Failed to remove question:'), error.message);
       process.exit(1);
@@ -1792,7 +2294,10 @@ program
   .argument('<index>', 'Rule index (0-based)')
   .action(async (workUnitId: string, index: string) => {
     try {
-      const result = await removeRule({ workUnitId, index: parseInt(index, 10) });
+      const result = await removeRule({
+        workUnitId,
+        index: parseInt(index, 10),
+      });
       console.log(chalk.green(`✓ Removed rule: "${result.removedRule}"`));
     } catch (error: any) {
       console.error(chalk.red('✗ Failed to remove rule:'), error.message);
@@ -1808,26 +2313,34 @@ program
   .argument('<index>', 'Question index (0-based)')
   .option('--answer <answer>', 'Answer text')
   .option('--add-to <type>', 'Add answer to: rule, assumption, or none', 'none')
-  .action(async (workUnitId: string, index: string, options: { answer?: string; addTo?: string }) => {
-    try {
-      const result = await answerQuestion({
-        workUnitId,
-        index: parseInt(index, 10),
-        answer: options.answer,
-        addTo: options.addTo as 'rule' | 'assumption' | 'none',
-      });
-      console.log(chalk.green(`✓ Answered question: "${result.question}"`));
-      if (options.answer) {
-        console.log(chalk.dim(`  Answer: "${options.answer}"`));
+  .action(
+    async (
+      workUnitId: string,
+      index: string,
+      options: { answer?: string; addTo?: string }
+    ) => {
+      try {
+        const result = await answerQuestion({
+          workUnitId,
+          index: parseInt(index, 10),
+          answer: options.answer,
+          addTo: options.addTo as 'rule' | 'assumption' | 'none',
+        });
+        console.log(chalk.green(`✓ Answered question: "${result.question}"`));
+        if (options.answer) {
+          console.log(chalk.dim(`  Answer: "${options.answer}"`));
+        }
+        if (result.addedTo && result.addedContent) {
+          console.log(
+            chalk.cyan(`  Added to ${result.addedTo}: "${result.addedContent}"`)
+          );
+        }
+      } catch (error: any) {
+        console.error(chalk.red('✗ Failed to answer question:'), error.message);
+        process.exit(1);
       }
-      if (result.addedTo && result.addedContent) {
-        console.log(chalk.cyan(`  Added to ${result.addedTo}: "${result.addedContent}"`));
-      }
-    } catch (error: any) {
-      console.error(chalk.red('✗ Failed to answer question:'), error.message);
-      process.exit(1);
     }
-  });
+  );
 
 // Import example map command
 program
@@ -1838,10 +2351,21 @@ program
   .action(async (workUnitId: string, file: string) => {
     try {
       const result = await importExampleMap({ workUnitId, file });
-      const total = result.rulesCount + result.examplesCount + result.questionsCount + result.assumptionsCount;
-      console.log(chalk.green(`✓ Imported ${total} items: ${result.rulesCount} rules, ${result.examplesCount} examples, ${result.questionsCount} questions, ${result.assumptionsCount} assumptions`));
+      const total =
+        result.rulesCount +
+        result.examplesCount +
+        result.questionsCount +
+        result.assumptionsCount;
+      console.log(
+        chalk.green(
+          `✓ Imported ${total} items: ${result.rulesCount} rules, ${result.examplesCount} examples, ${result.questionsCount} questions, ${result.assumptionsCount} assumptions`
+        )
+      );
     } catch (error: any) {
-      console.error(chalk.red('✗ Failed to import example map:'), error.message);
+      console.error(
+        chalk.red('✗ Failed to import example map:'),
+        error.message
+      );
       process.exit(1);
     }
   });
@@ -1857,7 +2381,10 @@ program
       const result = await exportExampleMap({ workUnitId, file });
       console.log(chalk.green(`✓ Exported to ${result.outputFile}`));
     } catch (error: any) {
-      console.error(chalk.red('✗ Failed to export example map:'), error.message);
+      console.error(
+        chalk.red('✗ Failed to export example map:'),
+        error.message
+      );
       process.exit(1);
     }
   });
@@ -1870,9 +2397,14 @@ program
   .action(async (workUnitId: string) => {
     try {
       const result = await generateScenarios({ workUnitId });
-      console.log(chalk.green(`✓ Generated ${result.scenariosGenerated} scenarios`));
+      console.log(
+        chalk.green(`✓ Generated ${result.scenariosGenerated} scenarios`)
+      );
     } catch (error: any) {
-      console.error(chalk.red('✗ Failed to generate scenarios:'), error.message);
+      console.error(
+        chalk.red('✗ Failed to generate scenarios:'),
+        error.message
+      );
       process.exit(1);
     }
   });
@@ -1911,7 +2443,9 @@ program
       const result = await autoAdvance({ dryRun: options.dryRun });
       console.log(chalk.green(`✓ Advanced ${result.advanced} work units`));
       if (result.details && result.details.length > 0) {
-        result.details.forEach((detail: string) => console.log(chalk.cyan(`  - ${detail}`)));
+        result.details.forEach((detail: string) =>
+          console.log(chalk.cyan(`  - ${detail}`))
+        );
       }
     } catch (error: any) {
       console.error(chalk.red('✗ Failed to auto-advance:'), error.message);
@@ -1969,22 +2503,29 @@ program
   .option('--prefix <prefix>', 'Filter by prefix')
   .option('--epic <epic>', 'Filter by epic')
   .option('--format <format>', 'Output format: text or json', 'text')
-  .action(async (options: { status?: string; prefix?: string; epic?: string; format?: string }) => {
-    try {
-      const result = await queryWorkUnits({
-        status: options.status as any,
-        prefix: options.prefix,
-        epic: options.epic,
-        format: options.format as 'text' | 'json',
-      });
-      if (options.format === 'json') {
-        console.log(JSON.stringify(result, null, 2));
+  .action(
+    async (options: {
+      status?: string;
+      prefix?: string;
+      epic?: string;
+      format?: string;
+    }) => {
+      try {
+        const result = await queryWorkUnits({
+          status: options.status as any,
+          prefix: options.prefix,
+          epic: options.epic,
+          format: options.format as 'text' | 'json',
+        });
+        if (options.format === 'json') {
+          console.log(JSON.stringify(result, null, 2));
+        }
+      } catch (error: any) {
+        console.error(chalk.red('✗ Query failed:'), error.message);
+        process.exit(1);
       }
-    } catch (error: any) {
-      console.error(chalk.red('✗ Query failed:'), error.message);
-      process.exit(1);
     }
-  });
+  );
 
 // Query dependency stats command
 program
@@ -1993,7 +2534,9 @@ program
   .option('--format <format>', 'Output format: text or json', 'text')
   .action(async (options: { format?: string }) => {
     try {
-      const result = await queryDependencyStats({ format: options.format as 'text' | 'json' });
+      const result = await queryDependencyStats({
+        format: options.format as 'text' | 'json',
+      });
       if (options.format === 'json') {
         console.log(JSON.stringify(result, null, 2));
       }
@@ -2010,7 +2553,9 @@ program
   .option('--format <format>', 'Output format: text or json', 'text')
   .action(async (options: { format?: string }) => {
     try {
-      const result = await queryExampleMappingStats({ format: options.format as 'text' | 'json' });
+      const result = await queryExampleMappingStats({
+        format: options.format as 'text' | 'json',
+      });
       if (options.format === 'json') {
         console.log(JSON.stringify(result, null, 2));
       }
@@ -2048,7 +2593,9 @@ program
   .option('--format <format>', 'Output format: text or json', 'text')
   .action(async (options: { format?: string }) => {
     try {
-      const result = await queryEstimateAccuracy({ format: options.format as 'text' | 'json' });
+      const result = await queryEstimateAccuracy({
+        format: options.format as 'text' | 'json',
+      });
       if (options.format === 'json') {
         console.log(JSON.stringify(result, null, 2));
       }
@@ -2106,20 +2653,29 @@ program
   .description('Record token usage for AI operations')
   .argument('<workUnitId>', 'Work unit ID')
   .argument('<tokens>', 'Number of tokens used')
-  .option('--operation <operation>', 'Operation type (e.g., specification, implementation)')
-  .action(async (workUnitId: string, tokens: string, options: { operation?: string }) => {
-    try {
-      await recordTokens({
-        workUnitId,
-        tokens: parseInt(tokens, 10),
-        operation: options.operation,
-      });
-      console.log(chalk.green(`✓ Token usage recorded successfully`));
-    } catch (error: any) {
-      console.error(chalk.red('✗ Failed to record tokens:'), error.message);
-      process.exit(1);
+  .option(
+    '--operation <operation>',
+    'Operation type (e.g., specification, implementation)'
+  )
+  .action(
+    async (
+      workUnitId: string,
+      tokens: string,
+      options: { operation?: string }
+    ) => {
+      try {
+        await recordTokens({
+          workUnitId,
+          tokens: parseInt(tokens, 10),
+          operation: options.operation,
+        });
+        console.log(chalk.green(`✓ Token usage recorded successfully`));
+      } catch (error: any) {
+        console.error(chalk.red('✗ Failed to record tokens:'), error.message);
+        process.exit(1);
+      }
     }
-  });
+  );
 
 // Record iteration command
 program
@@ -2148,7 +2704,11 @@ program
 program
   .command('generate-summary-report')
   .description('Generate a comprehensive project summary report')
-  .option('--format <format>', 'Output format: markdown, json, or html', 'markdown')
+  .option(
+    '--format <format>',
+    'Output format: markdown, json, or html',
+    'markdown'
+  )
   .option('--output <file>', 'Output file path')
   .action(async (options: { format?: string; output?: string }) => {
     try {
@@ -2176,10 +2736,16 @@ program
     try {
       const result = await validateSpecAlignment({ fix: options.fix });
       if (result.aligned) {
-        console.log(chalk.green(`✓ All specs are aligned with tests and implementation`));
+        console.log(
+          chalk.green(`✓ All specs are aligned with tests and implementation`)
+        );
       } else {
-        console.error(chalk.red(`✗ Found ${result.issues.length} alignment issues`));
-        result.issues.forEach((issue: string) => console.error(chalk.red(`  - ${issue}`)));
+        console.error(
+          chalk.red(`✗ Found ${result.issues.length} alignment issues`)
+        );
+        result.issues.forEach((issue: string) =>
+          console.error(chalk.red(`  - ${issue}`))
+        );
         process.exit(1);
       }
     } catch (error: any) {

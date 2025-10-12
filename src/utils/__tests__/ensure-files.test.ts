@@ -9,7 +9,11 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdtemp, rm, mkdir, readFile, access } from 'fs/promises';
 import { tmpdir } from 'os';
 import { join } from 'path';
-import { ensureWorkUnitsFile, ensurePrefixesFile, ensureEpicsFile } from '../ensure-files';
+import {
+  ensureWorkUnitsFile,
+  ensurePrefixesFile,
+  ensureEpicsFile,
+} from '../ensure-files';
 
 describe('Feature: Automatic JSON File Initialization', () => {
   let testDir: string;

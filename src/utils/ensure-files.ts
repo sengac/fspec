@@ -107,23 +107,75 @@ export async function ensureTagsFile(cwd: string): Promise<Tags> {
   } catch (error: unknown) {
     // File doesn't exist, create it with initial structure
     if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
-
       const initialData: Tags = {
         categories: [
-          { name: 'Phase Tags', description: 'Phase identification tags', required: true, tags: [] },
-          { name: 'Component Tags', description: 'Architectural component tags', required: true, tags: [] },
-          { name: 'Feature Group Tags', description: 'Functional area tags', required: true, tags: [] },
-          { name: 'Technical Tags', description: 'Technical concern tags', required: false, tags: [] },
-          { name: 'Platform Tags', description: 'Platform-specific tags', required: false, tags: [] },
-          { name: 'Priority Tags', description: 'Implementation priority tags', required: false, tags: [] },
-          { name: 'Status Tags', description: 'Development status tags', required: false, tags: [] },
-          { name: 'Testing Tags', description: 'Test-related tags', required: false, tags: [] },
-          { name: 'CAGE Integration Tags', description: 'CAGE-specific tags', required: false, tags: [] },
+          {
+            name: 'Phase Tags',
+            description: 'Phase identification tags',
+            required: true,
+            tags: [],
+          },
+          {
+            name: 'Component Tags',
+            description: 'Architectural component tags',
+            required: true,
+            tags: [],
+          },
+          {
+            name: 'Feature Group Tags',
+            description: 'Functional area tags',
+            required: true,
+            tags: [],
+          },
+          {
+            name: 'Technical Tags',
+            description: 'Technical concern tags',
+            required: false,
+            tags: [],
+          },
+          {
+            name: 'Platform Tags',
+            description: 'Platform-specific tags',
+            required: false,
+            tags: [],
+          },
+          {
+            name: 'Priority Tags',
+            description: 'Implementation priority tags',
+            required: false,
+            tags: [],
+          },
+          {
+            name: 'Status Tags',
+            description: 'Development status tags',
+            required: false,
+            tags: [],
+          },
+          {
+            name: 'Testing Tags',
+            description: 'Test-related tags',
+            required: false,
+            tags: [],
+          },
+          {
+            name: 'CAGE Integration Tags',
+            description: 'CAGE-specific tags',
+            required: false,
+            tags: [],
+          },
         ],
         combinationExamples: [],
         usageGuidelines: {
-          requiredCombinations: { title: '', requirements: [], minimumExample: '' },
-          recommendedCombinations: { title: '', includes: [], recommendedExample: '' },
+          requiredCombinations: {
+            title: '',
+            requirements: [],
+            minimumExample: '',
+          },
+          recommendedCombinations: {
+            title: '',
+            includes: [],
+            recommendedExample: '',
+          },
           orderingConvention: { title: '', order: [], example: '' },
         },
         addingNewTags: {
@@ -164,7 +216,6 @@ export async function ensureFoundationFile(cwd: string): Promise<Foundation> {
   } catch (error: unknown) {
     // File doesn't exist, create it with initial structure
     if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
-
       const initialData: Foundation = {
         project: {
           name: 'Project',

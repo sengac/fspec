@@ -215,7 +215,7 @@ export async function addDiagram(
 
     // Find existing diagram with same title or add new one
     const existingIndex = foundationData.architectureDiagrams.findIndex(
-      (d) => d.title === title
+      d => d.title === title
     );
 
     const newDiagram = {
@@ -254,9 +254,10 @@ export async function addDiagram(
 
     return {
       success: true,
-      message: existingIndex !== -1
-        ? `Updated diagram "${title}"`
-        : `Added diagram "${title}"`,
+      message:
+        existingIndex !== -1
+          ? `Updated diagram "${title}"`
+          : `Added diagram "${title}"`,
     };
   } catch (error: any) {
     return {

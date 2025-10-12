@@ -9,7 +9,14 @@ export interface QuestionItem {
 export interface WorkUnit {
   id: string;
   title: string;
-  status: 'backlog' | 'specifying' | 'testing' | 'implementing' | 'validating' | 'done' | 'blocked';
+  status:
+    | 'backlog'
+    | 'specifying'
+    | 'testing'
+    | 'implementing'
+    | 'validating'
+    | 'done'
+    | 'blocked';
   description?: string;
   estimate?: number;
   epic?: string;

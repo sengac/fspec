@@ -688,7 +688,9 @@ Feature: API Integration
       expect(Array.isArray(parsed.workUnits)).toBe(true);
 
       // And the workUnits array should contain object with id "API-001"
-      const apiWorkUnit = parsed.workUnits.find((wu: any) => wu.id === 'API-001');
+      const apiWorkUnit = parsed.workUnits.find(
+        (wu: any) => wu.id === 'API-001'
+      );
       expect(apiWorkUnit).toBeDefined();
       expect(apiWorkUnit.title).toBe('API Integration Work');
 

@@ -15,7 +15,9 @@ interface RemoveQuestionResult {
   remainingCount: number;
 }
 
-export async function removeQuestion(options: RemoveQuestionOptions): Promise<RemoveQuestionResult> {
+export async function removeQuestion(
+  options: RemoveQuestionOptions
+): Promise<RemoveQuestionResult> {
   const cwd = options.cwd || process.cwd();
   const workUnitsFile = join(cwd, 'spec/work-units.json');
 

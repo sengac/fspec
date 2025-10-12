@@ -298,11 +298,41 @@ describe('Feature: Work Unit Estimation and Metrics', () => {
       const workUnitsFile = join(testDir, 'spec', 'work-units.json');
       const data = {
         workUnits: {
-          'AUTH-001': { id: 'AUTH-001', status: 'done', estimate: 1, actualTokens: 22000, iterations: 1 },
-          'AUTH-002': { id: 'AUTH-002', status: 'done', estimate: 1, actualTokens: 28000, iterations: 2 },
-          'AUTH-003': { id: 'AUTH-003', status: 'done', estimate: 3, actualTokens: 70000, iterations: 2 },
-          'AUTH-004': { id: 'AUTH-004', status: 'done', estimate: 3, actualTokens: 80000, iterations: 3 },
-          'AUTH-005': { id: 'AUTH-005', status: 'done', estimate: 5, actualTokens: 95000, iterations: 2 },
+          'AUTH-001': {
+            id: 'AUTH-001',
+            status: 'done',
+            estimate: 1,
+            actualTokens: 22000,
+            iterations: 1,
+          },
+          'AUTH-002': {
+            id: 'AUTH-002',
+            status: 'done',
+            estimate: 1,
+            actualTokens: 28000,
+            iterations: 2,
+          },
+          'AUTH-003': {
+            id: 'AUTH-003',
+            status: 'done',
+            estimate: 3,
+            actualTokens: 70000,
+            iterations: 2,
+          },
+          'AUTH-004': {
+            id: 'AUTH-004',
+            status: 'done',
+            estimate: 3,
+            actualTokens: 80000,
+            iterations: 3,
+          },
+          'AUTH-005': {
+            id: 'AUTH-005',
+            status: 'done',
+            estimate: 5,
+            actualTokens: 95000,
+            iterations: 2,
+          },
         },
         states: {
           done: ['AUTH-001', 'AUTH-002', 'AUTH-003', 'AUTH-004', 'AUTH-005'],
@@ -343,10 +373,30 @@ describe('Feature: Work Unit Estimation and Metrics', () => {
       const workUnitsFile = join(testDir, 'spec', 'work-units.json');
       const data = {
         workUnits: {
-          'AUTH-001': { id: 'AUTH-001', status: 'done', estimate: 5, actualTokens: 95000 },
-          'AUTH-002': { id: 'AUTH-002', status: 'done', estimate: 3, actualTokens: 70000 },
-          'SEC-001': { id: 'SEC-001', status: 'done', estimate: 5, actualTokens: 140000 },
-          'SEC-002': { id: 'SEC-002', status: 'done', estimate: 3, actualTokens: 95000 },
+          'AUTH-001': {
+            id: 'AUTH-001',
+            status: 'done',
+            estimate: 5,
+            actualTokens: 95000,
+          },
+          'AUTH-002': {
+            id: 'AUTH-002',
+            status: 'done',
+            estimate: 3,
+            actualTokens: 70000,
+          },
+          'SEC-001': {
+            id: 'SEC-001',
+            status: 'done',
+            estimate: 5,
+            actualTokens: 140000,
+          },
+          'SEC-002': {
+            id: 'SEC-002',
+            status: 'done',
+            estimate: 3,
+            actualTokens: 95000,
+          },
         },
         states: {
           done: ['AUTH-001', 'AUTH-002', 'SEC-001', 'SEC-002'],
@@ -364,12 +414,16 @@ describe('Feature: Work Unit Estimation and Metrics', () => {
       // Then the output should show AUTH prefix stats
       expect(result.byPrefix['AUTH']).toBeDefined();
       expect(result.byPrefix['AUTH'].avgAccuracy).toContain('estimates');
-      expect(result.byPrefix['AUTH'].recommendation).toContain('well-calibrated');
+      expect(result.byPrefix['AUTH'].recommendation).toContain(
+        'well-calibrated'
+      );
 
       // And the output should show SEC prefix stats
       expect(result.byPrefix['SEC']).toBeDefined();
       expect(result.byPrefix['SEC'].avgAccuracy).toContain('estimates');
-      expect(result.byPrefix['SEC'].recommendation).toContain('increase estimates');
+      expect(result.byPrefix['SEC'].recommendation).toContain(
+        'increase estimates'
+      );
     });
   });
 
@@ -380,15 +434,58 @@ describe('Feature: Work Unit Estimation and Metrics', () => {
       const workUnitsFile = join(testDir, 'spec', 'work-units.json');
       const data = {
         workUnits: {
-          'AUTH-001': { id: 'AUTH-001', status: 'done', estimate: 1, actualTokens: 25000, iterations: 1 },
-          'AUTH-002': { id: 'AUTH-002', status: 'done', estimate: 1, actualTokens: 22000, iterations: 2 },
-          'AUTH-003': { id: 'AUTH-003', status: 'done', estimate: 3, actualTokens: 70000, iterations: 2 },
-          'AUTH-004': { id: 'AUTH-004', status: 'done', estimate: 3, actualTokens: 85000, iterations: 3 },
-          'AUTH-005': { id: 'AUTH-005', status: 'done', estimate: 5, actualTokens: 95000, iterations: 2 },
-          'AUTH-006': { id: 'AUTH-006', status: 'done', estimate: 5, actualTokens: 120000, iterations: 4 },
+          'AUTH-001': {
+            id: 'AUTH-001',
+            status: 'done',
+            estimate: 1,
+            actualTokens: 25000,
+            iterations: 1,
+          },
+          'AUTH-002': {
+            id: 'AUTH-002',
+            status: 'done',
+            estimate: 1,
+            actualTokens: 22000,
+            iterations: 2,
+          },
+          'AUTH-003': {
+            id: 'AUTH-003',
+            status: 'done',
+            estimate: 3,
+            actualTokens: 70000,
+            iterations: 2,
+          },
+          'AUTH-004': {
+            id: 'AUTH-004',
+            status: 'done',
+            estimate: 3,
+            actualTokens: 85000,
+            iterations: 3,
+          },
+          'AUTH-005': {
+            id: 'AUTH-005',
+            status: 'done',
+            estimate: 5,
+            actualTokens: 95000,
+            iterations: 2,
+          },
+          'AUTH-006': {
+            id: 'AUTH-006',
+            status: 'done',
+            estimate: 5,
+            actualTokens: 120000,
+            iterations: 4,
+          },
         },
         states: {
-          done: ['AUTH-001', 'AUTH-002', 'AUTH-003', 'AUTH-004', 'AUTH-005', 'AUTH-006'],
+          done: [
+            'AUTH-001',
+            'AUTH-002',
+            'AUTH-003',
+            'AUTH-004',
+            'AUTH-005',
+            'AUTH-006',
+          ],
         },
       };
       await writeFile(workUnitsFile, JSON.stringify(data, null, 2));
@@ -401,9 +498,24 @@ describe('Feature: Work Unit Estimation and Metrics', () => {
       // Then the output should show recommended patterns
       expect(result.patterns).toBeDefined();
       expect(result.patterns).toEqual([
-        { points: 1, expectedTokens: '22k-25k', expectedIterations: '1-2', confidence: 'medium' },
-        { points: 3, expectedTokens: '70k-85k', expectedIterations: '2-3', confidence: 'medium' },
-        { points: 5, expectedTokens: '95k-120k', expectedIterations: '2-4', confidence: 'medium' },
+        {
+          points: 1,
+          expectedTokens: '22k-25k',
+          expectedIterations: '1-2',
+          confidence: 'medium',
+        },
+        {
+          points: 3,
+          expectedTokens: '70k-85k',
+          expectedIterations: '2-3',
+          confidence: 'medium',
+        },
+        {
+          points: 5,
+          expectedTokens: '95k-120k',
+          expectedIterations: '2-4',
+          confidence: 'medium',
+        },
       ]);
     });
   });

@@ -70,7 +70,10 @@ describe('Feature: Work Unit Query and Reporting', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       // When I run "fspec query work-units --status=implementing --output=json"
       const result = await queryWorkUnits({
@@ -82,7 +85,9 @@ describe('Feature: Work Unit Query and Reporting', () => {
       // Then the output should contain only implementing work units
       expect(result.workUnits).toBeDefined();
       expect(result.workUnits).toHaveLength(2);
-      expect(result.workUnits?.every(wu => wu.status === 'implementing')).toBe(true);
+      expect(result.workUnits?.every(wu => wu.status === 'implementing')).toBe(
+        true
+      );
 
       // And the output should be valid JSON
       expect(result.workUnits?.some(wu => wu.id === 'AUTH-001')).toBe(true);
@@ -134,7 +139,10 @@ describe('Feature: Work Unit Query and Reporting', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       const epics: EpicsData = {
         epics: {
@@ -154,7 +162,10 @@ describe('Feature: Work Unit Query and Reporting', () => {
           },
         },
       };
-      await writeFile(join(testDir, 'spec/epics.json'), JSON.stringify(epics, null, 2));
+      await writeFile(
+        join(testDir, 'spec/epics.json'),
+        JSON.stringify(epics, null, 2)
+      );
 
       // When I run "fspec query work-units --epic=epic-auth"
       const result = await queryWorkUnits({
@@ -214,7 +225,10 @@ describe('Feature: Work Unit Query and Reporting', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       // When I run "fspec query work-units --status=implementing --epic=epic-auth --output=json"
       const result = await queryWorkUnits({
@@ -282,7 +296,10 @@ describe('Feature: Work Unit Query and Reporting', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       // When I run "fspec report summary"
       const result = await generateSummaryReport({
@@ -341,7 +358,10 @@ describe('Feature: Work Unit Query and Reporting', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       // When I run "fspec export work-units --format=json --output=work-units-export.json"
       const result = await exportWorkUnits({
@@ -353,7 +373,9 @@ describe('Feature: Work Unit Query and Reporting', () => {
       expect(result.success).toBe(true);
 
       // Then the file should contain valid JSON array
-      const exported = JSON.parse(await readFile(join(testDir, 'work-units-export.json'), 'utf-8'));
+      const exported = JSON.parse(
+        await readFile(join(testDir, 'work-units-export.json'), 'utf-8')
+      );
       expect(Array.isArray(exported)).toBe(true);
 
       // And each work unit should have all fields
@@ -405,7 +427,10 @@ describe('Feature: Work Unit Query and Reporting', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       // When I run "fspec board"
       const result = await displayBoard({

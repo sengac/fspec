@@ -66,13 +66,22 @@ export async function queryEstimateAccuracy(options: {
     }
 
     // All work units query
-    const completedWorkUnits = Object.values(data.workUnits).filter(wu => wu.status === 'done');
+    const completedWorkUnits = Object.values(data.workUnits).filter(
+      wu => wu.status === 'done'
+    );
 
     // Calculate by story points
-    const byStoryPoints: Record<string, { totalTokens: number; totalIterations: number; count: number }> = {};
+    const byStoryPoints: Record<
+      string,
+      { totalTokens: number; totalIterations: number; count: number }
+    > = {};
 
     for (const wu of completedWorkUnits) {
-      if (wu.estimate && wu.actualTokens !== undefined && wu.iterations !== undefined) {
+      if (
+        wu.estimate &&
+        wu.actualTokens !== undefined &&
+        wu.iterations !== undefined
+      ) {
         const key = wu.estimate.toString();
         if (!byStoryPoints[key]) {
           byStoryPoints[key] = { totalTokens: 0, totalIterations: 0, count: 0 };
@@ -87,14 +96,18 @@ export async function queryEstimateAccuracy(options: {
     for (const [points, data] of Object.entries(byStoryPoints)) {
       byStoryPointsResult[points] = {
         avgTokens: Math.round(data.totalTokens / data.count),
-        avgIterations: Math.round((data.totalIterations / data.count) * 10) / 10,
+        avgIterations:
+          Math.round((data.totalIterations / data.count) * 10) / 10,
         samples: data.count,
       };
     }
 
     // Calculate by prefix if requested
     if (options.byPrefix) {
-      const byPrefix: Record<string, { totalEstimate: number; totalActual: number; count: number }> = {};
+      const byPrefix: Record<
+        string,
+        { totalEstimate: number; totalActual: number; count: number }
+      > = {};
 
       for (const wu of completedWorkUnits) {
         const prefix = wu.id.split('-')[0];

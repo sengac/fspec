@@ -93,7 +93,9 @@ describe('Feature: Complete CLI Command Registration', () => {
 
       // Report results
       if (unregisteredCommands.length > 0) {
-        console.log(`\nUnregistered commands (${unregisteredCommands.length}):`);
+        console.log(
+          `\nUnregistered commands (${unregisteredCommands.length}):`
+        );
         unregisteredCommands.forEach(cmd => console.log(`  - ${cmd}`));
       }
 
@@ -126,7 +128,10 @@ describe('Feature: Complete CLI Command Registration', () => {
           },
         },
       };
-      await writeFile(join(testDir, 'spec/prefixes.json'), JSON.stringify(prefixes, null, 2));
+      await writeFile(
+        join(testDir, 'spec/prefixes.json'),
+        JSON.stringify(prefixes, null, 2)
+      );
 
       const workUnits: WorkUnitsData = {
         workUnits: {
@@ -162,7 +167,10 @@ describe('Feature: Complete CLI Command Registration', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       // When I run prioritize-work-unit AUTH-001 --position=top
       const result = await prioritizeWorkUnit({
@@ -176,7 +184,10 @@ describe('Feature: Complete CLI Command Registration', () => {
 
       // Verify the order
       const { readFile } = await import('fs/promises');
-      const updatedContent = await readFile(join(testDir, 'spec/work-units.json'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/work-units.json'),
+        'utf-8'
+      );
       const updated: WorkUnitsData = JSON.parse(updatedContent);
 
       expect(updated.states.backlog[0]).toBe('AUTH-001');
@@ -212,7 +223,10 @@ describe('Feature: Complete CLI Command Registration', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       // When I run update-work-unit AUTH-001 --title='New Title'
       const result = await updateWorkUnit({
@@ -226,7 +240,10 @@ describe('Feature: Complete CLI Command Registration', () => {
 
       // Verify the title
       const { readFile } = await import('fs/promises');
-      const updatedContent = await readFile(join(testDir, 'spec/work-units.json'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/work-units.json'),
+        'utf-8'
+      );
       const updated: WorkUnitsData = JSON.parse(updatedContent);
 
       expect(updated.workUnits['AUTH-001'].title).toBe('New Title');
@@ -262,7 +279,10 @@ describe('Feature: Complete CLI Command Registration', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       // When I run delete-work-unit AUTH-001
       const result = await deleteWorkUnit({
@@ -275,7 +295,10 @@ describe('Feature: Complete CLI Command Registration', () => {
 
       // Verify deletion
       const { readFile } = await import('fs/promises');
-      const updatedContent = await readFile(join(testDir, 'spec/work-units.json'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/work-units.json'),
+        'utf-8'
+      );
       const updated: WorkUnitsData = JSON.parse(updatedContent);
 
       expect(updated.workUnits['AUTH-001']).toBeUndefined();
@@ -286,7 +309,9 @@ describe('Feature: Complete CLI Command Registration', () => {
   describe('Scenario: Register update-work-unit-status command', () => {
     it('should update work unit status following ACDD workflow', async () => {
       // Given the function "updateWorkUnitStatus" exists
-      const { updateWorkUnitStatus } = await import('../update-work-unit-status');
+      const { updateWorkUnitStatus } = await import(
+        '../update-work-unit-status'
+      );
       expect(updateWorkUnitStatus).toBeDefined();
 
       // Setup test data
@@ -312,7 +337,10 @@ describe('Feature: Complete CLI Command Registration', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       // When I run update-work-unit-status AUTH-001 specifying (following ACDD: backlog -> specifying)
       const result = await updateWorkUnitStatus({
@@ -326,7 +354,10 @@ describe('Feature: Complete CLI Command Registration', () => {
 
       // Verify status
       const { readFile } = await import('fs/promises');
-      const updatedContent = await readFile(join(testDir, 'spec/work-units.json'), 'utf-8');
+      const updatedContent = await readFile(
+        join(testDir, 'spec/work-units.json'),
+        'utf-8'
+      );
       const updated: WorkUnitsData = JSON.parse(updatedContent);
 
       expect(updated.workUnits['AUTH-001'].status).toBe('specifying');

@@ -28,28 +28,49 @@ describe('Feature: Work Unit Management', () => {
     await mkdir(specDir, { recursive: true });
 
     // Initialize empty work units file
-    await writeFile(workUnitsFile, JSON.stringify({
-      workUnits: {},
-      states: {
-        backlog: [],
-        specifying: [],
-        testing: [],
-        implementing: [],
-        validating: [],
-        done: [],
-        blocked: []
-      }
-    }, null, 2));
+    await writeFile(
+      workUnitsFile,
+      JSON.stringify(
+        {
+          workUnits: {},
+          states: {
+            backlog: [],
+            specifying: [],
+            testing: [],
+            implementing: [],
+            validating: [],
+            done: [],
+            blocked: [],
+          },
+        },
+        null,
+        2
+      )
+    );
 
     // Initialize prefixes file
-    await writeFile(prefixesFile, JSON.stringify({
-      prefixes: {}
-    }, null, 2));
+    await writeFile(
+      prefixesFile,
+      JSON.stringify(
+        {
+          prefixes: {},
+        },
+        null,
+        2
+      )
+    );
 
     // Initialize epics file
-    await writeFile(epicsFile, JSON.stringify({
-      epics: {}
-    }, null, 2));
+    await writeFile(
+      epicsFile,
+      JSON.stringify(
+        {
+          epics: {},
+        },
+        null,
+        2
+      )
+    );
   });
 
   afterEach(async () => {
@@ -77,14 +98,18 @@ describe('Feature: Work Unit Management', () => {
       expect(workUnits.workUnits['AUTH-001']).toBeDefined();
 
       // And the work unit should have title "Implement OAuth login"
-      expect(workUnits.workUnits['AUTH-001'].title).toBe('Implement OAuth login');
+      expect(workUnits.workUnits['AUTH-001'].title).toBe(
+        'Implement OAuth login'
+      );
 
       // And the work unit should have status "backlog"
       expect(workUnits.workUnits['AUTH-001'].status).toBe('backlog');
 
       // And the work unit should have createdAt timestamp
       expect(workUnits.workUnits['AUTH-001'].createdAt).toBeDefined();
-      expect(new Date(workUnits.workUnits['AUTH-001'].createdAt).getTime()).toBeGreaterThan(0);
+      expect(
+        new Date(workUnits.workUnits['AUTH-001'].createdAt).getTime()
+      ).toBeGreaterThan(0);
 
       // And the work unit should have updatedAt timestamp
       expect(workUnits.workUnits['AUTH-001'].updatedAt).toBeDefined();
@@ -109,7 +134,7 @@ describe('Feature: Work Unit Management', () => {
         title: 'First work unit',
         status: 'backlog',
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.backlog.push('AUTH-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
@@ -119,7 +144,9 @@ describe('Feature: Work Unit Management', () => {
 
       // Then the command should succeed
       // And a work unit "AUTH-002" should be created
-      const updatedWorkUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const updatedWorkUnits = JSON.parse(
+        await readFile(workUnitsFile, 'utf-8')
+      );
       expect(updatedWorkUnits.workUnits['AUTH-002']).toBeDefined();
 
       // And the work unit should have status "backlog"
@@ -143,14 +170,14 @@ describe('Feature: Work Unit Management', () => {
       epics.epics['epic-user-management'] = {
         id: 'epic-user-management',
         title: 'User Management',
-        workUnits: []
+        workUnits: [],
       };
       await writeFile(epicsFile, JSON.stringify(epics, null, 2));
 
       // When I run "fspec create-work-unit AUTH 'OAuth integration' --epic=epic-user-management"
       await createWorkUnit('AUTH', 'OAuth integration', {
         cwd: testDir,
-        epic: 'epic-user-management'
+        epic: 'epic-user-management',
       });
 
       // Then the command should succeed
@@ -160,7 +187,9 @@ describe('Feature: Work Unit Management', () => {
 
       // And the epic should reference work unit "AUTH-001"
       const updatedEpics = JSON.parse(await readFile(epicsFile, 'utf-8'));
-      expect(updatedEpics.epics['epic-user-management'].workUnits).toContain('AUTH-001');
+      expect(updatedEpics.epics['epic-user-management'].workUnits).toContain(
+        'AUTH-001'
+      );
     });
   });
 
@@ -175,13 +204,15 @@ describe('Feature: Work Unit Management', () => {
       // When I run "fspec create-work-unit AUTH 'OAuth login' --description='Add OAuth 2.0 with Google and GitHub'"
       await createWorkUnit('AUTH', 'OAuth login', {
         cwd: testDir,
-        description: 'Add OAuth 2.0 with Google and GitHub'
+        description: 'Add OAuth 2.0 with Google and GitHub',
       });
 
       // Then the command should succeed
       // And the work unit should have description "Add OAuth 2.0 with Google and GitHub"
       const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
-      expect(workUnits.workUnits['AUTH-001'].description).toBe('Add OAuth 2.0 with Google and GitHub');
+      expect(workUnits.workUnits['AUTH-001'].description).toBe(
+        'Add OAuth 2.0 with Google and GitHub'
+      );
     });
   });
 
@@ -201,7 +232,7 @@ describe('Feature: Work Unit Management', () => {
         status: 'backlog',
         children: [],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.backlog.push('AUTH-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
@@ -209,19 +240,23 @@ describe('Feature: Work Unit Management', () => {
       // When I run "fspec create-work-unit AUTH 'Google provider' --parent=AUTH-001"
       await createWorkUnit('AUTH', 'Google provider', {
         cwd: testDir,
-        parent: 'AUTH-001'
+        parent: 'AUTH-001',
       });
 
       // Then the command should succeed
       // And the work unit "AUTH-002" should be created
-      const updatedWorkUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const updatedWorkUnits = JSON.parse(
+        await readFile(workUnitsFile, 'utf-8')
+      );
       expect(updatedWorkUnits.workUnits['AUTH-002']).toBeDefined();
 
       // And the work unit "AUTH-002" should have parent "AUTH-001"
       expect(updatedWorkUnits.workUnits['AUTH-002'].parent).toBe('AUTH-001');
 
       // And the work unit "AUTH-001" children array should contain "AUTH-002"
-      expect(updatedWorkUnits.workUnits['AUTH-001'].children).toContain('AUTH-002');
+      expect(updatedWorkUnits.workUnits['AUTH-001'].children).toContain(
+        'AUTH-002'
+      );
     });
   });
 
@@ -278,7 +313,7 @@ describe('Feature: Work Unit Management', () => {
       await expect(
         createWorkUnit('AUTH', 'Child work', {
           cwd: testDir,
-          parent: 'AUTH-999'
+          parent: 'AUTH-999',
         })
       ).rejects.toThrow("Parent work unit 'AUTH-999' does not exist");
     });
@@ -295,24 +330,32 @@ describe('Feature: Work Unit Management', () => {
         title: 'Old title',
         status: 'backlog',
         createdAt: oldTimestamp,
-        updatedAt: oldTimestamp
+        updatedAt: oldTimestamp,
       };
       workUnits.states.backlog.push('AUTH-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       // When I run "fspec update-work-unit AUTH-001 --title='New title'"
-      await updateWorkUnit('AUTH-001', { title: 'New title' }, { cwd: testDir });
+      await updateWorkUnit(
+        'AUTH-001',
+        { title: 'New title' },
+        { cwd: testDir }
+      );
 
       // Then the command should succeed
       // And the work unit "AUTH-001" should have title "New title"
-      const updatedWorkUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const updatedWorkUnits = JSON.parse(
+        await readFile(workUnitsFile, 'utf-8')
+      );
       expect(updatedWorkUnits.workUnits['AUTH-001'].title).toBe('New title');
 
       // And the updatedAt timestamp should be updated
-      expect(updatedWorkUnits.workUnits['AUTH-001'].updatedAt).not.toBe(oldTimestamp);
-      expect(new Date(updatedWorkUnits.workUnits['AUTH-001'].updatedAt).getTime()).toBeGreaterThan(
-        new Date(oldTimestamp).getTime()
+      expect(updatedWorkUnits.workUnits['AUTH-001'].updatedAt).not.toBe(
+        oldTimestamp
       );
+      expect(
+        new Date(updatedWorkUnits.workUnits['AUTH-001'].updatedAt).getTime()
+      ).toBeGreaterThan(new Date(oldTimestamp).getTime());
     });
   });
 
@@ -326,18 +369,26 @@ describe('Feature: Work Unit Management', () => {
         title: 'OAuth login',
         status: 'backlog',
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.backlog.push('AUTH-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       // When I run "fspec update-work-unit AUTH-001 --description='Updated description'"
-      await updateWorkUnit('AUTH-001', { description: 'Updated description' }, { cwd: testDir });
+      await updateWorkUnit(
+        'AUTH-001',
+        { description: 'Updated description' },
+        { cwd: testDir }
+      );
 
       // Then the command should succeed
       // And the work unit should have description "Updated description"
-      const updatedWorkUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
-      expect(updatedWorkUnits.workUnits['AUTH-001'].description).toBe('Updated description');
+      const updatedWorkUnits = JSON.parse(
+        await readFile(workUnitsFile, 'utf-8')
+      );
+      expect(updatedWorkUnits.workUnits['AUTH-001'].description).toBe(
+        'Updated description'
+      );
     });
   });
 
@@ -351,7 +402,7 @@ describe('Feature: Work Unit Management', () => {
         title: 'OAuth login',
         status: 'backlog',
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.backlog.push('AUTH-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
@@ -361,21 +412,29 @@ describe('Feature: Work Unit Management', () => {
       epics.epics['epic-security'] = {
         id: 'epic-security',
         title: 'Security Improvements',
-        workUnits: []
+        workUnits: [],
       };
       await writeFile(epicsFile, JSON.stringify(epics, null, 2));
 
       // When I run "fspec update-work-unit AUTH-001 --epic=epic-security"
-      await updateWorkUnit('AUTH-001', { epic: 'epic-security' }, { cwd: testDir });
+      await updateWorkUnit(
+        'AUTH-001',
+        { epic: 'epic-security' },
+        { cwd: testDir }
+      );
 
       // Then the command should succeed
       // And the work unit should have epic "epic-security"
-      const updatedWorkUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const updatedWorkUnits = JSON.parse(
+        await readFile(workUnitsFile, 'utf-8')
+      );
       expect(updatedWorkUnits.workUnits['AUTH-001'].epic).toBe('epic-security');
 
       // And the epic should reference work unit "AUTH-001"
       const updatedEpics = JSON.parse(await readFile(epicsFile, 'utf-8'));
-      expect(updatedEpics.epics['epic-security'].workUnits).toContain('AUTH-001');
+      expect(updatedEpics.epics['epic-security'].workUnits).toContain(
+        'AUTH-001'
+      );
     });
   });
 
@@ -389,7 +448,7 @@ describe('Feature: Work Unit Management', () => {
         title: 'OAuth login',
         status: 'backlog',
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.backlog.push('AUTH-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
@@ -401,7 +460,11 @@ describe('Feature: Work Unit Management', () => {
       // Then the command should fail
       // And the error should contain "Epic 'epic-nonexistent' does not exist"
       await expect(
-        updateWorkUnit('AUTH-001', { epic: 'epic-nonexistent' }, { cwd: testDir })
+        updateWorkUnit(
+          'AUTH-001',
+          { epic: 'epic-nonexistent' },
+          { cwd: testDir }
+        )
       ).rejects.toThrow("Epic 'epic-nonexistent' does not exist");
     });
   });
@@ -418,7 +481,7 @@ describe('Feature: Work Unit Management', () => {
         status: 'implementing',
         estimate: 5,
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.implementing.push('AUTH-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
@@ -444,13 +507,16 @@ describe('Feature: Work Unit Management', () => {
         title: 'OAuth login',
         status: 'backlog',
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.backlog.push('AUTH-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       // When I run "fspec show-work-unit AUTH-001 --output=json"
-      const output = await showWorkUnit('AUTH-001', { cwd: testDir, output: 'json' });
+      const output = await showWorkUnit('AUTH-001', {
+        cwd: testDir,
+        output: 'json',
+      });
 
       // Then the command should succeed
       // And the output should be valid JSON
@@ -471,21 +537,21 @@ describe('Feature: Work Unit Management', () => {
         title: 'OAuth login',
         status: 'done',
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['AUTH-002'] = {
         id: 'AUTH-002',
         title: 'Password reset',
         status: 'implementing',
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['DASH-001'] = {
         id: 'DASH-001',
         title: 'User dashboard',
         status: 'backlog',
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.done.push('AUTH-001');
       workUnits.states.implementing.push('AUTH-002');
@@ -513,21 +579,21 @@ describe('Feature: Work Unit Management', () => {
         status: 'backlog',
         title: 'Auth work',
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['AUTH-002'] = {
         id: 'AUTH-002',
         status: 'implementing',
         title: 'More auth',
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['DASH-001'] = {
         id: 'DASH-001',
         status: 'backlog',
         title: 'Dashboard',
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.backlog.push('AUTH-001', 'DASH-001');
       workUnits.states.implementing.push('AUTH-002');
@@ -556,21 +622,21 @@ describe('Feature: Work Unit Management', () => {
         title: 'Auth work',
         status: 'backlog',
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['AUTH-002'] = {
         id: 'AUTH-002',
         title: 'More auth',
         status: 'backlog',
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['DASH-001'] = {
         id: 'DASH-001',
         title: 'Dashboard',
         status: 'backlog',
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.backlog.push('AUTH-001', 'AUTH-002', 'DASH-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
@@ -599,7 +665,7 @@ describe('Feature: Work Unit Management', () => {
         epic: 'epic-user-management',
         status: 'backlog',
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['AUTH-002'] = {
         id: 'AUTH-002',
@@ -607,7 +673,7 @@ describe('Feature: Work Unit Management', () => {
         epic: 'epic-user-management',
         status: 'backlog',
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['SEC-001'] = {
         id: 'SEC-001',
@@ -615,13 +681,16 @@ describe('Feature: Work Unit Management', () => {
         epic: 'epic-security',
         status: 'backlog',
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.backlog.push('AUTH-001', 'AUTH-002', 'SEC-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       // When I run "fspec list-work-units --epic=epic-user-management"
-      const output = await listWorkUnits({ cwd: testDir, epic: 'epic-user-management' });
+      const output = await listWorkUnits({
+        cwd: testDir,
+        epic: 'epic-user-management',
+      });
 
       // Then the command should succeed
       // And the output should contain epic-user-management work units
@@ -644,7 +713,7 @@ describe('Feature: Work Unit Management', () => {
         status: 'backlog',
         children: [],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.backlog.push('AUTH-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
@@ -654,7 +723,9 @@ describe('Feature: Work Unit Management', () => {
 
       // Then the command should succeed
       // And the work unit "AUTH-001" should not exist
-      const updatedWorkUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const updatedWorkUnits = JSON.parse(
+        await readFile(workUnitsFile, 'utf-8')
+      );
       expect(updatedWorkUnits.workUnits['AUTH-001']).toBeUndefined();
 
       // And the work unit should be removed from states index
@@ -672,7 +743,7 @@ describe('Feature: Work Unit Management', () => {
         title: 'OAuth login',
         status: 'backlog',
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.backlog.push('AUTH-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
@@ -682,7 +753,9 @@ describe('Feature: Work Unit Management', () => {
 
       // Then the command should succeed without prompting
       // And the work unit "AUTH-001" should not exist
-      const updatedWorkUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const updatedWorkUnits = JSON.parse(
+        await readFile(workUnitsFile, 'utf-8')
+      );
       expect(updatedWorkUnits.workUnits['AUTH-001']).toBeUndefined();
     });
   });
@@ -698,7 +771,7 @@ describe('Feature: Work Unit Management', () => {
         status: 'backlog',
         children: ['AUTH-002'],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['AUTH-002'] = {
         id: 'AUTH-002',
@@ -706,7 +779,7 @@ describe('Feature: Work Unit Management', () => {
         status: 'backlog',
         parent: 'AUTH-001',
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.backlog.push('AUTH-001', 'AUTH-002');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
@@ -739,20 +812,20 @@ describe('Feature: Work Unit Management', () => {
         title: 'API work',
         status: 'backlog',
         relationships: {
-          blocks: ['AUTH-001']
+          blocks: ['AUTH-001'],
         },
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         title: 'Auth work',
         status: 'blocked',
         relationships: {
-          blockedBy: ['API-001']
+          blockedBy: ['API-001'],
         },
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.backlog.push('API-001');
       workUnits.states.blocked.push('AUTH-001');
@@ -785,15 +858,30 @@ describe('Feature: Work Unit Management', () => {
       await writeFile(prefixesFile, JSON.stringify(prefixes, null, 2));
 
       // When I create parent and children
-      await createWorkUnit('AUTH', 'OAuth 2.0 implementation', { cwd: testDir });
-      await createWorkUnit('AUTH', 'Google provider', { cwd: testDir, parent: 'AUTH-001' });
-      await createWorkUnit('AUTH', 'GitHub provider', { cwd: testDir, parent: 'AUTH-001' });
-      await createWorkUnit('AUTH', 'Token storage', { cwd: testDir, parent: 'AUTH-001' });
+      await createWorkUnit('AUTH', 'OAuth 2.0 implementation', {
+        cwd: testDir,
+      });
+      await createWorkUnit('AUTH', 'Google provider', {
+        cwd: testDir,
+        parent: 'AUTH-001',
+      });
+      await createWorkUnit('AUTH', 'GitHub provider', {
+        cwd: testDir,
+        parent: 'AUTH-001',
+      });
+      await createWorkUnit('AUTH', 'Token storage', {
+        cwd: testDir,
+        parent: 'AUTH-001',
+      });
 
       // Then work unit "AUTH-001" should have 3 children
       const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
       expect(workUnits.workUnits['AUTH-001'].children).toHaveLength(3);
-      expect(workUnits.workUnits['AUTH-001'].children).toEqual(['AUTH-002', 'AUTH-003', 'AUTH-004']);
+      expect(workUnits.workUnits['AUTH-001'].children).toEqual([
+        'AUTH-002',
+        'AUTH-003',
+        'AUTH-004',
+      ]);
 
       // And each child should have parent "AUTH-001"
       expect(workUnits.workUnits['AUTH-002'].parent).toBe('AUTH-001');
@@ -813,7 +901,7 @@ describe('Feature: Work Unit Management', () => {
         status: 'backlog',
         children: ['AUTH-002'],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['AUTH-002'] = {
         id: 'AUTH-002',
@@ -821,7 +909,7 @@ describe('Feature: Work Unit Management', () => {
         status: 'backlog',
         parent: 'AUTH-001',
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.backlog.push('AUTH-001', 'AUTH-002');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
@@ -849,7 +937,7 @@ describe('Feature: Work Unit Management', () => {
         status: 'backlog',
         children: ['AUTH-002'],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['AUTH-002'] = {
         id: 'AUTH-002',
@@ -858,7 +946,7 @@ describe('Feature: Work Unit Management', () => {
         parent: 'AUTH-001',
         children: ['AUTH-003'],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.workUnits['AUTH-003'] = {
         id: 'AUTH-003',
@@ -867,7 +955,7 @@ describe('Feature: Work Unit Management', () => {
         parent: 'AUTH-002',
         children: [],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.backlog.push('AUTH-001', 'AUTH-002', 'AUTH-003');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
@@ -890,7 +978,7 @@ describe('Feature: Work Unit Management', () => {
         title: 'OAuth login',
         status: 'backlog',
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       workUnits.states.backlog.push('AUTH-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
@@ -915,9 +1003,9 @@ describe('Feature: Work Unit Management', () => {
 
       // When I run "fspec show-work-unit AUTH-999"
       // Then the command should fail
-      await expect(
-        showWorkUnit('AUTH-999', { cwd: testDir })
-      ).rejects.toThrow("Work unit 'AUTH-999' does not exist");
+      await expect(showWorkUnit('AUTH-999', { cwd: testDir })).rejects.toThrow(
+        "Work unit 'AUTH-999' does not exist"
+      );
     });
   });
 });

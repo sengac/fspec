@@ -59,8 +59,16 @@ describe('Feature: List Registered Tags from Registry', () => {
       ],
       combinationExamples: [],
       usageGuidelines: {
-        requiredCombinations: { title: '', requirements: [], minimumExample: '' },
-        recommendedCombinations: { title: '', includes: [], recommendedExample: '' },
+        requiredCombinations: {
+          title: '',
+          requirements: [],
+          minimumExample: '',
+        },
+        recommendedCombinations: {
+          title: '',
+          includes: [],
+          recommendedExample: '',
+        },
         orderingConvention: { title: '', order: [], example: '' },
       },
       addingNewTags: {
@@ -158,7 +166,9 @@ describe('Feature: List Registered Tags from Registry', () => {
       expect(result.categories).toHaveLength(9); // 9 default categories
       expect(result.categories.map(c => c.name)).toContain('Phase Tags');
       expect(result.categories.map(c => c.name)).toContain('Component Tags');
-      expect(result.categories.map(c => c.name)).toContain('Feature Group Tags');
+      expect(result.categories.map(c => c.name)).toContain(
+        'Feature Group Tags'
+      );
     });
   });
 
@@ -241,8 +251,16 @@ describe('Feature: List Registered Tags from Registry', () => {
         ],
         combinationExamples: [],
         usageGuidelines: {
-          requiredCombinations: { title: '', requirements: [], minimumExample: '' },
-          recommendedCombinations: { title: '', includes: [], recommendedExample: '' },
+          requiredCombinations: {
+            title: '',
+            requirements: [],
+            minimumExample: '',
+          },
+          recommendedCombinations: {
+            title: '',
+            includes: [],
+            recommendedExample: '',
+          },
           orderingConvention: { title: '', order: [], example: '' },
         },
         addingNewTags: {
@@ -306,8 +324,16 @@ describe('Feature: List Registered Tags from Registry', () => {
         ],
         combinationExamples: [],
         usageGuidelines: {
-          requiredCombinations: { title: '', requirements: [], minimumExample: '' },
-          recommendedCombinations: { title: '', includes: [], recommendedExample: '' },
+          requiredCombinations: {
+            title: '',
+            requirements: [],
+            minimumExample: '',
+          },
+          recommendedCombinations: {
+            title: '',
+            includes: [],
+            recommendedExample: '',
+          },
           orderingConvention: { title: '', order: [], example: '' },
         },
         addingNewTags: {

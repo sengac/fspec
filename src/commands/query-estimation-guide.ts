@@ -38,13 +38,20 @@ export async function queryEstimationGuide(options: {
     const data: WorkUnitsData = JSON.parse(content);
 
     // Get completed work units
-    const completedWorkUnits = Object.values(data.workUnits).filter(wu => wu.status === 'done');
+    const completedWorkUnits = Object.values(data.workUnits).filter(
+      wu => wu.status === 'done'
+    );
 
     // Group by story points
-    const byPoints: Record<number, { tokens: number[]; iterations: number[] }> = {};
+    const byPoints: Record<number, { tokens: number[]; iterations: number[] }> =
+      {};
 
     for (const wu of completedWorkUnits) {
-      if (wu.estimate && wu.actualTokens !== undefined && wu.iterations !== undefined) {
+      if (
+        wu.estimate &&
+        wu.actualTokens !== undefined &&
+        wu.iterations !== undefined
+      ) {
         if (!byPoints[wu.estimate]) {
           byPoints[wu.estimate] = { tokens: [], iterations: [] };
         }
