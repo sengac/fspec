@@ -12,16 +12,15 @@ Feature: Stable Question Indices for Concurrent Answers
   - When question is answered, set selected=true and add answer field
   - Indices never change, preventing race conditions in concurrent operations
   - No file locking needed since each operation modifies only its own index
-  - Backward compatible migration for existing work units with string array questions
-
   Critical implementation requirements:
   - MUST change WorkUnit.questions type from string[] to QuestionItem[]
   - MUST update add-question command to create {text, selected: false} objects
   - MUST update answer-question command to set selected=true instead of removing
   - MUST update show-work-unit to display only unselected questions
   - MUST maintain indices stable even after questions are selected
-  - MUST handle backward compatibility with existing string[] questions
+  - MUST validate questions are QuestionItem objects (no string format support)
   - MUST update TypeScript types in src/types.ts
+  - MUST update validate-work-units to enforce QuestionItem format
   """
 
   Background: User Story
@@ -73,13 +72,6 @@ Feature: Stable Question Indices for Concurrent Answers
     When I run `fspec update-work-unit-status WORK-001 testing`
     Then the command should fail with error about unanswered questions
     And the error should list questions at indices 0 and 2
-
-  Scenario: Backward compatibility with string array questions
-    Given I have a work unit with questions as string array: ["Q1", "Q2", "Q3"]
-    When I run `fspec answer-question WORK-001 0 --answer "A1" --add-to rule`
-    Then the questions array should be migrated to object format
-    And question 0 should become {text: "Q1", selected: true, answer: "A1"}
-    And questions 1 and 2 should become {text: "Q2", selected: false}, {text: "Q3", selected: false}
 
   Scenario: Answer same question twice is idempotent
     Given I have a work unit with a question at index 0
