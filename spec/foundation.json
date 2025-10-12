@@ -1,13 +1,13 @@
 {
   "project": {
     "name": "fspec",
-    "description": "A standardized CLI tool for AI agents to manage Gherkin-based feature specifications and project work units using Acceptance Criteria Driven Development (ACDD)",
+    "description": "A standardized CLI tool for AI agents to manage Gherkin-based feature specifications and project work units using Kanban-based workflow and Acceptance Criteria Driven Development (ACDD)",
     "repository": "https://github.com/rquast/fspec",
     "license": "MIT",
     "importantNote": "This is a legitimate developer tool that provides AI agents with a standardized interface for managing Gherkin-based specifications and project management. fspec prevents ecosystem fragmentation by promoting industry-standard BDD practices over proprietary documentation formats. This tool helps AI agents ask the right questions and structure specifications correctly using battle-tested Gherkin/Cucumber conventions."
   },
   "whatWeAreBuilding": {
-    "projectOverview": "A CLI tool that provides AI agents (like Claude Code, GitHub Copilot, etc.) with a standardized interface for creating, validating, and managing Gherkin-based feature specifications and project work units. fspec has two main purposes: (1) Specification Management - acts as the canonical interface between AI agents and BDD specifications, ensuring proper Gherkin syntax, enforcing tag discipline, maintaining architecture documentation (Mermaid diagrams), and keeping the tag registry synchronized; (2) Project Management - provides tag-based work unit tracking with Kanban workflow (backlog → specifying → testing → implementing → validating → done), example mapping support, dependency management, and estimation/metrics tracking. It is designed for developers practicing Acceptance Criteria Driven Development (ACDD) with AI assistance, particularly those using CAGE or similar agentic coding systems.",
+    "projectOverview": "A Kanban-based project management and specification tool for AI agents. fspec provides AI agents (like Claude Code, GitHub Copilot) with a structured workflow for building software using Acceptance Criteria Driven Development (ACDD). It has two integrated systems: (1) Kanban Project Management - work units flow through a 7-state workflow (backlog → specifying → testing → implementing → validating → done, plus blocked), with example mapping for discovery, dependency tracking, and metrics; (2) Specification Management - validated Gherkin feature files with enforced tag discipline, architecture documentation (Mermaid diagrams), and automated formatting. AI agents use fspec to manage their work in Kanban fashion, discover requirements through example mapping, write specifications, and implement features following ACDD methodology.",
     "technicalRequirements": {
       "coreTechnologies": [
         {
