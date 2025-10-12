@@ -363,257 +363,148 @@ sequenceDiagram
     Note over AI,CODE: CAGE ensures alignment
 ```
 
----
+### Data and Storage Architecture
 
-## 4. Core Commands Reference
+```mermaid
+graph TB
+    subgraph "Source of Truth - JSON Files"
+        WORK[work-units.json<br/>Work units, states, dependencies,<br/>example mapping, metrics]
+        TAGS[tags.json<br/>Tag registry definitions]
+        FOUND[foundation.json<br/>Architecture diagrams,<br/>project foundation]
+        EPICS[epics.json<br/>Epic definitions]
+        PREFIX[prefixes.json<br/>Prefix definitions]
+    end
 
-### Feature File Commands
+    subgraph "Auto-Generated Documentation"
+        TAGS_MD[TAGS.md<br/>Generated from tags.json]
+        FOUND_MD[FOUNDATION.md<br/>Generated from foundation.json]
+    end
 
-- `fspec create-feature <name>` - Create new feature file with template ✅
-- `fspec add-scenario <feature> <name>` - Add scenario to feature ✅
-- `fspec add-step <feature> <scenario> <type> <text>` - Add Given/When/Then step ✅
-- `fspec update-scenario <feature> <old-name> <new-name>` - Rename scenario ✅
-- `fspec update-step <feature> <scenario> <current-step> [--text=<new>] [--keyword=<kw>]` - Update step ✅
-- `fspec delete-scenario <feature> <scenario>` - Delete scenario from feature ✅
-- `fspec delete-step <feature> <scenario> <step>` - Delete step from scenario ✅
-- `fspec add-architecture <feature> <notes>` - Add/update architecture doc string ✅
-- `fspec add-background <feature> <user-story>` - Add/update user story background ✅
-- `fspec list-features [--tag=@phase1]` - List all features (optionally filtered) ✅
-- `fspec show-feature <name> [--format=text|json] [--output=file]` - Display feature file contents ✅
+    subgraph "Gherkin Specifications"
+        FEATURES[spec/features/*.feature<br/>Gherkin feature files]
+    end
 
-### FOUNDATION.md Commands
+    WORK -->|references epic| EPICS
+    WORK -->|uses prefix| PREFIX
+    WORK -->|tagged with| TAGS
+    FEATURES -->|tagged with| TAGS
+    WORK -.->|linked via tags| FEATURES
+    
+    TAGS -->|generates| TAGS_MD
+    FOUND -->|generates| FOUND_MD
 
-- `fspec add-diagram <section> <title> <mermaid-code>` - Add Mermaid diagram ✅
-- `fspec update-foundation <section> <content>` - Update foundation section ✅
-- `fspec show-foundation [--section=<name>] [--format=text|markdown|json] [--output=file] [--list-sections] [--line-numbers]` - Display FOUNDATION.md ✅
+    style WORK fill:#4CAF50
+    style TAGS fill:#FF9800
+    style FOUND fill:#FF9800
+    style EPICS fill:#2196F3
+    style PREFIX fill:#2196F3
+    style FEATURES fill:#9C27B0
+```
 
-### TAGS.md Commands
+### Kanban Workflow State Machine
 
-- `fspec register-tag <tag> <category> <description>` - Register new tag ✅
-- `fspec update-tag <tag> [--category=<cat>] [--description=<desc>]` - Update tag ✅
-- `fspec delete-tag <tag> [--force] [--dry-run]` - Delete tag from registry ✅
-- `fspec validate-tags` - Ensure all feature file tags exist in TAGS.md ✅
-- `fspec list-tags [--category=phase]` - List registered tags ✅
-- `fspec tag-stats` - Show tag usage statistics ✅
-- `fspec retag --from=<old> --to=<new> [--dry-run]` - Rename tags across all files ✅
+```mermaid
+stateDiagram-v2
+    [*] --> backlog: Create work unit
+    
+    backlog --> specifying: Start discovery & specs
+    backlog --> blocked: Dependencies not met
+    
+    specifying --> testing: Specs complete
+    specifying --> blocked: Clarification needed
+    specifying --> backlog: Descope / defer
+    
+    testing --> implementing: Tests written (failing)
+    testing --> blocked: Test infrastructure issues
+    testing --> specifying: Specs incomplete
+    
+    implementing --> validating: Tests passing
+    implementing --> blocked: Technical blocker
+    implementing --> testing: Tests need updates
+    
+    validating --> done: All checks pass
+    validating --> blocked: Review feedback
+    validating --> implementing: Fix required
+    
+    blocked --> backlog: Unblock → return to backlog
+    blocked --> specifying: Unblock → continue specs
+    blocked --> testing: Unblock → continue tests
+    blocked --> implementing: Unblock → continue code
+    blocked --> validating: Unblock → continue validation
+    
+    done --> [*]
+    
+    note right of backlog
+        Work queued,
+        not started
+    end note
+    
+    note right of specifying
+        Example mapping,
+        writing Gherkin specs
+    end note
+    
+    note right of testing
+        Writing tests
+        (TDD - tests first!)
+    end note
+    
+    note right of implementing
+        Writing code to
+        make tests pass
+    end note
+    
+    note right of validating
+        Quality checks:
+        tests, lint, review
+    end note
+    
+    note right of done
+        Work complete,
+        all criteria met
+    end note
+    
+    note right of blocked
+        Cannot proceed,
+        needs resolution
+    end note
+```
 
-### Query & Bulk Operations Commands
+### Example Mapping Discovery Process
 
-- `fspec get-scenarios [--tag=@phase1]` - Get scenarios by tag(s) ✅
-- `fspec show-acceptance-criteria [--tag=@phase1] [--format=text|markdown|json] [--output=file]` - Show ACs ✅
-- `fspec delete-scenarios --tag=<tag> [--dry-run]` - Bulk delete scenarios by tag ✅
-- `fspec delete-features --tag=<tag> [--dry-run]` - Bulk delete feature files by tag ✅
-
-### Validation & Formatting Commands
-
-- `fspec validate [file]` - Validate Gherkin syntax (all files or specific) ✅
-- `fspec format [file]` - Format using Prettier (all files or specific) ✅
-- `fspec check [--verbose]` - Run all validations (syntax + tags + formatting) ✅
-
-### Project Management Commands (Phase 7 - Planned)
-
-- `fspec create-work-unit <tag> <title>` - Create work unit with PM metadata 📋
-- `fspec move-work <tag> <status>` - Move through Kanban workflow 📋
-- `fspec add-example-map <tag>` - Add example mapping 📋
-- `fspec link-work <tag> --blocks=<tag>` - Manage dependencies 📋
-- `fspec estimate <tag> --points=<num>` - Add estimation/metrics 📋
-- `fspec create-epic <tag> <title>` - Create epic 📋
-- `fspec project-status` - Generate project reports 📋
-- `fspec cage-sync` - Sync with CAGE 📋
-
----
-
-## 5. Feature File Inventory
-
-### Core Validation & Feature Management (5 features)
-
-5 features
-
-| Feature File | Command | Description |
-|--------------|---------|-------------|
-| gherkin-validation.feature | `fspec validate [file]` | Gherkin syntax validation using @cucumber/gherkin-parser |
-| format-features.feature | `fspec format [file]` | Format feature files with Prettier |
-| create-feature.feature | `fspec create-feature <name>` | Create feature file with Gherkin template |
-| list-features.feature | `fspec list-features [--tag]` | List all features with optional tag filtering |
-| check.feature | `fspec check [--verbose]` | Run all validations (syntax + tags + formatting) |
-
-### Tag Registry & Management (8 features)
-
-7 features
-
-| Feature File | Command | Description |
-|--------------|---------|-------------|
-| validate-tags.feature | `fspec validate-tags [file]` | Validate feature file tags against TAGS.md registry |
-| register-tag.feature | `fspec register-tag <tag> <cat> <desc>` | Register new tag in TAGS.md |
-| list-tags.feature | `fspec list-tags [--category]` | List all registered tags from TAGS.md |
-| tag-stats.feature | `fspec tag-stats` | Show tag usage statistics across all features |
-| update-tag.feature | `fspec update-tag <tag> [--category] [--desc]` | Update tag definition in registry |
-| add-architecture.feature | `fspec add-architecture <feature> <notes>` | Add/update architecture doc string in feature file |
-| add-background.feature | `fspec add-background <feature> <story>` | Add/update user story background section |
-| show-feature.feature | `fspec show-feature <name> [--format] [--output]` | Display feature file contents |
-
-### Advanced Feature Editing (2 features)
-
-2 features
-
-| Feature File | Command | Description |
-|--------------|---------|-------------|
-| add-scenario.feature | `fspec add-scenario <feature> <name>` | Add new scenario to existing feature file |
-| add-step.feature | `fspec add-step <feature> <scenario> <type> <text>` | Add Given/When/Then step to scenario |
-
-### CRUD Operations & Tag-Based Queries (4 features)
-
-4 features
-
-| Feature File | Command | Description |
-|--------------|---------|-------------|
-| get-scenarios.feature | `fspec get-scenarios [--tag]` | Query scenarios by tag with AND logic filtering |
-| show-acceptance-criteria.feature | `fspec show-acceptance-criteria [--tag] [--format]` | Display acceptance criteria by tag (text/markdown/JSON) |
-| delete-scenario.feature | `fspec delete-scenario <feature> <scenario>` | Delete scenario from feature file |
-| update-tag.feature | `fspec update-tag <tag> [options]` | Update tag category/description in registry |
-
-### Advanced CRUD & Bulk Operations (7 features)
-
-7 features
-
-| Feature File | Command | Description |
-|--------------|---------|-------------|
-| update-scenario.feature | `fspec update-scenario <feature> <old> <new>` | Rename scenario in feature file |
-| update-step.feature | `fspec update-step <feature> <scenario> <step> [options]` | Update step text or keyword |
-| delete-step.feature | `fspec delete-step <feature> <scenario> <step>` | Delete step from scenario |
-| delete-tag.feature | `fspec delete-tag <tag> [--force] [--dry-run]` | Delete tag from TAGS.md registry |
-| retag.feature | `fspec retag --from=<old> --to=<new> [--dry-run]` | Bulk rename tags across all feature files |
-| delete-scenarios-by-tag.feature | `fspec delete-scenarios --tag=<tag> [--dry-run]` | Bulk delete scenarios matching tag(s) |
-| delete-features-by-tag.feature | `fspec delete-features --tag=<tag> [--dry-run]` | Bulk delete entire feature files by tag |
-
-### Architecture Documentation (3 features)
-
-3 features
-
-| Feature File | Command | Description |
-|--------------|---------|-------------|
-| add-diagram.feature | `fspec add-diagram <section> <title> <code>` | Add/update Mermaid diagram in FOUNDATION.md |
-| update-foundation.feature | `fspec update-foundation <section> <content>` | Update FOUNDATION.md section content |
-| show-foundation.feature | `fspec show-foundation [options]` | Display FOUNDATION.md with multiple format options |
-
-### Project Management & Work Units (8 features)
-
-Tag-based project management with Kanban workflow
-
-| Feature File | Command | Description |
-|--------------|---------|-------------|
-| work-unit-management.feature | `fspec create-work-unit <tag> <title>` | Create work unit (scenario) with project management metadata |
-| kanban-workflow.feature | `fspec move-work <tag> <status>` | Move work unit through Kanban workflow (backlog → specifying → testing → implementing → validating → done) |
-| example-mapping.feature | `fspec add-example-map <tag>` | Add example mapping (rules, examples, questions, assumptions) to work unit |
-| work-dependencies.feature | `fspec link-work <tag> --blocks=<tag>` | Manage work unit dependencies (blocks, blockedBy, dependsOn, relatesTo) |
-| work-estimation.feature | `fspec estimate <tag> --points=<num>` | Add estimation and track metrics (story points, actual tokens, iterations) |
-| epic-management.feature | `fspec create-epic <tag> <title>` | Create and manage epics (collections of related work units) |
-| project-reporting.feature | `fspec project-status` | Generate project reports (burndown, velocity, work breakdown) |
-| cage-integration-pm.feature | `fspec cage-sync` | Sync project state with CAGE for AI-driven workflow automation |
-
-### Tag Usage Summary
-
-**Phase Distribution:**
-- @phase1: 5 files (18%)
-- @phase2: 7 files (25%)
-- @phase3: 2 files (7%)
-- @phase4: 4 files (14%)
-- @phase5: 7 files (25%)
-- @phase6: 3 files (11%)
-
-**Component Distribution:**
-- @cli: 28 files (100%)
-- @parser: 3 files (11%)
-- @generator: 1 files (4%)
-- @validator: 1 files (4%)
-- @formatter: 1 files (4%)
-- @file-ops: 1 files (4%)
+```mermaid
+sequenceDiagram
+    participant Human
+    participant AI as AI Agent
+    participant WorkUnit as Work Unit
+    participant FeatureFile as Feature File
+    
+    Note over Human,FeatureFile: Discovery Phase (specifying state)
+    
+    AI->>Human: What are the key business rules?
+    Human->>AI: Rule: Validation must complete in <2s
+    AI->>WorkUnit: add-rule "Validation <2s"
+    
+    AI->>Human: Can you give concrete examples?
+    Human->>AI: Example: fspec validate shows "All valid"
+    AI->>WorkUnit: add-example "validate shows success"
+    
+    AI->>Human: Question: Support custom rules in config?
+    AI->>WorkUnit: add-question "Custom validation rules?"
+    Human->>AI: No, defer to future work
+    AI->>WorkUnit: answer-question "Defer to VALID-025"
+    
+    Note over AI,WorkUnit: Iterate until no questions remain
+    
+    AI->>WorkUnit: generate-scenarios
+    WorkUnit->>FeatureFile: Transform to Gherkin
+    
+    Note over FeatureFile: Generated Feature File
+    Note over FeatureFile: - Rules → Background context
+    Note over FeatureFile: - Examples → Scenarios
+    Note over FeatureFile: - Questions → Assumptions
+    
+    Note over Human,FeatureFile: Ready for Testing Phase
+```
 
 ---
-
-## Notes Section
-
-### Development Status
-
-#### ✅ Core Validation & Feature Management (COMPLETE)
-- Gherkin syntax validation using @cucumber/gherkin-parser
-- Feature file creation with templates
-- List features with tag filtering
-- Prettier formatting integration
-- Clear error messages with line numbers
-- Batch validation for all feature files
-
-**Test Coverage:** 42 tests, all passing
-
-#### ✅ Tag Registry & Management (COMPLETE)
-- TAGS.md validation and enforcement
-- Tag registration with categories
-- List registered tags with filtering
-- Tag usage statistics and reporting
-- Identify unused and unregistered tags
-- Cross-file tag consistency checks
-
-**Test Coverage:** 41 tests, all passing
-
-#### ✅ Advanced Feature Editing (COMPLETE)
-- Add scenarios to existing features
-- Add steps to existing scenarios
-- Preserve formatting and indentation
-- Handle data tables and doc strings
-- Validate modifications automatically
-
-**Test Coverage:** 27 tests, all passing
-
-#### ✅ CRUD Operations & Tag-Based Queries (COMPLETE)
-- Query scenarios by tag(s) with AND logic
-- Show acceptance criteria by tag with multiple formats (text, markdown, JSON)
-- Export acceptance criteria to file
-- Update tag definitions (category and/or description)
-- Delete scenarios from feature files
-- Preserve feature structure during deletions
-- Complete tag-based filtering foundation
-
-**Test Coverage:** 28 tests, all passing
-
-#### ✅ Advanced CRUD & Bulk Operations (COMPLETE)
-- Delete step from scenario
-- Update scenario (rename)
-- Update step (edit text/type)
-- Delete tag from registry
-- Bulk delete scenarios by tag
-- Bulk delete features by tag
-- Retag operations (rename tags across files)
-- Comprehensive validation suite (`check` command)
-- Dry-run support for destructive operations
-
-**Test Coverage:** 108 tests, all passing
-
-#### ✅ Architecture Documentation (COMPLETE)
-- Add/update architecture notes in feature files
-- Add/update user stories (Background) in feature files
-- Add/update Mermaid diagrams in FOUNDATION.md
-- Update foundation sections programmatically
-- Display foundation content with multiple formats
-- Section-specific operations
-- JSON output for programmatic access
-- Diagram validation and formatting
-
-**Test Coverage:** 41 tests, all passing
-
-#### 📋 Project Management & Work Units (PLANNED)
-- Tag-based work unit management
-- Kanban workflow (backlog → specifying → testing → implementing → validating → done)
-- Example mapping integration (rules, examples, questions, assumptions)
-- Dependency tracking (blocks, blockedBy, dependsOn, relatesTo)
-- Estimation & metrics (story points, actual tokens, iterations)
-- Epic management (collections of related work units)
-- Project reporting (burndown, velocity, work breakdown)
-- CAGE integration for AI-driven workflow automation
-
-**Test Coverage:** Not yet implemented
-
-### Project Name: fspec
-
-fspec = feature specification management for AI agents. A standardized CLI tool preventing ecosystem fragmentation by promoting industry-standard Gherkin/BDD practices over proprietary specification formats. fspec ensures AI agents ask the right questions and structure specifications correctly using battle-tested Cucumber conventions.
-
-**GitHub Repository:** https://github.com/rquast/fspec
