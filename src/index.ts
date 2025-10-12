@@ -1402,6 +1402,10 @@ program
       if (result.warnings && result.warnings.length > 0) {
         result.warnings.forEach((warning: string) => console.log(chalk.yellow(`⚠ ${warning}`)));
       }
+      // Output system reminder (visible to AI, invisible to users)
+      if (result.systemReminder) {
+        console.log('\n' + result.systemReminder);
+      }
     } catch (error: any) {
       console.error(chalk.red('✗ Failed to update work unit status:'), error.message);
       process.exit(1);

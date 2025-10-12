@@ -64,6 +64,16 @@
       "prefix": "SAFE",
       "description": "Safety and validation features",
       "createdAt": "2025-10-12T03:27:56.701Z"
+    },
+    "DOC": {
+      "prefix": "DOC",
+      "description": "Documentation and guidance features",
+      "createdAt": "2025-10-12T05:13:22.795Z"
+    },
+    "REMIND": {
+      "prefix": "REMIND",
+      "description": "System reminder and anti-drift features",
+      "createdAt": "2025-10-12T05:13:23.082Z"
     }
   }
 }

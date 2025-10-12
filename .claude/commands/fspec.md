@@ -217,6 +217,38 @@ fspec add-scenario feature-file-validation "Validate all feature files in direct
 
 **Pro tip**: Use automatic generation first, then refine the generated scenarios manually if needed.
 
+### CRITICAL: Feature File and Test File Naming
+
+**ALWAYS name files using "WHAT IS" (the capability), NOT "what the current state is"!**
+
+✅ **CORRECT Naming (What IS - the capability):**
+- Feature: `system-reminder-anti-drift-pattern.feature` (describes WHAT the feature IS)
+- Test: `system-reminder.test.ts` (tests the system-reminder capability)
+- Code: `system-reminder.ts` (implements the capability)
+
+❌ **WRONG Naming (current state):**
+- Feature: `implement-system-reminder-pattern.feature` (this describes the TASK, not the capability)
+- Feature: `add-system-reminders.feature` (this describes the CHANGE, not the capability)
+- Test: `remind-001.test.ts` (this describes the WORK UNIT, not the capability)
+
+**Why This Matters:**
+- Feature files are **living documentation** of capabilities
+- They should describe what the system CAN DO, not what we're doing to it
+- The file name should make sense after the feature is built
+- "Implement X" only makes sense DURING development, not AFTER
+
+**Examples:**
+- ✅ `user-authentication.feature` - describes the capability
+- ❌ `add-user-login.feature` - describes the task
+- ✅ `gherkin-validation.feature` - describes the capability
+- ❌ `implement-gherkin-validator.feature` - describes the task
+- ✅ `dependency-graph-visualization.feature` - describes the capability
+- ❌ `create-dependency-graph.feature` - describes the task
+
+**Test and Code Files Follow the Same Rule:**
+- Test file: `user-authentication.test.ts` (tests the authentication capability)
+- Code file: `user-authentication.ts` (implements the authentication capability)
+
 ### fspec Commands for Example Mapping
 
 ```bash
@@ -246,6 +278,162 @@ fspec show-work-unit <work-unit-id>
 - **Better scenarios**: Examples naturally become Gherkin scenarios
 
 **Reference**: [Example Mapping Introduction](https://cucumber.io/blog/bdd/example-mapping-introduction/)
+
+## Step 2.5: Story Point Estimation (During or After Discovery)
+
+**CRITICAL**: After Example Mapping (or during if complexity becomes clear), you MUST estimate story points to help with prioritization and velocity tracking.
+
+### Story Point Scale (Fibonacci Sequence)
+
+Use the Fibonacci sequence for estimation to reflect increasing uncertainty at larger sizes:
+
+- **1 point** - Trivial (< 30 minutes)
+  - Simple text changes, documentation updates
+  - Adding a tag, updating a work unit description
+  - Running existing commands to verify something
+  - Example: "Update README with new command"
+
+- **2 points** - Simple (30 min - 1 hour)
+  - Small feature additions following known patterns
+  - Basic validation or formatting logic
+  - Single file changes with clear requirements
+  - Example: "Add new tag category to registry"
+
+- **3 points** - Moderate (1-2 hours)
+  - Medium features with some complexity
+  - Multiple file changes with clear integration points
+  - Writing tests + implementation for straightforward features
+  - Example: "Add new fspec command with 2-3 options"
+
+- **5 points** - Complex (2-4 hours)
+  - Complex features requiring some research or experimentation
+  - Multiple integrated components with dependencies
+  - New architectural patterns or significant refactoring
+  - Example: "Implement dependency graph visualization"
+
+- **8 points** - Very Complex (4-8 hours)
+  - Major features with multiple unknowns
+  - Significant refactoring affecting multiple systems
+  - Integration with external APIs or libraries
+  - Example: "Add CI/CD pipeline with multiple stages"
+
+- **13+ points** - Epic (8+ hours)
+  - **TOO LARGE** - MUST break down into smaller work units
+  - If a story is 13 points, it's actually multiple stories
+  - Use Example Mapping to identify natural split points
+  - Create parent work unit with dependencies between child units
+
+### How to Estimate Story Points
+
+**Ask yourself these questions during or after Example Mapping:**
+
+1. **Scope Clarity**: Do I fully understand what needs to be built?
+   - Clear requirements → Lower points
+   - Many unknowns → Higher points
+
+2. **File Impact**: How many files will I need to create/modify?
+   - 1 file → 1-2 points
+   - 2-3 files → 2-3 points
+   - 4-6 files → 3-5 points
+   - 7+ files → 5-8 points (or split the story)
+
+3. **Dependencies**: Are there blockers or external dependencies?
+   - No blockers → Estimate as-is
+   - Blocked by other work → Add to `dependsOn` relationship
+   - External API/library → +2-3 points for integration complexity
+
+4. **Familiarity**: Have I done something similar before?
+   - Familiar pattern → Lower points
+   - New technology/approach → Higher points
+
+5. **Testing Requirements**: What test coverage is needed?
+   - No tests (documentation) → Points as-is
+   - Unit tests only → +1 point
+   - Integration tests → +2 points
+   - E2E tests → +3 points
+
+6. **Risk**: What could go wrong?
+   - Low risk (well-understood) → Lower points
+   - High risk (many edge cases) → Higher points
+
+### Setting the Estimate
+
+**After Example Mapping, immediately set the estimate:**
+
+```bash
+# Estimate based on your analysis
+fspec update-work-unit-estimate <work-unit-id> <points>
+
+# Example:
+fspec update-work-unit-estimate UI-001 3
+```
+
+### Re-estimation Triggers
+
+**You MUST re-estimate if:**
+
+1. **Scope changes** during implementation (discovered hidden complexity)
+2. **Blockers appear** that weren't anticipated
+3. **Example Mapping reveals** the story is larger/smaller than initially thought
+4. **After testing phase** if implementation was much easier/harder than expected
+
+```bash
+# Update estimate when scope changes
+fspec update-work-unit-estimate UI-001 5  # Was 3, now 5 due to complexity
+```
+
+### Estimation Anti-Patterns (AVOID THESE)
+
+❌ **Don't estimate in hours** - Use relative story points (Fibonacci)
+❌ **Don't estimate without Example Mapping** - You'll be wildly inaccurate
+❌ **Don't skip estimation** - Velocity tracking requires estimates
+❌ **Don't let 13+ point stories exist** - Always break them down
+❌ **Don't estimate in a vacuum** - Use Example Mapping to inform estimates
+
+### Estimation Best Practices
+
+✅ **Estimate after Example Mapping** - Use rules/examples/questions to inform size
+✅ **Compare to previous work** - "Is this bigger or smaller than UI-003?"
+✅ **When in doubt, round up** - It's better to overestimate slightly
+✅ **Track actual vs estimated** - Use `fspec query-estimate-accuracy` to improve
+✅ **Break down large stories** - 13+ points = multiple work units
+✅ **Re-estimate when scope changes** - Keep estimates accurate throughout
+
+### Example Estimation Flow
+
+```bash
+# 1. After Example Mapping
+fspec show-work-unit UI-001
+# Review: 3 rules, 5 examples, 1 question answered
+# Analysis: 2 files to modify, familiar patterns, unit tests needed
+# Decision: 3 points (1-2 hours)
+
+fspec update-work-unit-estimate UI-001 3
+
+# 2. During implementation (scope change discovered)
+# Found: Need to refactor existing code + add integration tests
+# Re-analysis: Now 4-5 files, integration complexity, more tests
+# Decision: Re-estimate to 5 points
+
+fspec update-work-unit-estimate UI-001 5
+```
+
+### Velocity Tracking
+
+**Once you have estimates, track velocity:**
+
+```bash
+# Check estimation accuracy
+fspec query-estimate-accuracy
+
+# See velocity trends
+fspec query-metrics --format=json
+
+# Get estimation guidance based on history
+fspec query-estimation-guide UI-001
+```
+
+**Reference**: Story points help with sprint planning and predicting completion dates. Track your velocity over time to improve accuracy.
 
 ## Step 3: Kanban Workflow - How to Track Work
 

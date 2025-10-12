@@ -744,11 +744,119 @@
         "User runs 'fspec list-prefixes' and sees work unit counts for each prefix (e.g., 'SAFE: 1/1 (100%)')",
         "User runs 'fspec list-prefixes' when no prefixes.json exists, sees 'No prefixes found' in yellow"
       ]
+    },
+    "DOC-001": {
+      "id": "DOC-001",
+      "title": "Add story point estimation guidance",
+      "status": "backlog",
+      "createdAt": "2025-10-12T05:13:30.172Z",
+      "updatedAt": "2025-10-12T05:15:30.195Z",
+      "description": "Add story point estimation guidelines to /fspec command including Fibonacci scale, estimation prompts, and best practices",
+      "children": [],
+      "estimate": 2
+    },
+    "REMIND-001": {
+      "id": "REMIND-001",
+      "title": "Implement system-reminder pattern",
+      "status": "done",
+      "createdAt": "2025-10-12T05:13:30.451Z",
+      "updatedAt": "2025-10-12T05:29:04.618Z",
+      "description": "Add system-reminder wrapper functions and trigger points to prevent AI drift during long conversations",
+      "children": [],
+      "estimate": 5,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-12T05:17:36.967Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-12T05:20:47.043Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-12T05:21:53.587Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-12T05:23:54.695Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-12T05:24:11.995Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-12T05:24:29.001Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-12T05:25:59.299Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-12T05:26:23.102Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-12T05:26:44.204Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-12T05:27:04.588Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-12T05:27:37.721Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-12T05:27:52.779Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-12T05:29:04.618Z"
+        }
+      ],
+      "rules": [
+        "System reminders must be wrapped in <system-reminder> tags",
+        "Reminders must be invisible to users but visible to Claude",
+        "Reminders should only be injected after specific command executions",
+        "Each reminder must be context-specific to the command executed",
+        "Reminders must be conditional and context-aware - only show when relevant to the current situation",
+        "Reminders should be appended AFTER main command output"
+      ],
+      "examples": [
+        "After 'fspec update-work-unit-status UI-001 testing', output includes reminder: 'Write FAILING tests BEFORE any implementation code'",
+        "After 'fspec update-work-unit-status UI-001 implementing', output includes reminder: 'Write ONLY enough code to make tests pass'",
+        "After 'fspec update-work-unit-estimate UI-001' without an estimate value, output includes reminder: 'Use Fibonacci scale (1,2,3,5,8,13)'",
+        "After 'fspec list-work-units --status=backlog' returns empty, output includes reminder: 'Consider creating new work units or checking priorities'"
+      ],
+      "questions": []
+    },
+    "TEST-002": {
+      "id": "TEST-002",
+      "title": "Test system reminders",
+      "status": "specifying",
+      "createdAt": "2025-10-12T05:24:45.522Z",
+      "updatedAt": "2025-10-12T05:24:53.210Z",
+      "description": "Testing if system reminders work correctly",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-12T05:24:53.211Z"
+        }
+      ]
     }
   },
   "states": {
-    "backlog": [],
-    "specifying": [],
+    "backlog": [
+      "DOC-001"
+    ],
+    "specifying": [
+      "TEST-002"
+    ],
     "testing": [],
     "implementing": [],
     "validating": [],
@@ -769,7 +877,8 @@
       "INIT-002",
       "BOARD-001",
       "CLI-002",
-      "SAFE-001"
+      "SAFE-001",
+      "REMIND-001"
     ],
     "blocked": []
   }

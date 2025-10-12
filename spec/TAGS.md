@@ -135,6 +135,8 @@ Tags for specific technical concerns or architectural patterns.
 
 | Tag | Description | Usage |
 |-----|-------------|-------|
+| `@ai-guidance` | Features that provide contextual guidance to AI agents |  |
+| `@anti-drift` | Features that prevent AI drift and maintain workflow discipline |  |
 | `@ast` | Abstract Syntax Tree |  |
 | `@auth-001` | Work unit identifier for authentication features (example in example-mapping feature) |  |
 | `@auto-create` | Scenarios testing automatic file creation when files are missing |  |
