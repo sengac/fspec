@@ -1167,8 +1167,8 @@
       "title": "Copy CLAUDE.md template to new spec directory",
       "status": "done",
       "createdAt": "2025-10-12T07:58:21.443Z",
-      "updatedAt": "2025-10-12T08:10:49.917Z",
-      "description": "When fspec init creates a new spec/ directory, it should copy the spec/CLAUDE.md file from the fspec project as a template. This ensures new projects have the complete specification guidelines and workflow documentation from the start.",
+      "updatedAt": "2025-10-12T08:20:05.866Z",
+      "description": "When fspec init creates a new spec/ directory, it should copy the spec/CLAUDE.md file (bundled with the package) to the target project. This ensures new projects have the complete specification guidelines and workflow documentation from the start. The file is bundled from spec/CLAUDE.md to dist/spec/CLAUDE.md during build - no separate templates/ directory needed.",
       "children": [],
       "stateHistory": [
         {

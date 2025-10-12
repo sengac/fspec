@@ -9,37 +9,39 @@
 Feature: CLAUDE.md Specification Guidelines Template
   """
   Architecture notes:
-  - CLAUDE.md template bundled with fspec package in templates/ directory
-  - Template copied during 'fspec init' command execution
-  - Located at templates/CLAUDE.md (bundled in package build)
-  - Copied to spec/CLAUDE.md in target project
+  - Entire spec/ and .claude/ directories bundled with fspec package
+  - CLAUDE.md copied during 'fspec init' command execution
+  - Located at spec/CLAUDE.md (entire spec/ dir bundled to dist/spec/)
+  - Copied to target project's spec/CLAUDE.md
   - Always overwrites existing file (no version checking, no prompts)
-  - Confirmation message shown in /fspec slash command output only
+  - No separate confirmation message (implicit in workflow)
 
   Critical implementation requirements:
-  - MUST bundle templates/CLAUDE.md in package build (include in dist/)
-  - MUST resolve template path from package installation directory
-  - MUST copy file exactly (no modifications or customization)
+  - MUST bundle entire spec/ directory (all .md, .json, .feature files)
+  - MUST bundle entire .claude/ directory (fspec.md and other files)
+  - MUST resolve path from package installation directory
+  - MUST copy CLAUDE.md exactly (no modifications or customization)
   - MUST create spec/ directory if it doesn't exist
   - MUST overwrite existing spec/CLAUDE.md without prompting
-  - MUST NOT show separate CLI message (only in /fspec output)
 
   Implementation approach:
   - Enhance existing src/commands/init.ts
   - Add copyClaudeTemplate() function
-  - Import templates/CLAUDE.md from package installation
+  - Read spec/CLAUDE.md from bundled package installation
   - Use fs.copyFile() for exact copy
-  - Update /fspec command template to show confirmation
 
   Build configuration:
-  - Ensure templates/ directory included in build output
-  - Vite config must copy templates/ to dist/templates/
-  - Template resolution: __dirname/../templates/CLAUDE.md
+  - Vite plugin uses cpSync to recursively copy directories
+  - Copies spec/ → dist/spec/ (all subdirectories and files)
+  - Copies .claude/ → dist/.claude/ (all subdirectories and files)
+  - Template resolution tries: dist/spec/CLAUDE.md, spec/CLAUDE.md
+  - All feature files, JSON configs, and markdown docs included
 
   References:
   - Command: src/commands/init.ts
-  - Template: templates/CLAUDE.md (to be created)
-  - Slash command: .claude/commands/fspec.md
+  - Source: spec/CLAUDE.md (part of bundled spec/ directory)
+  - Slash command: .claude/commands/fspec.md (part of bundled .claude/ directory)
+  - Build: vite.config.ts (copy-bundled-files plugin)
   """
 
   Background: User Story
@@ -92,9 +94,9 @@ Feature: CLAUDE.md Specification Guidelines Template
     And no project-specific customization should exist
 
   @build
-  Scenario: Templates directory is bundled with package
+  Scenario: spec/CLAUDE.md is bundled with package
     Given I have installed fspec as npm package
     When I inspect the package installation directory
-    Then templates/ directory should exist
-    And templates/CLAUDE.md should exist
-    And the template should be readable by init command
+    Then dist/spec/ directory should exist
+    And dist/spec/CLAUDE.md should exist
+    And the file should be readable by init command

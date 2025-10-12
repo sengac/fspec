@@ -182,18 +182,18 @@ describe('Feature: CLAUDE.md Specification Guidelines Template', () => {
     });
   });
 
-  describe('Scenario: Templates directory is bundled with package', () => {
-    it('should have templates/CLAUDE.md available in package', async () => {
-      // This test verifies the build configuration includes templates/
-      // We'll check that the template can be resolved from the package
+  describe('Scenario: spec/CLAUDE.md is bundled with package', () => {
+    it('should have spec/CLAUDE.md available in package', async () => {
+      // This test verifies the build configuration bundles spec/CLAUDE.md
+      // We'll check that the file can be resolved from the package
 
       // Given I have installed fspec as npm package
       // When I inspect the package installation directory
-      // Then templates/ directory should exist
-      // And templates/CLAUDE.md should exist
-      // And the template should be readable by init command
+      // Then dist/spec/ directory should exist
+      // And dist/spec/CLAUDE.md should exist
+      // And the file should be readable by init command
 
-      // We'll verify this by checking if init() can successfully read the template
+      // We'll verify this by checking if init() can successfully read and copy it
       const result = await init({
         cwd: testDir,
         installType: 'claude-code',
@@ -203,7 +203,7 @@ describe('Feature: CLAUDE.md Specification Guidelines Template', () => {
       const claudeMd = join(testDir, 'spec', 'CLAUDE.md');
       const content = await readFile(claudeMd, 'utf-8');
 
-      // If this test passes, it means the template was successfully bundled and read
+      // If this test passes, it means spec/CLAUDE.md was successfully bundled and copied
       expect(content.length).toBeGreaterThan(0);
       expect(result.exitCode).toBe(0);
     });
