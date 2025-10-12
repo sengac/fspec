@@ -142,6 +142,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@auto-create` | Scenarios testing automatic file creation when files are missing |  |
 | `@automation` | Automated workflow operations and state transitions |  |
 | `@bdd` | Behavior-Driven Development methodology |  |
+| `@build` | Build system configuration and bundling |  |
 | `@command-registration` | CLI command registration features |  |
 | `@cucumber-parser` | Cucumber Parser Integration |  |
 | `@discovery` | BDD discovery technique used before writing Gherkin scenarios |  |
@@ -223,6 +224,7 @@ Tags for test-related scenarios and requirements.
 |-----|-------------|-------|
 | `@blocking` | Operations that block workflow progression |  |
 | `@circular-dependency` | Circular dependency detection tests |  |
+| `@confirmation` | Tests confirmation messages and user feedback |  |
 | `@consistency` | Data consistency validation |  |
 | `@duplicate` | Duplicate detection tests |  |
 | `@e2e` | End-to-end integration tests |  |
@@ -231,6 +233,7 @@ Tags for test-related scenarios and requirements.
 | `@happy-path` | Happy path test scenarios |  |
 | `@integration-test` | Integration Test Required |  |
 | `@manual-test` | Requires Manual Testing |  |
+| `@overwrite` | Tests overwrite behavior (file replacement without prompts) |  |
 | `@prerequisites` | Prerequisite validation scenarios |  |
 | `@regression` | Regression tests - comprehensive validation of existing functionality |  |
 | `@smoke` | Smoke tests - quick validation of critical functionality |  |

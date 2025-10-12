@@ -470,6 +470,10 @@
           "description": "Behavior-Driven Development methodology"
         },
         {
+          "name": "@build",
+          "description": "Build system configuration and bundling"
+        },
+        {
           "name": "@command-registration",
           "description": "CLI command registration features"
         },
@@ -704,6 +708,10 @@
           "description": "Circular dependency detection tests"
         },
         {
+          "name": "@confirmation",
+          "description": "Tests confirmation messages and user feedback"
+        },
+        {
           "name": "@consistency",
           "description": "Data consistency validation"
         },
@@ -737,6 +745,10 @@
           "name": "@manual-test",
           "description": "Requires Manual Testing",
           "testType": "Visual verification, platform-specific checks, edge cases"
+        },
+        {
+          "name": "@overwrite",
+          "description": "Tests overwrite behavior (file replacement without prompts)"
         },
         {
           "name": "@prerequisites",

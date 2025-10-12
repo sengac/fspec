@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 import { resolve } from 'path';
+import { copyFileSync, mkdirSync } from 'fs';
 
 export default defineConfig({
   build: {
@@ -37,4 +38,17 @@ export default defineConfig({
     outDir: 'dist',
     emptyOutDir: true,
   },
+  plugins: [
+    {
+      name: 'copy-templates',
+      closeBundle() {
+        const templatesDir = resolve(__dirname, 'dist', 'templates');
+        mkdirSync(templatesDir, { recursive: true });
+        copyFileSync(
+          resolve(__dirname, 'templates', 'CLAUDE.md'),
+          resolve(templatesDir, 'CLAUDE.md')
+        );
+      },
+    },
+  ],
 });

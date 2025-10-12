@@ -1,4 +1,4 @@
-import { mkdir, writeFile, access, readFile } from 'fs/promises';
+import { mkdir, writeFile, access, readFile, copyFile } from 'fs/promises';
 import { join, dirname, isAbsolute, normalize, relative } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -66,6 +66,9 @@ export async function init(options: InitOptions): Promise<InitResult> {
   // Write file
   await writeFile(targetPath, templateContent, 'utf-8');
 
+  // Copy CLAUDE.md template to spec/ directory
+  await copyClaudeTemplate(cwd);
+
   // Calculate relative path for display
   const relativePath = relative(cwd, targetPath);
 
@@ -127,15 +130,31 @@ async function checkFileExists(filePath: string): Promise<boolean> {
  */
 async function generateTemplate(): Promise<string> {
   // Read the fspec.md template from the installed package location
-  // When built, __dirname will be dist/, so we need to go up and find .claude/commands/fspec.md
-  const templatePath = join(
-    __dirname,
-    '..',
-    '.claude',
-    'commands',
-    'fspec.md'
-  );
-  let template = await readFile(templatePath, 'utf-8');
+  // Try multiple paths to support different execution contexts:
+  // 1. dist/.claude/commands/fspec.md (production)
+  // 2. .claude/commands/fspec.md (development from project root)
+  const possiblePaths = [
+    join(__dirname, '..', '.claude', 'commands', 'fspec.md'), // From dist/
+    join(__dirname, '..', '..', '.claude', 'commands', 'fspec.md'), // From src/commands/
+  ];
+
+  let template: string | null = null;
+  for (const path of possiblePaths) {
+    try {
+      template = await readFile(path, 'utf-8');
+      break;
+    } catch {
+      // Try next path
+      continue;
+    }
+  }
+
+  if (!template) {
+    throw new Error(
+      'Could not find fspec.md template. Tried paths: ' +
+        possiblePaths.join(', ')
+    );
+  }
 
   // Replace fspec-specific work unit IDs with generic examples
   template = template.replace(/CLI-\d+/g, 'EXAMPLE-001');
@@ -176,4 +195,51 @@ async function generateTemplate(): Promise<string> {
   }
 
   return template;
+}
+
+/**
+ * Copy CLAUDE.md template to spec/ directory
+ *
+ * Copies the bundled CLAUDE.md template from templates/ to spec/CLAUDE.md
+ * in the target project. Creates spec/ directory if it doesn't exist.
+ * Always overwrites existing CLAUDE.md without prompting.
+ */
+async function copyClaudeTemplate(cwd: string): Promise<void> {
+  // Resolve template path from package installation
+  // Try multiple paths to support different execution contexts:
+  // 1. dist/templates/CLAUDE.md (production)
+  // 2. templates/CLAUDE.md (development/test from project root)
+  const possiblePaths = [
+    join(__dirname, '..', 'templates', 'CLAUDE.md'), // From dist/
+    join(__dirname, '..', '..', 'templates', 'CLAUDE.md'), // From src/commands/
+  ];
+
+  let templatePath: string | null = null;
+  for (const path of possiblePaths) {
+    try {
+      await access(path);
+      templatePath = path;
+      break;
+    } catch {
+      // Try next path
+      continue;
+    }
+  }
+
+  if (!templatePath) {
+    throw new Error(
+      'Could not find CLAUDE.md template. Tried paths: ' +
+        possiblePaths.join(', ')
+    );
+  }
+
+  // Target path in project
+  const specDir = join(cwd, 'spec');
+  const targetPath = join(specDir, 'CLAUDE.md');
+
+  // Create spec/ directory if it doesn't exist
+  await mkdir(specDir, { recursive: true });
+
+  // Copy template (overwrites if exists)
+  await copyFile(templatePath, targetPath);
 }
