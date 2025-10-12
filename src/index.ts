@@ -396,17 +396,31 @@ function displayWorkHelp(): void {
   console.log('');
 
   console.log(chalk.bold('DEPENDENCIES'));
-  console.log('  ' + chalk.cyan('fspec add-dependency <id> <depends-on-id>'));
+  console.log('  ' + chalk.cyan('fspec add-dependency <id> [depends-on-id]'));
+  console.log('    Description: Add dependency relationship (shorthand or options)');
+  console.log('    Options:');
+  console.log('      --blocks <id>                    Work unit that this blocks');
+  console.log('      --blocked-by <id>                Work unit that blocks this');
+  console.log('      --depends-on <id>                Work unit this depends on');
+  console.log('      --relates-to <id>                Related work unit');
   console.log('    Examples:');
-  console.log('      fspec add-dependency AUTH-002 AUTH-001');
+  console.log('      fspec add-dependency AUTH-002 AUTH-001              # Shorthand: AUTH-002 depends on AUTH-001');
+  console.log('      fspec add-dependency AUTH-002 --blocks=API-001      # AUTH-002 blocks API-001');
+  console.log('      fspec add-dependency UI-001 --blocked-by=API-001    # UI-001 is blocked by API-001');
   console.log('');
   console.log('  ' + chalk.cyan('fspec add-dependencies <id> <dep1> <dep2>...'));
   console.log('    Examples:');
   console.log('      fspec add-dependencies DASH-001 AUTH-001 AUTH-002');
   console.log('');
-  console.log('  ' + chalk.cyan('fspec remove-dependency <id> <depends-on-id>'));
+  console.log('  ' + chalk.cyan('fspec remove-dependency <id> [depends-on-id]'));
+  console.log('    Options:');
+  console.log('      --blocks <id>                    Remove blocks relationship');
+  console.log('      --blocked-by <id>                Remove blockedBy relationship');
+  console.log('      --depends-on <id>                Remove dependsOn relationship');
+  console.log('      --relates-to <id>                Remove relatesTo relationship');
   console.log('    Examples:');
-  console.log('      fspec remove-dependency AUTH-002 AUTH-001');
+  console.log('      fspec remove-dependency AUTH-002 AUTH-001           # Remove dependsOn');
+  console.log('      fspec remove-dependency AUTH-002 --blocks=API-001   # Remove blocks');
   console.log('');
   console.log('  ' + chalk.cyan('fspec clear-dependencies <id>'));
   console.log('    Examples:');
@@ -473,60 +487,70 @@ function displayDiscoveryHelp(): void {
   console.log('  • Query example mapping coverage statistics\n');
 
   console.log(chalk.bold('EXAMPLES'));
-  console.log('  ' + chalk.cyan('fspec add-example <feature> <example>'));
+  console.log('  ' + chalk.cyan('fspec add-example <work-unit-id> <example>'));
+  console.log('    Description: Add example to work unit during specification');
   console.log('    Examples:');
   console.log('      fspec add-example AUTH-001 "User logs in with valid email"');
   console.log('');
-  console.log('  ' + chalk.cyan('fspec remove-example <feature> <index>'));
+  console.log('  ' + chalk.cyan('fspec remove-example <work-unit-id> <index>'));
+  console.log('    Description: Remove example by index (0-based)');
   console.log('    Examples:');
-  console.log('      fspec remove-example AUTH-001 1');
+  console.log('      fspec remove-example AUTH-001 0');
   console.log('');
 
   console.log(chalk.bold('QUESTIONS'));
-  console.log('  ' + chalk.cyan('fspec add-question <feature> <question>'));
+  console.log('  ' + chalk.cyan('fspec add-question <work-unit-id> <question>'));
+  console.log('    Description: Add question to work unit during specification');
   console.log('    Examples:');
   console.log('      fspec add-question AUTH-001 "Should we support OAuth?"');
   console.log('');
-  console.log('  ' + chalk.cyan('fspec answer-question <feature> <index> <answer>'));
+  console.log('  ' + chalk.cyan('fspec answer-question <work-unit-id> <index>'));
+  console.log('    Options:');
+  console.log('      --answer <answer>                Answer text');
+  console.log('      --add-to <type>                  Add to: rule, assumption, or none (default: none)');
   console.log('    Examples:');
-  console.log('      fspec answer-question AUTH-001 1 "Yes, Google and GitHub OAuth"');
+  console.log('      fspec answer-question AUTH-001 0 --answer "Yes" --add-to rule');
   console.log('');
-  console.log('  ' + chalk.cyan('fspec remove-question <feature> <index>'));
+  console.log('  ' + chalk.cyan('fspec remove-question <work-unit-id> <index>'));
+  console.log('    Description: Remove question by index (0-based)');
   console.log('    Examples:');
-  console.log('      fspec remove-question AUTH-001 1');
+  console.log('      fspec remove-question AUTH-001 0');
   console.log('');
 
   console.log(chalk.bold('RULES'));
-  console.log('  ' + chalk.cyan('fspec add-rule <feature> <rule>'));
+  console.log('  ' + chalk.cyan('fspec add-rule <work-unit-id> <rule>'));
+  console.log('    Description: Add business rule to work unit during specification');
   console.log('    Examples:');
   console.log('      fspec add-rule AUTH-001 "Password must be 8+ characters"');
   console.log('');
-  console.log('  ' + chalk.cyan('fspec remove-rule <feature> <index>'));
+  console.log('  ' + chalk.cyan('fspec remove-rule <work-unit-id> <index>'));
+  console.log('    Description: Remove rule by index (0-based)');
   console.log('    Examples:');
-  console.log('      fspec remove-rule AUTH-001 1');
+  console.log('      fspec remove-rule AUTH-001 0');
   console.log('');
 
   console.log(chalk.bold('ASSUMPTIONS'));
-  console.log('  ' + chalk.cyan('fspec add-assumption <feature> <assumption>'));
+  console.log('  ' + chalk.cyan('fspec add-assumption <work-unit-id> <assumption>'));
+  console.log('    Description: Add assumption to work unit during specification');
   console.log('    Examples:');
   console.log('      fspec add-assumption AUTH-001 "Email verification is handled externally"');
   console.log('');
 
   console.log(chalk.bold('IMPORT/EXPORT'));
-  console.log('  ' + chalk.cyan('fspec import-example-map <feature> <file>'));
+  console.log('  ' + chalk.cyan('fspec import-example-map <work-unit-id> <file>'));
+  console.log('    Description: Import examples, rules, questions from JSON');
   console.log('    Examples:');
   console.log('      fspec import-example-map AUTH-001 examples.json');
   console.log('');
-  console.log('  ' + chalk.cyan('fspec export-example-map <feature>'));
-  console.log('    Options:');
-  console.log('      --output <file>                  Output file path');
+  console.log('  ' + chalk.cyan('fspec export-example-map <work-unit-id> <file>'));
+  console.log('    Description: Export examples, rules, questions to JSON');
   console.log('    Examples:');
-  console.log('      fspec export-example-map AUTH-001 --output=examples.json');
+  console.log('      fspec export-example-map AUTH-001 examples.json');
   console.log('');
 
   console.log(chalk.bold('GENERATION'));
-  console.log('  ' + chalk.cyan('fspec generate-scenarios <feature>'));
-  console.log('    Description: Generate Gherkin scenarios from example map');
+  console.log('  ' + chalk.cyan('fspec generate-scenarios <work-unit-id>'));
+  console.log('    Description: Generate Gherkin scenarios from example mapping data');
   console.log('    Examples:');
   console.log('      fspec generate-scenarios AUTH-001');
   console.log('');
@@ -1440,17 +1464,31 @@ program
   .command('add-dependency')
   .description('Add a dependency relationship between work units')
   .argument('<workUnitId>', 'Work unit ID')
+  .argument('[dependsOnId]', 'Work unit ID that this depends on (shorthand for --depends-on)')
   .option('--blocks <targetId>', 'Work unit that this blocks')
   .option('--blocked-by <targetId>', 'Work unit that blocks this')
   .option('--depends-on <targetId>', 'Work unit this depends on (soft dependency)')
   .option('--relates-to <targetId>', 'Related work unit')
-  .action(async (workUnitId: string, options: { blocks?: string; blockedBy?: string; dependsOn?: string; relatesTo?: string }) => {
+  .action(async (workUnitId: string, dependsOnId: string | undefined, options: { blocks?: string; blockedBy?: string; dependsOn?: string; relatesTo?: string }) => {
     try {
+      // If second argument provided, use it as --depends-on (shorthand syntax)
+      const finalDependsOn = dependsOnId || options.dependsOn;
+
+      // Check if user provided both shorthand and option (conflict)
+      if (dependsOnId && options.dependsOn && dependsOnId !== options.dependsOn) {
+        throw new Error('Cannot specify dependency both as argument and --depends-on option');
+      }
+
+      // Require at least one relationship type
+      if (!finalDependsOn && !options.blocks && !options.blockedBy && !options.relatesTo) {
+        throw new Error('Must specify at least one relationship: <depends-on-id> or --blocks/--blocked-by/--depends-on/--relates-to');
+      }
+
       await addDependency({
         workUnitId,
         blocks: options.blocks,
         blockedBy: options.blockedBy,
-        dependsOn: options.dependsOn,
+        dependsOn: finalDependsOn,
         relatesTo: options.relatesTo,
       });
       console.log(chalk.green(`✓ Dependency added successfully`));
@@ -1492,17 +1530,31 @@ program
   .command('remove-dependency')
   .description('Remove a dependency relationship between work units')
   .argument('<workUnitId>', 'Work unit ID')
+  .argument('[dependsOnId]', 'Work unit ID to remove from dependsOn (shorthand for --depends-on)')
   .option('--blocks <targetId>', 'Remove blocks relationship')
   .option('--blocked-by <targetId>', 'Remove blockedBy relationship')
   .option('--depends-on <targetId>', 'Remove dependsOn relationship')
   .option('--relates-to <targetId>', 'Remove relatesTo relationship')
-  .action(async (workUnitId: string, options: { blocks?: string; blockedBy?: string; dependsOn?: string; relatesTo?: string }) => {
+  .action(async (workUnitId: string, dependsOnId: string | undefined, options: { blocks?: string; blockedBy?: string; dependsOn?: string; relatesTo?: string }) => {
     try {
+      // If second argument provided, use it as --depends-on (shorthand syntax)
+      const finalDependsOn = dependsOnId || options.dependsOn;
+
+      // Check if user provided both shorthand and option (conflict)
+      if (dependsOnId && options.dependsOn && dependsOnId !== options.dependsOn) {
+        throw new Error('Cannot specify dependency both as argument and --depends-on option');
+      }
+
+      // Require at least one relationship type
+      if (!finalDependsOn && !options.blocks && !options.blockedBy && !options.relatesTo) {
+        throw new Error('Must specify at least one relationship to remove: <depends-on-id> or --blocks/--blocked-by/--depends-on/--relates-to');
+      }
+
       await removeDependency({
         workUnitId,
         blocks: options.blocks,
         blockedBy: options.blockedBy,
-        dependsOn: options.dependsOn,
+        dependsOn: finalDependsOn,
         relatesTo: options.relatesTo,
       });
       console.log(chalk.green(`✓ Dependency removed successfully`));
@@ -1618,13 +1670,12 @@ program
 // Add example command
 program
   .command('add-example')
-  .description('Add an example to a scenario for example mapping')
-  .argument('<feature>', 'Feature file name or path')
-  .argument('<scenario>', 'Scenario name')
+  .description('Add an example to a work unit during specification phase')
+  .argument('<workUnitId>', 'Work unit ID')
   .argument('<example>', 'Example description')
-  .action(async (feature: string, scenario: string, example: string) => {
+  .action(async (workUnitId: string, example: string) => {
     try {
-      await addExample({ feature, scenario, example });
+      await addExample({ workUnitId, example });
       console.log(chalk.green(`✓ Example added successfully`));
     } catch (error: any) {
       console.error(chalk.red('✗ Failed to add example:'), error.message);
@@ -1635,13 +1686,12 @@ program
 // Add question command
 program
   .command('add-question')
-  .description('Add a question to a scenario for example mapping')
-  .argument('<feature>', 'Feature file name or path')
-  .argument('<scenario>', 'Scenario name')
+  .description('Add a question to a work unit during specification phase')
+  .argument('<workUnitId>', 'Work unit ID')
   .argument('<question>', 'Question text')
-  .action(async (feature: string, scenario: string, question: string) => {
+  .action(async (workUnitId: string, question: string) => {
     try {
-      await addQuestion({ feature, scenario, question });
+      await addQuestion({ workUnitId, question });
       console.log(chalk.green(`✓ Question added successfully`));
     } catch (error: any) {
       console.error(chalk.red('✗ Failed to add question:'), error.message);
@@ -1652,13 +1702,12 @@ program
 // Add rule command
 program
   .command('add-rule')
-  .description('Add a business rule to a scenario for example mapping')
-  .argument('<feature>', 'Feature file name or path')
-  .argument('<scenario>', 'Scenario name')
+  .description('Add a business rule to a work unit during specification phase')
+  .argument('<workUnitId>', 'Work unit ID')
   .argument('<rule>', 'Business rule description')
-  .action(async (feature: string, scenario: string, rule: string) => {
+  .action(async (workUnitId: string, rule: string) => {
     try {
-      await addRule({ feature, scenario, rule });
+      await addRule({ workUnitId, rule });
       console.log(chalk.green(`✓ Rule added successfully`));
     } catch (error: any) {
       console.error(chalk.red('✗ Failed to add rule:'), error.message);
@@ -1669,14 +1718,13 @@ program
 // Remove example command
 program
   .command('remove-example')
-  .description('Remove an example from a scenario')
-  .argument('<feature>', 'Feature file name or path')
-  .argument('<scenario>', 'Scenario name')
-  .argument('<example>', 'Example description to remove')
-  .action(async (feature: string, scenario: string, example: string) => {
+  .description('Remove an example from a work unit by index')
+  .argument('<workUnitId>', 'Work unit ID')
+  .argument('<index>', 'Example index (0-based)')
+  .action(async (workUnitId: string, index: string) => {
     try {
-      await removeExample({ feature, scenario, example });
-      console.log(chalk.green(`✓ Example removed successfully`));
+      const result = await removeExample({ workUnitId, index: parseInt(index, 10) });
+      console.log(chalk.green(`✓ Removed example: "${result.removedExample}"`));
     } catch (error: any) {
       console.error(chalk.red('✗ Failed to remove example:'), error.message);
       process.exit(1);
@@ -1686,14 +1734,13 @@ program
 // Remove question command
 program
   .command('remove-question')
-  .description('Remove a question from a scenario')
-  .argument('<feature>', 'Feature file name or path')
-  .argument('<scenario>', 'Scenario name')
-  .argument('<question>', 'Question text to remove')
-  .action(async (feature: string, scenario: string, question: string) => {
+  .description('Remove a question from a work unit by index')
+  .argument('<workUnitId>', 'Work unit ID')
+  .argument('<index>', 'Question index (0-based)')
+  .action(async (workUnitId: string, index: string) => {
     try {
-      await removeQuestion({ feature, scenario, question });
-      console.log(chalk.green(`✓ Question removed successfully`));
+      const result = await removeQuestion({ workUnitId, index: parseInt(index, 10) });
+      console.log(chalk.green(`✓ Removed question: "${result.removedQuestion}"`));
     } catch (error: any) {
       console.error(chalk.red('✗ Failed to remove question:'), error.message);
       process.exit(1);
@@ -1703,14 +1750,13 @@ program
 // Remove rule command
 program
   .command('remove-rule')
-  .description('Remove a business rule from a scenario')
-  .argument('<feature>', 'Feature file name or path')
-  .argument('<scenario>', 'Scenario name')
-  .argument('<rule>', 'Rule description to remove')
-  .action(async (feature: string, scenario: string, rule: string) => {
+  .description('Remove a business rule from a work unit by index')
+  .argument('<workUnitId>', 'Work unit ID')
+  .argument('<index>', 'Rule index (0-based)')
+  .action(async (workUnitId: string, index: string) => {
     try {
-      await removeRule({ feature, scenario, rule });
-      console.log(chalk.green(`✓ Rule removed successfully`));
+      const result = await removeRule({ workUnitId, index: parseInt(index, 10) });
+      console.log(chalk.green(`✓ Removed rule: "${result.removedRule}"`));
     } catch (error: any) {
       console.error(chalk.red('✗ Failed to remove rule:'), error.message);
       process.exit(1);
@@ -1720,15 +1766,23 @@ program
 // Answer question command
 program
   .command('answer-question')
-  .description('Answer a question from example mapping session')
-  .argument('<feature>', 'Feature file name or path')
-  .argument('<scenario>', 'Scenario name')
-  .argument('<question>', 'Question text')
-  .argument('<answer>', 'Answer text')
-  .action(async (feature: string, scenario: string, question: string, answer: string) => {
+  .description('Answer a question and optionally add to rules or assumptions')
+  .argument('<workUnitId>', 'Work unit ID')
+  .argument('<index>', 'Question index (0-based)')
+  .option('--answer <answer>', 'Answer text')
+  .option('--add-to <type>', 'Add answer to: rule, assumption, or none', 'none')
+  .action(async (workUnitId: string, index: string, options: { answer?: string; addTo?: string }) => {
     try {
-      await answerQuestion({ feature, scenario, question, answer });
-      console.log(chalk.green(`✓ Question answered successfully`));
+      const result = await answerQuestion({
+        workUnitId,
+        index: parseInt(index, 10),
+        answer: options.answer,
+        addTo: options.addTo as 'rule' | 'assumption' | 'none',
+      });
+      console.log(chalk.green(`✓ Removed question: "${result.removedQuestion}"`));
+      if (result.addedTo && result.addedContent) {
+        console.log(chalk.cyan(`  Added to ${result.addedTo}: "${result.addedContent}"`));
+      }
     } catch (error: any) {
       console.error(chalk.red('✗ Failed to answer question:'), error.message);
       process.exit(1);
@@ -1738,13 +1792,14 @@ program
 // Import example map command
 program
   .command('import-example-map')
-  .description('Import example mapping data from JSON file')
-  .argument('<feature>', 'Feature file name or path')
-  .argument('<input>', 'Input JSON file path')
-  .action(async (feature: string, input: string) => {
+  .description('Import example mapping data from JSON file to work unit')
+  .argument('<workUnitId>', 'Work unit ID')
+  .argument('<file>', 'Input JSON file path')
+  .action(async (workUnitId: string, file: string) => {
     try {
-      const result = await importExampleMap({ feature, input });
-      console.log(chalk.green(`✓ Imported ${result.imported} items successfully`));
+      const result = await importExampleMap({ workUnitId, file });
+      const total = result.rulesCount + result.examplesCount + result.questionsCount + result.assumptionsCount;
+      console.log(chalk.green(`✓ Imported ${total} items: ${result.rulesCount} rules, ${result.examplesCount} examples, ${result.questionsCount} questions, ${result.assumptionsCount} assumptions`));
     } catch (error: any) {
       console.error(chalk.red('✗ Failed to import example map:'), error.message);
       process.exit(1);
@@ -1754,12 +1809,12 @@ program
 // Export example map command
 program
   .command('export-example-map')
-  .description('Export example mapping data to JSON file')
-  .argument('<feature>', 'Feature file name or path')
-  .argument('<output>', 'Output JSON file path')
-  .action(async (feature: string, output: string) => {
+  .description('Export example mapping data from work unit to JSON file')
+  .argument('<workUnitId>', 'Work unit ID')
+  .argument('<file>', 'Output JSON file path')
+  .action(async (workUnitId: string, file: string) => {
     try {
-      const result = await exportExampleMap({ feature, output });
+      const result = await exportExampleMap({ workUnitId, file });
       console.log(chalk.green(`✓ Exported to ${result.outputFile}`));
     } catch (error: any) {
       console.error(chalk.red('✗ Failed to export example map:'), error.message);
@@ -1770,12 +1825,12 @@ program
 // Generate scenarios command
 program
   .command('generate-scenarios')
-  .description('Generate Gherkin scenarios from example mapping')
-  .argument('<feature>', 'Feature file name or path')
-  .action(async (feature: string) => {
+  .description('Generate Gherkin scenarios from example mapping in work unit')
+  .argument('<workUnitId>', 'Work unit ID')
+  .action(async (workUnitId: string) => {
     try {
-      const result = await generateScenarios({ feature });
-      console.log(chalk.green(`✓ Generated ${result.generated} scenarios`));
+      const result = await generateScenarios({ workUnitId });
+      console.log(chalk.green(`✓ Generated ${result.scenariosGenerated} scenarios`));
     } catch (error: any) {
       console.error(chalk.red('✗ Failed to generate scenarios:'), error.message);
       process.exit(1);
