@@ -1,6 +1,14 @@
-# fspec - Feature Specification & Project Management for AI Agents
+```
+  _____ ____  ____  _____ ____
+ |  ___/ ___||  _ \| ____/ ___|
+ | |_  \___ \| |_) |  _|| |
+ |  _|  ___) |  __/| |__| |___
+ |_|   |____/|_|   |_____\____|
+```
 
-A standardized CLI tool that provides AI agents with a structured interface for managing Gherkin-based feature specifications and project work units. fspec prevents ecosystem fragmentation by promoting industry-standard BDD practices over proprietary documentation formats.
+# Feature Specification & Project Management for AI Agents
+
+A standardized CLI tool that provides AI agents with a structured interface for managing Gherkin-based feature specifications and project work units. `fspec` prevents ecosystem fragmentation by promoting industry-standard BDD practices over proprietary documentation formats.
 
 ## Why fspec?
 
@@ -222,11 +230,6 @@ fspec help work        # Track work units through ACDD workflow (Kanban, depende
 fspec help discovery   # Collaborative discovery with example mapping (questions, rules, examples)
 fspec help metrics     # Track progress and quality (estimates, metrics, reports, statistics)
 fspec help setup       # Configure project structure (tags, epics, prefixes, foundation docs)
-
-# Command-specific help
-fspec <command> --help
-fspec validate --help
-fspec list-features --help
 ```
 
 **Command Groups:**
@@ -389,14 +392,14 @@ fspec show-acceptance-criteria --tag=@phase1 --format=markdown
 fspec show-acceptance-criteria --tag=@phase1 --format=json --output=phase1-acs.md
 
 # Bulk delete scenarios by tag
-fspec delete-scenarios --tag=@deprecated
-fspec delete-scenarios --tag=@phase1 --tag=@wip  # AND logic
-fspec delete-scenarios --tag=@deprecated --dry-run  # Preview deletions
+fspec delete-scenarios-by-tag --tag=@deprecated
+fspec delete-scenarios-by-tag --tag=@phase1 --tag=@wip  # AND logic
+fspec delete-scenarios-by-tag --tag=@deprecated --dry-run  # Preview deletions
 
 # Bulk delete feature files by tag
-fspec delete-features --tag=@deprecated
-fspec delete-features --tag=@phase1 --tag=@wip  # AND logic
-fspec delete-features --tag=@deprecated --dry-run  # Preview deletions
+fspec delete-features-by-tag --tag=@deprecated
+fspec delete-features-by-tag --tag=@phase1 --tag=@wip  # AND logic
+fspec delete-features-by-tag --tag=@deprecated --dry-run  # Preview deletions
 ```
 
 ### Formatting & Validation

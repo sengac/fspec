@@ -346,6 +346,6 @@ When contributing to fspec:
 4. Follow the established patterns
 5. Keep commits focused and descriptive
 6. Update specifications when behavior changes
-7. Register new tags in spec/TAGS.md
+7. Register new tags using `fspec register-tag`
 
 Remember: The goal is to create a CLI tool that helps AI agents manage Gherkin specifications and project work units using ACDD. Every line of code should contribute to this goal.

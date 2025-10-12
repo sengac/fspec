@@ -28,7 +28,7 @@ fspec uses a Kanban-based project management system with:
 
 1. **Check what needs to be done**: `fspec list-work-units --status=backlog`
 2. **Pick a work unit**: Review the backlog and choose the next highest priority item
-3. **Move to specifying**: `fspec move-work-unit WORK-001 specifying`
+3. **Move to specifying**: `fspec update-work-unit-status WORK-001 specifying`
 4. **Now proceed to write specifications** (see Specification Workflow below)
 
 ### Managing Your Work Units
@@ -44,14 +44,14 @@ fspec show-work-unit WORK-001
 fspec create-work-unit PREFIX "Title" --description "Details" --epic=epic-name
 
 # Move work unit through Kanban workflow
-fspec move-work-unit WORK-001 specifying   # Writing specs
-fspec move-work-unit WORK-001 testing      # Writing tests
-fspec move-work-unit WORK-001 implementing # Writing code
-fspec move-work-unit WORK-001 validating   # Code review/testing
-fspec move-work-unit WORK-001 done         # Completed
+fspec update-work-unit-status WORK-001 specifying   # Writing specs
+fspec update-work-unit-status WORK-001 testing      # Writing tests
+fspec update-work-unit-status WORK-001 implementing # Writing code
+fspec update-work-unit-status WORK-001 validating   # Code review/testing
+fspec update-work-unit-status WORK-001 done         # Completed
 
 # Mark work unit as blocked (with reason)
-fspec block-work-unit WORK-001 "Waiting for external API documentation"
+fspec update-work-unit-status WORK-001 blocked --blocked-reason "Waiting for external API documentation"
 ```
 
 ### ACDD with Project Management
@@ -512,18 +512,6 @@ fspec add-architecture gherkin-validation "Uses @cucumber/gherkin-parser for val
 
 # Add Mermaid diagram to foundation.json (with automatic syntax validation)
 fspec add-diagram "Architecture Diagrams" "Command Flow" "graph TB\n  CLI-->Parser\n  Parser-->Validator"
-
-# Update existing diagram
-fspec update-diagram "Architecture Diagrams" "Command Flow" "graph TB\n  CLI-->Parser\n  Parser-->Formatter"
-
-# Delete diagram
-fspec delete-diagram "Architecture Diagrams" "Command Flow"
-
-# List all diagrams
-fspec list-diagrams
-
-# Show specific diagram
-fspec show-diagram "Architecture Diagrams" "Command Flow"
 ```
 
 **Note**: All Mermaid diagrams are validated using mermaid.parse() before being added to foundation.json. Invalid syntax will be rejected with detailed error messages including line numbers.
@@ -535,7 +523,7 @@ fspec show-diagram "Architecture Diagrams" "Command Flow"
 fspec register-tag @performance "Technical Tags" "Performance-critical features requiring optimization"
 
 # Update tag description
-fspec update-tag @performance "Updated description"
+fspec update-tag @performance --description "Updated description"
 
 # Delete tag
 fspec delete-tag @performance
