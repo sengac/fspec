@@ -19,20 +19,50 @@ export async function createFeature(
       `File already exists: spec/features/${fileName}\nSuggestion: Use a different name or delete the existing file`
     );
   } catch (error: any) {
+    if (error.code === 'EACCES') {
+      throw new Error(
+        `Permission denied: Cannot access spec/features/${fileName}\nSuggestion: Check file permissions for the spec/features directory`
+      );
+    }
     if (error.code !== 'ENOENT') {
-      throw error; // File exists or other error
+      throw new Error(
+        `Failed to check if file exists: ${error.message}\nSuggestion: Verify you have access to the spec/features directory`
+      );
     }
     // File doesn't exist, proceed
   }
 
   // Create spec/features/ directory if it doesn't exist
-  await mkdir(featuresDir, { recursive: true });
+  try {
+    await mkdir(featuresDir, { recursive: true });
+  } catch (error: any) {
+    if (error.code === 'EACCES') {
+      throw new Error(
+        `Permission denied: Cannot create directory spec/features/\nSuggestion: Check file permissions`
+      );
+    }
+    throw new Error(`Failed to create directory: ${error.message}`);
+  }
 
   // Generate template content
   const content = generateFeatureTemplate(name);
 
   // Write file
-  await writeFile(filePath, content, 'utf-8');
+  try {
+    await writeFile(filePath, content, 'utf-8');
+  } catch (error: any) {
+    if (error.code === 'EACCES') {
+      throw new Error(
+        `Permission denied: Cannot write to ${fileName}\nSuggestion: Check file permissions`
+      );
+    }
+    if (error.code === 'ENOSPC') {
+      throw new Error(
+        `No space left on device: Cannot write ${fileName}\nSuggestion: Free up disk space`
+      );
+    }
+    throw new Error(`Failed to write file: ${error.message}`);
+  }
 
   return filePath;
 }

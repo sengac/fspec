@@ -28,8 +28,16 @@ export async function formatFeatures(
     try {
       await access(filePath);
       files = [options.file];
-    } catch (error) {
-      throw new Error(`File not found: ${options.file}`);
+    } catch (error: any) {
+      if (error.code === 'ENOENT') {
+        throw new Error(`File not found: ${options.file}`);
+      }
+      if (error.code === 'EACCES') {
+        throw new Error(
+          `Permission denied: Cannot access ${options.file}\nSuggestion: Check file permissions`
+        );
+      }
+      throw new Error(`Failed to access file: ${error.message}`);
     }
   } else {
     // Format all feature files
@@ -71,6 +79,17 @@ export async function formatFeatures(
 
         formattedCount++;
       } catch (parseError: any) {
+        // Handle file system errors
+        if (parseError.code === 'EACCES') {
+          console.error(
+            chalk.yellow(`Warning: Permission denied for ${file}`)
+          );
+          continue;
+        }
+        if (parseError.code === 'ENOENT') {
+          console.error(chalk.yellow(`Warning: File not found: ${file}`));
+          continue;
+        }
         // If parsing fails, skip this file and continue
         console.error(
           chalk.yellow(`Warning: Skipped ${file} due to parse error:`)
