@@ -14,7 +14,9 @@ interface AddAssumptionResult {
   assumptionCount: number;
 }
 
-export async function addAssumption(options: AddAssumptionOptions): Promise<AddAssumptionResult> {
+export async function addAssumption(
+  options: AddAssumptionOptions
+): Promise<AddAssumptionResult> {
   const cwd = options.cwd || process.cwd();
 
   // Read work units

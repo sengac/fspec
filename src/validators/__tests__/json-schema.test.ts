@@ -2,7 +2,11 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { readFile, writeFile, mkdir, rm } from 'fs/promises';
 import { join } from 'path';
 import { tmpdir } from 'os';
-import { validateFoundationJson, validateTagsJson, validateJson } from '../json-schema';
+import {
+  validateFoundationJson,
+  validateTagsJson,
+  validateJson,
+} from '../json-schema';
 
 describe('Feature: Validate JSON Files Against Schemas', () => {
   let tmpDir: string;
@@ -21,7 +25,12 @@ describe('Feature: Validate JSON Files Against Schemas', () => {
     tagsJsonPath = join(tmpDir, 'spec', 'tags.json');
 
     // Schemas are bundled in src/schemas/ - tests will use the actual bundled schemas
-    foundationSchemaPath = join(process.cwd(), 'src', 'schemas', 'foundation.schema.json');
+    foundationSchemaPath = join(
+      process.cwd(),
+      'src',
+      'schemas',
+      'foundation.schema.json'
+    );
     tagsSchemaPath = join(process.cwd(), 'src', 'schemas', 'tags.schema.json');
   });
 
@@ -45,9 +54,7 @@ describe('Feature: Validate JSON Files Against Schemas', () => {
         whatWeAreBuilding: {
           projectOverview: 'Test overview',
           technicalRequirements: {
-            coreTechnologies: [
-              { category: 'Language', name: 'TypeScript' },
-            ],
+            coreTechnologies: [{ category: 'Language', name: 'TypeScript' }],
             architecture: {
               pattern: 'CLI',
               fileStructure: 'test',
@@ -64,7 +71,9 @@ describe('Feature: Validate JSON Files Against Schemas', () => {
             keyLibraries: [
               {
                 category: 'Core',
-                libraries: [{ name: 'commander', description: 'CLI framework' }],
+                libraries: [
+                  { name: 'commander', description: 'CLI framework' },
+                ],
               },
             ],
           },
@@ -117,9 +126,7 @@ describe('Feature: Validate JSON Files Against Schemas', () => {
             assumptions: [{ category: 'Technical', items: ['assumption 1'] }],
           },
         },
-        architectureDiagrams: [
-          { title: 'Diagram 1', mermaidCode: 'graph TB' },
-        ],
+        architectureDiagrams: [{ title: 'Diagram 1', mermaidCode: 'graph TB' }],
         coreCommands: {
           categories: [
             {
@@ -150,11 +157,21 @@ describe('Feature: Validate JSON Files Against Schemas', () => {
             },
           ],
           tagUsageSummary: {
-            phaseDistribution: [{ tag: '@phase1', count: 1, percentage: '100%' }],
-            componentDistribution: [{ tag: '@cli', count: 1, percentage: '100%' }],
-            featureGroupDistribution: [{ tag: '@feature-management', count: 1, percentage: '100%' }],
-            priorityDistribution: [{ tag: '@critical', count: 1, percentage: '100%' }],
-            testingCoverage: [{ tag: '@unit-test', count: 1, percentage: '100%' }],
+            phaseDistribution: [
+              { tag: '@phase1', count: 1, percentage: '100%' },
+            ],
+            componentDistribution: [
+              { tag: '@cli', count: 1, percentage: '100%' },
+            ],
+            featureGroupDistribution: [
+              { tag: '@feature-management', count: 1, percentage: '100%' },
+            ],
+            priorityDistribution: [
+              { tag: '@critical', count: 1, percentage: '100%' },
+            ],
+            testingCoverage: [
+              { tag: '@unit-test', count: 1, percentage: '100%' },
+            ],
           },
         },
         notes: {
@@ -169,10 +186,16 @@ describe('Feature: Validate JSON Files Against Schemas', () => {
         },
       };
 
-      await writeFile(foundationJsonPath, JSON.stringify(validFoundation, null, 2));
+      await writeFile(
+        foundationJsonPath,
+        JSON.stringify(validFoundation, null, 2)
+      );
 
       // When I run `fspec validate-json spec/foundation.json`
-      const result = await validateFoundationJson(foundationJsonPath, foundationSchemaPath);
+      const result = await validateFoundationJson(
+        foundationJsonPath,
+        foundationSchemaPath
+      );
 
       // Then the command should exit with code 0
       expect(result.valid).toBe(true);
@@ -194,20 +217,30 @@ describe('Feature: Validate JSON Files Against Schemas', () => {
         },
       };
 
-      await writeFile(foundationJsonPath, JSON.stringify(invalidFoundation, null, 2));
+      await writeFile(
+        foundationJsonPath,
+        JSON.stringify(invalidFoundation, null, 2)
+      );
 
       // When I run `fspec validate-json spec/foundation.json`
-      const result = await validateFoundationJson(foundationJsonPath, foundationSchemaPath);
+      const result = await validateFoundationJson(
+        foundationJsonPath,
+        foundationSchemaPath
+      );
 
       // Then the command should exit with code 1
       expect(result.valid).toBe(false);
 
       // And the output should contain "Validation error at /project"
       expect(result.errors.length).toBeGreaterThan(0);
-      expect(result.errors.some((err) => err.instancePath.includes('/project'))).toBe(true);
+      expect(
+        result.errors.some(err => err.instancePath.includes('/project'))
+      ).toBe(true);
 
       // And the output should contain "must have required property 'name'"
-      expect(result.errors.some((err) => err.message.includes('required property'))).toBe(true);
+      expect(
+        result.errors.some(err => err.message.includes('required property'))
+      ).toBe(true);
     });
   });
 
@@ -264,7 +297,12 @@ describe('Feature: Validate JSON Files Against Schemas', () => {
         },
         queries: {
           title: 'Common Queries',
-          examples: [{ description: 'All phase 1', command: 'fspec list-features --tag=@phase1' }],
+          examples: [
+            {
+              description: 'All phase 1',
+              command: 'fspec list-features --tag=@phase1',
+            },
+          ],
         },
         statistics: {
           lastUpdated: '2025-01-15T10:30:00Z',
@@ -277,16 +315,34 @@ describe('Feature: Validate JSON Files Against Schemas', () => {
               planned: 0,
             },
           ],
-          componentStats: [{ component: '@cli', count: 28, percentage: '100%' }],
-          featureGroupStats: [{ featureGroup: '@feature-management', count: 11, percentage: '39%' }],
+          componentStats: [
+            { component: '@cli', count: 28, percentage: '100%' },
+          ],
+          featureGroupStats: [
+            {
+              featureGroup: '@feature-management',
+              count: 11,
+              percentage: '39%',
+            },
+          ],
           updateCommand: 'fspec tag-stats',
         },
         validation: {
-          rules: [{ rule: 'Registry Compliance', description: 'All tags must be registered' }],
-          commands: [{ description: 'Validate all', command: 'fspec validate-tags' }],
+          rules: [
+            {
+              rule: 'Registry Compliance',
+              description: 'All tags must be registered',
+            },
+          ],
+          commands: [
+            { description: 'Validate all', command: 'fspec validate-tags' },
+          ],
         },
         references: [
-          { title: 'Gherkin Reference', url: 'https://cucumber.io/docs/gherkin' },
+          {
+            title: 'Gherkin Reference',
+            url: 'https://cucumber.io/docs/gherkin',
+          },
         ],
       };
 
@@ -364,7 +420,7 @@ describe('Feature: Validate JSON Files Against Schemas', () => {
       expect(result.valid).toBe(false);
 
       // And the output should contain "Validation error at /categories/0/tags/0/name"
-      const nameError = result.errors.find((err) =>
+      const nameError = result.errors.find(err =>
         err.instancePath.includes('/categories/0/tags/0/name')
       );
       expect(nameError).toBeDefined();
@@ -444,8 +500,16 @@ describe('Feature: Validate JSON Files Against Schemas', () => {
         categories: [],
         combinationExamples: [],
         usageGuidelines: {
-          requiredCombinations: { title: 'Test', requirements: [], minimumExample: 'test' },
-          recommendedCombinations: { title: 'Test', includes: [], recommendedExample: 'test' },
+          requiredCombinations: {
+            title: 'Test',
+            requirements: [],
+            minimumExample: 'test',
+          },
+          recommendedCombinations: {
+            title: 'Test',
+            includes: [],
+            recommendedExample: 'test',
+          },
           orderingConvention: { title: 'Test', order: [], example: 'test' },
         },
         addingNewTags: {
@@ -465,7 +529,10 @@ describe('Feature: Validate JSON Files Against Schemas', () => {
         references: [],
       };
 
-      await writeFile(foundationJsonPath, JSON.stringify(validFoundation, null, 2));
+      await writeFile(
+        foundationJsonPath,
+        JSON.stringify(validFoundation, null, 2)
+      );
       await writeFile(tagsJsonPath, JSON.stringify(validTags, null, 2));
 
       // When I run `fspec validate-json`
@@ -475,7 +542,7 @@ describe('Feature: Validate JSON Files Against Schemas', () => {
       expect(results.length).toBe(2);
 
       // And if all valid, exit with code 0
-      const allValid = results.every((r) => r.valid);
+      const allValid = results.every(r => r.valid);
       expect(allValid).toBe(true);
     });
   });
@@ -492,26 +559,32 @@ describe('Feature: Validate JSON Files Against Schemas', () => {
         // Missing other required top-level fields
       };
 
-      await writeFile(foundationJsonPath, JSON.stringify(invalidFoundation, null, 2));
+      await writeFile(
+        foundationJsonPath,
+        JSON.stringify(invalidFoundation, null, 2)
+      );
 
       // When I run `fspec validate-json spec/foundation.json`
-      const result = await validateFoundationJson(foundationJsonPath, foundationSchemaPath);
+      const result = await validateFoundationJson(
+        foundationJsonPath,
+        foundationSchemaPath
+      );
 
       // Then the output should list all validation errors
       expect(result.errors.length).toBeGreaterThan(0);
 
       // And each error should show the JSON path
-      result.errors.forEach((error) => {
+      result.errors.forEach(error => {
         expect(error).toHaveProperty('instancePath');
       });
 
       // And each error should show the validation rule violated
-      result.errors.forEach((error) => {
+      result.errors.forEach(error => {
         expect(error).toHaveProperty('message');
       });
 
       // And each error should show the expected value or format
-      result.errors.forEach((error) => {
+      result.errors.forEach(error => {
         expect(error.message).toBeTruthy();
       });
     });

@@ -131,12 +131,14 @@ export async function autoAdvanceWorkUnitState(
   }
   workUnit.stateHistory.push({
     state: nextState,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 
   // Update states index
   if (workUnitsData.states[fromState]) {
-    workUnitsData.states[fromState] = workUnitsData.states[fromState].filter(id => id !== workUnitId);
+    workUnitsData.states[fromState] = workUnitsData.states[fromState].filter(
+      id => id !== workUnitId
+    );
   }
   if (!workUnitsData.states[nextState]) {
     workUnitsData.states[nextState] = [];
@@ -188,6 +190,6 @@ export async function validateWorkUnitSpecAlignment(
   return {
     aligned: scenariosFound > 0,
     scenariosFound,
-    features
+    features,
   };
 }

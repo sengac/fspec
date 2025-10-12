@@ -41,7 +41,9 @@ function detectCircularDependency(
   // Start from toId and follow the chain to see if we reach fromId
 
   const visited = new Set<string>();
-  const queue: Array<{ id: string; path: string[] }> = [{ id: toId, path: [toId] }];
+  const queue: Array<{ id: string; path: string[] }> = [
+    { id: toId, path: [toId] },
+  ];
 
   while (queue.length > 0) {
     const current = queue.shift()!;
@@ -97,7 +99,11 @@ export async function addDependency(
     throw new Error(`Work unit '${workUnitId}' does not exist`);
   }
 
-  const relationshipType = Object.keys(relationship)[0] as 'blocks' | 'blockedBy' | 'dependsOn' | 'relatesTo';
+  const relationshipType = Object.keys(relationship)[0] as
+    | 'blocks'
+    | 'blockedBy'
+    | 'dependsOn'
+    | 'relatesTo';
   const targetId = relationship[relationshipType];
 
   if (!targetId) {
@@ -119,7 +125,12 @@ export async function addDependency(
 
   // Check for circular dependencies BEFORE duplicate check (except for relatesTo and dependsOn)
   if (relationshipType === 'blocks' || relationshipType === 'blockedBy') {
-    const cycle = detectCircularDependency(workUnitId, targetId, relationshipType, workUnitsData.workUnits);
+    const cycle = detectCircularDependency(
+      workUnitId,
+      targetId,
+      relationshipType,
+      workUnitsData.workUnits
+    );
     if (cycle) {
       throw new Error(`Circular dependency detected: ${cycle}`);
     }
@@ -160,7 +171,8 @@ export async function addDependency(
     // Auto-block if blockedBy dependency is added and blocker is not done
     if (targetUnit.status !== 'done' && workUnit.status !== 'blocked') {
       workUnit.status = 'blocked' as 'blocked';
-      (workUnit as WorkUnit & { blockedReason?: string }).blockedReason = `Blocked by ${targetId}`;
+      (workUnit as WorkUnit & { blockedReason?: string }).blockedReason =
+        `Blocked by ${targetId}`;
 
       // Update states index
       for (const state of Object.keys(workUnitsData.states)) {
@@ -203,7 +215,11 @@ export async function removeDependency(
     throw new Error(`Work unit '${workUnitId}' does not exist`);
   }
 
-  const relationshipType = Object.keys(relationship)[0] as 'blocks' | 'blockedBy' | 'dependsOn' | 'relatesTo';
+  const relationshipType = Object.keys(relationship)[0] as
+    | 'blocks'
+    | 'blockedBy'
+    | 'dependsOn'
+    | 'relatesTo';
   const targetId = relationship[relationshipType];
 
   if (!targetId) {
@@ -212,11 +228,15 @@ export async function removeDependency(
 
   const workUnit = workUnitsData.workUnits[workUnitId];
   if (!workUnit.relationships?.[relationshipType]?.includes(targetId)) {
-    throw new Error(`Relationship '${relationshipType}' to '${targetId}' does not exist`);
+    throw new Error(
+      `Relationship '${relationshipType}' to '${targetId}' does not exist`
+    );
   }
 
   // Remove the relationship
-  workUnit.relationships[relationshipType] = workUnit.relationships[relationshipType]!.filter(id => id !== targetId);
+  workUnit.relationships[relationshipType] = workUnit.relationships[
+    relationshipType
+  ]!.filter(id => id !== targetId);
 
   // Remove bidirectional relationship
   const targetUnit = workUnitsData.workUnits[targetId];
@@ -231,7 +251,9 @@ export async function removeDependency(
             : 'relatesTo';
 
     if (targetUnit.relationships[reverseType]) {
-      targetUnit.relationships[reverseType] = targetUnit.relationships[reverseType]!.filter(id => id !== workUnitId);
+      targetUnit.relationships[reverseType] = targetUnit.relationships[
+        reverseType
+      ]!.filter(id => id !== workUnitId);
     }
   }
 
@@ -246,7 +268,10 @@ export async function removeDependency(
 
 export async function listDependencies(
   workUnitId: string,
-  options: { cwd: string; type?: 'blocks' | 'blockedBy' | 'dependsOn' | 'relatesTo' | 'all' }
+  options: {
+    cwd: string;
+    type?: 'blocks' | 'blockedBy' | 'dependsOn' | 'relatesTo' | 'all';
+  }
 ): Promise<{
   blocks: string[];
   blockedBy: string[];
@@ -264,10 +289,20 @@ export async function listDependencies(
   const relationships = workUnit.relationships || {};
 
   const result = {
-    blocks: type === 'all' || type === 'blocks' ? relationships.blocks || [] : [],
-    blockedBy: type === 'all' || type === 'blockedBy' ? relationships.blockedBy || [] : [],
-    dependsOn: type === 'all' || type === 'dependsOn' ? relationships.dependsOn || [] : [],
-    relatesTo: type === 'all' || type === 'relatesTo' ? relationships.relatesTo || [] : []
+    blocks:
+      type === 'all' || type === 'blocks' ? relationships.blocks || [] : [],
+    blockedBy:
+      type === 'all' || type === 'blockedBy'
+        ? relationships.blockedBy || []
+        : [],
+    dependsOn:
+      type === 'all' || type === 'dependsOn'
+        ? relationships.dependsOn || []
+        : [],
+    relatesTo:
+      type === 'all' || type === 'relatesTo'
+        ? relationships.relatesTo || []
+        : [],
   };
 
   return result;
@@ -294,7 +329,9 @@ export async function validateDependencies(options: { cwd: string }): Promise<{
           continue;
         }
         if (!blockedUnit.relationships?.blockedBy?.includes(id)) {
-          errors.push(`${id} blocks ${blockedId} but ${blockedId} does not list ${id} in blockedBy`);
+          errors.push(
+            `${id} blocks ${blockedId} but ${blockedId} does not list ${id} in blockedBy`
+          );
         }
       }
     }
@@ -307,7 +344,9 @@ export async function validateDependencies(options: { cwd: string }): Promise<{
           continue;
         }
         if (!blockerUnit.relationships?.blocks?.includes(id)) {
-          errors.push(`${id} blocked by ${blockerId} but ${blockerId} does not list ${id} in blocks`);
+          errors.push(
+            `${id} blocked by ${blockerId} but ${blockerId} does not list ${id} in blocks`
+          );
         }
       }
     }
@@ -331,7 +370,9 @@ export async function validateDependencies(options: { cwd: string }): Promise<{
           continue;
         }
         if (!relatedUnit.relationships?.relatesTo?.includes(id)) {
-          errors.push(`${id} relates to ${relatedId} but ${relatedId} does not list ${id} in relatesTo`);
+          errors.push(
+            `${id} relates to ${relatedId} but ${relatedId} does not list ${id} in relatesTo`
+          );
         }
       }
     }
@@ -339,7 +380,7 @@ export async function validateDependencies(options: { cwd: string }): Promise<{
 
   return {
     valid: errors.length === 0,
-    errors
+    errors,
   };
 }
 
@@ -361,7 +402,9 @@ export async function repairDependencies(options: { cwd: string }): Promise<{
       for (const blockedId of workUnit.relationships.blocks) {
         const blockedUnit = workUnitsData.workUnits[blockedId];
         if (!blockedUnit) {
-          errors.push(`Cannot repair: ${id} blocks non-existent work unit ${blockedId}`);
+          errors.push(
+            `Cannot repair: ${id} blocks non-existent work unit ${blockedId}`
+          );
           continue;
         }
         if (!blockedUnit.relationships) {
@@ -381,7 +424,9 @@ export async function repairDependencies(options: { cwd: string }): Promise<{
       for (const blockerId of workUnit.relationships.blockedBy) {
         const blockerUnit = workUnitsData.workUnits[blockerId];
         if (!blockerUnit) {
-          errors.push(`Cannot repair: ${id} blocked by non-existent work unit ${blockerId}`);
+          errors.push(
+            `Cannot repair: ${id} blocked by non-existent work unit ${blockerId}`
+          );
           continue;
         }
         if (!blockerUnit.relationships) {
@@ -402,7 +447,9 @@ export async function repairDependencies(options: { cwd: string }): Promise<{
       for (const relatedId of workUnit.relationships.relatesTo) {
         const relatedUnit = workUnitsData.workUnits[relatedId];
         if (!relatedUnit) {
-          errors.push(`Cannot repair: ${id} relates to non-existent work unit ${relatedId}`);
+          errors.push(
+            `Cannot repair: ${id} relates to non-existent work unit ${relatedId}`
+          );
           continue;
         }
         if (!relatedUnit.relationships) {
@@ -419,11 +466,19 @@ export async function repairDependencies(options: { cwd: string }): Promise<{
     }
 
     // Remove references to non-existent work units
-    for (const relType of ['blocks', 'blockedBy', 'dependsOn', 'relatesTo'] as const) {
+    for (const relType of [
+      'blocks',
+      'blockedBy',
+      'dependsOn',
+      'relatesTo',
+    ] as const) {
       if (workUnit.relationships[relType]) {
-        const validIds = workUnit.relationships[relType]!.filter(targetId => workUnitsData.workUnits[targetId]);
+        const validIds = workUnit.relationships[relType]!.filter(
+          targetId => workUnitsData.workUnits[targetId]
+        );
         if (validIds.length !== workUnit.relationships[relType]!.length) {
-          const removed = workUnit.relationships[relType]!.length - validIds.length;
+          const removed =
+            workUnit.relationships[relType]!.length - validIds.length;
           workUnit.relationships[relType] = validIds;
           repaired += removed;
         }
@@ -438,20 +493,30 @@ export async function repairDependencies(options: { cwd: string }): Promise<{
   return { repaired, errors };
 }
 
-export async function getDependencyGraph(options: { cwd: string; format?: 'json' | 'mermaid' }): Promise<string> {
+export async function getDependencyGraph(options: {
+  cwd: string;
+  format?: 'json' | 'mermaid';
+}): Promise<string> {
   const { cwd, format = 'json' } = options;
   const workUnitsData = await loadWorkUnits(cwd);
 
   if (format === 'json') {
-    const graph: Record<string, { blocks: string[]; blockedBy: string[]; dependsOn: string[]; relatesTo: string[] }> =
-      {};
+    const graph: Record<
+      string,
+      {
+        blocks: string[];
+        blockedBy: string[];
+        dependsOn: string[];
+        relatesTo: string[];
+      }
+    > = {};
 
     for (const [id, workUnit] of Object.entries(workUnitsData.workUnits)) {
       graph[id] = {
         blocks: workUnit.relationships?.blocks || [],
         blockedBy: workUnit.relationships?.blockedBy || [],
         dependsOn: workUnit.relationships?.dependsOn || [],
-        relatesTo: workUnit.relationships?.relatesTo || []
+        relatesTo: workUnit.relationships?.relatesTo || [],
       };
     }
 
@@ -529,7 +594,7 @@ export async function calculateCriticalPath(options: { cwd: string }): Promise<{
 
     const result = {
       path: [id, ...maxPath],
-      length: maxLength + 1
+      length: maxLength + 1,
     };
 
     memo[id] = result;
@@ -555,7 +620,9 @@ export async function calculateCriticalPath(options: { cwd: string }): Promise<{
   let estimatedEffort: number | undefined;
   if (criticalPath.length > 0) {
     const effort = criticalPath.reduce((sum, id) => {
-      const workUnit = workUnitsData.workUnits[id] as WorkUnit & { estimate?: number };
+      const workUnit = workUnitsData.workUnits[id] as WorkUnit & {
+        estimate?: number;
+      };
       return sum + (workUnit.estimate || 0);
     }, 0);
     if (effort > 0) {
@@ -566,7 +633,7 @@ export async function calculateCriticalPath(options: { cwd: string }): Promise<{
   return {
     path: criticalPath,
     length: maxLength,
-    estimatedEffort
+    estimatedEffort,
   };
 }
 
@@ -588,7 +655,7 @@ export async function analyzeImpact(
   const workUnit = workUnitsData.workUnits[workUnitId];
   const directlyAffected = [
     ...(workUnit.relationships?.blocks || []),
-    ...(workUnit.relationships?.blockedBy || [])
+    ...(workUnit.relationships?.blockedBy || []),
   ];
 
   // Find all transitively affected work units using BFS
@@ -605,7 +672,7 @@ export async function analyzeImpact(
     const neighbors = [
       ...(currentUnit.relationships.blocks || []),
       ...(currentUnit.relationships.blockedBy || []),
-      ...(currentUnit.relationships.dependsOn || [])
+      ...(currentUnit.relationships.dependsOn || []),
     ];
 
     for (const neighborId of neighbors) {
@@ -620,7 +687,7 @@ export async function analyzeImpact(
   return {
     directlyAffected,
     transitivelyAffected,
-    totalAffected: directlyAffected.length + transitivelyAffected.length
+    totalAffected: directlyAffected.length + transitivelyAffected.length,
   };
 }
 
@@ -661,7 +728,7 @@ export async function autoBlockWorkflow(
 
     return {
       blocked: true,
-      reason: `Blocked by: ${activeBlockers.join(', ')}`
+      reason: `Blocked by: ${activeBlockers.join(', ')}`,
     };
   }
 
@@ -685,7 +752,10 @@ export async function addDependencies(
 
 export async function clearDependencies(
   workUnitId: string,
-  options: { cwd: string; type?: 'blocks' | 'blockedBy' | 'dependsOn' | 'relatesTo' | 'all' }
+  options: {
+    cwd: string;
+    type?: 'blocks' | 'blockedBy' | 'dependsOn' | 'relatesTo' | 'all';
+  }
 ): Promise<void> {
   const { cwd, type = 'all' } = options;
   const workUnitsData = await loadWorkUnits(cwd);
@@ -697,13 +767,19 @@ export async function clearDependencies(
   const workUnit = workUnitsData.workUnits[workUnitId];
   if (!workUnit.relationships) return;
 
-  const typesToClear: Array<'blocks' | 'blockedBy' | 'dependsOn' | 'relatesTo'> =
+  const typesToClear: Array<
+    'blocks' | 'blockedBy' | 'dependsOn' | 'relatesTo'
+  > =
     type === 'all' ? ['blocks', 'blockedBy', 'dependsOn', 'relatesTo'] : [type];
 
   for (const relType of typesToClear) {
     const targets = workUnit.relationships[relType] || [];
     for (const target of [...targets]) {
-      await removeDependency(workUnitId, { [relType]: target } as Parameters<typeof removeDependency>[1], { cwd });
+      await removeDependency(
+        workUnitId,
+        { [relType]: target } as Parameters<typeof removeDependency>[1],
+        { cwd }
+      );
     }
   }
 }
@@ -837,7 +913,9 @@ export async function queryCriticalPath(
   }
 
   // BFS to find path
-  const queue: Array<{ id: string; path: string[] }> = [{ id: from, path: [from] }];
+  const queue: Array<{ id: string; path: string[] }> = [
+    { id: from, path: [from] },
+  ];
   const visited = new Set<string>([from]);
 
   while (queue.length > 0) {
@@ -845,7 +923,9 @@ export async function queryCriticalPath(
 
     if (current.id === to) {
       const totalPoints = current.path.reduce((sum, id) => {
-        const unit = workUnitsData.workUnits[id] as WorkUnit & { estimate?: number };
+        const unit = workUnitsData.workUnits[id] as WorkUnit & {
+          estimate?: number;
+        };
         return sum + (unit.estimate || 0);
       }, 0);
 
@@ -866,9 +946,9 @@ export async function queryCriticalPath(
   throw new Error(`No path found from ${from} to ${to}`);
 }
 
-export async function queryDependencyStats(
-  options: { cwd: string }
-): Promise<string> {
+export async function queryDependencyStats(options: {
+  cwd: string;
+}): Promise<string> {
   const { cwd } = options;
   const workUnitsData = await loadWorkUnits(cwd);
 
@@ -877,7 +957,7 @@ export async function queryDependencyStats(
     blocks: 0,
     blockedBy: 0,
     dependsOn: 0,
-    relatesTo: 0
+    relatesTo: 0,
   };
 
   const dependencyCounts: Array<{ id: string; count: number }> = [];

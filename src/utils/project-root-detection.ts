@@ -6,7 +6,13 @@ import { constants } from 'fs';
  * Project boundary markers that indicate the root of a project.
  * Searched in order from cwd upward.
  */
-const BOUNDARY_MARKERS = ['.git', 'package.json', '.gitignore', 'Cargo.toml', 'pyproject.toml'];
+const BOUNDARY_MARKERS = [
+  '.git',
+  'package.json',
+  '.gitignore',
+  'Cargo.toml',
+  'pyproject.toml',
+];
 
 /**
  * Maximum number of parent directories to search upward.

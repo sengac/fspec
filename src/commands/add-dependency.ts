@@ -39,7 +39,13 @@ function detectCircularDependency(
   const workUnit = workUnits[toId];
   if (workUnit?.blocks) {
     for (const blockedId of workUnit.blocks) {
-      const cycle = detectCircularDependency(workUnits, fromId, blockedId, new Set(visited), [...path]);
+      const cycle = detectCircularDependency(
+        workUnits,
+        fromId,
+        blockedId,
+        new Set(visited),
+        [...path]
+      );
       if (cycle) {
         return cycle;
       }
@@ -49,7 +55,9 @@ function detectCircularDependency(
   return null;
 }
 
-export async function addDependency(options: AddDependencyOptions): Promise<AddDependencyResult> {
+export async function addDependency(
+  options: AddDependencyOptions
+): Promise<AddDependencyResult> {
   const cwd = options.cwd || process.cwd();
 
   const data: WorkUnitsData = await ensureWorkUnitsFile(cwd);
@@ -79,9 +87,15 @@ export async function addDependency(options: AddDependencyOptions): Promise<AddD
     }
 
     // Check for circular dependency
-    const cycle = detectCircularDependency(data.workUnits, options.workUnitId, options.blocks);
+    const cycle = detectCircularDependency(
+      data.workUnits,
+      options.workUnitId,
+      options.blocks
+    );
     if (cycle) {
-      throw new Error(`Circular dependency detected: ${options.workUnitId} -> ${cycle}`);
+      throw new Error(
+        `Circular dependency detected: ${options.workUnitId} -> ${cycle}`
+      );
     }
 
     // Add blocks relationship
@@ -98,12 +112,17 @@ export async function addDependency(options: AddDependencyOptions): Promise<AddD
     targetWorkUnit.blockedBy.push(options.workUnitId);
 
     // Auto-transition target to blocked state if not already blocked or done
-    if (targetWorkUnit.status !== 'blocked' && targetWorkUnit.status !== 'done') {
+    if (
+      targetWorkUnit.status !== 'blocked' &&
+      targetWorkUnit.status !== 'done'
+    ) {
       const oldStatus = targetWorkUnit.status;
       targetWorkUnit.status = 'blocked';
 
       // Update states arrays
-      data.states[oldStatus] = data.states[oldStatus].filter(id => id !== options.blocks);
+      data.states[oldStatus] = data.states[oldStatus].filter(
+        id => id !== options.blocks
+      );
       if (!data.states.blocked) {
         data.states.blocked = [];
       }
@@ -128,9 +147,15 @@ export async function addDependency(options: AddDependencyOptions): Promise<AddD
     }
 
     // Check for circular dependency (from blocker's perspective)
-    const cycle = detectCircularDependency(data.workUnits, options.blockedBy, options.workUnitId);
+    const cycle = detectCircularDependency(
+      data.workUnits,
+      options.blockedBy,
+      options.workUnitId
+    );
     if (cycle) {
-      throw new Error(`Circular dependency detected: ${options.blockedBy} -> ${cycle}`);
+      throw new Error(
+        `Circular dependency detected: ${options.blockedBy} -> ${cycle}`
+      );
     }
 
     // Add blockedBy relationship
@@ -151,7 +176,9 @@ export async function addDependency(options: AddDependencyOptions): Promise<AddD
       const oldStatus = workUnit.status;
       workUnit.status = 'blocked';
 
-      data.states[oldStatus] = data.states[oldStatus].filter(id => id !== options.workUnitId);
+      data.states[oldStatus] = data.states[oldStatus].filter(
+        id => id !== options.workUnitId
+      );
       if (!data.states.blocked) {
         data.states.blocked = [];
       }

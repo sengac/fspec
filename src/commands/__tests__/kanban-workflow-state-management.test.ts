@@ -50,7 +50,10 @@ describe('Feature: Kanban Workflow State Management', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       // When I run "fspec update-work-unit AUTH-001 --status=specifying"
       const result = await updateWorkUnitStatus({
@@ -62,7 +65,9 @@ describe('Feature: Kanban Workflow State Management', () => {
       // Then the command should succeed
       expect(result.success).toBe(true);
 
-      const updated = JSON.parse(await readFile(join(testDir, 'spec/work-units.json'), 'utf-8'));
+      const updated = JSON.parse(
+        await readFile(join(testDir, 'spec/work-units.json'), 'utf-8')
+      );
 
       // And the work unit "AUTH-001" status should be "specifying"
       expect(updated.workUnits['AUTH-001'].status).toBe('specifying');
@@ -75,7 +80,9 @@ describe('Feature: Kanban Workflow State Management', () => {
 
       // And the stateHistory should include transition from "backlog" to "specifying"
       expect(updated.workUnits['AUTH-001'].stateHistory).toHaveLength(2);
-      expect(updated.workUnits['AUTH-001'].stateHistory[1].state).toBe('specifying');
+      expect(updated.workUnits['AUTH-001'].stateHistory[1].state).toBe(
+        'specifying'
+      );
 
       // And the updatedAt timestamp should be updated
       expect(updated.workUnits['AUTH-001'].updatedAt).not.toBe(initialTime);
@@ -95,7 +102,9 @@ describe('Feature: Kanban Workflow State Management', () => {
             estimate: 5,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
-            stateHistory: [{ state: 'backlog', timestamp: new Date().toISOString() }],
+            stateHistory: [
+              { state: 'backlog', timestamp: new Date().toISOString() },
+            ],
           },
         },
         states: {
@@ -108,7 +117,10 @@ describe('Feature: Kanban Workflow State Management', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       // Create a feature file with tagged scenario
       const featureContent = `Feature: Auth
@@ -117,16 +129,41 @@ Scenario: Login
   Given user exists
   When user logs in
   Then session is created`;
-      await writeFile(join(testDir, 'spec/features/auth.feature'), featureContent);
+      await writeFile(
+        join(testDir, 'spec/features/auth.feature'),
+        featureContent
+      );
 
       // When I run the full workflow
-      await updateWorkUnitStatus({ workUnitId: 'AUTH-001', status: 'specifying', cwd: testDir });
-      await updateWorkUnitStatus({ workUnitId: 'AUTH-001', status: 'testing', cwd: testDir });
-      await updateWorkUnitStatus({ workUnitId: 'AUTH-001', status: 'implementing', cwd: testDir });
-      await updateWorkUnitStatus({ workUnitId: 'AUTH-001', status: 'validating', cwd: testDir });
-      await updateWorkUnitStatus({ workUnitId: 'AUTH-001', status: 'done', cwd: testDir });
+      await updateWorkUnitStatus({
+        workUnitId: 'AUTH-001',
+        status: 'specifying',
+        cwd: testDir,
+      });
+      await updateWorkUnitStatus({
+        workUnitId: 'AUTH-001',
+        status: 'testing',
+        cwd: testDir,
+      });
+      await updateWorkUnitStatus({
+        workUnitId: 'AUTH-001',
+        status: 'implementing',
+        cwd: testDir,
+      });
+      await updateWorkUnitStatus({
+        workUnitId: 'AUTH-001',
+        status: 'validating',
+        cwd: testDir,
+      });
+      await updateWorkUnitStatus({
+        workUnitId: 'AUTH-001',
+        status: 'done',
+        cwd: testDir,
+      });
 
-      const updated = JSON.parse(await readFile(join(testDir, 'spec/work-units.json'), 'utf-8'));
+      const updated = JSON.parse(
+        await readFile(join(testDir, 'spec/work-units.json'), 'utf-8')
+      );
 
       // Then the work unit status should be "done"
       expect(updated.workUnits['AUTH-001'].status).toBe('done');
@@ -138,8 +175,17 @@ Scenario: Login
       expect(updated.workUnits['AUTH-001'].stateHistory).toHaveLength(6);
 
       // And the stateHistory should show progression
-      const states = updated.workUnits['AUTH-001'].stateHistory.map((h: { state: string }) => h.state);
-      expect(states).toEqual(['backlog', 'specifying', 'testing', 'implementing', 'validating', 'done']);
+      const states = updated.workUnits['AUTH-001'].stateHistory.map(
+        (h: { state: string }) => h.state
+      );
+      expect(states).toEqual([
+        'backlog',
+        'specifying',
+        'testing',
+        'implementing',
+        'validating',
+        'done',
+      ]);
     });
   });
 
@@ -154,7 +200,9 @@ Scenario: Login
             status: 'backlog',
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
-            stateHistory: [{ state: 'backlog', timestamp: new Date().toISOString() }],
+            stateHistory: [
+              { state: 'backlog', timestamp: new Date().toISOString() },
+            ],
           },
         },
         states: {
@@ -167,11 +215,18 @@ Scenario: Login
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       // When I try to jump to testing
       await expect(
-        updateWorkUnitStatus({ workUnitId: 'AUTH-001', status: 'testing', cwd: testDir })
+        updateWorkUnitStatus({
+          workUnitId: 'AUTH-001',
+          status: 'testing',
+          cwd: testDir,
+        })
       ).rejects.toThrow('Invalid state transition');
 
       const error = await updateWorkUnitStatus({
@@ -182,8 +237,12 @@ Scenario: Login
 
       expect(error).toBeInstanceOf(Error);
       if (error instanceof Error) {
-        expect(error.message).toContain("Must move to 'specifying' state first");
-        expect(error.message).toContain('ACDD requires specification before testing');
+        expect(error.message).toContain(
+          "Must move to 'specifying' state first"
+        );
+        expect(error.message).toContain(
+          'ACDD requires specification before testing'
+        );
       }
     });
   });
@@ -215,7 +274,10 @@ Scenario: Login
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       const error = await updateWorkUnitStatus({
         workUnitId: 'AUTH-001',
@@ -227,7 +289,9 @@ Scenario: Login
       if (error instanceof Error) {
         expect(error.message).toContain('Invalid state transition');
         expect(error.message).toContain("Must move to 'testing' state first");
-        expect(error.message).toContain('ACDD requires tests before implementation');
+        expect(error.message).toContain(
+          'ACDD requires tests before implementation'
+        );
       }
     });
   });
@@ -242,7 +306,9 @@ Scenario: Login
             status: 'implementing',
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
-            stateHistory: [{ state: 'implementing', timestamp: new Date().toISOString() }],
+            stateHistory: [
+              { state: 'implementing', timestamp: new Date().toISOString() },
+            ],
           },
         },
         states: {
@@ -255,7 +321,10 @@ Scenario: Login
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       const error = await updateWorkUnitStatus({
         workUnitId: 'AUTH-001',
@@ -266,7 +335,9 @@ Scenario: Login
       expect(error).toBeInstanceOf(Error);
       if (error instanceof Error) {
         expect(error.message).toContain('Cannot move work back to backlog');
-        expect(error.message).toContain("Use 'blocked' state if work cannot progress");
+        expect(error.message).toContain(
+          "Use 'blocked' state if work cannot progress"
+        );
       }
     });
   });
@@ -281,7 +352,9 @@ Scenario: Login
             status: 'implementing',
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
-            stateHistory: [{ state: 'implementing', timestamp: new Date().toISOString() }],
+            stateHistory: [
+              { state: 'implementing', timestamp: new Date().toISOString() },
+            ],
           },
         },
         states: {
@@ -294,7 +367,10 @@ Scenario: Login
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       const result = await updateWorkUnitStatus({
         workUnitId: 'AUTH-001',
@@ -305,13 +381,19 @@ Scenario: Login
 
       expect(result.success).toBe(true);
 
-      const updated = JSON.parse(await readFile(join(testDir, 'spec/work-units.json'), 'utf-8'));
+      const updated = JSON.parse(
+        await readFile(join(testDir, 'spec/work-units.json'), 'utf-8')
+      );
 
       expect(updated.workUnits['AUTH-001'].status).toBe('blocked');
       expect(updated.states.implementing).not.toContain('AUTH-001');
       expect(updated.states.blocked).toContain('AUTH-001');
-      expect(updated.workUnits['AUTH-001'].blockedReason).toBe('Waiting for API endpoint');
-      expect(updated.workUnits['AUTH-001'].stateHistory[1].state).toBe('blocked');
+      expect(updated.workUnits['AUTH-001'].blockedReason).toBe(
+        'Waiting for API endpoint'
+      );
+      expect(updated.workUnits['AUTH-001'].stateHistory[1].state).toBe(
+        'blocked'
+      );
     });
   });
 
@@ -343,7 +425,10 @@ Scenario: Login
           blocked: ['AUTH-001'],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       const result = await updateWorkUnitStatus({
         workUnitId: 'AUTH-001',
@@ -353,7 +438,9 @@ Scenario: Login
 
       expect(result.success).toBe(true);
 
-      const updated = JSON.parse(await readFile(join(testDir, 'spec/work-units.json'), 'utf-8'));
+      const updated = JSON.parse(
+        await readFile(join(testDir, 'spec/work-units.json'), 'utf-8')
+      );
 
       expect(updated.workUnits['AUTH-001'].status).toBe('specifying');
       expect(updated.workUnits['AUTH-001'].blockedReason).toBeUndefined();
@@ -372,7 +459,9 @@ Scenario: Login
             status: 'implementing',
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
-            stateHistory: [{ state: 'implementing', timestamp: new Date().toISOString() }],
+            stateHistory: [
+              { state: 'implementing', timestamp: new Date().toISOString() },
+            ],
           },
         },
         states: {
@@ -385,7 +474,10 @@ Scenario: Login
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       const error = await updateWorkUnitStatus({
         workUnitId: 'AUTH-001',
@@ -396,7 +488,9 @@ Scenario: Login
       expect(error).toBeInstanceOf(Error);
       if (error instanceof Error) {
         expect(error.message).toContain('Blocked reason is required');
-        expect(error.message).toContain("Use --blocked-reason='description of blocker'");
+        expect(error.message).toContain(
+          "Use --blocked-reason='description of blocker'"
+        );
       }
     });
   });
@@ -412,7 +506,9 @@ Scenario: Login
             estimate: 5,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
-            stateHistory: [{ state: 'specifying', timestamp: new Date().toISOString() }],
+            stateHistory: [
+              { state: 'specifying', timestamp: new Date().toISOString() },
+            ],
           },
         },
         states: {
@@ -425,10 +521,16 @@ Scenario: Login
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       // No feature files with @AUTH-001 tag
-      await writeFile(join(testDir, 'spec/features/auth.feature'), 'Feature: Auth\nScenario: Test\n  Given x');
+      await writeFile(
+        join(testDir, 'spec/features/auth.feature'),
+        'Feature: Auth\nScenario: Test\n  Given x'
+      );
 
       const error = await updateWorkUnitStatus({
         workUnitId: 'AUTH-001',
@@ -439,8 +541,12 @@ Scenario: Login
       expect(error).toBeInstanceOf(Error);
       if (error instanceof Error) {
         expect(error.message).toContain('No Gherkin scenarios found');
-        expect(error.message).toContain('At least one scenario must be tagged with @AUTH-001');
-        expect(error.message).toContain("Use 'fspec generate-scenarios AUTH-001'");
+        expect(error.message).toContain(
+          'At least one scenario must be tagged with @AUTH-001'
+        );
+        expect(error.message).toContain(
+          "Use 'fspec generate-scenarios AUTH-001'"
+        );
       }
     });
   });
@@ -456,7 +562,9 @@ Scenario: Login
             estimate: 5,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
-            stateHistory: [{ state: 'specifying', timestamp: new Date().toISOString() }],
+            stateHistory: [
+              { state: 'specifying', timestamp: new Date().toISOString() },
+            ],
           },
         },
         states: {
@@ -469,7 +577,10 @@ Scenario: Login
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       // Create feature file with @AUTH-001 tag
       const featureContent = `Feature: Authentication
@@ -478,7 +589,10 @@ Scenario: User logs in
   Given user exists
   When user logs in
   Then session is created`;
-      await writeFile(join(testDir, 'spec/features/authentication.feature'), featureContent);
+      await writeFile(
+        join(testDir, 'spec/features/authentication.feature'),
+        featureContent
+      );
 
       const result = await updateWorkUnitStatus({
         workUnitId: 'AUTH-001',
@@ -488,7 +602,9 @@ Scenario: User logs in
 
       expect(result.success).toBe(true);
 
-      const updated = JSON.parse(await readFile(join(testDir, 'spec/work-units.json'), 'utf-8'));
+      const updated = JSON.parse(
+        await readFile(join(testDir, 'spec/work-units.json'), 'utf-8')
+      );
       expect(updated.workUnits['AUTH-001'].status).toBe('testing');
     });
   });
@@ -503,7 +619,9 @@ Scenario: User logs in
             status: 'specifying',
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
-            stateHistory: [{ state: 'specifying', timestamp: new Date().toISOString() }],
+            stateHistory: [
+              { state: 'specifying', timestamp: new Date().toISOString() },
+            ],
           },
         },
         states: {
@@ -516,11 +634,18 @@ Scenario: User logs in
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       // Create feature with scenario
-      const featureContent = '@AUTH-001\nFeature: Auth\nScenario: Login\n  Given x';
-      await writeFile(join(testDir, 'spec/features/auth.feature'), featureContent);
+      const featureContent =
+        '@AUTH-001\nFeature: Auth\nScenario: Login\n  Given x';
+      await writeFile(
+        join(testDir, 'spec/features/auth.feature'),
+        featureContent
+      );
 
       const result = await updateWorkUnitStatus({
         workUnitId: 'AUTH-001',
@@ -531,7 +656,9 @@ Scenario: User logs in
       // Should succeed but with warning
       expect(result.success).toBe(true);
       expect(result.warnings).toBeDefined();
-      expect(result.warnings?.some(w => w.includes('No estimate assigned'))).toBe(true);
+      expect(
+        result.warnings?.some(w => w.includes('No estimate assigned'))
+      ).toBe(true);
     });
   });
 
@@ -545,7 +672,9 @@ Scenario: User logs in
             status: 'validating',
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
-            stateHistory: [{ state: 'validating', timestamp: new Date().toISOString() }],
+            stateHistory: [
+              { state: 'validating', timestamp: new Date().toISOString() },
+            ],
             children: ['AUTH-002'],
           },
           'AUTH-002': {
@@ -555,7 +684,9 @@ Scenario: User logs in
             parent: 'AUTH-001',
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
-            stateHistory: [{ state: 'implementing', timestamp: new Date().toISOString() }],
+            stateHistory: [
+              { state: 'implementing', timestamp: new Date().toISOString() },
+            ],
           },
         },
         states: {
@@ -568,7 +699,10 @@ Scenario: User logs in
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       const error = await updateWorkUnitStatus({
         workUnitId: 'AUTH-001',
@@ -596,7 +730,9 @@ Scenario: User logs in
             status: 'validating',
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
-            stateHistory: [{ state: 'validating', timestamp: new Date().toISOString() }],
+            stateHistory: [
+              { state: 'validating', timestamp: new Date().toISOString() },
+            ],
             children: ['AUTH-002', 'AUTH-003'],
           },
           'AUTH-002': {
@@ -606,7 +742,9 @@ Scenario: User logs in
             parent: 'AUTH-001',
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
-            stateHistory: [{ state: 'done', timestamp: new Date().toISOString() }],
+            stateHistory: [
+              { state: 'done', timestamp: new Date().toISOString() },
+            ],
           },
           'AUTH-003': {
             id: 'AUTH-003',
@@ -615,7 +753,9 @@ Scenario: User logs in
             parent: 'AUTH-001',
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
-            stateHistory: [{ state: 'done', timestamp: new Date().toISOString() }],
+            stateHistory: [
+              { state: 'done', timestamp: new Date().toISOString() },
+            ],
           },
         },
         states: {
@@ -628,7 +768,10 @@ Scenario: User logs in
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       const result = await updateWorkUnitStatus({
         workUnitId: 'AUTH-001',
@@ -638,7 +781,9 @@ Scenario: User logs in
 
       expect(result.success).toBe(true);
 
-      const updated = JSON.parse(await readFile(join(testDir, 'spec/work-units.json'), 'utf-8'));
+      const updated = JSON.parse(
+        await readFile(join(testDir, 'spec/work-units.json'), 'utf-8')
+      );
       expect(updated.workUnits['AUTH-001'].status).toBe('done');
     });
   });
@@ -679,7 +824,10 @@ Scenario: User logs in
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       const result = await prioritizeWorkUnit({
         workUnitId: 'AUTH-003',
@@ -689,8 +837,14 @@ Scenario: User logs in
 
       expect(result.success).toBe(true);
 
-      const updated = JSON.parse(await readFile(join(testDir, 'spec/work-units.json'), 'utf-8'));
-      expect(updated.states.backlog).toEqual(['AUTH-003', 'AUTH-001', 'AUTH-002']);
+      const updated = JSON.parse(
+        await readFile(join(testDir, 'spec/work-units.json'), 'utf-8')
+      );
+      expect(updated.states.backlog).toEqual([
+        'AUTH-003',
+        'AUTH-001',
+        'AUTH-002',
+      ]);
     });
   });
 
@@ -698,9 +852,27 @@ Scenario: User logs in
     it('should move work unit to bottom of backlog', async () => {
       const workUnits: WorkUnitsData = {
         workUnits: {
-          'AUTH-001': { id: 'AUTH-001', title: 'Work 1', status: 'backlog', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-          'AUTH-002': { id: 'AUTH-002', title: 'Work 2', status: 'backlog', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-          'AUTH-003': { id: 'AUTH-003', title: 'Work 3', status: 'backlog', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+          'AUTH-001': {
+            id: 'AUTH-001',
+            title: 'Work 1',
+            status: 'backlog',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+          'AUTH-002': {
+            id: 'AUTH-002',
+            title: 'Work 2',
+            status: 'backlog',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+          'AUTH-003': {
+            id: 'AUTH-003',
+            title: 'Work 3',
+            status: 'backlog',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
         },
         states: {
           backlog: ['AUTH-001', 'AUTH-002', 'AUTH-003'],
@@ -712,7 +884,10 @@ Scenario: User logs in
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       const result = await prioritizeWorkUnit({
         workUnitId: 'AUTH-001',
@@ -722,8 +897,14 @@ Scenario: User logs in
 
       expect(result.success).toBe(true);
 
-      const updated = JSON.parse(await readFile(join(testDir, 'spec/work-units.json'), 'utf-8'));
-      expect(updated.states.backlog).toEqual(['AUTH-002', 'AUTH-003', 'AUTH-001']);
+      const updated = JSON.parse(
+        await readFile(join(testDir, 'spec/work-units.json'), 'utf-8')
+      );
+      expect(updated.states.backlog).toEqual([
+        'AUTH-002',
+        'AUTH-003',
+        'AUTH-001',
+      ]);
     });
   });
 
@@ -731,9 +912,27 @@ Scenario: User logs in
     it('should insert work unit before target', async () => {
       const workUnits: WorkUnitsData = {
         workUnits: {
-          'AUTH-001': { id: 'AUTH-001', title: 'Work 1', status: 'backlog', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-          'AUTH-002': { id: 'AUTH-002', title: 'Work 2', status: 'backlog', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-          'AUTH-003': { id: 'AUTH-003', title: 'Work 3', status: 'backlog', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+          'AUTH-001': {
+            id: 'AUTH-001',
+            title: 'Work 1',
+            status: 'backlog',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+          'AUTH-002': {
+            id: 'AUTH-002',
+            title: 'Work 2',
+            status: 'backlog',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+          'AUTH-003': {
+            id: 'AUTH-003',
+            title: 'Work 3',
+            status: 'backlog',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
         },
         states: {
           backlog: ['AUTH-001', 'AUTH-002', 'AUTH-003'],
@@ -745,7 +944,10 @@ Scenario: User logs in
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       const result = await prioritizeWorkUnit({
         workUnitId: 'AUTH-003',
@@ -755,8 +957,14 @@ Scenario: User logs in
 
       expect(result.success).toBe(true);
 
-      const updated = JSON.parse(await readFile(join(testDir, 'spec/work-units.json'), 'utf-8'));
-      expect(updated.states.backlog).toEqual(['AUTH-001', 'AUTH-003', 'AUTH-002']);
+      const updated = JSON.parse(
+        await readFile(join(testDir, 'spec/work-units.json'), 'utf-8')
+      );
+      expect(updated.states.backlog).toEqual([
+        'AUTH-001',
+        'AUTH-003',
+        'AUTH-002',
+      ]);
     });
   });
 
@@ -764,9 +972,27 @@ Scenario: User logs in
     it('should insert work unit after target', async () => {
       const workUnits: WorkUnitsData = {
         workUnits: {
-          'AUTH-001': { id: 'AUTH-001', title: 'Work 1', status: 'backlog', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-          'AUTH-002': { id: 'AUTH-002', title: 'Work 2', status: 'backlog', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-          'AUTH-003': { id: 'AUTH-003', title: 'Work 3', status: 'backlog', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+          'AUTH-001': {
+            id: 'AUTH-001',
+            title: 'Work 1',
+            status: 'backlog',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+          'AUTH-002': {
+            id: 'AUTH-002',
+            title: 'Work 2',
+            status: 'backlog',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+          'AUTH-003': {
+            id: 'AUTH-003',
+            title: 'Work 3',
+            status: 'backlog',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
         },
         states: {
           backlog: ['AUTH-001', 'AUTH-002', 'AUTH-003'],
@@ -778,7 +1004,10 @@ Scenario: User logs in
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       const result = await prioritizeWorkUnit({
         workUnitId: 'AUTH-001',
@@ -788,8 +1017,14 @@ Scenario: User logs in
 
       expect(result.success).toBe(true);
 
-      const updated = JSON.parse(await readFile(join(testDir, 'spec/work-units.json'), 'utf-8'));
-      expect(updated.states.backlog).toEqual(['AUTH-002', 'AUTH-003', 'AUTH-001']);
+      const updated = JSON.parse(
+        await readFile(join(testDir, 'spec/work-units.json'), 'utf-8')
+      );
+      expect(updated.states.backlog).toEqual([
+        'AUTH-002',
+        'AUTH-003',
+        'AUTH-001',
+      ]);
     });
   });
 
@@ -797,10 +1032,34 @@ Scenario: User logs in
     it('should set work unit to specific position', async () => {
       const workUnits: WorkUnitsData = {
         workUnits: {
-          'AUTH-001': { id: 'AUTH-001', title: 'Work 1', status: 'backlog', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-          'AUTH-002': { id: 'AUTH-002', title: 'Work 2', status: 'backlog', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-          'AUTH-003': { id: 'AUTH-003', title: 'Work 3', status: 'backlog', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-          'AUTH-004': { id: 'AUTH-004', title: 'Work 4', status: 'backlog', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+          'AUTH-001': {
+            id: 'AUTH-001',
+            title: 'Work 1',
+            status: 'backlog',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+          'AUTH-002': {
+            id: 'AUTH-002',
+            title: 'Work 2',
+            status: 'backlog',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+          'AUTH-003': {
+            id: 'AUTH-003',
+            title: 'Work 3',
+            status: 'backlog',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+          'AUTH-004': {
+            id: 'AUTH-004',
+            title: 'Work 4',
+            status: 'backlog',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
         },
         states: {
           backlog: ['AUTH-001', 'AUTH-002', 'AUTH-003', 'AUTH-004'],
@@ -812,7 +1071,10 @@ Scenario: User logs in
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       const result = await prioritizeWorkUnit({
         workUnitId: 'AUTH-004',
@@ -822,8 +1084,15 @@ Scenario: User logs in
 
       expect(result.success).toBe(true);
 
-      const updated = JSON.parse(await readFile(join(testDir, 'spec/work-units.json'), 'utf-8'));
-      expect(updated.states.backlog).toEqual(['AUTH-001', 'AUTH-004', 'AUTH-002', 'AUTH-003']);
+      const updated = JSON.parse(
+        await readFile(join(testDir, 'spec/work-units.json'), 'utf-8')
+      );
+      expect(updated.states.backlog).toEqual([
+        'AUTH-001',
+        'AUTH-004',
+        'AUTH-002',
+        'AUTH-003',
+      ]);
     });
   });
 
@@ -831,7 +1100,13 @@ Scenario: User logs in
     it('should prevent prioritizing non-backlog work', async () => {
       const workUnits: WorkUnitsData = {
         workUnits: {
-          'AUTH-001': { id: 'AUTH-001', title: 'Work 1', status: 'implementing', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+          'AUTH-001': {
+            id: 'AUTH-001',
+            title: 'Work 1',
+            status: 'implementing',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
         },
         states: {
           backlog: [],
@@ -843,7 +1118,10 @@ Scenario: User logs in
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       const error = await prioritizeWorkUnit({
         workUnitId: 'AUTH-001',
@@ -853,7 +1131,9 @@ Scenario: User logs in
 
       expect(error).toBeInstanceOf(Error);
       if (error instanceof Error) {
-        expect(error.message).toContain('Can only prioritize work units in backlog state');
+        expect(error.message).toContain(
+          'Can only prioritize work units in backlog state'
+        );
         expect(error.message).toContain("AUTH-001 is in 'implementing' state");
       }
     });
@@ -863,7 +1143,13 @@ Scenario: User logs in
     it('should fail when target does not exist', async () => {
       const workUnits: WorkUnitsData = {
         workUnits: {
-          'AUTH-001': { id: 'AUTH-001', title: 'Work 1', status: 'backlog', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+          'AUTH-001': {
+            id: 'AUTH-001',
+            title: 'Work 1',
+            status: 'backlog',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
         },
         states: {
           backlog: ['AUTH-001'],
@@ -875,7 +1161,10 @@ Scenario: User logs in
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       const error = await prioritizeWorkUnit({
         workUnitId: 'AUTH-001',
@@ -900,7 +1189,9 @@ Scenario: User logs in
             status: 'backlog',
             createdAt: '2025-01-15T10:00:00Z',
             updatedAt: '2025-01-15T10:00:00Z',
-            stateHistory: [{ state: 'backlog', timestamp: '2025-01-15T10:00:00Z' }],
+            stateHistory: [
+              { state: 'backlog', timestamp: '2025-01-15T10:00:00Z' },
+            ],
           },
         },
         states: {
@@ -913,25 +1204,48 @@ Scenario: User logs in
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
-      await updateWorkUnitStatus({ workUnitId: 'AUTH-001', status: 'specifying', cwd: testDir });
+      await updateWorkUnitStatus({
+        workUnitId: 'AUTH-001',
+        status: 'specifying',
+        cwd: testDir,
+      });
       await updateWorkUnitStatus({
         workUnitId: 'AUTH-001',
         status: 'blocked',
         blockedReason: 'Question',
         cwd: testDir,
       });
-      await updateWorkUnitStatus({ workUnitId: 'AUTH-001', status: 'specifying', cwd: testDir });
+      await updateWorkUnitStatus({
+        workUnitId: 'AUTH-001',
+        status: 'specifying',
+        cwd: testDir,
+      });
 
-      const updated = JSON.parse(await readFile(join(testDir, 'spec/work-units.json'), 'utf-8'));
+      const updated = JSON.parse(
+        await readFile(join(testDir, 'spec/work-units.json'), 'utf-8')
+      );
 
       expect(updated.workUnits['AUTH-001'].stateHistory).toHaveLength(4);
-      expect(updated.workUnits['AUTH-001'].stateHistory[0].state).toBe('backlog');
-      expect(updated.workUnits['AUTH-001'].stateHistory[1].state).toBe('specifying');
-      expect(updated.workUnits['AUTH-001'].stateHistory[2].state).toBe('blocked');
-      expect(updated.workUnits['AUTH-001'].stateHistory[2].reason).toBe('Question');
-      expect(updated.workUnits['AUTH-001'].stateHistory[3].state).toBe('specifying');
+      expect(updated.workUnits['AUTH-001'].stateHistory[0].state).toBe(
+        'backlog'
+      );
+      expect(updated.workUnits['AUTH-001'].stateHistory[1].state).toBe(
+        'specifying'
+      );
+      expect(updated.workUnits['AUTH-001'].stateHistory[2].state).toBe(
+        'blocked'
+      );
+      expect(updated.workUnits['AUTH-001'].stateHistory[2].reason).toBe(
+        'Question'
+      );
+      expect(updated.workUnits['AUTH-001'].stateHistory[3].state).toBe(
+        'specifying'
+      );
     });
   });
 
@@ -965,7 +1279,10 @@ Scenario: User logs in
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       const result = await queryWorkUnits({
         workUnitId: 'AUTH-001',
@@ -993,7 +1310,9 @@ Scenario: User logs in
             status: 'validating',
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
-            stateHistory: [{ state: 'validating', timestamp: new Date().toISOString() }],
+            stateHistory: [
+              { state: 'validating', timestamp: new Date().toISOString() },
+            ],
           },
         },
         states: {
@@ -1006,7 +1325,10 @@ Scenario: User logs in
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       const result = await updateWorkUnitStatus({
         workUnitId: 'AUTH-001',
@@ -1017,9 +1339,13 @@ Scenario: User logs in
 
       expect(result.success).toBe(true);
 
-      const updated = JSON.parse(await readFile(join(testDir, 'spec/work-units.json'), 'utf-8'));
+      const updated = JSON.parse(
+        await readFile(join(testDir, 'spec/work-units.json'), 'utf-8')
+      );
       expect(updated.workUnits['AUTH-001'].status).toBe('implementing');
-      expect(updated.workUnits['AUTH-001'].stateHistory[1].reason).toBe('Test failures');
+      expect(updated.workUnits['AUTH-001'].stateHistory[1].reason).toBe(
+        'Test failures'
+      );
     });
   });
 
@@ -1033,7 +1359,9 @@ Scenario: User logs in
             status: 'validating',
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
-            stateHistory: [{ state: 'validating', timestamp: new Date().toISOString() }],
+            stateHistory: [
+              { state: 'validating', timestamp: new Date().toISOString() },
+            ],
           },
         },
         states: {
@@ -1046,7 +1374,10 @@ Scenario: User logs in
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       const result = await updateWorkUnitStatus({
         workUnitId: 'AUTH-001',
@@ -1057,7 +1388,9 @@ Scenario: User logs in
 
       expect(result.success).toBe(true);
 
-      const updated = JSON.parse(await readFile(join(testDir, 'spec/work-units.json'), 'utf-8'));
+      const updated = JSON.parse(
+        await readFile(join(testDir, 'spec/work-units.json'), 'utf-8')
+      );
       expect(updated.workUnits['AUTH-001'].status).toBe('specifying');
     });
   });
@@ -1072,7 +1405,9 @@ Scenario: User logs in
             status: 'done',
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
-            stateHistory: [{ state: 'done', timestamp: new Date().toISOString() }],
+            stateHistory: [
+              { state: 'done', timestamp: new Date().toISOString() },
+            ],
           },
         },
         states: {
@@ -1085,7 +1420,10 @@ Scenario: User logs in
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       const error = await updateWorkUnitStatus({
         workUnitId: 'AUTH-001',
@@ -1095,8 +1433,12 @@ Scenario: User logs in
 
       expect(error).toBeInstanceOf(Error);
       if (error instanceof Error) {
-        expect(error.message).toContain('Cannot change status of completed work unit');
-        expect(error.message).toContain('Create a new work unit for additional work');
+        expect(error.message).toContain(
+          'Cannot change status of completed work unit'
+        );
+        expect(error.message).toContain(
+          'Create a new work unit for additional work'
+        );
       }
     });
   });
@@ -1105,11 +1447,41 @@ Scenario: User logs in
     it('should filter work units by state', async () => {
       const workUnits: WorkUnitsData = {
         workUnits: {
-          'AUTH-001': { id: 'AUTH-001', title: 'Work 1', status: 'backlog', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-          'AUTH-002': { id: 'AUTH-002', title: 'Work 2', status: 'specifying', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-          'AUTH-003': { id: 'AUTH-003', title: 'Work 3', status: 'implementing', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-          'DASH-001': { id: 'DASH-001', title: 'Work 4', status: 'implementing', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-          'API-001': { id: 'API-001', title: 'Work 5', status: 'done', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+          'AUTH-001': {
+            id: 'AUTH-001',
+            title: 'Work 1',
+            status: 'backlog',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+          'AUTH-002': {
+            id: 'AUTH-002',
+            title: 'Work 2',
+            status: 'specifying',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+          'AUTH-003': {
+            id: 'AUTH-003',
+            title: 'Work 3',
+            status: 'implementing',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+          'DASH-001': {
+            id: 'DASH-001',
+            title: 'Work 4',
+            status: 'implementing',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+          'API-001': {
+            id: 'API-001',
+            title: 'Work 5',
+            status: 'done',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
         },
         states: {
           backlog: ['AUTH-001'],
@@ -1121,7 +1493,10 @@ Scenario: User logs in
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       const result = await queryWorkUnits({
         status: 'implementing',
@@ -1130,8 +1505,12 @@ Scenario: User logs in
       });
 
       expect(result.workUnits).toHaveLength(2);
-      expect(result.workUnits.some((wu: { id: string }) => wu.id === 'AUTH-003')).toBe(true);
-      expect(result.workUnits.some((wu: { id: string }) => wu.id === 'DASH-001')).toBe(true);
+      expect(
+        result.workUnits.some((wu: { id: string }) => wu.id === 'AUTH-003')
+      ).toBe(true);
+      expect(
+        result.workUnits.some((wu: { id: string }) => wu.id === 'DASH-001')
+      ).toBe(true);
     });
   });
 
@@ -1139,12 +1518,54 @@ Scenario: User logs in
     it('should display work units grouped by state', async () => {
       const workUnits: WorkUnitsData = {
         workUnits: {
-          'AUTH-001': { id: 'AUTH-001', title: 'Work 1', status: 'backlog', estimate: 5, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-          'AUTH-002': { id: 'AUTH-002', title: 'Work 2', status: 'specifying', estimate: 8, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-          'AUTH-003': { id: 'AUTH-003', title: 'Work 3', status: 'testing', estimate: 3, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-          'DASH-001': { id: 'DASH-001', title: 'Work 4', status: 'implementing', estimate: 5, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-          'API-001': { id: 'API-001', title: 'Work 5', status: 'validating', estimate: 5, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-          'SEC-001': { id: 'SEC-001', title: 'Work 6', status: 'done', estimate: 3, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+          'AUTH-001': {
+            id: 'AUTH-001',
+            title: 'Work 1',
+            status: 'backlog',
+            estimate: 5,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+          'AUTH-002': {
+            id: 'AUTH-002',
+            title: 'Work 2',
+            status: 'specifying',
+            estimate: 8,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+          'AUTH-003': {
+            id: 'AUTH-003',
+            title: 'Work 3',
+            status: 'testing',
+            estimate: 3,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+          'DASH-001': {
+            id: 'DASH-001',
+            title: 'Work 4',
+            status: 'implementing',
+            estimate: 5,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+          'API-001': {
+            id: 'API-001',
+            title: 'Work 5',
+            status: 'validating',
+            estimate: 5,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+          'SEC-001': {
+            id: 'SEC-001',
+            title: 'Work 6',
+            status: 'done',
+            estimate: 3,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
         },
         states: {
           backlog: ['AUTH-001'],
@@ -1156,7 +1577,10 @@ Scenario: User logs in
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       const result = await displayBoard({ cwd: testDir });
 
@@ -1194,7 +1618,10 @@ Scenario: User logs in
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       const { validateWorkUnits } = await import('../validate-work-units');
       const result = await validateWorkUnits({ cwd: testDir });
@@ -1230,7 +1657,10 @@ Scenario: User logs in
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       const { validateWorkUnits } = await import('../validate-work-units');
       const result = await validateWorkUnits({ cwd: testDir });
@@ -1269,15 +1699,22 @@ Scenario: User logs in
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       const result = await repairWorkUnits({ cwd: testDir });
 
       expect(result.success).toBe(true);
       expect(result.repairs).toBeDefined();
-      expect(result.repairs).toContain('Moved AUTH-001 from backlog to implementing');
+      expect(result.repairs).toContain(
+        'Moved AUTH-001 from backlog to implementing'
+      );
 
-      const updated = JSON.parse(await readFile(join(testDir, 'spec/work-units.json'), 'utf-8'));
+      const updated = JSON.parse(
+        await readFile(join(testDir, 'spec/work-units.json'), 'utf-8')
+      );
       expect(updated.states.implementing).toContain('AUTH-001');
       expect(updated.states.backlog).not.toContain('AUTH-001');
     });

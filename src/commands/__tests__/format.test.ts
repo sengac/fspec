@@ -333,11 +333,16 @@ Examples:
       await writeFile(filePath, scenarioOutlineContent);
 
       // When I run `fspec format`
-      await formatFeatures({ cwd: testDir, file: 'spec/features/outline.feature' });
+      await formatFeatures({
+        cwd: testDir,
+        file: 'spec/features/outline.feature',
+      });
 
       // Then the Scenario Outline should be indented by 2 spaces
       const content = await readFile(filePath, 'utf-8');
-      expect(content).toContain('  Scenario Outline: Login with different credentials');
+      expect(content).toContain(
+        '  Scenario Outline: Login with different credentials'
+      );
 
       // And the Examples section should be indented by 4 spaces
       expect(content).toContain('    Examples:');
@@ -370,7 +375,10 @@ Then the balance should be 50`;
       await writeFile(filePath, ruleContent);
 
       // When I run `fspec format`
-      await formatFeatures({ cwd: testDir, file: 'spec/features/rules.feature' });
+      await formatFeatures({
+        cwd: testDir,
+        file: 'spec/features/rules.feature',
+      });
 
       // Then the Rule should be indented by 2 spaces
       const content = await readFile(filePath, 'utf-8');
@@ -407,7 +415,10 @@ Then it should succeed`;
       await writeFile(filePath, withDocStrings);
 
       // When I run `fspec format`
-      await formatFeatures({ cwd: testDir, file: 'spec/features/docstrings.feature' });
+      await formatFeatures({
+        cwd: testDir,
+        file: 'spec/features/docstrings.feature',
+      });
 
       // Then the DocString delimiter should include the content type
       const content = await readFile(filePath, 'utf-8');
@@ -433,7 +444,10 @@ Given a step`;
       await writeFile(filePath, withTags);
 
       // When I run `fspec format`
-      await formatFeatures({ cwd: testDir, file: 'spec/features/tags.feature' });
+      await formatFeatures({
+        cwd: testDir,
+        file: 'spec/features/tags.feature',
+      });
 
       // Then each tag should be on its own line
       const content = await readFile(filePath, 'utf-8');
@@ -461,7 +475,10 @@ Then I should see an error`;
       await writeFile(filePath, withAndBut);
 
       // When I run `fspec format`
-      await formatFeatures({ cwd: testDir, file: 'spec/features/steps.feature' });
+      await formatFeatures({
+        cwd: testDir,
+        file: 'spec/features/steps.feature',
+      });
 
       // Then And steps should be formatted like other steps
       const content = await readFile(filePath, 'utf-8');
@@ -493,7 +510,10 @@ Then result`;
       await writeFile(filePath, withWildcard);
 
       // When I run `fspec format`
-      await formatFeatures({ cwd: testDir, file: 'spec/features/wildcard.feature' });
+      await formatFeatures({
+        cwd: testDir,
+        file: 'spec/features/wildcard.feature',
+      });
 
       // Then the * steps should be formatted correctly
       const content = await readFile(filePath, 'utf-8');
@@ -531,7 +551,10 @@ Then result`;
       await writeFile(filePath, withExcessiveBlankLines);
 
       // When I run `fspec format`
-      await formatFeatures({ cwd: testDir, file: 'spec/features/excessive.feature' });
+      await formatFeatures({
+        cwd: testDir,
+        file: 'spec/features/excessive.feature',
+      });
 
       // Then consecutive blank lines should be limited to maximum 2
       const content = await readFile(filePath, 'utf-8');

@@ -179,7 +179,10 @@ export async function generateTagsMd(tags: Tags): Promise<string> {
     }
 
     // Naming Conventions
-    if (tags.addingNewTags.namingConventions && tags.addingNewTags.namingConventions.length > 0) {
+    if (
+      tags.addingNewTags.namingConventions &&
+      tags.addingNewTags.namingConventions.length > 0
+    ) {
       sections.push('### Naming Conventions');
       sections.push('');
       for (const convention of tags.addingNewTags.namingConventions) {
@@ -193,11 +196,16 @@ export async function generateTagsMd(tags: Tags): Promise<string> {
       sections.push('### Anti-Patterns');
       sections.push('');
 
-      if (tags.addingNewTags.antiPatterns.dont && tags.addingNewTags.antiPatterns.dont.length > 0) {
-        sections.push('❌ **DON\'T**:');
+      if (
+        tags.addingNewTags.antiPatterns.dont &&
+        tags.addingNewTags.antiPatterns.dont.length > 0
+      ) {
+        sections.push("❌ **DON'T**:");
         for (const antiPattern of tags.addingNewTags.antiPatterns.dont) {
           if (antiPattern.example) {
-            sections.push(`- ${antiPattern.description} (${antiPattern.example})`);
+            sections.push(
+              `- ${antiPattern.description} (${antiPattern.example})`
+            );
           } else {
             sections.push(`- ${antiPattern.description}`);
           }
@@ -205,11 +213,16 @@ export async function generateTagsMd(tags: Tags): Promise<string> {
         sections.push('');
       }
 
-      if (tags.addingNewTags.antiPatterns.do && tags.addingNewTags.antiPatterns.do.length > 0) {
+      if (
+        tags.addingNewTags.antiPatterns.do &&
+        tags.addingNewTags.antiPatterns.do.length > 0
+      ) {
         sections.push('✅ **DO**:');
         for (const bestPractice of tags.addingNewTags.antiPatterns.do) {
           if (bestPractice.example) {
-            sections.push(`- ${bestPractice.description} (${bestPractice.example})`);
+            sections.push(
+              `- ${bestPractice.description} (${bestPractice.example})`
+            );
           } else {
             sections.push(`- ${bestPractice.description}`);
           }
@@ -223,7 +236,11 @@ export async function generateTagsMd(tags: Tags): Promise<string> {
   }
 
   // Tag-Based Queries
-  if (tags.queries && tags.queries.examples && tags.queries.examples.length > 0) {
+  if (
+    tags.queries &&
+    tags.queries.examples &&
+    tags.queries.examples.length > 0
+  ) {
     if (tags.queries.title) {
       sections.push(`## ${tags.queries.title}`);
     } else {
@@ -253,37 +270,53 @@ export async function generateTagsMd(tags: Tags): Promise<string> {
     if (tags.statistics.phaseStats && tags.statistics.phaseStats.length > 0) {
       sections.push('### By Phase');
       sections.push('');
-      sections.push('| Phase | Total Features | Complete | In Progress | Planned |');
-      sections.push('|-------|----------------|----------|-------------|---------|');
+      sections.push(
+        '| Phase | Total Features | Complete | In Progress | Planned |'
+      );
+      sections.push(
+        '|-------|----------------|----------|-------------|---------|'
+      );
 
       for (const stat of tags.statistics.phaseStats) {
-        sections.push(`| ${stat.phase} | ${stat.total} | ${stat.complete} | ${stat.inProgress} | ${stat.planned} |`);
+        sections.push(
+          `| ${stat.phase} | ${stat.total} | ${stat.complete} | ${stat.inProgress} | ${stat.planned} |`
+        );
       }
       sections.push('');
     }
 
     // Component Stats
-    if (tags.statistics.componentStats && tags.statistics.componentStats.length > 0) {
+    if (
+      tags.statistics.componentStats &&
+      tags.statistics.componentStats.length > 0
+    ) {
       sections.push('### By Component');
       sections.push('');
       sections.push('| Component | Feature Count | Percentage |');
       sections.push('|-----------|---------------|------------|');
 
       for (const stat of tags.statistics.componentStats) {
-        sections.push(`| ${stat.component} | ${stat.count} | ${stat.percentage} |`);
+        sections.push(
+          `| ${stat.component} | ${stat.count} | ${stat.percentage} |`
+        );
       }
       sections.push('');
     }
 
     // Feature Group Stats
-    if (tags.statistics.featureGroupStats && tags.statistics.featureGroupStats.length > 0) {
+    if (
+      tags.statistics.featureGroupStats &&
+      tags.statistics.featureGroupStats.length > 0
+    ) {
       sections.push('### By Feature Group');
       sections.push('');
       sections.push('| Feature Group | Feature Count | Percentage |');
       sections.push('|---------------|---------------|------------|');
 
       for (const stat of tags.statistics.featureGroupStats) {
-        sections.push(`| ${stat.featureGroup} | ${stat.count} | ${stat.percentage} |`);
+        sections.push(
+          `| ${stat.featureGroup} | ${stat.count} | ${stat.percentage} |`
+        );
       }
       sections.push('');
     }

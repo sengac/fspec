@@ -57,7 +57,11 @@ describe('Feature: Feature-Level Tag Management', () => {
       ],
       combinationExamples: [],
       usageGuidelines: {
-        requiredCombinations: { title: '', requirements: [], minimumExample: '' },
+        requiredCombinations: {
+          title: '',
+          requirements: [],
+          minimumExample: '',
+        },
         recommendedCombinations: {
           title: '',
           includes: [],
@@ -114,9 +118,11 @@ Feature: User Login
       );
 
       // When I run `fspec add-tag-to-feature spec/features/login.feature @critical`
-      const result = await addTagToFeature('spec/features/login.feature', [
-        '@critical',
-      ], { cwd: testDir });
+      const result = await addTagToFeature(
+        'spec/features/login.feature',
+        ['@critical'],
+        { cwd: testDir }
+      );
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
@@ -156,10 +162,11 @@ Feature: User Login
       );
 
       // When I run `fspec add-tag-to-feature spec/features/login.feature @critical @security`
-      const result = await addTagToFeature('spec/features/login.feature', [
-        '@critical',
-        '@security',
-      ], { cwd: testDir });
+      const result = await addTagToFeature(
+        'spec/features/login.feature',
+        ['@critical', '@security'],
+        { cwd: testDir }
+      );
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
@@ -195,9 +202,11 @@ Feature: Login
       );
 
       // When I run `fspec add-tag-to-feature spec/features/login.feature @critical`
-      const result = await addTagToFeature('spec/features/login.feature', [
-        '@critical',
-      ], { cwd: testDir });
+      const result = await addTagToFeature(
+        'spec/features/login.feature',
+        ['@critical'],
+        { cwd: testDir }
+      );
 
       // Then the command should exit with code 1
       expect(result.success).toBe(false);
@@ -230,9 +239,11 @@ Feature: Login
       );
 
       // When I run `fspec add-tag-to-feature spec/features/login.feature InvalidTag`
-      const result = await addTagToFeature('spec/features/login.feature', [
-        'InvalidTag',
-      ], { cwd: testDir });
+      const result = await addTagToFeature(
+        'spec/features/login.feature',
+        ['InvalidTag'],
+        { cwd: testDir }
+      );
 
       // Then the command should exit with code 1
       expect(result.success).toBe(false);
@@ -266,9 +277,11 @@ Feature: Login
       );
 
       // When I run `fspec add-tag-to-feature spec/features/login.feature @custom-tag --validate-registry`
-      const result = await addTagToFeature('spec/features/login.feature', [
-        '@custom-tag',
-      ], { cwd: testDir, validateRegistry: true });
+      const result = await addTagToFeature(
+        'spec/features/login.feature',
+        ['@custom-tag'],
+        { cwd: testDir, validateRegistry: true }
+      );
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
@@ -299,9 +312,11 @@ Feature: Login
       );
 
       // When I run `fspec add-tag-to-feature spec/features/login.feature @unregistered --validate-registry`
-      const result = await addTagToFeature('spec/features/login.feature', [
-        '@unregistered',
-      ], { cwd: testDir, validateRegistry: true });
+      const result = await addTagToFeature(
+        'spec/features/login.feature',
+        ['@unregistered'],
+        { cwd: testDir, validateRegistry: true }
+      );
 
       // Then the command should exit with code 1
       expect(result.success).toBe(false);
@@ -337,9 +352,11 @@ Feature: Login
       );
 
       // When I run `fspec remove-tag-from-feature spec/features/login.feature @critical`
-      const result = await removeTagFromFeature('spec/features/login.feature', [
-        '@critical',
-      ], { cwd: testDir });
+      const result = await removeTagFromFeature(
+        'spec/features/login.feature',
+        ['@critical'],
+        { cwd: testDir }
+      );
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
@@ -380,10 +397,11 @@ Feature: Login
       );
 
       // When I run `fspec remove-tag-from-feature spec/features/login.feature @critical @wip`
-      const result = await removeTagFromFeature('spec/features/login.feature', [
-        '@critical',
-        '@wip',
-      ], { cwd: testDir });
+      const result = await removeTagFromFeature(
+        'spec/features/login.feature',
+        ['@critical', '@wip'],
+        { cwd: testDir }
+      );
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
@@ -419,9 +437,11 @@ Feature: Login
       );
 
       // When I run `fspec remove-tag-from-feature spec/features/login.feature @critical`
-      const result = await removeTagFromFeature('spec/features/login.feature', [
-        '@critical',
-      ], { cwd: testDir });
+      const result = await removeTagFromFeature(
+        'spec/features/login.feature',
+        ['@critical'],
+        { cwd: testDir }
+      );
 
       // Then the command should exit with code 1
       expect(result.success).toBe(false);
@@ -521,9 +541,11 @@ Feature: Login
       );
 
       // When I run `fspec add-tag-to-feature spec/features/login.feature @critical`
-      const result = await addTagToFeature('spec/features/login.feature', [
-        '@critical',
-      ], { cwd: testDir });
+      const result = await addTagToFeature(
+        'spec/features/login.feature',
+        ['@critical'],
+        { cwd: testDir }
+      );
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
@@ -559,9 +581,11 @@ Feature: Login
       );
 
       // When I run `fspec add-tag-to-feature spec/features/login.feature @phase1`
-      const result = await addTagToFeature('spec/features/login.feature', [
-        '@phase1',
-      ], { cwd: testDir });
+      const result = await addTagToFeature(
+        'spec/features/login.feature',
+        ['@phase1'],
+        { cwd: testDir }
+      );
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
@@ -595,10 +619,11 @@ Feature: Login
       );
 
       // When I run `fspec remove-tag-from-feature spec/features/login.feature @phase1 @critical`
-      const result = await removeTagFromFeature('spec/features/login.feature', [
-        '@phase1',
-        '@critical',
-      ], { cwd: testDir });
+      const result = await removeTagFromFeature(
+        'spec/features/login.feature',
+        ['@phase1', '@critical'],
+        { cwd: testDir }
+      );
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
@@ -623,9 +648,11 @@ Feature: Login
       // (file does not exist)
 
       // When I run `fspec add-tag-to-feature spec/features/nonexistent.feature @phase1`
-      const result = await addTagToFeature('spec/features/nonexistent.feature', [
-        '@phase1',
-      ], { cwd: testDir });
+      const result = await addTagToFeature(
+        'spec/features/nonexistent.feature',
+        ['@phase1'],
+        { cwd: testDir }
+      );
 
       // Then the command should exit with code 1
       expect(result.success).toBe(false);
@@ -661,9 +688,11 @@ Feature: Login
       );
 
       // When I run `fspec add-tag-to-feature spec/features/login.feature @critical`
-      const result = await addTagToFeature('spec/features/login.feature', [
-        '@critical',
-      ], { cwd: testDir });
+      const result = await addTagToFeature(
+        'spec/features/login.feature',
+        ['@critical'],
+        { cwd: testDir }
+      );
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);

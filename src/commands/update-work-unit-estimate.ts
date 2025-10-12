@@ -26,7 +26,9 @@ export async function updateWorkUnitEstimate(options: {
   try {
     // Validate Fibonacci number
     if (!FIBONACCI_NUMBERS.includes(options.estimate)) {
-      throw new Error(`Invalid estimate: ${options.estimate}. Must be one of: ${FIBONACCI_NUMBERS.join(',')}`);
+      throw new Error(
+        `Invalid estimate: ${options.estimate}. Must be one of: ${FIBONACCI_NUMBERS.join(',')}`
+      );
     }
 
     // Read work units

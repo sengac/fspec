@@ -83,7 +83,9 @@ export async function addDiagramJsonBacked(options: {
     if (!validation.valid) {
       // Rollback on validation failure
       await writeFile(foundationFile, originalContent);
-      throw new Error(`foundation.json validation failed: ${validation.errors?.join(', ')}`);
+      throw new Error(
+        `foundation.json validation failed: ${validation.errors?.join(', ')}`
+      );
     }
 
     // Regenerate FOUNDATION.md
@@ -98,9 +100,13 @@ export async function addDiagramJsonBacked(options: {
       // Rollback foundation.json on markdown generation failure
       await writeFile(foundationFile, originalContent);
       if (error instanceof Error) {
-        throw new Error(`Failed to regenerate FOUNDATION.md - changes rolled back: ${error.message}`);
+        throw new Error(
+          `Failed to regenerate FOUNDATION.md - changes rolled back: ${error.message}`
+        );
       }
-      throw new Error('Failed to regenerate FOUNDATION.md - changes rolled back');
+      throw new Error(
+        'Failed to regenerate FOUNDATION.md - changes rolled back'
+      );
     }
 
     return {
@@ -118,11 +124,22 @@ export async function addDiagramJsonBacked(options: {
 async function validateMermaidSyntax(mermaidCode: string): Promise<void> {
   // Basic validation: check if it looks like valid Mermaid
   // More sophisticated validation would use mermaid.parse() with jsdom
-  const validPrefixes = ['graph', 'flowchart', 'sequenceDiagram', 'classDiagram', 'stateDiagram', 'erDiagram', 'journey', 'gantt', 'pie', 'gitGraph'];
+  const validPrefixes = [
+    'graph',
+    'flowchart',
+    'sequenceDiagram',
+    'classDiagram',
+    'stateDiagram',
+    'erDiagram',
+    'journey',
+    'gantt',
+    'pie',
+    'gitGraph',
+  ];
 
   const trimmed = mermaidCode.trim();
-  const startsWithValid = validPrefixes.some(prefix =>
-    trimmed.startsWith(prefix) || trimmed.startsWith(`${prefix}-`)
+  const startsWithValid = validPrefixes.some(
+    prefix => trimmed.startsWith(prefix) || trimmed.startsWith(`${prefix}-`)
   );
 
   if (!startsWithValid) {

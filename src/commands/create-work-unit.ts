@@ -1,7 +1,11 @@
 import { readFile, writeFile } from 'fs/promises';
 import { join } from 'path';
 import type { WorkUnitsData, PrefixesData, EpicsData } from '../types';
-import { ensureWorkUnitsFile, ensurePrefixesFile, ensureEpicsFile } from '../utils/ensure-files';
+import {
+  ensureWorkUnitsFile,
+  ensurePrefixesFile,
+  ensureEpicsFile,
+} from '../utils/ensure-files';
 
 const WORK_UNIT_ID_REGEX = /^[A-Z]{2,6}-\d+$/;
 const MAX_NESTING_DEPTH = 3;
@@ -20,7 +24,9 @@ interface CreateWorkUnitResult {
   workUnitId?: string;
 }
 
-export async function createWorkUnit(options: CreateWorkUnitOptions): Promise<CreateWorkUnitResult> {
+export async function createWorkUnit(
+  options: CreateWorkUnitOptions
+): Promise<CreateWorkUnitResult> {
   const cwd = options.cwd || process.cwd();
 
   // Validate title
@@ -125,11 +131,16 @@ function generateNextId(workUnitsData: WorkUnitsData, prefix: string): string {
     .map(id => parseInt(id.split('-')[1]))
     .filter(num => !isNaN(num));
 
-  const nextNumber = existingIds.length === 0 ? 1 : Math.max(...existingIds) + 1;
+  const nextNumber =
+    existingIds.length === 0 ? 1 : Math.max(...existingIds) + 1;
   return `${prefix}-${String(nextNumber).padStart(3, '0')}`;
 }
 
-function calculateNestingDepth(workUnitsData: WorkUnitsData, workUnitId: string, depth = 1): number {
+function calculateNestingDepth(
+  workUnitsData: WorkUnitsData,
+  workUnitId: string,
+  depth = 1
+): number {
   const workUnit = workUnitsData.workUnits[workUnitId];
   if (!workUnit || !workUnit.parent) {
     return depth;

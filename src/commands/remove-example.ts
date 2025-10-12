@@ -15,7 +15,9 @@ interface RemoveExampleResult {
   remainingCount: number;
 }
 
-export async function removeExample(options: RemoveExampleOptions): Promise<RemoveExampleResult> {
+export async function removeExample(
+  options: RemoveExampleOptions
+): Promise<RemoveExampleResult> {
   const cwd = options.cwd || process.cwd();
   const workUnitsFile = join(cwd, 'spec/work-units.json');
 

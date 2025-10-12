@@ -115,7 +115,8 @@ export async function showFeature(
         textOutput += '\n\n';
         textOutput += chalk.bold('Work Units:') + '\n';
         for (const wu of workUnits) {
-          const levelText = wu.level === 'feature' ? 'feature-level' : 'scenario-level';
+          const levelText =
+            wu.level === 'feature' ? 'feature-level' : 'scenario-level';
           textOutput += `\n  ${chalk.cyan(wu.id)} (${levelText}) - ${wu.title}\n`;
           for (const scenario of wu.scenarios) {
             const fileName = featurePath.split('/').pop() || '';

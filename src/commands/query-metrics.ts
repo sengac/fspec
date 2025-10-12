@@ -47,7 +47,9 @@ export async function queryMetrics(options: {
 
     // Calculate cycle time (first to last state)
     const firstTimestamp = new Date(workUnit.stateHistory[0].timestamp);
-    const lastTimestamp = new Date(workUnit.stateHistory[workUnit.stateHistory.length - 1].timestamp);
+    const lastTimestamp = new Date(
+      workUnit.stateHistory[workUnit.stateHistory.length - 1].timestamp
+    );
     const cycleTimeMs = lastTimestamp.getTime() - firstTimestamp.getTime();
     const cycleTimeHours = Math.round(cycleTimeMs / (1000 * 60 * 60));
 
@@ -60,7 +62,8 @@ export async function queryMetrics(options: {
       const nextTime = new Date(nextState.timestamp);
       const durationMs = nextTime.getTime() - currentTime.getTime();
       const durationHours = Math.round(durationMs / (1000 * 60 * 60));
-      timePerState[currentState.state] = `${durationHours} hour${durationHours !== 1 ? 's' : ''}`;
+      timePerState[currentState.state] =
+        `${durationHours} hour${durationHours !== 1 ? 's' : ''}`;
     }
 
     return {

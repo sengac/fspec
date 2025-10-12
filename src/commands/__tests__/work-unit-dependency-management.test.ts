@@ -54,7 +54,10 @@ describe('Feature: Work Unit Dependency Management', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       // When I run "fspec add-dependency AUTH-002 --blocks AUTH-001"
       const result = await addDependency({
@@ -66,7 +69,9 @@ describe('Feature: Work Unit Dependency Management', () => {
       // Then the command should succeed
       expect(result.success).toBe(true);
 
-      const updated = JSON.parse(await readFile(join(testDir, 'spec/work-units.json'), 'utf-8'));
+      const updated = JSON.parse(
+        await readFile(join(testDir, 'spec/work-units.json'), 'utf-8')
+      );
 
       // And AUTH-002 should have blocks: ["AUTH-001"]
       expect(updated.workUnits['AUTH-002'].blocks).toContain('AUTH-001');
@@ -105,7 +110,10 @@ describe('Feature: Work Unit Dependency Management', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       // When I run "fspec add-dependency AUTH-001 --blocked-by AUTH-002"
       const result = await addDependency({
@@ -116,7 +124,9 @@ describe('Feature: Work Unit Dependency Management', () => {
 
       expect(result.success).toBe(true);
 
-      const updated = JSON.parse(await readFile(join(testDir, 'spec/work-units.json'), 'utf-8'));
+      const updated = JSON.parse(
+        await readFile(join(testDir, 'spec/work-units.json'), 'utf-8')
+      );
 
       // And AUTH-001 should have blockedBy: ["AUTH-002"]
       expect(updated.workUnits['AUTH-001'].blockedBy).toContain('AUTH-002');
@@ -155,7 +165,10 @@ describe('Feature: Work Unit Dependency Management', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       // When I run "fspec add-dependency DASH-001 --depends-on AUTH-001"
       const result = await addDependency({
@@ -166,7 +179,9 @@ describe('Feature: Work Unit Dependency Management', () => {
 
       expect(result.success).toBe(true);
 
-      const updated = JSON.parse(await readFile(join(testDir, 'spec/work-units.json'), 'utf-8'));
+      const updated = JSON.parse(
+        await readFile(join(testDir, 'spec/work-units.json'), 'utf-8')
+      );
 
       // And DASH-001 should have dependsOn: ["AUTH-001"]
       expect(updated.workUnits['DASH-001'].dependsOn).toContain('AUTH-001');
@@ -205,7 +220,10 @@ describe('Feature: Work Unit Dependency Management', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       // When I run "fspec add-dependency AUTH-001 --relates-to AUTH-002"
       const result = await addDependency({
@@ -216,7 +234,9 @@ describe('Feature: Work Unit Dependency Management', () => {
 
       expect(result.success).toBe(true);
 
-      const updated = JSON.parse(await readFile(join(testDir, 'spec/work-units.json'), 'utf-8'));
+      const updated = JSON.parse(
+        await readFile(join(testDir, 'spec/work-units.json'), 'utf-8')
+      );
 
       // And AUTH-001 should have relatesTo: ["AUTH-002"]
       expect(updated.workUnits['AUTH-001'].relatesTo).toContain('AUTH-002');
@@ -262,7 +282,10 @@ describe('Feature: Work Unit Dependency Management', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       // Add first blocker
       await addDependency({
@@ -278,7 +301,9 @@ describe('Feature: Work Unit Dependency Management', () => {
         cwd: testDir,
       });
 
-      const updated = JSON.parse(await readFile(join(testDir, 'spec/work-units.json'), 'utf-8'));
+      const updated = JSON.parse(
+        await readFile(join(testDir, 'spec/work-units.json'), 'utf-8')
+      );
 
       // AUTH-001 should be blocked by both
       expect(updated.workUnits['AUTH-001'].blockedBy).toHaveLength(2);
@@ -330,7 +355,10 @@ describe('Feature: Work Unit Dependency Management', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       await addDependency({
         workUnitId: 'AUTH-001',
@@ -350,7 +378,9 @@ describe('Feature: Work Unit Dependency Management', () => {
         cwd: testDir,
       });
 
-      const updated = JSON.parse(await readFile(join(testDir, 'spec/work-units.json'), 'utf-8'));
+      const updated = JSON.parse(
+        await readFile(join(testDir, 'spec/work-units.json'), 'utf-8')
+      );
 
       expect(updated.workUnits['AUTH-001'].blocks).toContain('AUTH-002');
       expect(updated.workUnits['AUTH-001'].dependsOn).toContain('DASH-001');
@@ -389,7 +419,10 @@ describe('Feature: Work Unit Dependency Management', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       // When I run "fspec remove-dependency AUTH-002 --blocks AUTH-001"
       const result = await removeDependency({
@@ -400,13 +433,19 @@ describe('Feature: Work Unit Dependency Management', () => {
 
       expect(result.success).toBe(true);
 
-      const updated = JSON.parse(await readFile(join(testDir, 'spec/work-units.json'), 'utf-8'));
+      const updated = JSON.parse(
+        await readFile(join(testDir, 'spec/work-units.json'), 'utf-8')
+      );
 
       // AUTH-002 should not have blocks
-      expect(updated.workUnits['AUTH-002'].blocks || []).not.toContain('AUTH-001');
+      expect(updated.workUnits['AUTH-002'].blocks || []).not.toContain(
+        'AUTH-001'
+      );
 
       // AUTH-001 should not have blockedBy
-      expect(updated.workUnits['AUTH-001'].blockedBy || []).not.toContain('AUTH-002');
+      expect(updated.workUnits['AUTH-001'].blockedBy || []).not.toContain(
+        'AUTH-002'
+      );
     });
   });
 
@@ -440,7 +479,10 @@ describe('Feature: Work Unit Dependency Management', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       const result = await removeDependency({
         workUnitId: 'DASH-001',
@@ -450,9 +492,13 @@ describe('Feature: Work Unit Dependency Management', () => {
 
       expect(result.success).toBe(true);
 
-      const updated = JSON.parse(await readFile(join(testDir, 'spec/work-units.json'), 'utf-8'));
+      const updated = JSON.parse(
+        await readFile(join(testDir, 'spec/work-units.json'), 'utf-8')
+      );
 
-      expect(updated.workUnits['DASH-001'].dependsOn || []).not.toContain('AUTH-001');
+      expect(updated.workUnits['DASH-001'].dependsOn || []).not.toContain(
+        'AUTH-001'
+      );
     });
   });
 
@@ -487,7 +533,10 @@ describe('Feature: Work Unit Dependency Management', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       // Try to add AUTH-002 blocks AUTH-001 (which already blocks AUTH-002)
       const error = await addDependency({
@@ -544,7 +593,10 @@ describe('Feature: Work Unit Dependency Management', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       // Try to add AUTH-003 blocks AUTH-001 (creating cycle)
       const error = await addDependency({
@@ -564,7 +616,7 @@ describe('Feature: Work Unit Dependency Management', () => {
     it('should detect cycles in dependency chains', async () => {
       const workUnits: WorkUnitsData = {
         workUnits: {
-          'A': {
+          A: {
             id: 'A',
             title: 'Work A',
             status: 'testing',
@@ -572,7 +624,7 @@ describe('Feature: Work Unit Dependency Management', () => {
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           },
-          'B': {
+          B: {
             id: 'B',
             title: 'Work B',
             status: 'specifying',
@@ -581,7 +633,7 @@ describe('Feature: Work Unit Dependency Management', () => {
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           },
-          'C': {
+          C: {
             id: 'C',
             title: 'Work C',
             status: 'specifying',
@@ -590,7 +642,7 @@ describe('Feature: Work Unit Dependency Management', () => {
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           },
-          'D': {
+          D: {
             id: 'D',
             title: 'Work D',
             status: 'specifying',
@@ -609,7 +661,10 @@ describe('Feature: Work Unit Dependency Management', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       // Try to add D blocks A (creating long cycle)
       const error = await addDependency({
@@ -647,7 +702,10 @@ describe('Feature: Work Unit Dependency Management', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       const error = await addDependency({
         workUnitId: 'AUTH-999',
@@ -684,7 +742,10 @@ describe('Feature: Work Unit Dependency Management', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       const error = await addDependency({
         workUnitId: 'AUTH-001',
@@ -694,7 +755,9 @@ describe('Feature: Work Unit Dependency Management', () => {
 
       expect(error).toBeInstanceOf(Error);
       if (error instanceof Error) {
-        expect(error.message).toContain("Target work unit 'AUTH-999' does not exist");
+        expect(error.message).toContain(
+          "Target work unit 'AUTH-999' does not exist"
+        );
       }
     });
   });
@@ -721,7 +784,10 @@ describe('Feature: Work Unit Dependency Management', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       const error = await addDependency({
         workUnitId: 'AUTH-001',
@@ -767,7 +833,10 @@ describe('Feature: Work Unit Dependency Management', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       const error = await addDependency({
         workUnitId: 'AUTH-002',
@@ -811,7 +880,10 @@ describe('Feature: Work Unit Dependency Management', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       await addDependency({
         workUnitId: 'AUTH-002',
@@ -819,7 +891,9 @@ describe('Feature: Work Unit Dependency Management', () => {
         cwd: testDir,
       });
 
-      const updated = JSON.parse(await readFile(join(testDir, 'spec/work-units.json'), 'utf-8'));
+      const updated = JSON.parse(
+        await readFile(join(testDir, 'spec/work-units.json'), 'utf-8')
+      );
 
       // AUTH-001 should be in blocked state
       expect(updated.workUnits['AUTH-001'].status).toBe('blocked');
@@ -860,10 +934,15 @@ describe('Feature: Work Unit Dependency Management', () => {
           blocked: ['AUTH-001'],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       // Move AUTH-002 to done
-      const { updateWorkUnitStatus } = await import('../update-work-unit-status');
+      const { updateWorkUnitStatus } = await import(
+        '../update-work-unit-status'
+      );
       const result = await updateWorkUnitStatus({
         workUnitId: 'AUTH-002',
         status: 'done',
@@ -873,7 +952,9 @@ describe('Feature: Work Unit Dependency Management', () => {
       // Then the command should succeed
       expect(result.success).toBe(true);
 
-      const updated = JSON.parse(await readFile(join(testDir, 'spec/work-units.json'), 'utf-8'));
+      const updated = JSON.parse(
+        await readFile(join(testDir, 'spec/work-units.json'), 'utf-8')
+      );
 
       // And work unit AUTH-001 status should remain "blocked"
       expect(updated.workUnits['AUTH-001'].status).toBe('blocked');
@@ -917,7 +998,10 @@ describe('Feature: Work Unit Dependency Management', () => {
           blocked: ['AUTH-001'],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       const { deleteWorkUnit } = await import('../delete-work-unit');
       const result = await deleteWorkUnit({
@@ -928,7 +1012,9 @@ describe('Feature: Work Unit Dependency Management', () => {
 
       expect(result.success).toBe(true);
       expect(result.warnings).toBeDefined();
-      expect(result.warnings?.some((w: string) => w.includes('blocks 1 work unit'))).toBe(true);
+      expect(
+        result.warnings?.some((w: string) => w.includes('blocks 1 work unit'))
+      ).toBe(true);
     });
   });
 
@@ -971,7 +1057,10 @@ describe('Feature: Work Unit Dependency Management', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       const { deleteWorkUnit } = await import('../delete-work-unit');
       const error = await deleteWorkUnit({
@@ -1035,7 +1124,10 @@ describe('Feature: Work Unit Dependency Management', () => {
           blocked: ['AUTH-002'],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       const { deleteWorkUnit } = await import('../delete-work-unit');
       await deleteWorkUnit({
@@ -1044,16 +1136,22 @@ describe('Feature: Work Unit Dependency Management', () => {
         cwd: testDir,
       });
 
-      const updated = JSON.parse(await readFile(join(testDir, 'spec/work-units.json'), 'utf-8'));
+      const updated = JSON.parse(
+        await readFile(join(testDir, 'spec/work-units.json'), 'utf-8')
+      );
 
       // AUTH-001 should be deleted
       expect(updated.workUnits['AUTH-001']).toBeUndefined();
 
       // AUTH-002 should have blockedBy removed
-      expect(updated.workUnits['AUTH-002'].blockedBy || []).not.toContain('AUTH-001');
+      expect(updated.workUnits['AUTH-002'].blockedBy || []).not.toContain(
+        'AUTH-001'
+      );
 
       // API-001 should have relatesTo removed
-      expect(updated.workUnits['API-001'].relatesTo || []).not.toContain('AUTH-001');
+      expect(updated.workUnits['API-001'].relatesTo || []).not.toContain(
+        'AUTH-001'
+      );
     });
   });
 
@@ -1061,21 +1159,21 @@ describe('Feature: Work Unit Dependency Management', () => {
     it('should add multiple dependencies at once', async () => {
       const workUnits: WorkUnitsData = {
         workUnits: {
-          'A': {
+          A: {
             id: 'A',
             title: 'Work A',
             status: 'testing',
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           },
-          'B': {
+          B: {
             id: 'B',
             title: 'Work B',
             status: 'specifying',
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           },
-          'C': {
+          C: {
             id: 'C',
             title: 'Work C',
             status: 'done',
@@ -1093,7 +1191,10 @@ describe('Feature: Work Unit Dependency Management', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       const result = await addDependencies({
         workUnitId: 'A',
@@ -1107,7 +1208,9 @@ describe('Feature: Work Unit Dependency Management', () => {
       expect(result.success).toBe(true);
       expect(result.added).toBeGreaterThanOrEqual(2);
 
-      const updated = JSON.parse(await readFile(join(testDir, 'spec/work-units.json'), 'utf-8'));
+      const updated = JSON.parse(
+        await readFile(join(testDir, 'spec/work-units.json'), 'utf-8')
+      );
       expect(updated.workUnits['A'].blocks).toContain('B');
       expect(updated.workUnits['A'].dependsOn).toContain('C');
     });
@@ -1170,7 +1273,10 @@ describe('Feature: Work Unit Dependency Management', () => {
           blocked: ['AUTH-002'],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       const result = await clearDependencies({
         workUnitId: 'AUTH-001',
@@ -1180,7 +1286,9 @@ describe('Feature: Work Unit Dependency Management', () => {
 
       expect(result.success).toBe(true);
 
-      const updated = JSON.parse(await readFile(join(testDir, 'spec/work-units.json'), 'utf-8'));
+      const updated = JSON.parse(
+        await readFile(join(testDir, 'spec/work-units.json'), 'utf-8')
+      );
 
       expect(updated.workUnits['AUTH-001'].blocks).toBeUndefined();
       expect(updated.workUnits['AUTH-001'].blockedBy).toBeUndefined();
@@ -1188,9 +1296,15 @@ describe('Feature: Work Unit Dependency Management', () => {
       expect(updated.workUnits['AUTH-001'].relatesTo).toBeUndefined();
 
       // Bidirectional cleanup
-      expect(updated.workUnits['AUTH-002'].blockedBy || []).not.toContain('AUTH-001');
-      expect(updated.workUnits['AUTH-003'].blocks || []).not.toContain('AUTH-001');
-      expect(updated.workUnits['API-001'].relatesTo || []).not.toContain('AUTH-001');
+      expect(updated.workUnits['AUTH-002'].blockedBy || []).not.toContain(
+        'AUTH-001'
+      );
+      expect(updated.workUnits['AUTH-003'].blocks || []).not.toContain(
+        'AUTH-001'
+      );
+      expect(updated.workUnits['API-001'].relatesTo || []).not.toContain(
+        'AUTH-001'
+      );
     });
   });
 
@@ -1224,13 +1338,18 @@ describe('Feature: Work Unit Dependency Management', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       const { validateWorkUnits } = await import('../validate-work-units');
       const result = await validateWorkUnits({ cwd: testDir });
 
       expect(result.valid).toBe(false);
-      expect(result.errors?.some((e: string) => e.includes('empty strings'))).toBe(true);
+      expect(
+        result.errors?.some((e: string) => e.includes('empty strings'))
+      ).toBe(true);
     });
   });
 
@@ -1265,7 +1384,10 @@ describe('Feature: Work Unit Dependency Management', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       const { repairWorkUnits } = await import('../repair-work-units');
       const result = await repairWorkUnits({ cwd: testDir });
@@ -1273,7 +1395,9 @@ describe('Feature: Work Unit Dependency Management', () => {
       expect(result.success).toBe(true);
       expect(result.repaired).toBeGreaterThan(0);
 
-      const updated = JSON.parse(await readFile(join(testDir, 'spec/work-units.json'), 'utf-8'));
+      const updated = JSON.parse(
+        await readFile(join(testDir, 'spec/work-units.json'), 'utf-8')
+      );
 
       // Should have repaired bidirectional link
       expect(updated.workUnits['AUTH-002'].blockedBy).toContain('AUTH-001');
@@ -1327,7 +1451,10 @@ describe('Feature: Work Unit Dependency Management', () => {
           blocked: ['AUTH-002', 'AUTH-003'],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       const result = await queryDependencyStats({
         cwd: testDir,
@@ -1379,7 +1506,10 @@ describe('Feature: Work Unit Dependency Management', () => {
           blocked: ['AUTH-002'],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       const result = await exportDependencies({
         format: 'mermaid',
@@ -1389,7 +1519,10 @@ describe('Feature: Work Unit Dependency Management', () => {
 
       expect(result.success).toBe(true);
 
-      const mermaidContent = await readFile(join(testDir, 'dependencies.mmd'), 'utf-8');
+      const mermaidContent = await readFile(
+        join(testDir, 'dependencies.mmd'),
+        'utf-8'
+      );
       expect(mermaidContent).toContain('graph');
       expect(mermaidContent).toContain('AUTH-001');
       expect(mermaidContent).toContain('AUTH-002');
@@ -1427,7 +1560,10 @@ describe('Feature: Work Unit Dependency Management', () => {
           blocked: [],
         },
       };
-      await writeFile(join(testDir, 'spec/work-units.json'), JSON.stringify(workUnits, null, 2));
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
 
       // Create feature file with scenario tagged for DASH-001
       await mkdir(join(testDir, 'spec/features'), { recursive: true });
@@ -1436,7 +1572,9 @@ describe('Feature: Work Unit Dependency Management', () => {
         '@DASH-001\nFeature: Dashboard\nScenario: Show dashboard\n  Given user logged in'
       );
 
-      const { updateWorkUnitStatus } = await import('../update-work-unit-status');
+      const { updateWorkUnitStatus } = await import(
+        '../update-work-unit-status'
+      );
       const result = await updateWorkUnitStatus({
         workUnitId: 'DASH-001',
         status: 'testing',
@@ -1444,8 +1582,12 @@ describe('Feature: Work Unit Dependency Management', () => {
       });
 
       expect(result.warnings).toBeDefined();
-      expect(result.warnings?.some((w: string) => w.includes('soft dependencies'))).toBe(true);
-      expect(result.warnings?.some((w: string) => w.includes('AUTH-001'))).toBe(true);
+      expect(
+        result.warnings?.some((w: string) => w.includes('soft dependencies'))
+      ).toBe(true);
+      expect(result.warnings?.some((w: string) => w.includes('AUTH-001'))).toBe(
+        true
+      );
     });
   });
 });

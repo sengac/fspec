@@ -535,7 +535,9 @@ Feature: User Login
 
       // Then the output should show both scenarios
       expect(result.scenarios.length).toBe(2);
-      expect(result.scenarios.find(s => s.name === 'Basic login')).toBeDefined();
+      expect(
+        result.scenarios.find(s => s.name === 'Basic login')
+      ).toBeDefined();
       expect(result.scenarios.find(s => s.name === 'Quick test')).toBeDefined();
 
       // And both scenarios inherit the @phase1 tag from the feature

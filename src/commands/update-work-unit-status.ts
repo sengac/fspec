@@ -3,9 +3,19 @@ import { join } from 'path';
 import { glob } from 'tinyglobby';
 import type { WorkUnitsData, QuestionItem } from '../types';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
-import { getStatusChangeReminder, type WorkflowState } from '../utils/system-reminder';
+import {
+  getStatusChangeReminder,
+  type WorkflowState,
+} from '../utils/system-reminder';
 
-type WorkUnitStatus = 'backlog' | 'specifying' | 'testing' | 'implementing' | 'validating' | 'done' | 'blocked';
+type WorkUnitStatus =
+  | 'backlog'
+  | 'specifying'
+  | 'testing'
+  | 'implementing'
+  | 'validating'
+  | 'done'
+  | 'blocked';
 
 const ALLOWED_STATES: WorkUnitStatus[] = [
   'backlog',
@@ -89,9 +99,14 @@ export async function updateWorkUnitStatus(
   }
 
   // Validate state transitions (ACDD enforcement)
-  if (currentStatus !== newStatus && !isValidTransition(currentStatus, newStatus)) {
+  if (
+    currentStatus !== newStatus &&
+    !isValidTransition(currentStatus, newStatus)
+  ) {
     const errorMessages = [];
-    errorMessages.push(`Invalid state transition from '${currentStatus}' to '${newStatus}'.`);
+    errorMessages.push(
+      `Invalid state transition from '${currentStatus}' to '${newStatus}'.`
+    );
 
     // Specific ACDD violation messages
     if (currentStatus === 'backlog' && newStatus === 'testing') {
@@ -112,18 +127,22 @@ export async function updateWorkUnitStatus(
       // Filter for unselected questions
       const unansweredQuestions = workUnit.questions.filter(q => {
         if (typeof q === 'string') {
-          throw new Error('Invalid question format. Questions must be QuestionItem objects.');
+          throw new Error(
+            'Invalid question format. Questions must be QuestionItem objects.'
+          );
         }
         return !q.selected;
       });
 
       if (unansweredQuestions.length > 0) {
-        const questionsList = unansweredQuestions.map((q) => {
-          const questionItem = q as QuestionItem;
-          // Find the original index in the full array
-          const originalIndex = workUnit.questions!.indexOf(q);
-          return `  - [${originalIndex}] ${questionItem.text}`;
-        }).join('\n');
+        const questionsList = unansweredQuestions
+          .map(q => {
+            const questionItem = q as QuestionItem;
+            // Find the original index in the full array
+            const originalIndex = workUnit.questions!.indexOf(q);
+            return `  - [${originalIndex}] ${questionItem.text}`;
+          })
+          .join('\n');
 
         throw new Error(
           `Unanswered questions prevent state transition from '${currentStatus}' to '${newStatus}':\n${questionsList}\n\nAnswer questions with 'fspec answer-question ${options.workUnitId} <index>' before moving to testing.`
@@ -134,7 +153,7 @@ export async function updateWorkUnitStatus(
     // Warn if no examples (Example Mapping integration)
     if (!workUnit.examples || workUnit.examples.length === 0) {
       warnings.push(
-        'No examples captured in Example Mapping. Consider adding examples with \'fspec add-example\' before testing.'
+        "No examples captured in Example Mapping. Consider adding examples with 'fspec add-example' before testing."
       );
     }
 
@@ -148,7 +167,9 @@ export async function updateWorkUnitStatus(
 
     // Warn if no estimate
     if (!workUnit.estimate) {
-      warnings.push('No estimate assigned. Consider adding estimate with --estimate=<points>');
+      warnings.push(
+        'No estimate assigned. Consider adding estimate with --estimate=<points>'
+      );
     }
 
     // Warn about soft dependencies (dependsOn) that aren't done
@@ -160,7 +181,10 @@ export async function updateWorkUnitStatus(
 
       if (incompleteDeps.length > 0) {
         const depDetails = incompleteDeps
-          .map(id => `${id} (status: ${workUnitsData.workUnits[id]?.status || 'unknown'})`)
+          .map(
+            id =>
+              `${id} (status: ${workUnitsData.workUnits[id]?.status || 'unknown'})`
+          )
           .join(', ');
         warnings.push(
           `Work unit has soft dependencies that are not complete: ${depDetails}. Consider completing dependencies first for better workflow.`
@@ -190,9 +214,9 @@ export async function updateWorkUnitStatus(
 
   // Remove from current state array
   if (workUnitsData.states[currentStatus]) {
-    workUnitsData.states[currentStatus] = workUnitsData.states[currentStatus].filter(
-      id => id !== options.workUnitId
-    );
+    workUnitsData.states[currentStatus] = workUnitsData.states[
+      currentStatus
+    ].filter(id => id !== options.workUnitId);
   }
 
   // Add to new state array
@@ -222,14 +246,18 @@ export async function updateWorkUnitStatus(
     state: newStatus,
     timestamp: new Date().toISOString(),
     ...(options.reason && { reason: options.reason }),
-    ...(newStatus === 'blocked' && options.blockedReason && { reason: options.blockedReason }),
+    ...(newStatus === 'blocked' &&
+      options.blockedReason && { reason: options.blockedReason }),
   });
 
   // Write updated work units
   await writeFile(workUnitsFile, JSON.stringify(workUnitsData, null, 2));
 
   // Get system reminder for the new status
-  const systemReminder = getStatusChangeReminder(options.workUnitId, newStatus as WorkflowState);
+  const systemReminder = getStatusChangeReminder(
+    options.workUnitId,
+    newStatus as WorkflowState
+  );
 
   return {
     success: true,
@@ -245,9 +273,15 @@ function isValidTransition(from: WorkUnitStatus, to: WorkUnitStatus): boolean {
   return STATE_TRANSITIONS[from].includes(to);
 }
 
-async function checkScenariosExist(workUnitId: string, cwd: string): Promise<boolean> {
+async function checkScenariosExist(
+  workUnitId: string,
+  cwd: string
+): Promise<boolean> {
   try {
-    const featureFiles = await glob(['spec/features/**/*.feature'], { cwd, absolute: true });
+    const featureFiles = await glob(['spec/features/**/*.feature'], {
+      cwd,
+      absolute: true,
+    });
 
     for (const file of featureFiles) {
       const content = await readFile(file, 'utf-8');

@@ -52,7 +52,7 @@ export async function updateTag(
     let tagIndex = -1;
 
     for (const cat of tagsData.categories) {
-      const idx = cat.tags.findIndex((t) => t.name === tag);
+      const idx = cat.tags.findIndex(t => t.name === tag);
       if (idx !== -1) {
         currentCategory = cat;
         tagIndex = idx;
@@ -71,12 +71,10 @@ export async function updateTag(
 
     // If category is being changed, validate new category exists
     if (category && category !== currentCategory.name) {
-      const targetCategory = tagsData.categories.find(
-        (c) => c.name === category
-      );
+      const targetCategory = tagsData.categories.find(c => c.name === category);
 
       if (!targetCategory) {
-        const availableCategories = tagsData.categories.map((c) => c.name);
+        const availableCategories = tagsData.categories.map(c => c.name);
         return {
           success: false,
           error: `Invalid category: ${category}. Available categories: ${availableCategories.join(', ')}`,

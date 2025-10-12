@@ -162,6 +162,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@mermaid` | Mermaid Diagram Support |  |
 | `@pattern-detection` | Features involving pattern detection and analysis from historical data |  |
 | `@push` | Push notification functionality |  |
+| `@setup` | Setup and initialization commands |  |
 | `@sms` | SMS-related functionality |  |
 | `@template` | Template System |  |
 

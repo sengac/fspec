@@ -16,7 +16,9 @@ interface UpdateWorkUnitResult {
   success: boolean;
 }
 
-export async function updateWorkUnit(options: UpdateWorkUnitOptions): Promise<UpdateWorkUnitResult> {
+export async function updateWorkUnit(
+  options: UpdateWorkUnitOptions
+): Promise<UpdateWorkUnitResult> {
   const cwd = options.cwd || process.cwd();
 
   // Read work units
@@ -35,7 +37,13 @@ export async function updateWorkUnit(options: UpdateWorkUnitOptions): Promise<Up
     }
 
     // Check for circular reference
-    if (wouldCreateCircularReference(workUnitsData, options.workUnitId, options.parent)) {
+    if (
+      wouldCreateCircularReference(
+        workUnitsData,
+        options.workUnitId,
+        options.parent
+      )
+    ) {
       throw new Error('Circular parent relationship detected');
     }
   }
@@ -55,7 +63,8 @@ export async function updateWorkUnit(options: UpdateWorkUnitOptions): Promise<Up
   }
 
   if (options.description !== undefined) {
-    workUnitsData.workUnits[options.workUnitId].description = options.description;
+    workUnitsData.workUnits[options.workUnitId].description =
+      options.description;
   }
 
   if (options.epic !== undefined) {
@@ -67,10 +76,14 @@ export async function updateWorkUnit(options: UpdateWorkUnitOptions): Promise<Up
     const epicsFile = join(cwd, 'spec/epics.json');
 
     // Remove from old epic if exists
-    if (oldEpic && epicsData.epics[oldEpic] && epicsData.epics[oldEpic].workUnits) {
-      epicsData.epics[oldEpic].workUnits = epicsData.epics[oldEpic].workUnits.filter(
-        id => id !== options.workUnitId
-      );
+    if (
+      oldEpic &&
+      epicsData.epics[oldEpic] &&
+      epicsData.epics[oldEpic].workUnits
+    ) {
+      epicsData.epics[oldEpic].workUnits = epicsData.epics[
+        oldEpic
+      ].workUnits.filter(id => id !== options.workUnitId);
     }
 
     // Add to new epic
@@ -89,9 +102,9 @@ export async function updateWorkUnit(options: UpdateWorkUnitOptions): Promise<Up
     const oldParent = workUnitsData.workUnits[options.workUnitId].parent;
     if (oldParent && workUnitsData.workUnits[oldParent]) {
       if (workUnitsData.workUnits[oldParent].children) {
-        workUnitsData.workUnits[oldParent].children = workUnitsData.workUnits[oldParent].children.filter(
-          id => id !== options.workUnitId
-        );
+        workUnitsData.workUnits[oldParent].children = workUnitsData.workUnits[
+          oldParent
+        ].children.filter(id => id !== options.workUnitId);
       }
     }
 
@@ -102,13 +115,18 @@ export async function updateWorkUnit(options: UpdateWorkUnitOptions): Promise<Up
     if (!workUnitsData.workUnits[options.parent].children) {
       workUnitsData.workUnits[options.parent].children = [];
     }
-    if (!workUnitsData.workUnits[options.parent].children.includes(options.workUnitId)) {
+    if (
+      !workUnitsData.workUnits[options.parent].children.includes(
+        options.workUnitId
+      )
+    ) {
       workUnitsData.workUnits[options.parent].children.push(options.workUnitId);
     }
   }
 
   // Update timestamp
-  workUnitsData.workUnits[options.workUnitId].updatedAt = new Date().toISOString();
+  workUnitsData.workUnits[options.workUnitId].updatedAt =
+    new Date().toISOString();
 
   // Write updated work units
   await writeFile(workUnitsFile, JSON.stringify(workUnitsData, null, 2));
@@ -142,7 +160,12 @@ function wouldCreateCircularReference(
 
   // If the proposed parent has the workUnitId as a parent, that would create a circle
   if (proposedParent.parent) {
-    return wouldCreateCircularReference(workUnitsData, workUnitId, proposedParent.parent, visited);
+    return wouldCreateCircularReference(
+      workUnitsData,
+      workUnitId,
+      proposedParent.parent,
+      visited
+    );
   }
 
   return false;

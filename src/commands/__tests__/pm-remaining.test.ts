@@ -9,26 +9,26 @@ import {
   calculateCycleTime,
   queryEstimateAccuracy,
   queryEstimateAccuracyByPrefix,
-  queryEstimationGuide
+  queryEstimationGuide,
 } from '../estimation';
 import {
   createEpic,
   createPrefix,
   showEpicProgress,
   listEpics,
-  deleteEpic
+  deleteEpic,
 } from '../epics';
 import {
   queryWorkUnitsCompound,
   generateStatisticalReport,
   exportWorkUnits,
-  displayKanbanBoard
+  displayKanbanBoard,
 } from '../query';
 import {
   recordWorkUnitIteration,
   recordWorkUnitTokens,
   autoAdvanceWorkUnitState,
-  validateWorkUnitSpecAlignment
+  validateWorkUnitSpecAlignment,
 } from '../workflow-automation';
 
 describe('Feature: Work Unit Estimation and Metrics', () => {
@@ -41,7 +41,10 @@ describe('Feature: Work Unit Estimation and Metrics', () => {
     specDir = join(testDir, 'spec');
     workUnitsFile = join(specDir, 'work-units.json');
     await mkdir(specDir, { recursive: true });
-    await writeFile(workUnitsFile, JSON.stringify({ workUnits: {}, states: {} }, null, 2));
+    await writeFile(
+      workUnitsFile,
+      JSON.stringify({ workUnits: {}, states: {} }, null, 2)
+    );
   });
 
   afterEach(async () => {
@@ -56,7 +59,7 @@ describe('Feature: Work Unit Estimation and Metrics', () => {
         title: 'OAuth',
         status: 'specifying',
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
@@ -73,12 +76,14 @@ describe('Feature: Work Unit Estimation and Metrics', () => {
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       for (const value of [1, 2, 3, 5, 8, 13, 21]) {
-        await expect(assignEstimate('AUTH-001', value, { cwd: testDir })).resolves.not.toThrow();
+        await expect(
+          assignEstimate('AUTH-001', value, { cwd: testDir })
+        ).resolves.not.toThrow();
       }
     });
   });
@@ -89,7 +94,7 @@ describe('Feature: Work Unit Estimation and Metrics', () => {
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
@@ -111,14 +116,16 @@ describe('Feature: Work Unit Estimation and Metrics', () => {
         status: 'implementing',
         metrics: { actualTokens: 0 },
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       await recordTokens('AUTH-001', 15000, { cwd: testDir });
 
       const updated = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
-      expect(updated.workUnits['AUTH-001'].metrics.actualTokens).toBeGreaterThan(0);
+      expect(
+        updated.workUnits['AUTH-001'].metrics.actualTokens
+      ).toBeGreaterThan(0);
     });
   });
 
@@ -130,7 +137,7 @@ describe('Feature: Work Unit Estimation and Metrics', () => {
         status: 'implementing',
         metrics: { iterations: 1 },
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
@@ -152,10 +159,10 @@ describe('Feature: Work Unit Estimation and Metrics', () => {
           { state: 'specifying', timestamp: '2025-01-15T11:00:00Z' },
           { state: 'testing', timestamp: '2025-01-15T13:00:00Z' },
           { state: 'implementing', timestamp: '2025-01-15T14:00:00Z' },
-          { state: 'done', timestamp: '2025-01-15T18:00:00Z' }
+          { state: 'done', timestamp: '2025-01-15T18:00:00Z' },
         ],
         createdAt: '2025-01-15T10:00:00Z',
-        updatedAt: '2025-01-15T18:00:00Z'
+        updatedAt: '2025-01-15T18:00:00Z',
       };
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
@@ -176,7 +183,7 @@ describe('Feature: Work Unit Estimation and Metrics', () => {
         actualTokens: 95000,
         iterations: 2,
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
@@ -197,39 +204,42 @@ describe('Feature: Work Unit Estimation and Metrics', () => {
         status: 'done',
         estimate: 1,
         actualTokens: 22000,
-        iterations: 1
+        iterations: 1,
       };
       workUnits.workUnits['AUTH-002'] = {
         id: 'AUTH-002',
         status: 'done',
         estimate: 1,
         actualTokens: 28000,
-        iterations: 2
+        iterations: 2,
       };
       workUnits.workUnits['AUTH-003'] = {
         id: 'AUTH-003',
         status: 'done',
         estimate: 3,
         actualTokens: 70000,
-        iterations: 2
+        iterations: 2,
       };
       workUnits.workUnits['AUTH-004'] = {
         id: 'AUTH-004',
         status: 'done',
         estimate: 3,
         actualTokens: 80000,
-        iterations: 3
+        iterations: 3,
       };
       workUnits.workUnits['AUTH-005'] = {
         id: 'AUTH-005',
         status: 'done',
         estimate: 5,
         actualTokens: 95000,
-        iterations: 2
+        iterations: 2,
       };
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
-      const result = await queryEstimateAccuracy(null, { cwd: testDir, output: 'json' });
+      const result = await queryEstimateAccuracy(null, {
+        cwd: testDir,
+        output: 'json',
+      });
       const data = JSON.parse(result);
 
       expect(data['1-point'].avgTokens).toBe(25000);
@@ -254,30 +264,33 @@ describe('Feature: Work Unit Estimation and Metrics', () => {
         id: 'AUTH-001',
         status: 'done',
         estimate: 5,
-        actualTokens: 95000
+        actualTokens: 95000,
       };
       workUnits.workUnits['AUTH-002'] = {
         id: 'AUTH-002',
         status: 'done',
         estimate: 3,
-        actualTokens: 70000
+        actualTokens: 70000,
       };
       // SEC: expected 160k (8*20k), actual 235k = 47% over (estimates too low)
       workUnits.workUnits['SEC-001'] = {
         id: 'SEC-001',
         status: 'done',
         estimate: 5,
-        actualTokens: 140000
+        actualTokens: 140000,
       };
       workUnits.workUnits['SEC-002'] = {
         id: 'SEC-002',
         status: 'done',
         estimate: 3,
-        actualTokens: 95000
+        actualTokens: 95000,
       };
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
-      const result = await queryEstimateAccuracyByPrefix({ cwd: testDir, output: 'json' });
+      const result = await queryEstimateAccuracyByPrefix({
+        cwd: testDir,
+        output: 'json',
+      });
       const data = JSON.parse(result);
 
       // AUTH is well-calibrated (within 10%)
@@ -299,42 +312,42 @@ describe('Feature: Work Unit Estimation and Metrics', () => {
         status: 'done',
         estimate: 1,
         actualTokens: 20000,
-        iterations: 1
+        iterations: 1,
       };
       workUnits.workUnits['AUTH-002'] = {
         id: 'AUTH-002',
         status: 'done',
         estimate: 1,
         actualTokens: 25000,
-        iterations: 2
+        iterations: 2,
       };
       workUnits.workUnits['AUTH-003'] = {
         id: 'AUTH-003',
         status: 'done',
         estimate: 1,
         actualTokens: 30000,
-        iterations: 2
+        iterations: 2,
       };
       workUnits.workUnits['AUTH-004'] = {
         id: 'AUTH-004',
         status: 'done',
         estimate: 3,
         actualTokens: 60000,
-        iterations: 2
+        iterations: 2,
       };
       workUnits.workUnits['AUTH-005'] = {
         id: 'AUTH-005',
         status: 'done',
         estimate: 3,
         actualTokens: 75000,
-        iterations: 2
+        iterations: 2,
       };
       workUnits.workUnits['AUTH-006'] = {
         id: 'AUTH-006',
         status: 'done',
         estimate: 3,
         actualTokens: 90000,
-        iterations: 3
+        iterations: 3,
       };
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
@@ -374,7 +387,9 @@ describe('Feature: Epic and Prefix Management', () => {
 
   describe('Scenario: Create epic', () => {
     it('should add epic to epics.json', async () => {
-      await createEpic('epic-user-management', 'User Management', { cwd: testDir });
+      await createEpic('epic-user-management', 'User Management', {
+        cwd: testDir,
+      });
 
       const epics = JSON.parse(await readFile(epicsFile, 'utf-8'));
       expect(epics.epics['epic-user-management']).toBeDefined();
@@ -388,7 +403,9 @@ describe('Feature: Epic and Prefix Management', () => {
 
       const prefixes = JSON.parse(await readFile(prefixesFile, 'utf-8'));
       expect(prefixes.prefixes.AUTH).toBeDefined();
-      expect(prefixes.prefixes.AUTH.description).toBe('Authentication features');
+      expect(prefixes.prefixes.AUTH.description).toBe(
+        'Authentication features'
+      );
     });
   });
 
@@ -426,20 +443,33 @@ describe('Feature: Epic and Prefix Management', () => {
       epics.epics['epic-user-management'] = {
         id: 'epic-user-management',
         title: 'User Management',
-        workUnits: ['AUTH-001', 'AUTH-002', 'AUTH-003']
+        workUnits: ['AUTH-001', 'AUTH-002', 'AUTH-003'],
       };
       await writeFile(epicsFile, JSON.stringify(epics, null, 2));
 
       const workUnitsFile = join(specDir, 'work-units.json');
-      await writeFile(workUnitsFile, JSON.stringify({
-        workUnits: {
-          'AUTH-001': { id: 'AUTH-001', status: 'done', estimate: 5 },
-          'AUTH-002': { id: 'AUTH-002', status: 'implementing', estimate: 8 },
-          'AUTH-003': { id: 'AUTH-003', status: 'backlog', estimate: 3 }
-        }
-      }, null, 2));
+      await writeFile(
+        workUnitsFile,
+        JSON.stringify(
+          {
+            workUnits: {
+              'AUTH-001': { id: 'AUTH-001', status: 'done', estimate: 5 },
+              'AUTH-002': {
+                id: 'AUTH-002',
+                status: 'implementing',
+                estimate: 8,
+              },
+              'AUTH-003': { id: 'AUTH-003', status: 'backlog', estimate: 3 },
+            },
+          },
+          null,
+          2
+        )
+      );
 
-      const output = await showEpicProgress('epic-user-management', { cwd: testDir });
+      const output = await showEpicProgress('epic-user-management', {
+        cwd: testDir,
+      });
 
       expect(output).toContain('User Management');
       expect(output).toContain('1 of 3 complete');
@@ -454,12 +484,12 @@ describe('Feature: Epic and Prefix Management', () => {
       epics.epics['epic-user-management'] = {
         id: 'epic-user-management',
         title: 'User Management',
-        workUnits: ['AUTH-001']
+        workUnits: ['AUTH-001'],
       };
       epics.epics['epic-security'] = {
         id: 'epic-security',
         title: 'Security Improvements',
-        workUnits: ['SEC-001', 'SEC-002']
+        workUnits: ['SEC-001', 'SEC-002'],
       };
       await writeFile(epicsFile, JSON.stringify(epics, null, 2));
 
@@ -496,18 +526,29 @@ describe('Feature: Epic and Prefix Management', () => {
       epics.epics['epic-auth'] = {
         id: 'epic-auth',
         title: 'Authentication',
-        workUnits: ['AUTH-001', 'AUTH-002']
+        workUnits: ['AUTH-001', 'AUTH-002'],
       };
       await writeFile(epicsFile, JSON.stringify(epics, null, 2));
 
       // Create work units with epic field
       const workUnitsFile = join(specDir, 'work-units.json');
-      await writeFile(workUnitsFile, JSON.stringify({
-        workUnits: {
-          'AUTH-001': { id: 'AUTH-001', status: 'done', epic: 'epic-auth' },
-          'AUTH-002': { id: 'AUTH-002', status: 'backlog', epic: 'epic-auth' }
-        }
-      }, null, 2));
+      await writeFile(
+        workUnitsFile,
+        JSON.stringify(
+          {
+            workUnits: {
+              'AUTH-001': { id: 'AUTH-001', status: 'done', epic: 'epic-auth' },
+              'AUTH-002': {
+                id: 'AUTH-002',
+                status: 'backlog',
+                epic: 'epic-auth',
+              },
+            },
+          },
+          null,
+          2
+        )
+      );
 
       // Delete epic with force flag
       await deleteEpic('epic-auth', { force: true }, { cwd: testDir });
@@ -517,7 +558,9 @@ describe('Feature: Epic and Prefix Management', () => {
       expect(updatedEpics.epics['epic-auth']).toBeUndefined();
 
       // Verify work units have epic field cleared
-      const updatedWorkUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const updatedWorkUnits = JSON.parse(
+        await readFile(workUnitsFile, 'utf-8')
+      );
       expect(updatedWorkUnits.workUnits['AUTH-001'].epic).toBeUndefined();
       expect(updatedWorkUnits.workUnits['AUTH-002'].epic).toBeUndefined();
     });
@@ -534,7 +577,10 @@ describe('Feature: Work Unit Query and Reporting', () => {
     specDir = join(testDir, 'spec');
     workUnitsFile = join(specDir, 'work-units.json');
     await mkdir(specDir, { recursive: true });
-    await writeFile(workUnitsFile, JSON.stringify({ workUnits: {}, states: {} }, null, 2));
+    await writeFile(
+      workUnitsFile,
+      JSON.stringify({ workUnits: {}, states: {} }, null, 2)
+    );
   });
 
   afterEach(async () => {
@@ -545,16 +591,33 @@ describe('Feature: Work Unit Query and Reporting', () => {
     it('should filter work units by status', async () => {
       const { queryWorkUnitsByStatus } = await import('../query');
       const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
-      workUnits.workUnits['AUTH-001'] = { id: 'AUTH-001', status: 'implementing', title: 'OAuth' };
-      workUnits.workUnits['AUTH-002'] = { id: 'AUTH-002', status: 'backlog', title: 'Login' };
-      workUnits.workUnits['SEC-001'] = { id: 'SEC-001', status: 'implementing', title: 'Encryption' };
+      workUnits.workUnits['AUTH-001'] = {
+        id: 'AUTH-001',
+        status: 'implementing',
+        title: 'OAuth',
+      };
+      workUnits.workUnits['AUTH-002'] = {
+        id: 'AUTH-002',
+        status: 'backlog',
+        title: 'Login',
+      };
+      workUnits.workUnits['SEC-001'] = {
+        id: 'SEC-001',
+        status: 'implementing',
+        title: 'Encryption',
+      };
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
-      const result = await queryWorkUnitsByStatus('implementing', { cwd: testDir, output: 'json' });
+      const result = await queryWorkUnitsByStatus('implementing', {
+        cwd: testDir,
+        output: 'json',
+      });
       const json = JSON.parse(result);
 
       expect(json).toHaveLength(2);
-      expect(json.some((wu: { id: string }) => wu.id === 'AUTH-001')).toBe(true);
+      expect(json.some((wu: { id: string }) => wu.id === 'AUTH-001')).toBe(
+        true
+      );
       expect(json.some((wu: { id: string }) => wu.id === 'SEC-001')).toBe(true);
     });
   });
@@ -563,17 +626,36 @@ describe('Feature: Work Unit Query and Reporting', () => {
     it('should filter work units by epic', async () => {
       const { queryWorkUnitsByEpic } = await import('../query');
       const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
-      workUnits.workUnits['AUTH-001'] = { id: 'AUTH-001', epic: 'epic-auth', title: 'OAuth' };
-      workUnits.workUnits['AUTH-002'] = { id: 'AUTH-002', epic: 'epic-auth', title: 'Login' };
-      workUnits.workUnits['SEC-001'] = { id: 'SEC-001', epic: 'epic-security', title: 'Encryption' };
+      workUnits.workUnits['AUTH-001'] = {
+        id: 'AUTH-001',
+        epic: 'epic-auth',
+        title: 'OAuth',
+      };
+      workUnits.workUnits['AUTH-002'] = {
+        id: 'AUTH-002',
+        epic: 'epic-auth',
+        title: 'Login',
+      };
+      workUnits.workUnits['SEC-001'] = {
+        id: 'SEC-001',
+        epic: 'epic-security',
+        title: 'Encryption',
+      };
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
-      const result = await queryWorkUnitsByEpic('epic-auth', { cwd: testDir, output: 'json' });
+      const result = await queryWorkUnitsByEpic('epic-auth', {
+        cwd: testDir,
+        output: 'json',
+      });
       const json = JSON.parse(result);
 
       expect(json).toHaveLength(2);
-      expect(json.some((wu: { id: string }) => wu.id === 'AUTH-001')).toBe(true);
-      expect(json.some((wu: { id: string }) => wu.id === 'AUTH-002')).toBe(true);
+      expect(json.some((wu: { id: string }) => wu.id === 'AUTH-001')).toBe(
+        true
+      );
+      expect(json.some((wu: { id: string }) => wu.id === 'AUTH-002')).toBe(
+        true
+      );
     });
   });
 
@@ -584,27 +666,30 @@ describe('Feature: Work Unit Query and Reporting', () => {
         id: 'AUTH-001',
         status: 'implementing',
         estimate: 5,
-        epic: 'epic-user-management'
+        epic: 'epic-user-management',
       };
       workUnits.workUnits['AUTH-002'] = {
         id: 'AUTH-002',
         status: 'backlog',
         estimate: 8,
-        epic: 'epic-user-management'
+        epic: 'epic-user-management',
       };
       workUnits.workUnits['SEC-001'] = {
         id: 'SEC-001',
         status: 'implementing',
         estimate: 3,
-        epic: 'epic-security'
+        epic: 'epic-security',
       };
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
-      const result = await queryWorkUnitsCompound({
-        status: 'implementing',
-        epic: 'epic-user-management',
-        output: 'json'
-      }, { cwd: testDir });
+      const result = await queryWorkUnitsCompound(
+        {
+          status: 'implementing',
+          epic: 'epic-user-management',
+          output: 'json',
+        },
+        { cwd: testDir }
+      );
 
       const json = JSON.parse(result);
       expect(json).toHaveLength(1);
@@ -615,9 +700,24 @@ describe('Feature: Work Unit Query and Reporting', () => {
   describe('Scenario: Display Kanban board view', () => {
     it('should display work units organized by state columns', async () => {
       const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
-      workUnits.workUnits['AUTH-001'] = { id: 'AUTH-001', status: 'backlog', title: 'OAuth', estimate: 5 };
-      workUnits.workUnits['AUTH-002'] = { id: 'AUTH-002', status: 'implementing', title: 'Login', estimate: 8 };
-      workUnits.workUnits['SEC-001'] = { id: 'SEC-001', status: 'done', title: 'Encryption', estimate: 3 };
+      workUnits.workUnits['AUTH-001'] = {
+        id: 'AUTH-001',
+        status: 'backlog',
+        title: 'OAuth',
+        estimate: 5,
+      };
+      workUnits.workUnits['AUTH-002'] = {
+        id: 'AUTH-002',
+        status: 'implementing',
+        title: 'Login',
+        estimate: 8,
+      };
+      workUnits.workUnits['SEC-001'] = {
+        id: 'SEC-001',
+        status: 'done',
+        title: 'Encryption',
+        estimate: 3,
+      };
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       const board = await displayKanbanBoard({ cwd: testDir });
@@ -640,9 +740,21 @@ describe('Feature: Work Unit Query and Reporting', () => {
   describe('Scenario: Generate statistical report', () => {
     it('should calculate aggregate metrics', async () => {
       const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
-      workUnits.workUnits['AUTH-001'] = { id: 'AUTH-001', status: 'done', estimate: 5 };
-      workUnits.workUnits['AUTH-002'] = { id: 'AUTH-002', status: 'implementing', estimate: 8 };
-      workUnits.workUnits['AUTH-003'] = { id: 'AUTH-003', status: 'backlog', estimate: 3 };
+      workUnits.workUnits['AUTH-001'] = {
+        id: 'AUTH-001',
+        status: 'done',
+        estimate: 5,
+      };
+      workUnits.workUnits['AUTH-002'] = {
+        id: 'AUTH-002',
+        status: 'implementing',
+        estimate: 8,
+      };
+      workUnits.workUnits['AUTH-003'] = {
+        id: 'AUTH-003',
+        status: 'backlog',
+        estimate: 3,
+      };
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       const report = await generateStatisticalReport({ cwd: testDir });
@@ -662,23 +774,32 @@ describe('Feature: Work Unit Query and Reporting', () => {
         id: 'AUTH-001',
         title: 'OAuth',
         status: 'done',
-        estimate: 5
+        estimate: 5,
       };
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       const jsonOutput = join(testDir, 'export.json');
-      await exportWorkUnits({ output: jsonOutput, format: 'json' }, { cwd: testDir });
+      await exportWorkUnits(
+        { output: jsonOutput, format: 'json' },
+        { cwd: testDir }
+      );
       const jsonContent = await readFile(jsonOutput, 'utf-8');
       expect(() => JSON.parse(jsonContent)).not.toThrow();
 
       const csvOutput = join(testDir, 'export.csv');
-      await exportWorkUnits({ output: csvOutput, format: 'csv' }, { cwd: testDir });
+      await exportWorkUnits(
+        { output: csvOutput, format: 'csv' },
+        { cwd: testDir }
+      );
       const csvContent = await readFile(csvOutput, 'utf-8');
       expect(csvContent).toContain('id,title,status,estimate');
       expect(csvContent).toContain('AUTH-001,OAuth,done,5');
 
       const mdOutput = join(testDir, 'export.md');
-      await exportWorkUnits({ output: mdOutput, format: 'markdown' }, { cwd: testDir });
+      await exportWorkUnits(
+        { output: mdOutput, format: 'markdown' },
+        { cwd: testDir }
+      );
       const mdContent = await readFile(mdOutput, 'utf-8');
       expect(mdContent).toContain('| ID | Title | Status | Estimate |');
       expect(mdContent).toContain('| AUTH-001 | OAuth | done | 5 |');
@@ -696,7 +817,10 @@ describe('Feature: Workflow Automation', () => {
     specDir = join(testDir, 'spec');
     workUnitsFile = join(specDir, 'work-units.json');
     await mkdir(specDir, { recursive: true });
-    await writeFile(workUnitsFile, JSON.stringify({ workUnits: {}, states: {} }, null, 2));
+    await writeFile(
+      workUnitsFile,
+      JSON.stringify({ workUnits: {}, states: {} }, null, 2)
+    );
   });
 
   afterEach(async () => {
@@ -709,7 +833,7 @@ describe('Feature: Workflow Automation', () => {
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         status: 'implementing',
-        metrics: { iterations: 0 }
+        metrics: { iterations: 0 },
       };
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
@@ -726,7 +850,7 @@ describe('Feature: Workflow Automation', () => {
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         status: 'implementing',
-        metrics: { actualTokens: 0 }
+        metrics: { actualTokens: 0 },
       };
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
@@ -744,12 +868,18 @@ describe('Feature: Workflow Automation', () => {
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         status: 'testing',
-        stateHistory: [{ state: 'testing', timestamp: new Date().toISOString() }]
+        stateHistory: [
+          { state: 'testing', timestamp: new Date().toISOString() },
+        ],
       };
       workUnits.states = { testing: ['AUTH-001'], implementing: [] };
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
-      await autoAdvanceWorkUnitState('AUTH-001', { fromState: 'testing', event: 'tests-pass' }, { cwd: testDir });
+      await autoAdvanceWorkUnitState(
+        'AUTH-001',
+        { fromState: 'testing', event: 'tests-pass' },
+        { cwd: testDir }
+      );
 
       const updated = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
       expect(updated.workUnits['AUTH-001'].status).toBe('implementing');
@@ -761,7 +891,7 @@ describe('Feature: Workflow Automation', () => {
       const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
-        status: 'implementing'
+        status: 'implementing',
       };
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
@@ -772,7 +902,9 @@ describe('Feature: Workflow Automation', () => {
         `@auth\nFeature: Auth\n\n@AUTH-001\nScenario: Login\nGiven test\nWhen test\nThen test`
       );
 
-      const result = await validateWorkUnitSpecAlignment('AUTH-001', { cwd: testDir });
+      const result = await validateWorkUnitSpecAlignment('AUTH-001', {
+        cwd: testDir,
+      });
 
       expect(result.aligned).toBe(true);
       expect(result.scenariosFound).toBeGreaterThan(0);
@@ -787,20 +919,26 @@ describe('Feature: Workflow Automation', () => {
         status: 'validating',
         stateHistory: [
           { state: 'backlog', timestamp: '2025-01-15T10:00:00Z' },
-          { state: 'validating', timestamp: new Date().toISOString() }
-        ]
+          { state: 'validating', timestamp: new Date().toISOString() },
+        ],
       };
       workUnits.states = { validating: ['AUTH-001'], done: [] };
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
-      await autoAdvanceWorkUnitState('AUTH-001', { fromState: 'validating', event: 'validation-pass' }, { cwd: testDir });
+      await autoAdvanceWorkUnitState(
+        'AUTH-001',
+        { fromState: 'validating', event: 'validation-pass' },
+        { cwd: testDir }
+      );
 
       const updated = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
       expect(updated.workUnits['AUTH-001'].status).toBe('done');
 
       // Verify completion timestamp was recorded in state history
       const stateHistory = updated.workUnits['AUTH-001'].stateHistory;
-      const doneEntry = stateHistory.find((entry: { state: string }) => entry.state === 'done');
+      const doneEntry = stateHistory.find(
+        (entry: { state: string }) => entry.state === 'done'
+      );
       expect(doneEntry).toBeDefined();
       expect(doneEntry.timestamp).toBeDefined();
     });

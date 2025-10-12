@@ -61,7 +61,8 @@ export async function queryWorkUnits(options: {
         const durationMs = nextTime.getTime() - currentTime.getTime();
         const durationHours = Math.round(durationMs / (1000 * 60 * 60));
 
-        stateTimings[current.state] = `${durationHours} hour${durationHours !== 1 ? 's' : ''}`;
+        stateTimings[current.state] =
+          `${durationHours} hour${durationHours !== 1 ? 's' : ''}`;
         totalMs += durationMs;
       }
 

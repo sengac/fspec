@@ -46,7 +46,7 @@ export async function deleteTag(
     let tagIndex = -1;
 
     for (const cat of tagsData.categories) {
-      const idx = cat.tags.findIndex((t) => t.name === tag);
+      const idx = cat.tags.findIndex(t => t.name === tag);
       if (idx !== -1) {
         currentCategory = cat;
         tagIndex = idx;
@@ -127,7 +127,9 @@ export async function deleteTag(
     // Validate updated JSON against schema
     const validation = validateTagsJson(tagsData);
     if (!validation.valid) {
-      const errorMessages = validation.errors?.map(e => e.message).join(', ') || 'Unknown validation error';
+      const errorMessages =
+        validation.errors?.map(e => e.message).join(', ') ||
+        'Unknown validation error';
       return {
         success: false,
         error: `Updated tags.json failed schema validation: ${errorMessages}`,

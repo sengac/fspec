@@ -101,20 +101,44 @@ export async function queryExampleMappingStats(
   }));
 
   // Calculate aggregate statistics
-  const workUnitsWithRules = workUnits.filter(wu => (wu.rules?.length || 0) > 0).length;
-  const workUnitsWithExamples = workUnits.filter(wu => (wu.examples?.length || 0) > 0).length;
-  const workUnitsWithQuestions = workUnits.filter(wu => (wu.questions?.length || 0) > 0).length;
-  const workUnitsWithAssumptions = workUnits.filter(wu => (wu.assumptions?.length || 0) > 0).length;
+  const workUnitsWithRules = workUnits.filter(
+    wu => (wu.rules?.length || 0) > 0
+  ).length;
+  const workUnitsWithExamples = workUnits.filter(
+    wu => (wu.examples?.length || 0) > 0
+  ).length;
+  const workUnitsWithQuestions = workUnits.filter(
+    wu => (wu.questions?.length || 0) > 0
+  ).length;
+  const workUnitsWithAssumptions = workUnits.filter(
+    wu => (wu.assumptions?.length || 0) > 0
+  ).length;
 
-  const totalRules = workUnits.reduce((sum, wu) => sum + (wu.rules?.length || 0), 0);
-  const totalExamples = workUnits.reduce((sum, wu) => sum + (wu.examples?.length || 0), 0);
-  const totalQuestions = workUnits.reduce((sum, wu) => sum + (wu.questions?.length || 0), 0);
-  const totalAssumptions = workUnits.reduce((sum, wu) => sum + (wu.assumptions?.length || 0), 0);
+  const totalRules = workUnits.reduce(
+    (sum, wu) => sum + (wu.rules?.length || 0),
+    0
+  );
+  const totalExamples = workUnits.reduce(
+    (sum, wu) => sum + (wu.examples?.length || 0),
+    0
+  );
+  const totalQuestions = workUnits.reduce(
+    (sum, wu) => sum + (wu.questions?.length || 0),
+    0
+  );
+  const totalAssumptions = workUnits.reduce(
+    (sum, wu) => sum + (wu.assumptions?.length || 0),
+    0
+  );
 
-  const avgRulesPerWorkUnit = workUnits.length > 0 ? totalRules / workUnits.length : 0;
-  const avgExamplesPerWorkUnit = workUnits.length > 0 ? totalExamples / workUnits.length : 0;
-  const avgQuestionsPerWorkUnit = workUnits.length > 0 ? totalQuestions / workUnits.length : 0;
-  const avgAssumptionsPerWorkUnit = workUnits.length > 0 ? totalAssumptions / workUnits.length : 0;
+  const avgRulesPerWorkUnit =
+    workUnits.length > 0 ? totalRules / workUnits.length : 0;
+  const avgExamplesPerWorkUnit =
+    workUnits.length > 0 ? totalExamples / workUnits.length : 0;
+  const avgQuestionsPerWorkUnit =
+    workUnits.length > 0 ? totalQuestions / workUnits.length : 0;
+  const avgAssumptionsPerWorkUnit =
+    workUnits.length > 0 ? totalAssumptions / workUnits.length : 0;
 
   return {
     workUnits: stats,

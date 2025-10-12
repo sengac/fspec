@@ -748,12 +748,34 @@
     "DOC-001": {
       "id": "DOC-001",
       "title": "Add story point estimation guidance",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2025-10-12T05:13:30.172Z",
-      "updatedAt": "2025-10-12T05:15:30.195Z",
+      "updatedAt": "2025-10-12T06:58:58.773Z",
       "description": "Add story point estimation guidelines to /fspec command including Fibonacci scale, estimation prompts, and best practices",
       "children": [],
-      "estimate": 2
+      "estimate": 2,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-12T06:57:57.344Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-12T06:58:57.916Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-12T06:58:58.206Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-12T06:58:58.489Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-12T06:58:58.773Z"
+        }
+      ]
     },
     "REMIND-001": {
       "id": "REMIND-001",
@@ -837,24 +859,40 @@
     "TEST-002": {
       "id": "TEST-002",
       "title": "Test system reminders",
-      "status": "specifying",
+      "status": "done",
       "createdAt": "2025-10-12T05:24:45.522Z",
-      "updatedAt": "2025-10-12T05:24:53.210Z",
+      "updatedAt": "2025-10-12T06:57:17.505Z",
       "description": "Testing if system reminders work correctly",
       "children": [],
       "stateHistory": [
         {
           "state": "specifying",
           "timestamp": "2025-10-12T05:24:53.211Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-12T06:56:43.819Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-12T06:56:44.107Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-12T06:56:44.393Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-12T06:57:17.505Z"
         }
       ]
     },
     "CLI-003": {
       "id": "CLI-003",
       "title": "Initialize fspec slash command in Claude Code project",
-      "status": "testing",
+      "status": "done",
       "createdAt": "2025-10-12T05:41:20.177Z",
-      "updatedAt": "2025-10-12T05:54:31.891Z",
+      "updatedAt": "2025-10-12T06:53:58.304Z",
       "description": "Add 'fspec init' command that installs the /fspec slash command into a Claude Code project by creating/using .claude/commands/ directory and copying fspec.md command file. Should be idempotent and safe to run multiple times.",
       "children": [],
       "stateHistory": [
@@ -865,6 +903,18 @@
         {
           "state": "testing",
           "timestamp": "2025-10-12T05:54:31.892Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-12T06:51:49.181Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-12T06:52:51.675Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-12T06:53:58.304Z"
         }
       ],
       "rules": [
@@ -902,15 +952,31 @@
     "TEST-003": {
       "id": "TEST-003",
       "title": "Test answer-question with multiple questions",
-      "status": "specifying",
+      "status": "done",
       "createdAt": "2025-10-12T05:57:24.220Z",
-      "updatedAt": "2025-10-12T05:58:04.761Z",
+      "updatedAt": "2025-10-12T06:57:49.173Z",
       "description": "Testing that answering multiple questions works correctly with proper index handling",
       "children": [],
       "stateHistory": [
         {
           "state": "specifying",
           "timestamp": "2025-10-12T05:57:25.745Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-12T06:57:48.309Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-12T06:57:48.599Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-12T06:57:48.887Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-12T06:57:49.173Z"
         }
       ],
       "questions": [],
@@ -975,16 +1041,9 @@
     }
   },
   "states": {
-    "backlog": [
-      "DOC-001"
-    ],
-    "specifying": [
-      "TEST-002",
-      "TEST-003"
-    ],
-    "testing": [
-      "CLI-003"
-    ],
+    "backlog": [],
+    "specifying": [],
+    "testing": [],
     "implementing": [],
     "validating": [],
     "done": [
@@ -1006,7 +1065,11 @@
       "CLI-002",
       "SAFE-001",
       "REMIND-001",
-      "SAFE-002"
+      "SAFE-002",
+      "CLI-003",
+      "TEST-002",
+      "TEST-003",
+      "DOC-001"
     ],
     "blocked": []
   }

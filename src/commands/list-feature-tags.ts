@@ -133,9 +133,7 @@ export async function listFeatureTagsCommand(
     if (options.showCategories && result.categorizedTags) {
       console.log(chalk.bold('Tags on this feature:\n'));
       console.log(
-        chalk.gray(
-          `${chalk.bold('Tag').padEnd(20)} ${chalk.bold('Category')}`
-        )
+        chalk.gray(`${chalk.bold('Tag').padEnd(20)} ${chalk.bold('Category')}`)
       );
       console.log(chalk.gray('─'.repeat(50)));
 

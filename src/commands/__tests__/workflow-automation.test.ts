@@ -53,9 +53,9 @@ describe('Feature: Workflow Automation', () => {
       expect(updatedData.workUnits['AUTH-001'].iterations).toBe(1);
 
       // And the updatedAt timestamp should be updated
-      expect(new Date(updatedData.workUnits['AUTH-001'].updatedAt).getTime()).toBeGreaterThan(
-        new Date('2025-01-01').getTime()
-      );
+      expect(
+        new Date(updatedData.workUnits['AUTH-001'].updatedAt).getTime()
+      ).toBeGreaterThan(new Date('2025-01-01').getTime());
     });
   });
 
@@ -206,7 +206,9 @@ describe('Feature: Workflow Automation', () => {
 
       // And completion timestamp should be recorded
       expect(updatedData.workUnits['AUTH-001'].completedAt).toBeDefined();
-      expect(new Date(updatedData.workUnits['AUTH-001'].completedAt).getTime()).toBeGreaterThan(0);
+      expect(
+        new Date(updatedData.workUnits['AUTH-001'].completedAt).getTime()
+      ).toBeGreaterThan(0);
     });
   });
 });

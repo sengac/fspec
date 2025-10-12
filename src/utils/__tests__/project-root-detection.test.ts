@@ -16,7 +16,10 @@ describe('Feature: Prevent spec directory creation outside project root', () => 
 
   beforeEach(async () => {
     // Create a unique temp directory for each test
-    testRoot = join(tmpdir(), `fspec-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+    testRoot = join(
+      tmpdir(),
+      `fspec-test-${Date.now()}-${Math.random().toString(36).slice(2)}`
+    );
     await mkdir(testRoot, { recursive: true });
   });
 

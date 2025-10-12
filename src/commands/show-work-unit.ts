@@ -41,7 +41,9 @@ interface WorkUnitDetails {
   [key: string]: unknown;
 }
 
-export async function showWorkUnit(options: ShowWorkUnitOptions): Promise<WorkUnitDetails> {
+export async function showWorkUnit(
+  options: ShowWorkUnitOptions
+): Promise<WorkUnitDetails> {
   const cwd = options.cwd || process.cwd();
 
   // Read work units
@@ -88,7 +90,9 @@ export async function showWorkUnit(options: ShowWorkUnitOptions): Promise<WorkUn
       const workUnitTags = extractWorkUnitTags(gherkinDocument);
 
       // Find scenarios for this work unit
-      const matchingTag = workUnitTags.find(tag => tag.id === options.workUnitId);
+      const matchingTag = workUnitTags.find(
+        tag => tag.id === options.workUnitId
+      );
 
       if (matchingTag && matchingTag.scenarios.length > 0) {
         linkedFeatures.push({
@@ -111,7 +115,9 @@ export async function showWorkUnit(options: ShowWorkUnitOptions): Promise<WorkUn
     unselectedQuestions = workUnit.questions
       .map((q, index) => {
         if (typeof q === 'string') {
-          throw new Error('Invalid question format. Questions must be QuestionItem objects.');
+          throw new Error(
+            'Invalid question format. Questions must be QuestionItem objects.'
+          );
         }
         return { index, ...q };
       })
@@ -163,7 +169,7 @@ export async function showWorkUnitCommand(
         console.log(chalk.gray(result.description));
       }
       console.log('');
-      
+
       if (result.epic) {
         console.log(chalk.gray('Epic:'), result.epic);
       }
@@ -190,7 +196,7 @@ export async function showWorkUnitCommand(
 
       if (result.questions && result.questions.length > 0) {
         console.log(chalk.cyan('\nQuestions:'));
-        result.questions.forEach((question) => {
+        result.questions.forEach(question => {
           console.log(`  ${question}`);
         });
       }
@@ -207,14 +213,22 @@ export async function showWorkUnitCommand(
         for (const feature of result.linkedFeatures) {
           console.log(`\n  ${chalk.bold(feature.file)}`);
           for (const scenario of feature.scenarios) {
-            console.log(`    ${chalk.gray(`${scenario.file}:${scenario.line}`)} - ${scenario.name}`);
+            console.log(
+              `    ${chalk.gray(`${scenario.file}:${scenario.line}`)} - ${scenario.name}`
+            );
           }
         }
       }
 
       console.log('');
-      console.log(chalk.gray('Created:'), new Date(result.createdAt).toLocaleString());
-      console.log(chalk.gray('Updated:'), new Date(result.updatedAt).toLocaleString());
+      console.log(
+        chalk.gray('Created:'),
+        new Date(result.createdAt).toLocaleString()
+      );
+      console.log(
+        chalk.gray('Updated:'),
+        new Date(result.updatedAt).toLocaleString()
+      );
       console.log('');
     }
 
@@ -228,4 +242,3 @@ export async function showWorkUnitCommand(
     process.exit(1);
   }
 }
-

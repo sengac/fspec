@@ -80,9 +80,10 @@ export async function showEpic(options: {
     // No work units file yet
   }
 
-  const completionPercentage = totalWorkUnits > 0
-    ? Math.round((completedWorkUnits / totalWorkUnits) * 100 * 100) / 100
-    : 0;
+  const completionPercentage =
+    totalWorkUnits > 0
+      ? Math.round((completedWorkUnits / totalWorkUnits) * 100 * 100) / 100
+      : 0;
 
   return {
     epic,
@@ -115,13 +116,16 @@ export async function showEpicCommand(
 
       if (result.workUnits && result.workUnits.length > 0) {
         console.log(chalk.cyan('\nWork Units:'));
-        result.workUnits.forEach((wu) => {
+        result.workUnits.forEach(wu => {
           console.log(`  - ${wu}`);
         });
       }
 
       console.log('');
-      console.log(chalk.gray('Created:'), new Date(result.createdAt).toLocaleString());
+      console.log(
+        chalk.gray('Created:'),
+        new Date(result.createdAt).toLocaleString()
+      );
       console.log('');
     }
 

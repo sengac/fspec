@@ -15,7 +15,9 @@ interface RemoveRuleResult {
   remainingCount: number;
 }
 
-export async function removeRule(options: RemoveRuleOptions): Promise<RemoveRuleResult> {
+export async function removeRule(
+  options: RemoveRuleOptions
+): Promise<RemoveRuleResult> {
   const cwd = options.cwd || process.cwd();
   const workUnitsFile = join(cwd, 'spec/work-units.json');
 

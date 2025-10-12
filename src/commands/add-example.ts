@@ -14,7 +14,9 @@ interface AddExampleResult {
   exampleCount: number;
 }
 
-export async function addExample(options: AddExampleOptions): Promise<AddExampleResult> {
+export async function addExample(
+  options: AddExampleOptions
+): Promise<AddExampleResult> {
   const cwd = options.cwd || process.cwd();
   const workUnitsFile = join(cwd, 'spec/work-units.json');
 

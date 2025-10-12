@@ -33,13 +33,15 @@ export async function answerQuestion(
     retries: {
       retries: 10,
       minTimeout: 10,
-      maxTimeout: 100
-    }
+      maxTimeout: 100,
+    },
   });
 
   try {
     // Read work units with lock held
-    const data: WorkUnitsData = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+    const data: WorkUnitsData = JSON.parse(
+      await readFile(workUnitsFile, 'utf-8')
+    );
 
     // Validate work unit exists
     if (!data.workUnits[options.workUnitId]) {
@@ -71,7 +73,9 @@ export async function answerQuestion(
     const question = workUnit.questions[options.index] as QuestionItem;
 
     if (!question || typeof question === 'string') {
-      throw new Error('Question format is invalid. Expected QuestionItem object.');
+      throw new Error(
+        'Question format is invalid. Expected QuestionItem object.'
+      );
     }
 
     const questionText = question.text;
@@ -94,7 +98,10 @@ export async function answerQuestion(
         workUnit.rules.push(options.answer);
         addedTo = 'rules';
         addedContent = options.answer;
-      } else if (options.addTo === 'assumption' || options.addTo === 'assumptions') {
+      } else if (
+        options.addTo === 'assumption' ||
+        options.addTo === 'assumptions'
+      ) {
         if (!workUnit.assumptions) {
           workUnit.assumptions = [];
         }

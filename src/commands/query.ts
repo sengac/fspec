@@ -29,7 +29,9 @@ export async function queryWorkUnitsByStatus(
   const { cwd, output } = options;
   const workUnitsData = await loadWorkUnits(cwd);
 
-  const results = Object.values(workUnitsData.workUnits).filter(wu => wu.status === status);
+  const results = Object.values(workUnitsData.workUnits).filter(
+    wu => wu.status === status
+  );
 
   if (output === 'json') {
     return JSON.stringify(results, null, 2);
@@ -57,7 +59,9 @@ export async function queryWorkUnitsByEpic(
   const { cwd, output } = options;
   const workUnitsData = await loadWorkUnits(cwd);
 
-  const results = Object.values(workUnitsData.workUnits).filter(wu => wu.epic === epic);
+  const results = Object.values(workUnitsData.workUnits).filter(
+    wu => wu.epic === epic
+  );
 
   if (output === 'json') {
     return JSON.stringify(results, null, 2);
@@ -109,11 +113,15 @@ export async function queryWorkUnitsCompound(
   }
 
   if (filters.estimateGte !== undefined) {
-    results = results.filter(wu => wu.estimate && wu.estimate >= filters.estimateGte!);
+    results = results.filter(
+      wu => wu.estimate && wu.estimate >= filters.estimateGte!
+    );
   }
 
   if (filters.estimateLte !== undefined) {
-    results = results.filter(wu => wu.estimate && wu.estimate <= filters.estimateLte!);
+    results = results.filter(
+      wu => wu.estimate && wu.estimate <= filters.estimateLte!
+    );
   }
 
   if (filters.hasQuestions) {
@@ -145,7 +153,9 @@ export async function queryWorkUnitsCompound(
   return text;
 }
 
-export async function generateStatisticalReport(options: { cwd: string }): Promise<string> {
+export async function generateStatisticalReport(options: {
+  cwd: string;
+}): Promise<string> {
   const { cwd } = options;
   const workUnitsData = await loadWorkUnits(cwd);
 
@@ -161,11 +171,17 @@ export async function generateStatisticalReport(options: { cwd: string }): Promi
     pointsByStatus[status] = (pointsByStatus[status] || 0) + (wu.estimate || 0);
   }
 
-  const totalPoints = Object.values(pointsByStatus).reduce((sum, points) => sum + points, 0);
+  const totalPoints = Object.values(pointsByStatus).reduce(
+    (sum, points) => sum + points,
+    0
+  );
   const completedPoints = pointsByStatus.done || 0;
-  const inProgressPoints = (pointsByStatus.implementing || 0) + (pointsByStatus.validating || 0);
+  const inProgressPoints =
+    (pointsByStatus.implementing || 0) + (pointsByStatus.validating || 0);
   const remainingPoints =
-    (pointsByStatus.backlog || 0) + (pointsByStatus.specifying || 0) + (pointsByStatus.testing || 0);
+    (pointsByStatus.backlog || 0) +
+    (pointsByStatus.specifying || 0) +
+    (pointsByStatus.testing || 0);
 
   let report = 'Statistical Report\n';
   report += '==================\n\n';
@@ -233,11 +249,20 @@ export async function exportWorkUnits(
   }
 }
 
-export async function displayKanbanBoard(options: { cwd: string }): Promise<string> {
+export async function displayKanbanBoard(options: {
+  cwd: string;
+}): Promise<string> {
   const { cwd } = options;
   const workUnitsData = await loadWorkUnits(cwd);
 
-  const states = ['backlog', 'specifying', 'testing', 'implementing', 'validating', 'done'];
+  const states = [
+    'backlog',
+    'specifying',
+    'testing',
+    'implementing',
+    'validating',
+    'done',
+  ];
   const columnWidth = 20;
 
   // Group work units by state
@@ -291,7 +316,9 @@ export async function displayKanbanBoard(options: { cwd: string }): Promise<stri
   const maxRows = Math.max(...states.map(s => Math.min(byState[s].length, 3)));
 
   // Show up to 2 rows per work unit (first row: ID+title, second row: estimate)
-  const maxDisplayRows = Math.max(...states.map(s => Math.min(byState[s].length * 2, 6)));
+  const maxDisplayRows = Math.max(
+    ...states.map(s => Math.min(byState[s].length * 2, 6))
+  );
 
   for (let row = 0; row < maxDisplayRows || row < 1; row++) {
     board += '│';
@@ -333,9 +360,16 @@ export async function displayKanbanBoard(options: { cwd: string }): Promise<stri
   // Summary
   const totalInProgress = states
     .filter(s => s !== 'done' && s !== 'backlog')
-    .reduce((sum, s) => sum + byState[s].reduce((s2, wu) => s2 + (wu.estimate || 0), 0), 0);
+    .reduce(
+      (sum, s) =>
+        sum + byState[s].reduce((s2, wu) => s2 + (wu.estimate || 0), 0),
+      0
+    );
 
-  const totalCompleted = byState.done.reduce((sum, wu) => sum + (wu.estimate || 0), 0);
+  const totalCompleted = byState.done.reduce(
+    (sum, wu) => sum + (wu.estimate || 0),
+    0
+  );
 
   board += `\nTotal: ${totalInProgress} points in progress | ${totalCompleted} points completed\n`;
 

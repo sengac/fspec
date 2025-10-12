@@ -558,6 +558,10 @@
           "description": "Push notification functionality"
         },
         {
+          "name": "@setup",
+          "description": "Setup and initialization commands"
+        },
+        {
           "name": "@sms",
           "description": "SMS-related functionality"
         },

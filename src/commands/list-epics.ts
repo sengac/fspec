@@ -81,9 +81,10 @@ export async function listEpics(options: {
       }
     }
 
-    const completionPercentage = totalWorkUnits > 0
-      ? Math.round((completedWorkUnits / totalWorkUnits) * 100)
-      : 0;
+    const completionPercentage =
+      totalWorkUnits > 0
+        ? Math.round((completedWorkUnits / totalWorkUnits) * 100)
+        : 0;
 
     epics.push({
       id: epic.id,
@@ -117,7 +118,11 @@ export async function listEpicsCommand(): Promise<void> {
         console.log(chalk.gray(`  ${epic.description}`));
       }
       if (epic.totalWorkUnits > 0) {
-        console.log(chalk.gray(`  Work Units: ${epic.completedWorkUnits}/${epic.totalWorkUnits} (${epic.completionPercentage}%)`));
+        console.log(
+          chalk.gray(
+            `  Work Units: ${epic.completedWorkUnits}/${epic.totalWorkUnits} (${epic.completionPercentage}%)`
+          )
+        );
       }
       console.log('');
     }

@@ -1,7 +1,9 @@
+@DOC-001
+@done
+@scaffolding
 @phase1
 @cli
 @setup
-@wip
 Feature: fspec Slash Command Installation
   """
   Architecture notes:
