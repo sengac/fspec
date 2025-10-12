@@ -1816,7 +1816,10 @@ program
         answer: options.answer,
         addTo: options.addTo as 'rule' | 'assumption' | 'none',
       });
-      console.log(chalk.green(`✓ Removed question: "${result.removedQuestion}"`));
+      console.log(chalk.green(`✓ Answered question: "${result.question}"`));
+      if (options.answer) {
+        console.log(chalk.dim(`  Answer: "${options.answer}"`));
+      }
       if (result.addedTo && result.addedContent) {
         console.log(chalk.cyan(`  Added to ${result.addedTo}: "${result.addedContent}"`));
       }

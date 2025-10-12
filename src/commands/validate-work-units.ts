@@ -128,14 +128,32 @@ export async function validateWorkUnits(options: ValidateWorkUnitsOptions = {}):
       }
     }
 
-    // Validate questions array
+    // Validate questions array (must be QuestionItem objects)
     if (workUnit.questions) {
       if (!Array.isArray(workUnit.questions)) {
         errors.push(`Work unit ${id}: questions must be an array`);
       } else {
         for (let i = 0; i < workUnit.questions.length; i++) {
-          if (typeof workUnit.questions[i] !== 'string' || workUnit.questions[i].trim() === '') {
-            errors.push(`Work unit ${id}: questions array contains empty strings or non-strings at index ${i}`);
+          const question = workUnit.questions[i];
+
+          // Must be an object (QuestionItem format)
+          if (typeof question !== 'object' || question === null) {
+            errors.push(`Work unit ${id}: questions[${i}] must be a QuestionItem object with {text, selected, answer?}, got ${typeof question}`);
+            continue;
+          }
+
+          // Must have required fields
+          if (typeof question.text !== 'string' || question.text.trim() === '') {
+            errors.push(`Work unit ${id}: questions[${i}].text must be a non-empty string`);
+          }
+
+          if (typeof question.selected !== 'boolean') {
+            errors.push(`Work unit ${id}: questions[${i}].selected must be a boolean`);
+          }
+
+          // Optional answer field
+          if (question.answer !== undefined && (typeof question.answer !== 'string' || question.answer.trim() === '')) {
+            errors.push(`Work unit ${id}: questions[${i}].answer must be a non-empty string if provided`);
           }
         }
       }

@@ -22,7 +22,7 @@ export interface WorkUnit {
   blockedReason?: string;
   rules?: string[];
   examples?: string[];
-  questions?: (string | QuestionItem)[];
+  questions?: QuestionItem[];
   assumptions?: string[];
   stateHistory?: Array<{
     state: string;
