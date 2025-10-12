@@ -46,6 +46,7 @@ import { showWorkUnitCommand } from './commands/show-work-unit';
 import { createEpicCommand } from './commands/create-epic';
 import { listEpicsCommand } from './commands/list-epics';
 import { showEpicCommand } from './commands/show-epic';
+import { listPrefixes } from './commands/list-prefixes';
 // Additional work unit management commands
 import { prioritizeWorkUnit } from './commands/prioritize-work-unit';
 import { updateWorkUnit } from './commands/update-work-unit';
@@ -1263,6 +1264,38 @@ program
   .description('List all epics')
   .action(listEpicsCommand);
 
+// List prefixes command
+program
+  .command('list-prefixes')
+  .description('List all prefixes')
+  .action(async () => {
+    try {
+      const result = await listPrefixes({});
+      if (result.prefixes.length === 0) {
+        console.log(chalk.yellow('No prefixes found'));
+        process.exit(0);
+      }
+      console.log(chalk.bold(`\nPrefixes (${result.prefixes.length})`));
+      console.log('');
+      for (const prefix of result.prefixes) {
+        console.log(chalk.cyan(prefix.prefix));
+        console.log(chalk.gray(`  ${prefix.description}`));
+        if (prefix.totalWorkUnits > 0) {
+          console.log(chalk.gray(`  Work Units: ${prefix.completedWorkUnits}/${prefix.totalWorkUnits} (${prefix.completionPercentage}%)`));
+        }
+        console.log('');
+      }
+      process.exit(0);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error(chalk.red('Error:'), error.message);
+      } else {
+        console.error(chalk.red('Error: Unknown error occurred'));
+      }
+      process.exit(1);
+    }
+  });
+
 // Show epic command
 program
   .command('show-epic')
@@ -1844,12 +1877,12 @@ program
 // Add assumption command
 program
   .command('add-assumption')
-  .description('Add an assumption to a feature file')
-  .argument('<feature>', 'Feature file name or path')
+  .description('Add assumption to work unit during specification')
+  .argument('<work-unit-id>', 'Work unit ID')
   .argument('<assumption>', 'Assumption text')
-  .action(async (feature: string, assumption: string) => {
+  .action(async (workUnitId: string, assumption: string) => {
     try {
-      await addAssumption({ feature, assumption });
+      await addAssumption({ workUnitId, assumption });
       console.log(chalk.green(`✓ Assumption added successfully`));
     } catch (error: any) {
       console.error(chalk.red('✗ Failed to add assumption:'), error.message);
