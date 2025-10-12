@@ -589,38 +589,6 @@ fspec format
 fspec tag-stats
 ```
 
-## Acceptance Criteria Driven Development (ACDD)
-
-fspec follows ACDD methodology:
-
-1. **Specifications First** - Define acceptance criteria in Gherkin
-2. **Tests Second** - Write tests mapping to scenarios
-3. **Code Last** - Implement minimum code to pass tests
-
-See [spec/CLAUDE.md](./spec/CLAUDE.md) for detailed process guidelines.
-
-## Project Statistics
-
-**Current Release:**
-- **Commands Implemented:** 84 (specification + tag management + project management + query + foundation)
-- **Feature Files:** 44 validated Gherkin specifications
-- **Test Coverage:** 100% (all scenarios have tests - 746 tests passing across 52 test files)
-- **Build Size:** 462.21 kB (gzip: 98.82 kB)
-- **Architecture:** JSON-backed documentation with auto-generated markdown
-- **Validation:** Gherkin syntax + tag registry + Mermaid diagram validation
-
-**Key Features:**
-- ✅ Complete CRUD operations for features, scenarios, and diagrams
-- ✅ Tag registry management with full CRUD operations
-- ✅ Feature-level and scenario-level tag management (add, remove, list)
-- ✅ Work unit and epic management with Kanban workflow
-- ✅ Scenario-level tag support with inheritance from feature tags
-- ✅ JSON-backed tag registry (tags.json) with auto-generated TAGS.md
-- ✅ JSON-backed foundation (foundation.json) with auto-generated FOUNDATION.md
-- ✅ Mermaid diagram validation using bundled mermaid.parse()
-- ✅ Comprehensive query operations with tag filtering (AND logic)
-- ✅ Bulk operations with dry-run support
-
 ## Documentation
 
 - **[foundation.json](./spec/foundation.json)** - Project foundation (source of truth)
@@ -632,26 +600,6 @@ See [spec/CLAUDE.md](./spec/CLAUDE.md) for detailed process guidelines.
 
 **Important:** The `.json` files are the single source of truth. The `.md` files are auto-generated and should never be edited manually.
 
-## Contributing
-
-fspec is part of the CAGE ecosystem. Contributions should:
-- Follow ACDD methodology (spec → tests → code)
-- Include Gherkin feature files for new functionality
-- Pass validation: `fspec validate` and `npm run lint:spec`
-- Include tests mapping to scenarios
-
 ## License
 
 MIT
-
-## Related Projects
-
-- **[CAGE](https://github.com/sengac/cage)** - Code-spec alignment for agentic coding
-- **[Cucumber](https://cucumber.io/)** - BDD testing framework
-- **[Gherkin](https://github.com/cucumber/gherkin)** - Specification language parser
-
-## Credits
-
-- Built on [@cucumber/gherkin](https://github.com/cucumber/gherkin) parser
-- Inspired by 15+ years of BDD and Cucumber ecosystem maturity
-- Designed to work seamlessly with [CAGE](https://github.com/sengac/cage)
