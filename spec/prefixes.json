@@ -59,6 +59,11 @@
       "prefix": "BOARD",
       "description": "Kanban board and workflow visualization features",
       "createdAt": "2025-10-11T04:32:24.570Z"
+    },
+    "SAFE": {
+      "prefix": "SAFE",
+      "description": "Safety and validation features",
+      "createdAt": "2025-10-12T03:27:56.701Z"
     }
   }
 }

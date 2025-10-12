@@ -153,12 +153,12 @@ Feature: Epic and Prefix Management
     And the output should indicate no epics found
     And the file "spec/epics.json" should NOT be created
 
-  @auto-create
-  @file-initialization
-  Scenario: Auto-create prefixes.json when listing prefixes
+  @graceful-degradation
+  @error-handling
+  Scenario: List prefixes when prefixes.json does not exist
     Given I have a project with spec directory
     And the file "spec/prefixes.json" does not exist
     When I run "fspec list-prefixes"
     Then the command should succeed
-    And the file "spec/prefixes.json" should be created with empty structure
     And the output should indicate no prefixes found
+    And the file "spec/prefixes.json" should NOT be created

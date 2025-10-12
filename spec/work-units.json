@@ -646,11 +646,96 @@
           "reason": "Implementation validated: board command displays Kanban board correctly using Ink + React, all tests pass, follows CAGE patterns, architecture docs updated, no issues found"
         }
       ]
+    },
+    "SAFE-001": {
+      "id": "SAFE-001",
+      "title": "Prevent spec directory creation outside project root",
+      "status": "specifying",
+      "createdAt": "2025-10-12T03:27:57.082Z",
+      "updatedAt": "2025-10-12T03:45:19.158Z",
+      "description": "Add validation to check if current directory is within project root before creating spec directories",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-12T03:28:04.689Z"
+        }
+      ],
+      "rules": [
+        "Project root is determined by finding a spec/ directory, but search must stop at a project boundary marker (.git, package.json, etc.)",
+        "Search algorithm walks upward from cwd, stopping at project boundary markers: .git, package.json, .gitignore, Cargo.toml, pyproject.toml",
+        "If spec/ directory exists within project boundary, use that directory as project root",
+        "If no spec/ directory found within project boundary, create spec/ at the project boundary location (not cwd)",
+        "If no project boundary marker found after searching to filesystem root, create spec/ in current working directory",
+        "Stop at first boundary marker found when searching upward (closest to cwd)",
+        "All spec directory creation must go through a centralized utility function that performs project root detection",
+        "Search upward with a maximum limit (e.g., 10 directories) to prevent excessive traversal",
+        "On permission errors or filesystem issues, gracefully fall back to creating spec/ in current working directory",
+        "Centralized utility should automatically create spec/ directory and return the spec path (not project root)"
+      ],
+      "examples": [
+        "User at /project/src/commands/, .git at /project/, no spec/ exists → create /project/spec/",
+        "User at /project/src/commands/, .git at /project/, spec/ exists at /project/spec/ → use /project/spec/",
+        "User at /tmp/random/, no boundary markers found → create /tmp/random/spec/",
+        "Monorepo: /monorepo/.git and /monorepo/packages/app/package.json, user at /monorepo/packages/app/src/ → use /monorepo/packages/app/ as root",
+        "User at /very/deep/nested/path/a/b/c/d/e/f/g/h/i/j/k/, no boundary within 10 dirs → create spec/ at cwd",
+        "User at /project/src/, permission denied reading parent dirs → create spec/ at /project/src/"
+      ],
+      "questions": [
+        "@human: Need to verify existing ensure-files.ts functions work with new project root detection - may need to refactor callers. Should we test this during implementation?"
+      ],
+      "assumptions": [
+        "Need to verify existing ensure-files.ts functions work with new project root detection - may need to refactor callers to use returned spec path instead of manually constructing it"
+      ]
+    },
+    "CLI-002": {
+      "id": "CLI-002",
+      "title": "Fix missing list-prefixes CLI command registration",
+      "status": "done",
+      "createdAt": "2025-10-12T03:48:03.694Z",
+      "updatedAt": "2025-10-12T03:53:56.776Z",
+      "description": "The list-prefixes command is documented in help but not registered in the CLI",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-12T03:48:12.204Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-12T03:50:18.426Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-12T03:51:37.431Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-12T03:52:38.137Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-12T03:53:56.776Z"
+        }
+      ],
+      "questions": [],
+      "rules": [
+        "Yes, consistent with list-epics behavior",
+        "Yes, output format should match list-epics for consistency",
+        "Yes, return empty list with yellow message if no prefixes.json exists"
+      ],
+      "examples": [
+        "User runs 'fspec list-prefixes' and sees all registered prefixes with their descriptions",
+        "User runs 'fspec list-prefixes' and sees work unit counts for each prefix (e.g., 'SAFE: 1/1 (100%)')",
+        "User runs 'fspec list-prefixes' when no prefixes.json exists, sees 'No prefixes found' in yellow"
+      ]
     }
   },
   "states": {
     "backlog": [],
-    "specifying": [],
+    "specifying": [
+      "SAFE-001"
+    ],
     "testing": [],
     "implementing": [],
     "validating": [],
@@ -669,7 +754,8 @@
       "FEAT-005",
       "TEST-001",
       "INIT-002",
-      "BOARD-001"
+      "BOARD-001",
+      "CLI-002"
     ],
     "blocked": []
   }
