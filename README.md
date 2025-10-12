@@ -6,9 +6,9 @@
  |_|   |____/|_|   |_____\____|
 ```
 
-# Feature Specification & Project Management for AI Agents
+# Kanban-Based Project Management & Specification Tool for AI Agents
 
-A standardized CLI tool that provides AI agents with a structured interface for managing Gherkin-based feature specifications and project work units. `fspec` prevents ecosystem fragmentation by promoting industry-standard BDD practices over proprietary documentation formats.
+A standardized CLI tool that enables AI agents to manage their work using **Kanban workflow** while building software with **Acceptance Criteria Driven Development (ACDD)**. AI agents use `fspec` to track work units through discovery, specification, testing, and implementation phases, preventing ecosystem fragmentation by promoting industry-standard BDD practices.
 
 ## Why fspec?
 
@@ -52,13 +52,14 @@ Ensures specs are valid, concrete (Specification by Example), and follow BDD con
 - ✅ **Architecture Docs** - Mermaid diagrams with syntax validation keep architecture synchronized
 - ✅ **Ecosystem Compatibility** - Works with all Cucumber tooling (parsers, formatters, reporters)
 
-#### 2. Project Management
-Provides persistent queryable state, workflow enforcement, and collaborative discovery:
+#### 2. Kanban-Based Project Management
+Provides persistent queryable state with enforced Kanban workflow and collaborative discovery:
 
+- ✅ **Kanban Workflow** - AI manages work through 7 states: backlog → specifying → testing → implementing → validating → done (plus blocked). Cannot skip phases.
 - ✅ **Work Units** - Persistent project state (not TODO lists) with status, dependencies, epic relationships, example mapping
-- ✅ **Kanban Workflow** - Enforces ACDD phases: backlog → specifying → testing → implementing → validating → done
 - ✅ **Example Mapping** - Structured discovery where AI adds rules/examples/questions and human provides clarifying answers
 - ✅ **Queryable State** - AI runs `fspec list-work-units --status=specifying` to see what's in flight - doesn't rely on conversation context
+- ✅ **Visual Board** - `fspec board` displays Kanban board showing work units across all workflow states
 
 ### Why ACDD? (Acceptance Criteria Driven Development)
 
@@ -81,7 +82,7 @@ ACDD builds on **Specification by Example** and **Behavior-Driven Development (B
 
 **The Challenge:** AI agents naturally violate ACDD workflow without tooling enforcement - they get sidetracked, lose context, skip discovery, and jump to implementation.
 
-**The fspec Solution:** Workflow enforcement + persistent state + collaborative discovery = Reliable ACDD.
+**The fspec Solution:** Kanban workflow enforcement + persistent state + collaborative discovery = Reliable ACDD.
 
 ### How It Works Together
 
@@ -180,12 +181,13 @@ Blocked By: []
 
 ## Features
 
+- 📊 **Kanban Workflow** - 7-state workflow (backlog → specifying → testing → implementing → validating → done + blocked) with visual board
+- 🔄 **Work Unit Management** - Track work through Kanban states with dependencies, epics, and example mapping
 - 📋 **Gherkin Validation** - Validate syntax using official Cucumber parser
 - 🏗️ **Feature Management** - Create and manage .feature files with proper structure
 - 🏷️ **JSON-Backed Tag Registry** - Single source of truth in tags.json with auto-generated TAGS.md
 - 🔖 **Feature & Scenario Tag Management** - CRUD operations for tags at both feature and scenario levels
 - 📐 **JSON-Backed Foundation** - Single source of truth in foundation.json with auto-generated FOUNDATION.md
-- 📊 **Project Management** - Work units, epics, and Kanban workflow for ACDD development
 - 🎯 **Full CRUD Operations** - Complete Create, Read, Update, Delete for features, scenarios, tags, diagrams, work units, and epics
 - 🎨 **Auto-Formatting** - Custom AST-based formatter for Gherkin files
 - 🤖 **AI Agent Friendly** - Machine-readable JSON format with structured commands
@@ -458,9 +460,9 @@ fspec show-foundation --line-numbers
 
 **Note:** All write operations (add-diagram, delete-diagram, update-foundation) modify `spec/foundation.json` and automatically regenerate `spec/FOUNDATION.md`. Never edit the markdown files directly.
 
-### Project Management
+### Kanban-Based Project Management
 
-fspec provides work unit and epic management for ACDD (Acceptance Criteria Driven Development) workflows:
+fspec provides Kanban workflow with work units and epics for ACDD (Acceptance Criteria Driven Development):
 
 ```bash
 # Create and manage work units
@@ -476,10 +478,11 @@ fspec list-epics
 fspec show-epic user-management
 ```
 
-**Work Unit Workflow:**
-Work units progress through Kanban states:
-- `backlog` → `specifying` → `testing` → `implementing` → `validating` → `done`
-- `blocked` state can occur at any point
+**Kanban Workflow States:**
+Work units flow through a 7-state Kanban workflow:
+- **Normal flow:** `backlog` → `specifying` → `testing` → `implementing` → `validating` → `done`
+- **Blocking:** Any state can transition to `blocked` when work cannot proceed
+- **Phase enforcement:** Cannot skip states (e.g., can't jump from specifying directly to implementing)
 
 **Visualize Work:**
 ```bash
