@@ -23,11 +23,24 @@ const MAX_SEARCH_DEPTH = 10;
  * 3. If boundary marker found → create spec/ at that location
  * 4. If no boundary marker found → create spec/ at cwd (fallback)
  *
+ * Safety: If cwd contains 'spec' directory already, use cwd (test isolation)
+ *
  * @param cwd - Current working directory to start search from
  * @returns Absolute path to spec/ directory
  */
 export async function findOrCreateSpecDirectory(cwd: string): Promise<string> {
   try {
+    // Safety check: if spec/ already exists at cwd, use it (test isolation)
+    const cwdSpecPath = join(cwd, 'spec');
+    try {
+      const stats = await stat(cwdSpecPath);
+      if (stats.isDirectory()) {
+        return cwdSpecPath;
+      }
+    } catch {
+      // spec/ doesn't exist at cwd, continue with normal logic
+    }
+
     // First, search for existing spec/ directory within project boundary
     const existingSpec = await findExistingSpecDirectory(cwd);
     if (existingSpec) {

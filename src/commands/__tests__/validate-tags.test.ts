@@ -864,6 +864,7 @@ Feature: Test
       const featureContent = `@AUTH-001
 @phase1
 @cli
+@authentication
 Feature: Test
 
   @AUTH-002

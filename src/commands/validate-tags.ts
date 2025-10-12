@@ -257,15 +257,43 @@ async function validateFileTags(
       }
     }
 
-    // Check SCENARIO-LEVEL tags (lenient validation - allow work unit tags for traceability)
+    // Check SCENARIO-LEVEL tags (validate work unit tags for traceability)
     const unregisteredScenarioTags = scenarioTags.filter(
       tag => !registry.validTags.has(tag)
     );
     if (unregisteredScenarioTags.length > 0) {
       for (const tag of unregisteredScenarioTags) {
-        // Scenario-level work unit tags are ALLOWED for traceability (no validation needed)
+        // Scenario-level work unit tags must exist in work-units.json
         if (isWorkUnitTag(tag)) {
-          // Valid work unit tag format - allow it (no error)
+          const workUnitId = extractWorkUnitId(tag);
+
+          if (!workUnitId) {
+            // Invalid work unit tag format
+            result.valid = false;
+            result.errors.push({
+              tag,
+              message: `Invalid work unit tag format: ${tag}`,
+              suggestion:
+                'Work unit tags must match pattern @[A-Z]{2,6}-\\d+ (e.g., @AUTH-001, @BACK-123)',
+            });
+          } else if (!workUnitsData) {
+            // No work-units.json file
+            result.valid = false;
+            result.errors.push({
+              tag,
+              message: `Work unit ${tag} found but spec/work-units.json does not exist`,
+              suggestion: 'Create spec/work-units.json to define work units',
+            });
+          } else if (!workUnitsData.workUnits[workUnitId]) {
+            // Work unit doesn't exist
+            result.valid = false;
+            result.errors.push({
+              tag,
+              message: `Work unit ${tag} not found in spec/work-units.json`,
+              suggestion: `Add work unit ${workUnitId} to spec/work-units.json or use 'fspec create-work-unit'`,
+            });
+          }
+          // If work unit exists and format is valid, continue
           continue;
         } else if (looksLikeWorkUnitTag(tag)) {
           // Tag looks like work unit tag but has invalid format

@@ -1,15 +1,17 @@
-import { readFile, writeFile, mkdir } from 'fs/promises';
+import { readFile, writeFile } from 'fs/promises';
 import { join } from 'path';
 import type { WorkUnitsData, PrefixesData, EpicsData } from '../types';
 import type { Foundation } from '../types/foundation';
 import type { Tags } from '../types/tags';
+import { findOrCreateSpecDirectory } from './project-root-detection';
 
 /**
  * Ensures spec/work-units.json exists with proper initial structure.
  * If the file doesn't exist, creates it with empty work units and all Kanban states.
  */
 export async function ensureWorkUnitsFile(cwd: string): Promise<WorkUnitsData> {
-  const filePath = join(cwd, 'spec/work-units.json');
+  const specPath = await findOrCreateSpecDirectory(cwd);
+  const filePath = join(specPath, 'work-units.json');
 
   try {
     const content = await readFile(filePath, 'utf-8');
@@ -17,8 +19,6 @@ export async function ensureWorkUnitsFile(cwd: string): Promise<WorkUnitsData> {
   } catch (error: unknown) {
     // File doesn't exist, create it with initial structure
     if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
-      await mkdir(join(cwd, 'spec'), { recursive: true });
-
       const initialData: WorkUnitsData = {
         meta: {
           version: '1.0.0',
@@ -48,7 +48,8 @@ export async function ensureWorkUnitsFile(cwd: string): Promise<WorkUnitsData> {
  * If the file doesn't exist, creates it with empty prefixes object.
  */
 export async function ensurePrefixesFile(cwd: string): Promise<PrefixesData> {
-  const filePath = join(cwd, 'spec/prefixes.json');
+  const specPath = await findOrCreateSpecDirectory(cwd);
+  const filePath = join(specPath, 'prefixes.json');
 
   try {
     const content = await readFile(filePath, 'utf-8');
@@ -56,8 +57,6 @@ export async function ensurePrefixesFile(cwd: string): Promise<PrefixesData> {
   } catch (error: unknown) {
     // File doesn't exist, create it with initial structure
     if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
-      await mkdir(join(cwd, 'spec'), { recursive: true });
-
       const initialData: PrefixesData = {
         prefixes: {},
       };
@@ -74,7 +73,8 @@ export async function ensurePrefixesFile(cwd: string): Promise<PrefixesData> {
  * If the file doesn't exist, creates it with empty epics object.
  */
 export async function ensureEpicsFile(cwd: string): Promise<EpicsData> {
-  const filePath = join(cwd, 'spec/epics.json');
+  const specPath = await findOrCreateSpecDirectory(cwd);
+  const filePath = join(specPath, 'epics.json');
 
   try {
     const content = await readFile(filePath, 'utf-8');
@@ -82,8 +82,6 @@ export async function ensureEpicsFile(cwd: string): Promise<EpicsData> {
   } catch (error: unknown) {
     // File doesn't exist, create it with initial structure
     if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
-      await mkdir(join(cwd, 'spec'), { recursive: true });
-
       const initialData: EpicsData = {
         epics: {},
       };
@@ -100,7 +98,8 @@ export async function ensureEpicsFile(cwd: string): Promise<EpicsData> {
  * If the file doesn't exist, creates it with standard tag categories.
  */
 export async function ensureTagsFile(cwd: string): Promise<Tags> {
-  const filePath = join(cwd, 'spec/tags.json');
+  const specPath = await findOrCreateSpecDirectory(cwd);
+  const filePath = join(specPath, 'tags.json');
 
   try {
     const content = await readFile(filePath, 'utf-8');
@@ -108,7 +107,6 @@ export async function ensureTagsFile(cwd: string): Promise<Tags> {
   } catch (error: unknown) {
     // File doesn't exist, create it with initial structure
     if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
-      await mkdir(join(cwd, 'spec'), { recursive: true });
 
       const initialData: Tags = {
         categories: [
@@ -157,7 +155,8 @@ export async function ensureTagsFile(cwd: string): Promise<Tags> {
  * If the file doesn't exist, creates it with minimal foundation structure.
  */
 export async function ensureFoundationFile(cwd: string): Promise<Foundation> {
-  const filePath = join(cwd, 'spec/foundation.json');
+  const specPath = await findOrCreateSpecDirectory(cwd);
+  const filePath = join(specPath, 'foundation.json');
 
   try {
     const content = await readFile(filePath, 'utf-8');
@@ -165,7 +164,6 @@ export async function ensureFoundationFile(cwd: string): Promise<Foundation> {
   } catch (error: unknown) {
     // File doesn't exist, create it with initial structure
     if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
-      await mkdir(join(cwd, 'spec'), { recursive: true });
 
       const initialData: Foundation = {
         project: {
