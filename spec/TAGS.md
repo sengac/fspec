@@ -106,6 +106,7 @@ Tags that categorize features by functional area.
 | `@remove` | Remove operations |  |
 | `@repair` | Data repair operations |  |
 | `@reporting` | Reporting and statistics |  |
+| `@safety` | Safety and security features preventing accidental operations |  |
 | `@scaffolding` | Project Setup & Templates |  |
 | `@soft-dependency` | Soft dependency relationships |  |
 | `@state-enforcement` | State transition enforcement |  |
@@ -153,6 +154,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@initialization` | File and system initialization features |  |
 | `@internal` | Internal Utility |  |
 | `@json-backed` | JSON-Backed Documentation |  |
+| `@json-output` | JSON format output support |  |
 | `@json-schema` | JSON Schema Validation |  |
 | `@learning` | Machine learning and adaptive features based on usage patterns |  |
 | `@mermaid` | Mermaid Diagram Support |  |

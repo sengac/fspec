@@ -349,6 +349,10 @@
           "description": "Reporting and statistics"
         },
         {
+          "name": "@safety",
+          "description": "Safety and security features preventing accidental operations"
+        },
+        {
           "name": "@scaffolding",
           "description": "Project Setup & Templates",
           "examples": "Initialize spec directory, create templates, setup structure (0 files)"
@@ -518,6 +522,10 @@
           "name": "@json-backed",
           "description": "JSON-Backed Documentation",
           "useCases": "Features using JSON schemas and auto-generation of markdown"
+        },
+        {
+          "name": "@json-output",
+          "description": "JSON format output support"
         },
         {
           "name": "@json-schema",
