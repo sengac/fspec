@@ -1161,6 +1161,80 @@
       "examples": [
         "Running 'fspec generate-scenarios WORK-001' should display 'Generated 3 scenarios' not 'Generated undefined scenarios'"
       ]
+    },
+    "INIT-003": {
+      "id": "INIT-003",
+      "title": "Copy CLAUDE.md template to new spec directory",
+      "status": "done",
+      "createdAt": "2025-10-12T07:58:21.443Z",
+      "updatedAt": "2025-10-12T08:10:49.917Z",
+      "description": "When fspec init creates a new spec/ directory, it should copy the spec/CLAUDE.md file from the fspec project as a template. This ensures new projects have the complete specification guidelines and workflow documentation from the start.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-12T07:58:34.774Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-12T08:05:45.263Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-12T08:06:40.200Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-12T08:09:35.216Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-12T08:10:49.918Z"
+        }
+      ],
+      "rules": [
+        "CLAUDE.md template must be bundled with fspec package in a templates/ directory",
+        "CLAUDE.md file must be identical across all projects (no customization)",
+        "If spec/CLAUDE.md already exists, overwrite it with the latest template",
+        "fspec init command must set up complete spec directory structure with CLAUDE.md and /fspec slash command",
+        "Always overwrite - no version checking needed",
+        "Show confirmation message in /fspec slash command output (fspec.md), no separate message from fspec init CLI",
+        "Enhance existing 'fspec init' command to copy CLAUDE.md template"
+      ],
+      "examples": [
+        "User runs 'fspec init' in empty directory, creates spec/ directory with CLAUDE.md and .claude/commands/fspec.md",
+        "User runs 'fspec init' in directory with existing spec/CLAUDE.md, overwrites with latest template",
+        "CLAUDE.md template is copied from fspec package's templates/CLAUDE.md to project's spec/CLAUDE.md",
+        "fspec init copies templates/CLAUDE.md to spec/CLAUDE.md preserving all content exactly",
+        "/fspec slash command shows 'Copied spec/CLAUDE.md specification guidelines' in output",
+        "Running 'fspec init' twice overwrites spec/CLAUDE.md with latest template (no prompt, no backup)"
+      ],
+      "questions": [
+        {
+          "text": "@human: Should 'fspec init' also check if the CLAUDE.md template in the package is newer than the one in the project and offer to update it?",
+          "selected": true,
+          "answer": "Always overwrite - no version checking needed"
+        },
+        {
+          "text": "@human: What should happen if the templates/ directory is missing from the fspec package installation?",
+          "selected": true,
+          "answer": "Templates directory is bundled with package build - if missing, it's a build error (should never happen in production)"
+        },
+        {
+          "text": "@human: Should there be any output message confirming CLAUDE.md was copied/updated?",
+          "selected": true,
+          "answer": "Show confirmation message in /fspec slash command output (fspec.md), no separate message from fspec init CLI"
+        },
+        {
+          "text": "@human: Looking at existing INIT-002 work unit, should this enhance the existing init command or be separate?",
+          "selected": true,
+          "answer": "Enhance existing 'fspec init' command to copy CLAUDE.md template"
+        }
+      ],
+      "assumptions": [
+        "Templates directory is bundled with package build - if missing, it's a build error (should never happen in production)"
+      ],
+      "estimate": 2
     }
   },
   "states": {
@@ -1195,7 +1269,8 @@
       "DOC-001",
       "BUG-001",
       "BUG-002",
-      "CLI-004"
+      "CLI-004",
+      "INIT-003"
     ],
     "blocked": []
   }
