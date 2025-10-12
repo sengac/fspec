@@ -3,7 +3,7 @@ import { join } from 'path';
 import { glob } from 'tinyglobby';
 import * as Gherkin from '@cucumber/gherkin';
 import * as Messages from '@cucumber/messages';
-import type { WorkUnitsData } from '../types';
+import type { WorkUnitsData, QuestionItem } from '../types';
 import { extractWorkUnitTags } from '../utils/work-unit-tags';
 
 interface ShowWorkUnitOptions {
@@ -105,6 +105,24 @@ export async function showWorkUnit(options: ShowWorkUnitOptions): Promise<WorkUn
     // If features directory doesn't exist, just return empty linked features
   }
 
+  // Filter questions to show only unselected ones, and extract text
+  let unselectedQuestions: string[] | undefined;
+  if (workUnit.questions && workUnit.questions.length > 0) {
+    unselectedQuestions = workUnit.questions
+      .map((q, index) => {
+        if (typeof q === 'string') {
+          throw new Error('Invalid question format. Questions must be QuestionItem objects.');
+        }
+        return { index, ...q };
+      })
+      .filter(q => !q.selected)
+      .map(q => `[${q.index}] ${q.text}`);
+
+    if (unselectedQuestions.length === 0) {
+      unselectedQuestions = undefined;
+    }
+  }
+
   return {
     id: workUnit.id,
     title: workUnit.title,
@@ -117,7 +135,7 @@ export async function showWorkUnit(options: ShowWorkUnitOptions): Promise<WorkUn
     ...(workUnit.blockedBy && { blockedBy: workUnit.blockedBy }),
     ...(workUnit.rules && { rules: workUnit.rules }),
     ...(workUnit.examples && { examples: workUnit.examples }),
-    ...(workUnit.questions && { questions: workUnit.questions }),
+    ...(unselectedQuestions && { questions: unselectedQuestions }),
     ...(workUnit.assumptions && { assumptions: workUnit.assumptions }),
     createdAt: workUnit.createdAt,
     updatedAt: workUnit.updatedAt,
@@ -172,8 +190,8 @@ export async function showWorkUnitCommand(
 
       if (result.questions && result.questions.length > 0) {
         console.log(chalk.cyan('\nQuestions:'));
-        result.questions.forEach((question, idx) => {
-          console.log(`  ${idx + 1}. ${question}`);
+        result.questions.forEach((question) => {
+          console.log(`  ${question}`);
         });
       }
 

@@ -41,8 +41,8 @@ export async function addQuestion(options: AddQuestionOptions): Promise<AddQuest
     workUnit.questions = [];
   }
 
-  // Add question
-  workUnit.questions.push(options.question);
+  // Add question as QuestionItem object with stable indices
+  workUnit.questions.push({ text: options.question, selected: false });
 
   // Extract mentioned people (@mentions)
   const mentionedPeople = (options.question.match(/@\w+/g) || []).map(mention => mention.slice(1));

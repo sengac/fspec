@@ -104,7 +104,17 @@ export async function queryWorkUnits(options: {
         if (!wu.questions) {
           return false;
         }
-        return wu.questions.some(q => q.includes(mention));
+        return wu.questions.some(q => {
+          // Handle QuestionItem objects
+          if (typeof q === 'object' && 'text' in q) {
+            return q.text.includes(mention);
+          }
+          // Backward compatibility for string questions
+          if (typeof q === 'string') {
+            return q.includes(mention);
+          }
+          return false;
+        });
       });
     }
 

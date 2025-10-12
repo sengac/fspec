@@ -1,7 +1,7 @@
 import { readFile, writeFile } from 'fs/promises';
 import { join } from 'path';
 import { glob } from 'tinyglobby';
-import type { WorkUnitsData } from '../types';
+import type { WorkUnitsData, QuestionItem } from '../types';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
 import { getStatusChangeReminder, type WorkflowState } from '../utils/system-reminder';
 
@@ -109,10 +109,26 @@ export async function updateWorkUnitStatus(
   if (newStatus === 'testing' && currentStatus === 'specifying') {
     // Check for unanswered questions (Example Mapping integration)
     if (workUnit.questions && workUnit.questions.length > 0) {
-      const questionsList = workUnit.questions.map(q => `  - ${q}`).join('\n');
-      throw new Error(
-        `Unanswered questions prevent state transition from '${currentStatus}' to '${newStatus}':\n${questionsList}\n\nAnswer questions with 'fspec answer-question ${options.workUnitId} <index>' before moving to testing.`
-      );
+      // Filter for unselected questions
+      const unansweredQuestions = workUnit.questions.filter(q => {
+        if (typeof q === 'string') {
+          throw new Error('Invalid question format. Questions must be QuestionItem objects.');
+        }
+        return !q.selected;
+      });
+
+      if (unansweredQuestions.length > 0) {
+        const questionsList = unansweredQuestions.map((q) => {
+          const questionItem = q as QuestionItem;
+          // Find the original index in the full array
+          const originalIndex = workUnit.questions!.indexOf(q);
+          return `  - [${originalIndex}] ${questionItem.text}`;
+        }).join('\n');
+
+        throw new Error(
+          `Unanswered questions prevent state transition from '${currentStatus}' to '${newStatus}':\n${questionsList}\n\nAnswer questions with 'fspec answer-question ${options.workUnitId} <index>' before moving to testing.`
+        );
+      }
     }
 
     // Warn if no examples (Example Mapping integration)

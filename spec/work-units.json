@@ -848,6 +848,130 @@
           "timestamp": "2025-10-12T05:24:53.211Z"
         }
       ]
+    },
+    "CLI-003": {
+      "id": "CLI-003",
+      "title": "Initialize fspec slash command in Claude Code project",
+      "status": "testing",
+      "createdAt": "2025-10-12T05:41:20.177Z",
+      "updatedAt": "2025-10-12T05:54:31.891Z",
+      "description": "Add 'fspec init' command that installs the /fspec slash command into a Claude Code project by creating/using .claude/commands/ directory and copying fspec.md command file. Should be idempotent and safe to run multiple times.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-12T05:42:05.997Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-12T05:54:31.892Z"
+        }
+      ],
+      "rules": [
+        "Command must prompt user to choose: Claude Code or custom location",
+        "If Claude Code selected, install to .claude/commands/fspec.md automatically",
+        "If custom location selected, prompt for full file path where to save",
+        "Template must be generic and reusable across any project (not fspec-specific examples)",
+        "Success means file exists at specified location after command completes",
+        "Create parent directories if they don't exist",
+        "If target file exists, prompt for confirmation before overwriting",
+        "Template references fspec commands but uses generic project placeholders (not fspec-specific examples)",
+        "Use ink/react for interactive prompts (consistent with existing board UI)",
+        "Command works from any directory, installs relative to current working directory",
+        "Template uses same structure as .claude/commands/fspec.md but with generic project placeholders",
+        "If user cancels overwrite, display 'Installation cancelled' and exit with success (0)",
+        "Custom path must be relative to current directory (same or subdirectory, not parent or absolute)",
+        "On success, display both confirmation message and next steps for usage",
+        "On error (permission denied, disk full, etc), display error message and exit with non-zero code",
+        "Use example-project style (lowercase example placeholders)",
+        "Include all sections from current fspec.md (complete template with all ACDD workflow, example mapping, estimation, etc)",
+        "Allow: ./file.md, file.md, subdir/file.md, subdir/nested/file.md. Reject: ../file.md, /absolute/path, ~/home/path"
+      ],
+      "examples": [
+        "User runs 'fspec init' in project root, selects Claude Code, file created at ./claude/commands/fspec.md",
+        "User runs 'fspec init', selects custom location, enters 'docs/ai/fspec.md', file created at ./docs/ai/fspec.md",
+        "User runs 'fspec init' when .claude/commands/fspec.md exists, prompted to confirm overwrite, user confirms, file is overwritten",
+        "User runs 'fspec init', selects custom location, enters 'some/deep/path/fspec.md', parent directories created automatically",
+        "User runs 'fspec init', selects custom location, enters '../parent/fspec.md', validation fails with error about path being outside current directory",
+        "User runs 'fspec init' when .claude/commands/fspec.md exists, declines overwrite, command exits with 'Installation cancelled'",
+        "User runs 'fspec init', selects Claude Code, command succeeds, displays '✓ Installed /fspec command to .claude/commands/fspec.md' and 'Run /fspec in Claude Code to activate'"
+      ],
+      "questions": [],
+      "estimate": 5
+    },
+    "TEST-003": {
+      "id": "TEST-003",
+      "title": "Test answer-question with multiple questions",
+      "status": "specifying",
+      "createdAt": "2025-10-12T05:57:24.220Z",
+      "updatedAt": "2025-10-12T05:58:04.761Z",
+      "description": "Testing that answering multiple questions works correctly with proper index handling",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-12T05:57:25.745Z"
+        }
+      ],
+      "questions": [],
+      "rules": [
+        "Use option A for consistency",
+        "Edge case X should return error code 400",
+        "Not in phase 1, defer to backlog"
+      ]
+    },
+    "SAFE-002": {
+      "id": "SAFE-002",
+      "title": "Fix race condition in answer-question when run concurrently",
+      "status": "done",
+      "createdAt": "2025-10-12T06:01:08.064Z",
+      "updatedAt": "2025-10-12T06:33:27.231Z",
+      "description": "Add file locking or transaction mechanism to prevent race conditions when multiple answer-question commands run in parallel. Currently parallel executions can overwrite each other's changes causing data loss.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-12T06:01:09.809Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-12T06:07:32.863Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-12T06:09:49.140Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-12T06:32:14.013Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-12T06:33:27.232Z"
+        }
+      ],
+      "rules": [
+        "Multiple concurrent writes to work-units.json must not corrupt data",
+        "When multiple answer-question commands run in parallel, all answers must be saved",
+        "Last write must not overwrite changes from earlier writes",
+        "Solution must work across platforms (macOS, Linux, Windows)",
+        "Question indices must remain stable even after questions are answered",
+        "YES - Use stable indices with 'selected' flag. Change questions from string array to object array: [{text: 'question', selected: false}, ...]. When answered, mark as selected:true and add answer field. This eliminates race condition without needing file locks.",
+        "Questions use 'selected' property to indicate if answered, not 'answered' property"
+      ],
+      "examples": [
+        "User runs 3 answer-question commands in parallel, all 3 questions are answered and all 3 rules are added",
+        "User runs answer-question while another command modifies work-units.json, both changes are preserved",
+        "User adds 3 questions (indices 0,1,2), answers question 1, indices remain 0,1,2 but question 1 is marked as answered",
+        "Question object structure: {text: '@human: Should we...?', selected: false} becomes {text: '@human: Should we...?', selected: true, answer: 'Yes because...'} when answered"
+      ],
+      "questions": [],
+      "assumptions": [
+        "Not needed - stable indices approach eliminates race condition without file locking",
+        "Not needed - stable indices approach can be used for all commands, but answer-question is the priority",
+        "Not applicable - no lock acquisition with stable indices approach"
+      ],
+      "estimate": 3
     }
   },
   "states": {
@@ -855,9 +979,12 @@
       "DOC-001"
     ],
     "specifying": [
-      "TEST-002"
+      "TEST-002",
+      "TEST-003"
     ],
-    "testing": [],
+    "testing": [
+      "CLI-003"
+    ],
     "implementing": [],
     "validating": [],
     "done": [
@@ -878,7 +1005,8 @@
       "BOARD-001",
       "CLI-002",
       "SAFE-001",
-      "REMIND-001"
+      "REMIND-001",
+      "SAFE-002"
     ],
     "blocked": []
   }

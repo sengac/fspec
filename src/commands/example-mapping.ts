@@ -1,11 +1,12 @@
 import { readFile, writeFile } from 'fs/promises';
 import { join } from 'path';
+import type { QuestionItem } from '../types/index';
 
 interface WorkUnit {
   id: string;
   rules?: string[];
   examples?: string[];
-  questions?: string[];
+  questions?: (string | QuestionItem)[];
   assumptions?: string[];
   updatedAt: string;
 }
@@ -89,7 +90,7 @@ export async function addQuestion(
     workUnit.questions = [];
   }
 
-  workUnit.questions.push(question);
+  workUnit.questions.push({ text: question, selected: false });
   workUnit.updatedAt = new Date().toISOString();
 
   await saveWorkUnits(workUnitsData, cwd);
@@ -208,8 +209,15 @@ export async function answerQuestion(
     throw new Error(`Question index ${questionIndex} out of range`);
   }
 
-  // Remove the question
-  workUnit.questions.splice(questionIndex, 1);
+  // Get the question as QuestionItem
+  const question = workUnit.questions[questionIndex];
+  if (typeof question === 'string') {
+    throw new Error('Invalid question format. Questions must be QuestionItem objects.');
+  }
+
+  // Mark question as selected instead of removing it (stable indices)
+  question.selected = true;
+  question.answer = answer;
 
   // Add answer to appropriate category
   if (addTo === 'rules') {

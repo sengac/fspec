@@ -1,3 +1,10 @@
+// Question Item Interface
+export interface QuestionItem {
+  text: string;
+  selected: boolean;
+  answer?: string;
+}
+
 // Work Units Types
 export interface WorkUnit {
   id: string;
@@ -15,7 +22,7 @@ export interface WorkUnit {
   blockedReason?: string;
   rules?: string[];
   examples?: string[];
-  questions?: string[];
+  questions?: (string | QuestionItem)[];
   assumptions?: string[];
   stateHistory?: Array<{
     state: string;
