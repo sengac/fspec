@@ -30,8 +30,16 @@ export async function listFeatures(
   // Check if directory exists
   try {
     await access(featuresDir);
-  } catch (error) {
-    throw new Error(`Directory not found: spec/features/`);
+  } catch (error: any) {
+    if (error.code === 'ENOENT') {
+      throw new Error(`Directory not found: spec/features/`);
+    }
+    if (error.code === 'EACCES') {
+      throw new Error(
+        `Permission denied: Cannot access spec/features/\nSuggestion: Check directory permissions`
+      );
+    }
+    throw new Error(`Failed to access directory: ${error.message}`);
   }
 
   // Find all feature files
