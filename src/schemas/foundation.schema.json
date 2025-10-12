@@ -8,10 +8,7 @@
     "project",
     "whatWeAreBuilding",
     "whyWeAreBuildingIt",
-    "architectureDiagrams",
-    "coreCommands",
-    "featureInventory",
-    "notes"
+    "architectureDiagrams"
   ],
   "properties": {
     "$schema": {
