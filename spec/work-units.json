@@ -650,15 +650,31 @@
     "SAFE-001": {
       "id": "SAFE-001",
       "title": "Prevent spec directory creation outside project root",
-      "status": "specifying",
+      "status": "done",
       "createdAt": "2025-10-12T03:27:57.082Z",
-      "updatedAt": "2025-10-12T03:45:19.158Z",
+      "updatedAt": "2025-10-12T04:47:39.305Z",
       "description": "Add validation to check if current directory is within project root before creating spec directories",
       "children": [],
       "stateHistory": [
         {
           "state": "specifying",
           "timestamp": "2025-10-12T03:28:04.689Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-12T04:43:22.902Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-12T04:45:14.668Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-12T04:47:23.341Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-12T04:47:39.306Z"
         }
       ],
       "rules": [
@@ -671,7 +687,8 @@
         "All spec directory creation must go through a centralized utility function that performs project root detection",
         "Search upward with a maximum limit (e.g., 10 directories) to prevent excessive traversal",
         "On permission errors or filesystem issues, gracefully fall back to creating spec/ in current working directory",
-        "Centralized utility should automatically create spec/ directory and return the spec path (not project root)"
+        "Centralized utility should automatically create spec/ directory and return the spec path (not project root)",
+        "Defer testing refactored callers until core utility is complete. Critical: Do not break existing functionality - ensure backward compatibility so all current tests continue passing. Architecture must support both old and new code paths during transition."
       ],
       "examples": [
         "User at /project/src/commands/, .git at /project/, no spec/ exists → create /project/spec/",
@@ -681,9 +698,7 @@
         "User at /very/deep/nested/path/a/b/c/d/e/f/g/h/i/j/k/, no boundary within 10 dirs → create spec/ at cwd",
         "User at /project/src/, permission denied reading parent dirs → create spec/ at /project/src/"
       ],
-      "questions": [
-        "@human: Need to verify existing ensure-files.ts functions work with new project root detection - may need to refactor callers. Should we test this during implementation?"
-      ],
+      "questions": [],
       "assumptions": [
         "Need to verify existing ensure-files.ts functions work with new project root detection - may need to refactor callers to use returned spec path instead of manually constructing it"
       ]
@@ -733,9 +748,7 @@
   },
   "states": {
     "backlog": [],
-    "specifying": [
-      "SAFE-001"
-    ],
+    "specifying": [],
     "testing": [],
     "implementing": [],
     "validating": [],
@@ -755,7 +768,8 @@
       "TEST-001",
       "INIT-002",
       "BOARD-001",
-      "CLI-002"
+      "CLI-002",
+      "SAFE-001"
     ],
     "blocked": []
   }
