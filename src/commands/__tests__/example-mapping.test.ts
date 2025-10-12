@@ -196,7 +196,10 @@ describe('Feature: Example Mapping Integration', () => {
       // And the work unit should have 1 question
       const updatedWorkUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
       expect(updatedWorkUnits.workUnits['AUTH-001'].questions).toHaveLength(1);
-      expect(updatedWorkUnits.workUnits['AUTH-001'].questions[0]).toBe('Should we support GitHub Enterprise?');
+      expect(updatedWorkUnits.workUnits['AUTH-001'].questions[0]).toEqual({
+        text: 'Should we support GitHub Enterprise?',
+        selected: false
+      });
     });
   });
 
@@ -222,10 +225,10 @@ describe('Feature: Example Mapping Integration', () => {
       // Then the command should succeed
       // And the question should contain "@bob:"
       const updatedWorkUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
-      expect(updatedWorkUnits.workUnits['AUTH-001'].questions[0]).toContain('@bob:');
+      expect(updatedWorkUnits.workUnits['AUTH-001'].questions[0].text).toContain('@bob:');
 
       // And the question should be parseable for notifications
-      const question = updatedWorkUnits.workUnits['AUTH-001'].questions[0];
+      const question = updatedWorkUnits.workUnits['AUTH-001'].questions[0].text;
       const mentionMatch = question.match(/@(\w+):/);
       expect(mentionMatch).toBeTruthy();
       expect(mentionMatch![1]).toBe('bob');
@@ -306,7 +309,7 @@ describe('Feature: Example Mapping Integration', () => {
         status: 'specifying',
         rules: ['OAuth tokens expire after 1 hour', 'Users must authenticate first'],
         examples: ['User logs in with Google', 'User logs in with expired token'],
-        questions: ['@bob: Support GitHub Enterprise?'],
+        questions: [{ text: '@bob: Support GitHub Enterprise?', selected: false }],
         assumptions: ['Users have valid OAuth accounts'],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
@@ -403,8 +406,8 @@ describe('Feature: Example Mapping Integration', () => {
         title: 'OAuth',
         status: 'specifying',
         questions: [
-          '@bob: Support GitHub Enterprise?',
-          'What is the token expiry policy?'
+          { text: '@bob: Support GitHub Enterprise?', selected: false },
+          { text: 'What is the token expiry policy?', selected: false }
         ],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
@@ -460,7 +463,7 @@ describe('Feature: Example Mapping Integration', () => {
         id: 'AUTH-001',
         title: 'OAuth',
         status: 'specifying',
-        questions: ['@bob: Should we support GitHub Enterprise?'],
+        questions: [{ text: '@bob: Should we support GitHub Enterprise?', selected: false }],
         assumptions: [],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
@@ -475,9 +478,9 @@ describe('Feature: Example Mapping Integration', () => {
       });
 
       // Then the command should succeed
-      // And the work unit should have 0 questions
+      // And the question should be marked as selected
       const updatedWorkUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
-      expect(updatedWorkUnits.workUnits['AUTH-001'].questions).toHaveLength(0);
+      expect(updatedWorkUnits.workUnits['AUTH-001'].questions[0].selected).toBe(true);
 
       // And the work unit should have 1 assumption
       expect(updatedWorkUnits.workUnits['AUTH-001'].assumptions).toHaveLength(1);
@@ -494,7 +497,7 @@ describe('Feature: Example Mapping Integration', () => {
         id: 'AUTH-001',
         title: 'OAuth',
         status: 'specifying',
-        questions: ['What is the maximum session length?'],
+        questions: [{ text: 'What is the maximum session length?', selected: false }],
         rules: [],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
@@ -509,9 +512,9 @@ describe('Feature: Example Mapping Integration', () => {
       });
 
       // Then the command should succeed
-      // And the work unit should have 0 questions
+      // And the question should be marked as selected
       const updatedWorkUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
-      expect(updatedWorkUnits.workUnits['AUTH-001'].questions).toHaveLength(0);
+      expect(updatedWorkUnits.workUnits['AUTH-001'].questions[0].selected).toBe(true);
 
       // And the work unit should have 1 rule
       expect(updatedWorkUnits.workUnits['AUTH-001'].rules).toHaveLength(1);
@@ -528,7 +531,7 @@ describe('Feature: Example Mapping Integration', () => {
         id: 'AUTH-001',
         title: 'OAuth',
         status: 'specifying',
-        questions: ['Is this feature needed?'],
+        questions: [{ text: 'Is this feature needed?', selected: false }],
         rules: [],
         assumptions: [],
         createdAt: new Date().toISOString(),
@@ -544,9 +547,9 @@ describe('Feature: Example Mapping Integration', () => {
       });
 
       // Then the command should succeed
-      // And the work unit should have 0 questions
+      // And the question should be marked as selected
       const updatedWorkUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
-      expect(updatedWorkUnits.workUnits['AUTH-001'].questions).toHaveLength(0);
+      expect(updatedWorkUnits.workUnits['AUTH-001'].questions[0].selected).toBe(true);
 
       // And no rules or assumptions added
       expect(updatedWorkUnits.workUnits['AUTH-001'].rules).toHaveLength(0);
@@ -694,7 +697,7 @@ describe('Feature: Example Mapping Integration', () => {
         id: 'AUTH-001',
         title: 'OAuth',
         status: 'specifying',
-        questions: ['@bob: Should we support OAuth 2.0?'],
+        questions: [{ text: '@bob: Should we support OAuth 2.0?', selected: false }],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
@@ -850,7 +853,7 @@ describe('Feature: Example Mapping Integration', () => {
         id: 'AUTH-001',
         title: 'Auth 1',
         status: 'specifying',
-        questions: ['@bob: Support OAuth?'],
+        questions: [{ text: '@bob: Support OAuth?', selected: false }],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
@@ -866,7 +869,7 @@ describe('Feature: Example Mapping Integration', () => {
         id: 'DASH-001',
         title: 'Dashboard',
         status: 'specifying',
-        questions: ['What should timeout be?'],
+        questions: [{ text: 'What should timeout be?', selected: false }],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
@@ -903,7 +906,7 @@ describe('Feature: Example Mapping Integration', () => {
         id: 'AUTH-001',
         title: 'Auth 1',
         status: 'specifying',
-        questions: ['@bob: Support GitHub?'],
+        questions: [{ text: '@bob: Support GitHub?', selected: false }],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
@@ -911,7 +914,7 @@ describe('Feature: Example Mapping Integration', () => {
         id: 'AUTH-002',
         title: 'Auth 2',
         status: 'specifying',
-        questions: ['@alice: What is the timeout?'],
+        questions: [{ text: '@alice: What is the timeout?', selected: false }],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
@@ -919,7 +922,7 @@ describe('Feature: Example Mapping Integration', () => {
         id: 'DASH-001',
         title: 'Dashboard',
         status: 'specifying',
-        questions: ['@bob: Show user metrics?'],
+        questions: [{ text: '@bob: Show user metrics?', selected: false }],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
@@ -950,7 +953,7 @@ describe('Feature: Example Mapping Integration', () => {
         status: 'specifying',
         rules: ['Valid rule'],
         examples: ['Valid example'],
-        questions: ['Valid question'],
+        questions: [{ text: 'Valid question', selected: false }],
         assumptions: ['Valid assumption'],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
@@ -964,7 +967,7 @@ describe('Feature: Example Mapping Integration', () => {
       expect(result.valid).toBe(true);
       expect(result.checks).toContain('rules are strings');
       expect(result.checks).toContain('examples are strings');
-      expect(result.checks).toContain('questions are strings');
+      expect(result.checks).toContain('questions are QuestionItem objects');
       expect(result.checks).toContain('assumptions are strings');
     });
   });
@@ -991,7 +994,11 @@ describe('Feature: Example Mapping Integration', () => {
         status: 'specifying',
         rules: [],
         examples: [],
-        questions: ['q1', 'q2', 'q3'],
+        questions: [
+          { text: 'q1', selected: false },
+          { text: 'q2', selected: false },
+          { text: 'q3', selected: false }
+        ],
         assumptions: [],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
@@ -1002,7 +1009,7 @@ describe('Feature: Example Mapping Integration', () => {
         status: 'specifying',
         rules: ['r1', 'r2'],
         examples: ['e1', 'e2', 'e3', 'e4'],
-        questions: ['q1'],
+        questions: [{ text: 'q1', selected: false }],
         assumptions: ['a1'],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()

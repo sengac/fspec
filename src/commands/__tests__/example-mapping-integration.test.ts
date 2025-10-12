@@ -226,7 +226,10 @@ describe('Feature: Example Mapping Integration', () => {
       const updated = JSON.parse(await readFile(join(testDir, 'spec/work-units.json'), 'utf-8'));
 
       expect(updated.workUnits['AUTH-001'].questions).toHaveLength(1);
-      expect(updated.workUnits['AUTH-001'].questions[0]).toBe('Should we support GitHub Enterprise?');
+      expect(updated.workUnits['AUTH-001'].questions[0]).toEqual({
+        text: 'Should we support GitHub Enterprise?',
+        selected: false
+      });
     });
   });
 
@@ -264,8 +267,8 @@ describe('Feature: Example Mapping Integration', () => {
 
       const updated = JSON.parse(await readFile(join(testDir, 'spec/work-units.json'), 'utf-8'));
 
-      expect(updated.workUnits['AUTH-001'].questions[0]).toContain('@bob:');
-      expect(updated.workUnits['AUTH-001'].questions[0]).toBe('@bob: What is the token expiry policy?');
+      expect(updated.workUnits['AUTH-001'].questions[0].text).toContain('@bob:');
+      expect(updated.workUnits['AUTH-001'].questions[0].text).toBe('@bob: What is the token expiry policy?');
     });
   });
 
@@ -358,7 +361,7 @@ describe('Feature: Example Mapping Integration', () => {
             status: 'specifying',
             rules: ['OAuth tokens expire after 1 hour', 'Users must authenticate first'],
             examples: ['User logs in with Google', 'User logs in with expired token'],
-            questions: ['@bob: Support GitHub Enterprise?'],
+            questions: [{ text: '@bob: Support GitHub Enterprise?', selected: false }],
             assumptions: ['Users have valid OAuth accounts'],
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
@@ -488,8 +491,8 @@ describe('Feature: Example Mapping Integration', () => {
             title: 'OAuth login',
             status: 'specifying',
             questions: [
-              '@bob: Support GitHub Enterprise?',
-              'What is the token expiry policy?',
+              { text: '@bob: Support GitHub Enterprise?', selected: false },
+              { text: 'What is the token expiry policy?', selected: false },
             ],
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
@@ -568,7 +571,7 @@ describe('Feature: Example Mapping Integration', () => {
             id: 'AUTH-001',
             title: 'OAuth login',
             status: 'specifying',
-            questions: ['@bob: Should we support GitHub Enterprise?'],
+            questions: [{ text: '@bob: Should we support GitHub Enterprise?', selected: false }],
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           },
@@ -597,7 +600,7 @@ describe('Feature: Example Mapping Integration', () => {
 
       const updated = JSON.parse(await readFile(join(testDir, 'spec/work-units.json'), 'utf-8'));
 
-      expect(updated.workUnits['AUTH-001'].questions || []).toHaveLength(0);
+      expect(updated.workUnits['AUTH-001'].questions[0].selected).toBe(true);
       expect(updated.workUnits['AUTH-001'].assumptions).toHaveLength(1);
       expect(updated.workUnits['AUTH-001'].assumptions[0]).toContain('GitHub.com supported');
     });
@@ -611,7 +614,7 @@ describe('Feature: Example Mapping Integration', () => {
             id: 'AUTH-001',
             title: 'OAuth login',
             status: 'specifying',
-            questions: ['What is the maximum session length?'],
+            questions: [{ text: 'What is the maximum session length?', selected: false }],
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           },
@@ -640,7 +643,7 @@ describe('Feature: Example Mapping Integration', () => {
 
       const updated = JSON.parse(await readFile(join(testDir, 'spec/work-units.json'), 'utf-8'));
 
-      expect(updated.workUnits['AUTH-001'].questions || []).toHaveLength(0);
+      expect(updated.workUnits['AUTH-001'].questions[0].selected).toBe(true);
       expect(updated.workUnits['AUTH-001'].rules).toHaveLength(1);
       expect(updated.workUnits['AUTH-001'].rules[0]).toContain('24 hours');
     });
@@ -654,7 +657,7 @@ describe('Feature: Example Mapping Integration', () => {
             id: 'AUTH-001',
             title: 'OAuth login',
             status: 'specifying',
-            questions: ['Is this feature needed?'],
+            questions: [{ text: 'Is this feature needed?', selected: false }],
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           },
@@ -683,7 +686,7 @@ describe('Feature: Example Mapping Integration', () => {
 
       const updated = JSON.parse(await readFile(join(testDir, 'spec/work-units.json'), 'utf-8'));
 
-      expect(updated.workUnits['AUTH-001'].questions || []).toHaveLength(0);
+      expect(updated.workUnits['AUTH-001'].questions[0].selected).toBe(true);
       expect(updated.workUnits['AUTH-001'].rules || []).toHaveLength(0);
       expect(updated.workUnits['AUTH-001'].assumptions || []).toHaveLength(0);
     });
@@ -878,7 +881,7 @@ Scenario: Existing scenario
             id: 'AUTH-001',
             title: 'OAuth login',
             status: 'specifying',
-            questions: ['@bob: Should we support OAuth 2.0?'],
+            questions: [{ text: '@bob: Should we support OAuth 2.0?', selected: false }],
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           },
@@ -1069,7 +1072,7 @@ Scenario: Existing scenario
             id: 'AUTH-001',
             title: 'Work 1',
             status: 'specifying',
-            questions: ['@bob: Support OAuth?'],
+            questions: [{ text: '@bob: Support OAuth?', selected: false }],
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           },
@@ -1084,7 +1087,7 @@ Scenario: Existing scenario
             id: 'DASH-001',
             title: 'Work 3',
             status: 'specifying',
-            questions: ['What should timeout be?'],
+            questions: [{ text: 'What should timeout be?', selected: false }],
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           },
@@ -1129,7 +1132,7 @@ Scenario: Existing scenario
             id: 'AUTH-001',
             title: 'Work 1',
             status: 'specifying',
-            questions: ['@bob: Support GitHub?'],
+            questions: [{ text: '@bob: Support GitHub?', selected: false }],
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           },
@@ -1137,7 +1140,7 @@ Scenario: Existing scenario
             id: 'AUTH-002',
             title: 'Work 2',
             status: 'specifying',
-            questions: ['@alice: What is the timeout?'],
+            questions: [{ text: '@alice: What is the timeout?', selected: false }],
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           },
@@ -1145,7 +1148,7 @@ Scenario: Existing scenario
             id: 'DASH-001',
             title: 'Work 3',
             status: 'specifying',
-            questions: ['@bob: Show user metrics?'],
+            questions: [{ text: '@bob: Show user metrics?', selected: false }],
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           },
@@ -1266,7 +1269,11 @@ Scenario: Existing scenario
             id: 'AUTH-002',
             title: 'Work 2',
             status: 'specifying',
-            questions: ['Q1', 'Q2', 'Q3'],
+            questions: [
+              { text: 'Q1', selected: false },
+              { text: 'Q2', selected: false },
+              { text: 'Q3', selected: false }
+            ],
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           },
@@ -1276,7 +1283,7 @@ Scenario: Existing scenario
             status: 'specifying',
             rules: ['R1', 'R2'],
             examples: ['E1', 'E2', 'E3', 'E4'],
-            questions: ['Q1'],
+            questions: [{ text: 'Q1', selected: false }],
             assumptions: ['A1'],
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),

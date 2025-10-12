@@ -1,6 +1,12 @@
 import { readFile, writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 
+interface QuestionItem {
+  text: string;
+  selected: boolean;
+  answer?: string;
+}
+
 interface WorkUnit {
   id: string;
   title: string;
@@ -18,7 +24,7 @@ interface WorkUnit {
   };
   rules?: string[];
   examples?: string[];
-  questions?: string[];
+  questions?: (string | QuestionItem)[];
   assumptions?: string[];
   stateHistory?: Array<{ state: string; timestamp: string; reason?: string }>;
   blockedReason?: string;
@@ -345,8 +351,23 @@ async function updateWorkUnitStatus(
   // Check for unanswered questions before moving to testing
   if (oldStatus === 'specifying' && newStatus === 'testing') {
     if (workUnit.questions && workUnit.questions.length > 0) {
-      const questionList = workUnit.questions.map((q, i) => `\n  ${i}. ${q}`).join('');
-      throw new Error(`Unanswered questions prevent state transition to testing. ${workUnit.questions.length} question(s) must be answered first.${questionList}\n\nAnswer questions with 'fspec answer-question' or remove them using 'fspec remove-question'`);
+      // Filter for unselected questions only
+      const unansweredQuestions = workUnit.questions.filter(q => {
+        if (typeof q === 'string') {
+          throw new Error('Invalid question format. Questions must be QuestionItem objects.');
+        }
+        return !q.selected;
+      });
+
+      if (unansweredQuestions.length > 0) {
+        const questionList = unansweredQuestions.map((q, i) => {
+          const questionItem = q as QuestionItem;
+          const originalIndex = workUnit.questions!.indexOf(q);
+          return `\n  ${originalIndex}. ${questionItem.text}`;
+        }).join('');
+
+        throw new Error(`Unanswered questions prevent state transition to testing. ${unansweredQuestions.length} question(s) must be answered first.${questionList}\n\nAnswer questions with 'fspec answer-question' or remove them using 'fspec remove-question'`);
+      }
     }
 
     // Check for scenarios before moving to testing
@@ -560,7 +581,19 @@ export async function showWorkUnit(
     result += `\nExamples:\n${workUnit.examples.map((e, i) => `  ${i}. ${e}`).join('\n')}\n`;
   }
   if (workUnit.questions && workUnit.questions.length > 0) {
-    result += `\nQuestions:\n${workUnit.questions.map((q, i) => `  ${i}. ${q}`).join('\n')}\n`;
+    // Filter for unselected questions only
+    const unselectedQuestions = workUnit.questions
+      .map((q, index) => {
+        if (typeof q === 'string') {
+          throw new Error('Invalid question format. Questions must be QuestionItem objects.');
+        }
+        return { index, ...q };
+      })
+      .filter(q => !q.selected);
+
+    if (unselectedQuestions.length > 0) {
+      result += `\nQuestions:\n${unselectedQuestions.map(q => `  ${q.index}. ${q.text}`).join('\n')}\n`;
+    }
   }
   if (workUnit.assumptions && workUnit.assumptions.length > 0) {
     result += `\nAssumptions:\n${workUnit.assumptions.map((a, i) => `  ${i}. ${a}`).join('\n')}\n`;
@@ -620,7 +653,7 @@ export async function validateWorkUnits(
     'bidirectional consistency',
     'rules are strings',
     'examples are strings',
-    'questions are strings',
+    'questions are QuestionItem objects',
     'assumptions are strings'
   ];
 
@@ -800,7 +833,12 @@ export async function queryWorkUnit(
   if (questionsFor) {
     const mention = questionsFor.startsWith('@') ? questionsFor : `@${questionsFor}`;
     workUnits = workUnits.filter(wu =>
-      wu.questions?.some(q => q.includes(mention))
+      wu.questions?.some(q => {
+        if (typeof q === 'string') {
+          throw new Error('Invalid question format. Questions must be QuestionItem objects.');
+        }
+        return q.text.includes(mention);
+      })
     );
   }
 

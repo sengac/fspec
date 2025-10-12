@@ -27,6 +27,7 @@ export default defineConfig({
         'mermaid',
         'ink',
         'react',
+        'proper-lockfile',
       ],
       output: {
         preserveModules: false,
