@@ -2413,9 +2413,16 @@ program
       });
       console.log(
         chalk.green(
-          `✓ Generated ${result.scenariosCount} scenarios in spec/features/${result.featureFile}`
+          `✓ Generated ${result.scenariosCount} scenarios in ${result.featureFile}`
         )
       );
+
+      // Display system reminders if any
+      if (result.systemReminders && result.systemReminders.length > 0) {
+        for (const reminder of result.systemReminders) {
+          console.log('\n' + reminder);
+        }
+      }
     } catch (error: any) {
       console.error(
         chalk.red('✗ Failed to generate scenarios:'),

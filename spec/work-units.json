@@ -1614,6 +1614,261 @@
           "answer": "Throw error requiring --feature flag with helpful message suggesting capability-based name."
         }
       ]
+    },
+    "REMIND-002": {
+      "id": "REMIND-002",
+      "title": "Comprehensive System-Reminder Overhaul",
+      "status": "done",
+      "createdAt": "2025-10-13T07:56:29.390Z",
+      "updatedAt": "2025-10-13T08:19:36.823Z",
+      "description": "Audit existing system-reminders, expand to all critical commands based on analysis, add file naming detection, tag validation, and discovery phase reminders",
+      "children": [
+        "REMIND-003",
+        "REMIND-004",
+        "REMIND-005",
+        "REMIND-006",
+        "REMIND-007"
+      ],
+      "estimate": 13,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-13T08:18:35.217Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-13T08:19:35.726Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-13T08:19:36.092Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-13T08:19:36.462Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-13T08:19:36.824Z"
+        }
+      ],
+      "rules": [
+        "All child work units (REMIND-003, 004, 005, 006, 007) must be in done status",
+        "System-reminder functions implemented in src/utils/system-reminder.ts",
+        "System-reminders integrated into create-feature, add-tag-to-feature, generate-scenarios, show-work-unit, and update-work-unit-status commands"
+      ],
+      "examples": [
+        "All 5 child work units completed successfully with tests passing",
+        "Build passing with 843 tests, all system-reminder functionality working"
+      ]
+    },
+    "REMIND-003": {
+      "id": "REMIND-003",
+      "title": "File Naming Anti-Pattern Detection",
+      "status": "done",
+      "createdAt": "2025-10-13T07:56:47.607Z",
+      "updatedAt": "2025-10-13T08:02:40.554Z",
+      "description": "Add system-reminders to create-feature command to detect task-based naming (implement-, add-, create-, work-unit-ID) and remind to use capability-based naming",
+      "parent": "REMIND-002",
+      "estimate": 3,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-13T07:57:27.395Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-13T07:58:22.240Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-13T07:58:32.755Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-13T08:01:48.189Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-13T08:02:40.555Z"
+        }
+      ],
+      "rules": [
+        "System-reminders must detect task-based file naming patterns (implement-, add-, create-, fix-, build-)",
+        "System-reminders must detect work unit ID patterns in file names (e.g., AUTH-001, REMIND-003)",
+        "Reminders must provide correct examples of capability-based naming"
+      ],
+      "examples": [
+        "User runs 'fspec create-feature implement-authentication', reminder shows '❌ WRONG: implement-authentication → ✅ CORRECT: user-authentication'",
+        "User runs 'fspec create-feature AUTH-001', reminder shows work unit IDs are not capability names",
+        "User runs 'fspec create-feature user-authentication', no reminder (correct naming)"
+      ]
+    },
+    "REMIND-004": {
+      "id": "REMIND-004",
+      "title": "Tag Validation Reminders",
+      "status": "done",
+      "createdAt": "2025-10-13T07:56:49.298Z",
+      "updatedAt": "2025-10-13T08:07:44.888Z",
+      "description": "Add reminders to add-tag-to-feature for unregistered tags and missing required tags",
+      "parent": "REMIND-002",
+      "estimate": 2,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-13T08:06:04.788Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-13T08:06:29.915Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-13T08:06:31.632Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-13T08:07:43.185Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-13T08:07:44.888Z"
+        }
+      ],
+      "rules": [
+        "System-reminders must check if tag exists in tags.json before adding to feature file",
+        "System-reminders must check for missing required tags after adding a tag",
+        "Required tags are: phase tag, component tag, and feature-group tag"
+      ],
+      "examples": [
+        "User runs 'fspec add-tag-to-feature login.feature @unregistered-tag', reminder shows 'Tag not registered in tags.json'",
+        "User runs 'fspec add-tag-to-feature login.feature @phase1', no unregistered tag reminder but may show missing required tags reminder",
+        "User adds all required tags, no reminder shown"
+      ]
+    },
+    "REMIND-005": {
+      "id": "REMIND-005",
+      "title": "Discovery Phase Reminders",
+      "status": "done",
+      "createdAt": "2025-10-13T07:56:51.073Z",
+      "updatedAt": "2025-10-13T08:09:45.355Z",
+      "description": "Add reminders to generate-scenarios for unanswered questions, empty Example Mapping, and post-generation validation",
+      "parent": "REMIND-002",
+      "estimate": 3,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-13T08:08:01.105Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-13T08:08:14.931Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-13T08:08:15.225Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-13T08:09:45.064Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-13T08:09:45.355Z"
+        }
+      ],
+      "rules": [
+        "System-reminders must check for unanswered questions before allowing scenario generation",
+        "System-reminders must check for empty Example Mapping (no rules AND no examples)",
+        "System-reminders must provide post-generation guidance after successful scenario generation"
+      ],
+      "examples": [
+        "User runs 'fspec generate-scenarios WORK-001' with unanswered questions, reminder blocks generation",
+        "User runs 'fspec generate-scenarios WORK-001' with no rules or examples, reminder suggests adding Example Mapping data",
+        "After successful generation, reminder shows next steps (validate, add tags, move to testing)"
+      ]
+    },
+    "REMIND-006": {
+      "id": "REMIND-006",
+      "title": "Show Work Unit Reminders",
+      "status": "done",
+      "createdAt": "2025-10-13T07:56:52.746Z",
+      "updatedAt": "2025-10-13T08:17:10.347Z",
+      "description": "Add reminders to show-work-unit for missing estimates, empty Example Mapping in specifying phase, and long duration warnings",
+      "parent": "REMIND-002",
+      "estimate": 3,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-13T08:10:17.524Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-13T08:16:22.073Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-13T08:16:28.519Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-13T08:16:34.669Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-13T08:17:10.348Z"
+        }
+      ],
+      "rules": [
+        "Display system-reminder when work unit is missing estimate",
+        "Display system-reminder when work unit in specifying status has empty Example Mapping (no rules AND no examples)",
+        "Display system-reminder when work unit has been in current state for more than 24 hours"
+      ],
+      "examples": [
+        "Show work unit without estimate displays missing estimate reminder",
+        "Show work unit in specifying with no rules/examples displays Example Mapping reminder",
+        "Show work unit that has been in specifying for 25 hours displays long duration reminder"
+      ]
+    },
+    "REMIND-007": {
+      "id": "REMIND-007",
+      "title": "Update Status Reminder Enhancement",
+      "status": "done",
+      "createdAt": "2025-10-13T07:56:54.417Z",
+      "updatedAt": "2025-10-13T08:18:13.970Z",
+      "description": "Enhanced status reminders with blocked and done states - completed as part of REMIND-003",
+      "parent": "REMIND-002",
+      "estimate": 2,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-13T08:10:15.372Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-13T08:18:08.040Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-13T08:18:08.403Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-13T08:18:08.765Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-13T08:18:13.970Z"
+        }
+      ],
+      "rules": [
+        "Enhance getStatusChangeReminder to include 'done' state reminder about feature file tag updates",
+        "Enhance getStatusChangeReminder to include 'blocked' state reminder about documenting blocker reasons"
+      ],
+      "examples": [
+        "Update status to 'done' displays reminder to update feature file tags",
+        "Update status to 'blocked' displays reminder to document blocker reason"
+      ]
     }
   },
   "states": {
@@ -1655,7 +1910,13 @@
       "BUG-003",
       "CLI-005",
       "CLI-006",
-      "BUG-004"
+      "BUG-004",
+      "REMIND-003",
+      "REMIND-004",
+      "REMIND-005",
+      "REMIND-006",
+      "REMIND-007",
+      "REMIND-002"
     ],
     "blocked": []
   }

@@ -3,6 +3,7 @@ import { join } from 'path';
 import chalk from 'chalk';
 import { toKebabCase } from '../utils/file-helpers';
 import { generateFeatureTemplate } from '../utils/templates';
+import { getFileNamingReminder } from '../utils/system-reminder';
 
 export async function createFeature(
   name: string,
@@ -69,11 +70,21 @@ export async function createFeature(
 
 export async function createFeatureCommand(name: string): Promise<void> {
   try {
+    // Check for file naming anti-patterns BEFORE creating the file
+    const kebabName = toKebabCase(name);
+    const fileNamingReminder = getFileNamingReminder(kebabName);
+
     const filePath = await createFeature(name);
     const fileName = filePath.split('/').slice(-2).join('/'); // spec/features/file.feature
 
     console.log(chalk.green(`✓ Created ${fileName}`));
     console.log(chalk.gray('  Edit the file to add your scenarios'));
+
+    // Display file naming reminder if anti-pattern detected
+    if (fileNamingReminder) {
+      console.log('\n' + fileNamingReminder);
+    }
+
     process.exit(0);
   } catch (error: any) {
     console.error(chalk.red('Error:'), error.message);
