@@ -41,6 +41,8 @@ import { listFeatureTagsCommand } from './commands/list-feature-tags';
 import { addTagToScenarioCommand } from './commands/add-tag-to-scenario';
 import { removeTagFromScenarioCommand } from './commands/remove-tag-from-scenario';
 import { listScenarioTagsCommand } from './commands/list-scenario-tags';
+// Coverage tracking commands
+import { auditCoverageCommand } from './commands/audit-coverage';
 // Project management commands
 import { createWorkUnitCommand } from './commands/create-work-unit';
 import { listWorkUnitsCommand } from './commands/list-work-units';
@@ -2854,6 +2856,16 @@ program
       process.exit(1);
     }
   });
+
+// ============================================================================
+// COVERAGE TRACKING COMMANDS
+// ============================================================================
+
+program
+  .command('audit-coverage')
+  .description('Audit coverage file to verify test and implementation files exist')
+  .argument('<feature-name>', 'Feature name (e.g., "user-login" for user-login.feature.coverage)')
+  .action(auditCoverageCommand);
 
 // Main execution with help interceptor
 async function main(): Promise<void> {
