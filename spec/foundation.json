@@ -413,6 +413,11 @@
       "section": "Architecture Diagrams",
       "title": "Example Mapping Discovery Process",
       "mermaidCode": "sequenceDiagram\n    participant Human\n    participant AI as AI Agent\n    participant WorkUnit as Work Unit\n    participant FeatureFile as Feature File\n    \n    Note over Human,FeatureFile: Discovery Phase (specifying state)\n    \n    AI->>Human: What are the key business rules?\n    Human->>AI: Rule: Validation must complete in <2s\n    AI->>WorkUnit: add-rule \"Validation <2s\"\n    \n    AI->>Human: Can you give concrete examples?\n    Human->>AI: Example: fspec validate shows \"All valid\"\n    AI->>WorkUnit: add-example \"validate shows success\"\n    \n    AI->>Human: Question: Support custom rules in config?\n    AI->>WorkUnit: add-question \"Custom validation rules?\"\n    Human->>AI: No, defer to future work\n    AI->>WorkUnit: answer-question \"Defer to VALID-025\"\n    \n    Note over AI,WorkUnit: Iterate until no questions remain\n    \n    AI->>WorkUnit: generate-scenarios\n    WorkUnit->>FeatureFile: Transform to Gherkin\n    \n    Note over FeatureFile: Generated Feature File\n    Note over FeatureFile: - Rules → Background context\n    Note over FeatureFile: - Examples → Scenarios\n    Note over FeatureFile: - Questions → Assumptions\n    \n    Note over Human,FeatureFile: Ready for Testing Phase"
+    },
+    {
+      "section": "Architecture Diagrams",
+      "title": "Help System Architecture",
+      "mermaidCode": "graph TB\n  User[User runs command] -->|bare fspec or --help| Interceptor[help-interceptor.ts]\n  Interceptor -->|loads| Registry[help-registry.ts]\n  Registry -->|import.meta.glob eager| HelpFiles[*-help.ts files]\n  HelpFiles -->|exports| Configs[CommandHelpConfig interfaces]\n  Interceptor -->|displays & exits| Formatter[help-formatter.ts]\n  Formatter -->|renders| Output[Formatted help output]\n  Output -->|displays| Console[Terminal]\n  \n  Interceptor -->|no help flag| Commander[Commander.js]\n  Commander -->|runs| Command[fspec command execution]\n  \n  HelpFiles -->|structured data| Sections[WHEN TO USE, PREREQUISITES, WORKFLOW, ERRORS, PATTERNS]\n  Sections -->|AI-optimized| AgentContext[Claude context]\n  \n  style HelpFiles fill:#e1f5e1\n  style Sections fill:#ffe1e1\n  style AgentContext fill:#e1e5ff"
     }
   ]
 }

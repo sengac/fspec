@@ -105,7 +105,7 @@ import { init } from './commands/init';
 const program = new Command();
 
 // Custom help display
-function displayCustomHelp(): void {
+export function displayCustomHelpWithNote(): void {
   console.log(
     chalk.bold(
       '\nfspec - Feature Specification & Project Management for AI Agents'
@@ -182,6 +182,11 @@ function displayCustomHelp(): void {
   );
   console.log(
     '  ' +
+      chalk.cyan('fspec <command> --help') +
+      '  - Get detailed help for any command'
+  );
+  console.log(
+    '  ' +
       chalk.cyan('fspec help specs') +
       '        - Gherkin feature file commands'
   );
@@ -239,6 +244,7 @@ function displayCustomHelp(): void {
     '  README: ' + chalk.dim('See README.md for detailed usage examples')
   );
   console.log('');
+  process.exit(0);
 }
 
 // ===== SPECS HELP =====
@@ -1062,7 +1068,7 @@ function displaySetupHelp(): void {
 // Custom help command handler
 function handleHelpCommand(group?: string): void {
   if (!group) {
-    displayCustomHelp();
+    displayCustomHelpWithNote();
     return;
   }
 
@@ -1112,13 +1118,7 @@ program
     helpWidth: 100,
   })
   .addHelpCommand(false)
-  .helpOption(false); // Disable default help
-
-// Override help handling completely
-program.on('option:help', () => {
-  displayCustomHelp();
-  process.exit(0);
-});
+  .helpOption('-h, --help', 'Display help for command'); // Enable help option for all commands
 
 // Add custom help command
 program
@@ -1127,21 +1127,8 @@ program
   .argument('[group]', 'Help topic: spec, tags, foundation, query, project')
   .action(handleHelpCommand);
 
-// Handle -h and --help flags manually
-const args = process.argv;
-if (args.includes('-h') || args.includes('--help')) {
-  if (args.length === 3) {
-    // Just "fspec --help" or "fspec -h"
-    displayCustomHelp();
-    process.exit(0);
-  }
-}
-
-// Show custom help when no command is provided
-if (args.length === 2) {
-  displayCustomHelp();
-  process.exit(0);
-}
+// Note: Help handling moved to async main() function with help interceptor
+// Manual help handling removed to allow help interceptor to work properly
 
 // Validate command
 program
@@ -1573,7 +1560,9 @@ program
   .option('-s, --status <status>', 'Filter by status')
   .option('-p, --prefix <prefix>', 'Filter by prefix')
   .option('-e, --epic <epic>', 'Filter by epic')
-  .action(listWorkUnitsCommand);
+  .action(async (options: any) => {
+    await listWorkUnitsCommand(options);
+  });
 
 // Show work unit command
 program
@@ -1593,7 +1582,9 @@ program
   )
   .argument('<title>', 'Epic title')
   .option('-d, --description <description>', 'Epic description')
-  .action(createEpicCommand);
+  .action(async (epicId: string, title: string, options?: any) => {
+    await createEpicCommand(epicId, title, options);
+  });
 
 // List epics command
 program
@@ -1772,9 +1763,9 @@ program
 program
   .command('update-work-unit-status')
   .description('Update work unit status (follows ACDD workflow)')
-  .argument('<workUnitId>', 'Work unit ID')
+  .argument('[workUnitId]', 'Work unit ID')
   .argument(
-    '<status>',
+    '[status]',
     'New status: backlog, specifying, testing, implementing, validating, done, blocked'
   )
   .option(
@@ -1932,7 +1923,7 @@ program
 program
   .command('add-dependency')
   .description('Add a dependency relationship between work units')
-  .argument('<workUnitId>', 'Work unit ID')
+  .argument('[workUnitId]', 'Work unit ID')
   .argument(
     '[dependsOnId]',
     'Work unit ID that this depends on (shorthand for --depends-on)'
@@ -2835,4 +2826,42 @@ program
     }
   });
 
-program.parse();
+// Main execution with help interceptor
+async function main(): Promise<void> {
+  // Handle custom help before Commander.js processes arguments
+  const { handleCustomHelp } = await import('./utils/help-interceptor');
+  const customHelpShown = await handleCustomHelp();
+
+  if (customHelpShown) {
+    // Help was displayed and process.exit(0) was called
+    return;
+  }
+
+  // Normal Commander.js execution
+  program.parse();
+}
+
+// Run main function when executed directly (not when imported for testing)
+// This works for both direct execution (./dist/index.js) and npm link (/usr/local/bin/fspec)
+// by checking if the resolved script path matches this file
+import { fileURLToPath } from 'url';
+import { realpathSync } from 'fs';
+
+const __filename = fileURLToPath(import.meta.url);
+const isMainModule = (() => {
+  try {
+    // Resolve symlinks to get the actual file path
+    const realArgv1 = realpathSync(process.argv[1]);
+    return realArgv1 === __filename;
+  } catch {
+    // If we can't resolve, fall back to string comparison
+    return process.argv[1]?.includes('index.js');
+  }
+})();
+
+if (isMainModule) {
+  main().catch((error) => {
+    console.error(chalk.red('Fatal error:'), error.message);
+    process.exit(1);
+  });
+}

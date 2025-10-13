@@ -1,5 +1,5 @@
 /**
- * Feature: spec/features/cli-002.feature
+ * Feature: spec/features/list-prefixes.feature
  *
  * This test file validates the acceptance criteria defined in the feature file.
  * Scenarios in this test map directly to scenarios in the Gherkin feature.

@@ -1424,6 +1424,140 @@
         "Function signature currently missing format and output parameters"
       ],
       "estimate": 3
+    },
+    "CLI-005": {
+      "id": "CLI-005",
+      "title": "Add --help support to all fspec commands",
+      "status": "done",
+      "createdAt": "2025-10-13T05:32:26.029Z",
+      "updatedAt": "2025-10-13T05:56:38.745Z",
+      "description": "Currently commands like 'fspec create-epic --help' fail with 'unknown option --help'. Every fspec command should support --help flag that displays detailed usage information, options, arguments, and practical examples for that specific command. This includes all ~80+ commands across specs, work, discovery, metrics, and setup groups.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-13T05:32:33.248Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-13T05:44:40.837Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-13T05:46:16.843Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-13T05:55:36.370Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-13T05:56:38.746Z"
+        }
+      ],
+      "rules": [
+        "Help output must include: command description, all options with descriptions, required vs optional arguments, practical examples, and related commands",
+        "Help formatting must use custom colored output matching 'fspec help specs' style, optimized for AI agent readability",
+        "Number of examples should be contextually appropriate per command complexity",
+        "Individual command help (--help) must be separate from group help (fspec help specs/work/etc)",
+        "Main fspec --help output must mention that each command supports its own --help flag",
+        "Must use custom help system, not Commander.js built-in help (insufficient quality)",
+        "Help must include AI-optimized sections when applicable: WHEN TO USE, WHEN NOT TO USE, COMMON PATTERNS, TYPICAL WORKFLOW, PREREQUISITES, related workflow states",
+        "Examples must show both command and expected output for clarity",
+        "Help templates must vary by command complexity: Simple (1-2 examples), Medium (2-3 examples), Complex (4-5 examples showing different modes)",
+        "Help must include COMMON ERRORS section with error messages and fixes",
+        "Related commands section must only show highly related commands with whatever format makes sense (syntax/names/workflow context)",
+        "No validation or schema enforcement needed - help text should be inline in command code",
+        "Whatever is most elegant while retaining exact same functionality - ultrathink this",
+        "Create help infrastructure first, then implement each command help individually",
+        "Yes, refactor into shared help utilities module for consistency",
+        "Infrastructure first: build help system, then implement per command",
+        "Infrastructure first: build help system, then implement per command"
+      ],
+      "examples": [
+        "User runs 'fspec create-epic --help' and sees: description, usage syntax, options (none), arguments (<name> <title>), 2 examples with output, related commands (list-epics, show-epic, create-work-unit)",
+        "User runs 'fspec list-work-units --help' and sees: WHEN TO USE section, all options (--status, --prefix, --epic), 3 examples showing different filters with sample output, TYPICAL WORKFLOW mentioning backlog → specifying flow",
+        "User runs 'fspec add-dependency --help' and sees: description explaining dependency types, 5 examples showing shorthand vs --blocks vs --blocked-by vs --depends-on vs --relates-to, COMMON ERRORS section for 'work unit not found', related commands (remove-dependency, dependencies, export-dependencies)",
+        "User runs 'fspec update-work-unit-status --help' and sees: PREREQUISITES (work unit must exist), WHEN TO USE (moving through ACDD workflow), valid status values listed, TYPICAL WORKFLOW showing backlog→specifying→testing→implementing→validating→done, example with output showing status change",
+        "User runs 'fspec --help' and sees updated main help with note: 'Get detailed help for any command with: fspec <command> --help'",
+        "User runs 'fspec add-question --help' and sees: WHEN TO USE (during Example Mapping in specifying phase), COMMON PATTERNS (use @human: prefix for questions directed at human), example showing question with answer flow, related commands (answer-question, add-rule, add-example, generate-scenarios)"
+      ],
+      "questions": [
+        {
+          "text": "@human: How should we handle the --help flag given the custom help system that overrides Commander?",
+          "selected": true,
+          "answer": "Whatever works best - could be smoke tests, integration tests, or manual testing"
+        },
+        {
+          "text": "@human: Should we refactor existing help command formatting utilities into shared module?",
+          "selected": true,
+          "answer": "Integration tests that verify help output contains required sections and examples"
+        },
+        {
+          "text": "@human: Should we implement help for all 80+ commands at once or incrementally?",
+          "selected": true,
+          "answer": "Infrastructure first: build help system, then implement per command"
+        },
+        {
+          "text": "@human: What testing strategy should we use for help output?",
+          "selected": true,
+          "answer": "Integration tests that verify help output contains required sections and examples"
+        }
+      ],
+      "assumptions": [
+        "Whatever works best given current setup and custom help system that overrides Commander's, and existing fspec --help",
+        "Whatever works best - could be smoke tests, integration tests, or manual testing",
+        "Integration tests that verify help output contains required sections and examples",
+        "Integration tests that verify help output contains required sections and examples"
+      ]
+    },
+    "CLI-006": {
+      "id": "CLI-006",
+      "title": "Implement scalable help system for all commands",
+      "status": "done",
+      "createdAt": "2025-10-13T06:06:34.397Z",
+      "updatedAt": "2025-10-13T06:26:59.486Z",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-13T06:06:40.458Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-13T06:12:23.135Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-13T06:13:25.161Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-13T06:25:58.574Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-13T06:26:59.487Z"
+        }
+      ],
+      "rules": [
+        "Help system must automatically discover and register help configs without manual registration in index.ts",
+        "Each command should have its help config in a dedicated file (command-name-help.ts) co-located with command implementation",
+        "Commander.js should automatically handle --help flag for all commands without explicit handlers in action callbacks",
+        "Help configs should use a naming convention that maps to command names (e.g., remove-tag-from-scenario -> remove-tag-from-scenario-help.ts)",
+        "Missing help config files should fall back to Commander.js default help (current behavior) rather than error"
+      ],
+      "examples": [
+        "When user runs 'fspec remove-tag-from-scenario --help' and help config exists at src/commands/remove-tag-from-scenario-help.ts, display detailed help from config",
+        "When user runs 'fspec some-command --help' and no help config file exists, fall back to Commander.js default help"
+      ],
+      "questions": [
+        {
+          "text": "@human: Should we use Commander.js custom help configuration or a global --help interceptor to avoid modifying 91 command registrations?",
+          "selected": true,
+          "answer": "Use process-level help interceptor with registry Set. Intercept --help before Commander.js, use dynamic imports, graceful fallback for missing configs, zero modifications to 91 command registrations."
+        }
+      ]
     }
   },
   "states": {
@@ -1462,7 +1596,9 @@
       "INIT-003",
       "DOC-002",
       "RSPEC-001",
-      "BUG-003"
+      "BUG-003",
+      "CLI-005",
+      "CLI-006"
     ],
     "blocked": []
   }

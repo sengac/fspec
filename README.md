@@ -251,12 +251,13 @@ npm unlink -g fspec
 
 ### Getting Help
 
-fspec has a comprehensive, hierarchical help system organized by area of responsibility:
+fspec has a comprehensive, hierarchical help system with detailed documentation for all commands:
 
 ```bash
 # Main help - shows command groups and quick start
-fspec --help
-fspec help
+fspec                  # Shows main help (same as --help)
+fspec --help           # Shows main help
+fspec help             # Shows command group help
 
 # Group-specific help with all commands, options, and examples
 fspec help specs       # Write and manage Gherkin feature files (create, edit, validate)
@@ -264,6 +265,12 @@ fspec help work        # Track work units through ACDD workflow (Kanban, depende
 fspec help discovery   # Collaborative discovery with example mapping (questions, rules, examples)
 fspec help metrics     # Track progress and quality (estimates, metrics, reports, statistics)
 fspec help setup       # Configure project structure (tags, epics, prefixes, foundation docs)
+
+# Command-specific help - detailed documentation for ANY command
+fspec <command> --help
+fspec validate --help           # Comprehensive help for validate command
+fspec create-work-unit --help   # Comprehensive help for create-work-unit command
+fspec add-scenario --help       # Comprehensive help for add-scenario command
 ```
 
 **Command Groups:**
@@ -273,7 +280,15 @@ fspec help setup       # Configure project structure (tags, epics, prefixes, fou
 - **metrics** - Progress tracking, estimation, reports, token/time recording
 - **setup** - Tag registry, foundation docs, Mermaid diagrams, prefixes, epics
 
-**Note:** All commands include complete option documentation and practical examples in the help system. You no longer need to refer to this README for basic usage.
+**Help System Features:**
+- ✅ **All commands** have comprehensive `--help` documentation
+- ✅ **AI-optimized sections**: WHEN TO USE, PREREQUISITES, TYPICAL WORKFLOW, COMMON ERRORS, COMMON PATTERNS
+- ✅ **Complete examples** with expected output for every command
+- ✅ **Related commands** showing what to use next
+- ✅ **Notes and best practices** for each command
+- ✅ **Arguments and options** with required/optional indicators
+
+**Note:** All commands include complete option documentation and practical examples in the help system. You no longer need to refer to this README for detailed command usage.
 
 ### Validate Gherkin Syntax
 

@@ -197,6 +197,10 @@
           "description": "Work unit dependency tracking"
         },
         {
+          "name": "@discovery-command",
+          "description": "Example Mapping discovery commands"
+        },
+        {
           "name": "@documentation",
           "description": "Documentation Display",
           "examples": "Show acceptance criteria, show feature, show foundation (2 files)"
@@ -247,6 +251,10 @@
         {
           "name": "@generate-scenarios",
           "description": "Scenario generation from examples"
+        },
+        {
+          "name": "@help-system",
+          "description": "Help system and documentation features"
         },
         {
           "name": "@help-text",
@@ -435,6 +443,10 @@
         {
           "name": "@workflow-automation",
           "description": "Workflow automation and lifecycle integration utilities"
+        },
+        {
+          "name": "@workflow-command",
+          "description": "ACDD workflow-related commands"
         }
       ],
       "rule": "Every feature file MUST have at least ONE feature group tag."
@@ -728,6 +740,10 @@
           "description": "Circular dependency detection tests"
         },
         {
+          "name": "@complex-command",
+          "description": "Complex command with multiple modes and options"
+        },
+        {
           "name": "@confirmation",
           "description": "Tests confirmation messages and user feedback"
         },
@@ -762,9 +778,17 @@
           "testType": "Tests across components, parser integration, file operations"
         },
         {
+          "name": "@main-help",
+          "description": "Main help menu tests"
+        },
+        {
           "name": "@manual-test",
           "description": "Requires Manual Testing",
           "testType": "Visual verification, platform-specific checks, edge cases"
+        },
+        {
+          "name": "@medium-command",
+          "description": "Medium complexity command with multiple options"
         },
         {
           "name": "@overwrite",
@@ -777,6 +801,10 @@
         {
           "name": "@regression",
           "description": "Regression tests - comprehensive validation of existing functionality"
+        },
+        {
+          "name": "@simple-command",
+          "description": "Simple command with minimal options"
         },
         {
           "name": "@smoke",

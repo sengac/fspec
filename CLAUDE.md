@@ -328,13 +328,38 @@ npm run format
 5. **No Shortcuts**: Fix issues properly, don't use `any` types or disable linters
 6. **No File Extensions**: Never use .js or .ts extensions in TypeScript imports
 
+## Getting Help with Commands
+
+fspec has comprehensive `--help` documentation for all commands:
+
+```bash
+# Get help for any command
+fspec <command> --help
+
+# Examples:
+fspec validate --help
+fspec create-work-unit --help
+fspec add-scenario --help
+```
+
+**Every command includes:**
+- Description and purpose
+- Usage syntax with arguments/options
+- AI-optimized sections (WHEN TO USE, PREREQUISITES, TYPICAL WORKFLOW, COMMON ERRORS, COMMON PATTERNS)
+- Multiple examples with expected output
+- Related commands
+- Notes and best practices
+
+**Use `--help` frequently** - it's the fastest way to understand command usage without referring to documentation.
+
 ## When You Get Stuck
 
-1. Check existing patterns in the codebase
-2. Refer to `spec/FOUNDATION.md` for project goals
-3. Refer to `spec/CLAUDE.md` for Gherkin guidelines
-4. Run tests to verify changes
-5. Check feature files for acceptance criteria
+1. **Use `--help`**: Run `fspec <command> --help` for comprehensive command documentation
+2. Check existing patterns in the codebase
+3. Refer to `spec/FOUNDATION.md` for project goals
+4. Refer to `spec/CLAUDE.md` for Gherkin guidelines
+5. Run tests to verify changes
+6. Check feature files for acceptance criteria
 
 ## Contributing
 
