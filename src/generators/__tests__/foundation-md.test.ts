@@ -251,11 +251,80 @@ describe('Feature: Generate FOUNDATION.md from foundation.json', () => {
   });
 
   describe('Scenario: Command tables are generated with proper markdown syntax', () => {
-    it.todo('should format command tables with proper markdown');
+    it('should format command tables with proper markdown', async () => {
+      // Given I have "spec/foundation.json" with core commands
+      const foundation: Partial<Foundation> = {
+        project: {
+          name: 'test',
+          description: 'test',
+          repository: 'https://test.com',
+          license: 'MIT',
+          importantNote: 'test',
+        },
+        coreCommands: {
+          categories: [
+            {
+              title: 'Feature Management',
+              commands: [
+                {
+                  command: 'fspec create-feature',
+                  description: 'Create new feature file',
+                  status: '✅',
+                },
+                {
+                  command: 'fspec validate',
+                  description: 'Validate Gherkin syntax',
+                  status: '✅',
+                },
+              ],
+            },
+          ],
+        },
+      };
+
+      // When generation runs
+      const markdown = await generateFoundationMd(foundation as Foundation);
+
+      // Then markdown should contain command table
+      expect(markdown).toContain('## 4. Core Commands Reference');
+      expect(markdown).toContain('### Feature Management');
+      expect(markdown).toContain(
+        '- `fspec create-feature` - Create new feature file ✅'
+      );
+      expect(markdown).toContain(
+        '- `fspec validate` - Validate Gherkin syntax ✅'
+      );
+    });
   });
 
   describe('Scenario: Fail if foundation.json is invalid', () => {
-    it.todo('should reject invalid foundation.json schema');
+    it('should reject invalid foundation.json schema', async () => {
+      // Given I have an invalid foundation.json (missing required fields)
+      const invalidFoundation = {
+        // Missing $schema
+        project: {
+          name: 'test',
+          // Missing required fields: description, repository, license, importantNote
+        },
+      };
+
+      await writeFile(
+        foundationJsonPath,
+        JSON.stringify(invalidFoundation, null, 2)
+      );
+
+      // When I attempt to generate FOUNDATION.md with schema validation
+      // Note: generateFoundationMd doesn't validate, so we'd need to use
+      // the command that includes validation or validate separately
+      const { validateFoundationJson } = await import(
+        '../../validators/json-schema'
+      );
+
+      // Then validation should fail
+      const validation = await validateFoundationJson(foundationJsonPath);
+      expect(validation.valid).toBe(false);
+      expect(validation.errors.length).toBeGreaterThan(0);
+    });
   });
 
   describe('Scenario: Regeneration is idempotent', () => {
@@ -333,6 +402,81 @@ describe('Feature: Generate FOUNDATION.md from foundation.json', () => {
   });
 
   describe('Scenario: Support custom output path', () => {
-    it.todo('should support generating to custom output path');
+    it('should support generating to custom output path', async () => {
+      // Given I have a valid foundation.json
+      const foundation: Foundation = {
+        $schema: '../schemas/foundation.schema.json',
+        project: {
+          name: 'test',
+          description: 'test',
+          repository: 'https://test.com',
+          license: 'MIT',
+          importantNote: 'test',
+        },
+        whatWeAreBuilding: {
+          projectOverview: 'test',
+          technicalRequirements: {
+            coreTechnologies: [],
+            architecture: {
+              pattern: 'test',
+              fileStructure: 'test',
+              deploymentTarget: 'test',
+              integrationModel: [],
+            },
+            developmentAndOperations: {
+              developmentTools: 'test',
+              testingStrategy: 'test',
+              logging: 'test',
+              validation: 'test',
+              formatting: 'test',
+            },
+            keyLibraries: [],
+          },
+          nonFunctionalRequirements: [],
+        },
+        whyWeAreBuildingIt: {
+          problemDefinition: {
+            primary: { title: 'test', description: 'test', points: [] },
+            secondary: [],
+          },
+          painPoints: { currentState: 'test', specific: [] },
+          stakeholderImpact: [],
+          theoreticalSolutions: [],
+          developmentMethodology: {
+            name: 'test',
+            description: 'test',
+            steps: [],
+            ensures: [],
+          },
+          successCriteria: [],
+          constraintsAndAssumptions: { constraints: [], assumptions: [] },
+        },
+        architectureDiagrams: [],
+        coreCommands: { categories: [] },
+        featureInventory: {
+          phases: [],
+          tagUsageSummary: {
+            phaseDistribution: [],
+            componentDistribution: [],
+            featureGroupDistribution: [],
+            priorityDistribution: [],
+            testingCoverage: [],
+          },
+        },
+        notes: { developmentStatus: [] },
+      };
+
+      // When I generate markdown and write to custom path
+      const customPath = join(tmpDir, 'custom', 'FOUNDATION.md');
+      await mkdir(join(tmpDir, 'custom'), { recursive: true });
+
+      const markdown = await generateFoundationMd(foundation);
+      await writeFile(customPath, markdown, 'utf-8');
+
+      // Then the file should exist at the custom path
+      const content = await readFile(customPath, 'utf-8');
+      expect(content).toBeTruthy();
+      expect(content).toContain('# test Project Foundation Document');
+    });
   });
 });

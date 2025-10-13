@@ -1960,33 +1960,11 @@
         "action": "detect and fix feature file prefill using CLI commands",
         "benefit": "proper workflow enforcement and no direct file editing"
       }
-    },
-    "DOC-003": {
-      "id": "DOC-003",
-      "title": "Document prefill detection and set-user-story command",
-      "status": "specifying",
-      "createdAt": "2025-10-13T09:00:17.205Z",
-      "updatedAt": "2025-10-13T09:00:46.797Z",
-      "description": "Update spec/CLAUDE.md to document the new set-user-story command, prefill detection workflow, and system-reminders for placeholder text",
-      "children": [],
-      "stateHistory": [
-        {
-          "state": "specifying",
-          "timestamp": "2025-10-13T09:00:33.758Z"
-        }
-      ],
-      "userStory": {
-        "role": "AI agent using fspec",
-        "action": "understand the prefill detection workflow and set-user-story command",
-        "benefit": "I can properly use fspec commands instead of directly editing feature files"
-      }
     }
   },
   "states": {
     "backlog": [],
-    "specifying": [
-      "DOC-003"
-    ],
+    "specifying": [],
     "testing": [],
     "implementing": [],
     "validating": [],
