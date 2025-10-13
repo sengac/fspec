@@ -418,10 +418,11 @@ fspec list-scenario-tags spec/features/login.feature "Login" --show-categories
 **Notes:**
 - All tag write operations (register-tag, update-tag, delete-tag) modify `spec/tags.json` and automatically regenerate `spec/TAGS.md`
 - Feature-level tags apply to the entire feature
-- Scenario-level tags apply only to specific scenarios
+- Scenario-level tags apply only to specific scenarios (but NOT work unit ID tags - see below)
 - Scenarios inherit feature-level tags when queried
 - `--validate-registry` ensures tags exist in spec/tags.json before adding
 - Never edit the markdown files directly
+- **IMPORTANT**: Work unit ID tags (e.g., `@AUTH-001`, `@COV-005`) MUST be at feature level only, never at scenario level. Use coverage files (`*.feature.coverage`) for fine-grained scenario-to-implementation traceability
 
 ### Query Operations
 

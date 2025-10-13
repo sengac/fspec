@@ -816,8 +816,8 @@ Feature: Test
     });
   });
 
-  describe('Scenario: Validate scenario-level work unit tags', () => {
-    it('should validate work unit tags at scenario level', async () => {
+  describe('Scenario: Reject scenario-level work unit tags (BUG-005)', () => {
+    it('should reject work unit tags at scenario level', async () => {
       const featuresDir = join(testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
@@ -865,12 +865,21 @@ Feature: Test
         cwd: testDir,
       });
 
-      expect(result.results[0].valid).toBe(true);
+      // Should REJECT scenario-level work unit tags (BUG-005)
+      expect(result.results[0].valid).toBe(false);
+
+      // Should report both scenario-level work unit tags as errors
+      const workUnitErrors = result.results[0].errors.filter(e =>
+        e.message.includes('must be at feature level')
+      );
+      expect(workUnitErrors.length).toBe(2);
+      expect(workUnitErrors[0].tag).toBe('@AUTH-001');
+      expect(workUnitErrors[1].tag).toBe('@AUTH-002');
     });
   });
 
   describe('Scenario: Detect multiple invalid work unit tags', () => {
-    it('should report all invalid work unit tags', async () => {
+    it('should report all invalid work unit tags (scenario-level and non-existent)', async () => {
       const featuresDir = join(testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
@@ -920,11 +929,24 @@ Feature: Test
       });
 
       expect(result.results[0].valid).toBe(false);
-      const workUnitError = result.results[0].errors.find(
+
+      // Should have 2 errors:
+      // 1. @AUTH-002 at scenario level (BUG-005)
+      // 2. @AUTH-999 non-existent AND at scenario level
+      const errors = result.results[0].errors;
+      expect(errors.length).toBeGreaterThanOrEqual(2);
+
+      // Check for scenario-level work unit tag error
+      const scenarioLevelError = errors.find(
+        e => e.tag === '@AUTH-002' && e.message.includes('must be at feature level')
+      );
+      expect(scenarioLevelError).toBeDefined();
+
+      // Check for non-existent work unit error
+      const nonExistentError = errors.find(
         e => e.tag === '@AUTH-999'
       );
-      expect(workUnitError).toBeDefined();
-      expect(workUnitError!.message).toContain('@AUTH-999');
+      expect(nonExistentError).toBeDefined();
     });
   });
 
