@@ -1,3 +1,4 @@
+@validator
 @partial
 @phase2
 @setup

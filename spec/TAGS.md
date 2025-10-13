@@ -79,6 +79,7 @@ Tags that categorize features by functional area.
 | `@filtering` | Filtering and query operations |  |
 | `@forecasting` | Forecasting and predictions |  |
 | `@formatting` | Auto-Formatting |  |
+| `@foundation` | Foundation documentation and schema features |  |
 | `@foundation-management` | FOUNDATION.md Operations |  |
 | `@generate-scenarios` | Scenario generation from examples |  |
 | `@help-text` | Help and documentation features |  |
@@ -211,6 +212,7 @@ Tags tracking development status of features.
 | `@done` | Complete |  |
 | `@exmap-001` | Work unit: Redesign Example Mapping to match BDD technique |  |
 | `@init-001` | Work unit: Add ensureWorkUnitsFile to ALL 48+ commands |  |
+| `@partial` | Partially implemented feature - work in progress |  |
 | `@refactoring` | Code that needs refactoring |  |
 | `@technical-debt` | Technical debt that should be addressed |  |
 | `@test-001` | Example test work unit |  |

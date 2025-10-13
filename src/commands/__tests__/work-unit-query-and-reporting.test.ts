@@ -324,6 +324,64 @@ describe('Feature: Work Unit Query and Reporting', () => {
     });
   });
 
+  describe('Scenario: Summary report writes to file and returns output path', () => {
+    it('should write report to file and return path in output', async () => {
+      // Given I have a project with spec directory
+      // And work units exist across multiple states
+      const workUnits: WorkUnitsData = {
+        workUnits: {
+          'AUTH-001': {
+            id: 'AUTH-001',
+            title: 'OAuth',
+            status: 'implementing',
+            estimate: 5,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+          'DASH-001': {
+            id: 'DASH-001',
+            title: 'Dashboard',
+            status: 'done',
+            estimate: 8,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+        },
+        states: {
+          backlog: [],
+          specifying: [],
+          testing: [],
+          implementing: ['AUTH-001'],
+          validating: [],
+          done: ['DASH-001'],
+          blocked: [],
+        },
+      };
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
+
+      // When I run "fspec generate-summary-report --format=markdown"
+      const result = await generateSummaryReport({
+        format: 'markdown',
+        cwd: testDir,
+      });
+
+      // Then the command should succeed
+      expect(result).toBeDefined();
+
+      // And the file "spec/summary-report.md" should be created
+      const expectedPath = join(testDir, 'spec', 'summary-report.md');
+      const fileContent = await readFile(expectedPath, 'utf-8');
+      expect(fileContent).toBeTruthy();
+      expect(fileContent.length).toBeGreaterThan(0);
+
+      // And the output should display "Report generated: spec/summary-report.md"
+      expect(result.outputFile).toBe('spec/summary-report.md');
+    });
+  });
+
   describe('Scenario: Export work units to JSON', () => {
     it('should create valid JSON file with all work unit fields', async () => {
       // Given I have a project with spec directory

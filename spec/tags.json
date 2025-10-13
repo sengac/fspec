@@ -236,6 +236,10 @@
           "examples": "Prettier execution, Gherkin formatting, consistency enforcement (1 file)"
         },
         {
+          "name": "@foundation",
+          "description": "Foundation documentation and schema features"
+        },
+        {
           "name": "@foundation-management",
           "description": "FOUNDATION.md Operations",
           "examples": "Add Mermaid diagram, update foundation sections, show foundation (3 files)"
@@ -680,6 +684,10 @@
         {
           "name": "@init-001",
           "description": "Work unit: Add ensureWorkUnitsFile to ALL 48+ commands"
+        },
+        {
+          "name": "@partial",
+          "description": "Partially implemented feature - work in progress"
         },
         {
           "name": "@refactoring",

@@ -1,4 +1,4 @@
-import { readFile } from 'fs/promises';
+import { readFile, writeFile } from 'fs/promises';
 import { join } from 'path';
 
 interface WorkUnit {
@@ -21,17 +21,20 @@ interface SummaryReport {
     completedPoints: number;
     completedWorkUnits: number;
   };
+  outputFile: string;
 }
 
 export async function generateSummaryReport(options: {
   cwd?: string;
+  format?: 'markdown' | 'json';
+  output?: string;
 }): Promise<SummaryReport> {
   const cwd = options.cwd || process.cwd();
   const workUnitsFile = join(cwd, 'spec', 'work-units.json');
 
   try {
-    const content = await readFile(workUnitsFile, 'utf-8');
-    const data: WorkUnitsData = JSON.parse(content);
+    const fileContent = await readFile(workUnitsFile, 'utf-8');
+    const data: WorkUnitsData = JSON.parse(fileContent);
 
     const workUnits = Object.values(data.workUnits);
 
@@ -55,7 +58,7 @@ export async function generateSummaryReport(options: {
       0
     );
 
-    return {
+    const report = {
       totalWorkUnits: workUnits.length,
       byStatus,
       totalStoryPoints,
@@ -64,10 +67,50 @@ export async function generateSummaryReport(options: {
         completedWorkUnits: completedWorkUnits.length,
       },
     };
+
+    // Determine output file path
+    const format = options.format || 'markdown';
+    const extension = format === 'json' ? 'json' : 'md';
+    const defaultOutputPath = join('spec', `summary-report.${extension}`);
+    const outputPath = options.output || defaultOutputPath;
+    const fullOutputPath = join(cwd, outputPath);
+
+    // Generate report content based on format
+    let content: string;
+    if (format === 'json') {
+      content = JSON.stringify(report, null, 2);
+    } else {
+      content = generateMarkdownReport(report);
+    }
+
+    // Write report to file
+    await writeFile(fullOutputPath, content, 'utf-8');
+
+    return {
+      ...report,
+      outputFile: outputPath,
+    };
   } catch (error: unknown) {
     if (error instanceof Error) {
       throw new Error(`Failed to generate summary report: ${error.message}`);
     }
     throw error;
   }
+}
+
+function generateMarkdownReport(report: Omit<SummaryReport, 'outputFile'>): string {
+  let md = '# Project Summary Report\n\n';
+  md += `**Total Work Units:** ${report.totalWorkUnits}\n\n`;
+  md += `**Total Story Points:** ${report.totalStoryPoints}\n\n`;
+  md += '## Breakdown by Status\n\n';
+
+  for (const [status, count] of Object.entries(report.byStatus)) {
+    md += `- **${status}:** ${count}\n`;
+  }
+
+  md += '\n## Velocity Metrics\n\n';
+  md += `- **Completed Work Units:** ${report.velocity.completedWorkUnits}\n`;
+  md += `- **Completed Story Points:** ${report.velocity.completedPoints}\n`;
+
+  return md;
 }
