@@ -258,11 +258,30 @@ async function validateFileTags(
     }
 
     // Check SCENARIO-LEVEL tags (validate work unit tags for traceability)
+    // CRITICAL: Reject scenario-level work unit ID tags (BUG-005)
+    const scenarioWorkUnitTags = scenarioTags.filter(tag => isWorkUnitTag(tag));
+    if (scenarioWorkUnitTags.length > 0) {
+      for (const tag of scenarioWorkUnitTags) {
+        result.valid = false;
+        result.errors.push({
+          tag,
+          message: `Work unit ID tag ${tag} must be at feature level, not scenario level`,
+          suggestion: `Move ${tag} to feature-level tags. Use coverage files for fine-grained scenario traceability.`,
+        });
+      }
+    }
+
     const unregisteredScenarioTags = scenarioTags.filter(
       tag => !registry.validTags.has(tag)
     );
     if (unregisteredScenarioTags.length > 0) {
       for (const tag of unregisteredScenarioTags) {
+        // Skip work unit tags (already validated above)
+        if (isWorkUnitTag(tag)) {
+          // Already handled in scenario-level work unit tag check above
+          continue;
+        }
+
         // Scenario-level work unit tags must exist in work-units.json
         if (isWorkUnitTag(tag)) {
           const workUnitId = extractWorkUnitId(tag);

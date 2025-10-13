@@ -46,8 +46,7 @@ const PREFILL_PATTERNS = [
   // TODO markers
   { regex: /TODO:/gi, name: 'TODO:', command: 'fspec add-architecture' },
 
-  // Generic tag placeholders
-  { regex: /@phase1(?!\d)/g, name: '@phase1', command: 'fspec add-tag-to-feature' },
+  // Generic tag placeholders (literal placeholders only, not valid tags like @phase1)
   { regex: /@component(?!\w)/g, name: '@component', command: 'fspec add-tag-to-feature' },
   { regex: /@feature-group(?!\w)/g, name: '@feature-group', command: 'fspec add-tag-to-feature' },
 ];

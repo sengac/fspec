@@ -407,7 +407,8 @@ Individual scenarios can have their own tags for more granular organization:
 - **Test Type**: `@smoke`, `@regression`, `@sanity`, `@acceptance`
 - **Test Scope**: `@edge-case`, `@happy-path`, `@error-handling`
 - **Environment**: `@local`, `@staging`, `@production`
-- **Work Units**: `@AUTH-001`, `@DASH-002` (as defined in project-management.md)
+
+**IMPORTANT**: Work unit ID tags (e.g., `@AUTH-001`, `@DASH-002`) MUST be at feature level only, never at scenario level. Use coverage files (`*.feature.coverage`) for fine-grained scenario-to-implementation traceability (two-tier linking system).
 
 **Scenario-Level Example**:
 ```gherkin
