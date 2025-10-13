@@ -1,6 +1,10 @@
-import { readFile } from 'fs/promises';
-import { join } from 'path';
+import { readFile, access } from 'fs/promises';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
 import chalk from 'chalk';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 interface ShowFoundationSchemaOptions {
   cwd?: string;
@@ -18,9 +22,32 @@ export async function showFoundationSchema(
   const cwd = options.cwd || process.cwd();
 
   try {
-    // Read the schema file from src/schemas/foundation.schema.json
-    const schemaPath = join(__dirname, '../schemas/foundation.schema.json');
-    const schemaContent = await readFile(schemaPath, 'utf-8');
+    // Read the schema file from bundled location
+    // Try multiple paths to support different execution contexts:
+    // 1. dist/schemas/ (production, when running from dist/index.js)
+    // 2. src/schemas/ (tests, when running from src/commands/*.ts)
+    const possiblePaths = [
+      join(__dirname, 'schemas', 'foundation.schema.json'), // From dist/
+      join(__dirname, '..', 'schemas', 'foundation.schema.json'), // From src/commands/
+    ];
+
+    let schemaContent: string | null = null;
+    for (const path of possiblePaths) {
+      try {
+        schemaContent = await readFile(path, 'utf-8');
+        break;
+      } catch {
+        // Try next path
+        continue;
+      }
+    }
+
+    if (!schemaContent) {
+      throw new Error(
+        'Could not find foundation.schema.json. Tried paths: ' +
+          possiblePaths.join(', ')
+      );
+    }
 
     return {
       success: true,

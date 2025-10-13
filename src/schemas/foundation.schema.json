@@ -5,11 +5,26 @@
   "description": "JSON Schema for fspec foundation.json - the source of truth for FOUNDATION.md",
   "type": "object",
   "additionalProperties": true,
-  "required": [
-    "project",
-    "whatWeAreBuilding",
-    "whyWeAreBuildingIt",
-    "architectureDiagrams"
+  "required": ["project"],
+  "allOf": [
+    {
+      "anyOf": [
+        { "required": ["whatWeAreBuilding"] },
+        { "required": ["what_we_are_building"] }
+      ]
+    },
+    {
+      "anyOf": [
+        { "required": ["whyWeAreBuildingIt"] },
+        { "required": ["why_we_are_building_it"] }
+      ]
+    },
+    {
+      "anyOf": [
+        { "required": ["architectureDiagrams"] },
+        { "required": ["architecture_diagrams"] }
+      ]
+    }
   ],
   "properties": {
     "$schema": {
@@ -632,6 +647,48 @@
           }
         }
       }
+    },
+    "what_we_are_building": {
+      "type": "object",
+      "description": "Alias for whatWeAreBuilding (snake_case variant)",
+      "anyOf": [
+        { "required": ["projectOverview", "technicalRequirements", "nonFunctionalRequirements"] },
+        { "required": ["project_overview", "technical_requirements", "nonFunctionalRequirements"] }
+      ],
+      "properties": {
+        "project_overview": {
+          "type": "string",
+          "description": "Alias for projectOverview (snake_case variant)"
+        },
+        "projectOverview": {
+          "type": "string"
+        },
+        "technical_requirements": {
+          "type": "object",
+          "description": "Alias for technicalRequirements (snake_case variant)",
+          "required": ["coreTechnologies", "architecture", "developmentAndOperations", "keyLibraries"],
+          "properties": {
+            "coreTechnologies": { "type": "array" },
+            "architecture": { "type": "object" },
+            "developmentAndOperations": { "type": "object" },
+            "keyLibraries": { "type": "array" }
+          }
+        },
+        "technicalRequirements": {
+          "$ref": "#/properties/whatWeAreBuilding/properties/technicalRequirements"
+        },
+        "nonFunctionalRequirements": {
+          "$ref": "#/properties/whatWeAreBuilding/properties/nonFunctionalRequirements"
+        }
+      }
+    },
+    "why_we_are_building_it": {
+      "$ref": "#/properties/whyWeAreBuildingIt",
+      "description": "Alias for whyWeAreBuildingIt (snake_case variant)"
+    },
+    "architecture_diagrams": {
+      "$ref": "#/properties/architectureDiagrams",
+      "description": "Alias for architectureDiagrams (snake_case variant)"
     }
   }
 }
