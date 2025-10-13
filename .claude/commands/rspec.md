@@ -279,6 +279,18 @@ After reverse ACDD is complete, future work follows **forward ACDD**:
 4. **Implement**: Write minimal code to pass tests (green phase)
 5. **Validate**: Refactor, review, and validate
 
+**IMPORTANT**: During forward ACDD, you CAN move work units backward through Kanban states if you discover mistakes:
+
+```bash
+# Example: Realized specs are incomplete while implementing
+fspec update-work-unit-status AUTH-001 specifying  # Move backward to fix specs
+
+# Example: Tests need refactoring
+fspec update-work-unit-status AUTH-001 testing     # Move backward to fix tests
+```
+
+**Moving backward is ENCOURAGED** - it's better to fix issues properly than to create fragmented work units. Only create new work units for genuinely new features, not for fixing mistakes in current work.
+
 Use fspec commands to maintain specifications:
 - `fspec validate` - Validate Gherkin syntax
 - `fspec format` - Format feature files
