@@ -1375,6 +1375,55 @@
         "User story map created as Mermaid diagram in foundation.json architectureDiagrams array with section='User Story Map'",
         "Reverse engineered Express.js app: creates epic 'api-management', prefix 'API', work units API-001 'User authentication', API-002 'Data validation', feature files with inferred scenarios, skeleton tests with describe/it blocks (no implementation)"
       ]
+    },
+    "BUG-003": {
+      "id": "BUG-003",
+      "title": "Summary report shows 'undefined' instead of file path",
+      "status": "done",
+      "createdAt": "2025-10-13T05:18:30.471Z",
+      "updatedAt": "2025-10-13T05:25:46.597Z",
+      "description": "When running 'fspec generate-summary-report --format=markdown', the output shows 'Report generated: undefined' instead of the actual file path where the report was saved.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-13T05:18:44.355Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-13T05:22:07.396Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-13T05:22:44.125Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-13T05:24:48.456Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-13T05:25:46.597Z"
+        }
+      ],
+      "rules": [
+        "Command output must show the actual file path where the report was generated",
+        "When --output option is provided, show that specific path",
+        "When --output option is NOT provided, show the default generated path",
+        "Function must return outputFile property containing the path where report was written",
+        "Function must accept format (markdown, json, html) and output (file path) options",
+        "Function must write report to file system in the specified format",
+        "Default output path should be spec/summary-report.{format}"
+      ],
+      "examples": [
+        "User runs 'fspec generate-summary-report --format=markdown', sees 'Report generated: spec/summary-report.md'",
+        "User runs 'fspec generate-summary-report --format=markdown --output=custom.md', sees 'Report generated: custom.md'",
+        "Currently shows 'Report generated: undefined' instead of actual path",
+        "Function currently returns SummaryReport object without outputFile property",
+        "CLI calls result.outputFile which is undefined",
+        "Function signature currently missing format and output parameters"
+      ],
+      "estimate": 3
     }
   },
   "states": {
@@ -1412,7 +1461,8 @@
       "CLI-004",
       "INIT-003",
       "DOC-002",
-      "RSPEC-001"
+      "RSPEC-001",
+      "BUG-003"
     ],
     "blocked": []
   }

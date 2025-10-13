@@ -149,3 +149,12 @@ Feature: Work Unit Query and Reporting
     And the file should contain CSV headers: id,title,status,createdAt,updatedAt
     And the file should contain only work units with status "implementing"
     And the CSV should be valid and importable to spreadsheet applications
+
+  @BUG-003
+  Scenario: Summary report writes to file and returns output path
+    Given I have a project with spec directory
+    And work units exist across multiple states
+    When I run "fspec generate-summary-report --format=markdown"
+    Then the command should succeed
+    And the file "spec/summary-report.md" should be created
+    And the output should display "Report generated: spec/summary-report.md"

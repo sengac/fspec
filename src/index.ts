@@ -891,7 +891,7 @@ function displayMetricsHelp(): void {
   console.log('    Description: Generate comprehensive project report');
   console.log('    Options:');
   console.log(
-    '      --format <format>                Output: markdown, json, or html (default: markdown)'
+    '      --format <format>                Output: markdown or json (default: markdown)'
   );
   console.log('      --output <file>                  Output file path');
   console.log('    Examples:');
@@ -2727,14 +2727,14 @@ program
   .description('Generate a comprehensive project summary report')
   .option(
     '--format <format>',
-    'Output format: markdown, json, or html',
+    'Output format: markdown or json',
     'markdown'
   )
   .option('--output <file>', 'Output file path')
   .action(async (options: { format?: string; output?: string }) => {
     try {
       const result = await generateSummaryReport({
-        format: options.format as 'markdown' | 'json' | 'html',
+        format: options.format as 'markdown' | 'json',
         output: options.output,
       });
       console.log(chalk.green(`✓ Report generated: ${result.outputFile}`));
