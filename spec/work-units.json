@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-13T09:00:46.798Z"
+    "lastUpdated": "2025-10-13T12:26:34.356Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -1960,6 +1960,709 @@
         "action": "detect and fix feature file prefill using CLI commands",
         "benefit": "proper workflow enforcement and no direct file editing"
       }
+    },
+    "COV-001": {
+      "id": "COV-001",
+      "title": "Feature-to-Code Coverage Tracking",
+      "status": "done",
+      "createdAt": "2025-10-13T09:49:22.476Z",
+      "updatedAt": "2025-10-13T12:30:18.223Z",
+      "description": "Create .coverage files that map Gherkin scenarios to test files and implementation code lines, with statistics and AI-assisted verification",
+      "epic": "coverage-tracking",
+      "children": [
+        "COV-002",
+        "COV-003",
+        "COV-004",
+        "COV-005",
+        "COV-006"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-13T09:49:22.866Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-13T12:24:55.611Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-13T12:25:17.670Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-13T12:30:17.638Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-13T12:30:17.932Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-13T12:30:18.224Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using ACDD",
+        "action": "track which test files and implementation code lines map to each Gherkin scenario",
+        "benefit": "I can see exactly what code is covered by acceptance criteria and identify gaps"
+      },
+      "rules": [
+        "Every .feature file must have a corresponding .feature.coverage file",
+        "Coverage files must be in JSON format with scenario-to-test-to-code mappings",
+        "Coverage files must include calculated statistics (total scenarios, covered scenarios, coverage percentage)",
+        "Automatically create .feature.coverage files when feature files are created via create-feature command",
+        "AI discovers test-to-scenario mappings using reverse ACDD (rspec.md) for existing code, or tracks mappings during forward ACDD. fspec provides CLI commands for AI to record these mappings",
+        "fspec prompts AI agent via interactive 'link-coverage' command (or similar name) to specify which implementation files and lines are covered by tests",
+        "Use 'audit-coverage' command that works with AI agent in a loop, prompting it to verify each file's mappings one by one. AI looks up current line numbers and updates coverage file",
+        "All statistics: coverage percentage, uncovered scenarios, number of test cases per scenario, implementation files touched, lines covered per file",
+        "Separate commands since coverage tracking is interactive and requires AI agent collaboration (link-coverage, audit-coverage, show-coverage, etc.)",
+        "JSON schema: {scenarios: [{name, testMappings: [{file, lines, implMappings: [{file, lines}]}]}], stats: {totalScenarios, coveredScenarios, coveragePercent, testFiles, implFiles, totalLinesCovered}}",
+        "Yes to both: scenarios can have multiple test files (array of testMappings), and test files can appear in multiple scenario mappings (many-to-many relationship)",
+        "Yes, show uncovered scenarios with empty testMappings array. Integrate with ACDD: block work units from moving to 'done' if linked feature has uncovered scenarios. Emit system-reminder to prompt AI to add coverage",
+        "Yes, validate file paths exist when linking coverage. Fail with clear error if test file or implementation file path is invalid"
+      ],
+      "examples": [
+        "Feature file 'user-login.feature' has companion file 'user-login.feature.coverage' in same directory",
+        "Coverage file maps scenario 'Login with valid credentials' to test file 'src/__tests__/auth.test.ts' lines 45-62",
+        "Coverage file shows test at lines 45-62 covers implementation file 'src/auth/login.ts' lines 10,11,12,15,20",
+        "User runs 'fspec create-feature User Login', creates user-login.feature AND user-login.feature.coverage automatically",
+        "AI runs 'fspec link-coverage user-login --scenario \"Login with valid credentials\" --test-file src/__tests__/auth.test.ts --test-lines 45-62', fspec prompts AI for implementation files",
+        "AI runs 'fspec audit-coverage user-login', fspec shows first mapping and asks AI to verify line numbers are still correct, repeats for all mappings",
+        "Developer runs 'fspec show-coverage user-login', sees output: 5 scenarios, 4 covered (80%), 2 test files, 3 implementation files, 45 lines covered"
+      ],
+      "questions": [
+        {
+          "text": "@human: Should coverage files be created automatically when a feature file is created (via create-feature), or on-demand with a separate command (like init-coverage)?",
+          "selected": true,
+          "answer": "Automatically create .feature.coverage files when feature files are created via create-feature command"
+        },
+        {
+          "text": "@human: How should the system discover which test files map to which scenarios? Should AI read test files and match them to scenario names, or should users manually link them with a command?",
+          "selected": true,
+          "answer": "AI discovers test-to-scenario mappings using reverse ACDD (rspec.md) for existing code, or tracks mappings during forward ACDD. fspec provides CLI commands for AI to record these mappings"
+        },
+        {
+          "text": "@human: How should we track which implementation code lines are covered? Should AI parse test code to find which files are imported/used, or should this be manually specified?",
+          "selected": true,
+          "answer": "fspec prompts AI agent via interactive 'link-coverage' command (or similar name) to specify which implementation files and lines are covered by tests"
+        },
+        {
+          "text": "@human: What happens when code changes and line numbers shift? Should we store line numbers at all, or use some other identifier (like function names, AST nodes, code hashes)?",
+          "selected": true,
+          "answer": "Use 'audit-coverage' command that works with AI agent in a loop, prompting it to verify each file's mappings one by one. AI looks up current line numbers and updates coverage file"
+        },
+        {
+          "text": "@human: What does 'AI-assisted verification' mean exactly? Should the AI read coverage files and suggest corrections, or interactively ask the developer to confirm mappings?",
+          "selected": true,
+          "answer": "AI does all verification work during audit-coverage command by reading files, checking line numbers, and confirming mappings are correct"
+        },
+        {
+          "text": "@human: What statistics are most important? Coverage percentage, uncovered scenarios, number of test cases, implementation files touched, something else?",
+          "selected": true,
+          "answer": "All statistics: coverage percentage, uncovered scenarios, number of test cases per scenario, implementation files touched, lines covered per file"
+        },
+        {
+          "text": "@human: Should coverage validation be integrated into existing commands (like 'fspec check', 'fspec validate'), or be separate commands?",
+          "selected": true,
+          "answer": "Separate commands since coverage tracking is interactive and requires AI agent collaboration (link-coverage, audit-coverage, show-coverage, etc.)"
+        },
+        {
+          "text": "@human: What should the JSON schema look like? Should it be: {scenarios: [{name, testMappings: [{file, lines, implMappings: [{file, lines}]}]}], stats: {...}}?",
+          "selected": true,
+          "answer": "JSON schema: {scenarios: [{name, testMappings: [{file, lines, implMappings: [{file, lines}]}]}], stats: {totalScenarios, coveredScenarios, coveragePercent, testFiles, implFiles, totalLinesCovered}}"
+        },
+        {
+          "text": "@human: Can one scenario map to multiple test files? Can one test file cover multiple scenarios?",
+          "selected": true,
+          "answer": "Yes to both: scenarios can have multiple test files (array of testMappings), and test files can appear in multiple scenario mappings (many-to-many relationship)"
+        },
+        {
+          "text": "@human: What if a scenario has no tests yet (ACDD testing phase not started)? Should coverage file show it as uncovered with empty test mappings?",
+          "selected": true,
+          "answer": "Yes, show uncovered scenarios with empty testMappings array. Integrate with ACDD: block work units from moving to 'done' if linked feature has uncovered scenarios. Emit system-reminder to prompt AI to add coverage"
+        },
+        {
+          "text": "@human: Should we validate that test files and implementation files actually exist when linking coverage? Fail if file paths are invalid?",
+          "selected": true,
+          "answer": "Yes, validate file paths exist when linking coverage. Fail with clear error if test file or implementation file path is invalid"
+        },
+        {
+          "text": "@human: Should coverage files be formatted/validated like feature files? Should there be 'fspec validate-coverage' command?",
+          "selected": true,
+          "answer": "No validation command needed. Coverage files are only modified by fspec commands (link-coverage, audit-coverage), never manually edited. fspec maintains file integrity automatically"
+        }
+      ],
+      "assumptions": [
+        "AI does all verification work during audit-coverage command by reading files, checking line numbers, and confirming mappings are correct",
+        "No validation command needed. Coverage files are only modified by fspec commands (link-coverage, audit-coverage), never manually edited. fspec maintains file integrity automatically"
+      ],
+      "estimate": 8
+    },
+    "COV-002": {
+      "id": "COV-002",
+      "title": "Auto-create Coverage Files",
+      "status": "done",
+      "createdAt": "2025-10-13T10:04:49.597Z",
+      "updatedAt": "2025-10-13T10:30:26.647Z",
+      "description": "Modify create-feature command to automatically generate .feature.coverage JSON files alongside feature files with empty scenario mappings",
+      "epic": "coverage-tracking",
+      "children": [],
+      "parent": "COV-001",
+      "estimate": 2,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-13T10:08:21.423Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-13T10:22:20.882Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-13T10:25:15.136Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-13T10:29:47.242Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-13T10:30:26.647Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer creating feature files",
+        "action": "have .feature.coverage files automatically created when I run create-feature",
+        "benefit": "I don't have to manually create coverage tracking files"
+      },
+      "rules": [
+        "Coverage files must be auto-created when create-feature command runs",
+        "Coverage file must be named <feature-name>.feature.coverage (same name as .feature file with .coverage extension)",
+        "Coverage file must be in same directory as .feature file (spec/features/)",
+        "Coverage file must be valid JSON with schema: {scenarios: [{name, testMappings: []}], stats: {totalScenarios, coveredScenarios, coveragePercent, testFiles, implFiles, totalLinesCovered}}",
+        "Initial coverage file must have empty testMappings arrays (no coverage yet)",
+        "Scenarios array must be populated from feature file scenarios (read from Gherkin AST)",
+        "Stats must be calculated: totalScenarios=count, coveredScenarios=0, coveragePercent=0, testFiles=[], implFiles=[], totalLinesCovered=0",
+        "Display message: 'Created <filename>.feature.coverage' so user knows coverage file was generated",
+        "If .coverage file exists: read and validate JSON. If valid, skip creation (preserve existing coverage). If invalid JSON, overwrite with fresh coverage file",
+        "Scenario names must exactly match Gherkin scenario names (case-sensitive, preserve whitespace) for accurate mapping"
+      ],
+      "examples": [
+        "Run 'fspec create-feature User Login', creates spec/features/user-login.feature AND spec/features/user-login.feature.coverage",
+        "Coverage file contains {scenarios: [{name: 'Login with valid credentials', testMappings: []}], stats: {totalScenarios: 1, coveredScenarios: 0, coveragePercent: 0, testFiles: [], implFiles: [], totalLinesCovered: 0}}",
+        "Feature file with 3 scenarios creates coverage file with 3 entries in scenarios array, totalScenarios: 3",
+        "If create-feature fails (invalid name), no .coverage file should be created",
+        "Coverage file exists with valid JSON, create-feature skips creation and displays 'Skipped user-login.feature.coverage (already exists)'",
+        "Coverage file exists with invalid JSON, create-feature overwrites it and displays 'Recreated user-login.feature.coverage (previous file was invalid)'"
+      ],
+      "questions": [
+        {
+          "text": "@human: Should coverage file creation be silent (no output), or should create-feature display 'Created user-login.feature.coverage'?",
+          "selected": true,
+          "answer": "Display message: 'Created <filename>.feature.coverage' so user knows coverage file was generated"
+        },
+        {
+          "text": "@human: What if a .coverage file already exists? Should we overwrite it, skip it, or error?",
+          "selected": true,
+          "answer": "If .coverage file exists: read and validate JSON. If valid, skip creation (preserve existing coverage). If invalid JSON, overwrite with fresh coverage file"
+        },
+        {
+          "text": "@human: Should scenario names in coverage file exactly match Gherkin scenario names (including case/whitespace), or should they be normalized?",
+          "selected": true,
+          "answer": "Scenario names must exactly match Gherkin scenario names (case-sensitive, preserve whitespace) for accurate mapping"
+        }
+      ]
+    },
+    "COV-003": {
+      "id": "COV-003",
+      "title": "Link Coverage Command",
+      "status": "done",
+      "createdAt": "2025-10-13T10:04:51.632Z",
+      "updatedAt": "2025-10-13T11:25:03.758Z",
+      "description": "Implement 'fspec link-coverage' command for mapping scenarios to test files and implementation files with interactive AI prompting and file path validation",
+      "epic": "coverage-tracking",
+      "children": [],
+      "dependsOn": [
+        "COV-002"
+      ],
+      "parent": "COV-001",
+      "estimate": 3,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-13T11:03:16.421Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-13T11:17:50.164Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-13T11:19:34.215Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-13T11:24:59.487Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-13T11:25:03.759Z"
+        }
+      ],
+      "questions": [
+        {
+          "text": "@human: Should one command support BOTH adding test mapping AND implementation mapping, or separate them into distinct operations?",
+          "selected": true,
+          "answer": "Non-interactive command-line interface. Support partial additions (test-only, or test+impl). After execution, display helpful message showing how to add more mappings or remove existing ones. No interactive prompts that wait for user input. All operations complete immediately with instructional output."
+        },
+        {
+          "text": "@human: How should the link-coverage command be invoked? (all-in-one, two-step, or interactive prompting?)",
+          "selected": true,
+          "answer": "Single flexible link-coverage command. Support three modes: (1) test-only (--test-file + --test-lines), (2) impl-only (--impl-file + --impl-lines), (3) both at once (all four flags). Command validates required flag combinations and provides helpful error messages if incorrect combination provided."
+        },
+        {
+          "text": "@human: When adding impl-only (no test flags), which test mapping should it attach to? Most recent test for that scenario, or require test file specification?",
+          "selected": true,
+          "answer": "Always require --test-file when adding implementation mappings. Implementation mappings attach to specific test mappings, so test file must be specified to identify which test mapping to update. This ensures explicit, unambiguous attachment."
+        },
+        {
+          "text": "@human: For line numbers, should we support ranges (45-62), individual lines (10,11,12), or both? Should format be consistent between test and impl lines?",
+          "selected": true,
+          "answer": "Test lines: range format only (e.g., '45-62'). Implementation lines: comma-separated primary (e.g., '10,11,12,15,20'), but also accept ranges as convenience (e.g., '10-15' expands to [10,11,12,13,14,15]). This matches storage format and mirrors reality: tests are contiguous, impl can be scattered."
+        },
+        {
+          "text": "@human: Should file paths be validated (check if they exist on disk) before adding to coverage? Error if missing, or allow with warning?",
+          "selected": true,
+          "answer": "Validate file paths by default (error if file doesn't exist). Support --skip-validation flag to bypass validation for forward planning scenarios. When validation fails, display clear error with file path and suggestion. When --skip-validation used, show warning that file doesn't exist but continue."
+        },
+        {
+          "text": "@human: What happens if you try to link a test mapping that already exists (same scenario + same test file)? Overwrite, append, or error?",
+          "selected": true,
+          "answer": "Append mode: allow multiple test mappings for the same file in one scenario. Each mapping is independent with its own line range and impl mappings. Display message showing all mappings for that file. This supports scenarios where one scenario is tested multiple times in the same file (e.g., different test suites or contexts)."
+        },
+        {
+          "text": "@human: When adding impl mapping to existing test, what if that test already has impl mappings? Append to the array or replace?",
+          "selected": true,
+          "answer": "Smart append: check if impl file already exists in the test mapping's implMappings array. If exists, update the line numbers for that file. If doesn't exist, append as new impl mapping. Display whether updated or added. This allows one test to cover multiple impl files while preventing duplicate entries."
+        },
+        {
+          "text": "@human: Should the command support removing/unlinking mappings, or should that be a separate command (like unlink-coverage or remove-coverage)?",
+          "selected": true,
+          "answer": "Separate command for removal. link-coverage only adds/updates mappings. Display helpful message after linking showing how to remove: 'To remove this mapping: fspec unlink-coverage <feature> --scenario ... --test-file ...'. Removal command (unlink-coverage) is separate work unit, follows fspec pattern of separate add/remove commands."
+        }
+      ],
+      "rules": [
+        "Non-interactive command-line interface. Support partial additions (test-only, or test+impl). After execution, display helpful message showing how to add more mappings or remove existing ones. No interactive prompts that wait for user input. All operations complete immediately with instructional output.",
+        "Single flexible link-coverage command. Support three modes: (1) test-only (--test-file + --test-lines), (2) impl-only (--impl-file + --impl-lines), (3) both at once (all four flags). Command validates required flag combinations and provides helpful error messages if incorrect combination provided.",
+        "Always require --test-file when adding implementation mappings. Implementation mappings attach to specific test mappings, so test file must be specified to identify which test mapping to update. This ensures explicit, unambiguous attachment.",
+        "Test lines: range format only (e.g., '45-62'). Implementation lines: comma-separated primary (e.g., '10,11,12,15,20'), but also accept ranges as convenience (e.g., '10-15' expands to [10,11,12,13,14,15]). This matches storage format and mirrors reality: tests are contiguous, impl can be scattered.",
+        "Validate file paths by default (error if file doesn't exist). Support --skip-validation flag to bypass validation for forward planning scenarios. When validation fails, display clear error with file path and suggestion. When --skip-validation used, show warning that file doesn't exist but continue.",
+        "Append mode: allow multiple test mappings for the same file in one scenario. Each mapping is independent with its own line range and impl mappings. Display message showing all mappings for that file. This supports scenarios where one scenario is tested multiple times in the same file (e.g., different test suites or contexts).",
+        "Smart append: check if impl file already exists in the test mapping's implMappings array. If exists, update the line numbers for that file. If doesn't exist, append as new impl mapping. Display whether updated or added. This allows one test to cover multiple impl files while preventing duplicate entries.",
+        "Separate command for removal. link-coverage only adds/updates mappings. Display helpful message after linking showing how to remove: 'To remove this mapping: fspec unlink-coverage <feature> --scenario ... --test-file ...'. Removal command (unlink-coverage) is separate work unit, follows fspec pattern of separate add/remove commands."
+      ],
+      "examples": [
+        "User runs 'fspec link-coverage user-login --scenario \"Login with valid credentials\" --test-file src/__tests__/auth.test.ts --test-lines 45-62', creates test mapping, displays success and helpful message",
+        "User runs 'fspec link-coverage user-login --scenario \"Login with valid credentials\" --test-file src/__tests__/auth.test.ts --impl-file src/auth/login.ts --impl-lines 10,11,12', adds impl mapping to existing test",
+        "User runs command with both test and impl flags at once, creates test mapping with impl mapping in one operation",
+        "Test file doesn't exist, validation fails with error and suggestion to use --skip-validation",
+        "User provides --skip-validation flag with non-existent file, command succeeds with warning message",
+        "Impl lines '10-15' (range format) expands to array [10,11,12,13,14,15] in coverage file",
+        "Adding impl file that already exists in test mapping updates line numbers instead of creating duplicate entry",
+        "Adding test mapping with same test file but different lines appends as second mapping"
+      ],
+      "userStory": {
+        "role": "developer tracking test coverage",
+        "action": "link scenarios to test files and implementation files",
+        "benefit": "I can track which code covers which acceptance criteria"
+      }
+    },
+    "COV-004": {
+      "id": "COV-004",
+      "title": "Show Coverage Statistics",
+      "status": "done",
+      "createdAt": "2025-10-13T10:04:53.307Z",
+      "updatedAt": "2025-10-13T11:01:35.541Z",
+      "description": "Implement 'fspec show-coverage' command to display coverage statistics including percentage, test files, implementation files, and line counts",
+      "epic": "coverage-tracking",
+      "children": [],
+      "dependsOn": [
+        "COV-002"
+      ],
+      "parent": "COV-001",
+      "estimate": 2,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-13T10:35:18.928Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-13T10:58:41.331Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-13T10:59:49.378Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-13T11:01:24.285Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-13T11:01:35.542Z"
+        }
+      ],
+      "questions": [
+        {
+          "text": "@human: What output format(s) should show-coverage support? (text/json/markdown, with --format flag?)",
+          "selected": true,
+          "answer": "Markdown and JSON output formats. Default to markdown. Use --format flag (--format=json for JSON output, --format=markdown or no flag for markdown)"
+        },
+        {
+          "text": "@human: For text output, what level of detail by default? (summary only, full breakdown, or configurable with --verbose?)",
+          "selected": true,
+          "answer": "Full breakdown always shown by default in markdown. Include summary stats + scenario-by-scenario coverage details (test files, implementation files, line numbers). Show which scenarios are covered and uncovered."
+        },
+        {
+          "text": "@human: Should uncovered scenarios be highlighted in red and/or listed separately?",
+          "selected": true,
+          "answer": "Use both visual symbols (✅ for covered, ❌ for uncovered) throughout scenario list AND create a separate 'Coverage Gaps' section at the end listing all uncovered scenarios with action items"
+        },
+        {
+          "text": "@human: Should show-coverage work on single file, all files, or both? (Usage: fspec show-coverage [file])",
+          "selected": true,
+          "answer": "Support both modes: show all files when no argument provided, show specific file when file path is provided. File path can be relative (user-login.feature) or full path (spec/features/user-login.feature)"
+        },
+        {
+          "text": "@human: If showing all files, display aggregated stats, per-feature breakdown, or both?",
+          "selected": true,
+          "answer": "Both: show aggregated project summary at top (overall coverage, total features/scenarios, features overview table), then full per-feature breakdowns with scenario details for each feature file"
+        },
+        {
+          "text": "@human: How to calculate covered scenarios? (has test mapping, or test + impl mappings?)",
+          "selected": true,
+          "answer": "Three-tier coverage system: 'Fully Covered' (has test mapping AND implementation mappings), 'Partially Covered' (has test mapping but empty implMappings), 'Uncovered' (no test mappings). Statistics should count fully covered + partially covered as total covered scenarios."
+        },
+        {
+          "text": "@human: For line counts, count impl lines only, or test + impl lines separately?",
+          "selected": true,
+          "answer": "Separate counts for test lines and implementation lines. Display 'Test Lines', 'Implementation Lines', and 'Total Lines' in statistics. Parse line ranges (e.g., '45-62' = 18 lines) and count individual lines in arrays."
+        },
+        {
+          "text": "@human: Should we validate that mapped files/lines still exist? (always, never, or --validate flag?)",
+          "selected": true,
+          "answer": "Always validate file paths exist when displaying coverage. Check that test files and implementation files exist on disk. Display warnings for missing files but still show the coverage data. This ensures users are immediately aware of stale mappings."
+        },
+        {
+          "text": "@human: What happens if .coverage file doesn't exist? (error, show 0% with message, or suggest creating?)",
+          "selected": true,
+          "answer": "Error and exit with code 1 when .coverage file doesn't exist. Display clear error message with suggestion to create coverage file using appropriate command (fspec create-feature or manually). This ensures explicit coverage tracking setup."
+        },
+        {
+          "text": "@human: What happens if .coverage file has invalid JSON? (error, warning, or try to parse?)",
+          "selected": true,
+          "answer": "Error and exit with code 1 when .coverage file has invalid JSON. Display parse error details (line number, error message) and suggest validating/recreating the file. Keep error message focused on the parse failure."
+        }
+      ],
+      "rules": [
+        "Markdown and JSON output formats. Default to markdown. Use --format flag (--format=json for JSON output, --format=markdown or no flag for markdown)",
+        "Full breakdown always shown by default in markdown. Include summary stats + scenario-by-scenario coverage details (test files, implementation files, line numbers). Show which scenarios are covered and uncovered.",
+        "Use both visual symbols (✅ for covered, ❌ for uncovered) throughout scenario list AND create a separate 'Coverage Gaps' section at the end listing all uncovered scenarios with action items",
+        "Support both modes: show all files when no argument provided, show specific file when file path is provided. File path can be relative (user-login.feature) or full path (spec/features/user-login.feature)",
+        "Both: show aggregated project summary at top (overall coverage, total features/scenarios, features overview table), then full per-feature breakdowns with scenario details for each feature file",
+        "Three-tier coverage system: 'Fully Covered' (has test mapping AND implementation mappings), 'Partially Covered' (has test mapping but empty implMappings), 'Uncovered' (no test mappings). Statistics should count fully covered + partially covered as total covered scenarios.",
+        "Separate counts for test lines and implementation lines. Display 'Test Lines', 'Implementation Lines', and 'Total Lines' in statistics. Parse line ranges (e.g., '45-62' = 18 lines) and count individual lines in arrays.",
+        "Always validate file paths exist when displaying coverage. Check that test files and implementation files exist on disk. Display warnings for missing files but still show the coverage data. This ensures users are immediately aware of stale mappings.",
+        "Error and exit with code 1 when .coverage file doesn't exist. Display clear error message with suggestion to create coverage file using appropriate command (fspec create-feature or manually). This ensures explicit coverage tracking setup.",
+        "Error and exit with code 1 when .coverage file has invalid JSON. Display parse error details (line number, error message) and suggest validating/recreating the file. Keep error message focused on the parse failure."
+      ],
+      "examples": [
+        "User runs 'fspec show-coverage user-login.feature', displays markdown report with 80% coverage (4/5 scenarios), full breakdown with symbols, and Coverage Gaps section",
+        "User runs 'fspec show-coverage user-login.feature --format=json', outputs JSON with scenarios array, stats object, three-tier coverage status",
+        "User runs 'fspec show-coverage' (no args), displays project summary with aggregated stats + per-feature breakdown for all .coverage files",
+        "Scenario has test mapping with empty implMappings array, displayed as '⚠️ PARTIALLY COVERED' with warning icon",
+        "Test file path doesn't exist on disk, display '⚠️ File not found: src/__tests__/deleted.test.ts' warning but still show coverage",
+        "Line range '45-62' counts as 18 test lines, array [10,11,12,15,20] counts as 5 impl lines, displayed separately in stats",
+        "User runs 'fspec show-coverage missing.feature', .coverage file doesn't exist, error with exit code 1 and suggestion message",
+        ".coverage file has invalid JSON, command fails with parse error showing line number and suggestion to recreate"
+      ],
+      "userStory": {
+        "role": "developer tracking test coverage",
+        "action": "view coverage statistics for feature files",
+        "benefit": "I can identify gaps in test coverage and track testing progress"
+      }
+    },
+    "COV-005": {
+      "id": "COV-005",
+      "title": "Audit Coverage Command",
+      "status": "done",
+      "createdAt": "2025-10-13T10:04:55.178Z",
+      "updatedAt": "2025-10-13T12:13:39.422Z",
+      "description": "Implement 'fspec audit-coverage' command with interactive AI loop to verify and update line number mappings when code changes",
+      "epic": "coverage-tracking",
+      "children": [],
+      "dependsOn": [
+        "COV-002"
+      ],
+      "parent": "COV-001",
+      "estimate": 3,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-13T11:58:47.194Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-13T12:09:52.214Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-13T12:10:30.001Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-13T12:12:54.205Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-13T12:13:39.422Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer maintaining coverage tracking",
+        "action": "audit and update line number mappings when code changes",
+        "benefit": "I keep coverage data accurate as code evolves"
+      },
+      "questions": [
+        {
+          "text": "@human: Should audit-coverage automatically update line numbers if it detects they've shifted, or prompt AI to manually verify?",
+          "selected": true,
+          "answer": "Prompt AI to change (but unclear how to detect line shifts automatically)"
+        },
+        {
+          "text": "@human: Should audit-coverage check that test files and implementation files still exist?",
+          "selected": true,
+          "answer": "Yes, verify that test files and implementation files exist"
+        },
+        {
+          "text": "@human: Should audit-coverage be interactive or just display a report?",
+          "selected": true,
+          "answer": "Display good information on what to do next if something's not right (report with actionable recommendations)"
+        }
+      ],
+      "assumptions": [
+        "Prompt AI to change (but unclear how to detect line shifts automatically)"
+      ],
+      "rules": [
+        "Yes, verify that test files and implementation files exist",
+        "Display good information on what to do next if something's not right (report with actionable recommendations)",
+        "Audit command must validate that all test files referenced in coverage exist on disk",
+        "Audit command must validate that all implementation files referenced in coverage exist on disk",
+        "Report must show missing files with clear actionable recommendations (remove stale mappings or restore deleted files)",
+        "Command accepts feature file name as argument (e.g., 'fspec audit-coverage user-login')",
+        "Output format: markdown report with sections for each scenario's mappings and issues found"
+      ],
+      "examples": [
+        "Run 'fspec audit-coverage user-login', checks all files exist, displays report showing 3/3 files found, all mappings valid",
+        "Audit finds test file missing, displays '❌ Test file not found: src/__tests__/deleted.test.ts' with recommendation to remove mapping",
+        "Audit finds impl file missing, displays '❌ Implementation file not found: src/auth/deleted.ts' with recommendation"
+      ]
+    },
+    "COV-006": {
+      "id": "COV-006",
+      "title": "ACDD Workflow Integration",
+      "status": "done",
+      "createdAt": "2025-10-13T10:04:57.016Z",
+      "updatedAt": "2025-10-13T12:24:09.837Z",
+      "description": "Integrate coverage tracking with ACDD workflow: block work unit progression to 'done' if coverage incomplete, emit system-reminders for uncovered scenarios",
+      "epic": "coverage-tracking",
+      "children": [],
+      "dependsOn": [
+        "COV-003",
+        "COV-004",
+        "COV-005"
+      ],
+      "parent": "COV-001",
+      "estimate": 3,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-13T12:15:18.461Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-13T12:18:09.260Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-13T12:19:26.284Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-13T12:22:37.057Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-13T12:24:09.838Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using fspec with ACDD workflow",
+        "action": "ensure work units cannot be marked done when coverage is incomplete",
+        "benefit": "I maintain quality standards and prevent incomplete work from being considered complete"
+      },
+      "rules": [
+        "Block work unit status update to 'done' if linked feature file has uncovered scenarios (scenarios with empty testMappings array)",
+        "Emit system-reminder when work unit cannot advance to done due to incomplete coverage, showing which scenarios lack coverage",
+        "System-reminder must include specific commands to add coverage (e.g., 'fspec link-coverage <feature> --scenario ...')",
+        "Check coverage completeness by reading .feature.coverage file and looking for scenarios with empty testMappings arrays",
+        "Coverage checking is always enforced (no optional flag) to maintain consistent quality standards",
+        "If .coverage file doesn't exist, allow status update with warning. If .coverage file exists, enforce coverage completeness.",
+        "Only check coverage when moving to 'done' status, not when moving to 'validating'"
+      ],
+      "examples": [
+        "Work unit AUTH-001 linked to user-login.feature with all 5 scenarios covered (all have testMappings), status update to 'done' succeeds",
+        "Work unit AUTH-001 linked to user-login.feature with 2/5 scenarios uncovered (empty testMappings), status update to 'done' fails with error message and system-reminder",
+        "System-reminder displays: '❌ Cannot mark work unit done: 2 scenarios uncovered in user-login.feature' with list of uncovered scenario names"
+      ],
+      "questions": [
+        {
+          "text": "@human: Should this blocking behavior be optional (via flag) or always enforced?",
+          "selected": true,
+          "answer": "Always enforced - this maintains quality standards consistently"
+        },
+        {
+          "text": "@human: What happens if the .coverage file doesn't exist for a linked feature - should that block the status update?",
+          "selected": true,
+          "answer": "If .coverage file doesn't exist, allow the status update with a warning (coverage tracking is optional). But if .coverage file exists, enforce coverage completeness."
+        },
+        {
+          "text": "@human: Should we only check coverage when moving to 'done' status, or also when moving to 'validating'?",
+          "selected": true,
+          "answer": "Only check coverage when moving to 'done' status - validating is still part of the development process"
+        }
+      ]
+    },
+    "BUG-005": {
+      "id": "BUG-005",
+      "title": "Remove work unit ID tags from generate-scenarios",
+      "status": "done",
+      "createdAt": "2025-10-13T11:30:51.399Z",
+      "updatedAt": "2025-10-13T11:55:59.660Z",
+      "description": "Fixed generate-scenarios to add work unit IDs as FEATURE-LEVEL tags only (not scenario-level). Modified check.ts to use proper validateTags function. Removed scenario-level work unit ID tags from all feature files. This implements the optimal two-tier linking system: feature-level tags for coarse-grained work unit → feature association, with coverage files providing fine-grained scenario traceability.",
+      "children": [],
+      "estimate": 2,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-13T11:31:08.692Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-13T11:55:24.402Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-13T11:55:30.552Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-13T11:55:36.124Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-13T11:55:59.661Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer maintaining fspec",
+        "action": "verify that generate-scenarios adds work unit ID tags only at feature level",
+        "benefit": "I ensure the two-tier linking system (feature-level tags + coverage files) works correctly"
+      },
+      "rules": [
+        "Work unit ID tags must appear at feature level only, not scenario level",
+        "generate-scenarios command must add work unit ID as feature-level tag",
+        "Existing feature files must not have scenario-level work unit ID tags",
+        "check.ts validation must use proper validateTags function",
+        "Yes, add automated tests to verify generate-scenarios adds work unit ID at feature level only (check if tests already exist first)",
+        "Yes, create validation rule to reject scenario-level work unit ID tags. However, many existing features already have work unit IDs, so the script (Q3) must fix them first before validation can be enforced",
+        "Write a script to scan all feature files and move scenario-level work unit ID tags to feature level. This must run before validation enforcement"
+      ],
+      "examples": [
+        "Run generate-scenarios for a work unit, verify the generated feature file has work unit ID as feature-level tag (e.g., @BUG-005 at top)",
+        "Run generate-scenarios for a work unit, verify generated scenarios do NOT have work unit ID tags at scenario level",
+        "Check existing feature files to verify no scenario-level work unit ID tags remain (like @COV-001 on individual scenarios)",
+        "Verify check.ts uses validateTags() function instead of inline validation logic",
+        "Write script that scans spec/features/*.feature files, finds scenario-level work unit ID tags (like @COV-001 on scenarios), moves them to feature-level tags",
+        "After script runs, validate-tags command should reject any feature file with scenario-level work unit ID tags (pattern: @[A-Z]+-[0-9]+)"
+      ],
+      "questions": [
+        {
+          "text": "@human: Should we add automated tests to verify generate-scenarios adds work unit ID at feature level only?",
+          "selected": true,
+          "answer": "Yes, add automated tests to verify generate-scenarios adds work unit ID at feature level only (check if tests already exist first)"
+        },
+        {
+          "text": "@human: Should we create a validation rule in check.ts or validate-tags to reject scenario-level work unit ID tags?",
+          "selected": true,
+          "answer": "Yes, create validation rule to reject scenario-level work unit ID tags. However, many existing features already have work unit IDs, so the script (Q3) must fix them first before validation can be enforced"
+        },
+        {
+          "text": "@human: Is manual verification of existing feature files sufficient, or should we write a script to scan all feature files?",
+          "selected": true,
+          "answer": "Write a script to scan all feature files and move scenario-level work unit ID tags to feature level. This must run before validation enforcement"
+        }
+      ]
+    },
+    "BUG-006": {
+      "id": "BUG-006",
+      "title": "Parent work units shouldn't require scenarios",
+      "status": "done",
+      "createdAt": "2025-10-13T12:26:15.841Z",
+      "updatedAt": "2025-10-13T12:30:03.560Z",
+      "description": "Parent work units without linkedFeatures should only require all children to be done, not require scenarios to exist when moving to testing status",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-13T12:26:21.933Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-13T12:29:49.558Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-13T12:29:49.849Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-13T12:29:50.141Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-13T12:30:03.561Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer working on parent work units",
+        "action": "move parent work units through workflow without requiring scenarios",
+        "benefit": "parent work units are containers that don't need their own feature files"
+      },
+      "rules": [
+        "Parent work units (work units with children array) should skip scenario validation when moving to testing",
+        "checkScenariosExist function should return true immediately if work unit has children",
+        "Only leaf work units (no children) need to have scenarios tagged with @WORK-UNIT-ID",
+        "Parent work units can only move to done when ALL children are done (existing validation)"
+      ],
+      "examples": [
+        "COV-001 (parent with 5 children all done) can move from specifying -> testing -> implementing -> validating -> done without scenario validation",
+        "COV-002 (leaf work unit, no children) requires @COV-002 tag in feature file to move to testing",
+        "Parent work unit with incomplete children (COV-001 with COV-006 still in implementing) cannot move to done"
+      ]
     }
   },
   "states": {
@@ -2008,7 +2711,15 @@
       "REMIND-006",
       "REMIND-007",
       "REMIND-002",
-      "REMIND-008"
+      "REMIND-008",
+      "COV-002",
+      "COV-004",
+      "COV-003",
+      "BUG-005",
+      "COV-005",
+      "COV-006",
+      "BUG-006",
+      "COV-001"
     ],
     "blocked": []
   }

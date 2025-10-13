@@ -4,6 +4,7 @@ import chalk from 'chalk';
 import { toKebabCase } from '../utils/file-helpers';
 import { generateFeatureTemplate } from '../utils/templates';
 import { getFileNamingReminder } from '../utils/system-reminder';
+import { createCoverageFile } from '../utils/coverage-file';
 
 export async function createFeature(
   name: string,
@@ -65,6 +66,19 @@ export async function createFeature(
     throw new Error(`Failed to write file: ${error.message}`);
   }
 
+  // Create coverage file (graceful degradation - don't fail feature creation)
+  try {
+    const coverageResult = await createCoverageFile(filePath);
+    // Store result for display in command function
+    (createFeature as any).lastCoverageResult = coverageResult;
+  } catch (error: any) {
+    // Log warning but don't fail feature creation
+    (createFeature as any).lastCoverageResult = {
+      status: 'error',
+      message: `Warning: Failed to create coverage file: ${error.message}`,
+    };
+  }
+
   return filePath;
 }
 
@@ -79,6 +93,20 @@ export async function createFeatureCommand(name: string): Promise<void> {
 
     console.log(chalk.green(`✓ Created ${fileName}`));
     console.log(chalk.gray('  Edit the file to add your scenarios'));
+
+    // Display coverage file creation result
+    const coverageResult = (createFeature as any).lastCoverageResult;
+    if (coverageResult) {
+      if (coverageResult.status === 'created') {
+        console.log(chalk.green(coverageResult.message));
+      } else if (coverageResult.status === 'skipped') {
+        console.log(chalk.yellow(coverageResult.message));
+      } else if (coverageResult.status === 'recreated') {
+        console.log(chalk.yellow(coverageResult.message));
+      } else if (coverageResult.status === 'error') {
+        console.log(chalk.red(coverageResult.message));
+      }
+    }
 
     // Display file naming reminder if anti-pattern detected
     if (fileNamingReminder) {

@@ -438,7 +438,6 @@ Feature: Work Unit Dependency Management
     But the transition should succeed
     And the warning should be informational only
 
-  @DEP-001
   Scenario: Add blocks relationship creates bidirectional link
     Given I have a project with spec directory
     And work unit "AUTH-001" exists with title "Build OAuth"
@@ -449,7 +448,6 @@ Feature: Work Unit Dependency Management
     And work unit "API-001" blockedBy array should contain "AUTH-001"
     And the bidirectional relationship should be maintained
 
-  @DEP-001
   Scenario: Remove dependency cleans up both sides of relationship
     Given I have a project with spec directory
     And work unit "AUTH-001" blocks "API-001"
@@ -460,7 +458,6 @@ Feature: Work Unit Dependency Management
     And work unit "API-001" blockedBy array should not contain "AUTH-001"
     And both sides of the relationship should be cleaned up
 
-  @DEP-001
   Scenario: Circular dependency detection prevents A→B→A loops
     Given I have a project with spec directory
     And work unit "AUTH-001" blocks "API-001"
@@ -470,7 +467,6 @@ Feature: Work Unit Dependency Management
     And the error should show cycle: "AUTH-001 → API-001 → AUTH-001"
     And no circular dependency should be created
 
-  @DEP-001
   Scenario: Adding blockedBy dependency auto-sets work unit to blocked state
     Given I have a project with spec directory
     And work unit "UI-001" exists with status "backlog"
@@ -481,7 +477,6 @@ Feature: Work Unit Dependency Management
     And work unit "UI-001" blockedReason should be "Blocked by API-001"
     And work unit "API-001" blocks array should contain "UI-001"
 
-  @DEP-001
   Scenario: Query dependency stats shows metrics across all work units
     Given I have a project with spec directory
     And multiple work units exist with various dependencies

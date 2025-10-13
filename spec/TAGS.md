@@ -65,6 +65,7 @@ Tags that categorize features by functional area.
 | `@comparison` | Comparison operations |  |
 | `@completion` | Completion operations |  |
 | `@compound` | Compound query operations |  |
+| `@coverage-tracking` | Coverage tracking and traceability from scenarios to tests to implementation code |  |
 | `@critical-path` | Critical path analysis |  |
 | `@crud` | Create, Read, Update, Delete operations |  |
 | `@delete` | Delete operations |  |

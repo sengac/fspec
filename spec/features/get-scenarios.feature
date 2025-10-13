@@ -327,32 +327,3 @@ Feature: Get Scenarios by Tag
     When I run `fspec get-scenarios --tag=@auth-002`
     Then the output should show only scenarios tagged with @auth-002
 
-  @FEAT-003
-  Scenario: Get scenarios by single tag
-    Given [precondition]
-    When [action]
-    Then [expected outcome]
-
-  @FEAT-003
-  Scenario: Get scenarios by multiple tags (AND logic)
-    Given [precondition]
-    When [action]
-    Then [expected outcome]
-
-  @FEAT-003
-  Scenario: Show acceptance criteria for tag
-    Given [precondition]
-    When [action]
-    Then [expected outcome]
-
-  @FEAT-003
-  Scenario: Output scenarios as JSON
-    Given [precondition]
-    When [action]
-    Then [expected outcome]
-
-  @FEAT-003
-  Scenario: Query with tag matching pattern
-    Given [precondition]
-    When [action]
-    Then [expected outcome]

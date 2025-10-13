@@ -5,6 +5,7 @@ import * as Messages from '@cucumber/messages';
 import { readFile } from 'fs/promises';
 import { join } from 'path';
 import { formatGherkinDocument } from '../utils/gherkin-formatter';
+import { validateTags } from './validate-tags';
 
 interface CheckOptions {
   verbose?: boolean;
@@ -63,47 +64,19 @@ export async function check(options: CheckOptions = {}): Promise<CheckResult> {
       }
     }
 
-    // 2. Check tag validation
+    // 2. Check tag validation (use proper validateTags function with work unit ID support)
     tagStatus = 'PASS';
     try {
-      // Read tags.json
-      const tagsJsonPath = join(cwd, 'spec/tags.json');
-      let tagsContent = '';
-      try {
-        tagsContent = await readFile(tagsJsonPath, 'utf-8');
-      } catch {
-        // No tags.json file, skip tag validation
-        tagStatus = 'SKIP';
-      }
+      const tagResults = await validateTags({ cwd });
 
-      if (tagStatus !== 'SKIP') {
-        // Extract registered tags from tags.json
-        const tagsData = JSON.parse(tagsContent);
-        const registeredTags = new Set<string>();
+      if (tagResults.invalidCount > 0) {
+        tagStatus = 'FAIL';
 
-        // Extract tags from all categories
-        for (const category of tagsData.categories || []) {
-          for (const tag of category.tags || []) {
-            registeredTags.add(tag.name);
-          }
-        }
-
-        // Check all tags in feature files
-        for (const file of files) {
-          const filePath = join(cwd, file);
-          const content = await readFile(filePath, 'utf-8');
-          const lines = content.split('\n');
-
-          for (const line of lines) {
-            const trimmed = line.trim();
-            if (trimmed.startsWith('@')) {
-              const tags = trimmed.split(/\s+/).filter(t => t.startsWith('@'));
-              for (const tag of tags) {
-                if (!registeredTags.has(tag)) {
-                  tagStatus = 'FAIL';
-                  errors.push(`Unregistered tag ${tag} in ${file}`);
-                }
-              }
+        // Collect errors from validation results
+        for (const result of tagResults.results) {
+          if (!result.valid) {
+            for (const error of result.errors) {
+              errors.push(`${error.message}`);
             }
           }
         }

@@ -105,32 +105,3 @@ Feature: Update Scenario Name
     And the scenario should be renamed
     And the file should remain valid
 
-  @FEAT-005
-  Scenario: Update scenario name
-    Given [precondition]
-    When [action]
-    Then [expected outcome]
-
-  @FEAT-005
-  Scenario: Update Given step text
-    Given [precondition]
-    When [action]
-    Then [expected outcome]
-
-  @FEAT-005
-  Scenario: Update When step text
-    Given [precondition]
-    When [action]
-    Then [expected outcome]
-
-  @FEAT-005
-  Scenario: Update Then step text
-    Given [precondition]
-    When [action]
-    Then [expected outcome]
-
-  @FEAT-005
-  Scenario: Update step preserving position
-    Given [precondition]
-    When [action]
-    Then [expected outcome]

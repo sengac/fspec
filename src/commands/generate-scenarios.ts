@@ -32,8 +32,7 @@ function generateBasicScenario(
 ): string {
   const steps = extractStepsFromExample(example);
 
-  return `  @${workUnitId}
-  Scenario: ${example}
+  return `  Scenario: ${example}
     Given ${steps.given || '[precondition]'}
     When ${steps.when || '[action]'}
     Then ${steps.then || '[expected outcome]'}
@@ -47,8 +46,7 @@ function generateGivenWhenThenScenario(
 ): string {
   // Parse example to extract Given/When/Then if structured that way
   // For now, use example as scenario name with placeholder steps
-  return `  @${workUnitId}
-  Scenario: ${example}
+  return `  Scenario: ${example}
     Given [precondition from example]
     When [action from example]
     Then [expected outcome from example]
@@ -177,7 +175,8 @@ export async function generateScenarios(
     So that [benefit]`;
     }
 
-    const featureContent = `Feature: ${title}
+    const featureContent = `@${options.workUnitId}
+Feature: ${title}
 
 ${backgroundSection}
 

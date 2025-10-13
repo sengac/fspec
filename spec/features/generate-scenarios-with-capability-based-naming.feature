@@ -29,7 +29,6 @@ Feature: Generate Scenarios with Capability-Based Naming
     I want generate-scenarios to create feature files with capability-based names
     So that feature files are named after "what IS" (capability) not "what the current state is" (work unit ID)
 
-  @BUG-004
   Scenario: Generate scenarios using work unit title as default
     Given I have a work unit "AUTH-001" with title "User Authentication"
     And the work unit has 3 examples from Example Mapping
@@ -38,7 +37,6 @@ Feature: Generate Scenarios with Capability-Based Naming
     And the file should contain scenarios generated from the examples
     And the file should NOT be named "auth-001.feature"
 
-  @BUG-004
   Scenario: Generate scenarios with explicit feature name override
     Given I have a work unit "AUTH-001" with title "User Login"
     And the work unit has 2 examples from Example Mapping
@@ -46,7 +44,6 @@ Feature: Generate Scenarios with Capability-Based Naming
     Then a feature file "spec/features/user-authentication.feature" should be created
     And the file should contain scenarios generated from the examples
 
-  @BUG-004
   Scenario: Error when work unit has no title and no --feature flag provided
     Given I have a work unit "AUTH-001" with no title set
     And the work unit has examples from Example Mapping

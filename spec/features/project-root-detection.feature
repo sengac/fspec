@@ -31,7 +31,6 @@ Feature: Prevent spec directory creation outside project root
     I want spec/ directories to be created at the correct project root
     So that specifications stay organized within project boundaries and don't pollute parent directories
 
-  @SAFE-001
   Scenario: Create spec at project root when .git marker exists
     Given I am in directory "/project/src/commands/"
     And a ".git" directory exists at "/project/.git"
@@ -41,7 +40,6 @@ Feature: Prevent spec directory creation outside project root
     And the directory "/project/spec/" should be created
     And all existing tests should continue passing
 
-  @SAFE-001
   Scenario: Use existing spec directory within project boundary
     Given I am in directory "/project/src/commands/"
     And a ".git" directory exists at "/project/.git"
@@ -51,7 +49,6 @@ Feature: Prevent spec directory creation outside project root
     And no new directories should be created
     And all existing tests should continue passing
 
-  @SAFE-001
   Scenario: Fallback to cwd when no project boundary markers found
     Given I am in directory "/tmp/random/"
     And no project boundary markers exist in parent directories
@@ -60,7 +57,6 @@ Feature: Prevent spec directory creation outside project root
     And the directory "/tmp/random/spec/" should be created
     And all existing tests should continue passing
 
-  @SAFE-001
   Scenario: Handle monorepo with nested package.json correctly
     Given I am in directory "/monorepo/packages/app/src/"
     And a ".git" directory exists at "/monorepo/.git"
@@ -72,7 +68,6 @@ Feature: Prevent spec directory creation outside project root
     And the function should stop at the first boundary marker (closest to cwd)
     And all existing tests should continue passing
 
-  @SAFE-001
   Scenario: Stop search after maximum directory traversal limit
     Given I am in a very deeply nested directory (more than 10 levels deep)
     And no project boundary markers exist within 10 parent directories
@@ -81,7 +76,6 @@ Feature: Prevent spec directory creation outside project root
     And the search should stop after checking 10 parent directories
     And all existing tests should continue passing
 
-  @SAFE-001
   Scenario: Gracefully handle permission errors when searching parent directories
     Given I am in directory "/project/src/"
     And reading parent directories results in permission errors

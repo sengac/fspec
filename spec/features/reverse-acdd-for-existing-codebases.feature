@@ -48,7 +48,6 @@ Feature: Reverse ACDD for Existing Codebases
     I want to reverse engineer the application to discover user stories and acceptance criteria
     So that I can create proper Gherkin specifications and follow ACDD going forward
 
-  @RSPEC-001
   Scenario: Install rspec.md via fspec init
     Given I run "fspec init" to set up a new project
     When the init command completes
