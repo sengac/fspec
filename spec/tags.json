@@ -562,8 +562,16 @@
           "description": "Push notification functionality"
         },
         {
+          "name": "@reverse-engineering",
+          "description": "Reverse engineering existing code to create specifications"
+        },
+        {
           "name": "@setup",
           "description": "Setup and initialization commands"
+        },
+        {
+          "name": "@slash-command",
+          "description": "Slash command features for Claude Code"
         },
         {
           "name": "@sms",
@@ -583,14 +591,13 @@
       "required": false,
       "tags": [
         {
-          "name": "@windows",
-          "description": "Windows-Specific",
-          "whenToUse": "Windows paths, PowerShell compatibility, CMD behaviors"
+          "name": "@claude-code",
+          "description": "Features specific to Claude Code integration"
         },
         {
-          "name": "@macos",
-          "description": "macOS-Specific",
-          "whenToUse": "Unix paths, macOS-specific behaviors, Darwin platform"
+          "name": "@cross-platform",
+          "description": "Cross-Platform Requirement",
+          "whenToUse": "Features that MUST work on all platforms, path normalization"
         },
         {
           "name": "@linux",
@@ -598,9 +605,14 @@
           "whenToUse": "Linux distributions, Unix behaviors, shell compatibility"
         },
         {
-          "name": "@cross-platform",
-          "description": "Cross-Platform Requirement",
-          "whenToUse": "Features that MUST work on all platforms, path normalization"
+          "name": "@macos",
+          "description": "macOS-Specific",
+          "whenToUse": "Unix paths, macOS-specific behaviors, Darwin platform"
+        },
+        {
+          "name": "@windows",
+          "description": "Windows-Specific",
+          "whenToUse": "Windows paths, PowerShell compatibility, CMD behaviors"
         }
       ],
       "rule": "Use platform tags when a scenario has platform-specific behavior or requirements."

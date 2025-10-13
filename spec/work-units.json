@@ -1235,11 +1235,137 @@
         "Templates directory is bundled with package build - if missing, it's a build error (should never happen in production)"
       ],
       "estimate": 2
+    },
+    "DOC-002": {
+      "id": "DOC-002",
+      "title": "Provide schema information for foundation.json",
+      "status": "done",
+      "createdAt": "2025-10-12T11:46:03.860Z",
+      "updatedAt": "2025-10-12T23:11:14.375Z",
+      "description": "Add schema information to foundation.json to help AI agents draft foundation documents more easily. May require relaxing some schema constraints to make it more flexible for agents.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-12T11:46:21.581Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-12T22:56:07.240Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-12T22:59:39.116Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-12T23:11:14.091Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-12T23:11:14.376Z"
+        }
+      ],
+      "rules": [
+        "Schema must guide AI agents to write documentation in a specific format that preserves project meaning and prevents drift",
+        "Schema must be provided as a separate JSON Schema file (foundation.schema.json)",
+        "Schema file must be accessible via CLI command so AI agents can read it",
+        "Field names should be flexible (e.g., accept both camelCase and snake_case) while maintaining similar overall structure",
+        "Schema must include rich descriptions explaining the intent behind each section",
+        "Schema must include examples of good vs. bad content for each field",
+        "Schema must include validation rules (e.g., minimum array lengths, required fields)",
+        "Schema must include format instructions for structured fields",
+        "Must provide both 'fspec show-foundation-schema' to display schema and 'fspec validate-foundation-schema' to validate foundation.json",
+        "No backward compatibility required - existing foundation.json files may need migration to new format",
+        "Mermaid syntax validation should be handled by Mermaid library (mermaid.parse()), not by JSON Schema. Schema only validates that mermaidCode field exists and is a string.",
+        "Schema should allow AI agents to add custom sections beyond the standard ones (project, whatWeAreBuilding, whyWeAreBuildingIt). Use additionalProperties: true for extensibility.",
+        "Validation should check semantic content of descriptions. Schema descriptions should guide AI on what to write and what NOT to write (e.g., 'projectOverview should focus on WHAT/HOW, not WHY - business justification belongs in whyWeAreBuildingIt').",
+        "Schema should allow additional properties (additionalProperties: true) for future extensibility. AI agents can add custom sections as needed."
+      ],
+      "examples": [
+        "Schema for 'projectOverview' includes description: 'A comprehensive technical overview (2-4 sentences) describing: (1) what systems are being built, (2) who uses them (target users), (3) how the systems integrate. Focus on WHAT and HOW, not WHY. Example: A Kanban-based project management and specification tool for AI agents...'",
+        "Schema for 'problemDefinition.primary' includes validation: must contain 'title', 'description', and 'coreProblems' array with minimum 3 items describing distinct problem categories",
+        "Schema accepts both camelCase and snake_case for ALL field names. Examples: 'architectureDiagrams' OR 'architecture_diagrams', 'technicalRequirements' OR 'technical_requirements', 'projectOverview' OR 'project_overview'",
+        "AI agent runs 'fspec show-foundation-schema' and receives JSON Schema with rich descriptions and examples. Agent uses this to understand how to structure foundation.json sections when running 'fspec update-foundation'",
+        "AI agent runs 'fspec validate-foundation-schema' after updating foundation.json. Validation fails with message: 'Field problemDefinition.primary.coreProblems must have at least 3 items (found 2)'. Agent adds another problem and re-validates."
+      ],
+      "questions": [
+        {
+          "text": "@human: Should the schema validate Mermaid syntax in architectureDiagrams array, or just validate that mermaidCode field is a string?",
+          "selected": true,
+          "answer": "Mermaid syntax validation should be handled by Mermaid library (mermaid.parse()), not by JSON Schema. Schema only validates that mermaidCode field exists and is a string."
+        },
+        {
+          "text": "@human: Should the schema enforce specific top-level section names (project, whatWeAreBuilding, whyWeAreBuildingIt) or allow AI agents to add custom sections?",
+          "selected": true,
+          "answer": "Schema should allow AI agents to add custom sections beyond the standard ones (project, whatWeAreBuilding, whyWeAreBuildingIt). Use additionalProperties: true for extensibility."
+        },
+        {
+          "text": "@human: How detailed should validation be? Should it validate the semantic content of descriptions (e.g., 'projectOverview should not mention business justification') or just structural rules (required fields, types, array lengths)?",
+          "selected": true,
+          "answer": "Validation should check semantic content of descriptions. Schema descriptions should guide AI on what to write and what NOT to write (e.g., 'projectOverview should focus on WHAT/HOW, not WHY - business justification belongs in whyWeAreBuildingIt')."
+        },
+        {
+          "text": "@human: Should we provide a migration command (e.g., 'fspec migrate-foundation') to convert existing foundation.json to the new flexible format, or should users manually update?",
+          "selected": true,
+          "answer": "No migration command needed. No backward compatibility - users must manually update foundation.json to new format when schema is introduced."
+        },
+        {
+          "text": "@human: Should the schema allow additional properties beyond the defined ones (additionalProperties: true) to support future extensibility, or be strict (additionalProperties: false)?",
+          "selected": true,
+          "answer": "Schema should allow additional properties (additionalProperties: true) for future extensibility. AI agents can add custom sections as needed."
+        }
+      ],
+      "assumptions": [
+        "No migration command needed. No backward compatibility - users must manually update foundation.json to new format when schema is introduced."
+      ],
+      "estimate": 5
+    },
+    "RSPEC-001": {
+      "id": "RSPEC-001",
+      "title": "Add rspec command for reverse ACDD",
+      "status": "specifying",
+      "createdAt": "2025-10-12T11:46:05.565Z",
+      "updatedAt": "2025-10-12T23:52:29.773Z",
+      "description": "Create new 'rspec' command that performs reverse ACDD by decomposing/reverse engineering existing applications. The command discovers user stories, personas, and acceptance criteria from existing code. Extends the /fspec slash command to tell Claude to read fspec.md and continue with reverse engineering workflow.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-12T23:11:24.854Z"
+        }
+      ],
+      "rules": [
+        "Must identify user personas who interact with the system",
+        "Must identify high-level activities or goals users achieve with the software",
+        "Must break down high-level activities into smaller specific tasks or interactions that code supports",
+        "Analysis involves: (1) analyzing functionality and mapping to user goals, (2) examining UI elements/features/workflows, (3) grouping related features into epics/journeys, (4) decomposing into individual user stories",
+        "Must produce user story map organized visually along user journey (broad activities at top, detailed interactions underneath)",
+        "User stories must be expressed as user-centric narratives (As a [persona], I want [goal], So that [benefit])",
+        "fspec init must install rspec.md slash command (similar to how it installs fspec.md)",
+        "rspec.md first line (after title) must say 'fully read fspec.md' with markdown link to exact fspec.md location",
+        "Must create everything fspec can do: work units, epics, prefixes, example maps, features, foundation.json (particularly this, keep updating as it learns), diagrams, unit/integration tests (NOT implemented), test-to-feature links (header comments)",
+        "Must create user story map in feature file docstrings or foundation.json (wherever closest to where it needs to be)",
+        "Must ONLY create artifacts that use fspec or are tests - nothing else",
+        "When encountering incomplete/ambiguous code: reverse engineer as much as possible, then ask human to complete via Example Mapping session",
+        "foundation.json must be continuously updated as system learns more about the codebase",
+        "Unit tests and integration tests created must NOT be implemented (skeleton only) - AI/human implements them later following ACDD",
+        "/rspec is a Claude Code slash command (not CLI command) - user invokes it via /rspec in Claude Code",
+        "User story map should be one or more Mermaid diagrams (preferably) plus any supporting artifacts that help visualize the map"
+      ],
+      "examples": [
+        "Skeleton test file header includes: /** Feature: spec/features/[name].feature\\n * This test validates acceptance criteria. Tests map to Gherkin scenarios.\\n */",
+        "User runs /rspec in Claude Code → AI reads .claude/commands/rspec.md → First line says 'fully read fspec.md' (with link) → AI follows fspec workflow while reverse engineering",
+        "User story map created as Mermaid diagram in foundation.json architectureDiagrams array with section='User Story Map'",
+        "Reverse engineered Express.js app: creates epic 'api-management', prefix 'API', work units API-001 'User authentication', API-002 'Data validation', feature files with inferred scenarios, skeleton tests with describe/it blocks (no implementation)"
+      ]
     }
   },
   "states": {
     "backlog": [],
-    "specifying": [],
+    "specifying": [
+      "RSPEC-001"
+    ],
     "testing": [],
     "implementing": [],
     "validating": [],
@@ -1270,7 +1396,8 @@
       "BUG-001",
       "BUG-002",
       "CLI-004",
-      "INIT-003"
+      "INIT-003",
+      "DOC-002"
     ],
     "blocked": []
   }

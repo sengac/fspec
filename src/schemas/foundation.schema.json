@@ -4,6 +4,7 @@
   "title": "fspec Foundation Document Schema",
   "description": "JSON Schema for fspec foundation.json - the source of truth for FOUNDATION.md",
   "type": "object",
+  "additionalProperties": true,
   "required": [
     "project",
     "whatWeAreBuilding",
@@ -48,7 +49,10 @@
       "properties": {
         "projectOverview": {
           "type": "string",
-          "description": "High-level project overview"
+          "description": "A comprehensive technical overview (2-4 sentences) describing: (1) what systems are being built, (2) who uses them (target users), (3) how the systems integrate. Focus on WHAT and HOW, not WHY. Business justification belongs in whyWeAreBuildingIt.",
+          "examples": [
+            "A Kanban-based project management and specification tool for AI agents. fspec provides AI agents (like Claude Code) with a structured workflow for building software using ACDD. It has two integrated systems: (1) Kanban Project Management - work units flow through a 7-state workflow; (2) Specification Management - validated Gherkin feature files."
+          ]
         },
         "technicalRequirements": {
           "type": "object",
@@ -154,7 +158,9 @@
                 },
                 "coreProblems": {
                   "type": "array",
-                  "items": { "type": "string" }
+                  "minItems": 3,
+                  "items": { "type": "string" },
+                  "description": "Array of core problems (minimum 3 items) describing distinct problem categories"
                 }
               }
             },
@@ -425,8 +431,12 @@
         "required": ["title", "mermaidCode"],
         "properties": {
           "title": { "type": "string" },
-          "mermaidCode": { "type": "string" },
-          "description": { "type": "string" }
+          "mermaidCode": {
+            "type": "string",
+            "description": "Mermaid diagram code. Syntax validation is delegated to mermaid.parse(), not JSON Schema."
+          },
+          "description": { "type": "string" },
+          "section": { "type": "string" }
         }
       }
     },

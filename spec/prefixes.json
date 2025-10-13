@@ -79,6 +79,11 @@
       "prefix": "BUG",
       "description": "Bug fixes and patches",
       "createdAt": "2025-10-12T07:13:53.107Z"
+    },
+    "RSPEC": {
+      "prefix": "RSPEC",
+      "description": "Reverse specification and engineering commands",
+      "createdAt": "2025-10-12T11:46:02.120Z"
     }
   }
 }

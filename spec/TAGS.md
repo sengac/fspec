@@ -163,7 +163,9 @@ Tags for specific technical concerns or architectural patterns.
 | `@mermaid` | Mermaid Diagram Support |  |
 | `@pattern-detection` | Features involving pattern detection and analysis from historical data |  |
 | `@push` | Push notification functionality |  |
+| `@reverse-engineering` | Reverse engineering existing code to create specifications |  |
 | `@setup` | Setup and initialization commands |  |
+| `@slash-command` | Slash command features for Claude Code |  |
 | `@sms` | SMS-related functionality |  |
 | `@template` | Template System |  |
 
@@ -175,10 +177,11 @@ Tags for platform-specific scenarios or cross-platform requirements.
 
 | Tag | Description | Usage |
 |-----|-------------|-------|
-| `@windows` | Windows-Specific |  |
-| `@macos` | macOS-Specific |  |
-| `@linux` | Linux-Specific |  |
+| `@claude-code` | Features specific to Claude Code integration |  |
 | `@cross-platform` | Cross-Platform Requirement |  |
+| `@linux` | Linux-Specific |  |
+| `@macos` | macOS-Specific |  |
+| `@windows` | Windows-Specific |  |
 
 **Rule**: Use platform tags when a scenario has platform-specific behavior or requirements.
 
