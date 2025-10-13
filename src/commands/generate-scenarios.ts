@@ -75,8 +75,18 @@ export async function generateScenarios(
     const featureName = options.feature.replace(/\.feature$/, '');
     featureFile = join(cwd, 'spec/features', `${featureName}.feature`);
   } else {
-    // Default: create feature file based on work unit ID
-    const kebabCase = options.workUnitId.toLowerCase().replace(/_/g, '-');
+    // Default: use work unit title (capability-based naming)
+    if (!workUnit.title) {
+      throw new Error(
+        `Cannot determine feature file name. Work unit ${options.workUnitId} has no title.\n` +
+          `Suggestion: Use --feature flag with a capability-based name (e.g., --feature=user-authentication)`
+      );
+    }
+    // Convert title to kebab-case for feature file name
+    const kebabCase = workUnit.title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
     featureFile = join(cwd, 'spec/features', `${kebabCase}.feature`);
   }
 

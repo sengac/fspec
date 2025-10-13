@@ -211,6 +211,7 @@ Tags tracking development status of features.
 | `@auth-002` | Example work unit for authentication testing |  |
 | `@auth-999` | Non-existent work unit for testing error handling |  |
 | `@blocked` | Blocked |  |
+| `@bug-fix` | Marks bug fixes and corrections to existing functionality |  |
 | `@deprecated` | Deprecated |  |
 | `@done` | Complete |  |
 | `@exmap-001` | Work unit: Redesign Example Mapping to match BDD technique |  |

@@ -239,7 +239,7 @@ export function displayCustomHelpWithNote(): void {
   console.log('');
 
   console.log(chalk.bold('DOCUMENTATION'));
-  console.log('  GitHub: ' + chalk.cyan('https://github.com/rquast/fspec'));
+  console.log('  GitHub: ' + chalk.cyan('https://github.com/sengac/fspec'));
   console.log(
     '  README: ' + chalk.dim('See README.md for detailed usage examples')
   );
@@ -2406,11 +2406,20 @@ program
   .command('generate-scenarios')
   .description('Generate Gherkin scenarios from example mapping in work unit')
   .argument('<workUnitId>', 'Work unit ID')
-  .action(async (workUnitId: string) => {
+  .option(
+    '--feature <name>',
+    'Feature file name (without .feature extension). Defaults to work unit title in kebab-case.'
+  )
+  .action(async (workUnitId: string, options: { feature?: string }) => {
     try {
-      const result = await generateScenarios({ workUnitId });
+      const result = await generateScenarios({
+        workUnitId,
+        feature: options.feature,
+      });
       console.log(
-        chalk.green(`✓ Generated ${result.scenariosCount} scenarios`)
+        chalk.green(
+          `✓ Generated ${result.scenariosCount} scenarios in spec/features/${result.featureFile}`
+        )
       );
     } catch (error: any) {
       console.error(

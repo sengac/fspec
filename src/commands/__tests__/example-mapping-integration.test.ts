@@ -897,9 +897,9 @@ describe('Feature: Example Mapping Integration', () => {
       expect(result.success).toBe(true);
       expect(result.scenariosCount).toBe(3);
 
-      // Check feature file was created
+      // Check feature file was created using title (oauth-login)
       const featureFiles = await readFile(
-        join(testDir, 'spec/features/auth-001.feature'),
+        join(testDir, 'spec/features/oauth-login.feature'),
         'utf-8'
       );
       expect(featureFiles).toContain('@AUTH-001');
@@ -950,8 +950,9 @@ describe('Feature: Example Mapping Integration', () => {
 
       expect(result.success).toBe(true);
 
+      // Feature file should be named after work unit title (oauth-login)
       const featureContent = await readFile(
-        join(testDir, 'spec/features/auth-001.feature'),
+        join(testDir, 'spec/features/oauth-login.feature'),
         'utf-8'
       );
       expect(featureContent).toContain('@AUTH-001');
@@ -1490,9 +1491,9 @@ Scenario: Existing scenario
       });
 
       // AI can now edit the file manually or programmatically
-      // Just verify the tag is preserved
+      // Just verify the tag is preserved (feature file named after title: oauth-login)
       const featureContent = await readFile(
-        join(testDir, 'spec/features/auth-001.feature'),
+        join(testDir, 'spec/features/oauth-login.feature'),
         'utf-8'
       );
       expect(featureContent).toContain('@AUTH-001');

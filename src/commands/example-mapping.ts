@@ -4,6 +4,7 @@ import type { QuestionItem } from '../types/index';
 
 interface WorkUnit {
   id: string;
+  title?: string;
   rules?: string[];
   examples?: string[];
   questions?: (string | QuestionItem)[];
@@ -266,9 +267,24 @@ export async function generateScenarios(
   }
 
   // Determine feature file name
-  const featureFileName = feature
-    ? `${feature}.feature`
-    : `${workUnitId.toLowerCase()}.feature`;
+  let featureFileName: string;
+  if (feature) {
+    featureFileName = `${feature}.feature`;
+  } else {
+    // Default: use work unit title (capability-based naming)
+    if (!workUnit.title) {
+      throw new Error(
+        `Cannot determine feature file name. Work unit ${workUnitId} has no title.\n` +
+          `Suggestion: Use --feature flag with a capability-based name (e.g., --feature=user-authentication)`
+      );
+    }
+    // Convert title to kebab-case for feature file name
+    const kebabCase = workUnit.title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+    featureFileName = `${kebabCase}.feature`;
+  }
 
   const featuresDir = join(cwd, 'spec', 'features');
   const featureFilePath = join(featuresDir, featureFileName);

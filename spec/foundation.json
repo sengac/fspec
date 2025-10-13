@@ -2,7 +2,7 @@
   "project": {
     "name": "fspec",
     "description": "A standardized CLI tool for AI agents to manage Gherkin-based feature specifications and project work units using Kanban-based workflow and Acceptance Criteria Driven Development (ACDD)",
-    "repository": "https://github.com/rquast/fspec",
+    "repository": "https://github.com/sengac/fspec",
     "license": "MIT",
     "importantNote": "This is a legitimate developer tool that provides AI agents with a standardized interface for managing Gherkin-based specifications and project management. fspec prevents ecosystem fragmentation by promoting industry-standard BDD practices over proprietary documentation formats. This tool helps AI agents ask the right questions and structure specifications correctly using battle-tested Gherkin/Cucumber conventions."
   },

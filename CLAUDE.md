@@ -6,7 +6,7 @@ This document provides guidelines for AI assistants (particularly Claude) workin
 
 **fspec** is a standardized CLI tool for AI agents to manage Gherkin-based feature specifications and project work units using Acceptance Criteria Driven Development (ACDD).
 
-- **Repository**: https://github.com/rquast/fspec
+- **Repository**: https://github.com/sengac/fspec
 - **License**: MIT
 
 For detailed understanding of:
