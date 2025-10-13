@@ -1,0 +1,56 @@
+{
+  "scenarios": [
+    {
+      "name": "Delete step by exact text",
+      "testMappings": []
+    },
+    {
+      "name": "Delete Given step",
+      "testMappings": []
+    },
+    {
+      "name": "Delete When step",
+      "testMappings": []
+    },
+    {
+      "name": "Delete Then step",
+      "testMappings": []
+    },
+    {
+      "name": "Delete last remaining step",
+      "testMappings": []
+    },
+    {
+      "name": "Attempt to delete non-existent step",
+      "testMappings": []
+    },
+    {
+      "name": "Delete step from specific scenario when multiple scenarios exist",
+      "testMappings": []
+    },
+    {
+      "name": "Delete step preserves indentation",
+      "testMappings": []
+    },
+    {
+      "name": "Delete step with special characters in text",
+      "testMappings": []
+    },
+    {
+      "name": "Handle scenario not found",
+      "testMappings": []
+    },
+    {
+      "name": "Handle feature file with invalid syntax",
+      "testMappings": []
+    }
+  ],
+  "stats": {
+    "totalScenarios": 11,
+    "coveredScenarios": 0,
+    "coveragePercent": 0,
+    "testFiles": [],
+    "implFiles": [],
+    "totalLinesCovered": 0
+  }
+}

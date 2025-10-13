@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-13T12:26:34.356Z"
+    "lastUpdated": "2025-10-13T22:23:04.161Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -2727,6 +2727,110 @@
         "COV-002 (leaf work unit, no children) requires @COV-002 tag in feature file to move to testing",
         "Parent work unit with incomplete children (COV-001 with COV-006 still in implementing) cannot move to done"
       ]
+    },
+    "COV-007": {
+      "id": "COV-007",
+      "title": "Generate Coverage Files for Existing Features",
+      "status": "done",
+      "createdAt": "2025-10-13T22:05:01.056Z",
+      "updatedAt": "2025-10-13T22:14:08.318Z",
+      "description": "Add a command to generate .feature.coverage files for existing feature files that don't have coverage tracking yet",
+      "epic": "coverage-tracking",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-13T22:05:07.139Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-13T22:10:05.598Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-13T22:11:20.482Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-13T22:13:34.764Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-13T22:14:08.318Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using fspec for coverage tracking",
+        "action": "generate coverage files for existing feature files that lack them",
+        "benefit": "I can start tracking test coverage for features created before coverage tracking was implemented"
+      },
+      "rules": [
+        "Command must scan spec/features/ directory for .feature files",
+        "For each .feature file without a corresponding .feature.coverage file, generate one",
+        "Skip files that already have valid .feature.coverage files (preserve existing coverage data)",
+        "Overwrite .feature.coverage files that have invalid JSON (corrupted files)",
+        "Generated coverage files must have same JSON schema as auto-created coverage files from create-feature",
+        "Display summary: X files created, Y files skipped, Z files recreated (invalid JSON)",
+        "Support --dry-run flag to preview what would be generated without creating files"
+      ],
+      "examples": [
+        "Project has 66 .feature files, 0 .coverage files → command creates 66 .coverage files",
+        "Project has 50 .feature files, 30 valid .coverage files → command creates 20 new .coverage files, skips 30",
+        "Project has user-login.feature with 5 scenarios → generates user-login.feature.coverage with 5 entries in scenarios array, all with empty testMappings",
+        "Run with --dry-run flag → displays what would be created but doesn't create any files",
+        "Corrupted .coverage file with invalid JSON → overwrites with valid empty coverage file, displays 'Recreated'"
+      ]
+    },
+    "COV-008": {
+      "id": "COV-008",
+      "title": "Unlink Coverage Mappings",
+      "status": "done",
+      "createdAt": "2025-10-13T22:20:53.067Z",
+      "updatedAt": "2025-10-13T22:29:19.706Z",
+      "description": "Add unlink-coverage command to remove test and implementation mappings from scenarios",
+      "epic": "coverage-tracking",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-13T22:22:54.879Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-13T22:25:51.670Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-13T22:26:42.302Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-13T22:28:53.095Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-13T22:29:19.707Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer managing coverage tracking",
+        "action": "remove incorrect or outdated test and implementation mappings from scenarios",
+        "benefit": "I can correct mistakes and update coverage as code evolves without manual JSON editing"
+      },
+      "rules": [
+        "Support --all flag to remove all mappings for a scenario (reset to uncovered)",
+        "Support removing specific test mapping by test-file path",
+        "Support removing only implementation mapping while keeping test mapping",
+        "Removing test mapping must also remove all its implementation mappings",
+        "Must recalculate stats after any removal operation",
+        "Error if scenario not found in coverage file"
+      ],
+      "examples": [
+        "Remove all mappings: unlink-coverage user-login --scenario 'Login' --all → scenario becomes uncovered, stats recalculated",
+        "Remove test mapping: unlink-coverage user-login --scenario 'Login' --test-file src/__tests__/auth.test.ts → removes test and all its impl mappings",
+        "Remove only impl: unlink-coverage user-login --scenario 'Login' --test-file src/__tests__/auth.test.ts --impl-file src/auth/old.ts → keeps test mapping",
+        "Error if scenario not found → displays available scenarios"
+      ]
     }
   },
   "states": {
@@ -2783,7 +2887,9 @@
       "REMIND-004",
       "REMIND-005",
       "REMIND-006",
-      "REMIND-007"
+      "REMIND-007",
+      "COV-007",
+      "COV-008"
     ],
     "blocked": []
   }

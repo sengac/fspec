@@ -1,0 +1,64 @@
+{
+  "scenarios": [
+    {
+      "name": "Add background to feature without existing background",
+      "testMappings": []
+    },
+    {
+      "name": "Add background with standard user story format",
+      "testMappings": []
+    },
+    {
+      "name": "Replace existing Background section",
+      "testMappings": []
+    },
+    {
+      "name": "Add background preserves scenarios",
+      "testMappings": []
+    },
+    {
+      "name": "Add background preserves architecture doc string",
+      "testMappings": []
+    },
+    {
+      "name": "Add background preserves feature-level tags",
+      "testMappings": []
+    },
+    {
+      "name": "Reject non-existent feature file",
+      "testMappings": []
+    },
+    {
+      "name": "Accept feature file by name without .feature extension",
+      "testMappings": []
+    },
+    {
+      "name": "Accept feature file by full path",
+      "testMappings": []
+    },
+    {
+      "name": "Proper indentation of Background content",
+      "testMappings": []
+    },
+    {
+      "name": "Preserve scenario-level tags",
+      "testMappings": []
+    },
+    {
+      "name": "Empty background text should be rejected",
+      "testMappings": []
+    },
+    {
+      "name": "Background positioned after doc string and before scenarios",
+      "testMappings": []
+    }
+  ],
+  "stats": {
+    "totalScenarios": 13,
+    "coveredScenarios": 0,
+    "coveragePercent": 0,
+    "testFiles": [],
+    "implFiles": [],
+    "totalLinesCovered": 0
+  }
+}

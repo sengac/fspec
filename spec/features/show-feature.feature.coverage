@@ -1,0 +1,80 @@
+{
+  "scenarios": [
+    {
+      "name": "Show feature file contents in text format",
+      "testMappings": []
+    },
+    {
+      "name": "Show feature file by full path",
+      "testMappings": []
+    },
+    {
+      "name": "Show feature file in JSON format",
+      "testMappings": []
+    },
+    {
+      "name": "Write feature contents to output file",
+      "testMappings": []
+    },
+    {
+      "name": "Show feature with architecture doc string",
+      "testMappings": []
+    },
+    {
+      "name": "Show feature with tags",
+      "testMappings": []
+    },
+    {
+      "name": "Reject non-existent feature file",
+      "testMappings": []
+    },
+    {
+      "name": "Accept feature name without .feature extension",
+      "testMappings": []
+    },
+    {
+      "name": "Show feature with scenario-level tags",
+      "testMappings": []
+    },
+    {
+      "name": "JSON format includes all Gherkin elements",
+      "testMappings": []
+    },
+    {
+      "name": "Write JSON output to file",
+      "testMappings": []
+    },
+    {
+      "name": "Validate feature file Gherkin syntax",
+      "testMappings": []
+    },
+    {
+      "name": "Show error for invalid Gherkin syntax",
+      "testMappings": []
+    },
+    {
+      "name": "Display work units linked to feature (feature-level tags)",
+      "testMappings": []
+    },
+    {
+      "name": "Display multiple work units from scenario-level tags",
+      "testMappings": []
+    },
+    {
+      "name": "Display work units when feature has no work unit tag",
+      "testMappings": []
+    },
+    {
+      "name": "Display work units with JSON output format",
+      "testMappings": []
+    }
+  ],
+  "stats": {
+    "totalScenarios": 17,
+    "coveredScenarios": 0,
+    "coveragePercent": 0,
+    "testFiles": [],
+    "implFiles": [],
+    "totalLinesCovered": 0
+  }
+}

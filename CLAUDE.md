@@ -294,6 +294,10 @@ fspec list-tags
 # Filter tags by category
 fspec list-tags --category "Phase Tags"
 
+# Generate coverage files for existing features (setup/recovery)
+fspec generate-coverage
+fspec generate-coverage --dry-run  # Preview
+
 # Link tests to scenarios (after writing tests)
 fspec link-coverage feature-name --scenario "Scenario Name" \
   --test-file src/__tests__/test.test.ts --test-lines 10-25
@@ -302,6 +306,10 @@ fspec link-coverage feature-name --scenario "Scenario Name" \
 fspec link-coverage feature-name --scenario "Scenario Name" \
   --test-file src/__tests__/test.test.ts \
   --impl-file src/module.ts --impl-lines 5-20
+
+# Remove coverage mappings (fix mistakes)
+fspec unlink-coverage feature-name --scenario "Scenario Name" --all
+fspec unlink-coverage feature-name --scenario "Scenario Name" --test-file <path>
 
 # Check coverage (find gaps)
 fspec show-coverage feature-name
