@@ -267,7 +267,7 @@ npm run format    # Format code with Prettier
 fspec manages its own specifications:
 
 ```bash
-# Create new feature file
+# Create new feature file (with coverage file)
 fspec create-feature "Feature Name"
 
 # Validate all feature files
@@ -293,6 +293,22 @@ fspec list-tags
 
 # Filter tags by category
 fspec list-tags --category "Phase Tags"
+
+# Link tests to scenarios (after writing tests)
+fspec link-coverage feature-name --scenario "Scenario Name" \
+  --test-file src/__tests__/test.test.ts --test-lines 10-25
+
+# Link implementation to tests (after implementing)
+fspec link-coverage feature-name --scenario "Scenario Name" \
+  --test-file src/__tests__/test.test.ts \
+  --impl-file src/module.ts --impl-lines 5-20
+
+# Check coverage (find gaps)
+fspec show-coverage feature-name
+fspec show-coverage  # Project-wide
+
+# Audit coverage (verify file paths)
+fspec audit-coverage feature-name
 ```
 
 ## Common Commands

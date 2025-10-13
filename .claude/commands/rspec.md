@@ -164,9 +164,11 @@ graph TB
 "
 ```
 
-## Step 6: Create Skeleton Test Files
+## Step 6: Create Skeleton Test Files AND Link Coverage
 
-Generate test file structure (NOT implementation):
+**CRITICAL**: Generate test file structure (NOT implementation) AND immediately link to coverage files. This is the KEY to reverse ACDD - coverage files track what's been mapped and what remains.
+
+### Create Skeleton Test File
 
 ```typescript
 /**
@@ -183,6 +185,7 @@ import { describe, it, expect } from 'vitest';
 
 describe('Feature: User Login', () => {
   describe('Scenario: Login with valid credentials', () => {
+    // Lines 13-27 (skeleton test)
     it('should redirect to dashboard and display username', async () => {
       // Given I am on the login page
       // TODO: Implement setup
@@ -201,6 +204,80 @@ describe('Feature: User Login', () => {
     });
   });
 });
+```
+
+### IMMEDIATELY Link Test Skeleton and Implementation to Coverage
+
+**This is what makes reverse ACDD work!** Link the skeleton test and the existing implementation code to the coverage file:
+
+```bash
+# Link skeleton test to scenario (use --skip-validation since test is not implemented yet)
+fspec link-coverage user-login --scenario "Login with valid credentials" \
+  --test-file src/routes/__tests__/auth-login.test.ts --test-lines 13-27 \
+  --skip-validation
+
+# Link existing implementation code to test mapping
+fspec link-coverage user-login --scenario "Login with valid credentials" \
+  --test-file src/routes/__tests__/auth-login.test.ts \
+  --impl-file src/routes/auth.ts --impl-lines 45-67 \
+  --skip-validation
+
+# Verify coverage
+fspec show-coverage user-login
+# Output:
+# Coverage Report: user-login.feature
+# Coverage: 100% (1/1 scenarios)
+#
+# ## Scenarios
+# ### ⚠️  Login with valid credentials (PARTIALLY COVERED)
+# - **Test**: src/routes/__tests__/auth-login.test.ts:13-27 (SKELETON)
+# - **Implementation**: src/routes/auth.ts:45-67
+```
+
+### Why Coverage Tracking is CRITICAL for Reverse ACDD
+
+1. **Progress Tracking** - See which scenarios have been mapped (tests + implementation linked)
+2. **Gap Detection** - Find unmapped scenarios that still need skeleton tests
+3. **Implementation Discovery** - Track which code implements which acceptance criteria
+4. **Forward ACDD Transition** - Once mapped, you can implement skeleton tests using forward ACDD
+5. **Prevents Duplication** - Coverage files prevent mapping the same code twice
+
+### Coverage Workflow for Reverse ACDD
+
+```bash
+# 1. Create feature file (coverage file auto-created)
+fspec create-feature "User Login"
+
+# 2. Add scenarios inferred from code
+fspec add-scenario user-login "Login with valid credentials"
+fspec add-scenario user-login "Login with invalid credentials"
+
+# 3. Create skeleton test file (src/routes/__tests__/auth-login.test.ts)
+
+# 4. IMMEDIATELY link skeleton test to coverage
+fspec link-coverage user-login --scenario "Login with valid credentials" \
+  --test-file src/routes/__tests__/auth-login.test.ts --test-lines 13-27 \
+  --skip-validation
+
+# 5. IMMEDIATELY link implementation to coverage
+fspec link-coverage user-login --scenario "Login with valid credentials" \
+  --test-file src/routes/__tests__/auth-login.test.ts \
+  --impl-file src/routes/auth.ts --impl-lines 45-67 \
+  --skip-validation
+
+# 6. Check project-wide coverage
+fspec show-coverage
+# Shows:
+# Project Coverage Report
+# Overall Coverage: 20% (1/5 scenarios)
+#
+# Features Overview:
+# - user-login.feature: 50% (1/2) ⚠️
+# - user-logout.feature: 0% (0/1) ❌
+# - dashboard.feature: 0% (0/2) ❌
+
+# 7. Find gaps and repeat for uncovered scenarios
+fspec show-coverage user-login  # See which scenarios still need mapping
 ```
 
 ## Step 7: Handle Ambiguous Code
@@ -250,6 +327,8 @@ Reverse ACDD is complete when:
 3. ✓ foundation.json contains complete user story map(s)
 4. ✓ All ambiguous scenarios are documented with clarification needed
 5. ✓ Skeleton test files exist for all feature files
+6. ✓ **Coverage files link ALL scenarios to skeleton tests and implementation code**
+7. ✓ **Project-wide coverage report shows 100% scenario mapping** (run `fspec show-coverage` to verify)
 
 ### Example Completion Report
 
@@ -257,16 +336,25 @@ Reverse ACDD is complete when:
 Reverse ACDD complete:
 - 3 epics created (AUTH, PAY, DASH)
 - 8 work units created
-- 8 feature files generated
+- 8 feature files generated (with .coverage files)
 - 8 skeleton test files created
+- 100% scenario coverage (15/15 scenarios mapped to tests + implementation)
 - foundation.json updated with 2 user story map diagrams
 - 3 scenarios marked AMBIGUOUS for human review
+
+Coverage Summary (fspec show-coverage):
+- user-login.feature: 100% (2/2) ✅
+- user-logout.feature: 100% (1/1) ✅
+- checkout.feature: 100% (3/3) ✅
+- dashboard.feature: 100% (5/5) ✅
+- admin-tools.feature: 100% (4/4) ✅
 
 Next steps:
 1. Review AMBIGUOUS scenarios and run Example Mapping
 2. Implement skeleton tests (TDD red-green-refactor)
 3. Validate all feature files: fspec validate
 4. Begin forward ACDD for new features
+5. Use coverage files to track which skeleton tests have been implemented
 ```
 
 ## Transitioning to Forward ACDD

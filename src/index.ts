@@ -461,6 +461,73 @@ function displaySpecsHelp(): void {
   console.log('      fspec validate-tags');
   console.log('');
 
+  console.log(chalk.bold('COVERAGE TRACKING (Scenario-to-Test-to-Implementation)'));
+  console.log(
+    '  ' +
+      chalk.cyan('fspec link-coverage <feature> --scenario <name>') +
+      ' Link tests/implementation'
+  );
+  console.log('    Options:');
+  console.log(
+    '      --test-file <path>               Test file path (e.g., src/__tests__/auth.test.ts)'
+  );
+  console.log(
+    '      --test-lines <range>             Test line range (e.g., "45-62")'
+  );
+  console.log(
+    '      --impl-file <path>               Implementation file path'
+  );
+  console.log(
+    '      --impl-lines <lines>             Implementation lines (e.g., "10,11,12,23")'
+  );
+  console.log(
+    '      --skip-validation                Skip file validation (reverse ACDD)'
+  );
+  console.log('    Examples:');
+  console.log(
+    '      fspec link-coverage user-auth --scenario "Login" --test-file src/__tests__/auth.test.ts --test-lines 45-62'
+  );
+  console.log('');
+  console.log(
+    '  ' +
+      chalk.cyan('fspec show-coverage [feature]') +
+      '    Show coverage report (gaps)'
+  );
+  console.log('    Options:');
+  console.log('      --format <format>                Output: text or json');
+  console.log('      --output <file>                  Write to file');
+  console.log('    Examples:');
+  console.log('      fspec show-coverage user-authentication');
+  console.log('      fspec show-coverage              # Project-wide');
+  console.log('');
+  console.log(
+    '  ' +
+      chalk.cyan('fspec audit-coverage <feature>') +
+      '     Verify file paths exist'
+  );
+  console.log('    Options:');
+  console.log(
+    '      --fix                            Remove broken mappings'
+  );
+  console.log('    Examples:');
+  console.log('      fspec audit-coverage user-authentication --fix');
+  console.log('');
+  console.log(
+    '  ' +
+      chalk.cyan('fspec unlink-coverage <feature>') +
+      '    Remove coverage mappings'
+  );
+  console.log('    Options:');
+  console.log('      --scenario <name>                Scenario to unlink');
+  console.log('      --test-file <path>               Test file to remove');
+  console.log('      --impl-file <path>               Implementation to remove');
+  console.log('      --all                            Remove all mappings');
+  console.log('    Examples:');
+  console.log(
+    '      fspec unlink-coverage user-auth --scenario "Login" --all'
+  );
+  console.log('');
+
   console.log(chalk.bold('TAG MANAGEMENT (Feature/Scenario Level)'));
   console.log('  ' + chalk.cyan('fspec add-tag-to-feature <file> <tag>'));
   console.log('    Options:');
