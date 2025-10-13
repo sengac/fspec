@@ -206,12 +206,7 @@ export function displayCustomHelpWithNote(): void {
   console.log(
     '  ' +
       chalk.cyan('fspec help setup') +
-      '        - Configuration and setup commands'
-  );
-  console.log(
-    '  ' +
-      chalk.cyan('fspec <command> --help') +
-      '  - Detailed help for specific command\n'
+      '        - Configuration and setup commands\n'
   );
 
   console.log(chalk.bold('EXAMPLES'));
