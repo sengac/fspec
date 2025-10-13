@@ -1,7 +1,11 @@
 import { readFile } from 'fs/promises';
-import { join } from 'path';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
 import chalk from 'chalk';
 import Ajv from 'ajv';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 interface ValidateFoundationSchemaOptions {
   cwd?: string;
@@ -19,9 +23,33 @@ export async function validateFoundationSchema(
   const cwd = options.cwd || process.cwd();
 
   try {
-    // Read the schema file
-    const schemaPath = join(__dirname, '../schemas/foundation.schema.json');
-    const schemaContent = await readFile(schemaPath, 'utf-8');
+    // Read the schema file from bundled location
+    // Try multiple paths to support different execution contexts:
+    // 1. dist/schemas/ (production, when running from dist/index.js)
+    // 2. src/schemas/ (tests, when running from src/commands/*.ts)
+    const possiblePaths = [
+      join(__dirname, 'schemas', 'foundation.schema.json'), // From dist/
+      join(__dirname, '..', 'schemas', 'foundation.schema.json'), // From src/commands/
+    ];
+
+    let schemaContent: string | null = null;
+    for (const path of possiblePaths) {
+      try {
+        schemaContent = await readFile(path, 'utf-8');
+        break;
+      } catch {
+        // Try next path
+        continue;
+      }
+    }
+
+    if (!schemaContent) {
+      throw new Error(
+        'Could not find foundation.schema.json. Tried paths: ' +
+          possiblePaths.join(', ')
+      );
+    }
+
     const schema = JSON.parse(schemaContent);
 
     // Read the foundation.json file
@@ -30,7 +58,13 @@ export async function validateFoundationSchema(
     const foundation = JSON.parse(foundationContent);
 
     // Validate using Ajv
-    const ajv = new Ajv({ allErrors: true, verbose: true });
+    // Use strictSchema: false and logger: false to suppress warnings about unknown formats like "uri"
+    const ajv = new Ajv({
+      allErrors: true,
+      verbose: true,
+      strictSchema: false,
+      logger: false,
+    });
     const validate = ajv.compile(schema);
     const valid = validate(foundation);
 

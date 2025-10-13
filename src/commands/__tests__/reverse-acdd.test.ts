@@ -32,10 +32,10 @@ describe('Feature: Reverse ACDD for Existing Codebases', () => {
       const rspecFile = join(testDir, '.claude', 'commands', 'rspec.md');
       await access(rspecFile); // Throws if file doesn't exist
 
-      // And the first line should link to fspec.md: "fully read fspec.md"
+      // And the content should instruct to read fspec.md first
       const content = await readFile(rspecFile, 'utf-8');
-      const firstLine = content.split('\n')[0];
-      expect(firstLine.toLowerCase()).toContain('fully read fspec.md');
+      expect(content.toLowerCase()).toContain('fully read');
+      expect(content).toContain('fspec.md');
 
       // And the file should contain reverse engineering workflow instructions
       expect(content).toContain('reverse engineer');

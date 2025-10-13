@@ -1324,15 +1324,31 @@
     "RSPEC-001": {
       "id": "RSPEC-001",
       "title": "Add rspec command for reverse ACDD",
-      "status": "specifying",
+      "status": "done",
       "createdAt": "2025-10-12T11:46:05.565Z",
-      "updatedAt": "2025-10-12T23:52:29.773Z",
+      "updatedAt": "2025-10-13T00:20:55.500Z",
       "description": "Create new 'rspec' command that performs reverse ACDD by decomposing/reverse engineering existing applications. The command discovers user stories, personas, and acceptance criteria from existing code. Extends the /fspec slash command to tell Claude to read fspec.md and continue with reverse engineering workflow.",
       "children": [],
       "stateHistory": [
         {
           "state": "specifying",
           "timestamp": "2025-10-12T23:11:24.854Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-13T00:20:36.464Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-13T00:20:42.594Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-13T00:20:49.164Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-13T00:20:55.501Z"
         }
       ],
       "rules": [
@@ -1363,9 +1379,7 @@
   },
   "states": {
     "backlog": [],
-    "specifying": [
-      "RSPEC-001"
-    ],
+    "specifying": [],
     "testing": [],
     "implementing": [],
     "validating": [],
@@ -1397,7 +1411,8 @@
       "BUG-002",
       "CLI-004",
       "INIT-003",
-      "DOC-002"
+      "DOC-002",
+      "RSPEC-001"
     ],
     "blocked": []
   }
