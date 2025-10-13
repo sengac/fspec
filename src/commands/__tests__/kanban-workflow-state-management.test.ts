@@ -1395,8 +1395,10 @@ Scenario: User logs in
     });
   });
 
-  describe('Scenario: Prevent moving from done to any other state', () => {
-    it('should prevent transitions from done state', async () => {
+  describe('Scenario: Allow moving from done to fix mistakes (ACDD backward movement)', () => {
+    it('should allow status changes on completed work when mistakes discovered', async () => {
+      // Given I have a project with spec directory
+      // And a work unit "AUTH-001" exists with status "done"
       const workUnits: WorkUnitsData = {
         workUnits: {
           'AUTH-001': {
@@ -1406,6 +1408,8 @@ Scenario: User logs in
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
             stateHistory: [
+              { state: 'backlog', timestamp: '2025-01-15T10:00:00Z' },
+              { state: 'specifying', timestamp: '2025-01-15T11:00:00Z' },
               { state: 'done', timestamp: new Date().toISOString() },
             ],
           },
@@ -1425,21 +1429,26 @@ Scenario: User logs in
         JSON.stringify(workUnits, null, 2)
       );
 
-      const error = await updateWorkUnitStatus({
+      // When I run "fspec update-work-unit AUTH-001 --status=implementing"
+      // Then the command should succeed (backward movement allowed)
+      await updateWorkUnitStatus({
         workUnitId: 'AUTH-001',
         status: 'implementing',
         cwd: testDir,
-      }).catch((e: Error) => e);
+      });
 
-      expect(error).toBeInstanceOf(Error);
-      if (error instanceof Error) {
-        expect(error.message).toContain(
-          'Cannot change status of completed work unit'
-        );
-        expect(error.message).toContain(
-          'Create a new work unit for additional work'
-        );
-      }
+      // And the work unit status should be "implementing"
+      const updatedWorkUnits = JSON.parse(
+        await readFile(join(testDir, 'spec/work-units.json'), 'utf-8')
+      );
+      expect(updatedWorkUnits.workUnits['AUTH-001'].status).toBe(
+        'implementing'
+      );
+
+      // And the state history should include the backward transition
+      expect(
+        updatedWorkUnits.workUnits['AUTH-001'].stateHistory.length
+      ).toBeGreaterThan(3);
     });
   });
 

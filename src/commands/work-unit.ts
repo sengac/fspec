@@ -330,7 +330,7 @@ async function updateWorkUnitStatus(
     testing: ['implementing', 'blocked'],
     implementing: ['validating', 'blocked', 'testing', 'specifying'],
     validating: ['done', 'blocked', 'implementing', 'specifying'],
-    done: [],
+    done: ['specifying', 'testing', 'implementing', 'validating', 'blocked'], // Can move backward when mistakes discovered
     blocked: ['backlog', 'specifying', 'testing', 'implementing', 'validating'],
   };
 
@@ -356,12 +356,6 @@ async function updateWorkUnitStatus(
     if (oldStatus === 'specifying' && newStatus === 'implementing') {
       throw new Error(
         "Invalid state transition. Must move to 'testing' state first. ACDD requires tests before implementation"
-      );
-    }
-
-    if (oldStatus === 'done') {
-      throw new Error(
-        'Cannot change status of completed work unit. Create a new work unit for additional work'
       );
     }
 

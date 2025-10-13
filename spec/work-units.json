@@ -1709,7 +1709,7 @@
       "title": "Tag Validation Reminders",
       "status": "done",
       "createdAt": "2025-10-13T07:56:49.298Z",
-      "updatedAt": "2025-10-13T08:07:44.888Z",
+      "updatedAt": "2025-10-13T13:01:25.736Z",
       "description": "Add reminders to add-tag-to-feature for unregistered tags and missing required tags",
       "parent": "REMIND-002",
       "estimate": 2,
@@ -1733,6 +1733,22 @@
         {
           "state": "done",
           "timestamp": "2025-10-13T08:07:44.888Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-13T12:54:46.258Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-13T13:00:50.474Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-13T13:01:07.724Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-13T13:01:25.737Z"
         }
       ],
       "rules": [
@@ -1751,7 +1767,7 @@
       "title": "Discovery Phase Reminders",
       "status": "done",
       "createdAt": "2025-10-13T07:56:51.073Z",
-      "updatedAt": "2025-10-13T08:09:45.355Z",
+      "updatedAt": "2025-10-13T13:01:28.324Z",
       "description": "Add reminders to generate-scenarios for unanswered questions, empty Example Mapping, and post-generation validation",
       "parent": "REMIND-002",
       "estimate": 3,
@@ -1775,6 +1791,22 @@
         {
           "state": "done",
           "timestamp": "2025-10-13T08:09:45.355Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-13T12:54:55.259Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-13T13:00:52.611Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-13T13:01:10.713Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-13T13:01:28.325Z"
         }
       ],
       "rules": [
@@ -1793,7 +1825,7 @@
       "title": "Show Work Unit Reminders",
       "status": "done",
       "createdAt": "2025-10-13T07:56:52.746Z",
-      "updatedAt": "2025-10-13T08:17:10.347Z",
+      "updatedAt": "2025-10-13T13:01:30.534Z",
       "description": "Add reminders to show-work-unit for missing estimates, empty Example Mapping in specifying phase, and long duration warnings",
       "parent": "REMIND-002",
       "estimate": 3,
@@ -1817,6 +1849,22 @@
         {
           "state": "done",
           "timestamp": "2025-10-13T08:17:10.348Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-13T12:54:55.554Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-13T13:00:54.822Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-13T13:01:12.669Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-13T13:01:30.535Z"
         }
       ],
       "rules": [
@@ -1835,7 +1883,7 @@
       "title": "Update Status Reminder Enhancement",
       "status": "done",
       "createdAt": "2025-10-13T07:56:54.417Z",
-      "updatedAt": "2025-10-13T08:18:13.970Z",
+      "updatedAt": "2025-10-13T13:01:32.609Z",
       "description": "Enhanced status reminders with blocked and done states - completed as part of REMIND-003",
       "parent": "REMIND-002",
       "estimate": 2,
@@ -1859,6 +1907,22 @@
         {
           "state": "done",
           "timestamp": "2025-10-13T08:18:13.970Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-13T12:54:55.851Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-13T13:00:56.856Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-13T13:01:15.325Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-13T13:01:32.610Z"
         }
       ],
       "rules": [
@@ -2706,10 +2770,6 @@
       "CLI-006",
       "BUG-004",
       "REMIND-003",
-      "REMIND-004",
-      "REMIND-005",
-      "REMIND-006",
-      "REMIND-007",
       "REMIND-002",
       "REMIND-008",
       "COV-002",
@@ -2719,7 +2779,11 @@
       "COV-005",
       "COV-006",
       "BUG-006",
-      "COV-001"
+      "COV-001",
+      "REMIND-004",
+      "REMIND-005",
+      "REMIND-006",
+      "REMIND-007"
     ],
     "blocked": []
   }

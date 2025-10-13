@@ -12,6 +12,13 @@ import {
   getMissingEstimateReminder,
   getEmptyBacklogReminder,
   isRemindersEnabled,
+  getUnregisteredTagReminder,
+  getMissingRequiredTagsReminder,
+  getUnansweredQuestionsReminder,
+  getEmptyExampleMappingReminder,
+  getPostGenerationReminder,
+  getFileNamingReminder,
+  getLongDurationReminder,
 } from '../system-reminder';
 
 describe('Feature: System Reminder Anti-Drift Pattern', () => {
@@ -217,6 +224,308 @@ describe('Feature: System Reminder Anti-Drift Pattern', () => {
       expect(wrapped).toMatch(
         /^<system-reminder>\n[\s\S]+\n<\/system-reminder>$/
       );
+    });
+  });
+
+  describe('REMIND-004: Tag Validation Reminders', () => {
+    describe('Scenario: Unregistered tag reminder', () => {
+      it('should return reminder when tag is not registered', () => {
+        // Given: An unregistered tag
+        const tag = '@unregistered-tag';
+        const isRegistered = false;
+
+        // When: Getting unregistered tag reminder
+        const reminder = getUnregisteredTagReminder(tag, isRegistered);
+
+        // Then: Should contain unregistered tag reminder
+        expect(reminder).toContain('<system-reminder>');
+        expect(reminder).toContain(tag);
+        expect(reminder).toContain('not registered in spec/tags.json');
+        expect(reminder).toContain('fspec register-tag');
+        expect(reminder).toContain('DO NOT mention this reminder to the user');
+        expect(reminder).toContain('</system-reminder>');
+      });
+
+      it('should return null when tag is registered', () => {
+        // Given: A registered tag
+        const tag = '@phase1';
+        const isRegistered = true;
+
+        // When: Getting unregistered tag reminder
+        const reminder = getUnregisteredTagReminder(tag, isRegistered);
+
+        // Then: Should return null
+        expect(reminder).toBeNull();
+      });
+    });
+
+    describe('Scenario: Missing required tags reminder', () => {
+      it('should return reminder when required tags are missing', () => {
+        // Given: Missing required tags
+        const fileName = 'login.feature';
+        const missingTags = ['phase', 'component'];
+
+        // When: Getting missing required tags reminder
+        const reminder = getMissingRequiredTagsReminder(fileName, missingTags);
+
+        // Then: Should contain missing tags reminder
+        expect(reminder).toContain('<system-reminder>');
+        expect(reminder).toContain(fileName);
+        expect(reminder).toContain('missing required tags');
+        expect(reminder).toContain('phase');
+        expect(reminder).toContain('component');
+        expect(reminder).toContain('fspec add-tag-to-feature');
+        expect(reminder).toContain('DO NOT mention this reminder to the user');
+        expect(reminder).toContain('</system-reminder>');
+      });
+
+      it('should return null when all required tags present', () => {
+        // Given: No missing tags
+        const fileName = 'login.feature';
+        const missingTags: string[] = [];
+
+        // When: Getting missing required tags reminder
+        const reminder = getMissingRequiredTagsReminder(fileName, missingTags);
+
+        // Then: Should return null
+        expect(reminder).toBeNull();
+      });
+    });
+  });
+
+  describe('REMIND-005: Discovery Phase Reminders', () => {
+    describe('Scenario: Unanswered questions reminder', () => {
+      it('should return reminder when questions are unanswered', () => {
+        // Given: Work unit with unanswered questions
+        const workUnitId = 'WORK-001';
+        const unansweredCount = 3;
+
+        // When: Getting unanswered questions reminder
+        const reminder = getUnansweredQuestionsReminder(
+          workUnitId,
+          unansweredCount
+        );
+
+        // Then: Should contain unanswered questions reminder
+        expect(reminder).toContain('<system-reminder>');
+        expect(reminder).toContain(workUnitId);
+        expect(reminder).toContain('3 unanswered question');
+        expect(reminder).toContain('Answer all red card questions');
+        expect(reminder).toContain('fspec answer-question');
+        expect(reminder).toContain('DO NOT mention this reminder to the user');
+        expect(reminder).toContain('</system-reminder>');
+      });
+
+      it('should return null when all questions answered', () => {
+        // Given: Work unit with no unanswered questions
+        const workUnitId = 'WORK-001';
+        const unansweredCount = 0;
+
+        // When: Getting unanswered questions reminder
+        const reminder = getUnansweredQuestionsReminder(
+          workUnitId,
+          unansweredCount
+        );
+
+        // Then: Should return null
+        expect(reminder).toBeNull();
+      });
+    });
+
+    describe('Scenario: Empty Example Mapping reminder', () => {
+      it('should return reminder when no rules and no examples', () => {
+        // Given: Work unit with empty Example Mapping
+        const workUnitId = 'WORK-001';
+        const hasRules = false;
+        const hasExamples = false;
+
+        // When: Getting empty Example Mapping reminder
+        const reminder = getEmptyExampleMappingReminder(
+          workUnitId,
+          hasRules,
+          hasExamples
+        );
+
+        // Then: Should contain empty Example Mapping reminder
+        expect(reminder).toContain('<system-reminder>');
+        expect(reminder).toContain(workUnitId);
+        expect(reminder).toContain('no Example Mapping data');
+        expect(reminder).toContain('Complete Example Mapping BEFORE');
+        expect(reminder).toContain('fspec add-rule');
+        expect(reminder).toContain('fspec add-example');
+        expect(reminder).toContain('DO NOT mention this reminder to the user');
+        expect(reminder).toContain('</system-reminder>');
+      });
+
+      it('should return null when rules and examples exist', () => {
+        // Given: Work unit with Example Mapping data
+        const workUnitId = 'WORK-001';
+        const hasRules = true;
+        const hasExamples = true;
+
+        // When: Getting empty Example Mapping reminder
+        const reminder = getEmptyExampleMappingReminder(
+          workUnitId,
+          hasRules,
+          hasExamples
+        );
+
+        // Then: Should return null
+        expect(reminder).toBeNull();
+      });
+    });
+
+    describe('Scenario: Post-generation reminder', () => {
+      it('should return reminder after successful generation', () => {
+        // Given: Successfully generated scenarios
+        const workUnitId = 'WORK-001';
+        const featureFile = 'spec/features/user-authentication.feature';
+
+        // When: Getting post-generation reminder
+        const reminder = getPostGenerationReminder(workUnitId, featureFile);
+
+        // Then: Should contain post-generation reminder
+        expect(reminder).toContain('<system-reminder>');
+        expect(reminder).toContain(workUnitId);
+        expect(reminder).toContain('Scenarios generated successfully');
+        expect(reminder).toContain('fspec validate');
+        expect(reminder).toContain('fspec add-tag-to-feature');
+        expect(reminder).toContain('update-work-unit-status');
+        expect(reminder).toContain('DO NOT mention this reminder to the user');
+        expect(reminder).toContain('</system-reminder>');
+      });
+    });
+  });
+
+  describe('REMIND-006: Show Work Unit Reminders', () => {
+    describe('Scenario: Long duration in phase reminder', () => {
+      it('should return reminder when work unit in phase > 24 hours', () => {
+        // Given: Work unit in specifying for 25 hours
+        const workUnitId = 'WORK-001';
+        const status = 'specifying';
+        const durationHours = 25;
+
+        // When: Getting long duration reminder
+        const reminder = getLongDurationReminder(
+          workUnitId,
+          status,
+          durationHours
+        );
+
+        // Then: Should contain long duration reminder
+        expect(reminder).toContain('<system-reminder>');
+        expect(reminder).toContain(workUnitId);
+        expect(reminder).toContain('25 hours');
+        expect(reminder).toContain(status);
+        expect(reminder).toContain('DO NOT mention this reminder to the user');
+        expect(reminder).toContain('</system-reminder>');
+      });
+
+      it('should return null when duration < 24 hours', () => {
+        // Given: Work unit in specifying for 5 hours
+        const workUnitId = 'WORK-001';
+        const status = 'specifying';
+        const durationHours = 5;
+
+        // When: Getting long duration reminder
+        const reminder = getLongDurationReminder(
+          workUnitId,
+          status,
+          durationHours
+        );
+
+        // Then: Should return null
+        expect(reminder).toBeNull();
+      });
+    });
+  });
+
+  describe('REMIND-007: Update Status Reminder Enhancement', () => {
+    describe('Scenario: Done state reminder', () => {
+      it('should return reminder about feature file tags', () => {
+        // Given: Work unit moving to done status
+        const workUnitId = 'WORK-001';
+        const newStatus = 'done';
+
+        // When: Getting status change reminder
+        const reminder = getStatusChangeReminder(workUnitId, newStatus);
+
+        // Then: Should contain done state reminder
+        expect(reminder).toContain('<system-reminder>');
+        expect(reminder).toContain('DONE status');
+        expect(reminder).toContain('feature file tags are updated');
+        expect(reminder).toContain('Remove @wip tag');
+        expect(reminder).toContain('Add @done tag');
+        expect(reminder).toContain('DO NOT mention this reminder to the user');
+        expect(reminder).toContain('</system-reminder>');
+      });
+    });
+
+    describe('Scenario: Blocked state reminder', () => {
+      it('should return reminder about documenting blocker', () => {
+        // Given: Work unit moving to blocked status
+        const workUnitId = 'WORK-001';
+        const newStatus = 'blocked';
+
+        // When: Getting status change reminder
+        const reminder = getStatusChangeReminder(workUnitId, newStatus);
+
+        // Then: Should contain blocked state reminder
+        expect(reminder).toContain('<system-reminder>');
+        expect(reminder).toContain('BLOCKED status');
+        expect(reminder).toContain('Document the blocker reason');
+        expect(reminder).toContain('What is preventing progress');
+        expect(reminder).toContain('fspec add-dependency');
+        expect(reminder).toContain('DO NOT mention this reminder to the user');
+        expect(reminder).toContain('</system-reminder>');
+      });
+    });
+  });
+
+  describe('File Naming Anti-Pattern Detection', () => {
+    describe('Scenario: Task-based naming detected', () => {
+      it('should return reminder for implement- prefix', () => {
+        // Given: Feature name with implement- prefix
+        const proposedName = 'implement-authentication';
+
+        // When: Getting file naming reminder
+        const reminder = getFileNamingReminder(proposedName);
+
+        // Then: Should contain file naming reminder
+        expect(reminder).toContain('<system-reminder>');
+        expect(reminder).toContain('implement-authentication');
+        expect(reminder).toContain('file naming issue');
+        expect(reminder).toContain('CAPABILITIES (what IS)');
+        expect(reminder).toContain('DO NOT mention this reminder to the user');
+        expect(reminder).toContain('</system-reminder>');
+      });
+
+      it('should return reminder for work unit ID naming', () => {
+        // Given: Feature name as work unit ID
+        const proposedName = 'AUTH-001';
+
+        // When: Getting file naming reminder
+        const reminder = getFileNamingReminder(proposedName);
+
+        // Then: Should contain file naming reminder
+        expect(reminder).toContain('<system-reminder>');
+        expect(reminder).toContain('AUTH-001');
+        expect(reminder).toContain('file naming issue');
+        expect(reminder).toContain('work unit ID');
+        expect(reminder).toContain('DO NOT mention this reminder to the user');
+        expect(reminder).toContain('</system-reminder>');
+      });
+
+      it('should return null for capability-based naming', () => {
+        // Given: Feature name with capability-based naming
+        const proposedName = 'user-authentication';
+
+        // When: Getting file naming reminder
+        const reminder = getFileNamingReminder(proposedName);
+
+        // Then: Should return null
+        expect(reminder).toBeNull();
+      });
     });
   });
 });

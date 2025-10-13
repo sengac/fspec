@@ -1047,8 +1047,8 @@ describe('Feature: Kanban Workflow State Management', () => {
     });
   });
 
-  describe('Scenario: Prevent moving from done to any other state', () => {
-    it('should reject status changes on completed work', async () => {
+  describe('Scenario: Allow moving from done to fix mistakes (ACDD backward movement)', () => {
+    it('should allow status changes on completed work when mistakes discovered', async () => {
       // Given I have a project with spec directory
       // And a work unit "AUTH-001" exists with status "done"
       const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
@@ -1067,15 +1067,25 @@ describe('Feature: Kanban Workflow State Management', () => {
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       // When I run "fspec update-work-unit AUTH-001 --status=implementing"
-      // Then the command should fail
-      await expect(
-        updateWorkUnit('AUTH-001', { status: 'implementing' }, { cwd: testDir })
-      ).rejects.toThrow('Cannot change status of completed work unit');
+      // Then the command should succeed (backward movement allowed)
+      await updateWorkUnit(
+        'AUTH-001',
+        { status: 'implementing' },
+        { cwd: testDir }
+      );
 
-      // And the error should suggest creating new work unit
-      await expect(
-        updateWorkUnit('AUTH-001', { status: 'implementing' }, { cwd: testDir })
-      ).rejects.toThrow('Create a new work unit for additional work');
+      // And the work unit status should be "implementing"
+      const updatedWorkUnits = JSON.parse(
+        await readFile(workUnitsFile, 'utf-8')
+      );
+      expect(updatedWorkUnits.workUnits['AUTH-001'].status).toBe(
+        'implementing'
+      );
+
+      // And the state history should include the backward transition
+      expect(
+        updatedWorkUnits.workUnits['AUTH-001'].stateHistory.length
+      ).toBeGreaterThan(2);
     });
   });
 
