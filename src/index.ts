@@ -81,6 +81,7 @@ import { exportExampleMap } from './commands/export-example-map';
 import { generateScenarios } from './commands/generate-scenarios';
 // Feature documentation commands
 import { addAssumption } from './commands/add-assumption';
+import { setUserStoryCommand } from './commands/set-user-story';
 // Workflow and automation commands
 import { autoAdvance } from './commands/auto-advance';
 import { displayBoard } from './commands/display-board';
@@ -2451,6 +2452,23 @@ program
       process.exit(1);
     }
   });
+
+// Set user story command
+program
+  .command('set-user-story')
+  .description('Set user story fields for work unit')
+  .argument('<work-unit-id>', 'Work unit ID')
+  .requiredOption('--role <role>', 'User role (As a...)')
+  .requiredOption('--action <action>', 'User action (I want to...)')
+  .requiredOption('--benefit <benefit>', 'User benefit (So that...)')
+  .action(
+    async (
+      workUnitId: string,
+      options: { role: string; action: string; benefit: string }
+    ) => {
+      await setUserStoryCommand(workUnitId, options);
+    }
+  );
 
 // ============================================================================
 // WORKFLOW AND AUTOMATION COMMANDS

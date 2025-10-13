@@ -1,6 +1,7 @@
-@phase1 @cli @feature-management
+@phase1
+@cli
+@feature-management
 Feature: Scenario Completion and Refinement
-
   """
   Architecture notes:
   - TODO: Add key architectural decisions
@@ -53,4 +54,3 @@ Feature: Scenario Completion and Refinement
     Given [precondition]
     When [action]
     Then [expected outcome]
-

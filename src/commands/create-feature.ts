@@ -85,6 +85,16 @@ export async function createFeatureCommand(name: string): Promise<void> {
       console.log('\n' + fileNamingReminder);
     }
 
+    // Check for prefill in generated file
+    const { readFile } = await import('fs/promises');
+    const { detectPrefill } = await import('../utils/prefill-detection');
+    const content = await readFile(filePath, 'utf-8');
+    const prefillResult = detectPrefill(content);
+
+    if (prefillResult.hasPrefill && prefillResult.systemReminder) {
+      console.log('\n' + prefillResult.systemReminder);
+    }
+
     process.exit(0);
   } catch (error: any) {
     console.error(chalk.red('Error:'), error.message);

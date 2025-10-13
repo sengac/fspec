@@ -120,6 +120,38 @@ export async function updateWorkUnitStatus(
     throw new Error(errorMessages.join(' '));
   }
 
+  // Check for prefill in linked feature files (blocks ALL forward transitions except to blocked)
+  if (newStatus !== 'blocked' && currentStatus !== newStatus) {
+    const { checkWorkUnitFeatureForPrefill } = await import(
+      '../utils/prefill-detection'
+    );
+    const prefillResult = await checkWorkUnitFeatureForPrefill(
+      options.workUnitId,
+      cwd
+    );
+
+    if (prefillResult && prefillResult.hasPrefill) {
+      const matchDetails = prefillResult.matches
+        .slice(0, 3)
+        .map(m => `  Line ${m.line}: ${m.pattern}`)
+        .join('\n');
+
+      throw new Error(
+        `Cannot advance work unit status: linked feature file contains prefill placeholders.\n\n` +
+          `Found ${prefillResult.matches.length} placeholder(s):\n${matchDetails}\n` +
+          (prefillResult.matches.length > 3
+            ? `  ... and ${prefillResult.matches.length - 3} more\n\n`
+            : '\n') +
+          `Fix prefill using CLI commands:\n` +
+          `  - fspec set-user-story ${options.workUnitId} --role='...' --action='...' --benefit='...'\n` +
+          `  - fspec add-step <feature> <scenario> <keyword> <text>\n` +
+          `  - fspec add-tag-to-feature <file> <tag>\n` +
+          `  - fspec add-architecture <feature> <text>\n\n` +
+          `DO NOT use Write or Edit tools to replace prefill directly.`
+      );
+    }
+  }
+
   // Validate prerequisites for testing state
   if (newStatus === 'testing' && currentStatus === 'specifying') {
     // Check for unanswered questions (Example Mapping integration)

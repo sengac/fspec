@@ -714,6 +714,10 @@
           "description": "Code that needs refactoring"
         },
         {
+          "name": "@remind-008",
+          "description": "Feature file prefill detection and CLI enforcement work unit"
+        },
+        {
           "name": "@technical-debt",
           "description": "Technical debt that should be addressed"
         },
