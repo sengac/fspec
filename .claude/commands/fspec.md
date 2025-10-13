@@ -222,7 +222,7 @@ fspec generate-scenarios EXAMPLE-006 --feature=user-authentication
 This command:
 - Reads rules, examples, and answered questions from the work unit
 - Generates a feature file with scenarios based on your examples
-- **Names feature file after work unit title** (e.g., "User Authentication" → `user-authentication.feature`)
+- **Names feature file after work unit title** (e.g., "User Authentication" → `example-feature.feature`)
 - Use `--feature` flag to override the default name
 - Transforms rules into background context or scenario preconditions
 - Creates properly structured Given-When-Then steps
@@ -266,7 +266,7 @@ fspec add-scenario feature-file-validation "Validate all feature files in direct
 
 **Examples:**
 - ✅ `example-feature.feature` - describes the capability
-- ❌ `add-user-example-login.feature` - describes the task
+- ❌ `add-user-example-example-login.feature` - describes the task
 - ✅ `example-validation.feature` - describes the capability
 - ❌ `implement-gherkin-validator.feature` - describes the task
 - ✅ `dependency-graph-visualization.feature` - describes the capability
@@ -517,11 +517,11 @@ fspec add-tag-to-feature spec/features/feature-name.feature @done
 **Update tags as you progress:**
 ```bash
 # Starting work
-fspec add-tag-to-feature spec/features/example-login.feature @wip
+fspec add-tag-to-feature spec/features/example-example-login.feature @wip
 
 # Completing work
-fspec remove-tag-from-feature spec/features/example-login.feature @wip
-fspec add-tag-to-feature spec/features/example-login.feature @done
+fspec remove-tag-from-feature spec/features/example-example-login.feature @wip
+fspec add-tag-to-feature spec/features/example-example-login.feature @done
 ```
 
 ### If Blocked

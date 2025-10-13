@@ -278,7 +278,23 @@ describe('Feature: Generate TAGS.md from tags.json', () => {
   });
 
   describe('Scenario: Fail if tags.json is invalid', () => {
-    it.todo('should reject invalid tags.json schema');
+    it('should reject invalid tags.json schema', async () => {
+      // Given I have an invalid tags.json (missing required fields)
+      const invalidTags = {
+        // Missing required fields: categories, combinationExamples, usageGuidelines, etc.
+        categories: null, // Invalid type
+      };
+
+      await writeFile(tagsJsonPath, JSON.stringify(invalidTags, null, 2));
+
+      // When I attempt to generate TAGS.md with schema validation
+      const { validateTagsJson } = await import('../../validators/json-schema');
+
+      // Then validation should fail
+      const validation = await validateTagsJson(tagsJsonPath);
+      expect(validation.valid).toBe(false);
+      expect(validation.errors.length).toBeGreaterThan(0);
+    });
   });
 
   describe('Scenario: Regeneration is idempotent', () => {
@@ -324,6 +340,53 @@ describe('Feature: Generate TAGS.md from tags.json', () => {
   });
 
   describe('Scenario: Support custom output path', () => {
-    it.todo('should support generating to custom output path');
+    it('should support generating to custom output path', async () => {
+      // Given I have a valid tags.json
+      const tags: Tags = {
+        $schema: '../schemas/tags.schema.json',
+        categories: [],
+        combinationExamples: [],
+        usageGuidelines: {
+          requiredCombinations: {
+            title: '',
+            requirements: [],
+            minimumExample: '',
+          },
+          recommendedCombinations: {
+            title: '',
+            includes: [],
+            recommendedExample: '',
+          },
+          orderingConvention: { title: '', order: [], example: '' },
+        },
+        addingNewTags: {
+          process: [],
+          namingConventions: [],
+          antiPatterns: { dont: [], do: [] },
+        },
+        queries: { title: '', examples: [] },
+        statistics: {
+          lastUpdated: '2025-01-15T10:30:00Z',
+          phaseStats: [],
+          componentStats: [],
+          featureGroupStats: [],
+          updateCommand: '',
+        },
+        validation: { rules: [], commands: [] },
+        references: [],
+      };
+
+      // When I generate markdown and write to custom path
+      const customPath = join(tmpDir, 'custom', 'TAGS.md');
+      await mkdir(join(tmpDir, 'custom'), { recursive: true });
+
+      const markdown = await generateTagsMd(tags);
+      await writeFile(customPath, markdown, 'utf-8');
+
+      // Then the file should exist at the custom path
+      const content = await readFile(customPath, 'utf-8');
+      expect(content).toBeTruthy();
+      expect(content).toContain('# fspec Feature File Tag Registry');
+    });
   });
 });
