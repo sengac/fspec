@@ -335,13 +335,15 @@ Feature: Kanban Workflow State Management
 
   @validation
   @state-enforcement
-  Scenario: Prevent moving from done to any other state
+  @acdd
+  Scenario: Allow moving from done to fix mistakes (ACDD backward movement)
     Given I have a project with spec directory
     And a work unit "AUTH-001" exists with status "done"
     When I run "fspec update-work-unit AUTH-001 --status=implementing"
-    Then the command should fail
-    And the error should contain "Cannot change status of completed work unit"
-    And the error should suggest "Create a new work unit for additional work"
+    Then the command should succeed
+    And the work unit status should be "implementing"
+    And the stateHistory should include the backward transition
+    And the work unit should be moved from states.done to states.implementing
 
   @query
   @filtering

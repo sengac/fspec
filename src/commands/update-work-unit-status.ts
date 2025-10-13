@@ -33,7 +33,7 @@ const STATE_TRANSITIONS: Record<WorkUnitStatus, WorkUnitStatus[]> = {
   testing: ['implementing', 'blocked'],
   implementing: ['validating', 'blocked'],
   validating: ['done', 'implementing', 'specifying', 'blocked'], // Can go back for fixes
-  done: [], // Done is final
+  done: ['specifying', 'testing', 'implementing', 'validating', 'blocked'], // Can move backward when mistakes discovered
   blocked: ['backlog', 'specifying', 'testing', 'implementing', 'validating'], // Can return to previous state
 };
 
@@ -75,13 +75,6 @@ export async function updateWorkUnitStatus(
   if (!ALLOWED_STATES.includes(newStatus)) {
     throw new Error(
       `Invalid status value: ${newStatus}. Allowed values: ${ALLOWED_STATES.join(', ')}`
-    );
-  }
-
-  // Prevent moving from done
-  if (currentStatus === 'done' && newStatus !== 'done') {
-    throw new Error(
-      `Cannot change status of completed work unit. Create a new work unit for additional work.`
     );
   }
 
