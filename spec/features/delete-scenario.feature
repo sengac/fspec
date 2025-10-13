@@ -120,4 +120,3 @@ Feature: Delete Scenario from Feature File
     Given [precondition]
     When [action]
     Then [expected outcome]
-

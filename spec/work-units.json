@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-10T22:58:36.525Z"
+    "lastUpdated": "2025-10-13T09:00:46.798Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -1869,11 +1869,124 @@
         "Update status to 'done' displays reminder to update feature file tags",
         "Update status to 'blocked' displays reminder to document blocker reason"
       ]
+    },
+    "REMIND-008": {
+      "id": "REMIND-008",
+      "title": "Feature File Prefill Detection and CLI Enforcement",
+      "status": "done",
+      "createdAt": "2025-10-13T08:31:34.385Z",
+      "updatedAt": "2025-10-13T08:52:57.425Z",
+      "description": "Detect when feature files contain placeholder/prefill text and emit system-reminders instructing LLMs to use CLI commands. Block workflow state transitions if prefill remains.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-13T08:31:52.511Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-13T08:47:32.759Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-13T08:52:11.546Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-13T08:52:44.911Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-13T08:52:57.426Z"
+        }
+      ],
+      "rules": [
+        "Example Mapping must capture the complete user story (role, action, benefit) as the yellow card",
+        "fspec generate-scenarios should generate complete user story from example map data, not placeholders",
+        "Prefill detection should identify ALL placeholder patterns: [role], [action], TODO:, @phase1, @component, etc.",
+        "System-reminders must suggest specific CLI commands to fix detected prefill",
+        "Workflow state transitions must be blocked if linked feature files contain prefill placeholders",
+        "generate-scenarios should only run AFTER user story is complete (no [role], [action], [benefit] placeholders in Background)",
+        "Yes, add explicit userStory fields (role, action, benefit) to work-units.json schema and update JSON Schema validation",
+        "Write-time only, when all information has been collected. Detect prefill during fspec create-feature and fspec generate-scenarios, emit system-reminders with CLI commands to fix.",
+        "Yes, BOTH write-time and read-time. Write-time for immediate feedback when creating/generating. Read-time for ongoing reminders when showing features, validating, or advancing work unit status.",
+        "Until fixed - keep showing system-reminders every time a command interacts with a feature file that has prefill, until the prefill is completely removed.",
+        "Hard error (exit 1) - Command must fail completely when trying to advance work unit status if linked feature file contains prefill. Forces LLM to fix prefill before proceeding.",
+        "Hybrid approach - Try to intelligently extract Given/When/Then from example text (e.g., 'User logs in with valid credentials' → Given/When/Then steps). Fall back to prefill with system-reminders if parsing fails.",
+        "Work units need CLI commands to set user story fields: fspec set-user-story <work-unit-id> --role='...' --action='...' --benefit='...'"
+      ],
+      "examples": [
+        "LLM runs 'fspec create-feature Auth' and gets file with [role], [action], [benefit] placeholders. System-reminder tells LLM to use 'fspec add-background' instead of Edit tool",
+        "LLM runs 'fspec generate-scenarios AUTH-001' and gets scenarios with [precondition], [action], [expected outcome]. System-reminder tells LLM to use 'fspec add-step' instead of Write tool",
+        "Work unit AUTH-001 has user story in Example Mapping: role='developer', action='authenticate users', benefit='secure access'. generate-scenarios uses this data to create complete Background section without placeholders",
+        "LLM tries 'fspec update-work-unit-status AUTH-001 testing' but linked feature file has [role] placeholder. Command fails with error: 'Cannot advance: feature file contains prefill. Use fspec add-background to complete user story.'",
+        "LLM completes Example Mapping with user story fields. Runs 'fspec generate-scenarios AUTH-001'. Scenarios are generated BUT steps still have [precondition], [action], [outcome]. System-reminder tells LLM to use 'fspec add-step' for each scenario."
+      ],
+      "questions": [
+        {
+          "text": "@human: Should Example Mapping capture user story fields (role, action, benefit) as explicit fields in work-units.json?",
+          "selected": true,
+          "answer": "Yes, add explicit userStory fields (role, action, benefit) to work-units.json schema and update JSON Schema validation"
+        },
+        {
+          "text": "@human: Should prefill detection happen at read-time (when showing feature) or write-time (when creating feature)?",
+          "selected": true,
+          "answer": "Write-time only, when all information has been collected. Detect prefill during fspec create-feature and fspec generate-scenarios, emit system-reminders with CLI commands to fix."
+        },
+        {
+          "text": "@human: Should system-reminders for prefill appear every time or only once per session/work unit?",
+          "selected": true,
+          "answer": "Until fixed - keep showing system-reminders every time a command interacts with a feature file that has prefill, until the prefill is completely removed."
+        },
+        {
+          "text": "@human: Should workflow blocking be a hard error (exits 1) or a warning (exits 0 with reminder)?",
+          "selected": true,
+          "answer": "Hard error (exit 1) - Command must fail completely when trying to advance work unit status if linked feature file contains prefill. Forces LLM to fix prefill before proceeding."
+        },
+        {
+          "text": "@human: Should generate-scenarios create scenarios with prefill steps OR should it extract Given/When/Then from the example text itself?",
+          "selected": true,
+          "answer": "Hybrid approach - Try to intelligently extract Given/When/Then from example text (e.g., 'User logs in with valid credentials' → Given/When/Then steps). Fall back to prefill with system-reminders if parsing fails."
+        },
+        {
+          "text": "@human: Going back to question 1 - actually BOTH read-time and write-time?",
+          "selected": true,
+          "answer": "Yes, BOTH write-time and read-time. Write-time for immediate feedback when creating/generating. Read-time for ongoing reminders when showing features, validating, or advancing work unit status."
+        }
+      ],
+      "estimate": 5,
+      "userStory": {
+        "role": "AI agent (LLM) using fspec",
+        "action": "detect and fix feature file prefill using CLI commands",
+        "benefit": "proper workflow enforcement and no direct file editing"
+      }
+    },
+    "DOC-003": {
+      "id": "DOC-003",
+      "title": "Document prefill detection and set-user-story command",
+      "status": "specifying",
+      "createdAt": "2025-10-13T09:00:17.205Z",
+      "updatedAt": "2025-10-13T09:00:46.797Z",
+      "description": "Update spec/CLAUDE.md to document the new set-user-story command, prefill detection workflow, and system-reminders for placeholder text",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-13T09:00:33.758Z"
+        }
+      ],
+      "userStory": {
+        "role": "AI agent using fspec",
+        "action": "understand the prefill detection workflow and set-user-story command",
+        "benefit": "I can properly use fspec commands instead of directly editing feature files"
+      }
     }
   },
   "states": {
     "backlog": [],
-    "specifying": [],
+    "specifying": [
+      "DOC-003"
+    ],
     "testing": [],
     "implementing": [],
     "validating": [],
@@ -1916,7 +2029,8 @@
       "REMIND-005",
       "REMIND-006",
       "REMIND-007",
-      "REMIND-002"
+      "REMIND-002",
+      "REMIND-008"
     ],
     "blocked": []
   }

@@ -9,6 +9,7 @@ import {
   getEmptyExampleMappingReminder,
   getPostGenerationReminder,
 } from '../utils/system-reminder';
+import { extractStepsFromExample } from '../utils/step-extraction';
 
 interface GenerateScenariosOptions {
   workUnitId: string;
@@ -29,11 +30,13 @@ function generateBasicScenario(
   example: string,
   index: number
 ): string {
+  const steps = extractStepsFromExample(example);
+
   return `  @${workUnitId}
   Scenario: ${example}
-    Given [precondition]
-    When [action]
-    Then [expected outcome]
+    Given ${steps.given || '[precondition]'}
+    When ${steps.when || '[action]'}
+    Then ${steps.then || '[expected outcome]'}
 `;
 }
 
@@ -159,16 +162,33 @@ export async function generateScenarios(
   } else {
     // Create new feature file
     const title = workUnit.title || options.workUnitId;
-    const featureContent = `Feature: ${title}
 
-  Background: User Story
+    // Generate Background section from userStory if available
+    let backgroundSection: string;
+    if (workUnit.userStory) {
+      backgroundSection = `  Background: User Story
+    As a ${workUnit.userStory.role}
+    I want to ${workUnit.userStory.action}
+    So that ${workUnit.userStory.benefit}`;
+    } else {
+      backgroundSection = `  Background: User Story
     As a [role]
     I want to [action]
-    So that [benefit]
+    So that [benefit]`;
+    }
+
+    const featureContent = `Feature: ${title}
+
+${backgroundSection}
 
 ${scenarios.join('\n')}`;
     await writeFile(featureFile, featureContent);
   }
+
+  // Check for prefill in generated/updated file
+  const { detectPrefill } = await import('../utils/prefill-detection');
+  const finalContent = await readFile(featureFile, 'utf-8');
+  const prefillResult = detectPrefill(finalContent);
 
   // Generate post-generation reminder
   const systemReminders: string[] = [];
@@ -178,6 +198,11 @@ ${scenarios.join('\n')}`;
   );
   if (postGenReminder) {
     systemReminders.push(postGenReminder);
+  }
+
+  // Add prefill reminder if detected
+  if (prefillResult.hasPrefill && prefillResult.systemReminder) {
+    systemReminders.push(prefillResult.systemReminder);
   }
 
   return {

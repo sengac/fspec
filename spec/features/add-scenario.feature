@@ -147,4 +147,3 @@ Feature: Add Scenario to Existing Feature File
     Given [precondition]
     When [action]
     Then [expected outcome]
-

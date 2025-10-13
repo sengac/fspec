@@ -1,6 +1,8 @@
-@phase1 @cli @help-system @documentation
+@phase1
+@cli
+@help-system
+@documentation
 Feature: Scalable help system for all commands
-
   """
   Architecture notes:
   - Process-level help interceptor runs BEFORE Commander.js parsing

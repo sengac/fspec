@@ -5,6 +5,13 @@ export interface QuestionItem {
   answer?: string;
 }
 
+// User Story Interface
+export interface UserStory {
+  role: string;
+  action: string;
+  benefit: string;
+}
+
 // Work Units Types
 export interface WorkUnit {
   id: string;
@@ -31,6 +38,7 @@ export interface WorkUnit {
   examples?: string[];
   questions?: QuestionItem[];
   assumptions?: string[];
+  userStory?: UserStory;
   stateHistory?: Array<{
     state: string;
     timestamp: string;

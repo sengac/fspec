@@ -219,6 +219,7 @@ Tags tracking development status of features.
 | `@init-001` | Work unit: Add ensureWorkUnitsFile to ALL 48+ commands |  |
 | `@partial` | Partially implemented feature - work in progress |  |
 | `@refactoring` | Code that needs refactoring |  |
+| `@remind-008` | Feature file prefill detection and CLI enforcement work unit |  |
 | `@technical-debt` | Technical debt that should be addressed |  |
 | `@test-001` | Example test work unit |  |
 | `@todo` | To Do |  |

@@ -134,4 +134,3 @@ Feature: Update Scenario Name
     Given [precondition]
     When [action]
     Then [expected outcome]
-

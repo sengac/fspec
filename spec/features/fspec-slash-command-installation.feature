@@ -118,4 +118,3 @@ Feature: fspec Slash Command Installation
     Then the command should show init command help
     And the command should not show 'unknown command' error
     And 'fspec --help' output should list init command
-

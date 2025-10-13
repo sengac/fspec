@@ -151,4 +151,3 @@ Feature: Bulk Rename Tags Across Files
     Given [precondition]
     When [action]
     Then [expected outcome]
-

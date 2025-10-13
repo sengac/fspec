@@ -107,6 +107,19 @@ fspec update-work-unit-status EXAMPLE-006 specifying
 
 **Now begin the interactive conversation with the human:**
 
+#### Step 0: Capture User Story (Yellow Card)
+
+First, capture the user story fields to avoid placeholder text in generated scenarios:
+
+```bash
+fspec set-user-story EXAMPLE-006 \
+  --role "developer using fspec" \
+  --action "validate feature files automatically" \
+  --benefit "I catch syntax errors before committing"
+```
+
+**CRITICAL**: Setting the user story BEFORE generating scenarios ensures the Background section is complete without `[role]`, `[action]`, `[benefit]` placeholders.
+
 #### Step 1: Ask About Rules (Blue Cards)
 
 Ask the human to identify the business rules governing this feature:
@@ -562,6 +575,12 @@ fspec update-work-unit-status EXAMPLE-006 specifying  # Move to specifying
 
 # 2. DISCOVERY (Example Mapping - Interactive Conversation)
 # Start with user story (yellow card) from work unit description
+
+# STEP 0: Capture user story to avoid prefill placeholders
+fspec set-user-story EXAMPLE-006 \
+  --role "developer using fspec" \
+  --action "validate feature files automatically" \
+  --benefit "I catch syntax errors before committing"
 
 # Ask about rules (blue cards)
 # You: "What are the key business rules for feature validation?"

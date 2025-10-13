@@ -356,4 +356,3 @@ Feature: Get Scenarios by Tag
     Given [precondition]
     When [action]
     Then [expected outcome]
-
