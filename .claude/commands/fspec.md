@@ -68,6 +68,7 @@ BACKLOG → SPECIFYING → TESTING → IMPLEMENTING → VALIDATING → DONE
 2. **Kanban States**: Track progress through ACDD phases
 3. **Feature Tags**: `@wip` (in progress), `@done` (completed), `@critical`, `@phase1`, etc.
 4. **Test-Feature Links**: Comments at top of test files reference feature files
+5. **Coverage Files**: `*.feature.coverage` files track scenario-to-test-to-implementation mappings for traceability
 
 ## Step 1: Load fspec Context
 
@@ -266,7 +267,7 @@ fspec add-scenario feature-file-validation "Validate all feature files in direct
 
 **Examples:**
 - ✅ `example-feature.feature` - describes the capability
-- ❌ `add-user-example-example-example-example-login.feature` - describes the task
+- ❌ `add-user-example-example-example-example-example-login.feature` - describes the task
 - ✅ `example-validation.feature` - describes the capability
 - ❌ `implement-gherkin-validator.feature` - describes the task
 - ✅ `dependency-graph-visualization.feature` - describes the capability
@@ -564,11 +565,11 @@ fspec update-work-unit-status EXAMPLE-006 testing
 **Update tags as you progress:**
 ```bash
 # Starting work
-fspec add-tag-to-feature spec/features/example-example-example-example-login.feature @wip
+fspec add-tag-to-feature spec/features/example-example-example-example-example-login.feature @wip
 
 # Completing work
-fspec remove-tag-from-feature spec/features/example-example-example-example-login.feature @wip
-fspec add-tag-to-feature spec/features/example-example-example-example-login.feature @done
+fspec remove-tag-from-feature spec/features/example-example-example-example-example-login.feature @wip
+fspec add-tag-to-feature spec/features/example-example-example-example-example-login.feature @done
 ```
 
 ### If Blocked
@@ -670,7 +671,7 @@ example-project validate                                   # Ensure valid Gherki
 fspec update-work-unit-status EXAMPLE-006 testing    # Move to testing
 
 # 4. TEST (Write the Test - BEFORE any implementation code)
-# Create: src/__tests__/validate.test.ts
+# Create: src/__tests__/validate.test.ts (lines 45-62)
 #
 # CRITICAL: Add feature file reference at top of test file:
 # /**
@@ -694,14 +695,23 @@ fspec update-work-unit-status EXAMPLE-006 testing    # Move to testing
 npm test                                         # Tests MUST FAIL (red phase)
                                                  # If tests pass, you wrote code already!
 
+# IMMEDIATELY link test to scenario
+fspec link-coverage example-feature --scenario "Validate feature file with valid syntax" \
+  --test-file src/__tests__/validate.test.ts --test-lines 45-62
+
 fspec update-work-unit-status EXAMPLE-006 implementing # Move to implementing
 
 # 5. IMPLEMENT (Write minimal code to make tests pass)
-# Create: src/commands/validate.ts
+# Create: src/commands/validate.ts (lines 10-24)
 # Write ONLY enough code to make the tests pass
 
 npm test                                         # Tests MUST PASS (green phase)
                                                  # Refactor if needed, keep tests green
+
+# IMMEDIATELY link implementation to test mapping
+fspec link-coverage example-feature --scenario "Validate feature file with valid syntax" \
+  --test-file src/__tests__/validate.test.ts \
+  --impl-file src/commands/validate.ts --impl-lines 10-24
 
 fspec update-work-unit-status EXAMPLE-006 validating # Move to validating
 
@@ -731,13 +741,15 @@ fspec board                                      # Verify work unit in DONE colu
 7. **Validate ALL** - Run `npm test` again to ensure ALL tests still pass (nothing broke)
 8. **Tags Updated** - Remove `@wip`, add `@done` when complete
 
-## Step 6: Monitoring Progress
+## Step 7: Monitoring Progress
 
 ```bash
 fspec board                           # Visual Kanban board
 fspec list-work-units --status=implementing  # See what's in progress
 fspec show-work-unit EXAMPLE-006           # Detailed work unit view
 fspec generate-summary-report         # Comprehensive report
+fspec show-coverage                   # Project-wide coverage report
+fspec show-coverage user-authentication # Feature-specific coverage
 ```
 
 ## Key ACDD Principles
@@ -745,13 +757,16 @@ fspec generate-summary-report         # Comprehensive report
 1. **Example Mapping First** - Interactive conversation with human (rules, examples, questions)
 2. **Feature Second** - Generate or write Gherkin feature file from example map
 3. **Test Third** - Write test file with header comment linking to feature file
-4. **Tests Must Fail** - Verify tests fail (red) before implementing (proves they work)
-5. **Implement Fourth** - Write minimal code to make tests pass (green)
-6. **Validate All Tests** - Run ALL tests to ensure nothing broke
-7. **No Skipping** - Must follow ACDD order: Discovery → Feature → Test → Implementation → Validation
-8. **Kanban Tracking** - Move work units through board states as you progress
-9. **Tags Reflect State** - Add `@wip` when starting, change to `@done` when complete
-10. **Feature-Test Link** - Always add feature file path in test file header comment
+4. **Link Coverage Immediately** - After writing tests, link them to scenarios with `fspec link-coverage`
+5. **Tests Must Fail** - Verify tests fail (red) before implementing (proves they work)
+6. **Implement Fourth** - Write minimal code to make tests pass (green)
+7. **Link Implementation Immediately** - After implementing, link code to test mappings with `fspec link-coverage`
+8. **Validate All Tests** - Run ALL tests to ensure nothing broke
+9. **No Skipping** - Must follow ACDD order: Discovery → Feature → Test → Coverage → Implementation → Coverage → Validation
+10. **Kanban Tracking** - Move work units through board states as you progress
+11. **Tags Reflect State** - Add `@wip` when starting, change to `@done` when complete
+12. **Feature-Test Link** - Always add feature file path in test file header comment
+13. **Coverage Traceability** - Always maintain scenario-to-test-to-implementation mappings
 
 ### Test File Header Template
 
@@ -775,6 +790,127 @@ describe('Feature: [Feature Name]', () => {
   });
 });
 ```
+
+## Step 6.5: Coverage Tracking - Link Tests and Implementation
+
+**CRITICAL**: After writing tests and implementation, you MUST update coverage files to maintain traceability. Coverage files (`*.feature.coverage`) link Gherkin scenarios to their test files and implementation files.
+
+### Why Coverage Tracking Matters
+
+- **Traceability**: Know exactly which tests validate which scenarios
+- **Implementation Tracking**: See which code implements which acceptance criteria
+- **Gap Detection**: Identify uncovered scenarios or untested code
+- **Reverse ACDD**: Essential for reverse engineering existing codebases (see `/rspec`)
+- **Refactoring Safety**: Understand impact of code changes on scenarios
+
+### Coverage Commands
+
+```bash
+# Link test file to scenario (after writing tests)
+fspec link-coverage <feature-name> --scenario "<scenario-name>" --test-file <path> --test-lines <range>
+
+# Link implementation to existing test mapping (after implementing)
+fspec link-coverage <feature-name> --scenario "<scenario-name>" --test-file <path> --impl-file <path> --impl-lines <lines>
+
+# Link both test and implementation at once
+fspec link-coverage <feature-name> --scenario "<scenario-name>" --test-file <path> --test-lines <range> --impl-file <path> --impl-lines <lines>
+
+# Show coverage for a feature (see what's mapped)
+fspec show-coverage <feature-name>
+fspec show-coverage <feature-name> --format=json
+
+# Show all feature coverage (project-wide)
+fspec show-coverage
+
+# Audit coverage (verify files exist)
+fspec audit-coverage <feature-name>
+```
+
+### Coverage Workflow Integration
+
+**Update your ACDD workflow to include coverage tracking:**
+
+```bash
+# 4. TEST (Write the Test - BEFORE any implementation code)
+# Create: src/__tests__/validate.test.ts (lines 45-62)
+npm test  # Tests MUST FAIL (red phase)
+
+# IMMEDIATELY link test to scenario
+fspec link-coverage user-authentication --scenario "Login with valid credentials" \
+  --test-file src/__tests__/auth.test.ts --test-lines 45-62
+
+fspec update-work-unit-status EXAMPLE-006 implementing
+
+# 5. IMPLEMENT (Write minimal code to make tests pass)
+# Create: src/commands/validate.ts (lines 10,11,12,23,24)
+npm test  # Tests MUST PASS (green phase)
+
+# IMMEDIATELY link implementation to test mapping
+fspec link-coverage user-authentication --scenario "Login with valid credentials" \
+  --test-file src/__tests__/auth.test.ts \
+  --impl-file src/auth/login.ts --impl-lines 10-24
+
+# 6. VERIFY COVERAGE
+fspec show-coverage user-authentication
+# Should show: ✅ Login with valid credentials (FULLY COVERED)
+# - Test: src/__tests__/auth.test.ts:45-62
+# - Implementation: src/auth/login.ts:10,11,12,23,24
+```
+
+### When to Update Coverage
+
+✅ **IMMEDIATELY after**:
+1. Writing test file (link test to scenario)
+2. Implementing code (link implementation to test mapping)
+3. Refactoring (update line numbers if they change)
+4. Adding new scenarios (coverage file auto-created, but needs linking)
+
+❌ **DON'T**:
+- Wait until end of work unit to update coverage
+- Skip coverage linking (breaks traceability)
+- Manually edit `.coverage` files (always use `fspec link-coverage`)
+
+### Coverage File Format
+
+Coverage files (`*.feature.coverage`) are JSON files automatically created when you run `fspec create-feature`. They contain:
+
+```json
+{
+  "scenarios": [
+    {
+      "name": "Login with valid credentials",
+      "testMappings": [
+        {
+          "file": "src/__tests__/auth.test.ts",
+          "lines": "45-62",
+          "implMappings": [
+            {
+              "file": "src/auth/login.ts",
+              "lines": [10, 11, 12, 23, 24]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 1,
+    "coveragePercent": 20,
+    "testFiles": ["src/__tests__/auth.test.ts"],
+    "implFiles": ["src/auth/login.ts"],
+    "totalLinesCovered": 23
+  }
+}
+```
+
+### Coverage Best Practices
+
+1. **Update immediately** - Link coverage as soon as tests/code are written
+2. **Check coverage gaps** - Run `fspec show-coverage` regularly to find uncovered scenarios
+3. **Use audit** - Run `fspec audit-coverage <feature>` to verify file paths are correct
+4. **Track changes** - When refactoring changes line numbers, update coverage mappings
+5. **Project-wide view** - Run `fspec show-coverage` (no arguments) to see all features at once
 
 ## Ready to Start
 
