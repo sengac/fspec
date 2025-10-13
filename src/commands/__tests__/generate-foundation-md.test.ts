@@ -248,7 +248,7 @@ describe('Feature: Generate FOUNDATION.md from foundation.json', () => {
         project: {
           name: 'fspec',
           description: 'A CLI tool for AI agents',
-          repository: 'https://github.com/rquast/fspec',
+          repository: 'https://github.com/sengac/fspec',
           license: 'MIT',
           importantNote:
             'This is a legitimate developer tool for managing specifications',

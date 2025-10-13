@@ -680,6 +680,10 @@
           "meaning": "Feature cannot proceed due to dependencies or external factors"
         },
         {
+          "name": "@bug-fix",
+          "description": "Marks bug fixes and corrections to existing functionality"
+        },
+        {
           "name": "@deprecated",
           "description": "Deprecated",
           "meaning": "Feature is being phased out, replaced by newer implementation"

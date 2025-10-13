@@ -1381,7 +1381,7 @@
       "title": "Summary report shows 'undefined' instead of file path",
       "status": "done",
       "createdAt": "2025-10-13T05:18:30.471Z",
-      "updatedAt": "2025-10-13T05:25:46.597Z",
+      "updatedAt": "2025-10-13T07:23:52.363Z",
       "description": "When running 'fspec generate-summary-report --format=markdown', the output shows 'Report generated: undefined' instead of the actual file path where the report was saved.",
       "children": [],
       "stateHistory": [
@@ -1423,7 +1423,7 @@
         "CLI calls result.outputFile which is undefined",
         "Function signature currently missing format and output parameters"
       ],
-      "estimate": 3
+      "estimate": 2
     },
     "CLI-005": {
       "id": "CLI-005",
@@ -1558,6 +1558,62 @@
           "answer": "Use process-level help interceptor with registry Set. Intercept --help before Commander.js, use dynamic imports, graceful fallback for missing configs, zero modifications to 91 command registrations."
         }
       ]
+    },
+    "BUG-004": {
+      "id": "BUG-004",
+      "title": "Fix generate-scenarios to use capability-based feature file names",
+      "status": "done",
+      "createdAt": "2025-10-13T07:23:50.426Z",
+      "updatedAt": "2025-10-13T07:31:08.560Z",
+      "description": "The generate-scenarios command currently defaults to using work unit ID as feature file name (e.g., auth-001.feature) which violates the naming principle. Should require --feature flag or use work unit title as default.",
+      "children": [],
+      "estimate": 2,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-13T07:24:10.294Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-13T07:26:43.645Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-13T07:27:36.963Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-13T07:30:19.171Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-13T07:31:08.561Z"
+        }
+      ],
+      "rules": [
+        "Feature files must be named after capabilities, NOT work unit IDs",
+        "Work unit title should be used as default suggestion when --feature not provided",
+        "Command should fail with helpful error if --feature not provided and AI needs to choose name",
+        "Auto-default to work unit title (kebab-cased). User can override with --feature flag if they want a different name.",
+        "Throw error requiring --feature flag with helpful message suggesting capability-based name."
+      ],
+      "examples": [
+        "User runs 'fspec generate-scenarios AUTH-001', command suggests using work unit title as feature name",
+        "User runs 'fspec generate-scenarios AUTH-001 --feature=user-authentication', creates spec/features/user-authentication.feature",
+        "Work unit AUTH-001 has title 'User Login', defaults to spec/features/user-login.feature when --feature not provided"
+      ],
+      "questions": [
+        {
+          "text": "@human: Should we make --feature flag required, or auto-default to work unit title?",
+          "selected": true,
+          "answer": "Auto-default to work unit title (kebab-cased). User can override with --feature flag if they want a different name."
+        },
+        {
+          "text": "@human: What should happen if work unit title is empty or not set?",
+          "selected": true,
+          "answer": "Throw error requiring --feature flag with helpful message suggesting capability-based name."
+        }
+      ]
     }
   },
   "states": {
@@ -1598,7 +1654,8 @@
       "RSPEC-001",
       "BUG-003",
       "CLI-005",
-      "CLI-006"
+      "CLI-006",
+      "BUG-004"
     ],
     "blocked": []
   }
