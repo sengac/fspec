@@ -70,6 +70,7 @@ Tags that categorize features by functional area.
 | `@delete` | Delete operations |  |
 | `@dependencies` | Dependency management between work units |  |
 | `@dependency-management` | Work unit dependency tracking |  |
+| `@discovery-command` | Example Mapping discovery commands |  |
 | `@documentation` | Documentation Display |  |
 | `@epics` | Epic management and high-level work grouping |  |
 | `@estimation` | Estimation operations |  |
@@ -82,6 +83,7 @@ Tags that categorize features by functional area.
 | `@foundation` | Foundation documentation and schema features |  |
 | `@foundation-management` | FOUNDATION.md Operations |  |
 | `@generate-scenarios` | Scenario generation from examples |  |
+| `@help-system` | Help system and documentation features |  |
 | `@help-text` | Help and documentation features |  |
 | `@impact-analysis` | Impact analysis and dependency chains |  |
 | `@kanban` | Kanban board and workflow management |  |
@@ -127,6 +129,7 @@ Tags that categorize features by functional area.
 | `@work-units` | Work unit CRUD operations |  |
 | `@workflow` | Workflow and state transition features |  |
 | `@workflow-automation` | Workflow automation and lifecycle integration utilities |  |
+| `@workflow-command` | ACDD workflow-related commands |  |
 
 **Rule**: Every feature file MUST have at least ONE feature group tag.
 
@@ -229,6 +232,7 @@ Tags for test-related scenarios and requirements.
 |-----|-------------|-------|
 | `@blocking` | Operations that block workflow progression |  |
 | `@circular-dependency` | Circular dependency detection tests |  |
+| `@complex-command` | Complex command with multiple modes and options |  |
 | `@confirmation` | Tests confirmation messages and user feedback |  |
 | `@consistency` | Data consistency validation |  |
 | `@duplicate` | Duplicate detection tests |  |
@@ -237,10 +241,13 @@ Tags for test-related scenarios and requirements.
 | `@edge-case` | Edge case tests - validation of boundary conditions and unusual scenarios |  |
 | `@happy-path` | Happy path test scenarios |  |
 | `@integration-test` | Integration Test Required |  |
+| `@main-help` | Main help menu tests |  |
 | `@manual-test` | Requires Manual Testing |  |
+| `@medium-command` | Medium complexity command with multiple options |  |
 | `@overwrite` | Tests overwrite behavior (file replacement without prompts) |  |
 | `@prerequisites` | Prerequisite validation scenarios |  |
 | `@regression` | Regression tests - comprehensive validation of existing functionality |  |
+| `@simple-command` | Simple command with minimal options |  |
 | `@smoke` | Smoke tests - quick validation of critical functionality |  |
 | `@unit-test` | Unit Test Coverage Required |  |
 | `@unregistered-scenario-tag` | Example tag used in test scenarios to demonstrate error handling |  |

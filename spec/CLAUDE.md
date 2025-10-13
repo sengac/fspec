@@ -64,6 +64,31 @@ fspec update-work-unit-status WORK-001 blocked --blocked-reason "Waiting for ext
 4. **Write code** to make tests pass → move to `validating`
 5. **Review/validate** code and specs → move to `done`
 
+### Getting Help with Commands
+
+**All fspec commands have comprehensive `--help` documentation:**
+
+```bash
+# Get detailed help for any command
+fspec <command> --help
+
+# Examples:
+fspec validate --help           # Comprehensive help for validate command
+fspec create-work-unit --help   # Comprehensive help for create-work-unit
+fspec add-scenario --help       # Comprehensive help for add-scenario
+fspec list-work-units --help    # Comprehensive help for list-work-units
+```
+
+**Every command includes:**
+- **Description and purpose**: What the command does and why
+- **Usage syntax**: Exact command structure with arguments/options
+- **AI-optimized sections**: WHEN TO USE, PREREQUISITES, TYPICAL WORKFLOW, COMMON ERRORS, COMMON PATTERNS
+- **Complete examples**: Multiple examples with expected output
+- **Related commands**: What commands to use next in your workflow
+- **Notes and best practices**: Tips for effective use
+
+**Use `--help` as your primary reference** - it's faster than documentation and always up-to-date with the code.
+
 ## Reverse ACDD for Existing Codebases
 
 For projects **without existing specifications**, fspec provides **Reverse ACDD** via the `/rspec` command in Claude Code.

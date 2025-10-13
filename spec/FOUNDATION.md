@@ -507,4 +507,27 @@ sequenceDiagram
     Note over Human,FeatureFile: Ready for Testing Phase
 ```
 
+### Help System Architecture
+
+```mermaid
+graph TB
+  User[User runs command] -->|bare fspec or --help| Interceptor[help-interceptor.ts]
+  Interceptor -->|loads| Registry[help-registry.ts]
+  Registry -->|import.meta.glob eager| HelpFiles[*-help.ts files]
+  HelpFiles -->|exports| Configs[CommandHelpConfig interfaces]
+  Interceptor -->|displays & exits| Formatter[help-formatter.ts]
+  Formatter -->|renders| Output[Formatted help output]
+  Output -->|displays| Console[Terminal]
+  
+  Interceptor -->|no help flag| Commander[Commander.js]
+  Commander -->|runs| Command[fspec command execution]
+  
+  HelpFiles -->|structured data| Sections[WHEN TO USE, PREREQUISITES, WORKFLOW, ERRORS, PATTERNS]
+  Sections -->|AI-optimized| AgentContext[Claude context]
+  
+  style HelpFiles fill:#e1f5e1
+  style Sections fill:#ffe1e1
+  style AgentContext fill:#e1e5ff
+```
+
 ---

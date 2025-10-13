@@ -12,6 +12,8 @@ IMMEDIATELY: run "fspec --help" and the following more detailed help commands:
   fspec help metrics      - Progress tracking and reporting commands
   fspec help setup        - Configuration and setup commands
 
+**IMPORTANT: ALL fspec commands have comprehensive `--help` documentation**. For ANY command you need to use, run `fspec <command> --help` to see complete usage syntax, examples, and best practices.
+
 Fully read [fspec.md](./fspec.md) and add it to your context before proceeding with this reverse ACDD workflow.
 
 ## What is Reverse ACDD?

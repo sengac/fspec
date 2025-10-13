@@ -12,6 +12,13 @@ IMMEDIATELY: run "fspec --help" and the following more detailed help commands:
   fspec help metrics      - Progress tracking and reporting commands
   fspec help setup        - Configuration and setup commands
 
+**IMPORTANT: ALL fspec commands have comprehensive `--help` documentation**. For ANY command you need to use, run `fspec <command> --help` to see:
+- Complete usage syntax with arguments and options
+- AI-optimized sections (WHEN TO USE, PREREQUISITES, TYPICAL WORKFLOW, COMMON ERRORS, COMMON PATTERNS)
+- Multiple examples with expected output
+- Related commands to use next
+- Notes and best practices
+
 Store this information in your context for reference, and use fspec to do 100% of all project management and specification management for any feature that it offers - NO EXCEPTIONS - NEVER CREATE YOUR OWN MARKDOWN OR JSON FILES TO DO THINGS THAT FSPEC SHOULD DO, ALWAYS USE FSPEC FOR ALL WORK TRACKING AND SPECIFICATION MANAGEMENT!
 
 You are now operating in **fspec mode**. This activates Kanban-based project management where ALL work is tracked through fspec work units and moved through workflow states.
