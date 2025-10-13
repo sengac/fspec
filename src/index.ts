@@ -30,6 +30,8 @@ import { checkCommand } from './commands/check';
 import { addDiagramCommand } from './commands/add-diagram';
 import { updateFoundationCommand } from './commands/update-foundation';
 import { showFoundationCommand } from './commands/show-foundation';
+import { showFoundationSchemaCommand } from './commands/show-foundation-schema';
+import { validateFoundationSchemaCommand } from './commands/validate-foundation-schema';
 import { deleteDiagramCommand } from './commands/delete-diagram';
 import { generateFoundationMdCommandCLI } from './commands/generate-foundation-md';
 import { generateTagsMdCommandCLI } from './commands/generate-tags-md';
@@ -151,7 +153,7 @@ function displayCustomHelp(): void {
   console.log(
     '  ' +
       chalk.cyan('fspec init') +
-      '                  - Install /fspec slash command for Claude Code'
+      '                  - Initialize /fspec and /rspec slash commands'
   );
   console.log(
     '  ' +
@@ -1517,6 +1519,18 @@ program
   .option('--line-numbers', 'Show line numbers', false)
   .action(showFoundationCommand);
 
+// Show foundation schema command
+program
+  .command('show-foundation-schema')
+  .description('Display foundation.json JSON Schema with guidance for AI agents')
+  .action(showFoundationSchemaCommand);
+
+// Validate foundation schema command
+program
+  .command('validate-foundation-schema')
+  .description('Validate foundation.json against JSON Schema')
+  .action(validateFoundationSchemaCommand);
+
 // Delete diagram command
 program
   .command('delete-diagram')
@@ -2774,7 +2788,7 @@ program
 
 program
   .command('init')
-  .description('Initialize fspec slash command for Claude Code or custom location')
+  .description('Initialize /fspec and /rspec slash commands for Claude Code')
   .option('--type <type>', 'Installation type: claude-code or custom')
   .option('--path <path>', 'Custom installation path (relative to current directory)')
   .option('--yes', 'Skip confirmation prompts (auto-confirm overwrite)')

@@ -69,6 +69,9 @@ export async function init(options: InitOptions): Promise<InitResult> {
   // Copy CLAUDE.md template to spec/ directory
   await copyClaudeTemplate(cwd);
 
+  // Copy rspec.md template to .claude/commands/ directory
+  await copyRspecTemplate(cwd);
+
   // Calculate relative path for display
   const relativePath = relative(cwd, targetPath);
 
@@ -240,5 +243,52 @@ async function copyClaudeTemplate(cwd: string): Promise<void> {
   await mkdir(specDir, { recursive: true });
 
   // Copy CLAUDE.md (overwrites if exists)
+  await copyFile(sourcePath, targetPath);
+}
+
+/**
+ * Copy rspec.md template to .claude/commands/ directory
+ *
+ * Copies the bundled rspec.md template to .claude/commands/rspec.md
+ * in the target project. Creates .claude/commands/ directory if it doesn't exist.
+ * Always overwrites existing rspec.md without prompting.
+ */
+async function copyRspecTemplate(cwd: string): Promise<void> {
+  // Resolve rspec.md path from package installation
+  // Try multiple paths to support different execution contexts:
+  // 1. dist/.claude/commands/rspec.md (production - bundled from .claude/)
+  // 2. .claude/commands/rspec.md (development/test from project root)
+  const possiblePaths = [
+    join(__dirname, '..', '.claude', 'commands', 'rspec.md'), // From dist/
+    join(__dirname, '..', '..', '.claude', 'commands', 'rspec.md'), // From src/commands/
+  ];
+
+  let sourcePath: string | null = null;
+  for (const path of possiblePaths) {
+    try {
+      await access(path);
+      sourcePath = path;
+      break;
+    } catch {
+      // Try next path
+      continue;
+    }
+  }
+
+  if (!sourcePath) {
+    throw new Error(
+      'Could not find .claude/commands/rspec.md. Tried paths: ' +
+        possiblePaths.join(', ')
+    );
+  }
+
+  // Target path in project
+  const commandsDir = join(cwd, '.claude', 'commands');
+  const targetPath = join(commandsDir, 'rspec.md');
+
+  // Create .claude/commands/ directory if it doesn't exist
+  await mkdir(commandsDir, { recursive: true });
+
+  // Copy rspec.md (overwrites if exists)
   await copyFile(sourcePath, targetPath);
 }

@@ -86,7 +86,7 @@ ACDD builds on **Specification by Example** and **Behavior-Driven Development (B
 
 ### How It Works Together
 
-**The ACDD Workflow with fspec:**
+**The ACDD Workflow with fspec (Forward ACDD):**
 
 1. **Discovery (Example Mapping)**
    - Create work unit: `fspec create-work-unit AUTH "User login"`
@@ -113,6 +113,19 @@ ACDD builds on **Specification by Example** and **Behavior-Driven Development (B
 5. **Validation & Done**
    - Verify acceptance criteria met
    - Move to "done" - feature complete
+
+**Reverse ACDD (for Existing Codebases):**
+
+For projects without specifications, use `/rspec` in Claude Code to reverse engineer:
+
+1. **Analyze Codebase** - Identify user-facing interactions (routes, commands, UI)
+2. **Group into Epics** - Organize interactions by business domain
+3. **Create Work Units** - Generate work units for each user story
+4. **Infer Acceptance Criteria** - Create feature files from code behavior
+5. **Generate Test Skeletons** - Structure tests (not implemented)
+6. **Document User Stories** - Update foundation.json with Mermaid diagrams
+
+After reverse ACDD, continue with forward ACDD for new features.
 
 **Example:**
 ```bash
@@ -183,6 +196,7 @@ Blocked By: []
 
 - 📊 **Kanban Workflow** - 7-state workflow (backlog → specifying → testing → implementing → validating → done + blocked) with visual board
 - 🔄 **Work Unit Management** - Track work through Kanban states with dependencies, epics, and example mapping
+- 🔁 **Reverse ACDD** - Reverse engineer existing codebases to create specifications via `/rspec` command in Claude Code
 - 📋 **Gherkin Validation** - Validate syntax using official Cucumber parser
 - 🏗️ **Feature Management** - Create and manage .feature files with proper structure
 - 🏷️ **JSON-Backed Tag Registry** - Single source of truth in tags.json with auto-generated TAGS.md
@@ -208,6 +222,24 @@ This will:
 1. Install dependencies (including @cucumber/gherkin-parser)
 2. Build the TypeScript code
 3. Link the `fspec` command globally
+
+### Claude Code Integration
+
+fspec provides slash commands for Claude Code to enable AI-driven ACDD workflows:
+
+```bash
+# Initialize fspec in your project (installs /fspec and /rspec commands)
+fspec init
+```
+
+This creates:
+- `.claude/commands/fspec.md` - Main fspec slash command for forward ACDD
+- `.claude/commands/rspec.md` - Reverse ACDD command for existing codebases
+- `spec/CLAUDE.md` - Specification management guidelines
+
+**Available Claude Code Commands:**
+- `/fspec` - Main command for managing specifications and work units in forward ACDD
+- `/rspec` - Reverse engineer existing codebases to create specifications
 
 ### Uninstall
 
