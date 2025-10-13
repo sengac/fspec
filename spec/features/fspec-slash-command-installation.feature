@@ -111,7 +111,6 @@ Feature: fspec Slash Command Installation
     And the template should include example mapping guidance
     And the template should include story point estimation guidance
 
-  @CLI-004
   Scenario: CLI registration allows running fspec init command
     Given I have fspec installed
     When I run 'fspec init --help'

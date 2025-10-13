@@ -122,32 +122,3 @@ Feature: Bulk Rename Tags Across Files
     And the output should show "Both --from and --to are required"
     And no files should be modified
 
-  @FEAT-004
-  Scenario: Delete all scenarios with @deprecated tag
-    Given [precondition]
-    When [action]
-    Then [expected outcome]
-
-  @FEAT-004
-  Scenario: Delete feature files tagged @phase1
-    Given [precondition]
-    When [action]
-    Then [expected outcome]
-
-  @FEAT-004
-  Scenario: Rename tag from @old-tag to @new-tag
-    Given [precondition]
-    When [action]
-    Then [expected outcome]
-
-  @FEAT-004
-  Scenario: Preview bulk delete before confirmation
-    Given [precondition]
-    When [action]
-    Then [expected outcome]
-
-  @FEAT-004
-  Scenario: Show summary of bulk changes
-    Given [precondition]
-    When [action]
-    Then [expected outcome]

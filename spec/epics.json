@@ -1,3 +1,18 @@
 {
-  "epics": {}
+  "epics": {
+    "coverage-tracking": {
+      "id": "coverage-tracking",
+      "title": "Coverage Tracking",
+      "createdAt": "2025-10-13T09:49:22.109Z",
+      "description": "Track traceability from feature scenarios to test files to implementation code lines",
+      "workUnits": [
+        "COV-001",
+        "COV-002",
+        "COV-003",
+        "COV-004",
+        "COV-005",
+        "COV-006"
+      ]
+    }
+  }
 }

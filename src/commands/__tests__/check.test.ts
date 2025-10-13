@@ -22,8 +22,19 @@ describe('Feature: Run All Validations', () => {
       const tagsData = {
         categories: [
           {
+            name: 'Phase Tags',
             title: 'Phase Tags',
             tags: [{ name: '@phase1', description: 'Phase 1 features' }],
+          },
+          {
+            name: 'Component Tags',
+            title: 'Component Tags',
+            tags: [{ name: '@cli', description: 'CLI component' }],
+          },
+          {
+            name: 'Feature Group Tags',
+            title: 'Feature Group Tags',
+            tags: [{ name: '@testing', description: 'Testing features' }],
           },
         ],
       };
@@ -34,6 +45,8 @@ describe('Feature: Run All Validations', () => {
       );
 
       const feature1 = `@phase1
+@cli
+@testing
 Feature: Feature 1
 
   Scenario: Test
@@ -41,6 +54,8 @@ Feature: Feature 1
 `;
 
       const feature2 = `@phase1
+@cli
+@testing
 Feature: Feature 2
 
   Scenario: Test
@@ -48,6 +63,8 @@ Feature: Feature 2
 `;
 
       const feature3 = `@phase1
+@cli
+@testing
 Feature: Feature 3
 
   Scenario: Test
@@ -278,8 +295,19 @@ Given step`;
       const tagsData = {
         categories: [
           {
+            name: 'Phase Tags',
             title: 'Phase Tags',
             tags: [{ name: '@phase1', description: 'Phase 1 features' }],
+          },
+          {
+            name: 'Component Tags',
+            title: 'Component Tags',
+            tags: [{ name: '@cli', description: 'CLI component' }],
+          },
+          {
+            name: 'Feature Group Tags',
+            title: 'Feature Group Tags',
+            tags: [{ name: '@testing', description: 'Testing features' }],
           },
         ],
       };
@@ -291,6 +319,8 @@ Given step`;
 
       for (let i = 1; i <= 10; i++) {
         const feature = `@phase1
+@cli
+@testing
 Feature: Feature ${i}
 
   Scenario: Test
@@ -358,8 +388,19 @@ Feature: Feature 5
       const tagsData = {
         categories: [
           {
+            name: 'Phase Tags',
             title: 'Phase Tags',
             tags: [{ name: '@phase1', description: 'Phase 1 features' }],
+          },
+          {
+            name: 'Component Tags',
+            title: 'Component Tags',
+            tags: [{ name: '@cli', description: 'CLI component' }],
+          },
+          {
+            name: 'Feature Group Tags',
+            title: 'Feature Group Tags',
+            tags: [{ name: '@testing', description: 'Testing features' }],
           },
         ],
       };
@@ -371,6 +412,8 @@ Feature: Feature 5
 
       for (let i = 1; i <= 3; i++) {
         const feature = `@phase1
+@cli
+@testing
 Feature: Feature ${i}
 
   Scenario: Test
@@ -402,8 +445,19 @@ Feature: Feature ${i}
       const tagsData = {
         categories: [
           {
+            name: 'Phase Tags',
             title: 'Phase Tags',
             tags: [{ name: '@phase1', description: 'Phase 1 features' }],
+          },
+          {
+            name: 'Component Tags',
+            title: 'Component Tags',
+            tags: [{ name: '@cli', description: 'CLI component' }],
+          },
+          {
+            name: 'Feature Group Tags',
+            title: 'Feature Group Tags',
+            tags: [{ name: '@testing', description: 'Testing features' }],
           },
         ],
       };
@@ -415,6 +469,8 @@ Feature: Feature ${i}
 
       for (let i = 1; i <= 100; i++) {
         const feature = `@phase1
+@cli
+@testing
 Feature: Feature ${i}
 
   Scenario: Test

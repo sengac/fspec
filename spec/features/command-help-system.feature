@@ -29,7 +29,6 @@ Feature: Scalable help system for all commands
     I want comprehensive --help support for all commands
     So that I can understand command usage without reading source code
 
-  @CLI-006
   Scenario: Display custom help when help config exists
     Given I have a command "remove-tag-from-scenario" with help config at "src/commands/remove-tag-from-scenario-help.ts"
     And the command is registered in help-registry.ts
@@ -40,7 +39,6 @@ Feature: Scalable help system for all commands
     And I should see related commands
     And the process should exit with code 0
 
-  @CLI-006
   Scenario: Fall back to Commander.js help when no custom help exists
     Given I have a command "some-command" without a help config file
     And the command is NOT registered in help-registry.ts
@@ -49,7 +47,6 @@ Feature: Scalable help system for all commands
     And Commander.js should display default help
     And the process should exit with code 0
 
-  @CLI-006
   Scenario: Handle help flag in any position
     Given I have a command "list-work-units" with custom help
     When I run "fspec --help list-work-units"
@@ -58,14 +55,12 @@ Feature: Scalable help system for all commands
     Then custom help should be displayed in all cases
     And the process should exit with code 0
 
-  @CLI-006
   Scenario: Handle main program help without command
     Given I run "fspec --help" without specifying a command
     Then the help interceptor should return false
     And Commander.js should display main program help
     And the help should list all available commands
 
-  @CLI-006
   Scenario: Gracefully handle missing help config file
     Given I have a command "broken-command" registered in help-registry.ts
     But the help config file "src/commands/broken-command-help.ts" does not exist

@@ -88,7 +88,6 @@ Feature: Work Unit Query and Reporting
     And each column should list work units
     And work units should show ID, title, and estimate
 
-  @QRY-001
   Scenario: Query by status and prefix
     Given I have a project with spec directory
     And work units exist with various statuses and prefixes
@@ -101,7 +100,6 @@ Feature: Work Unit Query and Reporting
     And the output should not include "API-001"
     And the output should be valid JSON
 
-  @QRY-001
   Scenario: Export work units to JSON
     Given I have a project with spec directory
     And multiple work units exist with complete metadata
@@ -112,7 +110,6 @@ Feature: Work Unit Query and Reporting
     And each work unit should have all fields: id, title, status, createdAt, updatedAt
     And the export should be usable by external tools
 
-  @QRY-001
   Scenario: Generate summary report with statistics
     Given I have a project with spec directory
     And work units exist across all Kanban states
@@ -127,7 +124,6 @@ Feature: Work Unit Query and Reporting
     And the output should show "done: 5"
     And the output should show total story points if estimates exist
 
-  @QRY-001
   Scenario: Query with sorting by updated date
     Given I have a project with spec directory
     And work unit "AUTH-001" was updated at "2025-10-10T10:00:00Z"
@@ -139,7 +135,6 @@ Feature: Work Unit Query and Reporting
     And the second result should be "AUTH-001"
     And the third result should be "AUTH-003"
 
-  @QRY-001
   Scenario: Export filtered results to CSV
     Given I have a project with spec directory
     And work units exist with status "implementing"
@@ -150,7 +145,6 @@ Feature: Work Unit Query and Reporting
     And the file should contain only work units with status "implementing"
     And the CSV should be valid and importable to spreadsheet applications
 
-  @BUG-003
   Scenario: Summary report writes to file and returns output path
     Given I have a project with spec directory
     And work units exist across multiple states

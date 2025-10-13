@@ -177,6 +177,10 @@
           "description": "Compound query operations"
         },
         {
+          "name": "@coverage-tracking",
+          "description": "Coverage tracking and traceability from scenarios to tests to implementation code"
+        },
+        {
           "name": "@critical-path",
           "description": "Critical path analysis"
         },

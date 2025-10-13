@@ -84,6 +84,11 @@
       "prefix": "RSPEC",
       "description": "Reverse specification and engineering commands",
       "createdAt": "2025-10-12T11:46:02.120Z"
+    },
+    "COV": {
+      "prefix": "COV",
+      "description": "Coverage tracking and traceability features",
+      "createdAt": "2025-10-13T09:48:58.778Z"
     }
   }
 }

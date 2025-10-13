@@ -40,7 +40,6 @@ Feature: Foundation Schema Guidance for AI Agents
     I want JSON Schema guidance that explains the intent and format of each section
     So that I write documentation that preserves meaning, stays on point, and follows the expected structure
 
-  @DOC-002
   Scenario: Display foundation schema with rich descriptions
     Given I am an AI agent working on a project using fspec
     When I run "fspec show-foundation-schema"

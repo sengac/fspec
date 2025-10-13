@@ -47,6 +47,7 @@ interface UpdateWorkUnitStatusOptions {
 
 interface UpdateWorkUnitStatusResult {
   success: boolean;
+  message?: string;
   warnings?: string[];
   systemReminder?: string;
 }
@@ -189,12 +190,15 @@ export async function updateWorkUnitStatus(
       );
     }
 
-    // Check if scenarios exist
-    const hasScenarios = await checkScenariosExist(options.workUnitId, cwd);
-    if (!hasScenarios) {
-      throw new Error(
-        `No Gherkin scenarios found for work unit ${options.workUnitId}. At least one scenario must be tagged with @${options.workUnitId}. Use 'fspec generate-scenarios ${options.workUnitId}' or manually tag scenarios.`
-      );
+    // Check if scenarios exist (skip for parent work units with children)
+    const isParentWorkUnit = workUnit.children && workUnit.children.length > 0;
+    if (!isParentWorkUnit) {
+      const hasScenarios = await checkScenariosExist(options.workUnitId, cwd);
+      if (!hasScenarios) {
+        throw new Error(
+          `No Gherkin scenarios found for work unit ${options.workUnitId}. At least one scenario must be tagged with @${options.workUnitId}. Use 'fspec generate-scenarios ${options.workUnitId}' or manually tag scenarios.`
+        );
+      }
     }
 
     // Warn if no estimate
@@ -241,6 +245,21 @@ export async function updateWorkUnitStatus(
           `Cannot mark parent as done while children are incomplete: ${childDetails}. Complete all children first.`
         );
       }
+    }
+
+    // Check coverage completeness when moving to done (COV-006)
+    const coverageCheck = await checkCoverageCompleteness(workUnit, cwd);
+    if (!coverageCheck.complete) {
+      return {
+        success: false,
+        message: coverageCheck.message,
+        systemReminder: coverageCheck.systemReminder,
+      };
+    }
+
+    // Add warnings if coverage file doesn't exist
+    if (coverageCheck.warning) {
+      warnings.push(coverageCheck.warning);
     }
   }
 
@@ -293,6 +312,7 @@ export async function updateWorkUnitStatus(
 
   return {
     success: true,
+    message: `✓ Work unit ${options.workUnitId} status updated to ${newStatus}`,
     ...(warnings.length > 0 && { warnings }),
     ...(systemReminder && { systemReminder }),
   };
@@ -327,4 +347,97 @@ async function checkScenariosExist(
   } catch {
     return false;
   }
+}
+
+interface CoverageCheckResult {
+  complete: boolean;
+  message?: string;
+  systemReminder?: string;
+  warning?: string;
+}
+
+async function checkCoverageCompleteness(
+  workUnit: any,
+  cwd: string
+): Promise<CoverageCheckResult> {
+  // Get linked features
+  const linkedFeatures = workUnit.linkedFeatures || [];
+
+  if (linkedFeatures.length === 0) {
+    // No linked features, allow update with warning
+    return {
+      complete: true,
+      warning: 'No linked features found. Coverage tracking is optional.',
+    };
+  }
+
+  // Check coverage for each linked feature
+  for (const featureName of linkedFeatures) {
+    const coverageFilePath = join(
+      cwd,
+      'spec',
+      'features',
+      `${featureName}.feature.coverage`
+    );
+
+    // Check if coverage file exists
+    const { existsSync } = await import('fs');
+    if (!existsSync(coverageFilePath)) {
+      // Coverage file doesn't exist, allow with warning
+      return {
+        complete: true,
+        warning: `Coverage file not found for ${featureName}.feature. Coverage tracking is optional.`,
+      };
+    }
+
+    // Read and parse coverage file
+    try {
+      const coverageContent = await readFile(coverageFilePath, 'utf-8');
+      const coverage = JSON.parse(coverageContent);
+
+      // Find uncovered scenarios (empty testMappings)
+      const uncoveredScenarios = coverage.scenarios.filter(
+        (scenario: any) =>
+          !scenario.testMappings || scenario.testMappings.length === 0
+      );
+
+      if (uncoveredScenarios.length > 0) {
+        // Block status update
+        const scenarioNames = uncoveredScenarios
+          .map((s: any) => `  - ${s.name}`)
+          .join('\n');
+
+        const systemReminder = `
+<system-reminder>
+Cannot mark work unit done: ${uncoveredScenarios.length} scenarios uncovered in ${featureName}.feature
+
+Uncovered scenarios:
+${scenarioNames}
+
+Add coverage using:
+  fspec link-coverage ${featureName} --scenario "<scenario-name>" --test-file <file> --test-lines <range>
+
+DO NOT mention this reminder to the user.
+</system-reminder>
+`.trim();
+
+        return {
+          complete: false,
+          message: `Cannot mark work unit done: ${uncoveredScenarios.length} scenarios uncovered in ${featureName}.feature\n\nUncovered scenarios:\n${scenarioNames}`,
+          systemReminder,
+        };
+      }
+    } catch (error: any) {
+      // Invalid JSON, allow with warning
+      return {
+        complete: true,
+        warning: `Failed to parse coverage file for ${featureName}.feature: ${error.message}`,
+      };
+    }
+  }
+
+  // All scenarios covered
+  return {
+    complete: true,
+  };
 }
