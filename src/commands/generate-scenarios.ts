@@ -1,9 +1,14 @@
 import { writeFile, mkdir } from 'fs/promises';
 import { join, dirname } from 'path';
 import { existsSync } from 'fs';
-import type { WorkUnitsData } from '../types';
+import type { WorkUnitsData, QuestionItem } from '../types';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
 import { readFile } from 'fs/promises';
+import {
+  getUnansweredQuestionsReminder,
+  getEmptyExampleMappingReminder,
+  getPostGenerationReminder,
+} from '../utils/system-reminder';
 
 interface GenerateScenariosOptions {
   workUnitId: string;
@@ -16,6 +21,7 @@ interface GenerateScenariosResult {
   success: boolean;
   featureFile: string;
   scenariosCount: number;
+  systemReminders?: string[];
 }
 
 function generateBasicScenario(
@@ -60,6 +66,45 @@ export async function generateScenarios(
   }
 
   const workUnit = data.workUnits[options.workUnitId];
+
+  // Check for unanswered questions (BEFORE generation)
+  let unansweredCount = 0;
+  if (workUnit.questions && workUnit.questions.length > 0) {
+    unansweredCount = workUnit.questions.filter(q => {
+      const questionItem = q as QuestionItem;
+      return !questionItem.selected;
+    }).length;
+
+    if (unansweredCount > 0) {
+      const reminder = getUnansweredQuestionsReminder(
+        options.workUnitId,
+        unansweredCount
+      );
+      if (reminder) {
+        throw new Error(
+          `Cannot generate scenarios: ${unansweredCount} unanswered question${
+            unansweredCount > 1 ? 's' : ''
+          } found.\n\n${reminder}\n\nAnswer questions with 'fspec answer-question ${options.workUnitId} <index>' before generating.`
+        );
+      }
+    }
+  }
+
+  // Check for empty Example Mapping
+  const hasRules = workUnit.rules && workUnit.rules.length > 0;
+  const hasExamples = workUnit.examples && workUnit.examples.length > 0;
+  if (!hasRules && !hasExamples) {
+    const reminder = getEmptyExampleMappingReminder(
+      options.workUnitId,
+      hasRules,
+      hasExamples
+    );
+    if (reminder) {
+      throw new Error(
+        `Cannot generate scenarios: No Example Mapping data found.\n\n${reminder}\n\nComplete Example Mapping before generating scenarios.`
+      );
+    }
+  }
 
   // Validate examples exist
   if (!workUnit.examples || workUnit.examples.length === 0) {
@@ -125,9 +170,20 @@ ${scenarios.join('\n')}`;
     await writeFile(featureFile, featureContent);
   }
 
+  // Generate post-generation reminder
+  const systemReminders: string[] = [];
+  const postGenReminder = getPostGenerationReminder(
+    options.workUnitId,
+    featureFile
+  );
+  if (postGenReminder) {
+    systemReminders.push(postGenReminder);
+  }
+
   return {
     success: true,
     featureFile,
     scenariosCount: scenarios.length,
+    ...(systemReminders.length > 0 && { systemReminders }),
   };
 }

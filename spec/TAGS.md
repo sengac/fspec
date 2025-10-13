@@ -171,6 +171,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@setup` | Setup and initialization commands |  |
 | `@slash-command` | Slash command features for Claude Code |  |
 | `@sms` | SMS-related functionality |  |
+| `@system-reminder` | Anti-drift pattern for AI agents using contextual reminders |  |
 | `@template` | Template System |  |
 
 **Rule**: Use technical tags to highlight specific architectural concerns.

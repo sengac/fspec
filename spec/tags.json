@@ -594,6 +594,10 @@
           "description": "SMS-related functionality"
         },
         {
+          "name": "@system-reminder",
+          "description": "Anti-drift pattern for AI agents using contextual reminders"
+        },
+        {
           "name": "@template",
           "description": "Template System",
           "useCases": "Template generation, variable substitution, scaffolding"

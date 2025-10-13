@@ -5,6 +5,11 @@ import * as Gherkin from '@cucumber/gherkin';
 import * as Messages from '@cucumber/messages';
 import type { WorkUnitsData, QuestionItem } from '../types';
 import { extractWorkUnitTags } from '../utils/work-unit-tags';
+import {
+  getMissingEstimateReminder,
+  getEmptyExampleMappingReminder,
+  getLongDurationReminder,
+} from '../utils/system-reminder';
 
 interface ShowWorkUnitOptions {
   workUnitId: string;
@@ -38,6 +43,7 @@ interface WorkUnitDetails {
   createdAt: string;
   updatedAt: string;
   linkedFeatures?: LinkedFeature[];
+  systemReminders?: string[];
   [key: string]: unknown;
 }
 
@@ -129,6 +135,51 @@ export async function showWorkUnit(
     }
   }
 
+  // Generate system reminders
+  const systemReminders: string[] = [];
+
+  // Check for missing estimate
+  const hasEstimate = workUnit.estimate !== undefined;
+  const estimateReminder = getMissingEstimateReminder(
+    options.workUnitId,
+    hasEstimate
+  );
+  if (estimateReminder) {
+    systemReminders.push(estimateReminder);
+  }
+
+  // Check for empty Example Mapping in specifying phase
+  if (workUnit.status === 'specifying') {
+    const hasRules = workUnit.rules && workUnit.rules.length > 0;
+    const hasExamples = workUnit.examples && workUnit.examples.length > 0;
+    const exampleMappingReminder = getEmptyExampleMappingReminder(
+      options.workUnitId,
+      hasRules,
+      hasExamples
+    );
+    if (exampleMappingReminder) {
+      systemReminders.push(exampleMappingReminder);
+    }
+  }
+
+  // Check for long duration in current phase
+  if (workUnit.stateHistory && workUnit.stateHistory.length > 0) {
+    const lastStateChange =
+      workUnit.stateHistory[workUnit.stateHistory.length - 1];
+    const durationMs =
+      Date.now() - new Date(lastStateChange.timestamp).getTime();
+    const durationHours = durationMs / (1000 * 60 * 60);
+
+    const durationReminder = getLongDurationReminder(
+      options.workUnitId,
+      workUnit.status as any,
+      durationHours
+    );
+    if (durationReminder) {
+      systemReminders.push(durationReminder);
+    }
+  }
+
   return {
     id: workUnit.id,
     title: workUnit.title,
@@ -146,6 +197,7 @@ export async function showWorkUnit(
     createdAt: workUnit.createdAt,
     updatedAt: workUnit.updatedAt,
     linkedFeatures,
+    ...(systemReminders.length > 0 && { systemReminders }),
   };
 }
 
@@ -230,6 +282,14 @@ export async function showWorkUnitCommand(
         new Date(result.updatedAt).toLocaleString()
       );
       console.log('');
+
+      // Display system reminders if any
+      if (result.systemReminders && result.systemReminders.length > 0) {
+        for (const reminder of result.systemReminders) {
+          console.log(reminder);
+          console.log('');
+        }
+      }
     }
 
     process.exit(0);

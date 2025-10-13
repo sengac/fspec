@@ -4,6 +4,10 @@ import chalk from 'chalk';
 import * as Gherkin from '@cucumber/gherkin';
 import * as Messages from '@cucumber/messages';
 import { isWorkUnitTag } from '../utils/work-unit-tags';
+import {
+  getUnregisteredTagReminder,
+  getMissingRequiredTagsReminder,
+} from '../utils/system-reminder';
 
 interface AddTagToFeatureOptions {
   cwd?: string;
@@ -15,6 +19,7 @@ interface AddTagToFeatureResult {
   valid: boolean;
   message?: string;
   error?: string;
+  systemReminders?: string[];
 }
 
 export async function addTagToFeature(
@@ -200,11 +205,86 @@ export async function addTagToFeature(
   // Write file
   await writeFile(filePath, newContent, 'utf-8');
 
+  // Check for system reminders
+  const systemReminders: string[] = [];
+
+  // Check if tags are registered (unless validateRegistry was true, which already validated)
+  if (!options.validateRegistry) {
+    try {
+      const tagsJsonPath = join(cwd, 'spec', 'tags.json');
+      const tagsJson = JSON.parse(await readFile(tagsJsonPath, 'utf-8'));
+      const registeredTags = new Set<string>();
+
+      for (const category of tagsJson.categories) {
+        for (const tag of category.tags) {
+          registeredTags.add(tag.name);
+        }
+      }
+
+      // Check each new tag
+      for (const tag of tags) {
+        // Skip work unit tags - they don't need to be registered
+        if (isWorkUnitTag(tag)) {
+          continue;
+        }
+
+        const isRegistered = registeredTags.has(tag);
+        const reminder = getUnregisteredTagReminder(tag, isRegistered);
+        if (reminder) {
+          systemReminders.push(reminder);
+        }
+      }
+    } catch {
+      // If tags.json doesn't exist or is malformed, skip reminder check
+    }
+  }
+
+  // Check for missing required tags
+  const allTags = [...existingTags, ...tags];
+  const hasPhaseTag = allTags.some(t => /^@phase\d+$/.test(t));
+  const hasComponentTag = allTags.some(t =>
+    ['@cli', '@parser', '@validator', '@formatter', '@generator', '@file-ops'].includes(
+      t
+    )
+  );
+  const hasFeatureGroupTag = allTags.some(t =>
+    [
+      '@feature-management',
+      '@tag-management',
+      '@validation',
+      '@querying',
+      '@work-unit-management',
+      '@example-mapping',
+      '@metrics',
+      '@dependency-management',
+      '@workflow',
+    ].includes(t)
+  );
+
+  const missingTags: string[] = [];
+  if (!hasPhaseTag) {
+    missingTags.push('phase');
+  }
+  if (!hasComponentTag) {
+    missingTags.push('component');
+  }
+  if (!hasFeatureGroupTag) {
+    missingTags.push('feature-group');
+  }
+
+  if (missingTags.length > 0) {
+    const reminder = getMissingRequiredTagsReminder(featureFilePath, missingTags);
+    if (reminder) {
+      systemReminders.push(reminder);
+    }
+  }
+
   const tagList = tags.join(', ');
   return {
     success: true,
     valid,
     message: `Added ${tagList} to ${featureFilePath}`,
+    ...(systemReminders.length > 0 && { systemReminders }),
   };
 }
 
@@ -222,6 +302,14 @@ export async function addTagToFeatureCommand(
     }
 
     console.log(chalk.green(`✓ ${result.message}`));
+
+    // Display system reminders if any
+    if (result.systemReminders && result.systemReminders.length > 0) {
+      for (const reminder of result.systemReminders) {
+        console.log('\n' + reminder);
+      }
+    }
+
     process.exit(0);
   } catch (error: any) {
     console.error(chalk.red('Error:'), error.message);

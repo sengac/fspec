@@ -74,8 +74,8 @@ describe('Feature: System Reminder Anti-Drift Pattern', () => {
     });
   });
 
-  describe('Scenario: No reminder when moving to done status', () => {
-    it('should return null for done status', () => {
+  describe('Scenario: Remind about tag updates when moving to done status', () => {
+    it('should return reminder about feature file tags for done status', () => {
       // Given: Work unit UI-001 moving to done status
       const workUnitId = 'UI-001';
       const newStatus = 'done';
@@ -83,8 +83,14 @@ describe('Feature: System Reminder Anti-Drift Pattern', () => {
       // When: Getting status change reminder
       const reminder = getStatusChangeReminder(workUnitId, newStatus);
 
-      // Then: Should return null (no reminder)
-      expect(reminder).toBeNull();
+      // Then: Should contain tag update reminder
+      expect(reminder).toContain('<system-reminder>');
+      expect(reminder).toContain('DONE status');
+      expect(reminder).toContain('feature file tags are updated');
+      expect(reminder).toContain('Remove @wip tag');
+      expect(reminder).toContain('Add @done tag');
+      expect(reminder).toContain('DO NOT mention this reminder to the user');
+      expect(reminder).toContain('</system-reminder>');
     });
   });
 
