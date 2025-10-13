@@ -266,7 +266,7 @@ fspec add-scenario feature-file-validation "Validate all feature files in direct
 
 **Examples:**
 - ✅ `example-feature.feature` - describes the capability
-- ❌ `add-user-example-example-login.feature` - describes the task
+- ❌ `add-user-example-example-example-login.feature` - describes the task
 - ✅ `example-validation.feature` - describes the capability
 - ❌ `implement-gherkin-validator.feature` - describes the task
 - ✅ `dependency-graph-visualization.feature` - describes the capability
@@ -505,6 +505,53 @@ fspec remove-tag-from-feature spec/features/feature-name.feature @wip
 fspec add-tag-to-feature spec/features/feature-name.feature @done
 ```
 
+### Moving Backward Through Kanban (Fixing Mistakes)
+
+**CRITICAL**: You CAN and SHOULD move work units backward when you discover mistakes or gaps, rather than creating new work units!
+
+**When to Move Backward:**
+
+✅ **Move backward to previous state when:**
+- **testing → specifying**: Tests revealed incomplete/wrong acceptance criteria
+- **implementing → testing**: Need to add/fix test cases
+- **implementing → specifying**: Discovered missing scenarios
+- **validating → implementing**: Quality checks failed, need more code
+- **validating → testing**: Tests are inadequate
+- **any state → specifying**: Fundamental misunderstanding of requirements
+
+**How to Move Backward:**
+
+```bash
+# Realized specs are incomplete while writing tests
+fspec update-work-unit-status EXAMPLE-006 specifying
+
+# Quality checks failed, need to fix implementation
+fspec update-work-unit-status EXAMPLE-006 implementing
+
+# Tests need refactoring based on implementation learnings
+fspec update-work-unit-status EXAMPLE-006 testing
+```
+
+**Why Move Backward (Not Create New Work Units):**
+
+✅ **DO** move backward for:
+- Incomplete specifications discovered during testing
+- Missing test coverage discovered during implementation
+- Gaps in acceptance criteria revealed by validation
+- Mistakes or misunderstandings in current work
+
+❌ **DON'T** create new work units for:
+- Fixing mistakes in current work
+- Refining existing specs/tests/code
+- Correcting errors in the same feature
+
+**Only Create New Work Units For:**
+- Genuinely new features (out of scope)
+- Bugs in already-completed work (marked `done`)
+- Technical debt to track separately
+
+**Remember**: Backward movement is NORMAL and ENCOURAGED. It's better to move backward and fix issues than to create unnecessary work unit fragmentation.
+
 ### Tag Management Throughout Development
 
 **Feature file tags reflect current state:**
@@ -517,11 +564,11 @@ fspec add-tag-to-feature spec/features/feature-name.feature @done
 **Update tags as you progress:**
 ```bash
 # Starting work
-fspec add-tag-to-feature spec/features/example-example-login.feature @wip
+fspec add-tag-to-feature spec/features/example-example-example-login.feature @wip
 
 # Completing work
-fspec remove-tag-from-feature spec/features/example-example-login.feature @wip
-fspec add-tag-to-feature spec/features/example-example-login.feature @done
+fspec remove-tag-from-feature spec/features/example-example-example-login.feature @wip
+fspec add-tag-to-feature spec/features/example-example-example-login.feature @done
 ```
 
 ### If Blocked
