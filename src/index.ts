@@ -43,6 +43,10 @@ import { removeTagFromScenarioCommand } from './commands/remove-tag-from-scenari
 import { listScenarioTagsCommand } from './commands/list-scenario-tags';
 // Coverage tracking commands
 import { auditCoverageCommand } from './commands/audit-coverage';
+import { generateCoverageCommand } from './commands/generate-coverage';
+import { linkCoverageCommand } from './commands/link-coverage';
+import { showCoverageCommand } from './commands/show-coverage';
+import { unlinkCoverageCommand } from './commands/unlink-coverage';
 // Project management commands
 import { createWorkUnitCommand } from './commands/create-work-unit';
 import { listWorkUnitsCommand } from './commands/list-work-units';
@@ -526,6 +530,17 @@ function displaySpecsHelp(): void {
   console.log(
     '      fspec unlink-coverage user-auth --scenario "Login" --all'
   );
+  console.log('');
+  console.log(
+    '  ' +
+      chalk.cyan('fspec generate-coverage') +
+      '           Generate .coverage files for existing features'
+  );
+  console.log('    Options:');
+  console.log('      --dry-run                        Preview without creating files');
+  console.log('    Examples:');
+  console.log('      fspec generate-coverage');
+  console.log('      fspec generate-coverage --dry-run');
   console.log('');
 
   console.log(chalk.bold('TAG MANAGEMENT (Feature/Scenario Level)'));
@@ -2933,6 +2948,40 @@ program
   .description('Audit coverage file to verify test and implementation files exist')
   .argument('<feature-name>', 'Feature name (e.g., "user-login" for user-login.feature.coverage)')
   .action(auditCoverageCommand);
+
+program
+  .command('generate-coverage')
+  .description('Generate .feature.coverage files for existing .feature files without coverage')
+  .option('--dry-run', 'Preview what would be created without actually creating files')
+  .action(generateCoverageCommand);
+
+program
+  .command('link-coverage')
+  .description('Link test and implementation files to feature scenarios')
+  .argument('<feature-name>', 'Feature name (e.g., "user-login" for user-login.feature)')
+  .requiredOption('--scenario <name>', 'Scenario name to link')
+  .option('--test-file <file>', 'Test file path (e.g., src/__tests__/auth.test.ts)')
+  .option('--test-lines <range>', 'Test line range (e.g., "45-62")')
+  .option('--impl-file <file>', 'Implementation file path')
+  .option('--impl-lines <lines>', 'Implementation lines (e.g., "10,11,12" or "10-15")')
+  .option('--skip-validation', 'Skip file validation (for forward planning)')
+  .action(linkCoverageCommand);
+
+program
+  .command('show-coverage')
+  .description('Show coverage report for feature or all features')
+  .argument('[feature-name]', 'Feature name (optional - shows all if omitted)')
+  .action(showCoverageCommand);
+
+program
+  .command('unlink-coverage')
+  .description('Remove test or implementation links from scenario coverage mappings')
+  .argument('<feature-name>', 'Feature name (e.g., "user-login" for user-login.feature)')
+  .requiredOption('--scenario <name>', 'Scenario name to unlink')
+  .option('--test-file <path>', 'Test file path to remove')
+  .option('--impl-file <path>', 'Implementation file path to remove')
+  .option('--all', 'Remove all mappings for the scenario')
+  .action(unlinkCoverageCommand);
 
 // Main execution with help interceptor
 async function main(): Promise<void> {

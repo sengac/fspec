@@ -43,24 +43,31 @@ describe('Feature: Audit Coverage Command', () => {
       await writeFile(
         coverageFile,
         JSON.stringify({
-          featureFile: 'spec/features/user-login.feature',
           scenarios: [
             {
               name: 'Login with valid credentials',
-              testFiles: [
+              testMappings: [
                 {
                   file: 'src/__tests__/login.test.ts',
-                  lines: [10, 15, 20],
-                },
-              ],
-              implementationFiles: [
-                {
-                  file: 'src/auth/login.ts',
-                  lines: [25, 30],
+                  lines: '10-20',
+                  implMappings: [
+                    {
+                      file: 'src/auth/login.ts',
+                      lines: [25, 30],
+                    },
+                  ],
                 },
               ],
             },
           ],
+          stats: {
+            totalScenarios: 1,
+            coveredScenarios: 1,
+            coveragePercent: 100,
+            testFiles: ['src/__tests__/login.test.ts'],
+            implFiles: ['src/auth/login.ts'],
+            totalLinesCovered: 5,
+          },
         })
       );
 
@@ -95,19 +102,26 @@ describe('Feature: Audit Coverage Command', () => {
       await writeFile(
         coverageFile,
         JSON.stringify({
-          featureFile: 'spec/features/user-login.feature',
           scenarios: [
             {
               name: 'Login with valid credentials',
-              testFiles: [
+              testMappings: [
                 {
                   file: 'src/__tests__/deleted.test.ts',
-                  lines: [10, 15, 20],
+                  lines: '10-20',
+                  implMappings: [],
                 },
               ],
-              implementationFiles: [],
             },
           ],
+          stats: {
+            totalScenarios: 1,
+            coveredScenarios: 1,
+            coveragePercent: 100,
+            testFiles: ['src/__tests__/deleted.test.ts'],
+            implFiles: [],
+            totalLinesCovered: 3,
+          },
         })
       );
 
@@ -140,24 +154,37 @@ describe('Feature: Audit Coverage Command', () => {
       await writeFile(
         coverageFile,
         JSON.stringify({
-          featureFile: 'spec/features/user-login.feature',
           scenarios: [
             {
               name: 'Login with valid credentials',
-              testFiles: [],
-              implementationFiles: [
+              testMappings: [
                 {
-                  file: 'src/auth/deleted.ts',
-                  lines: [25, 30],
+                  file: 'src/__tests__/placeholder.test.ts',
+                  lines: '1-5',
+                  implMappings: [
+                    {
+                      file: 'src/auth/deleted.ts',
+                      lines: [25, 30],
+                    },
+                  ],
                 },
               ],
             },
           ],
+          stats: {
+            totalScenarios: 1,
+            coveredScenarios: 1,
+            coveragePercent: 100,
+            testFiles: ['src/__tests__/placeholder.test.ts'],
+            implFiles: ['src/auth/deleted.ts'],
+            totalLinesCovered: 2,
+          },
         })
       );
 
-      // And the implementation file "src/auth/deleted.ts" does not exist
-      // (file not created, so it doesn't exist)
+      // And the test file exists but implementation file doesn't
+      await writeFile(join(testsDir, 'placeholder.test.ts'), '// placeholder test');
+      // (implementation file "src/auth/deleted.ts" not created, so it doesn't exist)
 
       // When I run `fspec audit-coverage user-login`
       const result = await auditCoverage({

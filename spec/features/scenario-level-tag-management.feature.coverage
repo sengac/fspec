@@ -1,0 +1,84 @@
+{
+  "scenarios": [
+    {
+      "name": "Add single tag to scenario",
+      "testMappings": []
+    },
+    {
+      "name": "Add multiple tags to scenario",
+      "testMappings": []
+    },
+    {
+      "name": "Prevent adding duplicate tag to scenario",
+      "testMappings": []
+    },
+    {
+      "name": "Validate tag format when adding to scenario",
+      "testMappings": []
+    },
+    {
+      "name": "Add tag to scenario with registry validation",
+      "testMappings": []
+    },
+    {
+      "name": "Prevent adding unregistered tag to scenario with validation enabled",
+      "testMappings": []
+    },
+    {
+      "name": "Remove single tag from scenario",
+      "testMappings": []
+    },
+    {
+      "name": "Remove multiple tags from scenario",
+      "testMappings": []
+    },
+    {
+      "name": "Attempt to remove non-existent tag from scenario",
+      "testMappings": []
+    },
+    {
+      "name": "List all scenario-level tags",
+      "testMappings": []
+    },
+    {
+      "name": "List tags on scenario with no tags",
+      "testMappings": []
+    },
+    {
+      "name": "List scenario tags with category information",
+      "testMappings": []
+    },
+    {
+      "name": "Preserve feature-level tags when modifying scenario tags",
+      "testMappings": []
+    },
+    {
+      "name": "Preserve other scenarios when modifying one scenario's tags",
+      "testMappings": []
+    },
+    {
+      "name": "Handle scenario not found error",
+      "testMappings": []
+    },
+    {
+      "name": "Handle file not found error",
+      "testMappings": []
+    },
+    {
+      "name": "Remove all tags from scenario",
+      "testMappings": []
+    },
+    {
+      "name": "Preserve file formatting after scenario tag modification",
+      "testMappings": []
+    }
+  ],
+  "stats": {
+    "totalScenarios": 18,
+    "coveredScenarios": 0,
+    "coveragePercent": 0,
+    "testFiles": [],
+    "implFiles": [],
+    "totalLinesCovered": 0
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "scenarios": [
+    {
+      "name": "Record iteration after tool use",
+      "testMappings": []
+    },
+    {
+      "name": "Record tokens consumed",
+      "testMappings": []
+    },
+    {
+      "name": "Validate spec alignment before commit",
+      "testMappings": []
+    },
+    {
+      "name": "Auto-advance state after tests pass",
+      "testMappings": []
+    },
+    {
+      "name": "Auto-mark done after validation succeeds",
+      "testMappings": []
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 0,
+    "coveragePercent": 0,
+    "testFiles": [],
+    "implFiles": [],
+    "totalLinesCovered": 0
+  }
+}

@@ -1,0 +1,104 @@
+{
+  "scenarios": [
+    {
+      "name": "Validate tags in a compliant feature file",
+      "testMappings": []
+    },
+    {
+      "name": "Detect unregistered tag",
+      "testMappings": []
+    },
+    {
+      "name": "Validate all feature files",
+      "testMappings": []
+    },
+    {
+      "name": "Detect missing required phase tag",
+      "testMappings": []
+    },
+    {
+      "name": "Detect missing required component tag",
+      "testMappings": []
+    },
+    {
+      "name": "Detect missing required feature-group tag",
+      "testMappings": []
+    },
+    {
+      "name": "Handle missing tags.json file",
+      "testMappings": []
+    },
+    {
+      "name": "Validate tags after creating new feature",
+      "testMappings": []
+    },
+    {
+      "name": "Report multiple violations in one file",
+      "testMappings": []
+    },
+    {
+      "name": "Validate tags in multiple files with summary",
+      "testMappings": []
+    },
+    {
+      "name": "CAGE integration - prevent invalid tag commits",
+      "testMappings": []
+    },
+    {
+      "name": "JSON-backed workflow - validate against tags.json registry",
+      "testMappings": []
+    },
+    {
+      "name": "Validate scenario-level tags are registered",
+      "testMappings": []
+    },
+    {
+      "name": "Detect unregistered scenario-level tag",
+      "testMappings": []
+    },
+    {
+      "name": "Validate both feature-level and scenario-level tags",
+      "testMappings": []
+    },
+    {
+      "name": "Detect mix of registered and unregistered scenario tags",
+      "testMappings": []
+    },
+    {
+      "name": "Validate scenario tags do not require phase/component/feature-group tags",
+      "testMappings": []
+    },
+    {
+      "name": "Validate work unit tag exists in work-units.json",
+      "testMappings": []
+    },
+    {
+      "name": "Detect non-existent work unit tag",
+      "testMappings": []
+    },
+    {
+      "name": "Validate scenario-level work unit tags",
+      "testMappings": []
+    },
+    {
+      "name": "Detect multiple invalid work unit tags",
+      "testMappings": []
+    },
+    {
+      "name": "Validate work unit tag format",
+      "testMappings": []
+    },
+    {
+      "name": "Distinguish work unit tags from regular tags",
+      "testMappings": []
+    }
+  ],
+  "stats": {
+    "totalScenarios": 23,
+    "coveredScenarios": 0,
+    "coveragePercent": 0,
+    "testFiles": [],
+    "implFiles": [],
+    "totalLinesCovered": 0
+  }
+}

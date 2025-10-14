@@ -1,0 +1,56 @@
+{
+  "scenarios": [
+    {
+      "name": "Install rspec.md via fspec init",
+      "testMappings": []
+    },
+    {
+      "name": "Invoke rspec slash command in Claude Code",
+      "testMappings": []
+    },
+    {
+      "name": "Identify user-facing interactions from codebase",
+      "testMappings": []
+    },
+    {
+      "name": "Group interactions into epics",
+      "testMappings": []
+    },
+    {
+      "name": "Create work units for each user story",
+      "testMappings": []
+    },
+    {
+      "name": "Generate feature files from inferred acceptance criteria",
+      "testMappings": []
+    },
+    {
+      "name": "Create skeleton test files with feature links",
+      "testMappings": []
+    },
+    {
+      "name": "Update foundation.json with user story maps",
+      "testMappings": []
+    },
+    {
+      "name": "Handle ambiguous code with Example Mapping",
+      "testMappings": []
+    },
+    {
+      "name": "Completion criteria - all user interactions documented",
+      "testMappings": []
+    },
+    {
+      "name": "AI agent workflow - reverse then forward ACDD",
+      "testMappings": []
+    }
+  ],
+  "stats": {
+    "totalScenarios": 11,
+    "coveredScenarios": 0,
+    "coveragePercent": 0,
+    "testFiles": [],
+    "implFiles": [],
+    "totalLinesCovered": 0
+  }
+}

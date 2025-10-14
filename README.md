@@ -440,6 +440,10 @@ Every `.feature` file has a `.feature.coverage` JSON file (auto-created) that tr
 #### Coverage Commands
 
 ```bash
+# Generate coverage files for existing features (setup/recovery)
+fspec generate-coverage
+fspec generate-coverage --dry-run  # Preview what would be created
+
 # Link test file to scenario (after writing tests)
 fspec link-coverage <feature-name> --scenario "<scenario-name>" \
   --test-file <path> --test-lines <range>
@@ -452,6 +456,11 @@ fspec link-coverage <feature-name> --scenario "<scenario-name>" \
 fspec link-coverage <feature-name> --scenario "<scenario-name>" \
   --test-file <path> --test-lines <range> \
   --impl-file <path> --impl-lines <lines>
+
+# Remove coverage mappings (fix mistakes)
+fspec unlink-coverage <feature-name> --scenario "<scenario-name>" --all
+fspec unlink-coverage <feature-name> --scenario "<scenario-name>" --test-file <path>
+fspec unlink-coverage <feature-name> --scenario "<scenario-name>" --test-file <path> --impl-file <path>
 
 # Show coverage for a feature
 fspec show-coverage <feature-name>

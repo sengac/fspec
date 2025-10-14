@@ -1,0 +1,140 @@
+{
+  "scenarios": [
+    {
+      "name": "Move work unit from backlog to specifying",
+      "testMappings": []
+    },
+    {
+      "name": "Complete ACDD workflow from backlog to done",
+      "testMappings": []
+    },
+    {
+      "name": "Attempt to skip specifying state (violates ACDD)",
+      "testMappings": []
+    },
+    {
+      "name": "Attempt to skip testing state (violates ACDD)",
+      "testMappings": []
+    },
+    {
+      "name": "Attempt to move work back to backlog",
+      "testMappings": []
+    },
+    {
+      "name": "Move work unit to blocked state from any state",
+      "testMappings": []
+    },
+    {
+      "name": "Unblock work unit and return to previous state",
+      "testMappings": []
+    },
+    {
+      "name": "Require blocked reason when moving to blocked state",
+      "testMappings": []
+    },
+    {
+      "name": "Validate Gherkin scenarios exist before moving to testing",
+      "testMappings": []
+    },
+    {
+      "name": "Successfully move to testing when scenarios exist",
+      "testMappings": []
+    },
+    {
+      "name": "Validate estimate assigned before moving from specifying",
+      "testMappings": []
+    },
+    {
+      "name": "Prevent parent from being marked done with incomplete children",
+      "testMappings": []
+    },
+    {
+      "name": "Allow parent to be marked done when all children complete",
+      "testMappings": []
+    },
+    {
+      "name": "Reorder work unit to top of backlog (highest priority)",
+      "testMappings": []
+    },
+    {
+      "name": "Reorder work unit to bottom of backlog (lowest priority)",
+      "testMappings": []
+    },
+    {
+      "name": "Move work unit before another work unit",
+      "testMappings": []
+    },
+    {
+      "name": "Move work unit after another work unit",
+      "testMappings": []
+    },
+    {
+      "name": "Set work unit to specific position in backlog",
+      "testMappings": []
+    },
+    {
+      "name": "Attempt to prioritize work not in backlog",
+      "testMappings": []
+    },
+    {
+      "name": "Attempt to position work unit before non-existent work unit",
+      "testMappings": []
+    },
+    {
+      "name": "Track complete state history with timestamps",
+      "testMappings": []
+    },
+    {
+      "name": "Calculate time spent in each state from history",
+      "testMappings": []
+    },
+    {
+      "name": "Allow validation to move back to implementing on test failure",
+      "testMappings": []
+    },
+    {
+      "name": "Allow validation to move back to specifying on spec error",
+      "testMappings": []
+    },
+    {
+      "name": "Allow moving from done to fix mistakes (ACDD backward movement)",
+      "testMappings": []
+    },
+    {
+      "name": "Query work units by current state",
+      "testMappings": []
+    },
+    {
+      "name": "Display Kanban board showing all states",
+      "testMappings": []
+    },
+    {
+      "name": "Limit displayed work units per column with --limit option",
+      "testMappings": []
+    },
+    {
+      "name": "Export Kanban board as JSON for programmatic access",
+      "testMappings": []
+    },
+    {
+      "name": "Validate work unit state is one of allowed values",
+      "testMappings": []
+    },
+    {
+      "name": "Detect work unit in wrong state array",
+      "testMappings": []
+    },
+    {
+      "name": "Repair work units state index inconsistencies",
+      "testMappings": []
+    }
+  ],
+  "stats": {
+    "totalScenarios": 32,
+    "coveredScenarios": 0,
+    "coveragePercent": 0,
+    "testFiles": [],
+    "implFiles": [],
+    "totalLinesCovered": 0
+  }
+}

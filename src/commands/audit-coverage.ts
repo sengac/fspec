@@ -45,21 +45,21 @@ export async function auditCoverage(
   const missingFiles: Array<{ file: string; type: 'test' | 'implementation' }> = [];
 
   for (const scenario of coverage.scenarios) {
-    // Check test files
-    for (const testFile of scenario.testFiles) {
-      allFiles.push(testFile.file);
-      const fullPath = join(cwd, testFile.file);
+    // Check test mappings
+    for (const testMapping of scenario.testMappings) {
+      allFiles.push(testMapping.file);
+      const fullPath = join(cwd, testMapping.file);
       if (!existsSync(fullPath)) {
-        missingFiles.push({ file: testFile.file, type: 'test' });
+        missingFiles.push({ file: testMapping.file, type: 'test' });
       }
-    }
 
-    // Check implementation files
-    for (const implFile of scenario.implementationFiles) {
-      allFiles.push(implFile.file);
-      const fullPath = join(cwd, implFile.file);
-      if (!existsSync(fullPath)) {
-        missingFiles.push({ file: implFile.file, type: 'implementation' });
+      // Check implementation mappings within this test
+      for (const implMapping of testMapping.implMappings) {
+        allFiles.push(implMapping.file);
+        const implFullPath = join(cwd, implMapping.file);
+        if (!existsSync(implFullPath)) {
+          missingFiles.push({ file: implMapping.file, type: 'implementation' });
+        }
       }
     }
   }

@@ -1,0 +1,92 @@
+{
+  "scenarios": [
+    {
+      "name": "Add new diagram to existing section",
+      "testMappings": []
+    },
+    {
+      "name": "Add diagram to new section",
+      "testMappings": []
+    },
+    {
+      "name": "Replace existing diagram with same title",
+      "testMappings": []
+    },
+    {
+      "name": "Add multiple diagrams to same section",
+      "testMappings": []
+    },
+    {
+      "name": "Create FOUNDATION.md if it doesn't exist",
+      "testMappings": []
+    },
+    {
+      "name": "Preserve existing FOUNDATION.md sections",
+      "testMappings": []
+    },
+    {
+      "name": "Support different Mermaid diagram types",
+      "testMappings": []
+    },
+    {
+      "name": "Add class diagram",
+      "testMappings": []
+    },
+    {
+      "name": "Reject empty diagram code",
+      "testMappings": []
+    },
+    {
+      "name": "Reject empty diagram title",
+      "testMappings": []
+    },
+    {
+      "name": "Reject empty section name",
+      "testMappings": []
+    },
+    {
+      "name": "Format diagram with proper markdown",
+      "testMappings": []
+    },
+    {
+      "name": "Handle multi-line diagram code",
+      "testMappings": []
+    },
+    {
+      "name": "JSON-backed workflow - modify JSON and regenerate MD",
+      "testMappings": []
+    },
+    {
+      "name": "Reject invalid Mermaid syntax",
+      "testMappings": []
+    },
+    {
+      "name": "Reject diagram with invalid diagram type",
+      "testMappings": []
+    },
+    {
+      "name": "Accept valid flowchart diagram",
+      "testMappings": []
+    },
+    {
+      "name": "Accept valid sequence diagram",
+      "testMappings": []
+    },
+    {
+      "name": "Reject malformed graph syntax",
+      "testMappings": []
+    },
+    {
+      "name": "Provide helpful error message for syntax errors",
+      "testMappings": []
+    }
+  ],
+  "stats": {
+    "totalScenarios": 20,
+    "coveredScenarios": 0,
+    "coveragePercent": 0,
+    "testFiles": [],
+    "implFiles": [],
+    "totalLinesCovered": 0
+  }
+}
