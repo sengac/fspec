@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-13T22:23:04.161Z"
+    "lastUpdated": "2025-10-14T10:44:14.001Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -2831,6 +2831,64 @@
         "Remove only impl: unlink-coverage user-login --scenario 'Login' --test-file src/__tests__/auth.test.ts --impl-file src/auth/old.ts → keeps test mapping",
         "Error if scenario not found → displays available scenarios"
       ]
+    },
+    "DOC-003": {
+      "id": "DOC-003",
+      "title": "Clarify backward movement in workflow documentation",
+      "status": "done",
+      "createdAt": "2025-10-14T01:57:04.564Z",
+      "updatedAt": "2025-10-14T10:51:21.943Z",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-14T01:57:11.127Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-14T10:47:23.806Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-14T10:50:35.138Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-14T10:50:42.296Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-14T10:51:21.944Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using fspec workflow",
+        "action": "understand backward state transitions",
+        "benefit": "I can confidently move work backward when fixing mistakes"
+      },
+      "rules": [
+        "Cannot skip states forward (ACDD enforcement)",
+        "CAN move backward from validating to implementing or specifying to fix issues",
+        "CAN move backward from done to any previous state when mistakes discovered",
+        "Cannot move back to backlog (use blocked state instead)",
+        "Blocked state can transition back to any non-done state",
+        "Just text - CLI help should be text-based for terminal readability"
+      ],
+      "examples": [
+        "Move from testing to specifying when tests revealed incomplete acceptance criteria",
+        "Move from implementing to testing when test cases need refactoring",
+        "Move from validating to implementing when quality checks fail",
+        "Move from done to implementing when bug discovered in completed feature",
+        "Try to move from backlog to testing - blocked (must go through specifying)"
+      ],
+      "questions": [
+        {
+          "text": "@human: Should help include visual state diagram or just text describing backward transitions?",
+          "selected": true,
+          "answer": "Just text - CLI help should be text-based for terminal readability"
+        }
+      ],
+      "estimate": 2
     }
   },
   "states": {
@@ -2889,7 +2947,8 @@
       "REMIND-006",
       "REMIND-007",
       "COV-007",
-      "COV-008"
+      "COV-008",
+      "DOC-003"
     ],
     "blocked": []
   }

@@ -31,10 +31,10 @@ const ALLOWED_STATES: WorkUnitStatus[] = [
 
 const STATE_TRANSITIONS: Record<WorkUnitStatus, WorkUnitStatus[]> = {
   backlog: ['specifying', 'blocked'],
-  specifying: ['testing', 'blocked'],
-  testing: ['implementing', 'blocked'],
-  implementing: ['validating', 'blocked'],
-  validating: ['done', 'implementing', 'specifying', 'blocked'], // Can go back for fixes
+  specifying: ['testing', 'blocked'], // Cannot go back to backlog (prevented by separate check)
+  testing: ['implementing', 'specifying', 'blocked'], // Can go back to specifying
+  implementing: ['validating', 'testing', 'specifying', 'blocked'], // Can go back to testing or specifying
+  validating: ['done', 'implementing', 'testing', 'specifying', 'blocked'], // Can go back for fixes
   done: ['specifying', 'testing', 'implementing', 'validating', 'blocked'], // Can move backward when mistakes discovered
   blocked: ['backlog', 'specifying', 'testing', 'implementing', 'validating'], // Can return to previous state
 };
