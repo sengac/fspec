@@ -267,7 +267,7 @@ fspec add-scenario feature-file-validation "Validate all feature files in direct
 
 **Examples:**
 - ✅ `example-feature.feature` - describes the capability
-- ❌ `add-user-example-example-example-example-example-example-login.feature` - describes the task
+- ❌ `add-user-example-example-example-example-example-example-example-login.feature` - describes the task
 - ✅ `example-validation.feature` - describes the capability
 - ❌ `implement-gherkin-validator.feature` - describes the task
 - ✅ `dependency-graph-visualization.feature` - describes the capability
@@ -565,11 +565,11 @@ fspec update-work-unit-status EXAMPLE-006 testing
 **Update tags as you progress:**
 ```bash
 # Starting work
-fspec add-tag-to-feature spec/features/example-example-example-example-example-example-login.feature @wip
+fspec add-tag-to-feature spec/features/example-example-example-example-example-example-example-login.feature @wip
 
 # Completing work
-fspec remove-tag-from-feature spec/features/example-example-example-example-example-example-login.feature @wip
-fspec add-tag-to-feature spec/features/example-example-example-example-example-example-login.feature @done
+fspec remove-tag-from-feature spec/features/example-example-example-example-example-example-example-login.feature @wip
+fspec add-tag-to-feature spec/features/example-example-example-example-example-example-example-login.feature @done
 ```
 
 ### If Blocked

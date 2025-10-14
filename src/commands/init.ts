@@ -2,6 +2,7 @@ import { mkdir, writeFile, access, readFile, copyFile } from 'fs/promises';
 import type { Command } from 'commander';
 import { join, dirname, isAbsolute, normalize, relative } from 'path';
 import { fileURLToPath } from 'url';
+import chalk from 'chalk';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);

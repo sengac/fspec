@@ -1,4 +1,5 @@
 import type { WorkUnitsData } from '../types';
+import chalk from 'chalk';
 import type { Command } from 'commander';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
 

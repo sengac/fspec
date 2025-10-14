@@ -1,4 +1,5 @@
 import { writeFile, mkdir } from 'fs/promises';
+import chalk from 'chalk';
 import type { Command } from 'commander';
 import { dirname } from 'path';
 import type { WorkUnitsData } from '../types';
