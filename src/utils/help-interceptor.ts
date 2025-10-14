@@ -1,3 +1,7 @@
+import { displayCustomHelpWithNote } from '../help';
+import { helpConfigs } from '../commands/help-registry';
+import { displayHelpAndExit } from './help-formatter';
+
 /**
  * Process-level help interceptor
  *
@@ -25,14 +29,11 @@ export async function handleCustomHelp(): Promise<boolean> {
 
   if (!commandName) {
     // "fspec --help" or bare "fspec" without command -> show custom main help
-    const { displayCustomHelpWithNote } = await import('../index');
     displayCustomHelpWithNote();
     return true; // Help was displayed, prevent Commander from showing help again
   }
 
   // Check if command has custom help registered (pre-loaded via import.meta.glob)
-  const { helpConfigs } = await import('../commands/help-registry');
-
   const helpConfig = helpConfigs.get(commandName);
 
   if (!helpConfig) {
@@ -41,7 +42,6 @@ export async function handleCustomHelp(): Promise<boolean> {
   }
 
   // Display custom help using pre-loaded config
-  const { displayHelpAndExit } = await import('./help-formatter');
   displayHelpAndExit(helpConfig);
   return true; // Will never reach here - displayHelpAndExit calls process.exit(0)
 }
