@@ -2,6 +2,8 @@
 
 import { Command } from 'commander';
 import chalk from 'chalk';
+import { fileURLToPath } from 'url';
+import { realpathSync } from 'fs';
 
 // Command registration functions
 import { registerAddArchitectureCommand } from './commands/add-architecture';
@@ -1188,7 +1190,7 @@ program
   .configureHelp({
     helpWidth: 100,
   })
-  .addHelpCommand(false)
+  .helpCommand(false)
   .helpOption('-h, --help', 'Display help for command');
 
 // Add custom help command
@@ -1292,6 +1294,7 @@ registerValidateFoundationSchemaCommand(program);
 registerValidateSpecAlignmentCommand(program);
 registerValidateTagsCommand(program);
 registerValidateWorkUnitsCommand(program);
+
 async function main(): Promise<void> {
   // Handle custom help before Commander.js processes arguments
   const { handleCustomHelp } = await import('./utils/help-interceptor');
@@ -1309,9 +1312,6 @@ async function main(): Promise<void> {
 // Run main function when executed directly (not when imported for testing)
 // This works for both direct execution (./dist/index.js) and npm link (/usr/local/bin/fspec)
 // by checking if the resolved script path matches this file
-import { fileURLToPath } from 'url';
-import { realpathSync } from 'fs';
-
 const __filename = fileURLToPath(import.meta.url);
 const isMainModule = (() => {
   try {
