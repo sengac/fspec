@@ -189,6 +189,58 @@ Scenario: Login
     });
   });
 
+  describe('Scenario: Try to move from backlog to testing - blocked (must go through specifying)', () => {
+    it('should prevent skipping specifying state', async () => {
+      // Given a work unit in backlog
+      const workUnits: WorkUnitsData = {
+        workUnits: {
+          'WORK-001': {
+            id: 'WORK-001',
+            title: 'Work',
+            status: 'backlog',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            stateHistory: [
+              { state: 'backlog', timestamp: new Date().toISOString() },
+            ],
+          },
+        },
+        states: {
+          backlog: ['WORK-001'],
+          specifying: [],
+          testing: [],
+          implementing: [],
+          validating: [],
+          done: [],
+          blocked: [],
+        },
+      };
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
+
+      // When I try to jump to testing
+      const error = await updateWorkUnitStatus({
+        workUnitId: 'WORK-001',
+        status: 'testing',
+        cwd: testDir,
+      }).catch((e: Error) => e);
+
+      // Then the command should fail with an error message explaining that specifying is required first
+      expect(error).toBeInstanceOf(Error);
+      if (error instanceof Error) {
+        expect(error.message).toContain('Invalid state transition');
+        expect(error.message).toContain(
+          "Must move to 'specifying' state first"
+        );
+        expect(error.message).toContain(
+          'ACDD requires specification before testing'
+        );
+      }
+    });
+  });
+
   describe('Scenario: Attempt to skip specifying state (violates ACDD)', () => {
     it('should prevent skipping specifying state', async () => {
       // Given a work unit in backlog
@@ -1392,6 +1444,147 @@ Scenario: User logs in
         await readFile(join(testDir, 'spec/work-units.json'), 'utf-8')
       );
       expect(updated.workUnits['AUTH-001'].status).toBe('specifying');
+    });
+  });
+
+  describe('Scenario: Move from testing to specifying when tests revealed incomplete acceptance criteria', () => {
+    it('should allow backward transition from testing to specifying', async () => {
+      const workUnits: WorkUnitsData = {
+        workUnits: {
+          'WORK-001': {
+            id: 'WORK-001',
+            title: 'Work',
+            status: 'testing',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            stateHistory: [
+              { state: 'testing', timestamp: new Date().toISOString() },
+            ],
+          },
+        },
+        states: {
+          backlog: [],
+          specifying: [],
+          testing: ['WORK-001'],
+          implementing: [],
+          validating: [],
+          done: [],
+          blocked: [],
+        },
+      };
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
+
+      const result = await updateWorkUnitStatus({
+        workUnitId: 'WORK-001',
+        status: 'specifying',
+        cwd: testDir,
+      });
+
+      expect(result.success).toBe(true);
+
+      const updated = JSON.parse(
+        await readFile(join(testDir, 'spec/work-units.json'), 'utf-8')
+      );
+      expect(updated.workUnits['WORK-001'].status).toBe('specifying');
+      expect(updated.states.testing).not.toContain('WORK-001');
+      expect(updated.states.specifying).toContain('WORK-001');
+    });
+  });
+
+  describe('Scenario: Move from implementing to testing when test cases need refactoring', () => {
+    it('should allow backward transition from implementing to testing', async () => {
+      const workUnits: WorkUnitsData = {
+        workUnits: {
+          'WORK-001': {
+            id: 'WORK-001',
+            title: 'Work',
+            status: 'implementing',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            stateHistory: [
+              { state: 'implementing', timestamp: new Date().toISOString() },
+            ],
+          },
+        },
+        states: {
+          backlog: [],
+          specifying: [],
+          testing: [],
+          implementing: ['WORK-001'],
+          validating: [],
+          done: [],
+          blocked: [],
+        },
+      };
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
+
+      const result = await updateWorkUnitStatus({
+        workUnitId: 'WORK-001',
+        status: 'testing',
+        cwd: testDir,
+      });
+
+      expect(result.success).toBe(true);
+
+      const updated = JSON.parse(
+        await readFile(join(testDir, 'spec/work-units.json'), 'utf-8')
+      );
+      expect(updated.workUnits['WORK-001'].status).toBe('testing');
+      expect(updated.states.implementing).not.toContain('WORK-001');
+      expect(updated.states.testing).toContain('WORK-001');
+    });
+  });
+
+  describe('Scenario: Move from implementing to specifying when requirements misunderstood', () => {
+    it('should allow backward transition from implementing to specifying', async () => {
+      const workUnits: WorkUnitsData = {
+        workUnits: {
+          'WORK-001': {
+            id: 'WORK-001',
+            title: 'Work',
+            status: 'implementing',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            stateHistory: [
+              { state: 'implementing', timestamp: new Date().toISOString() },
+            ],
+          },
+        },
+        states: {
+          backlog: [],
+          specifying: [],
+          testing: [],
+          implementing: ['WORK-001'],
+          validating: [],
+          done: [],
+          blocked: [],
+        },
+      };
+      await writeFile(
+        join(testDir, 'spec/work-units.json'),
+        JSON.stringify(workUnits, null, 2)
+      );
+
+      const result = await updateWorkUnitStatus({
+        workUnitId: 'WORK-001',
+        status: 'specifying',
+        cwd: testDir,
+      });
+
+      expect(result.success).toBe(true);
+
+      const updated = JSON.parse(
+        await readFile(join(testDir, 'spec/work-units.json'), 'utf-8')
+      );
+      expect(updated.workUnits['WORK-001'].status).toBe('specifying');
+      expect(updated.states.implementing).not.toContain('WORK-001');
+      expect(updated.states.specifying).toContain('WORK-001');
     });
   });
 

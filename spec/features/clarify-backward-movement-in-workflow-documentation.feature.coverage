@@ -1,0 +1,178 @@
+{
+  "scenarios": [
+    {
+      "name": "Move from testing to specifying when tests revealed incomplete acceptance criteria",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/kanban-workflow-state-management.test.ts",
+          "lines": "1398-1443",
+          "implMappings": [
+            {
+              "file": "src/commands/update-work-unit-status.ts",
+              "lines": [
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Move from implementing to testing when test cases need refactoring",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/kanban-workflow-state-management.test.ts",
+          "lines": "1445-1490",
+          "implMappings": [
+            {
+              "file": "src/commands/update-work-unit-status.ts",
+              "lines": [
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Move from validating to implementing when quality checks fail",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/kanban-workflow-state-management.test.ts",
+          "lines": "1303-1350",
+          "implMappings": [
+            {
+              "file": "src/commands/update-work-unit-status.ts",
+              "lines": [
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Move from done to implementing when bug discovered in completed feature",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/kanban-workflow-state-management.test.ts",
+          "lines": "1539-1594",
+          "implMappings": [
+            {
+              "file": "src/commands/update-work-unit-status.ts",
+              "lines": [
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Try to move from backlog to testing - blocked (must go through specifying)",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/kanban-workflow-state-management.test.ts",
+          "lines": "192-242",
+          "implMappings": [
+            {
+              "file": "src/commands/update-work-unit-status.ts",
+              "lines": [
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Move from implementing to specifying when requirements misunderstood",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/kanban-workflow-state-management.test.ts",
+          "lines": "1492-1537",
+          "implMappings": [
+            {
+              "file": "src/commands/update-work-unit-status.ts",
+              "lines": [
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/commands/__tests__/kanban-workflow-state-management.test.ts"
+    ],
+    "implFiles": [
+      "src/commands/update-work-unit-status.ts"
+    ],
+    "totalLinesCovered": 359
+  }
+}
