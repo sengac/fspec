@@ -1,14 +1,16 @@
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="fspec-logo.svg">
-  <source media="(prefers-color-scheme: light)" srcset="fspec-logo.svg">
-  <img alt="fspec" src="fspec-logo.svg" width="248">
+  <source media="(prefers-color-scheme: dark)" srcset="fspec-logo-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="fspec-logo-light.svg">
+  <img alt="fspec" src="fspec-logo-light.svg" width="248">
 </picture>
 
-**Kanban-Based Project Management & Specification Tool for AI Agents**
+A Spec-Driven Development tool for AI Agents
 
 # Spec-Driven Development, Done Right
 
-A standardized CLI tool that enables AI agents to manage their work using **Kanban workflow** while building software with **Acceptance Criteria Driven Development (ACDD)**. AI agents use `fspec` to track work units through discovery, specification, testing, and implementation phases, preventing ecosystem fragmentation by promoting industry-standard BDD practices.
+Unlike template-based specification tools, fspec is a CLI-driven project management system that guides AI agents through structured workflows using prompt engineering, reducing hallucinations and maintaining specification integrity.
+
+**fspec provides a Kanban-based project & specification management tool for AI agents**
 
 ## Why fspec?
 
