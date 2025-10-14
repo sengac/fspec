@@ -1,10 +1,10 @@
-```
-┏┓┏┓┏┓┏┓┏┓
-┣ ┗┓┃┃┣ ┃
-┻ ┗┛┣┛┗┛┗┛
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="fspec-logo.svg">
+  <source media="(prefers-color-scheme: light)" srcset="fspec-logo.svg">
+  <img alt="fspec" src="fspec-logo.svg" width="248">
+</picture>
 
-Kanban-Based Project Management & Specification Tool for AI Agents
-```
+**Kanban-Based Project Management & Specification Tool for AI Agents**
 
 # Spec-Driven Development, Done Right
 
