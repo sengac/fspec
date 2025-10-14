@@ -6,7 +6,7 @@
 Kanban-Based Project Management & Specification Tool for AI Agents
 ```
 
-# Spec-Driven Design, Done Right
+# Spec-Driven Development, Done Right
 
 A standardized CLI tool that enables AI agents to manage their work using **Kanban workflow** while building software with **Acceptance Criteria Driven Development (ACDD)**. AI agents use `fspec` to track work units through discovery, specification, testing, and implementation phases, preventing ecosystem fragmentation by promoting industry-standard BDD practices.
 
