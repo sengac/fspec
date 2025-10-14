@@ -1,4 +1,5 @@
 import { readFile } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 import { glob } from 'tinyglobby';
 
@@ -70,4 +71,32 @@ export async function validateSpecAlignment(options: {
     }
     throw error;
   }
+}
+
+export function registerValidateSpecAlignmentCommand(program: Command): void {
+  program
+    .command('validate-spec-alignment')
+    .description('Validate alignment between specs, tests, and implementation')
+    .option('--fix', 'Attempt to fix alignment issues')
+    .action(async (options: { fix?: boolean }) => {
+      try {
+        const result = await validateSpecAlignment({ fix: options.fix });
+        if (result.aligned) {
+          console.log(
+            chalk.green(`✓ All specs are aligned with tests and implementation`)
+          );
+        } else {
+          console.error(
+            chalk.red(`✗ Found ${result.issues.length} alignment issues`)
+          );
+          result.issues.forEach((issue: string) =>
+            console.error(chalk.red(`  - ${issue}`))
+          );
+          process.exit(1);
+        }
+      } catch (error: any) {
+        console.error(chalk.red('✗ Validation failed:'), error.message);
+        process.exit(1);
+      }
+    });
 }

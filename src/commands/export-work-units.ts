@@ -1,4 +1,5 @@
 import { readFile, writeFile } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 
 interface WorkUnit {
@@ -42,4 +43,35 @@ export async function exportWorkUnits(options: {
     }
     throw error;
   }
+}
+
+export function registerExportWorkUnitsCommand(program: Command): void {
+  program
+    .command('export-work-units')
+    .description('Export work units to JSON or CSV')
+    .argument('<format>', 'Output format: json or csv')
+    .argument('<output>', 'Output file path')
+    .option('--status <status>', 'Filter by status')
+    .action(
+      async (format: string, output: string, options: { status?: string }) => {
+        try {
+          const result = await exportWorkUnits({
+            format: format as 'json' | 'csv',
+            output,
+            status: options.status as any,
+          });
+          console.log(
+            chalk.green(
+              `✓ Exported ${result.count} work units to ${result.outputFile}`
+            )
+          );
+        } catch (error: any) {
+          console.error(
+            chalk.red('✗ Failed to export work units:'),
+            error.message
+          );
+          process.exit(1);
+        }
+      }
+    );
 }

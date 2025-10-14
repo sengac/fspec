@@ -1,4 +1,5 @@
 import { writeFile } from 'fs/promises';
+import type { Command } from 'commander';
 import chalk from 'chalk';
 import type { Foundation } from '../types/foundation';
 import { ensureFoundationFile } from '../utils/ensure-files';
@@ -168,4 +169,16 @@ export async function showFoundationCommand(options: {
     console.error(chalk.red('Error:'), error.message);
     process.exit(1);
   }
+}
+
+export function registerShowFoundationCommand(program: Command): void {
+  program
+    .command('show-foundation')
+    .description('Display FOUNDATION.md content')
+    .option('--section <section>', 'Show specific section only')
+    .option('--format <format>', 'Output format: text, markdown, or json', 'text')
+    .option('--output <file>', 'Write output to file')
+    .option('--list-sections', 'List section names only', false)
+    .option('--line-numbers', 'Show line numbers', false)
+    .action(showFoundationCommand);
 }

@@ -1,4 +1,5 @@
 import { readFile } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 
 interface StateHistoryEntry {
@@ -76,4 +77,26 @@ export async function queryMetrics(options: {
     }
     throw error;
   }
+}
+
+export function registerQueryMetricsCommand(program: Command): void {
+  program
+    .command('query-metrics')
+    .description('Query project metrics and statistics')
+    .option('--metric <metric>', 'Specific metric to query')
+    .option('--format <format>', 'Output format: text or json', 'text')
+    .action(async (options: { metric?: string; format?: string }) => {
+      try {
+        const result = await queryMetrics({
+          metric: options.metric,
+          format: options.format as 'text' | 'json',
+        });
+        if (options.format === 'json') {
+          console.log(JSON.stringify(result, null, 2));
+        }
+      } catch (error: any) {
+        console.error(chalk.red('✗ Query failed:'), error.message);
+        process.exit(1);
+      }
+    });
 }

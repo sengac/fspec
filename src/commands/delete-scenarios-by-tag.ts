@@ -1,5 +1,6 @@
 import { readFile, writeFile } from 'fs/promises';
 import { join } from 'path';
+import type { Command } from 'commander';
 import chalk from 'chalk';
 import { glob } from 'tinyglobby';
 import * as Gherkin from '@cucumber/gherkin';
@@ -291,4 +292,19 @@ export async function deleteScenariosByTagCommand(options: {
     console.error(chalk.red('Error:'), error.message);
     process.exit(1);
   }
+}
+
+export function registerDeleteScenariosCommand(program: Command): void {
+  program
+    .command('delete-scenarios')
+    .description('Bulk delete scenarios by tag across multiple files')
+    .option(
+      '--tag <tag>',
+      'Filter by tag (can specify multiple times for AND logic)',
+      (value, previous) => {
+        return previous ? [...previous, value] : [value];
+      }
+    )
+    .option('--dry-run', 'Preview deletions without making changes')
+    .action(deleteScenariosByTagCommand);
 }

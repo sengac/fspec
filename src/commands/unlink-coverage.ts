@@ -6,6 +6,7 @@
  */
 
 import { readFile, writeFile } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 import chalk from 'chalk';
 import type { CoverageFile } from '../utils/coverage-file';
@@ -184,4 +185,16 @@ export async function unlinkCoverageCommand(
     console.error(chalk.red('Error:'), error.message);
     process.exit(1);
   }
+}
+
+export function registerUnlinkCoverageCommand(program: Command): void {
+  program
+    .command('unlink-coverage')
+    .description('Remove test or implementation links from scenario coverage mappings')
+    .argument('<feature-name>', 'Feature name (e.g., "user-login" for user-login.feature)')
+    .requiredOption('--scenario <name>', 'Scenario name to unlink')
+    .option('--test-file <path>', 'Test file path to remove')
+    .option('--impl-file <path>', 'Implementation file path to remove')
+    .option('--all', 'Remove all mappings for the scenario')
+    .action(unlinkCoverageCommand);
 }

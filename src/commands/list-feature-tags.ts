@@ -1,4 +1,5 @@
 import { readFile } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 import chalk from 'chalk';
 import * as Gherkin from '@cucumber/gherkin';
@@ -152,4 +153,15 @@ export async function listFeatureTagsCommand(
     console.error(chalk.red('Error:'), error.message);
     process.exit(1);
   }
+}
+
+export function registerListFeatureTagsCommand(program: Command): void {
+  program
+    .command('list-feature-tags')
+    .description('List all tags on a specific feature file')
+    .argument('<file>', 'Feature file path (e.g., spec/features/login.feature)')
+    .option('--show-categories', 'Show tag categories from registry')
+    .action(async (file: string, options: { showCategories?: boolean }) => {
+      await listFeatureTagsCommand(file, options);
+    });
 }

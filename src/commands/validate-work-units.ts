@@ -1,4 +1,5 @@
 import type { WorkUnitsData } from '../types';
+import type { Command } from 'commander';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
 
 interface ValidateWorkUnitsOptions {
@@ -306,4 +307,32 @@ export async function validateWorkUnits(
     checks,
     ...(errors.length > 0 && { errors }),
   };
+}
+
+export function registerValidateWorkUnitsCommand(program: Command): void {
+  program
+    .command('validate-work-units')
+    .description('Validate work units data integrity')
+    .action(async () => {
+      try {
+        const result = await validateWorkUnits({});
+        if (result.valid) {
+          console.log(chalk.green(`✓ All work units are valid`));
+        } else {
+          console.error(
+            chalk.red(`✗ Found ${result.errors.length} validation errors`)
+          );
+          result.errors.forEach((error: string) =>
+            console.error(chalk.red(`  - ${error}`))
+          );
+          process.exit(1);
+        }
+      } catch (error: any) {
+        console.error(
+          chalk.red('✗ Failed to validate work units:'),
+          error.message
+        );
+        process.exit(1);
+      }
+    });
 }

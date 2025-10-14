@@ -1,4 +1,5 @@
 import { readFile, writeFile } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 import { existsSync } from 'fs';
 import chalk from 'chalk';
@@ -97,4 +98,13 @@ export async function deleteDiagramCommand(
     console.error(chalk.red('Error:'), error.message);
     process.exit(1);
   }
+}
+
+export function registerDeleteDiagramCommand(program: Command): void {
+  program
+    .command('delete-diagram')
+    .description('Delete Mermaid diagram from FOUNDATION.md')
+    .argument('<section>', 'Section name (e.g., "Architecture Diagrams")')
+    .argument('<title>', 'Diagram title to delete')
+    .action(deleteDiagramCommand);
 }

@@ -1,4 +1,5 @@
 import { readFile, writeFile } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 import chalk from 'chalk';
 import { glob } from 'tinyglobby';
@@ -207,4 +208,14 @@ export async function retagCommand(options: {
     console.error(chalk.red('Error:'), error.message);
     process.exit(1);
   }
+}
+
+export function registerRetagCommand(program: Command): void {
+  program
+    .command('retag')
+    .description('Bulk rename tags across all feature files')
+    .option('--from <tag>', 'Tag to rename from (e.g., @old-tag)')
+    .option('--to <tag>', 'Tag to rename to (e.g., @new-tag)')
+    .option('--dry-run', 'Preview changes without making modifications')
+    .action(retagCommand);
 }

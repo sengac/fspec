@@ -1,4 +1,5 @@
 import { writeFile, mkdir } from 'fs/promises';
+import type { Command } from 'commander';
 import { join, dirname } from 'path';
 import type { WorkUnitsData } from '../types';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
@@ -65,4 +66,24 @@ export async function exportExampleMap(
     questionsCount: exported.questions,
     assumptionsCount: exported.assumptions,
   };
+}
+
+export function registerExportExampleMapCommand(program: Command): void {
+  program
+    .command('export-example-map')
+    .description('Export example mapping data from work unit to JSON file')
+    .argument('<workUnitId>', 'Work unit ID')
+    .argument('<file>', 'Output JSON file path')
+    .action(async (workUnitId: string, file: string) => {
+      try {
+        const result = await exportExampleMap({ workUnitId, file });
+        console.log(chalk.green(`✓ Exported to ${result.outputFile}`));
+      } catch (error: any) {
+        console.error(
+          chalk.red('✗ Failed to export example map:'),
+          error.message
+        );
+        process.exit(1);
+      }
+    });
 }

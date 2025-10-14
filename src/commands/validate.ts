@@ -2,6 +2,7 @@ import { readFile } from 'fs/promises';
 import { resolve, relative } from 'path';
 import * as Gherkin from '@cucumber/gherkin';
 import * as Messages from '@cucumber/messages';
+import type { Command } from 'commander';
 import chalk from 'chalk';
 import { glob } from 'tinyglobby';
 
@@ -249,4 +250,16 @@ function getSuggestion(errorMessage: string): string | undefined {
   }
 
   return undefined;
+}
+
+export function registerValidateCommand(program: Command): void {
+  program
+    .command('validate')
+    .description('Validate Gherkin syntax in feature files')
+    .argument(
+      '[file]',
+      'Feature file to validate (validates all if not specified)'
+    )
+    .option('-v, --verbose', 'Show detailed validation output', false)
+    .action(validateCommand);
 }

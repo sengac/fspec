@@ -1,4 +1,5 @@
 import { readFile, writeFile } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 import chalk from 'chalk';
 import * as Gherkin from '@cucumber/gherkin';
@@ -168,4 +169,14 @@ export async function updateScenarioCommand(
     console.error(chalk.red('Error:'), error.message);
     process.exit(1);
   }
+}
+
+export function registerUpdateScenarioCommand(program: Command): void {
+  program
+    .command('update-scenario')
+    .description('Rename a scenario in a feature file')
+    .argument('<feature>', 'Feature file name or path')
+    .argument('<old-name>', 'Current scenario name')
+    .argument('<new-name>', 'New scenario name')
+    .action(updateScenarioCommand);
 }

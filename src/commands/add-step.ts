@@ -1,4 +1,5 @@
 import { readFile, writeFile } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 import chalk from 'chalk';
 import * as Gherkin from '@cucumber/gherkin';
@@ -243,4 +244,15 @@ export async function addStepCommand(
     console.error(chalk.red('Error:'), error.message);
     process.exit(1);
   }
+}
+
+export function registerAddStepCommand(program: Command): void {
+  program
+    .command('add-step')
+    .description('Add a step to an existing scenario')
+    .argument('<feature>', 'Feature file name or path')
+    .argument('<scenario>', 'Scenario name')
+    .argument('<type>', 'Step type: given, when, then, and, but')
+    .argument('<text>', 'Step text')
+    .action(addStepCommand);
 }

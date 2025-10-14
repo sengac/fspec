@@ -1,4 +1,5 @@
 import { readFile, access } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 import chalk from 'chalk';
 import { glob } from 'tinyglobby';
@@ -216,4 +217,19 @@ export async function getScenariosCommand(options: {
     console.error(chalk.red('Error:'), error.message);
     process.exit(1);
   }
+}
+
+export function registerGetScenariosCommand(program: Command): void {
+  program
+    .command('get-scenarios')
+    .description('Get all scenarios matching specified tags')
+    .option(
+      '--tag <tag>',
+      'Filter by tag (can specify multiple times)',
+      (value, previous) => {
+        return previous ? [...previous, value] : [value];
+      }
+    )
+    .option('--format <format>', 'Output format: text or json', 'text')
+    .action(getScenariosCommand);
 }

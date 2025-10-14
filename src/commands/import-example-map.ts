@@ -1,4 +1,5 @@
 import { readFile, writeFile } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 import type { WorkUnitsData } from '../types';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
@@ -102,4 +103,33 @@ export async function importExampleMap(
     questionsCount: imported.questions,
     assumptionsCount: imported.assumptions,
   };
+}
+
+export function registerImportExampleMapCommand(program: Command): void {
+  program
+    .command('import-example-map')
+    .description('Import example mapping data from JSON file to work unit')
+    .argument('<workUnitId>', 'Work unit ID')
+    .argument('<file>', 'Input JSON file path')
+    .action(async (workUnitId: string, file: string) => {
+      try {
+        const result = await importExampleMap({ workUnitId, file });
+        const total =
+          result.rulesCount +
+          result.examplesCount +
+          result.questionsCount +
+          result.assumptionsCount;
+        console.log(
+          chalk.green(
+            `✓ Imported ${total} items: ${result.rulesCount} rules, ${result.examplesCount} examples, ${result.questionsCount} questions, ${result.assumptionsCount} assumptions`
+          )
+        );
+      } catch (error: any) {
+        console.error(
+          chalk.red('✗ Failed to import example map:'),
+          error.message
+        );
+        process.exit(1);
+      }
+    });
 }

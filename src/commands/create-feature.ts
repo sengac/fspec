@@ -1,5 +1,6 @@
 import { mkdir, writeFile, access } from 'fs/promises';
 import { join } from 'path';
+import type { Command } from 'commander';
 import chalk from 'chalk';
 import { toKebabCase } from '../utils/file-helpers';
 import { generateFeatureTemplate } from '../utils/templates';
@@ -128,4 +129,12 @@ export async function createFeatureCommand(name: string): Promise<void> {
     console.error(chalk.red('Error:'), error.message);
     process.exit(1);
   }
+}
+
+export function registerCreateFeatureCommand(program: Command): void {
+  program
+    .command('create-feature')
+    .description('Create a new feature file with template')
+    .argument('<name>', 'Feature name (e.g., "User Authentication")')
+    .action(createFeatureCommand);
 }

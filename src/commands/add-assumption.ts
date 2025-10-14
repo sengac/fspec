@@ -1,4 +1,5 @@
 import { writeFile } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 import type { WorkUnitsData } from '../types';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
@@ -55,4 +56,21 @@ export async function addAssumption(
     success: true,
     assumptionCount: workUnit.assumptions.length,
   };
+}
+
+export function registerAddAssumptionCommand(program: Command): void {
+  program
+    .command('add-assumption')
+    .description('Add assumption to work unit during specification')
+    .argument('<work-unit-id>', 'Work unit ID')
+    .argument('<assumption>', 'Assumption text')
+    .action(async (workUnitId: string, assumption: string) => {
+      try {
+        await addAssumption({ workUnitId, assumption });
+        console.log(chalk.green(`✓ Assumption added successfully`));
+      } catch (error: any) {
+        console.error(chalk.red('✗ Failed to add assumption:'), error.message);
+        process.exit(1);
+      }
+    });
 }

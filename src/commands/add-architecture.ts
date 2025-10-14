@@ -1,4 +1,5 @@
 import { readFile, writeFile, access } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 import chalk from 'chalk';
 import { glob } from 'tinyglobby';
@@ -201,4 +202,16 @@ export async function addArchitectureCommand(
     console.error(chalk.red('Error:'), error.message);
     process.exit(1);
   }
+}
+
+export function registerAddArchitectureCommand(program: Command): void {
+  program
+    .command('add-architecture')
+    .description('Add or update architecture documentation in a feature file')
+    .argument(
+      '<feature>',
+      'Feature file name or path (e.g., "login" or "spec/features/login.feature")'
+    )
+    .argument('<text>', 'Architecture documentation text (can be multi-line)')
+    .action(addArchitectureCommand);
 }

@@ -1,4 +1,5 @@
 import { writeFile } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 import type { WorkUnitsData } from '../types';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
@@ -81,4 +82,46 @@ export async function prioritizeWorkUnit(
   await writeFile(workUnitsFile, JSON.stringify(workUnitsData, null, 2));
 
   return { success: true };
+}
+
+export function registerPrioritizeWorkUnitCommand(program: Command): void {
+  program
+    .command('prioritize-work-unit')
+    .description('Change the priority order of a work unit in the backlog')
+    .argument('<workUnitId>', 'Work unit ID to prioritize')
+    .option('--position <position>', 'Position: top, bottom, or numeric index')
+    .option('--before <workUnitId>', 'Place before this work unit')
+    .option('--after <workUnitId>', 'Place after this work unit')
+    .action(
+      async (
+        workUnitId: string,
+        options: { position?: string; before?: string; after?: string }
+      ) => {
+        try {
+          const parsedPosition =
+            options.position === 'top'
+              ? 'top'
+              : options.position === 'bottom'
+                ? 'bottom'
+                : options.position
+                  ? parseInt(options.position, 10)
+                  : undefined;
+          await prioritizeWorkUnit({
+            workUnitId,
+            position: parsedPosition as 'top' | 'bottom' | number | undefined,
+            before: options.before,
+            after: options.after,
+          });
+          console.log(
+            chalk.green(`✓ Work unit ${workUnitId} prioritized successfully`)
+          );
+        } catch (error: any) {
+          console.error(
+            chalk.red('✗ Failed to prioritize work unit:'),
+            error.message
+          );
+          process.exit(1);
+        }
+      }
+    );
 }

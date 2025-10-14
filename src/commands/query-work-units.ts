@@ -1,4 +1,5 @@
 import { readFile } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 
 interface WorkUnit {
@@ -126,4 +127,37 @@ export async function queryWorkUnits(options: {
     }
     throw error;
   }
+}
+
+export function registerQueryWorkUnitsCommand(program: Command): void {
+  program
+    .command('query-work-units')
+    .description('Query work units with advanced filters')
+    .option('--status <status>', 'Filter by status')
+    .option('--prefix <prefix>', 'Filter by prefix')
+    .option('--epic <epic>', 'Filter by epic')
+    .option('--format <format>', 'Output format: text or json', 'text')
+    .action(
+      async (options: {
+        status?: string;
+        prefix?: string;
+        epic?: string;
+        format?: string;
+      }) => {
+        try {
+          const result = await queryWorkUnits({
+            status: options.status as any,
+            prefix: options.prefix,
+            epic: options.epic,
+            format: options.format as 'text' | 'json',
+          });
+          if (options.format === 'json') {
+            console.log(JSON.stringify(result, null, 2));
+          }
+        } catch (error: any) {
+          console.error(chalk.red('✗ Query failed:'), error.message);
+          process.exit(1);
+        }
+      }
+    );
 }

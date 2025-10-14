@@ -1,4 +1,5 @@
 import { readFile } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 import chalk from 'chalk';
 
@@ -136,4 +137,11 @@ export async function listEpicsCommand(): Promise<void> {
     }
     process.exit(1);
   }
+}
+
+export function registerListEpicsCommand(program: Command): void {
+  program
+    .command('list-epics')
+    .description('List all epics')
+    .action(listEpicsCommand);
 }

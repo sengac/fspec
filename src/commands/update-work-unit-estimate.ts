@@ -1,4 +1,5 @@
 import { readFile, writeFile } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 
 interface WorkUnit {
@@ -54,4 +55,26 @@ export async function updateWorkUnitEstimate(options: {
     }
     throw error;
   }
+}
+
+export function registerUpdateWorkUnitEstimateCommand(program: Command): void {
+  program
+    .command('update-work-unit-estimate')
+    .description('Update work unit estimate (Fibonacci: 1,2,3,5,8,13,21)')
+    .argument('<workUnitId>', 'Work unit ID')
+    .argument('<estimate>', 'Story points estimate (Fibonacci number)')
+    .action(async (workUnitId: string, estimate: string) => {
+      try {
+        await updateWorkUnitEstimate({
+          workUnitId,
+          estimate: parseInt(estimate, 10),
+        });
+        console.log(
+          chalk.green(`✓ Work unit ${workUnitId} estimate set to ${estimate}`)
+        );
+      } catch (error: any) {
+        console.error(chalk.red('✗ Failed to update estimate:'), error.message);
+        process.exit(1);
+      }
+    });
 }

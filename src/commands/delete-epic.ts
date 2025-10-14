@@ -1,4 +1,5 @@
 import { readFile, writeFile } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 
 interface Epic {
@@ -92,4 +93,24 @@ export async function deleteEpic(options: {
     }
     throw error;
   }
+}
+
+export function registerDeleteEpicCommand(program: Command): void {
+  program
+    .command('delete-epic')
+    .description('Delete an epic')
+    .argument('<epicId>', 'Epic ID to delete')
+    .option('--force', 'Force deletion even if work units are associated')
+    .action(async (epicId: string, options: { force?: boolean }) => {
+      try {
+        await deleteEpic({
+          epicId,
+          force: options.force,
+        });
+        console.log(chalk.green(`✓ Epic ${epicId} deleted successfully`));
+      } catch (error: any) {
+        console.error(chalk.red('✗ Failed to delete epic:'), error.message);
+        process.exit(1);
+      }
+    });
 }

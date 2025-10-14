@@ -1,4 +1,5 @@
 import { readFile } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 
 interface Prefix {
@@ -93,4 +94,41 @@ export async function listPrefixes(options: {
   }
 
   return { prefixes };
+}
+
+export function registerListPrefixesCommand(program: Command): void {
+  program
+    .command('list-prefixes')
+    .description('List all prefixes')
+    .action(async () => {
+      try {
+        const result = await listPrefixes({});
+        if (result.prefixes.length === 0) {
+          console.log(chalk.yellow('No prefixes found'));
+          process.exit(0);
+        }
+        console.log(chalk.bold(`\nPrefixes (${result.prefixes.length})`));
+        console.log('');
+        for (const prefix of result.prefixes) {
+          console.log(chalk.cyan(prefix.prefix));
+          console.log(chalk.gray(`  ${prefix.description}`));
+          if (prefix.totalWorkUnits > 0) {
+            console.log(
+              chalk.gray(
+                `  Work Units: ${prefix.completedWorkUnits}/${prefix.totalWorkUnits} (${prefix.completionPercentage}%)`
+              )
+            );
+          }
+          console.log('');
+        }
+        process.exit(0);
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          console.error(chalk.red('Error:'), error.message);
+        } else {
+          console.error(chalk.red('Error: Unknown error occurred'));
+        }
+        process.exit(1);
+      }
+    });
 }

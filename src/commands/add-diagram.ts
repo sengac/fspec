@@ -1,4 +1,5 @@
 import { readFile, writeFile, mkdir } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 import { existsSync } from 'fs';
 import chalk from 'chalk';
@@ -292,4 +293,14 @@ export async function addDiagramCommand(
     console.error(chalk.red('Error:'), error.message);
     process.exit(1);
   }
+}
+
+export function registerAddDiagramCommand(program: Command): void {
+  program
+    .command('add-diagram')
+    .description('Add or update Mermaid diagram in FOUNDATION.md')
+    .argument('<section>', 'Section name (e.g., "Architecture", "Data Flow")')
+    .argument('<title>', 'Diagram title')
+    .argument('<code>', 'Mermaid diagram code')
+    .action(addDiagramCommand);
 }

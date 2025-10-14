@@ -1,4 +1,5 @@
 import type { WorkUnitsData } from '../types';
+import type { Command } from 'commander';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
 
 interface QueryDependencyStatsOptions {
@@ -61,4 +62,24 @@ export async function queryDependencyStats(
     totalRelatesTo,
     workUnitsWithDependencies,
   };
+}
+
+export function registerQueryDependencyStatsCommand(program: Command): void {
+  program
+    .command('query-dependency-stats')
+    .description('Show dependency statistics and potential blockers')
+    .option('--format <format>', 'Output format: text or json', 'text')
+    .action(async (options: { format?: string }) => {
+      try {
+        const result = await queryDependencyStats({
+          format: options.format as 'text' | 'json',
+        });
+        if (options.format === 'json') {
+          console.log(JSON.stringify(result, null, 2));
+        }
+      } catch (error: any) {
+        console.error(chalk.red('✗ Query failed:'), error.message);
+        process.exit(1);
+      }
+    });
 }

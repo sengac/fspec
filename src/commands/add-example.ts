@@ -1,4 +1,5 @@
 import { writeFile } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 import type { WorkUnitsData } from '../types';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
@@ -55,4 +56,21 @@ export async function addExample(
     success: true,
     exampleCount: workUnit.examples.length,
   };
+}
+
+export function registerAddExampleCommand(program: Command): void {
+  program
+    .command('add-example')
+    .description('Add an example to a work unit during specification phase')
+    .argument('<workUnitId>', 'Work unit ID')
+    .argument('<example>', 'Example description')
+    .action(async (workUnitId: string, example: string) => {
+      try {
+        await addExample({ workUnitId, example });
+        console.log(chalk.green(`✓ Example added successfully`));
+      } catch (error: any) {
+        console.error(chalk.red('✗ Failed to add example:'), error.message);
+        process.exit(1);
+      }
+    });
 }

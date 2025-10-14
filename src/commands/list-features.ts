@@ -1,5 +1,6 @@
 import { readFile, access } from 'fs/promises';
 import { join } from 'path';
+import type { Command } from 'commander';
 import chalk from 'chalk';
 import { glob } from 'tinyglobby';
 import * as Gherkin from '@cucumber/gherkin';
@@ -145,4 +146,12 @@ export async function listFeaturesCommand(options?: {
     console.error(chalk.red('Error:'), error.message);
     process.exit(1);
   }
+}
+
+export function registerListFeaturesCommand(program: Command): void {
+  program
+    .command('list-features')
+    .description('List all feature files')
+    .option('--tag <tag>', 'Filter by tag (e.g., --tag=@phase1)')
+    .action(listFeaturesCommand);
 }

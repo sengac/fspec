@@ -1,4 +1,5 @@
 import { readFile } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 import chalk from 'chalk';
 import * as Gherkin from '@cucumber/gherkin';
@@ -175,4 +176,25 @@ export async function listScenarioTagsCommand(
     console.error(chalk.red('Error:'), error.message);
     process.exit(1);
   }
+}
+
+export function registerListScenarioTagsCommand(program: Command): void {
+  program
+    .command('list-scenario-tags')
+    .description('List all tags on a specific scenario')
+    .argument('<file>', 'Feature file path (e.g., spec/features/login.feature)')
+    .argument(
+      '<scenario>',
+      'Scenario name (e.g., "Login with valid credentials")'
+    )
+    .option('--show-categories', 'Show tag categories from registry')
+    .action(
+      async (
+        file: string,
+        scenario: string,
+        options: { showCategories?: boolean }
+      ) => {
+        await listScenarioTagsCommand(file, scenario, options);
+      }
+    );
 }

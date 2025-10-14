@@ -1,4 +1,5 @@
 import { readFile, writeFile } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 import chalk from 'chalk';
 import * as Gherkin from '@cucumber/gherkin';
@@ -168,4 +169,14 @@ export async function deleteStepCommand(
     console.error(chalk.red('Error:'), error.message);
     process.exit(1);
   }
+}
+
+export function registerDeleteStepCommand(program: Command): void {
+  program
+    .command('delete-step')
+    .description('Delete a step from a scenario')
+    .argument('<feature>', 'Feature file name or path')
+    .argument('<scenario>', 'Scenario name')
+    .argument('<step>', 'Step text to delete (with or without keyword)')
+    .action(deleteStepCommand);
 }

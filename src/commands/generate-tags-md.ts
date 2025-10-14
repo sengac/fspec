@@ -1,4 +1,5 @@
 import { readFile, writeFile } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 import { existsSync } from 'fs';
 import chalk from 'chalk';
@@ -79,4 +80,11 @@ export async function generateTagsMdCommandCLI(): Promise<void> {
     console.error(chalk.red('Error:'), error.message);
     process.exit(1);
   }
+}
+
+export function registerGenerateTagsMdCommand(program: Command): void {
+  program
+    .command('generate-tags-md')
+    .description('Generate TAGS.md from tags.json')
+    .action(generateTagsMdCommandCLI);
 }

@@ -1,4 +1,5 @@
 import { readFile, access } from 'fs/promises';
+import type { Command } from 'commander';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import chalk from 'chalk';
@@ -80,4 +81,11 @@ export async function showFoundationSchemaCommand(): Promise<void> {
     console.error(chalk.red('Error:'), errorMessage);
     process.exit(1);
   }
+}
+
+export function registerShowFoundationSchemaCommand(program: Command): void {
+  program
+    .command('show-foundation-schema')
+    .description('Display foundation.json JSON Schema with guidance for AI agents')
+    .action(showFoundationSchemaCommand);
 }

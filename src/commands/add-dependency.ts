@@ -1,4 +1,5 @@
 import { writeFile } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 import type { WorkUnitsData } from '../types';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
@@ -244,4 +245,71 @@ export async function addDependency(
   return {
     success: true,
   };
+}
+
+export function registerAddDependencyCommand(program: Command): void {
+  program
+    .command('add-dependency')
+    .description('Add a dependency relationship between work units')
+    .argument('[workUnitId]', 'Work unit ID')
+    .argument(
+      '[dependsOnId]',
+      'Work unit ID that this depends on (shorthand for --depends-on)'
+    )
+    .option('--blocks <targetId>', 'Work unit that this blocks')
+    .option('--blocked-by <targetId>', 'Work unit that blocks this')
+    .option(
+      '--depends-on <targetId>',
+      'Work unit this depends on (soft dependency)'
+    )
+    .option('--relates-to <targetId>', 'Related work unit')
+    .action(
+      async (
+        workUnitId: string,
+        dependsOnId: string | undefined,
+        options: {
+          blocks?: string;
+          blockedBy?: string;
+          dependsOn?: string;
+          relatesTo?: string;
+        }
+      ) => {
+        try {
+          // If second argument provided, use it as --depends-on (shorthand syntax)
+          const finalDependsOn = dependsOnId || options.dependsOn;
+          // Check if user provided both shorthand and option (conflict)
+          if (
+            dependsOnId &&
+            options.dependsOn &&
+            dependsOnId !== options.dependsOn
+          ) {
+            throw new Error(
+              'Cannot specify dependency both as argument and --depends-on option'
+            );
+          }
+          // Require at least one relationship type
+          if (
+            !finalDependsOn &&
+            !options.blocks &&
+            !options.blockedBy &&
+            !options.relatesTo
+          ) {
+            throw new Error(
+              'Must specify at least one relationship: <depends-on-id> or --blocks/--blocked-by/--depends-on/--relates-to'
+            );
+          }
+          await addDependency({
+            workUnitId,
+            blocks: options.blocks,
+            blockedBy: options.blockedBy,
+            dependsOn: finalDependsOn,
+            relatesTo: options.relatesTo,
+          });
+          console.log(chalk.green(`✓ Dependency added successfully`));
+        } catch (error: any) {
+          console.error(chalk.red('✗ Failed to add dependency:'), error.message);
+          process.exit(1);
+        }
+      }
+    );
 }

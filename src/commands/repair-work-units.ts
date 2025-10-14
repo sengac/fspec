@@ -1,4 +1,5 @@
 import { writeFile } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 import type { WorkUnitsData } from '../types';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
@@ -118,4 +119,27 @@ export async function repairWorkUnits(
     repairs,
     repaired: repairs.length,
   };
+}
+
+export function registerRepairWorkUnitsCommand(program: Command): void {
+  program
+    .command('repair-work-units')
+    .description('Repair work units data integrity issues')
+    .option('--dry-run', 'Show what would be repaired without making changes')
+    .action(async (options: { dryRun?: boolean }) => {
+      try {
+        const result = await repairWorkUnits({
+          dryRun: options.dryRun,
+        });
+        console.log(chalk.green(`✓ Repaired ${result.repaired} issues`));
+        if (result.details && result.details.length > 0) {
+          result.details.forEach((detail: string) =>
+            console.log(chalk.cyan(`  - ${detail}`))
+          );
+        }
+      } catch (error: any) {
+        console.error(chalk.red('✗ Failed to repair work units:'), error.message);
+        process.exit(1);
+      }
+    });
 }

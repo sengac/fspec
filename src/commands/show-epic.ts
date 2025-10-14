@@ -1,4 +1,5 @@
 import { readFile } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 import chalk from 'chalk';
 
@@ -138,4 +139,13 @@ export async function showEpicCommand(
     }
     process.exit(1);
   }
+}
+
+export function registerShowEpicCommand(program: Command): void {
+  program
+    .command('show-epic')
+    .description('Display epic details')
+    .argument('<epicId>', 'Epic ID')
+    .option('-f, --format <format>', 'Output format: text or json', 'text')
+    .action(showEpicCommand);
 }

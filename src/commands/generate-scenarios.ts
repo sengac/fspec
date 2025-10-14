@@ -1,4 +1,5 @@
 import { writeFile, mkdir } from 'fs/promises';
+import type { Command } from 'commander';
 import { join, dirname } from 'path';
 import { existsSync } from 'fs';
 import type { WorkUnitsData, QuestionItem } from '../types';
@@ -210,4 +211,40 @@ ${scenarios.join('\n')}`;
     scenariosCount: scenarios.length,
     ...(systemReminders.length > 0 && { systemReminders }),
   };
+}
+
+export function registerGenerateScenariosCommand(program: Command): void {
+  program
+    .command('generate-scenarios')
+    .description('Generate Gherkin scenarios from example mapping in work unit')
+    .argument('<workUnitId>', 'Work unit ID')
+    .option(
+      '--feature <name>',
+      'Feature file name (without .feature extension). Defaults to work unit title in kebab-case.'
+    )
+    .action(async (workUnitId: string, options: { feature?: string }) => {
+      try {
+        const result = await generateScenarios({
+          workUnitId,
+          feature: options.feature,
+        });
+        console.log(
+          chalk.green(
+            `✓ Generated ${result.scenariosCount} scenarios in ${result.featureFile}`
+          )
+        );
+        // Display system reminders if any
+        if (result.systemReminders && result.systemReminders.length > 0) {
+          for (const reminder of result.systemReminders) {
+            console.log('\n' + reminder);
+          }
+        }
+      } catch (error: any) {
+        console.error(
+          chalk.red('✗ Failed to generate scenarios:'),
+          error.message
+        );
+        process.exit(1);
+      }
+    });
 }

@@ -1,5 +1,7 @@
 import { readFile } from 'fs/promises';
 import { join } from 'path';
+import type { Command } from 'commander';
+import chalk from 'chalk';
 
 interface WorkUnit {
   id: string;
@@ -77,4 +79,39 @@ export async function displayBoard(options: {
     }
     throw error;
   }
+}
+
+export function registerBoardCommand(program: Command): void {
+  program
+    .command('board')
+    .description('Display Kanban board of work units')
+    .option('--format <format>', 'Output format: text or json', 'text')
+    .option('--limit <limit>', 'Max items per column', '25')
+    .action(async (options: { format?: string; limit?: string }) => {
+      try {
+        const result = await displayBoard({ cwd: process.cwd() });
+
+        if (options.format === 'json') {
+          console.log(JSON.stringify(result, null, 2));
+        } else {
+          // Display text format board using Ink
+          const limit = parseInt(options.limit || '25', 10);
+          const { render } = await import('ink');
+          const React = await import('react');
+          const { BoardDisplay } = await import('../components/BoardDisplay.js');
+
+          render(
+            React.createElement(BoardDisplay, {
+              columns: result.columns,
+              board: result.board,
+              summary: result.summary,
+              limit,
+            })
+          );
+        }
+      } catch (error: any) {
+        console.error(chalk.red('✗ Failed to display board:'), error.message);
+        process.exit(1);
+      }
+    });
 }

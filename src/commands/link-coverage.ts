@@ -1,4 +1,5 @@
 import { readFile, writeFile, access } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 import chalk from 'chalk';
 import type { CoverageFile } from '../utils/coverage-file';
@@ -347,4 +348,18 @@ export async function linkCoverageCommand(
     console.error(chalk.red('Error:'), error.message);
     process.exit(1);
   }
+}
+
+export function registerLinkCoverageCommand(program: Command): void {
+  program
+    .command('link-coverage')
+    .description('Link test and implementation files to feature scenarios')
+    .argument('<feature-name>', 'Feature name (e.g., "user-login" for user-login.feature)')
+    .requiredOption('--scenario <name>', 'Scenario name to link')
+    .option('--test-file <file>', 'Test file path (e.g., src/__tests__/auth.test.ts)')
+    .option('--test-lines <range>', 'Test line range (e.g., "45-62")')
+    .option('--impl-file <file>', 'Implementation file path')
+    .option('--impl-lines <lines>', 'Implementation lines (e.g., "10,11,12" or "10-15")')
+    .option('--skip-validation', 'Skip file validation (for forward planning)')
+    .action(linkCoverageCommand);
 }

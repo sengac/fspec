@@ -1,4 +1,5 @@
 import { readFile, writeFile } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 
 interface WorkUnit {
@@ -50,4 +51,26 @@ export async function recordIteration(options: {
     }
     throw error;
   }
+}
+
+export function registerRecordIterationCommand(program: Command): void {
+  program
+    .command('record-iteration')
+    .description('Record an iteration or sprint')
+    .argument('<name>', 'Iteration name')
+    .option('--start <date>', 'Start date')
+    .option('--end <date>', 'End date')
+    .action(async (name: string, options: { start?: string; end?: string }) => {
+      try {
+        await recordIteration({
+          name,
+          start: options.start,
+          end: options.end,
+        });
+        console.log(chalk.green(`✓ Iteration recorded successfully`));
+      } catch (error: any) {
+        console.error(chalk.red('✗ Failed to record iteration:'), error.message);
+        process.exit(1);
+      }
+    });
 }

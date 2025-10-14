@@ -1,4 +1,5 @@
 import { mkdir, writeFile, access, readFile, copyFile } from 'fs/promises';
+import type { Command } from 'commander';
 import { join, dirname, isAbsolute, normalize, relative } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -291,4 +292,51 @@ async function copyRspecTemplate(cwd: string): Promise<void> {
 
   // Copy rspec.md (overwrites if exists)
   await copyFile(sourcePath, targetPath);
+}
+
+export function registerInitCommand(program: Command): void {
+  program
+    .command('init')
+    .description('Initialize /fspec and /rspec slash commands for Claude Code')
+    .option('--type <type>', 'Installation type: claude-code or custom')
+    .option('--path <path>', 'Custom installation path (relative to current directory)')
+    .option('--yes', 'Skip confirmation prompts (auto-confirm overwrite)')
+    .action(async (options: { type?: string; path?: string; yes?: boolean }) => {
+      try {
+        let installType: 'claude-code' | 'custom';
+        let customPath: string | undefined;
+        // Determine install type
+        if (options.type) {
+          if (options.type !== 'claude-code' && options.type !== 'custom') {
+            console.error(
+              chalk.red(
+                '✗ Invalid type. Must be "claude-code" or "custom"'
+              )
+            );
+            process.exit(1);
+          }
+          installType = options.type as 'claude-code' | 'custom';
+          if (installType === 'custom' && !options.path) {
+            console.error(
+              chalk.red('✗ --path is required when --type=custom')
+            );
+            process.exit(1);
+          }
+          customPath = options.path;
+        } else {
+          // Interactive mode (default to claude-code for now)
+          installType = 'claude-code';
+        }
+        const result = await init({
+          installType,
+          customPath,
+          confirmOverwrite: options.yes !== false,
+        });
+        console.log(chalk.green(result.message));
+        process.exit(result.exitCode);
+      } catch (error: any) {
+        console.error(chalk.red('✗ Init failed:'), error.message);
+        process.exit(1);
+      }
+    });
 }

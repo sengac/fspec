@@ -1,4 +1,5 @@
 import { writeFile } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 import chalk from 'chalk';
 import type { Foundation } from '../types/foundation';
@@ -159,4 +160,13 @@ export async function updateFoundationCommand(
     console.error(chalk.red('Error:'), error.message);
     process.exit(1);
   }
+}
+
+export function registerUpdateFoundationCommand(program: Command): void {
+  program
+    .command('update-foundation')
+    .description('Update section content in FOUNDATION.md')
+    .argument('<section>', 'Section name (e.g., "What We Are Building", "Why")')
+    .argument('<content>', 'Section content (can be multi-line)')
+    .action(updateFoundationCommand);
 }

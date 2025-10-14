@@ -1,4 +1,5 @@
 import { readFile } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 
 interface WorkUnit {
@@ -159,4 +160,24 @@ export async function queryEstimateAccuracy(options: {
     }
     throw error;
   }
+}
+
+export function registerQueryEstimateAccuracyCommand(program: Command): void {
+  program
+    .command('query-estimate-accuracy')
+    .description('Show estimation accuracy metrics')
+    .option('--format <format>', 'Output format: text or json', 'text')
+    .action(async (options: { format?: string }) => {
+      try {
+        const result = await queryEstimateAccuracy({
+          format: options.format as 'text' | 'json',
+        });
+        if (options.format === 'json') {
+          console.log(JSON.stringify(result, null, 2));
+        }
+      } catch (error: any) {
+        console.error(chalk.red('✗ Query failed:'), error.message);
+        process.exit(1);
+      }
+    });
 }

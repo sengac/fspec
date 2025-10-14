@@ -1,4 +1,5 @@
 import { writeFile } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 import { ensurePrefixesFile, ensureEpicsFile } from '../utils/ensure-files';
 
@@ -65,4 +66,24 @@ export async function updatePrefix(options: {
     }
     throw error;
   }
+}
+
+export function registerUpdatePrefixCommand(program: Command): void {
+  program
+    .command('update-prefix')
+    .description('Update an existing work unit prefix')
+    .argument('<prefix>', 'Prefix code to update')
+    .option('-d, --description <description>', 'New description')
+    .action(async (prefix: string, options: { description?: string }) => {
+      try {
+        await updatePrefix({
+          prefix,
+          description: options.description,
+        });
+        console.log(chalk.green(`✓ Prefix ${prefix} updated successfully`));
+      } catch (error: any) {
+        console.error(chalk.red('✗ Failed to update prefix:'), error.message);
+        process.exit(1);
+      }
+    });
 }

@@ -1,4 +1,5 @@
 import { readFile, readdir, access } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 import chalk from 'chalk';
 import type { CoverageFile } from '../utils/coverage-file';
@@ -424,4 +425,12 @@ export async function showCoverageCommand(
     console.error(chalk.red('Error:'), error.message);
     process.exit(1);
   }
+}
+
+export function registerShowCoverageCommand(program: Command): void {
+  program
+    .command('show-coverage')
+    .description('Show coverage report for feature or all features')
+    .argument('[feature-name]', 'Feature name (optional - shows all if omitted)')
+    .action(showCoverageCommand);
 }
