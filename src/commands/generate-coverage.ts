@@ -6,6 +6,7 @@
  */
 
 import { readdir } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 import chalk from 'chalk';
 import { createCoverageFile } from '../utils/coverage-file';
@@ -151,4 +152,12 @@ export async function generateCoverageCommand(options: {
     console.error(chalk.red(`✗ Error: ${error.message}`));
     process.exit(1);
   }
+}
+
+export function registerGenerateCoverageCommand(program: Command): void {
+  program
+    .command('generate-coverage')
+    .description('Generate .feature.coverage files for existing .feature files without coverage')
+    .option('--dry-run', 'Preview what would be created without actually creating files')
+    .action(generateCoverageCommand);
 }

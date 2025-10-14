@@ -1,4 +1,5 @@
 import { readFile, writeFile, access } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 import chalk from 'chalk';
 import { glob } from 'tinyglobby';
@@ -307,4 +308,20 @@ export async function showAcceptanceCriteriaCommand(options: {
     console.error(chalk.red('Error:'), error.message);
     process.exit(1);
   }
+}
+
+export function registerShowAcceptanceCriteriaCommand(program: Command): void {
+  program
+    .command('show-acceptance-criteria')
+    .description('Show acceptance criteria for features matching tags')
+    .option(
+      '--tag <tag>',
+      'Filter by tag (can specify multiple times)',
+      (value, previous) => {
+        return previous ? [...previous, value] : [value];
+      }
+    )
+    .option('--format <format>', 'Output format: text, markdown, or json', 'text')
+    .option('--output <file>', 'Write output to file')
+    .action(showAcceptanceCriteriaCommand);
 }

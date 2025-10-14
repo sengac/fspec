@@ -1,4 +1,5 @@
 import { readFile, writeFile } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 
 interface WorkUnit {
@@ -49,4 +50,35 @@ export async function recordTokens(options: {
     }
     throw error;
   }
+}
+
+export function registerRecordTokensCommand(program: Command): void {
+  program
+    .command('record-tokens')
+    .description('Record token usage for AI operations')
+    .argument('<workUnitId>', 'Work unit ID')
+    .argument('<tokens>', 'Number of tokens used')
+    .option(
+      '--operation <operation>',
+      'Operation type (e.g., specification, implementation)'
+    )
+    .action(
+      async (
+        workUnitId: string,
+        tokens: string,
+        options: { operation?: string }
+      ) => {
+        try {
+          await recordTokens({
+            workUnitId,
+            tokens: parseInt(tokens, 10),
+            operation: options.operation,
+          });
+          console.log(chalk.green(`✓ Token usage recorded successfully`));
+        } catch (error: any) {
+          console.error(chalk.red('✗ Failed to record tokens:'), error.message);
+          process.exit(1);
+        }
+      }
+    );
 }

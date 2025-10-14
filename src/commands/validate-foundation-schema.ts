@@ -1,4 +1,5 @@
 import { readFile } from 'fs/promises';
+import type { Command } from 'commander';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import chalk from 'chalk';
@@ -128,4 +129,11 @@ export async function validateFoundationSchemaCommand(): Promise<void> {
     console.error(chalk.red('Error:'), errorMessage);
     process.exit(1);
   }
+}
+
+export function registerValidateFoundationSchemaCommand(program: Command): void {
+  program
+    .command('validate-foundation-schema')
+    .description('Validate foundation.json against JSON Schema')
+    .action(validateFoundationSchemaCommand);
 }

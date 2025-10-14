@@ -1,4 +1,5 @@
 import { writeFile } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 import chalk from 'chalk';
 import type { WorkUnitsData, UserStory } from '../types';
@@ -55,4 +56,22 @@ export async function setUserStoryCommand(
     console.error(chalk.red('Error:'), error.message);
     process.exit(1);
   }
+}
+
+export function registerSetUserStoryCommand(program: Command): void {
+  program
+    .command('set-user-story')
+    .description('Set user story fields for work unit')
+    .argument('<work-unit-id>', 'Work unit ID')
+    .requiredOption('--role <role>', 'User role (As a...)')
+    .requiredOption('--action <action>', 'User action (I want to...)')
+    .requiredOption('--benefit <benefit>', 'User benefit (So that...)')
+    .action(
+      async (
+        workUnitId: string,
+        options: { role: string; action: string; benefit: string }
+      ) => {
+        await setUserStoryCommand(workUnitId, options);
+      }
+    );
 }

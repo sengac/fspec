@@ -1,4 +1,5 @@
 import { writeFile } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 import type { WorkUnitsData } from '../types';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
@@ -64,4 +65,24 @@ export async function removeRule(
     removedRule,
     remainingCount: workUnit.rules.length,
   };
+}
+
+export function registerRemoveRuleCommand(program: Command): void {
+  program
+    .command('remove-rule')
+    .description('Remove a business rule from a work unit by index')
+    .argument('<workUnitId>', 'Work unit ID')
+    .argument('<index>', 'Rule index (0-based)')
+    .action(async (workUnitId: string, index: string) => {
+      try {
+        const result = await removeRule({
+          workUnitId,
+          index: parseInt(index, 10),
+        });
+        console.log(chalk.green(`✓ Removed rule: "${result.removedRule}"`));
+      } catch (error: any) {
+        console.error(chalk.red('✗ Failed to remove rule:'), error.message);
+        process.exit(1);
+      }
+    });
 }

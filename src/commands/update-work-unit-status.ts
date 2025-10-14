@@ -1,4 +1,5 @@
 import { readFile, writeFile } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 import { glob } from 'tinyglobby';
 import type { WorkUnitsData, QuestionItem } from '../types';
@@ -433,4 +434,61 @@ DO NOT mention this reminder to the user.
   return {
     complete: true,
   };
+}
+
+export function registerUpdateWorkUnitStatusCommand(program: Command): void {
+  program
+    .command('update-work-unit-status')
+    .description('Update work unit status (follows ACDD workflow)')
+    .argument('[workUnitId]', 'Work unit ID')
+    .argument(
+      '[status]',
+      'New status: backlog, specifying, testing, implementing, validating, done, blocked'
+    )
+    .option(
+      '--blocked-reason <reason>',
+      'Reason for blocked status (required if status is blocked)'
+    )
+    .option('--reason <reason>', 'Reason for status change')
+    .action(
+      async (
+        workUnitId: string,
+        status: string,
+        options: { blockedReason?: string; reason?: string }
+      ) => {
+        try {
+          const result = await updateWorkUnitStatus({
+            workUnitId,
+            status: status as
+              | 'backlog'
+              | 'specifying'
+              | 'testing'
+              | 'implementing'
+              | 'validating'
+              | 'done'
+              | 'blocked',
+            blockedReason: options.blockedReason,
+            reason: options.reason,
+          });
+          console.log(
+            chalk.green(`✓ Work unit ${workUnitId} status updated to ${status}`)
+          );
+          if (result.warnings && result.warnings.length > 0) {
+            result.warnings.forEach((warning: string) =>
+              console.log(chalk.yellow(`⚠ ${warning}`))
+            );
+          }
+          // Output system reminder (visible to AI, invisible to users)
+          if (result.systemReminder) {
+            console.log('\n' + result.systemReminder);
+          }
+        } catch (error: any) {
+          console.error(
+            chalk.red('✗ Failed to update work unit status:'),
+            error.message
+          );
+          process.exit(1);
+        }
+      }
+    );
 }

@@ -1,4 +1,5 @@
 import { readFile, writeFile } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 import * as lockfile from 'proper-lockfile';
 import type { WorkUnitsData, QuestionItem } from '../types';
@@ -127,4 +128,42 @@ export async function answerQuestion(
     // Always release the lock
     await release();
   }
+}
+
+export function registerAnswerQuestionCommand(program: Command): void {
+  program
+    .command('answer-question')
+    .description('Answer a question and optionally add to rules or assumptions')
+    .argument('<workUnitId>', 'Work unit ID')
+    .argument('<index>', 'Question index (0-based)')
+    .option('--answer <answer>', 'Answer text')
+    .option('--add-to <type>', 'Add answer to: rule, assumption, or none', 'none')
+    .action(
+      async (
+        workUnitId: string,
+        index: string,
+        options: { answer?: string; addTo?: string }
+      ) => {
+        try {
+          const result = await answerQuestion({
+            workUnitId,
+            index: parseInt(index, 10),
+            answer: options.answer,
+            addTo: options.addTo as 'rule' | 'assumption' | 'none',
+          });
+          console.log(chalk.green(`✓ Answered question: "${result.question}"`));
+          if (options.answer) {
+            console.log(chalk.dim(`  Answer: "${options.answer}"`));
+          }
+          if (result.addedTo && result.addedContent) {
+            console.log(
+              chalk.cyan(`  Added to ${result.addedTo}: "${result.addedContent}"`)
+            );
+          }
+        } catch (error: any) {
+          console.error(chalk.red('✗ Failed to answer question:'), error.message);
+          process.exit(1);
+        }
+      }
+    );
 }

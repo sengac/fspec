@@ -1,4 +1,5 @@
 import { readFile, writeFile } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 import { existsSync } from 'fs';
 import chalk from 'chalk';
@@ -83,4 +84,11 @@ export async function generateFoundationMdCommandCLI(): Promise<void> {
     console.error(chalk.red('Error:'), error.message);
     process.exit(1);
   }
+}
+
+export function registerGenerateFoundationMdCommand(program: Command): void {
+  program
+    .command('generate-foundation-md')
+    .description('Generate FOUNDATION.md from foundation.json')
+    .action(generateFoundationMdCommandCLI);
 }

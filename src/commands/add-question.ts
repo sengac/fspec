@@ -1,4 +1,5 @@
 import { writeFile } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 import type { WorkUnitsData } from '../types';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
@@ -62,4 +63,21 @@ export async function addQuestion(
     questionCount: workUnit.questions.length,
     ...(mentionedPeople.length > 0 && { mentionedPeople }),
   };
+}
+
+export function registerAddQuestionCommand(program: Command): void {
+  program
+    .command('add-question')
+    .description('Add a question to a work unit during specification phase')
+    .argument('<workUnitId>', 'Work unit ID')
+    .argument('<question>', 'Question text')
+    .action(async (workUnitId: string, question: string) => {
+      try {
+        await addQuestion({ workUnitId, question });
+        console.log(chalk.green(`✓ Question added successfully`));
+      } catch (error: any) {
+        console.error(chalk.red('✗ Failed to add question:'), error.message);
+        process.exit(1);
+      }
+    });
 }

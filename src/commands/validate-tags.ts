@@ -1,5 +1,6 @@
 import { readFile } from 'fs/promises';
 import { join } from 'path';
+import type { Command } from 'commander';
 import chalk from 'chalk';
 import { glob } from 'tinyglobby';
 import * as Gherkin from '@cucumber/gherkin';
@@ -382,4 +383,15 @@ async function validateFileTags(
   }
 
   return result;
+}
+
+export function registerValidateTagsCommand(program: Command): void {
+  program
+    .command('validate-tags')
+    .description('Validate feature file tags against TAGS.md registry')
+    .argument(
+      '[file]',
+      'Feature file to validate (validates all if not specified)'
+    )
+    .action(validateTagsCommand);
 }

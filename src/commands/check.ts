@@ -1,4 +1,5 @@
 import chalk from 'chalk';
+import type { Command } from 'commander';
 import { glob } from 'tinyglobby';
 import * as Gherkin from '@cucumber/gherkin';
 import * as Messages from '@cucumber/messages';
@@ -222,4 +223,12 @@ export async function checkCommand(
     console.error(chalk.red('Error:'), error.message);
     process.exit(1);
   }
+}
+
+export function registerCheckCommand(program: Command): void {
+  program
+    .command('check')
+    .description('Run all validation checks (Gherkin syntax, tags, formatting)')
+    .option('-v, --verbose', 'Show detailed validation output', false)
+    .action(checkCommand);
 }

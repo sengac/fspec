@@ -1,4 +1,5 @@
 import { writeFile } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 import type { WorkUnitsData } from '../types';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
@@ -64,4 +65,26 @@ export async function removeQuestion(
     removedQuestion,
     remainingCount: workUnit.questions.length,
   };
+}
+
+export function registerRemoveQuestionCommand(program: Command): void {
+  program
+    .command('remove-question')
+    .description('Remove a question from a work unit by index')
+    .argument('<workUnitId>', 'Work unit ID')
+    .argument('<index>', 'Question index (0-based)')
+    .action(async (workUnitId: string, index: string) => {
+      try {
+        const result = await removeQuestion({
+          workUnitId,
+          index: parseInt(index, 10),
+        });
+        console.log(
+          chalk.green(`✓ Removed question: "${result.removedQuestion}"`)
+        );
+      } catch (error: any) {
+        console.error(chalk.red('✗ Failed to remove question:'), error.message);
+        process.exit(1);
+      }
+    });
 }

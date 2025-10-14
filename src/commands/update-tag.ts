@@ -1,4 +1,5 @@
 import { readFile, writeFile } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 import { existsSync } from 'fs';
 import chalk from 'chalk';
@@ -154,4 +155,14 @@ export async function updateTagCommand(
     console.error(chalk.red('Error:'), error.message);
     process.exit(1);
   }
+}
+
+export function registerUpdateTagCommand(program: Command): void {
+  program
+    .command('update-tag')
+    .description('Update an existing tag in TAGS.md registry')
+    .argument('<tag>', 'Tag name (e.g., "@phase1")')
+    .option('--category <category>', 'New category name')
+    .option('--description <description>', 'New description')
+    .action(updateTagCommand);
 }

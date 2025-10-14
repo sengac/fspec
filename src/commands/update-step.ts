@@ -1,4 +1,5 @@
 import { readFile, writeFile } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 import chalk from 'chalk';
 import * as Gherkin from '@cucumber/gherkin';
@@ -216,4 +217,19 @@ export async function updateStepCommand(
     console.error(chalk.red('Error:'), error.message);
     process.exit(1);
   }
+}
+
+export function registerUpdateStepCommand(program: Command): void {
+  program
+    .command('update-step')
+    .description('Update step text or keyword in a scenario')
+    .argument('<feature>', 'Feature file name or path')
+    .argument('<scenario>', 'Scenario name')
+    .argument('<current-step>', 'Current step text (with or without keyword)')
+    .option('--text <text>', 'New step text')
+    .option(
+      '--keyword <keyword>',
+      'New step keyword (Given, When, Then, And, But)'
+    )
+    .action(updateStepCommand);
 }

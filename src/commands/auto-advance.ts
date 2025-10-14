@@ -1,4 +1,5 @@
 import { readFile, writeFile } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 
 interface WorkUnit {
@@ -105,4 +106,25 @@ export async function autoAdvance(options: {
     }
     throw error;
   }
+}
+
+export function registerAutoAdvanceCommand(program: Command): void {
+  program
+    .command('auto-advance')
+    .description('Automatically advance work units through workflow states')
+    .option('--dry-run', 'Show what would be advanced without making changes')
+    .action(async (options: { dryRun?: boolean }) => {
+      try {
+        const result = await autoAdvance({ dryRun: options.dryRun });
+        console.log(chalk.green(`✓ Advanced ${result.advanced} work units`));
+        if (result.details && result.details.length > 0) {
+          result.details.forEach((detail: string) =>
+            console.log(chalk.cyan(`  - ${detail}`))
+          );
+        }
+      } catch (error: any) {
+        console.error(chalk.red('✗ Failed to auto-advance:'), error.message);
+        process.exit(1);
+      }
+    });
 }

@@ -1,4 +1,5 @@
 import { readFile, writeFile } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 import type { WorkUnitsData, PrefixesData, EpicsData } from '../types';
 import {
@@ -189,4 +190,16 @@ export async function createWorkUnitCommand(
     }
     process.exit(1);
   }
+}
+
+export function registerCreateWorkUnitCommand(program: Command): void {
+  program
+    .command('create-work-unit')
+    .description('Create a new work unit')
+    .argument('<prefix>', 'Work unit prefix (e.g., AUTH, DASH)')
+    .argument('<title>', 'Work unit title')
+    .option('-d, --description <description>', 'Work unit description')
+    .option('-e, --epic <epic>', 'Epic ID to associate with')
+    .option('-p, --parent <parent>', 'Parent work unit ID')
+    .action(createWorkUnitCommand);
 }

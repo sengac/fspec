@@ -1,4 +1,5 @@
 import { readFile, writeFile } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 import chalk from 'chalk';
 import * as Gherkin from '@cucumber/gherkin';
@@ -133,4 +134,15 @@ export async function removeTagFromFeatureCommand(
     console.error(chalk.red('Error:'), error.message);
     process.exit(1);
   }
+}
+
+export function registerRemoveTagFromFeatureCommand(program: Command): void {
+  program
+    .command('remove-tag-from-feature')
+    .description('Remove one or more tags from a feature file')
+    .argument('<file>', 'Feature file path (e.g., spec/features/login.feature)')
+    .argument('<tags...>', 'Tag(s) to remove (e.g., @deprecated @wip)')
+    .action(async (file: string, tags: string[]) => {
+      await removeTagFromFeatureCommand(file, tags);
+    });
 }

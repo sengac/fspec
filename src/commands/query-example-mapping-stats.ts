@@ -1,4 +1,5 @@
 import type { WorkUnitsData, WorkUnit } from '../types';
+import type { Command } from 'commander';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
 
 interface QueryExampleMappingStatsOptions {
@@ -151,4 +152,24 @@ export async function queryExampleMappingStats(
     avgQuestionsPerWorkUnit,
     avgAssumptionsPerWorkUnit,
   };
+}
+
+export function registerQueryExampleMappingStatsCommand(program: Command): void {
+  program
+    .command('query-example-mapping-stats')
+    .description('Show example mapping coverage statistics')
+    .option('--format <format>', 'Output format: text or json', 'text')
+    .action(async (options: { format?: string }) => {
+      try {
+        const result = await queryExampleMappingStats({
+          format: options.format as 'text' | 'json',
+        });
+        if (options.format === 'json') {
+          console.log(JSON.stringify(result, null, 2));
+        }
+      } catch (error: any) {
+        console.error(chalk.red('✗ Query failed:'), error.message);
+        process.exit(1);
+      }
+    });
 }

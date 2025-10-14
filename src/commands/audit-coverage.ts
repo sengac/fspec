@@ -6,6 +6,7 @@
  */
 
 import { readFile } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 import { existsSync } from 'fs';
 import chalk from 'chalk';
@@ -113,4 +114,12 @@ export async function auditCoverageCommand(featureName: string): Promise<void> {
   const result = await auditCoverage({ featureName });
   console.log(result.output);
   process.exit(result.exitCode);
+}
+
+export function registerAuditCoverageCommand(program: Command): void {
+  program
+    .command('audit-coverage')
+    .description('Audit coverage file to verify test and implementation files exist')
+    .argument('<feature-name>', 'Feature name (e.g., "user-login" for user-login.feature.coverage)')
+    .action(auditCoverageCommand);
 }

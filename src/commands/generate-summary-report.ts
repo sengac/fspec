@@ -1,4 +1,5 @@
 import { readFile, writeFile } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 
 interface WorkUnit {
@@ -113,4 +114,28 @@ function generateMarkdownReport(report: Omit<SummaryReport, 'outputFile'>): stri
   md += `- **Completed Story Points:** ${report.velocity.completedPoints}\n`;
 
   return md;
+}
+
+export function registerGenerateSummaryReportCommand(program: Command): void {
+  program
+    .command('generate-summary-report')
+    .description('Generate a comprehensive project summary report')
+    .option(
+      '--format <format>',
+      'Output format: markdown or json',
+      'markdown'
+    )
+    .option('--output <file>', 'Output file path')
+    .action(async (options: { format?: string; output?: string }) => {
+      try {
+        const result = await generateSummaryReport({
+          format: options.format as 'markdown' | 'json',
+          output: options.output,
+        });
+        console.log(chalk.green(`✓ Report generated: ${result.outputFile}`));
+      } catch (error: any) {
+        console.error(chalk.red('✗ Failed to generate report:'), error.message);
+        process.exit(1);
+      }
+    });
 }

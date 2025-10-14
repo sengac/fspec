@@ -1,4 +1,5 @@
 import chalk from 'chalk';
+import type { Command } from 'commander';
 import type { Tags } from '../types/tags';
 import { ensureTagsFile } from '../utils/ensure-files';
 
@@ -93,4 +94,12 @@ export async function listTagsCommand(
     console.error(chalk.red('Error:'), error.message);
     process.exit(1);
   }
+}
+
+export function registerListTagsCommand(program: Command): void {
+  program
+    .command('list-tags')
+    .description('List all registered tags from TAGS.md')
+    .option('--category <category>', 'Filter by category (e.g., "Phase Tags")')
+    .action(listTagsCommand);
 }

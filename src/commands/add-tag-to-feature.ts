@@ -1,4 +1,5 @@
 import { readFile, writeFile } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 import chalk from 'chalk';
 import * as Gherkin from '@cucumber/gherkin';
@@ -315,4 +316,22 @@ export async function addTagToFeatureCommand(
     console.error(chalk.red('Error:'), error.message);
     process.exit(1);
   }
+}
+
+export function registerAddTagToFeatureCommand(program: Command): void {
+  program
+    .command('add-tag-to-feature')
+    .description('Add one or more tags to a feature file')
+    .argument('<file>', 'Feature file path (e.g., spec/features/login.feature)')
+    .argument('<tags...>', 'Tag(s) to add (e.g., @critical @security)')
+    .option('--validate-registry', 'Validate tags against spec/tags.json')
+    .action(
+      async (
+        file: string,
+        tags: string[],
+        options: { validateRegistry?: boolean }
+      ) => {
+        await addTagToFeatureCommand(file, tags, options);
+      }
+    );
 }

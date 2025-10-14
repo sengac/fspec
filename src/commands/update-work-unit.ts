@@ -1,4 +1,5 @@
 import { writeFile } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 import type { WorkUnitsData, EpicsData } from '../types';
 import { ensureWorkUnitsFile, ensureEpicsFile } from '../utils/ensure-files';
@@ -169,4 +170,42 @@ function wouldCreateCircularReference(
   }
 
   return false;
+}
+
+export function registerUpdateWorkUnitCommand(program: Command): void {
+  program
+    .command('update-work-unit')
+    .description('Update work unit properties')
+    .argument('<workUnitId>', 'Work unit ID to update')
+    .option('-t, --title <title>', 'New title')
+    .option('-d, --description <description>', 'New description')
+    .option('-e, --epic <epic>', 'Epic ID')
+    .option('-p, --parent <parent>', 'Parent work unit ID')
+    .action(
+      async (
+        workUnitId: string,
+        options: {
+          title?: string;
+          description?: string;
+          epic?: string;
+          parent?: string;
+        }
+      ) => {
+        try {
+          await updateWorkUnit({
+            workUnitId,
+            ...options,
+          });
+          console.log(
+            chalk.green(`✓ Work unit ${workUnitId} updated successfully`)
+          );
+        } catch (error: any) {
+          console.error(
+            chalk.red('✗ Failed to update work unit:'),
+            error.message
+          );
+          process.exit(1);
+        }
+      }
+    );
 }

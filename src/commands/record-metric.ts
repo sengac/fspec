@@ -1,4 +1,5 @@
 import { readFile, writeFile } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 
 interface WorkUnit {
@@ -46,4 +47,26 @@ export async function recordMetric(options: {
     }
     throw error;
   }
+}
+
+export function registerRecordMetricCommand(program: Command): void {
+  program
+    .command('record-metric')
+    .description('Record a project metric')
+    .argument('<metric>', 'Metric name')
+    .argument('<value>', 'Metric value')
+    .option('--unit <unit>', 'Unit of measurement')
+    .action(async (metric: string, value: string, options: { unit?: string }) => {
+      try {
+        await recordMetric({
+          metric,
+          value: parseFloat(value),
+          unit: options.unit,
+        });
+        console.log(chalk.green(`✓ Metric recorded successfully`));
+      } catch (error: any) {
+        console.error(chalk.red('✗ Failed to record metric:'), error.message);
+        process.exit(1);
+      }
+    });
 }

@@ -1,4 +1,5 @@
 import { readFile } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 
 interface WorkUnit {
@@ -101,4 +102,26 @@ export async function queryEstimationGuide(options: {
     }
     throw error;
   }
+}
+
+export function registerQueryEstimationGuideCommand(program: Command): void {
+  program
+    .command('query-estimation-guide')
+    .description('Get estimation guidance based on historical data')
+    .argument('<workUnitId>', 'Work unit ID')
+    .option('--format <format>', 'Output format: text or json', 'text')
+    .action(async (workUnitId: string, options: { format?: string }) => {
+      try {
+        const result = await queryEstimationGuide({
+          workUnitId,
+          format: options.format as 'text' | 'json',
+        });
+        if (options.format === 'json') {
+          console.log(JSON.stringify(result, null, 2));
+        }
+      } catch (error: any) {
+        console.error(chalk.red('✗ Query failed:'), error.message);
+        process.exit(1);
+      }
+    });
 }

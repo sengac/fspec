@@ -1,5 +1,6 @@
 import { readFile, unlink } from 'fs/promises';
 import { join } from 'path';
+import type { Command } from 'commander';
 import chalk from 'chalk';
 import { glob } from 'tinyglobby';
 import * as Gherkin from '@cucumber/gherkin';
@@ -171,4 +172,19 @@ export async function deleteFeaturesByTagCommand(options: {
     console.error(chalk.red('Error:'), error.message);
     process.exit(1);
   }
+}
+
+export function registerDeleteFeaturesCommand(program: Command): void {
+  program
+    .command('delete-features')
+    .description('Bulk delete feature files by tag')
+    .option(
+      '--tag <tag>',
+      'Filter by tag (can specify multiple times for AND logic)',
+      (value, previous) => {
+        return previous ? [...previous, value] : [value];
+      }
+    )
+    .option('--dry-run', 'Preview deletions without making changes')
+    .action(deleteFeaturesByTagCommand);
 }

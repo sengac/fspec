@@ -1,4 +1,5 @@
 import { writeFile } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 import type { WorkUnitsData } from '../types';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
@@ -132,4 +133,45 @@ export async function deleteWorkUnit(
     success: true,
     ...(warnings.length > 0 && { warnings }),
   };
+}
+
+export function registerDeleteWorkUnitCommand(program: Command): void {
+  program
+    .command('delete-work-unit')
+    .description('Delete a work unit')
+    .argument('<workUnitId>', 'Work unit ID to delete')
+    .option('--force', 'Force deletion without checks')
+    .option('--skip-confirmation', 'Skip confirmation prompt')
+    .option('--cascade-dependencies', 'Remove all dependencies before deleting')
+    .action(
+      async (
+        workUnitId: string,
+        options: {
+          force?: boolean;
+          skipConfirmation?: boolean;
+          cascadeDependencies?: boolean;
+        }
+      ) => {
+        try {
+          const result = await deleteWorkUnit({
+            workUnitId,
+            ...options,
+          });
+          console.log(
+            chalk.green(`✓ Work unit ${workUnitId} deleted successfully`)
+          );
+          if (result.warnings && result.warnings.length > 0) {
+            result.warnings.forEach((warning: string) =>
+              console.log(chalk.yellow(`⚠ ${warning}`))
+            );
+          }
+        } catch (error: any) {
+          console.error(
+            chalk.red('✗ Failed to delete work unit:'),
+            error.message
+          );
+          process.exit(1);
+        }
+      }
+    );
 }

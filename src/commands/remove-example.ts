@@ -1,4 +1,5 @@
 import { writeFile } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 import type { WorkUnitsData } from '../types';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
@@ -64,4 +65,24 @@ export async function removeExample(
     removedExample,
     remainingCount: workUnit.examples.length,
   };
+}
+
+export function registerRemoveExampleCommand(program: Command): void {
+  program
+    .command('remove-example')
+    .description('Remove an example from a work unit by index')
+    .argument('<workUnitId>', 'Work unit ID')
+    .argument('<index>', 'Example index (0-based)')
+    .action(async (workUnitId: string, index: string) => {
+      try {
+        const result = await removeExample({
+          workUnitId,
+          index: parseInt(index, 10),
+        });
+        console.log(chalk.green(`✓ Removed example: "${result.removedExample}"`));
+      } catch (error: any) {
+        console.error(chalk.red('✗ Failed to remove example:'), error.message);
+        process.exit(1);
+      }
+    });
 }

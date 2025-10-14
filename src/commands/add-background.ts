@@ -1,4 +1,5 @@
 import { readFile, writeFile, access } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 import chalk from 'chalk';
 import { glob } from 'tinyglobby';
@@ -254,4 +255,18 @@ export async function addBackgroundCommand(
     console.error(chalk.red('Error:'), error.message);
     process.exit(1);
   }
+}
+
+export function registerAddBackgroundCommand(program: Command): void {
+  program
+    .command('add-background')
+    .description(
+      'Add or update Background (user story) section in a feature file'
+    )
+    .argument(
+      '<feature>',
+      'Feature file name or path (e.g., "login" or "spec/features/login.feature")'
+    )
+    .argument('<text>', 'User story text (As a... I want to... So that...)')
+    .action(addBackgroundCommand);
 }

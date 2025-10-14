@@ -1,4 +1,5 @@
 import { readFile } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 import type { WorkUnitsData } from '../types';
 import { ensureWorkUnitsFile, ensurePrefixesFile } from '../utils/ensure-files';
@@ -102,4 +103,16 @@ export async function listWorkUnitsCommand(options: {
     }
     process.exit(1);
   }
+}
+
+export function registerListWorkUnitsCommand(program: Command): void {
+  program
+    .command('list-work-units')
+    .description('List all work units')
+    .option('-s, --status <status>', 'Filter by status')
+    .option('-p, --prefix <prefix>', 'Filter by prefix')
+    .option('-e, --epic <epic>', 'Filter by epic')
+    .action(async (options: any) => {
+      await listWorkUnitsCommand(options);
+    });
 }

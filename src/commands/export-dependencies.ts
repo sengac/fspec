@@ -1,4 +1,5 @@
 import { writeFile, mkdir } from 'fs/promises';
+import type { Command } from 'commander';
 import { dirname } from 'path';
 import type { WorkUnitsData } from '../types';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
@@ -110,4 +111,29 @@ export async function exportDependencies(
     success: true,
     outputFile: options.output,
   };
+}
+
+export function registerExportDependenciesCommand(program: Command): void {
+  program
+    .command('export-dependencies')
+    .description('Export dependency graph visualization')
+    .argument('<format>', 'Output format: mermaid or json')
+    .argument('<output>', 'Output file path')
+    .action(async (format: string, output: string) => {
+      try {
+        const result = await exportDependencies({
+          format: format as 'mermaid' | 'json',
+          output,
+        });
+        console.log(
+          chalk.green(`✓ Dependencies exported to ${result.outputFile}`)
+        );
+      } catch (error: any) {
+        console.error(
+          chalk.red('✗ Failed to export dependencies:'),
+          error.message
+        );
+        process.exit(1);
+      }
+    });
 }

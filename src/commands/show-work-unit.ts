@@ -1,4 +1,5 @@
 import { readFile } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 import { glob } from 'tinyglobby';
 import * as Gherkin from '@cucumber/gherkin';
@@ -301,4 +302,13 @@ export async function showWorkUnitCommand(
     }
     process.exit(1);
   }
+}
+
+export function registerShowWorkUnitCommand(program: Command): void {
+  program
+    .command('show-work-unit')
+    .description('Display work unit details')
+    .argument('<workUnitId>', 'Work unit ID (e.g., AUTH-001)')
+    .option('-f, --format <format>', 'Output format: text or json', 'text')
+    .action(showWorkUnitCommand);
 }

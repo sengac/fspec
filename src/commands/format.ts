@@ -1,5 +1,6 @@
 import { access, readFile, writeFile } from 'fs/promises';
 import { join } from 'path';
+import type { Command } from 'commander';
 import chalk from 'chalk';
 import { glob } from 'tinyglobby';
 import * as Gherkin from '@cucumber/gherkin';
@@ -124,4 +125,12 @@ export async function formatCommand(file?: string): Promise<void> {
     console.error(chalk.red('Error:'), error.message);
     process.exit(1);
   }
+}
+
+export function registerFormatCommand(program: Command): void {
+  program
+    .command('format')
+    .description('Format feature files with Prettier')
+    .argument('[file]', 'Feature file to format (formats all if not specified)')
+    .action(formatCommand);
 }

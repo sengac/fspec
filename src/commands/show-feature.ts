@@ -1,4 +1,5 @@
 import { readFile, writeFile, access } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 import chalk from 'chalk';
 import { glob } from 'tinyglobby';
@@ -185,4 +186,17 @@ export async function showFeatureCommand(
     console.error(chalk.red('Error:'), error.message);
     process.exit(1);
   }
+}
+
+export function registerShowFeatureCommand(program: Command): void {
+  program
+    .command('show-feature')
+    .description('Display feature file contents')
+    .argument(
+      '<feature>',
+      'Feature file name or path (e.g., "login" or "spec/features/login.feature")'
+    )
+    .option('--format <format>', 'Output format: text or json', 'text')
+    .option('--output <file>', 'Write output to file')
+    .action(showFeatureCommand);
 }

@@ -1,4 +1,5 @@
 import { readFile, writeFile } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 import chalk from 'chalk';
 import * as Gherkin from '@cucumber/gherkin';
@@ -168,4 +169,16 @@ export async function addScenarioCommand(
     console.error(chalk.red('Error:'), error.message);
     process.exit(1);
   }
+}
+
+export function registerAddScenarioCommand(program: Command): void {
+  program
+    .command('add-scenario')
+    .description('Add a new scenario to an existing feature file')
+    .argument(
+      '<feature>',
+      'Feature file name or path (e.g., "login" or "spec/features/login.feature")'
+    )
+    .argument('<scenario>', 'Scenario name (e.g., "Successful login")')
+    .action(addScenarioCommand);
 }

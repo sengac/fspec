@@ -1,4 +1,5 @@
 import { writeFile } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 import { ensurePrefixesFile } from '../utils/ensure-files';
 
@@ -56,4 +57,24 @@ export async function createPrefix(options: {
     }
     throw error;
   }
+}
+
+export function registerCreatePrefixCommand(program: Command): void {
+  program
+    .command('create-prefix')
+    .description('Register a new work unit prefix')
+    .argument('<prefix>', 'Prefix code (2-6 uppercase letters, e.g., AUTH, DASH)')
+    .argument('<description>', 'Prefix description')
+    .action(async (prefix: string, description: string) => {
+      try {
+        await createPrefix({
+          prefix,
+          description,
+        });
+        console.log(chalk.green(`✓ Prefix ${prefix} created successfully`));
+      } catch (error: any) {
+        console.error(chalk.red('✗ Failed to create prefix:'), error.message);
+        process.exit(1);
+      }
+    });
 }

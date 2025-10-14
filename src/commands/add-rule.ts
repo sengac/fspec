@@ -1,4 +1,5 @@
 import { writeFile } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 import type { WorkUnitsData } from '../types';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
@@ -53,4 +54,21 @@ export async function addRule(options: AddRuleOptions): Promise<AddRuleResult> {
     success: true,
     ruleCount: workUnit.rules.length,
   };
+}
+
+export function registerAddRuleCommand(program: Command): void {
+  program
+    .command('add-rule')
+    .description('Add a business rule to a work unit during specification phase')
+    .argument('<workUnitId>', 'Work unit ID')
+    .argument('<rule>', 'Business rule description')
+    .action(async (workUnitId: string, rule: string) => {
+      try {
+        await addRule({ workUnitId, rule });
+        console.log(chalk.green(`✓ Rule added successfully`));
+      } catch (error: any) {
+        console.error(chalk.red('✗ Failed to add rule:'), error.message);
+        process.exit(1);
+      }
+    });
 }

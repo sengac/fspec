@@ -1,4 +1,5 @@
 import { readFile, writeFile } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 import { existsSync } from 'fs';
 import chalk from 'chalk';
@@ -188,4 +189,14 @@ export async function deleteTagCommand(
     console.error(chalk.red('Error:'), error.message);
     process.exit(1);
   }
+}
+
+export function registerDeleteTagCommand(program: Command): void {
+  program
+    .command('delete-tag')
+    .description('Delete a tag from TAGS.md registry')
+    .argument('<tag>', 'Tag name (e.g., "@deprecated")')
+    .option('--force', 'Delete tag even if used in feature files')
+    .option('--dry-run', 'Show what would be deleted without making changes')
+    .action(deleteTagCommand);
 }

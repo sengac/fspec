@@ -1,4 +1,5 @@
 import { writeFile } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 import type { WorkUnitsData } from '../types';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
@@ -90,4 +91,27 @@ export async function clearDependencies(
   return {
     success: true,
   };
+}
+
+export function registerClearDependenciesCommand(program: Command): void {
+  program
+    .command('clear-dependencies')
+    .description('Remove all dependencies from a work unit')
+    .argument('<workUnitId>', 'Work unit ID')
+    .option('--confirm', 'Confirm clearing all dependencies')
+    .action(async (workUnitId: string, options: { confirm?: boolean }) => {
+      try {
+        await clearDependencies({
+          workUnitId,
+          confirm: options.confirm,
+        });
+        console.log(chalk.green(`✓ All dependencies cleared from ${workUnitId}`));
+      } catch (error: any) {
+        console.error(
+          chalk.red('✗ Failed to clear dependencies:'),
+          error.message
+        );
+        process.exit(1);
+      }
+    });
 }

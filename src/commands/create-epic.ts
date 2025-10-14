@@ -1,4 +1,5 @@
 import { readFile, writeFile, mkdir } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 import chalk from 'chalk';
 
@@ -105,4 +106,19 @@ export async function createEpicCommand(
     }
     process.exit(1);
   }
+}
+
+export function registerCreateEpicCommand(program: Command): void {
+  program
+    .command('create-epic')
+    .description('Create a new epic')
+    .argument(
+      '<epicId>',
+      'Epic ID (lowercase-with-hyphens, e.g., user-management)'
+    )
+    .argument('<title>', 'Epic title')
+    .option('-d, --description <description>', 'Epic description')
+    .action(async (epicId: string, title: string, options?: any) => {
+      await createEpicCommand(epicId, title, options);
+    });
 }

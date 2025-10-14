@@ -1,4 +1,5 @@
 import { readFile } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 import { existsSync } from 'fs';
 import chalk from 'chalk';
@@ -262,4 +263,11 @@ async function loadTagsJson(cwd: string): Promise<Tags> {
   const tagsData: Tags = JSON.parse(content);
 
   return tagsData;
+}
+
+export function registerTagStatsCommand(program: Command): void {
+  program
+    .command('tag-stats')
+    .description('Show tag usage statistics across all feature files')
+    .action(tagStatsCommand);
 }

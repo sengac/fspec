@@ -1,4 +1,5 @@
 import { writeFile } from 'fs/promises';
+import type { Command } from 'commander';
 import { join } from 'path';
 import chalk from 'chalk';
 import type { Tags, TagCategory } from '../types/tags';
@@ -142,4 +143,14 @@ export async function registerTagCommand(
     console.error(chalk.red('Error:'), error.message);
     process.exit(1);
   }
+}
+
+export function registerRegisterTagCommand(program: Command): void {
+  program
+    .command('register-tag')
+    .description('Register a new tag in TAGS.md registry')
+    .argument('<tag>', 'Tag name (e.g., "@my-tag")')
+    .argument('<category>', 'Category name (e.g., "Technical Tags")')
+    .argument('<description>', 'Tag description')
+    .action(registerTagCommand);
 }
