@@ -1,4 +1,5 @@
 import { writeFile, mkdir } from 'fs/promises';
+import chalk from 'chalk';
 import type { Command } from 'commander';
 import { join, dirname } from 'path';
 import { existsSync } from 'fs';

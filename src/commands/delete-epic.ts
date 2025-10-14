@@ -1,4 +1,5 @@
 import { readFile, writeFile } from 'fs/promises';
+import chalk from 'chalk';
 import type { Command } from 'commander';
 import { join } from 'path';
 
