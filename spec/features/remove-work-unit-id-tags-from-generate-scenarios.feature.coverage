@@ -2,7 +2,26 @@
   "scenarios": [
     {
       "name": "Generate scenarios adds work unit ID as feature-level tag only",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/generate-scenarios-tag-placement.test.ts",
+          "lines": "58-119",
+          "implMappings": [
+            {
+              "file": "src/commands/generate-scenarios.ts",
+              "lines": [
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186
+              ]
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "Verify check.ts uses validateTags function",
@@ -19,10 +38,14 @@
   ],
   "stats": {
     "totalScenarios": 4,
-    "coveredScenarios": 0,
-    "coveragePercent": 0,
-    "testFiles": [],
-    "implFiles": [],
-    "totalLinesCovered": 0
+    "coveredScenarios": 1,
+    "coveragePercent": 25,
+    "testFiles": [
+      "src/commands/__tests__/generate-scenarios-tag-placement.test.ts"
+    ],
+    "implFiles": [
+      "src/commands/generate-scenarios.ts"
+    ],
+    "totalLinesCovered": 69
   }
 }

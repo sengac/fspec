@@ -2,35 +2,507 @@
   "scenarios": [
     {
       "name": "Generate TAGS.md from valid tags.json",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/generate-tags-md.test.ts",
+          "lines": "20-98",
+          "implMappings": [
+            {
+              "file": "src/commands/generate-tags-md.ts",
+              "lines": [
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66
+              ]
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "Auto-generation warning header is included",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/generate-tags-md.test.ts",
+          "lines": "113-179",
+          "implMappings": [
+            {
+              "file": "src/commands/generate-tags-md.ts",
+              "lines": [
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66
+              ]
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "Tag category with table is generated correctly",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/generate-tags-md.test.ts",
+          "lines": "180-263",
+          "implMappings": [
+            {
+              "file": "src/commands/generate-tags-md.ts",
+              "lines": [
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66
+              ]
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "Tag combination examples are formatted correctly",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/generate-tags-md.test.ts",
+          "lines": "264-340",
+          "implMappings": [
+            {
+              "file": "src/commands/generate-tags-md.ts",
+              "lines": [
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66
+              ]
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "Tag statistics tables are generated",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/generate-tags-md.test.ts",
+          "lines": "341-420",
+          "implMappings": [
+            {
+              "file": "src/commands/generate-tags-md.ts",
+              "lines": [
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66
+              ]
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "Anti-patterns section with examples",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/generate-tags-md.test.ts",
+          "lines": "421-497",
+          "implMappings": [
+            {
+              "file": "src/commands/generate-tags-md.ts",
+              "lines": [
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66
+              ]
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "Fail if tags.json is invalid",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/generate-tags-md.test.ts",
+          "lines": "498-526",
+          "implMappings": [
+            {
+              "file": "src/commands/generate-tags-md.ts",
+              "lines": [
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66
+              ]
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "Regeneration is idempotent",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/generate-tags-md.test.ts",
+          "lines": "527-605",
+          "implMappings": [
+            {
+              "file": "src/commands/generate-tags-md.ts",
+              "lines": [
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66
+              ]
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "Support custom output path",
@@ -39,10 +511,14 @@
   ],
   "stats": {
     "totalScenarios": 9,
-    "coveredScenarios": 0,
-    "coveragePercent": 0,
-    "testFiles": [],
-    "implFiles": [],
-    "totalLinesCovered": 0
+    "coveredScenarios": 8,
+    "coveragePercent": 89,
+    "testFiles": [
+      "src/commands/__tests__/generate-tags-md.test.ts"
+    ],
+    "implFiles": [
+      "src/commands/generate-tags-md.ts"
+    ],
+    "totalLinesCovered": 948
   }
 }
