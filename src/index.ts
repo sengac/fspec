@@ -61,6 +61,7 @@ import { registerPrioritizeWorkUnitCommand } from './commands/prioritize-work-un
 import { registerQueryBottlenecksCommand } from './commands/query-bottlenecks';
 import { registerQueryDependencyStatsCommand } from './commands/query-dependency-stats';
 import { registerQueryEstimateAccuracyCommand } from './commands/query-estimate-accuracy';
+import { registerQueryOrphansCommand } from './commands/query-orphans';
 import { registerQueryEstimationGuideCommand } from './commands/query-estimation-guide';
 import { registerQueryExampleMappingStatsCommand } from './commands/query-example-mapping-stats';
 import { registerQueryMetricsCommand } from './commands/query-metrics';
@@ -183,6 +184,7 @@ registerQueryBottlenecksCommand(program);
 registerQueryDependencyStatsCommand(program);
 registerQueryEstimateAccuracyCommand(program);
 registerQueryEstimationGuideCommand(program);
+registerQueryOrphansCommand(program);
 registerQueryExampleMappingStatsCommand(program);
 registerQueryMetricsCommand(program);
 registerQueryWorkUnitsCommand(program);

@@ -4264,9 +4264,9 @@
     "COV-048": {
       "id": "COV-048",
       "title": "Test: Detect orphaned work units",
-      "status": "testing",
+      "status": "done",
       "createdAt": "2025-10-15T00:11:58.176Z",
-      "updatedAt": "2025-10-15T04:04:05.719Z",
+      "updatedAt": "2025-10-15T05:15:43.344Z",
       "description": "Feature: work-unit-dependency-management. Status: CREATE_BOTH. No tests or implementation found for orphan detection.",
       "epic": "test-coverage",
       "estimate": 5,
@@ -4278,6 +4278,18 @@
         {
           "state": "testing",
           "timestamp": "2025-10-15T04:04:05.720Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-15T05:15:23.827Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-15T05:15:41.265Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-15T05:15:43.345Z"
         }
       ],
       "rules": [
@@ -4543,9 +4555,7 @@
       "COV-033",
       "COV-038"
     ],
-    "testing": [
-      "COV-048"
-    ],
+    "testing": [],
     "implementing": [],
     "validating": [],
     "done": [
@@ -4639,7 +4649,8 @@
       "COV-050",
       "COV-051",
       "COV-046",
-      "COV-047"
+      "COV-047",
+      "COV-048"
     ],
     "blocked": []
   }

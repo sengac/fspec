@@ -30,49 +30,55 @@ describe('Feature: Work Unit Dependency Management', () => {
   describe('Scenario: Detect orphaned work units with no epic or dependencies', () => {
     it('should list orphaned work units with no epic and no relationships', async () => {
       // And work units exist:
-      const workUnits: WorkUnit[] = [
-        {
-          id: 'AUTH-001',
-          title: 'Test: Auth work',
-          status: 'implementing',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          epic: 'user-management',
-          blocks: ['API-001'],
+      const workUnitsData = {
+        workUnits: {
+          'AUTH-001': {
+            id: 'AUTH-001',
+            title: 'Test: Auth work',
+            status: 'implementing',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            epic: 'user-management',
+            blocks: ['API-001'],
+          },
+          'API-001': {
+            id: 'API-001',
+            title: 'Test: API work',
+            status: 'implementing',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            blockedBy: ['AUTH-001'],
+          },
+          'ORPHAN-1': {
+            id: 'ORPHAN-1',
+            title: 'Test: Orphaned work 1',
+            status: 'backlog',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+          'ORPHAN-2': {
+            id: 'ORPHAN-2',
+            title: 'Test: Orphaned work 2',
+            status: 'implementing',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+          'UI-001': {
+            id: 'UI-001',
+            title: 'Test: UI work',
+            status: 'backlog',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            epic: 'user-interface',
+          },
         },
-        {
-          id: 'API-001',
-          title: 'Test: API work',
-          status: 'implementing',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          blockedBy: ['AUTH-001'],
+        states: {
+          backlog: ['ORPHAN-1', 'UI-001'],
+          implementing: ['AUTH-001', 'API-001', 'ORPHAN-2'],
         },
-        {
-          id: 'ORPHAN-1',
-          title: 'Test: Orphaned work 1',
-          status: 'backlog',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-        {
-          id: 'ORPHAN-2',
-          title: 'Test: Orphaned work 2',
-          status: 'implementing',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-        {
-          id: 'UI-001',
-          title: 'Test: UI work',
-          status: 'backlog',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          epic: 'user-interface',
-        },
-      ];
+      };
 
-      await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+      await writeFile(workUnitsFile, JSON.stringify(workUnitsData, null, 2));
 
       // When I run "fspec query orphans --output=json"
       const { queryOrphans } = await import('../query-orphans.js');
