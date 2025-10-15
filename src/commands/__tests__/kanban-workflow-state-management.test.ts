@@ -135,19 +135,24 @@ Scenario: Login
       );
 
       // When I run the full workflow
+      // Note: skipTemporalValidation is used here because the feature file
+      // was created before entering specifying state (test setup constraint)
       await updateWorkUnitStatus({
         workUnitId: 'AUTH-001',
         status: 'specifying',
+        skipTemporalValidation: true,
         cwd: testDir,
       });
       await updateWorkUnitStatus({
         workUnitId: 'AUTH-001',
         status: 'testing',
+        skipTemporalValidation: true,
         cwd: testDir,
       });
       await updateWorkUnitStatus({
         workUnitId: 'AUTH-001',
         status: 'implementing',
+        skipTemporalValidation: true,
         cwd: testDir,
       });
       await updateWorkUnitStatus({

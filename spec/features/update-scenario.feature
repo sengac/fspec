@@ -104,4 +104,3 @@ Feature: Update Scenario Name
     Then the command should exit with code 0
     And the scenario should be renamed
     And the file should remain valid
-

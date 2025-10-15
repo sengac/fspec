@@ -65,6 +65,7 @@ Tags that categorize features by functional area.
 | `@comparison` | Comparison operations |  |
 | `@completion` | Completion operations |  |
 | `@compound` | Compound query operations |  |
+| `@coverage` | Coverage tracking and traceability features |  |
 | `@coverage-tracking` | Coverage tracking and traceability from scenarios to tests to implementation code |  |
 | `@critical-path` | Critical path analysis |  |
 | `@crud` | Create, Read, Update, Delete operations |  |
@@ -174,6 +175,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@sms` | SMS-related functionality |  |
 | `@system-reminder` | Anti-drift pattern for AI agents using contextual reminders |  |
 | `@template` | Template System |  |
+| `@type-system` | Work item type system features for categorizing work (story, task, bug) |  |
 
 **Rule**: Use technical tags to highlight specific architectural concerns.
 
@@ -497,7 +499,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-10-09T00:00:00Z_
+_Last updated: 2025-10-15T07:10:35.734Z_
 
 **Update Command**: `fspec tag-stats`
 

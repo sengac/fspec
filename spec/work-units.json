@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-15T04:16:23.759Z"
+    "lastUpdated": "2025-10-15T07:14:04.905Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -4594,11 +4594,259 @@
         }
       ],
       "estimate": 2
+    },
+    "FEAT-006": {
+      "id": "FEAT-006",
+      "title": "Work item type system - Core foundation",
+      "status": "done",
+      "createdAt": "2025-10-15T05:44:47.532Z",
+      "updatedAt": "2025-10-15T06:39:15.374Z",
+      "description": "Add support for different work item types (story, task, bug) similar to JIRA, allowing better categorization of work units based on their nature (user-facing features vs operational work vs defects)",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-15T05:54:25.542Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-15T06:06:59.919Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-15T06:09:03.428Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-15T06:15:05.862Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-15T06:25:53.799Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-15T06:26:03.435Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-15T06:26:09.298Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-15T06:39:12.885Z",
+          "reason": "All child work units complete (FEAT-007, 008, 009, 010 all done)"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-15T06:39:15.377Z",
+          "reason": "All child work units done, full test suite passes (1002/1002), build succeeds"
+        }
+      ],
+      "userStory": {
+        "role": "AI agent managing project work with fspec",
+        "action": "categorize work units by type (story, task, bug)",
+        "benefit": "I can track meta-work and housekeeping through Kanban without violating ACDD discipline for user-facing features"
+      },
+      "rules": [
+        "Work units must have a type field: 'story', 'task', or 'bug'",
+        "Default type is 'story' for backward compatibility with existing work units",
+        "Stories require full ACDD workflow: backlog → specifying → testing → implementing → validating → done",
+        "Tasks use simplified workflow: backlog → in-progress → done (+ blocked)",
+        "Bugs use same ACDD workflow as stories but may skip Example Mapping in favor of reproduction scenarios",
+        "Stories must have linked feature file before moving to testing state",
+        "Tasks do not require feature files or tests",
+        "Bugs must have reproduction scenario in feature file before moving to testing state",
+        "Yes, existing work units without type field automatically get type='story' (backward compatible). New work units default to 'story' unless --type specified.",
+        "Tasks CANNOT have feature files. Feature files represent user stories with acceptance criteria, which makes them stories by definition. Tasks are for operational work without user-facing behavior.",
+        "Bugs MUST link to an existing feature file. If no feature file exists for the buggy behavior, it's a story, not a bug. Bugs fix/update existing documented features. Validation error should explain: 'Bugs must link to existing feature file. If feature has no spec, create a story instead.'",
+        "Tasks support Example Mapping fields (rules, examples, questions) but they are OPTIONAL and only for clarity about what needs to be done. Unlike stories, tasks don't require these fields to be filled before progressing.",
+        "Treat all estimates the same way (combined velocity), but reporting commands should have ability to break down metrics by type (--type=story, --type=task, --type=bug) or show combined.",
+        "Type is immutable once set. If wrong, work unit must be deleted and recreated with correct type. This prevents confusion about workflow rules changing mid-flight.",
+        "All work unit types can use 'in-progress' state. Stories map: specifying/testing/implementing/validating → all represent 'in-progress'. Tasks use 'in-progress' explicitly. Bugs follow story states. This provides consistency across types.",
+        "Tasks use workflow: backlog → specifying → implementing → validating → done (+ blocked). They skip 'testing' state since no tests are required.",
+        "Tasks in specifying state do NOT require feature files (unlike stories). Specifying is for internal clarity only - can use description, rules, examples fields.",
+        "Yes, remove old rule #4. The corrected workflow is: backlog → specifying → implementing → validating → done. Tasks need 'specifying' for clarity but skip 'testing' since no tests required."
+      ],
+      "examples": [
+        "Create story work unit: 'fspec create-work-unit AUTH \"User Login\" --type=story' creates AUTH-XXX with type='story'",
+        "Create task work unit: 'fspec create-work-unit CLEAN \"Audit coverage files\" --type=task' creates CLEAN-XXX with type='task'",
+        "Create bug work unit: 'fspec create-work-unit BUG \"Login fails with @ symbol\" --type=bug' creates BUG-XXX with type='bug'",
+        "Default type: 'fspec create-work-unit AUTH \"Feature\"' creates work unit with type='story' (backward compatible)",
+        "Filter by type: 'fspec list-work-units --type=task' shows only task work units",
+        "Task workflow: CLEAN-001 moves backlog → in-progress → done (skipping specifying/testing/implementing/validating)",
+        "Story validation: Moving AUTH-001 (type=story) to testing without feature file shows error 'Cannot move to testing: no feature file linked'",
+        "Task flexibility: CLEAN-001 (type=task) can move from backlog directly to done without any validation errors",
+        "Board visualization: 'fspec board' shows three sections: STORIES (full workflow), TASKS (simplified), BUGS (full workflow)",
+        "Task workflow detail: CLEAN-001 (type=task) moves backlog → specifying (clarify what to do) → implementing (do the work) → validating (verify done) → done",
+        "Task specifying phase: CLEAN-001 in specifying state can use optional Example Mapping (rules, examples) to clarify work scope before implementing"
+      ],
+      "questions": [
+        {
+          "text": "@human: Should existing work units without a type field automatically get type='story', or should we require manual migration?",
+          "selected": true,
+          "answer": "Yes, existing work units without type field automatically get type='story' (backward compatible). New work units default to 'story' unless --type specified."
+        },
+        {
+          "text": "@human: Can a task optionally have a feature file linked for documentation purposes, or should tasks be completely prohibited from having feature files?",
+          "selected": true,
+          "answer": "Tasks CANNOT have feature files. Feature files represent user stories with acceptance criteria, which makes them stories by definition. Tasks are for operational work without user-facing behavior."
+        },
+        {
+          "text": "@human: Should the board command show all three types together, or should it have separate views/sections for each type?",
+          "selected": true,
+          "answer": "No changes to board visualization. All types shown in same board view with their respective workflow states."
+        },
+        {
+          "text": "@human: For bugs, should we enforce that they must link to an existing feature file (the one with the bug), or should they create a separate bug-fix feature file?",
+          "selected": true,
+          "answer": "Bugs MUST link to an existing feature file. If no feature file exists for the buggy behavior, it's a story, not a bug. Bugs fix/update existing documented features. Validation error should explain: 'Bugs must link to existing feature file. If feature has no spec, create a story instead.'"
+        },
+        {
+          "text": "@human: Should tasks support Example Mapping fields (rules, examples, questions), or should those be story/bug-only features?",
+          "selected": true,
+          "answer": "Tasks support Example Mapping fields (rules, examples, questions) but they are OPTIONAL and only for clarity about what needs to be done. Unlike stories, tasks don't require these fields to be filled before progressing."
+        },
+        {
+          "text": "@human: Should we track different velocity metrics for stories vs tasks vs bugs, or treat all estimates the same way?",
+          "selected": true,
+          "answer": "Treat all estimates the same way (combined velocity), but reporting commands should have ability to break down metrics by type (--type=story, --type=task, --type=bug) or show combined."
+        },
+        {
+          "text": "@human: Can a work unit's type be changed after creation, or is it immutable once set?",
+          "selected": true,
+          "answer": "Type is immutable once set. If wrong, work unit must be deleted and recreated with correct type. This prevents confusion about workflow rules changing mid-flight."
+        },
+        {
+          "text": "@human: Should 'in-progress' state be available for ALL work unit types, or should it remain task-only?",
+          "selected": true,
+          "answer": "All work unit types can use 'in-progress' state. Stories map: specifying/testing/implementing/validating → all represent 'in-progress'. Tasks use 'in-progress' explicitly. Bugs follow story states. This provides consistency across types."
+        },
+        {
+          "text": "@human: Should I remove the old rule #4 that says 'Tasks use simplified workflow: backlog → in-progress → done' since it's been superseded by the corrected workflow?",
+          "selected": true,
+          "answer": "Yes, remove old rule #4. The corrected workflow is: backlog → specifying → implementing → validating → done. Tasks need 'specifying' for clarity but skip 'testing' since no tests required."
+        }
+      ],
+      "assumptions": [
+        "No changes to board visualization. All types shown in same board view with their respective workflow states."
+      ],
+      "estimate": 5,
+      "epic": "work-item-types"
+    },
+    "FEAT-011": {
+      "id": "FEAT-011",
+      "title": "Prevent retroactive state walking - enforce temporal ordering",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-15T06:49:06.299Z",
+      "updatedAt": "2025-10-15T07:07:46.452Z",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-15T06:49:30.983Z",
+          "reason": "Need to add Example Mapping rules"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-15T07:06:20.805Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-15T07:06:36.424Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-15T07:06:42.872Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-15T07:07:46.453Z"
+        }
+      ],
+      "rules": [
+        "System must prevent AI agents from doing all work first, then retroactively walking through states as theater",
+        "When moving to testing state: system must verify tests were created AFTER entering testing state, not before",
+        "When moving to implementing state: system must verify tests currently FAIL (red phase). Tests failing proves they actually test something.",
+        "When moving to validating state: system must verify tests now PASS (green phase) and implementation was modified AFTER entering implementing",
+        "If work unit has artifacts (specs/tests/code) all timestamped BEFORE entering testing state, then: either delete the work unit if it has no unique value OR move it back to backlog and require proper ACDD workflow"
+      ],
+      "examples": [
+        "FEAT-007, FEAT-008, FEAT-009, FEAT-010: All work (specs, tests, code) completed in previous session. Current session: AI moved each through specifying→testing→implementing→validating→done in 5 seconds each. System allowed it because @WORK-UNIT-ID tags existed in feature file and tests passed. Result: ACDD completely bypassed.",
+        "work-item-types-for-stories-tasks-and-bugs.feature: Created before any child work units. Tests written before testing state. Implementation completed before implementing state. Feature file tagged with @FEAT-007 @FEAT-008 @FEAT-009 @FEAT-010 retroactively. checkScenariosExist() found tags and allowed testing state entry.",
+        "System checks: (1) Does @WORK-UNIT-ID exist? YES. (2) Is state transition valid? YES. (3) Are children done? YES. Missing checks: (1) When was feature file created? (2) When were tests written? (3) Did tests fail first? (4) Was implementation written after tests?",
+        "AI behavior enabled by current system: (1) Write all code in one session. (2) Tag feature file with work unit IDs. (3) Run tests to ensure they pass. (4) Walk through states as formality. (5) System approves everything. This is the opposite of ACDD.",
+        "Correct ACDD sequence: (1) Enter specifying: write feature file. (2) Enter testing: write FAILING tests. (3) Run tests: verify they fail. (4) Enter implementing: write minimal code. (5) Run tests: verify they pass. (6) Enter validating: run full suite. System must enforce this temporal ordering."
+      ],
+      "userStory": {
+        "role": "AI agent using fspec for ACDD workflow",
+        "action": "ensure work is done in the correct temporal order",
+        "benefit": "ACDD methodology is actually enforced, not just theatrical state walking"
+      }
+    },
+    "BUG-009": {
+      "id": "BUG-009",
+      "title": "remove-tag-from-scenario command doesn't properly remove tags",
+      "type": "story",
+      "status": "specifying",
+      "createdAt": "2025-10-15T07:11:37.663Z",
+      "updatedAt": "2025-10-15T07:15:13.379Z",
+      "description": "The remove-tag-from-scenario command is not working correctly - it claims to remove tags but they remain at scenario level in the feature files. This breaks tag validation because work unit ID tags (@COV-XXX) must be at feature level only.",
+      "children": [],
+      "userStory": {
+        "role": "developer or AI agent using fspec",
+        "action": "reliably remove tags from scenarios using the remove-tag-from-scenario command",
+        "benefit": "tag validation issues can be fixed programmatically without manual file editing"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-15T07:14:19.063Z"
+        }
+      ],
+      "rules": [
+        "Command must actually remove tags from scenario lines in the feature file, not just claim success",
+        "Command output should show success message when tags are removed",
+        "If tag doesn't exist on scenario, command should still succeed (idempotent)",
+        "Command must preserve file formatting and not corrupt Gherkin syntax",
+        "Must handle scenario names with special characters or partial matches"
+      ],
+      "examples": [
+        "Run 'fspec remove-tag-from-scenario spec/features/test.feature \"Login scenario\" @COV-010' and tag is actually removed from file",
+        "Tag appears on scenario line with 2-space indentation: '  @COV-010', command removes entire line",
+        "Multiple tags on scenario, remove one specific tag, other tags remain intact",
+        "Remove tag from scenario using wildcard scenario name '*', removes from all matching scenarios",
+        "Tag validation shows '@COV-010 must be at feature level', run remove command, validation passes after removal"
+      ],
+      "questions": [
+        {
+          "text": "@human: Should the command use Edit tool or direct file manipulation (sed/grep/perl)?",
+          "selected": false
+        },
+        {
+          "text": "@human: Should command fail if scenario name not found, or succeed silently?",
+          "selected": false
+        },
+        {
+          "text": "@human: What should happen if tag appears multiple times on same scenario line?",
+          "selected": false
+        }
+      ],
+      "assumptions": [
+        "Issue only affects scenario-level tags, not feature-level tags",
+        "Bug was discovered during tag validation fix for FEAT-011 temporal ordering",
+        "Workaround exists using grep/sed/perl for manual removal",
+        "Bug affects all fspec versions with remove-tag-from-scenario command"
+      ],
+      "estimate": 3
     }
   },
   "states": {
     "backlog": [],
-    "specifying": [],
+    "specifying": [
+      "BUG-009"
+    ],
     "testing": [],
     "implementing": [],
     "validating": [],
@@ -4697,7 +4945,9 @@
       "COV-048",
       "COV-031",
       "COV-033",
-      "COV-038"
+      "COV-038",
+      "FEAT-006",
+      "FEAT-011"
     ],
     "blocked": []
   }

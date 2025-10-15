@@ -177,6 +177,10 @@
           "description": "Compound query operations"
         },
         {
+          "name": "@coverage",
+          "description": "Coverage tracking and traceability features"
+        },
+        {
           "name": "@coverage-tracking",
           "description": "Coverage tracking and traceability from scenarios to tests to implementation code"
         },
@@ -605,6 +609,10 @@
           "name": "@template",
           "description": "Template System",
           "useCases": "Template generation, variable substitution, scaffolding"
+        },
+        {
+          "name": "@type-system",
+          "description": "Work item type system features for categorizing work (story, task, bug)"
         }
       ],
       "rule": "Use technical tags to highlight specific architectural concerns."
@@ -1051,7 +1059,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-10-09T00:00:00Z",
+    "lastUpdated": "2025-10-15T07:10:35.734Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

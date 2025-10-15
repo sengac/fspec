@@ -3,13 +3,17 @@ import chalk from 'chalk';
 import type { Command } from 'commander';
 import { join } from 'path';
 import { glob } from 'tinyglobby';
-import type { WorkUnitsData, QuestionItem } from '../types';
+import type { WorkUnitsData, QuestionItem, WorkItemType } from '../types';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
 import {
   getStatusChangeReminder,
   type WorkflowState,
 } from '../utils/system-reminder';
 import { checkWorkUnitFeatureForPrefill } from '../utils/prefill-detection';
+import {
+  findStateHistoryEntry,
+  checkFileCreatedAfter,
+} from '../utils/temporal-validation';
 
 type WorkUnitStatus =
   | 'backlog'
@@ -45,6 +49,7 @@ interface UpdateWorkUnitStatusOptions {
   status: WorkUnitStatus;
   blockedReason?: string;
   reason?: string;
+  skipTemporalValidation?: boolean;
   cwd?: string;
 }
 
@@ -73,11 +78,21 @@ export async function updateWorkUnitStatus(
   const workUnit = workUnitsData.workUnits[options.workUnitId];
   const currentStatus = workUnit.status;
   const newStatus = options.status;
+  const workItemType: WorkItemType = workUnit.type || 'story'; // Default to 'story' for backward compatibility
 
   // Validate state is allowed
   if (!ALLOWED_STATES.includes(newStatus)) {
     throw new Error(
       `Invalid status value: ${newStatus}. Allowed values: ${ALLOWED_STATES.join(', ')}`
+    );
+  }
+
+  // Validate type-specific workflow constraints
+  if (workItemType === 'task' && newStatus === 'testing') {
+    throw new Error(
+      `Tasks do not have a testing phase. task workflow: backlog → specifying → implementing → validating → done.\n` +
+        `Tasks are for operational work without testable acceptance criteria.\n` +
+        `Use stories for user-facing features that require tests.`
     );
   }
 
@@ -95,26 +110,38 @@ export async function updateWorkUnitStatus(
     );
   }
 
-  // Validate state transitions (ACDD enforcement)
-  if (
-    currentStatus !== newStatus &&
-    !isValidTransition(currentStatus, newStatus)
-  ) {
-    const errorMessages = [];
-    errorMessages.push(
-      `Invalid state transition from '${currentStatus}' to '${newStatus}'.`
-    );
+  // Validate state transitions (ACDD enforcement with type-specific rules)
+  if (currentStatus !== newStatus) {
+    // Special case for tasks: allow specifying → implementing (skip testing)
+    const isTaskSkippingTest =
+      workItemType === 'task' &&
+      currentStatus === 'specifying' &&
+      newStatus === 'implementing';
 
-    // Specific ACDD violation messages
-    if (currentStatus === 'backlog' && newStatus === 'testing') {
-      errorMessages.push(`Must move to 'specifying' state first.`);
-      errorMessages.push(`ACDD requires specification before testing.`);
-    } else if (currentStatus === 'specifying' && newStatus === 'implementing') {
-      errorMessages.push(`Must move to 'testing' state first.`);
-      errorMessages.push(`ACDD requires tests before implementation.`);
+    if (!isTaskSkippingTest && !isValidTransition(currentStatus, newStatus)) {
+      const errorMessages = [];
+      errorMessages.push(
+        `Invalid state transition from '${currentStatus}' to '${newStatus}'.`
+      );
+
+      // Specific ACDD violation messages
+      if (currentStatus === 'backlog' && newStatus === 'testing') {
+        errorMessages.push(`Must move to 'specifying' state first.`);
+        errorMessages.push(`ACDD requires specification before testing.`);
+      } else if (
+        currentStatus === 'specifying' &&
+        newStatus === 'implementing' &&
+        workItemType !== 'task'
+      ) {
+        errorMessages.push(`Must move to 'testing' state first.`);
+        errorMessages.push(`ACDD requires tests before implementation.`);
+        errorMessages.push(
+          `Note: Only tasks can skip testing. Use --type=task for operational work.`
+        );
+      }
+
+      throw new Error(errorMessages.join(' '));
     }
-
-    throw new Error(errorMessages.join(' '));
   }
 
   // Prevent starting work that is blocked by incomplete dependencies
@@ -172,6 +199,28 @@ export async function updateWorkUnitStatus(
 
   // Validate prerequisites for testing state
   if (newStatus === 'testing' && currentStatus === 'specifying') {
+    // Type-specific validation for bugs: must link to existing feature file
+    // Bugs can use either linkedFeatures array or @WORK-UNIT-ID tags in scenarios
+    if (workItemType === 'bug') {
+      const linkedFeatures = workUnit.linkedFeatures || [];
+      const hasLinkedFeatures = linkedFeatures.length > 0;
+
+      // Check for scenarios if no linkedFeatures
+      let hasScenarios = false;
+      if (!hasLinkedFeatures) {
+        hasScenarios = await checkScenariosExist(options.workUnitId, cwd);
+      }
+
+      if (!hasLinkedFeatures && !hasScenarios) {
+        throw new Error(
+          `Bugs must link to existing feature file before moving to testing.\n\n` +
+            `Use: fspec link-feature ${options.workUnitId} <feature-name>\n` +
+            `Or tag scenarios in feature files with @${options.workUnitId}\n\n` +
+            `If the feature has no spec, create a story instead of a bug.`
+        );
+      }
+    }
+
     // Check for unanswered questions (Example Mapping integration)
     if (workUnit.questions && workUnit.questions.length > 0) {
       // Filter for unselected questions
@@ -218,6 +267,19 @@ export async function updateWorkUnitStatus(
       }
     }
 
+    // FEAT-011: Temporal validation - ensure feature file was created AFTER entering specifying
+    if (!options.skipTemporalValidation) {
+      const specifyingEntry = findStateHistoryEntry(workUnit, 'specifying');
+      if (specifyingEntry) {
+        await checkFileCreatedAfter(
+          options.workUnitId,
+          specifyingEntry.timestamp,
+          'feature',
+          cwd
+        );
+      }
+    }
+
     // Warn if no estimate
     if (!workUnit.estimate) {
       warnings.push(
@@ -243,6 +305,25 @@ export async function updateWorkUnitStatus(
           `Work unit has soft dependencies that are not complete: ${depDetails}. Consider completing dependencies first for better workflow.`
         );
       }
+    }
+  }
+
+  // FEAT-011: Temporal validation for implementing state
+  // Ensure tests were created AFTER entering testing state
+  if (
+    newStatus === 'implementing' &&
+    currentStatus === 'testing' &&
+    !options.skipTemporalValidation &&
+    workItemType !== 'task' // Tasks don't have tests
+  ) {
+    const testingEntry = findStateHistoryEntry(workUnit, 'testing');
+    if (testingEntry) {
+      await checkFileCreatedAfter(
+        options.workUnitId,
+        testingEntry.timestamp,
+        'test',
+        cwd
+      );
     }
   }
 
@@ -473,11 +554,19 @@ export function registerUpdateWorkUnitStatusCommand(program: Command): void {
       'Reason for blocked status (required if status is blocked)'
     )
     .option('--reason <reason>', 'Reason for status change')
+    .option(
+      '--skip-temporal-validation',
+      'Skip temporal ordering validation (for reverse ACDD or importing existing work)'
+    )
     .action(
       async (
         workUnitId: string,
         status: string,
-        options: { blockedReason?: string; reason?: string }
+        options: {
+          blockedReason?: string;
+          reason?: string;
+          skipTemporalValidation?: boolean;
+        }
       ) => {
         try {
           const result = await updateWorkUnitStatus({
@@ -492,6 +581,7 @@ export function registerUpdateWorkUnitStatusCommand(program: Command): void {
               | 'blocked',
             blockedReason: options.blockedReason,
             reason: options.reason,
+            skipTemporalValidation: options.skipTemporalValidation,
           });
           console.log(
             chalk.green(`✓ Work unit ${workUnitId} status updated to ${status}`)

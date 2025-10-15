@@ -1,3 +1,4 @@
+@COV-033
 @phase4
 @phase8
 @cli
@@ -320,11 +321,9 @@ Feature: Get Scenarios by Tag
     And the scenario matches both work unit tag and test type tag
 
   @work-unit-linking
-  @COV-033
   Scenario: List all scenarios for multiple work units
     Given I have feature files with work unit tags "@auth-001" and "@auth-002"
     When I run `fspec get-scenarios --tag=@auth-001`
     Then the output should show only scenarios tagged with @auth-001
     When I run `fspec get-scenarios --tag=@auth-002`
     Then the output should show only scenarios tagged with @auth-002
-

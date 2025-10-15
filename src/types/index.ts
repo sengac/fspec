@@ -12,10 +12,14 @@ export interface UserStory {
   benefit: string;
 }
 
+// Work Item Type
+export type WorkItemType = 'story' | 'task' | 'bug';
+
 // Work Units Types
 export interface WorkUnit {
   id: string;
   title: string;
+  type?: WorkItemType; // Optional for backward compatibility, defaults to 'story'
   status:
     | 'backlog'
     | 'specifying'
