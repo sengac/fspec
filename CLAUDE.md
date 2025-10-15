@@ -375,6 +375,97 @@ fspec show-coverage  # Project-wide
 fspec audit-coverage feature-name
 ```
 
+## Lifecycle Hooks System
+
+fspec supports lifecycle hooks that execute custom scripts at command events. Hooks enable quality gates, automated testing, notifications, and custom workflow automation.
+
+### Hook Architecture
+
+**Key Components:**
+- **Hook Configuration**: `spec/fspec-hooks.json` - JSON configuration file
+- **Hook Engine**: `src/hooks/engine.ts` - Executes hooks with timeout/blocking support
+- **Hook Discovery**: `src/hooks/discovery.ts` - Discovers and filters hooks for events
+- **Hook Condition Evaluation**: `src/hooks/conditions.ts` - Evaluates tag/prefix/epic/estimate filters
+- **Command Integration**: All commands use `runCommandWithHooks()` wrapper
+
+**Event Naming:**
+- `pre-<command-name>` - Before command logic
+- `post-<command-name>` - After command logic
+- Example: `pre-update-work-unit-status`, `post-implementing`
+
+**Hook Properties:**
+- `name`: Unique identifier
+- `command`: Script path (relative to project root)
+- `blocking`: If true, failure prevents execution (pre) or sets exit code 1 (post)
+- `timeout`: Timeout in seconds (default: 60)
+- `condition`: Optional filters (tags, prefix, epic, estimateMin/Max)
+
+**System-Reminder Integration:**
+Blocking hook failures emit `<system-reminder>` tags wrapping stderr output, making failures highly visible to AI agents in Claude Code.
+
+### Implementing Hook Support for New Commands
+
+When adding new commands, integrate hooks using the wrapper:
+
+```typescript
+import { runCommandWithHooks } from '../hooks/integration';
+
+export async function myCommand(options: MyCommandOptions): Promise<void> {
+  await runCommandWithHooks(
+    'my-command',
+    options,
+    async (opts) => {
+      // Your command logic here
+      // This runs between pre- and post- hooks
+    }
+  );
+}
+```
+
+The wrapper automatically:
+1. Discovers pre-hooks for the command
+2. Executes pre-hooks (blocking failures prevent command)
+3. Runs your command logic
+4. Executes post-hooks (blocking failures set exit code to 1)
+5. Wraps blocking hook stderr in `<system-reminder>` tags
+
+### Hook Development Guidelines
+
+**DO:**
+- ✅ Use TypeScript for hook logic (src/hooks/)
+- ✅ Validate hook configurations with JSON schema
+- ✅ Test hook execution with timeout scenarios
+- ✅ Test blocking vs non-blocking behavior
+- ✅ Test condition evaluation (tags, prefix, epic, estimate)
+- ✅ Write comprehensive help files for hook commands
+
+**DON'T:**
+- ❌ Skip timeout validation (hooks must timeout properly)
+- ❌ Forget to test system-reminder formatting for blocking hooks
+- ❌ Hard-code event names (derive from command names)
+- ❌ Skip error handling for missing/invalid hook scripts
+
+### Hook Command Reference
+
+```bash
+# List all configured hooks
+fspec list-hooks
+
+# Validate hook configuration and script paths
+fspec validate-hooks
+
+# Add hook via CLI
+fspec add-hook <event> <name> --command <path> [--blocking] [--timeout <seconds>]
+
+# Remove hook
+fspec remove-hook <event> <name>
+```
+
+**See Also:**
+- `docs/hooks/configuration.md` - Complete hook configuration reference
+- `docs/hooks/troubleshooting.md` - Common errors and solutions
+- `examples/hooks/` - Example hook scripts
+
 ## Common Commands
 
 ```bash
@@ -397,6 +488,12 @@ npm run format
 ./dist/index.js validate
 ./dist/index.js format
 ./dist/index.js list-features
+
+# Hook management (development)
+./dist/index.js list-hooks
+./dist/index.js validate-hooks
+./dist/index.js add-hook pre-implementing lint --command spec/hooks/lint.sh --blocking
+./dist/index.js remove-hook pre-implementing lint
 ```
 
 ## Important Reminders

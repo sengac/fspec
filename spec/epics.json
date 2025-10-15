@@ -79,6 +79,22 @@
         "FEAT-009",
         "FEAT-010"
       ]
+    },
+    "hooks-system": {
+      "id": "hooks-system",
+      "title": "Lifecycle Hooks System",
+      "createdAt": "2025-10-15T11:44:12.200Z",
+      "workUnits": [
+        "HOOK-001",
+        "HOOK-002",
+        "HOOK-003",
+        "HOOK-004",
+        "HOOK-005",
+        "HOOK-006",
+        "HOOK-007",
+        "HOOK-008",
+        "HOOK-009"
+      ]
     }
   }
 }

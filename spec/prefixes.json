@@ -89,6 +89,11 @@
       "prefix": "COV",
       "description": "Coverage tracking and traceability features",
       "createdAt": "2025-10-13T09:48:58.778Z"
+    },
+    "HOOK": {
+      "prefix": "HOOK",
+      "description": "Lifecycle hooks and automation system",
+      "createdAt": "2025-10-15T10:55:43.290Z"
     }
   }
 }

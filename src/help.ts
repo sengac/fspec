@@ -43,6 +43,11 @@ export function displayCustomHelpWithNote(): void {
       chalk.cyan('setup') +
       '     - Configure project structure (tags, epics, prefixes, foundation docs)'
   );
+  console.log(
+    '  ' +
+      chalk.cyan('hooks') +
+      '     - Lifecycle hooks for workflow automation (validate, add, remove, list)'
+  );
   console.log('');
 
   console.log(chalk.bold('QUICK START'));
@@ -102,7 +107,12 @@ export function displayCustomHelpWithNote(): void {
   console.log(
     '  ' +
       chalk.cyan('fspec help setup') +
-      '        - Configuration and setup commands\n'
+      '        - Configuration and setup commands'
+  );
+  console.log(
+    '  ' +
+      chalk.cyan('fspec help hooks') +
+      '        - Lifecycle hook commands\n'
   );
 
   console.log(chalk.bold('EXAMPLES'));
@@ -876,6 +886,90 @@ function displayMetricsHelp(): void {
   console.log('');
 }
 
+// ===== HOOKS HELP =====
+function displayHooksHelp(): void {
+  console.log(chalk.bold('\nLIFECYCLE HOOKS'));
+  console.log(chalk.dim('Workflow automation with lifecycle hooks\n'));
+
+  console.log('Use this when you need to:');
+  console.log('  • Execute custom scripts at command lifecycle events');
+  console.log('  • Add quality gates with blocking pre-hooks');
+  console.log('  • Automate testing with post-hooks');
+  console.log('  • Send notifications on workflow events');
+  console.log('  • Validate hook configurations');
+  console.log('  • List and manage configured hooks\n');
+
+  console.log(chalk.bold('HOOK MANAGEMENT'));
+  console.log('  ' + chalk.cyan('fspec list-hooks'));
+  console.log('    Description: List all configured hooks');
+  console.log('    Examples:');
+  console.log('      fspec list-hooks');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec validate-hooks'));
+  console.log('    Description: Validate hook configuration and script paths');
+  console.log('    Examples:');
+  console.log('      fspec validate-hooks');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec add-hook <event> <name>'));
+  console.log('    Options:');
+  console.log('      --command <path>                 Path to hook script');
+  console.log('      --blocking                       Make hook blocking');
+  console.log('      --timeout <seconds>              Timeout in seconds');
+  console.log('    Examples:');
+  console.log(
+    '      fspec add-hook pre-implementing lint --command spec/hooks/lint.sh --blocking'
+  );
+  console.log(
+    '      fspec add-hook post-implementing test --command spec/hooks/test.sh'
+  );
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec remove-hook <event> <name>'));
+  console.log('    Examples:');
+  console.log('      fspec remove-hook pre-implementing lint');
+  console.log('      fspec remove-hook post-implementing test');
+  console.log('');
+
+  console.log(chalk.bold('HOOK CONFIGURATION'));
+  console.log('  Configuration file: ' + chalk.cyan('spec/fspec-hooks.json'));
+  console.log('');
+  console.log('  Event naming pattern:');
+  console.log('    pre-<command>   - Before command execution');
+  console.log('    post-<command>  - After command execution');
+  console.log('');
+  console.log('  Hook properties:');
+  console.log('    name            - Unique identifier');
+  console.log('    command         - Script path (relative to project root)');
+  console.log('    blocking        - If true, failure prevents execution');
+  console.log('    timeout         - Timeout in seconds (default: 60)');
+  console.log('    condition       - Optional filters (tags, prefix, epic, estimate)');
+  console.log('');
+
+  console.log(chalk.bold('COMMON USE CASES'));
+  console.log('  Quality Gates (blocking pre-hooks):');
+  console.log(
+    '    fspec add-hook pre-implementing validate --command spec/hooks/lint.sh --blocking'
+  );
+  console.log('');
+  console.log('  Automated Testing (post-hooks):');
+  console.log(
+    '    fspec add-hook post-implementing test --command spec/hooks/test.sh'
+  );
+  console.log('');
+  console.log('  Notifications (non-blocking post-hooks):');
+  console.log(
+    '    fspec add-hook post-validating notify --command spec/hooks/notify.sh'
+  );
+  console.log('');
+
+  console.log(chalk.bold('DOCUMENTATION'));
+  console.log('  Configuration: ' + chalk.cyan('docs/hooks/configuration.md'));
+  console.log(
+    '  Troubleshooting: ' + chalk.cyan('docs/hooks/troubleshooting.md')
+  );
+  console.log('  Examples: ' + chalk.cyan('examples/hooks/'));
+  console.log('');
+}
+
 // ===== SETUP HELP =====
 function displaySetupHelp(): void {
   console.log(chalk.bold('\nCONFIGURATION & SETUP'));
@@ -1072,9 +1166,15 @@ export function handleHelpCommand(group?: string): void {
     case 'foundation':
       displaySetupHelp();
       break;
+    case 'hooks':
+    case 'hook':
+    case 'lifecycle':
+    case 'automation':
+      displayHooksHelp();
+      break;
     default:
       console.log(chalk.red(`Unknown help topic: ${group}`));
-      console.log('Valid topics: specs, work, discovery, metrics, setup');
+      console.log('Valid topics: specs, work, discovery, metrics, setup, hooks');
       console.log('Use ' + chalk.cyan('fspec --help') + ' for main help\n');
   }
 }

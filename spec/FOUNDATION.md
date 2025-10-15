@@ -628,4 +628,68 @@ sequenceDiagram
     WorkUnit-->>AI: Status testing
 ```
 
+### Lifecycle Hooks System
+
+```mermaid
+sequenceDiagram
+    participant User as User/AI Agent
+    participant CMD as Command
+    participant Wrapper as runCommandWithHooks
+    participant Discovery as Hook Discovery
+    participant Engine as Hook Engine
+    participant Config as fspec-hooks.json
+    participant Script as Hook Script
+
+    Note over User,Script: Hook Execution Flow
+
+    User->>CMD: fspec update-work-unit-status AUTH-001 implementing
+    CMD->>Wrapper: runCommandWithHooks('update-work-unit-status', options, fn)
+    
+    Note over Wrapper: Pre-Hooks Phase
+    Wrapper->>Discovery: discoverHooks('pre-update-work-unit-status', context)
+    Discovery->>Config: Load hook configuration
+    Config-->>Discovery: hooks array
+    Discovery->>Discovery: Evaluate conditions (tags, prefix, epic, estimate)
+    Discovery-->>Wrapper: Filtered pre-hooks
+    
+    Wrapper->>Engine: executeHooks(preHooks, context)
+    loop For each pre-hook
+        Engine->>Script: Execute hook (stdin: JSON context)
+        Script-->>Engine: Exit code + stdout/stderr
+        alt Hook fails and blocking=true
+            Engine-->>Wrapper: Throw error (wrap stderr in system-reminder)
+            Wrapper-->>User: Error - hook failure prevents execution
+        end
+    end
+    
+    Note over Wrapper: Command Execution Phase
+    Wrapper->>CMD: Execute command logic
+    CMD-->>Wrapper: Command result
+    
+    Note over Wrapper: Post-Hooks Phase
+    Wrapper->>Discovery: discoverHooks('post-update-work-unit-status', context)
+    Discovery->>Config: Load hook configuration
+    Config-->>Discovery: hooks array
+    Discovery->>Discovery: Evaluate conditions
+    Discovery-->>Wrapper: Filtered post-hooks
+    
+    Wrapper->>Engine: executeHooks(postHooks, context)
+    loop For each post-hook
+        Engine->>Script: Execute hook (stdin: JSON context)
+        Script-->>Engine: Exit code + stdout/stderr
+        alt Hook fails and blocking=true
+            Engine-->>Wrapper: Set exitCode=1 (wrap stderr in system-reminder)
+        end
+    end
+    
+    Wrapper-->>User: Command result (with hook execution status)
+
+    Note over User,Script: Hook Context (JSON via stdin)
+    Note over Script: {
+    Note over Script:   workUnitId: 'AUTH-001',
+    Note over Script:   event: 'pre-update-work-unit-status',
+    Note over Script:   timestamp: '2025-01-15T10:30:00.000Z'
+    Note over Script: }
+```
+
 ---
