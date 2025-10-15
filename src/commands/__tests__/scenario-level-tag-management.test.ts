@@ -655,4 +655,58 @@ Feature: User Login
       expect(result.message).toContain('Added @CLI-004, @AUTH-001, @BUG-001');
     });
   });
+
+  describe('Scenario: List scenario tags with category information', () => {
+    it('should show tags with their categories from registry', async () => {
+      // Given I have a scenario with tags @smoke @critical @regression
+      // And the tags are registered in spec/tags.json with categories
+      const featureContent = `Feature: User Login
+
+  @smoke
+  @critical
+  @regression
+  Scenario: Login
+    Given I am on the login page
+    When I enter credentials
+    Then I am logged in
+`;
+      await writeFile(
+        join(testDir, 'spec/features/login.feature'),
+        featureContent
+      );
+
+      // When I run `fspec list-scenario-tags spec/features/login.feature "Login" --show-categories`
+      const result = await listScenarioTags(
+        'spec/features/login.feature',
+        'Login',
+        { cwd: testDir, showCategories: true }
+      );
+
+      // Then the command should exit with code 0
+      expect(result.success).toBe(true);
+
+      // And the output should show tags with their categories:
+      expect(result.categorizedTags).toBeDefined();
+      expect(result.categorizedTags!.length).toBe(3);
+
+      // Find the smoke tag
+      const smokeTag = result.categorizedTags!.find(ct => ct.tag === '@smoke');
+      expect(smokeTag).toBeDefined();
+      expect(smokeTag!.category).toBe('Test Type Tags');
+
+      // Find the critical tag
+      const criticalTag = result.categorizedTags!.find(
+        ct => ct.tag === '@critical'
+      );
+      expect(criticalTag).toBeDefined();
+      expect(criticalTag!.category).toBe('Priority Tags');
+
+      // Find the regression tag
+      const regressionTag = result.categorizedTags!.find(
+        ct => ct.tag === '@regression'
+      );
+      expect(regressionTag).toBeDefined();
+      expect(regressionTag!.category).toBe('Test Type Tags');
+    });
+  });
 });

@@ -381,99 +381,6 @@
       ]
     },
     {
-      "name": "Increment iteration count",
-      "testMappings": [
-        {
-          "file": "src/commands/__tests__/work-unit-estimation-and-metrics.test.ts",
-          "lines": "173-208",
-          "implMappings": [
-            {
-              "file": "src/commands/record-iteration.ts",
-              "lines": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
       "name": "Calculate cycle time from state history",
       "testMappings": [
         {
@@ -600,7 +507,7 @@
           "lines": "255-293",
           "implMappings": [
             {
-              "file": "src/commands/query-metrics.ts",
+              "file": "src/commands/query-estimate-accuracy.ts",
               "lines": [
                 1,
                 2,
@@ -704,7 +611,88 @@
                 100,
                 101,
                 102,
-                103
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184
               ]
             }
           ]
@@ -1257,40 +1245,126 @@
     },
     {
       "name": "Update work unit with 5-point estimate",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/work-unit-estimation-and-metrics.test.ts",
+          "lines": "24-59",
+          "implMappings": []
+        }
+      ]
     },
     {
       "name": "Record 45k tokens consumed",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/work-unit-estimation-and-metrics.test.ts",
+          "lines": "136-172",
+          "implMappings": []
+        }
+      ]
     },
     {
       "name": "Increment iteration count",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/work-unit-estimation-and-metrics.test.ts",
+          "lines": "173-207",
+          "implMappings": [
+            {
+              "file": "src/commands/record-iteration.ts",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50
+              ]
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "Query estimate accuracy for work unit",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/work-unit-estimation-and-metrics.test.ts",
+          "lines": "255-293",
+          "implMappings": []
+        }
+      ]
     },
     {
       "name": "Get estimation guide with patterns",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/work-unit-estimation-and-metrics.test.ts",
+          "lines": "430-522",
+          "implMappings": []
+        }
+      ]
     }
   ],
   "stats": {
-    "totalScenarios": 15,
-    "coveredScenarios": 10,
-    "coveragePercent": 67,
+    "totalScenarios": 14,
+    "coveredScenarios": 14,
+    "coveragePercent": 100,
     "testFiles": [
       "src/commands/__tests__/work-unit-estimation-and-metrics.test.ts"
     ],
     "implFiles": [
       "src/commands/update-work-unit-estimate.ts",
       "src/commands/record-metric.ts",
-      "src/commands/record-iteration.ts",
       "src/commands/query-metrics.ts",
       "src/commands/query-estimate-accuracy.ts",
-      "src/commands/query-estimation-guide.ts"
+      "src/commands/query-estimation-guide.ts",
+      "src/commands/record-iteration.ts"
     ],
-    "totalLinesCovered": 1594
+    "totalLinesCovered": 1852
   }
 }

@@ -1430,15 +1430,33 @@
     },
     {
       "name": "Format scenario-level tags",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/format.test.ts",
+          "lines": "432-458",
+          "implMappings": []
+        }
+      ]
     },
     {
       "name": "Format both feature-level and scenario-level tags",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/format.test.ts",
+          "lines": "432-458",
+          "implMappings": []
+        }
+      ]
     },
     {
       "name": "Format multiple scenario tags on same line",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/format.test.ts",
+          "lines": "432-458",
+          "implMappings": []
+        }
+      ]
     },
     {
       "name": "Format And/But step keywords",
@@ -1749,14 +1767,14 @@
   ],
   "stats": {
     "totalScenarios": 20,
-    "coveredScenarios": 17,
-    "coveragePercent": 85,
+    "coveredScenarios": 20,
+    "coveragePercent": 100,
     "testFiles": [
       "src/commands/__tests__/format.test.ts"
     ],
     "implFiles": [
       "src/commands/format.ts"
     ],
-    "totalLinesCovered": 1998
+    "totalLinesCovered": 2079
   }
 }

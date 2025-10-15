@@ -179,13 +179,13 @@ describe('Feature: Create Feature File with Template', () => {
       await mkdir(featuresDir, { recursive: true });
 
       // When I run `fspec create-feature "User Permissions"`
-      const filePath = await createFeature('User Permissions', testDir);
+      const result = await createFeature('User Permissions', testDir);
 
       // Then the command should return the file path
-      expect(filePath).toContain('spec/features/user-permissions.feature');
+      expect(result.filePath).toContain('spec/features/user-permissions.feature');
 
       // And the file should exist at that path
-      const content = await readFile(filePath, 'utf-8');
+      const content = await readFile(result.filePath, 'utf-8');
       expect(content).toContain('Feature: User Permissions');
     });
   });
@@ -233,13 +233,13 @@ describe('Feature: Create Feature File with Template', () => {
       await mkdir(featuresDir, { recursive: true });
 
       // When I run `fspec create-feature "Shopping Cart"`
-      const filePath = await createFeature('Shopping Cart', testDir);
+      const result = await createFeature('Shopping Cart', testDir);
 
       // Then a file should be created
-      expect(filePath).toContain('spec/features/shopping-cart.feature');
+      expect(result.filePath).toContain('spec/features/shopping-cart.feature');
 
       // And when I validate it, it should pass
-      const content = await readFile(filePath, 'utf-8');
+      const content = await readFile(result.filePath, 'utf-8');
       const uuidFn = Messages.IdGenerator.uuid();
       const builder = new Gherkin.AstBuilder(uuidFn);
       const matcher = new Gherkin.GherkinClassicTokenMatcher();

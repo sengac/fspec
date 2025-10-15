@@ -365,4 +365,158 @@ describe('Feature: Complete CLI Command Registration', () => {
       expect(updated.states.backlog).not.toContain('AUTH-001');
     });
   });
+
+  describe('Scenario: All commands registered and accessible', () => {
+    it('should have all command functions registered in CLI', () => {
+      // Given I have the fspec CLI built and ready
+      // And all command functions exist in src/commands/
+
+      // List of all expected commands based on src/index.ts imports
+      const allExpectedCommands = [
+        'add-architecture',
+        'add-assumption',
+        'add-background',
+        'add-dependencies',
+        'add-dependency',
+        'add-diagram',
+        'add-example',
+        'add-question',
+        'add-rule',
+        'add-scenario',
+        'add-step',
+        'add-tag-to-feature',
+        'add-tag-to-scenario',
+        'answer-question',
+        'audit-coverage',
+        'auto-advance',
+        'board',
+        'check',
+        'clear-dependencies',
+        'create-epic',
+        'create-feature',
+        'create-prefix',
+        'create-work-unit',
+        'delete-diagram',
+        'delete-epic',
+        'delete-features-by-tag',
+        'delete-scenario',
+        'delete-scenarios-by-tag',
+        'delete-step',
+        'delete-tag',
+        'delete-work-unit',
+        'export-dependencies',
+        'export-example-map',
+        'export-work-units',
+        'format',
+        'generate-coverage',
+        'generate-foundation-md',
+        'generate-scenarios',
+        'generate-summary-report',
+        'generate-tags-md',
+        'get-scenarios',
+        'import-example-map',
+        'init',
+        'link-coverage',
+        'list-epics',
+        'list-feature-tags',
+        'list-features',
+        'list-prefixes',
+        'list-scenario-tags',
+        'list-tags',
+        'list-work-units',
+        'prioritize-work-unit',
+        'query-dependency-stats',
+        'query-estimate-accuracy',
+        'query-estimation-guide',
+        'query-example-mapping-stats',
+        'query-metrics',
+        'query-work-units',
+        'record-iteration',
+        'record-metric',
+        'record-tokens',
+        'register-tag',
+        'remove-dependency',
+        'remove-example',
+        'remove-question',
+        'remove-rule',
+        'remove-tag-from-feature',
+        'remove-tag-from-scenario',
+        'repair-work-units',
+        'retag',
+        'set-user-story',
+        'show-acceptance-criteria',
+        'show-coverage',
+        'show-epic',
+        'show-feature',
+        'show-foundation',
+        'show-foundation-schema',
+        'show-work-unit',
+        'tag-stats',
+        'unlink-coverage',
+        'update-foundation',
+        'update-prefix',
+        'update-scenario',
+        'update-step',
+        'update-tag',
+        'update-work-unit',
+        'update-work-unit-estimate',
+        'update-work-unit-status',
+        'validate',
+        'validate-foundation-schema',
+        'validate-spec-alignment',
+        'validate-tags',
+        'validate-work-units',
+      ];
+
+      // When I check the CLI registration in src/index.ts
+      // Then all command functions should be registered
+      const registeredCommands: string[] = [];
+      const unregisteredCommands: string[] = [];
+
+      for (const command of allExpectedCommands) {
+        try {
+          // Try to get help for the command
+          execSync(`node dist/index.js ${command} --help 2>&1`, {
+            encoding: 'utf-8',
+            stdio: 'pipe',
+          });
+
+          // If we get here without error, command is registered
+          registeredCommands.push(command);
+        } catch (error: any) {
+          // Check if this is an "unknown command" error or something else
+          const output = error.stdout || error.stderr || '';
+
+          if (
+            output.includes('unknown command') ||
+            output.includes('error: unknown command')
+          ) {
+            // Command is NOT registered
+            unregisteredCommands.push(command);
+          } else {
+            // Command exists but threw an error (e.g., missing args, validation failure)
+            // This is fine - the command IS registered
+            registeredCommands.push(command);
+          }
+        }
+      }
+
+      // Report results (for debugging if test fails)
+      if (unregisteredCommands.length > 0) {
+        console.error(
+          `\n❌ Unregistered commands (${unregisteredCommands.length}):`
+        );
+        unregisteredCommands.forEach(cmd => console.error(`  - ${cmd}`));
+      }
+
+      // And each command should have proper Commander.js registration
+      // And each command should be accessible via "fspec <command-name>"
+      // And no implemented functionality should be missing from the CLI
+      expect(unregisteredCommands).toEqual([]);
+      expect(registeredCommands.length).toBe(allExpectedCommands.length);
+
+      // Verify we have 93 commands registered (as per current src/index.ts)
+      expect(registeredCommands.length).toBeGreaterThanOrEqual(93);
+    });
+  });
 });

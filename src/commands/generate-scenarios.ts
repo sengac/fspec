@@ -12,6 +12,7 @@ import {
   getPostGenerationReminder,
 } from '../utils/system-reminder';
 import { extractStepsFromExample } from '../utils/step-extraction';
+import { detectPrefill } from '../utils/prefill-detection';
 
 interface GenerateScenariosOptions {
   workUnitId: string;
@@ -187,7 +188,6 @@ ${scenarios.join('\n')}`;
   }
 
   // Check for prefill in generated/updated file
-  const { detectPrefill } = await import('../utils/prefill-detection');
   const finalContent = await readFile(featureFile, 'utf-8');
   const prefillResult = detectPrefill(finalContent);
 

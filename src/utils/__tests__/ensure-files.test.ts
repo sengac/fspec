@@ -139,4 +139,42 @@ describe('Feature: Automatic JSON File Initialization', () => {
       expect(result.epics).toEqual({});
     });
   });
+
+  describe('Scenario: Ensure utilities validate JSON structure', () => {
+    it('should throw a helpful error when JSON is corrupted', async () => {
+      // Given I have corrupted spec/work-units.json
+      await mkdir(join(testDir, 'spec'), { recursive: true });
+      const filePath = join(testDir, 'spec/work-units.json');
+      const fs = await import('fs/promises');
+
+      // Write corrupted JSON (trailing comma, missing closing brace)
+      await fs.writeFile(filePath, '{"workUnits": {},');
+
+      // When ensureWorkUnitsFile is called
+      // Then it should throw a helpful error
+      await expect(ensureWorkUnitsFile(testDir)).rejects.toThrow();
+
+      // And should indicate the file is invalid JSON
+      try {
+        await ensureWorkUnitsFile(testDir);
+      } catch (error: any) {
+        expect(error.message).toContain('work-units.json');
+        expect(error.message.toLowerCase()).toMatch(/json|parse|invalid/);
+      }
+    });
+
+    it('should provide helpful error message with file path', async () => {
+      // Given I have corrupted spec/work-units.json
+      await mkdir(join(testDir, 'spec'), { recursive: true });
+      const filePath = join(testDir, 'spec/work-units.json');
+      const fs = await import('fs/promises');
+
+      // Write invalid JSON
+      await fs.writeFile(filePath, 'not valid json at all');
+
+      // When ensureWorkUnitsFile is called
+      // Then error should mention the file path
+      await expect(ensureWorkUnitsFile(testDir)).rejects.toThrow(/work-units\.json/);
+    });
+  });
 });

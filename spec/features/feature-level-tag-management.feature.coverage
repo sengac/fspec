@@ -1397,7 +1397,13 @@
     },
     {
       "name": "List tags with category information",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/feature-level-tag-management.test.ts",
+          "lines": "462-494",
+          "implMappings": []
+        }
+      ]
     },
     {
       "name": "Preserve scenario-level tags when modifying feature tags",
@@ -2109,8 +2115,8 @@
   ],
   "stats": {
     "totalScenarios": 17,
-    "coveredScenarios": 16,
-    "coveragePercent": 94,
+    "coveredScenarios": 17,
+    "coveragePercent": 100,
     "testFiles": [
       "src/commands/__tests__/feature-level-tag-management.test.ts"
     ],
@@ -2119,6 +2125,6 @@
       "src/commands/remove-tag-from-feature.ts",
       "src/commands/list-feature-tags.ts"
     ],
-    "totalLinesCovered": 2435
+    "totalLinesCovered": 2468
   }
 }

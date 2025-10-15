@@ -736,11 +736,23 @@
     },
     {
       "name": "Auto-create prefixes.json when creating first prefix",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/epic-and-prefix-management.test.ts",
+          "lines": "58-84",
+          "implMappings": []
+        }
+      ]
     },
     {
       "name": "Auto-create epics.json when creating first epic",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/epic-and-prefix-management.test.ts",
+          "lines": "24-56",
+          "implMappings": []
+        }
+      ]
     },
     {
       "name": "List epics when epics.json does not exist",
@@ -945,8 +957,8 @@
   ],
   "stats": {
     "totalScenarios": 12,
-    "coveredScenarios": 10,
-    "coveragePercent": 83,
+    "coveredScenarios": 12,
+    "coveragePercent": 100,
     "testFiles": [
       "src/commands/__tests__/epic-and-prefix-management.test.ts",
       "src/commands/__tests__/list-prefixes.test.ts"
@@ -959,6 +971,6 @@
       "src/commands/delete-epic.ts",
       "src/commands/list-prefixes.ts"
     ],
-    "totalLinesCovered": 1228
+    "totalLinesCovered": 1288
   }
 }

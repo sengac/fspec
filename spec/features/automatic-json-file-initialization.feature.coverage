@@ -2,11 +2,39 @@
   "scenarios": [
     {
       "name": "Example mapping commands auto-create work-units.json",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/add-example.test.ts",
+          "lines": "27-102",
+          "implMappings": [
+            {
+              "file": "src/commands/add-example.ts",
+              "lines": [
+                25,
+                26
+              ]
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "Dependency commands auto-create work-units.json",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/add-dependency.test.ts",
+          "lines": "27-132",
+          "implMappings": [
+            {
+              "file": "src/commands/add-dependency.ts",
+              "lines": [
+                65,
+                66
+              ]
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "Epic commands auto-create epics.json",
@@ -54,12 +82,23 @@
               ]
             }
           ]
+        },
+        {
+          "file": "src/utils/__tests__/ensure-files.test.ts",
+          "lines": "125-141",
+          "implMappings": []
         }
       ]
     },
     {
       "name": "Prefix commands auto-create prefixes.json",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/ensure-files.test.ts",
+          "lines": "107-122",
+          "implMappings": []
+        }
+      ]
     },
     {
       "name": "Calling ensure utilities multiple times is safe",
@@ -158,12 +197,40 @@
               ]
             }
           ]
+        },
+        {
+          "file": "src/utils/__tests__/ensure-files.test.ts",
+          "lines": "29-143",
+          "implMappings": []
         }
       ]
     },
     {
       "name": "Ensure utilities validate JSON structure",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/ensure-files.test.ts",
+          "lines": "143-179",
+          "implMappings": [
+            {
+              "file": "src/utils/ensure-files.ts",
+              "lines": [
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28
+              ]
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "Auto-created files have proper structure",
@@ -262,60 +329,367 @@
               ]
             }
           ]
+        },
+        {
+          "file": "src/utils/__tests__/ensure-files.test.ts",
+          "lines": "29-143",
+          "implMappings": []
         }
       ]
     },
     {
       "name": "All 48+ commands use ensure utilities",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/ensure-utilities-usage.test.ts",
+          "lines": "13-118",
+          "implMappings": [
+            {
+              "file": "src/utils/ensure-files.ts",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200
+              ]
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "Create epic command auto-creates spec/epics.json when missing",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/ensure-files.test.ts",
+          "lines": "125-141",
+          "implMappings": []
+        }
+      ]
     },
     {
       "name": "Create prefix command auto-creates spec/prefixes.json when missing",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/ensure-files.test.ts",
+          "lines": "107-122",
+          "implMappings": []
+        }
+      ]
     },
     {
       "name": "List work units command auto-creates spec/work-units.json when missing",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/list-work-units.test.ts",
+          "lines": "14-60",
+          "implMappings": [
+            {
+              "file": "src/commands/list-work-units.ts",
+              "lines": [
+                33
+              ]
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "Update work unit command uses ensureWorkUnitsFile instead of direct readFile",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/update-work-unit-ensure.test.ts",
+          "lines": "14-83",
+          "implMappings": []
+        }
+      ]
     },
     {
       "name": "Calling ensureWorkUnitsFile multiple times returns same data without overwriting",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/ensure-files.test.ts",
+          "lines": "61-104",
+          "implMappings": []
+        }
+      ]
     },
     {
       "name": "Register tag command auto-creates spec/tags.json when missing",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/register-tag-ensure.test.ts",
+          "lines": "14-64",
+          "implMappings": []
+        }
+      ]
     },
     {
       "name": "Update foundation command auto-creates spec/foundation.json when missing",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/foundation-ensure.test.ts",
+          "lines": "24-46",
+          "implMappings": [
+            {
+              "file": "src/commands/update-foundation.ts",
+              "lines": [
+                50,
+                51
+              ]
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "List tags command auto-creates spec/tags.json instead of throwing error",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/list-tags-ensure.test.ts",
+          "lines": "14-58",
+          "implMappings": []
+        }
+      ]
     },
     {
       "name": "Show foundation command auto-creates spec/foundation.json instead of returning error",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/foundation-ensure.test.ts",
+          "lines": "48-68",
+          "implMappings": [
+            {
+              "file": "src/commands/show-foundation.ts",
+              "lines": [
+                35,
+                36
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
   "stats": {
     "totalScenarios": 17,
-    "coveredScenarios": 3,
-    "coveragePercent": 18,
+    "coveredScenarios": 17,
+    "coveragePercent": 100,
     "testFiles": [
-      "src/utils/__tests__/ensure-files.test.ts"
+      "src/commands/__tests__/add-example.test.ts",
+      "src/commands/__tests__/add-dependency.test.ts",
+      "src/utils/__tests__/ensure-files.test.ts",
+      "src/commands/__tests__/ensure-utilities-usage.test.ts",
+      "src/commands/__tests__/list-work-units.test.ts",
+      "src/commands/__tests__/update-work-unit-ensure.test.ts",
+      "src/commands/__tests__/register-tag-ensure.test.ts",
+      "src/commands/__tests__/foundation-ensure.test.ts",
+      "src/commands/__tests__/list-tags-ensure.test.ts"
     ],
     "implFiles": [
-      "src/utils/ensure-files.ts"
+      "src/commands/add-example.ts",
+      "src/commands/add-dependency.ts",
+      "src/utils/ensure-files.ts",
+      "src/commands/list-work-units.ts",
+      "src/commands/update-foundation.ts",
+      "src/commands/show-foundation.ts"
     ],
-    "totalLinesCovered": 450
+    "totalLinesCovered": 1592
   }
 }

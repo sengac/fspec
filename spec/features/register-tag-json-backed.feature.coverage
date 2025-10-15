@@ -562,23 +562,63 @@
     },
     {
       "name": "Rollback if markdown generation fails",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/register-tag.test.ts",
+          "lines": "506-551",
+          "implMappings": [
+            {
+              "file": "src/commands/register-tag.ts",
+              "lines": [
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122
+              ]
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "Update statistics after registering tag",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/register-tag.test.ts",
+          "lines": "553-593",
+          "implMappings": [
+            {
+              "file": "src/commands/register-tag.ts",
+              "lines": [
+                91,
+                92
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
   "stats": {
     "totalScenarios": 7,
-    "coveredScenarios": 5,
-    "coveragePercent": 71,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
     "testFiles": [
       "src/commands/__tests__/register-tag.test.ts"
     ],
     "implFiles": [
       "src/commands/register-tag.ts"
     ],
-    "totalLinesCovered": 666
+    "totalLinesCovered": 769
   }
 }

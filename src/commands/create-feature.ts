@@ -1,4 +1,4 @@
-import { mkdir, writeFile, access } from 'fs/promises';
+import { mkdir, writeFile, access, readFile } from 'fs/promises';
 import { join } from 'path';
 import type { Command } from 'commander';
 import chalk from 'chalk';
@@ -6,11 +6,33 @@ import { toKebabCase } from '../utils/file-helpers';
 import { generateFeatureTemplate } from '../utils/templates';
 import { getFileNamingReminder } from '../utils/system-reminder';
 import { createCoverageFile } from '../utils/coverage-file';
+import { detectPrefill } from '../utils/prefill-detection';
+
+export interface CreateFeatureResult {
+  filePath: string;
+  prefillDetection: {
+    hasPrefill: boolean;
+    matches: Array<{
+      pattern: string;
+      line?: number;
+      context?: string;
+      suggestion: string;
+    }>;
+    systemReminder?: string;
+  };
+  coverageFile: {
+    created: boolean;
+    path?: string;
+    status: 'created' | 'skipped' | 'recreated' | 'error';
+    message: string;
+  };
+  fileNamingReminder?: string;
+}
 
 export async function createFeature(
   name: string,
   cwd: string = process.cwd()
-): Promise<string> {
+): Promise<CreateFeatureResult> {
   const featuresDir = join(cwd, 'spec', 'features');
   const fileName = `${toKebabCase(name)}.feature`;
   const filePath = join(featuresDir, fileName);
@@ -68,65 +90,77 @@ export async function createFeature(
   }
 
   // Create coverage file (graceful degradation - don't fail feature creation)
+  let coverageFileResult: CreateFeatureResult['coverageFile'];
   try {
     const coverageResult = await createCoverageFile(filePath);
-    // Store result for display in command function
-    (createFeature as any).lastCoverageResult = coverageResult;
-  } catch (error: any) {
-    // Log warning but don't fail feature creation
-    (createFeature as any).lastCoverageResult = {
+    coverageFileResult = {
+      created: coverageResult.status === 'created',
+      path: coverageResult.path,
+      status: coverageResult.status,
+      message: coverageResult.message,
+    };
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    coverageFileResult = {
+      created: false,
       status: 'error',
-      message: `Warning: Failed to create coverage file: ${error.message}`,
+      message: `Warning: Failed to create coverage file: ${errorMessage}`,
     };
   }
 
-  return filePath;
+  // Detect prefill in generated content
+  const generatedContent = await readFile(filePath, 'utf-8');
+  const prefillResult = detectPrefill(generatedContent);
+
+  // Get file naming reminder
+  const kebabName = toKebabCase(name);
+  const fileNamingReminder = getFileNamingReminder(kebabName);
+
+  return {
+    filePath,
+    prefillDetection: {
+      hasPrefill: prefillResult.hasPrefill,
+      matches: prefillResult.matches,
+      systemReminder: prefillResult.systemReminder,
+    },
+    coverageFile: coverageFileResult,
+    fileNamingReminder: fileNamingReminder || undefined,
+  };
 }
 
 export async function createFeatureCommand(name: string): Promise<void> {
   try {
-    // Check for file naming anti-patterns BEFORE creating the file
-    const kebabName = toKebabCase(name);
-    const fileNamingReminder = getFileNamingReminder(kebabName);
-
-    const filePath = await createFeature(name);
-    const fileName = filePath.split('/').slice(-2).join('/'); // spec/features/file.feature
+    const result = await createFeature(name);
+    const fileName = result.filePath.split('/').slice(-2).join('/'); // spec/features/file.feature
 
     console.log(chalk.green(`✓ Created ${fileName}`));
     console.log(chalk.gray('  Edit the file to add your scenarios'));
 
     // Display coverage file creation result
-    const coverageResult = (createFeature as any).lastCoverageResult;
-    if (coverageResult) {
-      if (coverageResult.status === 'created') {
-        console.log(chalk.green(coverageResult.message));
-      } else if (coverageResult.status === 'skipped') {
-        console.log(chalk.yellow(coverageResult.message));
-      } else if (coverageResult.status === 'recreated') {
-        console.log(chalk.yellow(coverageResult.message));
-      } else if (coverageResult.status === 'error') {
-        console.log(chalk.red(coverageResult.message));
-      }
+    if (result.coverageFile.status === 'created') {
+      console.log(chalk.green(result.coverageFile.message));
+    } else if (result.coverageFile.status === 'skipped') {
+      console.log(chalk.yellow(result.coverageFile.message));
+    } else if (result.coverageFile.status === 'recreated') {
+      console.log(chalk.yellow(result.coverageFile.message));
+    } else if (result.coverageFile.status === 'error') {
+      console.log(chalk.red(result.coverageFile.message));
     }
 
     // Display file naming reminder if anti-pattern detected
-    if (fileNamingReminder) {
-      console.log('\n' + fileNamingReminder);
+    if (result.fileNamingReminder) {
+      console.log('\n' + result.fileNamingReminder);
     }
 
-    // Check for prefill in generated file
-    const { readFile } = await import('fs/promises');
-    const { detectPrefill } = await import('../utils/prefill-detection');
-    const content = await readFile(filePath, 'utf-8');
-    const prefillResult = detectPrefill(content);
-
-    if (prefillResult.hasPrefill && prefillResult.systemReminder) {
-      console.log('\n' + prefillResult.systemReminder);
+    // Display prefill detection system-reminder
+    if (result.prefillDetection.hasPrefill && result.prefillDetection.systemReminder) {
+      console.log('\n' + result.prefillDetection.systemReminder);
     }
 
     process.exit(0);
-  } catch (error: any) {
-    console.error(chalk.red('Error:'), error.message);
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error(chalk.red('Error:'), errorMessage);
     process.exit(1);
   }
 }

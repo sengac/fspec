@@ -11,6 +11,7 @@ const updateWorkUnitStatusHelp: CommandHelpConfig = {
     'Work unit must exist (create with fspec create-work-unit)',
     'For transition to testing: All Example Mapping questions must be answered',
     'For transition to implementing: Tests must be written',
+    'For transition to active states: All blocking dependencies must be completed (status: done)',
   ],
   arguments: [
     {
@@ -31,6 +32,12 @@ const updateWorkUnitStatusHelp: CommandHelpConfig = {
       description: 'Move to specifying (start Example Mapping and write feature files)',
       output: '✓ Work unit AUTH-001 status updated to specifying',
     },
+    {
+      command: 'fspec update-work-unit-status UI-001 implementing',
+      description: 'Attempt to start work on blocked work unit (will fail)',
+      output:
+        '✗ Cannot start work on UI-001: work unit is blocked by incomplete dependencies.\n\nActive blockers:\n  - AUTH-001 (status: implementing)\n\nComplete blocking work units or remove dependencies before starting work.',
+    },
   ],
   typicalWorkflow:
     'backlog → specifying (Example Mapping + feature file) → testing (write failing tests) → implementing (make tests pass) → validating (run all tests + quality checks) → done',
@@ -44,6 +51,8 @@ const updateWorkUnitStatusHelp: CommandHelpConfig = {
     'ACDD enforces strict workflow: you cannot skip states',
     'Status "blocked" can be used from any state when progress is prevented',
     'Moving to testing requires all Example Mapping questions to be answered first',
+    'Cannot move to active states (specifying, testing, implementing, validating) if work unit has incomplete blocking dependencies',
+    'Use "fspec remove-dependency" to remove blockers or complete blocking work units first',
   ],
 };
 

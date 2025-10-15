@@ -93,6 +93,7 @@ Feature: Register Tag in JSON-Backed Registry
     And the output should display "✗ Invalid tag name: must start with @ and contain only lowercase letters, numbers, and hyphens"
     And "spec/tags.json" should not be modified
 
+  @COV-034
   Scenario: Rollback if markdown generation fails
     Given I have a valid file "spec/tags.json"
     When I run `fspec register-tag @new-tag "Phase Tags" "Description"`
@@ -101,6 +102,7 @@ Feature: Register Tag in JSON-Backed Registry
     And "spec/tags.json" should be rolled back to previous state
     And the output should display "✗ Failed to regenerate TAGS.md - changes rolled back"
 
+  @COV-035
   Scenario: Update statistics after registering tag
     Given I have a valid file "spec/tags.json" with current statistics
     When I run `fspec register-tag @new-tag "Technical Tags" "New technical tag"`

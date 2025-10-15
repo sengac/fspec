@@ -1,6 +1,6 @@
-import { readFile, writeFile } from 'fs/promises';
+import { readFile, writeFile, mkdir } from 'fs/promises';
 import type { Command } from 'commander';
-import { join } from 'path';
+import { join, dirname } from 'path';
 import { existsSync } from 'fs';
 import chalk from 'chalk';
 import type { Tags } from '../types/tags';
@@ -9,6 +9,7 @@ import { generateTagsMd } from '../generators/tags-md';
 
 interface GenerateTagsMdOptions {
   cwd?: string;
+  output?: string;
 }
 
 interface GenerateTagsMdResult {
@@ -20,11 +21,11 @@ interface GenerateTagsMdResult {
 export async function generateTagsMdCommand(
   options: GenerateTagsMdOptions = {}
 ): Promise<GenerateTagsMdResult> {
-  const { cwd = process.cwd() } = options;
+  const { cwd = process.cwd(), output } = options;
 
   try {
     const tagsJsonPath = join(cwd, 'spec/tags.json');
-    const tagsMdPath = join(cwd, 'spec/TAGS.md');
+    const tagsMdPath = output ? join(cwd, output) : join(cwd, 'spec/TAGS.md');
 
     // Check if tags.json exists
     if (!existsSync(tagsJsonPath)) {
@@ -50,12 +51,17 @@ export async function generateTagsMdCommand(
     // Generate TAGS.md
     const markdown = await generateTagsMd(tagsData);
 
+    // Ensure output directory exists
+    const outputDir = dirname(tagsMdPath);
+    await mkdir(outputDir, { recursive: true });
+
     // Write TAGS.md
     await writeFile(tagsMdPath, markdown, 'utf-8');
 
+    const outputRelative = output || 'spec/TAGS.md';
     return {
       success: true,
-      message: 'Generated spec/TAGS.md from spec/tags.json',
+      message: `Generated ${outputRelative} from spec/tags.json`,
     };
   } catch (error: any) {
     return {
@@ -65,9 +71,11 @@ export async function generateTagsMdCommand(
   }
 }
 
-export async function generateTagsMdCommandCLI(): Promise<void> {
+export async function generateTagsMdCommandCLI(options: {
+  output?: string;
+}): Promise<void> {
   try {
-    const result = await generateTagsMdCommand();
+    const result = await generateTagsMdCommand({ output: options.output });
 
     if (!result.success) {
       console.error(chalk.red('Error:'), result.error);
@@ -86,5 +94,6 @@ export function registerGenerateTagsMdCommand(program: Command): void {
   program
     .command('generate-tags-md')
     .description('Generate TAGS.md from tags.json')
+    .option('--output <path>', 'Custom output path (default: spec/TAGS.md)')
     .action(generateTagsMdCommandCLI);
 }

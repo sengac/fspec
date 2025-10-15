@@ -9,6 +9,7 @@ import {
   getStatusChangeReminder,
   type WorkflowState,
 } from '../utils/system-reminder';
+import { checkWorkUnitFeatureForPrefill } from '../utils/prefill-detection';
 
 type WorkUnitStatus =
   | 'backlog'
@@ -116,11 +117,32 @@ export async function updateWorkUnitStatus(
     throw new Error(errorMessages.join(' '));
   }
 
+  // Prevent starting work that is blocked by incomplete dependencies
+  const activeStates = ['specifying', 'testing', 'implementing', 'validating'];
+  if (newStatus !== 'blocked' && activeStates.includes(newStatus)) {
+    const blockedBy = workUnit.blockedBy || [];
+    const activeBlockers: string[] = [];
+
+    for (const blockerId of blockedBy) {
+      const blockerUnit = workUnitsData.workUnits[blockerId];
+      if (blockerUnit && blockerUnit.status !== 'done') {
+        activeBlockers.push(
+          `${blockerId} (status: ${blockerUnit.status || 'unknown'})`
+        );
+      }
+    }
+
+    if (activeBlockers.length > 0) {
+      throw new Error(
+        `Cannot start work on ${options.workUnitId}: work unit is blocked by incomplete dependencies.\n\n` +
+          `Active blockers:\n  - ${activeBlockers.join('\n  - ')}\n\n` +
+          `Complete blocking work units or remove dependencies before starting work.`
+      );
+    }
+  }
+
   // Check for prefill in linked feature files (blocks ALL forward transitions except to blocked)
   if (newStatus !== 'blocked' && currentStatus !== newStatus) {
-    const { checkWorkUnitFeatureForPrefill } = await import(
-      '../utils/prefill-detection'
-    );
     const prefillResult = await checkWorkUnitFeatureForPrefill(
       options.workUnitId,
       cwd

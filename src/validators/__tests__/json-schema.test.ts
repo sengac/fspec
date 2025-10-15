@@ -547,6 +547,30 @@ describe('Feature: Validate JSON Files Against Schemas', () => {
     });
   });
 
+  describe('Scenario: Handle malformed JSON file', () => {
+    it('should throw a SyntaxError for invalid JSON syntax', async () => {
+      // Given I have a file "spec/foundation.json" with invalid JSON syntax
+      const malformedJson = '{"project": {"name": "test",}'; // Trailing comma - invalid JSON
+
+      await writeFile(foundationJsonPath, malformedJson);
+
+      // When the validation utility tries to read the file
+      // Then it should throw a SyntaxError
+      await expect(
+        validateFoundationJson(foundationJsonPath, foundationSchemaPath)
+      ).rejects.toThrow();
+
+      // And the error message should indicate JSON parsing failure
+      try {
+        await validateFoundationJson(foundationJsonPath, foundationSchemaPath);
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          expect(error.message.toLowerCase()).toMatch(/json|parse|syntax/);
+        }
+      }
+    });
+  });
+
   describe('Scenario: Show detailed validation errors with context', () => {
     it('should list all validation errors with JSON paths', async () => {
       // Given I have a file "spec/foundation.json" with multiple validation errors

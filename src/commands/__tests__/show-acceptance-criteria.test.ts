@@ -363,4 +363,52 @@ Feature: With Architecture
       expect(result.message).toContain('15 scenarios');
     });
   });
+
+  describe('Scenario: Show steps with proper indentation (text format)', () => {
+    it('should display Given/When/Then prominently and And/But indented', async () => {
+      // Given I have a scenario with Given, When, Then, And, But steps
+      const content = `@test
+Feature: Step Indentation Test
+
+  Scenario: Test with various step types
+    Given I have a precondition
+    And I have another precondition
+    When I perform an action
+    And I perform another action
+    Then I should see an outcome
+    And I should see another outcome
+    But I should not see an error
+`;
+      await writeFile(join(testDir, 'spec/features/steps.feature'), content);
+
+      // When I run `fspec show-acceptance-criteria --format=text`
+      const result = await showAcceptanceCriteria({
+        tags: ['@test'],
+        format: 'text',
+        cwd: testDir,
+      });
+
+      // Then Given/When/Then steps should be displayed prominently
+      expect(result.success).toBe(true);
+      expect(result.features[0].scenarios[0].steps.length).toBe(7);
+
+      // And And/But steps should be indented consistently
+      const steps = result.features[0].scenarios[0].steps;
+      expect(steps[0].keyword.trim()).toBe('Given');
+      expect(steps[1].keyword.trim()).toBe('And');
+      expect(steps[2].keyword.trim()).toBe('When');
+      expect(steps[3].keyword.trim()).toBe('And');
+      expect(steps[4].keyword.trim()).toBe('Then');
+      expect(steps[5].keyword.trim()).toBe('And');
+      expect(steps[6].keyword.trim()).toBe('But');
+
+      // And the output should be readable and well-formatted
+      expect(result.output).toBeDefined();
+      if (result.output) {
+        expect(result.output).toContain('Given');
+        expect(result.output).toContain('When');
+        expect(result.output).toContain('Then');
+      }
+    });
+  });
 });

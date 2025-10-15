@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "src/commands/__tests__/work-unit-query-and-reporting.test.ts",
-          "lines": "24-97",
+          "lines": "24-96",
           "implMappings": [
             {
               "file": "src/commands/query-work-units.ts",
@@ -173,7 +173,43 @@
                 161,
                 162,
                 163,
-                164
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200
               ]
             }
           ]
@@ -185,7 +221,7 @@
       "testMappings": [
         {
           "file": "src/commands/__tests__/work-unit-query-and-reporting.test.ts",
-          "lines": "98-184",
+          "lines": "98-183",
           "implMappings": [
             {
               "file": "src/commands/query-work-units.ts",
@@ -353,7 +389,43 @@
                 161,
                 162,
                 163,
-                164
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200
               ]
             }
           ]
@@ -365,7 +437,7 @@
       "testMappings": [
         {
           "file": "src/commands/__tests__/work-unit-query-and-reporting.test.ts",
-          "lines": "185-249",
+          "lines": "185-248",
           "implMappings": [
             {
               "file": "src/commands/query-work-units.ts",
@@ -533,7 +605,43 @@
                 161,
                 162,
                 163,
-                164
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200
               ]
             }
           ]
@@ -545,7 +653,7 @@
       "testMappings": [
         {
           "file": "src/commands/__tests__/work-unit-query-and-reporting.test.ts",
-          "lines": "250-326",
+          "lines": "250-325",
           "implMappings": [
             {
               "file": "src/commands/generate-summary-report.ts",
@@ -691,101 +799,15 @@
                 139,
                 140,
                 141,
-                142
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Export work units to JSON",
-      "testMappings": [
-        {
-          "file": "src/commands/__tests__/work-unit-query-and-reporting.test.ts",
-          "lines": "385-447",
-          "implMappings": [
-            {
-              "file": "src/commands/export-work-units.ts",
-              "lines": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150
               ]
             }
           ]
@@ -797,7 +819,7 @@
       "testMappings": [
         {
           "file": "src/commands/__tests__/work-unit-query-and-reporting.test.ts",
-          "lines": "448-518",
+          "lines": "449-520",
           "implMappings": [
             {
               "file": "src/commands/display-board.ts",
@@ -901,24 +923,7 @@
                 97,
                 98,
                 99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117
+                100
               ]
             }
           ]
@@ -927,30 +932,236 @@
     },
     {
       "name": "Query by status and prefix",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/query-work-units-advanced.test.ts",
+          "lines": "25-108",
+          "implMappings": [
+            {
+              "file": "src/commands/query-work-units.ts",
+              "lines": [
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97
+              ]
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "Export work units to JSON",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/work-unit-query-and-reporting.test.ts",
+          "lines": "385-447",
+          "implMappings": [
+            {
+              "file": "src/commands/export-work-units.ts",
+              "lines": [
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46
+              ]
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "Generate summary report with statistics",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/query-work-units-advanced.test.ts",
+          "lines": "266-417",
+          "implMappings": [
+            {
+              "file": "src/commands/generate-summary-report.ts",
+              "lines": [
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94
+              ]
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "Query with sorting by updated date",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/query-work-units-advanced.test.ts",
+          "lines": "110-183",
+          "implMappings": [
+            {
+              "file": "src/commands/query-work-units.ts",
+              "lines": [
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154
+              ]
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "Export filtered results to CSV",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/query-work-units-advanced.test.ts",
+          "lines": "185-264",
+          "implMappings": [
+            {
+              "file": "src/commands/query-work-units.ts",
+              "lines": [
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173
+              ]
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "Summary report writes to file and returns output path",
       "testMappings": [
         {
           "file": "src/commands/__tests__/work-unit-query-and-reporting.test.ts",
-          "lines": "327-384",
+          "lines": "327-383",
           "implMappings": [
             {
               "file": "src/commands/generate-summary-report.ts",
@@ -1096,7 +1307,15 @@
                 139,
                 140,
                 141,
-                142
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150
               ]
             }
           ]
@@ -1105,18 +1324,19 @@
     }
   ],
   "stats": {
-    "totalScenarios": 12,
-    "coveredScenarios": 7,
-    "coveragePercent": 58,
+    "totalScenarios": 11,
+    "coveredScenarios": 11,
+    "coveragePercent": 100,
     "testFiles": [
-      "src/commands/__tests__/work-unit-query-and-reporting.test.ts"
+      "src/commands/__tests__/work-unit-query-and-reporting.test.ts",
+      "src/commands/__tests__/query-work-units-advanced.test.ts"
     ],
     "implFiles": [
       "src/commands/query-work-units.ts",
       "src/commands/generate-summary-report.ts",
-      "src/commands/export-work-units.ts",
-      "src/commands/display-board.ts"
+      "src/commands/display-board.ts",
+      "src/commands/export-work-units.ts"
     ],
-    "totalLinesCovered": 1466
+    "totalLinesCovered": 2027
   }
 }

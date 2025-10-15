@@ -177,6 +177,7 @@ export async function addDependency(
     if (workUnit.status !== 'blocked' && workUnit.status !== 'done') {
       const oldStatus = workUnit.status;
       workUnit.status = 'blocked';
+      workUnit.blockedReason = `Blocked by ${options.blockedBy}`;
 
       data.states[oldStatus] = data.states[oldStatus].filter(
         id => id !== options.workUnitId

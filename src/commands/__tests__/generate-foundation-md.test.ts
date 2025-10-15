@@ -809,4 +809,116 @@ describe('Feature: Generate FOUNDATION.md from foundation.json', () => {
       expect(foundationMd).toContain('### Diagram 3');
     });
   });
+
+  describe('Scenario: Support custom output path', () => {
+    it('should write to custom path and not modify default location', async () => {
+      // Given I have a valid file "spec/foundation.json"
+      const foundation: Foundation = {
+        $schema: '../src/schemas/foundation.schema.json',
+        project: {
+          name: 'Test Project',
+          description: 'Test description',
+          repository: 'https://github.com/test/repo',
+          license: 'MIT',
+          importantNote: 'Test note',
+        },
+        whatWeAreBuilding: {
+          projectOverview: 'Test overview',
+          technicalRequirements: {
+            coreTechnologies: [],
+            architecture: {
+              pattern: 'Test pattern',
+              fileStructure: 'Test structure',
+              deploymentTarget: 'Test target',
+              integrationModel: [],
+            },
+            developmentAndOperations: {
+              developmentTools: 'Test tools',
+              testingStrategy: 'Test strategy',
+              logging: 'Test logging',
+              validation: 'Test validation',
+              formatting: 'Test formatting',
+            },
+            keyLibraries: [],
+          },
+          nonFunctionalRequirements: [],
+        },
+        whyWeAreBuildingIt: {
+          problemDefinition: {
+            primary: {
+              title: 'Test Problem',
+              description: 'Test description',
+              points: [],
+            },
+            secondary: [],
+          },
+          painPoints: {
+            currentState: 'Test state',
+            specific: [],
+          },
+          stakeholderImpact: [],
+          theoreticalSolutions: [],
+          developmentMethodology: {
+            name: 'Test Methodology',
+            description: 'Test description',
+            steps: [],
+            ensures: [],
+          },
+          successCriteria: [],
+          constraintsAndAssumptions: {
+            constraints: [],
+            assumptions: [],
+          },
+        },
+        architectureDiagrams: [],
+        coreCommands: {
+          categories: [],
+        },
+        featureInventory: {
+          phases: [],
+          tagUsageSummary: {
+            phaseDistribution: [],
+            componentDistribution: [],
+            featureGroupDistribution: [],
+            priorityDistribution: [],
+            testingCoverage: [],
+          },
+        },
+        notes: {
+          developmentStatus: [],
+        },
+      };
+
+      await writeFile(
+        join(testDir, 'spec/foundation.json'),
+        JSON.stringify(foundation, null, 2)
+      );
+
+      // Create docs directory and a placeholder file at spec/FOUNDATION.md
+      await mkdir(join(testDir, 'docs'), { recursive: true });
+      const defaultPath = join(testDir, 'spec/FOUNDATION.md');
+      await writeFile(defaultPath, 'OLD CONTENT', 'utf-8');
+      const originalContent = await readFile(defaultPath, 'utf-8');
+
+      // When I run `fspec generate-foundation --output=docs/FOUNDATION.md`
+      const result = await generateFoundationMdCommand({
+        cwd: testDir,
+        output: 'docs/FOUNDATION.md',
+      });
+
+      // Then the file "docs/FOUNDATION.md" should be created
+      expect(result.success).toBe(true);
+      const customOutput = await readFile(
+        join(testDir, 'docs/FOUNDATION.md'),
+        'utf-8'
+      );
+      expect(customOutput).toContain('Test Project');
+      expect(customOutput).toContain('THIS FILE IS AUTO-GENERATED');
+
+      // And "spec/FOUNDATION.md" should not be modified
+      const defaultStillExists = await readFile(defaultPath, 'utf-8');
+      expect(defaultStillExists).toBe(originalContent);
+      expect(defaultStillExists).toBe('OLD CONTENT');
+    });
+  });
 });

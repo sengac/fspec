@@ -603,4 +603,97 @@ describe('Feature: Generate TAGS.md from tags.json', () => {
       expect(secondGeneration).toBe(firstGeneration);
     });
   });
+
+  describe('Scenario: Support custom output path', () => {
+    it('should write to custom path and not modify default location', async () => {
+      // Given I have a valid file "spec/tags.json"
+      const tags: TagsRegistry = {
+        $schema: '../src/schemas/tags.schema.json',
+        categories: [
+          {
+            name: 'Phase Tags',
+            description: 'Test phase tags',
+            required: true,
+            tags: [
+              {
+                name: '@phase1',
+                description: 'Phase 1 tag',
+              },
+            ],
+          },
+        ],
+        combinationExamples: [],
+        usageGuidelines: {
+          requiredCombinations: {
+            title: 'Required',
+            requirements: [],
+            minimumExample: '',
+          },
+          recommendedCombinations: {
+            title: 'Recommended',
+            includes: [],
+            recommendedExample: '',
+          },
+          orderingConvention: {
+            title: 'Ordering',
+            order: [],
+            example: '',
+          },
+        },
+        addingNewTags: {
+          process: [],
+          namingConventions: [],
+          antiPatterns: { dont: [], do: [] },
+        },
+        queries: {
+          title: 'Common Queries',
+          examples: [],
+        },
+        statistics: {
+          lastUpdated: '2025-01-15T10:00:00Z',
+          phaseStats: [],
+          componentStats: [],
+          featureGroupStats: [],
+          updateCommand: 'fspec tag-stats',
+        },
+        validation: {
+          rules: [],
+          commands: [],
+        },
+        references: [],
+      };
+
+      await writeFile(
+        join(testDir, 'spec/tags.json'),
+        JSON.stringify(tags, null, 2)
+      );
+
+      // Create docs directory and a placeholder file at spec/TAGS.md
+      await mkdir(join(testDir, 'docs'), { recursive: true });
+      const defaultPath = join(testDir, 'spec/TAGS.md');
+      await writeFile(defaultPath, 'OLD CONTENT', 'utf-8');
+      const originalContent = await readFile(defaultPath, 'utf-8');
+
+      // When I run `fspec generate-tags --output=docs/TAGS.md`
+      const result = await generateTagsMdCommand({
+        cwd: testDir,
+        output: 'docs/TAGS.md',
+      });
+
+      // Then the file "docs/TAGS.md" should be created
+      expect(result.success).toBe(true);
+      const customOutput = await readFile(
+        join(testDir, 'docs/TAGS.md'),
+        'utf-8'
+      );
+      expect(customOutput).toContain('Phase Tags');
+      expect(customOutput).toContain('@phase1');
+      expect(customOutput).toContain('THIS FILE IS AUTO-GENERATED');
+
+      // And "spec/TAGS.md" should not be modified
+      const defaultStillExists = await readFile(defaultPath, 'utf-8');
+      expect(defaultStillExists).toBe(originalContent);
+      expect(defaultStillExists).toBe('OLD CONTENT');
+    });
+  });
 });
