@@ -40,8 +40,9 @@ const PREFILL_PATTERNS = [
   },
   { regex: /\[scenario name\]/gi, name: '[scenario name]', command: 'fspec add-scenario' },
 
-  // Generic placeholders
-  { regex: /\[.*?\]/g, name: '[placeholder]', command: 'fspec commands' },
+  // Generic placeholders (but exclude Mermaid node labels like AI[label] or A-->B[label])
+  // Only match standalone brackets with lowercase words or spaces (typical placeholders)
+  { regex: /\b\[(?![A-Z])[a-z\s]+\]/g, name: '[placeholder]', command: 'fspec commands' },
 
   // TODO markers
   { regex: /TODO:/gi, name: 'TODO:', command: 'fspec add-architecture' },
