@@ -2,7 +2,6 @@
 @coverage-tracking
 @cli
 @phase1
-@EXMAP-003
 Feature: Add system-reminder to generate-coverage command
 
   # ========================================

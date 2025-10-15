@@ -30,12 +30,13 @@ Tags that identify which architectural component a feature belongs to.
 | Tag | Description | Usage |
 |-----|-------------|-------|
 | `@cli` | Command-Line Interface |  |
-| `@parser` | Gherkin Parser Integration |  |
-| `@generator` | Template Generation |  |
-| `@validator` | Validation Logic |  |
-| `@formatter` | Formatting & Prettification |  |
 | `@file-ops` | File Operations |  |
+| `@formatter` | Formatting & Prettification |  |
+| `@generator` | Template Generation |  |
+| `@hooks` | Hooks system and execution engine |  |
 | `@integration` | Cross-Component Integration |  |
+| `@parser` | Gherkin Parser Integration |  |
+| `@validator` | Validation Logic |  |
 
 **Rule**: Every feature file MUST have at least ONE component tag (may have multiple if cross-component).
 
@@ -65,6 +66,7 @@ Tags that categorize features by functional area.
 | `@comparison` | Comparison operations |  |
 | `@completion` | Completion operations |  |
 | `@compound` | Compound query operations |  |
+| `@configuration` | Configuration loading and validation |  |
 | `@coverage` | Coverage tracking and traceability features |  |
 | `@coverage-tracking` | Coverage tracking and traceability from scenarios to tests to implementation code |  |
 | `@critical-path` | Critical path analysis |  |
@@ -499,7 +501,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-10-15T07:10:35.734Z_
+_Last updated: 2025-10-15T11:52:55.314Z_
 
 **Update Command**: `fspec tag-stats`
 

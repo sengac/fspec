@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-15T09:08:39.338Z"
+    "lastUpdated": "2025-10-15T13:02:51.985Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -5057,9 +5057,9 @@
       "id": "EXMAP-003",
       "title": "Add system-reminder to generate-coverage command",
       "type": "story",
-      "status": "specifying",
+      "status": "done",
       "createdAt": "2025-10-15T08:49:29.798Z",
-      "updatedAt": "2025-10-15T09:22:46.764Z",
+      "updatedAt": "2025-10-15T13:26:45.264Z",
       "description": "When generate-coverage creates coverage files, emit a system-reminder explaining that the LLM must manually link coverage using link-coverage command",
       "epic": "coverage-tracking",
       "children": [],
@@ -5087,6 +5087,22 @@
         {
           "state": "specifying",
           "timestamp": "2025-10-15T09:22:46.765Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-15T13:24:08.180Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-15T13:24:50.326Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-15T13:24:55.615Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-15T13:26:45.266Z"
         }
       ],
       "rules": [
@@ -5142,13 +5158,660 @@
         "action": "be reminded to manually link coverage after running generate-coverage",
         "benefit": "I don't forget the critical step of linking tests and implementation to scenarios"
       }
+    },
+    "HOOK-001": {
+      "id": "HOOK-001",
+      "title": "Kanban Lifecycle Hooks System",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-15T10:55:43.651Z",
+      "updatedAt": "2025-10-15T13:28:40.738Z",
+      "description": "Implement a hooks system similar to Claude Code hooks that allows executing custom commands before/after Kanban state transitions. Hooks are configured in spec/fspec-hooks.json and scripts live in spec/hooks/ directory. Enables quality gates, test automation, notifications, and CI/CD integration at each ACDD workflow stage.",
+      "children": [
+        "HOOK-002",
+        "HOOK-003",
+        "HOOK-004",
+        "HOOK-005",
+        "HOOK-006",
+        "HOOK-007",
+        "HOOK-008",
+        "HOOK-009"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-15T10:55:52.838Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-15T13:28:29.038Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-15T13:28:40.015Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-15T13:28:40.379Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-15T13:28:40.739Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using fspec",
+        "action": "configure lifecycle hooks to run custom scripts at Kanban transition points",
+        "benefit": "I can automate quality gates, testing, notifications, and CI/CD workflows throughout the ACDD process"
+      },
+      "rules": [
+        "Hooks are configured in spec/fspec-hooks.json file",
+        "Hook scripts live in spec/hooks/ directory",
+        "Hooks trigger before and after Kanban state transitions (pre-* and post-*)",
+        "Hooks can be blocking (prevent transition on failure) or non-blocking (run but don't block)",
+        "Hooks receive work unit context as JSON via stdin",
+        "Hooks can trigger on Example Mapping actions (add-rule, add-example, add-question, answer-question)",
+        "Hooks can trigger on generation commands (generate-scenarios, generate-coverage, generate-foundation-md, generate-tags-md)",
+        "Hooks can trigger on coverage operations (link-coverage, unlink-coverage, audit-coverage)",
+        "Hooks can block create operations (prevent resource creation if conditions not met)",
+        "Hooks can block delete operations (prevent accidental deletion of critical resources)",
+        "Hooks can return structured system messages that fspec passes back to the AI agent",
+        "Blocking hooks that fail will halt the command and return an error with the hook's system message",
+        "Hook system messages can include instructions, warnings, suggestions, or error details for the AI to act upon",
+        "Hooks can return structured feedback (JSON) that AI agents consume to improve ACDD workflow",
+        "Hooks enforce ACDD ordering by blocking transitions when prerequisites are not met",
+        "Hooks can spawn separate Claude Code sessions with specific personas (roles) for peer review and validation",
+        "Multi-agent hooks enable AI pair programming with different expertise (reviewer, QA, security, BDD expert, product owner)",
+        "fspec provides the hooks framework and execution engine, users write their own hook scripts",
+        "Hook scripts can be in any language (bash, python, node, etc) as long as they are executable",
+        "fspec passes work unit context to hooks via stdin (JSON) and environment variables",
+        "Hook scripts return exit codes and optional JSON output to fspec for processing",
+        "Hooks can trigger on program lifecycle events (startup and exit)",
+        "Startup hooks run before command logic executes (for setup, validation, or blocking)",
+        "Exit hooks receive command output and can intercept, modify, or augment the response before returning to user",
+        "Sequential execution only. Hooks for the same event run one after another in the order defined in fspec-hooks.json. This provides predictable execution order, easier debugging, and allows later hooks to depend on earlier hooks' side effects.",
+        "No skip mechanism. When a blocking hook fails, the command is blocked and the user must fix the issue. To bypass a hook, the user must edit spec/fspec-hooks.json to remove or disable it (more intentional than a flag). This maintains discipline and ensures hooks enforce their intended policies.",
+        "Always run for all work units. No matcher system. This keeps the framework simple and predictable. If users need conditional execution, they can implement it inside their hook scripts by reading the work unit context and exiting early if conditions aren't met.",
+        "Default timeout is 60 seconds (matching Claude Code). Hooks can override with 'timeout' field in fspec-hooks.json. Global default can be set in 'global.timeout'. When timeout is exceeded, the hook process is killed and an error is returned.",
+        "Plain stdout/stderr only. Exit code determines success (0) or failure (non-zero). Hook output is displayed as-is to the user. If blocking hook fails (exit != 0), fspec shows stderr in a system-reminder block for AI agent consumption. This keeps hooks simple and works with any tool.",
+        "No dry-run mode. Users can use 'fspec list-hooks' to see configured hooks and 'fspec validate-hooks' to validate configuration syntax. To test a hook, users can temporarily make it non-blocking or run it manually outside of fspec.",
+        "CLI commands 'fspec add-hook' and 'fspec remove-hook' manage hooks in fspec-hooks.json programmatically",
+        "No chaining. Each hook receives the same original work unit context via stdin. Hooks execute sequentially but independently. If users need chaining logic, they can implement it inside their hook scripts (e.g., read files left by previous hooks or use pipes within the script).",
+        "No chaining for any hooks. All hooks (event hooks and exit hooks) receive the original context/output via stdin. Hooks execute sequentially but independently for side effects (validation, logging, notifications). The original command output is returned to the user unchanged by hooks.",
+        "Hooks inherit the parent process environment naturally (as spawned child processes). fspec does NOT set custom FSPEC_* environment variables. Hooks receive all context via stdin as JSON. Hooks are independent programs that manage their own environment.",
+        "Support optional conditions in hook configuration. Hooks can specify 'condition' object with fields like 'tags', 'prefix', 'epic', 'estimateMin', 'estimateMax'. If condition doesn't match, hook is skipped. If no condition specified, hook always runs. This allows context-aware hooks without requiring logic in every script.",
+        "Support hooks for ANY fspec command using convention: 'pre-<command-name>' and 'post-<command-name>'. Examples: pre-create-work-unit, post-add-rule, pre-link-coverage, post-generate-scenarios. Plus special lifecycle hooks: pre-start (before any command) and pre-exit (before returning output). This makes the system extensible for current and future commands.",
+        "Yes. When a blocking hook fails (exit code != 0), fspec wraps the stderr output in a <system-reminder> block for AI agent consumption. This allows hooks to provide guidance, suggestions, and instructions to AI through plain text stderr output. Non-blocking hooks just display output normally.",
+        "No standard schema. Hooks output freeform text to stdout/stderr. AI agents read and interpret the text naturally. This maximizes flexibility for hook authors and keeps the framework simple. Documentation can provide examples of effective hook output patterns.",
+        "No. fspec provides the hooks framework only. Users can implement multi-agent patterns (spawning multiple Claude sessions, parallel execution, etc.) in their hook scripts using standard shell tools. This keeps fspec focused and avoids framework bloat."
+      ],
+      "examples": [
+        "Developer configures post-implementing hook to run ESLint before allowing transition to validating",
+        "Developer configures post-testing hook to run Playwright tests to verify E2E scenarios work",
+        "Developer configures post-done hook to send Slack notification that work unit is complete",
+        "Developer configures pre-validating hook to check test coverage is above 80%",
+        "Developer configures post-add-rule hook to check if rule needs clarification (AI analysis)",
+        "Developer configures post-generate-scenarios hook to auto-format generated feature files",
+        "Developer configures post-generate-coverage hook to run test suite with coverage reporter and extract actual line mappings",
+        "Developer configures post-answer-question hook to automatically add answer as rule or assumption based on AI classification",
+        "Developer configures pre-generate-scenarios hook to validate that all questions are answered before allowing scenario generation",
+        "Developer configures post-link-coverage hook to verify linked files exist and line ranges are valid",
+        "Developer configures pre-create-work-unit hook to block creation if work unit title contains placeholder text like TODO or TBD",
+        "Developer configures pre-delete-work-unit hook to prevent deletion of work units with status 'implementing' or 'validating'",
+        "Developer configures pre-unlink-coverage hook to confirm before removing coverage mappings (safety check)",
+        "Developer configures pre-delete-scenario hook to block deletion if scenario has existing test coverage",
+        "Code quality hook fails with message: 'BLOCKED: TypeScript errors in src/auth.ts:42. Fix type annotation for loginUser function before proceeding to validating state.'",
+        "Coverage hook returns: 'WARNING: Test coverage is 65%, below 80% threshold. Consider adding tests for edge cases in src/validator.ts:23-45 before moving to validating.'",
+        "Example mapping hook suggests: 'SUGGESTION: Question 0 contains implementation details. Consider rephrasing to focus on behavior: What should happen when... instead of How should we implement...'",
+        "AI uses post-testing hook to analyze test failures and suggest missing scenarios or edge cases",
+        "AI uses post-implementing hook to compare code against acceptance criteria and flag deviations",
+        "AI uses post-generate-scenarios hook to review generated Gherkin and suggest improvements for clarity",
+        "AI uses pre-implementing hook to verify all scenarios have corresponding test mappings before allowing code to be written",
+        "AI uses post-add-example hook to detect duplicate or conflicting examples and suggest consolidation",
+        "AI uses post-validating hook to analyze coverage gaps and suggest missing test scenarios",
+        "Developer configures post-implementing hook to spawn a separate Claude Code session as a 'code reviewer' persona to review implementation before validating",
+        "Developer configures post-generate-scenarios hook to spawn Claude Code as 'BDD expert' persona to critique Gherkin quality",
+        "Developer configures post-testing hook to spawn Claude Code as 'QA engineer' persona to review test coverage and suggest edge cases",
+        "Developer configures post-add-example hook to spawn Claude Code as 'product owner' persona to validate examples match business requirements",
+        "Developer configures pre-done hook to spawn Claude Code as 'security auditor' persona to review code for security vulnerabilities",
+        "User writes custom bash hook in spec/hooks/check-quality.sh that runs ESLint and returns JSON feedback",
+        "User writes Python hook in spec/hooks/analyze-coverage.py that uses pytest-cov to generate coverage reports",
+        "User writes Node.js hook in spec/hooks/validate-api.js that spawns separate Claude session for review",
+        "User configures startup hook to validate project configuration and block fspec execution if settings are invalid",
+        "User configures startup hook to initialize external services (database connection, API tokens) before fspec runs",
+        "User configures exit hook to send fspec command results to external dashboard or logging service",
+        "User configures exit hook to intercept validation errors and add project-specific troubleshooting guidance to AI agent",
+        "User configures exit hook to format fspec output for different consumers (JSON for CI, markdown for humans, structured for AI)",
+        "User runs 'fspec add-hook post-implementing code-quality spec/hooks/check-quality.sh --blocking' to add a new hook to configuration",
+        "User runs 'fspec remove-hook post-implementing code-quality' to remove a hook from configuration"
+      ],
+      "questions": [
+        {
+          "text": "@human: Should hooks for the same event run in parallel (all at once) or sequentially (one after another)? Claude Code runs them in parallel.",
+          "selected": true,
+          "answer": "Sequential execution only. Hooks for the same event run one after another in the order defined in fspec-hooks.json. This provides predictable execution order, easier debugging, and allows later hooks to depend on earlier hooks' side effects."
+        },
+        {
+          "text": "@human: When a blocking hook fails, should we provide a way for the user to override and force the transition anyway (like --skip-hooks flag)?",
+          "selected": true,
+          "answer": "No skip mechanism. When a blocking hook fails, the command is blocked and the user must fix the issue. To bypass a hook, the user must edit spec/fspec-hooks.json to remove or disable it (more intentional than a flag). This maintains discipline and ensures hooks enforce their intended policies."
+        },
+        {
+          "text": "@human: Should hooks be able to match specific work units (e.g., only run for AUTH-* prefixes or specific epics)? Or always run for all work units?",
+          "selected": true,
+          "answer": "Always run for all work units. No matcher system. This keeps the framework simple and predictable. If users need conditional execution, they can implement it inside their hook scripts by reading the work unit context and exiting early if conditions aren't met."
+        },
+        {
+          "text": "@human: What should the default timeout be? Claude Code uses 60 seconds. Should we allow per-hook timeout overrides?",
+          "selected": true,
+          "answer": "Default timeout is 60 seconds (matching Claude Code). Hooks can override with 'timeout' field in fspec-hooks.json. Global default can be set in 'global.timeout'. When timeout is exceeded, the hook process is killed and an error is returned."
+        },
+        {
+          "text": "@human: Should hook scripts be able to return structured output (JSON) that fspec displays to the user, or just stdout/stderr?",
+          "selected": true,
+          "answer": "Plain stdout/stderr only. Exit code determines success (0) or failure (non-zero). Hook output is displayed as-is to the user. If blocking hook fails (exit != 0), fspec shows stderr in a system-reminder block for AI agent consumption. This keeps hooks simple and works with any tool."
+        },
+        {
+          "text": "@human: Do you want a dry-run mode to test hooks without actually running them (just show what would execute)?",
+          "selected": true,
+          "answer": "No dry-run mode. Users can use 'fspec list-hooks' to see configured hooks and 'fspec validate-hooks' to validate configuration syntax. To test a hook, users can temporarily make it non-blocking or run it manually outside of fspec."
+        },
+        {
+          "text": "@human: Should we support hook chaining where one hook's output becomes the next hook's input?",
+          "selected": true,
+          "answer": "No chaining for any hooks. All hooks (event hooks and exit hooks) receive the original context/output via stdin. Hooks execute sequentially but independently for side effects (validation, logging, notifications). The original command output is returned to the user unchanged by hooks."
+        },
+        {
+          "text": "@human: What environment variables should be available to hooks? (e.g., FSPEC_WORK_UNIT_ID, FSPEC_STATUS, FSPEC_FEATURE_FILES, etc.)",
+          "selected": true,
+          "answer": "Hooks inherit the parent process environment naturally (as spawned child processes). fspec does NOT set custom FSPEC_* environment variables. Hooks receive all context via stdin as JSON. Hooks are independent programs that manage their own environment."
+        },
+        {
+          "text": "@human: Should we support hook conditions (e.g., only run if estimate > 5 points, or only for @critical tagged features)?",
+          "selected": true,
+          "answer": "Support optional conditions in hook configuration. Hooks can specify 'condition' object with fields like 'tags', 'prefix', 'epic', 'estimateMin', 'estimateMax'. If condition doesn't match, hook is skipped. If no condition specified, hook always runs. This allows context-aware hooks without requiring logic in every script."
+        },
+        {
+          "text": "@human: Do you want hooks for non-transition events like create-work-unit, add-dependency, or link-coverage?",
+          "selected": true,
+          "answer": "Support hooks for ANY fspec command using convention: 'pre-<command-name>' and 'post-<command-name>'. Examples: pre-create-work-unit, post-add-rule, pre-link-coverage, post-generate-scenarios. Plus special lifecycle hooks: pre-start (before any command) and pre-exit (before returning output). This makes the system extensible for current and future commands."
+        },
+        {
+          "text": "@human: Should we have hooks that run on commands like create-work-unit, add-dependency, or prioritize-work-unit for workflow automation?",
+          "selected": true,
+          "answer": "Yes - already answered in Question 9. All fspec commands support pre/post hooks including create-work-unit, add-dependency, prioritize-work-unit, etc. This enables workflow automation like auto-prioritizing critical work units or validating dependencies."
+        },
+        {
+          "text": "@human: Should hooks be able to provide AI-consumable feedback that influences the next steps (e.g., suggest missing scenarios, recommend refactoring)?",
+          "selected": true,
+          "answer": "Yes. When a blocking hook fails (exit code != 0), fspec wraps the stderr output in a <system-reminder> block for AI agent consumption. This allows hooks to provide guidance, suggestions, and instructions to AI through plain text stderr output. Non-blocking hooks just display output normally."
+        },
+        {
+          "text": "@human: Should we provide a standard schema for hook output that includes 'suggestions', 'warnings', 'blockers', and 'insights' for AI consumption?",
+          "selected": true,
+          "answer": "No standard schema. Hooks output freeform text to stdout/stderr. AI agents read and interpret the text naturally. This maximizes flexibility for hook authors and keeps the framework simple. Documentation can provide examples of effective hook output patterns."
+        },
+        {
+          "text": "@human: Should hooks support spawning multiple Claude Code sessions in parallel for multi-perspective review (e.g., security + performance + maintainability reviewers)?",
+          "selected": true,
+          "answer": "No. fspec provides the hooks framework only. Users can implement multi-agent patterns (spawning multiple Claude sessions, parallel execution, etc.) in their hook scripts using standard shell tools. This keeps fspec focused and avoids framework bloat."
+        }
+      ],
+      "assumptions": [
+        "Yes - already answered in Question 9. All fspec commands support pre/post hooks including create-work-unit, add-dependency, prioritize-work-unit, etc. This enables workflow automation like auto-prioritizing critical work units or validating dependencies."
+      ],
+      "estimate": 13,
+      "epic": "hooks-system"
+    },
+    "HOOK-002": {
+      "id": "HOOK-002",
+      "title": "Hook configuration schema and validation",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-15T11:44:40.720Z",
+      "updatedAt": "2025-10-15T11:57:55.780Z",
+      "description": "Create JSON schema for spec/fspec-hooks.json. Implement configuration loading, validation, and error handling. Support hook definition with name, command, blocking flag, timeout, and conditions.",
+      "epic": "hooks-system",
+      "children": [],
+      "estimate": 3,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-15T11:50:26.414Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-15T11:53:06.432Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-15T11:55:57.393Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-15T11:56:34.878Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-15T11:57:55.781Z"
+        }
+      ],
+      "userStory": {
+        "role": "fspec developer",
+        "action": "define hook configuration in spec/fspec-hooks.json",
+        "benefit": "the hooks system knows which scripts to execute at which events"
+      },
+      "rules": [
+        "Configuration file is spec/fspec-hooks.json in JSON format",
+        "Each hook has: name (string), command (path to executable), blocking (boolean, default false), timeout (number in seconds, default 60)",
+        "Hooks can have optional condition object with: tags (array), prefix (array), epic (string), estimateMin (number), estimateMax (number)",
+        "Configuration must be valid JSON and conform to hooks schema",
+        "Hook command paths must point to executable files",
+        "Global defaults can be set in 'global' object: timeout, shell"
+      ],
+      "examples": [
+        "Valid config with single hook: {hooks: {'post-implementing': [{name: 'lint', command: 'spec/hooks/lint.sh', blocking: true}]}}",
+        "Hook with timeout override: {name: 'e2e-tests', command: 'test.sh', timeout: 300}",
+        "Hook with conditions: {name: 'security', command: 'audit.sh', condition: {tags: ['@security'], prefix: ['AUTH']}}",
+        "Invalid JSON causes validation error with helpful message",
+        "Non-existent hook command path causes validation error",
+        "Missing hook file returns clear error: 'Hook command not found: spec/hooks/missing.sh'"
+      ]
+    },
+    "HOOK-003": {
+      "id": "HOOK-003",
+      "title": "Hook execution engine",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-15T11:44:44.580Z",
+      "updatedAt": "2025-10-15T12:09:58.633Z",
+      "description": "Implement core hook execution: spawn processes, pass context via stdin JSON, collect stdout/stderr, handle exit codes, implement 60s default timeout with override support, sequential execution of hooks.",
+      "epic": "hooks-system",
+      "children": [],
+      "estimate": 5,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-15T12:00:26.203Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-15T12:03:56.276Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-15T12:05:03.823Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-15T12:08:33.750Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-15T12:09:58.633Z"
+        }
+      ],
+      "userStory": {
+        "role": "fspec developer",
+        "action": "execute hook scripts at lifecycle events",
+        "benefit": "I can run custom automation, quality gates, and notifications during fspec commands"
+      },
+      "rules": [
+        "Hook execution engine spawns child processes for each hook script",
+        "Hook context is passed as JSON to stdin (workUnitId, event, timestamp, etc.)",
+        "stdout and stderr are captured and displayed to user/AI agent",
+        "Exit code 0 indicates success, non-zero indicates failure",
+        "Hooks timeout after configured duration (default 60s)",
+        "Blocking hooks halt command execution on failure (non-zero exit)",
+        "Hooks execute sequentially in the order defined in config",
+        "Hook processes inherit parent environment variables"
+      ],
+      "examples": [
+        "Execute single non-blocking hook that succeeds (exit 0) - output shown, command continues",
+        "Execute single non-blocking hook that fails (exit 1) - warning shown, command continues",
+        "Execute blocking hook that fails - command halted, error returned to user/AI",
+        "Hook times out after 60s - process killed, timeout error shown",
+        "Hook receives context via stdin: {\"workUnitId\":\"AUTH-001\",\"event\":\"post-implementing\",\"timestamp\":\"2025-01-15T10:30:00Z\"}",
+        "Multiple hooks execute sequentially - first runs to completion, then second starts",
+        "Hook stdout/stderr captured and displayed: 'Running tests...' visible to user"
+      ]
+    },
+    "HOOK-004": {
+      "id": "HOOK-004",
+      "title": "Hook discovery and event naming",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-15T11:44:48.300Z",
+      "updatedAt": "2025-10-15T12:17:01.555Z",
+      "description": "Implement hook discovery for any command using pre-/post- convention. Support special lifecycle hooks: pre-start and pre-exit. Build event name from command name dynamically.",
+      "epic": "hooks-system",
+      "children": [],
+      "estimate": 3,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-15T12:11:00.282Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-15T12:14:07.598Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-15T12:14:54.286Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-15T12:15:29.403Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-15T12:17:01.555Z"
+        }
+      ],
+      "userStory": {
+        "role": "fspec system",
+        "action": "discover and execute hooks for lifecycle events",
+        "benefit": "hooks can be triggered at the right moments during command execution"
+      },
+      "rules": [
+        "Event names follow pre-/post- convention: pre-<command-name>, post-<command-name>",
+        "Special lifecycle hooks: pre-start (before any command), pre-exit (before returning output)",
+        "Hook discovery searches config.hooks for matching event name",
+        "If no hooks match event name, return empty array (no error)",
+        "Event names are case-sensitive (pre-implementing != pre-Implementing)",
+        "Command name extraction: 'fspec update-work-unit-status' -> 'update-work-unit-status'"
+      ],
+      "examples": [
+        "Discover hooks for 'post-implementing' event - returns array of matching hooks",
+        "Discover hooks for 'pre-start' special lifecycle event - returns global pre-start hooks",
+        "Discover hooks for non-existent event 'pre-xyz' - returns empty array (no error)",
+        "Event name for command 'update-work-unit-status' generates 'pre-update-work-unit-status' and 'post-update-work-unit-status'",
+        "Case-sensitive matching: 'post-implementing' finds hooks, 'post-Implementing' does not",
+        "Multiple hooks for same event - returns all matching hooks in config order"
+      ]
+    },
+    "HOOK-005": {
+      "id": "HOOK-005",
+      "title": "Hook condition evaluation",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-15T11:44:52.221Z",
+      "updatedAt": "2025-10-15T12:24:15.115Z",
+      "description": "Implement optional condition matching: tags, prefix, epic, estimateMin, estimateMax. Skip hook if conditions don't match. Support no condition = always run.",
+      "epic": "hooks-system",
+      "children": [],
+      "estimate": 2,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-15T12:17:45.705Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-15T12:21:11.809Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-15T12:22:27.203Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-15T12:23:05.811Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-15T12:24:15.116Z"
+        }
+      ],
+      "userStory": {
+        "role": "hook execution system",
+        "action": "evaluate hook conditions to determine if a hook should run",
+        "benefit": "hooks only execute when their conditions match the current context"
+      },
+      "rules": [
+        "Hooks with no condition always match (condition is optional)",
+        "Condition with tags: hook runs if work unit has ANY of the specified tags (OR logic)",
+        "Condition with prefix: hook runs if work unit ID starts with ANY of the specified prefixes (OR logic)",
+        "Condition with epic: hook runs if work unit belongs to specified epic",
+        "Condition with estimateMin/estimateMax: hook runs if work unit estimate is within range",
+        "Multiple condition fields use AND logic (all must match)",
+        "If context has no workUnitId, only hooks without conditions run"
+      ],
+      "examples": [
+        "Hook with no condition matches any context - always runs",
+        "Hook with tags:[@security] matches work unit with @security tag",
+        "Hook with prefix:[AUTH,SEC] matches AUTH-001 but not DASH-001",
+        "Hook with epic:'user-management' matches work unit in that epic",
+        "Hook with estimateMin:5, estimateMax:13 matches work unit with estimate 8",
+        "Hook with tags:[@security] AND prefix:[AUTH] - both must match (AND logic)",
+        "Context with no workUnitId - only unconditional hooks match"
+      ]
+    },
+    "HOOK-006": {
+      "id": "HOOK-006",
+      "title": "System reminder formatting for AI",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-15T11:44:56.257Z",
+      "updatedAt": "2025-10-15T12:32:11.238Z",
+      "description": "When blocking hook fails, wrap stderr in <system-reminder> block for AI consumption. Display hook name, exit code, and error message. Include 'DO NOT mention this reminder to the user' footer.",
+      "epic": "hooks-system",
+      "children": [],
+      "estimate": 2,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-15T12:26:08.503Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-15T12:29:26.029Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-15T12:30:18.689Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-15T12:30:56.713Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-15T12:32:11.239Z"
+        }
+      ],
+      "userStory": {
+        "role": "fspec system",
+        "action": "format blocking hook stderr as system-reminders for AI agents",
+        "benefit": "AI agents receive actionable feedback when hooks fail"
+      },
+      "rules": [
+        "Blocking hook stderr is wrapped in <system-reminder> tags",
+        "Non-blocking hook stderr is displayed as-is (no wrapping)",
+        "System-reminder content includes hook name, exit code, and stderr output",
+        "Empty stderr produces no system-reminder (only if stderr has content)",
+        "System-reminder is appended to command output (not replacing it)"
+      ],
+      "examples": [
+        "Blocking hook fails with stderr 'Invalid config' - wrapped in system-reminder",
+        "Non-blocking hook fails with stderr - displayed as-is, no wrapping",
+        "Blocking hook succeeds - no system-reminder generated",
+        "Blocking hook fails with empty stderr - no system-reminder",
+        "System-reminder includes: hook name 'validate', exit code 1, stderr content"
+      ]
+    },
+    "HOOK-007": {
+      "id": "HOOK-007",
+      "title": "Hook management CLI commands",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-15T11:45:00.480Z",
+      "updatedAt": "2025-10-15T12:51:50.899Z",
+      "description": "Implement: fspec list-hooks, fspec validate-hooks, fspec add-hook, fspec remove-hook. List shows all configured hooks. Validate checks config syntax. Add/remove modify fspec-hooks.json.",
+      "epic": "hooks-system",
+      "children": [],
+      "estimate": 3,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-15T12:42:06.760Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-15T12:47:49.741Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-15T12:48:36.967Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-15T12:49:21.484Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-15T12:51:50.899Z"
+        }
+      ],
+      "userStory": {
+        "role": "fspec user",
+        "action": "manage hooks via CLI commands",
+        "benefit": "I can list, validate, add, and remove hooks without manually editing JSON"
+      },
+      "rules": [
+        "list-hooks command displays all configured hooks grouped by event",
+        "validate-hooks command checks config syntax and verifies hook scripts exist",
+        "add-hook command adds a hook to config and creates the event array if needed",
+        "remove-hook command removes a hook by name and event",
+        "Commands fail gracefully if spec/fspec-hooks.json does not exist",
+        "add-hook command requires: name, event, command (path to script)"
+      ],
+      "examples": [
+        "list-hooks displays: post-implementing: lint, test",
+        "validate-hooks passes - all scripts exist, JSON valid",
+        "validate-hooks fails - missing script spec/hooks/missing.sh",
+        "add-hook --name lint --event post-implementing --command spec/hooks/lint.sh --blocking",
+        "remove-hook --name lint --event post-implementing - hook removed from config",
+        "list-hooks when no config file - displays friendly message"
+      ]
+    },
+    "HOOK-008": {
+      "id": "HOOK-008",
+      "title": "Integrate hooks into all commands",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-15T11:45:04.467Z",
+      "updatedAt": "2025-10-15T13:01:53.657Z",
+      "description": "Add hook execution to every fspec command. Call runHooks() before/after command logic. Support pre-start lifecycle hook. Support pre-exit lifecycle hook. Pass appropriate context to each hook.",
+      "epic": "hooks-system",
+      "children": [],
+      "estimate": 5,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-15T12:56:41.998Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-15T12:58:43.162Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-15T12:59:55.073Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-15T13:00:34.477Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-15T13:01:53.657Z"
+        }
+      ],
+      "userStory": {
+        "role": "fspec CLI user",
+        "action": "have hooks execute automatically with every command",
+        "benefit": "I can enforce policies and automations without manually invoking hooks"
+      },
+      "rules": [
+        "Commands execute pre- hooks before main logic and post- hooks after main logic",
+        "Hook event names follow pattern: pre-{command} and post-{command}",
+        "Hooks receive context with workUnitId (if applicable), event name, and timestamp",
+        "Blocking hook failures prevent command execution (pre-hooks) or prevent exit with success (post-hooks)",
+        "Non-blocking hook failures do not prevent command execution or success",
+        "Hooks are filtered by conditions before execution (tags, prefix, epic, estimate)",
+        "Hook output is displayed using formatHookOutput() with system-reminders for blocking failures"
+      ],
+      "examples": [
+        "Command update-work-unit-status triggers pre-update-work-unit-status and post-update-work-unit-status hooks",
+        "Pre-hook validates work unit has feature file before allowing status change to testing",
+        "Post-hook runs tests after implementing status change",
+        "Blocking pre-hook failure prevents command from executing",
+        "Non-blocking post-hook failure allows command to succeed",
+        "Hook with tag condition only runs for work units with matching tag",
+        "Hook output formatted with system-reminder shows blocking hook failure details"
+      ]
+    },
+    "HOOK-009": {
+      "id": "HOOK-009",
+      "title": "Hook system documentation and examples",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-15T11:45:08.399Z",
+      "updatedAt": "2025-10-15T13:08:41.103Z",
+      "description": "Write comprehensive documentation: configuration format, hook script examples (bash/python/node), best practices for output, example hooks for common use cases (linting, testing, notifications).",
+      "epic": "hooks-system",
+      "children": [],
+      "estimate": 3,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-15T13:02:40.697Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-15T13:04:34.908Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-15T13:05:21.697Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-15T13:07:19.458Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-15T13:08:41.104Z"
+        }
+      ],
+      "userStory": {
+        "role": "fspec user writing hook scripts",
+        "action": "have comprehensive documentation and working examples",
+        "benefit": "I can quickly create custom hooks without trial and error"
+      },
+      "rules": [
+        "Documentation explains hook configuration JSON schema with all fields",
+        "Example hooks provided for bash, python, and node.js",
+        "Documentation explains hook context JSON passed via stdin",
+        "Best practices documented for stdout/stderr usage and exit codes",
+        "Common use case examples: linting, testing, notifications, validation",
+        "Documentation includes troubleshooting section for common errors"
+      ],
+      "examples": [
+        "Configuration doc shows complete fspec-hooks.json with global defaults and multiple hooks",
+        "Bash hook reads JSON context from stdin and validates work unit has feature file",
+        "Python hook parses JSON stdin and runs pytest on work unit tests",
+        "Node.js hook reads stdin and sends Slack notification about status change",
+        "Lint hook example shows proper exit codes: 0 for success, 1 for lint errors",
+        "Troubleshooting doc explains 'Hook command not found' error and solution"
+      ]
     }
   },
   "states": {
     "backlog": [],
-    "specifying": [
-      "EXMAP-003"
-    ],
+    "specifying": [],
     "testing": [],
     "implementing": [],
     "validating": [],
@@ -5253,7 +5916,17 @@
       "BUG-009",
       "DOC-004",
       "BUG-010",
-      "EXMAP-002"
+      "EXMAP-002",
+      "HOOK-002",
+      "HOOK-003",
+      "HOOK-004",
+      "HOOK-005",
+      "HOOK-006",
+      "HOOK-007",
+      "HOOK-008",
+      "HOOK-009",
+      "EXMAP-003",
+      "HOOK-001"
     ],
     "blocked": []
   }

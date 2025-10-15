@@ -209,6 +209,7 @@ Blocked By: []
 - 🎨 **Auto-Formatting** - Custom AST-based formatter for Gherkin files
 - 🤖 **AI Agent Friendly** - Machine-readable JSON format with structured commands
 - 🔌 **CAGE Integration** - Designed to work with CAGE for code-spec alignment
+- 🪝 **Lifecycle Hooks** - Execute custom scripts at command lifecycle events (pre-/post- hooks) with conditional execution, timeout support, and blocking capabilities
 
 ## Installation
 
@@ -292,6 +293,165 @@ fspec add-scenario --help       # Comprehensive help for add-scenario command
 - ✅ **Arguments and options** with required/optional indicators
 
 **Note:** All commands include complete option documentation and practical examples in the help system. You no longer need to refer to this README for detailed command usage.
+
+### Lifecycle Hooks
+
+fspec supports lifecycle hooks that execute custom scripts at specific command events. This allows you to integrate validation, testing, notifications, or any custom automation into your ACDD workflow.
+
+#### Hook Configuration
+
+Hooks are configured in `spec/fspec-hooks.json`:
+
+```json
+{
+  "global": {
+    "timeout": 120,
+    "shell": "/bin/bash"
+  },
+  "hooks": {
+    "pre-update-work-unit-status": [
+      {
+        "name": "validate-feature-file",
+        "command": "spec/hooks/validate-feature.sh",
+        "blocking": true,
+        "timeout": 30
+      }
+    ],
+    "post-implementing": [
+      {
+        "name": "run-tests",
+        "command": "spec/hooks/run-tests.sh",
+        "blocking": false,
+        "condition": {
+          "tags": ["@security"],
+          "prefix": ["AUTH", "SEC"]
+        }
+      }
+    ]
+  }
+}
+```
+
+#### Hook Events
+
+Hooks follow the pattern `pre-<command>` and `post-<command>`:
+
+- `pre-update-work-unit-status` - Before updating work unit status
+- `post-update-work-unit-status` - After updating work unit status
+- `post-implementing` - After moving work unit to implementing state
+- `post-testing` - After moving work unit to testing state
+- Any fspec command supports pre-/post- hooks
+
+#### Hook Properties
+
+- **`name`** (required): Unique hook identifier
+- **`command`** (required): Path to hook script (relative to project root)
+- **`blocking`** (optional): If true, hook failure prevents command execution (pre-hooks) or sets exit code to 1 (post-hooks). Default: false
+- **`timeout`** (optional): Timeout in seconds. Overrides global timeout. Default: 60
+- **`condition`** (optional): Conditions for when hook should run
+  - **`tags`**: Hook runs if work unit has ANY of these tags (OR logic)
+  - **`prefix`**: Hook runs if work unit ID starts with ANY of these prefixes (OR logic)
+  - **`epic`**: Hook runs if work unit belongs to this epic
+  - **`estimateMin`**: Hook runs if work unit estimate >= this value
+  - **`estimateMax`**: Hook runs if work unit estimate <= this value
+
+#### Hook Context
+
+Hooks receive JSON context via stdin:
+
+```json
+{
+  "workUnitId": "AUTH-001",
+  "event": "pre-update-work-unit-status",
+  "timestamp": "2025-01-15T10:30:00.000Z"
+}
+```
+
+#### Example Hook Scripts
+
+**Bash hook** (`spec/hooks/validate-feature.sh`):
+```bash
+#!/bin/bash
+set -e
+
+# Read context from stdin
+CONTEXT=$(cat)
+WORK_UNIT_ID=$(echo "$CONTEXT" | jq -r '.workUnitId')
+
+echo "Validating feature files for $WORK_UNIT_ID..."
+fspec validate
+
+exit 0
+```
+
+**Python hook** (`spec/hooks/run-tests.py`):
+```python
+#!/usr/bin/env python3
+import sys
+import json
+import subprocess
+
+# Read context from stdin
+context = json.load(sys.stdin)
+work_unit_id = context['workUnitId']
+
+print(f"Running tests for {work_unit_id}...")
+result = subprocess.run(['npm', 'test'], capture_output=True)
+
+sys.exit(result.returncode)
+```
+
+**JavaScript hook** (`spec/hooks/notify-slack.js`):
+```javascript
+#!/usr/bin/env node
+const context = JSON.parse(require('fs').readFileSync(0, 'utf-8'));
+
+console.log(`Notifying Slack about ${context.workUnitId}...`);
+// Slack notification logic here
+
+process.exit(0);
+```
+
+#### Hook Management Commands
+
+```bash
+# List all configured hooks
+fspec list-hooks
+
+# Validate hook configuration and script paths
+fspec validate-hooks
+
+# Add a hook via CLI
+fspec add-hook pre-implementing validate-code \
+  --command spec/hooks/lint.sh \
+  --blocking
+
+# Remove a hook
+fspec remove-hook pre-implementing validate-code
+```
+
+#### Blocking Hooks
+
+**Blocking hooks** (with `blocking: true`) provide quality gates:
+
+- **Pre-hooks**: Hook failure prevents command from running
+- **Post-hooks**: Hook failure sets command exit code to 1
+
+When a blocking hook fails, stderr output is wrapped in `<system-reminder>` tags for AI agents, making failures highly visible in Claude Code.
+
+#### Use Cases
+
+1. **Quality Gates**: Validate feature files before advancing work unit status
+2. **Automated Testing**: Run tests after implementation phase
+3. **Notifications**: Send Slack/email notifications on status changes
+4. **Code Quality**: Run linters, formatters, or type checkers
+5. **Documentation**: Auto-generate documentation on completion
+6. **Metrics**: Record time, token usage, or custom metrics
+
+**See Also:**
+- `docs/hooks/configuration.md` - Complete hook configuration reference
+- `docs/hooks/troubleshooting.md` - Common errors and solutions
+- `examples/hooks/` - Example hook scripts (Bash, Python, JavaScript)
 
 ### Validate Gherkin Syntax
 

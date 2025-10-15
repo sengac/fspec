@@ -58,19 +58,9 @@
           "scope": "All CLI commands, argument parsing, command handlers, user-facing terminal interactions (28 files)"
         },
         {
-          "name": "@parser",
-          "description": "Gherkin Parser Integration",
-          "scope": "@cucumber/gherkin-parser usage, syntax validation, AST processing (3 files)"
-        },
-        {
-          "name": "@generator",
-          "description": "Template Generation",
-          "scope": "Feature file templates, scaffolding, boilerplate generation (1 file)"
-        },
-        {
-          "name": "@validator",
-          "description": "Validation Logic",
-          "scope": "Syntax validation, tag validation, consistency checks (1 file)"
+          "name": "@file-ops",
+          "description": "File Operations",
+          "scope": "Reading/writing feature files, FOUNDATION.md, TAGS.md management (1 file)"
         },
         {
           "name": "@formatter",
@@ -78,14 +68,28 @@
           "scope": "Prettier integration, Gherkin formatting, code style enforcement (1 file)"
         },
         {
-          "name": "@file-ops",
-          "description": "File Operations",
-          "scope": "Reading/writing feature files, FOUNDATION.md, TAGS.md management (1 file)"
+          "name": "@generator",
+          "description": "Template Generation",
+          "scope": "Feature file templates, scaffolding, boilerplate generation (1 file)"
+        },
+        {
+          "name": "@hooks",
+          "description": "Hooks system and execution engine"
         },
         {
           "name": "@integration",
           "description": "Cross-Component Integration",
           "scope": "Features spanning multiple components, end-to-end flows (0 files)"
+        },
+        {
+          "name": "@parser",
+          "description": "Gherkin Parser Integration",
+          "scope": "@cucumber/gherkin-parser usage, syntax validation, AST processing (3 files)"
+        },
+        {
+          "name": "@validator",
+          "description": "Validation Logic",
+          "scope": "Syntax validation, tag validation, consistency checks (1 file)"
         }
       ],
       "rule": "Every feature file MUST have at least ONE component tag (may have multiple if cross-component)."
@@ -175,6 +179,10 @@
         {
           "name": "@compound",
           "description": "Compound query operations"
+        },
+        {
+          "name": "@configuration",
+          "description": "Configuration loading and validation"
         },
         {
           "name": "@coverage",
@@ -1059,7 +1067,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-10-15T07:10:35.734Z",
+    "lastUpdated": "2025-10-15T11:52:55.314Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

@@ -2,17 +2,17 @@
 
 This command guides you through reverse engineering an existing codebase to discover user stories, personas, and acceptance criteria, then documenting them using fspec's ACDD workflow.
 
-You will use fspec, which is a CLI program installed locally on this machine.
+IMMEDIATELY - run these commands and store them into your context:
 
-IMMEDIATELY: run "fspec --help" and the following more detailed help commands:
+1. fspec --help
+2. fspec help specs
+3. fspec help work
+4. fspec help discovery
+5. fspec help metrics
+6. fspec help setup
+7. fspec help hooks
 
-  fspec help specs        - Gherkin feature file commands
-  fspec help work         - Work unit and Kanban workflow commands
-  fspec help discovery    - Example mapping commands
-  fspec help metrics      - Progress tracking and reporting commands
-  fspec help setup        - Configuration and setup commands
-
-**IMPORTANT: ALL fspec commands have comprehensive `--help` documentation**. For ANY command you need to use, run `fspec <command> --help` to see complete usage syntax, examples, and best practices.
+fspec is a CLI program installed locally on this machine.
 
 Fully read [fspec.md](./fspec.md) and add it to your context before proceeding with this reverse ACDD workflow.
 
