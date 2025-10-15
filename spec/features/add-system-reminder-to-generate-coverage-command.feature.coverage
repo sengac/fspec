@@ -1,0 +1,224 @@
+{
+  "scenarios": [
+    {
+      "name": "Display reminder after generate-coverage with no arguments",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/generate-coverage-system-reminder.test.ts",
+          "lines": "46-103",
+          "implMappings": [
+            {
+              "file": "src/commands/generate-coverage.ts",
+              "lines": [
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Display reminder after generate-coverage --dry-run",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/generate-coverage-system-reminder.test.ts",
+          "lines": "105-144",
+          "implMappings": [
+            {
+              "file": "src/commands/generate-coverage.ts",
+              "lines": [
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Reminder explains difference between generate-coverage and link-coverage",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/generate-coverage-system-reminder.test.ts",
+          "lines": "146-185",
+          "implMappings": [
+            {
+              "file": "src/commands/generate-coverage.ts",
+              "lines": [
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Reminder shows complete ACDD workflow with coverage commands",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/generate-coverage-system-reminder.test.ts",
+          "lines": "187-233",
+          "implMappings": [
+            {
+              "file": "src/commands/generate-coverage.ts",
+              "lines": [
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/commands/__tests__/generate-coverage-system-reminder.test.ts"
+    ],
+    "implFiles": [
+      "src/commands/generate-coverage.ts"
+    ],
+    "totalLinesCovered": 329
+  }
+}

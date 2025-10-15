@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-15T08:34:55.773Z"
+    "lastUpdated": "2025-10-15T09:08:39.338Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -5057,19 +5057,98 @@
       "id": "EXMAP-003",
       "title": "Add system-reminder to generate-coverage command",
       "type": "story",
-      "status": "backlog",
+      "status": "specifying",
       "createdAt": "2025-10-15T08:49:29.798Z",
-      "updatedAt": "2025-10-15T08:49:29.798Z",
+      "updatedAt": "2025-10-15T09:22:46.764Z",
       "description": "When generate-coverage creates coverage files, emit a system-reminder explaining that the LLM must manually link coverage using link-coverage command",
       "epic": "coverage-tracking",
-      "children": []
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-15T09:06:38.009Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-15T09:09:37.200Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-15T09:10:49.274Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-15T09:13:24.474Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-15T09:13:36.457Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-15T09:22:46.765Z"
+        }
+      ],
+      "rules": [
+        "Coverage files must be populated manually using link-coverage",
+        "System reminder must be displayed after generate-coverage command",
+        "Reminder must explain that coverage files are empty until linked",
+        "Reminder must show example link-coverage commands",
+        "Yes, reminder should be shown for both modes with contextual examples",
+        "Yes, should mention show-coverage as verification step",
+        "Yes, reminder should clearly explain generate-coverage creates empty files and link-coverage populates them",
+        "Yes, should mention show-coverage as verification step",
+        "Yes, reminder should clearly explain generate-coverage creates empty files and link-coverage populates them",
+        "Yes, reminder should clearly explain generate-coverage creates empty files and link-coverage populates them",
+        "Yes, reminder should clearly explain generate-coverage creates empty files and link-coverage populates them"
+      ],
+      "examples": [
+        "User runs generate-coverage with no arguments and sees reminder",
+        "User runs generate-coverage --dry-run and sees reminder",
+        "User runs generate-coverage feature-name and sees reminder with feature-specific examples",
+        "Reminder includes link-coverage command syntax with test file example",
+        "Reminder includes link-coverage command syntax with implementation file example",
+        "Reminder explains three-step ACDD workflow: write specs → link tests → link implementation"
+      ],
+      "questions": [
+        {
+          "text": "Should the reminder be shown for both single-feature and all-features modes?",
+          "selected": true,
+          "answer": "Yes, reminder should clearly explain generate-coverage creates empty files and link-coverage populates them"
+        },
+        {
+          "text": "Should the reminder include show-coverage command as next step?",
+          "selected": true,
+          "answer": "Yes, reminder should clearly explain generate-coverage creates empty files and link-coverage populates them"
+        },
+        {
+          "text": "Should the reminder be suppressible with a --quiet flag?",
+          "selected": true,
+          "answer": "Yes, reminder should clearly explain generate-coverage creates empty files and link-coverage populates them"
+        },
+        {
+          "text": "Should the reminder explain the difference between generate-coverage and link-coverage?",
+          "selected": true,
+          "answer": "Yes, reminder should clearly explain generate-coverage creates empty files and link-coverage populates them"
+        }
+      ],
+      "assumptions": [
+        "No, reminder should always be shown as it's critical for ACDD workflow",
+        "No, reminder should always be shown as it's critical for ACDD workflow",
+        "No, reminder should always be shown as it's critical for ACDD workflow"
+      ],
+      "userStory": {
+        "role": "developer using fspec with ACDD workflow",
+        "action": "be reminded to manually link coverage after running generate-coverage",
+        "benefit": "I don't forget the critical step of linking tests and implementation to scenarios"
+      }
     }
   },
   "states": {
-    "backlog": [
+    "backlog": [],
+    "specifying": [
       "EXMAP-003"
     ],
-    "specifying": [],
     "testing": [],
     "implementing": [],
     "validating": [],
