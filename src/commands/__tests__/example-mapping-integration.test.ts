@@ -857,183 +857,22 @@ describe('Feature: Example Mapping Integration', () => {
     });
   });
 
-  describe('Scenario: Generate Gherkin scenarios from examples', () => {
-    it('should convert examples to Gherkin scenarios', async () => {
+  describe('Scenario: Generate context-only feature file with example mapping comments', () => {
+    it('should create feature file with comments and NO scenarios', async () => {
       const workUnits: WorkUnitsData = {
         workUnits: {
           'AUTH-001': {
             id: 'AUTH-001',
             title: 'OAuth login',
             status: 'specifying',
-            examples: [
-              'User logs in with Google account',
-              'User logs in with expired token',
-              'User token auto-refreshes',
-            ],
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          },
-        },
-        states: {
-          backlog: [],
-          specifying: ['AUTH-001'],
-          testing: [],
-          implementing: [],
-          validating: [],
-          done: [],
-          blocked: [],
-        },
-      };
-      await writeFile(
-        join(testDir, 'spec/work-units.json'),
-        JSON.stringify(workUnits, null, 2)
-      );
-
-      const result = await generateScenarios({
-        workUnitId: 'AUTH-001',
-        cwd: testDir,
-      });
-
-      expect(result.success).toBe(true);
-      expect(result.scenariosCount).toBe(3);
-
-      // Check feature file was created using title (oauth-login)
-      const featureFiles = await readFile(
-        join(testDir, 'spec/features/oauth-login.feature'),
-        'utf-8'
-      );
-      expect(featureFiles).toContain('@AUTH-001');
-      expect(featureFiles).toContain('User logs in with Google account');
-      expect(featureFiles).toContain('User logs in with expired token');
-      expect(featureFiles).toContain('User token auto-refreshes');
-
-      // Check examples are preserved
-      const updated = JSON.parse(
-        await readFile(join(testDir, 'spec/work-units.json'), 'utf-8')
-      );
-      expect(updated.workUnits['AUTH-001'].examples).toHaveLength(3);
-    });
-  });
-
-  describe('Scenario: Generate scenarios with Given/When/Then template', () => {
-    it('should use proper Gherkin structure', async () => {
-      const workUnits: WorkUnitsData = {
-        workUnits: {
-          'AUTH-001': {
-            id: 'AUTH-001',
-            title: 'OAuth login',
-            status: 'specifying',
-            examples: ['User logs in with valid credentials'],
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          },
-        },
-        states: {
-          backlog: [],
-          specifying: ['AUTH-001'],
-          testing: [],
-          implementing: [],
-          validating: [],
-          done: [],
-          blocked: [],
-        },
-      };
-      await writeFile(
-        join(testDir, 'spec/work-units.json'),
-        JSON.stringify(workUnits, null, 2)
-      );
-
-      const result = await generateScenarios({
-        workUnitId: 'AUTH-001',
-        cwd: testDir,
-      });
-
-      expect(result.success).toBe(true);
-
-      // Feature file should be named after work unit title (oauth-login)
-      const featureContent = await readFile(
-        join(testDir, 'spec/features/oauth-login.feature'),
-        'utf-8'
-      );
-      expect(featureContent).toContain('@AUTH-001');
-      expect(featureContent).toContain(
-        'Scenario: User logs in with valid credentials'
-      );
-      expect(featureContent).toContain('Given');
-      expect(featureContent).toContain('When');
-      expect(featureContent).toContain('Then');
-    });
-  });
-
-  describe('Scenario: Generate scenarios into existing feature file', () => {
-    it('should append scenarios to existing feature', async () => {
-      const workUnits: WorkUnitsData = {
-        workUnits: {
-          'AUTH-001': {
-            id: 'AUTH-001',
-            title: 'OAuth login',
-            status: 'specifying',
-            examples: ['User logs in with Google'],
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          },
-        },
-        states: {
-          backlog: [],
-          specifying: ['AUTH-001'],
-          testing: [],
-          implementing: [],
-          validating: [],
-          done: [],
-          blocked: [],
-        },
-      };
-      await writeFile(
-        join(testDir, 'spec/work-units.json'),
-        JSON.stringify(workUnits, null, 2)
-      );
-
-      // Create existing feature file
-      const existingFeature = `Feature: Authentication
-
-Scenario: Existing scenario
-  Given something
-  When something happens
-  Then result occurs
-`;
-      await writeFile(
-        join(testDir, 'spec/features/authentication.feature'),
-        existingFeature
-      );
-
-      const result = await generateScenarios({
-        workUnitId: 'AUTH-001',
-        feature: 'authentication',
-        cwd: testDir,
-      });
-
-      expect(result.success).toBe(true);
-
-      const featureContent = await readFile(
-        join(testDir, 'spec/features/authentication.feature'),
-        'utf-8'
-      );
-      expect(featureContent).toContain('Existing scenario');
-      // Note: When appending to existing feature, work unit tag is NOT added automatically
-      // expect(featureContent).toContain('@AUTH-001');
-      expect(featureContent).toContain('User logs in with Google');
-    });
-  });
-
-  describe('Scenario: Generate scenarios into new feature file', () => {
-    it('should create new feature file with scenarios', async () => {
-      const workUnits: WorkUnitsData = {
-        workUnits: {
-          'AUTH-001': {
-            id: 'AUTH-001',
-            title: 'OAuth login',
-            status: 'specifying',
+            userStory: {
+              role: 'user',
+              action: 'log in with OAuth',
+              benefit: 'access my account',
+            },
+            rules: ['Valid OAuth token required'],
             examples: ['User logs in with OAuth'],
+            assumptions: ['OAuth provider is available'],
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           },
@@ -1060,14 +899,37 @@ Scenario: Existing scenario
       });
 
       expect(result.success).toBe(true);
+      expect(result.scenariosCount).toBe(0); // NO scenarios generated
 
       const featureContent = await readFile(
         join(testDir, 'spec/features/oauth-login.feature'),
         'utf-8'
       );
-      expect(featureContent).toContain('Feature:');
+
+      // Should contain work unit tag
       expect(featureContent).toContain('@AUTH-001');
-      expect(featureContent).toContain('User logs in with OAuth');
+      expect(featureContent).toContain('Feature: OAuth login');
+
+      // Should contain example mapping comments
+      expect(featureContent).toContain('# EXAMPLE MAPPING CONTEXT');
+      expect(featureContent).toContain('# USER STORY:');
+      expect(featureContent).toContain('#   As a user');
+      expect(featureContent).toContain('# BUSINESS RULES:');
+      expect(featureContent).toContain('#   1. Valid OAuth token required');
+      expect(featureContent).toContain('# EXAMPLES:');
+      expect(featureContent).toContain('#   1. User logs in with OAuth');
+      expect(featureContent).toContain('# ASSUMPTIONS:');
+      expect(featureContent).toContain('#   1. OAuth provider is available');
+
+      // Should contain Background with user story
+      expect(featureContent).toContain('Background: User Story');
+      expect(featureContent).toContain('As a user');
+      expect(featureContent).toContain('I want to log in with OAuth');
+      expect(featureContent).toContain('So that access my account');
+
+      // Should have ZERO scenarios
+      const scenarioMatches = featureContent.match(/^\s*Scenario:/gm);
+      expect(scenarioMatches).toBeNull();
     });
   });
 

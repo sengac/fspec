@@ -228,59 +228,35 @@ Feature: Example Mapping Integration
 
   @generate-scenarios
   @critical
-  Scenario: Generate Gherkin scenarios from examples
+  Scenario: Generate context-only feature file with example mapping comments
     Given I have a project with spec directory
     And a work unit "AUTH-001" exists with status "specifying"
+    And the work unit has user story "user", "log in with OAuth", "access my account"
+    And the work unit has rules:
+      | Valid OAuth token required |
     And the work unit has examples:
-      | User logs in with Google account |
-      | User logs in with expired token  |
-      | User token auto-refreshes        |
-    When I run "fspec generate-scenarios AUTH-001"
-    Then the command should succeed
-    And a feature file should be created or updated
-    And the feature file should contain 3 scenarios
-    And each scenario title should match an example
-    And each scenario should be tagged with "@auth-001"
-    And the work unit examples should still be preserved
-
-  @generate-scenarios
-  @happy-path
-  Scenario: Generate scenarios with Given/When/Then template
-    Given I have a project with spec directory
-    And a work unit "AUTH-001" has examples:
-      | User logs in with valid credentials |
-    When I run "fspec generate-scenarios AUTH-001"
-    Then the generated scenario should have structure:
-      """
-      @auth-001
-      Scenario: User logs in with valid credentials
-        Given [precondition to be filled in]
-        When [action to be filled in]
-        Then [expected outcome to be filled in]
-      """
-
-  @generate-scenarios
-  @happy-path
-  Scenario: Generate scenarios into existing feature file
-    Given I have a project with spec directory
-    And a feature file "spec/features/authentication.feature" exists
-    And a work unit "AUTH-001" has examples:
-      | User logs in with Google |
-    When I run "fspec generate-scenarios AUTH-001 --feature=authentication"
-    Then the scenarios should be appended to "spec/features/authentication.feature"
-    And the scenarios should be tagged with "@auth-001"
-
-  @generate-scenarios
-  @happy-path
-  Scenario: Generate scenarios into new feature file
-    Given I have a project with spec directory
-    And a work unit "AUTH-001" has examples:
       | User logs in with OAuth |
-    And no feature file exists for "oauth-login"
+    And the work unit has assumptions:
+      | OAuth provider is available |
     When I run "fspec generate-scenarios AUTH-001 --feature=oauth-login"
-    Then a new feature file "spec/features/oauth-login.feature" should be created
-    And the file should contain the generated scenario
-    And the scenario should be tagged with "@auth-001"
+    Then the command should succeed
+    And a new feature file "spec/features/oauth-login.feature" should be created
+    And the file should be tagged with "@AUTH-001"
+    And the file should contain "Feature: OAuth login"
+    And the file should contain "# EXAMPLE MAPPING CONTEXT"
+    And the file should contain "# USER STORY:"
+    And the file should contain "#   As a user"
+    And the file should contain "# BUSINESS RULES:"
+    And the file should contain "#   1. Valid OAuth token required"
+    And the file should contain "# EXAMPLES:"
+    And the file should contain "#   1. User logs in with OAuth"
+    And the file should contain "# ASSUMPTIONS:"
+    And the file should contain "#   1. OAuth provider is available"
+    And the file should contain "Background: User Story"
+    And the file should contain "As a user"
+    And the file should contain "I want to log in with OAuth"
+    And the file should contain "So that access my account"
+    And the file should have ZERO scenarios
 
   @validation
   @blocking

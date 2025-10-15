@@ -13,7 +13,8 @@
         "COV-005",
         "COV-006",
         "COV-007",
-        "COV-008"
+        "COV-008",
+        "EXMAP-003"
       ]
     },
     "test-coverage": {
