@@ -91,6 +91,7 @@ Feature: Show Acceptance Criteria by Tag
     Then the output should show the feature name
     And the output should indicate "No scenarios defined"
 
+  @COV-037
   Scenario: Show steps with proper indentation (text format)
     Given I have a scenario with Given, When, Then, And, But steps
     When I run `fspec show-acceptance-criteria --format=text`

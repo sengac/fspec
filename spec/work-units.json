@@ -3835,9 +3835,9 @@
     "COV-037": {
       "id": "COV-037",
       "title": "Test: Show steps with proper indentation (text format)",
-      "status": "specifying",
+      "status": "done",
       "createdAt": "2025-10-15T00:11:27.777Z",
-      "updatedAt": "2025-10-15T00:35:29.447Z",
+      "updatedAt": "2025-10-15T03:17:39.051Z",
       "description": "Feature: show-acceptance-criteria. Status: CREATE_TEST_ONLY. Tests exist for markdown format but no specific test for text format indentation.",
       "epic": "test-coverage",
       "estimate": 2,
@@ -3845,6 +3845,22 @@
         {
           "state": "specifying",
           "timestamp": "2025-10-15T00:35:29.448Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-15T03:12:27.565Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-15T03:17:38.457Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-15T03:17:38.756Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-15T03:17:39.052Z"
         }
       ]
     },
@@ -3867,9 +3883,9 @@
     "COV-039": {
       "id": "COV-039",
       "title": "Test: Show work unit with all dependencies",
-      "status": "specifying",
+      "status": "done",
       "createdAt": "2025-10-15T00:11:28.367Z",
-      "updatedAt": "2025-10-15T00:35:32.973Z",
+      "updatedAt": "2025-10-15T03:17:41.481Z",
       "description": "Feature: work-unit-dependency-management. Status: CREATE_TEST_ONLY. No dedicated show/display test for work unit with all dependency types visible.",
       "epic": "test-coverage",
       "estimate": 2,
@@ -3877,15 +3893,31 @@
         {
           "state": "specifying",
           "timestamp": "2025-10-15T00:35:32.974Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-15T03:12:30.931Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-15T03:17:40.880Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-15T03:17:41.181Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-15T03:17:41.482Z"
         }
       ]
     },
     "COV-040": {
       "id": "COV-040",
       "title": "Test: Display dependency graph for single work unit",
-      "status": "specifying",
+      "status": "done",
       "createdAt": "2025-10-15T00:11:38.027Z",
-      "updatedAt": "2025-10-15T00:35:34.741Z",
+      "updatedAt": "2025-10-15T03:17:44.118Z",
       "description": "Feature: work-unit-dependency-management. Status: CREATE_TEST_ONLY. Export dependency graph test exists but not display for single work unit.",
       "epic": "test-coverage",
       "estimate": 2,
@@ -3893,15 +3925,31 @@
         {
           "state": "specifying",
           "timestamp": "2025-10-15T00:35:34.742Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-15T03:12:32.661Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-15T03:17:43.518Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-15T03:17:43.817Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-15T03:17:44.119Z"
         }
       ]
     },
     "COV-041": {
       "id": "COV-041",
       "title": "Test: Show all work units blocked by specific unit",
-      "status": "specifying",
+      "status": "done",
       "createdAt": "2025-10-15T00:11:38.336Z",
-      "updatedAt": "2025-10-15T00:35:36.502Z",
+      "updatedAt": "2025-10-15T03:17:46.469Z",
       "description": "Feature: work-unit-dependency-management. Status: CREATE_TEST_ONLY. No query test for finding all work units blocked by a specific unit.",
       "epic": "test-coverage",
       "estimate": 2,
@@ -3909,15 +3957,31 @@
         {
           "state": "specifying",
           "timestamp": "2025-10-15T00:35:36.502Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-15T03:12:42.064Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-15T03:17:45.868Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-15T03:17:46.173Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-15T03:17:46.469Z"
         }
       ]
     },
     "COV-042": {
       "id": "COV-042",
       "title": "Test: Find all currently blocked work units",
-      "status": "specifying",
+      "status": "done",
       "createdAt": "2025-10-15T00:11:38.639Z",
-      "updatedAt": "2025-10-15T00:35:38.264Z",
+      "updatedAt": "2025-10-15T03:17:48.816Z",
       "description": "Feature: work-unit-dependency-management. Status: CREATE_TEST_ONLY. No test for querying all blocked work units.",
       "epic": "test-coverage",
       "estimate": 2,
@@ -3925,15 +3989,31 @@
         {
           "state": "specifying",
           "timestamp": "2025-10-15T00:35:38.265Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-15T03:12:42.372Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-15T03:17:48.218Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-15T03:17:48.519Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-15T03:17:48.816Z"
         }
       ]
     },
     "COV-043": {
       "id": "COV-043",
       "title": "Test: Show impact analysis when completing work unit",
-      "status": "specifying",
+      "status": "done",
       "createdAt": "2025-10-15T00:11:38.944Z",
-      "updatedAt": "2025-10-15T00:35:40.035Z",
+      "updatedAt": "2025-10-15T03:17:52.275Z",
       "description": "Feature: work-unit-dependency-management. Status: CREATE_TEST_ONLY. No test for impact analysis feature.",
       "epic": "test-coverage",
       "estimate": 2,
@@ -3941,15 +4021,31 @@
         {
           "state": "specifying",
           "timestamp": "2025-10-15T00:35:40.036Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-15T03:12:42.678Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-15T03:17:51.680Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-15T03:17:51.977Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-15T03:17:52.276Z"
         }
       ]
     },
     "COV-044": {
       "id": "COV-044",
       "title": "Test: Show dependency chain depth",
-      "status": "specifying",
+      "status": "done",
       "createdAt": "2025-10-15T00:11:48.157Z",
-      "updatedAt": "2025-10-15T00:35:41.798Z",
+      "updatedAt": "2025-10-15T03:18:04.022Z",
       "description": "Feature: work-unit-dependency-management. Status: CREATE_TEST_ONLY. No test for calculating/displaying dependency chain depth.",
       "epic": "test-coverage",
       "estimate": 2,
@@ -3957,15 +4053,31 @@
         {
           "state": "specifying",
           "timestamp": "2025-10-15T00:35:41.799Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-15T03:12:42.978Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-15T03:18:03.423Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-15T03:18:03.725Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-15T03:18:04.023Z"
         }
       ]
     },
     "COV-045": {
       "id": "COV-045",
       "title": "Test: Calculate critical path",
-      "status": "specifying",
+      "status": "done",
       "createdAt": "2025-10-15T00:11:48.451Z",
-      "updatedAt": "2025-10-15T00:35:43.558Z",
+      "updatedAt": "2025-10-15T03:18:06.429Z",
       "description": "Feature: work-unit-dependency-management. Status: CREATE_BOTH. No tests or implementation found for critical path calculation.",
       "epic": "test-coverage",
       "estimate": 5,
@@ -3973,6 +4085,22 @@
         {
           "state": "specifying",
           "timestamp": "2025-10-15T00:35:43.559Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-15T03:12:43.290Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-15T03:18:05.829Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-15T03:18:06.128Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-15T03:18:06.429Z"
         }
       ]
     },
@@ -4027,9 +4155,9 @@
     "COV-049": {
       "id": "COV-049",
       "title": "Test: Query by status and prefix",
-      "status": "specifying",
+      "status": "done",
       "createdAt": "2025-10-15T00:11:58.467Z",
-      "updatedAt": "2025-10-15T00:35:50.613Z",
+      "updatedAt": "2025-10-15T03:18:09.151Z",
       "description": "Feature: work-unit-query-and-reporting. Status: CREATE_TEST_ONLY. Status query exists, epic query exists, but no prefix query test.",
       "epic": "test-coverage",
       "estimate": 2,
@@ -4037,15 +4165,31 @@
         {
           "state": "specifying",
           "timestamp": "2025-10-15T00:35:50.614Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-15T03:12:45.037Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-15T03:18:08.555Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-15T03:18:08.852Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-15T03:18:09.152Z"
         }
       ]
     },
     "COV-050": {
       "id": "COV-050",
       "title": "Test: Query with sorting by updated date",
-      "status": "specifying",
+      "status": "done",
       "createdAt": "2025-10-15T00:11:58.760Z",
-      "updatedAt": "2025-10-15T00:35:52.376Z",
+      "updatedAt": "2025-10-15T03:18:11.671Z",
       "description": "Feature: work-unit-query-and-reporting. Status: CREATE_TEST_ONLY. No test found for sorting functionality.",
       "epic": "test-coverage",
       "estimate": 2,
@@ -4053,15 +4197,31 @@
         {
           "state": "specifying",
           "timestamp": "2025-10-15T00:35:52.377Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-15T03:12:45.345Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-15T03:18:11.075Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-15T03:18:11.374Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-15T03:18:11.672Z"
         }
       ]
     },
     "COV-051": {
       "id": "COV-051",
       "title": "Test: Export filtered results to CSV",
-      "status": "specifying",
+      "status": "done",
       "createdAt": "2025-10-15T00:11:59.052Z",
-      "updatedAt": "2025-10-15T00:35:54.123Z",
+      "updatedAt": "2025-10-15T03:18:14.131Z",
       "description": "Feature: work-unit-query-and-reporting. Status: CREATE_TEST_ONLY. JSON export exists but no CSV export test.",
       "epic": "test-coverage",
       "estimate": 2,
@@ -4069,6 +4229,22 @@
         {
           "state": "specifying",
           "timestamp": "2025-10-15T00:35:54.123Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-15T03:12:45.650Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-15T03:18:13.529Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-15T03:18:13.832Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-15T03:18:14.132Z"
         }
       ]
     }
@@ -4078,21 +4254,10 @@
     "specifying": [
       "COV-031",
       "COV-033",
-      "COV-037",
       "COV-038",
-      "COV-039",
-      "COV-040",
-      "COV-041",
-      "COV-042",
-      "COV-043",
-      "COV-044",
-      "COV-045",
       "COV-046",
       "COV-047",
-      "COV-048",
-      "COV-049",
-      "COV-050",
-      "COV-051"
+      "COV-048"
     ],
     "testing": [],
     "implementing": [],
@@ -4173,7 +4338,18 @@
       "COV-032",
       "COV-034",
       "COV-035",
-      "COV-036"
+      "COV-036",
+      "COV-037",
+      "COV-039",
+      "COV-040",
+      "COV-041",
+      "COV-042",
+      "COV-043",
+      "COV-044",
+      "COV-045",
+      "COV-049",
+      "COV-050",
+      "COV-051"
     ],
     "blocked": []
   }

@@ -224,6 +224,7 @@ Feature: Work Unit Dependency Management
 
   @query
   @visualization
+  @COV-039
   Scenario: Show work unit with all dependencies
     Given I have a project with spec directory
     And a work unit "AUTH-001" has dependencies:
@@ -240,6 +241,7 @@ Feature: Work Unit Dependency Management
 
   @query
   @visualization
+  @COV-040
   Scenario: Display dependency graph for work unit
     Given I have a project with spec directory
     And work unit "AUTH-001" blocks "API-001"
@@ -256,6 +258,7 @@ Feature: Work Unit Dependency Management
 
   @query
   @visualization
+  @COV-041
   Scenario: Show all work units blocked by specific work unit
     Given I have a project with spec directory
     And work unit "API-001" blocks "UI-001", "DASH-001", "MOBILE-001"
@@ -265,6 +268,7 @@ Feature: Work Unit Dependency Management
 
   @query
   @filtering
+  @COV-042
   Scenario: Find all currently blocked work units
     Given I have a project with spec directory
     And work units exist:
@@ -278,6 +282,7 @@ Feature: Work Unit Dependency Management
 
   @query
   @impact-analysis
+  @COV-043
   Scenario: Show impact analysis when completing work unit
     Given I have a project with spec directory
     And work unit "API-001" blocks "UI-001", "DASH-001", "MOBILE-001"
@@ -288,6 +293,7 @@ Feature: Work Unit Dependency Management
 
   @query
   @impact-analysis
+  @COV-044
   Scenario: Show dependency chain depth
     Given I have a project with spec directory
     And work unit "AUTH-001" blocks "API-001"
@@ -302,6 +308,7 @@ Feature: Work Unit Dependency Management
 
   @critical-path
   @query
+  @COV-045
   Scenario: Calculate critical path through dependencies
     Given I have a project with spec directory
     And work units with estimates and dependencies:
