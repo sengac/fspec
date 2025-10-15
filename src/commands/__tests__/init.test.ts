@@ -216,8 +216,8 @@ describe('Feature: fspec Slash Command Installation', () => {
     });
   });
 
-  describe('Scenario: Template contains generic placeholders', () => {
-    it('should generate template with example-project placeholders', async () => {
+  describe('Scenario: Template preserves original examples (BUG-010)', () => {
+    it('should NOT perform string replacements on examples', async () => {
       // Given I am in a project directory
       // When I run `fspec init` and select "Claude Code"
       const result = await init({
@@ -229,15 +229,13 @@ describe('Feature: fspec Slash Command Installation', () => {
       const targetFile = join(testDir, '.claude', 'commands', 'fspec.md');
       const content = await readFile(targetFile, 'utf-8');
 
-      // Then the generated template should contain "example-project" style placeholders
-      expect(content).toContain('example-project');
+      // Then the template should preserve original fspec examples
+      // (Examples are illustrative and work for any project)
+      expect(content).toContain('system-reminder-anti-drift-pattern.feature');
 
-      // And the template should not contain fspec-specific work unit IDs
-      // (Generic examples should use EXAMPLE-001, EXAMPLE-002, etc.)
-      expect(content).not.toContain('CLI-003');
-      expect(content).not.toContain('TEST-002');
-      expect(content).not.toContain('AUTH-001');
-      expect(content).not.toContain('DASH-001');
+      // And the template should preserve work unit ID examples
+      // The examples use EXAMPLE- prefix which works fine for any project
+      expect(content).toContain('EXAMPLE-006');
 
       // And the template should include all ACDD workflow sections
       expect(content).toContain(
