@@ -139,6 +139,10 @@ export async function checkWorkUnitFeatureForPrefill(
   const { readdir } = await import('fs/promises');
   const files = await readdir(featuresDir);
 
+  // Use regex to match @work-unit-id as an actual tag (at line start or after whitespace)
+  // This prevents matching work unit IDs that appear in scenario names or descriptions
+  const tagPattern = new RegExp(`(^|\\s)@${workUnitId}(?:\\s|$)`, 'm');
+
   for (const file of files) {
     if (!file.endsWith('.feature')) {
       continue;
@@ -147,8 +151,8 @@ export async function checkWorkUnitFeatureForPrefill(
     const filePath = join(featuresDir, file);
     const content = await readFile(filePath, 'utf-8');
 
-    // Check if feature file has @work-unit-id tag
-    if (content.includes(`@${workUnitId}`)) {
+    // Check if feature file has @work-unit-id as an actual tag (not just in text)
+    if (tagPattern.test(content)) {
       return detectPrefill(content);
     }
   }
