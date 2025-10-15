@@ -3715,9 +3715,9 @@
     "COV-033": {
       "id": "COV-033",
       "title": "Test: List all scenarios for multiple work units",
-      "status": "specifying",
+      "status": "done",
       "createdAt": "2025-10-15T00:11:16.442Z",
-      "updatedAt": "2025-10-15T00:47:33.114Z",
+      "updatedAt": "2025-10-15T05:24:22.365Z",
       "description": "Feature: get-scenarios. Status: CREATE_TEST_ONLY. No test found for listing scenarios from multiple work units simultaneously.",
       "epic": "test-coverage",
       "estimate": 2,
@@ -3725,6 +3725,22 @@
         {
           "state": "specifying",
           "timestamp": "2025-10-15T00:35:22.406Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-15T05:24:21.188Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-15T05:24:21.481Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-15T05:24:22.071Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-15T05:24:22.366Z"
         }
       ],
       "rules": [
@@ -3883,9 +3899,9 @@
     "COV-038": {
       "id": "COV-038",
       "title": "Test: Handle malformed JSON file",
-      "status": "specifying",
+      "status": "done",
       "createdAt": "2025-10-15T00:11:28.072Z",
-      "updatedAt": "2025-10-15T00:35:31.212Z",
+      "updatedAt": "2025-10-15T05:26:37.315Z",
       "description": "Feature: validate-json-schema. Status: CREATE_TEST_ONLY. No test found for malformed/unparseable JSON files.",
       "epic": "test-coverage",
       "estimate": 2,
@@ -3893,6 +3909,22 @@
         {
           "state": "specifying",
           "timestamp": "2025-10-15T00:35:31.213Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-15T05:26:12.060Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-15T05:26:36.715Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-15T05:26:37.018Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-15T05:26:37.315Z"
         }
       ]
     },
@@ -4566,10 +4598,7 @@
   },
   "states": {
     "backlog": [],
-    "specifying": [
-      "COV-033",
-      "COV-038"
-    ],
+    "specifying": [],
     "testing": [],
     "implementing": [],
     "validating": [],
@@ -4666,7 +4695,9 @@
       "COV-046",
       "COV-047",
       "COV-048",
-      "COV-031"
+      "COV-031",
+      "COV-033",
+      "COV-038"
     ],
     "blocked": []
   }
