@@ -60,9 +60,21 @@ export async function queryEstimateAccuracy(options: {
         throw new Error(`Work unit ${options.workUnitId} not found`);
       }
 
+      // Check both root level and metrics.* for actualTokens/iterations
+      const actualTokens =
+        workUnit.actualTokens ||
+        (workUnit as WorkUnit & { metrics?: { actualTokens?: number } }).metrics
+          ?.actualTokens ||
+        0;
+      const iterations =
+        workUnit.iterations ||
+        (workUnit as WorkUnit & { metrics?: { iterations?: number } }).metrics
+          ?.iterations ||
+        0;
+
       return {
         estimated: `${workUnit.estimate || 0} points`,
-        actual: `${workUnit.actualTokens || 0} tokens, ${workUnit.iterations || 0} iterations`,
+        actual: `${actualTokens} tokens, ${iterations} iterations`,
         comparison: 'Within expected range',
       };
     }
@@ -79,17 +91,23 @@ export async function queryEstimateAccuracy(options: {
     > = {};
 
     for (const wu of completedWorkUnits) {
-      if (
-        wu.estimate &&
-        wu.actualTokens !== undefined &&
-        wu.iterations !== undefined
-      ) {
+      // Check both root level and metrics.* for actualTokens/iterations
+      const actualTokens =
+        wu.actualTokens ||
+        (wu as WorkUnit & { metrics?: { actualTokens?: number } }).metrics
+          ?.actualTokens;
+      const iterations =
+        wu.iterations ||
+        (wu as WorkUnit & { metrics?: { iterations?: number } }).metrics
+          ?.iterations;
+
+      if (wu.estimate && actualTokens !== undefined && iterations !== undefined) {
         const key = wu.estimate.toString();
         if (!byStoryPoints[key]) {
           byStoryPoints[key] = { totalTokens: 0, totalIterations: 0, count: 0 };
         }
-        byStoryPoints[key].totalTokens += wu.actualTokens;
-        byStoryPoints[key].totalIterations += wu.iterations;
+        byStoryPoints[key].totalTokens += actualTokens;
+        byStoryPoints[key].totalIterations += iterations;
         byStoryPoints[key].count++;
       }
     }
@@ -113,12 +131,18 @@ export async function queryEstimateAccuracy(options: {
 
       for (const wu of completedWorkUnits) {
         const prefix = wu.id.split('-')[0];
-        if (wu.estimate && wu.actualTokens !== undefined) {
+        // Check both root level and metrics.* for actualTokens
+        const actualTokens =
+          wu.actualTokens ||
+          (wu as WorkUnit & { metrics?: { actualTokens?: number } }).metrics
+            ?.actualTokens;
+
+        if (wu.estimate && actualTokens !== undefined) {
           if (!byPrefix[prefix]) {
             byPrefix[prefix] = { totalEstimate: 0, totalActual: 0, count: 0 };
           }
           // Normalize to tokens per point for comparison
-          const tokensPerPoint = wu.actualTokens / wu.estimate;
+          const tokensPerPoint = actualTokens / wu.estimate;
           byPrefix[prefix].totalActual += tokensPerPoint;
           byPrefix[prefix].count++;
         }
@@ -173,8 +197,44 @@ export function registerQueryEstimateAccuracyCommand(program: Command): void {
         const result = await queryEstimateAccuracy({
           format: options.format as 'text' | 'json',
         });
+
         if (options.format === 'json') {
           console.log(JSON.stringify(result, null, 2));
+        } else {
+          // Text format output
+          const data = result as AllWorkUnitsAccuracy;
+
+          console.log(chalk.bold('\n📊 Estimation Accuracy Report\n'));
+
+          // Check if there's any data
+          if (Object.keys(data.byStoryPoints).length === 0) {
+            console.log(chalk.yellow('No completed work units with estimates and actuals found.'));
+            console.log(chalk.gray('\nTo track accuracy, work units need:'));
+            console.log(chalk.gray('  • Status: done'));
+            console.log(chalk.gray('  • estimate field (story points)'));
+            console.log(chalk.gray('  • actualTokens field'));
+            console.log(chalk.gray('  • iterations field\n'));
+            return;
+          }
+
+          console.log(chalk.bold('By Story Points:'));
+          for (const [points, metrics] of Object.entries(data.byStoryPoints)) {
+            console.log(chalk.cyan(`\n  ${points} points:`));
+            console.log(chalk.gray(`    Average tokens: ${metrics.avgTokens.toLocaleString()}`));
+            console.log(chalk.gray(`    Average iterations: ${metrics.avgIterations}`));
+            console.log(chalk.gray(`    Samples: ${metrics.samples}`));
+          }
+
+          if (data.byPrefix) {
+            console.log(chalk.bold('\n\nBy Prefix:'));
+            for (const [prefix, accuracy] of Object.entries(data.byPrefix)) {
+              console.log(chalk.cyan(`\n  ${prefix}:`));
+              console.log(chalk.gray(`    Accuracy: ${accuracy.avgAccuracy}`));
+              console.log(chalk.gray(`    Recommendation: ${accuracy.recommendation}`));
+            }
+          }
+
+          console.log(); // Empty line at end
         }
       } catch (error: any) {
         console.error(chalk.red('✗ Query failed:'), error.message);
