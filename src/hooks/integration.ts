@@ -74,8 +74,7 @@ export async function runCommandWithHooks<T>(
       const workUnitsPath = join(projectRoot, 'spec', 'work-units.json');
       const workUnitsContent = await readFile(workUnitsPath, 'utf-8');
       const workUnitsData = JSON.parse(workUnitsContent);
-      workUnit =
-        workUnitsData.workUnits.find((wu: WorkUnit) => wu.id === context.workUnitId) || null;
+      workUnit = workUnitsData.workUnits[context.workUnitId] || null;
     } catch {
       // Work unit not found, continue without it
     }

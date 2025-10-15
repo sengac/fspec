@@ -708,6 +708,7 @@ function displayDiscoveryHelp(): void {
   console.log('  • Add questions that need answers before implementation');
   console.log('  • Add business rules that govern the feature');
   console.log('  • Add assumptions about requirements or constraints');
+  console.log('  • Capture architecture notes and non-functional requirements');
   console.log('  • Answer questions collaboratively (AI asks, human answers)');
   console.log('  • Generate Gherkin scenarios from examples');
   console.log('  • Import/export example maps for collaboration');
@@ -783,6 +784,29 @@ function displayDiscoveryHelp(): void {
   console.log(
     '      fspec add-assumption AUTH-001 "Email verification is handled externally"'
   );
+  console.log('');
+
+  console.log(chalk.bold('ARCHITECTURE NOTES'));
+  console.log(
+    '  ' + chalk.cyan('fspec add-architecture-note <work-unit-id> <note>')
+  );
+  console.log(
+    '    Description: Capture architecture decisions, NFRs, dependencies'
+  );
+  console.log('    Examples:');
+  console.log(
+    '      fspec add-architecture-note AUTH-001 "Uses @cucumber/gherkin parser"'
+  );
+  console.log(
+    '      fspec add-architecture-note AUTH-001 "Performance: Must complete within 2 seconds"'
+  );
+  console.log('');
+  console.log(
+    '  ' + chalk.cyan('fspec remove-architecture-note <work-unit-id> <index>')
+  );
+  console.log('    Description: Remove architecture note by index (0-based)');
+  console.log('    Examples:');
+  console.log('      fspec remove-architecture-note AUTH-001 0');
   console.log('');
 
   console.log(chalk.bold('IMPORT/EXPORT'));

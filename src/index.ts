@@ -7,6 +7,7 @@ import { realpathSync } from 'fs';
 
 // Command registration functions
 import { registerAddArchitectureCommand } from './commands/add-architecture';
+import { registerAddArchitectureNoteCommand } from './commands/add-architecture-note';
 import { registerAddAssumptionCommand } from './commands/add-assumption';
 import { registerAddBackgroundCommand } from './commands/add-background';
 import { registerAddDependenciesCommand } from './commands/add-dependencies';
@@ -70,6 +71,7 @@ import { registerRecordIterationCommand } from './commands/record-iteration';
 import { registerRecordMetricCommand } from './commands/record-metric';
 import { registerRecordTokensCommand } from './commands/record-tokens';
 import { registerRegisterTagCommand } from './commands/register-tag';
+import { registerRemoveArchitectureNoteCommand } from './commands/remove-architecture-note';
 import { registerRemoveDependencyCommand } from './commands/remove-dependency';
 import { registerRemoveExampleCommand } from './commands/remove-example';
 import { registerRemoveQuestionCommand } from './commands/remove-question';
@@ -129,6 +131,7 @@ program
 
 // Register all commands
 registerAddArchitectureCommand(program);
+registerAddArchitectureNoteCommand(program);
 registerAddAssumptionCommand(program);
 registerAddBackgroundCommand(program);
 registerAddDependenciesCommand(program);
@@ -192,6 +195,7 @@ registerRecordIterationCommand(program);
 registerRecordMetricCommand(program);
 registerRecordTokensCommand(program);
 registerRegisterTagCommand(program);
+registerRemoveArchitectureNoteCommand(program);
 registerRemoveDependencyCommand(program);
 registerRemoveExampleCommand(program);
 registerRemoveQuestionCommand(program);

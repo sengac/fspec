@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-15T13:02:51.985Z"
+    "lastUpdated": "2025-10-15T22:58:23.048Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -5807,6 +5807,127 @@
         "Lint hook example shows proper exit codes: 0 for success, 1 for lint errors",
         "Troubleshooting doc explains 'Hook command not found' error and solution"
       ]
+    },
+    "BUG-011": {
+      "id": "BUG-011",
+      "title": "generate-scenarios missing architecture docstring",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-15T22:51:07.833Z",
+      "updatedAt": "2025-10-15T23:10:52.876Z",
+      "description": "The generate-scenarios command creates feature files without architecture docstrings, violating CLAUDE.md requirements. Older files created with create-feature have docstrings, but newer files created with generate-scenarios are missing them.",
+      "children": [],
+      "estimate": 2,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-15T22:51:16.440Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-15T22:53:06.162Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-15T22:53:45.139Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-15T23:09:40.344Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-15T23:10:52.876Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using generate-scenarios",
+        "action": "have feature files with architecture docstrings",
+        "benefit": "all feature files meet CLAUDE.md requirements and have consistent structure"
+      },
+      "rules": [
+        "All feature files MUST have architecture docstrings (CLAUDE.md requirement)",
+        "generate-scenarios output MUST match create-feature template structure",
+        "Docstring MUST come before example mapping comments",
+        "Docstring MUST include TODO placeholders for architecture notes"
+      ],
+      "examples": [
+        "User runs generate-scenarios, file contains both docstring and example mapping comments",
+        "Generated file matches structure: tags → feature → docstring → comments → background",
+        "Existing tests pass with new docstring addition"
+      ]
+    },
+    "FEAT-012": {
+      "id": "FEAT-012",
+      "title": "Capture architecture notes during Example Mapping",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-15T22:58:05.227Z",
+      "updatedAt": "2025-10-15T23:23:02.738Z",
+      "description": "Add ability to capture architecture notes and non-functional requirements during Example Mapping discovery phase, and populate feature file docstrings with this information during generate-scenarios.",
+      "children": [],
+      "estimate": 5,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-15T22:58:14.705Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-15T23:15:36.150Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-15T23:16:21.173Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-15T23:21:08.805Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-15T23:23:02.739Z"
+        }
+      ],
+      "userStory": {
+        "role": "AI agent doing Example Mapping",
+        "action": "capture architecture notes and non-functional requirements",
+        "benefit": "generated feature files have complete technical context in docstrings"
+      },
+      "rules": [
+        "Architecture notes must be stored in WorkUnit during Example Mapping",
+        "Architecture notes must populate docstring in generate-scenarios output",
+        "Must support adding/removing/viewing architecture notes via CLI",
+        "Architecture notes should include: dependencies, performance reqs, security considerations, implementation constraints"
+      ],
+      "examples": [
+        "User runs 'fspec add-architecture-note WORK-001 \"Uses @cucumber/gherkin parser\"' during Example Mapping",
+        "User runs 'fspec generate-scenarios WORK-001' and docstring contains captured architecture notes instead of TODO placeholders",
+        "User runs 'fspec show-work-unit WORK-001' and sees architecture notes section with all captured notes",
+        "Generated docstring includes sections for dependencies, performance, security based on captured notes"
+      ],
+      "questions": [
+        {
+          "text": "@human: Should architectureNotes be a separate array field in WorkUnit, or reuse assumptions field?",
+          "selected": true,
+          "answer": "Separate architectureNotes array field in WorkUnit (clearer separation from assumptions)"
+        },
+        {
+          "text": "@human: Should we ask about architecture notes as a separate Example Mapping step (purple cards), or integrate with existing steps?",
+          "selected": true,
+          "answer": "Integrate with existing steps - ask architecture questions during Step 3 (Ask Questions phase) for natural flow"
+        },
+        {
+          "text": "@human: What specific NFR questions should AI ask during discovery? (performance, security, dependencies, scalability, etc.)",
+          "selected": true,
+          "answer": "Ask about: libraries/dependencies, code that should be refactored/shared, code quality considerations, UI/UX examples (websites/screenshots), implementation patterns to follow"
+        },
+        {
+          "text": "@human: Should architecture notes have categories/types, or just be free-form strings?",
+          "selected": true,
+          "answer": "Free-form strings initially - users can prefix naturally (e.g., 'Dependency: ...', 'Refactoring: ...'). Add categorization later if needed."
+        }
+      ]
     }
   },
   "states": {
@@ -5926,7 +6047,9 @@
       "HOOK-008",
       "HOOK-009",
       "EXMAP-003",
-      "HOOK-001"
+      "HOOK-001",
+      "BUG-011",
+      "FEAT-012"
     ],
     "blocked": []
   }

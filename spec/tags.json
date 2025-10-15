@@ -704,6 +704,10 @@
           "meaning": "Feature cannot proceed due to dependencies or external factors"
         },
         {
+          "name": "@bug",
+          "description": "Bug fix work units"
+        },
+        {
           "name": "@bug-fix",
           "description": "Marks bug fixes and corrections to existing functionality"
         },
@@ -1067,7 +1071,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-10-15T11:52:55.314Z",
+    "lastUpdated": "2025-10-15T23:22:36.568Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

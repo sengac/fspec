@@ -42,6 +42,7 @@ export interface WorkUnit {
   examples?: string[];
   questions?: QuestionItem[];
   assumptions?: string[];
+  architectureNotes?: string[];
   userStory?: UserStory;
   stateHistory?: Array<{
     state: string;
