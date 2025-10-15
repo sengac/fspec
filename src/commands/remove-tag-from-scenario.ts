@@ -75,25 +75,27 @@ export async function removeTagFromScenario(
   );
 
   if (!targetScenario || !targetScenario.scenario) {
+    // Idempotent behavior: succeed if scenario not found (no work to do)
     return {
-      success: false,
-      valid: false,
-      error: `Scenario '${scenarioName}' not found in ${featureFilePath}`,
+      success: true,
+      valid: true,
+      message: `Scenario '${scenarioName}' not found in ${featureFilePath} - no changes made`,
     };
   }
 
   // Get existing scenario tags
   const existingTags = targetScenario.scenario.tags.map(t => t.name);
 
-  // Check if tags exist
-  for (const tag of tags) {
-    if (!existingTags.includes(tag)) {
-      return {
-        success: false,
-        valid: false,
-        error: `Tag ${tag} not found on this scenario`,
-      };
-    }
+  // Check if any tags exist (filter out nonexistent tags for idempotent behavior)
+  const tagsToActuallyRemove = tags.filter(tag => existingTags.includes(tag));
+
+  if (tagsToActuallyRemove.length === 0) {
+    // Idempotent behavior: succeed even if no tags to remove
+    return {
+      success: true,
+      valid: true,
+      message: `No changes made - none of the specified tags found on scenario '${scenarioName}'`,
+    };
   }
 
   // Find the scenario line in the content
@@ -118,7 +120,7 @@ export async function removeTagFromScenario(
 
   // Find and remove the tags that belong to this scenario
   // Tags are on lines immediately before the Scenario line
-  const tagsToRemove = new Set(tags);
+  const tagsToRemove = new Set(tagsToActuallyRemove);
   const linesToKeep: string[] = [];
   let i = 0;
 
@@ -174,7 +176,7 @@ export async function removeTagFromScenario(
   // Write file
   await writeFile(filePath, newContent, 'utf-8');
 
-  const tagList = tags.join(', ');
+  const tagList = tagsToActuallyRemove.join(', ');
   return {
     success: true,
     valid,

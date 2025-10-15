@@ -338,7 +338,7 @@ Feature: User Login
   });
 
   describe('Scenario: Attempt to remove non-existent tag from scenario', () => {
-    it('should error when tag does not exist', async () => {
+    it('should succeed with no changes (idempotent behavior)', async () => {
       // Given I have a scenario with tags @smoke @regression
       const featureContent = `Feature: Login
 
@@ -360,12 +360,11 @@ Feature: User Login
         { cwd: testDir }
       );
 
-      // Then the command should exit with code 1
-      expect(result.success).toBe(false);
+      // Then the command should succeed (idempotent behavior - BUG-009 fix)
+      expect(result.success).toBe(true);
 
-      // And the output should show "Tag @critical not found on this scenario"
-      expect(result.error).toContain('@critical');
-      expect(result.error).toContain('not found');
+      // And the output should show "No changes made"
+      expect(result.message).toContain('No changes');
     });
   });
 
