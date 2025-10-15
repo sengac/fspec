@@ -556,7 +556,16 @@
         {
           "file": "src/validators/__tests__/json-schema.test.ts",
           "lines": "550-572",
-          "implMappings": []
+          "implMappings": [
+            {
+              "file": "src/validators/json-schema.ts",
+              "lines": [
+                29,
+                30,
+                31
+              ]
+            }
+          ]
         }
       ]
     },
@@ -706,6 +715,6 @@
     "implFiles": [
       "src/validators/json-schema.ts"
     ],
-    "totalLinesCovered": 1210
+    "totalLinesCovered": 1213
   }
 }

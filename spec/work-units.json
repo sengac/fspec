@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-14T11:25:56.152Z"
+    "lastUpdated": "2025-10-15T04:16:23.759Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -4107,9 +4107,9 @@
     "COV-046": {
       "id": "COV-046",
       "title": "Test: Identify bottleneck work units",
-      "status": "specifying",
+      "status": "testing",
       "createdAt": "2025-10-15T00:11:48.741Z",
-      "updatedAt": "2025-10-15T00:35:45.331Z",
+      "updatedAt": "2025-10-15T04:04:02.215Z",
       "description": "Feature: work-unit-dependency-management. Status: CREATE_BOTH. No tests or implementation found for bottleneck identification.",
       "epic": "test-coverage",
       "estimate": 5,
@@ -4117,15 +4117,65 @@
         {
           "state": "specifying",
           "timestamp": "2025-10-15T00:35:45.332Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-15T04:04:02.216Z"
         }
+      ],
+      "rules": [
+        "A bottleneck is a work unit that blocks multiple other work units (directly or transitively)",
+        "Only work units NOT in 'done' status are bottlenecks (completed work doesn't block)",
+        "Bottleneck score = total work units blocked (direct blocks + transitive blocks)",
+        "Rank bottlenecks by score (highest to lowest) to prioritize what to complete first",
+        "Only blocks/blockedBy relationships. dependsOn is a soft dependency that doesn't prevent work from starting, so it shouldn't factor into bottleneck calculation.",
+        "Include bottlenecks with score >= 2 (blocking 2+ work units). A work unit blocking only 1 other is not significant enough to be called a bottleneck.",
+        "No. Work units in 'blocked' status cannot be progressed, so they should not be identified as bottlenecks to prioritize. Only consider work units in states that can be actively worked on (backlog, specifying, testing, implementing, validating)."
+      ],
+      "examples": [
+        "AUTH-001 blocks API-001 and UI-001 directly → bottleneck score: 2 (blocks 2 work units)",
+        "DB-001 blocks API-001, API-001 blocks UI-001 → DB-001 bottleneck score: 2 (1 direct + 1 transitive)",
+        "AUTH-001 blocks API-001, API-002, API-003, and API-001 blocks UI-001 → AUTH-001 score: 4 (highest bottleneck)",
+        "DEPLOY-001 status='done' and blocks UI-001 → NOT a bottleneck (already complete)",
+        "UI-001 has no 'blocks' relationships → bottleneck score: 0 (not a bottleneck)"
+      ],
+      "questions": [
+        {
+          "text": "@human: Should bottleneck calculation include 'dependsOn' relationships or only 'blocks/blockedBy'?",
+          "selected": true,
+          "answer": "No. Work units in 'blocked' status cannot be progressed, so they should not be identified as bottlenecks to prioritize. Only consider work units in states that can be actively worked on (backlog, specifying, testing, implementing, validating)."
+        },
+        {
+          "text": "@human: Should we consider work unit estimates when ranking bottlenecks (e.g., 8-point story blocks more value than 1-point)?",
+          "selected": true,
+          "answer": "Only blocks/blockedBy relationships. dependsOn is a soft dependency that doesn't prevent work from starting, so it shouldn't factor into bottleneck calculation."
+        },
+        {
+          "text": "@human: What is the minimum bottleneck score to be included in output (1+, 2+, 3+)?",
+          "selected": true,
+          "answer": "No. For simplicity, rank bottlenecks by count of blocked work units only. Estimate weighting could be a future enhancement."
+        },
+        {
+          "text": "@human: Should work units in 'blocked' status be considered bottlenecks even though they can't progress themselves?",
+          "selected": true,
+          "answer": "Include bottlenecks with score >= 2 (blocking 2+ work units). A work unit blocking only 1 other is not significant enough to be called a bottleneck."
+        }
+      ],
+      "userStory": {
+        "role": "project manager or AI agent",
+        "action": "identify bottleneck work units blocking the most work",
+        "benefit": "I can prioritize completing high-impact work to unblock the project"
+      },
+      "assumptions": [
+        "No. For simplicity, rank bottlenecks by count of blocked work units only. Estimate weighting could be a future enhancement."
       ]
     },
     "COV-047": {
       "id": "COV-047",
       "title": "Test: Auto-suggest dependency relationships",
-      "status": "specifying",
+      "status": "testing",
       "createdAt": "2025-10-15T00:11:49.033Z",
-      "updatedAt": "2025-10-15T00:35:47.103Z",
+      "updatedAt": "2025-10-15T04:04:03.848Z",
       "description": "Feature: work-unit-dependency-management. Status: CREATE_BOTH. No tests or implementation found for auto-suggesting dependencies.",
       "epic": "test-coverage",
       "estimate": 5,
@@ -4133,15 +4183,66 @@
         {
           "state": "specifying",
           "timestamp": "2025-10-15T00:35:47.103Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-15T04:04:03.849Z"
         }
+      ],
+      "rules": [
+        "Auto-suggest analyzes work unit metadata (title, description, epic, prefix) to recommend likely dependency relationships",
+        "Sequential IDs in same prefix suggest dependency (AUTH-001 → AUTH-002 implies AUTH-002 depends on AUTH-001)",
+        "Build/Test pairs suggest dependency (work with 'Test X' depends on 'Build X')",
+        "Infrastructure before features (e.g., 'Setup Auth' should be suggested as blocker for 'Login Flow')",
+        "Suggestions are recommendations only - user must confirm before creating dependency relationships"
+      ],
+      "examples": [
+        "AUTH-001 'Setup OAuth' and AUTH-002 'Login Flow' → Suggest: AUTH-002 depends on AUTH-001 (sequential IDs)",
+        "'Build User API' and 'Test User API' → Suggest: 'Test User API' depends on 'Build User API' (build/test pair)",
+        "'Database Schema Migration' and 'Add User Data' → Suggest: 'Add User Data' depends on 'Database Schema Migration' (infrastructure first)",
+        "Work units in same epic 'User Management' → Suggest: relatesTo relationships for context",
+        "AUTH-003 with no semantic relationship to AUTH-001 or AUTH-002 → No suggestion (avoid false positives)"
+      ],
+      "questions": [
+        {
+          "text": "@human: Should auto-suggest use AI/LLM for semantic analysis or only rule-based heuristics?",
+          "selected": true,
+          "answer": "Start with rule-based heuristics only (simpler, faster, no external dependencies). AI/LLM integration could be a future enhancement."
+        },
+        {
+          "text": "@human: What confidence threshold should be used for suggestions (e.g., only suggest if >70% confidence)?",
+          "selected": true,
+          "answer": "No confidence scoring initially. Suggest only when rules match clearly (e.g., exact sequential IDs, exact 'Build X'/'Test X' match). Avoid ambiguous suggestions."
+        },
+        {
+          "text": "@human: Should suggestions be presented interactively or in batch for approval?",
+          "selected": true,
+          "answer": "Batch mode. Display all suggestions and let user review/approve them together. Interactive mode could be added later with --interactive flag."
+        },
+        {
+          "text": "@human: Should the system learn from user acceptance/rejection of suggestions over time?",
+          "selected": true,
+          "answer": "No learning capability in v1. Keep it simple and deterministic. Machine learning could be considered for future versions."
+        }
+      ],
+      "userStory": {
+        "role": "AI agent or developer",
+        "action": "receive automatic suggestions for dependency relationships between work units",
+        "benefit": "I can quickly establish connections without manually analyzing all work units"
+      },
+      "assumptions": [
+        "Start with rule-based heuristics only (simpler, faster, no external dependencies). AI/LLM integration could be a future enhancement.",
+        "No confidence scoring initially. Suggest only when rules match clearly (e.g., exact sequential IDs, exact 'Build X'/'Test X' match). Avoid ambiguous suggestions.",
+        "Batch mode. Display all suggestions and let user review/approve them together. Interactive mode could be added later with --interactive flag.",
+        "No learning capability in v1. Keep it simple and deterministic. Machine learning could be considered for future versions."
       ]
     },
     "COV-048": {
       "id": "COV-048",
       "title": "Test: Detect orphaned work units",
-      "status": "specifying",
+      "status": "testing",
       "createdAt": "2025-10-15T00:11:58.176Z",
-      "updatedAt": "2025-10-15T00:35:48.862Z",
+      "updatedAt": "2025-10-15T04:04:05.719Z",
       "description": "Feature: work-unit-dependency-management. Status: CREATE_BOTH. No tests or implementation found for orphan detection.",
       "epic": "test-coverage",
       "estimate": 5,
@@ -4149,7 +4250,51 @@
         {
           "state": "specifying",
           "timestamp": "2025-10-15T00:35:48.863Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-15T04:04:05.720Z"
         }
+      ],
+      "rules": [
+        "An orphaned work unit has NO dependency relationships (no blocks, blockedBy, dependsOn, or relatesTo)",
+        "An orphaned work unit has NO epic assignment (epic field is null or empty)",
+        "Orphaned work units are isolated from the project context and may indicate abandoned or misconfigured work",
+        "Detecting orphans helps identify work that should be connected, reassigned, or deleted",
+        "No. Prefix alone does not provide sufficient context. A work unit must have either an epic OR at least one relationship to not be considered orphaned.",
+        "Yes. Show suggested actions: 'Assign to epic', 'Add relationship to related work', 'Delete if no longer needed'. Make it actionable, not just informational."
+      ],
+      "examples": [
+        "UI-999 has no epic, no blocks, no blockedBy, no dependsOn, no relatesTo → ORPHANED (completely isolated)",
+        "AUTH-001 has epic='user-management' but no relationships → NOT orphaned (has epic context)",
+        "API-001 has no epic but dependsOn DB-001 → NOT orphaned (has dependency relationship)",
+        "TEST-042 has no epic, no relationships, status='done' → ORPHANED (even done work can be orphaned)",
+        "MISC-005 has relatesTo relationship to SEC-001 → NOT orphaned (any relationship counts)"
+      ],
+      "questions": [
+        {
+          "text": "@human: Should work units with only a prefix (but no epic or relationships) be considered orphaned?",
+          "selected": true,
+          "answer": "No. Prefix alone does not provide sufficient context. A work unit must have either an epic OR at least one relationship to not be considered orphaned."
+        },
+        {
+          "text": "@human: Should orphan detection exclude work units in 'done' status (completed work may not need connections)?",
+          "selected": true,
+          "answer": "No. Include all work units regardless of status. Even 'done' work can be orphaned and may indicate cleanup needed. Use --exclude-done flag if user wants to filter them out."
+        },
+        {
+          "text": "@human: Should the command suggest actions for orphaned work (e.g., 'assign epic', 'add dependency', 'delete')?",
+          "selected": true,
+          "answer": "Yes. Show suggested actions: 'Assign to epic', 'Add relationship to related work', 'Delete if no longer needed'. Make it actionable, not just informational."
+        }
+      ],
+      "userStory": {
+        "role": "project manager or AI agent",
+        "action": "detect orphaned work units with no epic or dependency relationships",
+        "benefit": "I can identify isolated work that needs to be connected, reassigned, or cleaned up"
+      },
+      "assumptions": [
+        "No. Include all work units regardless of status. Even 'done' work can be orphaned and may indicate cleanup needed. Use --exclude-done flag if user wants to filter them out."
       ]
     },
     "COV-049": {
@@ -4247,6 +4392,124 @@
           "timestamp": "2025-10-15T03:18:14.132Z"
         }
       ]
+    },
+    "BUG-007": {
+      "id": "BUG-007",
+      "title": "generate-coverage does not detect new scenarios in existing feature files",
+      "status": "done",
+      "createdAt": "2025-10-15T04:09:40.314Z",
+      "updatedAt": "2025-10-15T14:28:00.000Z",
+      "description": "When new scenarios are added to an existing feature file, the generate-coverage command does not update the .coverage file to include them. This blocks the link-coverage workflow in ACDD.",
+      "epic": "test-coverage",
+      "children": [],
+      "userStory": {
+        "role": "developer following ACDD workflow",
+        "action": "have generate-coverage detect and add new scenarios to existing .coverage files",
+        "benefit": "I can link test coverage for new scenarios without manual JSON editing"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-15T04:10:11.653Z"
+        }
+      ],
+      "rules": [
+        "generate-coverage should compare feature file scenarios against coverage file scenarios",
+        "If feature file has MORE scenarios than coverage file, add missing scenarios with empty testMappings array",
+        "If coverage file has scenarios NOT in feature file, remove them (cleanup orphaned entries)",
+        "Preserve existing test/impl mappings for unchanged scenarios (don't overwrite)",
+        "Update stats section to reflect new scenario count and coverage percentage",
+        "Yes. generate-coverage must be idempotent - safe to run multiple times. It should UPDATE existing coverage files, not overwrite them."
+      ],
+      "examples": [
+        "REPRODUCTION: work-unit-dependency-management.feature has 42 scenarios, but .coverage file only has 39 scenario entries",
+        "MISSING: Scenario 'Identify bottleneck work units blocking the most work' (line 501-518) NOT in coverage file",
+        "MISSING: Scenario 'Auto-suggest dependency relationships based on work unit metadata' (line 520-536) NOT in coverage file",
+        "MISSING: Scenario 'Detect orphaned work units with no epic or dependencies' (line 538-553) NOT in coverage file",
+        "COMMAND RESULT: 'fspec generate-coverage' runs without error but does NOT add missing scenarios",
+        "ERROR WHEN LINKING: 'fspec link-coverage work-unit-dependency-management --scenario \"Identify bottleneck...\"' fails with 'Scenario not found'",
+        "FILE: spec/features/work-unit-dependency-management.feature - grep shows 42 scenarios: 'grep -c \"^  Scenario:\" spec/features/work-unit-dependency-management.feature' returns 42",
+        "FILE: spec/features/work-unit-dependency-management.feature.coverage - only has 39 entries in scenarios array (verified by reading JSON)",
+        "EXACT LINE: Feature file line 501: '@COV-046' tag, Scenario: 'Identify bottleneck work units blocking the most work' - MISSING from coverage",
+        "EXACT LINE: Feature file line 520: '@COV-047' tag, Scenario: 'Auto-suggest dependency relationships based on work unit metadata' - MISSING from coverage",
+        "EXACT LINE: Feature file line 538: '@COV-048' tag, Scenario: 'Detect orphaned work units with no epic or dependencies' - MISSING from coverage",
+        "COMMAND TO REPRODUCE: 1) Add new scenario to existing .feature file 2) Run 'fspec generate-coverage' 3) Check .coverage file - new scenario NOT added 4) Try 'fspec link-coverage <feature> --scenario <name>' - ERROR: Scenario not found"
+      ],
+      "questions": [
+        {
+          "text": "@human: Should generate-coverage be idempotent (safe to run multiple times without data loss)?",
+          "selected": true,
+          "answer": "Yes. generate-coverage must be idempotent - safe to run multiple times. It should UPDATE existing coverage files, not overwrite them."
+        },
+        {
+          "text": "@human: Should generate-coverage create backup of .coverage file before modifying?",
+          "selected": true,
+          "answer": "No backup needed. Since it's idempotent and git tracks changes, users can revert if needed."
+        },
+        {
+          "text": "@human: Should there be a --force flag to overwrite coverage files vs update-only mode?",
+          "selected": true,
+          "answer": "No. Default behavior should be update mode (merge new scenarios). Keep it simple."
+        }
+      ],
+      "estimate": 3,
+      "assumptions": [
+        "No backup needed. Since it's idempotent and git tracks changes, users can revert if needed.",
+        "No. Default behavior should be update mode (merge new scenarios). Keep it simple."
+      ]
+    },
+    "BUG-008": {
+      "id": "BUG-008",
+      "title": "generate-scenarios produces malformed Gherkin steps from example titles",
+      "status": "done",
+      "createdAt": "2025-10-15T04:16:17.565Z",
+      "updatedAt": "2025-10-15T14:24:00.000Z",
+      "description": "The generate-scenarios command is creating scenarios with malformed Given/When/Then steps that include the entire example title text instead of proper Gherkin syntax. This results in invalid scenarios with prefill placeholders and prevents moving work units through the workflow.",
+      "children": [],
+      "userStory": {
+        "role": "developer using fspec with Example Mapping",
+        "action": "have generate-scenarios create proper Gherkin Given/When/Then steps from example titles",
+        "benefit": "generated scenarios are valid and don't block workflow progression with prefill errors"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-15T04:16:39.895Z"
+        }
+      ],
+      "rules": [
+        "Example titles that start with keywords like 'REPRODUCTION:', 'MISSING:', 'ERROR WHEN:', 'COMMAND RESULT:' should be parsed to extract the actual scenario content, not used verbatim as Given steps",
+        "Generated scenarios must follow proper Gherkin structure: Given [precondition] / When [action] / Then [expected outcome]",
+        "Steps should never include the full example title - they should be semantically meaningful Given/When/Then statements",
+        "Scenario titles must be cleaned by removing common prefixes (REPRODUCTION, MISSING, ERROR WHEN, COMMAND RESULT, FILE, EXACT LINE, COMMAND TO REPRODUCE) to create readable scenario names",
+        "Original example text must be preserved as a comment (# Example: ...) above each scenario to maintain traceability to Example Mapping"
+      ],
+      "examples": [
+        "CURRENT: Example 'REPRODUCTION: work-unit-dependency-management.feature has 42 scenarios' → Scenario with 'Given REPRODUCTION: work-unit-dependency-management.feature has 42 scenarios, but .coverage file only has 39 scenario entries' | EXPECTED: → Scenario with 'Given a feature file exists with 42 scenarios / When I check the coverage file / Then it should have 42 scenario entries'",
+        "CURRENT: Example 'MISSING: Scenario X (line 501-518) NOT in coverage file' → Generates 'Given [precondition] / When [action] / Then [expected outcome]' (placeholders\\!) | EXPECTED: → 'Given a scenario exists in feature file at lines 501-518 / When I run generate-coverage / Then the scenario should be added to the coverage file'",
+        "CURRENT: Example 'ERROR WHEN LINKING: fspec link-coverage fails with Scenario not found' → Generates 'Given I have an invalid condition / When I execute ERROR WHEN LINKING...' (malformed\\!) | EXPECTED: → 'Given a scenario is missing from coverage file / When I run fspec link-coverage with that scenario name / Then it should fail with error Scenario not found'",
+        "CURRENT: Example 'COMMAND RESULT: fspec generate-coverage runs without error but does NOT add missing scenarios' → 'Given I am COMMAND RESULT: fspec generate-coverage / When I runs without error...' (grammatically broken\\!) | EXPECTED: → 'Given I have a feature file with new scenarios / When I run fspec generate-coverage / Then it should run without error / And it should NOT add missing scenarios to existing coverage files' (documents the bug behavior)",
+        "CURRENT: Example 'FILE: spec/features/work-unit.feature - grep shows 42 scenarios' → 'Given I am FILE: spec/features... / When I shows 42 scenarios...' (nonsensical grammar\\!) | EXPECTED: → 'Given a feature file spec/features/work-unit.feature exists / When I count scenarios using grep / Then it should return 42 scenarios'",
+        "CURRENT: Example 'COMMAND TO REPRODUCE: 1) Add scenario 2) Run command 3) Check file 4) Try link' → 'Given I am COMMAND TO REPRODUCE: 1) / When I Add new scenario...' (truncated and malformed\\!) | EXPECTED: → 'Given I add a new scenario to an existing feature file / When I run fspec generate-coverage / And I check the coverage file / Then the new scenario should NOT be added / When I try to link coverage for the scenario / Then it should fail with Scenario not found'"
+      ],
+      "questions": [
+        {
+          "text": "Should generate-scenarios attempt to parse example titles to extract semantic meaning, or should users write proper Given/When/Then examples in the first place?",
+          "selected": true,
+          "answer": "Clean scenario titles by removing prefixes like 'REPRODUCTION:', 'MISSING:', etc. Keep full example as comment. Use existing extractStepsFromExample() for parsing."
+        },
+        {
+          "text": "If examples contain complex reproduction steps (multiple actions), should generate-scenarios create multiple Given/When/Then steps or a single scenario outline?",
+          "selected": true,
+          "answer": "Use existing extractStepsFromExample() which already generates multiple Given/When/Then steps based on pattern matching. No changes needed - current system handles this."
+        },
+        {
+          "text": "What should happen if an example title doesn't fit the Given/When/Then structure at all (e.g., purely descriptive)?",
+          "selected": true,
+          "answer": "Fall back to [placeholders] which triggers prefill detection. This is already implemented in extractStepsFromExample(). No changes needed."
+        }
+      ],
+      "estimate": 2
     }
   },
   "states": {
@@ -4254,15 +4517,18 @@
     "specifying": [
       "COV-031",
       "COV-033",
-      "COV-038",
+      "COV-038"
+    ],
+    "testing": [
       "COV-046",
       "COV-047",
       "COV-048"
     ],
-    "testing": [],
     "implementing": [],
     "validating": [],
     "done": [
+      "BUG-007",
+      "BUG-008",
       "EXMAP-001",
       "INIT-001",
       "DEP-001",

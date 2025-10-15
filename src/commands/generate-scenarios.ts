@@ -35,7 +35,16 @@ function generateBasicScenario(
 ): string {
   const steps = extractStepsFromExample(example);
 
-  return `  Scenario: ${example}
+  // Clean scenario title by removing common prefixes
+  const cleanTitle = example
+    .replace(
+      /^(REPRODUCTION|REPRO|MISSING|ERROR WHEN LINKING|ERROR WHEN|COMMAND RESULT|FILE|EXACT LINE|COMMAND TO REPRODUCE):\s*/i,
+      ''
+    )
+    .trim();
+
+  return `  # Example: ${example}
+  Scenario: ${cleanTitle}
     Given ${steps.given || '[precondition]'}
     When ${steps.when || '[action]'}
     Then ${steps.then || '[expected outcome]'}
@@ -47,9 +56,18 @@ function generateGivenWhenThenScenario(
   example: string,
   index: number
 ): string {
+  // Clean scenario title by removing common prefixes
+  const cleanTitle = example
+    .replace(
+      /^(REPRODUCTION|REPRO|MISSING|ERROR WHEN LINKING|ERROR WHEN|COMMAND RESULT|FILE|EXACT LINE|COMMAND TO REPRODUCE):\s*/i,
+      ''
+    )
+    .trim();
+
   // Parse example to extract Given/When/Then if structured that way
   // For now, use example as scenario name with placeholder steps
-  return `  Scenario: ${example}
+  return `  # Example: ${example}
+  Scenario: ${cleanTitle}
     Given [precondition from example]
     When [action from example]
     Then [expected outcome from example]

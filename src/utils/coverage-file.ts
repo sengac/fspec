@@ -34,11 +34,11 @@ export interface CoverageFile {
 
 /**
  * Create a coverage file for a feature file
- * Returns status: 'created', 'skipped', or 'recreated'
+ * Returns status: 'created', 'skipped', 'recreated', or 'updated'
  */
 export async function createCoverageFile(
   featureFilePath: string
-): Promise<{ status: 'created' | 'skipped' | 'recreated'; message: string }> {
+): Promise<{ status: 'created' | 'skipped' | 'recreated' | 'updated'; message: string }> {
   const coverageFilePath = `${featureFilePath}.coverage`;
 
   // Check if coverage file already exists
@@ -49,12 +49,23 @@ export async function createCoverageFile(
     const existingContent = await readFile(coverageFilePath, 'utf-8');
 
     try {
-      JSON.parse(existingContent);
-      // Valid JSON, skip creation
+      const existingCoverage = JSON.parse(existingContent);
+      // Valid JSON, check if scenarios need updating
+      const updated = await updateCoverageFile(featureFilePath, coverageFilePath, existingCoverage);
+
+      if (updated) {
+        const fileName = coverageFilePath.split('/').pop()!;
+        return {
+          status: 'updated',
+          message: `Updated ${fileName} (added missing scenarios)`,
+        };
+      }
+
+      // No updates needed, skip
       const fileName = coverageFilePath.split('/').pop()!;
       return {
         status: 'skipped',
-        message: `Skipped ${fileName} (already exists)`,
+        message: `Skipped ${fileName} (already up to date)`,
       };
     } catch {
       // Invalid JSON, recreate
@@ -78,6 +89,76 @@ export async function createCoverageFile(
       message: `✓ Created ${fileName}`,
     };
   }
+}
+
+/**
+ * Update existing coverage file with new scenarios from feature file
+ * Returns true if scenarios were added, false if no changes needed
+ */
+async function updateCoverageFile(
+  featureFilePath: string,
+  coverageFilePath: string,
+  existingCoverage: CoverageFile
+): Promise<boolean> {
+  // Read and parse the feature file to get current scenarios
+  const featureContent = await readFile(featureFilePath, 'utf-8');
+
+  const uuidFn = Messages.IdGenerator.uuid();
+  const builder = new Gherkin.AstBuilder(uuidFn);
+  const matcher = new Gherkin.GherkinClassicTokenMatcher();
+  const parser = new Gherkin.Parser(builder, matcher);
+
+  let gherkinDocument;
+  try {
+    gherkinDocument = parser.parse(featureContent);
+  } catch (error: any) {
+    throw new Error(`Failed to parse feature file: ${error.message}`);
+  }
+
+  // Extract scenario names from feature file
+  const currentScenarioNames: string[] = [];
+  if (gherkinDocument.feature) {
+    for (const child of gherkinDocument.feature.children) {
+      if (child.scenario) {
+        currentScenarioNames.push(child.scenario.name);
+      }
+    }
+  }
+
+  // Find existing scenario names
+  const existingScenarioNames = new Set(
+    existingCoverage.scenarios.map(s => s.name)
+  );
+
+  // Find new scenarios (in feature file but not in coverage file)
+  const newScenarios: CoverageScenario[] = [];
+  for (const name of currentScenarioNames) {
+    if (!existingScenarioNames.has(name)) {
+      newScenarios.push({
+        name,
+        testMappings: [],
+      });
+    }
+  }
+
+  // If no new scenarios, return false (no update needed)
+  if (newScenarios.length === 0) {
+    return false;
+  }
+
+  // Add new scenarios to coverage file
+  const updatedCoverage: CoverageFile = {
+    scenarios: [...existingCoverage.scenarios, ...newScenarios],
+    stats: {
+      ...existingCoverage.stats,
+      totalScenarios: existingCoverage.scenarios.length + newScenarios.length,
+    },
+  };
+
+  // Write updated coverage file
+  await writeFile(coverageFilePath, JSON.stringify(updatedCoverage, null, 2), 'utf-8');
+
+  return true;
 }
 
 /**

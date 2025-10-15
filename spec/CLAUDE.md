@@ -497,9 +497,9 @@ Every `.feature` file has a corresponding `.feature.coverage` JSON file that tra
 ### Coverage Commands
 
 ```bash
-# Generate coverage files for existing features (setup/recovery)
+# Generate or update coverage files (creates new files + updates existing ones with missing scenarios)
 fspec generate-coverage
-fspec generate-coverage --dry-run  # Preview what would be created
+fspec generate-coverage --dry-run  # Preview what would be created/updated
 
 # Link test file to scenario (after writing tests)
 fspec link-coverage <feature-name> --scenario "<scenario-name>" \
