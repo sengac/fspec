@@ -1,0 +1,60 @@
+{
+  "scenarios": [
+    {
+      "name": "work-unit-dependency-management.feature has 42 scenarios, but .coverage file only has 39 scenario entries",
+      "testMappings": []
+    },
+    {
+      "name": "Scenario 'Identify bottleneck work units blocking the most work' (line 501-518) NOT in coverage file",
+      "testMappings": []
+    },
+    {
+      "name": "Scenario 'Auto-suggest dependency relationships based on work unit metadata' (line 520-536) NOT in coverage file",
+      "testMappings": []
+    },
+    {
+      "name": "Scenario 'Detect orphaned work units with no epic or dependencies' (line 538-553) NOT in coverage file",
+      "testMappings": []
+    },
+    {
+      "name": "'fspec generate-coverage' runs without error but does NOT add missing scenarios",
+      "testMappings": []
+    },
+    {
+      "name": "'fspec link-coverage work-unit-dependency-management --scenario \"Identify bottleneck...\"' fails with 'Scenario not found'",
+      "testMappings": []
+    },
+    {
+      "name": "spec/features/work-unit-dependency-management.feature - grep shows 42 scenarios: 'grep -c \"^  Scenario:\" spec/features/work-unit-dependency-management.feature' returns 42",
+      "testMappings": []
+    },
+    {
+      "name": "spec/features/work-unit-dependency-management.feature.coverage - only has 39 entries in scenarios array (verified by reading JSON)",
+      "testMappings": []
+    },
+    {
+      "name": "Feature file line 501: '@COV-046' tag, Scenario: 'Identify bottleneck work units blocking the most work' - MISSING from coverage",
+      "testMappings": []
+    },
+    {
+      "name": "Feature file line 520: '@COV-047' tag, Scenario: 'Auto-suggest dependency relationships based on work unit metadata' - MISSING from coverage",
+      "testMappings": []
+    },
+    {
+      "name": "Feature file line 538: '@COV-048' tag, Scenario: 'Detect orphaned work units with no epic or dependencies' - MISSING from coverage",
+      "testMappings": []
+    },
+    {
+      "name": "1) Add new scenario to existing .feature file 2) Run 'fspec generate-coverage' 3) Check .coverage file - new scenario NOT added 4) Try 'fspec link-coverage <feature> --scenario <name>' - ERROR: Scenario not found",
+      "testMappings": []
+    }
+  ],
+  "stats": {
+    "totalScenarios": 12,
+    "coveredScenarios": 0,
+    "coveragePercent": 0,
+    "testFiles": [],
+    "implFiles": [],
+    "totalLinesCovered": 0
+  }
+}
