@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-15T07:18:59.555Z"
+    "lastUpdated": "2025-10-15T07:36:26.885Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -4862,6 +4862,80 @@
         "Bug affects all fspec versions with remove-tag-from-scenario command"
       ],
       "estimate": 3
+    },
+    "DOC-004": {
+      "id": "DOC-004",
+      "title": "Validate Mermaid diagrams during foundation.json regeneration",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-15T07:36:09.439Z",
+      "updatedAt": "2025-10-15T07:54:01.712Z",
+      "description": "The generate-foundation-md command should validate all Mermaid diagrams in foundation.json before regenerating FOUNDATION.md. If any diagram has invalid syntax, the command should fail with detailed error information including the position in the JSON file and the specific Mermaid validation error, guiding the AI to fix and regenerate.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-15T07:36:16.916Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-15T07:45:13.894Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-15T07:47:31.554Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-15T07:51:32.720Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-15T07:54:01.712Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer maintaining foundation.json documentation",
+        "action": "validate all Mermaid diagrams when regenerating FOUNDATION.md",
+        "benefit": "I catch syntax errors immediately with precise error locations and can fix them before the markdown file is written"
+      },
+      "rules": [
+        "All Mermaid diagrams in foundation.json MUST be validated before writing FOUNDATION.md",
+        "Validation errors MUST include the JSON position (architectureDiagrams array index) of the failing diagram",
+        "Validation errors MUST include the diagram title for easy identification",
+        "Validation errors MUST include the detailed Mermaid error message from mermaid.parse()",
+        "The command MUST exit with code 1 if any diagram validation fails",
+        "Error output MUST guide the AI to fix the diagram in foundation.json and regenerate",
+        "Diagram validation MUST use the existing validateMermaidSyntax() function from add-diagram.ts",
+        "After JSON schema validation - validate diagrams after the schema check passes",
+        "Validate all diagrams at once and show all errors together - don't fail fast",
+        "Yes, extract validateMermaidSyntax to src/utils/mermaid-validation.ts for reuse"
+      ],
+      "examples": [
+        "Running 'fspec generate-foundation-md' with valid diagrams completes successfully and generates FOUNDATION.md",
+        "Running 'fspec generate-foundation-md' with an invalid diagram at architectureDiagrams[2] shows: 'Error at architectureDiagrams[2] (title: \"Data Flow\"): Invalid Mermaid syntax: unexpected token' and exits with code 1",
+        "Running 'fspec generate-foundation-md' with multiple invalid diagrams shows all failures with their positions, titles, and error messages",
+        "Error message includes guidance: 'Fix the diagram(s) in spec/foundation.json and run fspec generate-foundation-md again'",
+        "After fixing invalid diagrams in foundation.json and running 'fspec generate-foundation-md' again, the command succeeds and generates FOUNDATION.md"
+      ],
+      "questions": [
+        {
+          "text": "@human: Should validation happen BEFORE or AFTER JSON schema validation?",
+          "selected": true,
+          "answer": "After JSON schema validation - validate diagrams after the schema check passes"
+        },
+        {
+          "text": "@human: Should we stop at the first invalid diagram or validate all diagrams and show all errors at once?",
+          "selected": true,
+          "answer": "Validate all diagrams at once and show all errors together - don't fail fast"
+        },
+        {
+          "text": "@human: Should the validateMermaidSyntax function be extracted to a shared utility file for reuse?",
+          "selected": true,
+          "answer": "Yes, extract validateMermaidSyntax to src/utils/mermaid-validation.ts for reuse"
+        }
+      ],
+      "estimate": 3
     }
   },
   "states": {
@@ -4968,7 +5042,8 @@
       "COV-038",
       "FEAT-006",
       "FEAT-011",
-      "BUG-009"
+      "BUG-009",
+      "DOC-004"
     ],
     "blocked": []
   }

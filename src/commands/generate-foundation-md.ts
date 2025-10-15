@@ -6,6 +6,7 @@ import chalk from 'chalk';
 import type { Foundation } from '../types/foundation';
 import { validateFoundationJson } from '../validators/json-schema';
 import { generateFoundationMd } from '../generators/foundation-md';
+import { validateMermaidSyntax } from '../utils/mermaid-validation';
 
 interface GenerateFoundationMdOptions {
   cwd?: string;
@@ -53,6 +54,39 @@ export async function generateFoundationMdCommand(
     // Read foundation.json
     const content = await readFile(foundationJsonPath, 'utf-8');
     const foundationData: Foundation = JSON.parse(content);
+
+    // Validate all Mermaid diagrams
+    const diagramErrors: string[] = [];
+    if (foundationData.architectureDiagrams && foundationData.architectureDiagrams.length > 0) {
+      for (let i = 0; i < foundationData.architectureDiagrams.length; i++) {
+        const diagram = foundationData.architectureDiagrams[i];
+        const validationResult = await validateMermaidSyntax(diagram.mermaidCode);
+
+        if (!validationResult.valid) {
+          diagramErrors.push(
+            `architectureDiagrams[${i}] (title: "${diagram.title}"): ${validationResult.error}`
+          );
+        }
+      }
+    }
+
+    // If any diagrams failed validation, return error with all failures
+    if (diagramErrors.length > 0) {
+      const errorMessage = [
+        'Diagram validation failed!',
+        '',
+        `Found ${diagramErrors.length} invalid diagram${diagramErrors.length > 1 ? 's' : ''}:`,
+        ...diagramErrors.map(err => `  - ${err}`),
+        '',
+        'Fix the diagram(s) in spec/foundation.json',
+        "Run 'fspec generate-foundation-md' again after fixing",
+      ].join('\n');
+
+      return {
+        success: false,
+        error: errorMessage,
+      };
+    }
 
     // Generate FOUNDATION.md
     const markdown = await generateFoundationMd(foundationData);
