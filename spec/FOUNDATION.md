@@ -588,47 +588,44 @@ sequenceDiagram
     participant FS as File System
     participant Validation as Temporal Validation
 
-    Note over AI,Validation: Scenario 1: Valid ACDD Workflow
+    Note over AI,Validation: Scenario 1 - Valid ACDD Workflow
     
     AI->>CLI: update-work-unit-status AUTH-001 specifying
     CLI->>WorkUnit: Record state entry timestamp T1
-    WorkUnit-->>AI: Status: specifying
+    WorkUnit-->>AI: Status specifying
     
     Note over AI: AI writes feature file AFTER T1
-    AI->>FS: Create feature file (mtime = T2, where T2 > T1)
+    AI->>FS: Create feature file (mtime T2 where T2 > T1)
     
     AI->>CLI: update-work-unit-status AUTH-001 testing
     CLI->>Validation: Check feature file timestamps
-    Validation->>FS: Read feature file mtime = T2
-    Validation->>WorkUnit: Read specifying timestamp = T1
+    Validation->>FS: Read feature file mtime T2
+    Validation->>WorkUnit: Read specifying timestamp T1
     Validation->>Validation: Verify T2 > T1
-    Validation-->>CLI: ✓ Valid temporal ordering
+    Validation-->>CLI: Valid temporal ordering
     CLI->>WorkUnit: Record testing state entry T3
-    WorkUnit-->>AI: Status: testing
+    WorkUnit-->>AI: Status testing
 
-    Note over AI,Validation: Scenario 2: Retroactive Completion (BLOCKED)
+    Note over AI,Validation: Scenario 2 - Retroactive Completion BLOCKED
     
-    AI->>FS: Create feature file FIRST (mtime = T0)
+    AI->>FS: Create feature file FIRST (mtime T0)
     AI->>CLI: update-work-unit-status AUTH-002 specifying
     CLI->>WorkUnit: Record state entry timestamp T1 (T1 > T0)
-    WorkUnit-->>AI: Status: specifying
+    WorkUnit-->>AI: Status specifying
     
     AI->>CLI: update-work-unit-status AUTH-002 testing
     CLI->>Validation: Check feature file timestamps
-    Validation->>FS: Read feature file mtime = T0
-    Validation->>WorkUnit: Read specifying timestamp = T1
-    Validation->>Validation: Verify T0 < T1 ❌
-    Validation-->>CLI: ✗ Temporal ordering violation!
-    CLI-->>AI: Error: File created BEFORE state entry
+    Validation->>FS: Read feature file mtime T0
+    Validation->>WorkUnit: Read specifying timestamp T1
+    Validation->>Validation: Verify T0 < T1 (FAIL)
+    Validation-->>CLI: Temporal ordering violation
+    CLI-->>AI: Error - File created BEFORE state entry
     
-    Note over AI,Validation: Scenario 3: Escape Hatch for Reverse ACDD
+    Note over AI,Validation: Scenario 3 - Escape Hatch for Reverse ACDD
     
     AI->>CLI: update-work-unit-status LEGACY-001 testing --skip-temporal-validation
     CLI->>WorkUnit: Record testing state entry (skip validation)
-    WorkUnit-->>AI: Status: testing
-
-    style Validation fill:#FF9800
-    style WorkUnit fill:#4CAF50
+    WorkUnit-->>AI: Status testing
 ```
 
 ---
