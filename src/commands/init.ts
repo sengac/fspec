@@ -161,44 +161,6 @@ async function generateTemplate(): Promise<string> {
     );
   }
 
-  // Replace fspec-specific work unit IDs with generic examples
-  template = template.replace(/CLI-\d+/g, 'EXAMPLE-001');
-  template = template.replace(/TEST-\d+/g, 'EXAMPLE-002');
-  template = template.replace(/AUTH-\d+/g, 'EXAMPLE-003');
-  template = template.replace(/DASH-\d+/g, 'EXAMPLE-004');
-  template = template.replace(/API-\d+/g, 'EXAMPLE-005');
-  template = template.replace(/UI-\d+/g, 'EXAMPLE-006');
-  template = template.replace(/SEC-\d+/g, 'EXAMPLE-007');
-  template = template.replace(/HOOK-\d+/g, 'EXAMPLE-008');
-  template = template.replace(/BACK-\d+/g, 'EXAMPLE-009');
-
-  // Replace fspec-specific feature names with generic examples
-  template = template.replace(
-    /user-authentication\.feature/g,
-    'example-feature.feature'
-  );
-  template = template.replace(
-    /gherkin-validation\.feature/g,
-    'example-validation.feature'
-  );
-  template = template.replace(
-    /feature-file-validation\.feature/g,
-    'example-feature.feature'
-  );
-  template = template.replace(/login\.feature/g, 'example-login.feature');
-  template = template.replace(
-    /shopping-cart\.feature/g,
-    'example-cart.feature'
-  );
-
-  // Replace fspec-specific command examples with generic project examples
-  template = template.replace(/fspec-test-/g, 'example-project-test-');
-
-  // Ensure "example-project" placeholder is used
-  if (!template.includes('example-project')) {
-    template = template.replace(/fspec validate/g, 'example-project validate');
-  }
-
   return template;
 }
 

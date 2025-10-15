@@ -4936,6 +4936,47 @@
         }
       ],
       "estimate": 3
+    },
+    "BUG-010": {
+      "id": "BUG-010",
+      "title": "fspec init performs unnecessary string replacements on generic slash command template",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-10-15T08:07:58.029Z",
+      "updatedAt": "2025-10-15T08:13:07.810Z",
+      "description": "The init command replaces fspec-specific examples (user-authentication.feature, CLI-003, etc.) with generic placeholders (example-feature.feature, EXAMPLE-001). These replacements are unnecessary because the slash command file contains illustrative examples that work for any project. The replacements also cause issues when running init from fspec's own directory, overwriting the original examples. Solution: Remove all string replacement logic from generateTemplate() function.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-15T08:08:12.311Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-15T08:11:59.282Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-15T08:12:08.189Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-15T08:12:08.484Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-15T08:13:07.810Z"
+        }
+      ],
+      "rules": [
+        "The slash command file is generic guidance that works for any project",
+        "Examples in the file are illustrative only - showing patterns not specific project details",
+        "String replacements provide no value and cause issues when run from fspec directory"
+      ],
+      "examples": [
+        "Running init from fspec dir overwrites original examples with generic ones",
+        "External projects see user-authentication.feature in examples which works fine as illustration"
+      ]
     }
   },
   "states": {
@@ -5043,7 +5084,8 @@
       "FEAT-006",
       "FEAT-011",
       "BUG-009",
-      "DOC-004"
+      "DOC-004",
+      "BUG-010"
     ],
     "blocked": []
   }
