@@ -542,11 +542,23 @@
     },
     {
       "name": "Validate from file path",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/validators/__tests__/json-schema.test.ts",
+          "lines": "42-204",
+          "implMappings": []
+        }
+      ]
     },
     {
       "name": "Handle malformed JSON file",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/validators/__tests__/json-schema.test.ts",
+          "lines": "550-572",
+          "implMappings": []
+        }
+      ]
     },
     {
       "name": "Format validation errors for display",
@@ -686,14 +698,14 @@
   ],
   "stats": {
     "totalScenarios": 7,
-    "coveredScenarios": 5,
-    "coveragePercent": 71,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
     "testFiles": [
       "src/validators/__tests__/json-schema.test.ts"
     ],
     "implFiles": [
       "src/validators/json-schema.ts"
     ],
-    "totalLinesCovered": 1024
+    "totalLinesCovered": 1210
   }
 }

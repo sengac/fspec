@@ -74,6 +74,7 @@ Feature: Complete CLI Command Registration
     Then the work unit AUTH-001 status should be "implementing"
 
   @example-mapping
+  @COV-020
   Scenario: Register example mapping commands
     Given example mapping functions exist in src/commands/
     When I check if example mapping commands are registered
@@ -112,6 +113,7 @@ Feature: Complete CLI Command Registration
     And "fspec query-estimation-guide" should be registered
 
   @workflow-automation
+  @COV-021
   Scenario: Register workflow and automation commands
     Given workflow functions exist in src/commands/
     When I check if workflow commands are registered
@@ -128,6 +130,7 @@ Feature: Complete CLI Command Registration
     And "fspec delete-epic" should be registered
 
   @validation
+  @COV-022
   Scenario: Register validation commands
     Given validation functions exist in src/commands/
     When I check if validation commands are registered
@@ -147,6 +150,7 @@ Feature: Complete CLI Command Registration
     And "fspec export-work-units" should be registered
 
   @assumption-management
+  @COV-023
   Scenario: Register assumption management command
     Given the function "addAssumption" exists in "src/commands/add-assumption.ts"
     When I check if "fspec add-assumption" is registered in CLI
@@ -156,6 +160,7 @@ Feature: Complete CLI Command Registration
     Then the assumption should be added to the feature file
 
   @help-text
+  @COV-024
   Scenario: Update help text for all command categories
     Given all missing commands are registered in src/index.ts
     When I run "fspec help project"
@@ -185,6 +190,7 @@ Feature: Complete CLI Command Registration
     And each command should be accessible via "fspec <command-name>"
     And no implemented functionality should be missing from the CLI
 
+  @COV-025
   Scenario: Help system shows all commands
     Given I have the fspec CLI built and ready
     And all commands are registered in src/index.ts
@@ -195,6 +201,7 @@ Feature: Complete CLI Command Registration
     And the help should include commands for: spec, tags, foundation, query, project management
     And no registered command should be missing from help output
 
+  @COV-026
   Scenario: Build succeeds with no errors
     Given I have made changes to command registration in src/index.ts
     And all command imports are correct

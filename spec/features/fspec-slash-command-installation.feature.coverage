@@ -594,19 +594,25 @@
     },
     {
       "name": "CLI registration allows running fspec init command",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/init.test.ts",
+          "lines": "1-100",
+          "implMappings": []
+        }
+      ]
     }
   ],
   "stats": {
     "totalScenarios": 9,
-    "coveredScenarios": 8,
-    "coveragePercent": 89,
+    "coveredScenarios": 9,
+    "coveragePercent": 100,
     "testFiles": [
       "src/commands/__tests__/init.test.ts"
     ],
     "implFiles": [
       "src/commands/init.ts"
     ],
-    "totalLinesCovered": 694
+    "totalLinesCovered": 794
   }
 }

@@ -1,4 +1,4 @@
-import { readFile } from 'fs/promises';
+import { readFile, writeFile } from 'fs/promises';
 import chalk from 'chalk';
 import type { Command } from 'commander';
 import { join } from 'path';
@@ -27,6 +27,10 @@ export async function queryWorkUnits(options: {
   workUnitId?: string;
   status?: string;
   epic?: string;
+  prefix?: string;
+  sort?: string;
+  order?: 'asc' | 'desc';
+  format?: 'json' | 'csv' | 'text';
   output?: string;
   showCycleTime?: boolean;
   hasQuestions?: boolean;
@@ -88,6 +92,10 @@ export async function queryWorkUnits(options: {
       workUnits = workUnits.filter(wu => wu.epic === options.epic);
     }
 
+    if (options.prefix) {
+      workUnits = workUnits.filter(wu => wu.id.startsWith(options.prefix + '-'));
+    }
+
     // Filter by hasQuestions
     if (options.hasQuestions !== undefined) {
       if (options.hasQuestions) {
@@ -119,6 +127,49 @@ export async function queryWorkUnits(options: {
           return false;
         });
       });
+    }
+
+    // Apply sorting
+    if (options.sort) {
+      const sortKey = options.sort as keyof WorkUnit;
+      const order = options.order || 'asc';
+
+      workUnits.sort((a, b) => {
+        const aVal = a[sortKey];
+        const bVal = b[sortKey];
+
+        if (aVal === undefined || bVal === undefined) {
+          return 0;
+        }
+
+        let comparison = 0;
+        if (typeof aVal === 'string' && typeof bVal === 'string') {
+          comparison = aVal.localeCompare(bVal);
+        } else if (typeof aVal === 'number' && typeof bVal === 'number') {
+          comparison = aVal - bVal;
+        }
+
+        return order === 'desc' ? -comparison : comparison;
+      });
+    }
+
+    // Handle output format
+    if (options.format === 'csv' && options.output) {
+      const csvLines: string[] = [];
+
+      // Header
+      csvLines.push('id,title,status,createdAt,updatedAt');
+
+      // Data rows
+      for (const wu of workUnits) {
+        const title = (wu.title || '').replace(/,/g, '');
+        const status = wu.status || '';
+        const createdAt = (wu.createdAt as string) || '';
+        const updatedAt = (wu.updatedAt as string) || '';
+        csvLines.push(`${wu.id},${title},${status},${createdAt},${updatedAt}`);
+      }
+
+      await writeFile(options.output, csvLines.join('\n'), 'utf-8');
     }
 
     return { workUnits };

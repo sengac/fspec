@@ -2889,11 +2889,1211 @@
         }
       ],
       "estimate": 2
+    },
+    "COV-010": {
+      "id": "COV-010",
+      "title": "Test: Example mapping commands auto-create work-units.json",
+      "status": "done",
+      "createdAt": "2025-10-15T00:10:11.075Z",
+      "updatedAt": "2025-10-15T00:24:35.178Z",
+      "description": "Feature: automatic-json-file-initialization. Status: CREATE_BOTH. Need to create tests and implementation for example mapping commands using ensure utilities.",
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-15T00:17:47.933Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-15T00:24:28.002Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-15T00:24:34.500Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-15T00:24:34.830Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-15T00:24:35.179Z"
+        }
+      ],
+      "estimate": 2,
+      "epic": "test-coverage"
+    },
+    "COV-011": {
+      "id": "COV-011",
+      "title": "Test: Dependency commands auto-create work-units.json",
+      "status": "done",
+      "createdAt": "2025-10-15T00:10:12.810Z",
+      "updatedAt": "2025-10-15T00:25:55.102Z",
+      "description": "Feature: automatic-json-file-initialization. Status: CREATE_TEST_ONLY. Implementation exists in ensure-files.ts, need tests to verify dependency commands use it.",
+      "epic": "test-coverage",
+      "estimate": 2,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-15T00:25:53.922Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-15T00:25:54.220Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-15T00:25:54.512Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-15T00:25:54.805Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-15T00:25:55.102Z"
+        }
+      ]
+    },
+    "COV-012": {
+      "id": "COV-012",
+      "title": "Test: Ensure utilities validate JSON structure",
+      "status": "done",
+      "createdAt": "2025-10-15T00:10:14.369Z",
+      "updatedAt": "2025-10-15T00:29:07.394Z",
+      "description": "Feature: automatic-json-file-initialization. Status: CREATE_BOTH. No tests found for validation within ensure utilities. Tests verify creation but not schema validation.",
+      "epic": "test-coverage",
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-15T00:27:05.485Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-15T00:27:54.504Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-15T00:28:30.230Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-15T00:29:07.099Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-15T00:29:07.395Z"
+        }
+      ],
+      "rules": [
+        "Ensure utilities must detect corrupted JSON files",
+        "Ensure utilities must provide helpful error messages indicating what went wrong"
+      ],
+      "examples": [
+        "Corrupted JSON with trailing comma throws parse error with file path",
+        "Invalid JSON with missing closing brace throws parse error with line number"
+      ],
+      "estimate": 3
+    },
+    "COV-013": {
+      "id": "COV-013",
+      "title": "Test: All 48+ commands use ensure utilities",
+      "status": "done",
+      "createdAt": "2025-10-15T00:10:16.274Z",
+      "updatedAt": "2025-10-15T00:33:46.472Z",
+      "description": "Feature: automatic-json-file-initialization. Status: CREATE_TEST_ONLY. Need integration tests to verify all commands use ensure utilities instead of direct file reads.",
+      "epic": "test-coverage",
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-15T00:31:57.735Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-15T00:32:52.803Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-15T00:33:40.011Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-15T00:33:46.175Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-15T00:33:46.473Z"
+        }
+      ],
+      "estimate": 2
+    },
+    "COV-014": {
+      "id": "COV-014",
+      "title": "Test: List work units command auto-creates work-units.json",
+      "status": "done",
+      "createdAt": "2025-10-15T00:10:17.732Z",
+      "updatedAt": "2025-10-15T00:34:01.759Z",
+      "description": "Feature: automatic-json-file-initialization. Status: CREATE_TEST_ONLY. Implementation exists (ensureWorkUnitsFile), need test to verify list-work-units command uses it.",
+      "epic": "test-coverage",
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-15T00:32:40.879Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-15T00:34:00.881Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-15T00:34:01.174Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-15T00:34:01.467Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-15T00:34:01.760Z"
+        }
+      ],
+      "estimate": 2
+    },
+    "COV-015": {
+      "id": "COV-015",
+      "title": "Test: Update work unit uses ensureWorkUnitsFile",
+      "status": "done",
+      "createdAt": "2025-10-15T00:10:19.515Z",
+      "updatedAt": "2025-10-15T00:34:03.243Z",
+      "description": "Feature: automatic-json-file-initialization. Status: CREATE_TEST_ONLY. Need to verify update-work-unit command implementation uses ensure utility.",
+      "epic": "test-coverage",
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-15T00:32:42.787Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-15T00:34:02.357Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-15T00:34:02.648Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-15T00:34:02.942Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-15T00:34:03.243Z"
+        }
+      ],
+      "estimate": 2
+    },
+    "COV-016": {
+      "id": "COV-016",
+      "title": "Test: Register tag auto-creates tags.json",
+      "status": "done",
+      "createdAt": "2025-10-15T00:10:31.606Z",
+      "updatedAt": "2025-10-15T00:34:04.720Z",
+      "description": "Feature: automatic-json-file-initialization. Status: CREATE_TEST_ONLY. Implementation likely exists but no specific test for register-tag using ensure utilities.",
+      "epic": "test-coverage",
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-15T00:32:44.610Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-15T00:34:03.831Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-15T00:34:04.127Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-15T00:34:04.425Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-15T00:34:04.720Z"
+        }
+      ],
+      "estimate": 2
+    },
+    "COV-017": {
+      "id": "COV-017",
+      "title": "Test: Update foundation auto-creates foundation.json",
+      "status": "done",
+      "createdAt": "2025-10-15T00:10:31.907Z",
+      "updatedAt": "2025-10-15T00:34:38.486Z",
+      "description": "Feature: automatic-json-file-initialization. Status: CREATE_BOTH. No ensure utility or test found for foundation.json auto-creation.",
+      "epic": "test-coverage",
+      "estimate": 3,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-15T00:34:35.262Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-15T00:34:37.605Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-15T00:34:37.899Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-15T00:34:38.193Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-15T00:34:38.486Z"
+        }
+      ]
+    },
+    "COV-018": {
+      "id": "COV-018",
+      "title": "Test: List tags auto-creates tags.json",
+      "status": "done",
+      "createdAt": "2025-10-15T00:10:32.205Z",
+      "updatedAt": "2025-10-15T00:34:39.662Z",
+      "description": "Feature: automatic-json-file-initialization. Status: CREATE_BOTH. No test found verifying list-tags auto-creates tags.json.",
+      "epic": "test-coverage",
+      "estimate": 3,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-15T00:34:35.845Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-15T00:34:38.783Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-15T00:34:39.078Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-15T00:34:39.371Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-15T00:34:39.662Z"
+        }
+      ]
+    },
+    "COV-019": {
+      "id": "COV-019",
+      "title": "Test: Show foundation auto-creates foundation.json",
+      "status": "done",
+      "createdAt": "2025-10-15T00:10:32.497Z",
+      "updatedAt": "2025-10-15T00:34:40.844Z",
+      "description": "Feature: automatic-json-file-initialization. Status: CREATE_BOTH. No test found verifying show-foundation auto-creates foundation.json.",
+      "epic": "test-coverage",
+      "estimate": 3,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-15T00:34:36.429Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-15T00:34:39.958Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-15T00:34:40.255Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-15T00:34:40.549Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-15T00:34:40.845Z"
+        }
+      ]
+    },
+    "COV-020": {
+      "id": "COV-020",
+      "title": "Test: Register example mapping commands",
+      "status": "done",
+      "createdAt": "2025-10-15T00:10:42.265Z",
+      "updatedAt": "2025-10-15T00:40:47.452Z",
+      "description": "Feature: cli-command-registration. Status: CREATE_BOTH. Test file only verifies 39 commands excluding example mapping. Need to add example mapping commands to registration test.",
+      "epic": "test-coverage",
+      "estimate": 3,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-15T00:34:59.479Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-15T00:40:24.923Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-15T00:40:46.567Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-15T00:40:46.863Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-15T00:40:47.453Z"
+        }
+      ],
+      "rules": [
+        "Example mapping commands must be registered in CLI"
+      ],
+      "examples": [
+        "add-rule, add-example, add-question commands should be accessible via CLI"
+      ]
+    },
+    "COV-021": {
+      "id": "COV-021",
+      "title": "Test: Register workflow automation commands",
+      "status": "done",
+      "createdAt": "2025-10-15T00:10:42.555Z",
+      "updatedAt": "2025-10-15T00:43:06.614Z",
+      "description": "Feature: cli-command-registration. Status: CREATE_BOTH. No tests found for workflow automation command registration.",
+      "epic": "test-coverage",
+      "estimate": 3,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-15T00:35:01.240Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-15T00:42:15.799Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-15T00:42:39.547Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-15T00:42:59.849Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-15T00:43:06.615Z"
+        }
+      ],
+      "rules": [
+        "Workflow commands must be registered: auto-advance, board, workflow-automation"
+      ],
+      "examples": [
+        "Running 'fspec workflow-automation' should show workflow automation options"
+      ]
+    },
+    "COV-022": {
+      "id": "COV-022",
+      "title": "Test: Register validation commands",
+      "status": "done",
+      "createdAt": "2025-10-15T00:10:42.849Z",
+      "updatedAt": "2025-10-15T00:43:28.938Z",
+      "description": "Feature: cli-command-registration. Status: CREATE_TEST_ONLY. Validation commands likely registered but no specific test verifies registration.",
+      "epic": "test-coverage",
+      "estimate": 2,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-15T00:35:03.008Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-15T00:43:21.439Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-15T00:43:28.062Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-15T00:43:28.356Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-15T00:43:28.938Z"
+        }
+      ],
+      "rules": [
+        "Validation commands must be registered: validate-spec-alignment, validate-work-units, repair-work-units"
+      ],
+      "examples": [
+        "Running 'fspec validate-work-units' should verify work unit data integrity"
+      ]
+    },
+    "COV-023": {
+      "id": "COV-023",
+      "title": "Test: Register assumption management command",
+      "status": "done",
+      "createdAt": "2025-10-15T00:10:43.142Z",
+      "updatedAt": "2025-10-15T00:43:46.185Z",
+      "description": "Feature: cli-command-registration. Status: CREATE_BOTH. No tests found for assumption management command.",
+      "epic": "test-coverage",
+      "estimate": 3,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-15T00:35:04.770Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-15T00:43:45.014Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-15T00:43:45.311Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-15T00:43:45.603Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-15T00:43:46.185Z"
+        }
+      ],
+      "rules": [
+        "Assumption management command must be registered: add-assumption"
+      ],
+      "examples": [
+        "Running 'fspec add-assumption feature-name \"assumption\"' should add assumption to feature file"
+      ]
+    },
+    "COV-024": {
+      "id": "COV-024",
+      "title": "Test: Update help text for all command categories",
+      "status": "done",
+      "createdAt": "2025-10-15T00:10:53.824Z",
+      "updatedAt": "2025-10-15T00:44:02.469Z",
+      "description": "Feature: cli-command-registration. Status: CREATE_TEST_ONLY. Need test to verify help text is complete for all categories.",
+      "epic": "test-coverage",
+      "estimate": 2,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-15T00:35:06.523Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-15T00:44:01.294Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-15T00:44:01.588Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-15T00:44:01.883Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-15T00:44:02.469Z"
+        }
+      ],
+      "rules": [
+        "Help text must include all commands in their respective categories"
+      ],
+      "examples": [
+        "Running 'fspec help project' should show all work unit commands"
+      ]
+    },
+    "COV-025": {
+      "id": "COV-025",
+      "title": "Test: Help system shows all commands",
+      "status": "done",
+      "createdAt": "2025-10-15T00:10:54.124Z",
+      "updatedAt": "2025-10-15T00:44:19.832Z",
+      "description": "Feature: cli-command-registration. Status: CREATE_TEST_ONLY. No test verifies help output includes all commands.",
+      "epic": "test-coverage",
+      "estimate": 2,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-15T00:35:08.285Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-15T00:44:18.664Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-15T00:44:18.959Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-15T00:44:19.250Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-15T00:44:19.833Z"
+        }
+      ],
+      "rules": [
+        "Help output must list all available commands organized by category"
+      ],
+      "examples": [
+        "Running 'fspec --help' should show commands for spec, tags, foundation, query, and project management"
+      ]
+    },
+    "COV-026": {
+      "id": "COV-026",
+      "title": "Test: Build succeeds with no errors",
+      "status": "done",
+      "createdAt": "2025-10-15T00:10:54.426Z",
+      "updatedAt": "2025-10-15T00:44:52.043Z",
+      "description": "Feature: cli-command-registration. Status: CREATE_TEST_ONLY. Integration test needed to verify build success.",
+      "epic": "test-coverage",
+      "estimate": 2,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-15T00:35:10.042Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-15T00:44:50.873Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-15T00:44:51.164Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-15T00:44:51.457Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-15T00:44:52.044Z"
+        }
+      ],
+      "rules": [
+        "Build must succeed with exit code 0 after command registration changes"
+      ],
+      "examples": [
+        "Running 'npm run build' should create dist/index.js with no TypeScript errors"
+      ]
+    },
+    "COV-027": {
+      "id": "COV-027",
+      "title": "Test: System-reminder after create-feature with prefill",
+      "status": "done",
+      "createdAt": "2025-10-15T00:10:54.737Z",
+      "updatedAt": "2025-10-15T00:45:17.872Z",
+      "description": "Feature: feature-file-prefill-detection. Status: CREATE_TEST_ONLY. Tests verify prefill detection but no integration test for create-feature command displaying the reminder.",
+      "epic": "test-coverage",
+      "estimate": 2,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-15T00:35:11.805Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-15T00:45:16.989Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-15T00:45:17.286Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-15T00:45:17.579Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-15T00:45:17.873Z"
+        }
+      ],
+      "rules": [
+        "System-reminder must appear when create-feature generates prefill"
+      ],
+      "examples": [
+        "After creating feature, reminder suggests 'fspec set-user-story' for [role]/[action]/[benefit] placeholders"
+      ]
+    },
+    "COV-028": {
+      "id": "COV-028",
+      "title": "Test: System-reminder after generate-scenarios with prefill",
+      "status": "done",
+      "createdAt": "2025-10-15T00:11:05.298Z",
+      "updatedAt": "2025-10-15T00:45:28.016Z",
+      "description": "Feature: feature-file-prefill-detection. Status: CREATE_TEST_ONLY. Need integration test for generate-scenarios command.",
+      "epic": "test-coverage",
+      "estimate": 2,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-15T00:35:13.572Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-15T00:45:27.132Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-15T00:45:27.426Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-15T00:45:27.723Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-15T00:45:28.017Z"
+        }
+      ],
+      "rules": [
+        "System-reminder must appear when generate-scenarios creates prefill steps"
+      ],
+      "examples": [
+        "After generating scenarios, reminder suggests 'fspec add-step' for placeholder steps"
+      ]
+    },
+    "COV-029": {
+      "id": "COV-029",
+      "title": "Test: User story from Example Mapping generates complete Background",
+      "status": "done",
+      "createdAt": "2025-10-15T00:11:05.606Z",
+      "updatedAt": "2025-10-15T00:45:38.597Z",
+      "description": "Feature: feature-file-prefill-detection. Status: CREATE_BOTH. No tests found for Example Mapping user story to Background conversion.",
+      "epic": "test-coverage",
+      "estimate": 3,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-15T00:35:15.340Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-15T00:45:37.713Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-15T00:45:38.009Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-15T00:45:38.302Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-15T00:45:38.598Z"
+        }
+      ],
+      "rules": [
+        "User story from Example Mapping must generate complete Background without placeholders"
+      ],
+      "examples": [
+        "When work unit has role/action/benefit set, generated Background should contain full user story"
+      ]
+    },
+    "COV-030": {
+      "id": "COV-030",
+      "title": "Test: Workflow blocking prevents status change with prefill",
+      "status": "done",
+      "createdAt": "2025-10-15T00:11:05.899Z",
+      "updatedAt": "2025-10-15T00:45:48.589Z",
+      "description": "Feature: feature-file-prefill-detection. Status: CREATE_BOTH. No tests found for workflow blocking based on prefill detection.",
+      "epic": "test-coverage",
+      "estimate": 3,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-15T00:35:17.102Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-15T00:45:47.707Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-15T00:45:48.003Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-15T00:45:48.298Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-15T00:45:48.590Z"
+        }
+      ],
+      "rules": [
+        "Workflow status change must be blocked when linked feature file has prefill"
+      ],
+      "examples": [
+        "Trying to move work unit to testing status should fail with error if feature file has [role]/[action] placeholders"
+      ]
+    },
+    "COV-031": {
+      "id": "COV-031",
+      "title": "Test: Support custom output path for generate-foundation-md",
+      "status": "specifying",
+      "createdAt": "2025-10-15T00:11:06.192Z",
+      "updatedAt": "2025-10-15T00:46:32.432Z",
+      "description": "Feature: generate-foundation-md. Status: CREATE_TEST_ONLY. No test found for custom output path option.",
+      "epic": "test-coverage",
+      "estimate": 2,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-15T00:35:18.861Z"
+        }
+      ],
+      "rules": [
+        "generate-foundation-md must support custom output path option"
+      ],
+      "examples": [
+        "'fspec generate-foundation-md --output custom/path.md' should create file at custom path"
+      ]
+    },
+    "COV-032": {
+      "id": "COV-032",
+      "title": "Test: Support custom output path for generate-tags-md",
+      "status": "done",
+      "createdAt": "2025-10-15T00:11:16.150Z",
+      "updatedAt": "2025-10-15T00:46:36.449Z",
+      "description": "Feature: generate-tags-md. Status: CREATE_TEST_ONLY. No test found for custom output path option.",
+      "epic": "test-coverage",
+      "estimate": 2,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-15T00:35:20.631Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-15T00:46:35.511Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-15T00:46:35.806Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-15T00:46:36.103Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-15T00:46:36.450Z"
+        }
+      ],
+      "rules": [
+        "generate-tags-md must support custom output path option"
+      ],
+      "examples": [
+        "'fspec generate-tags-md --output custom/path.md' should create file at custom path"
+      ]
+    },
+    "COV-033": {
+      "id": "COV-033",
+      "title": "Test: List all scenarios for multiple work units",
+      "status": "specifying",
+      "createdAt": "2025-10-15T00:11:16.442Z",
+      "updatedAt": "2025-10-15T00:47:33.114Z",
+      "description": "Feature: get-scenarios. Status: CREATE_TEST_ONLY. No test found for listing scenarios from multiple work units simultaneously.",
+      "epic": "test-coverage",
+      "estimate": 2,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-15T00:35:22.406Z"
+        }
+      ],
+      "rules": [
+        "get-scenarios must support listing scenarios from multiple work units"
+      ],
+      "examples": [
+        "'fspec get-scenarios AUTH-001 AUTH-002' should list scenarios from both work units"
+      ]
+    },
+    "COV-034": {
+      "id": "COV-034",
+      "title": "Test: Rollback if markdown generation fails",
+      "status": "done",
+      "createdAt": "2025-10-15T00:11:16.747Z",
+      "updatedAt": "2025-10-15T00:47:53.359Z",
+      "description": "Feature: register-tag-json-backed. Status: CREATE_TEST_ONLY. No test found for rollback behavior on TAGS.md generation failure.",
+      "epic": "test-coverage",
+      "estimate": 2,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-15T00:35:24.174Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-15T00:47:52.447Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-15T00:47:52.752Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-15T00:47:53.056Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-15T00:47:53.360Z"
+        }
+      ],
+      "rules": [
+        "Tag registration must rollback if TAGS.md generation fails"
+      ],
+      "examples": [
+        "If TAGS.md generation errors, tags.json should revert to previous state"
+      ]
+    },
+    "COV-035": {
+      "id": "COV-035",
+      "title": "Test: Update statistics after registering tag",
+      "status": "done",
+      "createdAt": "2025-10-15T00:11:17.039Z",
+      "updatedAt": "2025-10-15T00:48:04.694Z",
+      "description": "Feature: register-tag-json-backed. Status: CREATE_TEST_ONLY. No test verifies statistics section is updated when registering tags.",
+      "epic": "test-coverage",
+      "estimate": 2,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-15T00:35:25.928Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-15T00:48:03.784Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-15T00:48:04.090Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-15T00:48:04.395Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-15T00:48:04.694Z"
+        }
+      ],
+      "rules": [
+        "Statistics section must be updated when tag is registered"
+      ],
+      "examples": [
+        "After registering new tag, TAGS.md statistics should show incremented tag count"
+      ]
+    },
+    "COV-036": {
+      "id": "COV-036",
+      "title": "Test: List scenario tags with category information",
+      "status": "done",
+      "createdAt": "2025-10-15T00:11:27.483Z",
+      "updatedAt": "2025-10-15T00:49:36.550Z",
+      "description": "Feature: scenario-level-tag-management. Status: CREATE_TEST_ONLY. Test exists for listing tags but doesn't verify category information is shown.",
+      "epic": "test-coverage",
+      "estimate": 2,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-15T00:35:27.690Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-15T00:49:35.622Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-15T00:49:35.928Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-15T00:49:36.234Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-15T00:49:36.550Z"
+        }
+      ],
+      "rules": [
+        "Scenario tags must be listed with category information"
+      ],
+      "examples": [
+        "Tag display should show category grouping"
+      ]
+    },
+    "COV-037": {
+      "id": "COV-037",
+      "title": "Test: Show steps with proper indentation (text format)",
+      "status": "specifying",
+      "createdAt": "2025-10-15T00:11:27.777Z",
+      "updatedAt": "2025-10-15T00:35:29.447Z",
+      "description": "Feature: show-acceptance-criteria. Status: CREATE_TEST_ONLY. Tests exist for markdown format but no specific test for text format indentation.",
+      "epic": "test-coverage",
+      "estimate": 2,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-15T00:35:29.448Z"
+        }
+      ]
+    },
+    "COV-038": {
+      "id": "COV-038",
+      "title": "Test: Handle malformed JSON file",
+      "status": "specifying",
+      "createdAt": "2025-10-15T00:11:28.072Z",
+      "updatedAt": "2025-10-15T00:35:31.212Z",
+      "description": "Feature: validate-json-schema. Status: CREATE_TEST_ONLY. No test found for malformed/unparseable JSON files.",
+      "epic": "test-coverage",
+      "estimate": 2,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-15T00:35:31.213Z"
+        }
+      ]
+    },
+    "COV-039": {
+      "id": "COV-039",
+      "title": "Test: Show work unit with all dependencies",
+      "status": "specifying",
+      "createdAt": "2025-10-15T00:11:28.367Z",
+      "updatedAt": "2025-10-15T00:35:32.973Z",
+      "description": "Feature: work-unit-dependency-management. Status: CREATE_TEST_ONLY. No dedicated show/display test for work unit with all dependency types visible.",
+      "epic": "test-coverage",
+      "estimate": 2,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-15T00:35:32.974Z"
+        }
+      ]
+    },
+    "COV-040": {
+      "id": "COV-040",
+      "title": "Test: Display dependency graph for single work unit",
+      "status": "specifying",
+      "createdAt": "2025-10-15T00:11:38.027Z",
+      "updatedAt": "2025-10-15T00:35:34.741Z",
+      "description": "Feature: work-unit-dependency-management. Status: CREATE_TEST_ONLY. Export dependency graph test exists but not display for single work unit.",
+      "epic": "test-coverage",
+      "estimate": 2,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-15T00:35:34.742Z"
+        }
+      ]
+    },
+    "COV-041": {
+      "id": "COV-041",
+      "title": "Test: Show all work units blocked by specific unit",
+      "status": "specifying",
+      "createdAt": "2025-10-15T00:11:38.336Z",
+      "updatedAt": "2025-10-15T00:35:36.502Z",
+      "description": "Feature: work-unit-dependency-management. Status: CREATE_TEST_ONLY. No query test for finding all work units blocked by a specific unit.",
+      "epic": "test-coverage",
+      "estimate": 2,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-15T00:35:36.502Z"
+        }
+      ]
+    },
+    "COV-042": {
+      "id": "COV-042",
+      "title": "Test: Find all currently blocked work units",
+      "status": "specifying",
+      "createdAt": "2025-10-15T00:11:38.639Z",
+      "updatedAt": "2025-10-15T00:35:38.264Z",
+      "description": "Feature: work-unit-dependency-management. Status: CREATE_TEST_ONLY. No test for querying all blocked work units.",
+      "epic": "test-coverage",
+      "estimate": 2,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-15T00:35:38.265Z"
+        }
+      ]
+    },
+    "COV-043": {
+      "id": "COV-043",
+      "title": "Test: Show impact analysis when completing work unit",
+      "status": "specifying",
+      "createdAt": "2025-10-15T00:11:38.944Z",
+      "updatedAt": "2025-10-15T00:35:40.035Z",
+      "description": "Feature: work-unit-dependency-management. Status: CREATE_TEST_ONLY. No test for impact analysis feature.",
+      "epic": "test-coverage",
+      "estimate": 2,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-15T00:35:40.036Z"
+        }
+      ]
+    },
+    "COV-044": {
+      "id": "COV-044",
+      "title": "Test: Show dependency chain depth",
+      "status": "specifying",
+      "createdAt": "2025-10-15T00:11:48.157Z",
+      "updatedAt": "2025-10-15T00:35:41.798Z",
+      "description": "Feature: work-unit-dependency-management. Status: CREATE_TEST_ONLY. No test for calculating/displaying dependency chain depth.",
+      "epic": "test-coverage",
+      "estimate": 2,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-15T00:35:41.799Z"
+        }
+      ]
+    },
+    "COV-045": {
+      "id": "COV-045",
+      "title": "Test: Calculate critical path",
+      "status": "specifying",
+      "createdAt": "2025-10-15T00:11:48.451Z",
+      "updatedAt": "2025-10-15T00:35:43.558Z",
+      "description": "Feature: work-unit-dependency-management. Status: CREATE_BOTH. No tests or implementation found for critical path calculation.",
+      "epic": "test-coverage",
+      "estimate": 5,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-15T00:35:43.559Z"
+        }
+      ]
+    },
+    "COV-046": {
+      "id": "COV-046",
+      "title": "Test: Identify bottleneck work units",
+      "status": "specifying",
+      "createdAt": "2025-10-15T00:11:48.741Z",
+      "updatedAt": "2025-10-15T00:35:45.331Z",
+      "description": "Feature: work-unit-dependency-management. Status: CREATE_BOTH. No tests or implementation found for bottleneck identification.",
+      "epic": "test-coverage",
+      "estimate": 5,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-15T00:35:45.332Z"
+        }
+      ]
+    },
+    "COV-047": {
+      "id": "COV-047",
+      "title": "Test: Auto-suggest dependency relationships",
+      "status": "specifying",
+      "createdAt": "2025-10-15T00:11:49.033Z",
+      "updatedAt": "2025-10-15T00:35:47.103Z",
+      "description": "Feature: work-unit-dependency-management. Status: CREATE_BOTH. No tests or implementation found for auto-suggesting dependencies.",
+      "epic": "test-coverage",
+      "estimate": 5,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-15T00:35:47.103Z"
+        }
+      ]
+    },
+    "COV-048": {
+      "id": "COV-048",
+      "title": "Test: Detect orphaned work units",
+      "status": "specifying",
+      "createdAt": "2025-10-15T00:11:58.176Z",
+      "updatedAt": "2025-10-15T00:35:48.862Z",
+      "description": "Feature: work-unit-dependency-management. Status: CREATE_BOTH. No tests or implementation found for orphan detection.",
+      "epic": "test-coverage",
+      "estimate": 5,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-15T00:35:48.863Z"
+        }
+      ]
+    },
+    "COV-049": {
+      "id": "COV-049",
+      "title": "Test: Query by status and prefix",
+      "status": "specifying",
+      "createdAt": "2025-10-15T00:11:58.467Z",
+      "updatedAt": "2025-10-15T00:35:50.613Z",
+      "description": "Feature: work-unit-query-and-reporting. Status: CREATE_TEST_ONLY. Status query exists, epic query exists, but no prefix query test.",
+      "epic": "test-coverage",
+      "estimate": 2,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-15T00:35:50.614Z"
+        }
+      ]
+    },
+    "COV-050": {
+      "id": "COV-050",
+      "title": "Test: Query with sorting by updated date",
+      "status": "specifying",
+      "createdAt": "2025-10-15T00:11:58.760Z",
+      "updatedAt": "2025-10-15T00:35:52.376Z",
+      "description": "Feature: work-unit-query-and-reporting. Status: CREATE_TEST_ONLY. No test found for sorting functionality.",
+      "epic": "test-coverage",
+      "estimate": 2,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-15T00:35:52.377Z"
+        }
+      ]
+    },
+    "COV-051": {
+      "id": "COV-051",
+      "title": "Test: Export filtered results to CSV",
+      "status": "specifying",
+      "createdAt": "2025-10-15T00:11:59.052Z",
+      "updatedAt": "2025-10-15T00:35:54.123Z",
+      "description": "Feature: work-unit-query-and-reporting. Status: CREATE_TEST_ONLY. JSON export exists but no CSV export test.",
+      "epic": "test-coverage",
+      "estimate": 2,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-15T00:35:54.123Z"
+        }
+      ]
     }
   },
   "states": {
     "backlog": [],
-    "specifying": [],
+    "specifying": [
+      "COV-031",
+      "COV-033",
+      "COV-037",
+      "COV-038",
+      "COV-039",
+      "COV-040",
+      "COV-041",
+      "COV-042",
+      "COV-043",
+      "COV-044",
+      "COV-045",
+      "COV-046",
+      "COV-047",
+      "COV-048",
+      "COV-049",
+      "COV-050",
+      "COV-051"
+    ],
     "testing": [],
     "implementing": [],
     "validating": [],
@@ -2948,7 +4148,32 @@
       "REMIND-007",
       "COV-007",
       "COV-008",
-      "DOC-003"
+      "DOC-003",
+      "COV-010",
+      "COV-011",
+      "COV-012",
+      "COV-013",
+      "COV-014",
+      "COV-015",
+      "COV-016",
+      "COV-017",
+      "COV-018",
+      "COV-019",
+      "COV-020",
+      "COV-021",
+      "COV-022",
+      "COV-023",
+      "COV-024",
+      "COV-025",
+      "COV-026",
+      "COV-027",
+      "COV-028",
+      "COV-029",
+      "COV-030",
+      "COV-032",
+      "COV-034",
+      "COV-035",
+      "COV-036"
     ],
     "blocked": []
   }

@@ -15,7 +15,17 @@ export async function ensureWorkUnitsFile(cwd: string): Promise<WorkUnitsData> {
 
   try {
     const content = await readFile(filePath, 'utf-8');
-    return JSON.parse(content);
+    try {
+      return JSON.parse(content);
+    } catch (parseError: unknown) {
+      // JSON parse error - provide helpful message
+      if (parseError instanceof SyntaxError) {
+        throw new Error(
+          `Failed to parse work-units.json: ${parseError.message}. The file may be corrupted or contain invalid JSON.`
+        );
+      }
+      throw parseError;
+    }
   } catch (error: unknown) {
     // File doesn't exist, create it with initial structure
     if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {

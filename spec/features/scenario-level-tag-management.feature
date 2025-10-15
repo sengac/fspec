@@ -115,6 +115,7 @@ Feature: Scenario-Level Tag Management
     Then the command should exit with code 0
     And the output should show "No tags found on this scenario"
 
+  @COV-036
   Scenario: List scenario tags with category information
     Given I have a scenario with tags @smoke @critical @regression
     And the tags are registered in spec/tags.json with categories

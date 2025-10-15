@@ -32,6 +32,9 @@ const config: CommandHelpConfig = {
     'Template includes Background section placeholder',
     'Template includes one example Scenario placeholder',
     'File is created with proper Gherkin formatting',
+    'Automatically creates corresponding .feature.coverage file for coverage tracking',
+    'Detects placeholder text ([role], [action], [benefit]) and provides CLI commands to fix',
+    'Returns structured information about prefill detection, coverage file creation, and file naming',
   ],
 };
 

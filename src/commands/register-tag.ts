@@ -88,6 +88,12 @@ export async function registerTag(
   // Sort tags alphabetically within category
   targetCategory.tags.sort((a, b) => a.name.localeCompare(b.name));
 
+  // Update statistics
+  tagsData.statistics.lastUpdated = new Date().toISOString();
+
+  // Save original tags.json for rollback
+  const originalTagsData = await ensureTagsFile(cwd);
+
   // Write updated tags.json
   await writeFile(tagsJsonPath, JSON.stringify(tagsData, null, 2), 'utf-8');
 
@@ -99,9 +105,21 @@ export async function registerTag(
     );
   }
 
-  // Regenerate TAGS.md from JSON
-  const markdown = await generateTagsMd(tagsData);
-  await writeFile(tagsMdPath, markdown, 'utf-8');
+  // Regenerate TAGS.md from JSON with rollback on failure
+  try {
+    const markdown = await generateTagsMd(tagsData);
+    await writeFile(tagsMdPath, markdown, 'utf-8');
+  } catch (error: any) {
+    // Rollback tags.json to previous state
+    await writeFile(
+      tagsJsonPath,
+      JSON.stringify(originalTagsData, null, 2),
+      'utf-8'
+    );
+    throw new Error(
+      `Failed to regenerate TAGS.md - changes rolled back: ${error.message}`
+    );
+  }
 
   const message = converted
     ? `Successfully registered ${normalizedTag} (converted from ${tag}) in ${category}`

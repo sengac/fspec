@@ -37,7 +37,10 @@ interface WorkUnitDetails {
   epic?: string;
   parent?: string;
   children?: string[];
+  blocks?: string[];
   blockedBy?: string[];
+  dependsOn?: string[];
+  relatesTo?: string[];
   rules?: string[];
   examples?: string[];
   questions?: string[];
@@ -191,7 +194,10 @@ export async function showWorkUnit(
     ...(workUnit.epic && { epic: workUnit.epic }),
     ...(workUnit.parent && { parent: workUnit.parent }),
     ...(workUnit.children && { children: workUnit.children }),
+    ...(workUnit.blocks && { blocks: workUnit.blocks }),
     ...(workUnit.blockedBy && { blockedBy: workUnit.blockedBy }),
+    ...(workUnit.dependsOn && { dependsOn: workUnit.dependsOn }),
+    ...(workUnit.relatesTo && { relatesTo: workUnit.relatesTo }),
     ...(workUnit.rules && { rules: workUnit.rules }),
     ...(workUnit.examples && { examples: workUnit.examples }),
     ...(unselectedQuestions && { questions: unselectedQuestions }),
@@ -232,6 +238,20 @@ export async function showWorkUnitCommand(
       }
       if (result.children && result.children.length > 0) {
         console.log(chalk.gray('Children:'), result.children.join(', '));
+      }
+
+      // Display dependencies
+      if (result.blocks && result.blocks.length > 0) {
+        console.log(chalk.gray('Blocks:'), result.blocks.join(', '));
+      }
+      if (result.blockedBy && result.blockedBy.length > 0) {
+        console.log(chalk.gray('Blocked By:'), result.blockedBy.join(', '));
+      }
+      if (result.dependsOn && result.dependsOn.length > 0) {
+        console.log(chalk.gray('Depends On:'), result.dependsOn.join(', '));
+      }
+      if (result.relatesTo && result.relatesTo.length > 0) {
+        console.log(chalk.gray('Related To:'), result.relatesTo.join(', '));
       }
 
       if (result.rules && result.rules.length > 0) {

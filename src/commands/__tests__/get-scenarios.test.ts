@@ -607,4 +607,75 @@ Feature: User Login
       expect(result.scenarios[0].tags).toEqual(['@smoke', '@critical']);
     });
   });
+
+  describe('Scenario: List all scenarios for multiple work units', () => {
+    it('should filter scenarios by work unit tags', async () => {
+      // Given I have feature files with work unit tags "@auth-001" and "@auth-002"
+      await writeFile(
+        join(testDir, 'spec/features/auth-001.feature'),
+        `@auth-001
+Feature: Auth Feature 001
+
+  Scenario: First scenario in auth-001
+    Given a step
+    When another step
+    Then result
+
+  Scenario: Second scenario in auth-001
+    Given a step
+    When another step
+    Then result
+`
+      );
+
+      await writeFile(
+        join(testDir, 'spec/features/auth-002.feature'),
+        `@auth-002
+Feature: Auth Feature 002
+
+  Scenario: First scenario in auth-002
+    Given a step
+    When another step
+    Then result
+
+  Scenario: Second scenario in auth-002
+    Given a step
+    When another step
+    Then result
+`
+      );
+
+      // When I run `fspec get-scenarios --tag=@auth-001`
+      const result001 = await getScenarios({
+        tags: ['@auth-001'],
+        cwd: testDir,
+      });
+
+      // Then the output should show only scenarios tagged with @auth-001
+      expect(result001.success).toBe(true);
+      expect(result001.scenarios.length).toBe(2);
+      expect(
+        result001.scenarios.every(s => s.feature.includes('auth-001.feature'))
+      ).toBe(true);
+      expect(
+        result001.scenarios.every(s => !s.feature.includes('auth-002.feature'))
+      ).toBe(true);
+
+      // When I run `fspec get-scenarios --tag=@auth-002`
+      const result002 = await getScenarios({
+        tags: ['@auth-002'],
+        cwd: testDir,
+      });
+
+      // Then the output should show only scenarios tagged with @auth-002
+      expect(result002.success).toBe(true);
+      expect(result002.scenarios.length).toBe(2);
+      expect(
+        result002.scenarios.every(s => s.feature.includes('auth-002.feature'))
+      ).toBe(true);
+      expect(
+        result002.scenarios.every(s => !s.feature.includes('auth-001.feature'))
+      ).toBe(true);
+    });
+  });
 });

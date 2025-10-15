@@ -71,14 +71,6 @@ Feature: Work Unit Query and Reporting
     And the output should show total story points
     And the output should show velocity metrics
 
-  @export
-  @integration
-  Scenario: Export work units to JSON
-    Given I have a project with spec directory
-    When I run "fspec export work-units --format=json --output=work-units-export.json"
-    Then the file should contain valid JSON array
-    And each work unit should have all fields
-
   @visualization
   @board
   Scenario: Display Kanban board view
@@ -100,6 +92,8 @@ Feature: Work Unit Query and Reporting
     And the output should not include "API-001"
     And the output should be valid JSON
 
+  @export
+  @integration
   Scenario: Export work units to JSON
     Given I have a project with spec directory
     And multiple work units exist with complete metadata

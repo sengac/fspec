@@ -79,15 +79,6 @@ Feature: Work Unit Estimation and Metrics
     And the work unit should have actualTokens of 45000
 
   @metrics
-  @tracking
-  Scenario: Increment iteration count
-    Given I have a project with spec directory
-    And a work unit "AUTH-001" exists with iterations 2
-    When I run "fspec record-iteration AUTH-001"
-    Then the command should succeed
-    And the work unit should have iterations of 3
-
-  @metrics
   @query
   Scenario: Calculate cycle time from state history
     Given I have a project with spec directory
@@ -182,6 +173,8 @@ Feature: Work Unit Estimation and Metrics
     And the work unit should have actualTokens of 45000
     And the metric should be tracked for future analysis
 
+  @metrics
+  @tracking
   Scenario: Increment iteration count
     Given I have a project with spec directory
     And a work unit "AUTH-001" exists with iterations 2

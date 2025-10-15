@@ -227,7 +227,13 @@
     },
     {
       "name": "Handle non-existent section",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/delete-diagram.test.ts",
+          "lines": "19-314",
+          "implMappings": []
+        }
+      ]
     },
     {
       "name": "Delete last diagram in section",
@@ -457,14 +463,14 @@
   ],
   "stats": {
     "totalScenarios": 7,
-    "coveredScenarios": 6,
-    "coveragePercent": 86,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
     "testFiles": [
       "src/commands/__tests__/delete-diagram.test.ts"
     ],
     "implFiles": [
       "src/commands/delete-diagram.ts"
     ],
-    "totalLinesCovered": 2169
+    "totalLinesCovered": 2465
   }
 }

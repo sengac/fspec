@@ -25,27 +25,105 @@
     },
     {
       "name": "Verify check.ts uses validateTags function",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/check-validates-tags.test.ts",
+          "lines": "10-29",
+          "implMappings": []
+        }
+      ]
     },
     {
       "name": "Script moves scenario-level work unit ID tags to feature level",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/migrate-work-unit-tags.test.ts",
+          "lines": "10-58",
+          "implMappings": [
+            {
+              "file": "src/commands/__tests__/migrate-work-unit-tags.test.ts",
+              "lines": [
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110
+              ]
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "Validation rejects scenario-level work unit ID tags",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/validate-tags-scenario-level.test.ts",
+          "lines": "23-200",
+          "implMappings": []
+        }
+      ]
     }
   ],
   "stats": {
     "totalScenarios": 4,
-    "coveredScenarios": 1,
-    "coveragePercent": 25,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
     "testFiles": [
-      "src/commands/__tests__/generate-scenarios-tag-placement.test.ts"
+      "src/commands/__tests__/generate-scenarios-tag-placement.test.ts",
+      "src/commands/__tests__/check-validates-tags.test.ts",
+      "src/commands/__tests__/migrate-work-unit-tags.test.ts",
+      "src/commands/__tests__/validate-tags-scenario-level.test.ts"
     ],
     "implFiles": [
-      "src/commands/generate-scenarios.ts"
+      "src/commands/generate-scenarios.ts",
+      "src/commands/__tests__/migrate-work-unit-tags.test.ts"
     ],
-    "totalLinesCovered": 69
+    "totalLinesCovered": 366
   }
 }

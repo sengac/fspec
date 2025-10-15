@@ -2,19 +2,105 @@
   "scenarios": [
     {
       "name": "System-reminder appears after create-feature with prefill",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/create-feature-system-reminder.test.ts",
+          "lines": "26-52",
+          "implMappings": [
+            {
+              "file": "src/commands/create-feature.ts",
+              "lines": [
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125
+              ]
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "System-reminder appears after generate-scenarios with prefill",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/create-feature-system-reminder.test.ts",
+          "lines": "54-117",
+          "implMappings": []
+        }
+      ]
     },
     {
       "name": "User story from Example Mapping generates complete Background",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/generate-scenarios-user-story.test.ts",
+          "lines": "14-144",
+          "implMappings": []
+        }
+      ]
     },
     {
       "name": "Workflow blocking prevents status change with prefill",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/prefill-workflow-blocking.test.ts",
+          "lines": "14-184",
+          "implMappings": [
+            {
+              "file": "src/commands/update-work-unit-status.ts",
+              "lines": [
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149
+              ]
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "Hybrid step extraction attempts to parse example text",
@@ -112,14 +198,19 @@
   ],
   "stats": {
     "totalScenarios": 5,
-    "coveredScenarios": 1,
-    "coveragePercent": 20,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
     "testFiles": [
+      "src/commands/__tests__/create-feature-system-reminder.test.ts",
+      "src/commands/__tests__/generate-scenarios-user-story.test.ts",
+      "src/commands/__tests__/prefill-workflow-blocking.test.ts",
       "src/utils/__tests__/prefill-detection.test.ts"
     ],
     "implFiles": [
+      "src/commands/create-feature.ts",
+      "src/commands/update-work-unit-status.ts",
       "src/utils/prefill-detection.ts"
     ],
-    "totalLinesCovered": 204
+    "totalLinesCovered": 647
   }
 }

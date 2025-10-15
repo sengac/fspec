@@ -1,6 +1,6 @@
-import { readFile, writeFile } from 'fs/promises';
+import { readFile, writeFile, mkdir } from 'fs/promises';
 import type { Command } from 'commander';
-import { join } from 'path';
+import { join, dirname } from 'path';
 import { existsSync } from 'fs';
 import chalk from 'chalk';
 import type { Foundation } from '../types/foundation';
@@ -9,6 +9,7 @@ import { generateFoundationMd } from '../generators/foundation-md';
 
 interface GenerateFoundationMdOptions {
   cwd?: string;
+  output?: string;
 }
 
 interface GenerateFoundationMdResult {
@@ -20,11 +21,13 @@ interface GenerateFoundationMdResult {
 export async function generateFoundationMdCommand(
   options: GenerateFoundationMdOptions = {}
 ): Promise<GenerateFoundationMdResult> {
-  const { cwd = process.cwd() } = options;
+  const { cwd = process.cwd(), output } = options;
 
   try {
     const foundationJsonPath = join(cwd, 'spec/foundation.json');
-    const foundationMdPath = join(cwd, 'spec/FOUNDATION.md');
+    const foundationMdPath = output
+      ? join(cwd, output)
+      : join(cwd, 'spec/FOUNDATION.md');
 
     // Check if foundation.json exists
     if (!existsSync(foundationJsonPath)) {
@@ -54,12 +57,17 @@ export async function generateFoundationMdCommand(
     // Generate FOUNDATION.md
     const markdown = await generateFoundationMd(foundationData);
 
+    // Ensure output directory exists
+    const outputDir = dirname(foundationMdPath);
+    await mkdir(outputDir, { recursive: true });
+
     // Write FOUNDATION.md
     await writeFile(foundationMdPath, markdown, 'utf-8');
 
+    const outputRelative = output || 'spec/FOUNDATION.md';
     return {
       success: true,
-      message: 'Generated spec/FOUNDATION.md from spec/foundation.json',
+      message: `Generated ${outputRelative} from spec/foundation.json`,
     };
   } catch (error: any) {
     return {
@@ -69,9 +77,11 @@ export async function generateFoundationMdCommand(
   }
 }
 
-export async function generateFoundationMdCommandCLI(): Promise<void> {
+export async function generateFoundationMdCommandCLI(options: {
+  output?: string;
+}): Promise<void> {
   try {
-    const result = await generateFoundationMdCommand();
+    const result = await generateFoundationMdCommand({ output: options.output });
 
     if (!result.success) {
       console.error(chalk.red('Error:'), result.error);
@@ -90,5 +100,6 @@ export function registerGenerateFoundationMdCommand(program: Command): void {
   program
     .command('generate-foundation-md')
     .description('Generate FOUNDATION.md from foundation.json')
+    .option('--output <path>', 'Custom output path (default: spec/FOUNDATION.md)')
     .action(generateFoundationMdCommandCLI);
 }
