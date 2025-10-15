@@ -3,12 +3,12 @@ import type { CommandHelpConfig } from '../utils/help-formatter';
 const config: CommandHelpConfig = {
   name: 'generate-coverage',
   description:
-    'Generate .feature.coverage files for existing .feature files that do not have coverage tracking yet',
+    'Generate or update .feature.coverage files for existing .feature files. Creates new coverage files or updates existing ones with missing scenarios.',
   usage: 'fspec generate-coverage [options]',
   whenToUse:
-    'Use this command when transitioning an existing fspec project to coverage tracking, or when .feature.coverage files were accidentally deleted. Creates empty coverage structures for all unmapped features. Essential for reverse ACDD setup.',
+    'Use this command when: 1) Setting up coverage tracking for existing features, 2) You added new scenarios to existing .feature files and need to update .coverage files, 3) .feature.coverage files were accidentally deleted. Essential for reverse ACDD setup and maintaining coverage sync.',
   whenNotToUse:
-    'Do not use if .feature.coverage files already exist (they will be skipped). Do not use for creating new features (use fspec create-feature instead, which auto-creates coverage files).',
+    'Do not use for creating new features (use fspec create-feature instead, which auto-creates coverage files). This command is safe to run anytime - it preserves existing test mappings.',
   options: [
     {
       flag: '--dry-run',
@@ -20,9 +20,9 @@ const config: CommandHelpConfig = {
     {
       command: 'fspec generate-coverage',
       description:
-        'Generate coverage files for all .feature files without existing coverage',
+        'Generate or update coverage files for all .feature files',
       output:
-        '✓ Generated coverage for: user-authentication.feature\n✓ Generated coverage for: user-registration.feature\n✓ Skipped (already exists): gherkin-validation.feature\n\nCreated 2 coverage files',
+        '✓ Created 2, Updated 1, Skipped 3\n\nCreated: user-authentication.feature.coverage, user-registration.feature.coverage\nUpdated: existing-feature.feature.coverage (added 2 missing scenarios)\nSkipped: already-up-to-date.feature.coverage',
     },
     {
       command: 'fspec generate-coverage --dry-run',
@@ -56,10 +56,12 @@ const config: CommandHelpConfig = {
   ],
   notes: [
     'Coverage files are automatically created by fspec create-feature for new features',
-    'This command only creates coverage files, it does not link tests or implementation',
-    'Existing .feature.coverage files are skipped to prevent data loss',
-    'Coverage files contain empty testMappings arrays until you run fspec link-coverage',
-    'Use --dry-run to preview before creating files',
+    'This command creates new coverage files AND updates existing ones with missing scenarios',
+    'Existing test mappings are preserved when updating coverage files',
+    'New scenarios are added with empty testMappings arrays',
+    'Safe to run anytime - idempotent and preserves existing data',
+    'Use --dry-run to preview before making changes',
+    'Returns status: created, updated, skipped, or recreated (if invalid JSON)',
   ],
   prerequisites: [
     'Valid .feature files must exist in spec/features/',

@@ -496,3 +496,58 @@ Feature: Work Unit Dependency Management
     And the output should show "work units with soft dependencies: 8"
     And the output should show average dependencies per unit
     And the output should show max dependency chain depth
+
+  @COV-046
+  Scenario: Identify bottleneck work units blocking the most work
+    Given I have a project with spec directory
+    And work units exist with blocking relationships:
+      | id        | status       | blocks                    |
+      | AUTH-001  | implementing | API-001, API-002, API-003 |
+      | API-001   | implementing | UI-001                    |
+      | DB-001    | done         | API-002                   |
+      | CACHE-001 | blocked      | API-003                   |
+      | UI-002    | implementing |                           |
+    When I run "fspec query bottlenecks --output=json"
+    Then the output should list work units ranked by bottleneck score
+    And only work units blocking 2+ other work units should be included
+    And work units in 'done' status should be excluded
+    And work units in 'blocked' status should be excluded
+    And "AUTH-001" should have highest bottleneck score of 4
+    And "DB-001" should not be included (status='done')
+    And "CACHE-001" should not be included (status='blocked')
+    And "UI-002" should not be included (blocks nothing)
+
+  @COV-047
+  Scenario: Auto-suggest dependency relationships based on work unit metadata
+    Given I have a project with spec directory
+    And work units exist:
+      | id       | title                     |
+      | AUTH-001 | Setup OAuth               |
+      | AUTH-002 | User Login Flow           |
+      | API-001  | Build User API            |
+      | API-002  | Test User API             |
+      | DB-001   | Database Schema Migration |
+      | DB-002   | Add User Data             |
+    When I run "fspec suggest-dependencies --output=json"
+    Then the output should suggest "AUTH-002 depends on AUTH-001" (sequential IDs)
+    And the output should suggest "API-002 depends on API-001" (test depends on build)
+    And the output should suggest "DB-002 depends on DB-001" (data depends on schema)
+    And each suggestion should indicate the reason/pattern matched
+    And no suggestion should create circular dependencies
+
+  @COV-048
+  Scenario: Detect orphaned work units with no epic or dependencies
+    Given I have a project with spec directory
+    And work units exist:
+      | id       | epic            | relationships      |
+      | AUTH-001 | user-management | blocks API-001     |
+      | API-001  |                 | blockedBy AUTH-001 |
+      | ORPHAN-1 |                 |                    |
+      | ORPHAN-2 |                 |                    |
+      | UI-001   | user-interface  |                    |
+    When I run "fspec query orphans --output=json"
+    Then the output should list "ORPHAN-1" and "ORPHAN-2" as orphaned
+    And "AUTH-001" should not be listed (has epic)
+    And "API-001" should not be listed (has relationship)
+    And "UI-001" should not be listed (has epic)
+    And each orphan should show suggested actions: "Assign epic", "Add relationship", "Delete"

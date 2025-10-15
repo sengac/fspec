@@ -44,7 +44,10 @@ const config: CommandHelpConfig = {
     'Use --feature flag to override the default name',
     'Throws error if work unit has no title and --feature not provided',
     'Generates scenarios based on examples',
-    'Uses rules as Given steps',
+    'Scenario titles are automatically cleaned (removes prefixes like REPRODUCTION:, MISSING:, ERROR WHEN:, etc.)',
+    'Original example text is preserved as a comment above each scenario',
+    'Uses intelligent step extraction to generate Given/When/Then steps from example text',
+    'Falls back to [placeholders] if example cannot be parsed (triggers prefill detection)',
   ],
 };
 

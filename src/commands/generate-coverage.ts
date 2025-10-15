@@ -20,6 +20,7 @@ export interface GenerateCoverageResult {
   created: number;
   skipped: number;
   recreated: number;
+  updated: number;
   dryRun?: boolean;
   files?: string[];
 }
@@ -44,6 +45,7 @@ export async function generateCoverage(
   let created = 0;
   let skipped = 0;
   let recreated = 0;
+  let updated = 0;
   const fileList: string[] = [];
 
   // Process each feature file
@@ -77,7 +79,7 @@ export async function generateCoverage(
         }
       }
     } else {
-      // Actually create coverage files
+      // Actually create/update coverage files
       const result = await createCoverageFile(featureFilePath);
 
       switch (result.status) {
@@ -90,6 +92,9 @@ export async function generateCoverage(
         case 'recreated':
           recreated++;
           break;
+        case 'updated':
+          updated++;
+          break;
       }
     }
   }
@@ -98,6 +103,7 @@ export async function generateCoverage(
     created,
     skipped,
     recreated,
+    updated,
     dryRun: options.dryRun,
     files: options.dryRun ? fileList : undefined,
   };
@@ -132,6 +138,9 @@ export async function generateCoverageCommand(options: {
       const parts: string[] = [];
       if (result.created > 0) {
         parts.push(`Created ${result.created}`);
+      }
+      if (result.updated > 0) {
+        parts.push(`Updated ${result.updated}`);
       }
       if (result.skipped > 0) {
         parts.push(`Skipped ${result.skipped}`);
