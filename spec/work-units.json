@@ -3639,9 +3639,9 @@
     "COV-031": {
       "id": "COV-031",
       "title": "Test: Support custom output path for generate-foundation-md",
-      "status": "specifying",
+      "status": "done",
       "createdAt": "2025-10-15T00:11:06.192Z",
-      "updatedAt": "2025-10-15T00:46:32.432Z",
+      "updatedAt": "2025-10-15T05:20:19.824Z",
       "description": "Feature: generate-foundation-md. Status: CREATE_TEST_ONLY. No test found for custom output path option.",
       "epic": "test-coverage",
       "estimate": 2,
@@ -3649,6 +3649,22 @@
         {
           "state": "specifying",
           "timestamp": "2025-10-15T00:35:18.861Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-15T05:19:25.404Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-15T05:19:33.637Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-15T05:20:18.071Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-15T05:20:19.824Z"
         }
       ],
       "rules": [
@@ -4551,7 +4567,6 @@
   "states": {
     "backlog": [],
     "specifying": [
-      "COV-031",
       "COV-033",
       "COV-038"
     ],
@@ -4650,7 +4665,8 @@
       "COV-051",
       "COV-046",
       "COV-047",
-      "COV-048"
+      "COV-048",
+      "COV-031"
     ],
     "blocked": []
   }
