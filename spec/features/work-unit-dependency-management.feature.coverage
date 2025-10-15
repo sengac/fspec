@@ -8352,7 +8352,65 @@
     },
     {
       "name": "Detect orphaned work units with no epic or dependencies",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/query-orphans.test.ts",
+          "lines": "31-105",
+          "implMappings": [
+            {
+              "file": "src/commands/query-orphans.ts",
+              "lines": [
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73
+              ]
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "Identify bottleneck work units blocking the most work",
@@ -8361,8 +8419,8 @@
   ],
   "stats": {
     "totalScenarios": 43,
-    "coveredScenarios": 41,
-    "coveragePercent": 95,
+    "coveredScenarios": 42,
+    "coveragePercent": 98,
     "testFiles": [
       "src/commands/__tests__/work-unit-dependency-management.test.ts",
       "src/commands/__tests__/show-work-unit-dependencies.test.ts",
@@ -8378,7 +8436,8 @@
       "src/commands/__tests__/add-dependency-auto-block.test.ts",
       "src/commands/__tests__/query-dependency-stats.test.ts",
       "src/commands/__tests__/query-bottlenecks.test.ts",
-      "src/commands/__tests__/suggest-dependencies.test.ts"
+      "src/commands/__tests__/suggest-dependencies.test.ts",
+      "src/commands/__tests__/query-orphans.test.ts"
     ],
     "implFiles": [
       "src/commands/add-dependency.ts",
@@ -8395,8 +8454,9 @@
       "src/commands/query-dependency-stats.ts",
       "src/commands/export-dependencies.ts",
       "src/commands/query-bottlenecks.ts",
-      "src/commands/suggest-dependencies.ts"
+      "src/commands/suggest-dependencies.ts",
+      "src/commands/query-orphans.ts"
     ],
-    "totalLinesCovered": 11485
+    "totalLinesCovered": 11606
   }
 }
