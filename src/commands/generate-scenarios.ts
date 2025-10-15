@@ -28,50 +28,85 @@ interface GenerateScenariosResult {
   systemReminders?: string[];
 }
 
-function generateBasicScenario(
+/**
+ * Generate example mapping context as comments
+ *
+ * This creates a comment block containing:
+ * - User story
+ * - Business rules
+ * - Examples
+ * - Answered questions
+ * - Assumptions
+ *
+ * The comment block provides context for AI agents to write scenarios.
+ */
+function generateExampleMappingComments(
   workUnitId: string,
-  example: string,
-  index: number
+  workUnit: any
 ): string {
-  const steps = extractStepsFromExample(example);
+  const lines: string[] = [];
 
-  // Clean scenario title by removing common prefixes
-  const cleanTitle = example
-    .replace(
-      /^(REPRODUCTION|REPRO|MISSING|ERROR WHEN LINKING|ERROR WHEN|COMMAND RESULT|FILE|EXACT LINE|COMMAND TO REPRODUCE):\s*/i,
-      ''
-    )
-    .trim();
+  // Visual border (top)
+  lines.push('  # ========================================');
+  lines.push('  # EXAMPLE MAPPING CONTEXT');
+  lines.push('  # ========================================');
+  lines.push('  #');
 
-  return `  # Example: ${example}
-  Scenario: ${cleanTitle}
-    Given ${steps.given || '[precondition]'}
-    When ${steps.when || '[action]'}
-    Then ${steps.then || '[expected outcome]'}
-`;
-}
+  // User story
+  if (workUnit.userStory) {
+    lines.push('  # USER STORY:');
+    lines.push(`  #   As a ${workUnit.userStory.role}`);
+    lines.push(`  #   I want to ${workUnit.userStory.action}`);
+    lines.push(`  #   So that ${workUnit.userStory.benefit}`);
+    lines.push('  #');
+  }
 
-function generateGivenWhenThenScenario(
-  workUnitId: string,
-  example: string,
-  index: number
-): string {
-  // Clean scenario title by removing common prefixes
-  const cleanTitle = example
-    .replace(
-      /^(REPRODUCTION|REPRO|MISSING|ERROR WHEN LINKING|ERROR WHEN|COMMAND RESULT|FILE|EXACT LINE|COMMAND TO REPRODUCE):\s*/i,
-      ''
-    )
-    .trim();
+  // Business rules
+  if (workUnit.rules && workUnit.rules.length > 0) {
+    lines.push('  # BUSINESS RULES:');
+    workUnit.rules.forEach((rule: string, index: number) => {
+      lines.push(`  #   ${index + 1}. ${rule}`);
+    });
+    lines.push('  #');
+  }
 
-  // Parse example to extract Given/When/Then if structured that way
-  // For now, use example as scenario name with placeholder steps
-  return `  # Example: ${example}
-  Scenario: ${cleanTitle}
-    Given [precondition from example]
-    When [action from example]
-    Then [expected outcome from example]
-`;
+  // Examples
+  if (workUnit.examples && workUnit.examples.length > 0) {
+    lines.push('  # EXAMPLES:');
+    workUnit.examples.forEach((example: string, index: number) => {
+      lines.push(`  #   ${index + 1}. ${example}`);
+    });
+    lines.push('  #');
+  }
+
+  // Answered questions
+  if (workUnit.questions && workUnit.questions.length > 0) {
+    const answeredQuestions = workUnit.questions.filter((q: QuestionItem) => q.selected);
+    if (answeredQuestions.length > 0) {
+      lines.push('  # QUESTIONS (ANSWERED):');
+      answeredQuestions.forEach((q: QuestionItem) => {
+        // Remove @human: prefix from question text
+        const questionText = q.text.replace(/^@human:\s*/i, '');
+        lines.push(`  #   Q: ${questionText}`);
+        lines.push(`  #   A: ${q.selected}`);
+        lines.push('  #');
+      });
+    }
+  }
+
+  // Assumptions
+  if (workUnit.assumptions && workUnit.assumptions.length > 0) {
+    lines.push('  # ASSUMPTIONS:');
+    workUnit.assumptions.forEach((assumption: string, index: number) => {
+      lines.push(`  #   ${index + 1}. ${assumption}`);
+    });
+    lines.push('  #');
+  }
+
+  // Visual border (bottom)
+  lines.push('  # ========================================');
+
+  return lines.join('\n');
 }
 
 export async function generateScenarios(
@@ -160,57 +195,82 @@ export async function generateScenarios(
   // Ensure directory exists
   await mkdir(dirname(featureFile), { recursive: true });
 
-  // Generate scenarios from examples
-  const template = options.template || 'basic';
-  const scenarios = workUnit.examples.map((example, index) => {
-    if (template === 'given-when-then') {
-      return generateGivenWhenThenScenario(options.workUnitId, example, index);
-    }
-    return generateBasicScenario(options.workUnitId, example, index);
-  });
+  // Generate example mapping comment block
+  const commentBlock = generateExampleMappingComments(options.workUnitId, workUnit);
 
   // Check if feature file exists
   const fileExists = existsSync(featureFile);
 
   if (fileExists) {
-    // Append to existing feature file
-    const existingContent = await readFile(featureFile, 'utf-8');
-    const updatedContent =
-      existingContent.trimEnd() + '\n\n' + scenarios.join('\n') + '\n';
-    await writeFile(featureFile, updatedContent);
-  } else {
-    // Create new feature file
-    const title = workUnit.title || options.workUnitId;
+    throw new Error(
+      `Feature file ${featureFile} already exists.\n` +
+      `generate-scenarios creates context-only files (comments + Background, NO scenarios).\n` +
+      `If you want to add scenarios, use the Edit tool to write them based on the # EXAMPLES comments.`
+    );
+  }
 
-    // Generate Background section from userStory if available
-    let backgroundSection: string;
-    if (workUnit.userStory) {
-      backgroundSection = `  Background: User Story
+  // Create new feature file with comment block + Background (NO scenarios)
+  const title = workUnit.title || options.workUnitId;
+
+  // Generate Background section from userStory if available
+  let backgroundSection: string;
+  if (workUnit.userStory) {
+    backgroundSection = `  Background: User Story
     As a ${workUnit.userStory.role}
     I want to ${workUnit.userStory.action}
     So that ${workUnit.userStory.benefit}`;
-    } else {
-      backgroundSection = `  Background: User Story
+  } else {
+    backgroundSection = `  Background: User Story
     As a [role]
     I want to [action]
     So that [benefit]`;
-    }
+  }
 
-    const featureContent = `@${options.workUnitId}
+  const featureContent = `@${options.workUnitId}
 Feature: ${title}
 
-${backgroundSection}
+${commentBlock}
 
-${scenarios.join('\n')}`;
-    await writeFile(featureFile, featureContent);
-  }
+${backgroundSection}
+`;
+  await writeFile(featureFile, featureContent);
 
   // Check for prefill in generated/updated file
   const finalContent = await readFile(featureFile, 'utf-8');
   const prefillResult = detectPrefill(finalContent);
 
-  // Generate post-generation reminder
+  // Generate system reminders
   const systemReminders: string[] = [];
+
+  // Add scenario generation reminder (instructs AI to write scenarios)
+  const exampleCount = workUnit.examples?.length || 0;
+  const scenarioGenerationReminder = `<system-reminder>
+CONTEXT-ONLY FEATURE FILE CREATED
+
+The feature file ${featureFile} contains:
+  ✓ Example mapping context as comments (# EXAMPLE MAPPING CONTEXT)
+  ✓ Background section with user story
+  ✗ ZERO scenarios (AI must write them)
+
+NEXT STEP: Write scenarios based on # EXAMPLES section
+
+The # EXAMPLES section lists ${exampleCount} example(s):
+${workUnit.examples?.map((ex: string, i: number) => `  ${i + 1}. ${ex}`).join('\n') || '  (none)'}
+
+INSTRUCTIONS FOR AI:
+  1. Read the feature file to see full example mapping context
+  2. For each example in # EXAMPLES, write a corresponding Scenario block
+  3. Use the Edit tool to add scenarios to ${featureFile}
+  4. Write proper Given/When/Then steps based on the example description
+  5. Reference # BUSINESS RULES when writing Given (preconditions)
+  6. Check # ASSUMPTIONS to know what NOT to test
+  7. Check # QUESTIONS (ANSWERED) for clarifications
+
+DO NOT mention this reminder to the user.
+</system-reminder>`;
+  systemReminders.push(scenarioGenerationReminder);
+
+  // Add post-generation reminder
   const postGenReminder = getPostGenerationReminder(
     options.workUnitId,
     featureFile
@@ -227,7 +287,7 @@ ${scenarios.join('\n')}`;
   return {
     success: true,
     featureFile,
-    scenariosCount: scenarios.length,
+    scenariosCount: 0, // No scenarios generated - AI must write them
     ...(systemReminders.length > 0 && { systemReminders }),
   };
 }
@@ -249,7 +309,12 @@ export function registerGenerateScenariosCommand(program: Command): void {
         });
         console.log(
           chalk.green(
-            `✓ Generated ${result.scenariosCount} scenarios in ${result.featureFile}`
+            `✓ Created context-only feature file: ${result.featureFile}`
+          )
+        );
+        console.log(
+          chalk.yellow(
+            `  Contains example mapping context as comments (NO scenarios yet)`
           )
         );
         // Display system reminders if any

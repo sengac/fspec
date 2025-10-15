@@ -11,6 +11,7 @@ import type {
   Rule,
   DocString,
   DataTable,
+  Comment,
 } from '@cucumber/messages';
 
 interface FormatOptions {
@@ -48,19 +49,68 @@ export class GherkinFormatter {
       return '';
     }
 
-    this.formatFeature(ast.feature, lines);
+    // Build comment map indexed by line number
+    const commentMap = this.buildCommentMap(ast.comments || []);
+
+    this.formatFeature(ast.feature, lines, commentMap);
 
     // Ensure file ends with single newline
     return lines.join('\n') + '\n';
   }
 
-  private formatFeature(feature: Feature, lines: string[]): void {
+  /**
+   * Build a map of comments indexed by line number
+   */
+  private buildCommentMap(comments: readonly Comment[]): Map<number, string> {
+    const map = new Map<number, string>();
+    comments.forEach(comment => {
+      map.set(comment.location.line, comment.text);
+    });
+    return map;
+  }
+
+  /**
+   * Insert comments that appear before the given line number
+   *
+   * Note: Comments from the Gherkin parser already include their indentation
+   * as part of the comment text, so we output them as-is without adding indent.
+   */
+  private insertCommentsBeforeLine(
+    currentLine: number,
+    commentMap: Map<number, string>,
+    lines: string[]
+  ): void {
+    const sortedCommentLines = Array.from(commentMap.keys()).sort((a, b) => a - b);
+
+    for (const commentLine of sortedCommentLines) {
+      if (commentLine < currentLine) {
+        const commentText = commentMap.get(commentLine);
+        if (commentText !== undefined) {
+          // Comments include their own indentation, so output as-is
+          lines.push(commentText);
+          commentMap.delete(commentLine); // Remove processed comment
+        }
+      }
+    }
+  }
+
+  private formatFeature(feature: Feature, lines: string[], commentMap: Map<number, string>): void {
+    // Insert comments before tags
+    if (feature.tags.length > 0) {
+      this.insertCommentsBeforeLine(feature.tags[0].location.line, commentMap, lines);
+    } else {
+      this.insertCommentsBeforeLine(feature.location.line, commentMap, lines);
+    }
+
     // Tags - each on separate line
     if (feature.tags.length > 0) {
       feature.tags.forEach(tag => {
         lines.push(tag.name);
       });
     }
+
+    // Insert comments before Feature keyword
+    this.insertCommentsBeforeLine(feature.location.line, commentMap, lines);
 
     // Feature keyword and name
     lines.push(`Feature: ${feature.name}`);
@@ -78,28 +128,37 @@ export class GherkinFormatter {
       } else {
         lines.push(''); // Blank line between children
       }
-      this.formatFeatureChild(child, lines, 0);
+
+      // Insert comments before child element
+      const childLocation = child.background?.location || child.scenario?.location || child.rule?.location;
+      if (childLocation) {
+        this.insertCommentsBeforeLine(childLocation.line, commentMap, lines);
+      }
+
+      this.formatFeatureChild(child, lines, 0, commentMap);
     });
   }
 
   private formatFeatureChild(
     child: FeatureChild,
     lines: string[],
-    baseIndent: number
+    baseIndent: number,
+    commentMap: Map<number, string>
   ): void {
     if (child.background) {
-      this.formatBackground(child.background, lines, baseIndent);
+      this.formatBackground(child.background, lines, baseIndent, commentMap);
     } else if (child.scenario) {
-      this.formatScenario(child.scenario, lines, baseIndent);
+      this.formatScenario(child.scenario, lines, baseIndent, commentMap);
     } else if (child.rule) {
-      this.formatRule(child.rule, lines, baseIndent);
+      this.formatRule(child.rule, lines, baseIndent, commentMap);
     }
   }
 
   private formatBackground(
     background: Background,
     lines: string[],
-    baseIndent: number
+    baseIndent: number,
+    commentMap: Map<number, string>
   ): void {
     const indent = this.getIndent(baseIndent + 1);
 
@@ -110,14 +169,15 @@ export class GherkinFormatter {
     }
 
     background.steps.forEach(step => {
-      this.formatStep(step, lines, baseIndent + 2);
+      this.formatStep(step, lines, baseIndent + 2, commentMap);
     });
   }
 
   private formatScenario(
     scenario: Scenario,
     lines: string[],
-    baseIndent: number
+    baseIndent: number,
+    commentMap: Map<number, string>
   ): void {
     const indent = this.getIndent(baseIndent + 1);
 
@@ -138,17 +198,17 @@ export class GherkinFormatter {
 
     // Steps
     scenario.steps.forEach(step => {
-      this.formatStep(step, lines, baseIndent + 2);
+      this.formatStep(step, lines, baseIndent + 2, commentMap);
     });
 
     // Examples (for Scenario Outline)
     scenario.examples.forEach(examples => {
       lines.push(''); // Blank line before Examples
-      this.formatExamples(examples, lines, baseIndent + 2);
+      this.formatExamples(examples, lines, baseIndent + 2, commentMap);
     });
   }
 
-  private formatRule(rule: Rule, lines: string[], baseIndent: number): void {
+  private formatRule(rule: Rule, lines: string[], baseIndent: number, commentMap: Map<number, string>): void {
     const indent = this.getIndent(baseIndent + 1);
 
     // Tags
@@ -170,12 +230,15 @@ export class GherkinFormatter {
       if (index > 0 || rule.description) {
         lines.push(''); // Blank line before each child
       }
-      this.formatFeatureChild(child, lines, baseIndent + 1);
+      this.formatFeatureChild(child, lines, baseIndent + 1, commentMap);
     });
   }
 
-  private formatStep(step: Step, lines: string[], indentLevel: number): void {
+  private formatStep(step: Step, lines: string[], indentLevel: number, commentMap: Map<number, string>): void {
     const indent = this.getIndent(indentLevel);
+
+    // Insert comments before step
+    this.insertCommentsBeforeLine(step.location.line, commentMap, lines);
 
     // Steps are output as-is (no wrapping)
     // The keyword includes trailing space (e.g., "Given ")
@@ -195,7 +258,8 @@ export class GherkinFormatter {
   private formatExamples(
     examples: Examples,
     lines: string[],
-    indentLevel: number
+    indentLevel: number,
+    commentMap: Map<number, string>
   ): void {
     const indent = this.getIndent(indentLevel);
 

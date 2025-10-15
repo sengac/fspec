@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-15T07:36:26.885Z"
+    "lastUpdated": "2025-10-15T08:34:55.773Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -4977,10 +4977,98 @@
         "Running init from fspec dir overwrites original examples with generic ones",
         "External projects see user-authentication.feature in examples which works fine as illustration"
       ]
+    },
+    "EXMAP-002": {
+      "id": "EXMAP-002",
+      "title": "Preserve example mapping context as comments in generated feature files",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-15T08:34:45.292Z",
+      "updatedAt": "2025-10-15T09:00:08.967Z",
+      "description": "When generate-scenarios runs, embed full example mapping data (rules, examples, questions, assumptions) as comment blocks that persist through format cycles. This provides permanent context for AI and humans writing scenarios.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-15T08:34:53.790Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-15T08:39:15.384Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-15T08:44:19.099Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-15T08:57:40.553Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-15T09:00:08.967Z"
+        }
+      ],
+      "userStory": {
+        "role": "AI agent using fspec for ACDD workflow",
+        "action": "see full example mapping context when writing scenarios",
+        "benefit": "I can write meaningful Given/When/Then steps based on business rules and concrete examples"
+      },
+      "rules": [
+        "Comments in Gherkin AST MUST be preserved through format cycles",
+        "Example mapping context embedded as comments MUST NOT conflict with add-architecture doc strings",
+        "Generated feature files MUST contain zero scenarios initially (context-only)",
+        "System-reminder MUST guide AI to write scenarios based on embedded examples",
+        "Comment blocks MUST be visually distinct and easy to locate",
+        "All example mapping data (rules, examples, questions, assumptions) MUST be embedded"
+      ],
+      "examples": [
+        "FORMATTER PRESERVES COMMENTS: AI runs generate-scenarios, gets file with # comments, runs fspec format, comments are still present in file",
+        "COMMENTS DON'T CONFLICT WITH ARCHITECTURE: File has # example mapping comments AND \"\"\" architecture notes doc string, both coexist without overwriting",
+        "CONTEXT-ONLY GENERATION: generate-scenarios produces file with # comments + Background but ZERO scenarios, AI writes scenarios using Edit tool",
+        "USER STORY IN TWO PLACES: User story appears in # comments AND in Background section, both updated when set-user-story runs",
+        "SYSTEM-REMINDER GUIDES AI: After generate-scenarios, system-reminder tells AI 'write scenarios based on # EXAMPLES section', AI sees reminder and writes proper scenarios",
+        "RULES IN COMMENTS INFORM SCENARIOS: # BUSINESS RULES says 'password 8+ chars', AI writes scenario with Given step checking password length",
+        "ANSWERED QUESTIONS PRESERVED: # QUESTIONS section shows 'Q: OAuth support? A: Phase 2', developer reading file understands deferred decisions",
+        "ASSUMPTIONS DOCUMENTED: # ASSUMPTIONS says 'email verification external', AI doesn't write scenarios for email verification",
+        "VISUAL SEPARATION WITH BORDERS: Comment block has # === borders at top/bottom, easy to spot when scrolling through file",
+        "MULTIPLE EXAMPLES TO SCENARIOS: # EXAMPLES has 3 items, AI writes 3 separate scenarios OR combines related ones into single scenario",
+        "ADD-SCENARIO DOESN'T TOUCH COMMENTS: File has # example mapping comments, user runs add-scenario, comments remain untouched at top",
+        "ADD-BACKGROUND DOESN'T TOUCH COMMENTS: File has # comments before Background, user runs add-background to update user story, comments persist",
+        "PARSER PRESERVES COMMENTS IN AST: Gherkin parser reads file with # comments, ast.comments array contains comment objects with line numbers and text",
+        "FORMATTER OUTPUTS COMMENTS FROM AST: formatGherkinDocument receives AST with comments, inserts comment lines at correct positions in output",
+        "EMPTY EXAMPLE MAP HANDLED: Work unit has no rules/examples, generate-scenarios creates minimal comment block saying 'No example mapping data captured'",
+        "PREFILL DETECTION STILL WORKS: Generated Background has [role] placeholder, prefill detector emits system-reminder about using set-user-story",
+        "GIT DIFF SHOWS CONTEXT: Developer reviews PR, sees # example mapping comments in diff, understands why scenarios were written",
+        "EXISTING COMMENT HANDLING: Feature file already has some # comments, generate-scenarios appends its comment block without conflict",
+        "NO SCENARIOS MEANS FILE INCOMPLETE: generate-scenarios creates file with # comments + Background + zero scenarios, system-reminder says 'now write scenarios'",
+        "AI USES EDIT TOOL WITH CONTEXT: AI reads file, sees # EXAMPLES: '1. User logs in with valid creds', writes Scenario with proper Given/When/Then using Edit tool"
+      ],
+      "assumptions": [
+        "Gherkin parser (@cucumber/gherkin) already captures comments in AST",
+        "Current formatter (gherkin-formatter.ts) ignores ast.comments field",
+        "Comments use # syntax (Gherkin standard)",
+        "Doc strings use triple quotes (architecture notes)",
+        "AI agents have Edit tool access to feature files"
+      ],
+      "estimate": 5
+    },
+    "EXMAP-003": {
+      "id": "EXMAP-003",
+      "title": "Add system-reminder to generate-coverage command",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-10-15T08:49:29.798Z",
+      "updatedAt": "2025-10-15T08:49:29.798Z",
+      "description": "When generate-coverage creates coverage files, emit a system-reminder explaining that the LLM must manually link coverage using link-coverage command",
+      "epic": "coverage-tracking",
+      "children": []
     }
   },
   "states": {
-    "backlog": [],
+    "backlog": [
+      "EXMAP-003"
+    ],
     "specifying": [],
     "testing": [],
     "implementing": [],
@@ -5085,7 +5173,8 @@
       "FEAT-011",
       "BUG-009",
       "DOC-004",
-      "BUG-010"
+      "BUG-010",
+      "EXMAP-002"
     ],
     "blocked": []
   }
