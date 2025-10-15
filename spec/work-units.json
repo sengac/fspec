@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-15T07:14:04.905Z"
+    "lastUpdated": "2025-10-15T07:18:59.555Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -4789,20 +4789,36 @@
       "id": "BUG-009",
       "title": "remove-tag-from-scenario command doesn't properly remove tags",
       "type": "story",
-      "status": "specifying",
+      "status": "done",
       "createdAt": "2025-10-15T07:11:37.663Z",
-      "updatedAt": "2025-10-15T07:15:13.379Z",
+      "updatedAt": "2025-10-15T07:26:51.371Z",
       "description": "The remove-tag-from-scenario command is not working correctly - it claims to remove tags but they remain at scenario level in the feature files. This breaks tag validation because work unit ID tags (@COV-XXX) must be at feature level only.",
       "children": [],
       "userStory": {
-        "role": "developer or AI agent using fspec",
-        "action": "reliably remove tags from scenarios using the remove-tag-from-scenario command",
-        "benefit": "tag validation issues can be fixed programmatically without manual file editing"
+        "role": "developer using fspec",
+        "action": "remove scenario-level tags that should be at feature level",
+        "benefit": "tag validation passes and work unit tags are correctly positioned"
       },
       "stateHistory": [
         {
           "state": "specifying",
           "timestamp": "2025-10-15T07:14:19.063Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-15T07:22:07.019Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-15T07:24:11.287Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-15T07:25:32.534Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-15T07:26:51.372Z"
         }
       ],
       "rules": [
@@ -4810,7 +4826,10 @@
         "Command output should show success message when tags are removed",
         "If tag doesn't exist on scenario, command should still succeed (idempotent)",
         "Command must preserve file formatting and not corrupt Gherkin syntax",
-        "Must handle scenario names with special characters or partial matches"
+        "Must handle scenario names with special characters or partial matches",
+        "Use Edit tool for proper validation and formatting. Avoid sed/grep/perl for file modifications per CLAUDE.md guidelines.",
+        "Succeed silently (idempotent behavior). If scenario not found, log a warning but exit with code 0. This matches Rule 3 idempotency requirement.",
+        "Remove all occurrences of the tag from the scenario line. If '@COV-010 @COV-010' appears, both should be removed in a single operation."
       ],
       "examples": [
         "Run 'fspec remove-tag-from-scenario spec/features/test.feature \"Login scenario\" @COV-010' and tag is actually removed from file",
@@ -4822,15 +4841,18 @@
       "questions": [
         {
           "text": "@human: Should the command use Edit tool or direct file manipulation (sed/grep/perl)?",
-          "selected": false
+          "selected": true,
+          "answer": "Use Edit tool for proper validation and formatting. Avoid sed/grep/perl for file modifications per CLAUDE.md guidelines."
         },
         {
           "text": "@human: Should command fail if scenario name not found, or succeed silently?",
-          "selected": false
+          "selected": true,
+          "answer": "Succeed silently (idempotent behavior). If scenario not found, log a warning but exit with code 0. This matches Rule 3 idempotency requirement."
         },
         {
           "text": "@human: What should happen if tag appears multiple times on same scenario line?",
-          "selected": false
+          "selected": true,
+          "answer": "Remove all occurrences of the tag from the scenario line. If '@COV-010 @COV-010' appears, both should be removed in a single operation."
         }
       ],
       "assumptions": [
@@ -4844,9 +4866,7 @@
   },
   "states": {
     "backlog": [],
-    "specifying": [
-      "BUG-009"
-    ],
+    "specifying": [],
     "testing": [],
     "implementing": [],
     "validating": [],
@@ -4947,7 +4967,8 @@
       "COV-033",
       "COV-038",
       "FEAT-006",
-      "FEAT-011"
+      "FEAT-011",
+      "BUG-009"
     ],
     "blocked": []
   }
