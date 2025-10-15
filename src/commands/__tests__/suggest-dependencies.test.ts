@@ -30,52 +30,58 @@ describe('Feature: Work Unit Dependency Management', () => {
   describe('Scenario: Auto-suggest dependency relationships based on work unit metadata', () => {
     it('should suggest dependencies based on sequential IDs and title patterns', async () => {
       // And work units exist:
-      const workUnits: WorkUnit[] = [
-        {
-          id: 'AUTH-001',
-          title: 'Setup OAuth',
-          status: 'implementing',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
+      const workUnitsData = {
+        workUnits: {
+          'AUTH-001': {
+            id: 'AUTH-001',
+            title: 'Setup OAuth',
+            status: 'implementing',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+          'AUTH-002': {
+            id: 'AUTH-002',
+            title: 'User Login Flow',
+            status: 'backlog',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+          'API-001': {
+            id: 'API-001',
+            title: 'Build User API',
+            status: 'implementing',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+          'API-002': {
+            id: 'API-002',
+            title: 'Test User API',
+            status: 'backlog',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+          'DB-001': {
+            id: 'DB-001',
+            title: 'Database Schema Migration',
+            status: 'implementing',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+          'DB-002': {
+            id: 'DB-002',
+            title: 'Add User Data',
+            status: 'backlog',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
         },
-        {
-          id: 'AUTH-002',
-          title: 'User Login Flow',
-          status: 'backlog',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
+        states: {
+          backlog: ['AUTH-002', 'API-002', 'DB-002'],
+          implementing: ['AUTH-001', 'API-001', 'DB-001'],
         },
-        {
-          id: 'API-001',
-          title: 'Build User API',
-          status: 'implementing',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-        {
-          id: 'API-002',
-          title: 'Test User API',
-          status: 'backlog',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-        {
-          id: 'DB-001',
-          title: 'Database Schema Migration',
-          status: 'implementing',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-        {
-          id: 'DB-002',
-          title: 'Add User Data',
-          status: 'backlog',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-      ];
+      };
 
-      await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+      await writeFile(workUnitsFile, JSON.stringify(workUnitsData, null, 2));
 
       // When I run "fspec suggest-dependencies --output=json"
       const { suggestDependencies } = await import('../suggest-dependencies.js');

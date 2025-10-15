@@ -4185,9 +4185,9 @@
     "COV-047": {
       "id": "COV-047",
       "title": "Test: Auto-suggest dependency relationships",
-      "status": "testing",
+      "status": "done",
       "createdAt": "2025-10-15T00:11:49.033Z",
-      "updatedAt": "2025-10-15T04:04:03.848Z",
+      "updatedAt": "2025-10-15T05:05:29.014Z",
       "description": "Feature: work-unit-dependency-management. Status: CREATE_BOTH. No tests or implementation found for auto-suggesting dependencies.",
       "epic": "test-coverage",
       "estimate": 5,
@@ -4199,6 +4199,18 @@
         {
           "state": "testing",
           "timestamp": "2025-10-15T04:04:03.849Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-15T05:04:14.467Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-15T05:05:25.400Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-15T05:05:29.015Z"
         }
       ],
       "rules": [
@@ -4532,7 +4544,6 @@
       "COV-038"
     ],
     "testing": [
-      "COV-047",
       "COV-048"
     ],
     "implementing": [],
@@ -4627,7 +4638,8 @@
       "COV-049",
       "COV-050",
       "COV-051",
-      "COV-046"
+      "COV-046",
+      "COV-047"
     ],
     "blocked": []
   }
