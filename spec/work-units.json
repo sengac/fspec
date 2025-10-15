@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-15T22:58:23.048Z"
+    "lastUpdated": "2025-10-15T23:42:35.662Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -5928,6 +5928,79 @@
           "answer": "Free-form strings initially - users can prefix naturally (e.g., 'Dependency: ...', 'Refactoring: ...'). Add categorization later if needed."
         }
       ]
+    },
+    "FEAT-013": {
+      "id": "FEAT-013",
+      "title": "Attachment support for discovery process",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-15T23:42:01.192Z",
+      "updatedAt": "2025-10-15T23:47:36.516Z",
+      "description": "Add ability to attach files (diagrams, mockups, documents) to work units during Example Mapping to supplement architecture notes and NFRs",
+      "children": [],
+      "estimate": 5,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-15T23:42:21.297Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-15T23:42:57.989Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-15T23:43:10.317Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-15T23:43:11.875Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-15T23:44:54.141Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-15T23:46:00.822Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-15T23:46:24.484Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-15T23:47:32.452Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-15T23:47:34.074Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-15T23:47:36.517Z"
+        }
+      ],
+      "userStory": {
+        "role": "AI agent or developer using fspec",
+        "action": "attach files to work units during Example Mapping",
+        "benefit": "I can supplement architecture notes and NFRs with diagrams, mockups, and documents"
+      },
+      "rules": [
+        "Attachments must be stored in spec/attachments/<work-unit-id>/ directory",
+        "Attachment paths must be stored as relative paths from project root",
+        "Source file must exist before copying to attachments directory"
+      ],
+      "examples": [
+        "User runs 'fspec add-attachment AUTH-001 diagrams/auth-flow.png', file is copied to spec/attachments/AUTH-001/ and tracked in work unit",
+        "User runs 'fspec list-attachments AUTH-001', sees all attached files with sizes and modification dates",
+        "User runs 'fspec remove-attachment AUTH-001 diagram.png', file is deleted and tracking entry removed"
+      ],
+      "architectureNotes": [
+        "Attachments array added to WorkUnit interface in src/types/index.ts",
+        "Three new commands: add-attachment, list-attachments, remove-attachment",
+        "Uses fs/promises for file operations (copyFile, stat, unlink)"
+      ]
     }
   },
   "states": {
@@ -6049,7 +6122,8 @@
       "EXMAP-003",
       "HOOK-001",
       "BUG-011",
-      "FEAT-012"
+      "FEAT-012",
+      "FEAT-013"
     ],
     "blocked": []
   }
