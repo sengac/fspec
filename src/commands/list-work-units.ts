@@ -2,13 +2,14 @@ import { readFile } from 'fs/promises';
 import chalk from 'chalk';
 import type { Command } from 'commander';
 import { join } from 'path';
-import type { WorkUnitsData } from '../types';
+import type { WorkUnitsData, WorkItemType } from '../types';
 import { ensureWorkUnitsFile, ensurePrefixesFile } from '../utils/ensure-files';
 
 interface ListWorkUnitsOptions {
   status?: string;
   prefix?: string;
   epic?: string;
+  type?: WorkItemType;
   cwd?: string;
 }
 
@@ -51,6 +52,13 @@ export async function listWorkUnits(
     workUnits = workUnits.filter(wu => wu.epic === options.epic);
   }
 
+  if (options.type) {
+    workUnits = workUnits.filter(wu => {
+      const type = wu.type || 'story'; // Default to 'story' for backward compatibility
+      return type === options.type;
+    });
+  }
+
   // Map to summary format
   const summaries: WorkUnitSummary[] = workUnits.map(wu => ({
     id: wu.id,
@@ -69,6 +77,7 @@ export async function listWorkUnitsCommand(options: {
   status?: string;
   prefix?: string;
   epic?: string;
+  type?: WorkItemType;
 }): Promise<void> {
   const chalk = await import('chalk').then(m => m.default);
   try {
@@ -76,6 +85,7 @@ export async function listWorkUnitsCommand(options: {
       status: options.status,
       prefix: options.prefix,
       epic: options.epic,
+      type: options.type,
     });
 
     if (result.workUnits.length === 0) {
@@ -113,6 +123,10 @@ export function registerListWorkUnitsCommand(program: Command): void {
     .option('-s, --status <status>', 'Filter by status')
     .option('-p, --prefix <prefix>', 'Filter by prefix')
     .option('-e, --epic <epic>', 'Filter by epic')
+    .option(
+      '-t, --type <type>',
+      'Filter by work item type: story, task, or bug'
+    )
     .action(async (options: any) => {
       await listWorkUnitsCommand(options);
     });

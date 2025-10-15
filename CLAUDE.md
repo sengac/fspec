@@ -262,7 +262,63 @@ npm run format    # Format code with Prettier
 
 **Code that violates TypeScript standards will be rejected by the compiler.**
 
-### 4. Using fspec on Itself
+### 4. Temporal Ordering Enforcement
+
+**CRITICAL**: fspec enforces temporal ordering to prevent retroactive state walking where all work is done first, then states are walked through as theater.
+
+#### The Problem
+
+The system enforces state sequence (backlog → specifying → testing → implementing → validating → done) but must also enforce work sequence (when work is actually done).
+
+**Without temporal validation**, an AI could:
+1. Write feature file, tests, and code all at once
+2. Walk through states sequentially
+3. System would allow it because artifacts exist
+
+This violates ACDD by doing work BEFORE entering the required state.
+
+#### The Solution
+
+**Temporal validation** compares file modification timestamps (mtime) against state entry timestamps:
+
+- **Moving to testing**: Feature files must be modified AFTER entering specifying state
+- **Moving to implementing**: Test files must be modified AFTER entering testing state
+
+**Example Error**:
+```bash
+$ fspec update-work-unit-status AUTH-001 testing
+✗ ACDD temporal ordering violation detected!
+
+Feature files were created BEFORE entering specifying state.
+This indicates retroactive completion.
+
+Violations:
+  - spec/features/user-auth.feature
+    File modified: 2025-01-15T09:00:00Z
+    Entered specifying: 2025-01-15T10:00:00Z
+    Gap: 60 minutes BEFORE state entry
+```
+
+#### Escape Hatch: --skip-temporal-validation
+
+For legitimate cases (reverse ACDD, importing existing work):
+
+```bash
+fspec update-work-unit-status LEGACY-001 testing --skip-temporal-validation
+```
+
+**When to use**:
+- Reverse ACDD (documenting existing code)
+- Importing legacy work
+- Recovering from temporal validation errors
+
+**When NOT to use**:
+- Normal ACDD workflow (forward development)
+- Writing new features from scratch
+
+**See**: spec/CLAUDE.md "Temporal Ordering Enforcement (FEAT-011)" for complete details.
+
+### 5. Using fspec on Itself
 
 fspec manages its own specifications:
 

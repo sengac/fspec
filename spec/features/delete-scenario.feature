@@ -90,4 +90,3 @@ Feature: Delete Scenario from Feature File
     Then the command should exit with code 1
     And the output should show "Invalid Gherkin syntax"
     And the file should remain unchanged
-

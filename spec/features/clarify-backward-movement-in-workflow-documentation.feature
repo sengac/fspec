@@ -40,4 +40,3 @@ Feature: Clarify backward movement in workflow documentation
     Given a work unit is in implementing status
     When I run 'fspec update-work-unit-status WORK-001 specifying'
     Then the work unit status should change to specifying
-

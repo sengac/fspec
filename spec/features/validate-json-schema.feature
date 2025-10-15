@@ -1,3 +1,4 @@
+@COV-038
 @phase7
 @validator
 @validation
@@ -72,7 +73,6 @@ Feature: Internal JSON Schema Validation
     Then the validation should pass
     And the JSON data should be returned
 
-  @COV-038
   Scenario: Handle malformed JSON file
     Given I have a file "spec/foundation.json" with invalid JSON syntax
     When the validation utility tries to read the file

@@ -660,6 +660,7 @@ Work units flow through a 7-state Kanban workflow:
 - **Normal flow:** `backlog` → `specifying` → `testing` → `implementing` → `validating` → `done`
 - **Blocking:** Any state can transition to `blocked` when work cannot proceed
 - **Phase enforcement:** Cannot skip states (e.g., can't jump from specifying directly to implementing)
+- **Temporal ordering:** Files must be created AFTER entering required state (prevents retroactive completion). Use `--skip-temporal-validation` for reverse ACDD or importing existing work.
 
 **Visualize Work:**
 ```bash

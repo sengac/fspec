@@ -26,11 +26,36 @@ const updateWorkUnitStatusHelp: CommandHelpConfig = {
       required: true,
     },
   ],
+  options: [
+    {
+      name: '--reason <text>',
+      description: 'Reason for status change (optional, added to state history)',
+    },
+    {
+      name: '--blocked-reason <text>',
+      description: 'Reason for blocked status (required when status is "blocked")',
+    },
+    {
+      name: '--skip-temporal-validation',
+      description:
+        'Skip temporal ordering validation (for reverse ACDD or importing existing work)',
+    },
+  ],
   examples: [
     {
       command: 'fspec update-work-unit-status AUTH-001 specifying',
       description: 'Move to specifying (start Example Mapping and write feature files)',
       output: '✓ Work unit AUTH-001 status updated to specifying',
+    },
+    {
+      command: 'fspec update-work-unit-status AUTH-001 blocked --blocked-reason="Waiting for API design"',
+      description: 'Mark work unit as blocked with reason',
+      output: '✓ Work unit AUTH-001 status updated to blocked',
+    },
+    {
+      command: 'fspec update-work-unit-status LEGACY-001 testing --skip-temporal-validation',
+      description: 'Import existing work and skip temporal validation',
+      output: '✓ Work unit LEGACY-001 status updated to testing',
     },
     {
       command: 'fspec update-work-unit-status UI-001 implementing',
@@ -49,10 +74,15 @@ const updateWorkUnitStatusHelp: CommandHelpConfig = {
   ],
   notes: [
     'ACDD enforces strict workflow: you cannot skip states',
+    'FEAT-011: Temporal ordering is enforced - files must be created AFTER entering their required state',
+    'Moving to testing: feature files must be created AFTER entering specifying state',
+    'Moving to implementing: test files must be created AFTER entering testing state',
+    'Use --skip-temporal-validation for reverse ACDD or importing existing work',
     'Status "blocked" can be used from any state when progress is prevented',
     'Moving to testing requires all Example Mapping questions to be answered first',
     'Cannot move to active states (specifying, testing, implementing, validating) if work unit has incomplete blocking dependencies',
     'Use "fspec remove-dependency" to remove blockers or complete blocking work units first',
+    'Backward movement is allowed: can move from implementing → testing → specifying when mistakes discovered',
   ],
 };
 

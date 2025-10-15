@@ -28,6 +28,7 @@ export async function queryWorkUnits(options: {
   status?: string;
   epic?: string;
   prefix?: string;
+  type?: 'story' | 'task' | 'bug';
   sort?: string;
   order?: 'asc' | 'desc';
   format?: 'json' | 'csv' | 'text';
@@ -94,6 +95,14 @@ export async function queryWorkUnits(options: {
 
     if (options.prefix) {
       workUnits = workUnits.filter(wu => wu.id.startsWith(options.prefix + '-'));
+    }
+
+    // Filter by type
+    if (options.type) {
+      workUnits = workUnits.filter(wu => {
+        const type = wu.type || 'story'; // Default to 'story' for backward compatibility
+        return type === options.type;
+      });
     }
 
     // Filter by hasQuestions
@@ -188,12 +197,14 @@ export function registerQueryWorkUnitsCommand(program: Command): void {
     .option('--status <status>', 'Filter by status')
     .option('--prefix <prefix>', 'Filter by prefix')
     .option('--epic <epic>', 'Filter by epic')
+    .option('--type <type>', 'Filter by work item type: story, task, or bug')
     .option('--format <format>', 'Output format: text or json', 'text')
     .action(
       async (options: {
         status?: string;
         prefix?: string;
         epic?: string;
+        type?: 'story' | 'task' | 'bug';
         format?: string;
       }) => {
         try {
@@ -201,6 +212,7 @@ export function registerQueryWorkUnitsCommand(program: Command): void {
             status: options.status as any,
             prefix: options.prefix,
             epic: options.epic,
+            type: options.type,
             format: options.format as 'text' | 'json',
           });
           if (options.format === 'json') {

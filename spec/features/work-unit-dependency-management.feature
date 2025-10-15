@@ -1,3 +1,13 @@
+@COV-048
+@COV-047
+@COV-046
+@COV-045
+@COV-044
+@COV-043
+@COV-042
+@COV-041
+@COV-040
+@COV-039
 @wip
 @phase7
 @cli
@@ -224,7 +234,6 @@ Feature: Work Unit Dependency Management
 
   @query
   @visualization
-  @COV-039
   Scenario: Show work unit with all dependencies
     Given I have a project with spec directory
     And a work unit "AUTH-001" has dependencies:
@@ -241,7 +250,6 @@ Feature: Work Unit Dependency Management
 
   @query
   @visualization
-  @COV-040
   Scenario: Display dependency graph for work unit
     Given I have a project with spec directory
     And work unit "AUTH-001" blocks "API-001"
@@ -258,7 +266,6 @@ Feature: Work Unit Dependency Management
 
   @query
   @visualization
-  @COV-041
   Scenario: Show all work units blocked by specific work unit
     Given I have a project with spec directory
     And work unit "API-001" blocks "UI-001", "DASH-001", "MOBILE-001"
@@ -268,7 +275,6 @@ Feature: Work Unit Dependency Management
 
   @query
   @filtering
-  @COV-042
   Scenario: Find all currently blocked work units
     Given I have a project with spec directory
     And work units exist:
@@ -282,7 +288,6 @@ Feature: Work Unit Dependency Management
 
   @query
   @impact-analysis
-  @COV-043
   Scenario: Show impact analysis when completing work unit
     Given I have a project with spec directory
     And work unit "API-001" blocks "UI-001", "DASH-001", "MOBILE-001"
@@ -293,7 +298,6 @@ Feature: Work Unit Dependency Management
 
   @query
   @impact-analysis
-  @COV-044
   Scenario: Show dependency chain depth
     Given I have a project with spec directory
     And work unit "AUTH-001" blocks "API-001"
@@ -308,7 +312,6 @@ Feature: Work Unit Dependency Management
 
   @critical-path
   @query
-  @COV-045
   Scenario: Calculate critical path through dependencies
     Given I have a project with spec directory
     And work units with estimates and dependencies:
@@ -497,7 +500,6 @@ Feature: Work Unit Dependency Management
     And the output should show average dependencies per unit
     And the output should show max dependency chain depth
 
-  @COV-046
   Scenario: Identify bottleneck work units blocking the most work
     Given I have a project with spec directory
     And work units exist with blocking relationships:
@@ -517,7 +519,6 @@ Feature: Work Unit Dependency Management
     And "CACHE-001" should not be included (status='blocked')
     And "UI-002" should not be included (blocks nothing)
 
-  @COV-047
   Scenario: Auto-suggest dependency relationships based on work unit metadata
     Given I have a project with spec directory
     And work units exist:
@@ -535,7 +536,6 @@ Feature: Work Unit Dependency Management
     And each suggestion should indicate the reason/pattern matched
     And no suggestion should create circular dependencies
 
-  @COV-048
   Scenario: Detect orphaned work units with no epic or dependencies
     Given I have a project with spec directory
     And work units exist:

@@ -1,3 +1,4 @@
+@COV-032
 @phase7
 @cli
 @generator
@@ -209,7 +210,6 @@ Feature: Generate TAGS.md from tags.json
     And I run `fspec generate-tags` again
     Then the content of "spec/TAGS.md" should be identical to the saved version
 
-  @COV-032
   Scenario: Support custom output path
     Given I have a valid file "spec/tags.json"
     When I run `fspec generate-tags --output=docs/TAGS.md`

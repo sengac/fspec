@@ -1,3 +1,6 @@
+@COV-051
+@COV-050
+@COV-049
 @wip
 @phase7
 @cli
@@ -80,7 +83,6 @@ Feature: Work Unit Query and Reporting
     And each column should list work units
     And work units should show ID, title, and estimate
 
-  @COV-049
   Scenario: Query by status and prefix
     Given I have a project with spec directory
     And work units exist with various statuses and prefixes
@@ -119,7 +121,6 @@ Feature: Work Unit Query and Reporting
     And the output should show "done: 5"
     And the output should show total story points if estimates exist
 
-  @COV-050
   Scenario: Query with sorting by updated date
     Given I have a project with spec directory
     And work unit "AUTH-001" was updated at "2025-10-10T10:00:00Z"
@@ -131,7 +132,6 @@ Feature: Work Unit Query and Reporting
     And the second result should be "AUTH-001"
     And the third result should be "AUTH-003"
 
-  @COV-051
   Scenario: Export filtered results to CSV
     Given I have a project with spec directory
     And work units exist with status "implementing"

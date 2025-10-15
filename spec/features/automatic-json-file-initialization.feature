@@ -1,3 +1,13 @@
+@COV-019
+@COV-018
+@COV-017
+@COV-016
+@COV-015
+@COV-014
+@COV-013
+@COV-012
+@COV-011
+@COV-010
 @INIT-002
 @phase1
 @critical
@@ -48,7 +58,6 @@ Feature: Automatic JSON File Initialization
 
   @critical
   @happy-path
-  @COV-010
   Scenario: Example mapping commands auto-create work-units.json
     Given I have a fresh project with only spec/features/ directory
     And spec/work-units.json does not exist
@@ -60,7 +69,6 @@ Feature: Automatic JSON File Initialization
 
   @critical
   @happy-path
-  @COV-011
   Scenario: Dependency commands auto-create work-units.json
     Given I have a fresh project with only spec/features/ directory
     And spec/work-units.json does not exist
@@ -95,7 +103,6 @@ Feature: Automatic JSON File Initialization
     And should not lose any data
 
   @validation
-  @COV-012
   Scenario: Ensure utilities validate JSON structure
     Given I have corrupted spec/work-units.json
     When ensureWorkUnitsFile is called
@@ -114,7 +121,6 @@ Feature: Automatic JSON File Initialization
 
   @refactoring
   @technical-debt
-  @COV-013
   Scenario: All 48+ commands use ensure utilities
     Given I have analyzed all commands in src/commands/
     When I check which commands read JSON files
@@ -144,7 +150,6 @@ Feature: Automatic JSON File Initialization
     And the prefix "AUTH" should be added to the file
 
   @init-001
-  @COV-014
   Scenario: List work units command auto-creates spec/work-units.json when missing
     Given I have a fresh project with spec/ directory
     And spec/work-units.json does not exist
@@ -155,7 +160,6 @@ Feature: Automatic JSON File Initialization
     And the file should contain all 7 Kanban states
 
   @init-001
-  @COV-015
   Scenario: Update work unit command uses ensureWorkUnitsFile instead of direct readFile
     Given I have a fresh project with spec/ directory
     And spec/work-units.json does not exist
@@ -175,7 +179,6 @@ Feature: Automatic JSON File Initialization
     And the work unit title should still be "Original Title"
     And the file should not be modified or overwritten
 
-  @COV-016
   Scenario: Register tag command auto-creates spec/tags.json when missing
     Given I have a fresh project with spec/ directory
     Given spec/tags.json does not exist
@@ -185,7 +188,6 @@ Feature: Automatic JSON File Initialization
     And the file should contain valid Tags JSON structure with default categories
     And the tag @my-tag should be added to the Phase Tags category
 
-  @COV-017
   Scenario: Update foundation command auto-creates spec/foundation.json when missing
     Given I have a fresh project with spec/ directory
     Given spec/foundation.json does not exist
@@ -194,7 +196,6 @@ Feature: Automatic JSON File Initialization
     And spec/foundation.json should be created
     And the file should contain valid Foundation JSON structure
 
-  @COV-018
   Scenario: List tags command auto-creates spec/tags.json instead of throwing error
     Given I have a fresh project with spec/ directory
     Given spec/tags.json does not exist
@@ -203,7 +204,6 @@ Feature: Automatic JSON File Initialization
     And the command should succeed
     And spec/tags.json should be auto-created with default structure
 
-  @COV-019
   Scenario: Show foundation command auto-creates spec/foundation.json instead of returning error
     Given I have a fresh project with spec/ directory
     Given spec/foundation.json does not exist

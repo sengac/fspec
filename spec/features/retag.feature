@@ -121,4 +121,3 @@ Feature: Bulk Rename Tags Across Files
     Then the command should exit with code 1
     And the output should show "Both --from and --to are required"
     And no files should be modified
-

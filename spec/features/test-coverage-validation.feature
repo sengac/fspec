@@ -9,4 +9,3 @@ Feature: Implement comprehensive test coverage for all commands
     As a developer maintaining fspec CLI
     I want comprehensive test coverage for all commands
     So that I can ensure reliability and catch regressions early
-

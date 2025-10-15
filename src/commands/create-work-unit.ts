@@ -2,7 +2,12 @@ import { readFile, writeFile } from 'fs/promises';
 import chalk from 'chalk';
 import type { Command } from 'commander';
 import { join } from 'path';
-import type { WorkUnitsData, PrefixesData, EpicsData } from '../types';
+import type {
+  WorkUnitsData,
+  PrefixesData,
+  EpicsData,
+  WorkItemType,
+} from '../types';
 import {
   ensureWorkUnitsFile,
   ensurePrefixesFile,
@@ -15,6 +20,7 @@ const MAX_NESTING_DEPTH = 3;
 interface CreateWorkUnitOptions {
   prefix: string;
   title: string;
+  type?: WorkItemType;
   description?: string;
   epic?: string;
   parent?: string;
@@ -79,6 +85,7 @@ export async function createWorkUnit(
   const newWorkUnit = {
     id: nextId,
     title: options.title,
+    type: options.type || 'story', // Default to 'story' for backward compatibility
     status: 'backlog' as const,
     createdAt: now,
     updatedAt: now,
@@ -154,13 +161,19 @@ function calculateNestingDepth(
 export async function createWorkUnitCommand(
   prefix: string,
   title: string,
-  options: { description?: string; epic?: string; parent?: string }
+  options: {
+    type?: WorkItemType;
+    description?: string;
+    epic?: string;
+    parent?: string;
+  }
 ): Promise<void> {
   const chalk = await import('chalk').then(m => m.default);
   try {
     const result = await createWorkUnit({
       prefix,
       title,
+      type: options.type,
       description: options.description,
       epic: options.epic,
       parent: options.parent,
@@ -199,6 +212,10 @@ export function registerCreateWorkUnitCommand(program: Command): void {
     .description('Create a new work unit')
     .argument('<prefix>', 'Work unit prefix (e.g., AUTH, DASH)')
     .argument('<title>', 'Work unit title')
+    .option(
+      '-t, --type <type>',
+      'Work item type: story, task, or bug (default: story)'
+    )
     .option('-d, --description <description>', 'Work unit description')
     .option('-e, --epic <epic>', 'Epic ID to associate with')
     .option('-p, --parent <parent>', 'Parent work unit ID')

@@ -1,3 +1,4 @@
+@COV-031
 @phase7
 @cli
 @generator
@@ -148,7 +149,6 @@ Feature: Generate FOUNDATION.md from foundation.json
     And I run `fspec generate-foundation` again
     Then the content of "spec/FOUNDATION.md" should be identical to the saved version
 
-  @COV-031
   Scenario: Support custom output path
     Given I have a valid file "spec/foundation.json"
     When I run `fspec generate-foundation --output=docs/FOUNDATION.md`
