@@ -1,120 +1,193 @@
 # Getting Started with fspec
 
-## Quick Start
+## Overview
 
-### 1. Getting Help
+**Important:** You don't run fspec commands directly. Instead, you give high-level requests to your AI agent (like Claude Code), and the agent uses fspec to manage the workflow for you.
 
-fspec has a comprehensive, hierarchical help system with detailed documentation for all commands:
+## Installation
+
+### 1. Install fspec
 
 ```bash
-# Main help - shows command groups and quick start
-fspec                  # Shows main help (same as --help)
-fspec --help           # Shows main help
-fspec help             # Shows command group help
-
-# Group-specific help with all commands, options, and examples
-fspec help specs       # Write and manage Gherkin feature files
-fspec help work        # Track work units through ACDD workflow
-fspec help discovery   # Collaborative discovery with example mapping
-fspec help metrics     # Track progress and quality
-fspec help setup       # Configure project structure
-fspec help hooks       # Lifecycle hooks for automation
-
-# Command-specific help - detailed documentation for ANY command
-fspec <command> --help
-fspec validate --help           # Comprehensive help for validate command
-fspec create-work-unit --help   # Comprehensive help for create-work-unit command
+git clone https://github.com/sengac/fspec.git
+cd fspec
+npm install && npm run build && npm run install:local
 ```
 
-**Command Groups:**
-- **specs** - Gherkin validation, feature/scenario/step CRUD, bulk operations, formatting
-- **work** - Work units, epics, Kanban workflow, dependencies, board visualization
-- **discovery** - Example mapping for collaborative discovery
-- **metrics** - Progress tracking, estimation, reports
-- **setup** - Tag registry, foundation docs, Mermaid diagrams
-
-### 2. Validate Gherkin Syntax
+### 2. Initialize in Your Project
 
 ```bash
-# Validate all feature files
+cd /path/to/your/project
+fspec init
+```
+
+This creates:
+- `.claude/commands/fspec.md` - Forward ACDD command for building new features
+- `.claude/commands/rspec.md` - Reverse ACDD command for existing codebases
+- `spec/CLAUDE.md` - Specification management guidelines
+
+**Works with any AI agent:** While designed for Claude Code, you can use the generated `fspec.md` and `rspec.md` command files with other AI agents by mapping them to your agent's command system. If using another agent, rename `spec/CLAUDE.md` to `spec/AGENTS.md` for clarity.
+
+## Using fspec with Your AI Agent
+
+### For New Features (Forward ACDD)
+
+Simply ask your AI agent to build something using `/fspec`:
+
+```
+/fspec Build user authentication feature
+/fspec Add password reset functionality
+/fspec Implement API rate limiting
+```
+
+The AI agent will:
+1. **Create a work unit** and move it through Kanban states
+2. **Do Example Mapping** - Ask you clarifying questions about requirements
+3. **Generate validated Gherkin specs** from your answers
+4. **Write tests first** that map to the scenarios
+5. **Implement code** to make those tests pass
+6. **Enforce ACDD workflow** - can't skip phases
+
+### For Existing Code (Reverse ACDD)
+
+Ask your AI agent to analyze existing code using `/rspec`:
+
+```
+/rspec Analyze the entire codebase
+/rspec Document the payment processing system
+/rspec Create specs for src/api/routes.ts
+```
+
+The AI agent will:
+1. **Analyze the code** to identify user-facing interactions
+2. **Create feature files** with inferred acceptance criteria
+3. **Group into epics** by business domain
+4. **Generate test skeletons** (structure only, not implemented)
+5. **Link existing code** to scenarios for traceability
+
+## Example Interaction
+
+Here's what a typical interaction looks like:
+
+```
+You: /fspec Build user login feature
+
+Claude: I'll use fspec to manage this work through ACDD workflow.
+        Let me start with discovery...
+
+        I'm creating work unit AUTH-001 for "User Login" and moving
+        it to the specifying phase. Now let me ask some clarifying
+        questions:
+
+        1. Should we support OAuth in addition to email/password?
+        2. What are your password requirements (length, complexity)?
+        3. Do you want "remember me" functionality?
+
+You: 1. Yes, support Google OAuth
+     2. At least 8 characters, must include a number
+     3. Yes, remember for 30 days
+
+Claude: Perfect! Based on your answers, I'm adding these rules and
+        examples to the work unit:
+
+        Rules:
+        - Password must be 8+ characters with at least one number
+        - Support email/password and Google OAuth
+        - Remember me stores session for 30 days
+
+        Now I'll generate validated Gherkin scenarios from this...
+
+        ✓ Created spec/features/user-authentication.feature
+
+        Moving to testing phase. I'll write tests that map to these
+        scenarios BEFORE any implementation code...
+```
+
+## What Happens Behind the Scenes
+
+When you use `/fspec` or `/rspec`, the AI agent is running fspec commands on your behalf:
+
+```bash
+# Creating work units
+fspec create-work-unit AUTH "User login feature"
+
+# Managing workflow states
+fspec update-work-unit-status AUTH-001 specifying
+
+# Example mapping (discovery)
+fspec add-rule AUTH-001 "Password must be 8+ characters"
+fspec add-example AUTH-001 "User logs in with valid email"
+fspec add-question AUTH-001 "@human: Should we support OAuth?"
+
+# Generating specs from discovery
+fspec generate-scenarios AUTH-001
+
+# Validating Gherkin syntax
 fspec validate
 
-# Validate specific file
-fspec validate spec/features/login.feature
-
-# Verbose output
-fspec validate --verbose
+# Tracking coverage
+fspec link-coverage user-authentication --scenario "Login" --test-file ...
 ```
 
-### 3. Create Your First Feature
+**You focus on requirements, the AI handles workflow enforcement.**
+
+## Key Concepts
+
+### Kanban Workflow (7 States)
+
+Work units flow through enforced states:
+- `backlog` → `specifying` → `testing` → `implementing` → `validating` → `done`
+- Plus `blocked` for work that can't proceed
+
+**The AI agent cannot skip phases.** This ensures ACDD discipline.
+
+### Example Mapping (Discovery)
+
+Before writing code, the AI uses structured discovery:
+- **Rules** (blue cards) - Business rules governing the feature
+- **Examples** (green cards) - Concrete examples illustrating behavior
+- **Questions** (red cards) - Clarifying questions for you to answer
+- **Attachments** - Diagrams, mockups, or documents
+
+### Coverage Tracking
+
+fspec tracks scenario-to-test-to-implementation mappings:
+- Which scenarios have test coverage
+- Line ranges in test files
+- Which implementation files are tested
+- Coverage statistics
+
+## Getting Help
+
+If you want to see what fspec commands are available (for reference):
 
 ```bash
-# Create new feature file
-fspec create-feature "User Authentication"
-
-# Add scenario
-fspec add-scenario user-authentication "Login with valid credentials"
-
-# Add steps
-fspec add-step user-authentication "Login with valid credentials" given "I am on the login page"
-fspec add-step user-authentication "Login with valid credentials" when "I enter valid credentials"
-fspec add-step user-authentication "Login with valid credentials" then "I should be logged in"
-
-# Validate
-fspec validate
-
-# Format
-fspec format
+fspec help              # Overview
+fspec help work         # Kanban workflow commands
+fspec help discovery    # Example mapping commands
+fspec help specs        # Gherkin feature file commands
+fspec help hooks        # Lifecycle hooks
 ```
 
-### 4. The ACDD Workflow
-
-**Forward ACDD** (for new features):
-
-1. **Discovery (Example Mapping)**
-   ```bash
-   fspec create-work-unit AUTH "User login"
-   fspec update-work-unit-status AUTH-001 specifying
-   fspec add-rule AUTH-001 "Password must be 8+ characters"
-   fspec add-example AUTH-001 "User logs in with valid email"
-   fspec add-question AUTH-001 "@human: Should we support OAuth?"
-   ```
-
-2. **Specification (Gherkin)**
-   ```bash
-   fspec generate-scenarios AUTH-001  # Auto-generate from example map
-   fspec validate
-   ```
-
-3. **Testing Phase**
-   ```bash
-   fspec update-work-unit-status AUTH-001 testing
-   # Write tests mapping to Gherkin scenarios BEFORE any code
-   npm test  # Tests should fail
-   ```
-
-4. **Implementation Phase**
-   ```bash
-   fspec update-work-unit-status AUTH-001 implementing
-   # Write minimum code to make tests pass
-   npm test  # Tests should pass
-   ```
-
-5. **Validation & Done**
-   ```bash
-   fspec update-work-unit-status AUTH-001 validating
-   npm run check
-   fspec update-work-unit-status AUTH-001 done
-   ```
-
-**Reverse ACDD** (for existing codebases):
-
-See [Reverse ACDD Guide](./reverse-acdd.md) for complete documentation on using `/rspec` in Claude Code.
+But remember: **You don't run these yourself** - your AI agent uses them.
 
 ## Next Steps
 
-- [Complete Usage Guide](./usage.md) - Detailed command examples
-- [Coverage Tracking](./coverage-tracking.md) - Link scenarios to tests and implementation
-- [Tag Management](./tags.md) - Organize features with tags
-- [Lifecycle Hooks](./hooks/configuration.md) - Automate your workflow
-- [Project Management](./project-management.md) - Kanban workflow and work units
+- [Installation Guide](./installation.md) - Detailed setup instructions
+- [Reverse ACDD](./reverse-acdd.md) - Document existing codebases
+- [Project Management](./project-management.md) - Understand the Kanban workflow
+- [Coverage Tracking](./coverage-tracking.md) - Learn about traceability
+
+## Troubleshooting
+
+**Q: The AI agent isn't using fspec commands**
+
+A: Make sure you ran `fspec init` in your project directory, and that `.claude/commands/fspec.md` exists. Use `/fspec` (with slash) to invoke the command.
+
+**Q: Can I use fspec without an AI agent?**
+
+A: Yes, but that's not the intended use case. You can run commands directly for debugging or manual workflows, but fspec is designed to be driven by AI agents.
+
+**Q: Does this work with AI agents other than Claude Code?**
+
+A: Yes! Take the generated `fspec.md` and `rspec.md` files and map them to your AI agent's command system.
