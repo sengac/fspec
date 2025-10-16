@@ -1,0 +1,50 @@
+# Source files (not needed in published package)
+src/
+spec/
+scripts/
+examples/
+docs/
+
+# Test files
+*.test.ts
+*.spec.ts
+__tests__/
+coverage/
+
+# Build artifacts we don't need
+*.tsbuildinfo
+.nyc_output/
+
+# Development files
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+.env
+.env.local
+*.log
+
+# Config files
+tsconfig.json
+vite.config.ts
+vitest.config.ts
+.prettierrc
+.prettierignore
+
+# Git files
+.git/
+.gitignore
+.gitattributes
+
+# CI/CD
+.github/
+
+# Development dependencies
+node_modules/
+
+# Keep these files (they should be published)
+# dist/        <- NOT ignored, will be published
+# README.md    <- NOT ignored, will be published
+# package.json <- NOT ignored, will be published
+# LICENSE      <- NOT ignored, will be published

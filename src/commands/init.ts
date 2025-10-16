@@ -136,11 +136,11 @@ async function checkFileExists(filePath: string): Promise<boolean> {
 async function generateTemplate(): Promise<string> {
   // Read the fspec.md template from the installed package location
   // Try multiple paths to support different execution contexts:
-  // 1. dist/.claude/commands/fspec.md (production)
-  // 2. .claude/commands/fspec.md (development from project root)
+  // 1. .claude/commands/fspec.md (production - within dist/)
+  // 2. ../.claude/commands/fspec.md (development from src/commands/)
   const possiblePaths = [
-    join(__dirname, '..', '.claude', 'commands', 'fspec.md'), // From dist/
-    join(__dirname, '..', '..', '.claude', 'commands', 'fspec.md'), // From src/commands/
+    join(__dirname, '.claude', 'commands', 'fspec.md'), // From dist/ (production)
+    join(__dirname, '..', '..', '.claude', 'commands', 'fspec.md'), // From src/commands/ (dev)
   ];
 
   let template: string | null = null;
@@ -174,11 +174,11 @@ async function generateTemplate(): Promise<string> {
 async function copyClaudeTemplate(cwd: string): Promise<void> {
   // Resolve CLAUDE.md path from package installation
   // Try multiple paths to support different execution contexts:
-  // 1. dist/spec/CLAUDE.md (production - bundled from spec/)
-  // 2. spec/CLAUDE.md (development/test from project root)
+  // 1. spec/CLAUDE.md (production - within dist/)
+  // 2. ../../spec/CLAUDE.md (development from src/commands/)
   const possiblePaths = [
-    join(__dirname, '..', 'spec', 'CLAUDE.md'), // From dist/
-    join(__dirname, '..', '..', 'spec', 'CLAUDE.md'), // From src/commands/
+    join(__dirname, 'spec', 'CLAUDE.md'), // From dist/ (production)
+    join(__dirname, '..', '..', 'spec', 'CLAUDE.md'), // From src/commands/ (dev)
   ];
 
   let sourcePath: string | null = null;
@@ -220,11 +220,11 @@ async function copyClaudeTemplate(cwd: string): Promise<void> {
 async function copyRspecTemplate(cwd: string): Promise<void> {
   // Resolve rspec.md path from package installation
   // Try multiple paths to support different execution contexts:
-  // 1. dist/.claude/commands/rspec.md (production - bundled from .claude/)
-  // 2. .claude/commands/rspec.md (development/test from project root)
+  // 1. .claude/commands/rspec.md (production - within dist/)
+  // 2. ../../.claude/commands/rspec.md (development from src/commands/)
   const possiblePaths = [
-    join(__dirname, '..', '.claude', 'commands', 'rspec.md'), // From dist/
-    join(__dirname, '..', '..', '.claude', 'commands', 'rspec.md'), // From src/commands/
+    join(__dirname, '.claude', 'commands', 'rspec.md'), // From dist/ (production)
+    join(__dirname, '..', '..', '.claude', 'commands', 'rspec.md'), // From src/commands/ (dev)
   ];
 
   let sourcePath: string | null = null;

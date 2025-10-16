@@ -4,6 +4,16 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import { fileURLToPath } from 'url';
 import { realpathSync } from 'fs';
+import { readFileSync } from 'fs';
+import { dirname, join } from 'path';
+
+// Read version from package.json
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const packageJson = JSON.parse(
+  readFileSync(join(__dirname, '..', 'package.json'), 'utf-8')
+);
+const version = packageJson.version;
 
 // Command registration functions
 import { registerAddArchitectureCommand } from './commands/add-architecture';
@@ -118,7 +128,7 @@ const program = new Command();
 program
   .name('fspec')
   .description('Feature Specification & Project Management for AI Agents')
-  .version('0.0.1')
+  .version(version)
   .configureHelp({
     helpWidth: 100,
   })
@@ -251,7 +261,6 @@ async function main(): Promise<void> {
 // Run main function when executed directly (not when imported for testing)
 // This works for both direct execution (./dist/index.js) and npm link (/usr/local/bin/fspec)
 // by checking if the resolved script path matches this file
-const __filename = fileURLToPath(import.meta.url);
 const isMainModule = (() => {
   try {
     // Resolve symlinks to get the actual file path
