@@ -217,6 +217,7 @@ Tags tracking development status of features.
 | `@auth-002` | Example work unit for authentication testing |  |
 | `@auth-999` | Non-existent work unit for testing error handling |  |
 | `@blocked` | Blocked |  |
+| `@bug` | Bug fix work units |  |
 | `@bug-fix` | Marks bug fixes and corrections to existing functionality |  |
 | `@deprecated` | Deprecated |  |
 | `@done` | Complete |  |
@@ -501,7 +502,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-10-15T11:52:55.314Z_
+_Last updated: 2025-10-15T23:22:36.568Z_
 
 **Update Command**: `fspec tag-stats`
 

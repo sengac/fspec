@@ -46,6 +46,7 @@ interface WorkUnitDetails {
   examples?: string[];
   questions?: string[];
   assumptions?: string[];
+  architectureNotes?: string[];
   createdAt: string;
   updatedAt: string;
   linkedFeatures?: LinkedFeature[];
@@ -204,6 +205,7 @@ export async function showWorkUnit(
     ...(workUnit.examples && { examples: workUnit.examples }),
     ...(unselectedQuestions && { questions: unselectedQuestions }),
     ...(workUnit.assumptions && { assumptions: workUnit.assumptions }),
+    ...(workUnit.architectureNotes && { architectureNotes: workUnit.architectureNotes }),
     createdAt: workUnit.createdAt,
     updatedAt: workUnit.updatedAt,
     linkedFeatures,
@@ -282,6 +284,13 @@ export async function showWorkUnitCommand(
         console.log(chalk.cyan('\nAssumptions:'));
         result.assumptions.forEach((assumption, idx) => {
           console.log(`  ${idx + 1}. ${assumption}`);
+        });
+      }
+
+      if (result.architectureNotes && result.architectureNotes.length > 0) {
+        console.log(chalk.cyan('\nArchitecture Notes:'));
+        result.architectureNotes.forEach((note, idx) => {
+          console.log(`  ${idx}. ${note}`);
         });
       }
 

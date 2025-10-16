@@ -6,7 +6,6 @@
 @example-mapping
 @acdd
 Feature: Preserve example mapping context as comments in generated feature files
-
   """
   Architecture notes:
   - Gherkin parser (@cucumber/gherkin) captures comments in ast.comments array

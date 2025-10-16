@@ -489,6 +489,10 @@ sequenceDiagram
     Human->>AI: Example: fspec validate shows "All valid"
     AI->>WorkUnit: add-example "validate shows success"
     
+    AI->>Human: Architecture/NFR considerations?
+    Human->>AI: Uses @cucumber/gherkin parser
+    AI->>WorkUnit: add-architecture-note "Dependency: @cucumber/gherkin"
+    
     AI->>Human: Question: Support custom rules in config?
     AI->>WorkUnit: add-question "Custom validation rules?"
     Human->>AI: No, defer to future work
@@ -500,9 +504,10 @@ sequenceDiagram
     WorkUnit->>FeatureFile: Transform to Gherkin
     
     Note over FeatureFile: Generated Feature File
-    Note over FeatureFile: - Rules → Background context
+    Note over FeatureFile: - Architecture notes → Docstring
+    Note over FeatureFile: - Rules → Comment context
     Note over FeatureFile: - Examples → Scenarios
-    Note over FeatureFile: - Questions → Assumptions
+    Note over FeatureFile: - Questions → Comment context
     
     Note over Human,FeatureFile: Ready for Testing Phase
 ```

@@ -29,6 +29,72 @@ interface GenerateScenariosResult {
 }
 
 /**
+ * Categorize architecture notes by detected prefix
+ *
+ * Recognizes common prefixes like:
+ * - Dependency: / Dependencies:
+ * - Performance:
+ * - Refactoring: / Refactor:
+ * - Security:
+ * - UI/UX:
+ * - Implementation:
+ *
+ * Notes without recognized prefixes go into "General" category.
+ */
+function categorizeArchitectureNotes(
+  notes: string[]
+): Record<string, string[]> {
+  const categories: Record<string, string[]> = {
+    General: [],
+  };
+
+  const knownPrefixes = [
+    'Dependency',
+    'Dependencies',
+    'Performance',
+    'Refactoring',
+    'Refactor',
+    'Security',
+    'UI/UX',
+    'Implementation',
+  ];
+
+  for (const note of notes) {
+    let categorized = false;
+
+    for (const prefix of knownPrefixes) {
+      const regex = new RegExp(`^${prefix}:\\s*`, 'i');
+      if (regex.test(note)) {
+        // Normalize category name (Dependencies → Dependency, Refactor → Refactoring)
+        let categoryName = prefix;
+        if (prefix === 'Dependencies') categoryName = 'Dependency';
+        if (prefix === 'Refactor') categoryName = 'Refactoring';
+
+        if (!categories[categoryName]) {
+          categories[categoryName] = [];
+        }
+        categories[categoryName].push(note);
+        categorized = true;
+        break;
+      }
+    }
+
+    if (!categorized) {
+      categories.General.push(note);
+    }
+  }
+
+  // Remove empty categories
+  for (const [category, items] of Object.entries(categories)) {
+    if (items.length === 0) {
+      delete categories[category];
+    }
+  }
+
+  return categories;
+}
+
+/**
  * Generate example mapping context as comments
  *
  * This creates a comment block containing:
@@ -226,8 +292,45 @@ export async function generateScenarios(
     So that [benefit]`;
   }
 
+  // Generate architecture docstring from captured notes or use placeholders
+  let architectureDocstring: string;
+  if (workUnit.architectureNotes && workUnit.architectureNotes.length > 0) {
+    // Group notes by detected prefix (Dependency, Performance, Refactoring, etc.)
+    const categorizedNotes = categorizeArchitectureNotes(workUnit.architectureNotes);
+
+    const docstringLines = ['  """'];
+    for (const [category, notes] of Object.entries(categorizedNotes)) {
+      if (category === 'General') {
+        // General notes go first without category header
+        notes.forEach(note => {
+          docstringLines.push(`  ${note}`);
+        });
+      } else {
+        // Categorized notes with headers
+        docstringLines.push(`  ${category}:`);
+        notes.forEach(note => {
+          // Remove the prefix from the note since it's now in the header
+          const noteWithoutPrefix = note.replace(/^[A-Za-z]+:\s*/, '');
+          docstringLines.push(`  - ${noteWithoutPrefix}`);
+        });
+      }
+    }
+    docstringLines.push('  """');
+    architectureDocstring = docstringLines.join('\n');
+  } else {
+    // Use placeholder template if no notes captured
+    architectureDocstring = `  """
+  Architecture notes:
+  - TODO: Add key architectural decisions
+  - TODO: Add dependencies and integrations
+  - TODO: Add critical implementation requirements
+  """`;
+  }
+
   const featureContent = `@${options.workUnitId}
 Feature: ${title}
+
+${architectureDocstring}
 
 ${commentBlock}
 

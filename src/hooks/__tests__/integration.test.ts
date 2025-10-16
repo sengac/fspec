@@ -30,8 +30,8 @@ describe('Feature: Integrate hooks into all commands', () => {
     await writeFile(
       workUnitsPath,
       JSON.stringify({
-        workUnits: [
-          {
+        workUnits: {
+          'AUTH-001': {
             id: 'AUTH-001',
             title: 'Test Work Unit',
             type: 'story',
@@ -40,7 +40,7 @@ describe('Feature: Integrate hooks into all commands', () => {
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           },
-          {
+          'DASH-001': {
             id: 'DASH-001',
             title: 'Dashboard Work Unit',
             type: 'story',
@@ -49,9 +49,11 @@ describe('Feature: Integrate hooks into all commands', () => {
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           },
-        ],
-        prefixes: [],
-        epics: [],
+        },
+        states: {
+          backlog: ['DASH-001'],
+          specifying: ['AUTH-001'],
+        },
       })
     );
   });
