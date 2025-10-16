@@ -149,6 +149,61 @@ describe('Feature: Architecture notes in Example Mapping', () => {
     });
   });
 
+  describe('Scenario: View architecture notes in work unit', () => {
+    it('should display architecture notes in order with indices', async () => {
+      // Given I have added architecture notes to WORK-001
+      const workUnitsData: WorkUnitsData = {
+        meta: { lastId: 1, lastUpdated: new Date().toISOString() },
+        prefixes: { WORK: { name: 'Work', nextId: 2 } },
+        workUnits: {
+          'WORK-001': {
+            id: 'WORK-001',
+            prefix: 'WORK',
+            title: 'Test Feature',
+            description: 'Test',
+            type: 'story',
+            status: 'specifying',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            rules: ['Rule 1'],
+            examples: ['Example 1'],
+            questions: [],
+            architectureNotes: [
+              'Uses @cucumber/gherkin parser',
+              'Must complete within 2 seconds',
+              'Validates all Gherkin keywords',
+            ],
+          },
+        },
+      };
+
+      await writeFile(
+        join(tmpDir, 'spec', 'work-units.json'),
+        JSON.stringify(workUnitsData, null, 2)
+      );
+
+      // When I run "fspec show-work-unit WORK-001"
+      const { showWorkUnit } = await import('../show-work-unit');
+      const result = await showWorkUnit({
+        workUnitId: 'WORK-001',
+        cwd: tmpDir,
+      });
+
+      // Then I should see an "Architecture Notes:" section
+      expect(result.architectureNotes).toBeDefined();
+
+      // And the section should list all captured notes with indices
+      expect(result.architectureNotes).toHaveLength(3);
+
+      // And the notes should be displayed in the order they were added
+      expect(result.architectureNotes).toEqual([
+        'Uses @cucumber/gherkin parser',
+        'Must complete within 2 seconds',
+        'Validates all Gherkin keywords',
+      ]);
+    });
+  });
+
   describe('Scenario: Remove architecture note from work unit', () => {
     it('should remove architecture note at specified index', async () => {
       // Given I have a work unit with 3 architecture notes
@@ -197,6 +252,63 @@ describe('Feature: Architecture notes in Example Mapping', () => {
         'Note 1',
         'Note 3',
       ]);
+    });
+  });
+
+  describe('Scenario: Generated docstring organizes notes by category', () => {
+    it('should group architecture notes by detected prefix', async () => {
+      // Given I have architecture notes with natural prefixes
+      const workUnitsData: WorkUnitsData = {
+        meta: { lastId: 1, lastUpdated: new Date().toISOString() },
+        prefixes: { WORK: { name: 'Work', nextId: 2 } },
+        workUnits: {
+          'WORK-001': {
+            id: 'WORK-001',
+            prefix: 'WORK',
+            title: 'Test Feature',
+            description: 'Test',
+            type: 'story',
+            status: 'specifying',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            rules: ['Rule'],
+            examples: ['Example'],
+            questions: [],
+            // And I have note "Dependency: @cucumber/gherkin parser"
+            // And I have note "Performance: Must complete within 2 seconds"
+            // And I have note "Refactoring: Share validation logic with formatter"
+            architectureNotes: [
+              'Dependency: @cucumber/gherkin parser',
+              'Performance: Must complete within 2 seconds',
+              'Refactoring: Share validation logic with formatter',
+            ],
+          },
+        },
+      };
+
+      await writeFile(
+        join(tmpDir, 'spec', 'work-units.json'),
+        JSON.stringify(workUnitsData, null, 2)
+      );
+
+      // When I run "fspec generate-scenarios WORK-001"
+      const result = await generateScenarios({
+        workUnitId: 'WORK-001',
+        cwd: tmpDir,
+      });
+
+      const content = await readFile(result.featureFile, 'utf-8');
+
+      // Then the docstring should group notes by detected prefix
+      expect(content).toContain('"""');
+
+      // And dependency notes should appear first
+      expect(content).toContain('Dependency:');
+      expect(content).toContain('- @cucumber/gherkin parser');
+
+      // And performance notes should appear in their own section
+      expect(content).toContain('Performance:');
+      expect(content).toContain('- Must complete within 2 seconds');
     });
   });
 });
