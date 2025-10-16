@@ -48,84 +48,99 @@ Flat TODO lists don't help - they show "done" or "not done" but no workflow stat
 
 **The fspec Solution:** Kanban workflow + persistent state + collaborative discovery = Reliable ACDD.
 
-## Quick Example
+## How It Works
+
+**You don't run fspec commands directly.** Instead, you give high-level requests to your AI agent (like Claude Code), and the agent uses fspec to manage the workflow:
+
+### For New Features (Forward ACDD)
+```
+You: /fspec Build user login feature
+
+Claude: I'll use fspec to manage this work through ACDD workflow:
+1. Creating work unit AUTH-001 for "User login"
+2. Moving to discovery phase - let me ask clarifying questions...
+   - Should we support OAuth in addition to email/password?
+   - What password requirements do you need?
+3. After discovery, I'll generate validated Gherkin specs
+4. Then write tests that map to scenarios
+5. Finally implement code to pass those tests
+```
+
+### For Existing Code (Reverse ACDD)
+```
+You: /rspec Analyze the authentication system in src/auth/
+
+Claude: I'll reverse engineer the existing code:
+1. Analyzing routes, API endpoints, and business logic
+2. Creating feature files with inferred acceptance criteria
+3. Grouping into epics (user-management, security, etc.)
+4. Generating test skeletons (structure only, not implemented)
+5. Linking existing code to scenarios for traceability
+```
+
+**The AI agent handles all fspec commands** - you just provide the high-level intent.
+
+## Get Started
+
+### 1. Install fspec
 
 ```bash
-# AI queries persistent state (not conversation context)
-$ fspec show-work-unit AUTH-001
-Work Unit: AUTH-001
-Status: specifying
-Epic: user-management
-Rules:
-  1. Password must be 8+ characters
-  2. Email must be valid format
-Examples:
-  1. User logs in with valid email user@example.com
-  2. Login fails with password "short"
-Questions:
-  1. Should we support OAuth 2.0? (@human)
-
-# Human answers question
-$ fspec answer-question AUTH-001 0 --answer "Yes, via Google OAuth" --add-to rule
-
-# AI generates validated Gherkin from example map
-$ fspec generate-scenarios AUTH-001
-✓ Created spec/features/user-authentication.feature
-
-# Cannot skip phases - workflow enforced
-$ fspec update-work-unit-status AUTH-001 implementing
-✗ Error: Cannot move to implementing without entering testing state first
-
-# AI follows proper ACDD workflow
-$ fspec update-work-unit-status AUTH-001 testing
-✓ Moved to testing - write tests BEFORE implementation
+git clone https://github.com/sengac/fspec.git
+cd fspec
+npm install && npm run build && npm run install:local
 ```
+
+### 2. Initialize in Your Project
+
+```bash
+cd /path/to/your/project
+fspec init
+```
+
+This installs two command files in `.claude/commands/`:
+- `/fspec` - For building new features with forward ACDD
+- `/rspec` - For reverse engineering existing code
+
+**Works with any AI agent:** While designed for Claude Code, you can use the generated `fspec.md` and `rspec.md` command files with other AI agents by mapping them to your agent's command system. If using another agent, rename `spec/CLAUDE.md` to `spec/AGENTS.md` for clarity.
+
+### 3. Start Building with AI
+
+In Claude Code:
+
+**For new features:**
+```
+/fspec Build user authentication feature
+/fspec Add password reset functionality
+/fspec Implement API rate limiting
+```
+
+**For existing code:**
+```
+/rspec Analyze the entire codebase
+/rspec Document the payment processing system
+/rspec Create specs for src/api/routes.ts
+```
+
+The AI agent will guide you through discovery, ask clarifying questions, generate specs, and enforce ACDD workflow.
 
 ## Features
 
-- 📊 **Kanban Workflow** - 7-state workflow with visual board (`fspec board`)
+- 📊 **Kanban Workflow** - 7-state workflow with visual board
 - 🤝 **Example Mapping** - Collaborative discovery with rules, examples, questions, attachments
 - 🔄 **Work Unit Management** - Track work through Kanban with dependencies and epics
-- 🔁 **Reverse ACDD** - Reverse engineer existing codebases via `/rspec` command in Claude Code
+- 🔁 **Reverse ACDD** - Reverse engineer existing codebases via `/rspec` command
 - 📋 **Gherkin Validation** - Official Cucumber parser ensures valid syntax
 - 🔗 **Coverage Tracking** - Link scenarios → tests → implementation (critical for reverse ACDD)
 - 🏷️ **JSON-Backed Tag Registry** - Single source of truth with auto-generated docs
 - 🎨 **Auto-Formatting** - Custom AST-based formatter for Gherkin files
 - 🪝 **Lifecycle Hooks** - Execute custom scripts at command events (quality gates, automation)
-- 🤖 **AI Agent Friendly** - Designed for Claude Code integration with `/fspec` and `/rspec` commands
-
-## Get Started
-
-### Installation
-
-```bash
-npm install -g fspec
-fspec init  # Installs /fspec and /rspec commands for Claude Code
-```
-
-### Quick Start
-
-```bash
-# Validate Gherkin syntax
-fspec validate
-
-# Create your first feature
-fspec create-feature "User Authentication"
-
-# See the Kanban board
-fspec board
-
-# Get comprehensive help
-fspec help
-fspec help work     # Kanban workflow commands
-fspec help discovery # Example mapping commands
-```
+- 🤖 **AI Agent Friendly** - Designed for Claude Code integration with persistent queryable state
 
 ## Documentation
 
 - 📘 **[Getting Started](./docs/getting-started.md)** - Learn the ACDD workflow
 - 📦 **[Installation](./docs/installation.md)** - Setup and requirements
-- 📖 **[Usage Guide](./docs/usage.md)** - Complete command reference
+- 📖 **[Usage Guide](./docs/usage.md)** - Complete command reference (for AI agents)
 - 🏷️ **[Tag Management](./docs/tags.md)** - Organize features with tags
 - 🔗 **[Coverage Tracking](./docs/coverage-tracking.md)** - Link specs to tests and code
 - 📊 **[Project Management](./docs/project-management.md)** - Kanban workflow and work units
