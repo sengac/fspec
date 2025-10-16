@@ -118,15 +118,6 @@ function generateExampleMappingComments(
   lines.push('  # ========================================');
   lines.push('  #');
 
-  // User story
-  if (workUnit.userStory) {
-    lines.push('  # USER STORY:');
-    lines.push(`  #   As a ${workUnit.userStory.role}`);
-    lines.push(`  #   I want to ${workUnit.userStory.action}`);
-    lines.push(`  #   So that ${workUnit.userStory.benefit}`);
-    lines.push('  #');
-  }
-
   // Business rules
   if (workUnit.rules && workUnit.rules.length > 0) {
     lines.push('  # BUSINESS RULES:');

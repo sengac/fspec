@@ -54,12 +54,12 @@ Feature: Preserve example mapping context as comments in generated feature files
     And the file should contain ZERO scenarios
     And a system-reminder should tell AI to write scenarios
 
-  Scenario: User story embedded in both comments and Background section
+  Scenario: User story only in Background section, not in comments
     Given I set user story for work unit using "fspec set-user-story"
     When I run "fspec generate-scenarios" on the work unit
-    Then the feature file # comments should contain the user story
-    And the Background section should contain the same user story
-    And both locations should use identical text
+    Then the feature file # comments should NOT contain the user story
+    And the Background section should contain the user story
+    And the user story should only appear in Background (FEAT-012 separation)
 
   Scenario: System-reminder guides AI to write scenarios from examples
     Given I generate scenarios for a work unit

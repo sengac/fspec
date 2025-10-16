@@ -124,8 +124,8 @@ describe('Feature: Preserve example mapping context as comments', () => {
     });
   });
 
-  describe('Scenario: User story embedded in both comments and Background section', () => {
-    it('should include user story in both comment context and Background', async () => {
+  describe('Scenario: User story only in Background section, not in comments', () => {
+    it('should include user story in Background section only (FEAT-012)', async () => {
       // Given I set user story for work unit using "fspec set-user-story"
       const workUnitsData: WorkUnitsData = {
         meta: { lastId: 1, lastUpdated: new Date().toISOString() },
@@ -165,23 +165,18 @@ describe('Feature: Preserve example mapping context as comments', () => {
 
       const content = await readFile(result.featureFile, 'utf-8');
 
-      // Then the feature file # comments should contain the user story
-      expect(content).toContain('# USER STORY:');
-      expect(content).toContain('#   As a user');
-      expect(content).toContain('#   I want to log in securely');
-      expect(content).toContain('#   So that access my account');
+      // Then the feature file # comments should NOT contain the user story
+      expect(content).not.toContain('# USER STORY:');
 
-      // And the Background section should contain the same user story
+      // And the Background section should contain the user story
       expect(content).toContain('Background: User Story');
       expect(content).toContain('As a user');
       expect(content).toContain('I want to log in securely');
       expect(content).toContain('So that access my account');
 
-      // And both locations should use identical text
-      const commentUserStory = '#   As a user';
-      const backgroundUserStory = 'As a user';
-      expect(content).toContain(commentUserStory);
-      expect(content).toContain(backgroundUserStory);
+      // And the user story should only appear in Background, not comments
+      const hasUserStoryInComments = content.includes('# USER STORY:');
+      expect(hasUserStoryInComments).toBe(false);
     });
   });
 
