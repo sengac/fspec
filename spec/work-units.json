@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-16T23:25:18.965Z"
+    "lastUpdated": "2025-10-16T23:35:58.641Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -6371,6 +6371,62 @@
         "Error message suggests 'fspec list-epics' to see available epics",
         "Valid epic ID works correctly: 'fspec show-epic user-management' displays epic details"
       ]
+    },
+    "BUG-013": {
+      "id": "BUG-013",
+      "title": "Prevent story point estimation before feature file completion",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-16T23:34:28.036Z",
+      "updatedAt": "2025-10-16T23:44:51.565Z",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-16T23:34:32.599Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-16T23:36:34.521Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-16T23:37:23.155Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-16T23:44:34.790Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-16T23:44:51.565Z"
+        }
+      ],
+      "userStory": {
+        "role": "AI agent using fspec",
+        "action": "be prevented from estimating story points before feature file is complete",
+        "benefit": "I follow ACDD properly and estimate based on actual acceptance criteria"
+      },
+      "rules": [
+        "Story and Bug work units CANNOT be estimated until feature file exists and is complete (specifying phase finished)",
+        "Task work units CAN be estimated at any stage (tasks don't require feature files)",
+        "When AI attempts invalid estimation, emit system-reminder explaining ACDD estimation rules",
+        "Estimation requires completed feature file to understand complexity from acceptance criteria"
+      ],
+      "examples": [
+        "Story work unit AUTH-001 in 'backlog' state with no feature file → estimation BLOCKED with system-reminder",
+        "Story work unit AUTH-001 in 'testing' state with completed feature file → estimation ALLOWED",
+        "Task work unit TASK-001 in 'backlog' state with no feature file → estimation ALLOWED (tasks exempt)",
+        "Bug work unit BUG-001 in 'specifying' state but feature file has placeholders → estimation BLOCKED until prefill removed"
+      ],
+      "architectureNotes": [
+        "Check work unit type: if type='task', skip validation (tasks don't require feature files)",
+        "For story/bug types: find linked feature file via work unit ID tag (e.g., @AUTH-001)",
+        "If no feature file found OR file has prefill placeholders, block estimation and emit system-reminder",
+        "System-reminder should explain: ACDD requires feature file completion before estimation, suggest completing specifying phase first",
+        "Reuse existing prefill detection logic from temporal validation (similar pattern)"
+      ],
+      "estimate": 2
     }
   },
   "states": {
@@ -6505,7 +6561,8 @@
       "FEAT-013",
       "HOOK-010",
       "TEST-004",
-      "BUG-012"
+      "BUG-012",
+      "BUG-013"
     ],
     "blocked": []
   }

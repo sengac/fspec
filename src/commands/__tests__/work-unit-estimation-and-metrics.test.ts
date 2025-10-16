@@ -31,6 +31,7 @@ describe('Feature: Work Unit Estimation and Metrics', () => {
           'AUTH-001': {
             id: 'AUTH-001',
             title: 'User Authentication',
+            type: 'task',
             status: 'backlog',
           },
         },
@@ -67,6 +68,7 @@ describe('Feature: Work Unit Estimation and Metrics', () => {
           'AUTH-001': {
             id: 'AUTH-001',
             title: 'User Authentication',
+            type: 'task',
             status: 'backlog',
           },
         },

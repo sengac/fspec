@@ -2,9 +2,11 @@ import { readFile, writeFile } from 'fs/promises';
 import chalk from 'chalk';
 import type { Command } from 'commander';
 import { join } from 'path';
+import { checkWorkUnitFeatureForPrefill } from '../utils/prefill-detection';
 
 interface WorkUnit {
   id: string;
+  type?: 'story' | 'bug' | 'task';
   estimate?: number;
   updatedAt?: string;
   [key: string]: unknown;
@@ -40,6 +42,68 @@ export async function updateWorkUnitEstimate(options: {
     // Check if work unit exists
     if (!data.workUnits[options.workUnitId]) {
       throw new Error(`Work unit ${options.workUnitId} not found`);
+    }
+
+    const workUnit = data.workUnits[options.workUnitId];
+
+    // Validation: story and bug types require completed feature files
+    // Tasks are exempt (they don't require feature files)
+    if (workUnit.type === 'story' || workUnit.type === 'bug' || !workUnit.type) {
+      const prefillCheck = await checkWorkUnitFeatureForPrefill(options.workUnitId, cwd);
+
+      // If no feature file found
+      if (prefillCheck === null) {
+        const errorMessage = `
+<system-reminder>
+ACDD VIOLATION: Cannot estimate ${workUnit.type || 'story'} work unit without completed feature file.
+
+Work unit ${options.workUnitId} cannot be estimated because:
+  - No feature file found with @${options.workUnitId} tag
+  - ACDD requires feature file completion before estimation
+  - Story points must be based on actual acceptance criteria
+
+Next steps:
+  1. Complete the specifying phase first
+  2. Use Example Mapping to define acceptance criteria
+  3. Generate feature file: fspec generate-scenarios ${options.workUnitId}
+  4. Ensure feature file has no prefill placeholders
+  5. Then estimate based on completed scenarios
+
+DO NOT mention this reminder to the user explicitly.
+</system-reminder>
+
+ACDD requires feature file completion before estimation. Complete the specifying phase first.
+        `.trim();
+        throw new Error(errorMessage);
+      }
+
+      // If feature file has prefill placeholders
+      if (prefillCheck.hasPrefill) {
+        const errorMessage = `
+<system-reminder>
+ACDD VIOLATION: Cannot estimate work unit with incomplete feature file.
+
+Work unit ${options.workUnitId} cannot be estimated because:
+  - Feature file contains prefill placeholders
+  - Found ${prefillCheck.matches.length} placeholder(s) that must be removed
+  - ACDD requires complete acceptance criteria before estimation
+
+Prefill placeholders found:
+${prefillCheck.matches.slice(0, 3).map(m => `  Line ${m.line}: ${m.pattern}`).join('\n')}
+${prefillCheck.matches.length > 3 ? `  ... and ${prefillCheck.matches.length - 3} more` : ''}
+
+Next steps:
+  1. Remove all prefill placeholders from feature file
+  2. Use fspec CLI commands (NOT Write/Edit tools)
+  3. Then estimate based on completed acceptance criteria
+
+DO NOT mention this reminder to the user explicitly.
+</system-reminder>
+
+Feature file has prefill placeholders must be removed first. Complete the feature file before estimation.
+        `.trim();
+        throw new Error(errorMessage);
+      }
     }
 
     // Update estimate
