@@ -697,4 +697,52 @@ sequenceDiagram
     Note over Script: }
 ```
 
+### Attachment Support System
+
+```mermaid
+graph TB
+    subgraph "Work Units"
+        WORK[work-units.json<br/>Work unit metadata]
+        WU_ATTACHMENTS[attachments: string array<br/>Relative paths from root]
+    end
+
+    subgraph "File Storage"
+        ATTACH_DIR[spec/attachments/<work-unit-id>/<br/>Copied attachment files]
+        SOURCE[diagrams/, mockups/, docs/<br/>Original source files]
+    end
+
+    subgraph "Commands"
+        ADD[fspec add-attachment<br/>Copy file + track path]
+        LIST[fspec list-attachments<br/>Show files with stats]
+        REMOVE[fspec remove-attachment<br/>Delete + untrack OR untrack only]
+        SHOW[fspec show-work-unit<br/>Display attachments section]
+    end
+
+    SOURCE -->|copyFile| ATTACH_DIR
+    ADD -->|updates| WU_ATTACHMENTS
+    ADD -->|copies to| ATTACH_DIR
+    
+    WU_ATTACHMENTS -->|references| ATTACH_DIR
+    
+    LIST -->|reads| WU_ATTACHMENTS
+    LIST -->|stat files| ATTACH_DIR
+    
+    REMOVE -->|updates| WU_ATTACHMENTS
+    REMOVE -->|optionally unlink| ATTACH_DIR
+    
+    SHOW -->|reads| WU_ATTACHMENTS
+    SHOW -->|displays paths| ATTACH_DIR
+
+    WORK -->|contains| WU_ATTACHMENTS
+
+    style WORK fill:#4CAF50
+    style WU_ATTACHMENTS fill:#FF9800
+    style ATTACH_DIR fill:#2196F3
+    style SOURCE fill:#9C27B0
+    style ADD fill:#FFC107
+    style LIST fill:#FFC107
+    style REMOVE fill:#FFC107
+    style SHOW fill:#FFC107
+```
+
 ---

@@ -95,6 +95,7 @@ ACDD builds on **Specification by Example** and **Behavior-Driven Development (B
    - Enter "specifying" phase
    - AI adds rules, examples, asks questions collaboratively with human
    - Human answers questions to clarify requirements
+   - Attach supporting files (diagrams, mockups, documents) to work units
 
 2. **Specification (Gherkin)**
    - Convert examples → validated Gherkin scenarios
@@ -266,7 +267,7 @@ fspec help             # Shows command group help
 # Group-specific help with all commands, options, and examples
 fspec help specs       # Write and manage Gherkin feature files (create, edit, validate)
 fspec help work        # Track work units through ACDD workflow (Kanban, dependencies, board)
-fspec help discovery   # Collaborative discovery with example mapping (questions, rules, examples)
+fspec help discovery   # Collaborative discovery with example mapping (questions, rules, examples, attachments)
 fspec help metrics     # Track progress and quality (estimates, metrics, reports, statistics)
 fspec help setup       # Configure project structure (tags, epics, prefixes, foundation docs)
 
@@ -280,7 +281,7 @@ fspec add-scenario --help       # Comprehensive help for add-scenario command
 **Command Groups:**
 - **specs** - Gherkin validation, feature/scenario/step CRUD, bulk operations, formatting
 - **work** - Work units, epics, Kanban workflow, dependencies, board visualization
-- **discovery** - Example mapping for collaborative discovery (questions, rules, examples, assumptions)
+- **discovery** - Example mapping for collaborative discovery (questions, rules, examples, assumptions, attachments)
 - **metrics** - Progress tracking, estimation, reports, token/time recording
 - **setup** - Tag registry, foundation docs, Mermaid diagrams, prefixes, epics
 

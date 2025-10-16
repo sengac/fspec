@@ -300,6 +300,13 @@ fspec add-question <work-unit-id> "@human: Question text?"
 fspec answer-question <work-unit-id> <index> --answer "Answer text" --add-to rule|assumption|none
 fspec remove-question <work-unit-id> <index>
 
+# Attachments (supporting files)
+fspec add-attachment <work-unit-id> <file-path>
+fspec add-attachment <work-unit-id> <file-path> --description "Description"
+fspec list-attachments <work-unit-id>
+fspec remove-attachment <work-unit-id> <file-name>
+fspec remove-attachment <work-unit-id> <file-name> --keep-file
+
 # View the example map
 fspec show-work-unit <work-unit-id>
 ```
