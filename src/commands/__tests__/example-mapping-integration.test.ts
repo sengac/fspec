@@ -912,8 +912,7 @@ describe('Feature: Example Mapping Integration', () => {
 
       // Should contain example mapping comments
       expect(featureContent).toContain('# EXAMPLE MAPPING CONTEXT');
-      expect(featureContent).toContain('# USER STORY:');
-      expect(featureContent).toContain('#   As a user');
+      expect(featureContent).not.toContain('# USER STORY:'); // User story only in Background (FEAT-012)
       expect(featureContent).toContain('# BUSINESS RULES:');
       expect(featureContent).toContain('#   1. Valid OAuth token required');
       expect(featureContent).toContain('# EXAMPLES:');

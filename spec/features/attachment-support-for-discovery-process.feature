@@ -15,11 +15,6 @@ Feature: Attachment support for discovery process
   # EXAMPLE MAPPING CONTEXT
   # ========================================
   #
-  # USER STORY:
-  #   As a AI agent or developer using fspec
-  #   I want to attach files to work units during Example Mapping
-  #   So that I can supplement architecture notes and NFRs with diagrams, mockups, and documents
-  #
   # BUSINESS RULES:
   #   1. Attachments must be stored in spec/attachments/<work-unit-id>/ directory
   #   2. Attachment paths must be stored as relative paths from project root
