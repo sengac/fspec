@@ -11,6 +11,76 @@
 
 ---
 
+## Get Started
+
+### 1. Install fspec
+
+**Via npm (recommended):**
+
+```bash
+npm install -g @sengac/fspec
+```
+
+**Or from source:**
+
+```bash
+git clone https://github.com/sengac/fspec.git
+cd fspec
+npm install && npm run build && npm run install:local
+```
+
+### 2. Initialize in Your Project
+
+```bash
+cd /path/to/your/project
+fspec init
+```
+
+This installs two command files in `.claude/commands/`:
+- `/fspec` - For building new features with forward ACDD
+- `/rspec` - For reverse engineering existing code
+
+**Works with any AI agent:** While designed for Claude Code, you can use the generated `fspec.md` and `rspec.md` command files with other AI agents by mapping them to your agent's command system. If using another agent, rename `spec/CLAUDE.md` to `spec/AGENTS.md` for clarity.
+
+### 3. Start Building with AI
+
+In Claude Code, **be specific about work unit type** (story, bug, or task):
+
+**For new features (stories):**
+```
+/fspec Create a story for user authentication feature
+/fspec Create a story to add password reset functionality
+/fspec Create a story for API rate limiting
+```
+
+**For bugs:**
+```
+/fspec Create a bug for broken session timeout
+/fspec Create a bug where password validation allows weak passwords
+```
+
+**For tasks:**
+```
+/fspec Create a task to refactor authentication middleware
+/fspec Create a task to update API documentation
+```
+
+**Or just run `/fspec` to see the board:**
+```
+/fspec
+```
+
+**For existing code:**
+```
+/rspec Analyze the entire codebase
+/rspec Document the payment processing system
+/rspec Create specs for src/api/routes.ts
+```
+
+The AI agent will guide you through discovery, ask clarifying questions, generate specs, and enforce ACDD workflow.
+
+---
+
 ## The Problem: AI Agents Need Structure
 
 AI coding agents (like Claude Code, GitHub Copilot) excel at writing code but struggle to build quality software reliably. Without structure, they:
@@ -122,74 +192,6 @@ Claude: I'll reverse engineer the existing code:
 
 **The AI agent handles all fspec commands** - you just provide the high-level intent and work unit type.
 
-## Get Started
-
-### 1. Install fspec
-
-**Via npm (recommended):**
-
-```bash
-npm install -g @sengac/fspec
-```
-
-**Or from source:**
-
-```bash
-git clone https://github.com/sengac/fspec.git
-cd fspec
-npm install && npm run build && npm run install:local
-```
-
-### 2. Initialize in Your Project
-
-```bash
-cd /path/to/your/project
-fspec init
-```
-
-This installs two command files in `.claude/commands/`:
-- `/fspec` - For building new features with forward ACDD
-- `/rspec` - For reverse engineering existing code
-
-**Works with any AI agent:** While designed for Claude Code, you can use the generated `fspec.md` and `rspec.md` command files with other AI agents by mapping them to your agent's command system. If using another agent, rename `spec/CLAUDE.md` to `spec/AGENTS.md` for clarity.
-
-### 3. Start Building with AI
-
-In Claude Code, **be specific about work unit type** (story, bug, or task):
-
-**For new features (stories):**
-```
-/fspec Create a story for user authentication feature
-/fspec Create a story to add password reset functionality
-/fspec Create a story for API rate limiting
-```
-
-**For bugs:**
-```
-/fspec Create a bug for broken session timeout
-/fspec Create a bug where password validation allows weak passwords
-```
-
-**For tasks:**
-```
-/fspec Create a task to refactor authentication middleware
-/fspec Create a task to update API documentation
-```
-
-**Or just run `/fspec` to see the board:**
-```
-/fspec
-```
-
-**For existing code:**
-```
-/rspec Analyze the entire codebase
-/rspec Document the payment processing system
-/rspec Create specs for src/api/routes.ts
-```
-
-The AI agent will guide you through discovery, ask clarifying questions, generate specs, and enforce ACDD workflow.
-
 ## Features
 
 - 📊 **Kanban Workflow** - 7-state workflow with visual board
@@ -214,24 +216,6 @@ The AI agent will guide you through discovery, ask clarifying questions, generat
 - 🔁 **[Reverse ACDD](./docs/reverse-acdd.md)** - Reverse engineer existing codebases
 - 🪝 **[Lifecycle Hooks](./docs/hooks/configuration.md)** - Automate your workflow
 
-## Who Benefits?
-
-**Developers Using AI Coding Agents**
-- Reliable ACDD workflow with persistent state
-- Confidence AI is building the right thing
-
-**Teams Practicing BDD/ACDD**
-- AI agents that follow methodology rigorously
-- Enforced workflow, validated Gherkin, structured discovery
-
-**Product Owners & Stakeholders**
-- Clear visibility through Kanban board
-- Collaborative discovery ensures right features built
-
-**BDD/Cucumber Ecosystem**
-- Promotes standard Gherkin over proprietary formats
-- Works with existing Cucumber tooling
-
 ## Architecture
 
 fspec uses **JSON-backed documentation** for machine-readable state:
@@ -241,15 +225,6 @@ fspec uses **JSON-backed documentation** for machine-readable state:
 - `spec/foundation.json` - Project foundation (auto-generates FOUNDATION.md)
 - `spec/features/*.feature` - Gherkin specifications
 - `spec/features/*.feature.coverage` - Scenario-to-test-to-implementation mappings
-
-## Development
-
-```bash
-npm install
-npm run build
-npm test
-npm run dev  # Watch mode
-```
 
 ## License
 
