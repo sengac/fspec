@@ -126,6 +126,14 @@ Claude: I'll reverse engineer the existing code:
 
 ### 1. Install fspec
 
+**Via npm (recommended):**
+
+```bash
+npm install -g @sengac/fspec
+```
+
+**Or from source:**
+
 ```bash
 git clone https://github.com/sengac/fspec.git
 cd fspec

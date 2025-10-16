@@ -2,19 +2,31 @@
 
 **Important:** fspec is designed to be used by AI agents, not run directly by users. You give high-level commands to your AI agent (like `/fspec` or `/rspec` in Claude Code), and the agent uses fspec to manage the workflow.
 
-## Local Development
+## Installation
+
+### Via npm (Recommended)
 
 ```bash
-cd ~/projects/fspec
+npm install -g @sengac/fspec
+```
+
+This installs the latest stable version globally.
+
+### From Source (For Development)
+
+```bash
+git clone https://github.com/sengac/fspec.git
+cd fspec
 npm install
 npm run build
 npm run install:local
 ```
 
 This will:
-1. Install dependencies (including @cucumber/gherkin-parser)
-2. Build the TypeScript code
-3. Link the `fspec` command globally
+1. Clone the repository
+2. Install dependencies (including @cucumber/gherkin-parser)
+3. Build the TypeScript code
+4. Link the `fspec` command globally for development
 
 ## AI Agent Integration
 
@@ -40,6 +52,12 @@ This creates command files in `.claude/commands/`:
 
 ## Uninstall
 
+**If installed via npm:**
 ```bash
-npm unlink -g fspec
+npm uninstall -g @sengac/fspec
+```
+
+**If installed from source:**
+```bash
+npm unlink -g @sengac/fspec
 ```
