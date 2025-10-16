@@ -1,5 +1,5 @@
 #!/bin/bash
-# Based on cage's install-local.sh, simplified for single package
+# Install fspec CLI locally for development
 
 set -e
 

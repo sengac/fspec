@@ -266,17 +266,17 @@ Tags for test-related scenarios and requirements.
 
 **Rule**: Use testing tags to indicate what level of testing is required for a scenario.
 
-### CAGE Integration Tags
+### Automation Tags
 
-Tags specific to CAGE integration and agentic coding workflows.
+Tags for automation integration and agentic coding workflows.
 
 | Tag | Description | Usage |
 |-----|-------------|-------|
-| `@execa` | Execa Child Process |  |
+| `@execa` | Child process execution integration point |  |
 | `@acdd` | Acceptance Criteria Driven Development |  |
 | `@spec-alignment` | Specification Alignment |  |
 
-**Rule**: Use CAGE tags to indicate integration points with CAGE system.
+**Rule**: Use automation tags to indicate integration points with automation systems and lifecycle hooks.
 
 ---
 
@@ -302,7 +302,7 @@ Feature: Create Feature File with Template
 ### Example 2: Phase 2 Tag Registry Validation
 
 ```gherkin
-@phase2 @validator @tag-management @validation @error-handling @high @integration-test @cage-hook
+@phase2 @validator @tag-management @validation @error-handling @high @integration-test @hook
 Feature: Validate Feature File Tags Against Registry
 Feature: Create Feature File with Template
 ```
@@ -314,7 +314,7 @@ Feature: Create Feature File with Template
 - Includes validation and error handling
 - High priority
 - Requires integration tests
-- Called from CAGE hooks
+- Called from lifecycle hooks
 
 ### Example 3: Phase 3 Advanced Querying
 
@@ -355,12 +355,12 @@ Feature: Minimal Valid Feature
 - Platform tags if platform-specific
 - Priority tag for implementation planning
 - Testing tags for test strategy
-- CAGE integration tags if applicable
+- Automation integration tags if applicable
 
 **Recommended Example**:
 
 ```gherkin
-@phase1 @cli @parser @validation @gherkin @cucumber-parser @error-handling @cross-platform @critical @integration-test @cage-hook
+@phase1 @cli @parser @validation @gherkin @cucumber-parser @error-handling @cross-platform @critical @integration-test @hook
 Feature: Gherkin Syntax Validation
 ```
 
@@ -374,12 +374,12 @@ Feature: Gherkin Syntax Validation
 - Priority tag
 - Status tag
 - Testing tags
-- CAGE integration tags
+- Automation integration tags
 
 **Example**:
 
 ```gherkin
-@phase2 @cli @validator @tag-management @validation @mermaid @cross-platform @high @wip @integration-test @cage-hook
+@phase2 @cli @validator @tag-management @validation @mermaid @cross-platform @high @wip @integration-test @hook
 Feature: FOUNDATION.md Mermaid Diagram Validation
 ```
 
@@ -447,10 +447,10 @@ fspec list-features --tag=@validation --tag=@critical
 fspec list-features --tag=@integration-test
 ```
 
-**CAGE hook integration points**:
+**Lifecycle hook integration points**:
 
 ```bash
-fspec list-features --tag=@cage-hook
+fspec list-features --tag=@hook
 ```
 
 **Cross-platform CLI features**:

@@ -391,7 +391,7 @@ Every feature file MUST have these tags at the top:
 - **Priority Tag**: `@critical`, `@high`, `@medium`, `@low` (implementation priority)
 - **Status Tag**: `@wip`, `@todo`, `@done`, `@deprecated`, `@blocked` (development status)
 - **Testing Tags**: `@unit-test`, `@integration-test`, `@e2e-test`, `@manual-test`
-- **CAGE Integration Tags**: `@cage-hook`, `@execa`, `@acdd`, `@spec-alignment`
+- **Automation Tags**: `@hook`, `@cli-integration`, `@acdd`, `@spec-alignment`
 
 **Feature-Level Example**:
 ```gherkin
@@ -1753,10 +1753,10 @@ Common errors:
 - Validation catches errors immediately, enabling self-correction
 - Clear error messages help AI understand and fix issues
 
-**CAGE Integration**:
-- CAGE hooks invoke fspec to validate specifications during development
+**Automation Integration**:
+- Lifecycle hooks invoke fspec to validate specifications during development
 - Pre-commit hooks reject malformed feature files
-- Post-tool-use hooks ensure specs stay aligned with code changes
+- Post-command hooks ensure specs stay aligned with code changes
 
 **Developer Responsibility**:
 - Read this document before creating new specifications

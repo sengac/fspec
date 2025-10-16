@@ -50,7 +50,7 @@ Feature: Validate Feature File Tags Against Registry
 
   Integration points:
   - CLI command: `fspec validate-tags [file]`
-  - Called from CAGE PreToolUse hook before spec modifications
+  - Called from lifecycle hooks before spec modifications
   - Called before commits to ensure tag compliance
   """
 
@@ -135,9 +135,9 @@ Feature: Validate Feature File Tags Against Registry
     And the output should contain "✗ 2 files have tag violations"
     And the output should list the failing files
 
-  Scenario: CAGE integration - prevent invalid tag commits
-    Given I am working in a CAGE-monitored project
-    When a PreToolUse hook runs `fspec validate-tags`
+  Scenario: Automation integration - prevent invalid tag commits
+    Given I am working in a project with lifecycle hooks
+    When a pre-commit hook runs `fspec validate-tags`
     And unregistered tags are detected
     Then the hook can warn the AI agent
     And the AI agent can fix tags before proceeding

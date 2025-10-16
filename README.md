@@ -209,7 +209,7 @@ Blocked By: []
 - 🎯 **Full CRUD Operations** - Complete Create, Read, Update, Delete for features, scenarios, tags, diagrams, work units, and epics
 - 🎨 **Auto-Formatting** - Custom AST-based formatter for Gherkin files
 - 🤖 **AI Agent Friendly** - Machine-readable JSON format with structured commands
-- 🔌 **CAGE Integration** - Designed to work with CAGE for code-spec alignment
+- 🔌 **Automation Integration** - Designed for integration via lifecycle hooks and child process automation
 - 🪝 **Lifecycle Hooks** - Execute custom scripts at command lifecycle events (pre-/post- hooks) with conditional execution, timeout support, and blocking capabilities
 
 ## Installation
@@ -877,14 +877,14 @@ fspec uses a **JSON-first approach** for managing tags and foundation documentat
 3. **Report** - Provides clear error messages with line numbers and suggestions
 4. **Exit** - Returns appropriate exit code (0=valid, 1=errors, 2=file not found)
 
-### Integration with CAGE
+### Automation Integration
 
-fspec is designed as a companion tool to [CAGE](https://github.com/sengac/cage):
+fspec is designed for seamless integration with automation workflows:
 
-- **CAGE hooks** invoke fspec via `execa` to validate specifications
-- **PreToolUse hooks** validate specs before AI makes code changes
-- **PostToolUse hooks** validate specs after AI modifications
-- **CAGE tracks** test-to-feature mapping for code-spec alignment
+- **Lifecycle hooks** invoke fspec to validate specifications during development
+- **Pre-command hooks** validate specs before critical operations
+- **Post-command hooks** validate specs after modifications
+- **Coverage tracking** maintains test-to-feature mapping for spec alignment
 
 ## Development
 

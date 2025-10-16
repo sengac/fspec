@@ -371,9 +371,9 @@ Feature: Multi Error Feature
     });
   });
 
-  describe('Scenario: CAGE integration - prevent invalid tag commits', () => {
-    it('should support CAGE workflow for tag validation', async () => {
-      // Given I am working in a CAGE-monitored project
+  describe('Scenario: Automation integration - prevent invalid tag commits', () => {
+    it('should support automation workflow for tag validation', async () => {
+      // Given I am working in a project with lifecycle hooks
       const featuresDir = join(testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 

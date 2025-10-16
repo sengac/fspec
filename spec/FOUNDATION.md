@@ -59,15 +59,15 @@ A Kanban-based project management and specification tool for AI agents. fspec pr
   - File operations must be atomic (no partial writes)
   - Must never corrupt existing feature files
 - **Maintainability:**
-  - Follows same spec/ structure as CAGE (self-documenting)
+  - Follows consistent spec/ structure (self-documenting)
   - Command handlers are modular and independently testable
   - Clear error messages guide AI agents to correct usage
   - JSDoc documentation for all public APIs
 - **Compatibility:**
-  - Node.js: 18+ (matches CAGE requirement)
+  - Node.js: 18+
   - OS Support: Cross-platform (Windows, macOS, Linux)
   - Gherkin: Follows official Cucumber Gherkin specification
-  - Integration: Works seamlessly with CAGE hook system
+  - Integration: Designed for automation via hooks and child processes
 - **Compliance:**
   - MIT License
   - Follows Cucumber Gherkin specification: https://cucumber.io/docs/gherkin/reference
@@ -281,7 +281,7 @@ AI-assisted development with fspec:
 ```mermaid
 graph TB
     AI[AI Agent / Claude Code, Copilot]
-    CAGE[CAGE System / Hooks & Alignment]
+    HOOKS[Automation Hooks / CI/CD]
     FSPEC[fspec CLI]
     FEATURES[Feature Files / spec/features/*.feature]
     FOUNDATION[foundation.json / Architecture Data]
@@ -289,7 +289,7 @@ graph TB
     PARSER[cucumber/gherkin-parser / Validation]
 
     AI -->|CLI Commands| FSPEC
-    CAGE -->|execa calls| FSPEC
+    HOOKS -->|child process calls| FSPEC
     FSPEC -->|validate| PARSER
     FSPEC -->|read/write| FEATURES
     FSPEC -->|read/write| FOUNDATION
@@ -360,7 +360,7 @@ sequenceDiagram
     AI->>CODE: Write minimum code
     AI->>TEST: Run test (should pass)
 
-    Note over AI,CODE: CAGE ensures alignment
+    Note over AI,CODE: fspec ensures workflow alignment
 ```
 
 ### Data and Storage Architecture

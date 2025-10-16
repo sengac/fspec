@@ -53,9 +53,9 @@
       "architecture": {
         "pattern": "CLI command dispatcher with modular command handlers",
         "fileStructure": "fspec/\n├── src/\n│   ├── index.ts                 # CLI entry point\n│   ├── commands/                # Command implementations\n│   │   ├── feature/             # Feature file commands\n│   │   ├── foundation/          # FOUNDATION.md commands\n│   │   ├── tags/                # TAGS.md commands\n│   │   └── validate/            # Validation commands\n│   ├── parsers/                 # Gherkin parsing logic\n│   ├── generators/              # Template generators\n│   └── utils/                   # Shared utilities\n└── spec/                        # fspec's own specifications\n    ├── FOUNDATION.md            # This file\n    ├── TAGS.md                  # Tag registry\n    └── features/                # Gherkin feature files",
-        "deploymentTarget": "Local development machines (invoked by CAGE hooks or directly by AI agents)",
+        "deploymentTarget": "Local development machines (invoked by automation hooks or directly by AI agents)",
         "integrationModel": [
-          "CAGE hooks call fspec via `execa` (Node.js child process)",
+          "Automation hooks call fspec via child process execution (e.g., execa in Node.js)",
           "AI agents can invoke fspec CLI commands directly",
           "All operations are synchronous (no service/API component)"
         ]
@@ -167,7 +167,7 @@
       {
         "category": "Maintainability",
         "requirements": [
-          "Follows same spec/ structure as CAGE (self-documenting)",
+          "Follows consistent spec/ structure (self-documenting)",
           "Command handlers are modular and independently testable",
           "Clear error messages guide AI agents to correct usage",
           "JSDoc documentation for all public APIs"
@@ -176,10 +176,10 @@
       {
         "category": "Compatibility",
         "requirements": [
-          "Node.js: 18+ (matches CAGE requirement)",
+          "Node.js: 18+",
           "OS Support: Cross-platform (Windows, macOS, Linux)",
           "Gherkin: Follows official Cucumber Gherkin specification",
-          "Integration: Works seamlessly with CAGE hook system"
+          "Integration: Designed for automation via hooks and child processes"
         ]
       },
       {
@@ -387,7 +387,7 @@
     {
       "section": "Architecture Diagrams",
       "title": "fspec System Context",
-      "mermaidCode": "graph TB\n    AI[AI Agent / Claude Code, Copilot]\n    CAGE[CAGE System / Hooks & Alignment]\n    FSPEC[fspec CLI]\n    FEATURES[Feature Files / spec/features/*.feature]\n    FOUNDATION[foundation.json / Architecture Data]\n    TAGS[tags.json / Tag Registry]\n    PARSER[cucumber/gherkin-parser / Validation]\n\n    AI -->|CLI Commands| FSPEC\n    CAGE -->|execa calls| FSPEC\n    FSPEC -->|validate| PARSER\n    FSPEC -->|read/write| FEATURES\n    FSPEC -->|read/write| FOUNDATION\n    FSPEC -->|read/write| TAGS\n    PARSER -->|syntax check| FEATURES\n\n    style FSPEC fill:#4CAF50\n    style FEATURES fill:#2196F3\n    style FOUNDATION fill:#FF9800\n    style TAGS fill:#FF9800"
+      "mermaidCode": "graph TB\n    AI[AI Agent / Claude Code, Copilot]\n    HOOKS[Automation Hooks / CI/CD]\n    FSPEC[fspec CLI]\n    FEATURES[Feature Files / spec/features/*.feature]\n    FOUNDATION[foundation.json / Architecture Data]\n    TAGS[tags.json / Tag Registry]\n    PARSER[cucumber/gherkin-parser / Validation]\n\n    AI -->|CLI Commands| FSPEC\n    HOOKS -->|child process calls| FSPEC\n    FSPEC -->|validate| PARSER\n    FSPEC -->|read/write| FEATURES\n    FSPEC -->|read/write| FOUNDATION\n    FSPEC -->|read/write| TAGS\n    PARSER -->|syntax check| FEATURES\n\n    style FSPEC fill:#4CAF50\n    style FEATURES fill:#2196F3\n    style FOUNDATION fill:#FF9800\n    style TAGS fill:#FF9800"
     },
     {
       "section": "Architecture Diagrams",
@@ -397,7 +397,7 @@
     {
       "section": "Architecture Diagrams",
       "title": "ACDD Workflow with fspec",
-      "mermaidCode": "sequenceDiagram\n    participant AI as AI Agent\n    participant FSPEC as fspec CLI\n    participant FEAT as Feature File\n    participant TEST as Test File\n    participant CODE as Implementation\n\n    Note over AI,CODE: Phase 1: Specification\n    AI->>FSPEC: fspec create-feature \"User Login\"\n    FSPEC->>FEAT: Create login.feature (template)\n    AI->>FSPEC: fspec add-scenario \"login\" \"Successful login\"\n    FSPEC->>FEAT: Add Given/When/Then\n    AI->>FSPEC: fspec validate login.feature\n    FSPEC-->>AI: ✓ Valid Gherkin\n\n    Note over AI,CODE: Phase 2: Testing\n    AI->>TEST: Write test mapping to scenario\n    AI->>TEST: Run test (should fail)\n\n    Note over AI,CODE: Phase 3: Implementation\n    AI->>CODE: Write minimum code\n    AI->>TEST: Run test (should pass)\n\n    Note over AI,CODE: CAGE ensures alignment"
+      "mermaidCode": "sequenceDiagram\n    participant AI as AI Agent\n    participant FSPEC as fspec CLI\n    participant FEAT as Feature File\n    participant TEST as Test File\n    participant CODE as Implementation\n\n    Note over AI,CODE: Phase 1: Specification\n    AI->>FSPEC: fspec create-feature \"User Login\"\n    FSPEC->>FEAT: Create login.feature (template)\n    AI->>FSPEC: fspec add-scenario \"login\" \"Successful login\"\n    FSPEC->>FEAT: Add Given/When/Then\n    AI->>FSPEC: fspec validate login.feature\n    FSPEC-->>AI: ✓ Valid Gherkin\n\n    Note over AI,CODE: Phase 2: Testing\n    AI->>TEST: Write test mapping to scenario\n    AI->>TEST: Run test (should fail)\n\n    Note over AI,CODE: Phase 3: Implementation\n    AI->>CODE: Write minimum code\n    AI->>TEST: Run test (should pass)\n\n    Note over AI,CODE: fspec ensures workflow alignment"
     },
     {
       "section": "Architecture Diagrams",
