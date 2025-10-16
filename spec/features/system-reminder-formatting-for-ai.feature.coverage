@@ -1,0 +1,157 @@
+{
+  "scenarios": [
+    {
+      "name": "Blocking hook fails with stderr wrapped in system-reminder",
+      "testMappings": [
+        {
+          "file": "src/hooks/__tests__/formatting.test.ts",
+          "lines": "13-44",
+          "implMappings": [
+            {
+              "file": "src/hooks/formatting.ts",
+              "lines": [
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Non-blocking hook stderr displayed as-is",
+      "testMappings": [
+        {
+          "file": "src/hooks/__tests__/formatting.test.ts",
+          "lines": "46-71",
+          "implMappings": [
+            {
+              "file": "src/hooks/formatting.ts",
+              "lines": [
+                15,
+                16,
+                17,
+                18
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Blocking hook succeeds with no system-reminder",
+      "testMappings": [
+        {
+          "file": "src/hooks/__tests__/formatting.test.ts",
+          "lines": "73-97",
+          "implMappings": [
+            {
+              "file": "src/hooks/formatting.ts",
+              "lines": [
+                10,
+                11,
+                12,
+                13
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Blocking hook fails with empty stderr produces no system-reminder",
+      "testMappings": [
+        {
+          "file": "src/hooks/__tests__/formatting.test.ts",
+          "lines": "99-120",
+          "implMappings": [
+            {
+              "file": "src/hooks/formatting.ts",
+              "lines": [
+                22,
+                23,
+                24,
+                25
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "System-reminder includes hook metadata",
+      "testMappings": [
+        {
+          "file": "src/hooks/__tests__/formatting.test.ts",
+          "lines": "122-150",
+          "implMappings": [
+            {
+              "file": "src/hooks/formatting.ts",
+              "lines": [
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/hooks/__tests__/formatting.test.ts"
+    ],
+    "implFiles": [
+      "src/hooks/formatting.ts"
+    ],
+    "totalLinesCovered": 195
+  }
+}

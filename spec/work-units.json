@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-15T23:42:35.662Z"
+    "lastUpdated": "2025-10-16T00:50:40.923Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -6002,19 +6002,100 @@
         "Uses fs/promises for file operations (copyFile, stat, unlink)"
       ]
     },
-    "CLEAN-001": {
-      "id": "CLEAN-001",
-      "title": "Remove all CAGE project references",
+    "HOOK-010": {
+      "id": "HOOK-010",
+      "title": "Migrate hook execution to use execa library",
       "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-16T00:49:47.693Z",
+      "updatedAt": "2025-10-16T01:18:17.009Z",
+      "description": "Replace Node.js child_process.spawn with execa library for hook execution, following the patterns used in the cage project for better process management and cross-platform compatibility",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-16T00:49:52.619Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-16T00:55:20.542Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-16T00:57:07.118Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-16T01:06:35.448Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-16T01:18:17.009Z"
+        }
+      ],
+      "userStory": {
+        "role": "fspec developer",
+        "action": "use execa for hook execution instead of child_process.spawn",
+        "benefit": "better process management, improved error handling, and cross-platform compatibility"
+      },
+      "rules": [
+        "Hook execution must maintain timeout behavior (default 60s)",
+        "Hook context must be passed to stdin as JSON",
+        "stdout and stderr must be captured separately",
+        "Hook execution results must include hookName, success, exitCode, stdout, stderr, timedOut, duration",
+        "execa library must be installed as a dependency",
+        "All existing hook tests must continue to pass",
+        "Non-detached behavior - hooks run attached to fspec process",
+        "Keep custom timeout implementation integrated with execa - use AbortController signal to cancel subprocess",
+        "Use execa's input option for passing JSON context - it's the best practice and handles stream management automatically"
+      ],
+      "examples": [
+        "Hook executes successfully and returns exitCode 0 with captured stdout/stderr",
+        "Hook times out after configured timeout period and is killed",
+        "Hook fails with non-zero exit code and error message in stderr",
+        "Hook receives context via stdin as JSON string",
+        "Multiple hooks execute sequentially in order"
+      ],
+      "architectureNotes": [
+        "Use execa library (same as cage project) for better process management",
+        "Modify src/hooks/executor.ts executeHook() function",
+        "Install execa as dependency in package.json",
+        "Reference cage's server.ts implementation for execa usage patterns"
+      ],
+      "questions": [
+        {
+          "text": "@human: Should we support detached processes like cage does for server.ts, or keep the current non-detached behavior?",
+          "selected": true,
+          "answer": "Non-detached behavior - hooks run attached to fspec process"
+        },
+        {
+          "text": "@human: Should we use execa's built-in timeout option or keep the custom timeout implementation?",
+          "selected": true,
+          "answer": "Keep custom timeout implementation integrated with execa - use AbortController signal to cancel subprocess"
+        },
+        {
+          "text": "@human: Should we use execa's input option for passing context or stick with stdin.write()?",
+          "selected": true,
+          "answer": "Use execa's input option for passing JSON context - it's the best practice and handles stream management automatically"
+        }
+      ],
+      "estimate": 3
+    },
+    "TEST-004": {
+      "id": "TEST-004",
+      "title": "Write missing tests for partially covered features",
+      "type": "task",
       "status": "backlog",
-      "createdAt": "2025-10-16T00:20:47.402Z",
-      "updatedAt": "2025-10-16T00:20:47.402Z",
-      "children": []
+      "createdAt": "2025-10-16T01:54:24.619Z",
+      "updatedAt": "2025-10-16T01:54:43.447Z",
+      "description": "Complete test coverage for 3 features: architecture-notes-in-example-mapping (2 scenarios), generate-scenarios-include-architecture-docstring (1 scenario), and preserve-example-mapping-context-as-comments-in-generated-feature-files (11 scenarios). Total: 14 uncovered scenarios that need tests.",
+      "children": [],
+      "estimate": 8
     }
   },
   "states": {
     "backlog": [
-      "CLEAN-001"
+      "TEST-004"
     ],
     "specifying": [],
     "testing": [],
@@ -6134,7 +6215,8 @@
       "HOOK-001",
       "BUG-011",
       "FEAT-012",
-      "FEAT-013"
+      "FEAT-013",
+      "HOOK-010"
     ],
     "blocked": []
   }

@@ -1,0 +1,296 @@
+{
+  "scenarios": [
+    {
+      "name": "Hook with no condition always matches",
+      "testMappings": [
+        {
+          "file": "src/hooks/__tests__/conditions.test.ts",
+          "lines": "14-43",
+          "implMappings": [
+            {
+              "file": "src/hooks/conditions.ts",
+              "lines": [
+                13,
+                14,
+                15,
+                16
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Hook with tag condition matches work unit with matching tag",
+      "testMappings": [
+        {
+          "file": "src/hooks/__tests__/conditions.test.ts",
+          "lines": "45-78",
+          "implMappings": [
+            {
+              "file": "src/hooks/conditions.ts",
+              "lines": [
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Hook with tag condition does not match work unit without tag",
+      "testMappings": [
+        {
+          "file": "src/hooks/__tests__/conditions.test.ts",
+          "lines": "80-113",
+          "implMappings": [
+            {
+              "file": "src/hooks/conditions.ts",
+              "lines": [
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Hook with prefix condition matches work unit with matching prefix",
+      "testMappings": [
+        {
+          "file": "src/hooks/__tests__/conditions.test.ts",
+          "lines": "115-147",
+          "implMappings": [
+            {
+              "file": "src/hooks/conditions.ts",
+              "lines": [
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Hook with prefix condition does not match work unit with different prefix",
+      "testMappings": [
+        {
+          "file": "src/hooks/__tests__/conditions.test.ts",
+          "lines": "149-181",
+          "implMappings": [
+            {
+              "file": "src/hooks/conditions.ts",
+              "lines": [
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Hook with epic condition matches work unit in that epic",
+      "testMappings": [
+        {
+          "file": "src/hooks/__tests__/conditions.test.ts",
+          "lines": "183-216",
+          "implMappings": [
+            {
+              "file": "src/hooks/conditions.ts",
+              "lines": [
+                46,
+                47,
+                48,
+                49,
+                50,
+                51
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Hook with estimate range matches work unit within range",
+      "testMappings": [
+        {
+          "file": "src/hooks/__tests__/conditions.test.ts",
+          "lines": "218-252",
+          "implMappings": [
+            {
+              "file": "src/hooks/conditions.ts",
+              "lines": [
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Hook with multiple conditions uses AND logic",
+      "testMappings": [
+        {
+          "file": "src/hooks/__tests__/conditions.test.ts",
+          "lines": "254-288",
+          "implMappings": [
+            {
+              "file": "src/hooks/conditions.ts",
+              "lines": [
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Hook with multiple conditions fails if any condition is not met",
+      "testMappings": [
+        {
+          "file": "src/hooks/__tests__/conditions.test.ts",
+          "lines": "290-324",
+          "implMappings": [
+            {
+              "file": "src/hooks/conditions.ts",
+              "lines": [
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Context without work unit ID only matches unconditional hooks",
+      "testMappings": [
+        {
+          "file": "src/hooks/__tests__/conditions.test.ts",
+          "lines": "326-349",
+          "implMappings": [
+            {
+              "file": "src/hooks/conditions.ts",
+              "lines": [
+                18,
+                19,
+                20,
+                21
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 10,
+    "coveredScenarios": 10,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/hooks/__tests__/conditions.test.ts"
+    ],
+    "implFiles": [
+      "src/hooks/conditions.ts"
+    ],
+    "totalLinesCovered": 447
+  }
+}

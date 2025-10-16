@@ -2,7 +2,7 @@
  * Hook execution engine
  */
 
-import { spawn } from 'node:child_process';
+import { execa } from 'execa';
 import { join } from 'node:path';
 import type { HookDefinition, HookContext, HookExecutionResult } from './types.js';
 
@@ -15,91 +15,95 @@ export async function executeHook(
   const commandPath = join(projectRoot, hook.command);
   const timeout = hook.timeout ?? 60;
 
-  return new Promise((resolve) => {
-    let stdout = '';
-    let stderr = '';
-    let timedOut = false;
-    let timeoutId: NodeJS.Timeout | null = null;
+  // Create AbortController for custom timeout implementation
+  const controller = new AbortController();
+  let timedOut = false;
+  let timeoutId: NodeJS.Timeout | null = null;
 
-    const child = spawn(commandPath, [], {
+  // Set up timeout with AbortController
+  timeoutId = setTimeout(() => {
+    timedOut = true;
+    controller.abort();
+  }, timeout * 1000);
+
+  try {
+    // Prepare context JSON for stdin
+    const contextJson = JSON.stringify(context);
+
+    // Execute hook using execa with input option for stdin
+    const subprocess = execa(commandPath, [], {
       cwd: projectRoot,
       env: process.env,
+      input: contextJson + '\n',
+      cancelSignal: controller.signal,
+      all: true, // Capture interleaved stdout/stderr
     });
 
-    // Set up timeout
-    timeoutId = setTimeout(() => {
-      timedOut = true;
-      child.kill('SIGTERM');
-      // Force kill if still running after 1s
-      setTimeout(() => {
-        if (!child.killed) {
-          child.kill('SIGKILL');
-        }
-      }, 1000);
-    }, timeout * 1000);
+    const result = await subprocess;
 
-    // Pass context to stdin (ignore errors if process dies before reading)
-    try {
-      const contextJson = JSON.stringify(context);
-      child.stdin.write(contextJson + '\n');
-      child.stdin.end();
-    } catch (err) {
-      // Ignore stdin write errors
+    // Clear timeout on successful completion
+    if (timeoutId) {
+      clearTimeout(timeoutId);
     }
 
-    // Ignore stdin errors (process may die before reading)
-    child.stdin.on('error', () => {
-      // Ignore
-    });
+    const duration = Date.now() - startTime;
+    const exitCode = timedOut ? null : result.exitCode;
+    const success = !timedOut && exitCode === 0;
 
-    // Capture stdout
-    child.stdout.on('data', (data: Buffer) => {
-      stdout += data.toString();
-    });
+    return {
+      hookName: hook.name,
+      success,
+      exitCode,
+      stdout: result.stdout,
+      stderr: result.stderr,
+      timedOut,
+      duration,
+    };
+  } catch (error: any) {
+    // Clear timeout
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
 
-    // Capture stderr
-    child.stderr.on('data', (data: Buffer) => {
-      stderr += data.toString();
-    });
+    const duration = Date.now() - startTime;
 
-    // Handle process exit
-    child.on('close', (code: number | null) => {
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
-
-      const duration = Date.now() - startTime;
-      const exitCode = timedOut ? null : code;
-      const success = !timedOut && exitCode === 0;
-
-      resolve({
-        hookName: hook.name,
-        success,
-        exitCode,
-        stdout,
-        stderr,
-        timedOut,
-        duration,
-      });
-    });
-
-    // Handle process error
-    child.on('error', (err: Error) => {
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
-
-      resolve({
+    // Handle timeout/abort case
+    if (error.isCanceled || error.killed || timedOut) {
+      return {
         hookName: hook.name,
         success: false,
         exitCode: null,
-        stdout,
-        stderr: stderr + '\n' + err.message,
+        stdout: error.stdout || '',
+        stderr: error.stderr || '',
+        timedOut: true,
+        duration,
+      };
+    }
+
+    // Handle non-zero exit codes (execa throws on non-zero)
+    if (error.exitCode !== undefined) {
+      return {
+        hookName: hook.name,
+        success: false,
+        exitCode: error.exitCode,
+        stdout: error.stdout || '',
+        stderr: error.stderr || '',
         timedOut: false,
-        duration: Date.now() - startTime,
-      });
-    });
-  });
+        duration,
+      };
+    }
+
+    // Handle other execution errors (ENOENT, permission denied, etc.)
+    return {
+      hookName: hook.name,
+      success: false,
+      exitCode: null,
+      stdout: error.stdout || '',
+      stderr: (error.stderr || '') + '\n' + error.message,
+      timedOut: false,
+      duration,
+    };
+  }
 }
 
 export async function executeHooks(

@@ -1,0 +1,74 @@
+{
+  "scenarios": [
+    {
+      "name": "Configuration documentation shows complete JSON schema",
+      "testMappings": [
+        {
+          "file": "src/hooks/__tests__/documentation.test.ts",
+          "lines": "16-49",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Bash hook example reads context and validates feature file",
+      "testMappings": [
+        {
+          "file": "src/hooks/__tests__/documentation.test.ts",
+          "lines": "51-75",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Python hook example parses stdin and runs tests",
+      "testMappings": [
+        {
+          "file": "src/hooks/__tests__/documentation.test.ts",
+          "lines": "77-104",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Node.js hook example reads stdin and sends notifications",
+      "testMappings": [
+        {
+          "file": "src/hooks/__tests__/documentation.test.ts",
+          "lines": "106-131",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Lint hook example demonstrates proper exit codes",
+      "testMappings": [
+        {
+          "file": "src/hooks/__tests__/documentation.test.ts",
+          "lines": "133-155",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Troubleshooting section explains common errors",
+      "testMappings": [
+        {
+          "file": "src/hooks/__tests__/documentation.test.ts",
+          "lines": "157-179",
+          "implMappings": []
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/hooks/__tests__/documentation.test.ts"
+    ],
+    "implFiles": [],
+    "totalLinesCovered": 159
+  }
+}
