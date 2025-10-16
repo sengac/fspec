@@ -1,0 +1,171 @@
+{
+  "scenarios": [
+    {
+      "name": "Discover hooks for specific event",
+      "testMappings": [
+        {
+          "file": "src/hooks/__tests__/discovery.test.ts",
+          "lines": "13-35",
+          "implMappings": [
+            {
+              "file": "src/hooks/discovery.ts",
+              "lines": [
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Discover special lifecycle hooks",
+      "testMappings": [
+        {
+          "file": "src/hooks/__tests__/discovery.test.ts",
+          "lines": "37-56",
+          "implMappings": [
+            {
+              "file": "src/hooks/discovery.ts",
+              "lines": [
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Discover hooks for non-existent event",
+      "testMappings": [
+        {
+          "file": "src/hooks/__tests__/discovery.test.ts",
+          "lines": "58-76",
+          "implMappings": [
+            {
+              "file": "src/hooks/discovery.ts",
+              "lines": [
+                11,
+                12,
+                13,
+                14
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Generate event names from command name",
+      "testMappings": [
+        {
+          "file": "src/hooks/__tests__/discovery.test.ts",
+          "lines": "78-92",
+          "implMappings": [
+            {
+              "file": "src/hooks/discovery.ts",
+              "lines": [
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Event names are case-sensitive",
+      "testMappings": [
+        {
+          "file": "src/hooks/__tests__/discovery.test.ts",
+          "lines": "94-113",
+          "implMappings": [
+            {
+              "file": "src/hooks/discovery.ts",
+              "lines": [
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Multiple hooks for same event",
+      "testMappings": [
+        {
+          "file": "src/hooks/__tests__/discovery.test.ts",
+          "lines": "115-140",
+          "implMappings": [
+            {
+              "file": "src/hooks/discovery.ts",
+              "lines": [
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/hooks/__tests__/discovery.test.ts"
+    ],
+    "implFiles": [
+      "src/hooks/discovery.ts"
+    ],
+    "totalLinesCovered": 182
+  }
+}

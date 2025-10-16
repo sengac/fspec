@@ -1149,11 +1149,61 @@
           ]
         }
       ]
+    },
+    {
+      "name": "Automation integration - prevent invalid tag commits",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/validate-tags.test.ts",
+          "lines": "375-411",
+          "implMappings": [
+            {
+              "file": "src/commands/validate-tags.ts",
+              "lines": [
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
   "stats": {
-    "totalScenarios": 23,
-    "coveredScenarios": 23,
+    "totalScenarios": 24,
+    "coveredScenarios": 24,
     "coveragePercent": 100,
     "testFiles": [
       "src/commands/__tests__/validate-tags.test.ts"
@@ -1161,6 +1211,6 @@
     "implFiles": [
       "src/commands/validate-tags.ts"
     ],
-    "totalLinesCovered": 1708
+    "totalLinesCovered": 1779
   }
 }

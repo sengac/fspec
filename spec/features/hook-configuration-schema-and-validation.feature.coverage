@@ -1,0 +1,292 @@
+{
+  "scenarios": [
+    {
+      "name": "Load valid hook configuration with single hook",
+      "testMappings": [
+        {
+          "file": "src/hooks/__tests__/config.test.ts",
+          "lines": "28-61",
+          "implMappings": [
+            {
+              "file": "src/hooks/config.ts",
+              "lines": [
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Load hook configuration with timeout override",
+      "testMappings": [
+        {
+          "file": "src/hooks/__tests__/config.test.ts",
+          "lines": "64-88",
+          "implMappings": [
+            {
+              "file": "src/hooks/config.ts",
+              "lines": [
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Load hook configuration with conditions",
+      "testMappings": [
+        {
+          "file": "src/hooks/__tests__/config.test.ts",
+          "lines": "91-122",
+          "implMappings": [
+            {
+              "file": "src/hooks/config.ts",
+              "lines": [
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Reject invalid JSON configuration",
+      "testMappings": [
+        {
+          "file": "src/hooks/__tests__/config.test.ts",
+          "lines": "124-139",
+          "implMappings": [
+            {
+              "file": "src/hooks/config.ts",
+              "lines": [
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Reject configuration with non-existent hook command",
+      "testMappings": [
+        {
+          "file": "src/hooks/__tests__/config.test.ts",
+          "lines": "141-168",
+          "implMappings": [
+            {
+              "file": "src/hooks/config.ts",
+              "lines": [
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Load configuration with global defaults",
+      "testMappings": [
+        {
+          "file": "src/hooks/__tests__/config.test.ts",
+          "lines": "170-204",
+          "implMappings": [
+            {
+              "file": "src/hooks/config.ts",
+              "lines": [
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/hooks/__tests__/config.test.ts"
+    ],
+    "implFiles": [
+      "src/hooks/config.ts"
+    ],
+    "totalLinesCovered": 350
+  }
+}
