@@ -709,6 +709,7 @@ function displayDiscoveryHelp(): void {
   console.log('  • Add business rules that govern the feature');
   console.log('  • Add assumptions about requirements or constraints');
   console.log('  • Capture architecture notes and non-functional requirements');
+  console.log('  • Attach supporting files (diagrams, mockups, documents)');
   console.log('  • Answer questions collaboratively (AI asks, human answers)');
   console.log('  • Generate Gherkin scenarios from examples');
   console.log('  • Import/export example maps for collaboration');
@@ -807,6 +808,39 @@ function displayDiscoveryHelp(): void {
   console.log('    Description: Remove architecture note by index (0-based)');
   console.log('    Examples:');
   console.log('      fspec remove-architecture-note AUTH-001 0');
+  console.log('');
+
+  console.log(chalk.bold('ATTACHMENTS'));
+  console.log(
+    '  ' + chalk.cyan('fspec add-attachment <work-unit-id> <file-path>')
+  );
+  console.log(
+    '    Description: Add attachment to work unit (diagrams, mockups, docs, etc.)'
+  );
+  console.log('    Options:');
+  console.log('      -d, --description <text>         Attachment description');
+  console.log('    Examples:');
+  console.log('      fspec add-attachment AUTH-001 diagrams/auth-flow.png');
+  console.log(
+    '      fspec add-attachment UI-002 mockups/dashboard.png --description "Dashboard v2"'
+  );
+  console.log('');
+  console.log(
+    '  ' + chalk.cyan('fspec list-attachments <work-unit-id>')
+  );
+  console.log('    Description: List all attachments for a work unit');
+  console.log('    Examples:');
+  console.log('      fspec list-attachments AUTH-001');
+  console.log('');
+  console.log(
+    '  ' + chalk.cyan('fspec remove-attachment <work-unit-id> <file-name>')
+  );
+  console.log('    Description: Remove attachment from work unit');
+  console.log('    Options:');
+  console.log('      --keep-file                      Keep file on disk');
+  console.log('    Examples:');
+  console.log('      fspec remove-attachment AUTH-001 auth-flow.png');
+  console.log('      fspec remove-attachment AUTH-001 diagram.png --keep-file');
   console.log('');
 
   console.log(chalk.bold('IMPORT/EXPORT'));

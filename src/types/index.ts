@@ -43,6 +43,7 @@ export interface WorkUnit {
   questions?: QuestionItem[];
   assumptions?: string[];
   architectureNotes?: string[];
+  attachments?: string[]; // Relative paths to files in spec/attachments/<work-unit-id>/
   userStory?: UserStory;
   stateHistory?: Array<{
     state: string;
