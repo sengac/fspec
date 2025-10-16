@@ -654,6 +654,7 @@ Scenario: User logs in
       const result = await updateWorkUnitStatus({
         workUnitId: 'AUTH-001',
         status: 'testing',
+        skipTemporalValidation: true,
         cwd: testDir,
       });
 
@@ -707,6 +708,7 @@ Scenario: User logs in
       const result = await updateWorkUnitStatus({
         workUnitId: 'AUTH-001',
         status: 'testing',
+        skipTemporalValidation: true,
         cwd: testDir,
       });
 
