@@ -30,21 +30,50 @@ This creates:
 
 ## Using fspec with Your AI Agent
 
+**Important:** You must tell the AI agent to create a work unit and specify the type (story, bug, or task). Otherwise, the agent won't know to create one and kick off the ACDD workflow.
+
+### Work Unit Types
+
+- **Story** - New user-facing feature or functionality (requires tests and full ACDD workflow)
+- **Bug** - Something that's broken and needs fixing (requires tests to reproduce the issue)
+- **Task** - Non-user-facing work like refactoring, infrastructure, documentation (tests optional)
+
 ### For New Features (Forward ACDD)
 
-Simply ask your AI agent to build something using `/fspec`:
+**Tell the agent to create a specific work unit type:**
 
+**Stories (new features):**
 ```
-/fspec Build user authentication feature
-/fspec Add password reset functionality
-/fspec Implement API rate limiting
+/fspec Create a story for user authentication feature
+/fspec Create a story to add password reset functionality
+/fspec Create a story for API rate limiting
 ```
+
+**Bugs (fixing issues):**
+```
+/fspec Create a bug for broken session timeout
+/fspec Create a bug where password validation allows weak passwords
+```
+
+**Tasks (non-user-facing work):**
+```
+/fspec Create a task to refactor authentication middleware
+/fspec Create a task to update API documentation
+/fspec Create a task to upgrade dependencies
+```
+
+**Or just run `/fspec` to see the board:**
+```
+/fspec
+```
+
+The AI will show you the current board state and ask what you want to work on.
 
 The AI agent will:
-1. **Create a work unit** and move it through Kanban states
+1. **Create a work unit** of the specified type and move it through Kanban states
 2. **Do Example Mapping** - Ask you clarifying questions about requirements
 3. **Generate validated Gherkin specs** from your answers
-4. **Write tests first** that map to the scenarios
+4. **Write tests first** that map to the scenarios (stories and bugs require tests)
 5. **Implement code** to make those tests pass
 6. **Enforce ACDD workflow** - can't skip phases
 
@@ -69,15 +98,17 @@ The AI agent will:
 
 Here's what a typical interaction looks like:
 
-```
-You: /fspec Build user login feature
+### Creating a Story
 
-Claude: I'll use fspec to manage this work through ACDD workflow.
+```
+You: /fspec Create a story for user login feature
+
+Claude: I'll create a story work unit and manage this through ACDD workflow.
         Let me start with discovery...
 
-        I'm creating work unit AUTH-001 for "User Login" and moving
-        it to the specifying phase. Now let me ask some clarifying
-        questions:
+        I'm creating work unit AUTH-001 (type: story) for "User Login"
+        and moving it to the specifying phase. Now let me ask some
+        clarifying questions:
 
         1. Should we support OAuth in addition to email/password?
         2. What are your password requirements (length, complexity)?
@@ -101,6 +132,41 @@ Claude: Perfect! Based on your answers, I'm adding these rules and
 
         Moving to testing phase. I'll write tests that map to these
         scenarios BEFORE any implementation code...
+```
+
+### Creating a Bug
+
+```
+You: /fspec Create a bug where session timeout doesn't work properly
+
+Claude: I'll create a bug work unit for the session timeout issue.
+
+        Creating BUG-001 (type: bug) for "Session timeout not working"
+        Moving to specifying phase...
+
+        Let me ask some questions to understand the bug:
+        1. What is the expected timeout behavior?
+        2. What actually happens instead?
+        3. Can you provide steps to reproduce?
+```
+
+### Just Checking the Board
+
+```
+You: /fspec
+
+Claude: Let me check the fspec board...
+
+        Current board shows:
+        - 3 items in backlog
+        - 1 item in implementing (AUTH-001: User login - story)
+        - 2 items done
+
+        What would you like to work on?
+        1. Continue with AUTH-001 (currently implementing)
+        2. Start a new work unit (story, bug, or task)
+        3. Review the backlog
+        4. Show board details
 ```
 
 ## What Happens Behind the Scenes
@@ -180,9 +246,20 @@ But remember: **You don't run these yourself** - your AI agent uses them.
 
 ## Troubleshooting
 
+**Q: The AI agent isn't creating a work unit**
+
+A: You must explicitly tell the AI to create a work unit with a type. Say "Create a story for..." or "Create a bug for..." or "Create a task to...". Without this, the AI won't know to kick off the ACDD workflow.
+
 **Q: The AI agent isn't using fspec commands**
 
 A: Make sure you ran `fspec init` in your project directory, and that `.claude/commands/fspec.md` exists. Use `/fspec` (with slash) to invoke the command.
+
+**Q: What's the difference between story, bug, and task?**
+
+A:
+- **Story** = New user-facing feature (requires tests, full ACDD)
+- **Bug** = Something broken (requires tests to reproduce)
+- **Task** = Non-user-facing work like refactoring (tests optional)
 
 **Q: Can I use fspec without an AI agent?**
 
@@ -190,4 +267,4 @@ A: Yes, but that's not the intended use case. You can run commands directly for 
 
 **Q: Does this work with AI agents other than Claude Code?**
 
-A: Yes! Take the generated `fspec.md` and `rspec.md` files and map them to your AI agent's command system.
+A: Yes! Take the generated `fspec.md` and `rspec.md` files and map them to your AI agent's command system. Rename `spec/CLAUDE.md` to `spec/AGENTS.md` for clarity.

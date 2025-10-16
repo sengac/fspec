@@ -50,20 +50,62 @@ Flat TODO lists don't help - they show "done" or "not done" but no workflow stat
 
 ## How It Works
 
-**You don't run fspec commands directly.** Instead, you give high-level requests to your AI agent (like Claude Code), and the agent uses fspec to manage the workflow:
+**You don't run fspec commands directly.** Instead, you give high-level requests to your AI agent (like Claude Code), and the agent uses fspec to manage the workflow.
+
+**Important:** You must tell the AI agent to create a work unit and specify the type (story, bug, or task). Otherwise, the agent won't know to create one and kick off the ACDD workflow.
+
+### Work Unit Types
+
+- **Story** - New user-facing feature or functionality
+- **Bug** - Something that's broken and needs fixing
+- **Task** - Non-user-facing work (refactoring, infrastructure, documentation)
 
 ### For New Features (Forward ACDD)
-```
-You: /fspec Build user login feature
 
-Claude: I'll use fspec to manage this work through ACDD workflow:
-1. Creating work unit AUTH-001 for "User login"
+**Tell the agent to create a story:**
+```
+You: /fspec Create a story for user login feature
+
+Claude: I'll create a story work unit for user login and manage this
+        through ACDD workflow:
+1. Creating work unit AUTH-001 (type: story) for "User login"
 2. Moving to discovery phase - let me ask clarifying questions...
    - Should we support OAuth in addition to email/password?
    - What password requirements do you need?
 3. After discovery, I'll generate validated Gherkin specs
 4. Then write tests that map to scenarios
 5. Finally implement code to pass those tests
+```
+
+**Or create a bug:**
+```
+You: /fspec Create a bug for login session timeout not working
+
+Claude: I'll create a bug work unit for the session timeout issue...
+```
+
+**Or create a task:**
+```
+You: /fspec Create a task to refactor authentication middleware
+
+Claude: I'll create a task work unit for refactoring the middleware...
+```
+
+**Or just run `/fspec` alone:**
+```
+You: /fspec
+
+Claude: Let me check the fspec board...
+
+        Current board shows:
+        - 3 items in backlog
+        - 1 item in implementing (AUTH-001: User login)
+        - 2 items done
+
+        What would you like to work on?
+        1. Continue with AUTH-001 (currently implementing)
+        2. Start a new work unit
+        3. Review the backlog
 ```
 
 ### For Existing Code (Reverse ACDD)
@@ -78,7 +120,7 @@ Claude: I'll reverse engineer the existing code:
 5. Linking existing code to scenarios for traceability
 ```
 
-**The AI agent handles all fspec commands** - you just provide the high-level intent.
+**The AI agent handles all fspec commands** - you just provide the high-level intent and work unit type.
 
 ## Get Started
 
@@ -105,13 +147,30 @@ This installs two command files in `.claude/commands/`:
 
 ### 3. Start Building with AI
 
-In Claude Code:
+In Claude Code, **be specific about work unit type** (story, bug, or task):
 
-**For new features:**
+**For new features (stories):**
 ```
-/fspec Build user authentication feature
-/fspec Add password reset functionality
-/fspec Implement API rate limiting
+/fspec Create a story for user authentication feature
+/fspec Create a story to add password reset functionality
+/fspec Create a story for API rate limiting
+```
+
+**For bugs:**
+```
+/fspec Create a bug for broken session timeout
+/fspec Create a bug where password validation allows weak passwords
+```
+
+**For tasks:**
+```
+/fspec Create a task to refactor authentication middleware
+/fspec Create a task to update API documentation
+```
+
+**Or just run `/fspec` to see the board:**
+```
+/fspec
 ```
 
 **For existing code:**
