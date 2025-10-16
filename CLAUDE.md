@@ -373,6 +373,13 @@ fspec show-coverage  # Project-wide
 
 # Audit coverage (verify file paths)
 fspec audit-coverage feature-name
+
+# Attachment support (during Example Mapping and discovery)
+fspec add-attachment <work-unit-id> <file-path>
+fspec add-attachment <work-unit-id> <file-path> --description "Description"
+fspec list-attachments <work-unit-id>
+fspec remove-attachment <work-unit-id> <file-name>
+fspec remove-attachment <work-unit-id> <file-name> --keep-file
 ```
 
 ## Lifecycle Hooks System
