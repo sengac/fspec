@@ -1,6 +1,6 @@
 {
-  "name": "fspec",
-  "version": "0.0.1",
+  "name": "@sengac/fspec",
+  "version": "0.0.3",
   "description": "Feature Specification & Project Management for AI Agents - Manage Gherkin specs and work units with ACDD workflow",
   "type": "module",
   "main": "./dist/index.js",
@@ -26,8 +26,16 @@
     "feature-files",
     "acceptance-criteria"
   ],
-  "author": "",
+  "author": "rquast@sengac.com",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sengac/fspec.git"
+  },
+  "homepage": "https://github.com/sengac/fspec#readme",
+  "bugs": {
+    "url": "https://github.com/sengac/fspec/issues"
+  },
   "files": [
     "dist",
     "README.md"
