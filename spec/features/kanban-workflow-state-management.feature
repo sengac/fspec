@@ -19,7 +19,7 @@ Feature: Kanban Workflow State Management
   - specifying: Example mapping and writing Gherkin scenarios (discovery phase)
   - testing: Writing tests that map to scenarios BEFORE implementation
   - implementing: Writing code to make tests pass
-  - validating: Running CAGE hooks, build, all quality checks
+  - validating: Running lifecycle hooks, build, all quality checks
   - done: All validations passed, work complete
   - blocked: Cannot progress due to dependency, question, or external blocker
 

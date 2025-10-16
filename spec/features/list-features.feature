@@ -34,7 +34,7 @@ Feature: List Feature Files
   Integration points:
   - CLI command: `fspec list-features [--tag=@tag]`
   - Called by AI agents to discover existing specifications
-  - Called by CAGE to understand specification landscape
+  - Called by automation tools to understand specification landscape
   """
 
   Background: User Story

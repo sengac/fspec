@@ -26,8 +26,8 @@ Feature: Gherkin Syntax Validation
   - Error output MUST be clear enough for AI to self-correct
 
   Integration points:
-  - Called from CAGE PreToolUse hook to validate specs before code changes
-  - Called from CAGE PostToolUse hook to validate specs after AI modifications
+  - Called from lifecycle hooks to validate specs before code changes
+  - Called from post-commit hooks to validate specs after AI modifications
   - CLI command: `fspec validate [file]`
   - Exit codes: 0 = valid, 1 = syntax errors, 2 = file not found
 

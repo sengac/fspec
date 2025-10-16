@@ -13,7 +13,7 @@ Feature: Register New Tag in Tag Registry
   - Regenerates TAGS.md from updated tags.json
   - Creates tags.json if it doesn't exist (with schema validation)
   - Supports all tag categories: phase, component, feature-group, technical, platform,
-  priority, status, testing, CAGE
+  priority, status, testing, automation
 
   Critical implementation requirements:
   - MUST load tags.json (or create from template)

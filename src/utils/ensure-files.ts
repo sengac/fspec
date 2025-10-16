@@ -168,8 +168,8 @@ export async function ensureTagsFile(cwd: string): Promise<Tags> {
             tags: [],
           },
           {
-            name: 'CAGE Integration Tags',
-            description: 'CAGE-specific tags',
+            name: 'Automation Tags',
+            description: 'Automation integration tags',
             required: false,
             tags: [],
           },

@@ -617,7 +617,7 @@
       "status": "done",
       "createdAt": "2025-10-11T04:32:31.325Z",
       "updatedAt": "2025-10-11T05:18:44.997Z",
-      "description": "Create a Kanban board visualization using Ink + React that displays all work units across 7 workflow states. The board command replaces the old display-board implementation with a responsive terminal UI following CAGE patterns.",
+      "description": "Create a Kanban board visualization using Ink + React that displays all work units across 7 workflow states. The board command replaces the old display-board implementation with a responsive terminal UI following React patterns.",
       "children": [],
       "stateHistory": [
         {
@@ -638,12 +638,12 @@
         {
           "state": "validating",
           "timestamp": "2025-10-11T05:11:08.352Z",
-          "reason": "Implementation complete: BoardDisplay component using Ink + React, architecture docs updated, component follows CAGE patterns with useStdout, ready for validation"
+          "reason": "Implementation complete: BoardDisplay component using Ink + React, architecture docs updated, component follows React patterns with useStdout, ready for validation"
         },
         {
           "state": "done",
           "timestamp": "2025-10-11T05:13:08.776Z",
-          "reason": "Implementation validated: board command displays Kanban board correctly using Ink + React, all tests pass, follows CAGE patterns, architecture docs updated, no issues found"
+          "reason": "Implementation validated: board command displays Kanban board correctly using Ink + React, all tests pass, follows React patterns, architecture docs updated, no issues found"
         }
       ]
     },
@@ -6001,10 +6001,21 @@
         "Three new commands: add-attachment, list-attachments, remove-attachment",
         "Uses fs/promises for file operations (copyFile, stat, unlink)"
       ]
+    },
+    "CLEAN-001": {
+      "id": "CLEAN-001",
+      "title": "Remove all CAGE project references",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-10-16T00:20:47.402Z",
+      "updatedAt": "2025-10-16T00:20:47.402Z",
+      "children": []
     }
   },
   "states": {
-    "backlog": [],
+    "backlog": [
+      "CLEAN-001"
+    ],
     "specifying": [],
     "testing": [],
     "implementing": [],

@@ -10,7 +10,7 @@ Feature: Workflow Automation
   - Auto-track metrics when work is completed
   - Validate state transitions align with ACDD
   - Auto-move work units through workflow states
-  - Provides utilities for external tools (e.g., CAGE, custom scripts)
+  - Provides utilities for external tools (e.g., automation hooks, custom scripts)
 
   Critical implementation requirements:
   - MUST record tokens consumed during work
