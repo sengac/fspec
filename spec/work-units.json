@@ -6085,18 +6085,80 @@
       "id": "TEST-004",
       "title": "Write missing tests for partially covered features",
       "type": "task",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2025-10-16T01:54:24.619Z",
-      "updatedAt": "2025-10-16T01:54:43.447Z",
+      "updatedAt": "2025-10-16T11:07:03.554Z",
       "description": "Complete test coverage for 3 features: architecture-notes-in-example-mapping (2 scenarios), generate-scenarios-include-architecture-docstring (1 scenario), and preserve-example-mapping-context-as-comments-in-generated-feature-files (11 scenarios). Total: 14 uncovered scenarios that need tests.",
       "children": [],
-      "estimate": 8
+      "estimate": 8,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-16T10:32:36.675Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-16T10:40:42.515Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-16T10:50:27.809Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-16T10:50:43.392Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-16T10:57:29.589Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-16T11:07:03.243Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-16T11:07:03.554Z"
+        }
+      ],
+      "questions": [
+        {
+          "text": "@human: For these uncovered scenarios, should I write (A) full test implementations (traditional forward ACDD) or (B) skeleton tests (reverse ACDD style - structure only with TODOs)?",
+          "selected": true,
+          "answer": "Forward ACDD where there's no implementation/tests, reverse ACDD where there's no tests/features"
+        },
+        {
+          "text": "@human: Should I examine the implementation files (e.g., generate-scenarios.ts, show-work-unit.ts) to infer what the tests should validate for scenarios that have existing code?",
+          "selected": true,
+          "answer": "Yes, examine implementation files to infer what the tests should validate. Figure out what code the test is running by analyzing existing implementation."
+        },
+        {
+          "text": "@human: Are there any specific testing patterns or conventions in this codebase I should follow when writing tests for the generate-scenarios and example mapping commands?",
+          "selected": true,
+          "answer": "Follow the ACDD process - no special testing patterns beyond what's defined in CLAUDE.md"
+        },
+        {
+          "text": "@human: I see the third feature has 11 uncovered scenarios. Should I tackle all 14 scenarios (2 from architecture-notes + 1 from generate-scenarios-include-architecture + 11 from preserve-example-mapping) in this single work unit, or should I break this into smaller work units?",
+          "selected": true,
+          "answer": "Do all 14 scenarios in one work unit - don't break it up"
+        }
+      ],
+      "rules": [
+        "Forward ACDD where there's no implementation/tests, reverse ACDD where there's no tests/features",
+        "Yes, examine implementation files to infer what the tests should validate. Figure out what code the test is running by analyzing existing implementation.",
+        "Do all 14 scenarios in one work unit - don't break it up"
+      ],
+      "assumptions": [
+        "Follow the ACDD process - no special testing patterns beyond what's defined in CLAUDE.md"
+      ],
+      "examples": [
+        "For 'View architecture notes in work unit' scenario - check show-work-unit command displays architecture notes added during example mapping",
+        "For scenarios in preserve-example-mapping feature - test that add-scenario and add-background commands don't remove existing example mapping comments"
+      ]
     }
   },
   "states": {
-    "backlog": [
-      "TEST-004"
-    ],
+    "backlog": [],
     "specifying": [],
     "testing": [],
     "implementing": [],
@@ -6216,7 +6278,8 @@
       "BUG-011",
       "FEAT-012",
       "FEAT-013",
-      "HOOK-010"
+      "HOOK-010",
+      "TEST-004"
     ],
     "blocked": []
   }

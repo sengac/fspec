@@ -162,4 +162,59 @@ describe('Feature: generate-scenarios include architecture docstring', () => {
       expect(content).toMatch(/"""[\s\S]*?Architecture notes:[\s\S]*?TODO:[\s\S]*?"""/);
     });
   });
+
+  describe('Scenario: Existing tests continue to pass with docstring addition', () => {
+    it('should validate docstring presence and correct ordering', async () => {
+      // Given I modify generate-scenarios to include docstrings
+      // (This is already done - the feature is implemented)
+
+      // When I run the existing test suite (simulated by running generate-scenarios)
+      const workUnitsData: WorkUnitsData = {
+        meta: { lastId: 1, lastUpdated: new Date().toISOString() },
+        prefixes: { TEST: { name: 'Test', nextId: 2 } },
+        workUnits: {
+          'TEST-001': {
+            id: 'TEST-001',
+            prefix: 'TEST',
+            title: 'Regression Test',
+            description: 'Test',
+            type: 'story',
+            status: 'specifying',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            userStory: { role: 'user', action: 'test', benefit: 'quality' },
+            rules: ['Rule 1'],
+            examples: ['Example 1'],
+            questions: [],
+          },
+        },
+      };
+
+      await writeFile(
+        join(tmpDir, 'spec', 'work-units.json'),
+        JSON.stringify(workUnitsData, null, 2)
+      );
+
+      const result = await generateScenarios({
+        workUnitId: 'TEST-001',
+        cwd: tmpDir,
+      });
+
+      const content = await readFile(result.featureFile, 'utf-8');
+
+      // Then all generate-scenarios tests should pass
+      expect(result.success).toBe(true);
+
+      // And tests should validate docstring presence
+      expect(content).toContain('"""');
+      expect(content).toContain('Architecture notes:');
+
+      // And tests should validate correct ordering (docstring before comments)
+      const docstringIndex = content.indexOf('"""');
+      const commentIndex = content.indexOf('# EXAMPLE MAPPING CONTEXT');
+      expect(docstringIndex).toBeLessThan(commentIndex);
+      expect(docstringIndex).toBeGreaterThan(-1);
+      expect(commentIndex).toBeGreaterThan(-1);
+    });
+  });
 });

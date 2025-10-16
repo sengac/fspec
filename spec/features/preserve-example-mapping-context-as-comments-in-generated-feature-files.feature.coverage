@@ -1,10 +1,6 @@
 {
   "scenarios": [
     {
-      "name": "[Scenario name]",
-      "testMappings": []
-    },
-    {
       "name": "Formatter preserves comments through format cycles",
       "testMappings": [
         {
@@ -302,10 +298,6 @@
       ]
     },
     {
-      "name": "User story embedded in both comments and Background section",
-      "testMappings": []
-    },
-    {
       "name": "System-reminder guides AI to write scenarios from examples",
       "testMappings": [
         {
@@ -362,7 +354,13 @@
     },
     {
       "name": "Business rules in comments inform scenario preconditions",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/preserve-comments-in-commands.test.ts",
+          "lines": "222-249",
+          "implMappings": []
+        }
+      ]
     },
     {
       "name": "Answered questions preserved in comments",
@@ -496,15 +494,33 @@
     },
     {
       "name": "Multiple examples converted to separate scenarios",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/preserve-comments-in-commands.test.ts",
+          "lines": "139-176",
+          "implMappings": []
+        }
+      ]
     },
     {
       "name": "Add-scenario command preserves example mapping comments",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/preserve-comments-in-commands.test.ts",
+          "lines": "40-86",
+          "implMappings": []
+        }
+      ]
     },
     {
       "name": "Add-background command preserves example mapping comments",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/preserve-comments-in-commands.test.ts",
+          "lines": "89-136",
+          "implMappings": []
+        }
+      ]
     },
     {
       "name": "Gherkin parser captures comments in AST",
@@ -641,23 +657,53 @@
     },
     {
       "name": "Prefill detection still works after adding comments",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/preserve-comments-in-commands.test.ts",
+          "lines": "253-285",
+          "implMappings": []
+        }
+      ]
     },
     {
       "name": "Git diffs show example mapping context",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/preserve-comments-in-commands.test.ts",
+          "lines": "289-329",
+          "implMappings": []
+        }
+      ]
     },
     {
       "name": "Existing comments are preserved when adding example mapping",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/preserve-comments-in-commands.test.ts",
+          "lines": "333-388",
+          "implMappings": []
+        }
+      ]
     },
     {
       "name": "Zero scenarios means file incomplete - system reminder triggered",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/preserve-comments-in-commands.test.ts",
+          "lines": "392-429",
+          "implMappings": []
+        }
+      ]
     },
     {
       "name": "AI uses Edit tool with full context visible",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/preserve-comments-in-commands.test.ts",
+          "lines": "433-469",
+          "implMappings": []
+        }
+      ]
     },
     {
       "name": "User story only in Background section, not in comments",
@@ -731,22 +777,28 @@
               ]
             }
           ]
+        },
+        {
+          "file": "src/commands/__tests__/preserve-comments-in-commands.test.ts",
+          "lines": "179-218",
+          "implMappings": []
         }
       ]
     }
   ],
   "stats": {
-    "totalScenarios": 22,
-    "coveredScenarios": 11,
-    "coveragePercent": 50,
+    "totalScenarios": 20,
+    "coveredScenarios": 20,
+    "coveragePercent": 100,
     "testFiles": [
       "src/utils/__tests__/gherkin-formatter-comment-preservation.test.ts",
-      "src/commands/__tests__/generate-scenarios-comment-embedding.test.ts"
+      "src/commands/__tests__/generate-scenarios-comment-embedding.test.ts",
+      "src/commands/__tests__/preserve-comments-in-commands.test.ts"
     ],
     "implFiles": [
       "src/utils/gherkin-formatter.ts",
       "src/commands/generate-scenarios.ts"
     ],
-    "totalLinesCovered": 1127
+    "totalLinesCovered": 1533
   }
 }
