@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-16T00:50:40.923Z"
+    "lastUpdated": "2025-10-16T23:25:18.965Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -4791,7 +4791,7 @@
       "type": "story",
       "status": "done",
       "createdAt": "2025-10-15T07:11:37.663Z",
-      "updatedAt": "2025-10-15T07:26:51.371Z",
+      "updatedAt": "2025-10-16T23:24:13.114Z",
       "description": "The remove-tag-from-scenario command is not working correctly - it claims to remove tags but they remain at scenario level in the feature files. This breaks tag validation because work unit ID tags (@COV-XXX) must be at feature level only.",
       "children": [],
       "userStory": {
@@ -4861,7 +4861,7 @@
         "Workaround exists using grep/sed/perl for manual removal",
         "Bug affects all fspec versions with remove-tag-from-scenario command"
       ],
-      "estimate": 3
+      "estimate": 2
     },
     "DOC-004": {
       "id": "DOC-004",
@@ -6155,12 +6155,237 @@
         "For 'View architecture notes in work unit' scenario - check show-work-unit command displays architecture notes added during example mapping",
         "For scenarios in preserve-example-mapping feature - test that add-scenario and add-background commands don't remove existing example mapping comments"
       ]
+    },
+    "FOUND-001": {
+      "id": "FOUND-001",
+      "title": "Design Generic Foundation Schema",
+      "type": "story",
+      "status": "testing",
+      "createdAt": "2025-10-16T23:12:53.931Z",
+      "updatedAt": "2025-10-16T23:23:00.347Z",
+      "description": "Create new TypeScript types and JSON schema for generic PRD structure focusing on WHY and WHAT",
+      "epic": "foundation-document-redesign",
+      "children": [],
+      "estimate": 5,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-16T23:13:02.563Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-16T23:23:00.347Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using fspec for any project type",
+        "action": "create a generic foundation document that captures WHY and WHAT",
+        "benefit": "I have clear product requirements without mixing in implementation details"
+      },
+      "questions": [],
+      "assumptions": [
+        "Unlimited personas allowed, but suggest 3-7 in documentation as best practice. No hard limits enforced by schema."
+      ],
+      "rules": [
+        "Multiple problems supported. Complex products can have thousands of problems. Foundation.json can reference external sub-foundation documents for scalability (all built from single foundation.json). This creates a hierarchical PRD structure.",
+        "Broad capabilities only (3-7 high-level abilities). Granular features belong in .feature files. Example: 'User Authentication' is a capability in foundation.json, 'Login with OAuth' is a feature in user-authentication.feature.",
+        "REQUIRED: project identity, problem statement, solution overview. OPTIONAL: architecture diagrams, constraints, detailed personas. This ensures minimum viable PRD while allowing detailed documentation.",
+        "Schema must focus ONLY on WHY (problem) and WHAT (solution), never HOW (implementation)",
+        "Schema must work for ANY project type: web apps, CLI tools, libraries, services, mobile apps",
+        "Mermaid diagram validation must be preserved from current implementation",
+        "JSON Schema must use Ajv for validation with clear error messages"
+      ],
+      "examples": [
+        "Web app foundation includes personas: 'End User', 'Admin', 'API Consumer'",
+        "CLI tool foundation includes persona: 'Developer using CLI in terminal'",
+        "Library foundation includes persona: 'Developer integrating library into their codebase'",
+        "Problem space includes multiple problems with impact ratings (high/medium/low)",
+        "Solution includes 3-7 high-level capabilities like 'User Authentication', 'Data Visualization', 'API Integration'",
+        "Foundation.json can reference sub-foundations: { 'subFoundations': ['spec/foundations/auth-subsystem.foundation.json'] }"
+      ],
+      "architectureNotes": [
+        "TypeScript interfaces must map exactly to JSON Schema definitions",
+        "Use Ajv with ajv-formats for validation (uri, email, date-time formats)",
+        "Hierarchical foundations: parent foundation.json can reference child foundations in subFoundations array",
+        "Migration path needed: old schema → new schema with backward compatibility flag",
+        "Mermaid validation must use mermaid.parse() with jsdom (existing pattern)"
+      ]
+    },
+    "FOUND-002": {
+      "id": "FOUND-002",
+      "title": "Implement Automated Discovery - Code Analysis",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-10-16T23:19:35.741Z",
+      "updatedAt": "2025-10-16T23:19:36.111Z",
+      "description": "Scan existing codebase to infer project type, personas, and capabilities using reverse ACDD techniques",
+      "epic": "foundation-document-redesign",
+      "children": [],
+      "estimate": 8
+    },
+    "FOUND-003": {
+      "id": "FOUND-003",
+      "title": "Implement Interactive Questionnaire",
+      "type": "story",
+      "status": "specifying",
+      "createdAt": "2025-10-16T23:19:36.482Z",
+      "updatedAt": "2025-10-16T23:20:22.899Z",
+      "description": "Build Ink-based CLI questionnaire to gather WHY/WHAT information from users",
+      "epic": "foundation-document-redesign",
+      "children": [],
+      "estimate": 5,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-16T23:20:17.487Z"
+        }
+      ],
+      "architectureNotes": [
+        "Questionnaire must guide AI through structured discovery workflow with specific question templates",
+        "Section 1: Vision Questions - 'What is the core purpose?', 'Who are the primary users?', 'What problem does this solve?'",
+        "Section 2: Problem Space - 'What are the top 3-5 pain points?', 'What is the impact?', 'What is the frequency?'",
+        "Section 3: Solution Space - 'What are the 3-7 key capabilities?', 'What makes this solution unique?', 'What is out of scope?'",
+        "Section 4: Architecture - 'What is the tech stack?' (optional if detected), 'What are system boundaries?', 'What are external dependencies?'",
+        "Section 5: Constraints - 'Business constraints?', 'Technical constraints?', 'Timeline/budget constraints?'",
+        "Prefill mode: If code analysis detected values, show as defaults with [DETECTED] tag, allow AI to confirm/edit/skip",
+        "AI guidance: Each question includes HELP text explaining WHY it's asked and EXAMPLES of good answers"
+      ],
+      "rules": [
+        "Questions must be grouped by section with progress indicator (Question 3 of 15)",
+        "Must support both prefilled mode (--from-discovery) and blank slate (--interactive)",
+        "Must validate answers before accepting (e.g. non-empty strings, valid format)"
+      ],
+      "examples": [
+        "Vision question with help: 'What is the core purpose? [HELP: One sentence elevator pitch. Example: fspec helps AI agents follow ACDD workflow]'",
+        "Prefilled answer: 'Primary user: Developer using CLI [DETECTED from code analysis] - Keep/Edit/Skip?'"
+      ]
+    },
+    "FOUND-004": {
+      "id": "FOUND-004",
+      "title": "Implement discover-foundation Command",
+      "type": "story",
+      "status": "specifying",
+      "createdAt": "2025-10-16T23:19:37.238Z",
+      "updatedAt": "2025-10-16T23:20:51.429Z",
+      "description": "Orchestrate code analysis + questionnaire to generate foundation.json with validation",
+      "epic": "foundation-document-redesign",
+      "children": [],
+      "estimate": 8,
+      "dependsOn": [
+        "FOUND-001",
+        "FOUND-002",
+        "FOUND-003"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-16T23:20:49.620Z"
+        }
+      ],
+      "architectureNotes": [
+        "System-reminder integration: Wrap questionnaire output in <system-reminder> tags when running in AI context (detectable via environment)",
+        "System-reminder triggers: (1) After code analysis completes - show detected personas/capabilities (2) During questionnaire - provide examples of good answers (3) After foundation.json generated - next steps guidance",
+        "System-reminder content: 'Code analysis detected 3 personas [list]. Review and confirm during questionnaire. Focus on WHY/WHAT, not HOW. See CLAUDE.md for boundary guidance.'"
+      ],
+      "rules": [
+        "Must emit system-reminders to guide AI through discovery process (persona review, WHY/WHAT boundary, next steps)"
+      ],
+      "examples": [
+        "After code analysis: <system-reminder>Detected 3 user personas from routes: End User, Admin, API Consumer. Review in questionnaire. Use 'fspec show-work-unit FOUND-002' for details.</system-reminder>"
+      ]
+    },
+    "FOUND-005": {
+      "id": "FOUND-005",
+      "title": "Migrate Existing foundation.json",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-10-16T23:19:38.001Z",
+      "updatedAt": "2025-10-16T23:19:51.841Z",
+      "description": "Extract WHY/WHAT from current fspec foundation.json, move HOW content elsewhere, automated migration",
+      "epic": "foundation-document-redesign",
+      "children": [],
+      "estimate": 3,
+      "dependsOn": [
+        "FOUND-001"
+      ]
+    },
+    "FOUND-006": {
+      "id": "FOUND-006",
+      "title": "Update Documentation and Help",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-10-16T23:19:38.837Z",
+      "updatedAt": "2025-10-16T23:19:52.211Z",
+      "description": "Update CLAUDE.md, help system, and create discovery guide with examples",
+      "epic": "foundation-document-redesign",
+      "children": [],
+      "estimate": 3,
+      "dependsOn": [
+        "FOUND-004"
+      ]
+    },
+    "BUG-012": {
+      "id": "BUG-012",
+      "title": "Fix show-epic command returning undefined",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-10-16T23:24:12.754Z",
+      "updatedAt": "2025-10-16T23:28:27.652Z",
+      "description": "The show-epic command accepts invalid epic IDs and returns 'undefined' for epic and title instead of showing proper error message or help text",
+      "children": [],
+      "estimate": 2,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-16T23:25:18.576Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-16T23:25:51.736Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-16T23:26:50.136Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-16T23:27:29.673Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-16T23:28:27.652Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using fspec",
+        "action": "see a clear error when querying non-existent epics",
+        "benefit": "I understand what went wrong and how to fix it"
+      },
+      "rules": [
+        "Command must validate epic ID exists before attempting to display",
+        "Must show clear error message with epic ID when not found",
+        "Must exit with non-zero code on error"
+      ],
+      "examples": [
+        "Run 'fspec show-epic invalid-epic' shows error: Epic 'invalid-epic' not found",
+        "Error message suggests 'fspec list-epics' to see available epics",
+        "Valid epic ID works correctly: 'fspec show-epic user-management' displays epic details"
+      ]
     }
   },
   "states": {
-    "backlog": [],
-    "specifying": [],
-    "testing": [],
+    "backlog": [
+      "FOUND-002",
+      "FOUND-005",
+      "FOUND-006"
+    ],
+    "specifying": [
+      "FOUND-003",
+      "FOUND-004"
+    ],
+    "testing": [
+      "FOUND-001"
+    ],
     "implementing": [],
     "validating": [],
     "done": [
@@ -6279,7 +6504,8 @@
       "FEAT-012",
       "FEAT-013",
       "HOOK-010",
-      "TEST-004"
+      "TEST-004",
+      "BUG-012"
     ],
     "blocked": []
   }

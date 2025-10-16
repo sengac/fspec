@@ -95,6 +95,20 @@
         "HOOK-008",
         "HOOK-009"
       ]
+    },
+    "foundation-document-redesign": {
+      "id": "foundation-document-redesign",
+      "title": "Foundation Document Redesign",
+      "createdAt": "2025-10-16T23:12:46.147Z",
+      "description": "Transform foundation.json into generic PRD system with intelligent discovery",
+      "workUnits": [
+        "FOUND-001",
+        "FOUND-002",
+        "FOUND-003",
+        "FOUND-004",
+        "FOUND-005",
+        "FOUND-006"
+      ]
     }
   }
 }
