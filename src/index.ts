@@ -21,6 +21,8 @@ import { registerAddArchitectureNoteCommand } from './commands/add-architecture-
 import { registerAddAttachmentCommand } from './commands/add-attachment';
 import { registerAddAssumptionCommand } from './commands/add-assumption';
 import { registerAddBackgroundCommand } from './commands/add-background';
+import { registerAddCapabilityCommand } from './commands/register-add-capability';
+import { registerAddPersonaCommand } from './commands/register-add-persona';
 import { registerAddHookCommand } from './commands/add-hook';
 import { registerAddDependenciesCommand } from './commands/add-dependencies';
 import { registerAddDependencyCommand } from './commands/add-dependency';
@@ -154,6 +156,8 @@ registerAddArchitectureNoteCommand(program);
 registerAddAttachmentCommand(program);
 registerAddAssumptionCommand(program);
 registerAddBackgroundCommand(program);
+registerAddCapabilityCommand(program);
+registerAddPersonaCommand(program);
 registerAddHookCommand(program);
 registerAddDependenciesCommand(program);
 registerAddDependencyCommand(program);

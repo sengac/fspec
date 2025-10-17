@@ -1469,14 +1469,14 @@ fspec discover-foundation --finalize
    - Draft IS the guidance - defines structure and what needs to be filled
 
 2. **ULTRATHINK Guidance**: Command emits initial system-reminder for AI
-   - Instructs AI to analyze EVERYTHING: commands, routes, UI, tests, README, package.json
+   - Instructs AI to analyze EVERYTHING: code structure, entry points, user interactions, documentation
    - Emphasizes understanding HOW system works, then determining WHY it exists and WHAT users can do
    - Guides AI field-by-field through discovery process
 
 3. **Field-by-Field Prompting**: Command scans draft for FIRST unfilled field
    - Emits system-reminder with field-specific guidance (Field 1/N: project.name)
    - Includes exact command to run: `fspec update-foundation --field <path> --value <value>`
-   - Provides context (e.g., "analyze package.json", "ULTRATHINK: determine core PURPOSE")
+   - Provides context (e.g., "Analyze project configuration", "ULTRATHINK: determine core PURPOSE")
 
 4. **AI Analysis and Update**: AI analyzes codebase, asks human, runs fspec command
    - AI examines code patterns to understand project structure

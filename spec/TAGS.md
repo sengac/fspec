@@ -108,7 +108,6 @@ Tags that categorize features by functional area.
 | `@query` | Query operations for searching and filtering |  |
 | `@query-reporting` | Query and reporting features |  |
 | `@querying` | Query & Search Operations |  |
-| `@questionnaire` | Interactive questionnaire features for gathering foundation information |  |
 | `@read` | Read operations |  |
 | `@read-only` | Read-Only Operations |  |
 | `@recommendations` | Recommendation features providing suggestions based on historical data |  |

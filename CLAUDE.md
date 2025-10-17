@@ -475,7 +475,7 @@ fspec remove-hook <event> <name>
 
 ## Foundation Document Discovery
 
-fspec provides automated discovery to bootstrap foundation.json for new projects. The discovery system analyzes existing codebases to detect project type, personas, and capabilities, then runs an interactive questionnaire to gather additional information.
+fspec provides automated discovery to bootstrap foundation.json for new projects through an AI-guided draft-driven workflow.
 
 ### Discovery Workflow
 
@@ -495,19 +495,24 @@ fspec discover-foundation --output foundation.json
    - Draft IS the guidance - defines structure and what needs to be filled
 
 2. **ULTRATHINK Guidance**: Command emits initial system-reminder for AI
-   - Instructs AI to analyze EVERYTHING: commands, routes, UI, tests, README, package.json
+   - Instructs AI to analyze EVERYTHING: code structure, entry points, user interactions, documentation
    - Emphasizes understanding HOW system works, then determining WHY it exists and WHAT users can do
    - Guides AI field-by-field through discovery process
 
 3. **Field-by-Field Prompting**: Command scans draft for FIRST unfilled field
    - Emits system-reminder with field-specific guidance (Field 1/N: project.name)
-   - Includes exact command to run: `fspec update-foundation --field <path> --value <value>`
-   - Provides context (e.g., "analyze package.json", "ULTRATHINK: determine core PURPOSE")
+   - Includes exact command to run for simple fields: `fspec update-foundation projectName "value"`
+   - For capabilities: `fspec add-capability "name" "description"`
+   - For personas: `fspec add-persona "name" "description" --goal "goal"`
+   - Provides language-agnostic guidance (not specific to JavaScript/TypeScript)
 
 4. **AI Analysis and Update**: AI analyzes codebase, asks human, runs fspec command
    - AI examines code patterns to understand project structure
    - AI asks human for confirmation/clarification
-   - AI runs: `fspec update-foundation --field project.name --value "fspec"`
+   - AI runs appropriate commands based on field type:
+     - Simple fields: `fspec update-foundation projectName "fspec"`
+     - Capabilities: `fspec add-capability "User Authentication" "Secure access control"`
+     - Personas: `fspec add-persona "Developer" "Builds features" --goal "Ship quality code faster"`
    - NO manual editing allowed - command detects and reverts manual edits
 
 5. **Automatic Chaining**: Command automatically re-scans draft after each update
@@ -536,24 +541,34 @@ The discovery system guides AI to focus on user needs and capabilities, not tech
 ### Example Discovery Output
 
 ```
-Analyzing codebase...
-✓ Detected project type: cli-tool
-✓ Found 1 persona: Developer using CLI
-✓ Identified 12 capabilities
+✓ Created spec/foundation.json.draft
 
-Running questionnaire...
-? What is the project vision? [DETECTED: CLI tool for managing Gherkin specs]
-? What is the primary problem? [DETECTED: AI agents lack structured workflow]
+Field 1/8: project.name
+Analyze project configuration to determine project name. Confirm with human.
+Run: fspec update-foundation projectName "<name>"
 
-✓ Generated spec/foundation.json
-✓ Validation passed (v2.0.0 schema)
+[AI analyzes codebase and determines name]
+
+✓ Updated project.name
+
+Field 2/8: project.vision
+ULTRATHINK: Read ALL code, understand the system deeply...
 ```
 
 ### Related Commands
 
 ```bash
-# Update existing foundation
-fspec update-foundation --field project.vision --value "New vision"
+# Update simple foundation fields
+fspec update-foundation projectName "fspec"
+fspec update-foundation projectVision "CLI tool for managing Gherkin specs"
+
+# Add capabilities to foundation
+fspec add-capability "User Authentication" "Secure access control"
+fspec add-capability "Data Visualization" "Interactive charts and graphs"
+
+# Add personas to foundation
+fspec add-persona "Developer" "Builds features with AI agents" --goal "Ship quality code faster"
+fspec add-persona "AI Agent" "Uses fspec for specs" --goal "Complete foundation" --goal "Validate features"
 
 # Show current foundation
 fspec show-foundation
@@ -579,7 +594,9 @@ fspec workflow-automation <action> <work-unit-id>
 For complete guidance on the draft-driven discovery workflow:
 - `foundation.json.draft` - The guidance file with placeholders showing what needs to be filled
 - `src/commands/discover-foundation.ts` - Orchestration command that reads draft and prompts AI
-- `fspec update-foundation` - Command for AI to update draft fields (NO manual editing)
+- `fspec update-foundation` - Command for simple fields (project.name, project.vision, etc.)
+- `fspec add-capability` - Command for adding capabilities (NO manual editing)
+- `fspec add-persona` - Command for adding personas (NO manual editing)
 
 ## Work Unit Analysis and Dependency Management
 

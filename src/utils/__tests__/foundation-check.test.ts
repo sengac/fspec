@@ -153,9 +153,9 @@ describe('Feature: Foundation missing error message is not imperative enough', (
       expect(result.error).toContain('Step 1: fspec discover-foundation');
       expect(result.error).toContain('creates draft');
 
-      // And error must show "Step 2: Fill [QUESTION:] placeholders in draft"
+      // And error must show "Step 2: AI analyzes codebase and fills fields"
       expect(result.error).toContain('Step 2');
-      expect(result.error).toContain('Fill [QUESTION:] placeholders');
+      expect(result.error).toContain('AI analyzes codebase and fills fields');
 
       // And error must show "Step 3: fspec discover-foundation --finalize"
       expect(result.error).toContain('Step 3: fspec discover-foundation --finalize');

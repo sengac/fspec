@@ -1133,6 +1133,34 @@ function displaySetupHelp(): void {
   console.log('      fspec discover-foundation --output foundation.json');
   console.log('');
   console.log(
+    '  ' + chalk.cyan('fspec add-capability <name> <description>')
+  );
+  console.log('    Description: Add capability to foundation.json');
+  console.log('    Examples:');
+  console.log(
+    '      fspec add-capability "User Authentication" "Secure access control"'
+  );
+  console.log(
+    '      fspec add-capability "Data Visualization" "Interactive charts and graphs"'
+  );
+  console.log('');
+  console.log(
+    '  ' + chalk.cyan('fspec add-persona <name> <description> --goal <goal>')
+  );
+  console.log('    Description: Add persona to foundation.json');
+  console.log('    Options:');
+  console.log(
+    '      --goal <goal>                    Persona goal (can be repeated)'
+  );
+  console.log('    Examples:');
+  console.log(
+    '      fspec add-persona "Developer" "Builds features" --goal "Ship quality code faster"'
+  );
+  console.log(
+    '      fspec add-persona "AI Agent" "Uses fspec for specs" --goal "Complete foundation" --goal "Validate features"'
+  );
+  console.log('');
+  console.log(
     '  ' + chalk.cyan('fspec add-diagram <section> <title> <content>')
   );
   console.log('    Description: Add Mermaid diagram with validation');

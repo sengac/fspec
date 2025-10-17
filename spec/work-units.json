@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-17T06:42:45.374Z"
+    "lastUpdated": "2025-10-17T07:20:41.669Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -7208,6 +7208,97 @@
       "attachments": [
         "spec/attachments/DISC-001/discovery-feedback-loop.mmd"
       ]
+    },
+    "BUG-015": {
+      "id": "BUG-015",
+      "title": "Foundation discovery workflow cannot update nested fields (capabilities, personas)",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-10-17T07:18:39.226Z",
+      "updatedAt": "2025-10-17T07:52:53.614Z",
+      "description": "The discover-foundation workflow guides AI to use 'fspec update-foundation --field <path> --value <value>' syntax, but the actual update-foundation command uses '<section> <content>' syntax and cannot update nested array fields like capabilities[] and personas[]. This breaks the field-by-field discovery feedback loop.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-17T07:18:52.919Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-17T07:21:32.389Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-17T07:22:28.653Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-17T07:24:04.760Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-17T07:25:17.038Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-17T07:25:48.358Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-17T07:37:31.310Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-17T07:52:53.615Z"
+        }
+      ],
+      "examples": [
+        "AI runs 'fspec discover-foundation' → system-reminder says 'Run: fspec update-foundation --field project.name --value <name>' → AI tries command → Error: 'unknown option --field'",
+        "AI checks help with 'fspec update-foundation --help' → discovers actual syntax is '<section> <content>' not '--field <path> --value <value>'",
+        "AI successfully uses 'fspec update-foundation projectName \"fspec\"' for simple fields → works correctly",
+        "AI encounters foundation.json.draft with capabilities[] array placeholder → no CLI command exists to update array fields → workflow breaks",
+        "AI encounters personas[] array with nested structure → update-foundation command cannot handle nested JSON objects → must manually edit file (violates automation principle)"
+      ],
+      "rules": [
+        "discover-foundation system-reminders MUST use syntax that matches actual update-foundation command implementation",
+        "update-foundation command MUST support updating nested array fields (capabilities[], personas[]) through CLI without manual file editing",
+        "Foundation discovery workflow MUST be fully automatable by AI without requiring manual JSON editing",
+        "All fields in foundation.json.draft MUST have corresponding CLI commands to update them programmatically"
+      ],
+      "architectureNotes": [
+        "Root Cause: src/commands/discover-foundation.ts emits system-reminders with '--field <path> --value <value>' syntax, but src/commands/update-foundation.ts implements '<section> <content>' syntax with no --field option",
+        "Impact: Breaks field-by-field discovery feedback loop documented in CLAUDE.md 'Foundation Document Discovery' section. AI cannot complete foundation without manual file editing.",
+        "Current Workaround: AI must manually edit foundation.json or foundation.json.draft using Write tool, which violates the automation principle and bypasses validation",
+        "Affected Fields: capabilities[] (array of {name, description} objects), personas[] (array of {name, description, goals[]} objects), architectureDiagrams[] (array of Mermaid diagrams)",
+        "Schema Reference: src/schemas/generic-foundation.schema.json defines required structure - capabilities[] requires minItems:1, personas[] is optional but must follow persona definition structure"
+      ],
+      "questions": [
+        {
+          "text": "@human: Should update-foundation support JSON path syntax (e.g., 'capabilities[0].name') or add separate commands (e.g., 'add-capability', 'add-persona')?",
+          "selected": true,
+          "answer": "Add separate commands for better UX: 'fspec add-capability <name> <description>' and 'fspec add-persona <name> <description> --goal <goal>'. This follows existing command patterns (add-scenario, add-step) and is more intuitive than JSON path syntax."
+        },
+        {
+          "text": "@human: Should the fix update discover-foundation to emit correct syntax, or extend update-foundation to support --field flag?",
+          "selected": true,
+          "answer": "Create new commands (add-capability, add-persona) that update foundation.json programmatically. Update discover-foundation to emit system-reminders with correct command syntax. This is cleaner than retrofitting --field flag to update-foundation."
+        },
+        {
+          "text": "@human: How should AI update array elements - append to array, or replace entire array?",
+          "selected": true,
+          "answer": "Append to arrays for add-capability and add-persona commands. This allows building up the foundation iteratively during discovery. Provide separate clear-capabilities and clear-personas commands if replacement is needed."
+        }
+      ],
+      "assumptions": [
+        "Add separate commands for better UX: 'fspec add-capability <name> <description>' and 'fspec add-persona <name> <description> --goal <goal>'. This follows existing command patterns (add-scenario, add-step) and is more intuitive than JSON path syntax.",
+        "Create new commands (add-capability, add-persona) that update foundation.json programmatically. Update discover-foundation to emit system-reminders with correct command syntax. This is cleaner than retrofitting --field flag to update-foundation.",
+        "Append to arrays for add-capability and add-persona commands. This allows building up the foundation iteratively during discovery. Provide separate clear-capabilities and clear-personas commands if replacement is needed."
+      ],
+      "userStory": {
+        "role": "AI agent using fspec discover-foundation workflow",
+        "action": "update nested array fields in foundation.json through CLI commands",
+        "benefit": "I can complete foundation discovery without manual file editing"
+      }
     }
   },
   "states": {
@@ -7352,7 +7443,8 @@
       "HELP-002",
       "FOUND-009",
       "FOUND-010",
-      "DISC-001"
+      "DISC-001",
+      "BUG-015"
     ],
     "blocked": []
   }
