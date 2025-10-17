@@ -1,0 +1,115 @@
+{
+  "scenarios": [
+    {
+      "name": "Chain to next field after updating first field",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/update-foundation-field-chaining.test.ts",
+          "lines": "32-75",
+          "implMappings": [
+            {
+              "file": "src/commands/update-foundation.ts",
+              "lines": [
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Chain to next field after updating middle field",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/update-foundation-field-chaining.test.ts",
+          "lines": "77-117",
+          "implMappings": [
+            {
+              "file": "src/commands/update-foundation.ts",
+              "lines": [
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Show finalize reminder when all fields complete",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/update-foundation-field-chaining.test.ts",
+          "lines": "119-168",
+          "implMappings": [
+            {
+              "file": "src/commands/update-foundation.ts",
+              "lines": [
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/commands/__tests__/update-foundation-field-chaining.test.ts"
+    ],
+    "implFiles": [
+      "src/commands/update-foundation.ts"
+    ],
+    "totalLinesCovered": 186
+  }
+}

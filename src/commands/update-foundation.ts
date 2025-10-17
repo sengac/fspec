@@ -215,6 +215,21 @@ export async function updateFoundationCommand(
     // Show different output based on whether we updated draft or final
     if (result.message?.includes('draft')) {
       console.log(chalk.gray('  Updated: spec/foundation.json.draft'));
+
+      // IMPORTANT: Chain to next field during draft-driven discovery
+      // Import discoverFoundation dynamically to avoid circular dependencies
+      const { discoverFoundation } = await import('./discover-foundation');
+
+      // Scan draft for next field
+      const scanResult = await discoverFoundation({
+        scanOnly: true,
+        draftPath: 'spec/foundation.json.draft',
+      });
+
+      // Emit system-reminder for next field (visible to AI, stripped from user output)
+      if (scanResult.systemReminder) {
+        console.log(scanResult.systemReminder);
+      }
     } else {
       console.log(chalk.gray('  Updated: spec/foundation.json'));
       console.log(chalk.gray('  Regenerated: spec/FOUNDATION.md'));
