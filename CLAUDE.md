@@ -575,11 +575,6 @@ fspec update-foundation --field project.vision --value "New vision"
 # Show current foundation
 fspec show-foundation
 
-# Migrate v1.x foundation to v2.0.0 (for legacy projects)
-fspec migrate-foundation
-fspec migrate-foundation --dry-run  # Preview changes
-fspec migrate-foundation --output foundation-v2.json  # Custom output
-
 # Generate FOUNDATION.md from foundation.json
 fspec generate-foundation-md
 
@@ -730,29 +725,6 @@ fspec delete-scenarios-by-tag --tag=@wip
 
 **When to use**: For cleanup operations, removing deprecated features, or pruning work-in-progress scenarios.
 
-## Foundation Schema Migration
-
-For projects created before v2.0.0, migrate legacy foundation.json:
-
-```bash
-# Preview migration (safe)
-fspec migrate-foundation --dry-run
-
-# Migrate to v2.0.0
-fspec migrate-foundation
-
-# Migrate to custom location
-fspec migrate-foundation --output foundation-v2.json
-
-# Example output:
-# ✓ Migrated foundation.json to v2.0.0 schema
-# Backup: spec/foundation.json.backup
-# Updated: spec/foundation.json
-# Version: 2.0.0
-```
-
-**When to use**: When upgrading existing projects with v1.x foundation.json files to maintain compatibility with v2.0.0 schema.
-
 ## Common Commands
 
 ```bash
@@ -791,9 +763,6 @@ npm run format
 # Bulk operations
 ./dist/index.js delete-features-by-tag --tag=@deprecated --dry-run
 ./dist/index.js delete-scenarios-by-tag --tag=@wip --dry-run
-
-# Migration
-./dist/index.js migrate-foundation --dry-run
 ```
 
 ## Important Reminders

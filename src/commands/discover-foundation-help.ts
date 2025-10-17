@@ -67,7 +67,6 @@ Next steps:
   relatedCommands: [
     'update-foundation',
     'show-foundation',
-    'migrate-foundation',
     'generate-foundation-md',
   ],
   notes: [

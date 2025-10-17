@@ -6962,9 +6962,9 @@
       "id": "HELP-002",
       "title": "Register 7 missing commands with Commander",
       "type": "task",
-      "status": "implementing",
+      "status": "done",
       "createdAt": "2025-10-17T05:37:10.832Z",
-      "updatedAt": "2025-10-17T05:37:27.623Z",
+      "updatedAt": "2025-10-17T05:42:41.825Z",
       "description": "7 fully-implemented commands with help files are not registered with Commander.js: add-hook, list-hooks, remove-hook, validate-hooks, dependencies, workflow-automation, migrate-foundation. Also remove 2 duplicate legacy help files (delete-features-help.ts, delete-scenarios-help.ts).",
       "children": [],
       "stateHistory": [
@@ -6975,6 +6975,14 @@
         {
           "state": "implementing",
           "timestamp": "2025-10-17T05:37:27.623Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-17T05:42:41.537Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-17T05:42:41.825Z"
         }
       ]
     }
@@ -6983,9 +6991,7 @@
     "backlog": [],
     "specifying": [],
     "testing": [],
-    "implementing": [
-      "HELP-002"
-    ],
+    "implementing": [],
     "validating": [],
     "done": [
       "BUG-007",
@@ -7117,7 +7123,8 @@
       "REFAC-001",
       "TEST-005",
       "COV-052",
-      "HELP-001"
+      "HELP-001",
+      "HELP-002"
     ],
     "blocked": []
   }

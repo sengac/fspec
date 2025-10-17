@@ -1482,7 +1482,6 @@ fspec discover-foundation --output foundation.json
 ```bash
 fspec update-foundation      # Update existing foundation
 fspec show-foundation        # Display foundation
-fspec migrate-foundation     # Migrate v1.x to v2.0.0
 fspec generate-foundation-md # Generate FOUNDATION.md from JSON
 ```
 
