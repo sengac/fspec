@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-17T08:52:58.616Z"
+    "lastUpdated": "2025-10-17T09:09:13.936Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -7399,6 +7399,57 @@
         "AI fills last field, sees success message PLUS system-reminder saying 'All fields complete. Run: fspec discover-foundation --finalize'"
       ],
       "estimate": 3
+    },
+    "BUG-018": {
+      "id": "BUG-018",
+      "title": "add-persona and add-capability don't work with foundation.json.draft",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-10-17T09:08:55.578Z",
+      "updatedAt": "2025-10-17T09:15:50.916Z",
+      "description": "During draft-driven discovery workflow, add-persona and add-capability commands fail because they check for foundation.json instead of foundation.json.draft. This prevents AI from adding personas/capabilities during the discovery phase.",
+      "epic": "foundation-document-redesign",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-17T09:09:00.995Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-17T09:11:14.730Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-17T09:12:19.941Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-17T09:13:32.198Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-17T09:15:50.917Z"
+        }
+      ],
+      "userStory": {
+        "role": "AI agent using draft-driven discovery",
+        "action": "add personas and capabilities during discovery phase",
+        "benefit": "I can complete all foundation fields without waiting for finalization"
+      },
+      "rules": [
+        "add-persona MUST check for foundation.json.draft first, then foundation.json",
+        "add-capability MUST check for foundation.json.draft first, then foundation.json",
+        "Commands MUST prefer draft over final foundation.json (draft takes precedence)",
+        "Error messages MUST be helpful when neither file exists"
+      ],
+      "examples": [
+        "AI runs 'fspec add-persona' during discovery, draft exists, persona added to draft",
+        "AI runs 'fspec add-capability' during discovery, draft exists, capability added to draft",
+        "AI runs 'fspec add-persona', no draft but foundation.json exists, persona added to foundation.json (backward compatibility)",
+        "AI runs 'fspec add-capability', neither file exists, shows helpful error with 'fspec discover-foundation' suggestion"
+      ],
+      "estimate": 3
     }
   },
   "states": {
@@ -7546,7 +7597,8 @@
       "DISC-001",
       "BUG-015",
       "BUG-016",
-      "BUG-017"
+      "BUG-017",
+      "BUG-018"
     ],
     "blocked": []
   }
