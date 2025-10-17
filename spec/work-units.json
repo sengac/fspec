@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-17T08:38:11.144Z"
+    "lastUpdated": "2025-10-17T08:52:58.616Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -7349,6 +7349,56 @@
         "User runs finalize with empty capabilities array, sees error: 'Missing required: solutionSpace.capabilities' with example command"
       ],
       "estimate": 2
+    },
+    "BUG-017": {
+      "id": "BUG-017",
+      "title": "update-foundation doesn't chain to next field during discovery",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-10-17T08:52:34.641Z",
+      "updatedAt": "2025-10-17T08:57:37.226Z",
+      "description": "When AI runs 'fspec update-foundation' during draft-driven discovery, the command updates the draft but doesn't automatically scan for and emit the next field guidance. This breaks the automatic field-by-field chaining workflow, forcing AI to manually call discover-foundation again or guess what field comes next.",
+      "epic": "foundation-document-redesign",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-17T08:52:50.903Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-17T08:54:25.470Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-17T08:55:56.939Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-17T08:57:04.254Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-17T08:57:36.662Z"
+        }
+      ],
+      "userStory": {
+        "role": "AI agent using draft-driven discovery",
+        "action": "automatically see next field guidance after updating a field",
+        "benefit": "I don't have to manually re-run discover-foundation or guess what comes next"
+      },
+      "rules": [
+        "After updating draft field, MUST automatically scan draft for next field",
+        "MUST emit system-reminder with guidance for next unfilled field",
+        "If all fields complete, MUST tell AI to run finalize",
+        "Chaining MUST be automatic, no manual intervention required"
+      ],
+      "examples": [
+        "AI runs 'fspec update-foundation projectName \"MyProject\"', sees success message PLUS system-reminder for Field 2/8: project.vision",
+        "AI runs 'fspec update-foundation projectVision \"My vision\"', sees success message PLUS system-reminder for Field 3/8: project.projectType",
+        "AI fills last field, sees success message PLUS system-reminder saying 'All fields complete. Run: fspec discover-foundation --finalize'"
+      ],
+      "estimate": 3
     }
   },
   "states": {
@@ -7495,7 +7545,8 @@
       "FOUND-010",
       "DISC-001",
       "BUG-015",
-      "BUG-016"
+      "BUG-016",
+      "BUG-017"
     ],
     "blocked": []
   }
