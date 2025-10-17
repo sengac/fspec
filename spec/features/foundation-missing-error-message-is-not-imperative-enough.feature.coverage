@@ -1,0 +1,134 @@
+{
+  "scenarios": [
+    {
+      "name": "Error forbids manual foundation.json creation",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/foundation-check.test.ts",
+          "lines": "128-142",
+          "implMappings": [
+            {
+              "file": "src/utils/foundation-check.ts",
+              "lines": [
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Error shows complete workflow steps",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/foundation-check.test.ts",
+          "lines": "144-164",
+          "implMappings": [
+            {
+              "file": "src/utils/foundation-check.ts",
+              "lines": [
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/utils/__tests__/foundation-check.test.ts"
+    ],
+    "implFiles": [
+      "src/utils/foundation-check.ts"
+    ],
+    "totalLinesCovered": 122
+  }
+}

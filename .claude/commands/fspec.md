@@ -94,37 +94,49 @@ Then read `spec/CLAUDE.md` for fspec-specific workflow details.
 
 ## Step 1.5: Bootstrap Foundation (REQUIRED for New Projects)
 
-**CRITICAL**: If `spec/foundation.json` does not exist, you MUST bootstrap it using automated discovery. This is ENFORCED by fspec commands.
+**CRITICAL**: If `spec/foundation.json` does not exist, you MUST bootstrap it using the AI-driven discovery feedback loop. This is ENFORCED by fspec commands.
 
 ```bash
-# REQUIRED: Analyze codebase and generate foundation.json
+# AI runs discover-foundation to create draft with placeholders
 fspec discover-foundation
 
-# Custom output path
-fspec discover-foundation --output foundation.json
+# Finalize draft after all fields filled
+fspec discover-foundation --finalize
 ```
 
 **What `discover-foundation` does:**
 
-1. **Automated Code Analysis** - Detects project type from codebase patterns
-   - CLI tools: commander.js, bin field in package.json
-   - Web apps: Express routes, React components
-   - Libraries: exports field in package.json
+1. **Draft Creation** - AI runs `fspec discover-foundation` to create `foundation.json.draft`
+   - Command creates draft with `[QUESTION: text]` placeholders for fields requiring input
+   - Command creates draft with `[DETECTED: value]` for auto-detected fields to verify
+   - Draft IS the guidance - defines structure and what needs to be filled
 
-2. **Persona Discovery** - Identifies user personas from code structure
-   - CLI tools → "Developer using CLI in terminal"
-   - Web apps → "End User" (UI) + "API Consumer" (routes)
-   - Libraries → "Developer integrating library into their codebase"
+2. **ULTRATHINK Guidance** - Command emits initial system-reminder for AI
+   - Instructs AI to analyze EVERYTHING: commands, routes, UI, tests, README, package.json
+   - Emphasizes understanding HOW system works, then determining WHY it exists and WHAT users can do
+   - Guides AI field-by-field through discovery process
 
-3. **Capability Inference** - Extracts high-level capabilities (WHAT, not HOW)
-   - Focus on user-facing features and capabilities
-   - NOT implementation details (React, Express, JWT, etc.)
-   - Example: "User Authentication" (WHAT) not "JWT with bcrypt" (HOW)
+3. **Field-by-Field Prompting** - Command scans draft for FIRST unfilled field
+   - Emits system-reminder with field-specific guidance (Field 1/N: project.name)
+   - Includes exact command to run: `fspec update-foundation --field <path> --value <value>`
+   - Provides context (e.g., "analyze package.json", "ULTRATHINK: determine core PURPOSE")
 
-4. **Interactive Questionnaire** - Prefills detected values, prompts for WHY/WHAT
-   - Project vision and problems solved (WHY)
-   - Solution approach and capabilities (WHAT)
-   - Validates before generating foundation.json
+4. **AI Analysis and Update** - AI analyzes codebase, asks human, runs fspec command
+   - AI examines code patterns to understand project structure
+   - AI asks human for confirmation/clarification
+   - AI runs: `fspec update-foundation --field project.name --value "fspec"`
+   - NO manual editing allowed - command detects and reverts manual edits
+
+5. **Automatic Chaining** - Command automatically re-scans draft after each update
+   - Detects newly filled field
+   - Identifies NEXT unfilled placeholder (Field 2/N: project.vision)
+   - Emits system-reminder with guidance for next field
+   - Repeats until all [QUESTION:] placeholders resolved
+
+6. **Validation and Finalization** - AI runs `fspec discover-foundation --finalize`
+   - Validates draft against JSON Schema
+   - If valid: creates foundation.json, deletes draft, auto-generates FOUNDATION.md
+   - If invalid: shows validation errors with exact field paths, prompts AI to fix and re-run
 
 **Why this is mandatory:**
 
@@ -138,7 +150,7 @@ fspec discover-foundation --output foundation.json
 
 - ONLY if `spec/foundation.json` already exists
 
-**See also:** `spec/CLAUDE.md` section "Foundation Document Discovery" for complete guidance.
+**See also:** `spec/CLAUDE.md` section "Bootstrapping Foundation for New Projects" for complete guidance.
 
 ## Step 2: Example Mapping - Discovery BEFORE Specification
 

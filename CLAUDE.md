@@ -489,54 +489,37 @@ fspec discover-foundation --output foundation.json
 
 ### How Discovery Works
 
-1. **Automated Code Analysis**: Analyzes codebase using pattern detection
-   - **CLI Tools**: Detects commander.js usage, bin field in package.json
-   - **Web Apps**: Detects Express routes, React components, identifies multiple personas
-   - **Libraries**: Detects exports field, identifies Developer persona
+1. **Draft Creation**: AI runs `fspec discover-foundation` to create foundation.json.draft
+   - Command creates draft with `[QUESTION: text]` placeholders for fields requiring input
+   - Command creates draft with `[DETECTED: value]` for auto-detected fields to verify
+   - Draft IS the guidance - defines structure and what needs to be filled
 
-2. **Project Type Detection**: Infers project type from code patterns
-   - Looks for framework indicators (commander, express, React)
-   - Analyzes package.json structure
-   - Examines file organization and naming
+2. **ULTRATHINK Guidance**: Command emits initial system-reminder for AI
+   - Instructs AI to analyze EVERYTHING: commands, routes, UI, tests, README, package.json
+   - Emphasizes understanding HOW system works, then determining WHY it exists and WHAT users can do
+   - Guides AI field-by-field through discovery process
 
-3. **Persona Discovery**: Identifies user personas from code structure
-   - CLI tools → "Developer using CLI in terminal"
-   - Web apps → "End User" (from UI) and "API Consumer" (from routes)
-   - Libraries → "Developer integrating library"
+3. **Field-by-Field Prompting**: Command scans draft for FIRST unfilled field
+   - Emits system-reminder with field-specific guidance (Field 1/N: project.name)
+   - Includes exact command to run: `fspec update-foundation --field <path> --value <value>`
+   - Provides context (e.g., "analyze package.json", "ULTRATHINK: determine core PURPOSE")
 
-4. **Capability Inference**: Extracts high-level capabilities (WHAT, not HOW)
-   - Focuses on user-facing features
-   - Groups granular functions into broad capabilities
-   - Example: React components → "User Interface" (NOT "Uses React hooks")
+4. **AI Analysis and Update**: AI analyzes codebase, asks human, runs fspec command
+   - AI examines code patterns to understand project structure
+   - AI asks human for confirmation/clarification
+   - AI runs: `fspec update-foundation --field project.name --value "fspec"`
+   - NO manual editing allowed - command detects and reverts manual edits
 
-5. **Interactive Questionnaire**: Prefills detected information, prompts for WHY/WHAT
-   - Answers prefilled with [DETECTED] tag
-   - Asks for project vision, problems solved, solution approach
-   - Validates all required fields before generating
+5. **Automatic Chaining**: Command automatically re-scans draft after each update
+   - Detects newly filled field
+   - Identifies NEXT unfilled placeholder (Field 2/N: project.vision)
+   - Emits system-reminder with guidance for next field
+   - Repeats until all [QUESTION:] placeholders resolved
 
-6. **Foundation Generation**: Creates foundation.json with v2.0.0 schema
-   - Maps discovered data to generic foundation schema
-   - Validates against JSON Schema
-   - Creates backup of existing foundation.json if present
-
-### Code Analysis Patterns
-
-The discovery system uses guidance patterns (not implementation code) located in `src/guidance/automated-discovery-code-analysis.ts`:
-
-**CLI Tool Pattern**:
-- Indicators: `commander`, `.command(`, `.option(`, `bin field in package.json`
-- Infers: Project type = cli-tool, Persona = Developer using CLI
-- Capabilities: Extracted from command names (validate, format, list-features)
-
-**Web App Pattern**:
-- Indicators: `express`, `app.get(`, `React.Component`, `useState`, `routes/`
-- Infers: Project type = web-app, Personas = End User + API Consumer
-- Capabilities: High-level features from routes and components
-
-**Library Pattern**:
-- Indicators: `exports field`, `main field`, `index.ts with exports`
-- Infers: Project type = library, Persona = Developer integrating library
-- Capabilities: Exported functions, classes, types
+6. **Validation and Finalization**: AI runs `fspec discover-foundation --finalize`
+   - Validates draft against JSON Schema
+   - If valid: creates foundation.json, deletes draft, auto-generates FOUNDATION.md
+   - If invalid: shows validation errors with exact field paths, prompts AI to fix and re-run
 
 ### Discovery Focus: WHY/WHAT not HOW
 
@@ -593,10 +576,10 @@ fspec workflow-automation <action> <work-unit-id>
 
 ### Discovery Guidance Reference
 
-For complete guidance patterns used during discovery, see:
-- `src/guidance/automated-discovery-code-analysis.ts` - Pattern detection and inference rules
-- `src/commands/interactive-questionnaire.ts` - Questionnaire logic with prefill support
-- `src/commands/discover-foundation.ts` - Orchestration command
+For complete guidance on the draft-driven discovery workflow:
+- `foundation.json.draft` - The guidance file with placeholders showing what needs to be filled
+- `src/commands/discover-foundation.ts` - Orchestration command that reads draft and prompts AI
+- `fspec update-foundation` - Command for AI to update draft fields (NO manual editing)
 
 ## Work Unit Analysis and Dependency Management
 

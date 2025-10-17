@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-17T02:39:34.863Z"
+    "lastUpdated": "2025-10-17T06:42:45.374Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -6985,10 +6985,235 @@
           "timestamp": "2025-10-17T05:42:41.825Z"
         }
       ]
+    },
+    "FOUND-008": {
+      "id": "FOUND-008",
+      "title": "Improve foundation discovery error messaging and workflow guidance",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-10-17T05:54:23.527Z",
+      "updatedAt": "2025-10-17T05:54:23.527Z",
+      "description": "When foundation.json is missing, fspec should provide crystal-clear imperative guidance on running the interactive discovery workflow. The error message must prevent AI from manually creating foundation.json and instead force use of discover-foundation with proper codebase analysis.",
+      "children": []
+    },
+    "FOUND-009": {
+      "id": "FOUND-009",
+      "title": "Foundation missing error message is not imperative enough",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-10-17T05:57:24.673Z",
+      "updatedAt": "2025-10-17T06:04:32.745Z",
+      "description": "When foundation.json is missing, the error message in src/utils/foundation-check.ts is not imperative or detailed enough. It must: (1) FORBID manual JSON creation, (2) Explain the complete interactive workflow, (3) Emphasize foundation.json is a detailed PRD not a summary, (4) Show exact command sequence for draft->finalize workflow",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-17T05:57:49.057Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-17T05:59:37.205Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-17T06:01:14.358Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-17T06:02:04.914Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-17T06:02:43.048Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-17T06:03:26.554Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-17T06:04:32.745Z"
+        }
+      ],
+      "userStory": {
+        "role": "AI agent without foundation.json",
+        "action": "receive imperative guidance on foundation discovery workflow",
+        "benefit": "I follow the correct interactive workflow instead of manually creating JSON files"
+      },
+      "rules": [
+        "Error message must FORBID manual creation of foundation.json files",
+        "Error message must explain foundation.json is a detailed PRD, not a quick summary",
+        "Error message must show exact command sequence: discover-foundation creates draft, AI fills placeholders, discover-foundation --finalize creates final file"
+      ],
+      "examples": [
+        "AI tries to create work unit, gets error saying 'NEVER manually create foundation.json - use discover-foundation workflow'",
+        "Error message shows: Step 1: fspec discover-foundation (creates draft), Step 2: Fill [QUESTION:] placeholders, Step 3: fspec discover-foundation --finalize"
+      ],
+      "estimate": 2
+    },
+    "FOUND-010": {
+      "id": "FOUND-010",
+      "title": "Project type detection incorrectly identifies CLI tools as web-apps",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-10-17T05:57:26.180Z",
+      "updatedAt": "2025-10-17T06:27:34.821Z",
+      "description": "The discover-foundation command should NOT have automated project type detection. It must be 100% interactive questionnaire where AI asks human about project type, personas, capabilities. Remove all automated detection code from src/guidance/automated-discovery-code-analysis.ts",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-17T06:05:33.155Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-17T06:06:27.667Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-17T06:07:40.429Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-17T06:08:47.536Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-17T06:09:16.927Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-17T06:17:17.434Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-17T06:20:43.565Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-17T06:24:08.400Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-17T06:26:18.558Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-17T06:27:34.821Z"
+        }
+      ],
+      "userStory": {
+        "role": "AI agent running discover-foundation",
+        "action": "correctly detect CLI tool projects",
+        "benefit": "foundation.json has accurate project type and personas"
+      },
+      "rules": [
+        "foundation.json.draft IS the guidance file - it defines structure and what needs to be filled",
+        "Draft contains [QUESTION: text] placeholders for fields requiring human/AI input",
+        "Draft contains [DETECTED: value] for auto-detected fields that AI should verify with human",
+        "discover-foundation reads draft and identifies unfilled/placeholder fields",
+        "For each unfilled field, command emits system-reminder prompting AI to gather information",
+        "AI must analyze codebase AND ask human to gather accurate information",
+        "AI must use fspec update-foundation command to set values (NOT manual editing)",
+        "After each field is set, command re-reads draft and chains to next unfilled field",
+        "When all [QUESTION:] placeholders resolved, command validates against JSON schema",
+        "Final step: command creates foundation.json and deletes draft"
+      ],
+      "examples": [
+        "Draft has projectType:[QUESTION: What type?] → Command prompts AI → AI analyzes commander.js usage → AI asks human 'Is this cli-tool, web-app, or library?' → Human: 'cli-tool' → AI runs: fspec update-foundation --field project.projectType --value cli-tool → Command re-reads draft and moves to next field",
+        "Draft has personas with [QUESTION: Describe persona] → Command prompts AI to gather persona info → AI analyzes CLI commands, no web UI → AI asks human 'Who uses this and their goals?' → Human: 'Developers in terminal managing specs' → AI runs: fspec update-foundation --field personas[0].description --value 'Developer using fspec to manage Gherkin specs' → Command chains to next field",
+        "Draft has all [QUESTION:] resolved → Command validates against schema → If valid: creates foundation.json, deletes draft → If invalid: shows validation errors, prompts AI to fix",
+        "AI tries to manually edit foundation.json.draft → Command detects file change outside fspec → Emits system-reminder: 'You must use fspec update-foundation commands, not manual editing'",
+        "Draft has [DETECTED: web-app] for projectType → Command prompts AI to verify → AI asks human 'Detected web-app, is this correct?' → Human: 'No, it's cli-tool' → AI runs: fspec update-foundation --field project.projectType --value cli-tool"
+      ],
+      "estimate": 3
+    },
+    "DISC-001": {
+      "id": "DISC-001",
+      "title": "Implement draft-driven discovery workflow with AI chaining",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-17T06:32:17.502Z",
+      "updatedAt": "2025-10-17T07:03:28.396Z",
+      "description": "discover-foundation must read draft, identify next unfilled field, prompt AI with system-reminders, re-read after each fspec update-foundation command, chain to next field, validate when complete, and auto-regenerate FOUNDATION.md from foundation.json",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-17T06:32:29.265Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-17T06:49:02.418Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-17T06:51:45.257Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-17T06:57:04.523Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-17T06:57:23.540Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-17T06:58:27.988Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-17T07:03:05.753Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-17T07:03:28.396Z"
+        }
+      ],
+      "userStory": {
+        "role": "AI agent running discover-foundation",
+        "action": "be guided step-by-step through filling foundation.json.draft",
+        "benefit": "foundation.json is created accurately with all required fields and FOUNDATION.md is auto-generated"
+      },
+      "rules": [
+        "discover-foundation creates foundation.json.draft with [QUESTION:] and [DETECTED:] placeholders",
+        "After creating draft, command scans for FIRST unfilled [QUESTION:] field",
+        "For each unfilled field, command emits system-reminder with: field path, guidance text, example values",
+        "System-reminder instructs AI to: analyze codebase, ask human, use fspec update-foundation command",
+        "After AI runs fspec update-foundation, command automatically re-runs to find NEXT unfilled field",
+        "Command must NOT advance if AI tries to manually edit draft - emit system-reminder to use commands",
+        "When all [QUESTION:] placeholders resolved, command validates draft against JSON schema",
+        "If validation passes: create foundation.json, delete draft, auto-run fspec generate-foundation-md",
+        "If validation fails: show errors, keep draft, prompt AI to fix and re-run",
+        "[DETECTED:] fields must be verified with human before accepting",
+        "Command tracks progress: shows N of M fields completed in each system-reminder",
+        "System-reminders must be actionable: specific field, specific command to run, example value",
+        "AI must NEVER skip fields - command enforces sequential field completion",
+        "Final FOUNDATION.md generation happens automatically without AI intervention",
+        "Command must detect if draft was manually edited between runs and reject with error"
+      ],
+      "examples": [
+        "INITIAL RUN: Human runs 'fspec discover-foundation' → Command creates foundation.json.draft with structure → Draft has REQUIRED fields: project{name,vision,projectType}, problemSpace{primaryProblem{title,description,impact}}, solutionSpace{overview,capabilities[]}, personas[] → All fields contain [QUESTION: ...] or [DETECTED: ...] placeholders → Command emits system-reminder: 'Draft created. To complete foundation, you must ULTRATHINK the entire codebase. Analyze EVERYTHING: commands, routes, UI, tests, README, package.json. Understand HOW it works, then determine WHY it exists and WHAT users can do. I will guide you field-by-field. Field 1/9: project.name'",
+        "FIELD 1 (project.name): Command reads draft → Finds [QUESTION: What is the project name?] → Emits: 'Field 1/9: project.name. Analyze package.json name field. Confirm with human. Run: fspec update-foundation --field project.name --value <name>' → AI reads package.json, sees 'fspec' → AI asks human 'Package name is fspec, correct?' → Human confirms → AI runs 'fspec update-foundation --field project.name --value fspec' → Command detects update, re-scans draft, finds next unfilled field",
+        "FIELD 2 (project.vision): Command re-scans → Finds [QUESTION: What is the one-sentence vision?] → Emits: 'Field 2/9: project.vision (elevator pitch). ULTRATHINK: Read ALL code, understand the system deeply. What is the core PURPOSE? Focus on WHY this exists, not HOW it works. Ask human. Run: fspec update-foundation --field project.vision --value \"your vision\"' → AI reads README, analyzes commands (validate, format, list-features), understands it manages Gherkin specs → AI formulates: 'CLI tool for managing Gherkin specifications using ACDD' → AI asks human 'Is vision correct?' → Human confirms → AI updates field",
+        "FIELD 3 (project.projectType): Command re-scans → Finds [DETECTED: cli-tool] → Emits: 'Field 3/9: project.projectType. Auto-detected cli-tool from commander.js usage and bin field. Verify with human. Options: cli-tool, web-app, library, sdk, mobile-app, desktop-app, service, api, other. Run: fspec update-foundation --field project.projectType --value cli-tool' → AI analyzes code: sees commander.js imports, .command() calls, bin field in package.json → AI confirms: yes, this is cli-tool → AI asks human 'Detected cli-tool, correct?' → Human confirms → AI updates field → Command chains to problemSpace",
+        "FIELD 4 (problemSpace.primaryProblem): Command re-scans → Finds [QUESTION: What problem does this solve?] → Emits: 'Field 4/9: problemSpace.primaryProblem. CRITICAL: Think from USER perspective. WHO uses this (persona)? WHAT problem do THEY face? WHY do they need this solution? Analyze codebase to understand user pain, ask human. Required: title, description, impact (high/medium/low). Run: fspec update-foundation --field problemSpace.primaryProblem.title --value \"Problem Title\"' → AI analyzes: this is CLI for specs, users are developers, they need structured spec workflow → AI asks human 'Primary problem: Developers lack structured workflow for managing specifications?' → Human elaborates → AI updates title,description,impact",
+        "FIELD 5 (solutionSpace.capabilities): Command re-scans → Finds [QUESTION: What can users DO?] → Emits: 'Field 5/9: solutionSpace.capabilities. List 3-7 HIGH-LEVEL abilities users have. Focus on WHAT not HOW. Example: \"Spec Validation\" (WHAT), not \"Uses Cucumber parser\" (HOW). Analyze commands/features to identify user-facing capabilities. Run: fspec update-foundation --field solutionSpace.capabilities[0].name --value \"Capability Name\"' → AI analyzes commands: validate, format, list, create → Groups into capabilities: Spec Management, Validation, Work Unit Tracking → AI asks human → Human confirms → AI adds each capability with description",
+        "FIELD 6 (personas): Command re-scans → Finds [QUESTION: Who uses this?] → Emits: 'Field 6/9: personas. Identify ALL user types from interactions. CLI tools: who runs commands? Web apps: who uses UI + who calls API? Analyze ALL user-facing code. Ask human about goals and pain points. Run: fspec update-foundation --field personas[0].name --value \"Persona Name\"' → AI analyzes: CLI commands used by developers, no web UI, no API consumers → Identifies persona: \"Developer using CLI in terminal\" → AI asks human about goals: managing specs, following ACDD → AI asks about pain points: fragmented tools, no workflow → AI updates persona with name, description, goals, painPoints",
+        "COMPLETION: AI fills last required field → Command re-scans → ALL required fields complete (no [QUESTION:] in required fields) → Command validates draft against JSON schema → Schema validation PASSES → Command creates spec/foundation.json from draft → Command deletes spec/foundation.json.draft → Command AUTOMATICALLY runs 'fspec generate-foundation-md' (no AI action needed) → Command emits: 'Discovery complete\\! Created: spec/foundation.json, spec/FOUNDATION.md. Foundation is ready. You can now run fspec commands that require foundation.' → AI can now proceed with other work",
+        "ERROR: Manual Editing → AI uses Write tool to edit foundation.json.draft directly → Command detects: draft mtime changed without fspec command → Command compares last known state vs current → Command emits ERROR in system-reminder: 'CRITICAL: You manually edited foundation.json.draft. This violates the workflow. You MUST use: fspec update-foundation --field <path> --value <value>. Reverting your changes. Draft restored to last valid state. Try again with proper command.' → Draft is restored → AI must use fspec commands",
+        "ERROR: Validation Failure → AI fills all fields → Command validates against schema → Validation FAILS: missing required field problemSpace.primaryProblem.description → Command emits: 'Schema validation failed. Missing required: problemSpace.primaryProblem.description. Draft NOT finalized. Fix by running: fspec update-foundation --field problemSpace.primaryProblem.description --value \"your description\". Then re-run discover-foundation to validate.' → Draft kept, foundation.json NOT created → AI fixes missing field and re-runs"
+      ],
+      "attachments": [
+        "spec/attachments/DISC-001/discovery-feedback-loop.mmd"
+      ]
     }
   },
   "states": {
-    "backlog": [],
+    "backlog": [
+      "FOUND-008"
+    ],
     "specifying": [],
     "testing": [],
     "implementing": [],
@@ -7124,7 +7349,10 @@
       "TEST-005",
       "COV-052",
       "HELP-001",
-      "HELP-002"
+      "HELP-002",
+      "FOUND-009",
+      "FOUND-010",
+      "DISC-001"
     ],
     "blocked": []
   }

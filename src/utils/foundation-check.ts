@@ -48,15 +48,26 @@ export function checkFoundationExists(
 function buildFoundationMissingError(originalCommand: string): string {
   const userMessage = `Error: Project foundation not found.
 
-Before managing work units, you must create a foundation document.
+CRITICAL: NEVER manually create foundation.json - you MUST use discover-foundation workflow!
 
-Run: fspec discover-foundation
+Foundation.json is a DETAILED product requirements document, not a quick summary.
+Manual creation bypasses essential codebase analysis and questionnaire.
 
-This will analyze your codebase and generate spec/foundation.json with:
-  - Project type detection (CLI tool, web app, library)
-  - User personas identification
-  - Capability mapping
-  - Interactive questionnaire for project vision and problems
+You MUST follow this exact workflow:
+
+  Step 1: fspec discover-foundation (creates draft)
+    - Analyzes codebase to detect project type, personas, capabilities
+    - Generates foundation.json.draft with [QUESTION:] placeholders
+
+  Step 2: Fill [QUESTION:] placeholders in draft
+    - Edit foundation.json.draft to replace all [QUESTION: ...] placeholders
+    - Provide detailed answers about project vision, problems, solutions
+
+  Step 3: fspec discover-foundation --finalize
+    - Validates completed draft
+    - Generates final foundation.json
+
+DO NOT skip this workflow. DO NOT create foundation.json manually.
 `;
 
   const systemReminder = `<system-reminder>

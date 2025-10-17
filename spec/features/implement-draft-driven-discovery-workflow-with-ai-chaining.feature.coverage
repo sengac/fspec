@@ -1,0 +1,640 @@
+{
+  "scenarios": [
+    {
+      "name": "Initial draft creation with ULTRATHINK guidance",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/draft-driven-discovery-feedback-loop.test.ts",
+          "lines": "30-81",
+          "implMappings": [
+            {
+              "file": "src/commands/discover-foundation.ts",
+              "lines": [
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Fill project.name field via feedback loop",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/draft-driven-discovery-feedback-loop.test.ts",
+          "lines": "85-149",
+          "implMappings": [
+            {
+              "file": "src/commands/discover-foundation.ts",
+              "lines": [
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Fill project.vision with ULTRATHINK guidance",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/draft-driven-discovery-feedback-loop.test.ts",
+          "lines": "153-215",
+          "implMappings": [
+            {
+              "file": "src/commands/discover-foundation.ts",
+              "lines": [
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Verify DETECTED project type with human",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/draft-driven-discovery-feedback-loop.test.ts",
+          "lines": "219-263",
+          "implMappings": [
+            {
+              "file": "src/commands/discover-foundation.ts",
+              "lines": [
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Fill problemSpace from USER perspective",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/draft-driven-discovery-feedback-loop.test.ts",
+          "lines": "267-323",
+          "implMappings": [
+            {
+              "file": "src/commands/discover-foundation.ts",
+              "lines": [
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Fill solutionSpace.capabilities with WHAT not HOW focus",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/draft-driven-discovery-feedback-loop.test.ts",
+          "lines": "327-405",
+          "implMappings": [
+            {
+              "file": "src/commands/discover-foundation.ts",
+              "lines": [
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Fill personas from user interaction analysis",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/draft-driven-discovery-feedback-loop.test.ts",
+          "lines": "409-491",
+          "implMappings": [
+            {
+              "file": "src/commands/discover-foundation.ts",
+              "lines": [
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Complete discovery with auto-generation",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/draft-driven-discovery-feedback-loop.test.ts",
+          "lines": "495-564",
+          "implMappings": [
+            {
+              "file": "src/commands/discover-foundation.ts",
+              "lines": [
+                292,
+                293,
+                294,
+                295,
+                296,
+                297,
+                298,
+                299,
+                300,
+                301,
+                302,
+                303,
+                304,
+                305,
+                306,
+                307,
+                308,
+                309,
+                310,
+                311,
+                312,
+                313,
+                314,
+                315,
+                316,
+                317,
+                318,
+                319,
+                320,
+                321,
+                322,
+                323,
+                324,
+                325,
+                326,
+                327,
+                328,
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345,
+                346,
+                347,
+                348,
+                349,
+                350,
+                351,
+                352,
+                353,
+                354,
+                355,
+                356,
+                357,
+                358,
+                359,
+                360
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Detect and reject manual editing",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/draft-driven-discovery-feedback-loop.test.ts",
+          "lines": "568-618",
+          "implMappings": [
+            {
+              "file": "src/commands/discover-foundation.ts",
+              "lines": [
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Handle schema validation failure",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/draft-driven-discovery-feedback-loop.test.ts",
+          "lines": "622-719",
+          "implMappings": [
+            {
+              "file": "src/commands/discover-foundation.ts",
+              "lines": [
+                292,
+                293,
+                294,
+                295,
+                296,
+                297,
+                298,
+                299,
+                300,
+                301,
+                302,
+                303,
+                304,
+                305,
+                306,
+                307,
+                308,
+                309,
+                310,
+                311,
+                312,
+                313,
+                314,
+                315,
+                316,
+                317,
+                318,
+                319,
+                320,
+                321,
+                322,
+                323,
+                324,
+                325,
+                326,
+                327,
+                328,
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345,
+                346,
+                347,
+                348
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 10,
+    "coveredScenarios": 10,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/commands/__tests__/draft-driven-discovery-feedback-loop.test.ts"
+    ],
+    "implFiles": [
+      "src/commands/discover-foundation.ts"
+    ],
+    "totalLinesCovered": 1127
+  }
+}
