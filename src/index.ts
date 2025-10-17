@@ -122,7 +122,6 @@ import { registerValidateHooksCommand } from './commands/validate-hooks';
 import { registerValidateSpecAlignmentCommand } from './commands/validate-spec-alignment';
 import { registerValidateTagsCommand } from './commands/validate-tags';
 import { registerValidateWorkUnitsCommand } from './commands/validate-work-units';
-import { registerMigrateFoundationCommand } from './commands/migrate-foundation';
 import { registerWorkflowAutomationCommand } from './commands/workflow-automation';
 
 // Help functions
@@ -256,7 +255,6 @@ registerValidateHooksCommand(program);
 registerValidateSpecAlignmentCommand(program);
 registerValidateTagsCommand(program);
 registerValidateWorkUnitsCommand(program);
-registerMigrateFoundationCommand(program);
 registerWorkflowAutomationCommand(program);
 
 async function main(): Promise<void> {

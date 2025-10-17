@@ -79,7 +79,6 @@ const config: CommandHelpConfig = {
     'validate-foundation-schema',
     'generate-foundation-md',
     'discover-foundation',
-    'migrate-foundation',
   ],
   notes: [
     'Automatically regenerates FOUNDATION.md from foundation.json after update',
