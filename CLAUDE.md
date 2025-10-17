@@ -570,6 +570,14 @@ fspec add-capability "Data Visualization" "Interactive charts and graphs"
 fspec add-persona "Developer" "Builds features with AI agents" --goal "Ship quality code faster"
 fspec add-persona "AI Agent" "Uses fspec for specs" --goal "Complete foundation" --goal "Validate features"
 
+# Remove capabilities from foundation
+fspec remove-capability "User Authentication"
+fspec remove-capability "[QUESTION: What can users DO?]"
+
+# Remove personas from foundation
+fspec remove-persona "Developer"
+fspec remove-persona "[QUESTION: Who uses this?]"
+
 # Show current foundation
 fspec show-foundation
 
@@ -597,6 +605,8 @@ For complete guidance on the draft-driven discovery workflow:
 - `fspec update-foundation` - Command for simple fields (project.name, project.vision, etc.)
 - `fspec add-capability` - Command for adding capabilities (NO manual editing)
 - `fspec add-persona` - Command for adding personas (NO manual editing)
+- `fspec remove-capability` - Command for removing capabilities (NO manual editing)
+- `fspec remove-persona` - Command for removing personas (NO manual editing)
 
 ## Work Unit Analysis and Dependency Management
 

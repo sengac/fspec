@@ -1160,6 +1160,18 @@ function displaySetupHelp(): void {
     '      fspec add-persona "AI Agent" "Uses fspec for specs" --goal "Complete foundation" --goal "Validate features"'
   );
   console.log('');
+  console.log('  ' + chalk.cyan('fspec remove-capability <name>'));
+  console.log('    Description: Remove capability from foundation.json');
+  console.log('    Examples:');
+  console.log('      fspec remove-capability "User Authentication"');
+  console.log('      fspec remove-capability "[QUESTION: What can users DO?]"');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec remove-persona <name>'));
+  console.log('    Description: Remove persona from foundation.json');
+  console.log('    Examples:');
+  console.log('      fspec remove-persona "Developer"');
+  console.log('      fspec remove-persona "[QUESTION: Who uses this?]"');
+  console.log('');
   console.log(
     '  ' + chalk.cyan('fspec add-diagram <section> <title> <content>')
   );

@@ -119,8 +119,8 @@ fspec discover-foundation --finalize
 3. **Field-by-Field Prompting** - Command scans draft for FIRST unfilled field
    - Emits system-reminder with field-specific guidance (Field 1/N: project.name)
    - Includes exact command to run for simple fields: `fspec update-foundation projectName "value"`
-   - For capabilities: `fspec add-capability "name" "description"`
-   - For personas: `fspec add-persona "name" "description" --goal "goal"`
+   - For capabilities: `fspec add-capability "name" "description"` or `fspec remove-capability "name"`
+   - For personas: `fspec add-persona "name" "description" --goal "goal"` or `fspec remove-persona "name"`
    - Provides language-agnostic guidance (not specific to JavaScript/TypeScript)
 
 4. **AI Analysis and Update** - AI analyzes codebase, asks human, runs fspec command
