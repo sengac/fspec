@@ -147,9 +147,32 @@ Feature: User Login
 - `if (user.role === 'admin') showAdminPanel()` → Scenario: "Admin views admin panel"
 - `if (cart.isEmpty()) redirectToProducts()` → Scenario: "View checkout with empty cart"
 
-## Step 5: Update foundation.json with User Story Maps
+## Step 5: Bootstrap foundation.json (REQUIRED)
 
-Create Mermaid diagrams showing user workflows:
+**CRITICAL**: Before proceeding with reverse ACDD, you MUST bootstrap the project foundation using automated discovery. This is ENFORCED by fspec commands.
+
+```bash
+# REQUIRED: Analyze existing codebase and create foundation.json
+fspec discover-foundation
+
+# Custom output path
+fspec discover-foundation --output foundation.json
+```
+
+**What `discover-foundation` does:**
+- Detects project type (CLI, web app, library) from code patterns
+- Identifies personas from code structure (routes, commands, exports)
+- Infers capabilities focusing on WHAT not HOW
+- Runs interactive questionnaire for WHY/WHAT information
+- Validates and generates foundation.json with v2.0.0 schema
+
+**Why this is mandatory:**
+- fspec commands check for foundation.json existence
+- Foundation establishes project type, personas, and capabilities
+- Provides context for all subsequent reverse ACDD work
+- Ensures consistent WHY/WHAT focus (not HOW/implementation details)
+
+**After bootstrapping**, you can optionally add user story map diagrams:
 
 ```bash
 fspec add-diagram "User Story Maps" "Authentication Flow" "

@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-17T01:25:24.422Z"
+    "lastUpdated": "2025-10-17T02:39:34.863Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -6229,7 +6229,7 @@
       "type": "story",
       "status": "done",
       "createdAt": "2025-10-16T23:19:35.741Z",
-      "updatedAt": "2025-10-17T00:38:38.932Z",
+      "updatedAt": "2025-10-17T02:20:14.997Z",
       "description": "Scan existing codebase to infer project type, personas, and capabilities using reverse ACDD techniques",
       "epic": "foundation-document-redesign",
       "children": [],
@@ -6254,6 +6254,34 @@
         {
           "state": "done",
           "timestamp": "2025-10-17T00:38:38.932Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-17T02:04:30.871Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-17T02:05:39.193Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-17T02:06:41.226Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-17T02:17:17.252Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-17T02:18:45.665Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-17T02:19:03.302Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-17T02:20:14.997Z"
         }
       ],
       "userStory": {
@@ -6364,7 +6392,7 @@
       "type": "story",
       "status": "done",
       "createdAt": "2025-10-16T23:19:37.238Z",
-      "updatedAt": "2025-10-17T01:01:53.733Z",
+      "updatedAt": "2025-10-17T02:15:18.183Z",
       "description": "Orchestrate code analysis + questionnaire to generate foundation.json with validation",
       "epic": "foundation-document-redesign",
       "children": [],
@@ -6394,6 +6422,34 @@
         {
           "state": "done",
           "timestamp": "2025-10-17T01:01:53.733Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-17T02:04:31.237Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-17T02:05:39.561Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-17T02:06:41.599Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-17T02:08:36.356Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-17T02:11:49.901Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-17T02:13:55.861Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-17T02:15:18.183Z"
         }
       ],
       "architectureNotes": [
@@ -6402,7 +6458,10 @@
         "System-reminder content: 'Code analysis detected 3 personas [list]. Review and confirm during questionnaire. Focus on WHY/WHAT, not HOW. See CLAUDE.md for boundary guidance.'"
       ],
       "rules": [
-        "Must emit system-reminders to guide AI through discovery process (persona review, WHY/WHAT boundary, next steps)"
+        "Must emit system-reminders to guide AI through discovery process (persona review, WHY/WHAT boundary, next steps)",
+        "The command should output all questions at once in a structured format. The AI (Claude) sees the questions, analyzes the codebase based on the guidance, and then the command collects answers through a partial foundation.json file that the AI edits.",
+        "The command creates a partial foundation.json with prefilled [DETECTED] values and [QUESTION] placeholders. The AI edits this file directly using Write/Edit tools, filling in answers based on code analysis. Then running the command again validates and completes the foundation.",
+        "Two-phase execution: (1) First run outputs questions and creates partial foundation.json with placeholders. AI edits the file. (2) Second run (or --finalize flag) validates the completed foundation.json and writes the final version."
       ],
       "examples": [
         "After code analysis: <system-reminder>Detected 3 user personas from routes: End User, Admin, API Consumer. Review in questionnaire. Use 'fspec show-work-unit FOUND-002' for details.</system-reminder>"
@@ -6411,7 +6470,24 @@
         "role": "developer using fspec with AI to bootstrap foundation documents",
         "action": "run discover-foundation command to orchestrate analysis and questionnaire",
         "benefit": "I get a complete validated foundation.json without manual work"
-      }
+      },
+      "questions": [
+        {
+          "text": "@human: How should the interactive questionnaire work? Does it output all questions at once and expect answers in a file, or does it prompt question-by-question?",
+          "selected": true,
+          "answer": "The command should output all questions at once in a structured format. The AI (Claude) sees the questions, analyzes the codebase based on the guidance, and then the command collects answers through a partial foundation.json file that the AI edits."
+        },
+        {
+          "text": "@human: When the command outputs questions, how does the AI provide answers? Through command arguments, through editing a file, or through some other mechanism?",
+          "selected": true,
+          "answer": "The command creates a partial foundation.json with prefilled [DETECTED] values and [QUESTION] placeholders. The AI edits this file directly using Write/Edit tools, filling in answers based on code analysis. Then running the command again validates and completes the foundation."
+        },
+        {
+          "text": "@human: Should the command run multiple times (once to output questions, again to collect answers), or should it be a single execution that somehow waits for input?",
+          "selected": true,
+          "answer": "Two-phase execution: (1) First run outputs questions and creates partial foundation.json with placeholders. AI edits the file. (2) Second run (or --finalize flag) validates the completed foundation.json and writes the final version."
+        }
+      ]
     },
     "FOUND-005": {
       "id": "FOUND-005",
@@ -6719,10 +6795,96 @@
         }
       ],
       "estimate": 3
+    },
+    "BUG-014": {
+      "id": "BUG-014",
+      "title": "validate-foundation-schema uses wrong schema for generic foundations",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-10-17T02:39:24.338Z",
+      "updatedAt": "2025-10-17T02:43:30.783Z",
+      "description": "The validate-foundation-schema command validates against fspec-specific schema instead of detecting schema version and using appropriate validator (generic v2.0.0 or fspec-specific)",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-17T02:39:28.719Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-17T02:40:53.846Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-17T02:41:31.662Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-17T02:43:24.348Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-17T02:43:30.783Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using fspec",
+        "action": "validate foundation.json files",
+        "benefit": "I get correct validation regardless of schema version"
+      },
+      "rules": [
+        "Command must detect schema version from foundation.json 'version' field",
+        "Version 2.0.0 and above should use generic-foundation-validator",
+        "Version 1.x should use fspec-specific validator for backward compatibility"
+      ],
+      "examples": [
+        "Foundation with version: 2.0.0 validates using generic schema successfully",
+        "Foundation with version: 1.0.0 validates using fspec-specific schema"
+      ]
+    },
+    "TEST-005": {
+      "id": "TEST-005",
+      "title": "Update test fixtures to use generic foundation schema",
+      "type": "task",
+      "status": "backlog",
+      "createdAt": "2025-10-17T02:53:51.917Z",
+      "updatedAt": "2025-10-17T02:53:51.917Z",
+      "description": "Update test fixtures in 9 test files that are currently using old fspec-specific schema format to use the new generic v2.0.0 schema format. This is cleanup work following BUG-014 where we simplified validate-foundation-schema to only use generic schema.",
+      "children": []
+    },
+    "REFAC-001": {
+      "id": "REFAC-001",
+      "title": "Migrate old fspec-specific schema commands to generic schema",
+      "type": "task",
+      "status": "done",
+      "createdAt": "2025-10-17T03:12:44.169Z",
+      "updatedAt": "2025-10-17T04:25:47.145Z",
+      "description": "Complete migration from old foundation.schema.json (fspec-specific) to generic-foundation.schema.json. Update all commands and tests that still reference whatWeAreBuilding/whyWeAreBuildingIt fields.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-17T03:13:09.841Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-17T03:13:10.534Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-17T04:18:34.350Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-17T04:25:47.145Z"
+        }
+      ]
     }
   },
   "states": {
-    "backlog": [],
+    "backlog": [
+      "TEST-005"
+    ],
     "specifying": [],
     "testing": [],
     "implementing": [],
@@ -6847,12 +7009,14 @@
       "BUG-012",
       "BUG-013",
       "FOUND-001",
-      "FOUND-002",
       "FOUND-003",
-      "FOUND-004",
       "FOUND-005",
       "FOUND-006",
-      "FOUND-007"
+      "FOUND-007",
+      "FOUND-004",
+      "FOUND-002",
+      "BUG-014",
+      "REFAC-001"
     ],
     "blocked": []
   }

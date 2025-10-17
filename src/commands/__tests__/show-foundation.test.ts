@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdir, writeFile, rm, readFile, access } from 'fs/promises';
 import { join } from 'path';
 import { showFoundation } from '../show-foundation';
+import { createMinimalFoundation } from '../../test-helpers/foundation-fixtures';
 
 describe('Feature: Display Foundation Documentation', () => {
   let testDir: string;
@@ -19,71 +20,7 @@ describe('Feature: Display Foundation Documentation', () => {
   describe('Scenario: Display entire foundation in JSON format', () => {
     it('should output valid JSON with all fields', async () => {
       // Given I have a foundation.json with complete project data
-      const foundationData = {
-        $schema: '../src/schemas/foundation.schema.json',
-        project: {
-          name: 'Test Project',
-          description: 'Test project description',
-          repository: 'https://github.com/test/test',
-          license: 'MIT',
-          importantNote: 'Test note',
-        },
-        whatWeAreBuilding: {
-          projectOverview: 'A CLI tool for specifications',
-          technicalRequirements: {
-            coreTechnologies: [],
-            architecture: {
-              pattern: 'CLI',
-              fileStructure: 'test',
-              deploymentTarget: 'local',
-              integrationModel: [],
-            },
-            developmentAndOperations: {
-              developmentTools: 'test',
-              testingStrategy: 'test',
-              logging: 'test',
-              validation: 'test',
-              formatting: 'test',
-            },
-            keyLibraries: [],
-          },
-          nonFunctionalRequirements: [],
-        },
-        whyWeAreBuildingIt: {
-          problemDefinition: {
-            primary: {
-              title: 'Primary Problem',
-              description: 'Problem description',
-              points: [],
-            },
-            secondary: [],
-          },
-          painPoints: { currentState: 'Test', specific: [] },
-          stakeholderImpact: [],
-          theoreticalSolutions: [],
-          developmentMethodology: {
-            name: 'ACDD',
-            description: 'Test',
-            steps: [],
-            ensures: [],
-          },
-          successCriteria: [],
-          constraintsAndAssumptions: { constraints: [], assumptions: [] },
-        },
-        architectureDiagrams: [],
-        coreCommands: { categories: [] },
-        featureInventory: {
-          phases: [],
-          tagUsageSummary: {
-            phaseDistribution: [],
-            componentDistribution: [],
-            featureGroupDistribution: [],
-            priorityDistribution: [],
-            testingCoverage: [],
-          },
-        },
-        notes: { developmentStatus: [] },
-      };
+      const foundationData = createMinimalFoundation();
 
       await writeFile(
         join(testDir, 'spec/foundation.json'),
@@ -104,8 +41,8 @@ describe('Feature: Display Foundation Documentation', () => {
 
       // And the JSON should contain all foundation fields
       expect(parsed).toHaveProperty('project');
-      expect(parsed).toHaveProperty('whatWeAreBuilding');
-      expect(parsed).toHaveProperty('whyWeAreBuildingIt');
+      expect(parsed).toHaveProperty('solutionSpace');
+      expect(parsed).toHaveProperty('problemSpace');
       expect(parsed.project.name).toBe('Test Project');
     });
   });
@@ -113,71 +50,12 @@ describe('Feature: Display Foundation Documentation', () => {
   describe('Scenario: Display specific field', () => {
     it('should display only specified field', async () => {
       // Given I have a foundation.json with projectOverview field
-      const foundationData = {
-        $schema: '../src/schemas/foundation.schema.json',
-        project: {
-          name: 'Test Project',
-          description: 'Test',
-          repository: 'https://test.com',
-          license: 'MIT',
-          importantNote: 'Test',
+      const foundationData = createMinimalFoundation({
+        solutionSpace: {
+          overview: 'This is the project overview content',
+          capabilities: [],
         },
-        whatWeAreBuilding: {
-          projectOverview: 'This is the project overview content',
-          technicalRequirements: {
-            coreTechnologies: [],
-            architecture: {
-              pattern: 'CLI',
-              fileStructure: 'test',
-              deploymentTarget: 'local',
-              integrationModel: [],
-            },
-            developmentAndOperations: {
-              developmentTools: 'test',
-              testingStrategy: 'test',
-              logging: 'test',
-              validation: 'test',
-              formatting: 'test',
-            },
-            keyLibraries: [],
-          },
-          nonFunctionalRequirements: [],
-        },
-        whyWeAreBuildingIt: {
-          problemDefinition: {
-            primary: {
-              title: 'Primary Problem',
-              description: 'Other content not to display',
-              points: [],
-            },
-            secondary: [],
-          },
-          painPoints: { currentState: 'Test', specific: [] },
-          stakeholderImpact: [],
-          theoreticalSolutions: [],
-          developmentMethodology: {
-            name: 'ACDD',
-            description: 'Test',
-            steps: [],
-            ensures: [],
-          },
-          successCriteria: [],
-          constraintsAndAssumptions: { constraints: [], assumptions: [] },
-        },
-        architectureDiagrams: [],
-        coreCommands: { categories: [] },
-        featureInventory: {
-          phases: [],
-          tagUsageSummary: {
-            phaseDistribution: [],
-            componentDistribution: [],
-            featureGroupDistribution: [],
-            priorityDistribution: [],
-            testingCoverage: [],
-          },
-        },
-        notes: { developmentStatus: [] },
-      };
+      });
 
       await writeFile(
         join(testDir, 'spec/foundation.json'),
@@ -204,71 +82,13 @@ describe('Feature: Display Foundation Documentation', () => {
   describe('Scenario: Display in text format (default)', () => {
     it('should display foundation as readable text', async () => {
       // Given I have a foundation.json
-      const foundationData = {
-        $schema: '../src/schemas/foundation.schema.json',
+      const foundationData = createMinimalFoundation({
         project: {
           name: 'My Project',
-          description: 'My project description',
-          repository: 'https://test.com',
-          license: 'MIT',
-          importantNote: 'Test',
+          vision: 'My project description',
+          projectType: 'cli-tool',
         },
-        whatWeAreBuilding: {
-          projectOverview: 'Project overview',
-          technicalRequirements: {
-            coreTechnologies: [],
-            architecture: {
-              pattern: 'CLI',
-              fileStructure: 'test',
-              deploymentTarget: 'local',
-              integrationModel: [],
-            },
-            developmentAndOperations: {
-              developmentTools: 'test',
-              testingStrategy: 'test',
-              logging: 'test',
-              validation: 'test',
-              formatting: 'test',
-            },
-            keyLibraries: [],
-          },
-          nonFunctionalRequirements: [],
-        },
-        whyWeAreBuildingIt: {
-          problemDefinition: {
-            primary: {
-              title: 'Primary Problem',
-              description: 'Problem',
-              points: [],
-            },
-            secondary: [],
-          },
-          painPoints: { currentState: 'Test', specific: [] },
-          stakeholderImpact: [],
-          theoreticalSolutions: [],
-          developmentMethodology: {
-            name: 'ACDD',
-            description: 'Test',
-            steps: [],
-            ensures: [],
-          },
-          successCriteria: [],
-          constraintsAndAssumptions: { constraints: [], assumptions: [] },
-        },
-        architectureDiagrams: [],
-        coreCommands: { categories: [] },
-        featureInventory: {
-          phases: [],
-          tagUsageSummary: {
-            phaseDistribution: [],
-            componentDistribution: [],
-            featureGroupDistribution: [],
-            priorityDistribution: [],
-            testingCoverage: [],
-          },
-        },
-        notes: { developmentStatus: [] },
-      };
+      });
 
       await writeFile(
         join(testDir, 'spec/foundation.json'),
@@ -295,71 +115,7 @@ describe('Feature: Display Foundation Documentation', () => {
   describe('Scenario: Write JSON output to file', () => {
     it('should write JSON to file', async () => {
       // Given I have a foundation.json
-      const foundationData = {
-        $schema: '../src/schemas/foundation.schema.json',
-        project: {
-          name: 'Test',
-          description: 'Test',
-          repository: 'https://test.com',
-          license: 'MIT',
-          importantNote: 'Test',
-        },
-        whatWeAreBuilding: {
-          projectOverview: 'Test',
-          technicalRequirements: {
-            coreTechnologies: [],
-            architecture: {
-              pattern: 'CLI',
-              fileStructure: 'test',
-              deploymentTarget: 'local',
-              integrationModel: [],
-            },
-            developmentAndOperations: {
-              developmentTools: 'test',
-              testingStrategy: 'test',
-              logging: 'test',
-              validation: 'test',
-              formatting: 'test',
-            },
-            keyLibraries: [],
-          },
-          nonFunctionalRequirements: [],
-        },
-        whyWeAreBuildingIt: {
-          problemDefinition: {
-            primary: {
-              title: 'Primary Problem',
-              description: 'Problem',
-              points: [],
-            },
-            secondary: [],
-          },
-          painPoints: { currentState: 'Test', specific: [] },
-          stakeholderImpact: [],
-          theoreticalSolutions: [],
-          developmentMethodology: {
-            name: 'ACDD',
-            description: 'Test',
-            steps: [],
-            ensures: [],
-          },
-          successCriteria: [],
-          constraintsAndAssumptions: { constraints: [], assumptions: [] },
-        },
-        architectureDiagrams: [],
-        coreCommands: { categories: [] },
-        featureInventory: {
-          phases: [],
-          tagUsageSummary: {
-            phaseDistribution: [],
-            componentDistribution: [],
-            featureGroupDistribution: [],
-            priorityDistribution: [],
-            testingCoverage: [],
-          },
-        },
-        notes: { developmentStatus: [] },
-      };
+      const foundationData = createMinimalFoundation();
 
       await writeFile(
         join(testDir, 'spec/foundation.json'),
@@ -411,71 +167,7 @@ describe('Feature: Display Foundation Documentation', () => {
   describe('Scenario: Handle missing field', () => {
     it('should error when field not found', async () => {
       // Given I have a foundation.json
-      const foundationData = {
-        $schema: '../src/schemas/foundation.schema.json',
-        project: {
-          name: 'Test',
-          description: 'Test',
-          repository: 'https://test.com',
-          license: 'MIT',
-          importantNote: 'Test',
-        },
-        whatWeAreBuilding: {
-          projectOverview: 'Test',
-          technicalRequirements: {
-            coreTechnologies: [],
-            architecture: {
-              pattern: 'CLI',
-              fileStructure: 'test',
-              deploymentTarget: 'local',
-              integrationModel: [],
-            },
-            developmentAndOperations: {
-              developmentTools: 'test',
-              testingStrategy: 'test',
-              logging: 'test',
-              validation: 'test',
-              formatting: 'test',
-            },
-            keyLibraries: [],
-          },
-          nonFunctionalRequirements: [],
-        },
-        whyWeAreBuildingIt: {
-          problemDefinition: {
-            primary: {
-              title: 'Primary Problem',
-              description: 'Problem',
-              points: [],
-            },
-            secondary: [],
-          },
-          painPoints: { currentState: 'Test', specific: [] },
-          stakeholderImpact: [],
-          theoreticalSolutions: [],
-          developmentMethodology: {
-            name: 'ACDD',
-            description: 'Test',
-            steps: [],
-            ensures: [],
-          },
-          successCriteria: [],
-          constraintsAndAssumptions: { constraints: [], assumptions: [] },
-        },
-        architectureDiagrams: [],
-        coreCommands: { categories: [] },
-        featureInventory: {
-          phases: [],
-          tagUsageSummary: {
-            phaseDistribution: [],
-            componentDistribution: [],
-            featureGroupDistribution: [],
-            priorityDistribution: [],
-            testingCoverage: [],
-          },
-        },
-        notes: { developmentStatus: [] },
-      };
+      const foundationData = createMinimalFoundation();
 
       await writeFile(
         join(testDir, 'spec/foundation.json'),
@@ -499,71 +191,7 @@ describe('Feature: Display Foundation Documentation', () => {
   describe('Scenario: JSON-backed workflow - read from source of truth', () => {
     it('should load from foundation.json', async () => {
       // Given I have a valid foundation.json file
-      const foundationData = {
-        $schema: '../src/schemas/foundation.schema.json',
-        project: {
-          name: 'Test Project',
-          description: 'Description',
-          repository: 'https://test.com',
-          license: 'MIT',
-          importantNote: 'Note',
-        },
-        whatWeAreBuilding: {
-          projectOverview: 'Overview',
-          technicalRequirements: {
-            coreTechnologies: [],
-            architecture: {
-              pattern: 'CLI',
-              fileStructure: 'test',
-              deploymentTarget: 'local',
-              integrationModel: [],
-            },
-            developmentAndOperations: {
-              developmentTools: 'test',
-              testingStrategy: 'test',
-              logging: 'test',
-              validation: 'test',
-              formatting: 'test',
-            },
-            keyLibraries: [],
-          },
-          nonFunctionalRequirements: [],
-        },
-        whyWeAreBuildingIt: {
-          problemDefinition: {
-            primary: {
-              title: 'Primary Problem',
-              description: 'Problem',
-              points: [],
-            },
-            secondary: [],
-          },
-          painPoints: { currentState: 'Test', specific: [] },
-          stakeholderImpact: [],
-          theoreticalSolutions: [],
-          developmentMethodology: {
-            name: 'ACDD',
-            description: 'Test',
-            steps: [],
-            ensures: [],
-          },
-          successCriteria: [],
-          constraintsAndAssumptions: { constraints: [], assumptions: [] },
-        },
-        architectureDiagrams: [],
-        coreCommands: { categories: [] },
-        featureInventory: {
-          phases: [],
-          tagUsageSummary: {
-            phaseDistribution: [],
-            componentDistribution: [],
-            featureGroupDistribution: [],
-            priorityDistribution: [],
-            testingCoverage: [],
-          },
-        },
-        notes: { developmentStatus: [] },
-      };
+      const foundationData = createMinimalFoundation();
 
       await writeFile(
         join(testDir, 'spec/foundation.json'),
@@ -584,12 +212,8 @@ describe('Feature: Display Foundation Documentation', () => {
 
       // And all top-level fields should be present
       expect(parsed).toHaveProperty('project');
-      expect(parsed).toHaveProperty('whatWeAreBuilding');
-      expect(parsed).toHaveProperty('whyWeAreBuildingIt');
-      expect(parsed).toHaveProperty('architectureDiagrams');
-      expect(parsed).toHaveProperty('coreCommands');
-      expect(parsed).toHaveProperty('featureInventory');
-      expect(parsed).toHaveProperty('notes');
+      expect(parsed).toHaveProperty('solutionSpace');
+      expect(parsed).toHaveProperty('problemSpace');
 
       // And the command should exit with code 0
       expect(result.success).toBe(true);

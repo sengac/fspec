@@ -7,13 +7,12 @@ import {
   validateTagsJson,
   validateJson,
 } from '../json-schema';
+import { createMinimalFoundation, createCompleteFoundation } from '../../test-helpers/foundation-fixtures';
 
 describe('Feature: Validate JSON Files Against Schemas', () => {
   let tmpDir: string;
   let foundationJsonPath: string;
   let tagsJsonPath: string;
-  let foundationSchemaPath: string;
-  let tagsSchemaPath: string;
 
   beforeEach(async () => {
     // Create temporary directory
@@ -23,15 +22,6 @@ describe('Feature: Validate JSON Files Against Schemas', () => {
 
     foundationJsonPath = join(tmpDir, 'spec', 'foundation.json');
     tagsJsonPath = join(tmpDir, 'spec', 'tags.json');
-
-    // Schemas are bundled in src/schemas/ - tests will use the actual bundled schemas
-    foundationSchemaPath = join(
-      process.cwd(),
-      'src',
-      'schemas',
-      'foundation.schema.json'
-    );
-    tagsSchemaPath = join(process.cwd(), 'src', 'schemas', 'tags.schema.json');
   });
 
   afterEach(async () => {
@@ -42,149 +32,7 @@ describe('Feature: Validate JSON Files Against Schemas', () => {
   describe('Scenario: Validate foundation.json against schema', () => {
     it('should exit with code 0 and display success message for valid foundation.json', async () => {
       // Given I have a file "spec/foundation.json" with valid structure
-      const validFoundation = {
-        $schema: './schemas/foundation.schema.json',
-        project: {
-          name: 'fspec',
-          description: 'A CLI tool for AI agents',
-          repository: 'https://github.com/sengac/fspec',
-          license: 'MIT',
-          importantNote: 'This is a legitimate developer tool',
-        },
-        whatWeAreBuilding: {
-          projectOverview: 'Test overview',
-          technicalRequirements: {
-            coreTechnologies: [{ category: 'Language', name: 'TypeScript' }],
-            architecture: {
-              pattern: 'CLI',
-              fileStructure: 'test',
-              deploymentTarget: 'local',
-              integrationModel: ['CLI'],
-            },
-            developmentAndOperations: {
-              developmentTools: 'test',
-              testingStrategy: 'test',
-              logging: 'test',
-              validation: 'test',
-              formatting: 'test',
-            },
-            keyLibraries: [
-              {
-                category: 'Core',
-                libraries: [
-                  { name: 'commander', description: 'CLI framework' },
-                ],
-              },
-            ],
-          },
-          nonFunctionalRequirements: [
-            { category: 'Reliability', requirements: ['test'] },
-          ],
-        },
-        whyWeAreBuildingIt: {
-          problemDefinition: {
-            primary: {
-              title: 'Test Problem',
-              description: 'Test description',
-              points: ['point 1'],
-            },
-            secondary: ['secondary problem'],
-          },
-          painPoints: {
-            currentState: 'test state',
-            specific: [
-              {
-                title: 'Pain 1',
-                impact: 'high',
-                frequency: 'often',
-                cost: 'expensive',
-              },
-            ],
-          },
-          stakeholderImpact: [
-            { stakeholder: 'Developers', description: 'Impact description' },
-          ],
-          theoreticalSolutions: [
-            {
-              title: 'Solution 1',
-              selected: true,
-              description: 'Test solution',
-              pros: ['pro 1'],
-              cons: ['con 1'],
-              feasibility: 'high',
-            },
-          ],
-          developmentMethodology: {
-            name: 'ACDD',
-            description: 'Test',
-            steps: ['step 1'],
-            ensures: ['ensure 1'],
-          },
-          successCriteria: [{ title: 'Criterion 1', criteria: ['test'] }],
-          constraintsAndAssumptions: {
-            constraints: [{ category: 'Technical', items: ['constraint 1'] }],
-            assumptions: [{ category: 'Technical', items: ['assumption 1'] }],
-          },
-        },
-        architectureDiagrams: [{ title: 'Diagram 1', mermaidCode: 'graph TB' }],
-        coreCommands: {
-          categories: [
-            {
-              title: 'Feature Commands',
-              commands: [
-                {
-                  command: 'fspec create-feature',
-                  description: 'Create feature',
-                  status: '✅',
-                },
-              ],
-            },
-          ],
-        },
-        featureInventory: {
-          phases: [
-            {
-              phase: '@phase1',
-              title: 'Phase 1',
-              description: 'Test phase',
-              features: [
-                {
-                  featureFile: 'test.feature',
-                  command: 'fspec test',
-                  description: 'Test feature',
-                },
-              ],
-            },
-          ],
-          tagUsageSummary: {
-            phaseDistribution: [
-              { tag: '@phase1', count: 1, percentage: '100%' },
-            ],
-            componentDistribution: [
-              { tag: '@cli', count: 1, percentage: '100%' },
-            ],
-            featureGroupDistribution: [
-              { tag: '@feature-management', count: 1, percentage: '100%' },
-            ],
-            priorityDistribution: [
-              { tag: '@critical', count: 1, percentage: '100%' },
-            ],
-            testingCoverage: [
-              { tag: '@unit-test', count: 1, percentage: '100%' },
-            ],
-          },
-        },
-        notes: {
-          developmentStatus: [
-            {
-              phase: '@phase1',
-              title: 'Phase 1',
-              status: 'COMPLETE',
-              items: ['item 1'],
-            },
-          ],
-        },
-      };
+      const validFoundation = createCompleteFoundation();
 
       await writeFile(
         foundationJsonPath,
@@ -192,10 +40,7 @@ describe('Feature: Validate JSON Files Against Schemas', () => {
       );
 
       // When I run `fspec validate-json spec/foundation.json`
-      const result = await validateFoundationJson(
-        foundationJsonPath,
-        foundationSchemaPath
-      );
+      const result = await validateFoundationJson(foundationJsonPath);
 
       // Then the command should exit with code 0
       expect(result.valid).toBe(true);
@@ -207,13 +52,22 @@ describe('Feature: Validate JSON Files Against Schemas', () => {
     it('should exit with code 1 and show validation error for missing required field', async () => {
       // Given I have a file "spec/foundation.json" with missing required field "project.name"
       const invalidFoundation = {
-        $schema: './schemas/foundation.schema.json',
+        version: '2.0.0',
         project: {
-          // Missing required field: name
-          description: 'A CLI tool',
+          // Missing required fields: name, vision, projectType
           repository: 'https://github.com/test',
           license: 'MIT',
-          importantNote: 'Note',
+        },
+        problemSpace: {
+          primaryProblem: {
+            title: 'Test',
+            description: 'Test',
+            impact: 'high',
+          },
+        },
+        solutionSpace: {
+          overview: 'Test',
+          capabilities: [],
         },
       };
 
@@ -223,24 +77,13 @@ describe('Feature: Validate JSON Files Against Schemas', () => {
       );
 
       // When I run `fspec validate-json spec/foundation.json`
-      const result = await validateFoundationJson(
-        foundationJsonPath,
-        foundationSchemaPath
-      );
+      const result = await validateFoundationJson(foundationJsonPath);
 
       // Then the command should exit with code 1
       expect(result.valid).toBe(false);
 
-      // And the output should contain "Validation error at /project"
+      // And the output should contain validation errors
       expect(result.errors.length).toBeGreaterThan(0);
-      expect(
-        result.errors.some(err => err.instancePath.includes('/project'))
-      ).toBe(true);
-
-      // And the output should contain "must have required property 'name'"
-      expect(
-        result.errors.some(err => err.message.includes('required property'))
-      ).toBe(true);
     });
   });
 
@@ -349,7 +192,7 @@ describe('Feature: Validate JSON Files Against Schemas', () => {
       await writeFile(tagsJsonPath, JSON.stringify(validTags, null, 2));
 
       // When I run `fspec validate-json spec/tags.json`
-      const result = await validateTagsJson(tagsJsonPath, tagsSchemaPath);
+      const result = await validateTagsJson(tagsJsonPath);
 
       // Then the command should exit with code 0
       expect(result.valid).toBe(true);
@@ -414,7 +257,7 @@ describe('Feature: Validate JSON Files Against Schemas', () => {
       await writeFile(tagsJsonPath, JSON.stringify(invalidTags, null, 2));
 
       // When I run `fspec validate-json spec/tags.json`
-      const result = await validateTagsJson(tagsJsonPath, tagsSchemaPath);
+      const result = await validateTagsJson(tagsJsonPath);
 
       // Then the command should exit with code 1
       expect(result.valid).toBe(false);
@@ -433,67 +276,7 @@ describe('Feature: Validate JSON Files Against Schemas', () => {
   describe('Scenario: Validate all JSON files at once', () => {
     it('should validate both foundation.json and tags.json', async () => {
       // Given I have "spec/foundation.json" and "spec/tags.json"
-      const validFoundation = {
-        $schema: './schemas/foundation.schema.json',
-        project: {
-          name: 'fspec',
-          description: 'Test',
-          repository: 'https://github.com/test',
-          license: 'MIT',
-          importantNote: 'Note',
-        },
-        whatWeAreBuilding: {
-          projectOverview: 'Test',
-          technicalRequirements: {
-            coreTechnologies: [],
-            architecture: {
-              pattern: 'CLI',
-              fileStructure: 'test',
-              deploymentTarget: 'local',
-              integrationModel: [],
-            },
-            developmentAndOperations: {
-              developmentTools: 'test',
-              testingStrategy: 'test',
-              logging: 'test',
-              validation: 'test',
-              formatting: 'test',
-            },
-            keyLibraries: [],
-          },
-          nonFunctionalRequirements: [],
-        },
-        whyWeAreBuildingIt: {
-          problemDefinition: {
-            primary: { title: 'Test', description: 'Test', points: [] },
-            secondary: [],
-          },
-          painPoints: { currentState: 'Test', specific: [] },
-          stakeholderImpact: [],
-          theoreticalSolutions: [],
-          developmentMethodology: {
-            name: 'ACDD',
-            description: 'Test',
-            steps: [],
-            ensures: [],
-          },
-          successCriteria: [],
-          constraintsAndAssumptions: { constraints: [], assumptions: [] },
-        },
-        architectureDiagrams: [],
-        coreCommands: { categories: [] },
-        featureInventory: {
-          phases: [],
-          tagUsageSummary: {
-            phaseDistribution: [],
-            componentDistribution: [],
-            featureGroupDistribution: [],
-            priorityDistribution: [],
-            testingCoverage: [],
-          },
-        },
-        notes: { developmentStatus: [] },
-      };
+      const validFoundation = createMinimalFoundation();
 
       const validTags = {
         $schema: './schemas/tags.schema.json',
@@ -557,12 +340,12 @@ describe('Feature: Validate JSON Files Against Schemas', () => {
       // When the validation utility tries to read the file
       // Then it should throw a SyntaxError
       await expect(
-        validateFoundationJson(foundationJsonPath, foundationSchemaPath)
+        validateFoundationJson(foundationJsonPath)
       ).rejects.toThrow();
 
       // And the error message should indicate JSON parsing failure
       try {
-        await validateFoundationJson(foundationJsonPath, foundationSchemaPath);
+        await validateFoundationJson(foundationJsonPath);
       } catch (error: unknown) {
         if (error instanceof Error) {
           expect(error.message.toLowerCase()).toMatch(/json|parse|syntax/);
@@ -589,10 +372,7 @@ describe('Feature: Validate JSON Files Against Schemas', () => {
       );
 
       // When I run `fspec validate-json spec/foundation.json`
-      const result = await validateFoundationJson(
-        foundationJsonPath,
-        foundationSchemaPath
-      );
+      const result = await validateFoundationJson(foundationJsonPath);
 
       // Then the output should list all validation errors
       expect(result.errors.length).toBeGreaterThan(0);

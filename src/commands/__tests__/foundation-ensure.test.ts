@@ -9,6 +9,7 @@ import { tmpdir } from 'os';
 import { join } from 'path';
 import { updateFoundation } from '../update-foundation';
 import { showFoundation } from '../show-foundation';
+import { createMinimalFoundation } from '../../test-helpers/foundation-fixtures';
 
 describe('Feature: Automatic JSON File Initialization', () => {
   let testDir: string;

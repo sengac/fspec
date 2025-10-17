@@ -2,7 +2,7 @@ import Ajv, { type ErrorObject } from 'ajv';
 import addFormats from 'ajv-formats';
 import { readFile } from 'fs/promises';
 import { join } from 'path';
-import foundationSchema from '../schemas/foundation.schema.json';
+import foundationSchema from '../schemas/generic-foundation.schema.json';
 import tagsSchema from '../schemas/tags.schema.json';
 
 export interface ValidationResult {
@@ -41,7 +41,7 @@ async function validateJsonFile(
 }
 
 /**
- * Validate foundation.json against foundation.schema.json
+ * Validate foundation.json against generic-foundation.schema.json
  * Schema is bundled into the application at build time
  */
 export async function validateFoundationJson(

@@ -65,7 +65,67 @@ describe('Feature: Add Mermaid Diagram to FOUNDATION.md', () => {
     it('should add diagram to architectureDiagrams array', async () => {
       // Given I have a foundation.json with existing data
       const foundationJsonPath = join(testDir, 'spec', 'foundation.json');
-      const minimalFoundation = createMinimalFoundation();
+      const minimalFoundation = {
+        $schema: '../src/schemas/foundation.schema.json',
+        project: {
+          name: 'Test Project',
+          description: 'Test',
+          repository: 'https://test.com',
+          license: 'MIT',
+          importantNote: 'Test note',
+        },
+        whatWeAreBuilding: {
+          projectOverview: 'Test',
+          technicalRequirements: {
+            coreTechnologies: [],
+            architecture: {
+              pattern: 'CLI',
+              fileStructure: 'test',
+              deploymentTarget: 'local',
+              integrationModel: [],
+            },
+            developmentAndOperations: {
+              developmentTools: 'test',
+              testingStrategy: 'test',
+              logging: 'test',
+              validation: 'test',
+              formatting: 'test',
+            },
+            keyLibraries: [],
+          },
+          nonFunctionalRequirements: [],
+        },
+        whyWeAreBuildingIt: {
+          problemDefinition: {
+            primary: { title: 'Test', description: 'Test', points: [] },
+            secondary: [],
+          },
+          painPoints: { currentState: 'Test', specific: [] },
+          stakeholderImpact: [],
+          theoreticalSolutions: [],
+          developmentMethodology: {
+            name: 'ACDD',
+            description: 'Test',
+            steps: [],
+            ensures: [],
+          },
+          successCriteria: [],
+          constraintsAndAssumptions: { constraints: [], assumptions: [] },
+        },
+        architectureDiagrams: [],
+        coreCommands: { categories: [] },
+        featureInventory: {
+          phases: [],
+          tagUsageSummary: {
+            phaseDistribution: [],
+            componentDistribution: [],
+            featureGroupDistribution: [],
+            priorityDistribution: [],
+            testingCoverage: [],
+          },
+        },
+        notes: { developmentStatus: [] },
+      };
 
       await writeFile(
         foundationJsonPath,
@@ -109,7 +169,72 @@ describe('Feature: Add Mermaid Diagram to FOUNDATION.md', () => {
     it('should replace existing diagram', async () => {
       // Given I have a foundation.json with an existing diagram
       const foundationJsonPath = join(testDir, 'spec', 'foundation.json');
-      const minimalFoundation = createMinimalFoundation();
+      const minimalFoundation = {
+        $schema: '../src/schemas/foundation.schema.json',
+        project: {
+          name: 'Test Project',
+          description: 'Test',
+          repository: 'https://test.com',
+          license: 'MIT',
+          importantNote: 'Test note',
+        },
+        whatWeAreBuilding: {
+          projectOverview: 'Test',
+          technicalRequirements: {
+            coreTechnologies: [],
+            architecture: {
+              pattern: 'CLI',
+              fileStructure: 'test',
+              deploymentTarget: 'local',
+              integrationModel: [],
+            },
+            developmentAndOperations: {
+              developmentTools: 'test',
+              testingStrategy: 'test',
+              logging: 'test',
+              validation: 'test',
+              formatting: 'test',
+            },
+            keyLibraries: [],
+          },
+          nonFunctionalRequirements: [],
+        },
+        whyWeAreBuildingIt: {
+          problemDefinition: {
+            primary: { title: 'Test', description: 'Test', points: [] },
+            secondary: [],
+          },
+          painPoints: { currentState: 'Test', specific: [] },
+          stakeholderImpact: [],
+          theoreticalSolutions: [],
+          developmentMethodology: {
+            name: 'ACDD',
+            description: 'Test',
+            steps: [],
+            ensures: [],
+          },
+          successCriteria: [],
+          constraintsAndAssumptions: { constraints: [], assumptions: [] },
+        },
+        architectureDiagrams: [
+          {
+            title: 'System Overview',
+            mermaidCode: 'graph TD\n  Old-->Content',
+          },
+        ],
+        coreCommands: { categories: [] },
+        featureInventory: {
+          phases: [],
+          tagUsageSummary: {
+            phaseDistribution: [],
+            componentDistribution: [],
+            featureGroupDistribution: [],
+            priorityDistribution: [],
+            testingCoverage: [],
+          },
+        },
+        notes: { developmentStatus: [] },
+      };
 
       await writeFile(
         foundationJsonPath,
@@ -151,18 +276,76 @@ describe('Feature: Add Mermaid Diagram to FOUNDATION.md', () => {
     it('should add multiple diagrams', async () => {
       // Given I have a foundation.json with an existing diagram
       const foundationJsonPath = join(testDir, 'spec', 'foundation.json');
-      const foundationWithDiagram = createMinimalFoundation({
+      const minimalFoundation = {
+        $schema: '../src/schemas/foundation.schema.json',
+        project: {
+          name: 'Test Project',
+          description: 'Test',
+          repository: 'https://test.com',
+          license: 'MIT',
+          importantNote: 'Test note',
+        },
+        whatWeAreBuilding: {
+          projectOverview: 'Test',
+          technicalRequirements: {
+            coreTechnologies: [],
+            architecture: {
+              pattern: 'CLI',
+              fileStructure: 'test',
+              deploymentTarget: 'local',
+              integrationModel: [],
+            },
+            developmentAndOperations: {
+              developmentTools: 'test',
+              testingStrategy: 'test',
+              logging: 'test',
+              validation: 'test',
+              formatting: 'test',
+            },
+            keyLibraries: [],
+          },
+          nonFunctionalRequirements: [],
+        },
+        whyWeAreBuildingIt: {
+          problemDefinition: {
+            primary: { title: 'Test', description: 'Test', points: [] },
+            secondary: [],
+          },
+          painPoints: { currentState: 'Test', specific: [] },
+          stakeholderImpact: [],
+          theoreticalSolutions: [],
+          developmentMethodology: {
+            name: 'ACDD',
+            description: 'Test',
+            steps: [],
+            ensures: [],
+          },
+          successCriteria: [],
+          constraintsAndAssumptions: { constraints: [], assumptions: [] },
+        },
         architectureDiagrams: [
           {
             title: 'Diagram 1',
             mermaidCode: 'graph TD\n  A-->B',
           },
         ],
-      });
+        coreCommands: { categories: [] },
+        featureInventory: {
+          phases: [],
+          tagUsageSummary: {
+            phaseDistribution: [],
+            componentDistribution: [],
+            featureGroupDistribution: [],
+            priorityDistribution: [],
+            testingCoverage: [],
+          },
+        },
+        notes: { developmentStatus: [] },
+      };
 
       await writeFile(
         foundationJsonPath,
-        JSON.stringify(foundationWithDiagram, null, 2)
+        JSON.stringify(minimalFoundation, null, 2)
       );
 
       // When I run `fspec add-diagram Architecture "Diagram 2" "graph TD\n  C-->D"`
@@ -231,7 +414,7 @@ describe('Feature: Add Mermaid Diagram to FOUNDATION.md', () => {
       );
 
       // And it should contain the "Architecture Diagrams" section with the diagram
-      expect(content).toContain('## Architecture Diagrams');
+      expect(content).toContain('## 3. Architecture Diagrams');
       expect(content).toContain('### Initial Diagram');
     });
   });
@@ -240,7 +423,71 @@ describe('Feature: Add Mermaid Diagram to FOUNDATION.md', () => {
     it('should preserve foundation.json data and add new diagram', async () => {
       // Given I have a foundation.json with existing content
       const foundationJsonPath = join(testDir, 'spec', 'foundation.json');
-      const minimalFoundation = createMinimalFoundation();
+      const minimalFoundation = {
+        $schema: '../src/schemas/foundation.schema.json',
+        project: {
+          name: 'Test Project',
+          description: 'Test',
+          repository: 'https://test.com',
+          license: 'MIT',
+          importantNote: 'Test note',
+        },
+        whatWeAreBuilding: {
+          projectOverview: 'This is what we are building.',
+          technicalRequirements: {
+            coreTechnologies: [],
+            architecture: {
+              pattern: 'CLI',
+              fileStructure: 'test',
+              deploymentTarget: 'local',
+              integrationModel: [],
+            },
+            developmentAndOperations: {
+              developmentTools: 'test',
+              testingStrategy: 'test',
+              logging: 'test',
+              validation: 'test',
+              formatting: 'test',
+            },
+            keyLibraries: [],
+          },
+          nonFunctionalRequirements: [],
+        },
+        whyWeAreBuildingIt: {
+          problemDefinition: {
+            primary: {
+              title: 'Why Problem',
+              description: 'This is why.',
+              points: [],
+            },
+            secondary: [],
+          },
+          painPoints: { currentState: 'Test', specific: [] },
+          stakeholderImpact: [],
+          theoreticalSolutions: [],
+          developmentMethodology: {
+            name: 'ACDD',
+            description: 'Test',
+            steps: [],
+            ensures: [],
+          },
+          successCriteria: [],
+          constraintsAndAssumptions: { constraints: [], assumptions: [] },
+        },
+        architectureDiagrams: [],
+        coreCommands: { categories: [] },
+        featureInventory: {
+          phases: [],
+          tagUsageSummary: {
+            phaseDistribution: [],
+            componentDistribution: [],
+            featureGroupDistribution: [],
+            priorityDistribution: [],
+            testingCoverage: [],
+          },
+        },
+        notes: { developmentStatus: [] },
+      };
 
       await writeFile(
         foundationJsonPath,
@@ -262,12 +509,12 @@ describe('Feature: Add Mermaid Diagram to FOUNDATION.md', () => {
       const updatedJson = JSON.parse(
         await readFile(foundationJsonPath, 'utf-8')
       );
-      expect(updatedJson.solutionSpace.overview).toBe(
-        'Test solution overview'
+      expect(updatedJson.whatWeAreBuilding.projectOverview).toBe(
+        'This is what we are building.'
       );
-      expect(updatedJson.problemSpace.primaryProblem.description).toBe(
-        'Test problem description'
-      );
+      expect(
+        updatedJson.whyWeAreBuildingIt.problemDefinition.primary.description
+      ).toBe('This is why.');
       const diagram = updatedJson.architectureDiagrams.find(
         (d: any) => d.title === 'Diagram'
       );
@@ -279,11 +526,11 @@ describe('Feature: Add Mermaid Diagram to FOUNDATION.md', () => {
         join(testDir, 'spec/FOUNDATION.md'),
         'utf-8'
       );
-      expect(updatedContent).toContain('## Solution Space');
-      expect(updatedContent).toContain('Test solution overview');
-      expect(updatedContent).toContain('## Problem Space');
-      expect(updatedContent).toContain('Test problem description');
-      expect(updatedContent).toContain('## Architecture Diagrams');
+      expect(updatedContent).toContain('## 1. What We Are Building');
+      expect(updatedContent).toContain('This is what we are building.');
+      expect(updatedContent).toContain('## 2. Why We Are Building It');
+      expect(updatedContent).toContain('This is why.');
+      expect(updatedContent).toContain('## 3. Architecture Diagrams');
       expect(updatedContent).toContain('Diagram');
     });
   });
@@ -461,20 +708,78 @@ describe('Feature: Add Mermaid Diagram to FOUNDATION.md', () => {
 
   describe('Scenario: JSON-backed workflow - modify JSON and regenerate MD', () => {
     it('should update foundation.json and regenerate FOUNDATION.md', async () => {
-      // Given I have a valid foundation.json file with an existing diagram
+      // Given I have a valid foundation.json file
       const foundationJsonPath = join(testDir, 'spec', 'foundation.json');
-      const foundationWithDiagram = createMinimalFoundation({
+      const minimalFoundation = {
+        $schema: '../src/schemas/foundation.schema.json',
+        project: {
+          name: 'Test Project',
+          description: 'Test',
+          repository: 'https://test.com',
+          license: 'MIT',
+          importantNote: 'Test note',
+        },
+        whatWeAreBuilding: {
+          projectOverview: 'Test',
+          technicalRequirements: {
+            coreTechnologies: [],
+            architecture: {
+              pattern: 'CLI',
+              fileStructure: 'test',
+              deploymentTarget: 'local',
+              integrationModel: [],
+            },
+            developmentAndOperations: {
+              developmentTools: 'test',
+              testingStrategy: 'test',
+              logging: 'test',
+              validation: 'test',
+              formatting: 'test',
+            },
+            keyLibraries: [],
+          },
+          nonFunctionalRequirements: [],
+        },
+        whyWeAreBuildingIt: {
+          problemDefinition: {
+            primary: { title: 'Test', description: 'Test', points: [] },
+            secondary: [],
+          },
+          painPoints: { currentState: 'Test', specific: [] },
+          stakeholderImpact: [],
+          theoreticalSolutions: [],
+          developmentMethodology: {
+            name: 'ACDD',
+            description: 'Test',
+            steps: [],
+            ensures: [],
+          },
+          successCriteria: [],
+          constraintsAndAssumptions: { constraints: [], assumptions: [] },
+        },
         architectureDiagrams: [
           {
             title: 'Existing Diagram',
             mermaidCode: 'graph TD\n  X-->Y',
           },
         ],
-      });
+        coreCommands: { categories: [] },
+        featureInventory: {
+          phases: [],
+          tagUsageSummary: {
+            phaseDistribution: [],
+            componentDistribution: [],
+            featureGroupDistribution: [],
+            priorityDistribution: [],
+            testingCoverage: [],
+          },
+        },
+        notes: { developmentStatus: [] },
+      };
 
       await writeFile(
         foundationJsonPath,
-        JSON.stringify(foundationWithDiagram, null, 2)
+        JSON.stringify(minimalFoundation, null, 2)
       );
 
       // When I run `fspec add-diagram "Architecture Diagrams" "New System Diagram" "graph TD\n  A-->B"`

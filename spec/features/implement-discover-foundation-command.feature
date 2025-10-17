@@ -4,7 +4,6 @@
 @phase1
 @FOUND-004
 Feature: Implement discover-foundation Command
-
   """
   System-reminder integration: Wrap questionnaire output in <system-reminder> tags when running in AI context (detectable via environment)
   System-reminder triggers: (1) After code analysis completes - show detected personas/capabilities (2) During questionnaire - provide examples of good answers (3) After foundation.json generated - next steps guidance
@@ -22,7 +21,6 @@ Feature: Implement discover-foundation Command
   #   1. After code analysis: <system-reminder>Detected 3 user personas from routes: End User, Admin, API Consumer. Review in questionnaire. Use 'fspec show-work-unit FOUND-002' for details.</system-reminder>
   #
   # ========================================
-
   Background: User Story
     As a developer using fspec with AI to bootstrap foundation documents
     I want to run discover-foundation command to orchestrate analysis and questionnaire
@@ -36,7 +34,6 @@ Feature: Implement discover-foundation Command
     And system-reminder should list all 3 detected personas
     And system-reminder should guide AI to review in questionnaire
 
-
   Scenario: Generate validated foundation.json after questionnaire
     Given I complete the questionnaire with all required answers
     When discover-foundation finishes
@@ -44,3 +41,16 @@ Feature: Implement discover-foundation Command
     And foundation.json should pass schema validation
     And foundation.json should contain questionnaire answers
 
+  Scenario: Create draft foundation with detected values and question placeholders
+    Given I have an existing fspec codebase with commander.js commands
+    When I run 'fspec discover-foundation'
+    Then a file 'spec/foundation.json.draft' should be created
+    And the draft should contain '[DETECTED: cli-tool]' for project type
+    And the draft should contain '[QUESTION: What is the core vision?]' placeholders
+
+  Scenario: Finalize foundation after AI edits draft
+    Given I have edited spec/foundation.json.draft with answers
+    When I run 'fspec discover-foundation --finalize'
+    Then the command should validate the draft file
+    And create 'spec/foundation.json' with validated content
+    And delete 'spec/foundation.json.draft'

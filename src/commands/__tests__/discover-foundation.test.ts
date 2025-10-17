@@ -40,8 +40,43 @@ describe('Feature: Implement discover-foundation Command', () => {
   describe('Scenario: Generate validated foundation.json after questionnaire', () => {
     it('should create validated foundation.json with questionnaire answers', async () => {
       // Given I complete the questionnaire with all required answers
-      // When discover-foundation finishes
-      const result = await discoverFoundation();
+      // (Simulated by creating a draft file manually)
+      const { writeFile, mkdir } = await import('fs/promises');
+      const draftPath = 'spec/foundation.json.draft';
+      const editedDraft = {
+        version: '2.0.0',
+        project: {
+          name: 'fspec',
+          vision: 'CLI tool for managing Gherkin specs with ACDD',
+          projectType: 'cli-tool',
+        },
+        problemSpace: {
+          primaryProblem: {
+            title: 'Specification Management',
+            description: 'AI agents need structured workflow for specifications',
+            impact: 'high',
+          },
+        },
+        solutionSpace: {
+          overview: 'Gherkin-based specification management',
+          capabilities: [
+            { name: 'Gherkin Validation', description: 'Validate feature files' },
+          ],
+        },
+        personas: [
+          {
+            name: 'Developer using CLI',
+            description: 'Uses fspec in terminal',
+            goals: ['Manage specifications'],
+          },
+        ],
+      };
+
+      await mkdir('spec', { recursive: true });
+      await writeFile(draftPath, JSON.stringify(editedDraft, null, 2), 'utf-8');
+
+      // When discover-foundation finishes (in finalize mode)
+      const result = await discoverFoundation({ finalize: true, draftPath });
 
       // Then foundation.json should be created
       expect(result.foundation).toBeDefined();
@@ -54,6 +89,83 @@ describe('Feature: Implement discover-foundation Command', () => {
       expect(result.foundation.problemSpace.primaryProblem).toBeDefined();
       expect(result.foundation.solutionSpace.capabilities).toBeDefined();
       expect(result.foundation.personas).toBeDefined();
+    });
+  });
+
+  describe('Scenario: Create draft foundation with detected values and question placeholders', () => {
+    it('should create foundation.json.draft with detected values and placeholders', async () => {
+      // Given I have an existing fspec codebase with commander.js commands
+      const discoveryResult = analyzeCodebase();
+
+      // When I run 'fspec discover-foundation'
+      const result = await discoverFoundation();
+
+      // Then a file 'spec/foundation.json.draft' should be created
+      expect(result.draftPath).toBe('spec/foundation.json.draft');
+      expect(result.draftCreated).toBe(true);
+
+      // And the draft should contain '[DETECTED: web-app]' for project type
+      expect(result.draftContent).toContain('[DETECTED: web-app]');
+
+      // And the draft should contain '[QUESTION: What is the core vision?]' placeholders
+      expect(result.draftContent).toContain('[QUESTION:');
+      expect(result.draftContent).toContain('core vision');
+    });
+  });
+
+  describe('Scenario: Finalize foundation after AI edits draft', () => {
+    it('should validate draft and create final foundation.json', async () => {
+      // Given I have edited spec/foundation.json.draft with answers
+      const { writeFile, mkdir } = await import('fs/promises');
+      const draftPath = 'spec/foundation.json.draft';
+      const editedDraft = {
+        version: '2.0.0',
+        project: {
+          name: 'fspec',
+          vision: 'CLI tool for managing Gherkin specs with ACDD',
+          projectType: 'cli-tool',
+        },
+        problemSpace: {
+          primaryProblem: {
+            title: 'Specification Management',
+            description: 'AI agents need structured workflow for specifications',
+            impact: 'high',
+          },
+        },
+        solutionSpace: {
+          overview: 'Gherkin-based specification management',
+          capabilities: [
+            { name: 'Gherkin Validation', description: 'Validate feature files' },
+          ],
+        },
+        personas: [
+          {
+            name: 'Developer using CLI',
+            description: 'Uses fspec in terminal',
+            goals: ['Manage specifications'],
+          },
+        ],
+      };
+
+      // Create spec directory and write draft file
+      await mkdir('spec', { recursive: true });
+      await writeFile(draftPath, JSON.stringify(editedDraft, null, 2), 'utf-8');
+
+      // When I run 'fspec discover-foundation --finalize'
+      const result = await discoverFoundation({
+        finalize: true,
+        draftPath,
+      });
+
+      // Then the command should validate the draft file
+      expect(result.validated).toBe(true);
+
+      // And create 'spec/foundation.json' with validated content
+      expect(result.finalPath).toBe('spec/foundation.json');
+      expect(result.finalCreated).toBe(true);
+
+      // And delete 'spec/foundation.json.draft'
+      expect(result.draftDeleted).toBe(true);
     });
   });
 });

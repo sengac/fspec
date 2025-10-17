@@ -3,7 +3,7 @@ import addFormats from 'ajv-formats';
 import { readFile } from 'fs/promises';
 import type { Foundation } from '../types/foundation';
 import type { Tags } from '../types/tags';
-import foundationSchema from '../schemas/foundation.schema.json';
+import foundationSchema from '../schemas/generic-foundation.schema.json';
 import tagsSchema from '../schemas/tags.schema.json';
 
 interface ValidationError {
