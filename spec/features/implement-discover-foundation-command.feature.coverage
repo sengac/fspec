@@ -134,16 +134,28 @@
     },
     {
       "name": "Create draft foundation with detected values and question placeholders",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/discover-foundation.test.ts",
+          "lines": "95-114",
+          "implMappings": []
+        }
+      ]
     },
     {
       "name": "Finalize foundation after AI edits draft",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/discover-foundation.test.ts",
+          "lines": "116-186",
+          "implMappings": []
+        }
+      ]
     }
   ],
   "stats": {
     "totalScenarios": 4,
-    "coveredScenarios": 2,
+    "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
       "src/commands/__tests__/discover-foundation.test.ts"
@@ -151,6 +163,6 @@
     "implFiles": [
       "src/commands/discover-foundation.ts"
     ],
-    "totalLinesCovered": 135
+    "totalLinesCovered": 226
   }
 }

@@ -2,23 +2,43 @@
   "scenarios": [
     {
       "name": "Show error when epic does not exist",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/show-epic.test.ts",
+          "lines": "29-62",
+          "implMappings": []
+        }
+      ]
     },
     {
       "name": "Show helpful suggestion in error message",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/show-epic.test.ts",
+          "lines": "29-62",
+          "implMappings": []
+        }
+      ]
     },
     {
       "name": "Show epic details when epic exists",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/show-epic.test.ts",
+          "lines": "64-97",
+          "implMappings": []
+        }
+      ]
     }
   ],
   "stats": {
     "totalScenarios": 3,
-    "coveredScenarios": 0,
-    "coveragePercent": 0,
-    "testFiles": [],
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/commands/__tests__/show-epic.test.ts"
+    ],
     "implFiles": [],
-    "totalLinesCovered": 0
+    "totalLinesCovered": 102
   }
 }

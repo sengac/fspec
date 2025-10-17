@@ -2,27 +2,53 @@
   "scenarios": [
     {
       "name": "Block estimation for story work unit without feature file",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/update-work-unit-estimate-validation.test.ts",
+          "lines": "31-64",
+          "implMappings": []
+        }
+      ]
     },
     {
       "name": "Allow estimation for story work unit with completed feature file",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/update-work-unit-estimate-validation.test.ts",
+          "lines": "67-121",
+          "implMappings": []
+        }
+      ]
     },
     {
       "name": "Allow estimation for task work unit at any stage",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/update-work-unit-estimate-validation.test.ts",
+          "lines": "123-157",
+          "implMappings": []
+        }
+      ]
     },
     {
       "name": "Block estimation for bug work unit with incomplete feature file",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/update-work-unit-estimate-validation.test.ts",
+          "lines": "159-212",
+          "implMappings": []
+        }
+      ]
     }
   ],
   "stats": {
     "totalScenarios": 4,
-    "coveredScenarios": 0,
-    "coveragePercent": 0,
-    "testFiles": [],
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/commands/__tests__/update-work-unit-estimate-validation.test.ts"
+    ],
     "implFiles": [],
-    "totalLinesCovered": 0
+    "totalLinesCovered": 178
   }
 }

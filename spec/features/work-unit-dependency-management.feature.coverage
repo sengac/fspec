@@ -8411,16 +8411,12 @@
           ]
         }
       ]
-    },
-    {
-      "name": "Identify bottleneck work units blocking the most work",
-      "testMappings": []
     }
   ],
   "stats": {
-    "totalScenarios": 43,
+    "totalScenarios": 42,
     "coveredScenarios": 42,
-    "coveragePercent": 98,
+    "coveragePercent": 100,
     "testFiles": [
       "src/commands/__tests__/work-unit-dependency-management.test.ts",
       "src/commands/__tests__/show-work-unit-dependencies.test.ts",

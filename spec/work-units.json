@@ -6846,11 +6846,29 @@
       "id": "TEST-005",
       "title": "Update test fixtures to use generic foundation schema",
       "type": "task",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2025-10-17T02:53:51.917Z",
-      "updatedAt": "2025-10-17T02:53:51.917Z",
+      "updatedAt": "2025-10-17T04:36:30.647Z",
       "description": "Update test fixtures in 9 test files that are currently using old fspec-specific schema format to use the new generic v2.0.0 schema format. This is cleanup work following BUG-014 where we simplified validate-foundation-schema to only use generic schema.",
-      "children": []
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-17T04:36:22.446Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-17T04:36:30.071Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-17T04:36:30.360Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-17T04:36:30.647Z"
+        }
+      ]
     },
     "REFAC-001": {
       "id": "REFAC-001",
@@ -6879,12 +6897,42 @@
           "timestamp": "2025-10-17T04:25:47.145Z"
         }
       ]
+    },
+    "COV-052": {
+      "id": "COV-052",
+      "title": "Fix coverage gaps and align with foundation v2.0.0 migration",
+      "type": "task",
+      "status": "done",
+      "createdAt": "2025-10-17T04:41:45.465Z",
+      "updatedAt": "2025-10-17T04:50:39.148Z",
+      "description": "Complete coverage mapping for all features, remove obsolete foundation-schema-guidance references, and ensure 100% coverage after REFAC-001 migration",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-17T04:41:57.147Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-17T04:41:57.435Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-17T04:44:59.582Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-17T04:46:21.862Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-17T04:50:39.148Z"
+        }
+      ]
     }
   },
   "states": {
-    "backlog": [
-      "TEST-005"
-    ],
+    "backlog": [],
     "specifying": [],
     "testing": [],
     "implementing": [],
@@ -7016,7 +7064,9 @@
       "FOUND-004",
       "FOUND-002",
       "BUG-014",
-      "REFAC-001"
+      "REFAC-001",
+      "TEST-005",
+      "COV-052"
     ],
     "blocked": []
   }
