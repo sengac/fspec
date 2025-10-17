@@ -4,6 +4,7 @@
 
 import { readFile, access } from 'fs/promises';
 import { join } from 'path';
+import type { Command } from 'commander';
 import type { HookConfig } from '../hooks/types.js';
 
 export interface ValidateHooksOptions {
@@ -60,4 +61,13 @@ export async function validateHooks(
       errors: 'Failed to load hook configuration',
     };
   }
+}
+
+export function registerValidateHooksCommand(program: Command): void {
+  program
+    .command('validate-hooks')
+    .description('Validate hook configuration and verify that all hook scripts exist')
+    .action(async (options: { cwd?: string }) => {
+      await validateHooks(options);
+    });
 }

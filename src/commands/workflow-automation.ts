@@ -1,6 +1,7 @@
 import { readFile, writeFile } from 'fs/promises';
 import { join } from 'path';
 import { glob } from 'tinyglobby';
+import type { Command } from 'commander';
 
 interface WorkUnit {
   id: string;
@@ -192,4 +193,45 @@ export async function validateWorkUnitSpecAlignment(
     scenariosFound,
     features,
   };
+}
+
+export async function workflowAutomation(
+  action: string,
+  workUnitId: string,
+  options: {
+    tokens?: number;
+    event?: 'tests-pass' | 'validation-pass' | 'specs-complete';
+    fromState?: string;
+    cwd?: string;
+  }
+): Promise<void> {
+  const cwd = options.cwd || process.cwd();
+
+  if (action === 'record-iteration') {
+    await recordWorkUnitIteration(workUnitId, { cwd });
+  } else if (action === 'record-tokens' && options.tokens) {
+    await recordWorkUnitTokens(workUnitId, options.tokens, { cwd });
+  } else if (action === 'auto-advance' && options.event && options.fromState) {
+    await autoAdvanceWorkUnitState(
+      workUnitId,
+      { fromState: options.fromState, event: options.event },
+      { cwd }
+    );
+  } else if (action === 'validate-alignment') {
+    await validateWorkUnitSpecAlignment(workUnitId, { cwd });
+  } else {
+    throw new Error(`Invalid action: ${action}`);
+  }
+}
+
+export function registerWorkflowAutomationCommand(program: Command): void {
+  program
+    .command('workflow-automation')
+    .description('Workflow automation utilities for work units (record iterations, track tokens, auto-advance state, validate spec alignment)')
+    .argument('<action>', 'Action to perform: record-iteration, record-tokens, auto-advance, validate-alignment')
+    .argument('<work-unit-id>', 'Work unit ID (required for all actions)')
+    .option('--tokens <count>', 'Number of tokens to record (used with record-tokens)', (value: string) => parseInt(value, 10))
+    .option('--event <event>', 'Event triggering state change: tests-pass, validation-pass, specs-complete (used with auto-advance)')
+    .option('--from-state <state>', 'Current state before transition (used with auto-advance for safety check)')
+    .action(workflowAutomation);
 }

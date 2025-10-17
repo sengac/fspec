@@ -4,6 +4,7 @@
 
 import { readFile } from 'fs/promises';
 import { join } from 'path';
+import type { Command } from 'commander';
 import type { HookConfig } from '../hooks/types.js';
 
 export interface ListHooksOptions {
@@ -39,4 +40,13 @@ export async function listHooks(options: ListHooksOptions = {}): Promise<ListHoo
       message: 'No hooks are configured',
     };
   }
+}
+
+export function registerListHooksCommand(program: Command): void {
+  program
+    .command('list-hooks')
+    .description('List all configured lifecycle hooks')
+    .action(async (options: { cwd?: string }) => {
+      await listHooks(options);
+    });
 }

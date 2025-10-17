@@ -5,6 +5,7 @@
  * Preserves WHY/WHAT content, extracts HOW content to documentation.
  */
 
+import type { Command } from 'commander';
 import type { GenericFoundation } from '../types/generic-foundation';
 
 interface LegacyFoundation {
@@ -73,4 +74,19 @@ export function migrateFoundation(
   }
 
   return migrated;
+}
+
+export function registerMigrateFoundationCommand(program: Command): void {
+  program
+    .command('migrate-foundation')
+    .description('Migrate legacy foundation.json (v1.x) to generic v2.0.0 schema format')
+    .option('--output <path>', 'Output path for migrated foundation.json', 'spec/foundation.json')
+    .option('--backup', 'Create backup of original file before migration', false)
+    .option('--dry-run', 'Preview migration without writing files', false)
+    .action(async (options: { output?: string; backup?: boolean; dryRun?: boolean; cwd?: string }) => {
+      // This action will need to be implemented by the command wrapper
+      // For now, we just export the registration function
+      // The actual command logic will use migrateFoundation() function
+      throw new Error('migrate-foundation command action not yet implemented');
+    });
 }
