@@ -1449,6 +1449,43 @@ fspec uses a **dual-format documentation system** combining human-readable Markd
 6. **Single Source of Truth**: JSON is authoritative, Markdown is documentation
 7. **Version Control**: Both formats tracked in git for full history
 
+### Bootstrapping Foundation for New Projects
+
+For new projects without existing foundation documentation, fspec provides automated discovery to generate `foundation.json`:
+
+```bash
+# Run automated discovery and interactive questionnaire
+fspec discover-foundation
+
+# Specify custom output location
+fspec discover-foundation --output foundation.json
+```
+
+**How Discovery Works:**
+
+1. **Automated Code Analysis** - Detects project type, personas, and capabilities from codebase
+   - CLI tools: Detects commander.js, bin field in package.json
+   - Web apps: Detects Express routes, React components, identifies multiple personas
+   - Libraries: Detects exports field, identifies Developer persona
+
+2. **Interactive Questionnaire** - Prefills detected answers, prompts for WHY/WHAT
+   - Project vision and problems solved
+   - Solution approach and capabilities
+   - Validates all required fields before generating
+
+3. **Foundation Generation** - Creates `spec/foundation.json` with v2.0.0 schema
+   - Maps discovered data to generic foundation schema
+   - Validates against JSON Schema before writing
+   - Creates backup of existing foundation.json if present
+
+**Related Commands:**
+```bash
+fspec update-foundation      # Update existing foundation
+fspec show-foundation        # Display foundation
+fspec migrate-foundation     # Migrate v1.x to v2.0.0
+fspec generate-foundation-md # Generate FOUNDATION.md from JSON
+```
+
 ## Benefits of This Approach
 
 1. **Single Source of Truth**: Feature files + JSON data are the definitive specification
