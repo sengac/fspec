@@ -2,32 +2,118 @@
   "version": "2.0.0",
   "project": {
     "name": "fspec",
-    "vision": "CLI tool for managing Gherkin specs with ACDD",
+    "vision": "Enable AI agents to build quality software through structured spec-driven development with enforced ACDD workflow and persistent queryable state",
     "projectType": "cli-tool"
   },
   "problemSpace": {
     "primaryProblem": {
-      "title": "Specification Management",
-      "description": "AI agents need structured workflow for specifications",
+      "title": "AI agents lack persistent state and workflow enforcement for building quality software",
+      "description": "AI agents lack persistent state and workflow enforcement for building quality software. AI coding agents excel at writing code but struggle with software quality because they lose context between sessions, skip discovery phases, violate test-driven discipline, and rely on conversation history instead of queryable project state. Without structure, they jump straight to implementation without understanding requirements, creating specification chaos and building features that don't match user needs.",
       "impact": "high"
     }
   },
   "solutionSpace": {
-    "overview": "Gherkin-based specification management",
+    "overview": "Provides AI agents with a Kanban-based project management system that enforces ACDD workflow, collaborative discovery through Example Mapping, validated Gherkin specifications, and persistent queryable state. Agents track work through structured phases, write acceptance criteria before tests, write tests before code, and maintain traceability from scenarios to implementation.",
     "capabilities": [
       {
-        "name": "Gherkin Validation",
-        "description": "Validate feature files"
+        "name": "Kanban Workflow Management",
+        "description": "Track work through ACDD phases (backlog → specifying → testing → implementing → validating → done) with visual board and state enforcement"
+      },
+      {
+        "name": "Example Mapping Discovery",
+        "description": "Collaborative requirement clarification through rules, examples, and questions before writing specifications"
+      },
+      {
+        "name": "Gherkin Specification Management",
+        "description": "Create, validate, format, and query Gherkin feature files using official Cucumber parser"
+      },
+      {
+        "name": "Work Unit Management",
+        "description": "Create, track, prioritize, and manage work units with dependencies, epics, and estimates"
+      },
+      {
+        "name": "Coverage Tracking",
+        "description": "Link Gherkin scenarios to test files and implementation code for full traceability"
+      },
+      {
+        "name": "Tag Management",
+        "description": "Organize features with JSON-backed tag registry and validation"
+      },
+      {
+        "name": "Foundation Discovery",
+        "description": "AI-guided draft-driven workflow to bootstrap project foundation documentation"
+      },
+      {
+        "name": "Lifecycle Hooks",
+        "description": "Execute custom scripts at command events for quality gates and workflow automation"
       }
     ]
   },
   "personas": [
     {
-      "name": "Developer using CLI",
-      "description": "Uses fspec in terminal",
+      "name": "AI Agent (Claude Code)",
+      "description": "AI coding agent that uses fspec to manage project work and specifications through ACDD workflow",
       "goals": [
-        "Manage specifications"
+        "Build quality software using ACDD",
+        "Maintain persistent queryable project state",
+        "Enforce workflow discipline and prevent shortcuts"
       ]
+    },
+    {
+      "name": "Human Developer",
+      "description": "Software developer collaborating with AI agents during discovery and validation",
+      "goals": [
+        "Provide clear requirements through Example Mapping",
+        "Answer clarifying questions during discovery",
+        "Validate AI's understanding of user stories"
+      ]
+    },
+    {
+      "name": "Team Lead / Product Owner",
+      "description": "Technical leader managing project priorities and tracking progress",
+      "goals": [
+        "Track work progress across Kanban board",
+        "Prioritize backlog based on business value",
+        "Ensure specifications align with business goals"
+      ]
+    }
+  ],
+  "architectureDiagrams": [
+    {
+      "title": "System Context",
+      "mermaidCode": "graph TB\n    Human[Human Developer]\n    AI[AI Agent - Claude Code]\n    \n    fspec[fspec CLI]\n    \n    SpecFiles[\"Gherkin Feature Files<br/>spec/features/*.feature\"]\n    WorkUnits[\"Work Units<br/>spec/work-units.json\"]\n    Tags[\"Tag Registry<br/>spec/tags.json\"]\n    Foundation[\"Foundation Docs<br/>spec/foundation.json\"]\n    Coverage[\"Coverage Tracking<br/>*.feature.coverage\"]\n    \n    Tests[\"Test Files<br/>src/__tests__/*.test.ts\"]\n    Impl[\"Implementation<br/>src/**/*.ts\"]\n    \n    Cucumber[\"Cucumber Gherkin<br/>Parser\"]\n    Mermaid[\"mermaid<br/>Diagram Validator\"]\n    Ajv[\"Ajv<br/>JSON Schema Validator\"]\n    \n    Human -->|collaborates| AI\n    AI -->|runs commands| fspec\n    Human -->|answers questions| fspec\n    \n    fspec -->|reads/writes| SpecFiles\n    fspec -->|reads/writes| WorkUnits\n    fspec -->|reads/writes| Tags\n    fspec -->|reads/writes| Foundation\n    fspec -->|reads/writes| Coverage\n    \n    fspec -->|validates with| Cucumber\n    fspec -->|validates with| Mermaid\n    fspec -->|validates with| Ajv\n    \n    Coverage -->|links to| Tests\n    Coverage -->|links to| Impl\n    SpecFiles -->|defines acceptance criteria for| Tests\n    Tests -->|validate| Impl"
+    },
+    {
+      "title": "Command Architecture",
+      "mermaidCode": "graph TD\n    CLI[fspec CLI Entry Point<br/>src/index.ts]\n    Commander[Commander.js]\n    \n    CLI -->|registers| Commander\n    \n    subgraph \"Command Categories\"\n        SpecCmds[Specification Commands<br/>create-feature, add-scenario, validate, format]\n        WorkCmds[Work Unit Commands<br/>create-work-unit, update-status, board]\n        DiscCmds[Discovery Commands<br/>add-question, add-example, generate-scenarios]\n        TagCmds[Tag Commands<br/>register-tag, add-tag-to-feature, validate-tags]\n        CovCmds[Coverage Commands<br/>link-coverage, show-coverage, audit-coverage]\n        HookCmds[Hook Commands<br/>add-hook, list-hooks, validate-hooks]\n    end\n    \n    Commander -->|dispatches| SpecCmds\n    Commander -->|dispatches| WorkCmds\n    Commander -->|dispatches| DiscCmds\n    Commander -->|dispatches| TagCmds\n    Commander -->|dispatches| CovCmds\n    Commander -->|dispatches| HookCmds\n    \n    subgraph \"Core Utilities\"\n        Formatter[Gherkin Formatter<br/>AST-based formatting]\n        Validator[Gherkin Validator<br/>Cucumber parser]\n        FileOps[File Operations<br/>Read/write with locking]\n        SystemReminder[System Reminder<br/>AI guidance]\n    end\n    \n    SpecCmds -->|uses| Formatter\n    SpecCmds -->|uses| Validator\n    SpecCmds -->|uses| FileOps\n    WorkCmds -->|uses| FileOps\n    WorkCmds -->|uses| SystemReminder\n    \n    subgraph \"Hook Integration\"\n        HookEngine[Hook Engine<br/>Executor]\n        HookDiscovery[Hook Discovery<br/>Find matching hooks]\n        HookConditions[Condition Evaluator<br/>Filter by tags/prefix]\n    end\n    \n    WorkCmds -->|triggers| HookEngine\n    HookEngine -->|uses| HookDiscovery\n    HookEngine -->|uses| HookConditions"
+    },
+    {
+      "title": "Data Model",
+      "mermaidCode": "erDiagram\n    WorkUnit ||--o{ WorkUnit : \"parent/children\"\n    WorkUnit ||--o{ WorkUnit : \"depends on\"\n    WorkUnit ||--o{ WorkUnit : \"blocks\"\n    WorkUnit }o--|| Epic : \"belongs to\"\n    WorkUnit ||--o{ QuestionItem : \"has\"\n    WorkUnit ||--o{ UserStory : \"has\"\n    WorkUnit ||--o{ Attachment : \"has\"\n    \n    Feature ||--o{ Scenario : \"contains\"\n    Feature ||--o{ Tag : \"tagged with\"\n    Scenario ||--o{ Tag : \"tagged with\"\n    Scenario ||--o{ Step : \"contains\"\n    \n    CoverageFile ||--|| Feature : \"tracks\"\n    CoverageFile ||--o{ ScenarioMapping : \"contains\"\n    ScenarioMapping }o--|| Scenario : \"maps to\"\n    ScenarioMapping ||--o{ TestMapping : \"has\"\n    TestMapping ||--o{ ImplMapping : \"has\"\n    \n    WorkUnit {\n        string id PK\n        string title\n        string type\n        string status\n        string epic FK\n        string parent FK\n        array children\n        array blocks\n        array blockedBy\n        array dependsOn\n        array rules\n        array examples\n        array questions\n        array attachments\n        object userStory\n        array stateHistory\n    }\n    \n    Epic {\n        string id PK\n        string title\n        string description\n        array workUnits\n    }\n    \n    Feature {\n        string name PK\n        string path\n        array tags\n        string background\n        array scenarios\n    }\n    \n    Scenario {\n        string name\n        array tags\n        array steps\n    }\n    \n    CoverageFile {\n        string featureName FK\n        array scenarios\n        object stats\n    }\n    \n    Tag {\n        string name PK\n        string category\n        string description\n    }"
+    },
+    {
+      "title": "ACDD Workflow State Machine",
+      "mermaidCode": "stateDiagram-v2\n    [*] --> backlog: Create work unit\n    \n    backlog --> specifying: Start discovery\n    specifying --> backlog: Deprioritize\n    \n    specifying --> testing: Specs complete\n    testing --> specifying: Incomplete specs\n    \n    testing --> implementing: Tests written (failing)\n    implementing --> testing: Tests need changes\n    \n    implementing --> validating: Tests pass\n    validating --> implementing: Quality checks fail\n    \n    validating --> done: All checks pass\n    done --> [*]\n    \n    backlog --> blocked: Dependencies not met\n    specifying --> blocked: Needs clarification\n    testing --> blocked: Blocker found\n    implementing --> blocked: Blocker found\n    validating --> blocked: Blocker found\n    \n    blocked --> backlog: Blocker resolved\n    blocked --> specifying: Blocker resolved\n    blocked --> testing: Blocker resolved\n    blocked --> implementing: Blocker resolved\n    blocked --> validating: Blocker resolved\n    \n    note right of specifying\n        Example Mapping:\n        - Add rules\n        - Add examples\n        - Add questions\n        - Generate scenarios\n    end note\n    \n    note right of testing\n        Write tests BEFORE code:\n        - Tests MUST fail (red)\n        - Link to scenarios\n        - Update coverage\n    end note\n    \n    note right of implementing\n        Write minimal code:\n        - Make tests pass (green)\n        - Refactor safely\n        - Link to coverage\n    end note\n    \n    note right of validating\n        Quality gates:\n        - Run ALL tests\n        - Validate Gherkin\n        - Check coverage\n        - Run hooks\n    end note"
+    },
+    {
+      "title": "File System Structure",
+      "mermaidCode": "graph TD\n    Root[Project Root]\n    \n    Root --> Spec[spec/]\n    Root --> Src[src/]\n    Root --> Claude[.claude/]\n    \n    Spec --> Features[features/]\n    Spec --> WorkUnits[work-units.json]\n    Spec --> Tags[tags.json]\n    Spec --> Foundation[foundation.json]\n    Spec --> Epics[epics.json]\n    Spec --> Prefixes[prefixes.json]\n    Spec --> SpecAttachments[attachments/]\n    Spec --> Hooks[fspec-hooks.json]\n    Spec --> ClaudeSpec[CLAUDE.md]\n    Spec --> TagsMd[TAGS.md]\n    Spec --> FoundationMd[FOUNDATION.md]\n    \n    Features --> Feature1[*.feature]\n    Features --> Coverage1[*.feature.coverage]\n    \n    Feature1 -->|defines| Scenarios[Scenarios with<br/>acceptance criteria]\n    Coverage1 -->|links| TestFiles[Test files with<br/>line numbers]\n    Coverage1 -->|links| ImplFiles[Implementation files<br/>with line numbers]\n    \n    SpecAttachments --> WorkUnitDir[work-unit-id/]\n    WorkUnitDir --> Diagrams[diagrams/]\n    WorkUnitDir --> Mockups[mockups/]\n    WorkUnitDir --> Docs[documents/]\n    \n    Src --> Commands[commands/]\n    Src --> Utils[utils/]\n    Src --> Types[types/]\n    Src --> HooksSrc[hooks/]\n    Src --> Validators[validators/]\n    \n    Claude --> FspecCmd[commands/fspec.md]\n    Claude --> RspecCmd[commands/rspec.md]\n    \n    style WorkUnits fill:#e1f5ff\n    style Tags fill:#e1f5ff\n    style Foundation fill:#e1f5ff\n    style Feature1 fill:#fff4e1\n    style Coverage1 fill:#ffe1f5"
+    },
+    {
+      "title": "Hook System Architecture",
+      "mermaidCode": "sequenceDiagram\n    participant CLI as fspec Command\n    participant Integration as Hook Integration\n    participant Discovery as Hook Discovery\n    participant Conditions as Condition Evaluator\n    participant Executor as Hook Executor\n    participant Script as Hook Script\n    \n    CLI->>Integration: runCommandWithHooks()\n    Integration->>Discovery: discoverHooks(pre-command)\n    Discovery->>Conditions: evaluateConditions(hooks, context)\n    \n    alt Has matching pre-hooks\n        Conditions-->>Discovery: filtered pre-hooks\n        Discovery-->>Integration: pre-hooks to execute\n        \n        loop For each pre-hook\n            Integration->>Executor: executeHook(hook, context)\n            Executor->>Script: run script with JSON context\n            Script-->>Executor: exit code + output\n            \n            alt Blocking hook failed\n                Executor-->>Integration: failure (blocking)\n                Integration-->>CLI: Error with system-reminder\n                CLI-->>CLI: Exit without running command\n            end\n        end\n    end\n    \n    Integration->>CLI: Execute command logic\n    CLI-->>Integration: Command result\n    \n    Integration->>Discovery: discoverHooks(post-command)\n    Discovery->>Conditions: evaluateConditions(hooks, context)\n    \n    alt Has matching post-hooks\n        Conditions-->>Discovery: filtered post-hooks\n        Discovery-->>Integration: post-hooks to execute\n        \n        loop For each post-hook\n            Integration->>Executor: executeHook(hook, context)\n            Executor->>Script: run script with JSON context\n            Script-->>Executor: exit code + output\n            \n            alt Blocking hook failed\n                Executor-->>Integration: failure (blocking)\n                Integration-->>CLI: Set exit code to 1\n            end\n        end\n    end\n    \n    Integration-->>CLI: Final result"
+    },
+    {
+      "title": "Coverage Tracking Flow",
+      "mermaidCode": "graph LR\n    subgraph \"ACDD Workflow\"\n        WU[Work Unit<br/>AUTH-001]\n        WU -->|specifying| EM[Example Mapping]\n        EM -->|generates| Feature[Feature File<br/>user-authentication.feature]\n    end\n    \n    subgraph \"Feature File\"\n        Feature -->|contains| Scenario1[Scenario: Login with<br/>valid credentials]\n        Feature -->|contains| Scenario2[Scenario: Login with<br/>invalid credentials]\n    end\n    \n    subgraph \"Coverage File Created\"\n        Feature -->|auto-creates| CovFile[user-authentication.feature.coverage]\n        CovFile -->|tracks| Scenario1\n        CovFile -->|tracks| Scenario2\n    end\n    \n    subgraph \"Testing Phase\"\n        Scenario1 -->|write test for| TestFile1[auth.test.ts:45-62]\n        TestFile1 -->|link coverage| LinkCmd1[fspec link-coverage<br/>--test-file --test-lines]\n        LinkCmd1 -->|updates| CovFile\n    end\n    \n    subgraph \"Implementing Phase\"\n        TestFile1 -->|implement to pass| ImplFile1[login.ts:10-24]\n        ImplFile1 -->|link coverage| LinkCmd2[fspec link-coverage<br/>--impl-file --impl-lines]\n        LinkCmd2 -->|updates| CovFile\n    end\n    \n    subgraph \"Traceability\"\n        CovFile -->|shows mapping| Trace[Scenario → Test → Implementation]\n        Trace -->|queryable via| ShowCov[fspec show-coverage]\n        Trace -->|verifiable via| AuditCov[fspec audit-coverage]\n    end\n    \n    style Feature fill:#fff4e1\n    style CovFile fill:#ffe1f5\n    style TestFile1 fill:#e1ffe1\n    style ImplFile1 fill:#e1e1ff"
+    },
+    {
+      "title": "Foundation Discovery Workflow",
+      "mermaidCode": "sequenceDiagram\n    participant AI as AI Agent\n    participant Cmd as fspec discover-foundation\n    participant Draft as foundation.json.draft\n    participant Human as Human Developer\n    participant Final as foundation.json\n    \n    AI->>Cmd: fspec discover-foundation\n    Cmd->>Draft: Create draft with [QUESTION:] placeholders\n    Cmd->>AI: System-reminder: ULTRATHINK guidance\n    \n    loop Field-by-Field Discovery\n        Cmd->>AI: System-reminder: Field N/8 guidance\n        AI->>AI: Analyze codebase deeply\n        AI->>Human: Ask for confirmation\n        Human-->>AI: Confirm or clarify\n        AI->>Cmd: fspec update-foundation <field> <value>\n        Cmd->>Draft: Update field\n        Cmd->>Draft: Scan for next [QUESTION:]\n        \n        alt More fields to fill\n            Cmd->>AI: System-reminder: Next field guidance\n        else All fields filled\n            Cmd->>AI: All fields complete, ready to finalize\n        end\n    end\n    \n    AI->>Cmd: fspec discover-foundation --finalize\n    Cmd->>Draft: Validate against JSON Schema\n    \n    alt Valid\n        Cmd->>Final: Create foundation.json\n        Cmd->>Final: Auto-generate FOUNDATION.md\n        Cmd->>Draft: Delete draft\n        Cmd->>AI: Success\n    else Invalid\n        Cmd->>AI: Validation errors with field paths\n        AI->>Cmd: Fix errors and re-run finalize\n    end\n    \n    Note over AI,Final: Focus on WHY/WHAT not HOW:<br/>Capabilities describe user abilities,<br/>not implementation details"
+    },
+    {
+      "title": "Example Mapping Process",
+      "mermaidCode": "graph TD\n    WU[Work Unit Created<br/>AUTH-001]\n    \n    WU -->|move to| Specifying[Status: specifying]\n    \n    Specifying -->|Step 0| SetUserStory[Set User Story<br/>fspec set-user-story<br/>--role --action --benefit]\n    \n    SetUserStory -->|Step 1| AskRules[Ask About Rules<br/>Blue Cards]\n    AskRules -->|add| Rule1[Rule: Password 8+ chars]\n    AskRules -->|add| Rule2[Rule: Max 5 login attempts]\n    \n    Rule1 -->|fspec add-rule| RulesArray[Work Unit Rules Array]\n    Rule2 -->|fspec add-rule| RulesArray\n    \n    RulesArray -->|Step 2| AskExamples[Ask About Examples<br/>Green Cards]\n    AskExamples -->|add| Ex1[Example: User enters valid email/password]\n    AskExamples -->|add| Ex2[Example: User enters wrong password 3 times]\n    \n    Ex1 -->|fspec add-example| ExamplesArray[Work Unit Examples Array]\n    Ex2 -->|fspec add-example| ExamplesArray\n    \n    ExamplesArray -->|Step 3| AskQuestions[Ask Questions<br/>Red Cards]\n    AskQuestions -->|add| Q1[Question: Support OAuth?]\n    AskQuestions -->|add| Q2[Question: Session timeout?]\n    \n    Q1 -->|fspec add-question| QuestionsArray[Work Unit Questions Array]\n    Q2 -->|fspec add-question| QuestionsArray\n    \n    QuestionsArray -->|Step 4| WaitAnswers[Wait for Human Answers]\n    WaitAnswers -->|answer| A1[Answer: Yes, Phase 2]\n    WaitAnswers -->|answer| A2[Answer: 30 minutes]\n    \n    A1 -->|fspec answer-question| QuestionsArray\n    A2 -->|fspec answer-question| QuestionsArray\n    \n    QuestionsArray -->|Step 5| CheckConsensus{All questions<br/>answered?}\n    \n    CheckConsensus -->|No| AskQuestions\n    CheckConsensus -->|Yes| GenerateScenarios[fspec generate-scenarios<br/>AUTH-001]\n    \n    GenerateScenarios -->|creates| FeatureFile[user-authentication.feature<br/>with complete Background]\n    FeatureFile -->|contains| Scenarios[Scenarios from Examples]\n    FeatureFile -->|auto-creates| CoverageFile[user-authentication.feature.coverage]\n    \n    style SetUserStory fill:#ffffcc\n    style Rule1 fill:#cce5ff\n    style Rule2 fill:#cce5ff\n    style Ex1 fill:#ccffcc\n    style Ex2 fill:#ccffcc\n    style Q1 fill:#ffcccc\n    style Q2 fill:#ffcccc\n    style FeatureFile fill:#fff4e1"
     }
   ]
 }
