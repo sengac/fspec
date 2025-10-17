@@ -11,6 +11,7 @@ import type { Command } from 'commander';
 import { writeFile, mkdir, readFile, unlink } from 'fs/promises';
 import { dirname } from 'path';
 import chalk from 'chalk';
+import { generateFoundationMdCommand } from './generate-foundation-md';
 
 export interface DiscoverFoundationOptions {
   outputPath?: string;
@@ -325,8 +326,8 @@ Then re-run: fspec discover-foundation --finalize`;
     // Auto-generate FOUNDATION.md if requested
     let mdGenerated = false;
     if (options.autoGenerateMd) {
-      // TODO: Implement generate-foundation-md call
-      mdGenerated = true;
+      const mdResult = await generateFoundationMdCommand({ cwd: dirname(dirname(finalPath)) });
+      mdGenerated = mdResult.success;
     }
 
     const completionMessage = `Discovery complete!
@@ -432,11 +433,17 @@ export function registerDiscoverFoundationCommand(program: Command): void {
       'Path to draft file (default: spec/foundation.json.draft)',
       'spec/foundation.json.draft'
     )
-    .action(async (options: { output?: string; finalize?: boolean; draftPath?: string }) => {
+    .option(
+      '--auto-generate-md',
+      'Automatically generate FOUNDATION.md after finalization (default: true)',
+      true
+    )
+    .action(async (options: { output?: string; finalize?: boolean; draftPath?: string; autoGenerateMd?: boolean }) => {
       const result = await discoverFoundation({
         outputPath: options.output,
         finalize: options.finalize,
         draftPath: options.draftPath,
+        autoGenerateMd: options.autoGenerateMd !== false, // Default to true
       });
 
       // Emit system-reminder (only visible to AI)
@@ -455,6 +462,9 @@ export function registerDiscoverFoundationCommand(program: Command): void {
         }
 
         console.log(chalk.green(`✓ Generated ${result.finalPath}`));
+        if (result.mdGenerated) {
+          console.log(chalk.green('✓ Generated spec/FOUNDATION.md'));
+        }
         console.log(chalk.green('✓ Foundation discovered and validated successfully'));
       } else {
         // Creating draft
