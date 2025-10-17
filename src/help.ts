@@ -1122,6 +1122,16 @@ function displaySetupHelp(): void {
   console.log('');
 
   console.log(chalk.bold('FOUNDATION & DOCUMENTATION'));
+  console.log('  ' + chalk.cyan('fspec discover-foundation'));
+  console.log('    Description: Discover project foundation automatically');
+  console.log('    Options:');
+  console.log(
+    '      --output <path>                  Output path (default: spec/foundation.json)'
+  );
+  console.log('    Examples:');
+  console.log('      fspec discover-foundation');
+  console.log('      fspec discover-foundation --output foundation.json');
+  console.log('');
   console.log(
     '  ' + chalk.cyan('fspec add-diagram <section> <title> <content>')
   );
