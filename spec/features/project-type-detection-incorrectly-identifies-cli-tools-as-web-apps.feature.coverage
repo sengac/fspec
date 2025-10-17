@@ -1,0 +1,141 @@
+{
+  "scenarios": [
+    {
+      "name": "Fill project type field using draft guidance",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/draft-driven-discovery.test.ts",
+          "lines": "28-61",
+          "implMappings": [
+            {
+              "file": "src/commands/discover-foundation.ts",
+              "lines": [
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Fill persona field using draft guidance",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/draft-driven-discovery.test.ts",
+          "lines": "63-77",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Finalize foundation when all fields are filled",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/draft-driven-discovery.test.ts",
+          "lines": "79-157",
+          "implMappings": [
+            {
+              "file": "src/commands/discover-foundation.ts",
+              "lines": [
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Prevent manual editing of draft file",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/draft-driven-discovery.test.ts",
+          "lines": "159-176",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Verify detected values with human",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/draft-driven-discovery.test.ts",
+          "lines": "178-194",
+          "implMappings": []
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/commands/__tests__/draft-driven-discovery.test.ts"
+    ],
+    "implFiles": [
+      "src/commands/discover-foundation.ts"
+    ],
+    "totalLinesCovered": 226
+  }
+}

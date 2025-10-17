@@ -1,0 +1,57 @@
+graph TD
+    Start([Human runs: fspec discover-foundation]) --> CreateDraft[Command creates foundation.json.draft]
+    CreateDraft --> AddPlaceholders[Add REQUIRED fields with placeholders:<br/>- project.name [QUESTION: ...]<br/>- project.vision [QUESTION: ...]<br/>- project.projectType [DETECTED: ...]<br/>- problemSpace [QUESTION: ...]<br/>- solutionSpace [QUESTION: ...]<br/>- personas [QUESTION: ...]]
+
+    AddPlaceholders --> ScanDraft[Command scans draft for next unfilled field]
+
+    ScanDraft --> CheckComplete{All fields<br/>complete?}
+
+    CheckComplete -->|No| EmitReminder[Emit system-reminder to AI:<br/>- Field N/M: field.path<br/>- Guidance: ULTRATHINK/WHY/WHAT/personas<br/>- Exact command to run]
+
+    EmitReminder --> AIAnalyzes[AI analyzes entire codebase:<br/>- Reads ALL code<br/>- Understands HOW it works<br/>- Determines WHY it exists<br/>- Identifies WHAT users can do<br/>- Discovers personas from interactions]
+
+    AIAnalyzes --> AIAsksHuman[AI asks human to confirm/clarify:<br/>- Package name correct?<br/>- Vision accurate?<br/>- Project type right?<br/>- Problem statement clear?<br/>- Capabilities complete?]
+
+    AIAsksHuman --> HumanResponds[Human responds with confirmation/correction]
+
+    HumanResponds --> AIRunsCommand[AI runs:<br/>fspec update-foundation<br/>--field &lt;path&gt;<br/>--value &lt;value&gt;]
+
+    AIRunsCommand --> CommandDetects[Command detects draft update]
+
+    CommandDetects --> ScanDraft
+
+    CheckComplete -->|Yes| Validate[Command validates draft<br/>against JSON schema]
+
+    Validate --> ValidationOK{Schema<br/>valid?}
+
+    ValidationOK -->|No| EmitError[Emit system-reminder ERROR:<br/>- Schema validation failed<br/>- Missing: field.path<br/>- Command to fix<br/>- Keep draft, NO foundation.json]
+
+    EmitError --> AIFixesField[AI fixes missing/invalid field]
+    AIFixesField --> AIRunsCommand
+
+    ValidationOK -->|Yes| CreateFoundation[Create spec/foundation.json]
+
+    CreateFoundation --> DeleteDraft[Delete spec/foundation.json.draft]
+
+    DeleteDraft --> AutoGenerate[AUTOMATICALLY run:<br/>fspec generate-foundation-md]
+
+    AutoGenerate --> Complete([Discovery complete!<br/>Files created:<br/>- foundation.json<br/>- FOUNDATION.md])
+
+    %% Error path: Manual editing
+    AIAnalyzes -.->|AI tries Write tool| ManualEdit[AI manually edits draft]
+    ManualEdit --> DetectManual[Command detects<br/>mtime changed<br/>outside fspec]
+    DetectManual --> RevertDraft[Emit ERROR + Revert draft:<br/>MUST use fspec commands!]
+    RevertDraft --> ScanDraft
+
+    %% Styling
+    classDef commandNode fill:#e1f5ff,stroke:#0066cc,stroke-width:2px
+    classDef aiNode fill:#fff4e6,stroke:#ff9800,stroke-width:2px
+    classDef humanNode fill:#e8f5e9,stroke:#4caf50,stroke-width:2px
+    classDef errorNode fill:#ffebee,stroke:#f44336,stroke-width:2px
+    classDef successNode fill:#f3e5f5,stroke:#9c27b0,stroke-width:3px
+
+    class CreateDraft,AddPlaceholders,ScanDraft,EmitReminder,CommandDetects,Validate,CreateFoundation,DeleteDraft,AutoGenerate commandNode
+    class AIAnalyzes,AIAsksHuman,AIRunsCommand,AIFixesField aiNode
+    class HumanResponds humanNode
+    class EmitError,ManualEdit,DetectManual,RevertDraft errorNode
+    class Start,Complete successNode

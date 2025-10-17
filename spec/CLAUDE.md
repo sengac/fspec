@@ -1451,38 +1451,55 @@ fspec uses a **dual-format documentation system** combining human-readable Markd
 
 ### Bootstrapping Foundation for New Projects
 
-For new projects without existing foundation documentation, fspec provides automated discovery to generate `foundation.json`:
+For new projects without existing foundation documentation, fspec provides automated discovery via an AI-driven feedback loop workflow:
 
 ```bash
-# Run automated discovery and interactive questionnaire
+# AI runs discover-foundation to create draft with placeholders
 fspec discover-foundation
 
-# Specify custom output location
-fspec discover-foundation --output foundation.json
+# Finalize draft after all fields filled
+fspec discover-foundation --finalize
 ```
 
 **How Discovery Works:**
 
-1. **Automated Code Analysis** - Detects project type, personas, and capabilities from codebase
-   - CLI tools: Detects commander.js, bin field in package.json
-   - Web apps: Detects Express routes, React components, identifies multiple personas
-   - Libraries: Detects exports field, identifies Developer persona
+1. **Draft Creation**: AI runs `fspec discover-foundation` to create `foundation.json.draft`
+   - Command creates draft with `[QUESTION: text]` placeholders for fields requiring input
+   - Command creates draft with `[DETECTED: value]` for auto-detected fields to verify
+   - Draft IS the guidance - defines structure and what needs to be filled
 
-2. **Interactive Questionnaire** - Prefills detected answers, prompts for WHY/WHAT
-   - Project vision and problems solved
-   - Solution approach and capabilities
-   - Validates all required fields before generating
+2. **ULTRATHINK Guidance**: Command emits initial system-reminder for AI
+   - Instructs AI to analyze EVERYTHING: commands, routes, UI, tests, README, package.json
+   - Emphasizes understanding HOW system works, then determining WHY it exists and WHAT users can do
+   - Guides AI field-by-field through discovery process
 
-3. **Foundation Generation** - Creates `spec/foundation.json` with v2.0.0 schema
-   - Maps discovered data to generic foundation schema
-   - Validates against JSON Schema before writing
-   - Creates backup of existing foundation.json if present
+3. **Field-by-Field Prompting**: Command scans draft for FIRST unfilled field
+   - Emits system-reminder with field-specific guidance (Field 1/N: project.name)
+   - Includes exact command to run: `fspec update-foundation --field <path> --value <value>`
+   - Provides context (e.g., "analyze package.json", "ULTRATHINK: determine core PURPOSE")
+
+4. **AI Analysis and Update**: AI analyzes codebase, asks human, runs fspec command
+   - AI examines code patterns to understand project structure
+   - AI asks human for confirmation/clarification
+   - AI runs: `fspec update-foundation --field project.name --value "fspec"`
+   - NO manual editing allowed - command detects and reverts manual edits
+
+5. **Automatic Chaining**: Command automatically re-scans draft after each update
+   - Detects newly filled field
+   - Identifies NEXT unfilled placeholder (Field 2/N: project.vision)
+   - Emits system-reminder with guidance for next field
+   - Repeats until all [QUESTION:] placeholders resolved
+
+6. **Validation and Finalization**: AI runs `fspec discover-foundation --finalize`
+   - Validates draft against JSON Schema
+   - If valid: creates foundation.json, deletes draft, auto-generates FOUNDATION.md
+   - If invalid: shows validation errors with exact field paths, prompts AI to fix and re-run
 
 **Related Commands:**
 ```bash
-fspec update-foundation      # Update existing foundation
-fspec show-foundation        # Display foundation
-fspec generate-foundation-md # Generate FOUNDATION.md from JSON
+fspec update-foundation --field <path> --value <value>  # Update specific field in draft
+fspec show-foundation                                   # Display foundation
+fspec generate-foundation-md                            # Generate FOUNDATION.md from JSON
 ```
 
 ## Benefits of This Approach

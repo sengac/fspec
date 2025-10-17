@@ -194,36 +194,58 @@ Claude: I'll reverse engineer the existing code:
 
 ### Foundation Document Discovery
 
-**Bootstrap foundation.json automatically** by analyzing your existing codebase:
+**Bootstrap foundation.json through an AI-driven feedback loop:**
 
 ```
 You: /fspec Discover project foundation from codebase
 
-Claude: I'll analyze your codebase and generate foundation.json:
-1. Analyzing codebase structure...
-   ✓ Detected project type: cli-tool
-   ✓ Found 1 persona: Developer using CLI
-   ✓ Identified 12 capabilities
+Claude: I'll guide you through foundation discovery field-by-field:
 
-2. Running interactive questionnaire...
-   ? What is the project vision? [DETECTED: CLI tool for managing Gherkin specs]
-   ? What is the primary problem? [DETECTED: AI agents lack structured workflow]
+1. Creating draft foundation.json.draft with placeholders...
+   ✓ Draft created
 
-3. Generating foundation.json (v2.0.0 schema)...
-   ✓ Validation passed
-   ✓ Created spec/foundation.json
+2. ULTRATHINK: Analyzing entire codebase...
+   - Examining commands, routes, UI, tests, README, package.json
+   - Understanding HOW it works to determine WHY it exists
+
+3. Field 1/8: project.name
+   Detected from package.json: "fspec"
+   Confirm? (y/n)
+
+   You: y
+
+   ✓ Updated project.name
+
+4. Field 2/8: project.vision
+   Based on codebase analysis, the core PURPOSE appears to be:
+   "CLI tool for managing Gherkin specs with ACDD"
+   Confirm? (y/n)
+
+   You: y
+
+   ✓ Updated project.vision
+
+... (continues for all 8 fields)
+
+8. All fields complete! Finalizing...
+   ✓ Validated against schema
+   ✓ Generated spec/foundation.json
+   ✓ Auto-generated spec/FOUNDATION.md
 ```
 
-**Discovery detects:**
-- **CLI tools** - From commander.js, bin field in package.json
-- **Web apps** - From Express routes, React components
-- **Libraries** - From exports field, public API
+**How it works:**
+1. **Draft Creation** - Creates `foundation.json.draft` with `[QUESTION:]` and `[DETECTED:]` placeholders
+2. **ULTRATHINK Guidance** - AI analyzes entire codebase deeply to understand WHY and WHAT
+3. **Field-by-Field Prompting** - Command emits system-reminders guiding AI through each field
+4. **AI Analysis and Update** - AI examines code, asks human for confirmation, runs `fspec update-foundation`
+5. **Automatic Chaining** - After each update, command chains to next unfilled field
+6. **Validation and Finalization** - When complete, validates and generates final files
 
 **Focuses on WHY/WHAT, not HOW:**
 - ✅ Capabilities: "User Authentication", "Data Visualization"
 - ❌ Not: "Uses JWT with bcrypt", "D3.js library"
 
-The questionnaire prefills detected information and prompts for project vision, problems, and solutions.
+The feedback loop ensures AI agents discover foundation through deep analysis, not guesswork.
 
 ## Features
 

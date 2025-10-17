@@ -109,6 +109,11 @@
       "prefix": "HELP",
       "description": "Help Documentation and CLI UX",
       "createdAt": "2025-10-17T04:55:06.345Z"
+    },
+    "DISC": {
+      "prefix": "DISC",
+      "description": "Discovery and Foundation Management",
+      "createdAt": "2025-10-17T06:32:10.309Z"
     }
   }
 }

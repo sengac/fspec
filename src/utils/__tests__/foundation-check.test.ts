@@ -108,3 +108,57 @@ describe('Feature: Foundation existence check in commands', () => {
     });
   });
 });
+
+/**
+ * Feature: spec/features/foundation-missing-error-message-is-not-imperative-enough.feature
+ * Bug: FOUND-009
+ */
+describe('Feature: Foundation missing error message is not imperative enough', () => {
+  let tmpDir: string;
+
+  beforeEach(async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
+    await mkdir(join(tmpDir, 'spec'), { recursive: true });
+  });
+
+  afterEach(async () => {
+    await rm(tmpDir, { recursive: true, force: true });
+  });
+
+  describe('Scenario: Error forbids manual foundation.json creation', () => {
+    it('should contain NEVER manually create foundation.json in error message', () => {
+      // Given foundation.json does not exist
+      // (tmpDir has no foundation.json)
+
+      // When AI agent attempts to create a work unit
+      const result = checkFoundationExists(tmpDir, 'fspec create-work-unit AUTH "Login"');
+
+      // Then error message must contain "NEVER manually create foundation.json"
+      expect(result.error).toContain('NEVER manually create foundation.json');
+
+      // And error message must instruct to use discover-foundation workflow
+      expect(result.error).toContain('use discover-foundation workflow');
+    });
+  });
+
+  describe('Scenario: Error shows complete workflow steps', () => {
+    it('should show 3-step workflow in error message', () => {
+      // Given foundation.json does not exist
+      // (tmpDir has no foundation.json)
+
+      // When AI agent receives foundation missing error
+      const result = checkFoundationExists(tmpDir, 'fspec board');
+
+      // Then error must show "Step 1: fspec discover-foundation (creates draft)"
+      expect(result.error).toContain('Step 1: fspec discover-foundation');
+      expect(result.error).toContain('creates draft');
+
+      // And error must show "Step 2: Fill [QUESTION:] placeholders in draft"
+      expect(result.error).toContain('Step 2');
+      expect(result.error).toContain('Fill [QUESTION:] placeholders');
+
+      // And error must show "Step 3: fspec discover-foundation --finalize"
+      expect(result.error).toContain('Step 3: fspec discover-foundation --finalize');
+    });
+  });
+});
