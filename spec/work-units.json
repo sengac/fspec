@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-17T09:09:13.936Z"
+    "lastUpdated": "2025-10-17T09:23:08.645Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -7450,6 +7450,43 @@
         "AI runs 'fspec add-capability', neither file exists, shows helpful error with 'fspec discover-foundation' suggestion"
       ],
       "estimate": 3
+    },
+    "FEAT-014": {
+      "id": "FEAT-014",
+      "title": "Add remove-persona and remove-capability commands",
+      "type": "feature",
+      "status": "testing",
+      "createdAt": "2025-10-17T09:22:49.579Z",
+      "updatedAt": "2025-10-17T09:25:00.500Z",
+      "description": "Users need commands to remove personas and capabilities from foundation.json or foundation.json.draft. Currently they must manually edit JSON files to remove unwanted placeholder entries.",
+      "epic": "foundation-document-redesign",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-17T09:22:55.289Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-17T09:25:00.500Z"
+        }
+      ],
+      "userStory": {
+        "role": "user managing foundation document",
+        "action": "remove unwanted personas and capabilities",
+        "benefit": "I can clean up placeholders without manually editing JSON"
+      },
+      "rules": [
+        "remove-persona MUST work with both foundation.json and foundation.json.draft (same file priority as add-persona)",
+        "remove-capability MUST work with both foundation.json and foundation.json.draft (same file priority as add-capability)",
+        "Remove commands MUST match by exact name (case-sensitive)",
+        "If persona/capability not found, show error with list of available names"
+      ],
+      "examples": [
+        "User runs 'fspec remove-persona Developer', persona removed from draft",
+        "User runs 'fspec remove-capability \"Mind Mapping\"', capability removed from foundation.json",
+        "User runs 'fspec remove-persona NonExistent', shows error listing available personas"
+      ]
     }
   },
   "states": {
@@ -7457,7 +7494,9 @@
       "FOUND-008"
     ],
     "specifying": [],
-    "testing": [],
+    "testing": [
+      "FEAT-014"
+    ],
     "implementing": [],
     "validating": [],
     "done": [
