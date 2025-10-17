@@ -10,6 +10,7 @@ import { showWorkUnit } from '../show-work-unit';
 import { listWorkUnits } from '../list-work-units';
 import { deleteWorkUnit } from '../delete-work-unit';
 import { validateWorkUnits } from '../validate-work-units';
+import { createMinimalFoundation } from '../../test-helpers/foundation-helper';
 
 describe('Feature: Work Unit Management', () => {
   let testDir: string;
@@ -18,6 +19,9 @@ describe('Feature: Work Unit Management', () => {
     testDir = join(process.cwd(), 'test-tmp-work-unit-management');
     await mkdir(testDir, { recursive: true });
     await mkdir(join(testDir, 'spec'), { recursive: true });
+
+    // Create foundation.json for all tests (required by create-work-unit)
+    await createMinimalFoundation(testDir);
   });
 
   afterEach(async () => {

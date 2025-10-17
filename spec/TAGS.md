@@ -97,6 +97,7 @@ Tags that categorize features by functional area.
 | `@migration` | Migration & Data Transformation |  |
 | `@modification` | Feature Modification Operations |  |
 | `@operations` | General operations |  |
+| `@orchestration` | Command orchestration features that coordinate multiple operations |  |
 | `@parent-child` | Parent-child work unit relationships |  |
 | `@prediction` | Prediction operations |  |
 | `@prefix-epic` | Prefix and epic management |  |
@@ -107,12 +108,14 @@ Tags that categorize features by functional area.
 | `@query` | Query operations for searching and filtering |  |
 | `@query-reporting` | Query and reporting features |  |
 | `@querying` | Query & Search Operations |  |
+| `@questionnaire` | Interactive questionnaire features for gathering foundation information |  |
 | `@read` | Read operations |  |
 | `@read-only` | Read-Only Operations |  |
 | `@recommendations` | Recommendation features providing suggestions based on historical data |  |
 | `@remove` | Remove operations |  |
 | `@repair` | Data repair operations |  |
 | `@reporting` | Reporting and statistics |  |
+| `@reverse-acdd` | Features related to reverse ACDD for documenting existing codebases |  |
 | `@safety` | Safety and security features preventing accidental operations |  |
 | `@scaffolding` | Project Setup & Templates |  |
 | `@schema-design` | Schema design and data structure definition |  |
@@ -162,6 +165,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@file-system` | File System Operations |  |
 | `@gherkin` | Gherkin Specification Compliance |  |
 | `@graceful-degradation` | Features that gracefully handle missing or invalid data |  |
+| `@guidance` | Features that provide AI guidance/prompts rather than code implementation |  |
 | `@idempotent` | Operations that can be safely repeated without changing results |  |
 | `@initialization` | File and system initialization features |  |
 | `@internal` | Internal Utility |  |
@@ -503,7 +507,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-10-16T23:22:59.167Z_
+_Last updated: 2025-10-17T00:58:18.818Z_
 
 **Update Command**: `fspec tag-stats`
 

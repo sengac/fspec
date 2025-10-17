@@ -311,6 +311,10 @@
           "description": "General operations"
         },
         {
+          "name": "@orchestration",
+          "description": "Command orchestration features that coordinate multiple operations"
+        },
+        {
           "name": "@parent-child",
           "description": "Parent-child work unit relationships"
         },
@@ -352,6 +356,10 @@
           "examples": "List features, show feature, find by tag, search scenarios (6 files)"
         },
         {
+          "name": "@questionnaire",
+          "description": "Interactive questionnaire features for gathering foundation information"
+        },
+        {
           "name": "@read",
           "description": "Read operations"
         },
@@ -375,6 +383,10 @@
         {
           "name": "@reporting",
           "description": "Reporting and statistics"
+        },
+        {
+          "name": "@reverse-acdd",
+          "description": "Features related to reverse ACDD for documenting existing codebases"
         },
         {
           "name": "@safety",
@@ -552,6 +564,10 @@
         {
           "name": "@graceful-degradation",
           "description": "Features that gracefully handle missing or invalid data"
+        },
+        {
+          "name": "@guidance",
+          "description": "Features that provide AI guidance/prompts rather than code implementation"
         },
         {
           "name": "@idempotent",
@@ -1075,7 +1091,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-10-16T23:22:59.167Z",
+    "lastUpdated": "2025-10-17T00:58:18.818Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

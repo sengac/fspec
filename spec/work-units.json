@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-16T23:35:58.641Z"
+    "lastUpdated": "2025-10-17T01:25:24.422Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -6160,9 +6160,9 @@
       "id": "FOUND-001",
       "title": "Design Generic Foundation Schema",
       "type": "story",
-      "status": "testing",
+      "status": "done",
       "createdAt": "2025-10-16T23:12:53.931Z",
-      "updatedAt": "2025-10-16T23:23:00.347Z",
+      "updatedAt": "2025-10-17T00:05:44.115Z",
       "description": "Create new TypeScript types and JSON schema for generic PRD structure focusing on WHY and WHAT",
       "epic": "foundation-document-redesign",
       "children": [],
@@ -6175,6 +6175,18 @@
         {
           "state": "testing",
           "timestamp": "2025-10-16T23:23:00.347Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-17T00:00:17.011Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-17T00:05:04.272Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-17T00:05:44.116Z"
         }
       ],
       "userStory": {
@@ -6215,21 +6227,86 @@
       "id": "FOUND-002",
       "title": "Implement Automated Discovery - Code Analysis",
       "type": "story",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2025-10-16T23:19:35.741Z",
-      "updatedAt": "2025-10-16T23:19:36.111Z",
+      "updatedAt": "2025-10-17T00:38:38.932Z",
       "description": "Scan existing codebase to infer project type, personas, and capabilities using reverse ACDD techniques",
       "epic": "foundation-document-redesign",
       "children": [],
-      "estimate": 8
+      "estimate": 8,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-17T00:09:59.672Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-17T00:29:37.164Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-17T00:34:52.164Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-17T00:37:07.269Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-17T00:38:38.932Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using fspec to document an existing codebase",
+        "action": "automatically discover project structure and infer personas/capabilities",
+        "benefit": "I can quickly bootstrap a foundation document without manual analysis"
+      },
+      "rules": [
+        "Code analysis must detect project type (web app, CLI tool, library, service, mobile app, desktop app, API)",
+        "Code analysis must infer personas from user-facing interactions (routes, commands, UI components, API endpoints)",
+        "Code analysis must infer capabilities from code structure (high-level features, not implementation details)",
+        "Analysis must be fast enough for interactive use (< 5 seconds for typical projects)",
+        "fspec provides GUIDANCE to AI, not implementation - AI decides how to analyze code",
+        "Discovery must infer: project type, personas, capabilities, AND problems/pain points",
+        "Support monorepos - AI analyzes all packages that are part of the same project"
+      ],
+      "examples": [
+        "CLI tool with commander.js commands → project type: cli-tool, persona: Developer using CLI",
+        "Express.js with /api routes → project type: web-app, personas: API Consumer, End User",
+        "Package with exports in package.json → project type: library, persona: Developer integrating library",
+        "React components in src/ → capability: User Interface, not implementation detail like 'Uses React hooks'",
+        "AI discovers React app → infers problem: 'Users need interactive web UI' not 'Code needs React'"
+      ],
+      "questions": [
+        {
+          "text": "@human: Should code analysis support monorepos with multiple package.json files, or just single-project repositories?",
+          "selected": true,
+          "answer": "Yes, support monorepos - analyze all package.json files that are part of the same project"
+        },
+        {
+          "text": "@human: What file patterns should we analyze to detect project type? (package.json, tsconfig.json, Cargo.toml, go.mod, etc.)",
+          "selected": true,
+          "answer": "AI decides file patterns - fspec guides AI to discover project type using available clues, not prescriptive tool list"
+        },
+        {
+          "text": "@human: Should we infer problems/pain points from code, or only project type and personas?",
+          "selected": true,
+          "answer": "Yes, infer everything: project type, personas, capabilities, AND problems/pain points - all critical for complete foundation"
+        },
+        {
+          "text": "@human: How deep should directory traversal go? Should we limit to specific directories (src/, lib/, cmd/) or scan entire project?",
+          "selected": true,
+          "answer": "AI decides traversal depth - fspec guides AI to intelligently explore codebase, not prescriptive directory limits"
+        }
+      ]
     },
     "FOUND-003": {
       "id": "FOUND-003",
       "title": "Implement Interactive Questionnaire",
       "type": "story",
-      "status": "specifying",
+      "status": "done",
       "createdAt": "2025-10-16T23:19:36.482Z",
-      "updatedAt": "2025-10-16T23:20:22.899Z",
+      "updatedAt": "2025-10-17T00:55:12.776Z",
       "description": "Build Ink-based CLI questionnaire to gather WHY/WHAT information from users",
       "epic": "foundation-document-redesign",
       "children": [],
@@ -6238,6 +6315,22 @@
         {
           "state": "specifying",
           "timestamp": "2025-10-16T23:20:17.487Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-17T00:45:42.074Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-17T00:47:44.622Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-17T00:54:48.957Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-17T00:55:12.776Z"
         }
       ],
       "architectureNotes": [
@@ -6258,15 +6351,20 @@
       "examples": [
         "Vision question with help: 'What is the core purpose? [HELP: One sentence elevator pitch. Example: fspec helps AI agents follow ACDD workflow]'",
         "Prefilled answer: 'Primary user: Developer using CLI [DETECTED from code analysis] - Keep/Edit/Skip?'"
-      ]
+      ],
+      "userStory": {
+        "role": "developer using fspec with AI to bootstrap foundation documents",
+        "action": "gather WHY/WHAT information through structured questionnaire",
+        "benefit": "I can create complete foundation.json without manual analysis"
+      }
     },
     "FOUND-004": {
       "id": "FOUND-004",
       "title": "Implement discover-foundation Command",
       "type": "story",
-      "status": "specifying",
+      "status": "done",
       "createdAt": "2025-10-16T23:19:37.238Z",
-      "updatedAt": "2025-10-16T23:20:51.429Z",
+      "updatedAt": "2025-10-17T01:01:53.733Z",
       "description": "Orchestrate code analysis + questionnaire to generate foundation.json with validation",
       "epic": "foundation-document-redesign",
       "children": [],
@@ -6280,6 +6378,22 @@
         {
           "state": "specifying",
           "timestamp": "2025-10-16T23:20:49.620Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-17T00:58:37.167Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-17T00:59:52.936Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-17T01:01:33.811Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-17T01:01:53.733Z"
         }
       ],
       "architectureNotes": [
@@ -6292,36 +6406,130 @@
       ],
       "examples": [
         "After code analysis: <system-reminder>Detected 3 user personas from routes: End User, Admin, API Consumer. Review in questionnaire. Use 'fspec show-work-unit FOUND-002' for details.</system-reminder>"
-      ]
+      ],
+      "userStory": {
+        "role": "developer using fspec with AI to bootstrap foundation documents",
+        "action": "run discover-foundation command to orchestrate analysis and questionnaire",
+        "benefit": "I get a complete validated foundation.json without manual work"
+      }
     },
     "FOUND-005": {
       "id": "FOUND-005",
       "title": "Migrate Existing foundation.json",
       "type": "story",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2025-10-16T23:19:38.001Z",
-      "updatedAt": "2025-10-16T23:19:51.841Z",
+      "updatedAt": "2025-10-17T01:09:17.482Z",
       "description": "Extract WHY/WHAT from current fspec foundation.json, move HOW content elsewhere, automated migration",
       "epic": "foundation-document-redesign",
       "children": [],
       "estimate": 3,
       "dependsOn": [
         "FOUND-001"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-17T01:03:24.343Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-17T01:05:56.004Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-17T01:07:10.808Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-17T01:08:03.028Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-17T01:09:17.482Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer migrating fspec to generic foundation schema",
+        "action": "migrate existing foundation.json to v2.0.0 format",
+        "benefit": "foundation document follows the new generic schema and supports all project types"
+      },
+      "rules": [
+        "Must preserve all existing architecture diagrams in architectureDiagrams array",
+        "WHY/WHAT content stays in foundation.json, HOW content moves to CLAUDE.md or other docs",
+        "Migration must be automated via CLI command 'fspec migrate-foundation'",
+        "Migrated foundation.json must pass generic foundation schema validation"
+      ],
+      "examples": [
+        "Current 'whatWeAreBuilding.projectOverview' maps to 'project.vision'",
+        "Current 'whyWeAreBuildingIt.problemDefinition.primary' maps to 'problemSpace.primaryProblem'",
+        "Current 'architectureDiagrams' array preserved as-is (already compatible)",
+        "HOW content like 'technicalRequirements.coreTechnologies' moves to CLAUDE.md"
       ]
     },
     "FOUND-006": {
       "id": "FOUND-006",
       "title": "Update Documentation and Help",
       "type": "story",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2025-10-16T23:19:38.837Z",
-      "updatedAt": "2025-10-16T23:19:52.211Z",
+      "updatedAt": "2025-10-17T01:23:48.715Z",
       "description": "Update CLAUDE.md, help system, and create discovery guide with examples",
       "epic": "foundation-document-redesign",
       "children": [],
       "estimate": 3,
       "dependsOn": [
         "FOUND-004"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-17T01:09:42.788Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-17T01:11:37.151Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-17T01:12:53.339Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-17T01:12:53.748Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-17T01:14:09.494Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-17T01:16:23.508Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-17T01:23:09.031Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-17T01:23:48.716Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using fspec for foundation document discovery",
+        "action": "have comprehensive documentation and help for discovery commands",
+        "benefit": "I can effectively use discover-foundation, questionnaire, and code analysis features"
+      },
+      "rules": [
+        "CLAUDE.md must document discover-foundation workflow with examples",
+        "Help system must have comprehensive --help output for discover-foundation command",
+        "Discovery guide must explain code analysis patterns (CLI tool, web app, library)",
+        "Documentation must show integration with Example Mapping workflow"
+      ],
+      "examples": [
+        "CLAUDE.md shows: 'Run discover-foundation to analyze codebase and generate foundation.json'",
+        "Help output includes WHEN TO USE, WORKFLOW, and EXAMPLES sections",
+        "Discovery guide explains CLI tool pattern: bin field in package.json, commander usage"
       ]
     },
     "BUG-012": {
@@ -6427,21 +6635,96 @@
         "Reuse existing prefill detection logic from temporal validation (similar pattern)"
       ],
       "estimate": 2
+    },
+    "FOUND-007": {
+      "id": "FOUND-007",
+      "title": "Foundation existence check in commands",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-17T01:22:59.515Z",
+      "updatedAt": "2025-10-17T01:49:42.199Z",
+      "description": "Add check for foundation.json existence in key commands (board, create-work-unit, etc.). Commands should exit with helpful message if foundation.json missing, directing user to run discover-foundation first. CRITICAL: System reminder must tell AI agent to return to the original task after completing discover-foundation command.",
+      "epic": "foundation-document-redesign",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-17T01:25:10.420Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-17T01:30:47.830Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-17T01:32:38.194Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-17T01:38:39.487Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-17T01:38:58.984Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-17T01:43:25.715Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-17T01:49:24.427Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-17T01:49:42.199Z"
+        }
+      ],
+      "userStory": {
+        "role": "AI agent using fspec",
+        "action": "ensure foundation.json exists before running project management commands",
+        "benefit": "I prevent work from proceeding without proper project foundation and can resume my original task after discovery"
+      },
+      "rules": [
+        "Commands that manage work units MUST check for foundation.json existence before executing",
+        "If foundation.json is missing, command MUST exit with error code 1 and display helpful message",
+        "Error message MUST direct user to run 'fspec discover-foundation' command",
+        "System reminder MUST tell AI agent to return to original task after discover-foundation completes",
+        "Check applies to: fspec board, create-work-unit, update-work-unit-status, create-epic, and other PM commands",
+        "Yes, include exact command arguments. System reminders in Claude Code are used for actionable guidance - including the original command makes it clear what to retry after discover-foundation completes.",
+        "No, only create/modify commands need foundation.json. Read-only commands like show-foundation, list-features, validate can run without foundation.json.",
+        "Check only spec/foundation.json - this is the canonical location used by show-foundation, update-foundation, and generate-foundation-md commands."
+      ],
+      "examples": [
+        "AI runs 'fspec board' without foundation.json → Command exits with error, displays message with discover-foundation instructions, system reminder tells AI to run board again after discovery",
+        "AI runs 'fspec create-work-unit AUTH \"Login\"' without foundation.json → Command exits with error, system reminder includes original command to retry",
+        "AI runs 'fspec board' with foundation.json present → Command executes normally, no check triggered",
+        "AI runs 'fspec validate' (non-PM command) without foundation.json → Command executes normally, foundation check not required for spec-only commands"
+      ],
+      "questions": [
+        {
+          "text": "@human: Should the system reminder include the exact command arguments that were originally attempted?",
+          "selected": true,
+          "answer": "Yes, include exact command arguments. System reminders in Claude Code are used for actionable guidance - including the original command makes it clear what to retry after discover-foundation completes."
+        },
+        {
+          "text": "@human: Should read-only commands like 'fspec show-foundation' also require foundation.json, or only commands that create/modify work units?",
+          "selected": true,
+          "answer": "No, only create/modify commands need foundation.json. Read-only commands like show-foundation, list-features, validate can run without foundation.json."
+        },
+        {
+          "text": "@human: Should the check look for BOTH foundation.json AND spec/foundation.json paths, or just spec/foundation.json?",
+          "selected": true,
+          "answer": "Check only spec/foundation.json - this is the canonical location used by show-foundation, update-foundation, and generate-foundation-md commands."
+        }
+      ],
+      "estimate": 3
     }
   },
   "states": {
-    "backlog": [
-      "FOUND-002",
-      "FOUND-005",
-      "FOUND-006"
-    ],
-    "specifying": [
-      "FOUND-003",
-      "FOUND-004"
-    ],
-    "testing": [
-      "FOUND-001"
-    ],
+    "backlog": [],
+    "specifying": [],
+    "testing": [],
     "implementing": [],
     "validating": [],
     "done": [
@@ -6562,7 +6845,14 @@
       "HOOK-010",
       "TEST-004",
       "BUG-012",
-      "BUG-013"
+      "BUG-013",
+      "FOUND-001",
+      "FOUND-002",
+      "FOUND-003",
+      "FOUND-004",
+      "FOUND-005",
+      "FOUND-006",
+      "FOUND-007"
     ],
     "blocked": []
   }

@@ -9,6 +9,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdir, writeFile, rm, readFile } from 'fs/promises';
 import { join } from 'path';
 import type { WorkUnitsData, PrefixesData } from '../../types';
+import { createMinimalFoundation } from '../../test-helpers/foundation-helper';
 
 // Import commands
 import { createWorkUnit } from '../create-work-unit';
@@ -27,6 +28,9 @@ describe('Feature: Work item types for stories, tasks, and bugs', () => {
     await mkdir(testDir, { recursive: true });
     await mkdir(join(testDir, 'spec'), { recursive: true });
     await mkdir(join(testDir, 'spec/features'), { recursive: true });
+
+    // Create foundation.json for all tests (required by commands)
+    await createMinimalFoundation(testDir);
   });
 
   afterEach(async () => {
