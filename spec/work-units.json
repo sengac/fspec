@@ -7455,9 +7455,9 @@
       "id": "FEAT-014",
       "title": "Add remove-persona and remove-capability commands",
       "type": "feature",
-      "status": "testing",
+      "status": "done",
       "createdAt": "2025-10-17T09:22:49.579Z",
-      "updatedAt": "2025-10-17T09:25:00.500Z",
+      "updatedAt": "2025-10-17T09:30:23.946Z",
       "description": "Users need commands to remove personas and capabilities from foundation.json or foundation.json.draft. Currently they must manually edit JSON files to remove unwanted placeholder entries.",
       "epic": "foundation-document-redesign",
       "children": [],
@@ -7469,6 +7469,18 @@
         {
           "state": "testing",
           "timestamp": "2025-10-17T09:25:00.500Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-17T09:29:24.677Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-17T09:29:24.949Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-17T09:30:23.946Z"
         }
       ],
       "userStory": {
@@ -7486,7 +7498,8 @@
         "User runs 'fspec remove-persona Developer', persona removed from draft",
         "User runs 'fspec remove-capability \"Mind Mapping\"', capability removed from foundation.json",
         "User runs 'fspec remove-persona NonExistent', shows error listing available personas"
-      ]
+      ],
+      "estimate": 2
     }
   },
   "states": {
@@ -7494,9 +7507,7 @@
       "FOUND-008"
     ],
     "specifying": [],
-    "testing": [
-      "FEAT-014"
-    ],
+    "testing": [],
     "implementing": [],
     "validating": [],
     "done": [
@@ -7637,7 +7648,8 @@
       "BUG-015",
       "BUG-016",
       "BUG-017",
-      "BUG-018"
+      "BUG-018",
+      "FEAT-014"
     ],
     "blocked": []
   }
