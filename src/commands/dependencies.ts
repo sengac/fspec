@@ -1,5 +1,6 @@
 import { readFile, writeFile } from 'fs/promises';
 import { join } from 'path';
+import type { Command } from 'commander';
 
 interface WorkUnit {
   id: string;
@@ -1011,4 +1012,77 @@ export async function exportDependencies(
 
   const content = await getDependencyGraph({ cwd, format });
   await writeFile(output, content);
+}
+
+export async function dependencies(
+  action: string,
+  workUnitId: string | undefined,
+  options: {
+    blocks?: string;
+    blockedBy?: string;
+    dependsOn?: string;
+    relatesTo?: string;
+    type?: 'blocks' | 'blockedBy' | 'dependsOn' | 'relatesTo' | 'all';
+    format?: 'json' | 'mermaid';
+    graph?: boolean;
+    cwd?: string;
+  }
+): Promise<void> {
+  const cwd = options.cwd || process.cwd();
+
+  if (action === 'add' && workUnitId) {
+    const relationship: {
+      blocks?: string;
+      blockedBy?: string;
+      dependsOn?: string;
+      relatesTo?: string;
+    } = {};
+    if (options.blocks) relationship.blocks = options.blocks;
+    if (options.blockedBy) relationship.blockedBy = options.blockedBy;
+    if (options.dependsOn) relationship.dependsOn = options.dependsOn;
+    if (options.relatesTo) relationship.relatesTo = options.relatesTo;
+    await addDependency(workUnitId, relationship, { cwd });
+  } else if (action === 'remove' && workUnitId) {
+    const relationship: {
+      blocks?: string;
+      blockedBy?: string;
+      dependsOn?: string;
+      relatesTo?: string;
+    } = {};
+    if (options.blocks) relationship.blocks = options.blocks;
+    if (options.blockedBy) relationship.blockedBy = options.blockedBy;
+    if (options.dependsOn) relationship.dependsOn = options.dependsOn;
+    if (options.relatesTo) relationship.relatesTo = options.relatesTo;
+    await removeDependency(workUnitId, relationship, { cwd });
+  } else if (action === 'list' && workUnitId) {
+    await listDependencies(workUnitId, { cwd, type: options.type });
+  } else if (action === 'validate') {
+    await validateDependencies({ cwd });
+  } else if (action === 'repair') {
+    await repairDependencies({ cwd });
+  } else if (action === 'graph') {
+    await getDependencyGraph({ cwd, format: options.format });
+  } else if (action === 'critical') {
+    await calculateCriticalPath({ cwd });
+  } else if (action === 'impact' && workUnitId) {
+    await analyzeImpact(workUnitId, { cwd });
+  } else {
+    throw new Error(`Invalid action: ${action}`);
+  }
+}
+
+export function registerDependenciesCommand(program: Command): void {
+  program
+    .command('dependencies')
+    .description('Comprehensive dependency management for work units (add, remove, list, validate, repair, analyze, visualize)')
+    .argument('<action>', 'Action to perform: add, remove, list, validate, repair, graph, critical, impact')
+    .argument('[work-unit-id]', 'Work unit ID (required for add, remove, list, impact)')
+    .option('--blocks <id>', 'Add blocks relationship (blocker blocks target)')
+    .option('--blocked-by <id>', 'Add blockedBy relationship (blocker must complete first)')
+    .option('--depends-on <id>', 'Add dependsOn relationship (soft dependency)')
+    .option('--relates-to <id>', 'Add relatesTo relationship (bidirectional, no blocking)')
+    .option('--type <type>', 'Relationship type filter: blocks, blockedBy, dependsOn, relatesTo, all')
+    .option('--format <format>', 'Output format for graph: json, mermaid')
+    .option('--graph', 'Display dependencies as graph visualization', false)
+    .action(dependencies);
 }
