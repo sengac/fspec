@@ -16,6 +16,10 @@ const config: CommandHelpConfig = {
       flag: '--force',
       description: 'Skip confirmation',
     },
+    {
+      flag: '--dry-run',
+      description: 'Show what would be deleted without making changes',
+    },
   ],
   examples: [
     {

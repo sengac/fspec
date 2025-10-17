@@ -22,12 +22,16 @@ const config: CommandHelpConfig = {
       description: 'The answer text',
     },
     {
+      flag: '--add-to <type>',
+      description: 'Add answer to: rule, assumption, or none (default: none)',
+    },
+    {
       flag: '--add-to-rules',
-      description: 'Also add answer as a rule',
+      description: 'Also add answer as a rule (deprecated: use --add-to rule)',
     },
     {
       flag: '--add-to-assumptions',
-      description: 'Also add answer as an assumption',
+      description: 'Also add answer as an assumption (deprecated: use --add-to assumption)',
     },
   ],
   examples: [

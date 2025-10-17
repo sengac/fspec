@@ -21,6 +21,10 @@ const config: CommandHelpConfig = {
       flag: '--date <date>',
       description: 'Date for metric (ISO format)',
     },
+    {
+      flag: '--unit <unit>',
+      description: 'Unit of measurement (e.g., points, days, percent)',
+    },
   ],
   examples: [
     {

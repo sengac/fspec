@@ -13,6 +13,10 @@ const config: CommandHelpConfig = {
       flag: '--format <format>',
       description: 'Output format: table or json',
     },
+    {
+      flag: '--work-unit-id <id>',
+      description: 'Specific work unit to query metrics for',
+    },
   ],
   examples: [
     {
