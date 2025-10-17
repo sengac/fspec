@@ -1,0 +1,82 @@
+{
+  "scenarios": [
+    {
+      "name": "Show detailed error when personas array has placeholder data",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/discover-foundation-validation-feedback.test.ts",
+          "lines": "31-88",
+          "implMappings": [
+            {
+              "file": "src/commands/discover-foundation.ts",
+              "lines": [
+                449,
+                450,
+                451,
+                452,
+                453,
+                454
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Show detailed error when capabilities array is empty",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/discover-foundation-validation-feedback.test.ts",
+          "lines": "90-143",
+          "implMappings": [
+            {
+              "file": "src/commands/discover-foundation.ts",
+              "lines": [
+                449,
+                450,
+                451,
+                452,
+                453,
+                454
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Show all missing fields in one error message",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/discover-foundation-validation-feedback.test.ts",
+          "lines": "145-206",
+          "implMappings": [
+            {
+              "file": "src/commands/discover-foundation.ts",
+              "lines": [
+                449,
+                450,
+                451,
+                452,
+                453,
+                454
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/commands/__tests__/discover-foundation-validation-feedback.test.ts"
+    ],
+    "implFiles": [
+      "src/commands/discover-foundation.ts"
+    ],
+    "totalLinesCovered": 192
+  }
+}

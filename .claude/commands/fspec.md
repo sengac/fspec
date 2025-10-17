@@ -126,7 +126,7 @@ fspec discover-foundation --finalize
 4. **AI Analysis and Update** - AI analyzes codebase, asks human, runs fspec command
    - AI examines code patterns to understand project structure
    - AI asks human for confirmation/clarification
-   - AI runs: `fspec update-foundation --field project.name --value "fspec"`
+   - AI runs: `fspec update-foundation projectName "fspec"`
    - NO manual editing allowed - command detects and reverts manual edits
 
 5. **Automatic Chaining** - Command automatically re-scans draft after each update

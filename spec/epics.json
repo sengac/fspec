@@ -108,7 +108,8 @@
         "FOUND-004",
         "FOUND-005",
         "FOUND-006",
-        "FOUND-007"
+        "FOUND-007",
+        "BUG-016"
       ]
     }
   }

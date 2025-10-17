@@ -571,4 +571,88 @@ describe('Feature: Update Foundation Section Content', () => {
       );
     });
   });
+
+  describe('Scenario: Update draft file when draft exists', () => {
+    it('should update foundation.json.draft instead of foundation.json', async () => {
+      // Given I have a foundation.json.draft file
+      const draftPath = join(testDir, 'spec', 'foundation.json.draft');
+      const foundationJsonPath = join(testDir, 'spec', 'foundation.json');
+
+      const draftFoundation = createMinimalFoundation({
+        project: {
+          name: '[QUESTION: What is the project name?]',
+          vision: 'Test vision',
+          projectType: 'cli-tool',
+        },
+      });
+
+      await writeFile(draftPath, JSON.stringify(draftFoundation, null, 2));
+
+      // When I run `fspec update-foundation projectName "My Project"`
+      const result = await updateFoundation({
+        section: 'projectName',
+        content: 'My Project',
+        cwd: testDir,
+      });
+
+      // Then the command should exit with code 0
+      expect(result.success).toBe(true);
+
+      // And the draft file should be updated
+      const updatedDraft = JSON.parse(await readFile(draftPath, 'utf-8'));
+      expect(updatedDraft.project.name).toBe('My Project');
+
+      // And foundation.json should NOT be created
+      const finalExists = await access(foundationJsonPath)
+        .then(() => true)
+        .catch(() => false);
+      expect(finalExists).toBe(false);
+
+      // And the success message should mention draft
+      expect(result.message).toContain('draft');
+    });
+  });
+
+  describe('Scenario: Update final foundation when draft does not exist', () => {
+    it('should update foundation.json when draft does not exist', async () => {
+      // Given I have a foundation.json file (no draft)
+      const foundationJsonPath = join(testDir, 'spec', 'foundation.json');
+      const draftPath = join(testDir, 'spec', 'foundation.json.draft');
+
+      const minimalFoundation = createMinimalFoundation();
+      await writeFile(
+        foundationJsonPath,
+        JSON.stringify(minimalFoundation, null, 2)
+      );
+
+      // When I run `fspec update-foundation projectName "Updated Project"`
+      const result = await updateFoundation({
+        section: 'projectName',
+        content: 'Updated Project',
+        cwd: testDir,
+      });
+
+      // Then the command should exit with code 0
+      expect(result.success).toBe(true);
+
+      // And foundation.json should be updated
+      const updatedFoundation = JSON.parse(
+        await readFile(foundationJsonPath, 'utf-8')
+      );
+      expect(updatedFoundation.project.name).toBe('Updated Project');
+
+      // And draft file should NOT exist
+      const draftExists = await access(draftPath)
+        .then(() => true)
+        .catch(() => false);
+      expect(draftExists).toBe(false);
+
+      // And FOUNDATION.md should be regenerated
+      const foundationMdPath = join(testDir, 'spec', 'FOUNDATION.md');
+      const mdExists = await access(foundationMdPath)
+        .then(() => true)
+        .catch(() => false);
+      expect(mdExists).toBe(true);
+    });
+  });
 });

@@ -448,6 +448,9 @@ export function registerDiscoverFoundationCommand(program: Command): void {
         // Finalizing draft
         if (!result.valid) {
           console.error(chalk.red('✗ Foundation validation failed'));
+          if (result.validationErrors) {
+            console.error(chalk.yellow('\n' + result.validationErrors));
+          }
           process.exit(1);
         }
 

@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-17T07:20:41.669Z"
+    "lastUpdated": "2025-10-17T08:38:11.144Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -7299,6 +7299,56 @@
         "action": "update nested array fields in foundation.json through CLI commands",
         "benefit": "I can complete foundation discovery without manual file editing"
       }
+    },
+    "BUG-016": {
+      "id": "BUG-016",
+      "title": "discover-foundation --finalize doesn't show validation errors",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-10-17T08:37:12.330Z",
+      "updatedAt": "2025-10-17T08:43:45.249Z",
+      "description": "When 'fspec discover-foundation --finalize' fails validation, it only shows '✗ Foundation validation failed' without showing WHAT validation errors occurred. The validationErrors field is populated in the code (lines 132-139 in discover-foundation.ts) but never printed to the user in the CLI action handler (lines 280-288). This leaves users/AI with no feedback on what needs to be fixed.",
+      "epic": "foundation-document-redesign",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-17T08:37:55.679Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-17T08:39:33.216Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-17T08:40:43.274Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-17T08:41:42.645Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-17T08:43:20.424Z"
+        }
+      ],
+      "userStory": {
+        "role": "AI agent using draft-driven discovery workflow",
+        "action": "see detailed validation errors when finalize fails",
+        "benefit": "I know exactly what fields to fix without guessing"
+      },
+      "rules": [
+        "When finalize fails validation, MUST show detailed error messages",
+        "Error messages MUST list missing/invalid fields",
+        "Error messages MUST show commands to fix each type of issue",
+        "Error messages MUST be visible to both users and AI agents"
+      ],
+      "examples": [
+        "User runs 'fspec discover-foundation --finalize' with empty personas array, sees error: 'Missing required: personas[0].name' with command to fix",
+        "User runs finalize with placeholder persona data, sees error listing ALL missing fields in personas",
+        "User runs finalize with empty capabilities array, sees error: 'Missing required: solutionSpace.capabilities' with example command"
+      ],
+      "estimate": 2
     }
   },
   "states": {
@@ -7444,7 +7494,8 @@
       "FOUND-009",
       "FOUND-010",
       "DISC-001",
-      "BUG-015"
+      "BUG-015",
+      "BUG-016"
     ],
     "blocked": []
   }
