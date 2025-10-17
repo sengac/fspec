@@ -99,41 +99,32 @@ export async function showEpicCommand(
   options: { format?: string }
 ): Promise<void> {
   try {
-    const result = await showEpic({
-      epicId,
-      output: (options.format as 'json' | 'text') || 'text',
-    });
+    const result = await showEpic({ epicId });
 
     if (options.format === 'json') {
       console.log(JSON.stringify(result, null, 2));
     } else {
-      console.log(chalk.bold(`\nEpic: ${result.id}`));
+      console.log(chalk.bold(`\nEpic: ${result.epic.id}`));
       console.log('');
-      console.log(chalk.cyan('Title:'), result.title);
+      console.log(chalk.cyan('Title:'), result.epic.title || 'N/A');
 
-      if (result.description) {
-        console.log(chalk.cyan('Description:'), result.description);
-      }
-
-      if (result.workUnits && result.workUnits.length > 0) {
-        console.log(chalk.cyan('\nWork Units:'));
-        result.workUnits.forEach(wu => {
-          console.log(`  - ${wu}`);
-        });
+      if (result.epic.description) {
+        console.log(chalk.cyan('Description:'), result.epic.description);
       }
 
       console.log('');
-      console.log(
-        chalk.gray('Created:'),
-        new Date(result.createdAt).toLocaleString()
-      );
+      console.log(chalk.cyan('Progress:'));
+      console.log(`  Total work units: ${result.totalWorkUnits}`);
+      console.log(`  Completed: ${result.completedWorkUnits}`);
+      console.log(`  Completion: ${result.completionPercentage}%`);
       console.log('');
     }
 
     process.exit(0);
   } catch (error: unknown) {
     if (error instanceof Error) {
-      console.error(chalk.red('Error:'), error.message);
+      console.error(chalk.red('✗'), error.message);
+      console.error(chalk.gray('\nTry: fspec list-epics'));
     } else {
       console.error(chalk.red('Error: Unknown error occurred'));
     }

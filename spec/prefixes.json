@@ -94,6 +94,11 @@
       "prefix": "HOOK",
       "description": "Lifecycle hooks and automation system",
       "createdAt": "2025-10-15T10:55:43.290Z"
+    },
+    "FOUND": {
+      "prefix": "FOUND",
+      "description": "Foundation document features",
+      "createdAt": "2025-10-16T23:12:39.403Z"
     }
   }
 }

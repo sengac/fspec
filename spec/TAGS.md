@@ -115,6 +115,7 @@ Tags that categorize features by functional area.
 | `@reporting` | Reporting and statistics |  |
 | `@safety` | Safety and security features preventing accidental operations |  |
 | `@scaffolding` | Project Setup & Templates |  |
+| `@schema-design` | Schema design and data structure definition |  |
 | `@soft-dependency` | Soft dependency relationships |  |
 | `@state-enforcement` | State transition enforcement |  |
 | `@state-history` | State history tracking |  |
@@ -502,7 +503,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-10-15T23:22:36.568Z_
+_Last updated: 2025-10-16T23:22:59.167Z_
 
 **Update Command**: `fspec tag-stats`
 

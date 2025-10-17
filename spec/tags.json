@@ -386,6 +386,10 @@
           "examples": "Initialize spec directory, create templates, setup structure (0 files)"
         },
         {
+          "name": "@schema-design",
+          "description": "Schema design and data structure definition"
+        },
+        {
           "name": "@soft-dependency",
           "description": "Soft dependency relationships"
         },
@@ -1071,7 +1075,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-10-15T23:22:36.568Z",
+    "lastUpdated": "2025-10-16T23:22:59.167Z",
     "phaseStats": [
       {
         "phase": "Phase 1",
