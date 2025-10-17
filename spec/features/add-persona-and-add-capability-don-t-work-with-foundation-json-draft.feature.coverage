@@ -1,0 +1,214 @@
+{
+  "scenarios": [
+    {
+      "name": "Add persona to foundation.json.draft during discovery",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/add-persona-draft-support.test.ts",
+          "lines": "31-72",
+          "implMappings": [
+            {
+              "file": "src/commands/add-persona.ts",
+              "lines": [
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Add capability to foundation.json.draft during discovery",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/add-capability-draft-support.test.ts",
+          "lines": "31-64",
+          "implMappings": [
+            {
+              "file": "src/commands/add-capability.ts",
+              "lines": [
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Add persona to foundation.json when no draft exists (backward compatibility)",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/add-persona-draft-support.test.ts",
+          "lines": "74-131",
+          "implMappings": [
+            {
+              "file": "src/commands/add-persona.ts",
+              "lines": [
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Show helpful error when neither file exists",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/add-persona-draft-support.test.ts",
+          "lines": "133-147",
+          "implMappings": [
+            {
+              "file": "src/commands/add-persona.ts",
+              "lines": [
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/commands/__tests__/add-persona-draft-support.test.ts",
+      "src/commands/__tests__/add-capability-draft-support.test.ts"
+    ],
+    "implFiles": [
+      "src/commands/add-persona.ts",
+      "src/commands/add-capability.ts"
+    ],
+    "totalLinesCovered": 281
+  }
+}

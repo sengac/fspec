@@ -9,12 +9,25 @@ export async function addPersona(
   description: string,
   goals: string[],
 ): Promise<void> {
+  const draftPath = join(cwd, 'spec', 'foundation.json.draft');
   const foundationPath = join(cwd, 'spec', 'foundation.json');
 
-  // Read existing foundation.json
+  // Check for draft first, then foundation.json (draft takes precedence)
+  let targetPath = foundationPath;
+  let isDraft = false;
+
+  try {
+    await fs.access(draftPath);
+    targetPath = draftPath;
+    isDraft = true;
+  } catch {
+    // Draft doesn't exist, try foundation.json
+  }
+
+  // Read existing foundation file (draft or final)
   let foundation: GenericFoundation;
   try {
-    const content = await fs.readFile(foundationPath, 'utf-8');
+    const content = await fs.readFile(targetPath, 'utf-8');
     foundation = JSON.parse(content);
   } catch (error: unknown) {
     const err = error as NodeJS.ErrnoException;
@@ -42,13 +55,14 @@ export async function addPersona(
     goals,
   });
 
-  // Write updated foundation.json
+  // Write updated file (draft or final)
   await fs.writeFile(
-    foundationPath,
+    targetPath,
     JSON.stringify(foundation, null, 2) + '\n',
   );
 
-  console.log(chalk.green('✓ Added persona to foundation.json'));
+  const fileName = isDraft ? 'foundation.json.draft' : 'foundation.json';
+  console.log(chalk.green(`✓ Added persona to ${fileName}`));
   console.log(chalk.dim(`  Name: ${name}`));
   console.log(chalk.dim(`  Description: ${description}`));
   console.log(chalk.dim(`  Goals: ${goals.join(', ')}`));
