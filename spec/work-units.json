@@ -6929,13 +6929,35 @@
           "timestamp": "2025-10-17T04:50:39.148Z"
         }
       ]
+    },
+    "HELP-001": {
+      "id": "HELP-001",
+      "title": "Audit and sync all help files with command implementations",
+      "type": "task",
+      "status": "implementing",
+      "createdAt": "2025-10-17T04:55:11.179Z",
+      "updatedAt": "2025-10-17T04:55:17.370Z",
+      "description": "Verify every command help file (src/commands/*-help.ts) accurately reflects the actual command arguments, options, and behavior registered with Commander.js. Ensure src/help.ts grouping is complete and accurate.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-17T04:55:17.079Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-17T04:55:17.370Z"
+        }
+      ]
     }
   },
   "states": {
     "backlog": [],
     "specifying": [],
     "testing": [],
-    "implementing": [],
+    "implementing": [
+      "HELP-001"
+    ],
     "validating": [],
     "done": [
       "BUG-007",

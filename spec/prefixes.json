@@ -104,6 +104,11 @@
       "prefix": "REFAC",
       "description": "Refactoring and code improvements",
       "createdAt": "2025-10-17T03:12:43.828Z"
+    },
+    "HELP": {
+      "prefix": "HELP",
+      "description": "Help Documentation and CLI UX",
+      "createdAt": "2025-10-17T04:55:06.345Z"
     }
   }
 }
