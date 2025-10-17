@@ -6,6 +6,7 @@ import type { Foundation } from '../types/foundation';
 import { validateFoundationJson } from '../validators/json-schema';
 import { generateFoundationMd } from '../generators/foundation-md';
 import { ensureFoundationFile } from '../utils/ensure-files';
+import { discoverFoundation } from './discover-foundation';
 
 interface UpdateFoundationOptions {
   section: string;
@@ -217,9 +218,6 @@ export async function updateFoundationCommand(
       console.log(chalk.gray('  Updated: spec/foundation.json.draft'));
 
       // IMPORTANT: Chain to next field during draft-driven discovery
-      // Import discoverFoundation dynamically to avoid circular dependencies
-      const { discoverFoundation } = await import('./discover-foundation');
-
       // Scan draft for next field
       const scanResult = await discoverFoundation({
         scanOnly: true,
