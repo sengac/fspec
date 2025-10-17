@@ -1,8 +1,7 @@
-import { readFile } from 'fs/promises';
-import { join } from 'path';
 import type { Command } from 'commander';
 import chalk from 'chalk';
 import { checkFoundationExists } from '../utils/foundation-check.js';
+import { ensureWorkUnitsFile } from '../utils/ensure-files';
 
 interface WorkUnit {
   id: string;
@@ -40,11 +39,9 @@ export async function displayBoard(options: {
     throw new Error(foundationCheck.error!);
   }
 
-  const workUnitsFile = join(cwd, 'spec', 'work-units.json');
-
   try {
-    const content = await readFile(workUnitsFile, 'utf-8');
-    const data: WorkUnitsData = JSON.parse(content);
+    // Ensure work-units.json exists (auto-creates if missing)
+    const data: WorkUnitsData = await ensureWorkUnitsFile(cwd);
 
     // Group work units by state
     const columns: Record<string, BoardColumn[]> = {};
