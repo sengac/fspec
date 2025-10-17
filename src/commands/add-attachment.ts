@@ -4,6 +4,10 @@ import chalk from 'chalk';
 import type { Command } from 'commander';
 import type { WorkUnitsData } from '../types';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
+import {
+  shouldValidateMermaid,
+  validateMermaidAttachment,
+} from '../utils/attachment-mermaid-validation';
 
 export interface AddAttachmentOptions {
   workUnitId: string;
@@ -31,6 +35,23 @@ export async function addAttachment(
     await access(options.filePath);
   } catch {
     throw new Error(`Source file '${options.filePath}' does not exist`);
+  }
+
+  // Validate Mermaid syntax if file is a Mermaid diagram
+  if (shouldValidateMermaid(options.filePath)) {
+    const fileName = basename(options.filePath);
+    try {
+      const validationResult = await validateMermaidAttachment(options.filePath);
+      if (!validationResult.valid) {
+        throw new Error(
+          `Failed to attach ${fileName}: ${validationResult.error}`
+        );
+      }
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      throw new Error(errorMessage);
+    }
   }
 
   const workUnit = data.workUnits[options.workUnitId];
