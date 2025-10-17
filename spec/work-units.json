@@ -6934,9 +6934,9 @@
       "id": "HELP-001",
       "title": "Audit and sync all help files with command implementations",
       "type": "task",
-      "status": "implementing",
+      "status": "done",
       "createdAt": "2025-10-17T04:55:11.179Z",
-      "updatedAt": "2025-10-17T04:55:17.370Z",
+      "updatedAt": "2025-10-17T05:24:40.447Z",
       "description": "Verify every command help file (src/commands/*-help.ts) accurately reflects the actual command arguments, options, and behavior registered with Commander.js. Ensure src/help.ts grouping is complete and accurate.",
       "children": [],
       "stateHistory": [
@@ -6947,6 +6947,14 @@
         {
           "state": "implementing",
           "timestamp": "2025-10-17T04:55:17.370Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-17T05:24:40.157Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-17T05:24:40.447Z"
         }
       ]
     }
@@ -6955,9 +6963,7 @@
     "backlog": [],
     "specifying": [],
     "testing": [],
-    "implementing": [
-      "HELP-001"
-    ],
+    "implementing": [],
     "validating": [],
     "done": [
       "BUG-007",
@@ -7088,7 +7094,8 @@
       "BUG-014",
       "REFAC-001",
       "TEST-005",
-      "COV-052"
+      "COV-052",
+      "HELP-001"
     ],
     "blocked": []
   }

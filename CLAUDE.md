@@ -575,11 +575,25 @@ fspec update-foundation --field project.vision --value "New vision"
 # Show current foundation
 fspec show-foundation
 
-# Migrate v1.x foundation to v2.0.0
+# Migrate v1.x foundation to v2.0.0 (for legacy projects)
 fspec migrate-foundation
+fspec migrate-foundation --dry-run  # Preview changes
+fspec migrate-foundation --output foundation-v2.json  # Custom output
 
 # Generate FOUNDATION.md from foundation.json
 fspec generate-foundation-md
+
+# Delete features or scenarios by tag (bulk operations)
+fspec delete-features-by-tag --tag=@deprecated --dry-run
+fspec delete-scenarios-by-tag --tag=@wip --dry-run
+
+# Query dependency bottlenecks and orphans
+fspec query-bottlenecks  # Find work units blocking 2+ others
+fspec query-orphans  # Find work units with no epic or dependencies
+fspec suggest-dependencies  # Auto-suggest dependencies based on patterns
+
+# Workflow automation utilities
+fspec workflow-automation <action> <work-unit-id>
 ```
 
 ### Discovery Guidance Reference
@@ -588,6 +602,156 @@ For complete guidance patterns used during discovery, see:
 - `src/guidance/automated-discovery-code-analysis.ts` - Pattern detection and inference rules
 - `src/commands/interactive-questionnaire.ts` - Questionnaire logic with prefill support
 - `src/commands/discover-foundation.ts` - Orchestration command
+
+## Work Unit Analysis and Dependency Management
+
+fspec provides powerful analysis commands to identify bottlenecks, orphans, and automatically suggest dependencies:
+
+### Query Bottlenecks
+
+Identify critical path blockers blocking 2+ work units:
+
+```bash
+# Find bottleneck work units
+fspec query-bottlenecks
+fspec query-bottlenecks --output=json
+
+# Example output:
+# Bottleneck Work Units (blocking 2+ work units):
+#
+# AUTH-001 (implementing) - Setup authentication infrastructure
+#   Bottleneck Score: 5
+#   Direct Blocks: AUTH-002, AUTH-003
+#   Transitive Blocks: AUTH-004, AUTH-005, AUTH-006
+```
+
+**When to use**: Run daily during active development to identify critical path blockers and maximize team throughput.
+
+### Query Orphans
+
+Detect work units with no epic assignment or dependency relationships:
+
+```bash
+# Find orphaned work units
+fspec query-orphans
+fspec query-orphans --exclude-done  # Exclude completed work
+fspec query-orphans --output=json
+
+# Example output:
+# Found 3 orphaned work unit(s):
+#
+# 1. MISC-001 - Update documentation (backlog)
+#    ⚠ No epic or dependency relationships
+```
+
+**When to use**: Run after bulk work unit creation or periodically for maintenance to ensure all work is properly organized.
+
+### Suggest Dependencies
+
+Auto-suggest dependency relationships based on patterns:
+
+```bash
+# Get dependency suggestions
+fspec suggest-dependencies
+fspec suggest-dependencies --output=json
+
+# Example output:
+# Found 5 dependency suggestion(s):
+#
+# 1. AUTH-002 → AUTH-001 (dependsOn)
+#    ● sequential IDs in AUTH prefix suggest AUTH-002 depends on AUTH-001
+#    Confidence: MEDIUM
+#
+# 2. TEST-AUTH-001 → BUILD-AUTH-001 (dependsOn)
+#    ● test work depends on build work
+#    Confidence: HIGH
+```
+
+**When to use**: After creating multiple work units with consistent naming to quickly establish relationships.
+
+### Show Work Unit Dependencies
+
+Display all dependencies for a specific work unit:
+
+```bash
+# Show dependencies for a work unit
+fspec dependencies AUTH-002
+
+# Example output:
+# Work Unit: AUTH-002 - User Login Flow
+#
+# Dependencies:
+# - Depends On: AUTH-001 (Setup authentication infrastructure)
+# - Blocks: AUTH-003 (Password reset flow)
+# - Relates To: UI-001 (Login form component)
+```
+
+**When to use**: When reviewing work unit relationships or planning implementation order.
+
+## Bulk Operations
+
+fspec provides bulk operations for managing features and scenarios:
+
+### Delete Features by Tag
+
+Delete multiple features matching a tag:
+
+```bash
+# Preview deletion (safe)
+fspec delete-features-by-tag --tag=@deprecated --dry-run
+
+# Delete features with tag
+fspec delete-features-by-tag --tag=@deprecated
+
+# Example output:
+# Found 3 feature(s) with tag @deprecated:
+# - spec/features/old-login.feature
+# - spec/features/legacy-auth.feature
+# - spec/features/deprecated-api.feature
+#
+# Deleted 3 feature file(s)
+```
+
+### Delete Scenarios by Tag
+
+Delete multiple scenarios matching a tag:
+
+```bash
+# Preview deletion (safe)
+fspec delete-scenarios-by-tag --tag=@wip --dry-run
+
+# Delete scenarios with tag
+fspec delete-scenarios-by-tag --tag=@wip
+
+# Example output:
+# Found 5 scenario(s) with tag @wip in 3 feature file(s)
+# Deleted 5 scenario(s) from 3 feature file(s)
+```
+
+**When to use**: For cleanup operations, removing deprecated features, or pruning work-in-progress scenarios.
+
+## Foundation Schema Migration
+
+For projects created before v2.0.0, migrate legacy foundation.json:
+
+```bash
+# Preview migration (safe)
+fspec migrate-foundation --dry-run
+
+# Migrate to v2.0.0
+fspec migrate-foundation
+
+# Migrate to custom location
+fspec migrate-foundation --output foundation-v2.json
+
+# Example output:
+# ✓ Migrated foundation.json to v2.0.0 schema
+# Backup: spec/foundation.json.backup
+# Updated: spec/foundation.json
+# Version: 2.0.0
+```
+
+**When to use**: When upgrading existing projects with v1.x foundation.json files to maintain compatibility with v2.0.0 schema.
 
 ## Common Commands
 
@@ -617,6 +781,19 @@ npm run format
 ./dist/index.js validate-hooks
 ./dist/index.js add-hook pre-implementing lint --command spec/hooks/lint.sh --blocking
 ./dist/index.js remove-hook pre-implementing lint
+
+# Analysis and dependency management
+./dist/index.js query-bottlenecks
+./dist/index.js query-orphans
+./dist/index.js suggest-dependencies
+./dist/index.js dependencies AUTH-001
+
+# Bulk operations
+./dist/index.js delete-features-by-tag --tag=@deprecated --dry-run
+./dist/index.js delete-scenarios-by-tag --tag=@wip --dry-run
+
+# Migration
+./dist/index.js migrate-foundation --dry-run
 ```
 
 ## Important Reminders
