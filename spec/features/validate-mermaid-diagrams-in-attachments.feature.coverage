@@ -1,0 +1,171 @@
+{
+  "scenarios": [
+    {
+      "name": "Attach valid Mermaid diagram with .mmd extension",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/add-attachment-mermaid-validation.test.ts",
+          "lines": "47-84",
+          "implMappings": [
+            {
+              "file": "src/utils/attachment-mermaid-validation.ts",
+              "lines": [
+                6,
+                7,
+                8,
+                9,
+                10
+              ]
+            },
+            {
+              "file": "src/commands/add-attachment.ts",
+              "lines": [
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Attach invalid Mermaid diagram with syntax errors",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/add-attachment-mermaid-validation.test.ts",
+          "lines": "86-145",
+          "implMappings": [
+            {
+              "file": "src/utils/attachment-mermaid-validation.ts",
+              "lines": [
+                6,
+                7,
+                8,
+                9,
+                10
+              ]
+            },
+            {
+              "file": "src/commands/add-attachment.ts",
+              "lines": [
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Attach non-Mermaid file without validation",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/add-attachment-mermaid-validation.test.ts",
+          "lines": "147-180",
+          "implMappings": [
+            {
+              "file": "src/utils/attachment-mermaid-validation.ts",
+              "lines": [
+                6,
+                7,
+                8,
+                9,
+                10
+              ]
+            },
+            {
+              "file": "src/commands/add-attachment.ts",
+              "lines": [
+                40,
+                41
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Attach markdown file with valid Mermaid code block",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/add-attachment-mermaid-validation.test.ts",
+          "lines": "182-214",
+          "implMappings": [
+            {
+              "file": "src/utils/attachment-mermaid-validation.ts",
+              "lines": [
+                6,
+                7,
+                8,
+                9,
+                10
+              ]
+            },
+            {
+              "file": "src/commands/add-attachment.ts",
+              "lines": [
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/commands/__tests__/add-attachment-mermaid-validation.test.ts"
+    ],
+    "implFiles": [
+      "src/utils/attachment-mermaid-validation.ts",
+      "src/commands/add-attachment.ts"
+    ],
+    "totalLinesCovered": 235
+  }
+}

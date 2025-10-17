@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-17T09:23:08.645Z"
+    "lastUpdated": "2025-10-17T10:13:34.975Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -7500,6 +7500,76 @@
         "User runs 'fspec remove-persona NonExistent', shows error listing available personas"
       ],
       "estimate": 2
+    },
+    "FEAT-015": {
+      "id": "FEAT-015",
+      "title": "Validate Mermaid diagrams in attachments",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-17T10:13:18.110Z",
+      "updatedAt": "2025-10-17T10:27:24.865Z",
+      "description": "Add validation for Mermaid diagram attachments using the same validation logic as add-diagram command, providing detailed syntax error feedback when diagrams are invalid",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-17T10:13:25.228Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-17T10:20:44.838Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-17T10:23:28.000Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-17T10:25:36.448Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-17T10:27:24.865Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using fspec with AI agents",
+        "action": "attach Mermaid diagrams to work units with automatic validation",
+        "benefit": "I catch diagram syntax errors immediately and get helpful feedback to fix them"
+      },
+      "rules": [
+        "Mermaid diagram attachments must be validated using the same mermaid.parse() logic as add-diagram command",
+        "Only files with .mmd or .mermaid extensions should trigger Mermaid validation",
+        "Invalid Mermaid syntax must prevent attachment with detailed error message including line numbers",
+        "Valid Mermaid diagrams should be attached successfully with confirmation message",
+        "Use similar error format to add-diagram but adapted for attachment context (e.g., 'Failed to attach diagram.mmd' instead of 'Failed to add diagram')",
+        "No --skip-validation flag - all Mermaid diagrams must pass validation before attachment",
+        "Yes, validate .md files that contain mermaid code blocks (triple-backtick mermaid syntax)"
+      ],
+      "examples": [
+        "User attaches valid flowchart.mmd with 'graph TD' syntax - attachment succeeds with confirmation",
+        "User attaches sequence.mermaid with invalid syntax - attachment fails with detailed error message showing line number",
+        "User attaches diagram.png - no Mermaid validation performed (not .mmd or .mermaid extension)",
+        "User attaches erDiagram.mmd with valid ER diagram syntax - attachment succeeds"
+      ],
+      "questions": [
+        {
+          "text": "@human: Should we also validate .md files that contain mermaid code blocks?",
+          "selected": true,
+          "answer": "Yes, validate .md files that contain mermaid code blocks (triple-backtick mermaid syntax)"
+        },
+        {
+          "text": "@human: Should the error message format match exactly with add-diagram errors for consistency?",
+          "selected": true,
+          "answer": "Use similar error format to add-diagram but adapted for attachment context (e.g., 'Failed to attach diagram.mmd' instead of 'Failed to add diagram')"
+        },
+        {
+          "text": "@human: Should we add a --skip-validation flag to allow attaching invalid diagrams for drafts?",
+          "selected": true,
+          "answer": "No --skip-validation flag - all Mermaid diagrams must pass validation before attachment"
+        }
+      ],
+      "estimate": 3
     }
   },
   "states": {
@@ -7649,7 +7719,8 @@
       "BUG-016",
       "BUG-017",
       "BUG-018",
-      "FEAT-014"
+      "FEAT-014",
+      "FEAT-015"
     ],
     "blocked": []
   }

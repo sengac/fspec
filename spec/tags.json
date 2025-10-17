@@ -112,6 +112,10 @@
           "description": "Assumption tracking in Example Mapping"
         },
         {
+          "name": "@attachments",
+          "description": "Feature related to work unit attachments (diagrams, documents, mockups)"
+        },
+        {
           "name": "@authentication",
           "description": "Authentication and authorization functionality"
         },
@@ -1087,7 +1091,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-10-17T00:58:18.818Z",
+    "lastUpdated": "2025-10-17T10:17:58.513Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

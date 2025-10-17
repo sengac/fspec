@@ -49,6 +49,7 @@ Tags that categorize features by functional area.
 | `@accuracy` | Accuracy measurement |  |
 | `@answer-question` | Question answering operations |  |
 | `@assumption-management` | Assumption tracking in Example Mapping |  |
+| `@attachments` | Feature related to work unit attachments (diagrams, documents, mockups) |  |
 | `@authentication` | Authentication and authorization functionality |  |
 | `@auto-blocking` | Automatic blocking state transitions |  |
 | `@auto-transition` | Automatic state transitions |  |
@@ -506,7 +507,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-10-17T00:58:18.818Z_
+_Last updated: 2025-10-17T10:17:58.513Z_
 
 **Update Command**: `fspec tag-stats`
 
