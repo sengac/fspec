@@ -28,7 +28,7 @@ const config: CommandHelpConfig = {
     '1. AI runs "fspec discover-foundation" to create draft with placeholders',
     '2. Command creates spec/foundation.json.draft with [QUESTION:] and [DETECTED:] placeholders',
     '3. Command scans draft and emits system-reminder for FIRST unfilled field (Field 1/N)',
-    '4. AI analyzes codebase (ULTRATHINK), asks human for confirmation, runs "fspec update-foundation --field <path> --value <value>"',
+    '4. AI analyzes codebase (ULTRATHINK), asks human for confirmation, runs "fspec update-foundation <section> <content>"',
     '5. Command automatically re-scans draft and emits system-reminder for NEXT unfilled field',
     '6. Repeat steps 4-5 until all [QUESTION:] placeholders resolved',
     '7. When complete, AI runs "fspec discover-foundation --finalize" to validate and create foundation.json',
@@ -56,9 +56,10 @@ Run: fspec update-foundation projectName "<name>"
 </system-reminder>`,
     },
     {
-      command: 'fspec update-foundation --field project.name --value "fspec"',
+      command: 'fspec update-foundation projectName "fspec"',
       description: 'Fill first field, command chains to next field',
-      output: `✓ Updated project.name to "fspec" in spec/foundation.json.draft
+      output: `✓ Updated "projectName" in foundation.json.draft
+  Updated: spec/foundation.json.draft
 
 <system-reminder>
 Field 2/8: project.vision (elevator pitch)
@@ -68,7 +69,7 @@ Focus on WHY this exists, not HOW it works.
 
 Ask human to confirm vision.
 
-Run: fspec update-foundation --field project.vision --value "your vision"
+Run: fspec update-foundation projectVision "your vision"
 </system-reminder>`,
     },
     {
@@ -82,6 +83,20 @@ Discovery complete!
 Created: spec/foundation.json, spec/FOUNDATION.md
 
 Foundation is ready.`,
+    },
+    {
+      command: 'fspec discover-foundation --finalize',
+      description: 'Finalize with incomplete draft shows detailed validation errors',
+      output: `✗ Foundation validation failed
+
+Schema validation failed. Missing required: solutionSpace.capabilities, personas[0].name
+
+Fix by running appropriate commands:
+  - For simple fields: fspec update-foundation <section> "<value>"
+  - For capabilities: fspec add-capability "<name>" "<description>"
+  - For personas: fspec add-persona "<name>" "<description>" --goal "<goal>"
+
+Then re-run: fspec discover-foundation --finalize`,
     },
   ],
   commonPatterns: [
@@ -105,6 +120,9 @@ Foundation is ready.`,
     'Generated foundation.json uses v2.0.0 generic schema',
     'Finalization validates draft against schema and auto-generates FOUNDATION.md',
     'Draft file is automatically deleted after successful finalization',
+    'Validation errors show detailed feedback with missing fields and fix commands',
+    'Error messages list exact field paths (e.g., "Missing required: personas[0].name")',
+    'Includes command examples for each error type (update-foundation, add-capability, add-persona)',
   ],
 };
 

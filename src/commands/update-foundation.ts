@@ -1,4 +1,4 @@
-import { writeFile } from 'fs/promises';
+import { writeFile, readFile, access } from 'fs/promises';
 import type { Command } from 'commander';
 import { join } from 'path';
 import chalk from 'chalk';
@@ -44,11 +44,30 @@ export async function updateFoundation(
   }
 
   try {
+    const draftPath = join(cwd, 'spec/foundation.json.draft');
     const foundationJsonPath = join(cwd, 'spec/foundation.json');
     const foundationMdPath = join(cwd, 'spec/FOUNDATION.md');
 
-    // Load or create foundation.json using ensureFoundationFile
-    const foundationData: Foundation = await ensureFoundationFile(cwd);
+    // Check if draft exists - if yes, update draft instead of final foundation
+    let isDraft = false;
+    let targetPath = foundationJsonPath;
+
+    try {
+      await access(draftPath);
+      isDraft = true;
+      targetPath = draftPath;
+    } catch {
+      // Draft doesn't exist, use final foundation.json
+    }
+
+    // Load or create foundation file (draft or final)
+    let foundationData: Foundation;
+    if (isDraft) {
+      const draftContent = await readFile(draftPath, 'utf-8');
+      foundationData = JSON.parse(draftContent);
+    } else {
+      foundationData = await ensureFoundationFile(cwd);
+    }
 
     // Update the JSON field based on section name
     const updated = updateJsonField(foundationData, section, content);
@@ -59,31 +78,40 @@ export async function updateFoundation(
       };
     }
 
-    // Write updated foundation.json
+    // Write updated file (draft or final)
     await writeFile(
-      foundationJsonPath,
+      targetPath,
       JSON.stringify(foundationData, null, 2),
       'utf-8'
     );
 
-    // Validate updated JSON against schema
-    const validation = await validateFoundationJson(foundationJsonPath);
-    if (!validation.valid) {
-      const errorMessages = validation.errors?.map(e => e.message).join(', ');
+    if (isDraft) {
+      // When updating draft, don't validate or regenerate FOUNDATION.md
+      // (those happen during finalize step)
       return {
-        success: false,
-        error: `Updated foundation.json failed schema validation: ${errorMessages}`,
+        success: true,
+        message: `Updated "${section}" in foundation.json.draft`,
+      };
+    } else {
+      // When updating final foundation, validate and regenerate FOUNDATION.md
+      const validation = await validateFoundationJson(foundationJsonPath);
+      if (!validation.valid) {
+        const errorMessages = validation.errors?.map(e => e.message).join(', ');
+        return {
+          success: false,
+          error: `Updated foundation.json failed schema validation: ${errorMessages}`,
+        };
+      }
+
+      // Regenerate FOUNDATION.md from JSON
+      const markdown = await generateFoundationMd(foundationData);
+      await writeFile(foundationMdPath, markdown, 'utf-8');
+
+      return {
+        success: true,
+        message: `Updated "${section}" section in FOUNDATION.md`,
       };
     }
-
-    // Regenerate FOUNDATION.md from JSON
-    const markdown = await generateFoundationMd(foundationData);
-    await writeFile(foundationMdPath, markdown, 'utf-8');
-
-    return {
-      success: true,
-      message: `Updated "${section}" section in FOUNDATION.md`,
-    };
   } catch (error: any) {
     return {
       success: false,
@@ -183,8 +211,15 @@ export async function updateFoundationCommand(
     }
 
     console.log(chalk.green('✓'), result.message);
-    console.log(chalk.gray('  Updated: spec/foundation.json'));
-    console.log(chalk.gray('  Regenerated: spec/FOUNDATION.md'));
+
+    // Show different output based on whether we updated draft or final
+    if (result.message?.includes('draft')) {
+      console.log(chalk.gray('  Updated: spec/foundation.json.draft'));
+    } else {
+      console.log(chalk.gray('  Updated: spec/foundation.json'));
+      console.log(chalk.gray('  Regenerated: spec/FOUNDATION.md'));
+    }
+
     process.exit(0);
   } catch (error: any) {
     console.error(chalk.red('Error:'), error.message);
