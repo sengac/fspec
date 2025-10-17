@@ -13,6 +13,7 @@ import {
   ensurePrefixesFile,
   ensureEpicsFile,
 } from '../utils/ensure-files';
+import { checkFoundationExists } from '../utils/foundation-check.js';
 
 const WORK_UNIT_ID_REGEX = /^[A-Z]{2,6}-\d+$/;
 const MAX_NESTING_DEPTH = 3;
@@ -36,6 +37,13 @@ export async function createWorkUnit(
   options: CreateWorkUnitOptions
 ): Promise<CreateWorkUnitResult> {
   const cwd = options.cwd || process.cwd();
+
+  // Check if foundation.json exists
+  const originalCommand = `fspec create-work-unit ${options.prefix} "${options.title}"`;
+  const foundationCheck = checkFoundationExists(cwd, originalCommand);
+  if (!foundationCheck.exists) {
+    throw new Error(foundationCheck.error!);
+  }
 
   // Validate title
   if (!options.title || options.title.trim() === '') {

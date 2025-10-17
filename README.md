@@ -192,10 +192,44 @@ Claude: I'll reverse engineer the existing code:
 
 **The AI agent handles all fspec commands** - you just provide the high-level intent and work unit type.
 
+### Foundation Document Discovery
+
+**Bootstrap foundation.json automatically** by analyzing your existing codebase:
+
+```
+You: /fspec Discover project foundation from codebase
+
+Claude: I'll analyze your codebase and generate foundation.json:
+1. Analyzing codebase structure...
+   ✓ Detected project type: cli-tool
+   ✓ Found 1 persona: Developer using CLI
+   ✓ Identified 12 capabilities
+
+2. Running interactive questionnaire...
+   ? What is the project vision? [DETECTED: CLI tool for managing Gherkin specs]
+   ? What is the primary problem? [DETECTED: AI agents lack structured workflow]
+
+3. Generating foundation.json (v2.0.0 schema)...
+   ✓ Validation passed
+   ✓ Created spec/foundation.json
+```
+
+**Discovery detects:**
+- **CLI tools** - From commander.js, bin field in package.json
+- **Web apps** - From Express routes, React components
+- **Libraries** - From exports field, public API
+
+**Focuses on WHY/WHAT, not HOW:**
+- ✅ Capabilities: "User Authentication", "Data Visualization"
+- ❌ Not: "Uses JWT with bcrypt", "D3.js library"
+
+The questionnaire prefills detected information and prompts for project vision, problems, and solutions.
+
 ## Features
 
 - 📊 **Kanban Workflow** - 7-state workflow with visual board
 - 🤝 **Example Mapping** - Collaborative discovery with rules, examples, questions, attachments
+- 🔍 **Foundation Discovery** - Automated codebase analysis + interactive questionnaire for foundation.json
 - 🔄 **Work Unit Management** - Track work through Kanban with dependencies and epics
 - 🔁 **Reverse ACDD** - Reverse engineer existing codebases via `/rspec` command
 - 📋 **Gherkin Validation** - Official Cucumber parser ensures valid syntax

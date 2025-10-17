@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdir, writeFile, rm, readFile } from 'fs/promises';
 import { join } from 'path';
 import type { WorkUnitsData, EpicsData } from '../../types';
+import { createMinimalFoundation } from '../../test-helpers/foundation-helper';
 
 import { queryWorkUnits } from '../query-work-units';
 import { generateSummaryReport } from '../generate-summary-report';
@@ -15,6 +16,9 @@ describe('Feature: Work Unit Query and Reporting', () => {
     testDir = join(process.cwd(), 'test-tmp-work-unit-query-reporting');
     await mkdir(testDir, { recursive: true });
     await mkdir(join(testDir, 'spec'), { recursive: true });
+
+    // Create foundation.json for all tests (required by commands)
+    await createMinimalFoundation(testDir);
   });
 
   afterEach(async () => {

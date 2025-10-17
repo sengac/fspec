@@ -473,6 +473,122 @@ fspec remove-hook <event> <name>
 - `docs/hooks/troubleshooting.md` - Common errors and solutions
 - `examples/hooks/` - Example hook scripts
 
+## Foundation Document Discovery
+
+fspec provides automated discovery to bootstrap foundation.json for new projects. The discovery system analyzes existing codebases to detect project type, personas, and capabilities, then runs an interactive questionnaire to gather additional information.
+
+### Discovery Workflow
+
+```bash
+# Run full discovery workflow
+fspec discover-foundation
+
+# Custom output path
+fspec discover-foundation --output foundation.json
+```
+
+### How Discovery Works
+
+1. **Automated Code Analysis**: Analyzes codebase using pattern detection
+   - **CLI Tools**: Detects commander.js usage, bin field in package.json
+   - **Web Apps**: Detects Express routes, React components, identifies multiple personas
+   - **Libraries**: Detects exports field, identifies Developer persona
+
+2. **Project Type Detection**: Infers project type from code patterns
+   - Looks for framework indicators (commander, express, React)
+   - Analyzes package.json structure
+   - Examines file organization and naming
+
+3. **Persona Discovery**: Identifies user personas from code structure
+   - CLI tools → "Developer using CLI in terminal"
+   - Web apps → "End User" (from UI) and "API Consumer" (from routes)
+   - Libraries → "Developer integrating library"
+
+4. **Capability Inference**: Extracts high-level capabilities (WHAT, not HOW)
+   - Focuses on user-facing features
+   - Groups granular functions into broad capabilities
+   - Example: React components → "User Interface" (NOT "Uses React hooks")
+
+5. **Interactive Questionnaire**: Prefills detected information, prompts for WHY/WHAT
+   - Answers prefilled with [DETECTED] tag
+   - Asks for project vision, problems solved, solution approach
+   - Validates all required fields before generating
+
+6. **Foundation Generation**: Creates foundation.json with v2.0.0 schema
+   - Maps discovered data to generic foundation schema
+   - Validates against JSON Schema
+   - Creates backup of existing foundation.json if present
+
+### Code Analysis Patterns
+
+The discovery system uses guidance patterns (not implementation code) located in `src/guidance/automated-discovery-code-analysis.ts`:
+
+**CLI Tool Pattern**:
+- Indicators: `commander`, `.command(`, `.option(`, `bin field in package.json`
+- Infers: Project type = cli-tool, Persona = Developer using CLI
+- Capabilities: Extracted from command names (validate, format, list-features)
+
+**Web App Pattern**:
+- Indicators: `express`, `app.get(`, `React.Component`, `useState`, `routes/`
+- Infers: Project type = web-app, Personas = End User + API Consumer
+- Capabilities: High-level features from routes and components
+
+**Library Pattern**:
+- Indicators: `exports field`, `main field`, `index.ts with exports`
+- Infers: Project type = library, Persona = Developer integrating library
+- Capabilities: Exported functions, classes, types
+
+### Discovery Focus: WHY/WHAT not HOW
+
+**WHAT** (Capabilities):
+- ✅ Good: "User Authentication", "Data Visualization", "Real-time Updates"
+- ❌ Bad: "Uses JWT with bcrypt", "D3.js charting", "WebSocket connections"
+
+**WHY** (Problems):
+- ✅ Good: "Users need secure access to protected features"
+- ❌ Bad: "Code needs JWT authentication"
+
+The discovery system guides AI to focus on user needs and capabilities, not technical implementation details.
+
+### Example Discovery Output
+
+```
+Analyzing codebase...
+✓ Detected project type: cli-tool
+✓ Found 1 persona: Developer using CLI
+✓ Identified 12 capabilities
+
+Running questionnaire...
+? What is the project vision? [DETECTED: CLI tool for managing Gherkin specs]
+? What is the primary problem? [DETECTED: AI agents lack structured workflow]
+
+✓ Generated spec/foundation.json
+✓ Validation passed (v2.0.0 schema)
+```
+
+### Related Commands
+
+```bash
+# Update existing foundation
+fspec update-foundation --field project.vision --value "New vision"
+
+# Show current foundation
+fspec show-foundation
+
+# Migrate v1.x foundation to v2.0.0
+fspec migrate-foundation
+
+# Generate FOUNDATION.md from foundation.json
+fspec generate-foundation-md
+```
+
+### Discovery Guidance Reference
+
+For complete guidance patterns used during discovery, see:
+- `src/guidance/automated-discovery-code-analysis.ts` - Pattern detection and inference rules
+- `src/commands/interactive-questionnaire.ts` - Questionnaire logic with prefill support
+- `src/commands/discover-foundation.ts` - Orchestration command
+
 ## Common Commands
 
 ```bash

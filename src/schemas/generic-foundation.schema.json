@@ -1,0 +1,281 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/sengac/fspec/schemas/generic-foundation.schema.json",
+  "title": "Generic Foundation Document Schema",
+  "description": "A generic schema for foundation documents that works for ANY project type (web apps, CLI tools, libraries, services, mobile apps). Focuses ONLY on WHY (problem) and WHAT (solution), never HOW (implementation).",
+  "type": "object",
+  "required": ["version", "project", "problemSpace", "solutionSpace"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference"
+    },
+    "version": {
+      "type": "string",
+      "description": "Schema version for migration compatibility",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "examples": ["2.0.0"]
+    },
+    "project": {
+      "type": "object",
+      "description": "REQUIRED: Project identity and basic metadata",
+      "required": ["name", "vision", "projectType"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Project name",
+          "minLength": 1
+        },
+        "vision": {
+          "type": "string",
+          "description": "One-sentence elevator pitch",
+          "minLength": 1
+        },
+        "projectType": {
+          "type": "string",
+          "description": "Type of software project",
+          "enum": [
+            "web-app",
+            "cli-tool",
+            "library",
+            "sdk",
+            "mobile-app",
+            "desktop-app",
+            "service",
+            "api",
+            "other"
+          ]
+        },
+        "repository": {
+          "type": "string",
+          "description": "Repository URL (optional)",
+          "format": "uri"
+        },
+        "license": {
+          "type": "string",
+          "description": "License identifier (optional)",
+          "examples": ["MIT", "Apache-2.0", "GPL-3.0"]
+        }
+      }
+    },
+    "problemSpace": {
+      "type": "object",
+      "description": "REQUIRED: Problem space (WHY) - captures the problems this project solves",
+      "required": ["primaryProblem"],
+      "additionalProperties": false,
+      "properties": {
+        "primaryProblem": {
+          "$ref": "#/definitions/problem"
+        },
+        "additionalProblems": {
+          "type": "array",
+          "description": "Additional problems (can have thousands - use subFoundations for scalability)",
+          "items": {
+            "$ref": "#/definitions/problem"
+          }
+        },
+        "currentStatePainPoints": {
+          "type": "array",
+          "description": "Current state pain points",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "solutionSpace": {
+      "type": "object",
+      "description": "REQUIRED: Solution space (WHAT) - broad capabilities only (3-7 high-level abilities)",
+      "required": ["overview", "capabilities"],
+      "additionalProperties": false,
+      "properties": {
+        "overview": {
+          "type": "string",
+          "description": "High-level solution overview",
+          "minLength": 1
+        },
+        "capabilities": {
+          "type": "array",
+          "description": "High-level capabilities (3-7 recommended). Granular features belong in .feature files.",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/capability"
+          }
+        },
+        "outOfScope": {
+          "type": "array",
+          "description": "What this solution does NOT do (optional)",
+          "items": {
+            "type": "string"
+          }
+        },
+        "successCriteria": {
+          "type": "array",
+          "description": "Success criteria (optional)",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "subFoundations": {
+      "type": "array",
+      "description": "OPTIONAL: Hierarchical foundations - references to external sub-foundation documents",
+      "items": {
+        "type": "string",
+        "description": "Path to sub-foundation file",
+        "pattern": "\\.foundation\\.json$"
+      }
+    },
+    "architectureDiagrams": {
+      "type": "array",
+      "description": "OPTIONAL: Architecture diagrams using Mermaid syntax",
+      "items": {
+        "$ref": "#/definitions/mermaidDiagram"
+      }
+    },
+    "constraints": {
+      "type": "object",
+      "description": "OPTIONAL: Business, technical, and timeline constraints",
+      "additionalProperties": false,
+      "properties": {
+        "business": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "technical": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "timeline": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "budget": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "personas": {
+      "type": "array",
+      "description": "OPTIONAL: Detailed personas (unlimited allowed, suggest 3-7 as best practice)",
+      "items": {
+        "$ref": "#/definitions/persona"
+      }
+    }
+  },
+  "definitions": {
+    "problem": {
+      "type": "object",
+      "description": "Problem definition with impact, frequency, and cost ratings",
+      "required": ["title", "description", "impact"],
+      "additionalProperties": false,
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "impact": {
+          "type": "string",
+          "enum": ["high", "medium", "low"],
+          "description": "Impact rating"
+        },
+        "frequency": {
+          "type": "string",
+          "enum": ["constant", "frequent", "occasional", "rare"],
+          "description": "Frequency rating (optional)"
+        },
+        "cost": {
+          "type": "string",
+          "enum": ["critical", "significant", "moderate", "minor"],
+          "description": "Cost rating (optional)"
+        },
+        "affectedStakeholders": {
+          "type": "array",
+          "description": "Stakeholders affected by this problem (optional)",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "capability": {
+      "type": "object",
+      "description": "High-level capability (WHAT the system does, not HOW)",
+      "required": ["name", "description"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Capability name (e.g., 'User Authentication', NOT 'Login with OAuth')",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "description": "Capability description (focus on WHAT, not HOW)",
+          "minLength": 1
+        },
+        "rationale": {
+          "type": "string",
+          "description": "Why this capability is important (optional)"
+        }
+      }
+    },
+    "persona": {
+      "type": "object",
+      "description": "User persona (unlimited allowed, suggest 3-7)",
+      "required": ["name", "description"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "goals": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "painPoints": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "mermaidDiagram": {
+      "type": "object",
+      "description": "Mermaid diagram (validated using mermaid.parse() with jsdom)",
+      "required": ["title", "mermaidCode"],
+      "additionalProperties": false,
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "mermaidCode": {
+          "type": "string",
+          "description": "Mermaid diagram syntax",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "description": "Diagram description (optional)"
+        }
+      }
+    }
+  }
+}

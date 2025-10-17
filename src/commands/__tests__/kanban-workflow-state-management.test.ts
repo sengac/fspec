@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdir, writeFile, rm, readFile } from 'fs/promises';
 import { join } from 'path';
 import type { WorkUnitsData } from '../../types';
+import { createMinimalFoundation } from '../../test-helpers/foundation-helper';
 
 // Import commands (to be created/extended)
 import { updateWorkUnitStatus } from '../update-work-unit-status';
@@ -18,6 +19,9 @@ describe('Feature: Kanban Workflow State Management', () => {
     await mkdir(testDir, { recursive: true });
     await mkdir(join(testDir, 'spec'), { recursive: true });
     await mkdir(join(testDir, 'spec/features'), { recursive: true });
+
+    // Create foundation.json for all tests (required by commands)
+    await createMinimalFoundation(testDir);
   });
 
   afterEach(async () => {

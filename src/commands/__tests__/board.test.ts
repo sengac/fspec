@@ -25,6 +25,18 @@ describe('Feature: Kanban Workflow State Management', () => {
       // Given I have a project with spec directory
       await mkdir(join(testDir, 'spec'), { recursive: true });
 
+      // And foundation.json exists
+      await writeFile(
+        join(testDir, 'spec', 'foundation.json'),
+        JSON.stringify({
+          version: '2.0.0',
+          project: { name: 'Test', vision: 'Test', projectType: 'cli-tool' },
+          problemSpace: { primaryProblem: { title: 'Test', description: 'Test', impact: 'high' } },
+          solutionSpace: { overview: 'Test', capabilities: [] },
+          personas: [],
+        })
+      );
+
       // And work units exist
       const workUnitsData = {
         meta: {
@@ -146,6 +158,18 @@ describe('Feature: Kanban Workflow State Management', () => {
       // Given I have a project with spec directory
       await mkdir(join(testDir, 'spec'), { recursive: true });
 
+      // And foundation.json exists
+      await writeFile(
+        join(testDir, 'spec', 'foundation.json'),
+        JSON.stringify({
+          version: '2.0.0',
+          project: { name: 'Test', vision: 'Test', projectType: 'cli-tool' },
+          problemSpace: { primaryProblem: { title: 'Test', description: 'Test', impact: 'high' } },
+          solutionSpace: { overview: 'Test', capabilities: [] },
+          personas: [],
+        })
+      );
+
       // And work units exist in backlog
       const workUnitsData = {
         meta: {
@@ -238,6 +262,18 @@ describe('Feature: Kanban Workflow State Management', () => {
     it('should export board data as valid JSON', async () => {
       // Given I have a project with spec directory
       await mkdir(join(testDir, 'spec'), { recursive: true });
+
+      // And foundation.json exists
+      await writeFile(
+        join(testDir, 'spec', 'foundation.json'),
+        JSON.stringify({
+          version: '2.0.0',
+          project: { name: 'Test', vision: 'Test', projectType: 'cli-tool' },
+          problemSpace: { primaryProblem: { title: 'Test', description: 'Test', impact: 'high' } },
+          solutionSpace: { overview: 'Test', capabilities: [] },
+          personas: [],
+        })
+      );
 
       // And work units exist
       const workUnitsData = {

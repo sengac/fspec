@@ -2,6 +2,7 @@ import { readFile } from 'fs/promises';
 import { join } from 'path';
 import type { Command } from 'commander';
 import chalk from 'chalk';
+import { checkFoundationExists } from '../utils/foundation-check.js';
 
 interface WorkUnit {
   id: string;
@@ -32,6 +33,13 @@ export async function displayBoard(options: {
   cwd?: string;
 }): Promise<BoardResult> {
   const cwd = options.cwd || process.cwd();
+
+  // Check if foundation.json exists
+  const foundationCheck = checkFoundationExists(cwd, 'fspec board');
+  if (!foundationCheck.exists) {
+    throw new Error(foundationCheck.error!);
+  }
+
   const workUnitsFile = join(cwd, 'spec', 'work-units.json');
 
   try {

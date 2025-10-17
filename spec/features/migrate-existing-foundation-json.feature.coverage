@@ -1,0 +1,144 @@
+{
+  "scenarios": [
+    {
+      "name": "Migrate project overview to vision field",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/migrate-foundation.test.ts",
+          "lines": "13-40",
+          "implMappings": [
+            {
+              "file": "src/commands/migrate-foundation.ts",
+              "lines": [
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Migrate problem definition to problem space",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/migrate-foundation.test.ts",
+          "lines": "42-75",
+          "implMappings": [
+            {
+              "file": "src/commands/migrate-foundation.ts",
+              "lines": [
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Preserve architecture diagrams during migration",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/migrate-foundation.test.ts",
+          "lines": "77-111",
+          "implMappings": [
+            {
+              "file": "src/commands/migrate-foundation.ts",
+              "lines": [
+                71,
+                72,
+                73,
+                74
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Validate migrated foundation against v2.0.0 schema",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/migrate-foundation.test.ts",
+          "lines": "113-142",
+          "implMappings": [
+            {
+              "file": "src/commands/migrate-foundation.ts",
+              "lines": [
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/commands/__tests__/migrate-foundation.test.ts"
+    ],
+    "implFiles": [
+      "src/commands/migrate-foundation.ts"
+    ],
+    "totalLinesCovered": 191
+  }
+}
