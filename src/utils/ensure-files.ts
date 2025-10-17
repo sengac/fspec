@@ -224,81 +224,39 @@ export async function ensureFoundationFile(cwd: string): Promise<Foundation> {
     const content = await readFile(filePath, 'utf-8');
     return JSON.parse(content);
   } catch (error: unknown) {
-    // File doesn't exist, create it with initial structure
+    // File doesn't exist, create it with initial structure (generic schema v2.0.0)
     if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
-      const initialData: Foundation = {
+      const initialData: any = {
+        version: '2.0.0',
         project: {
-          name: 'Project',
-          description: 'Project description',
-          repository: 'https://github.com/user/repo',
-          license: 'MIT',
-          importantNote: 'Important project note',
+          name: 'Project Name',
+          vision: 'Project vision statement',
+          projectType: 'cli-tool',
         },
-        whatWeAreBuilding: {
-          projectOverview: 'Project overview',
-          technicalRequirements: {
-            coreTechnologies: [],
-            architecture: {
-              pattern: 'Architecture pattern',
-              fileStructure: 'File structure',
-              deploymentTarget: 'Deployment target',
-              integrationModel: [],
-            },
-            developmentAndOperations: {
-              developmentTools: 'Development tools',
-              testingStrategy: 'Testing strategy',
-              logging: 'Logging approach',
-              validation: 'Validation approach',
-              formatting: 'Formatting approach',
-            },
-            keyLibraries: [],
-          },
-          nonFunctionalRequirements: [],
-        },
-        whyWeAreBuildingIt: {
-          problemDefinition: {
-            primary: {
-              title: 'Primary Problem',
-              description: 'Description',
-              points: [],
-            },
-            secondary: [],
-          },
-          painPoints: {
-            currentState: 'Current state',
-            specific: [],
-          },
-          stakeholderImpact: [],
-          theoreticalSolutions: [],
-          developmentMethodology: {
-            name: 'Methodology',
-            description: 'Description',
-            steps: [],
-            ensures: [],
-          },
-          successCriteria: [],
-          constraintsAndAssumptions: {
-            constraints: [],
-            assumptions: [],
+        problemSpace: {
+          primaryProblem: {
+            title: 'Primary Problem',
+            description: 'Problem description',
+            impact: 'high',
           },
         },
+        solutionSpace: {
+          overview: 'Solution overview',
+          capabilities: [
+            {
+              name: 'Core Capability',
+              description: 'Capability description',
+            },
+          ],
+        },
+        personas: [
+          {
+            name: 'Primary User',
+            description: 'User description',
+            goals: ['User goal'],
+          },
+        ],
         architectureDiagrams: [],
-        coreCommands: {
-          categories: [],
-        },
-        featureInventory: {
-          phases: [],
-          tagUsageSummary: {
-            phaseDistribution: [],
-            componentDistribution: [],
-            featureGroupDistribution: [],
-            priorityDistribution: [],
-            testingCoverage: [],
-          },
-        },
-        notes: {
-          developmentStatus: [],
-        },
       };
 
       await writeFile(filePath, JSON.stringify(initialData, null, 2));

@@ -131,10 +131,18 @@
           ]
         }
       ]
+    },
+    {
+      "name": "Create draft foundation with detected values and question placeholders",
+      "testMappings": []
+    },
+    {
+      "name": "Finalize foundation after AI edits draft",
+      "testMappings": []
     }
   ],
   "stats": {
-    "totalScenarios": 2,
+    "totalScenarios": 4,
     "coveredScenarios": 2,
     "coveragePercent": 100,
     "testFiles": [

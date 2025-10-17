@@ -69,9 +69,10 @@ export async function updateFoundation(
     // Validate updated JSON against schema
     const validation = await validateFoundationJson(foundationJsonPath);
     if (!validation.valid) {
+      const errorMessages = validation.errors?.map(e => e.message).join(', ');
       return {
         success: false,
-        error: `Updated foundation.json failed schema validation: ${validation.errors?.join(', ')}`,
+        error: `Updated foundation.json failed schema validation: ${errorMessages}`,
       };
     }
 
@@ -93,43 +94,72 @@ export async function updateFoundation(
 
 // Helper function to update JSON field based on section name
 function updateJsonField(
-  foundation: Foundation,
+  foundation: any,
   section: string,
   content: string
 ): boolean {
-  // Map section names to JSON field paths
+  // Map section names to JSON field paths (generic schema v2.0.0)
   switch (section) {
-    case 'projectOverview':
-      foundation.whatWeAreBuilding.projectOverview = content;
+    // Project fields
+    case 'projectName':
+    case 'name':
+      foundation.project = foundation.project || {};
+      foundation.project.name = content;
+      return true;
+
+    case 'projectVision':
+    case 'vision':
+      foundation.project = foundation.project || {};
+      foundation.project.vision = content;
+      return true;
+
+    case 'projectType':
+      foundation.project = foundation.project || {};
+      foundation.project.projectType = content;
+      return true;
+
+    // Problem space fields
+    case 'problemTitle':
+      foundation.problemSpace = foundation.problemSpace || {};
+      foundation.problemSpace.primaryProblem =
+        foundation.problemSpace.primaryProblem || {};
+      foundation.problemSpace.primaryProblem.title = content;
       return true;
 
     case 'problemDefinition':
-      foundation.whyWeAreBuildingIt.problemDefinition.primary.description =
-        content;
+    case 'problemDescription':
+      foundation.problemSpace = foundation.problemSpace || {};
+      foundation.problemSpace.primaryProblem =
+        foundation.problemSpace.primaryProblem || {};
+      foundation.problemSpace.primaryProblem.description = content;
       return true;
 
-    case 'architecturePattern':
-      foundation.whatWeAreBuilding.technicalRequirements.architecture.pattern =
-        content;
+    case 'problemImpact':
+      if (!['high', 'medium', 'low'].includes(content)) {
+        return false;
+      }
+      foundation.problemSpace = foundation.problemSpace || {};
+      foundation.problemSpace.primaryProblem =
+        foundation.problemSpace.primaryProblem || {};
+      foundation.problemSpace.primaryProblem.impact = content;
       return true;
 
-    case 'developmentTools':
-      foundation.whatWeAreBuilding.technicalRequirements.developmentAndOperations.developmentTools =
-        content;
+    // Solution space fields
+    case 'solutionOverview':
+    case 'projectOverview':
+      foundation.solutionSpace = foundation.solutionSpace || {};
+      foundation.solutionSpace.overview = content;
       return true;
 
+    // Legacy mappings for backward compatibility
     case 'testingStrategy':
-      foundation.whatWeAreBuilding.technicalRequirements.developmentAndOperations.testingStrategy =
-        content;
-      return true;
-
+    case 'developmentTools':
+    case 'architecturePattern':
     case 'painPoints':
-      foundation.whyWeAreBuildingIt.painPoints.currentState = content;
-      return true;
-
     case 'methodology':
-      foundation.whyWeAreBuildingIt.developmentMethodology.description =
-        content;
+      // These were old schema fields - map to solutionSpace.overview
+      foundation.solutionSpace = foundation.solutionSpace || {};
+      foundation.solutionSpace.overview = content;
       return true;
 
     default:

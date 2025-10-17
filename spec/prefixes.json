@@ -99,6 +99,11 @@
       "prefix": "FOUND",
       "description": "Foundation document features",
       "createdAt": "2025-10-16T23:12:39.403Z"
+    },
+    "REFAC": {
+      "prefix": "REFAC",
+      "description": "Refactoring and code improvements",
+      "createdAt": "2025-10-17T03:12:43.828Z"
     }
   }
 }

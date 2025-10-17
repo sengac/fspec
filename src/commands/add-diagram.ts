@@ -1,17 +1,17 @@
-import { readFile, writeFile, mkdir } from 'fs/promises';
+import { writeFile } from 'fs/promises';
 import type { Command } from 'commander';
 import { join } from 'path';
-import { existsSync } from 'fs';
 import chalk from 'chalk';
-import type { Foundation } from '../types/foundation';
-import { validateFoundationJson } from '../validators/json-schema';
+import { validateFoundationJson } from '../validators/validate-json-schema';
 import { generateFoundationMd } from '../generators/foundation-md';
 import { validateMermaidSyntax } from '../utils/mermaid-validation';
+import { ensureFoundationFile } from '../utils/ensure-files';
 
 interface AddDiagramOptions {
   section: string;
   title: string;
   code: string;
+  description?: string;
   cwd?: string;
 }
 
@@ -21,87 +21,10 @@ interface AddDiagramResult {
   error?: string;
 }
 
-// Minimal foundation.json template
-const FOUNDATION_JSON_TEMPLATE: Foundation = {
-  project: {
-    name: 'Project',
-    description: 'Project description',
-    repository: 'https://github.com/user/repo',
-    license: 'MIT',
-    importantNote: 'Important project note',
-  },
-  whatWeAreBuilding: {
-    projectOverview: 'Project overview',
-    technicalRequirements: {
-      coreTechnologies: [],
-      architecture: {
-        pattern: 'Architecture pattern',
-        fileStructure: 'File structure',
-        deploymentTarget: 'Deployment target',
-        integrationModel: [],
-      },
-      developmentAndOperations: {
-        developmentTools: 'Development tools',
-        testingStrategy: 'Testing strategy',
-        logging: 'Logging approach',
-        validation: 'Validation approach',
-        formatting: 'Formatting approach',
-      },
-      keyLibraries: [],
-    },
-    nonFunctionalRequirements: [],
-  },
-  whyWeAreBuildingIt: {
-    problemDefinition: {
-      primary: {
-        title: 'Primary Problem',
-        description: 'Description',
-        points: [],
-      },
-      secondary: [],
-    },
-    painPoints: {
-      currentState: 'Current state',
-      specific: [],
-    },
-    stakeholderImpact: [],
-    theoreticalSolutions: [],
-    developmentMethodology: {
-      name: 'Methodology',
-      description: 'Description',
-      steps: [],
-      ensures: [],
-    },
-    successCriteria: [],
-    constraintsAndAssumptions: {
-      constraints: [],
-      assumptions: [],
-    },
-  },
-  architectureDiagrams: [],
-  coreCommands: {
-    categories: [],
-  },
-  featureInventory: {
-    phases: [],
-    tagUsageSummary: {
-      phaseDistribution: [],
-      componentDistribution: [],
-      featureGroupDistribution: [],
-      priorityDistribution: [],
-      testingCoverage: [],
-    },
-  },
-  notes: {
-    developmentStatus: [],
-  },
-};
-
-
 export async function addDiagram(
   options: AddDiagramOptions
 ): Promise<AddDiagramResult> {
-  const { section, title, code, cwd = process.cwd() } = options;
+  const { section, title, code, description, cwd = process.cwd() } = options;
 
   // Validate inputs
   if (!section || section.trim().length === 0) {
@@ -138,28 +61,29 @@ export async function addDiagram(
     const foundationJsonPath = join(cwd, 'spec/foundation.json');
     const foundationMdPath = join(cwd, 'spec/FOUNDATION.md');
 
-    // Load or create foundation.json
-    let foundationData: Foundation;
+    // Load or create foundation.json using ensureFoundationFile (generic schema v2.0.0)
+    const foundationData: any = await ensureFoundationFile(cwd);
 
-    if (existsSync(foundationJsonPath)) {
-      const content = await readFile(foundationJsonPath, 'utf-8');
-      foundationData = JSON.parse(content);
-    } else {
-      // Create spec directory and foundation.json from template
-      await mkdir(join(cwd, 'spec'), { recursive: true });
-      foundationData = JSON.parse(JSON.stringify(FOUNDATION_JSON_TEMPLATE));
+    // Ensure architectureDiagrams array exists
+    if (!foundationData.architectureDiagrams) {
+      foundationData.architectureDiagrams = [];
     }
 
     // Find existing diagram with same title or add new one
     const existingIndex = foundationData.architectureDiagrams.findIndex(
-      d => d.title === title
+      (d: any) => d.title === title
     );
 
-    const newDiagram = {
-      section,
+    // Create new diagram (generic schema doesn't have 'section' field)
+    const newDiagram: any = {
       title,
       mermaidCode: code,
     };
+
+    // Add optional description if provided
+    if (description) {
+      newDiagram.description = description;
+    }
 
     if (existingIndex !== -1) {
       // Replace existing diagram
@@ -177,11 +101,12 @@ export async function addDiagram(
     );
 
     // Validate updated JSON against schema
-    const validation = await validateFoundationJson(foundationJsonPath);
+    const validation = validateFoundationJson(foundationData);
     if (!validation.valid) {
+      const errorMessages = validation.errors?.map(e => e.message).join(', ');
       return {
         success: false,
-        error: `Updated foundation.json failed schema validation: ${validation.errors?.join(', ')}`,
+        error: `Updated foundation.json failed schema validation: ${errorMessages}`,
       };
     }
 

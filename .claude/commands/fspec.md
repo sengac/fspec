@@ -92,6 +92,54 @@ fspec help hooks       # Lifecycle hooks for workflow automation
 
 Then read `spec/CLAUDE.md` for fspec-specific workflow details.
 
+## Step 1.5: Bootstrap Foundation (REQUIRED for New Projects)
+
+**CRITICAL**: If `spec/foundation.json` does not exist, you MUST bootstrap it using automated discovery. This is ENFORCED by fspec commands.
+
+```bash
+# REQUIRED: Analyze codebase and generate foundation.json
+fspec discover-foundation
+
+# Custom output path
+fspec discover-foundation --output foundation.json
+```
+
+**What `discover-foundation` does:**
+
+1. **Automated Code Analysis** - Detects project type from codebase patterns
+   - CLI tools: commander.js, bin field in package.json
+   - Web apps: Express routes, React components
+   - Libraries: exports field in package.json
+
+2. **Persona Discovery** - Identifies user personas from code structure
+   - CLI tools → "Developer using CLI in terminal"
+   - Web apps → "End User" (UI) + "API Consumer" (routes)
+   - Libraries → "Developer integrating library into their codebase"
+
+3. **Capability Inference** - Extracts high-level capabilities (WHAT, not HOW)
+   - Focus on user-facing features and capabilities
+   - NOT implementation details (React, Express, JWT, etc.)
+   - Example: "User Authentication" (WHAT) not "JWT with bcrypt" (HOW)
+
+4. **Interactive Questionnaire** - Prefills detected values, prompts for WHY/WHAT
+   - Project vision and problems solved (WHY)
+   - Solution approach and capabilities (WHAT)
+   - Validates before generating foundation.json
+
+**Why this is mandatory:**
+
+- fspec commands check for foundation.json existence
+- Foundation establishes project context (type, personas, capabilities)
+- Ensures consistent WHY/WHAT focus (not HOW/implementation)
+- Required for Example Mapping and work unit creation
+- Provides context for all ACDD workflow steps
+
+**When to skip:**
+
+- ONLY if `spec/foundation.json` already exists
+
+**See also:** `spec/CLAUDE.md` section "Foundation Document Discovery" for complete guidance.
+
 ## Step 2: Example Mapping - Discovery BEFORE Specification
 
 **CRITICAL**: Before writing any Gherkin feature file, you MUST do Example Mapping to clarify requirements through conversation.

@@ -18,12 +18,19 @@ interface ShowFoundationResult {
   error?: string;
 }
 
-// Map of common field names to JSON paths
+// Map of common field names to JSON paths (generic schema v2.0.0)
 const FIELD_MAP: Record<string, string> = {
-  projectOverview: 'whatWeAreBuilding.projectOverview',
-  problemDefinition: 'whyWeAreBuildingIt.problemDefinition.primary.description',
   projectName: 'project.name',
-  projectDescription: 'project.description',
+  projectVision: 'project.vision',
+  projectType: 'project.projectType',
+  problemTitle: 'problemSpace.primaryProblem.title',
+  problemDescription: 'problemSpace.primaryProblem.description',
+  problemImpact: 'problemSpace.primaryProblem.impact',
+  solutionOverview: 'solutionSpace.overview',
+
+  // Legacy mappings for backward compatibility
+  projectOverview: 'solutionSpace.overview',
+  problemDefinition: 'problemSpace.primaryProblem.description',
 };
 
 export async function showFoundation(
@@ -32,8 +39,8 @@ export async function showFoundation(
   const { field, format = 'text', output, cwd = process.cwd() } = options;
 
   try {
-    // Load or create foundation.json using ensureFoundationFile
-    const foundationData: Foundation = await ensureFoundationFile(cwd);
+    // Load or create foundation.json using ensureFoundationFile (generic schema v2.0.0)
+    const foundationData: any = await ensureFoundationFile(cwd);
 
     // Get specific field or entire foundation
     let displayData: any;
@@ -106,33 +113,61 @@ function getNestedProperty(obj: any, path: string): any {
   return current;
 }
 
-// Helper function to format Foundation as readable text
-function formatFoundationAsText(foundation: Foundation): string {
+// Helper function to format Foundation as readable text (generic schema v2.0.0)
+function formatFoundationAsText(foundation: any): string {
   const lines: string[] = [];
 
   lines.push('=== PROJECT ===');
-  lines.push(`Name: ${foundation.project.name}`);
-  lines.push(`Description: ${foundation.project.description}`);
-  lines.push(`Repository: ${foundation.project.repository}`);
-  lines.push(`License: ${foundation.project.license}`);
+  if (foundation.project) {
+    lines.push(`Name: ${foundation.project.name || 'N/A'}`);
+    lines.push(`Vision: ${foundation.project.vision || 'N/A'}`);
+    lines.push(`Type: ${foundation.project.projectType || 'N/A'}`);
+    if (foundation.project.repository) {
+      lines.push(`Repository: ${foundation.project.repository}`);
+    }
+    if (foundation.project.license) {
+      lines.push(`License: ${foundation.project.license}`);
+    }
+  }
   lines.push('');
 
-  lines.push('=== WHAT WE ARE BUILDING ===');
-  lines.push(foundation.whatWeAreBuilding.projectOverview);
-  lines.push('');
+  if (foundation.problemSpace && foundation.problemSpace.primaryProblem) {
+    lines.push('=== PROBLEM SPACE ===');
+    const problem = foundation.problemSpace.primaryProblem;
+    lines.push(`Title: ${problem.title || 'N/A'}`);
+    lines.push(`Description: ${problem.description || 'N/A'}`);
+    lines.push(`Impact: ${problem.impact || 'N/A'}`);
+    lines.push('');
+  }
 
-  lines.push('=== WHY WE ARE BUILDING IT ===');
-  lines.push(
-    `Problem: ${foundation.whyWeAreBuildingIt.problemDefinition.primary.title}`
-  );
-  lines.push(
-    foundation.whyWeAreBuildingIt.problemDefinition.primary.description
-  );
-  lines.push('');
+  if (foundation.solutionSpace) {
+    lines.push('=== SOLUTION SPACE ===');
+    lines.push(foundation.solutionSpace.overview || 'N/A');
+    lines.push('');
 
-  if (foundation.architectureDiagrams.length > 0) {
+    if (
+      foundation.solutionSpace.capabilities &&
+      foundation.solutionSpace.capabilities.length > 0
+    ) {
+      lines.push('Capabilities:');
+      foundation.solutionSpace.capabilities.forEach((cap: any) => {
+        lines.push(`- ${cap.name}: ${cap.description}`);
+      });
+      lines.push('');
+    }
+  }
+
+  if (foundation.personas && foundation.personas.length > 0) {
+    lines.push('=== PERSONAS ===');
+    foundation.personas.forEach((persona: any) => {
+      lines.push(`- ${persona.name}: ${persona.description}`);
+    });
+    lines.push('');
+  }
+
+  if (foundation.architectureDiagrams && foundation.architectureDiagrams.length > 0) {
     lines.push('=== ARCHITECTURE DIAGRAMS ===');
-    foundation.architectureDiagrams.forEach(diagram => {
+    foundation.architectureDiagrams.forEach((diagram: any) => {
       lines.push(`- ${diagram.title}`);
     });
     lines.push('');

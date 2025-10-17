@@ -9,6 +9,7 @@ import {
 } from '../validate-json-schema';
 import type { Foundation } from '../../types/foundation';
 import type { Tags } from '../../types/tags';
+import { createMinimalFoundation } from '../../test-helpers/foundation-fixtures';
 
 describe('Feature: Internal JSON Schema Validation', () => {
   let testDir: string;
@@ -26,69 +27,9 @@ describe('Feature: Internal JSON Schema Validation', () => {
   describe('Scenario: Validate valid foundation.json', () => {
     it('should pass validation for valid foundation.json', () => {
       // Given I have a foundation.json object with valid structure
-      const validFoundation: Foundation = {
-        $schema: '../src/schemas/foundation.schema.json',
-        project: {
-          name: 'Test Project',
-          description: 'Test description',
-          repository: 'https://github.com/test/test',
-          license: 'MIT',
-          importantNote: 'Test note',
-        },
-        whatWeAreBuilding: {
-          projectOverview: 'Test overview',
-          technicalRequirements: {
-            coreTechnologies: [],
-            architecture: {
-              pattern: 'CLI',
-              fileStructure: 'test',
-              deploymentTarget: 'local',
-              integrationModel: [],
-            },
-            developmentAndOperations: {
-              developmentTools: 'test',
-              testingStrategy: 'test',
-              logging: 'test',
-              validation: 'test',
-              formatting: 'test',
-            },
-            keyLibraries: [],
-          },
-          nonFunctionalRequirements: [],
-        },
-        whyWeAreBuildingIt: {
-          problemDefinition: {
-            primary: { title: 'Test', description: 'Test', points: [] },
-            secondary: [],
-          },
-          painPoints: { currentState: 'Test', specific: [] },
-          stakeholderImpact: [],
-          theoreticalSolutions: [],
-          developmentMethodology: {
-            name: 'ACDD',
-            description: 'Test',
-            steps: [],
-            ensures: [],
-          },
-          successCriteria: [],
-          constraintsAndAssumptions: { constraints: [], assumptions: [] },
-        },
-        architectureDiagrams: [],
-        coreCommands: { categories: [] },
-        featureInventory: {
-          phases: [],
-          tagUsageSummary: {
-            phaseDistribution: [],
-            componentDistribution: [],
-            featureGroupDistribution: [],
-            priorityDistribution: [],
-            testingCoverage: [],
-          },
-        },
-        notes: { developmentStatus: [] },
-      };
+      const validFoundation = createMinimalFoundation() as unknown as Foundation;
 
-      // When the validation utility validates it against foundation.schema.json
+      // When the validation utility validates it against generic-foundation.schema.json
       const result = validateFoundationJson(validFoundation);
 
       // Then the validation should pass
@@ -254,67 +195,7 @@ describe('Feature: Internal JSON Schema Validation', () => {
   describe('Scenario: Validate from file path', () => {
     it('should read and validate JSON file', async () => {
       // Given I have a file "spec/foundation.json" with valid JSON
-      const validFoundation: Foundation = {
-        $schema: '../src/schemas/foundation.schema.json',
-        project: {
-          name: 'Test',
-          description: 'Test',
-          repository: 'https://test.com',
-          license: 'MIT',
-          importantNote: 'Test',
-        },
-        whatWeAreBuilding: {
-          projectOverview: 'Test',
-          technicalRequirements: {
-            coreTechnologies: [],
-            architecture: {
-              pattern: 'test',
-              fileStructure: 'test',
-              deploymentTarget: 'test',
-              integrationModel: [],
-            },
-            developmentAndOperations: {
-              developmentTools: 'test',
-              testingStrategy: 'test',
-              logging: 'test',
-              validation: 'test',
-              formatting: 'test',
-            },
-            keyLibraries: [],
-          },
-          nonFunctionalRequirements: [],
-        },
-        whyWeAreBuildingIt: {
-          problemDefinition: {
-            primary: { title: 'Test', description: 'Test', points: [] },
-            secondary: [],
-          },
-          painPoints: { currentState: 'Test', specific: [] },
-          stakeholderImpact: [],
-          theoreticalSolutions: [],
-          developmentMethodology: {
-            name: 'Test',
-            description: 'Test',
-            steps: [],
-            ensures: [],
-          },
-          successCriteria: [],
-          constraintsAndAssumptions: { constraints: [], assumptions: [] },
-        },
-        architectureDiagrams: [],
-        coreCommands: { categories: [] },
-        featureInventory: {
-          phases: [],
-          tagUsageSummary: {
-            phaseDistribution: [],
-            componentDistribution: [],
-            featureGroupDistribution: [],
-            priorityDistribution: [],
-            testingCoverage: [],
-          },
-        },
-        notes: { developmentStatus: [] },
-      };
+      const validFoundation = createMinimalFoundation();
 
       const filePath = join(testDir, 'spec', 'foundation.json');
       await writeFile(filePath, JSON.stringify(validFoundation, null, 2));
@@ -326,7 +207,7 @@ describe('Feature: Internal JSON Schema Validation', () => {
       expect(result.valid).toBe(true);
       // And the JSON data should be returned
       expect(result.data).toBeDefined();
-      expect(result.data!.project.name).toBe('Test');
+      expect(result.data!.project.name).toBe('Test Project');
     });
   });
 

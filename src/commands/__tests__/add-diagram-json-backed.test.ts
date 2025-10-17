@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdir, writeFile, rm, readFile } from 'fs/promises';
 import { join } from 'path';
 import { addDiagramJsonBacked } from '../add-diagram-json-backed';
+import { createFoundationWithDiagrams } from '../../test-helpers/foundation-with-diagram-fixtures';
 
 describe('Feature: Add Diagram to JSON-Backed Foundation', () => {
   let testDir: string;
@@ -20,81 +21,7 @@ describe('Feature: Add Diagram to JSON-Backed Foundation', () => {
     it('should add diagram to foundation.json and regenerate FOUNDATION.md', async () => {
       // Given I have a valid file "spec/foundation.json"
       const foundationFile = join(testDir, 'spec', 'foundation.json');
-      const initialFoundation = {
-        $schema: '../src/schemas/foundation.schema.json',
-        project: {
-          name: 'Test Project',
-          description: 'Test',
-          repository: 'https://github.com/test/test',
-          license: 'MIT',
-          importantNote: 'Test note',
-        },
-        whatWeAreBuilding: {
-          projectOverview: 'Test overview',
-          technicalRequirements: {
-            coreTechnologies: [],
-            architecture: {
-              pattern: 'Test',
-              fileStructure: 'Test',
-              deploymentTarget: 'Test',
-              integrationModel: [],
-            },
-            developmentAndOperations: {
-              developmentTools: 'Test',
-              testingStrategy: 'Test',
-              logging: 'Test',
-              validation: 'Test',
-              formatting: 'Test',
-            },
-            keyLibraries: [],
-          },
-          nonFunctionalRequirements: [],
-        },
-        whyWeAreBuildingIt: {
-          problemDefinition: {
-            primary: {
-              title: 'Test',
-              description: 'Test',
-              points: [],
-            },
-            secondary: [],
-          },
-          painPoints: {
-            currentState: 'Test',
-            specific: [],
-          },
-          stakeholderImpact: [],
-          theoreticalSolutions: [],
-          developmentMethodology: {
-            name: 'Test',
-            description: 'Test',
-            steps: [],
-            ensures: [],
-          },
-          successCriteria: [],
-          constraintsAndAssumptions: {
-            constraints: [],
-            assumptions: [],
-          },
-        },
-        architectureDiagrams: [],
-        coreCommands: {
-          categories: [],
-        },
-        featureInventory: {
-          phases: [],
-          tagUsageSummary: {
-            phaseDistribution: [],
-            componentDistribution: [],
-            featureGroupDistribution: [],
-            priorityDistribution: [],
-            testingCoverage: [],
-          },
-        },
-        notes: {
-          developmentStatus: [],
-        },
-      };
+      const initialFoundation = createFoundationWithDiagrams();
       await writeFile(
         foundationFile,
         JSON.stringify(initialFoundation, null, 2)
@@ -134,78 +61,12 @@ describe('Feature: Add Diagram to JSON-Backed Foundation', () => {
       // Given I have a valid file "spec/foundation.json"
       // And it contains a diagram titled "fspec System Context"
       const foundationFile = join(testDir, 'spec', 'foundation.json');
-      const initialFoundation = {
-        $schema: '../src/schemas/foundation.schema.json',
-        project: {
-          name: 'Test',
-          description: 'Test',
-          repository: 'https://github.com/test/test',
-          license: 'MIT',
-          importantNote: 'Test',
+      const initialFoundation = createFoundationWithDiagrams([
+        {
+          title: 'fspec System Context',
+          mermaidCode: 'graph TB\n  OLD[Old]',
         },
-        whatWeAreBuilding: {
-          projectOverview: 'Test',
-          technicalRequirements: {
-            coreTechnologies: [],
-            architecture: {
-              pattern: 'Test',
-              fileStructure: 'Test',
-              deploymentTarget: 'Test',
-              integrationModel: [],
-            },
-            developmentAndOperations: {
-              developmentTools: 'Test',
-              testingStrategy: 'Test',
-              logging: 'Test',
-              validation: 'Test',
-              formatting: 'Test',
-            },
-            keyLibraries: [],
-          },
-          nonFunctionalRequirements: [],
-        },
-        whyWeAreBuildingIt: {
-          problemDefinition: {
-            primary: { title: 'Test', description: 'Test', points: [] },
-            secondary: [],
-          },
-          painPoints: {
-            currentState: 'Test',
-            specific: [],
-          },
-          stakeholderImpact: [],
-          theoreticalSolutions: [],
-          developmentMethodology: {
-            name: 'Test',
-            description: 'Test',
-            steps: [],
-            ensures: [],
-          },
-          successCriteria: [],
-          constraintsAndAssumptions: {
-            constraints: [],
-            assumptions: [],
-          },
-        },
-        architectureDiagrams: [
-          {
-            title: 'fspec System Context',
-            mermaidCode: 'graph TB\n  OLD[Old]',
-          },
-        ],
-        coreCommands: { categories: [] },
-        featureInventory: {
-          phases: [],
-          tagUsageSummary: {
-            phaseDistribution: [],
-            componentDistribution: [],
-            featureGroupDistribution: [],
-            priorityDistribution: [],
-            testingCoverage: [],
-          },
-        },
-        notes: { developmentStatus: [] },
-      };
+      ]);
       await writeFile(
         foundationFile,
         JSON.stringify(initialFoundation, null, 2)
@@ -238,67 +99,7 @@ describe('Feature: Add Diagram to JSON-Backed Foundation', () => {
     it('should include description field in diagram', async () => {
       // Given I have a valid file "spec/foundation.json"
       const foundationFile = join(testDir, 'spec', 'foundation.json');
-      const minimalFoundation = {
-        $schema: '../src/schemas/foundation.schema.json',
-        project: {
-          name: 'Test',
-          description: 'Test',
-          repository: 'https://github.com/test/test',
-          license: 'MIT',
-          importantNote: 'Test',
-        },
-        whatWeAreBuilding: {
-          projectOverview: 'Test',
-          technicalRequirements: {
-            coreTechnologies: [],
-            architecture: {
-              pattern: 'Test',
-              fileStructure: 'Test',
-              deploymentTarget: 'Test',
-              integrationModel: [],
-            },
-            developmentAndOperations: {
-              developmentTools: 'Test',
-              testingStrategy: 'Test',
-              logging: 'Test',
-              validation: 'Test',
-              formatting: 'Test',
-            },
-            keyLibraries: [],
-          },
-          nonFunctionalRequirements: [],
-        },
-        whyWeAreBuildingIt: {
-          problemDefinition: {
-            primary: { title: 'Test', description: 'Test', points: [] },
-            secondary: [],
-          },
-          painPoints: { currentState: 'Test', specific: [] },
-          stakeholderImpact: [],
-          theoreticalSolutions: [],
-          developmentMethodology: {
-            name: 'Test',
-            description: 'Test',
-            steps: [],
-            ensures: [],
-          },
-          successCriteria: [],
-          constraintsAndAssumptions: { constraints: [], assumptions: [] },
-        },
-        architectureDiagrams: [],
-        coreCommands: { categories: [] },
-        featureInventory: {
-          phases: [],
-          tagUsageSummary: {
-            phaseDistribution: [],
-            componentDistribution: [],
-            featureGroupDistribution: [],
-            priorityDistribution: [],
-            testingCoverage: [],
-          },
-        },
-        notes: { developmentStatus: [] },
-      };
+      const minimalFoundation = createFoundationWithDiagrams();
       await writeFile(
         foundationFile,
         JSON.stringify(minimalFoundation, null, 2)
@@ -332,67 +133,7 @@ describe('Feature: Add Diagram to JSON-Backed Foundation', () => {
       );
 
       const foundationFile = join(testDir, 'spec', 'foundation.json');
-      const minimalFoundation = {
-        $schema: '../src/schemas/foundation.schema.json',
-        project: {
-          name: 'Test',
-          description: 'Test',
-          repository: 'https://github.com/test/test',
-          license: 'MIT',
-          importantNote: 'Test',
-        },
-        whatWeAreBuilding: {
-          projectOverview: 'Test',
-          technicalRequirements: {
-            coreTechnologies: [],
-            architecture: {
-              pattern: 'Test',
-              fileStructure: 'Test',
-              deploymentTarget: 'Test',
-              integrationModel: [],
-            },
-            developmentAndOperations: {
-              developmentTools: 'Test',
-              testingStrategy: 'Test',
-              logging: 'Test',
-              validation: 'Test',
-              formatting: 'Test',
-            },
-            keyLibraries: [],
-          },
-          nonFunctionalRequirements: [],
-        },
-        whyWeAreBuildingIt: {
-          problemDefinition: {
-            primary: { title: 'Test', description: 'Test', points: [] },
-            secondary: [],
-          },
-          painPoints: { currentState: 'Test', specific: [] },
-          stakeholderImpact: [],
-          theoreticalSolutions: [],
-          developmentMethodology: {
-            name: 'Test',
-            description: 'Test',
-            steps: [],
-            ensures: [],
-          },
-          successCriteria: [],
-          constraintsAndAssumptions: { constraints: [], assumptions: [] },
-        },
-        architectureDiagrams: [],
-        coreCommands: { categories: [] },
-        featureInventory: {
-          phases: [],
-          tagUsageSummary: {
-            phaseDistribution: [],
-            componentDistribution: [],
-            featureGroupDistribution: [],
-            priorityDistribution: [],
-            testingCoverage: [],
-          },
-        },
-        notes: { developmentStatus: [] },
-      };
+      const minimalFoundation = createFoundationWithDiagrams();
       await writeFile(
         foundationFile,
         JSON.stringify(minimalFoundation, null, 2)
@@ -421,67 +162,7 @@ describe('Feature: Add Diagram to JSON-Backed Foundation', () => {
     it('should validate Mermaid syntax before adding to JSON', async () => {
       // Given I have a valid file "spec/foundation.json"
       const foundationFile = join(testDir, 'spec', 'foundation.json');
-      const minimalFoundation = {
-        $schema: '../src/schemas/foundation.schema.json',
-        project: {
-          name: 'Test',
-          description: 'Test',
-          repository: 'https://github.com/test/test',
-          license: 'MIT',
-          importantNote: 'Test',
-        },
-        whatWeAreBuilding: {
-          projectOverview: 'Test',
-          technicalRequirements: {
-            coreTechnologies: [],
-            architecture: {
-              pattern: 'Test',
-              fileStructure: 'Test',
-              deploymentTarget: 'Test',
-              integrationModel: [],
-            },
-            developmentAndOperations: {
-              developmentTools: 'Test',
-              testingStrategy: 'Test',
-              logging: 'Test',
-              validation: 'Test',
-              formatting: 'Test',
-            },
-            keyLibraries: [],
-          },
-          nonFunctionalRequirements: [],
-        },
-        whyWeAreBuildingIt: {
-          problemDefinition: {
-            primary: { title: 'Test', description: 'Test', points: [] },
-            secondary: [],
-          },
-          painPoints: { currentState: 'Test', specific: [] },
-          stakeholderImpact: [],
-          theoreticalSolutions: [],
-          developmentMethodology: {
-            name: 'Test',
-            description: 'Test',
-            steps: [],
-            ensures: [],
-          },
-          successCriteria: [],
-          constraintsAndAssumptions: { constraints: [], assumptions: [] },
-        },
-        architectureDiagrams: [],
-        coreCommands: { categories: [] },
-        featureInventory: {
-          phases: [],
-          tagUsageSummary: {
-            phaseDistribution: [],
-            componentDistribution: [],
-            featureGroupDistribution: [],
-            priorityDistribution: [],
-            testingCoverage: [],
-          },
-        },
-        notes: { developmentStatus: [] },
-      };
+      const minimalFoundation = createFoundationWithDiagrams();
       await writeFile(
         foundationFile,
         JSON.stringify(minimalFoundation, null, 2)
@@ -511,67 +192,7 @@ describe('Feature: Add Diagram to JSON-Backed Foundation', () => {
     it('should error when diagram section does not exist in foundation.json', async () => {
       // Given I have a valid file "spec/foundation.json"
       const foundationFile = join(testDir, 'spec', 'foundation.json');
-      const minimalFoundation = {
-        $schema: '../src/schemas/foundation.schema.json',
-        project: {
-          name: 'Test',
-          description: 'Test',
-          repository: 'https://github.com/test/test',
-          license: 'MIT',
-          importantNote: 'Test',
-        },
-        whatWeAreBuilding: {
-          projectOverview: 'Test',
-          technicalRequirements: {
-            coreTechnologies: [],
-            architecture: {
-              pattern: 'Test',
-              fileStructure: 'Test',
-              deploymentTarget: 'Test',
-              integrationModel: [],
-            },
-            developmentAndOperations: {
-              developmentTools: 'Test',
-              testingStrategy: 'Test',
-              logging: 'Test',
-              validation: 'Test',
-              formatting: 'Test',
-            },
-            keyLibraries: [],
-          },
-          nonFunctionalRequirements: [],
-        },
-        whyWeAreBuildingIt: {
-          problemDefinition: {
-            primary: { title: 'Test', description: 'Test', points: [] },
-            secondary: [],
-          },
-          painPoints: { currentState: 'Test', specific: [] },
-          stakeholderImpact: [],
-          theoreticalSolutions: [],
-          developmentMethodology: {
-            name: 'Test',
-            description: 'Test',
-            steps: [],
-            ensures: [],
-          },
-          successCriteria: [],
-          constraintsAndAssumptions: { constraints: [], assumptions: [] },
-        },
-        architectureDiagrams: [],
-        coreCommands: { categories: [] },
-        featureInventory: {
-          phases: [],
-          tagUsageSummary: {
-            phaseDistribution: [],
-            componentDistribution: [],
-            featureGroupDistribution: [],
-            priorityDistribution: [],
-            testingCoverage: [],
-          },
-        },
-        notes: { developmentStatus: [] },
-      };
+      const minimalFoundation = createFoundationWithDiagrams();
       await writeFile(
         foundationFile,
         JSON.stringify(minimalFoundation, null, 2)
@@ -600,67 +221,7 @@ describe('Feature: Add Diagram to JSON-Backed Foundation', () => {
     it('should rollback JSON changes if MD generation fails', async () => {
       // Given I have a valid file "spec/foundation.json"
       const foundationFile = join(testDir, 'spec', 'foundation.json');
-      const minimalFoundation = {
-        $schema: '../src/schemas/foundation.schema.json',
-        project: {
-          name: 'Test',
-          description: 'Test',
-          repository: 'https://github.com/test/test',
-          license: 'MIT',
-          importantNote: 'Test',
-        },
-        whatWeAreBuilding: {
-          projectOverview: 'Test',
-          technicalRequirements: {
-            coreTechnologies: [],
-            architecture: {
-              pattern: 'Test',
-              fileStructure: 'Test',
-              deploymentTarget: 'Test',
-              integrationModel: [],
-            },
-            developmentAndOperations: {
-              developmentTools: 'Test',
-              testingStrategy: 'Test',
-              logging: 'Test',
-              validation: 'Test',
-              formatting: 'Test',
-            },
-            keyLibraries: [],
-          },
-          nonFunctionalRequirements: [],
-        },
-        whyWeAreBuildingIt: {
-          problemDefinition: {
-            primary: { title: 'Test', description: 'Test', points: [] },
-            secondary: [],
-          },
-          painPoints: { currentState: 'Test', specific: [] },
-          stakeholderImpact: [],
-          theoreticalSolutions: [],
-          developmentMethodology: {
-            name: 'Test',
-            description: 'Test',
-            steps: [],
-            ensures: [],
-          },
-          successCriteria: [],
-          constraintsAndAssumptions: { constraints: [], assumptions: [] },
-        },
-        architectureDiagrams: [],
-        coreCommands: { categories: [] },
-        featureInventory: {
-          phases: [],
-          tagUsageSummary: {
-            phaseDistribution: [],
-            componentDistribution: [],
-            featureGroupDistribution: [],
-            priorityDistribution: [],
-            testingCoverage: [],
-          },
-        },
-        notes: { developmentStatus: [] },
-      };
+      const minimalFoundation = createFoundationWithDiagrams();
       await writeFile(
         foundationFile,
         JSON.stringify(minimalFoundation, null, 2)
@@ -689,69 +250,9 @@ describe('Feature: Add Diagram to JSON-Backed Foundation', () => {
     it('should support adding diagrams to different sections', async () => {
       // Given "spec/foundation.json" has multiple sections that can contain diagrams
       const foundationFile = join(testDir, 'spec', 'foundation.json');
-      const foundationWithSections = {
-        $schema: '../src/schemas/foundation.schema.json',
-        project: {
-          name: 'Test',
-          description: 'Test',
-          repository: 'https://github.com/test/test',
-          license: 'MIT',
-          importantNote: 'Test',
-        },
-        whatWeAreBuilding: {
-          projectOverview: 'Test',
-          technicalRequirements: {
-            coreTechnologies: [],
-            architecture: {
-              pattern: 'Test',
-              fileStructure: 'Test',
-              deploymentTarget: 'Test',
-              integrationModel: [],
-            },
-            developmentAndOperations: {
-              developmentTools: 'Test',
-              testingStrategy: 'Test',
-              logging: 'Test',
-              validation: 'Test',
-              formatting: 'Test',
-            },
-            keyLibraries: [],
-          },
-          nonFunctionalRequirements: [],
-        },
-        whyWeAreBuildingIt: {
-          problemDefinition: {
-            primary: { title: 'Test', description: 'Test', points: [] },
-            secondary: [],
-          },
-          painPoints: { currentState: 'Test', specific: [] },
-          stakeholderImpact: [],
-          theoreticalSolutions: [],
-          developmentMethodology: {
-            name: 'Test',
-            description: 'Test',
-            steps: [],
-            ensures: [],
-          },
-          successCriteria: [],
-          constraintsAndAssumptions: { constraints: [], assumptions: [] },
-        },
-        architectureDiagrams: [
-          { title: 'Existing Diagram', mermaidCode: 'graph TB\n  X[Existing]' },
-        ],
-        coreCommands: { categories: [] },
-        featureInventory: {
-          phases: [],
-          tagUsageSummary: {
-            phaseDistribution: [],
-            componentDistribution: [],
-            featureGroupDistribution: [],
-            priorityDistribution: [],
-            testingCoverage: [],
-          },
-        },
-        notes: { developmentStatus: [] },
-      };
+      const foundationWithSections = createFoundationWithDiagrams([
+        { title: 'Existing Diagram', mermaidCode: 'graph TB\n  X[Existing]' },
+      ]);
       await writeFile(
         foundationFile,
         JSON.stringify(foundationWithSections, null, 2)

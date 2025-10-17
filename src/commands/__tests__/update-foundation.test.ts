@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdir, writeFile, rm, readFile, access } from 'fs/promises';
 import { join } from 'path';
 import { updateFoundation } from '../update-foundation';
+import { createMinimalFoundation } from '../../test-helpers/foundation-fixtures';
 
 describe('Feature: Update Foundation Section Content', () => {
   let testDir: string;
@@ -20,71 +21,24 @@ describe('Feature: Update Foundation Section Content', () => {
     it('should update section content and preserve others', async () => {
       // Given I have a FOUNDATION.md with a "What We Are Building" section
       const foundationJsonPath = join(testDir, 'spec', 'foundation.json');
-      const minimalFoundation = {
-        $schema: '../src/schemas/foundation.schema.json',
-        project: {
-          name: 'Test Project',
-          description: 'Test',
-          repository: 'https://test.com',
-          license: 'MIT',
-          importantNote: 'Test note',
-        },
-        whatWeAreBuilding: {
-          projectOverview: 'Original project overview',
-          technicalRequirements: {
-            coreTechnologies: [],
-            architecture: {
-              pattern: 'CLI',
-              fileStructure: 'test',
-              deploymentTarget: 'local',
-              integrationModel: [],
+      const minimalFoundation = createMinimalFoundation({
+        solutionSpace: {
+          overview: 'Original project overview',
+          capabilities: [
+            {
+              name: 'Test Capability',
+              description: 'Test capability description',
             },
-            developmentAndOperations: {
-              developmentTools: 'test',
-              testingStrategy: 'test',
-              logging: 'test',
-              validation: 'test',
-              formatting: 'test',
-            },
-            keyLibraries: [],
-          },
-          nonFunctionalRequirements: [],
+          ],
         },
-        whyWeAreBuildingIt: {
-          problemDefinition: {
-            primary: {
-              title: 'Primary Problem',
-              description: 'Original problem description',
-              points: [],
-            },
-            secondary: [],
-          },
-          painPoints: { currentState: 'Test', specific: [] },
-          stakeholderImpact: [],
-          theoreticalSolutions: [],
-          developmentMethodology: {
-            name: 'ACDD',
-            description: 'Test',
-            steps: [],
-            ensures: [],
-          },
-          successCriteria: [],
-          constraintsAndAssumptions: { constraints: [], assumptions: [] },
-        },
-        architectureDiagrams: [],
-        coreCommands: { categories: [] },
-        featureInventory: {
-          phases: [],
-          tagUsageSummary: {
-            phaseDistribution: [],
-            componentDistribution: [],
-            featureGroupDistribution: [],
-            priorityDistribution: [],
-            testingCoverage: [],
+        problemSpace: {
+          primaryProblem: {
+            title: 'Test Problem',
+            description: 'Original problem description',
+            impact: 'high',
           },
         },
-        notes: { developmentStatus: [] },
-      };
+      });
 
       await writeFile(
         foundationJsonPath,
@@ -105,14 +59,13 @@ describe('Feature: Update Foundation Section Content', () => {
       const updatedFoundationJson = JSON.parse(
         await readFile(foundationJsonPath, 'utf-8')
       );
-      expect(updatedFoundationJson.whatWeAreBuilding.projectOverview).toBe(
+      expect(updatedFoundationJson.solutionSpace.overview).toBe(
         'New content for this section'
       );
 
       // And other sections should be preserved
       expect(
-        updatedFoundationJson.whyWeAreBuildingIt.problemDefinition.primary
-          .description
+        updatedFoundationJson.problemSpace.primaryProblem.description
       ).toBe('Original problem description');
       expect(updatedFoundationJson.project.name).toBe('Test Project');
     });
@@ -140,10 +93,9 @@ describe('Feature: Update Foundation Section Content', () => {
       );
 
       // And it should contain the specified content
-      expect(
-        updatedFoundation.whatWeAreBuilding.technicalRequirements
-          .developmentAndOperations.testingStrategy
-      ).toBe('Our technical approach details');
+      expect(updatedFoundation.solutionSpace.overview).toBe(
+        'Our technical approach details'
+      );
 
       // And FOUNDATION.md should be generated
       const foundationMdPath = join(testDir, 'spec', 'FOUNDATION.md');
@@ -158,71 +110,7 @@ describe('Feature: Update Foundation Section Content', () => {
     it('should completely replace existing content', async () => {
       // Given I have a "Why" section with existing content
       const foundationJsonPath = join(testDir, 'spec', 'foundation.json');
-      const minimalFoundation = {
-        $schema: '../src/schemas/foundation.schema.json',
-        project: {
-          name: 'Test Project',
-          description: 'Test',
-          repository: 'https://test.com',
-          license: 'MIT',
-          importantNote: 'Test note',
-        },
-        whatWeAreBuilding: {
-          projectOverview: 'Test',
-          technicalRequirements: {
-            coreTechnologies: [],
-            architecture: {
-              pattern: 'CLI',
-              fileStructure: 'test',
-              deploymentTarget: 'local',
-              integrationModel: [],
-            },
-            developmentAndOperations: {
-              developmentTools: 'test',
-              testingStrategy: 'test',
-              logging: 'test',
-              validation: 'test',
-              formatting: 'test',
-            },
-            keyLibraries: [],
-          },
-          nonFunctionalRequirements: [],
-        },
-        whyWeAreBuildingIt: {
-          problemDefinition: {
-            primary: {
-              title: 'Primary Problem',
-              description: 'Original content',
-              points: [],
-            },
-            secondary: [],
-          },
-          painPoints: { currentState: 'Test', specific: [] },
-          stakeholderImpact: [],
-          theoreticalSolutions: [],
-          developmentMethodology: {
-            name: 'ACDD',
-            description: 'Test',
-            steps: [],
-            ensures: [],
-          },
-          successCriteria: [],
-          constraintsAndAssumptions: { constraints: [], assumptions: [] },
-        },
-        architectureDiagrams: [],
-        coreCommands: { categories: [] },
-        featureInventory: {
-          phases: [],
-          tagUsageSummary: {
-            phaseDistribution: [],
-            componentDistribution: [],
-            featureGroupDistribution: [],
-            priorityDistribution: [],
-            testingCoverage: [],
-          },
-        },
-        notes: { developmentStatus: [] },
-      };
+      const minimalFoundation = createMinimalFoundation();
 
       await writeFile(
         foundationJsonPath,
@@ -246,11 +134,11 @@ describe('Feature: Update Foundation Section Content', () => {
 
       // And only the new content should be present in the section
       expect(
-        updatedFoundation.whyWeAreBuildingIt.problemDefinition.primary
+        updatedFoundation.problemSpace.primaryProblem
           .description
       ).toBe('Completely new reasoning');
       expect(
-        updatedFoundation.whyWeAreBuildingIt.problemDefinition.primary
+        updatedFoundation.problemSpace.primaryProblem
           .description
       ).not.toContain('Original content');
     });
@@ -260,71 +148,7 @@ describe('Feature: Update Foundation Section Content', () => {
     it('should only modify target section', async () => {
       // Given I have FOUNDATION.md with multiple sections
       const foundationJsonPath = join(testDir, 'spec', 'foundation.json');
-      const minimalFoundation = {
-        $schema: '../src/schemas/foundation.schema.json',
-        project: {
-          name: 'Test Project',
-          description: 'Test',
-          repository: 'https://test.com',
-          license: 'MIT',
-          importantNote: 'Test note',
-        },
-        whatWeAreBuilding: {
-          projectOverview: 'Original project overview',
-          technicalRequirements: {
-            coreTechnologies: [],
-            architecture: {
-              pattern: 'Original architecture',
-              fileStructure: 'test',
-              deploymentTarget: 'local',
-              integrationModel: [],
-            },
-            developmentAndOperations: {
-              developmentTools: 'test',
-              testingStrategy: 'test',
-              logging: 'test',
-              validation: 'test',
-              formatting: 'test',
-            },
-            keyLibraries: [],
-          },
-          nonFunctionalRequirements: [],
-        },
-        whyWeAreBuildingIt: {
-          problemDefinition: {
-            primary: {
-              title: 'Primary Problem',
-              description: 'Original why',
-              points: [],
-            },
-            secondary: [],
-          },
-          painPoints: { currentState: 'Test', specific: [] },
-          stakeholderImpact: [],
-          theoreticalSolutions: [],
-          developmentMethodology: {
-            name: 'ACDD',
-            description: 'Test',
-            steps: [],
-            ensures: [],
-          },
-          successCriteria: [],
-          constraintsAndAssumptions: { constraints: [], assumptions: [] },
-        },
-        architectureDiagrams: [],
-        coreCommands: { categories: [] },
-        featureInventory: {
-          phases: [],
-          tagUsageSummary: {
-            phaseDistribution: [],
-            componentDistribution: [],
-            featureGroupDistribution: [],
-            priorityDistribution: [],
-            testingCoverage: [],
-          },
-        },
-        notes: { developmentStatus: [] },
-      };
+      const minimalFoundation = createMinimalFoundation();
 
       await writeFile(
         foundationJsonPath,
@@ -346,21 +170,14 @@ describe('Feature: Update Foundation Section Content', () => {
       );
 
       // And the "What We Are Building" section should be unchanged
-      expect(updatedFoundation.whatWeAreBuilding.projectOverview).toBe(
-        'Original project overview'
+      expect(updatedFoundation.solutionSpace.overview).toBe(
+        'Test solution overview'
       );
 
-      // And the "Architecture" section should be unchanged
-      expect(
-        updatedFoundation.whatWeAreBuilding.technicalRequirements.architecture
-          .pattern
-      ).toBe('Original architecture');
-
       // And only the "Why" section should have new content
-      expect(
-        updatedFoundation.whyWeAreBuildingIt.problemDefinition.primary
-          .description
-      ).toBe('Updated why section');
+      expect(updatedFoundation.problemSpace.primaryProblem.description).toBe(
+        'Updated why section'
+      );
     });
   });
 
@@ -411,7 +228,7 @@ describe('Feature: Update Foundation Section Content', () => {
       );
 
       expect(
-        updatedFoundation.whyWeAreBuildingIt.problemDefinition.primary
+        updatedFoundation.problemSpace.primaryProblem
           .description
       ).toBe('Line 1\nLine 2\nLine 3');
 
@@ -426,71 +243,7 @@ describe('Feature: Update Foundation Section Content', () => {
     it('should preserve subsections in unmodified sections', async () => {
       // Given I have a foundation.json with architecture pattern
       const foundationJsonPath = join(testDir, 'spec', 'foundation.json');
-      const minimalFoundation = {
-        $schema: '../src/schemas/foundation.schema.json',
-        project: {
-          name: 'Test Project',
-          description: 'Test',
-          repository: 'https://test.com',
-          license: 'MIT',
-          importantNote: 'Test note',
-        },
-        whatWeAreBuilding: {
-          projectOverview: 'Original',
-          technicalRequirements: {
-            coreTechnologies: [],
-            architecture: {
-              pattern: 'Original architecture with diagrams',
-              fileStructure: 'test',
-              deploymentTarget: 'local',
-              integrationModel: [],
-            },
-            developmentAndOperations: {
-              developmentTools: 'test',
-              testingStrategy: 'test',
-              logging: 'test',
-              validation: 'test',
-              formatting: 'test',
-            },
-            keyLibraries: [],
-          },
-          nonFunctionalRequirements: [],
-        },
-        whyWeAreBuildingIt: {
-          problemDefinition: {
-            primary: {
-              title: 'Primary Problem',
-              description: 'Test',
-              points: [],
-            },
-            secondary: [],
-          },
-          painPoints: { currentState: 'Test', specific: [] },
-          stakeholderImpact: [],
-          theoreticalSolutions: [],
-          developmentMethodology: {
-            name: 'ACDD',
-            description: 'Test',
-            steps: [],
-            ensures: [],
-          },
-          successCriteria: [],
-          constraintsAndAssumptions: { constraints: [], assumptions: [] },
-        },
-        architectureDiagrams: [],
-        coreCommands: { categories: [] },
-        featureInventory: {
-          phases: [],
-          tagUsageSummary: {
-            phaseDistribution: [],
-            componentDistribution: [],
-            featureGroupDistribution: [],
-            priorityDistribution: [],
-            testingCoverage: [],
-          },
-        },
-        notes: { developmentStatus: [] },
-      };
+      const minimalFoundation = createMinimalFoundation();
 
       await writeFile(
         foundationJsonPath,
@@ -507,20 +260,18 @@ describe('Feature: Update Foundation Section Content', () => {
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      // And the Architecture section should be preserved
+      // And the solution space should be preserved
       const updatedFoundation = JSON.parse(
         await readFile(foundationJsonPath, 'utf-8')
       );
-      expect(
-        updatedFoundation.whatWeAreBuilding.technicalRequirements.architecture
-          .pattern
-      ).toBe('Original architecture with diagrams');
+      expect(updatedFoundation.solutionSpace.overview).toBe(
+        'Test solution overview'
+      );
 
       // And only the target section should be modified
-      expect(
-        updatedFoundation.whyWeAreBuildingIt.problemDefinition.primary
-          .description
-      ).toBe('New content');
+      expect(updatedFoundation.problemSpace.primaryProblem.description).toBe(
+        'New content'
+      );
     });
   });
 
@@ -528,71 +279,15 @@ describe('Feature: Update Foundation Section Content', () => {
     it('should update first section correctly', async () => {
       // Given I have FOUNDATION.md with projectOverview as the first section
       const foundationJsonPath = join(testDir, 'spec', 'foundation.json');
-      const minimalFoundation = {
-        $schema: '../src/schemas/foundation.schema.json',
-        project: {
-          name: 'Test Project',
-          description: 'Test',
-          repository: 'https://test.com',
-          license: 'MIT',
-          importantNote: 'Test note',
-        },
-        whatWeAreBuilding: {
-          projectOverview: 'Original overview',
-          technicalRequirements: {
-            coreTechnologies: [],
-            architecture: {
-              pattern: 'CLI',
-              fileStructure: 'test',
-              deploymentTarget: 'local',
-              integrationModel: [],
-            },
-            developmentAndOperations: {
-              developmentTools: 'test',
-              testingStrategy: 'test',
-              logging: 'test',
-              validation: 'test',
-              formatting: 'test',
-            },
-            keyLibraries: [],
-          },
-          nonFunctionalRequirements: [],
-        },
-        whyWeAreBuildingIt: {
-          problemDefinition: {
-            primary: {
-              title: 'Primary Problem',
-              description: 'Test',
-              points: [],
-            },
-            secondary: [],
-          },
-          painPoints: { currentState: 'Test', specific: [] },
-          stakeholderImpact: [],
-          theoreticalSolutions: [],
-          developmentMethodology: {
-            name: 'ACDD',
+      const minimalFoundation = createMinimalFoundation({
+        problemSpace: {
+          primaryProblem: {
+            title: 'Test Problem',
             description: 'Test',
-            steps: [],
-            ensures: [],
-          },
-          successCriteria: [],
-          constraintsAndAssumptions: { constraints: [], assumptions: [] },
-        },
-        architectureDiagrams: [],
-        coreCommands: { categories: [] },
-        featureInventory: {
-          phases: [],
-          tagUsageSummary: {
-            phaseDistribution: [],
-            componentDistribution: [],
-            featureGroupDistribution: [],
-            priorityDistribution: [],
-            testingCoverage: [],
+            impact: 'high',
           },
         },
-        notes: { developmentStatus: [] },
-      };
+      });
 
       await writeFile(
         foundationJsonPath,
@@ -613,13 +308,13 @@ describe('Feature: Update Foundation Section Content', () => {
       const updatedFoundation = JSON.parse(
         await readFile(foundationJsonPath, 'utf-8')
       );
-      expect(updatedFoundation.whatWeAreBuilding.projectOverview).toBe(
+      expect(updatedFoundation.solutionSpace.overview).toBe(
         'Updated overview'
       );
 
       // And sections after it should be preserved
       expect(
-        updatedFoundation.whyWeAreBuildingIt.problemDefinition.primary
+        updatedFoundation.problemSpace.primaryProblem
           .description
       ).toBe('Test');
     });
@@ -629,71 +324,17 @@ describe('Feature: Update Foundation Section Content', () => {
     it('should update last section correctly', async () => {
       // Given I have foundation.json with methodology at the end
       const foundationJsonPath = join(testDir, 'spec', 'foundation.json');
-      const minimalFoundation = {
-        $schema: '../src/schemas/foundation.schema.json',
-        project: {
-          name: 'Test Project',
-          description: 'Test',
-          repository: 'https://test.com',
-          license: 'MIT',
-          importantNote: 'Test note',
-        },
-        whatWeAreBuilding: {
-          projectOverview: 'Test',
-          technicalRequirements: {
-            coreTechnologies: [],
-            architecture: {
-              pattern: 'CLI',
-              fileStructure: 'test',
-              deploymentTarget: 'local',
-              integrationModel: [],
+      const minimalFoundation = createMinimalFoundation({
+        solutionSpace: {
+          overview: 'Test',
+          capabilities: [
+            {
+              name: 'Test Capability',
+              description: 'Test capability description',
             },
-            developmentAndOperations: {
-              developmentTools: 'test',
-              testingStrategy: 'test',
-              logging: 'test',
-              validation: 'test',
-              formatting: 'test',
-            },
-            keyLibraries: [],
-          },
-          nonFunctionalRequirements: [],
+          ],
         },
-        whyWeAreBuildingIt: {
-          problemDefinition: {
-            primary: {
-              title: 'Primary Problem',
-              description: 'Test',
-              points: [],
-            },
-            secondary: [],
-          },
-          painPoints: { currentState: 'Test', specific: [] },
-          stakeholderImpact: [],
-          theoreticalSolutions: [],
-          developmentMethodology: {
-            name: 'ACDD',
-            description: 'Original plans',
-            steps: [],
-            ensures: [],
-          },
-          successCriteria: [],
-          constraintsAndAssumptions: { constraints: [], assumptions: [] },
-        },
-        architectureDiagrams: [],
-        coreCommands: { categories: [] },
-        featureInventory: {
-          phases: [],
-          tagUsageSummary: {
-            phaseDistribution: [],
-            componentDistribution: [],
-            featureGroupDistribution: [],
-            priorityDistribution: [],
-            testingCoverage: [],
-          },
-        },
-        notes: { developmentStatus: [] },
-      };
+      });
 
       await writeFile(
         foundationJsonPath,
@@ -715,11 +356,11 @@ describe('Feature: Update Foundation Section Content', () => {
         await readFile(foundationJsonPath, 'utf-8')
       );
       expect(
-        updatedFoundation.whyWeAreBuildingIt.developmentMethodology.description
+        updatedFoundation.solutionSpace.overview
       ).toBe('Updated plans');
 
       // And sections before it should be preserved
-      expect(updatedFoundation.whatWeAreBuilding.projectOverview).toBe('Test');
+      expect(updatedFoundation.problemSpace.primaryProblem.description).toBe('Test problem description');
     });
   });
 
@@ -777,7 +418,7 @@ describe('Feature: Update Foundation Section Content', () => {
       const updatedFoundation = JSON.parse(
         await readFile(foundationJsonPath, 'utf-8')
       );
-      expect(updatedFoundation.whatWeAreBuilding.projectOverview).toBe(
+      expect(updatedFoundation.solutionSpace.overview).toBe(
         'Content with apostrophe'
       );
     });
@@ -801,7 +442,7 @@ describe('Feature: Update Foundation Section Content', () => {
       const updatedFoundation = JSON.parse(
         await readFile(foundationJsonPath, 'utf-8')
       );
-      expect(updatedFoundation.whatWeAreBuilding.projectOverview).toBe(
+      expect(updatedFoundation.solutionSpace.overview).toBe(
         '- Feature 1\n- Feature 2\n- Feature 3'
       );
 
@@ -818,71 +459,7 @@ describe('Feature: Update Foundation Section Content', () => {
     it('should support multiple updates', async () => {
       // Given I have a section with content "Original"
       const foundationJsonPath = join(testDir, 'spec', 'foundation.json');
-      const minimalFoundation = {
-        $schema: '../src/schemas/foundation.schema.json',
-        project: {
-          name: 'Test Project',
-          description: 'Test',
-          repository: 'https://test.com',
-          license: 'MIT',
-          importantNote: 'Test note',
-        },
-        whatWeAreBuilding: {
-          projectOverview: 'Original',
-          technicalRequirements: {
-            coreTechnologies: [],
-            architecture: {
-              pattern: 'CLI',
-              fileStructure: 'test',
-              deploymentTarget: 'local',
-              integrationModel: [],
-            },
-            developmentAndOperations: {
-              developmentTools: 'test',
-              testingStrategy: 'test',
-              logging: 'test',
-              validation: 'test',
-              formatting: 'test',
-            },
-            keyLibraries: [],
-          },
-          nonFunctionalRequirements: [],
-        },
-        whyWeAreBuildingIt: {
-          problemDefinition: {
-            primary: {
-              title: 'Primary Problem',
-              description: 'Original',
-              points: [],
-            },
-            secondary: [],
-          },
-          painPoints: { currentState: 'Test', specific: [] },
-          stakeholderImpact: [],
-          theoreticalSolutions: [],
-          developmentMethodology: {
-            name: 'ACDD',
-            description: 'Test',
-            steps: [],
-            ensures: [],
-          },
-          successCriteria: [],
-          constraintsAndAssumptions: { constraints: [], assumptions: [] },
-        },
-        architectureDiagrams: [],
-        coreCommands: { categories: [] },
-        featureInventory: {
-          phases: [],
-          tagUsageSummary: {
-            phaseDistribution: [],
-            componentDistribution: [],
-            featureGroupDistribution: [],
-            priorityDistribution: [],
-            testingCoverage: [],
-          },
-        },
-        notes: { developmentStatus: [] },
-      };
+      const minimalFoundation = createMinimalFoundation();
 
       await writeFile(
         foundationJsonPath,
@@ -912,17 +489,17 @@ describe('Feature: Update Foundation Section Content', () => {
         await readFile(foundationJsonPath, 'utf-8')
       );
       expect(
-        updatedFoundation.whyWeAreBuildingIt.problemDefinition.primary
+        updatedFoundation.problemSpace.primaryProblem
           .description
       ).toBe('Second update');
 
       // And previous content should not be present
       expect(
-        updatedFoundation.whyWeAreBuildingIt.problemDefinition.primary
+        updatedFoundation.problemSpace.primaryProblem
           .description
       ).not.toContain('First update');
       expect(
-        updatedFoundation.whyWeAreBuildingIt.problemDefinition.primary
+        updatedFoundation.problemSpace.primaryProblem
           .description
       ).not.toContain('Original');
     });
@@ -932,71 +509,15 @@ describe('Feature: Update Foundation Section Content', () => {
     it('should update foundation.json and regenerate FOUNDATION.md', async () => {
       // Given I have a valid foundation.json file
       const foundationJsonPath = join(testDir, 'spec', 'foundation.json');
-      const minimalFoundation = {
-        $schema: '../src/schemas/foundation.schema.json',
-        project: {
-          name: 'Test Project',
-          description: 'Test',
-          repository: 'https://test.com',
-          license: 'MIT',
-          importantNote: 'Test note',
-        },
-        whatWeAreBuilding: {
-          projectOverview: 'Original project overview',
-          technicalRequirements: {
-            coreTechnologies: [],
-            architecture: {
-              pattern: 'CLI',
-              fileStructure: 'test',
-              deploymentTarget: 'local',
-              integrationModel: [],
-            },
-            developmentAndOperations: {
-              developmentTools: 'test',
-              testingStrategy: 'test',
-              logging: 'test',
-              validation: 'test',
-              formatting: 'test',
-            },
-            keyLibraries: [],
-          },
-          nonFunctionalRequirements: [],
-        },
-        whyWeAreBuildingIt: {
-          problemDefinition: {
-            primary: {
-              title: 'Primary Problem',
-              description: 'Original problem description',
-              points: [],
-            },
-            secondary: [],
-          },
-          painPoints: { currentState: 'Test', specific: [] },
-          stakeholderImpact: [],
-          theoreticalSolutions: [],
-          developmentMethodology: {
-            name: 'ACDD',
-            description: 'Test',
-            steps: [],
-            ensures: [],
-          },
-          successCriteria: [],
-          constraintsAndAssumptions: { constraints: [], assumptions: [] },
-        },
-        architectureDiagrams: [],
-        coreCommands: { categories: [] },
-        featureInventory: {
-          phases: [],
-          tagUsageSummary: {
-            phaseDistribution: [],
-            componentDistribution: [],
-            featureGroupDistribution: [],
-            priorityDistribution: [],
-            testingCoverage: [],
+      const minimalFoundation = createMinimalFoundation({
+        problemSpace: {
+          primaryProblem: {
+            title: 'Test Problem',
+            description: 'Original problem description',
+            impact: 'high',
           },
         },
-        notes: { developmentStatus: [] },
-      };
+      });
 
       await writeFile(
         foundationJsonPath,
@@ -1018,17 +539,17 @@ describe('Feature: Update Foundation Section Content', () => {
       );
 
       // And the foundation.json should validate against foundation.schema.json
-      expect(updatedFoundationJson.whatWeAreBuilding).toBeDefined();
+      expect(updatedFoundationJson.solutionSpace).toBeDefined();
 
-      // And the whatWeAreBuilding.projectOverview field should contain "Updated project overview content"
-      expect(updatedFoundationJson.whatWeAreBuilding.projectOverview).toBe(
+      // And the solutionSpace.overview field should contain "Updated project overview content"
+      expect(updatedFoundationJson.solutionSpace.overview).toBe(
         'Updated project overview content'
       );
 
       // And other foundation.json fields should be preserved
       expect(updatedFoundationJson.project.name).toBe('Test Project');
       expect(
-        updatedFoundationJson.whyWeAreBuildingIt.problemDefinition.primary
+        updatedFoundationJson.problemSpace.primaryProblem
           .description
       ).toBe('Original problem description');
 

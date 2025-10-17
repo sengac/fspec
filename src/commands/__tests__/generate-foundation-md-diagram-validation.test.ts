@@ -8,7 +8,10 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdir, writeFile, rm, readFile, access } from 'fs/promises';
 import { join } from 'path';
 import { generateFoundationMdCommand } from '../generate-foundation-md';
-import type { Foundation } from '../../types/foundation';
+import {
+  createMinimalFoundation,
+  type GenericFoundation,
+} from '../../test-helpers/foundation-fixtures';
 
 describe('Feature: Validate Mermaid Diagrams During Foundation Regeneration', () => {
   let testDir: string;
@@ -26,82 +29,6 @@ describe('Feature: Validate Mermaid Diagrams During Foundation Regeneration', ()
     await rm(testDir, { recursive: true, force: true });
   });
 
-  // Helper to create minimal valid foundation
-  const createMinimalFoundation = (): Foundation => ({
-    $schema: '../src/schemas/foundation.schema.json',
-    project: {
-      name: 'Test Project',
-      description: 'Test description',
-      repository: 'https://github.com/test/repo',
-      license: 'MIT',
-      importantNote: 'Test note',
-    },
-    whatWeAreBuilding: {
-      projectOverview: 'Test overview',
-      technicalRequirements: {
-        coreTechnologies: [],
-        architecture: {
-          pattern: 'Test pattern',
-          fileStructure: 'Test structure',
-          deploymentTarget: 'Test target',
-          integrationModel: [],
-        },
-        developmentAndOperations: {
-          developmentTools: 'Test tools',
-          testingStrategy: 'Test strategy',
-          logging: 'Test logging',
-          validation: 'Test validation',
-          formatting: 'Test formatting',
-        },
-        keyLibraries: [],
-      },
-      nonFunctionalRequirements: [],
-    },
-    whyWeAreBuildingIt: {
-      problemDefinition: {
-        primary: {
-          title: 'Test Problem',
-          description: 'Test description',
-          points: [],
-        },
-        secondary: [],
-      },
-      painPoints: {
-        currentState: 'Test state',
-        specific: [],
-      },
-      stakeholderImpact: [],
-      theoreticalSolutions: [],
-      developmentMethodology: {
-        name: 'Test Methodology',
-        description: 'Test description',
-        steps: [],
-        ensures: [],
-      },
-      successCriteria: [],
-      constraintsAndAssumptions: {
-        constraints: [],
-        assumptions: [],
-      },
-    },
-    architectureDiagrams: [],
-    coreCommands: {
-      categories: [],
-    },
-    featureInventory: {
-      phases: [],
-      tagUsageSummary: {
-        phaseDistribution: [],
-        componentDistribution: [],
-        featureGroupDistribution: [],
-        priorityDistribution: [],
-        testingCoverage: [],
-      },
-    },
-    notes: {
-      developmentStatus: [],
-    },
-  });
 
   describe('Scenario: Generate FOUNDATION.md with all valid diagrams', () => {
     it('should exit with code 0 and create FOUNDATION.md when all diagrams are valid', async () => {
@@ -109,17 +36,14 @@ describe('Feature: Validate Mermaid Diagrams During Foundation Regeneration', ()
       const foundation = createMinimalFoundation();
       foundation.architectureDiagrams = [
         {
-          section: 'Architecture',
           title: 'System Context',
           mermaidCode: 'graph TB\n  A[AI Agent]\n  B[fspec CLI]',
         },
         {
-          section: 'Architecture',
           title: 'Data Flow',
           mermaidCode: 'graph LR\n  JSON[foundation.json]\n  MD[FOUNDATION.md]',
         },
         {
-          section: 'Architecture',
           title: 'Components',
           mermaidCode: 'graph TD\n  CLI-->Parser\n  Parser-->Generator',
         },
@@ -155,18 +79,15 @@ describe('Feature: Validate Mermaid Diagrams During Foundation Regeneration', ()
       const foundation = createMinimalFoundation();
       foundation.architectureDiagrams = [
         {
-          section: 'Architecture',
           title: 'Valid Diagram',
           mermaidCode: 'graph TB\n  A-->B',
         },
         {
-          section: 'Architecture',
           title: 'Data Flow',
           // And the diagram at architectureDiagrams[1] with title "Data Flow" has invalid Mermaid syntax
           mermaidCode: 'invalid mermaid syntax here @#$%',
         },
         {
-          section: 'Architecture',
           title: 'Another Valid',
           mermaidCode: 'graph LR\n  C-->D',
         },
@@ -208,28 +129,23 @@ describe('Feature: Validate Mermaid Diagrams During Foundation Regeneration', ()
       const foundation = createMinimalFoundation();
       foundation.architectureDiagrams = [
         {
-          section: 'Architecture',
           title: 'Valid 1',
           mermaidCode: 'graph TB\n  A-->B',
         },
         {
-          section: 'Architecture',
           title: 'Invalid 1',
           // And diagrams at architectureDiagrams[1] and architectureDiagrams[3] have invalid syntax
           mermaidCode: 'bad syntax @#$',
         },
         {
-          section: 'Architecture',
           title: 'Valid 2',
           mermaidCode: 'graph LR\n  C-->D',
         },
         {
-          section: 'Architecture',
           title: 'Invalid 2',
           mermaidCode: 'also bad !@#$%',
         },
         {
-          section: 'Architecture',
           title: 'Valid 3',
           mermaidCode: 'graph TD\n  E-->F',
         },
@@ -270,7 +186,6 @@ describe('Feature: Validate Mermaid Diagrams During Foundation Regeneration', ()
       const foundation = createMinimalFoundation();
       foundation.architectureDiagrams = [
         {
-          section: 'Architecture',
           title: 'Bad Diagram',
           mermaidCode: 'invalid syntax',
         },
@@ -303,7 +218,6 @@ describe('Feature: Validate Mermaid Diagrams During Foundation Regeneration', ()
       const invalidFoundation = createMinimalFoundation();
       invalidFoundation.architectureDiagrams = [
         {
-          section: 'Architecture',
           title: 'Bad Diagram',
           mermaidCode: 'invalid syntax',
         },
@@ -321,7 +235,6 @@ describe('Feature: Validate Mermaid Diagrams During Foundation Regeneration', ()
       const fixedFoundation = createMinimalFoundation();
       fixedFoundation.architectureDiagrams = [
         {
-          section: 'Architecture',
           title: 'Good Diagram',
           mermaidCode: 'graph TB\n  A-->B',
         },

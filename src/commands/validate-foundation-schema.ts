@@ -24,13 +24,21 @@ export async function validateFoundationSchema(
   const cwd = options.cwd || process.cwd();
 
   try {
+    // Read the foundation.json file
+    const foundationPath = join(cwd, 'spec/foundation.json');
+    const foundationContent = await readFile(foundationPath, 'utf-8');
+    const foundation = JSON.parse(foundationContent);
+
+    // Use generic foundation schema (v2.0.0+)
+    const schemaFileName = 'generic-foundation.schema.json';
+
     // Read the schema file from bundled location
     // Try multiple paths to support different execution contexts:
     // 1. dist/schemas/ (production, when running from dist/index.js)
     // 2. src/schemas/ (tests, when running from src/commands/*.ts)
     const possiblePaths = [
-      join(__dirname, 'schemas', 'foundation.schema.json'), // From dist/
-      join(__dirname, '..', 'schemas', 'foundation.schema.json'), // From src/commands/
+      join(__dirname, 'schemas', schemaFileName), // From dist/
+      join(__dirname, '..', 'schemas', schemaFileName), // From src/commands/
     ];
 
     let schemaContent: string | null = null;
@@ -46,17 +54,12 @@ export async function validateFoundationSchema(
 
     if (!schemaContent) {
       throw new Error(
-        'Could not find foundation.schema.json. Tried paths: ' +
+        `Could not find ${schemaFileName}. Tried paths: ` +
           possiblePaths.join(', ')
       );
     }
 
     const schema = JSON.parse(schemaContent);
-
-    // Read the foundation.json file
-    const foundationPath = join(cwd, 'spec/foundation.json');
-    const foundationContent = await readFile(foundationPath, 'utf-8');
-    const foundation = JSON.parse(foundationContent);
 
     // Validate using Ajv
     // Use strictSchema: false and logger: false to suppress warnings about unknown formats like "uri"
