@@ -356,10 +356,6 @@
           "examples": "List features, show feature, find by tag, search scenarios (6 files)"
         },
         {
-          "name": "@questionnaire",
-          "description": "Interactive questionnaire features for gathering foundation information"
-        },
-        {
           "name": "@read",
           "description": "Read operations"
         },

@@ -160,11 +160,11 @@ fspec discover-foundation --output foundation.json
 ```
 
 **What `discover-foundation` does:**
-- Detects project type (CLI, web app, library) from code patterns
-- Identifies personas from code structure (routes, commands, exports)
-- Infers capabilities focusing on WHAT not HOW
-- Runs interactive questionnaire for WHY/WHAT information
-- Validates and generates foundation.json with v2.0.0 schema
+- Creates draft with placeholders for required fields
+- AI analyzes codebase to determine project type, personas, and capabilities
+- AI runs field-by-field through draft using CLI commands
+- AI asks human for confirmation/clarification
+- Validates draft and generates foundation.json with v2.0.0 schema
 
 **Why this is mandatory:**
 - fspec commands check for foundation.json existence

@@ -42,7 +42,7 @@ const config: CommandHelpConfig = {
 
 Draft created. To complete foundation, you must ULTRATHINK the entire codebase.
 
-analyze EVERYTHING: commands, routes, UI, tests, README, package.json.
+Analyze EVERYTHING: code structure, entry points, user interactions, documentation.
 Understand HOW it works, then determine WHY it exists and WHAT users can do.
 
 I will guide you field-by-field.
@@ -50,9 +50,9 @@ I will guide you field-by-field.
 <system-reminder>
 Field 1/8: project.name
 
-analyze package.json name field and confirm with human.
+Analyze project configuration to determine project name. Confirm with human.
 
-Run: fspec update-foundation --field project.name --value <name>
+Run: fspec update-foundation projectName "<name>"
 </system-reminder>`,
     },
     {
@@ -85,9 +85,9 @@ Foundation is ready.`,
     },
   ],
   commonPatterns: [
-    'CLI tools: Detects commander.js usage, bin field in package.json, command definitions',
-    'Web apps: Detects Express routes, React components, identifies End User and API Consumer personas',
-    'Libraries: Detects exports field in package.json, identifies Developer persona',
+    'CLI tools: AI analyzes CLI framework usage, command definitions, identifies command-line user persona',
+    'Web apps: AI analyzes routes, UI components, identifies End User and API Consumer personas',
+    'Libraries: AI analyzes exports and API, identifies Developer persona',
   ],
   relatedCommands: [
     'update-foundation',

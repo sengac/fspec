@@ -205,12 +205,12 @@ Claude: I'll guide you through foundation discovery field-by-field:
    ✓ Draft created
 
 2. ULTRATHINK: Analyzing entire codebase...
-   - Examining commands, routes, UI, tests, README, package.json
+   - Examining code structure, entry points, user interactions, documentation
    - Understanding HOW it works to determine WHY it exists
 
 3. Field 1/8: project.name
-   Detected from package.json: "fspec"
-   Confirm? (y/n)
+   Analyze project configuration to determine name.
+   AI: "fspec" - Confirm? (y/n)
 
    You: y
 
@@ -251,7 +251,7 @@ The feedback loop ensures AI agents discover foundation through deep analysis, n
 
 - 📊 **Kanban Workflow** - 7-state workflow with visual board
 - 🤝 **Example Mapping** - Collaborative discovery with rules, examples, questions, attachments
-- 🔍 **Foundation Discovery** - Automated codebase analysis + interactive questionnaire for foundation.json
+- 🔍 **Foundation Discovery** - AI-guided draft-driven workflow to bootstrap foundation.json
 - 🔄 **Work Unit Management** - Track work through Kanban with dependencies and epics
 - 🔁 **Reverse ACDD** - Reverse engineer existing codebases via `/rspec` command
 - 📋 **Gherkin Validation** - Official Cucumber parser ensures valid syntax

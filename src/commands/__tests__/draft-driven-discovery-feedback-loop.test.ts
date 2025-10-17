@@ -73,7 +73,7 @@ describe('Feature: Implement draft-driven discovery workflow with AI chaining', 
 
       // And system-reminder should instruct AI to analyze entire codebase
       expect(result.systemReminder).toContain('ULTRATHINK');
-      expect(result.systemReminder).toContain('analyze');
+      expect(result.systemReminder).toContain('Analyze');
 
       // And system-reminder should show "Field 1/N: project.name"
       expect(result.systemReminder).toMatch(/Field 1\/\d+/);
@@ -110,13 +110,12 @@ describe('Feature: Implement draft-driven discovery workflow with AI chaining', 
       // And system-reminder should say "Field 1/N: project.name"
       expect(result.systemReminder).toMatch(/Field 1\/\d+: project\.name/);
 
-      // And system-reminder should instruct to analyze package.json
-      expect(result.systemReminder).toContain('package.json');
+      // And system-reminder should instruct to analyze project configuration
+      expect(result.systemReminder).toContain('Analyze project configuration');
 
       // And system-reminder should provide exact command to run
       expect(result.systemReminder).toContain('fspec update-foundation');
-      expect(result.systemReminder).toContain('--field project.name');
-      expect(result.systemReminder).toContain('--value');
+      expect(result.systemReminder).toContain('projectName');
     });
 
     it('should detect draft update and automatically re-scan for next unfilled field', async () => {
@@ -240,15 +239,15 @@ describe('Feature: Implement draft-driven discovery workflow with AI chaining', 
 
       // Then command should emit system-reminder to verify detected value
       expect(result.systemReminder).toContain('[DETECTED: cli-tool]');
-      expect(result.systemReminder).toContain('verify');
+      expect(result.systemReminder).toContain('Verify');
 
       // And system-reminder should list all projectType options
       expect(result.systemReminder).toContain('cli-tool');
       expect(result.systemReminder).toContain('web-app');
       expect(result.systemReminder).toContain('library');
 
-      // And system-reminder should instruct AI to confirm with human
-      expect(result.systemReminder).toContain('confirm with human');
+      // And system-reminder should instruct AI to verify with human
+      expect(result.systemReminder).toContain('Verify with human');
     });
 
     it('should accept verified value and chain to problemSpace fields', async () => {
@@ -477,7 +476,7 @@ describe('Feature: Implement draft-driven discovery workflow with AI chaining', 
       });
 
       // Then system-reminder should instruct to identify ALL user types
-      expect(result.systemReminder).toContain('identify ALL user types');
+      expect(result.systemReminder).toContain('Identify ALL user types');
 
       // And system-reminder should guide based on project type
       expect(result.systemReminder).toContain('CLI');
@@ -649,10 +648,10 @@ describe('Feature: Implement draft-driven discovery workflow with AI chaining', 
       expect(result.errorReminder).toContain('CRITICAL');
       expect(result.errorReminder).toContain('manually edited');
 
-      // And error should say "You MUST use: fspec update-foundation --field <path> --value <value>"
+      // And error should say "You MUST use: fspec update-foundation, fspec add-capability, fspec add-persona"
       expect(result.errorReminder).toContain('fspec update-foundation');
-      expect(result.errorReminder).toContain('--field');
-      expect(result.errorReminder).toContain('--value');
+      expect(result.errorReminder).toContain('fspec add-capability');
+      expect(result.errorReminder).toContain('fspec add-persona');
 
       // And command should revert changes
       expect(result.reverted).toBe(true);
@@ -706,9 +705,10 @@ describe('Feature: Implement draft-driven discovery workflow with AI chaining', 
       // And error should say "Missing required: problemSpace.primaryProblem.description"
       expect(result.validationErrors).toContain('problemSpace.primaryProblem.description');
 
-      // And error should provide fix command with field path
+      // And error should provide fix command with appropriate commands
       expect(result.validationErrors).toContain('fspec update-foundation');
-      expect(result.validationErrors).toContain('--field problemSpace.primaryProblem.description');
+      expect(result.validationErrors).toContain('fspec add-capability');
+      expect(result.validationErrors).toContain('fspec add-persona');
 
       // And draft should NOT be deleted
       const draftExists = await stat(draftPath).then(() => true).catch(() => false);

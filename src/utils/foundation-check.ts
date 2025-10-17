@@ -51,17 +51,17 @@ function buildFoundationMissingError(originalCommand: string): string {
 CRITICAL: NEVER manually create foundation.json - you MUST use discover-foundation workflow!
 
 Foundation.json is a DETAILED product requirements document, not a quick summary.
-Manual creation bypasses essential codebase analysis and questionnaire.
+Manual creation bypasses essential codebase analysis and AI-guided discovery.
 
 You MUST follow this exact workflow:
 
   Step 1: fspec discover-foundation (creates draft)
-    - Analyzes codebase to detect project type, personas, capabilities
-    - Generates foundation.json.draft with [QUESTION:] placeholders
+    - Creates foundation.json.draft with [QUESTION:] and [DETECTED:] placeholders
+    - Command guides AI field-by-field using system-reminders
 
-  Step 2: Fill [QUESTION:] placeholders in draft
-    - Edit foundation.json.draft to replace all [QUESTION: ...] placeholders
-    - Provide detailed answers about project vision, problems, solutions
+  Step 2: AI analyzes codebase and fills fields
+    - AI uses 'fspec update-foundation' to fill each [QUESTION:] placeholder
+    - Command automatically chains to next field after each update
 
   Step 3: fspec discover-foundation --finalize
     - Validates completed draft
@@ -77,7 +77,7 @@ The command '${originalCommand}' requires a project foundation document.
 
 CRITICAL: You must complete this workflow:
   1. Run: fspec discover-foundation
-  2. Complete the interactive questionnaire
+  2. Follow field-by-field guidance to fill draft
   3. After foundation.json is created, retry: ${originalCommand}
 
 After completing discover-foundation, you MUST return to your original task.
