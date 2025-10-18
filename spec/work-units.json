@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-17T10:13:34.975Z"
+    "lastUpdated": "2025-10-18T23:34:29.907Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -7560,10 +7560,131 @@
         }
       ],
       "estimate": 3
+    },
+    "MCP-001": {
+      "id": "MCP-001",
+      "title": "Attachment categorization system",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-10-18T23:26:49.209Z",
+      "updatedAt": "2025-10-18T23:26:49.209Z",
+      "description": "Add metadata to attachments to categorize them as 'architecture', 'example', 'mockup', or 'diagram'. This enables system-reminders to distinguish code examples from other attachments when transitioning workflow states.",
+      "epic": "example-driven-discovery",
+      "children": []
+    },
+    "MCP-002": {
+      "id": "MCP-002",
+      "title": "MCP tool integration framework",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-10-18T23:26:50.151Z",
+      "updatedAt": "2025-10-18T23:26:50.151Z",
+      "description": "Implement client integration for Model Context Protocol (MCP), including configuration for MCP servers, abstraction layer for invoking MCP tools, and error handling for external tool failures.",
+      "epic": "example-driven-discovery",
+      "children": []
+    },
+    "MCP-003": {
+      "id": "MCP-003",
+      "title": "Attachment-aware workflow transitions",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-10-18T23:26:51.165Z",
+      "updatedAt": "2025-10-18T23:26:51.165Z",
+      "description": "Emit system-reminders when transitioning to testing or implementing states if work unit has attachments. Reminders should list attached examples and prompt AI to review them before writing tests or code.",
+      "epic": "example-driven-discovery",
+      "children": []
+    },
+    "MCP-004": {
+      "id": "MCP-004",
+      "title": "Context7 code discovery command",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-10-18T23:26:52.165Z",
+      "updatedAt": "2025-10-18T23:27:05.300Z",
+      "description": "Implement 'fspec discover-code-examples <work-unit-id> <query>' command that uses context7 MCP tool to search codebase for relevant patterns, generates markdown summaries, and auto-attaches results to work unit.",
+      "epic": "example-driven-discovery",
+      "children": [],
+      "dependsOn": [
+        "MCP-002",
+        "MCP-001"
+      ]
+    },
+    "MCP-005": {
+      "id": "MCP-005",
+      "title": "Enhanced discovery prompts with example guidance",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-10-18T23:26:53.140Z",
+      "updatedAt": "2025-10-18T23:27:07.168Z",
+      "description": "Update system-reminders during specifying state to encourage AI to use 'fspec discover-code-examples' and attach architectural examples. Update CLAUDE.md with guidance on example-driven discovery workflow.",
+      "epic": "example-driven-discovery",
+      "children": [],
+      "dependsOn": [
+        "MCP-003",
+        "MCP-004"
+      ]
+    },
+    "BUG-019": {
+      "id": "BUG-019",
+      "title": "Dependencies command throws 'Invalid action' error",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-18T23:33:40.052Z",
+      "updatedAt": "2025-10-18T23:38:21.107Z",
+      "description": "The 'fspec dependencies <work-unit-id>' command throws 'Error: Invalid action: <work-unit-id>' when invoked. The command registration expects an action argument first, but users/AI expect to pass work-unit-id directly to query dependencies.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-18T23:33:40.419Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-18T23:35:11.478Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-18T23:36:33.004Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-18T23:38:08.835Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-18T23:38:21.108Z"
+        }
+      ],
+      "userStory": {
+        "role": "AI agent using fspec CLI",
+        "action": "query work unit dependencies with simple syntax",
+        "benefit": "I can understand dependency relationships without parsing complex multi-action commands"
+      },
+      "rules": [
+        "Command must accept work-unit-id as first positional argument",
+        "Command must display all dependency types: blocks, blockedBy, dependsOn, relatesTo",
+        "Command must provide AI-friendly error wrapped in system-reminder if work unit does not exist"
+      ],
+      "examples": [
+        "AI runs 'fspec dependencies MCP-001' and sees 'Dependencies for MCP-001:' with empty lists (no dependencies)",
+        "AI runs 'fspec dependencies MCP-004' and sees 'Depends on: MCP-001, MCP-002'",
+        "AI runs 'fspec dependencies INVALID-999' and gets system-reminder with suggestions to run 'fspec list-work-units'"
+      ],
+      "architectureNotes": [
+        "Root cause: registerDependenciesCommand() uses multi-action router pattern with .argument('<action>') expecting 'list', 'add', 'remove', etc. but help docs suggest direct work-unit-id usage",
+        "Solution: Simplify to single-purpose command accepting .command('dependencies <work-unit-id>') and call showDependencies() directly with AI-friendly error handling",
+        "Error handling: Wrap errors in system-reminder tags to make failures highly visible to AI agents in Claude Code"
+      ]
     }
   },
   "states": {
-    "backlog": [],
+    "backlog": [
+      "MCP-001",
+      "MCP-002",
+      "MCP-003",
+      "MCP-004",
+      "MCP-005"
+    ],
     "specifying": [],
     "testing": [],
     "implementing": [],
@@ -7708,7 +7829,8 @@
       "BUG-017",
       "BUG-018",
       "FEAT-014",
-      "FEAT-015"
+      "FEAT-015",
+      "BUG-019"
     ],
     "blocked": []
   }

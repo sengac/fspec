@@ -114,6 +114,11 @@
       "prefix": "DISC",
       "description": "Discovery and Foundation Management",
       "createdAt": "2025-10-17T06:32:10.309Z"
+    },
+    "MCP": {
+      "prefix": "MCP",
+      "description": "MCP Integration and Example-Driven Enhancements",
+      "createdAt": "2025-10-18T23:26:31.587Z"
     }
   }
 }
