@@ -6986,16 +6986,6 @@
         }
       ]
     },
-    "FOUND-008": {
-      "id": "FOUND-008",
-      "title": "Improve foundation discovery error messaging and workflow guidance",
-      "type": "story",
-      "status": "backlog",
-      "createdAt": "2025-10-17T05:54:23.527Z",
-      "updatedAt": "2025-10-17T05:54:23.527Z",
-      "description": "When foundation.json is missing, fspec should provide crystal-clear imperative guidance on running the interactive discovery workflow. The error message must prevent AI from manually creating foundation.json and instead force use of discover-foundation with proper codebase analysis.",
-      "children": []
-    },
     "FOUND-009": {
       "id": "FOUND-009",
       "title": "Foundation missing error message is not imperative enough",
@@ -7573,9 +7563,7 @@
     }
   },
   "states": {
-    "backlog": [
-      "FOUND-008"
-    ],
+    "backlog": [],
     "specifying": [],
     "testing": [],
     "implementing": [],
