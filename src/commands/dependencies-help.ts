@@ -3,176 +3,112 @@ import type { CommandHelpConfig } from '../utils/help-formatter';
 const config: CommandHelpConfig = {
   name: 'dependencies',
   description:
-    'Comprehensive dependency management for work units (add, remove, list, validate, repair, analyze, visualize)',
-  usage:
-    'fspec dependencies <action> [work-unit-id] [options]\n\nActions:\n  add         - Add dependency relationship\n  remove      - Remove dependency relationship\n  list        - List dependencies for work unit\n  validate    - Validate dependency graph consistency\n  repair      - Auto-repair bidirectional relationships\n  graph       - Export dependency graph (JSON/Mermaid)\n  critical    - Calculate critical path\n  impact      - Analyze impact of work unit changes',
+    'Show all dependency relationships for a work unit (blocks, blockedBy, dependsOn, relatesTo)',
+  usage: 'fspec dependencies <work-unit-id> [options]',
   whenToUse:
-    'Use this command for comprehensive dependency management: creating relationships, validating graph consistency, visualizing dependencies, calculating critical paths, and analyzing impact. Central command for understanding work unit relationships and project structure.',
+    'Use this command to quickly view all dependency relationships for a specific work unit. Shows which work units it blocks, is blocked by, depends on, and relates to. Essential for understanding work unit relationships and planning implementation order.',
   prerequisites: ['spec/work-units.json exists with work units'],
   arguments: [
     {
-      name: 'action',
-      description:
-        'Action to perform: add, remove, list, validate, repair, graph, critical, impact',
-      required: true,
-    },
-    {
       name: 'work-unit-id',
-      description: 'Work unit ID (required for add, remove, list, impact)',
-      required: false,
+      description: 'Work unit ID to show dependencies for',
+      required: true,
     },
   ],
   options: [
     {
-      flag: '--blocks <id>',
-      description: 'Add blocks relationship (blocker blocks target)',
-    },
-    {
-      flag: '--blocked-by <id>',
-      description: 'Add blockedBy relationship (blocker must complete first)',
-    },
-    {
-      flag: '--depends-on <id>',
-      description: 'Add dependsOn relationship (soft dependency)',
-    },
-    {
-      flag: '--relates-to <id>',
-      description: 'Add relatesTo relationship (bidirectional, no blocking)',
-    },
-    {
-      flag: '--type <type>',
-      description: 'Relationship type filter: blocks, blockedBy, dependsOn, relatesTo, all',
-    },
-    {
-      flag: '--format <format>',
-      description: 'Output format for graph: json, mermaid',
-    },
-    {
       flag: '--graph',
-      description: 'Display dependencies as graph visualization',
+      description:
+        'Display dependencies as graph visualization (shows dependency tree)',
     },
   ],
   examples: [
     {
-      command: 'fspec dependencies add AUTH-002 --depends-on AUTH-001',
-      description: 'Add dependency: AUTH-002 depends on AUTH-001',
-      output: '✓ Added dependency: AUTH-002 depends on AUTH-001',
+      command: 'fspec dependencies MCP-001',
+      description: 'Show dependencies for work unit with no relationships',
+      output: 'Dependencies for MCP-001:',
     },
     {
-      command: 'fspec dependencies add AUTH-001 --blocks AUTH-002',
-      description: 'Add blocking relationship (bidirectional)',
+      command: 'fspec dependencies MCP-004',
+      description: 'Show dependencies for work unit with multiple relationships',
       output:
-        '✓ Added dependency: AUTH-001 blocks AUTH-002\n✓ Bidirectional: AUTH-002 blocked by AUTH-001',
+        'Dependencies for MCP-004:\n  Depends on: MCP-001, MCP-002\n  Blocks: MCP-005\n  Related to: DOC-MCP-004',
     },
     {
-      command: 'fspec dependencies list AUTH-001',
-      description: 'List all dependencies for work unit',
+      command: 'fspec dependencies AUTH-001',
+      description: 'Show all dependency types',
       output:
         'Dependencies for AUTH-001:\n  Blocks: AUTH-002, AUTH-003\n  Blocked by: INFRA-001\n  Depends on: SCHEMA-001\n  Related to: DOC-001',
     },
     {
-      command: 'fspec dependencies validate',
-      description: 'Validate dependency graph consistency',
+      command: 'fspec dependencies AUTH-001 --graph',
+      description: 'Show dependencies as graph visualization',
       output:
-        '✓ Dependency graph is valid\n  Checked 45 work units\n  Verified 87 relationships\n  No errors found',
-    },
-    {
-      command: 'fspec dependencies repair',
-      description: 'Auto-repair bidirectional relationships',
-      output: '✓ Repaired 3 relationship(s)\n  Fixed blocks/blockedBy bidirectional links',
-    },
-    {
-      command: 'fspec dependencies graph --format mermaid',
-      description: 'Export dependency graph as Mermaid diagram',
-      output:
-        'graph TD\n  AUTH-001[AUTH-001] -->|blocks| AUTH-002[AUTH-002]\n  AUTH-001[AUTH-001] -.->|depends on| SCHEMA-001[SCHEMA-001]\n  AUTH-002[AUTH-002] <-->|relates to| DOC-001[DOC-001]',
-    },
-    {
-      command: 'fspec dependencies critical',
-      description: 'Calculate critical path through work units',
-      output:
-        'Critical Path:\n  SCHEMA-001 → AUTH-001 → AUTH-002 → AUTH-003 → TEST-001\n\nPath length: 5 work units\nEstimated effort: 23 story points',
-    },
-    {
-      command: 'fspec dependencies impact AUTH-001',
-      description: 'Analyze impact of changes to work unit',
-      output:
-        'Impact Analysis for AUTH-001:\n\nDirectly Affected: 2 work units\n  - AUTH-002 (blocked by AUTH-001)\n  - AUTH-003 (blocked by AUTH-001)\n\nTransitively Affected: 5 work units\n  - TEST-001, TEST-002, DEPLOY-001, DOC-001, DOC-002\n\nTotal Affected: 7 work units',
+        'AUTH-001\n  blocks → AUTH-002\n    blocks → AUTH-004\n  blocks → AUTH-003',
     },
   ],
   commonErrors: [
     {
-      error: 'Error: Circular dependency detected: AUTH-001 → AUTH-002 → AUTH-001',
-      fix: 'Circular dependencies are not allowed. Restructure dependencies to break the cycle.',
-    },
-    {
-      error: 'Error: Dependency already exists',
-      fix: 'This dependency relationship already exists. Use remove first if you need to change it.',
-    },
-    {
-      error: 'Error: Cannot create dependency to self',
-      fix: 'Work units cannot depend on themselves. Specify a different target work unit.',
-    },
-    {
-      error: 'Error: Work unit does not exist',
-      fix: 'Verify work unit IDs exist. Run: fspec list-work-units',
-    },
-    {
-      error: 'Error: 5 relationship(s) have inconsistent bidirectional links',
-      fix: 'Run: fspec dependencies repair to auto-fix bidirectional consistency',
+      error: "Error: Work unit 'INVALID-999' does not exist",
+      fix: 'Verify work unit ID exists. Run: fspec list-work-units\n\nNote: This error includes AI-friendly system-reminder with suggestions.',
     },
   ],
   typicalWorkflow:
-    '1. Add dependencies as you create work units → 2. Validate: fspec dependencies validate → 3. Repair if needed: fspec dependencies repair → 4. Visualize: fspec dependencies graph --format mermaid → 5. Analyze impact before changes: fspec dependencies impact <id>',
+    '1. Create work units → 2. Add dependencies with add-dependency command → 3. View relationships: fspec dependencies <id> → 4. Plan implementation order based on dependencies',
   commonPatterns: [
     {
-      pattern: 'Sequential Dependency Setup',
+      pattern: 'Quick Dependency Check',
       example:
-        '# Create sequential work units\nfspec create-work-unit AUTH-001 "Setup auth infrastructure"\nfspec create-work-unit AUTH-002 "Add login endpoint"\nfspec create-work-unit AUTH-003 "Add logout endpoint"\n\n# Add dependencies\nfspec dependencies add AUTH-002 --depends-on AUTH-001\nfspec dependencies add AUTH-003 --depends-on AUTH-001\n\n# Validate\nfspec dependencies validate',
+        '# Before starting work, check what blocks this work unit\nfspec dependencies UI-001\n\n# Output shows:\n#   Blocked by: AUTH-001, API-001\n#\n# Decision: Wait for AUTH-001 and API-001 to complete',
     },
     {
-      pattern: 'Blocking Relationship',
+      pattern: 'Understanding Impact',
       example:
-        '# AUTH-001 must complete before AUTH-002 can start\nfspec dependencies add AUTH-001 --blocks AUTH-002\n\n# This automatically:\n# - Sets AUTH-002 blockedBy AUTH-001 (bidirectional)\n# - Sets AUTH-002 status to "blocked" if AUTH-001 not done',
+        '# Check what will be unblocked after completing this work\nfspec dependencies AUTH-001\n\n# Output shows:\n#   Blocks: AUTH-002, AUTH-003, UI-001\n#\n# Completing AUTH-001 will unblock 3 work units',
     },
     {
-      pattern: 'Cross-Cutting Relationships',
+      pattern: 'Dependency Tree Visualization',
       example:
-        '# Feature relates to documentation (no blocking)\nfspec dependencies add AUTH-001 --relates-to DOC-AUTH-001\n\n# This creates bidirectional relatesTo (both directions)',
+        '# View full dependency tree\nfspec dependencies AUTH-001 --graph\n\n# Shows cascading dependencies',
     },
     {
-      pattern: 'Dependency Maintenance',
+      pattern: 'Integration with add-dependency',
       example:
-        '# Weekly validation\nfspec dependencies validate\n\n# If errors found, repair\nfspec dependencies repair\n\n# Visualize current state\nfspec dependencies graph --format mermaid > dependencies.mmd',
+        '# Add dependency\nfspec add-dependency UI-001 AUTH-001\n\n# Verify it was added\nfspec dependencies UI-001\n# Output: Depends on: AUTH-001',
     },
   ],
   relatedCommands: [
-    'add-dependency',
-    'remove-dependency',
-    'query-bottlenecks',
-    'suggest-dependencies',
-    'update-work-unit-status',
-    'show-work-unit',
+    'add-dependency - Add dependency relationships between work units',
+    'remove-dependency - Remove dependency relationships',
+    'query-bottlenecks - Find critical path blockers',
+    'suggest-dependencies - Auto-suggest dependencies based on patterns',
+    'export-dependencies - Export dependency graph (JSON/Mermaid)',
+    'show-work-unit - Show complete work unit details (includes dependencies)',
   ],
   notes: [
-    'Relationship types:',
-    '  blocks: Hard blocking (blocker must complete first, sets status to "blocked")',
-    '  blockedBy: Inverse of blocks (automatically bidirectional)',
-    '  dependsOn: Soft dependency (no status change, for ordering)',
-    '  relatesTo: Bidirectional relationship (no blocking, for context)',
-    'Bidirectional enforcement:',
-    '  - blocks ↔ blockedBy automatically synchronized',
-    '  - relatesTo automatically bidirectional',
-    'Circular dependency prevention:',
-    '  - blocks/blockedBy relationships cannot form cycles',
-    '  - dependsOn/relatesTo can have cycles (soft relationships)',
-    'Auto-blocking:',
-    '  - Adding blockedBy automatically sets status to "blocked" if blocker not done',
-    '  - Completing blocker automatically unblocks dependent work',
-    'Validation checks:',
-    '  - Bidirectional consistency (blocks ↔ blockedBy)',
-    '  - Non-existent work unit references',
-    '  - Orphaned relationships',
+    'Simplified Command (BUG-019):',
+    '  - This command was simplified from multi-action to single-purpose',
+    '  - Old: fspec dependencies <action> <work-unit-id>',
+    '  - New: fspec dependencies <work-unit-id>',
+    '  - Other actions now use dedicated commands (add-dependency, remove-dependency, etc.)',
+    '',
+    'Relationship types displayed:',
+    '  blocks: Work units blocked by this work unit',
+    '  blockedBy: Work units blocking this work unit',
+    '  dependsOn: Soft dependencies (ordering hints)',
+    '  relatesTo: Related work units (no blocking)',
+    '',
+    'Error handling:',
+    '  - Non-existent work units show AI-friendly system-reminder',
+    '  - System-reminder includes troubleshooting steps',
+    '  - Wrapped for visibility in Claude Code',
+    '',
+    'For comprehensive dependency management:',
+    '  - add-dependency: Create relationships',
+    '  - remove-dependency: Delete relationships',
+    '  - clear-dependencies: Remove all relationships',
+    '  - export-dependencies: Visualize full graph',
+    '  - query-bottlenecks: Find critical path issues',
   ],
 };
 

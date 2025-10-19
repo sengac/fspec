@@ -114,6 +114,18 @@
         "BUG-018",
         "FEAT-014"
       ]
+    },
+    "example-driven-discovery": {
+      "id": "example-driven-discovery",
+      "title": "Example-Driven Discovery with MCP Integration",
+      "createdAt": "2025-10-18T23:26:30.551Z",
+      "workUnits": [
+        "MCP-001",
+        "MCP-002",
+        "MCP-003",
+        "MCP-004",
+        "MCP-005"
+      ]
     }
   }
 }

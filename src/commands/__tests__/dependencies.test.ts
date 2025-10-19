@@ -1215,4 +1215,87 @@ describe('Feature: Work Unit Dependency Management', () => {
       // Warnings about incomplete dependencies are optional
     });
   });
+
+  /**
+   * Feature: spec/features/dependencies-command-throws-invalid-action-error.feature
+   *
+   * These tests validate the CLI command interface for querying work unit dependencies.
+   * Bug fix (BUG-019): Command now accepts work-unit-id directly instead of requiring action argument.
+   */
+
+  describe('Feature: Dependencies command CLI interface (BUG-019)', () => {
+    describe('Scenario: Query dependencies for work unit with no dependencies', () => {
+      it('should show empty dependency list for work unit with no relationships', async () => {
+        const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+        workUnits.workUnits['MCP-001'] = {
+          id: 'MCP-001',
+          title: 'Example work unit',
+          status: 'backlog',
+          relationships: {},
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+        await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+
+        const output = await showDependencies(
+          'MCP-001',
+          { graph: false },
+          { cwd: testDir }
+        );
+
+        expect(output).toContain('Dependencies for MCP-001:');
+        expect(output).not.toContain('Blocks:');
+        expect(output).not.toContain('Blocked by:');
+        expect(output).not.toContain('Depends on:');
+        expect(output).not.toContain('Related to:');
+      });
+    });
+
+    describe('Scenario: Query dependencies for work unit with dependsOn relationships', () => {
+      it('should display dependsOn relationships', async () => {
+        const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+        workUnits.workUnits['MCP-001'] = {
+          id: 'MCP-001',
+          status: 'backlog',
+          relationships: {},
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+        workUnits.workUnits['MCP-002'] = {
+          id: 'MCP-002',
+          status: 'backlog',
+          relationships: {},
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+        workUnits.workUnits['MCP-004'] = {
+          id: 'MCP-004',
+          status: 'backlog',
+          relationships: {
+            dependsOn: ['MCP-001', 'MCP-002'],
+          },
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+        await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+
+        const output = await showDependencies(
+          'MCP-004',
+          { graph: false },
+          { cwd: testDir }
+        );
+
+        expect(output).toContain('Dependencies for MCP-004:');
+        expect(output).toContain('Depends on: MCP-001, MCP-002');
+      });
+    });
+
+    describe('Scenario: Query dependencies for non-existent work unit', () => {
+      it('should throw error with work unit not found message', async () => {
+        await expect(
+          showDependencies('INVALID-999', { graph: false }, { cwd: testDir })
+        ).rejects.toThrow("Work unit 'INVALID-999' does not exist");
+      });
+    });
+  });
 });
