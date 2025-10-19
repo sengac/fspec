@@ -19,14 +19,18 @@ describe('Feature: Add system-reminder to generate-coverage command', () => {
 
   beforeEach(async () => {
     // Create temporary directory for each test
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-generate-coverage-reminder-test-'));
+    testDir = await mkdtemp(
+      join(tmpdir(), 'fspec-generate-coverage-reminder-test-')
+    );
 
     // Spy on console and process.exit
     consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
     consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    processExitSpy = vi.spyOn(process, 'exit').mockImplementation((code?: number) => {
-      throw new Error(`process.exit(${code})`);
-    });
+    processExitSpy = vi
+      .spyOn(process, 'exit')
+      .mockImplementation((code?: number) => {
+        throw new Error(`process.exit(${code})`);
+      });
 
     // Change to test directory
     process.chdir(testDir);
@@ -56,7 +60,10 @@ Feature: Test Feature
     When an action
     Then an outcome
 `;
-      await writeFile(join(featuresDir, 'test-feature.feature'), featureContent);
+      await writeFile(
+        join(featuresDir, 'test-feature.feature'),
+        featureContent
+      );
 
       // When I run `fspec generate-coverage`
       try {
@@ -66,7 +73,9 @@ Feature: Test Feature
         // Check if it's an expected error
         if (error.message === 'process.exit(1)') {
           // Check console error output to understand the failure
-          const errorOutput = consoleErrorSpy.mock.calls.map(call => call.join(' ')).join('\n');
+          const errorOutput = consoleErrorSpy.mock.calls
+            .map(call => call.join(' '))
+            .join('\n');
           console.error('Command failed with:', errorOutput);
         }
         expect(error.message).toContain('process.exit');
@@ -77,7 +86,9 @@ Feature: Test Feature
       expect(processExitSpy).toHaveBeenCalled();
 
       // And the output should display a system-reminder
-      const allOutput = consoleLogSpy.mock.calls.map(call => call.join(' ')).join('\n');
+      const allOutput = consoleLogSpy.mock.calls
+        .map(call => call.join(' '))
+        .join('\n');
 
       expect(allOutput).toContain('<system-reminder>');
       expect(allOutput).toContain('</system-reminder>');
@@ -115,7 +126,10 @@ Feature: Test Feature
     When an action
     Then an outcome
 `;
-      await writeFile(join(featuresDir, 'test-feature.feature'), featureContent);
+      await writeFile(
+        join(featuresDir, 'test-feature.feature'),
+        featureContent
+      );
 
       // When I run `fspec generate-coverage --dry-run`
       try {
@@ -128,7 +142,9 @@ Feature: Test Feature
       expect(processExitSpy).toHaveBeenCalled();
 
       // And the output should display a system-reminder
-      const allOutput = consoleLogSpy.mock.calls.map(call => call.join(' ')).join('\n');
+      const allOutput = consoleLogSpy.mock.calls
+        .map(call => call.join(' '))
+        .join('\n');
       expect(allOutput).toContain('<system-reminder>');
 
       // And the reminder should explain the three-step ACDD workflow
@@ -156,7 +172,10 @@ Feature: Test Feature
     When an action
     Then an outcome
 `;
-      await writeFile(join(featuresDir, 'test-feature.feature'), featureContent);
+      await writeFile(
+        join(featuresDir, 'test-feature.feature'),
+        featureContent
+      );
 
       // When I run `fspec generate-coverage`
       try {
@@ -169,7 +188,9 @@ Feature: Test Feature
       expect(processExitSpy).toHaveBeenCalled();
 
       // And the system-reminder should clearly state difference
-      const allOutput = consoleLogSpy.mock.calls.map(call => call.join(' ')).join('\n');
+      const allOutput = consoleLogSpy.mock.calls
+        .map(call => call.join(' '))
+        .join('\n');
 
       // Should mention that generate-coverage creates empty files
       expect(allOutput).toContain('EMPTY');
@@ -197,7 +218,10 @@ Feature: Test Feature
     When an action
     Then an outcome
 `;
-      await writeFile(join(featuresDir, 'test-feature.feature'), featureContent);
+      await writeFile(
+        join(featuresDir, 'test-feature.feature'),
+        featureContent
+      );
 
       // When I run `fspec generate-coverage`
       try {
@@ -210,7 +234,9 @@ Feature: Test Feature
       expect(processExitSpy).toHaveBeenCalled();
 
       // And the system-reminder should include complete workflow
-      const allOutput = consoleLogSpy.mock.calls.map(call => call.join(' ')).join('\n');
+      const allOutput = consoleLogSpy.mock.calls
+        .map(call => call.join(' '))
+        .join('\n');
 
       // Should show all 7 steps
       expect(allOutput).toContain('1.');

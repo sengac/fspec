@@ -60,7 +60,9 @@ export async function addRule(options: AddRuleOptions): Promise<AddRuleResult> {
 export function registerAddRuleCommand(program: Command): void {
   program
     .command('add-rule')
-    .description('Add a business rule to a work unit during specification phase')
+    .description(
+      'Add a business rule to a work unit during specification phase'
+    )
     .argument('<workUnitId>', 'Work unit ID')
     .argument('<rule>', 'Business rule description')
     .action(async (workUnitId: string, rule: string) => {

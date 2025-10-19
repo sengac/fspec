@@ -1,7 +1,6 @@
 import Ajv, { type ErrorObject } from 'ajv';
 import addFormats from 'ajv-formats';
 import { readFile } from 'fs/promises';
-import { join } from 'path';
 import foundationSchema from '../schemas/generic-foundation.schema.json';
 import tagsSchema from '../schemas/tags.schema.json';
 
@@ -10,10 +9,24 @@ export interface ValidationResult {
   errors: ErrorObject[];
 }
 
-export interface ValidationResults {
-  filePath: string;
-  valid: boolean;
-  errors: ErrorObject[];
+/**
+ * Validate a JSON object against a JSON Schema
+ */
+function validateJsonObject(
+  data: unknown,
+  schema: object
+): ValidationResult {
+  const ajv = new Ajv({ allErrors: true, verbose: true });
+  addFormats(ajv); // Add format validation (uri, date-time, etc.)
+
+  // Validate
+  const validate = ajv.compile(schema);
+  const valid = validate(data);
+
+  return {
+    valid: Boolean(valid),
+    errors: validate.errors || [],
+  };
 }
 
 /**
@@ -23,25 +36,32 @@ async function validateJsonFile(
   jsonPath: string,
   schema: object
 ): Promise<ValidationResult> {
-  const ajv = new Ajv({ allErrors: true, verbose: true });
-  addFormats(ajv); // Add format validation (uri, date-time, etc.)
-
   // Read JSON file
   const jsonContent = await readFile(jsonPath, 'utf-8');
   const jsonData = JSON.parse(jsonContent);
 
-  // Validate
-  const validate = ajv.compile(schema);
-  const valid = validate(jsonData);
-
-  return {
-    valid: Boolean(valid),
-    errors: validate.errors || [],
-  };
+  // Validate using object validator
+  return validateJsonObject(jsonData, schema);
 }
 
 /**
- * Validate foundation.json against generic-foundation.schema.json
+ * Validate a foundation.json object against generic-foundation.schema.json
+ * Schema is bundled into the application at build time
+ */
+export function validateFoundationObject(data: unknown): ValidationResult {
+  return validateJsonObject(data, foundationSchema);
+}
+
+/**
+ * Validate a tags.json object against tags.schema.json
+ * Schema is bundled into the application at build time
+ */
+export function validateTagsObject(data: unknown): ValidationResult {
+  return validateJsonObject(data, tagsSchema);
+}
+
+/**
+ * Validate foundation.json file against generic-foundation.schema.json
  * Schema is bundled into the application at build time
  */
 export async function validateFoundationJson(
@@ -52,7 +72,7 @@ export async function validateFoundationJson(
 }
 
 /**
- * Validate tags.json against tags.schema.json
+ * Validate tags.json file against tags.schema.json
  * Schema is bundled into the application at build time
  */
 export async function validateTagsJson(
@@ -60,49 +80,6 @@ export async function validateTagsJson(
 ): Promise<ValidationResult> {
   const tagsJsonPath = jsonPath || 'spec/tags.json';
   return validateJsonFile(tagsJsonPath, tagsSchema);
-}
-
-/**
- * Validate all JSON files (foundation.json and tags.json)
- * Uses bundled schemas from src/schemas/
- */
-export async function validateJson(cwd?: string): Promise<ValidationResults[]> {
-  const baseDir = cwd || process.cwd();
-  const results: ValidationResults[] = [];
-
-  // Validate foundation.json (schema path is handled by validateFoundationJson)
-  try {
-    const foundationJsonPath = join(baseDir, 'spec', 'foundation.json');
-    const foundationResult = await validateFoundationJson(foundationJsonPath);
-
-    results.push({
-      filePath: foundationJsonPath,
-      ...foundationResult,
-    });
-  } catch (error: any) {
-    // If file doesn't exist, skip
-    if (error.code !== 'ENOENT') {
-      throw error;
-    }
-  }
-
-  // Validate tags.json (schema path is handled by validateTagsJson)
-  try {
-    const tagsJsonPath = join(baseDir, 'spec', 'tags.json');
-    const tagsResult = await validateTagsJson(tagsJsonPath);
-
-    results.push({
-      filePath: tagsJsonPath,
-      ...tagsResult,
-    });
-  } catch (error: any) {
-    // If file doesn't exist, skip
-    if (error.code !== 'ENOENT') {
-      throw error;
-    }
-  }
-
-  return results;
 }
 
 /**

@@ -88,7 +88,7 @@ async function showAllFilesCoverage(
     );
   }
 
-  const coverageFiles = files.filter((f) => f.endsWith('.feature.coverage'));
+  const coverageFiles = files.filter(f => f.endsWith('.feature.coverage'));
 
   if (coverageFiles.length === 0) {
     throw new Error(
@@ -133,7 +133,9 @@ async function showAllFilesCoverage(
   };
 
   aggregated.coveragePercent = aggregated.totalScenarios
-    ? Math.round((aggregated.coveredScenarios / aggregated.totalScenarios) * 100)
+    ? Math.round(
+        (aggregated.coveredScenarios / aggregated.totalScenarios) * 100
+      )
     : 0;
 
   // Format output
@@ -183,7 +185,7 @@ function formatCoverageAsJSON(
 ): string {
   const enriched = {
     fileName,
-    scenarios: coverage.scenarios.map((scenario) => ({
+    scenarios: coverage.scenarios.map(scenario => ({
       ...scenario,
       coverageStatus: getCoverageStatus(scenario).status,
     })),
@@ -231,7 +233,7 @@ function formatCoverageAsMarkdown(
   // Warnings
   if (coverage.warnings && coverage.warnings.length > 0) {
     lines.push('## Warnings');
-    coverage.warnings.forEach((warning) => lines.push(warning));
+    coverage.warnings.forEach(warning => lines.push(warning));
     lines.push('');
   }
 
@@ -274,7 +276,7 @@ function formatCoverageAsMarkdown(
 
   // Coverage Gaps section
   const uncoveredScenarios = coverage.scenarios.filter(
-    (s) => s.testMappings.length === 0
+    s => s.testMappings.length === 0
   );
 
   if (uncoveredScenarios.length > 0) {
@@ -284,7 +286,7 @@ function formatCoverageAsMarkdown(
     lines.push('');
     lines.push('The following scenarios need test coverage:');
     lines.push('');
-    uncoveredScenarios.forEach((scenario) => {
+    uncoveredScenarios.forEach(scenario => {
       lines.push(`- ${scenario.name}`);
     });
     lines.push('');
@@ -372,7 +374,7 @@ function getCoverageStatus(scenario: {
   }
 
   const hasImplMappings = scenario.testMappings.some(
-    (tm) => tm.implMappings.length > 0
+    tm => tm.implMappings.length > 0
   );
 
   if (hasImplMappings) {
@@ -431,6 +433,9 @@ export function registerShowCoverageCommand(program: Command): void {
   program
     .command('show-coverage')
     .description('Show coverage report for feature or all features')
-    .argument('[feature-name]', 'Feature name (optional - shows all if omitted)')
+    .argument(
+      '[feature-name]',
+      'Feature name (optional - shows all if omitted)'
+    )
     .action(showCoverageCommand);
 }

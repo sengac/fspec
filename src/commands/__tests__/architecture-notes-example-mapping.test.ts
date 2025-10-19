@@ -247,7 +247,9 @@ describe('Feature: Architecture notes in Example Mapping', () => {
 
       // And when I run "fspec show-work-unit WORK-001"
       // Then I should see 2 remaining architecture notes
-      expect(updatedData.workUnits['WORK-001'].architectureNotes.length).toBe(2);
+      expect(updatedData.workUnits['WORK-001'].architectureNotes.length).toBe(
+        2
+      );
       expect(updatedData.workUnits['WORK-001'].architectureNotes).toEqual([
         'Note 1',
         'Note 3',

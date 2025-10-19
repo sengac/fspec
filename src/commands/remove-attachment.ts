@@ -36,7 +36,7 @@ export async function removeAttachment(
   }
 
   // Find attachment by filename
-  const attachmentIndex = workUnit.attachments.findIndex((path) =>
+  const attachmentIndex = workUnit.attachments.findIndex(path =>
     path.endsWith(options.fileName)
   );
 
@@ -56,10 +56,14 @@ export async function removeAttachment(
   if (!options.keepFile) {
     try {
       await unlink(fullPath);
-      console.log(chalk.green('✓ Attachment removed from work unit and file deleted'));
+      console.log(
+        chalk.green('✓ Attachment removed from work unit and file deleted')
+      );
     } catch (error: unknown) {
       console.log(
-        chalk.yellow('⚠ Attachment removed from work unit (file was already missing)')
+        chalk.yellow(
+          '⚠ Attachment removed from work unit (file was already missing)'
+        )
       );
     }
   } else {

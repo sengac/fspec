@@ -56,7 +56,7 @@ describe('Feature: Foundation discovery workflow - add-persona command', () => {
       };
       await fs.writeFile(
         foundationPath,
-        JSON.stringify(initialFoundation, null, 2),
+        JSON.stringify(initialFoundation, null, 2)
       );
 
       // When I run "fspec add-persona 'AI Agent' 'Uses fspec to manage specifications' --goal 'Complete foundation discovery without manual editing'"
@@ -64,12 +64,12 @@ describe('Feature: Foundation discovery workflow - add-persona command', () => {
         testDir,
         'AI Agent',
         'Uses fspec to manage specifications',
-        ['Complete foundation discovery without manual editing'],
+        ['Complete foundation discovery without manual editing']
       );
 
       // Then the foundation.json file should contain the new persona
       const updatedFoundation = JSON.parse(
-        await fs.readFile(foundationPath, 'utf-8'),
+        await fs.readFile(foundationPath, 'utf-8')
       );
       expect(updatedFoundation.personas).toHaveLength(1);
 
@@ -78,12 +78,12 @@ describe('Feature: Foundation discovery workflow - add-persona command', () => {
 
       // And the persona should have description "Uses fspec to manage specifications"
       expect(updatedFoundation.personas[0].description).toBe(
-        'Uses fspec to manage specifications',
+        'Uses fspec to manage specifications'
       );
 
       // And the persona should have goal "Complete foundation discovery without manual editing"
       expect(updatedFoundation.personas[0].goals).toContain(
-        'Complete foundation discovery without manual editing',
+        'Complete foundation discovery without manual editing'
       );
 
       // And the foundation.json should pass schema validation

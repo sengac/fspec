@@ -48,7 +48,7 @@ describe('Feature: Fix show-epic command returning undefined', () => {
       // And the output should contain "Epic 'invalid-epic' not found"
       await expect(
         showEpic({ epicId: 'invalid-epic', cwd: testDir })
-      ).rejects.toThrow("Epic invalid-epic not found");
+      ).rejects.toThrow('Epic invalid-epic not found');
     });
 
     it('should throw error when epics.json does not exist', async () => {
@@ -57,7 +57,7 @@ describe('Feature: Fix show-epic command returning undefined', () => {
       // Then the command should throw error
       await expect(
         showEpic({ epicId: 'any-epic', cwd: testDir })
-      ).rejects.toThrow("Epic any-epic not found");
+      ).rejects.toThrow('Epic any-epic not found');
     });
   });
 
@@ -80,7 +80,10 @@ describe('Feature: Fix show-epic command returning undefined', () => {
 
       // And an epic "user-management" exists with title "User Management Features"
       // When I run "fspec show-epic user-management"
-      const result = await showEpic({ epicId: 'user-management', cwd: testDir });
+      const result = await showEpic({
+        epicId: 'user-management',
+        cwd: testDir,
+      });
 
       // Then the command should exit with code 0
       // And the output should contain "Epic: user-management"

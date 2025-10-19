@@ -140,7 +140,9 @@ describe('Feature: Audit Coverage Command', () => {
       );
 
       // And the output should show recommendation "Remove this mapping or restore the deleted file"
-      expect(result.output).toContain('Remove this mapping or restore the deleted file');
+      expect(result.output).toContain(
+        'Remove this mapping or restore the deleted file'
+      );
 
       // And the command should exit with code 1
       expect(result.exitCode).toBe(1);
@@ -183,7 +185,10 @@ describe('Feature: Audit Coverage Command', () => {
       );
 
       // And the test file exists but implementation file doesn't
-      await writeFile(join(testsDir, 'placeholder.test.ts'), '// placeholder test');
+      await writeFile(
+        join(testsDir, 'placeholder.test.ts'),
+        '// placeholder test'
+      );
       // (implementation file "src/auth/deleted.ts" not created, so it doesn't exist)
 
       // When I run `fspec audit-coverage user-login`
@@ -198,7 +203,9 @@ describe('Feature: Audit Coverage Command', () => {
       );
 
       // And the output should show actionable recommendation
-      expect(result.output).toMatch(/Remove this mapping|restore the deleted file/i);
+      expect(result.output).toMatch(
+        /Remove this mapping|restore the deleted file/i
+      );
 
       // And the command should exit with code 1
       expect(result.exitCode).toBe(1);

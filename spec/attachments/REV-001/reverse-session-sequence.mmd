@@ -1,0 +1,47 @@
+sequenceDiagram
+    participant User
+    participant Claude
+    participant fspec reverse
+    participant Session File
+    participant Project Files
+
+    User->>Claude: I have legacy code, need specs
+    Claude->>fspec reverse: fspec reverse
+
+    fspec reverse->>Session File: Create .reverse-session.json
+    fspec reverse->>Project Files: Scan for feature files
+    fspec reverse->>Project Files: Scan for test files
+    fspec reverse->>Project Files: Scan for implementation
+    fspec reverse->>Session File: Save analysis results
+
+    fspec reverse->>Claude: <system-reminder><br/>Analysis complete<br/>Found gaps
+    Claude->>User: Found 3 test files without features
+
+    User->>Claude: Let's do Strategy A
+    Claude->>fspec reverse: fspec reverse --strategy=A
+
+    fspec reverse->>Session File: Set strategy=A, phase=executing
+    fspec reverse->>Claude: <system-reminder><br/>Step 1/3 guidance<br/>Read test file...
+
+    Claude->>Project Files: Read src/__tests__/legacy.test.ts
+    Claude->>fspec reverse: (creates feature file)
+    Claude->>fspec reverse: (links coverage)
+    Claude->>fspec reverse: fspec reverse --continue
+
+    fspec reverse->>Session File: Increment currentStep to 2
+    fspec reverse->>Claude: <system-reminder><br/>Step 2/3 guidance<br/>Next file...
+
+    Note over Claude,fspec reverse: Repeat for each gap
+
+    Claude->>fspec reverse: fspec reverse --continue
+    fspec reverse->>Session File: Increment currentStep to 3
+    fspec reverse->>Claude: <system-reminder><br/>Step 3/3 guidance<br/>Final file...
+
+    Claude->>fspec reverse: (completes final file)
+    Claude->>fspec reverse: fspec reverse --complete
+
+    fspec reverse->>Session File: Validate all work done
+    fspec reverse->>Session File: Delete session file
+    fspec reverse->>Claude: <system-reminder><br/>Session complete<br/>All gaps filled
+
+    Claude->>User: ✅ Reverse ACDD complete

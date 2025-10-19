@@ -262,9 +262,7 @@ describe('Feature: Add Mermaid Diagram to FOUNDATION.md', () => {
       const updatedJson = JSON.parse(
         await readFile(foundationJsonPath, 'utf-8')
       );
-      expect(updatedJson.solutionSpace.overview).toBe(
-        'Test solution overview'
-      );
+      expect(updatedJson.solutionSpace.overview).toBe('Test solution overview');
       expect(updatedJson.problemSpace.primaryProblem.description).toBe(
         'Test problem description'
       );

@@ -568,9 +568,7 @@ describe('Feature: Register New Tag in Tag Registry', () => {
       });
 
       // Then "spec/tags.json" statistics should be updated
-      const updatedTagsJson = JSON.parse(
-        await readFile(tagsJsonPath, 'utf-8')
-      );
+      const updatedTagsJson = JSON.parse(await readFile(tagsJsonPath, 'utf-8'));
 
       // And the lastUpdated timestamp should be current
       expect(updatedTagsJson.statistics.lastUpdated).toBeDefined();

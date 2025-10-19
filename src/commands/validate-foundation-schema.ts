@@ -75,7 +75,7 @@ export async function validateFoundationSchema(
     if (!valid) {
       // Format errors in a user-friendly way
       const errors = validate.errors || [];
-      const errorMessages = errors.map((err) => {
+      const errorMessages = errors.map(err => {
         const path = err.instancePath || err.schemaPath;
 
         // Special handling for minimum array length
@@ -134,7 +134,9 @@ export async function validateFoundationSchemaCommand(): Promise<void> {
   }
 }
 
-export function registerValidateFoundationSchemaCommand(program: Command): void {
+export function registerValidateFoundationSchemaCommand(
+  program: Command
+): void {
   program
     .command('validate-foundation-schema')
     .description('Validate foundation.json against JSON Schema')

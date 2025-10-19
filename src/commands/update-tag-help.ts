@@ -23,7 +23,8 @@ const config: CommandHelpConfig = {
   ],
   examples: [
     {
-      command: 'fspec update-tag @performance --description "High-performance features"',
+      command:
+        'fspec update-tag @performance --description "High-performance features"',
       description: 'Update tag description',
       output: '✓ Updated tag @performance',
     },

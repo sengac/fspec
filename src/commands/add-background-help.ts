@@ -2,7 +2,8 @@ import type { CommandHelpConfig } from '../utils/help-formatter';
 
 const config: CommandHelpConfig = {
   name: 'add-background',
-  description: 'Add or update Background (user story) section in a feature file',
+  description:
+    'Add or update Background (user story) section in a feature file',
   usage: 'fspec add-background <feature> <text>',
   whenToUse:
     'Use this command to add a Background section containing the user story to a feature file. Background sections provide context for all scenarios in the feature.',
@@ -10,29 +11,34 @@ const config: CommandHelpConfig = {
   arguments: [
     {
       name: 'feature',
-      description: 'Feature file name or path (e.g., "login" or "spec/features/login.feature")',
+      description:
+        'Feature file name or path (e.g., "login" or "spec/features/login.feature")',
       required: true,
     },
     {
       name: 'text',
-      description: 'User story text in format: "As a [role] I want to [action] So that [benefit]"',
+      description:
+        'User story text in format: "As a [role] I want to [action] So that [benefit]"',
       required: true,
     },
   ],
   options: [],
   examples: [
     {
-      command: 'fspec add-background login "As a user\\nI want to login securely\\nSo that I can access my account"',
+      command:
+        'fspec add-background login "As a user\\nI want to login securely\\nSo that I can access my account"',
       description: 'Add user story to login feature',
       output: '✓ Added background to login',
     },
     {
-      command: 'fspec add-background user-auth "As a developer\\nI want to implement JWT authentication\\nSo that users can access protected resources"',
+      command:
+        'fspec add-background user-auth "As a developer\\nI want to implement JWT authentication\\nSo that users can access protected resources"',
       description: 'Add background to user-auth feature',
       output: '✓ Added background to user-auth',
     },
     {
-      command: 'fspec add-background spec/features/api.feature "As an API consumer\\nI want RESTful endpoints\\nSo that I can integrate with the system"',
+      command:
+        'fspec add-background spec/features/api.feature "As an API consumer\\nI want RESTful endpoints\\nSo that I can integrate with the system"',
       description: 'Add background using full feature path',
       output: '✓ Added background to spec/features/api.feature',
     },
@@ -65,7 +71,12 @@ const config: CommandHelpConfig = {
         '# Running add-background again replaces the existing Background\nfspec add-background login "As a premium user\\nI want to login with SSO\\nSo that I can use corporate credentials"',
     },
   ],
-  relatedCommands: ['create-feature', 'show-feature', 'add-scenario', 'validate'],
+  relatedCommands: [
+    'create-feature',
+    'show-feature',
+    'add-scenario',
+    'validate',
+  ],
   notes: [
     'Background sections appear before all scenarios in a feature',
     'If a Background already exists, it will be replaced',

@@ -46,7 +46,10 @@ describe('Feature: Hook configuration schema and validation', () => {
           },
         })
       );
-      await writeFile(join(testDir, 'spec/hooks/lint.sh'), '#!/bin/bash\necho "lint"');
+      await writeFile(
+        join(testDir, 'spec/hooks/lint.sh'),
+        '#!/bin/bash\necho "lint"'
+      );
 
       // When I load the hook configuration
       const config = await loadHookConfig(testDir);
@@ -129,17 +132,24 @@ describe('Feature: Hook configuration schema and validation', () => {
       const config = await loadHookConfig(testDir);
 
       // Then the hook "security" should have condition tags set to ["@security"]
-      expect(config.hooks['post-implementing'][0].condition?.tags).toEqual(['@security']);
+      expect(config.hooks['post-implementing'][0].condition?.tags).toEqual([
+        '@security',
+      ]);
 
       // And the hook "security" should have condition prefix set to ["AUTH"]
-      expect(config.hooks['post-implementing'][0].condition?.prefix).toEqual(['AUTH']);
+      expect(config.hooks['post-implementing'][0].condition?.prefix).toEqual([
+        'AUTH',
+      ]);
     });
   });
 
   describe('Scenario: Reject invalid JSON configuration', () => {
     it('should throw error for invalid JSON', async () => {
       // Given I have a file "spec/fspec-hooks.json" with invalid JSON content
-      await writeFile(join(testDir, 'spec/fspec-hooks.json'), '{ invalid json }');
+      await writeFile(
+        join(testDir, 'spec/fspec-hooks.json'),
+        '{ invalid json }'
+      );
 
       // When I try to load the hook configuration
       // Then an error should be thrown
@@ -149,7 +159,9 @@ describe('Feature: Hook configuration schema and validation', () => {
       await expect(loadHookConfig(testDir)).rejects.toThrow(/Invalid JSON/i);
 
       // And the error message should be helpful
-      await expect(loadHookConfig(testDir)).rejects.toThrow(/fspec-hooks\.json/);
+      await expect(loadHookConfig(testDir)).rejects.toThrow(
+        /fspec-hooks\.json/
+      );
     });
   });
 
@@ -202,7 +214,10 @@ describe('Feature: Hook configuration schema and validation', () => {
           },
         })
       );
-      await writeFile(join(testDir, 'spec/hooks/lint.sh'), '#!/bin/bash\necho "lint"');
+      await writeFile(
+        join(testDir, 'spec/hooks/lint.sh'),
+        '#!/bin/bash\necho "lint"'
+      );
 
       // When I load the hook configuration
       const config = await loadHookConfig(testDir);

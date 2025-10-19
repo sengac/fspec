@@ -27,7 +27,10 @@ export async function auditCoverage(
 ): Promise<AuditCoverageResult> {
   const cwd = options.cwd || process.cwd();
   const featuresDir = join(cwd, 'spec', 'features');
-  const coverageFilePath = join(featuresDir, `${options.featureName}.feature.coverage`);
+  const coverageFilePath = join(
+    featuresDir,
+    `${options.featureName}.feature.coverage`
+  );
 
   // Check if coverage file exists
   if (!existsSync(coverageFilePath)) {
@@ -43,7 +46,8 @@ export async function auditCoverage(
 
   // Collect all files referenced in coverage
   const allFiles: string[] = [];
-  const missingFiles: Array<{ file: string; type: 'test' | 'implementation' }> = [];
+  const missingFiles: Array<{ file: string; type: 'test' | 'implementation' }> =
+    [];
 
   for (const scenario of coverage.scenarios) {
     // Check test mappings
@@ -70,7 +74,9 @@ export async function auditCoverage(
 
   if (missingFiles.length === 0) {
     // All files found
-    output += chalk.green(`✅ All files found (${allFiles.length}/${allFiles.length})`);
+    output += chalk.green(
+      `✅ All files found (${allFiles.length}/${allFiles.length})`
+    );
     output += '\n';
     output += chalk.green('All mappings valid');
 
@@ -119,7 +125,12 @@ export async function auditCoverageCommand(featureName: string): Promise<void> {
 export function registerAuditCoverageCommand(program: Command): void {
   program
     .command('audit-coverage')
-    .description('Audit coverage file to verify test and implementation files exist')
-    .argument('<feature-name>', 'Feature name (e.g., "user-login" for user-login.feature.coverage)')
+    .description(
+      'Audit coverage file to verify test and implementation files exist'
+    )
+    .argument(
+      '<feature-name>',
+      'Feature name (e.g., "user-login" for user-login.feature.coverage)'
+    )
     .action(auditCoverageCommand);
 }

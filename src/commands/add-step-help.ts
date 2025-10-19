@@ -28,7 +28,8 @@ const config: CommandHelpConfig = {
   ],
   examples: [
     {
-      command: 'fspec add-step spec/features/login.feature "Login with valid credentials" given "I am on the login page"',
+      command:
+        'fspec add-step spec/features/login.feature "Login with valid credentials" given "I am on the login page"',
       description: 'Add given step',
       output: '✓ Added step to scenario',
     },

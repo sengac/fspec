@@ -259,7 +259,9 @@ describe('Feature: Parent Work Unit Validation (BUG-006)', () => {
           status: 'done',
           cwd: testDir,
         })
-      ).rejects.toThrow(/Cannot mark parent as done while children are incomplete/);
+      ).rejects.toThrow(
+        /Cannot mark parent as done while children are incomplete/
+      );
     });
   });
 });

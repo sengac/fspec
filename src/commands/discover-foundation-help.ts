@@ -15,13 +15,11 @@ const config: CommandHelpConfig = {
     },
     {
       flag: '--finalize',
-      description:
-        'Finalize foundation.json from edited draft file',
+      description: 'Finalize foundation.json from edited draft file',
     },
     {
       flag: '--draft-path <path>',
-      description:
-        'Path to draft file (default: spec/foundation.json.draft)',
+      description: 'Path to draft file (default: spec/foundation.json.draft)',
     },
   ],
   workflow: [
@@ -86,7 +84,8 @@ Foundation is ready.`,
     },
     {
       command: 'fspec discover-foundation --finalize',
-      description: 'Finalize with incomplete draft shows detailed validation errors',
+      description:
+        'Finalize with incomplete draft shows detailed validation errors',
       output: `✗ Foundation validation failed
 
 Schema validation failed. Missing required: solutionSpace.capabilities, personas[0].name

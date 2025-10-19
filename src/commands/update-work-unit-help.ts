@@ -82,8 +82,7 @@ const config: CommandHelpConfig = {
       fix: 'Cannot set parent to a work unit that is already a descendant. Check hierarchy with: fspec show-work-unit <id>',
     },
     {
-      error:
-        'Work item type is immutable and cannot be changed after creation',
+      error: 'Work item type is immutable and cannot be changed after creation',
       fix: 'Delete this work unit and create a new one with the correct type (story/bug/task)',
     },
   ],

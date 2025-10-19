@@ -8,7 +8,8 @@ const config: CommandHelpConfig = {
     {
       command: 'fspec list-epics',
       description: 'List all epics',
-      output: 'user-management - User Management Features\nauth - Authentication System\n\nFound 2 epics',
+      output:
+        'user-management - User Management Features\nauth - Authentication System\n\nFound 2 epics',
     },
   ],
   relatedCommands: ['create-epic', 'show-epic', 'delete-epic'],

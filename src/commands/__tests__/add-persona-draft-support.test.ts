@@ -99,7 +99,7 @@ describe('Feature: add-persona draft support', () => {
       await writeFile(
         foundationPath,
         JSON.stringify(foundation, null, 2),
-        'utf-8',
+        'utf-8'
       );
 
       // When I run `fspec add-persona "User" "End users" --goal "Use the app"`
@@ -107,7 +107,7 @@ describe('Feature: add-persona draft support', () => {
 
       // Then the persona should be added to spec/foundation.json
       const updatedFoundation = JSON.parse(
-        await readFile(foundationPath, 'utf-8'),
+        await readFile(foundationPath, 'utf-8')
       );
       expect(updatedFoundation.personas).toHaveLength(1);
       expect(updatedFoundation.personas[0]).toEqual({
@@ -126,7 +126,7 @@ describe('Feature: add-persona draft support', () => {
       // When I run `fspec add-persona "Developer" "Engineers" --goal "Build"`
       // Then the command should throw with helpful error
       await expect(
-        addPersona(testDir, 'Developer', 'Engineers', ['Build']),
+        addPersona(testDir, 'Developer', 'Engineers', ['Build'])
       ).rejects.toThrow('foundation.json not found');
     });
   });

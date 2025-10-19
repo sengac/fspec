@@ -50,7 +50,7 @@ describe('Feature: Implement Interactive Questionnaire', () => {
       // When questionnaire displays personas question
       const questionnaire = runQuestionnaire(options);
       const personasQuestionIndex = questionnaire.questions.findIndex(
-        (q) => q.id === 'primary-users'
+        q => q.id === 'primary-users'
       );
       const display = questionnaire.formatQuestion(personasQuestionIndex);
 
@@ -93,7 +93,7 @@ describe('Feature: Implement Interactive Questionnaire', () => {
         mode: 'interactive',
       };
       const questionnaire = runQuestionnaire(options);
-      const requiredQuestion = questionnaire.questions.find((q) => q.required);
+      const requiredQuestion = questionnaire.questions.find(q => q.required);
 
       // When I submit an empty answer
       const validation = questionnaire.validate('', requiredQuestion!.id);

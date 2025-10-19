@@ -105,7 +105,9 @@ describe('Feature: Command Help System', () => {
 
       // And the output should include a "TYPICAL WORKFLOW" section mentioning "backlog → specifying" flow
       expect(result.stdout).toMatch(/typical workflow|workflow/i);
-      expect(result.stdout).toMatch(/backlog.*specifying|backlog.*→.*specifying/i);
+      expect(result.stdout).toMatch(
+        /backlog.*specifying|backlog.*→.*specifying/i
+      );
     });
   });
 

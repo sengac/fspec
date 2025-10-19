@@ -14,7 +14,10 @@ describe('Feature: Remove automated project type detection', () => {
   describe('Scenario: Remove automated detection code', () => {
     it('should verify automated-discovery-code-analysis.ts is deleted', () => {
       // Given automated detection code should be removed
-      const filePath = join(__dirname, '../automated-discovery-code-analysis.ts');
+      const filePath = join(
+        __dirname,
+        '../automated-discovery-code-analysis.ts'
+      );
 
       // When checking if file exists
       const fileExists = existsSync(filePath);
@@ -26,4 +29,3 @@ describe('Feature: Remove automated project type detection', () => {
     });
   });
 });
-

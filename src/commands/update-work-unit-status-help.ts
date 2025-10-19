@@ -29,11 +29,13 @@ const updateWorkUnitStatusHelp: CommandHelpConfig = {
   options: [
     {
       name: '--reason <text>',
-      description: 'Reason for status change (optional, added to state history)',
+      description:
+        'Reason for status change (optional, added to state history)',
     },
     {
       name: '--blocked-reason <text>',
-      description: 'Reason for blocked status (required when status is "blocked")',
+      description:
+        'Reason for blocked status (required when status is "blocked")',
     },
     {
       name: '--skip-temporal-validation',
@@ -44,16 +46,19 @@ const updateWorkUnitStatusHelp: CommandHelpConfig = {
   examples: [
     {
       command: 'fspec update-work-unit-status AUTH-001 specifying',
-      description: 'Move to specifying (start Example Mapping and write feature files)',
+      description:
+        'Move to specifying (start Example Mapping and write feature files)',
       output: '✓ Work unit AUTH-001 status updated to specifying',
     },
     {
-      command: 'fspec update-work-unit-status AUTH-001 blocked --blocked-reason="Waiting for API design"',
+      command:
+        'fspec update-work-unit-status AUTH-001 blocked --blocked-reason="Waiting for API design"',
       description: 'Mark work unit as blocked with reason',
       output: '✓ Work unit AUTH-001 status updated to blocked',
     },
     {
-      command: 'fspec update-work-unit-status LEGACY-001 testing --skip-temporal-validation',
+      command:
+        'fspec update-work-unit-status LEGACY-001 testing --skip-temporal-validation',
       description: 'Import existing work and skip temporal validation',
       output: '✓ Work unit LEGACY-001 status updated to testing',
     },

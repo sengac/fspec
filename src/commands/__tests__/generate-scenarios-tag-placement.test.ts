@@ -93,10 +93,14 @@ describe('Feature: Remove work unit ID tags from generate-scenarios', () => {
 
       // Find the feature-level tags (before "Feature:" keyword)
       const featureLine = lines.findIndex(line => line.startsWith('Feature:'));
-      const featureLevelTags = lines.slice(0, featureLine).filter(line => line.trim().startsWith('@'));
+      const featureLevelTags = lines
+        .slice(0, featureLine)
+        .filter(line => line.trim().startsWith('@'));
 
       // Verify @TEST-001 is present at feature level
-      expect(featureLevelTags.some(tag => tag.includes('@TEST-001'))).toBe(true);
+      expect(featureLevelTags.some(tag => tag.includes('@TEST-001'))).toBe(
+        true
+      );
 
       // And none of the generated scenarios should have @TEST-001 as a scenario-level tag
       const scenarioLines = lines
@@ -106,13 +110,14 @@ describe('Feature: Remove work unit ID tags from generate-scenarios', () => {
       for (const { line, index } of scenarioLines) {
         // Check if there are any tags on the line(s) immediately before this scenario
         const linesBefore = lines.slice(Math.max(0, index - 5), index);
-        const scenarioLevelTags = linesBefore.filter(l =>
-          l.trim().startsWith('@') &&
-          l.trim().startsWith('  @') // Scenario-level tags are indented
+        const scenarioLevelTags = linesBefore.filter(
+          l => l.trim().startsWith('@') && l.trim().startsWith('  @') // Scenario-level tags are indented
         );
 
         // Verify no scenario-level tags contain @TEST-001
-        const hasWorkUnitIdTag = scenarioLevelTags.some(tag => tag.includes('@TEST-001'));
+        const hasWorkUnitIdTag = scenarioLevelTags.some(tag =>
+          tag.includes('@TEST-001')
+        );
         expect(hasWorkUnitIdTag).toBe(false);
       }
     });

@@ -4,10 +4,15 @@ import { join } from 'path';
 import { tmpdir } from 'os';
 import {
   validateFoundationJson,
+  validateFoundationObject,
   validateTagsJson,
-  validateJson,
+  validateTagsObject,
+  formatValidationErrors,
 } from '../json-schema';
-import { createMinimalFoundation, createCompleteFoundation } from '../../test-helpers/foundation-fixtures';
+import {
+  createMinimalFoundation,
+  createCompleteFoundation,
+} from '../../test-helpers/foundation-fixtures';
 
 describe('Feature: Validate JSON Files Against Schemas', () => {
   let tmpDir: string;
@@ -29,28 +34,25 @@ describe('Feature: Validate JSON Files Against Schemas', () => {
     await rm(tmpDir, { recursive: true, force: true });
   });
 
-  describe('Scenario: Validate foundation.json against schema', () => {
-    it('should exit with code 0 and display success message for valid foundation.json', async () => {
-      // Given I have a file "spec/foundation.json" with valid structure
+  describe('Scenario: Validate valid foundation.json', () => {
+    it('should pass validation and return no errors', () => {
+      // Given I have a foundation.json object with valid structure
       const validFoundation = createCompleteFoundation();
 
-      await writeFile(
-        foundationJsonPath,
-        JSON.stringify(validFoundation, null, 2)
-      );
+      // When the validation utility validates it against foundation.schema.json
+      const result = validateFoundationObject(validFoundation);
 
-      // When I run `fspec validate-json spec/foundation.json`
-      const result = await validateFoundationJson(foundationJsonPath);
-
-      // Then the command should exit with code 0
+      // Then the validation should pass
       expect(result.valid).toBe(true);
+
+      // And no errors should be returned
       expect(result.errors).toEqual([]);
     });
   });
 
   describe('Scenario: Detect missing required field in foundation.json', () => {
-    it('should exit with code 1 and show validation error for missing required field', async () => {
-      // Given I have a file "spec/foundation.json" with missing required field "project.name"
+    it('should exit with code 1 and show validation error for missing required field', () => {
+      // Given I have a foundation.json object missing required field "project.name"
       const invalidFoundation = {
         version: '2.0.0',
         project: {
@@ -71,25 +73,24 @@ describe('Feature: Validate JSON Files Against Schemas', () => {
         },
       };
 
-      await writeFile(
-        foundationJsonPath,
-        JSON.stringify(invalidFoundation, null, 2)
-      );
+      // When the validation utility validates it against foundation.schema.json
+      const result = validateFoundationObject(invalidFoundation);
 
-      // When I run `fspec validate-json spec/foundation.json`
-      const result = await validateFoundationJson(foundationJsonPath);
-
-      // Then the command should exit with code 1
+      // Then the validation should fail
       expect(result.valid).toBe(false);
 
-      // And the output should contain validation errors
-      expect(result.errors.length).toBeGreaterThan(0);
+      // And the error should indicate "/project" path
+      expect(result.errors.some(e => e.instancePath === '/project')).toBe(true);
+
+      // And the error should mention "must have required property 'name'"
+      const projectError = result.errors.find(e => e.instancePath === '/project');
+      expect(projectError?.message).toContain("must have required property 'name'");
     });
   });
 
-  describe('Scenario: Validate tags.json against schema', () => {
-    it('should exit with code 0 and display success message for valid tags.json', async () => {
-      // Given I have a file "spec/tags.json" with valid structure
+  describe('Scenario: Validate valid tags.json', () => {
+    it('should pass validation and return no errors', () => {
+      // Given I have a tags.json object with valid structure
       const validTags = {
         $schema: './schemas/tags.schema.json',
         categories: [
@@ -189,20 +190,20 @@ describe('Feature: Validate JSON Files Against Schemas', () => {
         ],
       };
 
-      await writeFile(tagsJsonPath, JSON.stringify(validTags, null, 2));
+      // When the validation utility validates it against tags.schema.json
+      const result = validateTagsObject(validTags);
 
-      // When I run `fspec validate-json spec/tags.json`
-      const result = await validateTagsJson(tagsJsonPath);
-
-      // Then the command should exit with code 0
+      // Then the validation should pass
       expect(result.valid).toBe(true);
+
+      // And no errors should be returned
       expect(result.errors).toEqual([]);
     });
   });
 
   describe('Scenario: Detect invalid tag name format', () => {
-    it('should exit with code 1 for tag name without @ prefix', async () => {
-      // Given I have a file "spec/tags.json"
+    it('should fail validation for tag name without @ prefix', () => {
+      // Given I have a tags.json object
       // And it contains a tag "phase1" without @ prefix
       const invalidTags = {
         $schema: './schemas/tags.schema.json',
@@ -254,81 +255,23 @@ describe('Feature: Validate JSON Files Against Schemas', () => {
         references: [],
       };
 
-      await writeFile(tagsJsonPath, JSON.stringify(invalidTags, null, 2));
+      // When the validation utility validates it against tags.schema.json
+      const result = validateTagsObject(invalidTags);
 
-      // When I run `fspec validate-json spec/tags.json`
-      const result = await validateTagsJson(tagsJsonPath);
-
-      // Then the command should exit with code 1
+      // Then the validation should fail
       expect(result.valid).toBe(false);
 
-      // And the output should contain "Validation error at /categories/0/tags/0/name"
+      // And the error should indicate the tag name field path
       const nameError = result.errors.find(err =>
         err.instancePath.includes('/categories/0/tags/0/name')
       );
       expect(nameError).toBeDefined();
 
-      // And the output should contain "must match pattern"
+      // And the error should mention pattern requirement "^@[a-z0-9-]+$"
       expect(nameError?.message).toContain('pattern');
     });
   });
 
-  describe('Scenario: Validate all JSON files at once', () => {
-    it('should validate both foundation.json and tags.json', async () => {
-      // Given I have "spec/foundation.json" and "spec/tags.json"
-      const validFoundation = createMinimalFoundation();
-
-      const validTags = {
-        $schema: './schemas/tags.schema.json',
-        categories: [],
-        combinationExamples: [],
-        usageGuidelines: {
-          requiredCombinations: {
-            title: 'Test',
-            requirements: [],
-            minimumExample: 'test',
-          },
-          recommendedCombinations: {
-            title: 'Test',
-            includes: [],
-            recommendedExample: 'test',
-          },
-          orderingConvention: { title: 'Test', order: [], example: 'test' },
-        },
-        addingNewTags: {
-          process: [],
-          namingConventions: [],
-          antiPatterns: { dont: [], do: [] },
-        },
-        queries: { title: 'Test', examples: [] },
-        statistics: {
-          lastUpdated: '2025-01-15T10:30:00Z',
-          phaseStats: [],
-          componentStats: [],
-          featureGroupStats: [],
-          updateCommand: 'test',
-        },
-        validation: { rules: [], commands: [] },
-        references: [],
-      };
-
-      await writeFile(
-        foundationJsonPath,
-        JSON.stringify(validFoundation, null, 2)
-      );
-      await writeFile(tagsJsonPath, JSON.stringify(validTags, null, 2));
-
-      // When I run `fspec validate-json`
-      const results = await validateJson(tmpDir);
-
-      // Then the command should validate both files
-      expect(results.length).toBe(2);
-
-      // And if all valid, exit with code 0
-      const allValid = results.every(r => r.valid);
-      expect(allValid).toBe(true);
-    });
-  });
 
   describe('Scenario: Handle malformed JSON file', () => {
     it('should throw a SyntaxError for invalid JSON syntax', async () => {
@@ -354,43 +297,37 @@ describe('Feature: Validate JSON Files Against Schemas', () => {
     });
   });
 
-  describe('Scenario: Show detailed validation errors with context', () => {
-    it('should list all validation errors with JSON paths', async () => {
-      // Given I have a file "spec/foundation.json" with multiple validation errors
+  describe('Scenario: Format validation errors for display', () => {
+    it('should format errors with JSON path and human-readable messages', () => {
+      // Given I have multiple validation errors from Ajv
       const invalidFoundation = {
-        $schema: './schemas/foundation.schema.json',
-        // Missing required field: project
-        whatWeAreBuilding: {
-          // Missing required fields
+        version: '2.0.0',
+        project: {
+          // Missing required field: name
         },
         // Missing other required top-level fields
       };
 
-      await writeFile(
-        foundationJsonPath,
-        JSON.stringify(invalidFoundation, null, 2)
-      );
+      const result = validateFoundationObject(invalidFoundation);
+      expect(result.errors.length).toBeGreaterThan(0); // Ensure we have errors
 
-      // When I run `fspec validate-json spec/foundation.json`
-      const result = await validateFoundationJson(foundationJsonPath);
+      // When I format the errors for display
+      const formattedErrors = formatValidationErrors(result.errors);
 
-      // Then the output should list all validation errors
-      expect(result.errors.length).toBeGreaterThan(0);
-
-      // And each error should show the JSON path
-      result.errors.forEach(error => {
-        expect(error).toHaveProperty('instancePath');
+      // Then each error should show the JSON path
+      formattedErrors.forEach(errorMessage => {
+        expect(errorMessage).toMatch(/Validation error at .+:/);
       });
 
       // And each error should show the validation rule violated
-      result.errors.forEach(error => {
-        expect(error).toHaveProperty('message');
+      formattedErrors.forEach(errorMessage => {
+        expect(errorMessage).toContain('must');
       });
 
-      // And each error should show the expected value or format
-      result.errors.forEach(error => {
-        expect(error.message).toBeTruthy();
-      });
+      // And each error should be human-readable
+      const firstError = formattedErrors[0];
+      expect(firstError).toContain('Validation error at');
+      expect(firstError).toContain(':');
     });
   });
 });

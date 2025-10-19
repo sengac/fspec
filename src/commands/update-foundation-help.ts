@@ -2,15 +2,19 @@ import type { CommandHelpConfig } from '../utils/help-formatter';
 
 const config: CommandHelpConfig = {
   name: 'update-foundation',
-  description: 'Update section content in foundation.json or foundation.json.draft during discovery',
+  description:
+    'Update section content in foundation.json or foundation.json.draft during discovery',
   usage: 'fspec update-foundation <section> <content>',
   whenToUse:
     'Use this command during draft-driven discovery workflow (fspec discover-foundation) to fill placeholder fields, OR to update an existing foundation.json. The command automatically detects which file to update.',
-  prerequisites: ['EITHER spec/foundation.json.draft (during discovery) OR spec/foundation.json (after discovery) exists'],
+  prerequisites: [
+    'EITHER spec/foundation.json.draft (during discovery) OR spec/foundation.json (after discovery) exists',
+  ],
   arguments: [
     {
       name: 'section',
-      description: 'Section name or field path (e.g., "projectVision", "problemDefinition", "solutionOverview")',
+      description:
+        'Section name or field path (e.g., "projectVision", "problemDefinition", "solutionOverview")',
       required: true,
     },
     {
@@ -23,28 +27,37 @@ const config: CommandHelpConfig = {
   examples: [
     {
       command: 'fspec update-foundation projectName "My Project"',
-      description: 'Update project name during discovery (updates draft if it exists)',
-      output: '✓ Updated "projectName" in foundation.json.draft\n  Updated: spec/foundation.json.draft',
+      description:
+        'Update project name during discovery (updates draft if it exists)',
+      output:
+        '✓ Updated "projectName" in foundation.json.draft\n  Updated: spec/foundation.json.draft',
     },
     {
-      command: 'fspec update-foundation projectVision "CLI tool for AI agents to manage Gherkin specs using ACDD"',
+      command:
+        'fspec update-foundation projectVision "CLI tool for AI agents to manage Gherkin specs using ACDD"',
       description: 'Update project vision (after discovery completes)',
-      output: '✓ Updated "projectVision" section in FOUNDATION.md\n  Updated: spec/foundation.json\n  Regenerated: spec/FOUNDATION.md',
+      output:
+        '✓ Updated "projectVision" section in FOUNDATION.md\n  Updated: spec/foundation.json\n  Regenerated: spec/FOUNDATION.md',
     },
     {
-      command: 'fspec update-foundation problemDefinition "AI agents lack structured workflow for spec management"',
+      command:
+        'fspec update-foundation problemDefinition "AI agents lack structured workflow for spec management"',
       description: 'Update problem definition during discovery',
-      output: '✓ Updated "problemDefinition" in foundation.json.draft\n  Updated: spec/foundation.json.draft',
+      output:
+        '✓ Updated "problemDefinition" in foundation.json.draft\n  Updated: spec/foundation.json.draft',
     },
     {
-      command: 'fspec update-foundation solutionOverview "Standardized CLI with Gherkin specs and ACDD workflow"',
+      command:
+        'fspec update-foundation solutionOverview "Standardized CLI with Gherkin specs and ACDD workflow"',
       description: 'Update solution overview',
-      output: '✓ Updated "solutionOverview" section in FOUNDATION.md\n  Updated: spec/foundation.json\n  Regenerated: spec/FOUNDATION.md',
+      output:
+        '✓ Updated "solutionOverview" section in FOUNDATION.md\n  Updated: spec/foundation.json\n  Regenerated: spec/FOUNDATION.md',
     },
   ],
   commonErrors: [
     {
-      error: 'Error: Unknown section: "invalidSection". Use field names like: projectOverview, problemDefinition, etc.',
+      error:
+        'Error: Unknown section: "invalidSection". Use field names like: projectOverview, problemDefinition, etc.',
       fix: 'Use valid section names. Common sections: projectName, projectVision, projectType, problemDefinition, problemImpact, solutionOverview',
     },
     {

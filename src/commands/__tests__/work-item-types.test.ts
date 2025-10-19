@@ -359,13 +359,13 @@ describe('Feature: Work item types for stories, tasks, and bugs', () => {
       });
 
       // Then the output should include "CLEAN-001"
-      expect(result.workUnits.some((wu) => wu.id === 'CLEAN-001')).toBe(true);
+      expect(result.workUnits.some(wu => wu.id === 'CLEAN-001')).toBe(true);
 
       // And the output should not include "AUTH-001"
-      expect(result.workUnits.some((wu) => wu.id === 'AUTH-001')).toBe(false);
+      expect(result.workUnits.some(wu => wu.id === 'AUTH-001')).toBe(false);
 
       // And the output should not include "BUG-001"
-      expect(result.workUnits.some((wu) => wu.id === 'BUG-001')).toBe(false);
+      expect(result.workUnits.some(wu => wu.id === 'BUG-001')).toBe(false);
     });
   });
 
@@ -934,10 +934,10 @@ Feature: User Authentication
       });
 
       // Then the JSON output should only include work units with type "task"
-      expect(result.workUnits.every((wu) => wu.type === 'task')).toBe(true);
-      expect(result.workUnits.some((wu) => wu.id === 'CLEAN-001')).toBe(true);
-      expect(result.workUnits.some((wu) => wu.id === 'AUTH-001')).toBe(false);
-      expect(result.workUnits.some((wu) => wu.id === 'BUG-001')).toBe(false);
+      expect(result.workUnits.every(wu => wu.type === 'task')).toBe(true);
+      expect(result.workUnits.some(wu => wu.id === 'CLEAN-001')).toBe(true);
+      expect(result.workUnits.some(wu => wu.id === 'AUTH-001')).toBe(false);
+      expect(result.workUnits.some(wu => wu.id === 'BUG-001')).toBe(false);
     });
   });
 

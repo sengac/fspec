@@ -80,7 +80,9 @@ export function registerRemoveExampleCommand(program: Command): void {
           workUnitId,
           index: parseInt(index, 10),
         });
-        console.log(chalk.green(`✓ Removed example: "${result.removedExample}"`));
+        console.log(
+          chalk.green(`✓ Removed example: "${result.removedExample}"`)
+        );
       } catch (error: any) {
         console.error(chalk.red('✗ Failed to remove example:'), error.message);
         process.exit(1);

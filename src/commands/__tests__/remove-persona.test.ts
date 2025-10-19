@@ -115,7 +115,7 @@ describe('Feature: remove-persona command', () => {
       // When I run `fspec remove-persona "NonExistent"`
       // Then the command should exit with code 1
       await expect(removePersona(testDir, 'NonExistent')).rejects.toThrow(
-        'Persona "NonExistent" not found',
+        'Persona "NonExistent" not found'
       );
     });
   });

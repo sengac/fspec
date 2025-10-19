@@ -31,7 +31,13 @@ describe('Feature: Kanban Workflow State Management', () => {
         JSON.stringify({
           version: '2.0.0',
           project: { name: 'Test', vision: 'Test', projectType: 'cli-tool' },
-          problemSpace: { primaryProblem: { title: 'Test', description: 'Test', impact: 'high' } },
+          problemSpace: {
+            primaryProblem: {
+              title: 'Test',
+              description: 'Test',
+              impact: 'high',
+            },
+          },
           solutionSpace: { overview: 'Test', capabilities: [] },
           personas: [],
         })
@@ -164,7 +170,13 @@ describe('Feature: Kanban Workflow State Management', () => {
         JSON.stringify({
           version: '2.0.0',
           project: { name: 'Test', vision: 'Test', projectType: 'cli-tool' },
-          problemSpace: { primaryProblem: { title: 'Test', description: 'Test', impact: 'high' } },
+          problemSpace: {
+            primaryProblem: {
+              title: 'Test',
+              description: 'Test',
+              impact: 'high',
+            },
+          },
           solutionSpace: { overview: 'Test', capabilities: [] },
           personas: [],
         })
@@ -269,7 +281,13 @@ describe('Feature: Kanban Workflow State Management', () => {
         JSON.stringify({
           version: '2.0.0',
           project: { name: 'Test', vision: 'Test', projectType: 'cli-tool' },
-          problemSpace: { primaryProblem: { title: 'Test', description: 'Test', impact: 'high' } },
+          problemSpace: {
+            primaryProblem: {
+              title: 'Test',
+              description: 'Test',
+              impact: 'high',
+            },
+          },
           solutionSpace: { overview: 'Test', capabilities: [] },
           personas: [],
         })

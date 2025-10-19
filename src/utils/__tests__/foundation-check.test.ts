@@ -81,8 +81,18 @@ describe('Feature: Foundation existence check in commands', () => {
         foundationPath,
         JSON.stringify({
           version: '2.0.0',
-          project: { name: 'Test', vision: 'Test vision', projectType: 'cli-tool' },
-          problemSpace: { primaryProblem: { title: 'Test', description: 'Test', impact: 'high' } },
+          project: {
+            name: 'Test',
+            vision: 'Test vision',
+            projectType: 'cli-tool',
+          },
+          problemSpace: {
+            primaryProblem: {
+              title: 'Test',
+              description: 'Test',
+              impact: 'high',
+            },
+          },
           solutionSpace: { overview: 'Test', capabilities: [] },
           personas: [],
         })
@@ -131,7 +141,10 @@ describe('Feature: Foundation missing error message is not imperative enough', (
       // (tmpDir has no foundation.json)
 
       // When AI agent attempts to create a work unit
-      const result = checkFoundationExists(tmpDir, 'fspec create-work-unit AUTH "Login"');
+      const result = checkFoundationExists(
+        tmpDir,
+        'fspec create-work-unit AUTH "Login"'
+      );
 
       // Then error message must contain "NEVER manually create foundation.json"
       expect(result.error).toContain('NEVER manually create foundation.json');
@@ -158,7 +171,9 @@ describe('Feature: Foundation missing error message is not imperative enough', (
       expect(result.error).toContain('AI analyzes codebase and fills fields');
 
       // And error must show "Step 3: fspec discover-foundation --finalize"
-      expect(result.error).toContain('Step 3: fspec discover-foundation --finalize');
+      expect(result.error).toContain(
+        'Step 3: fspec discover-foundation --finalize'
+      );
     });
   });
 });

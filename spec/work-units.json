@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-19T12:57:50.225Z"
+    "lastUpdated": "2025-10-19T21:40:53.643Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -7833,6 +7833,231 @@
       "updatedAt": "2025-10-19T12:58:26.949Z",
       "description": "When running 'fspec remove-question <id> <index>', the success message displays 'Removed question: [object Object]' instead of showing the actual question text that was removed",
       "children": []
+    },
+    "REV-001": {
+      "id": "REV-001",
+      "title": "Interactive reverse ACDD strategy planning command",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-19T20:57:37.321Z",
+      "updatedAt": "2025-10-19T21:51:43.660Z",
+      "description": "Refactor reverse ACDD workflow from prescriptive /rspec command to interactive strategy planning session. Implement 'fspec reverse' command that analyzes project state, detects gaps (missing features, tests, coverage, work units), offers strategic options, and guides AI step-by-step through gap-filling process. This command is a planning/guidance tool only - it does NOT execute reverse ACDD work itself, but helps AI make informed decisions about the best approach based on project state. Similar to discover-foundation interactive session with system-reminders.",
+      "epic": "reverse-acdd-refactor",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-19T20:57:42.682Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-19T21:06:32.964Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-19T21:09:44.583Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-19T21:18:12.503Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-19T21:39:19.514Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-19T21:39:29.035Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-19T21:50:29.445Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-19T21:51:43.661Z"
+        }
+      ],
+      "userStory": {
+        "role": "AI agent (Claude) working on legacy codebase",
+        "action": "plan and execute reverse ACDD strategy to fill specification/test gaps",
+        "benefit": "I can intelligently choose the right approach based on project state rather than following rigid instructions"
+      },
+      "rules": [
+        "Command must be interactive like discover-foundation (session-based with system-reminders)",
+        "Command analyzes project state but does NOT execute reverse ACDD itself - it only guides",
+        "Must detect gaps: missing features, missing tests, missing coverage mappings, missing work units",
+        "Must offer multiple strategies based on gap analysis (Spec Gap Filling, Test Gap Filling, Coverage Mapping, Full Reverse ACDD)",
+        "Must emit step-by-step guidance via system-reminders (NOT execute the steps)",
+        "Must replace /rspec command in .claude/commands/fspec.md and deprecate it",
+        "Must update spec/CLAUDE.md section on Reverse ACDD with new workflow",
+        "Session file must be deleted on completion (--complete) or reset (--reset)",
+        "State machine phases: analyzing → gap-detection → strategy-planning → executing → complete",
+        "Show summary with counts, paginate detailed gap list, suggest --strategy to narrow scope",
+        "Yes - include story point estimates in strategy suggestions (helps AI prioritize)",
+        "Yes - support --dry-run for preview analysis without creating session file",
+        "Must detect existing session and prevent overwrite - show status and suggest options (--continue, --status, --reset, --complete)",
+        "Must persist session state in OS temp directory (tmpdir) using project-specific hash for filename isolation - ephemeral, OS-managed cleanup",
+        "Must support CLI flags: --continue, --strategy=X, --status, --reset, --complete, --dry-run"
+      ],
+      "examples": [
+        "User runs 'fspec reverse' → command analyzes project → finds 3 test files without features → suggests Strategy A (Spec Gap Filling) via system-reminder",
+        "AI runs 'fspec reverse --strategy=A' → emits system-reminder with step 1 guidance → AI reads test file, creates feature, links coverage → AI runs 'fspec reverse --continue' → emits step 2 guidance",
+        "User runs 'fspec reverse --status' → shows current phase (executing), detected gaps (3 test files without features), chosen strategy (A), current step (2 of 3)",
+        "User runs 'fspec reverse --reset' → deletes session file → outputs 'Session reset' → user can start fresh with 'fspec reverse'",
+        "Project has features but no tests → analysis detects 2 feature files without tests → suggests Strategy B (Test Gap Filling) → guides AI through creating test skeletons with --skip-validation",
+        "Project has both features and tests but unmapped → analysis detects 5 scenarios without coverage links → suggests Strategy C (Coverage Mapping) → guides AI through linking existing tests to scenarios",
+        "Project has raw implementation code only (no features, no tests) → analysis detects 10 implementation files → suggests Strategy D (Full Reverse ACDD) → guides through creating features, tests, and work units from scratch",
+        "AI completes all steps → runs 'fspec reverse --complete' → command validates work done → deletes session file → emits system-reminder with completion summary",
+        "User runs 'fspec reverse' while session exists → command detects existing session → exits with error → shows current status → suggests --continue, --status, --reset, --complete → does NOT overwrite session"
+      ],
+      "questions": [
+        {
+          "text": "@human: Should the session file be human-readable JSON or optimized binary format?",
+          "selected": true,
+          "answer": "Human-readable JSON - easier to debug, inspect, and aligns with foundation.json pattern"
+        },
+        {
+          "text": "@human: Should we support parallel strategies (e.g., Strategy A + Strategy C simultaneously)?",
+          "selected": true,
+          "answer": "No parallel strategies in MVP - keep it simple. AI chooses one strategy, completes it, then can run reverse again for other gaps"
+        },
+        {
+          "text": "@human: How should we handle very large projects (100+ gaps detected)? Paginate output?",
+          "selected": true,
+          "answer": "Show summary with counts, paginate detailed gap list, suggest --strategy to narrow scope"
+        },
+        {
+          "text": "@human: Should --strategy=custom trigger an interactive Q&A session with the user?",
+          "selected": true,
+          "answer": "Defer --strategy=custom to Phase 2 - start with four predefined strategies (A, B, C, D)"
+        },
+        {
+          "text": "@human: Should we track time/effort estimates for each strategy in the guidance output?",
+          "selected": true,
+          "answer": "Yes - include story point estimates in strategy suggestions (helps AI prioritize)"
+        },
+        {
+          "text": "@human: Should the command support --dry-run mode to preview analysis without creating session?",
+          "selected": true,
+          "answer": "Yes - support --dry-run for preview analysis without creating session file"
+        }
+      ],
+      "architectureNotes": [
+        "State machine phases: analyzing → gap-detection → strategy-planning → executing → complete (similar to discover-foundation feedback loop)",
+        "System-reminders emitted at phase transitions and for step-by-step guidance (wrapped in <system-reminder> tags)",
+        "Reuses existing analysis utilities: file scanners (Glob), Gherkin parser, test file pattern matching",
+        "NO execution logic in command - all work done by AI using existing fspec commands (create-feature, link-coverage, etc.)",
+        "Integration point 1: .claude/commands/fspec.md must mention 'fspec reverse' and deprecate /rspec command",
+        "Integration point 2: spec/CLAUDE.md section 'Reverse ACDD for Existing Codebases' must be updated with new workflow",
+        "Strategy templates: A=Spec Gap Filling, B=Test Gap Filling, C=Coverage Mapping, D=Full Reverse ACDD (each has predefined guidance steps)",
+        "Session state stored in tmpdir()/fspec-reverse-{hash}.json where hash=sha256(projectRoot).substring(0,12) - ephemeral, OS-managed cleanup, zero project pollution"
+      ],
+      "attachments": [
+        "spec/attachments/REV-001/reverse-session-state-machine.mmd",
+        "spec/attachments/REV-001/strategy-decision-tree.mmd",
+        "spec/attachments/REV-001/reverse-session-sequence.mmd"
+      ],
+      "assumptions": [
+        "Human-readable JSON - easier to debug, inspect, and aligns with foundation.json pattern",
+        "No parallel strategies in MVP - keep it simple. AI chooses one strategy, completes it, then can run reverse again for other gaps",
+        "Defer --strategy=custom to Phase 2 - start with four predefined strategies (A, B, C, D)"
+      ],
+      "estimate": 13
+    },
+    "UX-001": {
+      "id": "UX-001",
+      "title": "System-reminder for missing scenarios in link-coverage",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-19T21:40:43.514Z",
+      "updatedAt": "2025-10-19T22:00:01.065Z",
+      "description": "When link-coverage fails because a scenario is not found in the coverage file but exists in the feature file, emit a system-reminder telling the AI to run generate-coverage first",
+      "epic": "cli-ux-improvements",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-19T21:40:52.678Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-19T21:52:58.263Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-19T21:54:10.182Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-19T21:59:49.858Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-19T22:00:01.066Z"
+        }
+      ],
+      "userStory": {
+        "role": "AI agent (Claude) using fspec",
+        "action": "receive helpful guidance when link-coverage fails due to missing scenarios",
+        "benefit": "I can quickly fix the issue without trial and error"
+      },
+      "rules": [
+        "When link-coverage fails with 'Scenario not found', check if scenario exists in feature file",
+        "If scenario exists in feature file but not in coverage file, emit system-reminder suggesting generate-coverage",
+        "System-reminder must be wrapped in <system-reminder> tags (visible to AI, invisible to user)",
+        "If scenario doesn't exist in feature file either, show normal error without system-reminder"
+      ],
+      "examples": [
+        "AI adds new scenario to feature file, runs link-coverage before generate-coverage → error with system-reminder: 'Run generate-coverage first'",
+        "AI tries to link non-existent scenario (typo in scenario name) → error without system-reminder, just shows available scenarios",
+        "Coverage file missing entirely → system-reminder suggests running generate-coverage to create it"
+      ],
+      "estimate": 3
+    },
+    "DOCS-002": {
+      "id": "DOCS-002",
+      "title": "Update all documentation to replace /rspec with fspec reverse",
+      "type": "task",
+      "status": "done",
+      "createdAt": "2025-10-19T22:25:10.476Z",
+      "updatedAt": "2025-10-19T22:51:53.017Z",
+      "description": "REV-001 implementation is complete but documentation still references deprecated /rspec command. Update all docs to use 'fspec reverse' instead.",
+      "epic": "reverse-acdd-refactor",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-19T22:25:15.775Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-19T22:26:02.269Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-19T22:45:25.166Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-19T22:51:53.017Z"
+        }
+      ],
+      "rules": [
+        "All references to /rspec command must be replaced with 'fspec reverse'",
+        "File .claude/commands/rspec.md must be deleted as it is deprecated by fspec reverse",
+        "Command fspec reverse must have comprehensive help file at src/commands/reverse-help.ts following CommandHelpConfig pattern",
+        "File src/commands/help.ts must include reverse command in command list",
+        "File spec/foundation.json must include Interactive Reverse ACDD capability with proper description",
+        "After foundation.json changes, spec/FOUNDATION.md must be regenerated using fspec generate-foundation-md"
+      ],
+      "examples": [
+        "Update .claude/commands/fspec.md: Replace '(see /rspec)' with '(see fspec reverse command)'",
+        "Update spec/CLAUDE.md section 'Reverse ACDD for Existing Codebases': Replace 'via /rspec command' with 'via fspec reverse command'",
+        "Update README.md: Replace '/rspec - For reverse engineering' with 'fspec reverse - Interactive strategy planning for reverse ACDD'",
+        "Create src/commands/reverse-help.ts with sections: name, description, usage, whenToUse, options (--continue, --strategy, --status, --reset, --complete, --dry-run), examples, commonErrors, typicalWorkflow",
+        "Add to foundation.json capabilities: {name: 'Interactive Reverse ACDD Strategy Planning', description: 'Analyzes project gaps and guides AI through reverse ACDD workflow with step-by-step system-reminders'}"
+      ]
     }
   },
   "states": {
@@ -7991,7 +8216,10 @@
       "DOCS-001",
       "COV-031",
       "HOOK-002",
-      "FEAT-016"
+      "FEAT-016",
+      "REV-001",
+      "UX-001",
+      "DOCS-002"
     ],
     "blocked": []
   }

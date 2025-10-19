@@ -20,7 +20,8 @@ const config: CommandHelpConfig = {
     {
       command: 'fspec board',
       description: 'Show full board',
-      output: '┌────────┬────────┬────────┬────────┬────────┬────────┐\n│BACKLOG │SPECIFY │TESTING │IMPL    │VALID   │DONE    │\n├────────┼────────┼────────┼────────┼────────┼────────┤\n│AUTH-003│AUTH-001│        │AUTH-002│        │UI-001  │',
+      output:
+        '┌────────┬────────┬────────┬────────┬────────┬────────┐\n│BACKLOG │SPECIFY │TESTING │IMPL    │VALID   │DONE    │\n├────────┼────────┼────────┼────────┼────────┼────────┤\n│AUTH-003│AUTH-001│        │AUTH-002│        │UI-001  │',
     },
   ],
   relatedCommands: ['list-work-units', 'update-work-unit-status'],

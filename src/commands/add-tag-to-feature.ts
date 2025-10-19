@@ -244,9 +244,14 @@ export async function addTagToFeature(
   const allTags = [...existingTags, ...tags];
   const hasPhaseTag = allTags.some(t => /^@phase\d+$/.test(t));
   const hasComponentTag = allTags.some(t =>
-    ['@cli', '@parser', '@validator', '@formatter', '@generator', '@file-ops'].includes(
-      t
-    )
+    [
+      '@cli',
+      '@parser',
+      '@validator',
+      '@formatter',
+      '@generator',
+      '@file-ops',
+    ].includes(t)
   );
   const hasFeatureGroupTag = allTags.some(t =>
     [
@@ -274,7 +279,10 @@ export async function addTagToFeature(
   }
 
   if (missingTags.length > 0) {
-    const reminder = getMissingRequiredTagsReminder(featureFilePath, missingTags);
+    const reminder = getMissingRequiredTagsReminder(
+      featureFilePath,
+      missingTags
+    );
     if (reminder) {
       systemReminders.push(reminder);
     }

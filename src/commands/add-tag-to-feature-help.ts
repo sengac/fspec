@@ -29,17 +29,25 @@ const config: CommandHelpConfig = {
       output: '✓ Added tag @phase1 to spec/features/login.feature',
     },
     {
-      command: 'fspec add-tag-to-feature spec/features/login.feature @phase1 @critical',
+      command:
+        'fspec add-tag-to-feature spec/features/login.feature @phase1 @critical',
       description: 'Add multiple tags',
       output: '✓ Added tags @phase1, @critical to spec/features/login.feature',
     },
     {
-      command: 'fspec add-tag-to-feature spec/features/login.feature @custom-tag --validate-registry',
+      command:
+        'fspec add-tag-to-feature spec/features/login.feature @custom-tag --validate-registry',
       description: 'Add tag with registry validation',
-      output: 'Error: Tag @custom-tag is not registered in spec/tags.json\nRegister it first with: fspec register-tag @custom-tag "Category" "Description"',
+      output:
+        'Error: Tag @custom-tag is not registered in spec/tags.json\nRegister it first with: fspec register-tag @custom-tag "Category" "Description"',
     },
   ],
-  relatedCommands: ['remove-tag-from-feature', 'list-feature-tags', 'add-tag-to-scenario', 'register-tag'],
+  relatedCommands: [
+    'remove-tag-from-feature',
+    'list-feature-tags',
+    'add-tag-to-scenario',
+    'register-tag',
+  ],
   notes: [
     'Tags must be registered first (unless --validate-registry is skipped)',
     'Duplicates are automatically ignored',

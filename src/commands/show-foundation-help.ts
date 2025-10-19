@@ -31,7 +31,8 @@ const config: CommandHelpConfig = {
     {
       command: 'fspec show-foundation --list-sections',
       description: 'List available sections',
-      output: 'Available sections:\n  - Architecture Diagrams\n  - System Overview\n  - Project Goals',
+      output:
+        'Available sections:\n  - Architecture Diagrams\n  - System Overview\n  - Project Goals',
     },
     {
       command: 'fspec show-foundation "Architecture Diagrams"',

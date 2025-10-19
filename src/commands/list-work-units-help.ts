@@ -2,10 +2,11 @@ import type { CommandHelpConfig } from '../utils/help-formatter';
 
 const listWorkUnitsHelp: CommandHelpConfig = {
   name: 'list-work-units',
-  description: 'List work units with optional filtering by status, prefix, or epic',
+  description:
+    'List work units with optional filtering by status, prefix, or epic',
   usage: 'fspec list-work-units [options]',
   whenToUse:
-    'Use this command when you need to view work units in the backlog, see what\'s in progress, or filter by specific criteria like status, prefix, or epic.',
+    "Use this command when you need to view work units in the backlog, see what's in progress, or filter by specific criteria like status, prefix, or epic.",
   options: [
     {
       flag: '-s, --status <status>',
@@ -14,8 +15,7 @@ const listWorkUnitsHelp: CommandHelpConfig = {
     },
     {
       flag: '--prefix <prefix>',
-      description:
-        'Filter by work unit prefix (e.g., AUTH, UI, API)',
+      description: 'Filter by work unit prefix (e.g., AUTH, UI, API)',
     },
     {
       flag: '--epic <epic>',
@@ -41,7 +41,12 @@ const listWorkUnitsHelp: CommandHelpConfig = {
   ],
   typicalWorkflow:
     'backlog → specifying → testing → implementing → validating → done. Use --status flag to see work units at each stage.',
-  relatedCommands: ['show-work-unit', 'create-work-unit', 'update-work-unit-status', 'board'],
+  relatedCommands: [
+    'show-work-unit',
+    'create-work-unit',
+    'update-work-unit-status',
+    'board',
+  ],
 };
 
 export default listWorkUnitsHelp;

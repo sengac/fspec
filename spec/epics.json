@@ -126,6 +126,26 @@
         "MCP-004",
         "MCP-005"
       ]
+    },
+    "reverse-acdd-refactor": {
+      "id": "reverse-acdd-refactor",
+      "title": "Reverse ACDD Refactor",
+      "createdAt": "2025-10-19T20:57:21.648Z",
+      "description": "Refactor reverse ACDD workflow from prescriptive /rspec command to interactive strategy planning session",
+      "workUnits": [
+        "REV-001",
+        "DOCS-002",
+        "DOCS-002"
+      ]
+    },
+    "cli-ux-improvements": {
+      "id": "cli-ux-improvements",
+      "title": "CLI User Experience Improvements",
+      "createdAt": "2025-10-19T21:40:41.616Z",
+      "description": "Enhancements to CLI usability, error messages, and AI agent guidance",
+      "workUnits": [
+        "UX-001"
+      ]
     }
   }
 }

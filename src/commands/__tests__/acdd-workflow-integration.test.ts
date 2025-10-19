@@ -75,11 +75,26 @@ describe('Feature: ACDD Workflow Integration', () => {
         JSON.stringify({
           featureFile: 'spec/features/user-login.feature',
           scenarios: [
-            { name: 'Scenario 1', testMappings: [{ file: 'test1.ts', lines: [1, 2] }] },
-            { name: 'Scenario 2', testMappings: [{ file: 'test2.ts', lines: [3, 4] }] },
-            { name: 'Scenario 3', testMappings: [{ file: 'test3.ts', lines: [5, 6] }] },
-            { name: 'Scenario 4', testMappings: [{ file: 'test4.ts', lines: [7, 8] }] },
-            { name: 'Scenario 5', testMappings: [{ file: 'test5.ts', lines: [9, 10] }] },
+            {
+              name: 'Scenario 1',
+              testMappings: [{ file: 'test1.ts', lines: [1, 2] }],
+            },
+            {
+              name: 'Scenario 2',
+              testMappings: [{ file: 'test2.ts', lines: [3, 4] }],
+            },
+            {
+              name: 'Scenario 3',
+              testMappings: [{ file: 'test3.ts', lines: [5, 6] }],
+            },
+            {
+              name: 'Scenario 4',
+              testMappings: [{ file: 'test4.ts', lines: [7, 8] }],
+            },
+            {
+              name: 'Scenario 5',
+              testMappings: [{ file: 'test5.ts', lines: [9, 10] }],
+            },
           ],
         })
       );
@@ -112,9 +127,18 @@ describe('Feature: ACDD Workflow Integration', () => {
         JSON.stringify({
           featureFile: 'spec/features/user-login.feature',
           scenarios: [
-            { name: 'Scenario 1', testMappings: [{ file: 'test1.ts', lines: [1, 2] }] },
-            { name: 'Scenario 2', testMappings: [{ file: 'test2.ts', lines: [3, 4] }] },
-            { name: 'Scenario 3', testMappings: [{ file: 'test3.ts', lines: [5, 6] }] },
+            {
+              name: 'Scenario 1',
+              testMappings: [{ file: 'test1.ts', lines: [1, 2] }],
+            },
+            {
+              name: 'Scenario 2',
+              testMappings: [{ file: 'test2.ts', lines: [3, 4] }],
+            },
+            {
+              name: 'Scenario 3',
+              testMappings: [{ file: 'test3.ts', lines: [5, 6] }],
+            },
             { name: 'Uncovered Scenario 1', testMappings: [] },
             { name: 'Uncovered Scenario 2', testMappings: [] },
           ],
@@ -142,7 +166,7 @@ describe('Feature: ACDD Workflow Integration', () => {
     });
   });
 
-  describe('Scenario: Allow status update when coverage file doesn\'t exist', () => {
+  describe("Scenario: Allow status update when coverage file doesn't exist", () => {
     it('should update work unit with warning when no coverage file exists', async () => {
       // Given I have a work unit "AUTH-001" linked to "user-login.feature"
       // (Already created in beforeEach)
@@ -162,7 +186,11 @@ describe('Feature: ACDD Workflow Integration', () => {
 
       // And the output should display a warning about missing coverage file
       expect(result.warnings).toBeDefined();
-      expect(result.warnings!.some((w: string) => w.includes('Coverage file not found'))).toBe(true);
+      expect(
+        result.warnings!.some((w: string) =>
+          w.includes('Coverage file not found')
+        )
+      ).toBe(true);
 
       // And the work unit status should be updated to "done"
       expect(result.message).toContain('done');

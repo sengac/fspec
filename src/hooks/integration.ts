@@ -81,7 +81,7 @@ export async function runCommandWithHooks<T>(
   }
 
   // Discover and filter pre-hooks
-  const preHooks = discoverHooks(config, preEvent).filter((hook) =>
+  const preHooks = discoverHooks(config, preEvent).filter(hook =>
     evaluateHookCondition(hook, hookContext, workUnit)
   );
 
@@ -98,7 +98,10 @@ export async function runCommandWithHooks<T>(
     // Format and display blocking hook failures
     preHookResults.forEach((result, index) => {
       if (preHooks[index].blocking && !result.success) {
-        const formatted = formatHookOutput(result, preHooks[index].blocking ?? false);
+        const formatted = formatHookOutput(
+          result,
+          preHooks[index].blocking ?? false
+        );
         output.push(formatted);
       }
     });
@@ -127,13 +130,17 @@ export async function runCommandWithHooks<T>(
   commandExecuted = true;
 
   // Discover and filter post-hooks
-  const postHooks = discoverHooks(config, postEvent).filter((hook) =>
+  const postHooks = discoverHooks(config, postEvent).filter(hook =>
     evaluateHookCondition(hook, hookContext, workUnit)
   );
 
   // Execute post-hooks
   hookContext.event = postEvent;
-  const postHookResults = await executeHooks(postHooks, hookContext, projectRoot);
+  const postHookResults = await executeHooks(
+    postHooks,
+    hookContext,
+    projectRoot
+  );
 
   // Check if any blocking post-hook failed
   const blockingPostHookFailed = postHookResults.some(
@@ -142,7 +149,10 @@ export async function runCommandWithHooks<T>(
 
   // Format and display hook output
   postHookResults.forEach((result, index) => {
-    const formatted = formatHookOutput(result, postHooks[index].blocking ?? false);
+    const formatted = formatHookOutput(
+      result,
+      postHooks[index].blocking ?? false
+    );
     if (formatted) {
       output.push(formatted);
     }

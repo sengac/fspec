@@ -54,7 +54,11 @@ describe('Feature: add-capability draft support', () => {
       await writeFile(draftPath, JSON.stringify(draft, null, 2), 'utf-8');
 
       // When I run `fspec add-capability "User Authentication" "Login and registration"`
-      await addCapability(testDir, 'User Authentication', 'Login and registration');
+      await addCapability(
+        testDir,
+        'User Authentication',
+        'Login and registration'
+      );
 
       // Then the capability should be added to spec/foundation.json.draft
       const updatedDraft = JSON.parse(await readFile(draftPath, 'utf-8'));
@@ -96,7 +100,7 @@ describe('Feature: add-capability draft support', () => {
       await writeFile(
         foundationPath,
         JSON.stringify(foundation, null, 2),
-        'utf-8',
+        'utf-8'
       );
 
       // When I run `fspec add-capability "Feature" "Description"`
@@ -104,7 +108,7 @@ describe('Feature: add-capability draft support', () => {
 
       // Then the capability should be added to spec/foundation.json
       const updatedFoundation = JSON.parse(
-        await readFile(foundationPath, 'utf-8'),
+        await readFile(foundationPath, 'utf-8')
       );
       expect(updatedFoundation.solutionSpace.capabilities).toHaveLength(1);
       expect(updatedFoundation.solutionSpace.capabilities[0]).toEqual({
@@ -122,7 +126,7 @@ describe('Feature: add-capability draft support', () => {
       // When I run `fspec add-capability "Feature" "Description"`
       // Then the command should throw with helpful error
       await expect(
-        addCapability(testDir, 'Feature', 'Description'),
+        addCapability(testDir, 'Feature', 'Description')
       ).rejects.toThrow('foundation.json not found');
     });
   });

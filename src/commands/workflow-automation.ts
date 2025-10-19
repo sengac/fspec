@@ -227,11 +227,26 @@ export async function workflowAutomation(
 export function registerWorkflowAutomationCommand(program: Command): void {
   program
     .command('workflow-automation')
-    .description('Workflow automation utilities for work units (record iterations, track tokens, auto-advance state, validate spec alignment)')
-    .argument('<action>', 'Action to perform: record-iteration, record-tokens, auto-advance, validate-alignment')
+    .description(
+      'Workflow automation utilities for work units (record iterations, track tokens, auto-advance state, validate spec alignment)'
+    )
+    .argument(
+      '<action>',
+      'Action to perform: record-iteration, record-tokens, auto-advance, validate-alignment'
+    )
     .argument('<work-unit-id>', 'Work unit ID (required for all actions)')
-    .option('--tokens <count>', 'Number of tokens to record (used with record-tokens)', (value: string) => parseInt(value, 10))
-    .option('--event <event>', 'Event triggering state change: tests-pass, validation-pass, specs-complete (used with auto-advance)')
-    .option('--from-state <state>', 'Current state before transition (used with auto-advance for safety check)')
+    .option(
+      '--tokens <count>',
+      'Number of tokens to record (used with record-tokens)',
+      (value: string) => parseInt(value, 10)
+    )
+    .option(
+      '--event <event>',
+      'Event triggering state change: tests-pass, validation-pass, specs-complete (used with auto-advance)'
+    )
+    .option(
+      '--from-state <state>',
+      'Current state before transition (used with auto-advance for safety check)'
+    )
     .action(workflowAutomation);
 }

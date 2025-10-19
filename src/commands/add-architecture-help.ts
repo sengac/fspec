@@ -18,7 +18,8 @@ const config: CommandHelpConfig = {
   ],
   examples: [
     {
-      command: 'fspec add-architecture spec/features/login.feature "Uses bcrypt for password hashing"',
+      command:
+        'fspec add-architecture spec/features/login.feature "Uses bcrypt for password hashing"',
       description: 'Add architecture notes',
       output: '✓ Added architecture notes to spec/features/login.feature',
     },

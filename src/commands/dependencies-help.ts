@@ -30,7 +30,8 @@ const config: CommandHelpConfig = {
     },
     {
       command: 'fspec dependencies MCP-004',
-      description: 'Show dependencies for work unit with multiple relationships',
+      description:
+        'Show dependencies for work unit with multiple relationships',
       output:
         'Dependencies for MCP-004:\n  Depends on: MCP-001, MCP-002\n  Blocks: MCP-005\n  Related to: DOC-MCP-004',
     },

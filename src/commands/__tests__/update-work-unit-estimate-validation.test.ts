@@ -89,7 +89,12 @@ describe('Feature: Prevent story point estimation before feature file completion
       );
 
       // Create feature file with complete content (no prefill)
-      const featureFile = join(testDir, 'spec', 'features', 'user-authentication.feature');
+      const featureFile = join(
+        testDir,
+        'spec',
+        'features',
+        'user-authentication.feature'
+      );
       await writeFile(
         featureFile,
         `@AUTH-001
@@ -180,7 +185,12 @@ Feature: User Authentication
       );
 
       // Create feature file with prefill placeholders
-      const featureFile = join(testDir, 'spec', 'features', 'fix-login-bug.feature');
+      const featureFile = join(
+        testDir,
+        'spec',
+        'features',
+        'fix-login-bug.feature'
+      );
       await writeFile(
         featureFile,
         `@BUG-001

@@ -46,7 +46,8 @@ const config: CommandHelpConfig = {
     {
       command:
         'fspec unlink-coverage user-authentication --scenario "Login with valid credentials" --test-file src/__tests__/auth.test.ts',
-      description: 'Remove entire test mapping (including implementation links)',
+      description:
+        'Remove entire test mapping (including implementation links)',
       output:
         '✓ Removed test mapping src/__tests__/auth.test.ts from scenario "Login with valid credentials"',
     },
@@ -60,7 +61,8 @@ const config: CommandHelpConfig = {
   ],
   commonErrors: [
     {
-      error: 'Error: Scenario "Login with valid credentials" not found in feature',
+      error:
+        'Error: Scenario "Login with valid credentials" not found in feature',
       fix: 'Check scenario name matches exactly. Run: fspec show-feature user-authentication',
     },
     {

@@ -36,16 +36,14 @@ function calculateDepth(
   // Follow blocks relationships to calculate depth
   if (workUnit.blocks) {
     for (const blockedId of workUnit.blocks) {
-      const childDepth = calculateDepth(
-        workUnits,
-        blockedId,
-        new Set(visited)
-      );
+      const childDepth = calculateDepth(workUnits, blockedId, new Set(visited));
       maxChildDepth = Math.max(maxChildDepth, childDepth);
     }
   }
 
-  return maxChildDepth + (workUnit.blocks && workUnit.blocks.length > 0 ? 1 : 0);
+  return (
+    maxChildDepth + (workUnit.blocks && workUnit.blocks.length > 0 ? 1 : 0)
+  );
 }
 
 interface QueryDependencyStatsOptions {
@@ -132,7 +130,8 @@ export async function queryDependencyStats(
     workUnitsWithBlockers,
     workUnitsBlockingOthers,
     workUnitsWithSoftDependencies,
-    averageDependenciesPerUnit: Math.round(averageDependenciesPerUnit * 100) / 100,
+    averageDependenciesPerUnit:
+      Math.round(averageDependenciesPerUnit * 100) / 100,
     maxDependencyChainDepth,
   };
 }

@@ -2,7 +2,8 @@ import type { CommandHelpConfig } from '../utils/help-formatter';
 
 const config: CommandHelpConfig = {
   name: 'check',
-  description: 'Run all validation checks: Gherkin syntax, tag compliance, and formatting',
+  description:
+    'Run all validation checks: Gherkin syntax, tag compliance, and formatting',
   usage: 'fspec check',
   whenToUse:
     'Use before committing or as part of CI/CD pipeline to ensure all specifications meet quality standards. Combines validate, validate-tags, and format checks.',
@@ -10,7 +11,8 @@ const config: CommandHelpConfig = {
     {
       command: 'fspec check',
       description: 'Run all validation checks',
-      output: '✓ Gherkin syntax validation passed\n✓ Tag validation passed\n✓ All files properly formatted\n\n✓ All checks passed',
+      output:
+        '✓ Gherkin syntax validation passed\n✓ Tag validation passed\n✓ All files properly formatted\n\n✓ All checks passed',
     },
   ],
   prerequisites: [

@@ -48,8 +48,15 @@ export async function updateWorkUnitEstimate(options: {
 
     // Validation: story and bug types require completed feature files
     // Tasks are exempt (they don't require feature files)
-    if (workUnit.type === 'story' || workUnit.type === 'bug' || !workUnit.type) {
-      const prefillCheck = await checkWorkUnitFeatureForPrefill(options.workUnitId, cwd);
+    if (
+      workUnit.type === 'story' ||
+      workUnit.type === 'bug' ||
+      !workUnit.type
+    ) {
+      const prefillCheck = await checkWorkUnitFeatureForPrefill(
+        options.workUnitId,
+        cwd
+      );
 
       // If no feature file found
       if (prefillCheck === null) {
@@ -89,7 +96,10 @@ Work unit ${options.workUnitId} cannot be estimated because:
   - ACDD requires complete acceptance criteria before estimation
 
 Prefill placeholders found:
-${prefillCheck.matches.slice(0, 3).map(m => `  Line ${m.line}: ${m.pattern}`).join('\n')}
+${prefillCheck.matches
+  .slice(0, 3)
+  .map(m => `  Line ${m.line}: ${m.pattern}`)
+  .join('\n')}
 ${prefillCheck.matches.length > 3 ? `  ... and ${prefillCheck.matches.length - 3} more` : ''}
 
 Next steps:

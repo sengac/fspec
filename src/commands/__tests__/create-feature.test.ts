@@ -182,7 +182,9 @@ describe('Feature: Create Feature File with Template', () => {
       const result = await createFeature('User Permissions', testDir);
 
       // Then the command should return the file path
-      expect(result.filePath).toContain('spec/features/user-permissions.feature');
+      expect(result.filePath).toContain(
+        'spec/features/user-permissions.feature'
+      );
 
       // And the file should exist at that path
       const content = await readFile(result.filePath, 'utf-8');

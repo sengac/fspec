@@ -19,8 +19,7 @@ const config: CommandHelpConfig = {
   examples: [
     {
       command: 'fspec generate-coverage',
-      description:
-        'Generate or update coverage files for all .feature files',
+      description: 'Generate or update coverage files for all .feature files',
       output:
         '✓ Created 2, Updated 1, Skipped 3\n\nCreated: user-authentication.feature.coverage, user-registration.feature.coverage\nUpdated: existing-feature.feature.coverage (added 2 missing scenarios)\nSkipped: already-up-to-date.feature.coverage',
     },

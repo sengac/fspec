@@ -221,7 +221,9 @@ export async function showWorkUnit(
     ...(workUnit.examples && { examples: workUnit.examples }),
     ...(unselectedQuestions && { questions: unselectedQuestions }),
     ...(workUnit.assumptions && { assumptions: workUnit.assumptions }),
-    ...(workUnit.architectureNotes && { architectureNotes: workUnit.architectureNotes }),
+    ...(workUnit.architectureNotes && {
+      architectureNotes: workUnit.architectureNotes,
+    }),
     ...(workUnit.attachments && { attachments: workUnit.attachments }),
     createdAt: workUnit.createdAt,
     updatedAt: workUnit.updatedAt,

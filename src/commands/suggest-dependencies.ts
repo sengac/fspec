@@ -64,9 +64,15 @@ export async function suggestDependencies(
         if (candidate.id === wu.id) continue;
         const candidateTitle = candidate.title.toLowerCase();
 
-        if (candidateTitle.startsWith('build ') && candidateTitle.includes(testTarget)) {
+        if (
+          candidateTitle.startsWith('build ') &&
+          candidateTitle.includes(testTarget)
+        ) {
           // Skip if dependency already exists
-          if (wu.dependsOn?.includes(candidate.id) || wu.blockedBy?.includes(candidate.id)) {
+          if (
+            wu.dependsOn?.includes(candidate.id) ||
+            wu.blockedBy?.includes(candidate.id)
+          ) {
             continue;
           }
 
@@ -97,14 +103,18 @@ export async function suggestDependencies(
 
   for (const featureWu of workUnits) {
     const featureTitle = featureWu.title.toLowerCase();
-    const hasFeatureKeyword = featureKeywords.some(kw => featureTitle.startsWith(kw + ' '));
+    const hasFeatureKeyword = featureKeywords.some(kw =>
+      featureTitle.startsWith(kw + ' ')
+    );
 
     if (!hasFeatureKeyword) continue;
 
     for (const infraWu of workUnits) {
       if (infraWu.id === featureWu.id) continue;
       const infraTitle = infraWu.title.toLowerCase();
-      const hasInfraKeyword = infrastructureKeywords.some(kw => infraTitle.includes(kw));
+      const hasInfraKeyword = infrastructureKeywords.some(kw =>
+        infraTitle.includes(kw)
+      );
 
       if (!hasInfraKeyword) continue;
 
@@ -195,8 +205,14 @@ export async function suggestDependencies(
 export function registerSuggestDependenciesCommand(program: Command): void {
   program
     .command('suggest-dependencies')
-    .description('Auto-suggest dependency relationships based on work unit metadata')
-    .option('--output <format>', 'Output format: json or text (default: text)', 'text')
+    .description(
+      'Auto-suggest dependency relationships based on work unit metadata'
+    )
+    .option(
+      '--output <format>',
+      'Output format: json or text (default: text)',
+      'text'
+    )
     .action(async (options: { output?: 'json' | 'text' }) => {
       try {
         const result = await suggestDependencies({ output: options.output });
@@ -216,11 +232,14 @@ export function registerSuggestDependenciesCommand(program: Command): void {
           }
 
           console.log(
-            chalk.bold(`\nFound ${result.suggestions.length} dependency suggestion(s):\n`)
+            chalk.bold(
+              `\nFound ${result.suggestions.length} dependency suggestion(s):\n`
+            )
           );
 
           result.suggestions.forEach((suggestion, index) => {
-            const confidenceColor = suggestion.confidence === 'high' ? chalk.green : chalk.yellow;
+            const confidenceColor =
+              suggestion.confidence === 'high' ? chalk.green : chalk.yellow;
             console.log(
               `${index + 1}. ${chalk.cyan(suggestion.from)} → ${chalk.cyan(suggestion.to)} (${suggestion.type})`
             );
@@ -237,7 +256,10 @@ export function registerSuggestDependenciesCommand(program: Command): void {
           );
         }
       } catch (error: any) {
-        console.error(chalk.red('✗ Failed to suggest dependencies:'), error.message);
+        console.error(
+          chalk.red('✗ Failed to suggest dependencies:'),
+          error.message
+        );
         process.exit(1);
       }
     });

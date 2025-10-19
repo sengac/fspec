@@ -29,7 +29,6 @@ describe('Feature: Validate Mermaid Diagrams During Foundation Regeneration', ()
     await rm(testDir, { recursive: true, force: true });
   });
 
-
   describe('Scenario: Generate FOUNDATION.md with all valid diagrams', () => {
     it('should exit with code 0 and create FOUNDATION.md when all diagrams are valid', async () => {
       // Given I have a valid file "spec/foundation.json" with 3 Mermaid diagrams

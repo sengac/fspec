@@ -16,7 +16,8 @@ const config: CommandHelpConfig = {
     {
       command: 'fspec query-example-mapping-stats',
       description: 'Show EM stats',
-      output: 'Work units with Example Mapping: 25/42 (59%)\nTotal rules: 87\nTotal examples: 134\nUnanswered questions: 12',
+      output:
+        'Work units with Example Mapping: 25/42 (59%)\nTotal rules: 87\nTotal examples: 134\nUnanswered questions: 12',
     },
   ],
   relatedCommands: ['show-work-unit', 'add-rule', 'add-example'],

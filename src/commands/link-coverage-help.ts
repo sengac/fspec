@@ -57,7 +57,8 @@ const config: CommandHelpConfig = {
     {
       command:
         'fspec link-coverage user-authentication --scenario "Login with valid credentials" --test-file src/__tests__/auth.test.ts --impl-file src/auth/login.ts --impl-lines 10-24',
-      description: 'Link implementation to existing test mapping (after implementing)',
+      description:
+        'Link implementation to existing test mapping (after implementing)',
       output:
         '✓ Linked implementation to scenario "Login with valid credentials"\n  Test: src/__tests__/auth.test.ts:45-62\n  Implementation: src/auth/login.ts:10,11,12,23,24',
     },
@@ -79,7 +80,8 @@ const config: CommandHelpConfig = {
   ],
   commonErrors: [
     {
-      error: 'Error: Scenario "Login with valid credentials" not found in feature',
+      error:
+        'Error: Scenario "Login with valid credentials" not found in feature',
       fix: 'Check scenario name matches exactly. Run: fspec show-feature user-authentication',
     },
     {
@@ -105,7 +107,12 @@ const config: CommandHelpConfig = {
         '# Link skeleton test (not implemented yet)\nfspec link-coverage user-login --scenario "Login" --test-file src/__tests__/auth.test.ts --test-lines 13-27 --skip-validation\n\n# Link existing implementation\nfspec link-coverage user-login --scenario "Login" --test-file src/__tests__/auth.test.ts --impl-file src/routes/auth.ts --impl-lines 45-67 --skip-validation',
     },
   ],
-  relatedCommands: ['show-coverage', 'audit-coverage', 'unlink-coverage', 'create-feature'],
+  relatedCommands: [
+    'show-coverage',
+    'audit-coverage',
+    'unlink-coverage',
+    'create-feature',
+  ],
   notes: [
     'Coverage files (.feature.coverage) are auto-created by fspec create-feature',
     'ALWAYS link coverage immediately after writing tests or code (do not batch)',

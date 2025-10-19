@@ -64,7 +64,10 @@ export function registerCreatePrefixCommand(program: Command): void {
   program
     .command('create-prefix')
     .description('Register a new work unit prefix')
-    .argument('<prefix>', 'Prefix code (2-6 uppercase letters, e.g., AUTH, DASH)')
+    .argument(
+      '<prefix>',
+      'Prefix code (2-6 uppercase letters, e.g., AUTH, DASH)'
+    )
     .argument('<description>', 'Prefix description')
     .action(async (prefix: string, description: string) => {
       try {

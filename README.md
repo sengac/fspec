@@ -36,11 +36,9 @@ cd /path/to/your/project
 fspec init
 ```
 
-This installs two command files in `.claude/commands/`:
-- `/fspec` - For building new features with forward ACDD
-- `/rspec` - For reverse engineering existing code
+This installs the `/fspec` command file in `.claude/commands/` for building new features with forward ACDD.
 
-**Works with any AI agent:** While designed for Claude Code, you can use the generated `fspec.md` and `rspec.md` command files with other AI agents by mapping them to your agent's command system. If using another agent, rename `spec/CLAUDE.md` to `spec/AGENTS.md` for clarity.
+**Works with any AI agent:** While designed for Claude Code, you can use the generated `fspec.md` command file with other AI agents by mapping it to your agent's command system. If using another agent, rename `spec/CLAUDE.md` to `spec/AGENTS.md` for clarity.
 
 ### 3. Start Building with AI
 
@@ -70,11 +68,11 @@ In Claude Code, **be specific about work unit type** (story, bug, or task):
 /fspec
 ```
 
-**For existing code:**
+**For existing code (Reverse ACDD):**
 ```
-/rspec Analyze the entire codebase
-/rspec Document the payment processing system
-/rspec Create specs for src/api/routes.ts
+/fspec Run fspec reverse to analyze the codebase
+/fspec Run fspec reverse --strategy=A to create features from tests
+/fspec Run fspec reverse --strategy=D for full reverse ACDD
 ```
 
 The AI agent will guide you through discovery, ask clarifying questions, generate specs, and enforce ACDD workflow.
@@ -180,14 +178,16 @@ Claude: Let me check the fspec board...
 
 ### For Existing Code (Reverse ACDD)
 ```
-You: /rspec Analyze the authentication system in src/auth/
+You: /fspec Run fspec reverse to analyze the authentication system
 
-Claude: I'll reverse engineer the existing code:
+Claude: I'll reverse engineer the existing code using fspec reverse:
 1. Analyzing routes, API endpoints, and business logic
-2. Creating feature files with inferred acceptance criteria
-3. Grouping into epics (user-management, security, etc.)
-4. Generating test skeletons (structure only, not implemented)
-5. Linking existing code to scenarios for traceability
+2. Detecting gaps (missing features, tests, or coverage)
+3. Suggesting strategy (A=Spec Gap, B=Test Gap, C=Coverage, D=Full)
+4. Creating feature files with inferred acceptance criteria
+5. Grouping into epics (user-management, security, etc.)
+6. Generating test skeletons (structure only, not implemented)
+7. Linking existing code to scenarios for traceability
 ```
 
 **The AI agent handles all fspec commands** - you just provide the high-level intent and work unit type.
@@ -253,7 +253,7 @@ The feedback loop ensures AI agents discover foundation through deep analysis, n
 - 🤝 **Example Mapping** - Collaborative discovery with rules, examples, questions, attachments
 - 🔍 **Foundation Discovery** - AI-guided draft-driven workflow to bootstrap foundation.json
 - 🔄 **Work Unit Management** - Track work through Kanban with dependencies and epics
-- 🔁 **Reverse ACDD** - Reverse engineer existing codebases via `/rspec` command
+- 🔁 **Reverse ACDD** - Reverse engineer existing codebases via `fspec reverse` command
 - 📋 **Gherkin Validation** - Official Cucumber parser ensures valid syntax
 - 🔗 **Coverage Tracking** - Link scenarios → tests → implementation (critical for reverse ACDD)
 - 🏷️ **JSON-Backed Tag Registry** - Single source of truth with auto-generated docs

@@ -6,7 +6,15 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, readFile, mkdir, writeFile, access, readdir } from 'fs/promises';
+import {
+  mkdtemp,
+  rm,
+  readFile,
+  mkdir,
+  writeFile,
+  access,
+  readdir,
+} from 'fs/promises';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { generateCoverage } from '../generate-coverage';
@@ -193,7 +201,7 @@ Feature: Test Feature
 
       // Then no .coverage files should be created
       const files = await readdir(featuresDir);
-      const coverageFiles = files.filter((f) => f.endsWith('.coverage'));
+      const coverageFiles = files.filter(f => f.endsWith('.coverage'));
       expect(coverageFiles).toHaveLength(0);
 
       // And the output should display 'Would create 3 coverage files (DRY RUN)'

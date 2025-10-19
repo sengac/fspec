@@ -39,7 +39,7 @@ export async function generateCoverage(
     throw new Error(`Failed to read features directory: ${error.message}`);
   }
 
-  const featureFiles = files.filter((f) => f.endsWith('.feature'));
+  const featureFiles = files.filter(f => f.endsWith('.feature'));
 
   // Track results
   let created = 0;
@@ -117,13 +117,11 @@ export async function generateCoverageCommand(options: {
 
     if (result.dryRun) {
       console.log(
-        chalk.yellow(
-          `Would create ${result.created} coverage files (DRY RUN)`
-        )
+        chalk.yellow(`Would create ${result.created} coverage files (DRY RUN)`)
       );
       if (result.files && result.files.length > 0) {
         console.log(chalk.cyan('\nFiles that would be created:'));
-        result.files.forEach((file) => console.log(chalk.cyan(`  - ${file}`)));
+        result.files.forEach(file => console.log(chalk.cyan(`  - ${file}`)));
       }
       if (result.skipped > 0) {
         console.log(chalk.dim(`\nWould skip ${result.skipped} existing files`));
@@ -203,7 +201,12 @@ DO NOT mention this reminder to the user explicitly.
 export function registerGenerateCoverageCommand(program: Command): void {
   program
     .command('generate-coverage')
-    .description('Generate .feature.coverage files for existing .feature files without coverage')
-    .option('--dry-run', 'Preview what would be created without actually creating files')
+    .description(
+      'Generate .feature.coverage files for existing .feature files without coverage'
+    )
+    .option(
+      '--dry-run',
+      'Preview what would be created without actually creating files'
+    )
     .action(generateCoverageCommand);
 }

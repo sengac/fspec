@@ -48,7 +48,8 @@ const config: CommandHelpConfig = {
       output: '✓ Recorded iteration for AUTH-001\n  Total iterations: 3',
     },
     {
-      command: 'fspec workflow-automation record-tokens AUTH-001 --tokens 15000',
+      command:
+        'fspec workflow-automation record-tokens AUTH-001 --tokens 15000',
       description: 'Record token usage for work unit',
       output: '✓ Recorded 15000 tokens for AUTH-001\n  Total tokens: 42000',
     },
@@ -62,8 +63,10 @@ const config: CommandHelpConfig = {
     {
       command:
         'fspec workflow-automation auto-advance AUTH-001 --event validation-pass --from-state validating',
-      description: 'Auto-advance from validating → done after validation passes',
-      output: '✓ Advanced AUTH-001 from validating → done\n  Event: validation-pass',
+      description:
+        'Auto-advance from validating → done after validation passes',
+      output:
+        '✓ Advanced AUTH-001 from validating → done\n  Event: validation-pass',
     },
     {
       command: 'fspec workflow-automation validate-alignment AUTH-001',
@@ -82,8 +85,7 @@ const config: CommandHelpConfig = {
       fix: 'tests-pass event only valid from "testing" state. Check current state with: fspec show-work-unit <id>',
     },
     {
-      error:
-        'Error: Work unit is in state "implementing", expected "testing"',
+      error: 'Error: Work unit is in state "implementing", expected "testing"',
       fix: 'State mismatch. Verify current state before auto-advance. Use --from-state to ensure safety.',
     },
     {

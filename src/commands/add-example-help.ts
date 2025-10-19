@@ -20,12 +20,18 @@ const config: CommandHelpConfig = {
   ],
   examples: [
     {
-      command: 'fspec add-example AUTH-001 "Login with user@example.com and correct password"',
+      command:
+        'fspec add-example AUTH-001 "Login with user@example.com and correct password"',
       description: 'Add example',
       output: '✓ Example added successfully',
     },
   ],
-  relatedCommands: ['add-rule', 'add-question', 'generate-scenarios', 'remove-example'],
+  relatedCommands: [
+    'add-rule',
+    'add-question',
+    'generate-scenarios',
+    'remove-example',
+  ],
 };
 
 export default config;

@@ -618,6 +618,10 @@
           "description": "Reverse engineering existing code to create specifications"
         },
         {
+          "name": "@session-based",
+          "description": "Session-based interactive command pattern (similar to discover-foundation)"
+        },
+        {
           "name": "@setup",
           "description": "Setup and initialization commands"
         },
@@ -628,6 +632,10 @@
         {
           "name": "@sms",
           "description": "SMS-related functionality"
+        },
+        {
+          "name": "@strategy-planning",
+          "description": "Strategy planning and decision-making features that guide user choices"
         },
         {
           "name": "@system-reminder",
@@ -896,14 +904,22 @@
       "required": false,
       "tags": [
         {
-          "name": "@execa",
-          "description": "Child process execution integration point",
-          "useCases": "Features invoked via Node.js child process (execa) from automation hooks"
-        },
-        {
           "name": "@acdd",
           "description": "Acceptance Criteria Driven Development",
           "useCases": "Features following ACDD methodology"
+        },
+        {
+          "name": "@discovery-workflow",
+          "description": "Discovery workflow and bootstrapping processes"
+        },
+        {
+          "name": "@draft-driven",
+          "description": "Draft-driven development and feedback loops"
+        },
+        {
+          "name": "@execa",
+          "description": "Child process execution integration point",
+          "useCases": "Features invoked via Node.js child process (execa) from automation hooks"
         },
         {
           "name": "@spec-alignment",
@@ -1091,7 +1107,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-10-17T10:17:58.513Z",
+    "lastUpdated": "2025-10-19T22:53:42.574Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

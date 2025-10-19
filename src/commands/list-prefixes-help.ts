@@ -8,7 +8,8 @@ const config: CommandHelpConfig = {
     {
       command: 'fspec list-prefixes',
       description: 'List all prefixes',
-      output: 'AUTH - Authentication features\nUI - User interface components\nAPI - API endpoints\n\nFound 3 prefixes',
+      output:
+        'AUTH - Authentication features\nUI - User interface components\nAPI - API endpoints\n\nFound 3 prefixes',
     },
   ],
   relatedCommands: ['create-prefix', 'create-work-unit'],

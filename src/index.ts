@@ -102,6 +102,7 @@ import { registerRemoveTagFromFeatureCommand } from './commands/remove-tag-from-
 import { registerRemoveTagFromScenarioCommand } from './commands/remove-tag-from-scenario';
 import { registerRepairWorkUnitsCommand } from './commands/repair-work-units';
 import { registerRetagCommand } from './commands/retag';
+import { registerReverseCommand } from './commands/reverse';
 import { registerSetUserStoryCommand } from './commands/set-user-story';
 import { registerShowAcceptanceCriteriaCommand } from './commands/show-acceptance-criteria';
 import { registerShowCoverageCommand } from './commands/show-coverage';
@@ -239,6 +240,7 @@ registerRemoveTagFromFeatureCommand(program);
 registerRemoveTagFromScenarioCommand(program);
 registerRepairWorkUnitsCommand(program);
 registerRetagCommand(program);
+registerReverseCommand(program);
 registerSetUserStoryCommand(program);
 registerShowAcceptanceCriteriaCommand(program);
 registerShowCoverageCommand(program);
@@ -293,7 +295,7 @@ const isMainModule = (() => {
 })();
 
 if (isMainModule) {
-  main().catch((error) => {
+  main().catch(error => {
     console.error(chalk.red('Fatal error:'), error.message);
     process.exit(1);
   });

@@ -1,0 +1,47 @@
+stateDiagram-v2
+    [*] --> Analyzing: fspec reverse
+    Analyzing --> GapDetection: Analysis complete
+    GapDetection --> StrategyPlanning: Gaps detected
+    StrategyPlanning --> StrategyChosen: fspec reverse --strategy=X
+    StrategyChosen --> ExecutingStep1: Begin execution
+    ExecutingStep1 --> ExecutingStep2: fspec reverse --continue
+    ExecutingStep2 --> ExecutingStepN: fspec reverse --continue
+    ExecutingStepN --> Complete: All steps done
+    Complete --> [*]: fspec reverse --complete
+
+    StrategyPlanning --> Analyzing: fspec reverse --reset
+    StrategyChosen --> Analyzing: fspec reverse --reset
+    ExecutingStep1 --> Analyzing: fspec reverse --reset
+    ExecutingStep2 --> Analyzing: fspec reverse --reset
+    ExecutingStepN --> Analyzing: fspec reverse --reset
+
+    note right of Analyzing
+        Scans project for:
+        - Feature files
+        - Test files
+        - Implementation files
+        - Coverage files
+        - Work units
+    end note
+
+    note right of GapDetection
+        Identifies:
+        - Features without tests
+        - Tests without features
+        - Unmapped coverage
+        - Missing work units
+    end note
+
+    note right of StrategyPlanning
+        Suggests strategies:
+        A: Spec Gap Filling
+        B: Test Gap Filling
+        C: Coverage Mapping
+        D: Full Reverse ACDD
+    end note
+
+    note right of ExecutingStep1
+        Emits system-reminders
+        with step-by-step
+        guidance for AI
+    end note

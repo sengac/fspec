@@ -2,7 +2,8 @@ import type { CommandHelpConfig } from '../utils/help-formatter';
 
 const config: CommandHelpConfig = {
   name: 'answer-question',
-  description: 'Answer a question from Example Mapping and optionally convert to rule or assumption',
+  description:
+    'Answer a question from Example Mapping and optionally convert to rule or assumption',
   usage: 'fspec answer-question <workUnitId> <index> [options]',
   arguments: [
     {
@@ -31,17 +32,21 @@ const config: CommandHelpConfig = {
     },
     {
       flag: '--add-to-assumptions',
-      description: 'Also add answer as an assumption (deprecated: use --add-to assumption)',
+      description:
+        'Also add answer as an assumption (deprecated: use --add-to assumption)',
     },
   ],
   examples: [
     {
-      command: 'fspec answer-question AUTH-001 0 --answer "Yes, support Google OAuth"',
+      command:
+        'fspec answer-question AUTH-001 0 --answer "Yes, support Google OAuth"',
       description: 'Answer question',
-      output: '✓ Answered question: "Should we support OAuth?"\n  Answer: "Yes, support Google OAuth"',
+      output:
+        '✓ Answered question: "Should we support OAuth?"\n  Answer: "Yes, support Google OAuth"',
     },
     {
-      command: 'fspec answer-question AUTH-001 0 --answer "Email required" --add-to-rules',
+      command:
+        'fspec answer-question AUTH-001 0 --answer "Email required" --add-to-rules',
       description: 'Answer and add as rule',
       output: '✓ Answered question and added to rules',
     },

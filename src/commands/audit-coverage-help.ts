@@ -47,7 +47,8 @@ const config: CommandHelpConfig = {
       fix: 'Check feature name matches file name. Run: fspec list-features',
     },
     {
-      error: 'Error: Coverage file user-authentication.feature.coverage not found',
+      error:
+        'Error: Coverage file user-authentication.feature.coverage not found',
       fix: 'Coverage file should auto-create with fspec create-feature.',
     },
   ],

@@ -19,7 +19,8 @@ const config: CommandHelpConfig = {
   ],
   examples: [
     {
-      command: 'fspec update-prefix AUTH --description "Authentication and authorization"',
+      command:
+        'fspec update-prefix AUTH --description "Authentication and authorization"',
       description: 'Update prefix description',
       output: '✓ Updated prefix AUTH',
     },

@@ -90,13 +90,24 @@ describe('Feature: Attachment support for discovery process', () => {
       });
 
       // Then the file should be copied to "spec/attachments/AUTH-001/auth-flow.png"
-      const attachmentPath = join(testDir, 'spec', 'attachments', 'AUTH-001', 'auth-flow.png');
+      const attachmentPath = join(
+        testDir,
+        'spec',
+        'attachments',
+        'AUTH-001',
+        'auth-flow.png'
+      );
       await expect(access(attachmentPath)).resolves.not.toThrow();
 
       // And the work unit should track the attachment path
-      const workUnitsContent = await readFile(join(testDir, 'spec', 'work-units.json'), 'utf-8');
+      const workUnitsContent = await readFile(
+        join(testDir, 'spec', 'work-units.json'),
+        'utf-8'
+      );
       const workUnits: WorkUnitsData = JSON.parse(workUnitsContent);
-      expect(workUnits.workUnits['AUTH-001'].attachments).toContain('spec/attachments/AUTH-001/auth-flow.png');
+      expect(workUnits.workUnits['AUTH-001'].attachments).toContain(
+        'spec/attachments/AUTH-001/auth-flow.png'
+      );
     });
   });
 
@@ -117,7 +128,13 @@ describe('Feature: Attachment support for discovery process', () => {
       });
 
       // Then the file should be copied to "spec/attachments/UI-002/dashboard.png"
-      const attachmentPath = join(testDir, 'spec', 'attachments', 'UI-002', 'dashboard.png');
+      const attachmentPath = join(
+        testDir,
+        'spec',
+        'attachments',
+        'UI-002',
+        'dashboard.png'
+      );
       await expect(access(attachmentPath)).resolves.not.toThrow();
     });
   });
@@ -137,7 +154,10 @@ describe('Feature: Attachment support for discovery process', () => {
 
       // When I run "fspec list-attachments AUTH-001"
       // Then output would display attachment info (tested via console output in real scenario)
-      const workUnitsContent = await readFile(join(testDir, 'spec', 'work-units.json'), 'utf-8');
+      const workUnitsContent = await readFile(
+        join(testDir, 'spec', 'work-units.json'),
+        'utf-8'
+      );
       const workUnits: WorkUnitsData = JSON.parse(workUnitsContent);
 
       expect(workUnits.workUnits['AUTH-001'].attachments).toBeDefined();
@@ -151,7 +171,10 @@ describe('Feature: Attachment support for discovery process', () => {
       // When I run "fspec list-attachments AUTH-002"
       // Then output should show "No attachments found"
 
-      const workUnitsContent = await readFile(join(testDir, 'spec', 'work-units.json'), 'utf-8');
+      const workUnitsContent = await readFile(
+        join(testDir, 'spec', 'work-units.json'),
+        'utf-8'
+      );
       const workUnits: WorkUnitsData = JSON.parse(workUnitsContent);
 
       expect(workUnits.workUnits['AUTH-002'].attachments).toBeUndefined();
@@ -179,11 +202,20 @@ describe('Feature: Attachment support for discovery process', () => {
       });
 
       // Then the file should be deleted
-      const attachmentPath = join(testDir, 'spec', 'attachments', 'AUTH-001', 'diagram.png');
+      const attachmentPath = join(
+        testDir,
+        'spec',
+        'attachments',
+        'AUTH-001',
+        'diagram.png'
+      );
       await expect(access(attachmentPath)).rejects.toThrow();
 
       // And the work unit should no longer track the attachment
-      const workUnitsContent = await readFile(join(testDir, 'spec', 'work-units.json'), 'utf-8');
+      const workUnitsContent = await readFile(
+        join(testDir, 'spec', 'work-units.json'),
+        'utf-8'
+      );
       const workUnits: WorkUnitsData = JSON.parse(workUnitsContent);
       expect(workUnits.workUnits['AUTH-001'].attachments).toEqual([]);
     });
@@ -211,11 +243,20 @@ describe('Feature: Attachment support for discovery process', () => {
       });
 
       // Then the file should still exist
-      const attachmentPath = join(testDir, 'spec', 'attachments', 'AUTH-001', 'important-doc.pdf');
+      const attachmentPath = join(
+        testDir,
+        'spec',
+        'attachments',
+        'AUTH-001',
+        'important-doc.pdf'
+      );
       await expect(access(attachmentPath)).resolves.not.toThrow();
 
       // And the work unit should no longer track the attachment
-      const workUnitsContent = await readFile(join(testDir, 'spec', 'work-units.json'), 'utf-8');
+      const workUnitsContent = await readFile(
+        join(testDir, 'spec', 'work-units.json'),
+        'utf-8'
+      );
       const workUnits: WorkUnitsData = JSON.parse(workUnitsContent);
       expect(workUnits.workUnits['AUTH-001'].attachments).toEqual([]);
     });
@@ -242,7 +283,9 @@ describe('Feature: Attachment support for discovery process', () => {
 
       // Then the output should include attachments
       expect(result.attachments).toBeDefined();
-      expect(result.attachments).toContain('spec/attachments/AUTH-001/auth-flow.png');
+      expect(result.attachments).toContain(
+        'spec/attachments/AUTH-001/auth-flow.png'
+      );
     });
   });
 
@@ -260,7 +303,7 @@ describe('Feature: Attachment support for discovery process', () => {
           filePath: missingFile,
           cwd: testDir,
         })
-      ).rejects.toThrow("Source file");
+      ).rejects.toThrow('Source file');
     });
   });
 

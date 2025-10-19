@@ -309,7 +309,10 @@ export function registerAddDependencyCommand(program: Command): void {
           });
           console.log(chalk.green(`✓ Dependency added successfully`));
         } catch (error: any) {
-          console.error(chalk.red('✗ Failed to add dependency:'), error.message);
+          console.error(
+            chalk.red('✗ Failed to add dependency:'),
+            error.message
+          );
           process.exit(1);
         }
       }

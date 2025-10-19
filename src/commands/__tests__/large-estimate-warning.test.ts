@@ -158,7 +158,9 @@ Feature: Fix authentication bug
       );
       expect(largeEstimateReminder).toBeDefined();
       expect(largeEstimateReminder).toContain('<system-reminder>');
-      expect(largeEstimateReminder).toContain('estimate is greater than 13 points');
+      expect(largeEstimateReminder).toContain(
+        'estimate is greater than 13 points'
+      );
       expect(largeEstimateReminder).toContain('21 points is too large');
       expect(largeEstimateReminder).toContain('fspec create-work-unit');
       expect(largeEstimateReminder).toContain('fspec add-dependency');
@@ -378,7 +380,9 @@ Feature: User Dashboard
       expect(largeEstimateReminder).toBeDefined();
       expect(largeEstimateReminder).toContain('<system-reminder>');
       expect(largeEstimateReminder).toContain('CREATE FEATURE FILE FIRST');
-      expect(largeEstimateReminder).toContain('fspec generate-scenarios AUTH-008');
+      expect(largeEstimateReminder).toContain(
+        'fspec generate-scenarios AUTH-008'
+      );
     });
   });
 

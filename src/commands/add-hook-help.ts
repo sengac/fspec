@@ -15,7 +15,8 @@ const config: CommandHelpConfig = {
     },
     {
       name: 'name',
-      description: 'Unique name for this hook (e.g., validate-feature, run-tests)',
+      description:
+        'Unique name for this hook (e.g., validate-feature, run-tests)',
       required: true,
     },
   ],
@@ -32,7 +33,8 @@ const config: CommandHelpConfig = {
     },
     {
       flag: '--timeout <seconds>',
-      description: 'Timeout in seconds (default: 60). Hook is killed if it exceeds this time.',
+      description:
+        'Timeout in seconds (default: 60). Hook is killed if it exceeds this time.',
     },
   ],
   examples: [
@@ -92,7 +94,8 @@ const config: CommandHelpConfig = {
       pattern: 'Automated Testing (Post-Hook)',
       example:
         'fspec add-hook post-implementing test --command spec/hooks/test.sh --timeout 300',
-      description: 'Runs tests after implementation completes. Failure sets exit code to 1.',
+      description:
+        'Runs tests after implementation completes. Failure sets exit code to 1.',
     },
     {
       pattern: 'Notification (Non-Blocking Post-Hook)',

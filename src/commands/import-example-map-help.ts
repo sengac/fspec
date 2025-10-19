@@ -20,7 +20,8 @@ const config: CommandHelpConfig = {
     {
       command: 'fspec import-example-map AUTH-001 example-map.json',
       description: 'Import Example Mapping',
-      output: '✓ Imported Example Mapping data to AUTH-001\n  3 rules, 5 examples, 2 questions',
+      output:
+        '✓ Imported Example Mapping data to AUTH-001\n  3 rules, 5 examples, 2 questions',
     },
   ],
   relatedCommands: ['export-example-map', 'show-work-unit'],

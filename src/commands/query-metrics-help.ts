@@ -22,7 +22,8 @@ const config: CommandHelpConfig = {
     {
       command: 'fspec query-metrics',
       description: 'Show all metrics',
-      output: 'Velocity: 23 points/week\nCycle time: 3.5 days avg\nThroughput: 5 work units/week',
+      output:
+        'Velocity: 23 points/week\nCycle time: 3.5 days avg\nThroughput: 5 work units/week',
     },
   ],
   relatedCommands: ['record-metric', 'generate-summary-report'],

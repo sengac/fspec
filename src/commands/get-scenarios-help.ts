@@ -22,7 +22,8 @@ const config: CommandHelpConfig = {
     {
       command: 'fspec get-scenarios --file spec/features/login.feature',
       description: 'Get scenarios from file',
-      output: 'Login with valid credentials\nLogin with invalid password\nLogin with locked account',
+      output:
+        'Login with valid credentials\nLogin with invalid password\nLogin with locked account',
     },
   ],
   relatedCommands: ['show-acceptance-criteria', 'list-features'],

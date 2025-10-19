@@ -70,7 +70,10 @@ export function registerRecordIterationCommand(program: Command): void {
         });
         console.log(chalk.green(`✓ Iteration recorded successfully`));
       } catch (error: any) {
-        console.error(chalk.red('✗ Failed to record iteration:'), error.message);
+        console.error(
+          chalk.red('✗ Failed to record iteration:'),
+          error.message
+        );
         process.exit(1);
       }
     });

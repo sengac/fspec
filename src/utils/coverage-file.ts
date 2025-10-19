@@ -38,7 +38,10 @@ export interface CoverageFile {
  */
 export async function createCoverageFile(
   featureFilePath: string
-): Promise<{ status: 'created' | 'skipped' | 'recreated' | 'updated'; message: string }> {
+): Promise<{
+  status: 'created' | 'skipped' | 'recreated' | 'updated';
+  message: string;
+}> {
   const coverageFilePath = `${featureFilePath}.coverage`;
 
   // Check if coverage file already exists
@@ -51,7 +54,11 @@ export async function createCoverageFile(
     try {
       const existingCoverage = JSON.parse(existingContent);
       // Valid JSON, check if scenarios need updating
-      const updated = await updateCoverageFile(featureFilePath, coverageFilePath, existingCoverage);
+      const updated = await updateCoverageFile(
+        featureFilePath,
+        coverageFilePath,
+        existingCoverage
+      );
 
       if (updated) {
         const fileName = coverageFilePath.split('/').pop()!;
@@ -156,7 +163,11 @@ async function updateCoverageFile(
   };
 
   // Write updated coverage file
-  await writeFile(coverageFilePath, JSON.stringify(updatedCoverage, null, 2), 'utf-8');
+  await writeFile(
+    coverageFilePath,
+    JSON.stringify(updatedCoverage, null, 2),
+    'utf-8'
+  );
 
   return true;
 }

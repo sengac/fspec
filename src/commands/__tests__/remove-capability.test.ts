@@ -62,7 +62,7 @@ describe('Feature: remove-capability command', () => {
       await writeFile(
         foundationPath,
         JSON.stringify(foundation, null, 2),
-        'utf-8',
+        'utf-8'
       );
 
       // When I run `fspec remove-capability "Mind Mapping"`
@@ -70,11 +70,11 @@ describe('Feature: remove-capability command', () => {
 
       // Then the capability "Mind Mapping" should be removed from spec/foundation.json
       const updatedFoundation = JSON.parse(
-        await readFile(foundationPath, 'utf-8'),
+        await readFile(foundationPath, 'utf-8')
       );
       expect(updatedFoundation.solutionSpace.capabilities).toHaveLength(1);
       expect(updatedFoundation.solutionSpace.capabilities[0].name).toBe(
-        'AI Chat',
+        'AI Chat'
       );
     });
   });

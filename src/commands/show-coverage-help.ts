@@ -56,7 +56,8 @@ const config: CommandHelpConfig = {
       fix: 'Check feature name matches file name. Run: fspec list-features',
     },
     {
-      error: 'Error: Coverage file user-authentication.feature.coverage not found',
+      error:
+        'Error: Coverage file user-authentication.feature.coverage not found',
       fix: 'Coverage file should auto-create with fspec create-feature. Try running create-feature again.',
     },
   ],
@@ -76,10 +77,15 @@ const config: CommandHelpConfig = {
     {
       pattern: 'Export Coverage for CI/CD',
       example:
-        '# Export as JSON for automated checks\nfspec show-coverage --format=json --output=coverage.json\n\n# Parse in CI pipeline to enforce coverage thresholds\njq \'.coveragePercent\' coverage.json',
+        "# Export as JSON for automated checks\nfspec show-coverage --format=json --output=coverage.json\n\n# Parse in CI pipeline to enforce coverage thresholds\njq '.coveragePercent' coverage.json",
     },
   ],
-  relatedCommands: ['link-coverage', 'audit-coverage', 'unlink-coverage', 'list-features'],
+  relatedCommands: [
+    'link-coverage',
+    'audit-coverage',
+    'unlink-coverage',
+    'list-features',
+  ],
   notes: [
     'Coverage symbols: ✅ FULLY COVERED, ⚠️ PARTIALLY COVERED (test only), ❌ NOT COVERED',
     'Project-wide report (no args) shows overall coverage percentage',

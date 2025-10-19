@@ -41,7 +41,9 @@ export async function addAttachment(
   if (shouldValidateMermaid(options.filePath)) {
     const fileName = basename(options.filePath);
     try {
-      const validationResult = await validateMermaidAttachment(options.filePath);
+      const validationResult = await validateMermaidAttachment(
+        options.filePath
+      );
       if (!validationResult.valid) {
         throw new Error(
           `Failed to attach ${fileName}: ${validationResult.error}`
@@ -109,7 +111,10 @@ export function registerAddAttachmentCommand(program: Command): void {
     )
     .argument('<workUnitId>', 'Work unit ID')
     .argument('<filePath>', 'Path to file to attach')
-    .option('-d, --description <text>', 'Optional description of the attachment')
+    .option(
+      '-d, --description <text>',
+      'Optional description of the attachment'
+    )
     .action(
       async (
         workUnitId: string,

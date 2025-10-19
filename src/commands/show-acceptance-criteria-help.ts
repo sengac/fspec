@@ -15,7 +15,8 @@ const config: CommandHelpConfig = {
     {
       command: 'fspec show-acceptance-criteria spec/features/login.feature',
       description: 'Show acceptance criteria',
-      output: 'Feature: User Login\n\nScenario: Login with valid credentials\n  Given I am on the login page\n  When I enter valid credentials\n  Then I should be logged in',
+      output:
+        'Feature: User Login\n\nScenario: Login with valid credentials\n  Given I am on the login page\n  When I enter valid credentials\n  Then I should be logged in',
     },
   ],
   relatedCommands: ['get-scenarios', 'show-feature'],

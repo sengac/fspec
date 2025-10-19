@@ -61,7 +61,7 @@ export function formatCommandHelp(config: CommandHelpConfig): string {
   // Prerequisites (AI-optimized)
   if (config.prerequisites && config.prerequisites.length > 0) {
     lines.push(chalk.bold('PREREQUISITES'));
-    config.prerequisites.forEach((prereq) => {
+    config.prerequisites.forEach(prereq => {
       lines.push(`  • ${prereq}`);
     });
     lines.push('');
@@ -76,9 +76,11 @@ export function formatCommandHelp(config: CommandHelpConfig): string {
   // Arguments
   if (config.arguments && config.arguments.length > 0) {
     lines.push(chalk.bold('ARGUMENTS'));
-    config.arguments.forEach((arg) => {
+    config.arguments.forEach(arg => {
       const argName = arg.required ? `<${arg.name}>` : `[${arg.name}]`;
-      const required = arg.required ? chalk.red('(required)') : chalk.dim('(optional)');
+      const required = arg.required
+        ? chalk.red('(required)')
+        : chalk.dim('(optional)');
       lines.push(`  ${chalk.yellow(argName)} ${required}`);
       lines.push(`    ${arg.description}`);
     });
@@ -88,7 +90,7 @@ export function formatCommandHelp(config: CommandHelpConfig): string {
   // Options
   if (config.options && config.options.length > 0) {
     lines.push(chalk.bold('OPTIONS'));
-    config.options.forEach((opt) => {
+    config.options.forEach(opt => {
       lines.push(`  ${chalk.green(opt.flag)}`);
       lines.push(`    ${opt.description}`);
       if (opt.defaultValue) {
@@ -105,7 +107,7 @@ export function formatCommandHelp(config: CommandHelpConfig): string {
   // Common Patterns (AI-optimized)
   if (config.commonPatterns && config.commonPatterns.length > 0) {
     lines.push(chalk.bold('COMMON PATTERNS'));
-    config.commonPatterns.forEach((pattern) => {
+    config.commonPatterns.forEach(pattern => {
       lines.push(`  • ${pattern}`);
     });
     lines.push('');
@@ -139,7 +141,7 @@ export function formatCommandHelp(config: CommandHelpConfig): string {
   // Common Errors (AI-optimized)
   if (config.commonErrors && config.commonErrors.length > 0) {
     lines.push(chalk.bold('COMMON ERRORS'));
-    config.commonErrors.forEach((err) => {
+    config.commonErrors.forEach(err => {
       lines.push(`  ${chalk.red('✗')} ${chalk.bold(err.error)}`);
       lines.push(`    ${chalk.green('Fix:')} ${err.fix}`);
       lines.push('');
@@ -149,7 +151,7 @@ export function formatCommandHelp(config: CommandHelpConfig): string {
   // Related Commands
   if (config.relatedCommands && config.relatedCommands.length > 0) {
     lines.push(chalk.bold('RELATED COMMANDS'));
-    config.relatedCommands.forEach((cmd) => {
+    config.relatedCommands.forEach(cmd => {
       lines.push(`  ${chalk.cyan(`fspec ${cmd}`)}`);
     });
     lines.push('');
@@ -158,7 +160,7 @@ export function formatCommandHelp(config: CommandHelpConfig): string {
   // Notes
   if (config.notes && config.notes.length > 0) {
     lines.push(chalk.bold('NOTES'));
-    config.notes.forEach((note) => {
+    config.notes.forEach(note => {
       lines.push(`  • ${note}`);
     });
     lines.push('');

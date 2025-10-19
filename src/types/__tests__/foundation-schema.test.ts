@@ -110,7 +110,10 @@ describe('Feature: Design Generic Foundation Schema', () => {
         solutionSpace: {
           overview: 'Automated CLI tool',
           capabilities: [
-            { name: 'Task Automation', description: 'Automate repetitive tasks' },
+            {
+              name: 'Task Automation',
+              description: 'Automate repetitive tasks',
+            },
           ],
         },
         personas: cliPersonas,
@@ -169,7 +172,10 @@ describe('Feature: Design Generic Foundation Schema', () => {
           overview: 'Type-safe, well-documented library',
           capabilities: [
             { name: 'Core API', description: 'Provide core functionality' },
-            { name: 'Type Definitions', description: 'Full TypeScript support' },
+            {
+              name: 'Type Definitions',
+              description: 'Full TypeScript support',
+            },
           ],
         },
         personas: libraryPersonas,
@@ -248,11 +254,23 @@ describe('Feature: Design Generic Foundation Schema', () => {
       // Given I am defining the solution space structure
       // And capabilities should be broad (3-7 items), not granular features
       const capabilities = [
-        { name: 'User Authentication', description: 'Authenticate users securely' },
-        { name: 'Data Visualization', description: 'Visualize data with charts' },
-        { name: 'API Integration', description: 'Integrate with external APIs' },
+        {
+          name: 'User Authentication',
+          description: 'Authenticate users securely',
+        },
+        {
+          name: 'Data Visualization',
+          description: 'Visualize data with charts',
+        },
+        {
+          name: 'API Integration',
+          description: 'Integrate with external APIs',
+        },
         { name: 'Reporting', description: 'Generate comprehensive reports' },
-        { name: 'Real-time Updates', description: 'Provide real-time data updates' },
+        {
+          name: 'Real-time Updates',
+          description: 'Provide real-time data updates',
+        },
       ];
 
       // When I validate a foundation.json with capabilities like "User Authentication", "Data Visualization"
@@ -260,7 +278,10 @@ describe('Feature: Design Generic Foundation Schema', () => {
         overview: 'A platform for data-driven decision making',
         capabilities,
         outOfScope: ['Mobile app development', 'Blockchain integration'],
-        successCriteria: ['Users can authenticate', 'Data visualizes correctly'],
+        successCriteria: [
+          'Users can authenticate',
+          'Data visualizes correctly',
+        ],
       };
 
       // Then the schema should accept 3-7 high-level capabilities
@@ -274,8 +295,12 @@ describe('Feature: Design Generic Foundation Schema', () => {
 
       // And the schema should focus on WHAT the system does, not HOW
       // Description focuses on WHAT, not implementation details
-      expect(solutionSpace.capabilities[0].description).not.toContain('using JWT');
-      expect(solutionSpace.capabilities[0].description).not.toContain('PostgreSQL');
+      expect(solutionSpace.capabilities[0].description).not.toContain(
+        'using JWT'
+      );
+      expect(solutionSpace.capabilities[0].description).not.toContain(
+        'PostgreSQL'
+      );
     });
   });
 
@@ -300,7 +325,10 @@ describe('Feature: Design Generic Foundation Schema', () => {
         solutionSpace: {
           overview: 'Integrated platform with multiple subsystems',
           capabilities: [
-            { name: 'Core Platform', description: 'Base platform functionality' },
+            {
+              name: 'Core Platform',
+              description: 'Base platform functionality',
+            },
           ],
         },
         // When I validate a foundation.json with subFoundations array
@@ -377,7 +405,8 @@ describe('Feature: Design Generic Foundation Schema', () => {
       // Invalid: HOW it's implemented (implementation detail)
       const invalidCapability = {
         name: 'JWT Authentication using PostgreSQL sessions',
-        description: 'Uses bcrypt for password hashing and Redis for session storage',
+        description:
+          'Uses bcrypt for password hashing and Redis for session storage',
       };
 
       // When I validate a foundation.json containing implementation details
@@ -456,9 +485,14 @@ describe('Feature: Design Generic Foundation Schema', () => {
       // And TypeScript interfaces must map exactly to JSON Schema definitions
       // (This is enforced by our type definitions matching the schema structure)
       // The validator uses the schema which requires these fields
-      expect(result.errors.some(e => e.params?.missingProperty === 'project' ||
-                                     e.params?.missingProperty === 'problemSpace' ||
-                                     e.params?.missingProperty === 'solutionSpace')).toBe(true);
+      expect(
+        result.errors.some(
+          e =>
+            e.params?.missingProperty === 'project' ||
+            e.params?.missingProperty === 'problemSpace' ||
+            e.params?.missingProperty === 'solutionSpace'
+        )
+      ).toBe(true);
     });
   });
 });

@@ -58,7 +58,12 @@ describe('Feature: Prevent retroactive state walking - enforce temporal ordering
       );
 
       // And I have a feature file tagged with @TEST-001 that was created BEFORE T1
-      const featureFile = join(tmpDir, 'spec', 'features', 'test-feature.feature');
+      const featureFile = join(
+        tmpDir,
+        'spec',
+        'features',
+        'test-feature.feature'
+      );
       const featureContent = `@TEST-001
 Feature: Test Feature
 
@@ -95,7 +100,9 @@ Feature: Test Feature
           status: 'testing',
           cwd: tmpDir,
         })
-      ).rejects.toThrow(/Feature files were created.*BEFORE entering specifying state/);
+      ).rejects.toThrow(
+        /Feature files were created.*BEFORE entering specifying state/
+      );
     });
   });
 
@@ -129,7 +136,12 @@ Feature: Test Feature
       );
 
       // And I have a feature file tagged with @TEST-002 that was created AFTER T1
-      const featureFile = join(tmpDir, 'spec', 'features', 'test-feature.feature');
+      const featureFile = join(
+        tmpDir,
+        'spec',
+        'features',
+        'test-feature.feature'
+      );
       const featureContent = `@TEST-002
 Feature: Test Feature
 
@@ -197,7 +209,12 @@ Feature: Test Feature
       );
 
       // And I have a feature file (required to pass other validation)
-      const featureFile = join(tmpDir, 'spec', 'features', 'test-feature.feature');
+      const featureFile = join(
+        tmpDir,
+        'spec',
+        'features',
+        'test-feature.feature'
+      );
       await writeFile(featureFile, `@TEST-003\nFeature: Test`);
       const featureTime = new Date('2025-01-15T10:30:00.000Z');
       await utimes(featureFile, featureTime, featureTime);
@@ -236,7 +253,9 @@ describe('Feature: Test Feature', () => {
           status: 'implementing',
           cwd: tmpDir,
         })
-      ).rejects.toThrow(/Test files were created.*BEFORE entering testing state/);
+      ).rejects.toThrow(
+        /Test files were created.*BEFORE entering testing state/
+      );
     });
   });
 
@@ -270,7 +289,12 @@ describe('Feature: Test Feature', () => {
       );
 
       // And the feature file was created BEFORE specifying state (legacy code)
-      const featureFile = join(tmpDir, 'spec', 'features', 'imported-feature.feature');
+      const featureFile = join(
+        tmpDir,
+        'spec',
+        'features',
+        'imported-feature.feature'
+      );
       const featureContent = `@TEST-004
 Feature: Imported Feature
 

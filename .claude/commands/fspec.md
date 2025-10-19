@@ -886,7 +886,7 @@ describe('Feature: [Feature Name]', () => {
 - **Traceability**: Know exactly which tests validate which scenarios
 - **Implementation Tracking**: See which code implements which acceptance criteria
 - **Gap Detection**: Identify uncovered scenarios or untested code
-- **Reverse ACDD**: Essential for reverse engineering existing codebases (see `/rspec`)
+- **Reverse ACDD**: Essential for reverse engineering existing codebases (see `fspec reverse --help`)
 - **Refactoring Safety**: Understand impact of code changes on scenarios
 
 ### Coverage Commands

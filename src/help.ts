@@ -54,7 +54,7 @@ export function displayCustomHelpWithNote(): void {
   console.log(
     '  ' +
       chalk.cyan('fspec init') +
-      '                  - Initialize /fspec and /rspec slash commands'
+      '                  - Initialize /fspec slash command for Claude Code'
   );
   console.log(
     '  ' +
@@ -74,7 +74,12 @@ export function displayCustomHelpWithNote(): void {
   console.log(
     '  ' +
       chalk.cyan('fspec check') +
-      '                 - Run all validation checks\n'
+      '                 - Run all validation checks'
+  );
+  console.log(
+    '  ' +
+      chalk.cyan('fspec reverse') +
+      '              - Interactive reverse ACDD for existing codebases\n'
   );
 
   console.log(chalk.bold('GET HELP'));
@@ -364,7 +369,9 @@ function displaySpecsHelp(): void {
   console.log('      fspec validate-tags');
   console.log('');
 
-  console.log(chalk.bold('COVERAGE TRACKING (Scenario-to-Test-to-Implementation)'));
+  console.log(
+    chalk.bold('COVERAGE TRACKING (Scenario-to-Test-to-Implementation)')
+  );
   console.log(
     '  ' +
       chalk.cyan('fspec link-coverage <feature> --scenario <name>') +
@@ -409,9 +416,7 @@ function displaySpecsHelp(): void {
       '     Verify file paths exist'
   );
   console.log('    Options:');
-  console.log(
-    '      --fix                            Remove broken mappings'
-  );
+  console.log('      --fix                            Remove broken mappings');
   console.log('    Examples:');
   console.log('      fspec audit-coverage user-authentication --fix');
   console.log('');
@@ -423,12 +428,12 @@ function displaySpecsHelp(): void {
   console.log('    Options:');
   console.log('      --scenario <name>                Scenario to unlink');
   console.log('      --test-file <path>               Test file to remove');
-  console.log('      --impl-file <path>               Implementation to remove');
+  console.log(
+    '      --impl-file <path>               Implementation to remove'
+  );
   console.log('      --all                            Remove all mappings');
   console.log('    Examples:');
-  console.log(
-    '      fspec unlink-coverage user-auth --scenario "Login" --all'
-  );
+  console.log('      fspec unlink-coverage user-auth --scenario "Login" --all');
   console.log('');
   console.log(
     '  ' +
@@ -436,7 +441,9 @@ function displaySpecsHelp(): void {
       '           Generate .coverage files for existing features'
   );
   console.log('    Options:');
-  console.log('      --dry-run                        Preview without creating files');
+  console.log(
+    '      --dry-run                        Preview without creating files'
+  );
   console.log('    Examples:');
   console.log('      fspec generate-coverage');
   console.log('      fspec generate-coverage --dry-run');
@@ -825,9 +832,7 @@ function displayDiscoveryHelp(): void {
     '      fspec add-attachment UI-002 mockups/dashboard.png --description "Dashboard v2"'
   );
   console.log('');
-  console.log(
-    '  ' + chalk.cyan('fspec list-attachments <work-unit-id>')
-  );
+  console.log('  ' + chalk.cyan('fspec list-attachments <work-unit-id>'));
   console.log('    Description: List all attachments for a work unit');
   console.log('    Examples:');
   console.log('      fspec list-attachments AUTH-001');
@@ -999,7 +1004,9 @@ function displayHooksHelp(): void {
   console.log('    command         - Script path (relative to project root)');
   console.log('    blocking        - If true, failure prevents execution');
   console.log('    timeout         - Timeout in seconds (default: 60)');
-  console.log('    condition       - Optional filters (tags, prefix, epic, estimate)');
+  console.log(
+    '    condition       - Optional filters (tags, prefix, epic, estimate)'
+  );
   console.log('');
 
   console.log(chalk.bold('COMMON USE CASES'));
@@ -1132,9 +1139,7 @@ function displaySetupHelp(): void {
   console.log('      fspec discover-foundation');
   console.log('      fspec discover-foundation --output foundation.json');
   console.log('');
-  console.log(
-    '  ' + chalk.cyan('fspec add-capability <name> <description>')
-  );
+  console.log('  ' + chalk.cyan('fspec add-capability <name> <description>'));
   console.log('    Description: Add capability to foundation.json');
   console.log('    Examples:');
   console.log(
@@ -1282,7 +1287,9 @@ export function handleHelpCommand(group?: string): void {
       break;
     default:
       console.log(chalk.red(`Unknown help topic: ${group}`));
-      console.log('Valid topics: specs, work, discovery, metrics, setup, hooks');
+      console.log(
+        'Valid topics: specs, work, discovery, metrics, setup, hooks'
+      );
       console.log('Use ' + chalk.cyan('fspec --help') + ' for main help\n');
   }
 }

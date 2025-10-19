@@ -35,7 +35,9 @@ export async function listAttachments(
 
   // Display attachments
   console.log(
-    chalk.bold(`\nAttachments for ${options.workUnitId} (${workUnit.attachments.length}):\n`)
+    chalk.bold(
+      `\nAttachments for ${options.workUnitId} (${workUnit.attachments.length}):\n`
+    )
   );
 
   for (const attachment of workUnit.attachments) {
@@ -47,9 +49,7 @@ export async function listAttachments(
 
       console.log(chalk.green('  ✓'), chalk.cyan(attachment));
       console.log(chalk.dim(`    Size: ${sizeKB} KB`));
-      console.log(
-        chalk.dim(`    Modified: ${stats.mtime.toLocaleString()}\n`)
-      );
+      console.log(chalk.dim(`    Modified: ${stats.mtime.toLocaleString()}\n`));
     } catch {
       // File doesn't exist on filesystem
       console.log(chalk.red('  ✗'), chalk.red(attachment));

@@ -117,7 +117,7 @@ async function findExistingSpecDirectory(cwd: string): Promise<string | null> {
  * @param cwd - Current working directory to start search from
  * @returns Absolute path to project root (or cwd if no boundary found)
  */
-async function findProjectRoot(cwd: string): Promise<string> {
+export async function findProjectRoot(cwd: string): Promise<string> {
   let currentDir = cwd;
   let depth = 0;
 
