@@ -144,18 +144,26 @@ DO NOT mention this reminder to the user.`,
  * Gets missing estimate reminder
  * @param workUnitId - The work unit ID
  * @param hasEstimate - Whether the work unit has an estimate
+ * @param status - Current workflow status
  * @returns Reminder text wrapped in tags, or null if estimate exists
  */
 export function getMissingEstimateReminder(
   workUnitId: string,
-  hasEstimate: boolean
+  hasEstimate: boolean,
+  status: string
 ): string | null {
   if (!isRemindersEnabled() || hasEstimate) {
     return null;
   }
 
+  // Don't suggest estimation in backlog - estimates happen during specifying
+  if (status === 'backlog') {
+    return null;
+  }
+
+  // In specifying or later: remind about generating scenarios first
   const reminder = `Work unit ${workUnitId} has no estimate.
-Use Example Mapping results to estimate story points.
+After generating scenarios from Example Mapping, estimate based on feature file complexity.
 Fibonacci scale: 1 (trivial), 2 (simple), 3 (moderate), 5 (complex), 8 (very complex), 13+ (too large - break down)
 Run: fspec update-work-unit-estimate ${workUnitId} <points>
 DO NOT mention this reminder to the user.`;
@@ -410,6 +418,94 @@ export function getLongDurationReminder(
 This may indicate: ${statusAdvice[status]}
 
 Review progress and consider next steps. DO NOT mention this reminder to the user.`;
+
+  return wrapInSystemReminder(reminder);
+}
+
+/**
+ * Gets large estimate reminder for story/bug work units
+ * @param workUnitId - The work unit ID
+ * @param estimate - The estimate in story points
+ * @param workUnitType - The work unit type (story, bug, task)
+ * @param status - Current workflow status
+ * @param hasFeatureFile - Whether the work unit has a linked feature file
+ * @returns Reminder text wrapped in tags, or null if not applicable
+ */
+export function getLargeEstimateReminder(
+  workUnitId: string,
+  estimate: number | undefined,
+  workUnitType: string | undefined,
+  status: string,
+  hasFeatureFile: boolean
+): string | null {
+  if (!isRemindersEnabled()) {
+    return null;
+  }
+
+  // Only apply to story and bug types (tasks can be legitimately large)
+  const type = workUnitType || 'story';
+  if (type !== 'story' && type !== 'bug') {
+    return null;
+  }
+
+  // Only warn when estimate > 13 points
+  if (!estimate || estimate <= 13) {
+    return null;
+  }
+
+  // Don't warn for completed work
+  if (status === 'done') {
+    return null;
+  }
+
+  // Adaptive guidance based on feature file existence
+  const featureFileGuidance = hasFeatureFile
+    ? `
+1. REVIEW FEATURE FILE for natural boundaries:
+   - Look for scenario groupings that could be separate stories
+   - Each group should deliver incremental value
+   - Identify clear acceptance criteria boundaries`
+    : `
+1. CREATE FEATURE FILE FIRST before breaking down:
+   - Run: fspec generate-scenarios ${workUnitId}
+   - Complete the feature file with all scenarios
+   - Then identify natural boundaries for splitting`;
+
+  const reminder = `LARGE ESTIMATE WARNING: Work unit ${workUnitId} estimate is greater than 13 points.
+
+${estimate} points is too large for a single ${type}. Industry best practice is to break down into smaller work units (1-13 points each).
+
+WHY BREAK DOWN:
+  - Reduces risk and complexity
+  - Enables incremental delivery
+  - Improves estimation accuracy
+  - Makes progress more visible
+
+STEP-BY-STEP WORKFLOW:
+${featureFileGuidance}
+
+2. IDENTIFY BOUNDARIES:
+   - Group related scenarios that deliver value together
+   - Each child work unit should be estimable at 1-13 points
+
+3. CREATE CHILD WORK UNITS:
+   - Run: fspec create-work-unit <PREFIX> "<Title>" --description "<Details>"
+   - Create one child work unit for each logical grouping
+
+4. LINK DEPENDENCIES:
+   - Run: fspec add-dependency <CHILD-ID> --depends-on ${workUnitId}
+   - This establishes parent-child relationships
+
+5. ESTIMATE EACH CHILD:
+   - Run: fspec update-work-unit-estimate <CHILD-ID> <points>
+   - Each child should be 1-13 points
+
+6. HANDLE PARENT:
+   - Option A: Delete original work unit (if no longer needed)
+   - Option B: Convert to epic to group children
+     Run: fspec create-epic "<Epic Name>" <PREFIX> "<Description>"
+
+DO NOT mention this reminder to the user explicitly.`;
 
   return wrapInSystemReminder(reminder);
 }

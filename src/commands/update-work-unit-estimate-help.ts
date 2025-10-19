@@ -5,7 +5,7 @@ const config: CommandHelpConfig = {
   description: 'Set story point estimate for a work unit using Fibonacci scale',
   usage: 'fspec update-work-unit-estimate <id> <points>',
   whenToUse:
-    'Use after Example Mapping when you have enough information to estimate complexity. IMPORTANT: Story and Bug work units require a completed feature file before estimation. Task work units can be estimated at any stage.',
+    'Use after generating scenarios from Example Mapping when you have enough information to estimate complexity. IMPORTANT: Story and Bug work units require a completed feature file before estimation. Task work units can be estimated at any stage.',
   prerequisites: [
     'For story/bug work units: Feature file must exist and be complete (no prefill placeholders)',
     'For task work units: No prerequisites (tasks do not require feature files)',
@@ -59,11 +59,13 @@ const config: CommandHelpConfig = {
   ],
   notes: [
     'Use Fibonacci sequence for estimates: 1, 2, 3, 5, 8, 13, 21',
-    'Estimate AFTER completing Example Mapping and feature file',
+    'Estimate AFTER generating scenarios from Example Mapping and completing feature file',
     '1=trivial, 3=small, 5=medium, 8=large, 13+=very large',
     'Story/Bug types: MUST have completed feature file with @WORK-UNIT-ID tag',
     'Task types: Can be estimated without feature files',
     'Prefill placeholders ([role], [action], etc.) block estimation',
+    'IMPORTANT: Estimates > 13 points trigger a warning in show-work-unit recommending breakdown into smaller work units (1-13 points each)',
+    'Large estimate warnings persist until estimate ≤ 13 or status = done (tasks exempt from warnings)',
   ],
 };
 

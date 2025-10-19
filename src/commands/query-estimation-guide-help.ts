@@ -5,7 +5,7 @@ const config: CommandHelpConfig = {
   description: 'Get estimation guidance based on historical data for a work unit',
   usage: 'fspec query-estimation-guide <workUnitId> [options]',
   whenToUse:
-    'Use after Example Mapping to get data-driven estimation guidance based on similar historical work.',
+    'Use after generating scenarios from Example Mapping to get data-driven estimation guidance based on similar historical work.',
   arguments: [
     {
       name: 'workUnitId',

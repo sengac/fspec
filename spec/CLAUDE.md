@@ -1035,7 +1035,7 @@ Work unit AUTH-001 cannot be estimated because:
 Next steps:
   1. Complete the specifying phase first
   2. Use Example Mapping to define acceptance criteria
-  3. Generate feature file: fspec generate-scenarios AUTH-001
+  3. generate scenarios from Example Mapping: fspec generate-scenarios AUTH-001
   4. Ensure feature file has no prefill placeholders
   5. Then estimate based on completed scenarios
 
@@ -1077,7 +1077,7 @@ Feature file has prefill placeholders must be removed first. Complete the featur
 ✅ **Story/Bug work units**:
 - Feature file exists with `@WORK-UNIT-ID` tag
 - Feature file has NO prefill placeholders (`[role]`, `[action]`, `[benefit]`, `[precondition]`, etc.)
-- Work unit is typically in `specifying` phase or later (after Example Mapping)
+- Work unit is typically in `specifying` phase or later (after generating scenarios from Example Mapping)
 
 ✅ **Task work units**:
 - Can be estimated at ANY stage
@@ -1590,6 +1590,50 @@ DO NOT mention this to the user explicitly.
      3. Generate feature file: fspec generate-scenarios AUTH-001
      4. Ensure feature file has no prefill placeholders
      5. Then estimate based on completed scenarios
+
+   DO NOT mention this reminder to the user explicitly.
+   </system-reminder>
+   ```
+
+3b. **Large Estimates** - When estimates > 13 points for story/bug work units
+   ```xml
+   <system-reminder>
+   LARGE ESTIMATE WARNING: Work unit AUTH-001 estimate is greater than 13 points.
+
+   21 points is too large for a single story. Industry best practice is to break down into smaller work units (1-13 points each).
+
+   WHY BREAK DOWN:
+     - Reduces risk and complexity
+     - Enables incremental delivery
+     - Improves estimation accuracy
+     - Makes progress more visible
+
+   STEP-BY-STEP WORKFLOW:
+   1. REVIEW FEATURE FILE for natural boundaries:
+      - Look for scenario groupings that could be separate stories
+      - Each group should deliver incremental value
+      - Identify clear acceptance criteria boundaries
+
+   2. IDENTIFY BOUNDARIES:
+      - Group related scenarios that deliver value together
+      - Each child work unit should be estimable at 1-13 points
+
+   3. CREATE CHILD WORK UNITS:
+      - Run: fspec create-work-unit <PREFIX> "<Title>" --description "<Details>"
+      - Create one child work unit for each logical grouping
+
+   4. LINK DEPENDENCIES:
+      - Run: fspec add-dependency <CHILD-ID> --depends-on AUTH-001
+      - This establishes parent-child relationships
+
+   5. ESTIMATE EACH CHILD:
+      - Run: fspec update-work-unit-estimate <CHILD-ID> <points>
+      - Each child should be 1-13 points
+
+   6. HANDLE PARENT:
+      - Option A: Delete original work unit (if no longer needed)
+      - Option B: Convert to epic to group children
+        Run: fspec create-epic "<Epic Name>" <PREFIX> "<Description>"
 
    DO NOT mention this reminder to the user explicitly.
    </system-reminder>

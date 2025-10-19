@@ -65,7 +65,7 @@ Work unit ${options.workUnitId} cannot be estimated because:
 Next steps:
   1. Complete the specifying phase first
   2. Use Example Mapping to define acceptance criteria
-  3. Generate feature file: fspec generate-scenarios ${options.workUnitId}
+  3. generate scenarios from Example Mapping: fspec generate-scenarios ${options.workUnitId}
   4. Ensure feature file has no prefill placeholders
   5. Then estimate based on completed scenarios
 

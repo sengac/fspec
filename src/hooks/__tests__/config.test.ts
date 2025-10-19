@@ -21,7 +21,12 @@ describe('Feature: Hook configuration schema and validation', () => {
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    try {
+      await rm(testDir, { recursive: true, force: true, maxRetries: 3 });
+    } catch (error) {
+      // Ignore cleanup errors - test cleanup is not critical
+      console.warn(`Failed to clean up ${testDir}:`, error);
+    }
   });
 
   describe('Scenario: Load valid hook configuration with single hook', () => {
@@ -78,7 +83,12 @@ describe('Feature: Hook configuration schema and validation', () => {
           },
         })
       );
-      await writeFile(join(testDir, 'test.sh'), '#!/bin/bash\necho "test"');
+      const testShPath = join(testDir, 'test.sh');
+      await writeFile(testShPath, '#!/bin/bash\necho "test"');
+
+      // Ensure file exists before loading config
+      const { access } = await import('node:fs/promises');
+      await access(testShPath);
 
       // When I load the hook configuration
       const config = await loadHookConfig(testDir);
@@ -108,7 +118,12 @@ describe('Feature: Hook configuration schema and validation', () => {
           },
         })
       );
-      await writeFile(join(testDir, 'audit.sh'), '#!/bin/bash\necho "audit"');
+      const auditShPath = join(testDir, 'audit.sh');
+      await writeFile(auditShPath, '#!/bin/bash\necho "audit"');
+
+      // Ensure file exists before loading config
+      const { access } = await import('node:fs/promises');
+      await access(auditShPath);
 
       // When I load the hook configuration
       const config = await loadHookConfig(testDir);

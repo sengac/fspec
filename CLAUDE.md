@@ -1,6 +1,10 @@
 # Claude Development Guidelines for fspec
 
-This document provides guidelines for AI assistants (particularly Claude) working on the fspec project. For complete project context and requirements, always refer to [spec/FOUNDATION.md](spec/FOUNDATION.md).
+This document provides guidelines for AI assistants (particularly Claude) working on the **fspec codebase**. This is about DEVELOPING fspec itself, not using it.
+
+**For using fspec commands and ACDD workflow**: See [spec/CLAUDE.md](spec/CLAUDE.md)
+
+---
 
 ## Project Overview
 
@@ -9,23 +13,11 @@ This document provides guidelines for AI assistants (particularly Claude) workin
 - **Repository**: https://github.com/sengac/fspec
 - **License**: MIT
 
-For detailed understanding of:
+For complete project context:
+- **Project foundation**: [spec/FOUNDATION.md](spec/FOUNDATION.md)
+- **Using fspec workflow**: [spec/CLAUDE.md](spec/CLAUDE.md)
 
-- **Why we're building this**: See [spec/FOUNDATION.md - Why We Are Building It](spec/FOUNDATION.md#2-why-we-are-building-it)
-- **Technical requirements**: See [spec/FOUNDATION.md - What We Are Building](spec/FOUNDATION.md#1-what-we-are-building)
-- **Specification guidelines**: See [spec/CLAUDE.md](spec/CLAUDE.md)
-
-## Core Principles
-
-### 1. Acceptance Criteria Driven Development (ACDD)
-
-As defined in [spec/CLAUDE.md](spec/CLAUDE.md):
-
-- **Specifications come first** - Define acceptance criteria in Gherkin format
-- **Tests come second** - Write tests that map to Gherkin scenarios BEFORE any code
-- **Code comes last** - Implement just enough code to make tests pass
-
-### 2. Code Quality Standards
+---
 
 ## MANDATORY CODING STANDARDS - ZERO TOLERANCE
 
@@ -72,9 +64,11 @@ As defined in [spec/CLAUDE.md](spec/CLAUDE.md):
 - ❌ **NEVER** use `console.log/error/warn` in source code (tests are OK)
 - ✅ **ONLY** use chalk for colored CLI output in commands
 
-### MANDATORY IMPLEMENTATION PATTERNS
+---
 
-#### ES Modules (Required):
+## MANDATORY IMPLEMENTATION PATTERNS
+
+### ES Modules (Required):
 
 ```typescript
 // ✅ CORRECT
@@ -87,7 +81,7 @@ const __dirname = dirname(__filename);
 const __dirname = require('path').dirname(__filename);
 ```
 
-#### Type Safety (Required):
+### Type Safety (Required):
 
 ```typescript
 // ✅ CORRECT
@@ -101,7 +95,7 @@ const feature: FeatureFile = loadFeature();
 const feature: any = loadFeature();
 ```
 
-#### Error Handling (Required):
+### Error Handling (Required):
 
 ```typescript
 // ✅ CORRECT - All async operations must have error handling
@@ -114,7 +108,7 @@ try {
 }
 ```
 
-#### CLI Output (Required):
+### CLI Output (Required):
 
 ```typescript
 // ✅ CORRECT - Use chalk for colored output
@@ -126,13 +120,17 @@ console.error(chalk.red('✗ Validation failed'));
 console.log('Feature file is valid');
 ```
 
-### File Organization
+---
+
+## File Organization
 
 - **Keep files under 300 lines** - refactor when approaching this limit
 - When a file exceeds 300 lines, stop and refactor BEFORE continuing
 - Ask for approval before major refactoring
 
-### Testing Requirements
+---
+
+## Testing Requirements
 
 - **Use Vitest exclusively** - NEVER use Jest
 - **Write ALL tests in TypeScript** - NEVER create standalone JavaScript test files
@@ -145,7 +143,7 @@ console.log('Feature file is valid');
 - **Mock Patterns:** Use Vitest mocks, avoid actual file system in unit tests
 - **Type Safety:** No `any` types allowed in tests - use proper type assertions
 
-#### Test File Requirements:
+### Test File Requirements:
 
 - ❌ **NEVER** create `test.mjs`, `test.js`, or any external JavaScript test files
 - ❌ **NEVER** run tests with `node test.js` or `node test.mjs`
@@ -153,7 +151,7 @@ console.log('Feature file is valid');
 - ✅ **ALWAYS** run tests through `npm test` using Vitest
 - ✅ **ALWAYS** import and test TypeScript modules directly in TypeScript test files
 
-#### Test Naming Convention:
+### Test Naming Convention:
 
 ```typescript
 // Test file: src/commands/__tests__/validate.test.ts
@@ -179,6 +177,8 @@ describe('Feature: Gherkin Syntax Validation', () => {
 });
 ```
 
+---
+
 ## Technology Stack
 
 ### Build System
@@ -199,6 +199,8 @@ describe('Feature: Gherkin Syntax Validation', () => {
 - **Output**: chalk for colored CLI output
 - **JSON Schema**: Ajv for validating foundation.json and tags.json
 
+---
+
 ## Development Methodology: Acceptance Criteria Driven Development (ACDD)
 
 This project uses **Acceptance Criteria Driven Development** where:
@@ -214,13 +216,15 @@ This project uses **Acceptance Criteria Driven Development** where:
 - **Tests must map 1:1 to scenarios in feature files**
 - **Feature files define acceptance criteria, NOT implementation details**
 
+---
+
 ## Development Workflow
 
 ### 1. Before Making Changes
 
 - Read the acceptance criteria in relevant .feature files (spec/features/*.feature)
 - Check `spec/FOUNDATION.md` for project requirements
-- Check `spec/CLAUDE.md` for Gherkin specification guidelines
+- Check `spec/CLAUDE.md` for fspec workflow and commands
 - Review `spec/TAGS.md` for available tags
 
 ### 2. When Writing Code (ACDD Process)
@@ -262,155 +266,9 @@ npm run format    # Format code with Prettier
 
 **Code that violates TypeScript standards will be rejected by the compiler.**
 
-### 4. Temporal Ordering Enforcement
+---
 
-**CRITICAL**: fspec enforces temporal ordering to prevent retroactive state walking where all work is done first, then states are walked through as theater.
-
-#### The Problem
-
-The system enforces state sequence (backlog → specifying → testing → implementing → validating → done) but must also enforce work sequence (when work is actually done).
-
-**Without temporal validation**, an AI could:
-1. Write feature file, tests, and code all at once
-2. Walk through states sequentially
-3. System would allow it because artifacts exist
-
-This violates ACDD by doing work BEFORE entering the required state.
-
-#### The Solution
-
-**Temporal validation** compares file modification timestamps (mtime) against state entry timestamps:
-
-- **Moving to testing**: Feature files must be modified AFTER entering specifying state
-- **Moving to implementing**: Test files must be modified AFTER entering testing state
-
-**Example Error**:
-```bash
-$ fspec update-work-unit-status AUTH-001 testing
-✗ ACDD temporal ordering violation detected!
-
-Feature files were created BEFORE entering specifying state.
-This indicates retroactive completion.
-
-Violations:
-  - spec/features/user-auth.feature
-    File modified: 2025-01-15T09:00:00Z
-    Entered specifying: 2025-01-15T10:00:00Z
-    Gap: 60 minutes BEFORE state entry
-```
-
-#### Escape Hatch: --skip-temporal-validation
-
-For legitimate cases (reverse ACDD, importing existing work):
-
-```bash
-fspec update-work-unit-status LEGACY-001 testing --skip-temporal-validation
-```
-
-**When to use**:
-- Reverse ACDD (documenting existing code)
-- Importing legacy work
-- Recovering from temporal validation errors
-
-**When NOT to use**:
-- Normal ACDD workflow (forward development)
-- Writing new features from scratch
-
-**See**: spec/CLAUDE.md "Temporal Ordering Enforcement (FEAT-011)" for complete details.
-
-### 5. Using fspec on Itself
-
-fspec manages its own specifications:
-
-```bash
-# Create new feature file (with coverage file)
-fspec create-feature "Feature Name"
-
-# Validate all feature files
-fspec validate
-
-# Validate tags
-fspec validate-tags
-
-# Format all feature files
-fspec format
-
-# List all features
-fspec list-features
-
-# Filter by tag
-fspec list-features --tag=@phase1
-
-# Register new tag
-fspec register-tag @my-tag "Category Name" "Description"
-
-# List all tags
-fspec list-tags
-
-# Filter tags by category
-fspec list-tags --category "Phase Tags"
-
-# Generate coverage files for existing features (setup/recovery)
-fspec generate-coverage
-fspec generate-coverage --dry-run  # Preview
-
-# Link tests to scenarios (after writing tests)
-fspec link-coverage feature-name --scenario "Scenario Name" \
-  --test-file src/__tests__/test.test.ts --test-lines 10-25
-
-# Link implementation to tests (after implementing)
-fspec link-coverage feature-name --scenario "Scenario Name" \
-  --test-file src/__tests__/test.test.ts \
-  --impl-file src/module.ts --impl-lines 5-20
-
-# Remove coverage mappings (fix mistakes)
-fspec unlink-coverage feature-name --scenario "Scenario Name" --all
-fspec unlink-coverage feature-name --scenario "Scenario Name" --test-file <path>
-
-# Check coverage (find gaps)
-fspec show-coverage feature-name
-fspec show-coverage  # Project-wide
-
-# Audit coverage (verify file paths)
-fspec audit-coverage feature-name
-
-# Attachment support (during Example Mapping and discovery)
-fspec add-attachment <work-unit-id> <file-path>
-fspec add-attachment <work-unit-id> <file-path> --description "Description"
-fspec list-attachments <work-unit-id>
-fspec remove-attachment <work-unit-id> <file-name>
-fspec remove-attachment <work-unit-id> <file-name> --keep-file
-```
-
-## Lifecycle Hooks System
-
-fspec supports lifecycle hooks that execute custom scripts at command events. Hooks enable quality gates, automated testing, notifications, and custom workflow automation.
-
-### Hook Architecture
-
-**Key Components:**
-- **Hook Configuration**: `spec/fspec-hooks.json` - JSON configuration file
-- **Hook Engine**: `src/hooks/engine.ts` - Executes hooks with timeout/blocking support
-- **Hook Discovery**: `src/hooks/discovery.ts` - Discovers and filters hooks for events
-- **Hook Condition Evaluation**: `src/hooks/conditions.ts` - Evaluates tag/prefix/epic/estimate filters
-- **Command Integration**: All commands use `runCommandWithHooks()` wrapper
-
-**Event Naming:**
-- `pre-<command-name>` - Before command logic
-- `post-<command-name>` - After command logic
-- Example: `pre-update-work-unit-status`, `post-implementing`
-
-**Hook Properties:**
-- `name`: Unique identifier
-- `command`: Script path (relative to project root)
-- `blocking`: If true, failure prevents execution (pre) or sets exit code 1 (post)
-- `timeout`: Timeout in seconds (default: 60)
-- `condition`: Optional filters (tags, prefix, epic, estimateMin/Max)
-
-**System-Reminder Integration:**
-Blocking hook failures emit `<system-reminder>` tags wrapping stderr output, making failures highly visible to AI agents in Claude Code.
-
-### Implementing Hook Support for New Commands
+## Implementing Hook Support for New Commands
 
 When adding new commands, integrate hooks using the wrapper:
 
@@ -436,7 +294,9 @@ The wrapper automatically:
 4. Executes post-hooks (blocking failures set exit code to 1)
 5. Wraps blocking hook stderr in `<system-reminder>` tags
 
-### Hook Development Guidelines
+---
+
+## Hook Development Guidelines
 
 **DO:**
 - ✅ Use TypeScript for hook logic (src/hooks/)
@@ -452,290 +312,9 @@ The wrapper automatically:
 - ❌ Hard-code event names (derive from command names)
 - ❌ Skip error handling for missing/invalid hook scripts
 
-### Hook Command Reference
+---
 
-```bash
-# List all configured hooks
-fspec list-hooks
-
-# Validate hook configuration and script paths
-fspec validate-hooks
-
-# Add hook via CLI
-fspec add-hook <event> <name> --command <path> [--blocking] [--timeout <seconds>]
-
-# Remove hook
-fspec remove-hook <event> <name>
-```
-
-**See Also:**
-- `docs/hooks/configuration.md` - Complete hook configuration reference
-- `docs/hooks/troubleshooting.md` - Common errors and solutions
-- `examples/hooks/` - Example hook scripts
-
-## Foundation Document Discovery
-
-fspec provides automated discovery to bootstrap foundation.json for new projects through an AI-guided draft-driven workflow.
-
-### Discovery Workflow
-
-```bash
-# Run full discovery workflow
-fspec discover-foundation
-
-# Custom output path
-fspec discover-foundation --output foundation.json
-```
-
-### How Discovery Works
-
-1. **Draft Creation**: AI runs `fspec discover-foundation` to create foundation.json.draft
-   - Command creates draft with `[QUESTION: text]` placeholders for fields requiring input
-   - Command creates draft with `[DETECTED: value]` for auto-detected fields to verify
-   - Draft IS the guidance - defines structure and what needs to be filled
-
-2. **ULTRATHINK Guidance**: Command emits initial system-reminder for AI
-   - Instructs AI to analyze EVERYTHING: code structure, entry points, user interactions, documentation
-   - Emphasizes understanding HOW system works, then determining WHY it exists and WHAT users can do
-   - Guides AI field-by-field through discovery process
-
-3. **Field-by-Field Prompting**: Command scans draft for FIRST unfilled field
-   - Emits system-reminder with field-specific guidance (Field 1/N: project.name)
-   - Includes exact command to run for simple fields: `fspec update-foundation projectName "value"`
-   - For capabilities: `fspec add-capability "name" "description"`
-   - For personas: `fspec add-persona "name" "description" --goal "goal"`
-   - Provides language-agnostic guidance (not specific to JavaScript/TypeScript)
-
-4. **AI Analysis and Update**: AI analyzes codebase, asks human, runs fspec command
-   - AI examines code patterns to understand project structure
-   - AI asks human for confirmation/clarification
-   - AI runs appropriate commands based on field type:
-     - Simple fields: `fspec update-foundation projectName "fspec"`
-     - Capabilities: `fspec add-capability "User Authentication" "Secure access control"`
-     - Personas: `fspec add-persona "Developer" "Builds features" --goal "Ship quality code faster"`
-   - NO manual editing allowed - command detects and reverts manual edits
-
-5. **Automatic Chaining**: Command automatically re-scans draft after each update
-   - Detects newly filled field
-   - Identifies NEXT unfilled placeholder (Field 2/N: project.vision)
-   - Emits system-reminder with guidance for next field
-   - Repeats until all [QUESTION:] placeholders resolved
-
-6. **Validation and Finalization**: AI runs `fspec discover-foundation --finalize`
-   - Validates draft against JSON Schema
-   - If valid: creates foundation.json, deletes draft, auto-generates FOUNDATION.md
-   - If invalid: shows validation errors with exact field paths, prompts AI to fix and re-run
-
-### Discovery Focus: WHY/WHAT not HOW
-
-**WHAT** (Capabilities):
-- ✅ Good: "User Authentication", "Data Visualization", "Real-time Updates"
-- ❌ Bad: "Uses JWT with bcrypt", "D3.js charting", "WebSocket connections"
-
-**WHY** (Problems):
-- ✅ Good: "Users need secure access to protected features"
-- ❌ Bad: "Code needs JWT authentication"
-
-The discovery system guides AI to focus on user needs and capabilities, not technical implementation details.
-
-### Example Discovery Output
-
-```
-✓ Created spec/foundation.json.draft
-
-Field 1/8: project.name
-Analyze project configuration to determine project name. Confirm with human.
-Run: fspec update-foundation projectName "<name>"
-
-[AI analyzes codebase and determines name]
-
-✓ Updated project.name
-
-Field 2/8: project.vision
-ULTRATHINK: Read ALL code, understand the system deeply...
-```
-
-### Related Commands
-
-```bash
-# Update simple foundation fields
-fspec update-foundation projectName "fspec"
-fspec update-foundation projectVision "CLI tool for managing Gherkin specs"
-
-# Add capabilities to foundation
-fspec add-capability "User Authentication" "Secure access control"
-fspec add-capability "Data Visualization" "Interactive charts and graphs"
-
-# Add personas to foundation
-fspec add-persona "Developer" "Builds features with AI agents" --goal "Ship quality code faster"
-fspec add-persona "AI Agent" "Uses fspec for specs" --goal "Complete foundation" --goal "Validate features"
-
-# Remove capabilities from foundation
-fspec remove-capability "User Authentication"
-fspec remove-capability "[QUESTION: What can users DO?]"
-
-# Remove personas from foundation
-fspec remove-persona "Developer"
-fspec remove-persona "[QUESTION: Who uses this?]"
-
-# Show current foundation
-fspec show-foundation
-
-# Generate FOUNDATION.md from foundation.json
-fspec generate-foundation-md
-
-# Delete features or scenarios by tag (bulk operations)
-fspec delete-features-by-tag --tag=@deprecated --dry-run
-fspec delete-scenarios-by-tag --tag=@wip --dry-run
-
-# Query dependency bottlenecks and orphans
-fspec query-bottlenecks  # Find work units blocking 2+ others
-fspec query-orphans  # Find work units with no epic or dependencies
-fspec suggest-dependencies  # Auto-suggest dependencies based on patterns
-
-# Workflow automation utilities
-fspec workflow-automation <action> <work-unit-id>
-```
-
-### Discovery Guidance Reference
-
-For complete guidance on the draft-driven discovery workflow:
-- `foundation.json.draft` - The guidance file with placeholders showing what needs to be filled
-- `src/commands/discover-foundation.ts` - Orchestration command that reads draft and prompts AI
-- `fspec update-foundation` - Command for simple fields (project.name, project.vision, etc.)
-- `fspec add-capability` - Command for adding capabilities (NO manual editing)
-- `fspec add-persona` - Command for adding personas (NO manual editing)
-- `fspec remove-capability` - Command for removing capabilities (NO manual editing)
-- `fspec remove-persona` - Command for removing personas (NO manual editing)
-
-## Work Unit Analysis and Dependency Management
-
-fspec provides powerful analysis commands to identify bottlenecks, orphans, and automatically suggest dependencies:
-
-### Query Bottlenecks
-
-Identify critical path blockers blocking 2+ work units:
-
-```bash
-# Find bottleneck work units
-fspec query-bottlenecks
-fspec query-bottlenecks --output=json
-
-# Example output:
-# Bottleneck Work Units (blocking 2+ work units):
-#
-# AUTH-001 (implementing) - Setup authentication infrastructure
-#   Bottleneck Score: 5
-#   Direct Blocks: AUTH-002, AUTH-003
-#   Transitive Blocks: AUTH-004, AUTH-005, AUTH-006
-```
-
-**When to use**: Run daily during active development to identify critical path blockers and maximize team throughput.
-
-### Query Orphans
-
-Detect work units with no epic assignment or dependency relationships:
-
-```bash
-# Find orphaned work units
-fspec query-orphans
-fspec query-orphans --exclude-done  # Exclude completed work
-fspec query-orphans --output=json
-
-# Example output:
-# Found 3 orphaned work unit(s):
-#
-# 1. MISC-001 - Update documentation (backlog)
-#    ⚠ No epic or dependency relationships
-```
-
-**When to use**: Run after bulk work unit creation or periodically for maintenance to ensure all work is properly organized.
-
-### Suggest Dependencies
-
-Auto-suggest dependency relationships based on patterns:
-
-```bash
-# Get dependency suggestions
-fspec suggest-dependencies
-fspec suggest-dependencies --output=json
-
-# Example output:
-# Found 5 dependency suggestion(s):
-#
-# 1. AUTH-002 → AUTH-001 (dependsOn)
-#    ● sequential IDs in AUTH prefix suggest AUTH-002 depends on AUTH-001
-#    Confidence: MEDIUM
-#
-# 2. TEST-AUTH-001 → BUILD-AUTH-001 (dependsOn)
-#    ● test work depends on build work
-#    Confidence: HIGH
-```
-
-**When to use**: After creating multiple work units with consistent naming to quickly establish relationships.
-
-### Show Work Unit Dependencies
-
-Display all dependencies for a specific work unit:
-
-```bash
-# Show dependencies for a work unit
-fspec dependencies AUTH-002
-
-# Example output:
-# Work Unit: AUTH-002 - User Login Flow
-#
-# Dependencies:
-# - Depends On: AUTH-001 (Setup authentication infrastructure)
-# - Blocks: AUTH-003 (Password reset flow)
-# - Relates To: UI-001 (Login form component)
-```
-
-**When to use**: When reviewing work unit relationships or planning implementation order.
-
-## Bulk Operations
-
-fspec provides bulk operations for managing features and scenarios:
-
-### Delete Features by Tag
-
-Delete multiple features matching a tag:
-
-```bash
-# Preview deletion (safe)
-fspec delete-features-by-tag --tag=@deprecated --dry-run
-
-# Delete features with tag
-fspec delete-features-by-tag --tag=@deprecated
-
-# Example output:
-# Found 3 feature(s) with tag @deprecated:
-# - spec/features/old-login.feature
-# - spec/features/legacy-auth.feature
-# - spec/features/deprecated-api.feature
-#
-# Deleted 3 feature file(s)
-```
-
-### Delete Scenarios by Tag
-
-Delete multiple scenarios matching a tag:
-
-```bash
-# Preview deletion (safe)
-fspec delete-scenarios-by-tag --tag=@wip --dry-run
-
-# Delete scenarios with tag
-fspec delete-scenarios-by-tag --tag=@wip
-
-# Example output:
-# Found 5 scenario(s) with tag @wip in 3 feature file(s)
-# Deleted 5 scenario(s) from 3 feature file(s)
-```
-
-**When to use**: For cleanup operations, removing deprecated features, or pruning work-in-progress scenarios.
-
-## Common Commands
+## Common Build Commands
 
 ```bash
 # Install dependencies
@@ -753,27 +332,13 @@ npm test
 # Format code
 npm run format
 
-# Run fspec CLI
+# Run fspec CLI (after build)
 ./dist/index.js validate
 ./dist/index.js format
 ./dist/index.js list-features
-
-# Hook management (development)
-./dist/index.js list-hooks
-./dist/index.js validate-hooks
-./dist/index.js add-hook pre-implementing lint --command spec/hooks/lint.sh --blocking
-./dist/index.js remove-hook pre-implementing lint
-
-# Analysis and dependency management
-./dist/index.js query-bottlenecks
-./dist/index.js query-orphans
-./dist/index.js suggest-dependencies
-./dist/index.js dependencies AUTH-001
-
-# Bulk operations
-./dist/index.js delete-features-by-tag --tag=@deprecated --dry-run
-./dist/index.js delete-scenarios-by-tag --tag=@wip --dry-run
 ```
+
+---
 
 ## Important Reminders
 
@@ -784,38 +349,17 @@ npm run format
 5. **No Shortcuts**: Fix issues properly, don't use `any` types or disable linters
 6. **No File Extensions**: Never use .js or .ts extensions in TypeScript imports
 
-## Getting Help with Commands
-
-fspec has comprehensive `--help` documentation for all commands:
-
-```bash
-# Get help for any command
-fspec <command> --help
-
-# Examples:
-fspec validate --help
-fspec create-work-unit --help
-fspec add-scenario --help
-```
-
-**Every command includes:**
-- Description and purpose
-- Usage syntax with arguments/options
-- AI-optimized sections (WHEN TO USE, PREREQUISITES, TYPICAL WORKFLOW, COMMON ERRORS, COMMON PATTERNS)
-- Multiple examples with expected output
-- Related commands
-- Notes and best practices
-
-**Use `--help` frequently** - it's the fastest way to understand command usage without referring to documentation.
+---
 
 ## When You Get Stuck
 
-1. **Use `--help`**: Run `fspec <command> --help` for comprehensive command documentation
-2. Check existing patterns in the codebase
-3. Refer to `spec/FOUNDATION.md` for project goals
-4. Refer to `spec/CLAUDE.md` for Gherkin guidelines
-5. Run tests to verify changes
-6. Check feature files for acceptance criteria
+1. Check existing patterns in the codebase
+2. Refer to `spec/FOUNDATION.md` for project goals
+3. Refer to `spec/CLAUDE.md` for fspec usage and workflow
+4. Run tests to verify changes
+5. Check feature files for acceptance criteria
+
+---
 
 ## Contributing
 
