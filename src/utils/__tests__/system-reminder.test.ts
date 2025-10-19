@@ -103,12 +103,13 @@ describe('Feature: System Reminder Anti-Drift Pattern', () => {
 
   describe('Scenario: Remind about Fibonacci scale when estimate is missing', () => {
     it('should return reminder about Fibonacci scale when estimate is missing', () => {
-      // Given: Work unit UI-001 with no estimate
+      // Given: Work unit UI-001 with no estimate in specifying state
       const workUnitId = 'UI-001';
       const hasEstimate = false;
+      const status = 'specifying';
 
       // When: Getting missing estimate reminder
-      const reminder = getMissingEstimateReminder(workUnitId, hasEstimate);
+      const reminder = getMissingEstimateReminder(workUnitId, hasEstimate, status);
 
       // Then: Should contain Fibonacci scale reminder
       expect(reminder).toContain('<system-reminder>');
@@ -131,9 +132,10 @@ describe('Feature: System Reminder Anti-Drift Pattern', () => {
       // Given: Work unit UI-001 with estimate "3"
       const workUnitId = 'UI-001';
       const hasEstimate = true;
+      const status = 'specifying';
 
       // When: Getting missing estimate reminder
-      const reminder = getMissingEstimateReminder(workUnitId, hasEstimate);
+      const reminder = getMissingEstimateReminder(workUnitId, hasEstimate, status);
 
       // Then: Should return null (no reminder)
       expect(reminder).toBeNull();

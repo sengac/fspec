@@ -84,7 +84,7 @@ const config: CommandHelpConfig = {
     'Text format shows all dependency relationships (blocks, blockedBy, dependsOn, relatesTo)',
     'Text format shows linked feature files with scenario names and line numbers',
     'JSON format includes all fields, suitable for scripting and automation',
-    'System reminders are displayed for missing estimates, empty Example Mapping, or long phase duration',
+    'System reminders are displayed for missing estimates, empty Example Mapping, long phase duration, or large estimates (> 13 points for story/bug)',
     'Questions are filtered to show only unselected questions (answered questions are hidden)',
     'Linked features are automatically discovered by scanning feature files for work unit tags',
   ],

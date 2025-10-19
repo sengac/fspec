@@ -27,7 +27,12 @@ describe('Feature: Generate FOUNDATION.md from foundation.json', () => {
 
   afterEach(async () => {
     // Clean up temporary directory
-    await rm(tmpDir, { recursive: true, force: true });
+    try {
+      await rm(tmpDir, { recursive: true, force: true, maxRetries: 3 });
+    } catch (error) {
+      // Ignore cleanup errors - test cleanup is not critical
+      console.warn(`Failed to clean up ${tmpDir}:`, error);
+    }
   });
 
   describe('Scenario: Generate FOUNDATION.md from valid foundation.json', () => {

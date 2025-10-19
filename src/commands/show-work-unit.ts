@@ -11,6 +11,7 @@ import {
   getMissingEstimateReminder,
   getEmptyExampleMappingReminder,
   getLongDurationReminder,
+  getLargeEstimateReminder,
 } from '../utils/system-reminder';
 
 interface ShowWorkUnitOptions {
@@ -150,7 +151,8 @@ export async function showWorkUnit(
   const hasEstimate = workUnit.estimate !== undefined;
   const estimateReminder = getMissingEstimateReminder(
     options.workUnitId,
-    hasEstimate
+    hasEstimate,
+    workUnit.status
   );
   if (estimateReminder) {
     systemReminders.push(estimateReminder);
@@ -186,6 +188,19 @@ export async function showWorkUnit(
     if (durationReminder) {
       systemReminders.push(durationReminder);
     }
+  }
+
+  // Check for large estimate (> 13 points)
+  const hasFeatureFile = linkedFeatures.length > 0;
+  const largeEstimateReminder = getLargeEstimateReminder(
+    options.workUnitId,
+    workUnit.estimate,
+    workUnit.type,
+    workUnit.status,
+    hasFeatureFile
+  );
+  if (largeEstimateReminder) {
+    systemReminders.push(largeEstimateReminder);
   }
 
   return {

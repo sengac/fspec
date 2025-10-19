@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-18T23:34:29.907Z"
+    "lastUpdated": "2025-10-19T12:57:50.225Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -3641,7 +3641,7 @@
       "title": "Test: Support custom output path for generate-foundation-md",
       "status": "done",
       "createdAt": "2025-10-15T00:11:06.192Z",
-      "updatedAt": "2025-10-15T05:20:19.824Z",
+      "updatedAt": "2025-10-19T13:17:25.558Z",
       "description": "Feature: generate-foundation-md. Status: CREATE_TEST_ONLY. No test found for custom output path option.",
       "epic": "test-coverage",
       "estimate": 2,
@@ -3665,6 +3665,18 @@
         {
           "state": "done",
           "timestamp": "2025-10-15T05:20:19.824Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-19T13:13:06.763Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-19T13:17:25.285Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-19T13:17:25.559Z"
         }
       ],
       "rules": [
@@ -5369,7 +5381,7 @@
       "type": "story",
       "status": "done",
       "createdAt": "2025-10-15T11:44:40.720Z",
-      "updatedAt": "2025-10-15T11:57:55.780Z",
+      "updatedAt": "2025-10-19T13:17:31.592Z",
       "description": "Create JSON schema for spec/fspec-hooks.json. Implement configuration loading, validation, and error handling. Support hook definition with name, command, blocking flag, timeout, and conditions.",
       "epic": "hooks-system",
       "children": [],
@@ -5394,6 +5406,18 @@
         {
           "state": "done",
           "timestamp": "2025-10-15T11:57:55.781Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-19T13:13:13.128Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-19T13:17:31.318Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-19T13:17:31.593Z"
         }
       ],
       "userStory": {
@@ -7675,6 +7699,140 @@
         "Solution: Simplify to single-purpose command accepting .command('dependencies <work-unit-id>') and call showDependencies() directly with AI-friendly error handling",
         "Error handling: Wrap errors in system-reminder tags to make failures highly visible to AI agents in Claude Code"
       ]
+    },
+    "DOCS-001": {
+      "id": "DOCS-001",
+      "title": "Clarify estimation timing in documentation and system-reminders",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-19T12:10:39.283Z",
+      "updatedAt": "2025-10-19T12:34:31.582Z",
+      "description": "System-reminders and documentation don't make it clear enough that story point estimation happens AFTER Example Mapping during the specifying phase, not before. AI agents are suggesting to add estimates before moving work units to specifying state, which violates ACDD workflow.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-19T12:10:47.439Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-19T12:18:22.138Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-19T12:22:04.487Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-19T12:33:00.375Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-19T12:34:31.583Z"
+        }
+      ],
+      "userStory": {
+        "role": "AI agent using fspec",
+        "action": "understand when to estimate story points",
+        "benefit": "I follow ACDD workflow correctly without suggesting premature estimation"
+      },
+      "rules": [
+        "Story point estimation happens AFTER Example Mapping, during specifying state",
+        "Cannot estimate accurately without understanding scope from Example Mapping",
+        "System-reminders in backlog state must NOT suggest adding estimates",
+        "System-reminders in specifying state SHOULD remind to estimate after Example Mapping",
+        "System-reminders must align with ACDD violation enforcement (feature file required before estimation)"
+      ],
+      "examples": [
+        "AI shows MCP epic with 5 work units in backlog, suggests adding estimates before moving to specifying (WRONG)",
+        "AI moves work unit to specifying, does Example Mapping, THEN suggests estimate based on discovered complexity (CORRECT)",
+        "AI reads show-work-unit output showing 'no estimate' reminder in backlog state, incorrectly offers to add estimate immediately (WRONG)",
+        "AI completes Example Mapping, generates scenarios, THEN sees reminder 'After generating scenarios, estimate based on feature file complexity' (CORRECT)"
+      ],
+      "architectureNotes": [
+        "Files to check: src/commands/show-work-unit.ts (system-reminder logic), src/commands/update-work-unit-status.ts (state transition reminders), CLAUDE.md (workflow documentation), .claude/commands/fspec.md (slash command docs)",
+        "CRITICAL FIX: System-reminder in show-work-unit.ts currently says 'Use Example Mapping results to estimate story points' but should say 'After generating scenarios from Example Mapping, estimate story points based on feature file complexity' to match ACDD violation enforcement",
+        "Also update .claude/commands/fspec.md Step 2.5 section to explicitly state: estimate AFTER generating scenarios from Example Mapping, not before"
+      ],
+      "questions": [
+        {
+          "text": "@human: Are there other places in the codebase besides system-reminders where estimation timing should be clarified?",
+          "selected": true,
+          "answer": "Yes - update help documentation for update-work-unit-estimate command, add workflow examples to README.md and spec/CLAUDE.md showing correct timing, and potentially add validation to prevent estimating work units not yet in specifying state"
+        }
+      ],
+      "estimate": 3
+    },
+    "FEAT-016": {
+      "id": "FEAT-016",
+      "title": "Warn AI when estimate is > 13 points to break down work unit",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-19T12:40:51.573Z",
+      "updatedAt": "2025-10-19T13:17:50.986Z",
+      "description": "When AI estimates a work unit at more than 13 points (21+), emit system-reminder warnings to guide breaking down into smaller work units (1-13 points each)",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-19T12:40:58.524Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-19T13:03:29.376Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-19T13:05:27.211Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-19T13:11:11.102Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-19T13:17:50.986Z"
+        }
+      ],
+      "userStory": {
+        "role": "AI agent estimating work units",
+        "action": "receive clear warnings and guidance when estimate is too large",
+        "benefit": "I break down large work into manageable chunks without getting lost in the process"
+      },
+      "rules": [
+        "Warning must include SPECIFIC step-by-step commands (not generic advice) to break down the work unit",
+        "Warning should guide AI to review feature file scenarios for natural split boundaries (not arbitrary splitting)",
+        "Warning is non-blocking (allows estimate to be set) but strongly recommends breaking down",
+        "Warning triggers IMMEDIATELY when estimate > 13 points (21 is too large, but 13 is acceptable)",
+        "Warning ONLY applies to story and bug types, NOT task types (tasks can legitimately be large)",
+        "Warning should suggest breaking into smaller stories (1-13 points each) for clear guidance",
+        "Warning persists in show-work-unit while estimate > 13 AND status is not done",
+        "Warning guidance adapts based on context: if feature file exists suggest reviewing it for natural boundaries, if no feature file exists suggest creating it first before breaking down"
+      ],
+      "examples": [
+        "AI estimates BUG-005 at 21 points → warning shown → AI ignores and continues → runs show-work-unit BUG-005 → warning shown again in system-reminder section → AI finally breaks it down",
+        "AI estimates INFRA-001 (type=task, infrastructure setup) at 21 points → NO warning (task type exempt) → estimate accepted",
+        "AI sees warning → reads feature file → identifies natural scenario groupings → creates child work units for each group → estimates each child (all <= 13) → links with dependencies"
+      ],
+      "architectureNotes": [
+        "TWO PLACEMENT POINTS: (1) update-work-unit-estimate.ts - immediate warning when estimate set, (2) show-work-unit.ts - persistent reminder via getLargeEstimateReminder() in system-reminder.ts",
+        "SYSTEM-REMINDER MUST BE HIGHLY SPECIFIC: Include exact fspec commands (create-work-unit, add-dependency, create-epic), not generic advice like 'break this down'",
+        "GUIDE FEATURE FILE ANALYSIS: Remind AI to 'Review feature file linked to this work unit. Look for scenario groupings that could be separate stories. Each group should deliver incremental value.'",
+        "PERSISTENCE STRATEGY: Warning appears in TWO contexts (immediate + show-work-unit) creating 'sticky' reminder. AI will see it multiple times, increasing likelihood of following through.",
+        "STEP-BY-STEP WORKFLOW IN WARNING: (1) Review feature file (or create if missing), (2) Identify boundaries, (3) Create child work units with fspec create-work-unit, (4) Link with fspec add-dependency --depends-on, (5) Optionally create epic to group, (6) Delete original work unit or convert to epic using fspec create-epic"
+      ],
+      "questions": [],
+      "estimate": 5
+    },
+    "BUG-020": {
+      "id": "BUG-020",
+      "title": "remove-question command shows '[object Object]' instead of question text",
+      "type": "bug",
+      "status": "backlog",
+      "createdAt": "2025-10-19T12:58:26.949Z",
+      "updatedAt": "2025-10-19T12:58:26.949Z",
+      "description": "When running 'fspec remove-question <id> <index>', the success message displays 'Removed question: [object Object]' instead of showing the actual question text that was removed",
+      "children": []
     }
   },
   "states": {
@@ -7683,7 +7841,8 @@
       "MCP-002",
       "MCP-003",
       "MCP-004",
-      "MCP-005"
+      "MCP-005",
+      "BUG-020"
     ],
     "specifying": [],
     "testing": [],
@@ -7782,7 +7941,6 @@
       "COV-046",
       "COV-047",
       "COV-048",
-      "COV-031",
       "COV-033",
       "COV-038",
       "FEAT-006",
@@ -7791,7 +7949,6 @@
       "DOC-004",
       "BUG-010",
       "EXMAP-002",
-      "HOOK-002",
       "HOOK-003",
       "HOOK-004",
       "HOOK-005",
@@ -7830,7 +7987,11 @@
       "BUG-018",
       "FEAT-014",
       "FEAT-015",
-      "BUG-019"
+      "BUG-019",
+      "DOCS-001",
+      "COV-031",
+      "HOOK-002",
+      "FEAT-016"
     ],
     "blocked": []
   }

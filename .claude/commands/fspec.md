@@ -383,9 +383,11 @@ fspec show-work-unit <work-unit-id>
 
 **Reference**: [Example Mapping Introduction](https://cucumber.io/blog/bdd/example-mapping-introduction/)
 
-## Step 2.5: Story Point Estimation (During or After Discovery)
+## Step 2.5: Story Point Estimation (After Generating Scenarios)
 
-**CRITICAL**: After Example Mapping (or during if complexity becomes clear), you MUST estimate story points to help with prioritization and velocity tracking.
+**CRITICAL**: After generating scenarios from Example Mapping, you MUST estimate story points based on feature file complexity to help with prioritization and velocity tracking.
+
+**Workflow Order**: Example Mapping → Generate Scenarios → Estimate
 
 ### Story Point Scale (Fibonacci Sequence)
 
@@ -421,15 +423,23 @@ Use the Fibonacci sequence for estimation to reflect increasing uncertainty at l
   - Integration with external APIs or libraries
   - Example: "Add CI/CD pipeline with multiple stages"
 
-- **13+ points** - Epic (8+ hours)
-  - **TOO LARGE** - MUST break down into smaller work units
-  - If a story is 13 points, it's actually multiple stories
+- **13 points** - Large (8+ hours)
+  - Upper limit for single work units
+  - Acceptable but at the edge of complexity
+  - Consider breaking down if approaching this size
+
+- **21+ points** - Epic (very large)
+  - **TOO LARGE** - MUST break down into smaller work units (1-13 points each)
+  - If a story is 21 points, it's actually multiple stories
   - Use Example Mapping to identify natural split points
   - Create parent work unit with dependencies between child units
+  - **AUTOMATIC WARNING**: When you estimate story/bug > 13 points, `fspec show-work-unit` displays a system-reminder warning with step-by-step guidance for breaking down the work unit
+  - Warning persists until estimate ≤ 13 or status = done
+  - Tasks are exempt from this warning (can be legitimately large)
 
 ### How to Estimate Story Points
 
-**Ask yourself these questions during or after Example Mapping:**
+**Ask yourself these questions after generating scenarios from Example Mapping:**
 
 1. **Scope Clarity**: Do I fully understand what needs to be built?
    - Clear requirements → Lower points
@@ -491,7 +501,7 @@ fspec update-work-unit-estimate EXAMPLE-006 5  # Was 3, now 5 due to complexity
 ❌ **Don't estimate in hours** - Use relative story points (Fibonacci)
 ❌ **Don't estimate without Example Mapping** - You'll be wildly inaccurate
 ❌ **Don't skip estimation** - Velocity tracking requires estimates
-❌ **Don't let 13+ point stories exist** - Always break them down
+❌ **Don't let stories > 13 points exist** - Always break them down (13 points is acceptable, 21+ is too large)
 ❌ **Don't estimate in a vacuum** - Use Example Mapping to inform estimates
 
 ### Estimation Best Practices
@@ -500,7 +510,7 @@ fspec update-work-unit-estimate EXAMPLE-006 5  # Was 3, now 5 due to complexity
 ✅ **Compare to previous work** - "Is this bigger or smaller than EXAMPLE-006?"
 ✅ **When in doubt, round up** - It's better to overestimate slightly
 ✅ **Track actual vs estimated** - Use `fspec query-estimate-accuracy` to improve
-✅ **Break down large stories** - 13+ points = multiple work units
+✅ **Break down large stories** - Stories > 13 points = multiple work units (13 is acceptable, 21+ must be split)
 ✅ **Re-estimate when scope changes** - Keep estimates accurate throughout
 
 ### Example Estimation Flow
