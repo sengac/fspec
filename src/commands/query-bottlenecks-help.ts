@@ -7,7 +7,9 @@ const config: CommandHelpConfig = {
   usage: 'fspec query-bottlenecks [options]',
   whenToUse:
     'Use this command to identify critical path blockers that are preventing progress on multiple work units. Essential for prioritization decisions and unblocking parallelizable work. Run daily during active development to maximize throughput.',
-  prerequisites: ['spec/work-units.json exists with work units and dependency relationships'],
+  prerequisites: [
+    'spec/work-units.json exists with work units and dependency relationships',
+  ],
   arguments: [],
   options: [
     {
@@ -61,7 +63,7 @@ const config: CommandHelpConfig = {
     {
       pattern: 'Automation with JSON Output',
       example:
-        '# Export bottlenecks for dashboard\nfspec query-bottlenecks --output json > bottlenecks.json\n\n# Process with jq (highest score first)\njq \'.bottlenecks | sort_by(-.score) | .[0]\' bottlenecks.json',
+        "# Export bottlenecks for dashboard\nfspec query-bottlenecks --output json > bottlenecks.json\n\n# Process with jq (highest score first)\njq '.bottlenecks | sort_by(-.score) | .[0]' bottlenecks.json",
     },
     {
       pattern: 'Team Coordination',

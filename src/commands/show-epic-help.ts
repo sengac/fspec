@@ -15,7 +15,8 @@ const config: CommandHelpConfig = {
     {
       command: 'fspec show-epic user-management',
       description: 'Show epic details',
-      output: 'user-management\nTitle: User Management Features\nDescription: Handles user accounts\n\nWork Units:\n  AUTH-001 - User login feature\n  AUTH-002 - Password reset',
+      output:
+        'user-management\nTitle: User Management Features\nDescription: Handles user accounts\n\nWork Units:\n  AUTH-001 - User login feature\n  AUTH-002 - Password reset',
     },
   ],
   relatedCommands: ['list-epics', 'create-epic', 'list-work-units'],

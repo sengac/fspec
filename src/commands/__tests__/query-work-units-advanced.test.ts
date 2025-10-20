@@ -95,7 +95,7 @@ describe('Feature: Work Unit Query and Reporting', () => {
       expect(result.workUnits?.length).toBe(2);
 
       // And the output should include "AUTH-001" and "AUTH-002"
-      const ids = result.workUnits?.map((wu) => wu.id);
+      const ids = result.workUnits?.map(wu => wu.id);
       expect(ids).toContain('AUTH-001');
       expect(ids).toContain('AUTH-002');
 
@@ -247,7 +247,10 @@ describe('Feature: Work Unit Query and Reporting', () => {
       expect(result).toBeDefined();
 
       // And the file should be created
-      const csvContent = await readFile(join(testDir, 'implementing.csv'), 'utf-8');
+      const csvContent = await readFile(
+        join(testDir, 'implementing.csv'),
+        'utf-8'
+      );
 
       // And the file should contain CSV headers
       expect(csvContent).toContain('id,title,status,createdAt,updatedAt');

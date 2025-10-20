@@ -36,6 +36,7 @@ Provides AI agents with a Kanban-based project management system that enforces A
 - **Tag Management**: Organize features with JSON-backed tag registry and validation
 - **Foundation Discovery**: AI-guided draft-driven workflow to bootstrap project foundation documentation
 - **Lifecycle Hooks**: Execute custom scripts at command events for quality gates and workflow automation
+- **Interactive Reverse ACDD Strategy Planning**: Analyze project state to detect gaps (missing features, tests, coverage), suggest strategic approaches, and guide AI step-by-step through gap-filling workflow for existing codebases
 
 ---
 

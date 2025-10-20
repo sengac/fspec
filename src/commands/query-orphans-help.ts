@@ -75,7 +75,7 @@ const config: CommandHelpConfig = {
     {
       pattern: 'JSON Export for Reporting',
       example:
-        '# Export orphans for dashboard\nfspec query-orphans --output json > orphans.json\n\n# Count orphans by status\njq \'[.orphans[].status] | group_by(.) | map({status: .[0], count: length})\' orphans.json',
+        "# Export orphans for dashboard\nfspec query-orphans --output json > orphans.json\n\n# Count orphans by status\njq '[.orphans[].status] | group_by(.) | map({status: .[0], count: length})' orphans.json",
     },
   ],
   relatedCommands: [

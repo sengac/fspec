@@ -7,7 +7,7 @@ export async function addPersona(
   cwd: string,
   name: string,
   description: string,
-  goals: string[],
+  goals: string[]
 ): Promise<void> {
   const draftPath = join(cwd, 'spec', 'foundation.json.draft');
   const foundationPath = join(cwd, 'spec', 'foundation.json');
@@ -35,8 +35,8 @@ export async function addPersona(
       console.error(chalk.red('✗ foundation.json not found'));
       console.error(
         chalk.yellow(
-          '  Run: fspec discover-foundation to create foundation.json',
-        ),
+          '  Run: fspec discover-foundation to create foundation.json'
+        )
       );
       throw new Error('foundation.json not found');
     }
@@ -56,10 +56,7 @@ export async function addPersona(
   });
 
   // Write updated file (draft or final)
-  await fs.writeFile(
-    targetPath,
-    JSON.stringify(foundation, null, 2) + '\n',
-  );
+  await fs.writeFile(targetPath, JSON.stringify(foundation, null, 2) + '\n');
 
   const fileName = isDraft ? 'foundation.json.draft' : 'foundation.json';
   console.log(chalk.green(`✓ Added persona to ${fileName}`));

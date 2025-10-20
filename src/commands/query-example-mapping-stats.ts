@@ -155,7 +155,9 @@ export async function queryExampleMappingStats(
   };
 }
 
-export function registerQueryExampleMappingStatsCommand(program: Command): void {
+export function registerQueryExampleMappingStatsCommand(
+  program: Command
+): void {
   program
     .command('query-example-mapping-stats')
     .description('Show example mapping coverage statistics')

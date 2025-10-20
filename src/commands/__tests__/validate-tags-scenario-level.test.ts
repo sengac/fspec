@@ -59,8 +59,16 @@ Feature: Test Feature
         ],
         combinationExamples: [],
         usageGuidelines: {
-          requiredCombinations: { title: '', requirements: [], minimumExample: '' },
-          recommendedCombinations: { title: '', includes: [], recommendedExample: '' },
+          requiredCombinations: {
+            title: '',
+            requirements: [],
+            minimumExample: '',
+          },
+          recommendedCombinations: {
+            title: '',
+            includes: [],
+            recommendedExample: '',
+          },
           orderingConvention: { title: '', order: [], example: '' },
         },
         addingNewTags: {
@@ -92,12 +100,12 @@ Feature: Test Feature
       expect(result.invalidCount).toBeGreaterThan(0);
 
       // And the error message should indicate scenario-level work unit ID tags are not allowed
-      const invalidResults = result.results.filter((r) => !r.valid);
+      const invalidResults = result.results.filter(r => !r.valid);
       expect(invalidResults.length).toBeGreaterThan(0);
 
-      const hasWorkUnitError = invalidResults.some((r) =>
+      const hasWorkUnitError = invalidResults.some(r =>
         r.errors.some(
-          (err) =>
+          err =>
             err.message.toLowerCase().includes('work unit') ||
             err.message.toLowerCase().includes('scenario') ||
             err.message.includes('AUTH-001')
@@ -107,10 +115,10 @@ Feature: Test Feature
 
       // And the error should show which scenario has the invalid tag
       const hasScenarioReference = invalidResults.some(
-        (r) =>
+        r =>
           r.file.includes('test-feature.feature') &&
           r.errors.some(
-            (err) =>
+            err =>
               err.message.includes('Invalid scenario with work unit ID tag') ||
               err.message.includes('AUTH-001')
           )
@@ -153,8 +161,16 @@ Feature: Valid Feature
         ],
         combinationExamples: [],
         usageGuidelines: {
-          requiredCombinations: { title: '', requirements: [], minimumExample: '' },
-          recommendedCombinations: { title: '', includes: [], recommendedExample: '' },
+          requiredCombinations: {
+            title: '',
+            requirements: [],
+            minimumExample: '',
+          },
+          recommendedCombinations: {
+            title: '',
+            includes: [],
+            recommendedExample: '',
+          },
           orderingConvention: { title: '', order: [], example: '' },
         },
         addingNewTags: {
@@ -184,11 +200,11 @@ Feature: Valid Feature
 
       // Then the validation should pass (or only have warnings about unregistered tags)
       // Work unit ID tags at feature level are allowed
-      const invalidResults = result.results.filter((r) => !r.valid);
+      const invalidResults = result.results.filter(r => !r.valid);
 
-      const hasWorkUnitScenarioError = invalidResults.some((r) =>
+      const hasWorkUnitScenarioError = invalidResults.some(r =>
         r.errors.some(
-          (err) =>
+          err =>
             (err.message.toLowerCase().includes('work unit') &&
               err.message.toLowerCase().includes('scenario')) ||
             (err.message.includes('AUTH-002') &&

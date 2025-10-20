@@ -29,7 +29,8 @@ const config: CommandHelpConfig = {
   ],
   examples: [
     {
-      command: 'fspec delete-step spec/features/login.feature "Login with valid credentials" 2',
+      command:
+        'fspec delete-step spec/features/login.feature "Login with valid credentials" 2',
       description: 'Delete step',
       output: '✓ Deleted step from scenario',
     },

@@ -6,7 +6,7 @@ import type { GenericFoundation } from '../types/foundation';
 export async function addCapability(
   cwd: string,
   name: string,
-  description: string,
+  description: string
 ): Promise<void> {
   const draftPath = join(cwd, 'spec', 'foundation.json.draft');
   const foundationPath = join(cwd, 'spec', 'foundation.json');
@@ -34,8 +34,8 @@ export async function addCapability(
       console.error(chalk.red('✗ foundation.json not found'));
       console.error(
         chalk.yellow(
-          '  Run: fspec discover-foundation to create foundation.json',
-        ),
+          '  Run: fspec discover-foundation to create foundation.json'
+        )
       );
       throw new Error('foundation.json not found');
     }
@@ -54,10 +54,7 @@ export async function addCapability(
   });
 
   // Write updated file (draft or final)
-  await fs.writeFile(
-    targetPath,
-    JSON.stringify(foundation, null, 2) + '\n',
-  );
+  await fs.writeFile(targetPath, JSON.stringify(foundation, null, 2) + '\n');
 
   const fileName = isDraft ? 'foundation.json.draft' : 'foundation.json';
   console.log(chalk.green(`✓ Added capability to ${fileName}`));

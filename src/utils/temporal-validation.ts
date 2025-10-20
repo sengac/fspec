@@ -51,8 +51,7 @@ export async function checkFileCreatedAfter(
 
       // If file was modified BEFORE entering the state, that's a violation
       if (fileModTime < afterDate) {
-        const stateName =
-          fileType === 'feature' ? 'specifying' : 'testing';
+        const stateName = fileType === 'feature' ? 'specifying' : 'testing';
         violations.push({ file, fileTime: fileModTime, stateName });
       }
     } catch (error) {
@@ -139,7 +138,10 @@ export async function findWorkUnitFiles(
       try {
         const content = await readFile(file, 'utf-8');
         // Check if test file mentions the work unit ID in comments or describes
-        if (content.includes(workUnitId) || content.includes(`@${workUnitId}`)) {
+        if (
+          content.includes(workUnitId) ||
+          content.includes(`@${workUnitId}`)
+        ) {
           matchingFiles.push(file);
         }
       } catch {

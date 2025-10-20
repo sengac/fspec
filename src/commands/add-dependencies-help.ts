@@ -6,7 +6,10 @@ const config: CommandHelpConfig = {
   usage: 'fspec add-dependencies <workUnitId> [options]',
   whenToUse:
     'Use this command to add multiple dependency relationships to a work unit in a single command, instead of calling add-dependency multiple times. Efficient for setting up complex dependency graphs.',
-  prerequisites: ['Work unit must exist in spec/work-units.json', 'Target work units must exist'],
+  prerequisites: [
+    'Work unit must exist in spec/work-units.json',
+    'Target work units must exist',
+  ],
   arguments: [
     {
       name: 'workUnitId',
@@ -17,24 +20,29 @@ const config: CommandHelpConfig = {
   options: [
     {
       flag: '--blocks <ids...>',
-      description: 'Space-separated list of work unit IDs that this work unit blocks',
+      description:
+        'Space-separated list of work unit IDs that this work unit blocks',
     },
     {
       flag: '--blocked-by <ids...>',
-      description: 'Space-separated list of work unit IDs that block this work unit',
+      description:
+        'Space-separated list of work unit IDs that block this work unit',
     },
     {
       flag: '--depends-on <ids...>',
-      description: 'Space-separated list of work unit IDs this work unit depends on',
+      description:
+        'Space-separated list of work unit IDs this work unit depends on',
     },
     {
       flag: '--relates-to <ids...>',
-      description: 'Space-separated list of related work unit IDs (non-blocking association)',
+      description:
+        'Space-separated list of related work unit IDs (non-blocking association)',
     },
   ],
   examples: [
     {
-      command: 'fspec add-dependencies AUTH-001 --depends-on AUTH-002 AUTH-003 --relates-to UI-001',
+      command:
+        'fspec add-dependencies AUTH-001 --depends-on AUTH-002 AUTH-003 --relates-to UI-001',
       description: 'Add multiple dependencies and relations',
       output: '✓ Added 3 dependencies successfully',
     },
@@ -49,7 +57,8 @@ const config: CommandHelpConfig = {
       output: '✓ Added 3 dependencies successfully',
     },
     {
-      command: 'fspec add-dependencies REFAC-001 --relates-to AUTH-001 API-001 DB-001',
+      command:
+        'fspec add-dependencies REFAC-001 --relates-to AUTH-001 API-001 DB-001',
       description: 'Add related work units (non-blocking relationships)',
       output: '✓ Added 3 dependencies successfully',
     },

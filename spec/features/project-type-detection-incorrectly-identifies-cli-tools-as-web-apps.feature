@@ -1,3 +1,6 @@
+@foundation-management
+@cli
+@phase1
 @FOUND-010
 Feature: Project type detection incorrectly identifies CLI tools as web-apps
 

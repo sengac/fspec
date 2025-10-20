@@ -20,7 +20,8 @@ const config: CommandHelpConfig = {
     },
     {
       flag: '--dry-run',
-      description: 'Preview deletions without making changes (ALWAYS use first)',
+      description:
+        'Preview deletions without making changes (ALWAYS use first)',
     },
   ],
   examples: [
@@ -37,7 +38,8 @@ const config: CommandHelpConfig = {
         '✓ Deleted 4 scenario(s) from 2 file(s). All modified files validated successfully.',
     },
     {
-      command: 'fspec delete-scenarios --tag @deprecated --tag @phase1 --dry-run',
+      command:
+        'fspec delete-scenarios --tag @deprecated --tag @phase1 --dry-run',
       description: 'Preview deletion with AND logic (both tags required)',
       output:
         'Dry run mode - no files modified\n\nWould delete 2 scenario(s) from 1 file(s):\n\nspec/features/legacy-api.feature:\n  - Old login flow (@deprecated @phase1)\n  - Legacy token refresh (@deprecated @phase1)',
@@ -45,7 +47,8 @@ const config: CommandHelpConfig = {
     {
       command: 'fspec delete-scenarios --tag @todo',
       description: 'Delete unimplemented placeholder scenarios',
-      output: '✓ Deleted 8 scenario(s) from 5 file(s). All modified files validated successfully.',
+      output:
+        '✓ Deleted 8 scenario(s) from 5 file(s). All modified files validated successfully.',
     },
   ],
   commonErrors: [

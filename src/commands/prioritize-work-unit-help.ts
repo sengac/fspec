@@ -62,11 +62,13 @@ const config: CommandHelpConfig = {
       fix: 'Check work unit ID is correct. Run: fspec list-work-units',
     },
     {
-      error: 'Error: Can only prioritize work units in backlog state. AUTH-001 is in "implementing" state.',
+      error:
+        'Error: Can only prioritize work units in backlog state. AUTH-001 is in "implementing" state.',
       fix: 'Only backlog items can be reprioritized. Work units in other states have their order determined by workflow.',
     },
     {
-      error: 'Error: Work unit UI-002 does not exist (using --before or --after)',
+      error:
+        'Error: Work unit UI-002 does not exist (using --before or --after)',
       fix: 'Target work unit for relative positioning does not exist. Check ID is correct.',
     },
   ],

@@ -321,7 +321,11 @@ export function registerShowAcceptanceCriteriaCommand(program: Command): void {
         return previous ? [...previous, value] : [value];
       }
     )
-    .option('--format <format>', 'Output format: text, markdown, or json', 'text')
+    .option(
+      '--format <format>',
+      'Output format: text, markdown, or json',
+      'text'
+    )
     .option('--output <file>', 'Write output to file')
     .action(showAcceptanceCriteriaCommand);
 }

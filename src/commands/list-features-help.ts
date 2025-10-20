@@ -9,7 +9,8 @@ const config: CommandHelpConfig = {
   options: [
     {
       flag: '--tag <tag>',
-      description: 'Filter by tag (can be used multiple times, e.g., --tag=@phase1 --tag=@critical)',
+      description:
+        'Filter by tag (can be used multiple times, e.g., --tag=@phase1 --tag=@critical)',
     },
     {
       flag: '--format <format>',
@@ -20,17 +21,20 @@ const config: CommandHelpConfig = {
     {
       command: 'fspec list-features',
       description: 'List all features',
-      output: 'spec/features/login.feature\nspec/features/signup.feature\n\nFound 2 features',
+      output:
+        'spec/features/login.feature\nspec/features/signup.feature\n\nFound 2 features',
     },
     {
       command: 'fspec list-features --tag=@phase1',
       description: 'List phase 1 features',
-      output: 'spec/features/login.feature [@phase1 @authentication]\n\nFound 1 feature',
+      output:
+        'spec/features/login.feature [@phase1 @authentication]\n\nFound 1 feature',
     },
     {
       command: 'fspec list-features --tag=@phase1 --tag=@critical',
       description: 'List features with multiple tags',
-      output: 'spec/features/login.feature [@phase1 @critical @authentication]\n\nFound 1 feature',
+      output:
+        'spec/features/login.feature [@phase1 @critical @authentication]\n\nFound 1 feature',
     },
   ],
   relatedCommands: ['show-feature', 'create-feature', 'list-tags', 'validate'],

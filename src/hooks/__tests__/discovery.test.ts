@@ -60,7 +60,9 @@ describe('Feature: Hook discovery and event naming', () => {
       // Given I have a hook configuration
       const config: HookConfig = {
         hooks: {
-          'post-implementing': [{ name: 'lint', command: 'spec/hooks/lint.sh' }],
+          'post-implementing': [
+            { name: 'lint', command: 'spec/hooks/lint.sh' },
+          ],
         },
       };
 
@@ -96,7 +98,9 @@ describe('Feature: Hook discovery and event naming', () => {
       // Given I have a hook configuration with hooks for "post-implementing"
       const config: HookConfig = {
         hooks: {
-          'post-implementing': [{ name: 'lint', command: 'spec/hooks/lint.sh' }],
+          'post-implementing': [
+            { name: 'lint', command: 'spec/hooks/lint.sh' },
+          ],
         },
       };
 

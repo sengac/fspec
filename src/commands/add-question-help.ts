@@ -21,20 +21,24 @@ const addQuestionHelp: CommandHelpConfig = {
     },
     {
       name: 'question',
-      description: 'The question text (use @human: prefix for human-directed questions)',
+      description:
+        'The question text (use @human: prefix for human-directed questions)',
       required: true,
     },
   ],
   examples: [
     {
-      command: 'fspec add-question AUTH-001 "@human: Should we support OAuth providers?"',
+      command:
+        'fspec add-question AUTH-001 "@human: Should we support OAuth providers?"',
       description: 'Add question during Example Mapping',
       output: '✓ Question added successfully',
     },
     {
-      command: 'fspec answer-question AUTH-001 0 --answer "Yes, support Google and GitHub OAuth"',
+      command:
+        'fspec answer-question AUTH-001 0 --answer "Yes, support Google and GitHub OAuth"',
       description: 'Answer the question (index 0)',
-      output: '✓ Answered question: "@human: Should we support OAuth providers?"\n  Answer: "Yes, support Google and GitHub OAuth"',
+      output:
+        '✓ Answered question: "@human: Should we support OAuth providers?"\n  Answer: "Yes, support Google and GitHub OAuth"',
     },
   ],
   typicalWorkflow:

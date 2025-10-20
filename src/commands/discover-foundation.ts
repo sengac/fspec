@@ -37,10 +37,19 @@ function scanDraftForNextField(draft: GenericFoundation): {
     { path: 'project.name', value: draft.project?.name },
     { path: 'project.vision', value: draft.project?.vision },
     { path: 'project.projectType', value: draft.project?.projectType },
-    { path: 'problemSpace.primaryProblem.title', value: draft.problemSpace?.primaryProblem?.title },
-    { path: 'problemSpace.primaryProblem.description', value: draft.problemSpace?.primaryProblem?.description },
+    {
+      path: 'problemSpace.primaryProblem.title',
+      value: draft.problemSpace?.primaryProblem?.title,
+    },
+    {
+      path: 'problemSpace.primaryProblem.description',
+      value: draft.problemSpace?.primaryProblem?.description,
+    },
     { path: 'solutionSpace.overview', value: draft.solutionSpace?.overview },
-    { path: 'solutionSpace.capabilities', value: draft.solutionSpace?.capabilities },
+    {
+      path: 'solutionSpace.capabilities',
+      value: draft.solutionSpace?.capabilities,
+    },
     { path: 'personas', value: draft.personas },
   ];
 
@@ -56,8 +65,12 @@ function scanDraftForNextField(draft: GenericFoundation): {
       continue; // Skip undefined fields
     }
 
-    const valueStr = typeof field.value === 'string' ? field.value : JSON.stringify(field.value);
-    const hasPlaceholder = valueStr.includes('[QUESTION:') || valueStr.includes('[DETECTED:');
+    const valueStr =
+      typeof field.value === 'string'
+        ? field.value
+        : JSON.stringify(field.value);
+    const hasPlaceholder =
+      valueStr.includes('[QUESTION:') || valueStr.includes('[DETECTED:');
 
     if (hasPlaceholder && !nextField) {
       nextField = field.path; // Return full path
@@ -147,7 +160,8 @@ Run: fspec add-persona "Persona Name" "Persona Description" --goal "Primary goal
 Run again for each persona (repeat --goal for multiple goals)`,
   };
 
-  const message = reminders[fieldPath] || `Field ${fieldNum}/${totalFields}: ${fieldPath}`;
+  const message =
+    reminders[fieldPath] || `Field ${fieldNum}/${totalFields}: ${fieldPath}`;
   return wrapInSystemReminder(message);
 }
 
@@ -186,7 +200,8 @@ export async function discoverFoundation(
         // Manual edit detected - revert changes
         await writeFile(draftPath, options.lastKnownState, 'utf-8');
 
-        const errorReminder = wrapInSystemReminder(`ERROR: CRITICAL: You manually edited foundation.json.draft
+        const errorReminder =
+          wrapInSystemReminder(`ERROR: CRITICAL: You manually edited foundation.json.draft
 
 This violates the workflow. You MUST use:
   fspec update-foundation <section> "<value>"
@@ -228,8 +243,13 @@ Reverting your changes. Draft restored to last valid state. Try again with prope
 
       // Extract detected value if present
       let detectedValue: string | undefined;
-      if (scan.fieldPath === 'project.projectType' && draft.project.projectType) {
-        const match = draft.project.projectType.match(/\[DETECTED:\s*([^\]]+)\]/);
+      if (
+        scan.fieldPath === 'project.projectType' &&
+        draft.project.projectType
+      ) {
+        const match = draft.project.projectType.match(
+          /\[DETECTED:\s*([^\]]+)\]/
+        );
         if (match) {
           detectedValue = match[1].trim();
         }
@@ -274,7 +294,7 @@ Reverting your changes. Draft restored to last valid state. Try again with prope
 
     if (!validation.valid) {
       const errors = validation.errors || [];
-      const errorMessages = errors.map((err) => {
+      const errorMessages = errors.map(err => {
         // Extract field path from instancePath and params.missingProperty
         let field = err.instancePath.replace(/^\//, '').replace(/\//g, '.');
 
@@ -288,14 +308,18 @@ Reverting your changes. Draft restored to last valid state. Try again with prope
       });
 
       // Extract first field for example command
-      const firstField = errors[0] ? (() => {
-        let field = errors[0].instancePath.replace(/^\//, '').replace(/\//g, '.');
-        if (errors[0].params && 'missingProperty' in errors[0].params) {
-          const missingProp = errors[0].params.missingProperty as string;
-          field = field ? `${field}.${missingProp}` : missingProp;
-        }
-        return field;
-      })() : '<path>';
+      const firstField = errors[0]
+        ? (() => {
+            let field = errors[0].instancePath
+              .replace(/^\//, '')
+              .replace(/\//g, '.');
+            if (errors[0].params && 'missingProperty' in errors[0].params) {
+              const missingProp = errors[0].params.missingProperty as string;
+              field = field ? `${field}.${missingProp}` : missingProp;
+            }
+            return field;
+          })()
+        : '<path>';
 
       const validationErrors = `Schema validation failed. ${errorMessages.join(', ')}
 
@@ -326,7 +350,9 @@ Then re-run: fspec discover-foundation --finalize`;
     // Auto-generate FOUNDATION.md if requested
     let mdGenerated = false;
     if (options.autoGenerateMd) {
-      const mdResult = await generateFoundationMdCommand({ cwd: dirname(dirname(finalPath)) });
+      const mdResult = await generateFoundationMdCommand({
+        cwd: dirname(dirname(finalPath)),
+      });
       mdGenerated = mdResult.success;
     }
 
@@ -402,7 +428,6 @@ I will guide you field-by-field.
 
 ${firstFieldReminder}`;
 
-
   return {
     systemReminder,
     valid: true,
@@ -424,10 +449,7 @@ export function registerDiscoverFoundationCommand(program: Command): void {
       'Output path for final foundation.json (default: spec/foundation.json)',
       'spec/foundation.json'
     )
-    .option(
-      '--finalize',
-      'Finalize foundation.json from edited draft file'
-    )
+    .option('--finalize', 'Finalize foundation.json from edited draft file')
     .option(
       '--draft-path <path>',
       'Path to draft file (default: spec/foundation.json.draft)',
@@ -438,40 +460,57 @@ export function registerDiscoverFoundationCommand(program: Command): void {
       'Automatically generate FOUNDATION.md after finalization (default: true)',
       true
     )
-    .action(async (options: { output?: string; finalize?: boolean; draftPath?: string; autoGenerateMd?: boolean }) => {
-      const result = await discoverFoundation({
-        outputPath: options.output,
-        finalize: options.finalize,
-        draftPath: options.draftPath,
-        autoGenerateMd: options.autoGenerateMd !== false, // Default to true
-      });
+    .action(
+      async (options: {
+        output?: string;
+        finalize?: boolean;
+        draftPath?: string;
+        autoGenerateMd?: boolean;
+      }) => {
+        const result = await discoverFoundation({
+          outputPath: options.output,
+          finalize: options.finalize,
+          draftPath: options.draftPath,
+          autoGenerateMd: options.autoGenerateMd !== false, // Default to true
+        });
 
-      // Emit system-reminder (only visible to AI)
-      if (result.systemReminder) {
-        console.log(result.systemReminder);
-      }
+        // Emit system-reminder (only visible to AI)
+        if (result.systemReminder) {
+          console.log(result.systemReminder);
+        }
 
-      if (options.finalize) {
-        // Finalizing draft
-        if (!result.valid) {
-          console.error(chalk.red('✗ Foundation validation failed'));
-          if (result.validationErrors) {
-            console.error(chalk.yellow('\n' + result.validationErrors));
+        if (options.finalize) {
+          // Finalizing draft
+          if (!result.valid) {
+            console.error(chalk.red('✗ Foundation validation failed'));
+            if (result.validationErrors) {
+              console.error(chalk.yellow('\n' + result.validationErrors));
+            }
+            process.exit(1);
           }
-          process.exit(1);
-        }
 
-        console.log(chalk.green(`✓ Generated ${result.finalPath}`));
-        if (result.mdGenerated) {
-          console.log(chalk.green('✓ Generated spec/FOUNDATION.md'));
+          console.log(chalk.green(`✓ Generated ${result.finalPath}`));
+          if (result.mdGenerated) {
+            console.log(chalk.green('✓ Generated spec/FOUNDATION.md'));
+          }
+          console.log(
+            chalk.green('✓ Foundation discovered and validated successfully')
+          );
+        } else {
+          // Creating draft
+          console.log(chalk.green(`✓ Generated ${result.draftPath}`));
+          console.log(chalk.yellow('\nNext steps:'));
+          console.log(
+            chalk.yellow(
+              '1. Use fspec update-foundation commands to fill [QUESTION: ...] placeholders'
+            )
+          );
+          console.log(
+            chalk.yellow(
+              '2. When complete, run: fspec discover-foundation --finalize'
+            )
+          );
         }
-        console.log(chalk.green('✓ Foundation discovered and validated successfully'));
-      } else {
-        // Creating draft
-        console.log(chalk.green(`✓ Generated ${result.draftPath}`));
-        console.log(chalk.yellow('\nNext steps:'));
-        console.log(chalk.yellow('1. Use fspec update-foundation commands to fill [QUESTION: ...] placeholders'));
-        console.log(chalk.yellow('2. When complete, run: fspec discover-foundation --finalize'));
       }
-    });
+    );
 }

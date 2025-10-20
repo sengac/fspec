@@ -71,9 +71,6 @@ export async function init(options: InitOptions): Promise<InitResult> {
   // Copy CLAUDE.md template to spec/ directory
   await copyClaudeTemplate(cwd);
 
-  // Copy rspec.md template to .claude/commands/ directory
-  await copyRspecTemplate(cwd);
-
   // Calculate relative path for display
   const relativePath = relative(cwd, targetPath);
 
@@ -210,96 +207,52 @@ async function copyClaudeTemplate(cwd: string): Promise<void> {
   await copyFile(sourcePath, targetPath);
 }
 
-/**
- * Copy rspec.md template to .claude/commands/ directory
- *
- * Copies the bundled rspec.md template to .claude/commands/rspec.md
- * in the target project. Creates .claude/commands/ directory if it doesn't exist.
- * Always overwrites existing rspec.md without prompting.
- */
-async function copyRspecTemplate(cwd: string): Promise<void> {
-  // Resolve rspec.md path from package installation
-  // Try multiple paths to support different execution contexts:
-  // 1. .claude/commands/rspec.md (production - within dist/)
-  // 2. ../../.claude/commands/rspec.md (development from src/commands/)
-  const possiblePaths = [
-    join(__dirname, '.claude', 'commands', 'rspec.md'), // From dist/ (production)
-    join(__dirname, '..', '..', '.claude', 'commands', 'rspec.md'), // From src/commands/ (dev)
-  ];
-
-  let sourcePath: string | null = null;
-  for (const path of possiblePaths) {
-    try {
-      await access(path);
-      sourcePath = path;
-      break;
-    } catch {
-      // Try next path
-      continue;
-    }
-  }
-
-  if (!sourcePath) {
-    throw new Error(
-      'Could not find .claude/commands/rspec.md. Tried paths: ' +
-        possiblePaths.join(', ')
-    );
-  }
-
-  // Target path in project
-  const commandsDir = join(cwd, '.claude', 'commands');
-  const targetPath = join(commandsDir, 'rspec.md');
-
-  // Create .claude/commands/ directory if it doesn't exist
-  await mkdir(commandsDir, { recursive: true });
-
-  // Copy rspec.md (overwrites if exists)
-  await copyFile(sourcePath, targetPath);
-}
-
 export function registerInitCommand(program: Command): void {
   program
     .command('init')
-    .description('Initialize /fspec and /rspec slash commands for Claude Code')
+    .description('Initialize /fspec slash command for Claude Code')
     .option('--type <type>', 'Installation type: claude-code or custom')
-    .option('--path <path>', 'Custom installation path (relative to current directory)')
+    .option(
+      '--path <path>',
+      'Custom installation path (relative to current directory)'
+    )
     .option('--yes', 'Skip confirmation prompts (auto-confirm overwrite)')
-    .action(async (options: { type?: string; path?: string; yes?: boolean }) => {
-      try {
-        let installType: 'claude-code' | 'custom';
-        let customPath: string | undefined;
-        // Determine install type
-        if (options.type) {
-          if (options.type !== 'claude-code' && options.type !== 'custom') {
-            console.error(
-              chalk.red(
-                '✗ Invalid type. Must be "claude-code" or "custom"'
-              )
-            );
-            process.exit(1);
+    .action(
+      async (options: { type?: string; path?: string; yes?: boolean }) => {
+        try {
+          let installType: 'claude-code' | 'custom';
+          let customPath: string | undefined;
+          // Determine install type
+          if (options.type) {
+            if (options.type !== 'claude-code' && options.type !== 'custom') {
+              console.error(
+                chalk.red('✗ Invalid type. Must be "claude-code" or "custom"')
+              );
+              process.exit(1);
+            }
+            installType = options.type as 'claude-code' | 'custom';
+            if (installType === 'custom' && !options.path) {
+              console.error(
+                chalk.red('✗ --path is required when --type=custom')
+              );
+              process.exit(1);
+            }
+            customPath = options.path;
+          } else {
+            // Interactive mode (default to claude-code for now)
+            installType = 'claude-code';
           }
-          installType = options.type as 'claude-code' | 'custom';
-          if (installType === 'custom' && !options.path) {
-            console.error(
-              chalk.red('✗ --path is required when --type=custom')
-            );
-            process.exit(1);
-          }
-          customPath = options.path;
-        } else {
-          // Interactive mode (default to claude-code for now)
-          installType = 'claude-code';
+          const result = await init({
+            installType,
+            customPath,
+            confirmOverwrite: options.yes !== false,
+          });
+          console.log(chalk.green(result.message));
+          process.exit(result.exitCode);
+        } catch (error: any) {
+          console.error(chalk.red('✗ Init failed:'), error.message);
+          process.exit(1);
         }
-        const result = await init({
-          installType,
-          customPath,
-          confirmOverwrite: options.yes !== false,
-        });
-        console.log(chalk.green(result.message));
-        process.exit(result.exitCode);
-      } catch (error: any) {
-        console.error(chalk.red('✗ Init failed:'), error.message);
-        process.exit(1);
       }
-    });
+    );
 }

@@ -153,7 +153,10 @@ export async function createFeatureCommand(name: string): Promise<void> {
     }
 
     // Display prefill detection system-reminder
-    if (result.prefillDetection.hasPrefill && result.prefillDetection.systemReminder) {
+    if (
+      result.prefillDetection.hasPrefill &&
+      result.prefillDetection.systemReminder
+    ) {
       console.log('\n' + result.prefillDetection.systemReminder);
     }
 

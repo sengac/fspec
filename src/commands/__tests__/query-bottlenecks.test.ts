@@ -125,20 +125,28 @@ describe('Feature: Work Unit Dependency Management', () => {
       });
 
       // And "AUTH-001" should have highest bottleneck score of 4
-      const auth001 = result.bottlenecks.find((b: { id: string }) => b.id === 'AUTH-001');
+      const auth001 = result.bottlenecks.find(
+        (b: { id: string }) => b.id === 'AUTH-001'
+      );
       expect(auth001).toBeDefined();
       expect(auth001.score).toBe(4); // Blocks API-001, API-002, API-003 directly, UI-001 transitively
 
       // And "DB-001" should not be included (status='done')
-      const db001 = result.bottlenecks.find((b: { id: string }) => b.id === 'DB-001');
+      const db001 = result.bottlenecks.find(
+        (b: { id: string }) => b.id === 'DB-001'
+      );
       expect(db001).toBeUndefined();
 
       // And "CACHE-001" should not be included (status='blocked')
-      const cache001 = result.bottlenecks.find((b: { id: string }) => b.id === 'CACHE-001');
+      const cache001 = result.bottlenecks.find(
+        (b: { id: string }) => b.id === 'CACHE-001'
+      );
       expect(cache001).toBeUndefined();
 
       // And "UI-002" should not be included (blocks nothing)
-      const ui002 = result.bottlenecks.find((b: { id: string }) => b.id === 'UI-002');
+      const ui002 = result.bottlenecks.find(
+        (b: { id: string }) => b.id === 'UI-002'
+      );
       expect(ui002).toBeUndefined();
 
       // And work units in 'done' status should be excluded

@@ -4,7 +4,10 @@
 
 import type { HookConfig, HookDefinition } from './types.js';
 
-export function discoverHooks(config: HookConfig, eventName: string): HookDefinition[] {
+export function discoverHooks(
+  config: HookConfig,
+  eventName: string
+): HookDefinition[] {
   // Search config.hooks for matching event name
   const hooks = config.hooks[eventName];
 
@@ -17,7 +20,10 @@ export function discoverHooks(config: HookConfig, eventName: string): HookDefini
   return hooks;
 }
 
-export function generateEventNames(commandName: string): { pre: string; post: string } {
+export function generateEventNames(commandName: string): {
+  pre: string;
+  post: string;
+} {
   // Event names follow pre-/post- convention: pre-<command-name>, post-<command-name>
   return {
     pre: `pre-${commandName}`,

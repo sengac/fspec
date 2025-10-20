@@ -23,7 +23,8 @@ const config: CommandHelpConfig = {
   ],
   examples: [
     {
-      command: 'fspec update-scenario spec/features/login.feature "Old name" "New name"',
+      command:
+        'fspec update-scenario spec/features/login.feature "Old name" "New name"',
       description: 'Rename scenario',
       output: '✓ Updated scenario name',
     },

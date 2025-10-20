@@ -99,7 +99,10 @@ describe('Feature: Integrate hooks into all commands', () => {
       );
 
       // When I run "fspec update-work-unit-status AUTH-001 implementing"
-      const commandFn = async (context: { workUnitId: string; newStatus: string }) => {
+      const commandFn = async (context: {
+        workUnitId: string;
+        newStatus: string;
+      }) => {
         // Simulate command execution
         return { success: true, message: 'Status updated' };
       };
@@ -368,7 +371,9 @@ describe('Feature: Integrate hooks into all commands', () => {
 
       // Then the hook should execute because work unit has @security tag
       expect(resultAuth.postHookResults).toHaveLength(1);
-      expect(resultAuth.postHookResults[0].stdout).toContain('Security scan executed');
+      expect(resultAuth.postHookResults[0].stdout).toContain(
+        'Security scan executed'
+      );
 
       // When I run "fspec update-work-unit-status DASH-001 implementing"
       const resultDash = await runCommandWithHooks(

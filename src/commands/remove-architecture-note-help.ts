@@ -14,7 +14,8 @@ const config: CommandHelpConfig = {
     },
     {
       name: 'index',
-      description: 'Index of note to remove (0-based, see show-work-unit output)',
+      description:
+        'Index of note to remove (0-based, see show-work-unit output)',
       required: true,
     },
   ],

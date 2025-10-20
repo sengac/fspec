@@ -84,9 +84,7 @@ Feature: Test Feature
       await generateCoverage({ cwd: tempDir });
 
       // Then the coverage file should now have 3 scenarios
-      const updatedCoverage = JSON.parse(
-        await readFile(coverageFile, 'utf-8')
-      );
+      const updatedCoverage = JSON.parse(await readFile(coverageFile, 'utf-8'));
 
       expect(updatedCoverage.scenarios).toHaveLength(3);
       expect(updatedCoverage.scenarios[0].name).toBe('Existing scenario 1');
@@ -158,9 +156,7 @@ Feature: Another Test
       await generateCoverage({ cwd: tempDir });
 
       // Then the existing test mapping should be preserved
-      const updatedCoverage = JSON.parse(
-        await readFile(coverageFile, 'utf-8')
-      );
+      const updatedCoverage = JSON.parse(await readFile(coverageFile, 'utf-8'));
 
       expect(updatedCoverage.scenarios).toHaveLength(2);
       expect(updatedCoverage.scenarios[0].name).toBe('Scenario with coverage');
@@ -169,9 +165,9 @@ Feature: Another Test
         'src/__tests__/test.test.ts'
       );
       expect(updatedCoverage.scenarios[0].testMappings[0].lines).toBe('10-20');
-      expect(updatedCoverage.scenarios[0].testMappings[0].implMappings).toHaveLength(
-        1
-      );
+      expect(
+        updatedCoverage.scenarios[0].testMappings[0].implMappings
+      ).toHaveLength(1);
 
       // And the new scenario should be added with empty mappings
       expect(updatedCoverage.scenarios[1].name).toBe(

@@ -7,14 +7,16 @@ const config: CommandHelpConfig = {
   options: [
     {
       flag: '--category <category>',
-      description: 'Filter tags by category (e.g., "Phase Tags", "Component Tags")',
+      description:
+        'Filter tags by category (e.g., "Phase Tags", "Component Tags")',
     },
   ],
   examples: [
     {
       command: 'fspec list-tags',
       description: 'List all tags',
-      output: 'Phase Tags:\n  @phase1 - Phase 1 features\n  @phase2 - Phase 2 features\n\nComponent Tags:\n  @cli - CLI commands\n  @parser - Parser features',
+      output:
+        'Phase Tags:\n  @phase1 - Phase 1 features\n  @phase2 - Phase 2 features\n\nComponent Tags:\n  @cli - CLI commands\n  @parser - Parser features',
     },
     {
       command: 'fspec list-tags --category="Phase Tags"',

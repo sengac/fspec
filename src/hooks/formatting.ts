@@ -4,7 +4,10 @@
 
 import type { HookExecutionResult } from './types.js';
 
-export function formatHookOutput(result: HookExecutionResult, isBlocking: boolean): string {
+export function formatHookOutput(
+  result: HookExecutionResult,
+  isBlocking: boolean
+): string {
   const parts: string[] = [];
 
   // Display stdout if present

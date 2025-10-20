@@ -27,7 +27,8 @@ describe('Feature: Internal JSON Schema Validation', () => {
   describe('Scenario: Validate valid foundation.json', () => {
     it('should pass validation for valid foundation.json', () => {
       // Given I have a foundation.json object with valid structure
-      const validFoundation = createMinimalFoundation() as unknown as Foundation;
+      const validFoundation =
+        createMinimalFoundation() as unknown as Foundation;
 
       // When the validation utility validates it against generic-foundation.schema.json
       const result = validateFoundationJson(validFoundation);

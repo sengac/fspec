@@ -10,7 +10,11 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdir, writeFile, rm, chmod } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import type { HookDefinition, HookContext, HookExecutionResult } from '../types.js';
+import type {
+  HookDefinition,
+  HookContext,
+  HookExecutionResult,
+} from '../types.js';
 import { executeHook, executeHooks } from '../executor.js';
 
 let testDir: string;
@@ -52,7 +56,11 @@ describe('Feature: Migrate hook execution to use execa library', () => {
       };
 
       // When the hook is executed using execa
-      const result: HookExecutionResult = await executeHook(hook, context, testDir);
+      const result: HookExecutionResult = await executeHook(
+        hook,
+        context,
+        testDir
+      );
 
       // Then the hook result should have success = true
       expect(result.success).toBe(true);
@@ -75,51 +83,51 @@ describe('Feature: Migrate hook execution to use execa library', () => {
   });
 
   describe('Scenario: Hook times out after configured timeout period and is killed', () => {
-    it(
-      'should use execa with AbortController to kill hook after timeout',
-      async () => {
-        // Given I have a hook script that runs longer than the timeout period
-        const hookScript = join(testDir, 'spec/hooks/long-running.sh');
-        await writeFile(
-          hookScript,
-          '#!/usr/bin/env node\nconst start = Date.now();\nwhile (Date.now() - start < 10000) { /* busy loop */ }'
-        );
-        await chmod(hookScript, 0o755);
+    it('should use execa with AbortController to kill hook after timeout', async () => {
+      // Given I have a hook script that runs longer than the timeout period
+      const hookScript = join(testDir, 'spec/hooks/long-running.sh');
+      await writeFile(
+        hookScript,
+        '#!/usr/bin/env node\nconst start = Date.now();\nwhile (Date.now() - start < 10000) { /* busy loop */ }'
+      );
+      await chmod(hookScript, 0o755);
 
-        // And the timeout is configured to 2 seconds
-        const hook: HookDefinition = {
-          name: 'timeout-hook',
-          command: 'spec/hooks/long-running.sh',
-          blocking: false,
-          timeout: 2,
-        };
+      // And the timeout is configured to 2 seconds
+      const hook: HookDefinition = {
+        name: 'timeout-hook',
+        command: 'spec/hooks/long-running.sh',
+        blocking: false,
+        timeout: 2,
+      };
 
-        const context: HookContext = {
-          workUnitId: 'HOOK-010',
-          event: 'pre-implementing',
-          timestamp: new Date().toISOString(),
-        };
+      const context: HookContext = {
+        workUnitId: 'HOOK-010',
+        event: 'pre-implementing',
+        timestamp: new Date().toISOString(),
+      };
 
-        // When the hook is executed using execa with AbortController
-        const startTime = Date.now();
-        const result: HookExecutionResult = await executeHook(hook, context, testDir);
-        const duration = Date.now() - startTime;
+      // When the hook is executed using execa with AbortController
+      const startTime = Date.now();
+      const result: HookExecutionResult = await executeHook(
+        hook,
+        context,
+        testDir
+      );
+      const duration = Date.now() - startTime;
 
-        // Then the hook should be killed after 2 seconds
-        expect(duration).toBeGreaterThan(1800); // At least 1.8s
-        expect(duration).toBeLessThan(4000); // Less than 4s
+      // Then the hook should be killed after 2 seconds
+      expect(duration).toBeGreaterThan(1800); // At least 1.8s
+      expect(duration).toBeLessThan(4000); // Less than 4s
 
-        // And the hook result should have timedOut = true
-        expect(result.timedOut).toBe(true);
+      // And the hook result should have timedOut = true
+      expect(result.timedOut).toBe(true);
 
-        // And the hook result should have exitCode = null
-        expect(result.exitCode).toBe(null);
+      // And the hook result should have exitCode = null
+      expect(result.exitCode).toBe(null);
 
-        // And the hook result should have success = false
-        expect(result.success).toBe(false);
-      },
-      6000
-    ); // 6 second test timeout
+      // And the hook result should have success = false
+      expect(result.success).toBe(false);
+    }, 6000); // 6 second test timeout
   });
 
   describe('Scenario: Hook fails with non-zero exit code and error message in stderr', () => {
@@ -147,7 +155,11 @@ describe('Feature: Migrate hook execution to use execa library', () => {
       };
 
       // When the hook is executed using execa
-      const result: HookExecutionResult = await executeHook(hook, context, testDir);
+      const result: HookExecutionResult = await executeHook(
+        hook,
+        context,
+        testDir
+      );
 
       // Then the hook result should have success = false
       expect(result.success).toBe(false);
@@ -185,7 +197,11 @@ describe('Feature: Migrate hook execution to use execa library', () => {
       };
 
       // When the hook is executed using execa with input option
-      const result: HookExecutionResult = await executeHook(hook, context, testDir);
+      const result: HookExecutionResult = await executeHook(
+        hook,
+        context,
+        testDir
+      );
 
       // Then the hook should receive the context as JSON via stdin
       // And the hook should be able to parse the workUnitId from stdin

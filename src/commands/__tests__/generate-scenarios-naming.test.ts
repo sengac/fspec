@@ -101,10 +101,7 @@ describe('Feature: Generate Scenarios with Capability-Based Naming', () => {
         id: 'AUTH-001',
         title: 'User Login',
         status: 'specifying',
-        examples: [
-          'User logs in with email',
-          'User logs in with username',
-        ],
+        examples: ['User logs in with email', 'User logs in with username'],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };

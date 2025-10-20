@@ -2,7 +2,8 @@ import type { CommandHelpConfig } from '../utils/help-formatter';
 
 const config: CommandHelpConfig = {
   name: 'delete-features',
-  description: 'Bulk delete feature files by tag using AND logic (all tags must match)',
+  description:
+    'Bulk delete feature files by tag using AND logic (all tags must match)',
   usage: 'fspec delete-features --tag <tag> [--tag <tag>] [options]',
   whenToUse:
     'Use this command to bulk delete feature files by tag (e.g., removing all @deprecated, @phase1, or @spike features). Essential for cleanup after major refactoring or phase completion. ALWAYS use --dry-run first to preview deletions.',
@@ -19,7 +20,8 @@ const config: CommandHelpConfig = {
     },
     {
       flag: '--dry-run',
-      description: 'Preview deletions without making changes (ALWAYS use first)',
+      description:
+        'Preview deletions without making changes (ALWAYS use first)',
     },
   ],
   examples: [
@@ -44,7 +46,8 @@ const config: CommandHelpConfig = {
     {
       command: 'fspec delete-features --tag @phase1 --tag @complete',
       description: 'Delete completed phase1 features',
-      output: '✓ Deleted 5 feature file(s)\n\nDeleted files:\n  - spec/features/phase1-auth.feature\n  ...',
+      output:
+        '✓ Deleted 5 feature file(s)\n\nDeleted files:\n  - spec/features/phase1-auth.feature\n  ...',
     },
   ],
   commonErrors: [

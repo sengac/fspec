@@ -84,26 +84,34 @@ describe('Feature: Work Unit Dependency Management', () => {
       await writeFile(workUnitsFile, JSON.stringify(workUnitsData, null, 2));
 
       // When I run "fspec suggest-dependencies --output=json"
-      const { suggestDependencies } = await import('../suggest-dependencies.js');
-      const result = await suggestDependencies({ cwd: tempDir, output: 'json' });
+      const { suggestDependencies } = await import(
+        '../suggest-dependencies.js'
+      );
+      const result = await suggestDependencies({
+        cwd: tempDir,
+        output: 'json',
+      });
 
       // Then the output should suggest "AUTH-002 depends on AUTH-001" (sequential IDs)
       const auth002Suggestion = result.suggestions.find(
-        (s: { from: string; to: string }) => s.from === 'AUTH-002' && s.to === 'AUTH-001'
+        (s: { from: string; to: string }) =>
+          s.from === 'AUTH-002' && s.to === 'AUTH-001'
       );
       expect(auth002Suggestion).toBeDefined();
       expect(auth002Suggestion.reason).toContain('sequential');
 
       // And the output should suggest "API-002 depends on API-001" (test depends on build)
       const api002Suggestion = result.suggestions.find(
-        (s: { from: string; to: string }) => s.from === 'API-002' && s.to === 'API-001'
+        (s: { from: string; to: string }) =>
+          s.from === 'API-002' && s.to === 'API-001'
       );
       expect(api002Suggestion).toBeDefined();
       expect(api002Suggestion.reason).toMatch(/test.*build/i);
 
       // And the output should suggest "DB-002 depends on DB-001" (data depends on schema)
       const db002Suggestion = result.suggestions.find(
-        (s: { from: string; to: string }) => s.from === 'DB-002' && s.to === 'DB-001'
+        (s: { from: string; to: string }) =>
+          s.from === 'DB-002' && s.to === 'DB-001'
       );
       expect(db002Suggestion).toBeDefined();
       expect(db002Suggestion.reason).toMatch(/schema|migration/i);
@@ -115,14 +123,17 @@ describe('Feature: Work Unit Dependency Management', () => {
       });
 
       // And no suggestion should create circular dependencies
-      const suggestionPairs = result.suggestions.map((s: { from: string; to: string }) => ({
-        from: s.from,
-        to: s.to,
-      }));
+      const suggestionPairs = result.suggestions.map(
+        (s: { from: string; to: string }) => ({
+          from: s.from,
+          to: s.to,
+        })
+      );
 
       suggestionPairs.forEach((pair: { from: string; to: string }) => {
         const reversePair = suggestionPairs.find(
-          (p: { from: string; to: string }) => p.from === pair.to && p.to === pair.from
+          (p: { from: string; to: string }) =>
+            p.from === pair.to && p.to === pair.from
         );
         expect(reversePair).toBeUndefined();
       });

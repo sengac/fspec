@@ -138,7 +138,11 @@ export function registerAnswerQuestionCommand(program: Command): void {
     .argument('<workUnitId>', 'Work unit ID')
     .argument('<index>', 'Question index (0-based)')
     .option('--answer <answer>', 'Answer text')
-    .option('--add-to <type>', 'Add answer to: rule, assumption, or none', 'none')
+    .option(
+      '--add-to <type>',
+      'Add answer to: rule, assumption, or none',
+      'none'
+    )
     .action(
       async (
         workUnitId: string,
@@ -158,11 +162,16 @@ export function registerAnswerQuestionCommand(program: Command): void {
           }
           if (result.addedTo && result.addedContent) {
             console.log(
-              chalk.cyan(`  Added to ${result.addedTo}: "${result.addedContent}"`)
+              chalk.cyan(
+                `  Added to ${result.addedTo}: "${result.addedContent}"`
+              )
             );
           }
         } catch (error: any) {
-          console.error(chalk.red('✗ Failed to answer question:'), error.message);
+          console.error(
+            chalk.red('✗ Failed to answer question:'),
+            error.message
+          );
           process.exit(1);
         }
       }

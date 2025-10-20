@@ -92,11 +92,21 @@ describe('Feature: Implement draft-driven discovery workflow with AI chaining', 
           vision: '[QUESTION: What is the vision?]',
           projectType: '[DETECTED: cli-tool]',
         },
-        problemSpace: { primaryProblem: { title: '[QUESTION:]', description: '[QUESTION:]', impact: 'high' } },
+        problemSpace: {
+          primaryProblem: {
+            title: '[QUESTION:]',
+            description: '[QUESTION:]',
+            impact: 'high',
+          },
+        },
         solutionSpace: { overview: '[QUESTION:]', capabilities: [] },
         personas: [],
       };
-      await writeFile(draftPath, JSON.stringify(draftContent, null, 2), 'utf-8');
+      await writeFile(
+        draftPath,
+        JSON.stringify(draftContent, null, 2),
+        'utf-8'
+      );
 
       // When command scans draft for next unfilled field
       const result = await discoverFoundation({
@@ -128,11 +138,21 @@ describe('Feature: Implement draft-driven discovery workflow with AI chaining', 
           vision: '[QUESTION: What is the vision?]', // NEXT UNFILLED
           projectType: '[DETECTED: cli-tool]',
         },
-        problemSpace: { primaryProblem: { title: '[QUESTION:]', description: '[QUESTION:]', impact: 'high' } },
+        problemSpace: {
+          primaryProblem: {
+            title: '[QUESTION:]',
+            description: '[QUESTION:]',
+            impact: 'high',
+          },
+        },
         solutionSpace: { overview: '[QUESTION:]', capabilities: [] },
         personas: [],
       };
-      await writeFile(draftPath, JSON.stringify(draftContent, null, 2), 'utf-8');
+      await writeFile(
+        draftPath,
+        JSON.stringify(draftContent, null, 2),
+        'utf-8'
+      );
 
       // When AI runs "fspec update-foundation --field project.name --value fspec"
       // Then command should detect draft update
@@ -160,11 +180,21 @@ describe('Feature: Implement draft-driven discovery workflow with AI chaining', 
           vision: '[QUESTION: What is the one-sentence vision?]',
           projectType: '[DETECTED: cli-tool]',
         },
-        problemSpace: { primaryProblem: { title: '[QUESTION:]', description: '[QUESTION:]', impact: 'high' } },
+        problemSpace: {
+          primaryProblem: {
+            title: '[QUESTION:]',
+            description: '[QUESTION:]',
+            impact: 'high',
+          },
+        },
         solutionSpace: { overview: '[QUESTION:]', capabilities: [] },
         personas: [],
       };
-      await writeFile(draftPath, JSON.stringify(draftContent, null, 2), 'utf-8');
+      await writeFile(
+        draftPath,
+        JSON.stringify(draftContent, null, 2),
+        'utf-8'
+      );
 
       // When command re-scans draft
       const result = await discoverFoundation({
@@ -197,11 +227,21 @@ describe('Feature: Implement draft-driven discovery workflow with AI chaining', 
           vision: 'CLI tool for managing Gherkin specs with ACDD',
           projectType: '[DETECTED: cli-tool]',
         },
-        problemSpace: { primaryProblem: { title: '[QUESTION:]', description: '[QUESTION:]', impact: 'high' } },
+        problemSpace: {
+          primaryProblem: {
+            title: '[QUESTION:]',
+            description: '[QUESTION:]',
+            impact: 'high',
+          },
+        },
         solutionSpace: { overview: '[QUESTION:]', capabilities: [] },
         personas: [],
       };
-      await writeFile(draftPath, JSON.stringify(draftContent, null, 2), 'utf-8');
+      await writeFile(
+        draftPath,
+        JSON.stringify(draftContent, null, 2),
+        'utf-8'
+      );
 
       // When command re-scans
       const result = await discoverFoundation({
@@ -225,11 +265,21 @@ describe('Feature: Implement draft-driven discovery workflow with AI chaining', 
           vision: 'CLI tool for managing Gherkin specs',
           projectType: '[DETECTED: cli-tool]',
         },
-        problemSpace: { primaryProblem: { title: '[QUESTION:]', description: '[QUESTION:]', impact: 'high' } },
+        problemSpace: {
+          primaryProblem: {
+            title: '[QUESTION:]',
+            description: '[QUESTION:]',
+            impact: 'high',
+          },
+        },
         solutionSpace: { overview: '[QUESTION:]', capabilities: [] },
         personas: [],
       };
-      await writeFile(draftPath, JSON.stringify(draftContent, null, 2), 'utf-8');
+      await writeFile(
+        draftPath,
+        JSON.stringify(draftContent, null, 2),
+        'utf-8'
+      );
 
       // When command scans draft
       const result = await discoverFoundation({
@@ -260,11 +310,21 @@ describe('Feature: Implement draft-driven discovery workflow with AI chaining', 
           vision: 'CLI tool for managing Gherkin specs',
           projectType: 'cli-tool', // VERIFIED (no [DETECTED:] tag)
         },
-        problemSpace: { primaryProblem: { title: '[QUESTION:]', description: '[QUESTION:]', impact: 'high' } },
+        problemSpace: {
+          primaryProblem: {
+            title: '[QUESTION:]',
+            description: '[QUESTION:]',
+            impact: 'high',
+          },
+        },
         solutionSpace: { overview: '[QUESTION:]', capabilities: [] },
         personas: [],
       };
-      await writeFile(draftPath, JSON.stringify(draftContent, null, 2), 'utf-8');
+      await writeFile(
+        draftPath,
+        JSON.stringify(draftContent, null, 2),
+        'utf-8'
+      );
 
       // When command re-scans
       const result = await discoverFoundation({
@@ -299,7 +359,11 @@ describe('Feature: Implement draft-driven discovery workflow with AI chaining', 
         solutionSpace: { overview: '[QUESTION:]', capabilities: [] },
         personas: [],
       };
-      await writeFile(draftPath, JSON.stringify(draftContent, null, 2), 'utf-8');
+      await writeFile(
+        draftPath,
+        JSON.stringify(draftContent, null, 2),
+        'utf-8'
+      );
 
       // When command scans problemSpace.primaryProblem
       const result = await discoverFoundation({
@@ -335,7 +399,8 @@ describe('Feature: Implement draft-driven discovery workflow with AI chaining', 
         problemSpace: {
           primaryProblem: {
             title: 'Specification Management',
-            description: 'AI agents need structured workflow for specifications',
+            description:
+              'AI agents need structured workflow for specifications',
             impact: 'high',
           },
         },
@@ -345,7 +410,11 @@ describe('Feature: Implement draft-driven discovery workflow with AI chaining', 
         },
         personas: [],
       };
-      await writeFile(draftPath, JSON.stringify(draftContent, null, 2), 'utf-8');
+      await writeFile(
+        draftPath,
+        JSON.stringify(draftContent, null, 2),
+        'utf-8'
+      );
 
       // When command re-scans
       const result = await discoverFoundation({
@@ -382,7 +451,11 @@ describe('Feature: Implement draft-driven discovery workflow with AI chaining', 
         },
         personas: [],
       };
-      await writeFile(draftPath, JSON.stringify(draftContent, null, 2), 'utf-8');
+      await writeFile(
+        draftPath,
+        JSON.stringify(draftContent, null, 2),
+        'utf-8'
+      );
 
       // When command scans solutionSpace.capabilities
       const result = await discoverFoundation({
@@ -423,12 +496,19 @@ describe('Feature: Implement draft-driven discovery workflow with AI chaining', 
         solutionSpace: {
           overview: 'Gherkin-based spec management',
           capabilities: [
-            { name: 'Gherkin Validation', description: 'Validate feature files' },
+            {
+              name: 'Gherkin Validation',
+              description: 'Validate feature files',
+            },
           ],
         },
         personas: '[QUESTION: Who uses this?]',
       };
-      await writeFile(draftPath, JSON.stringify(draftContent, null, 2), 'utf-8');
+      await writeFile(
+        draftPath,
+        JSON.stringify(draftContent, null, 2),
+        'utf-8'
+      );
 
       // When command re-scans
       const result = await discoverFoundation({
@@ -462,12 +542,19 @@ describe('Feature: Implement draft-driven discovery workflow with AI chaining', 
         solutionSpace: {
           overview: 'Gherkin-based spec management',
           capabilities: [
-            { name: 'Gherkin Validation', description: 'Validate feature files' },
+            {
+              name: 'Gherkin Validation',
+              description: 'Validate feature files',
+            },
           ],
         },
         personas: '[QUESTION: Who uses this?]',
       };
-      await writeFile(draftPath, JSON.stringify(draftContent, null, 2), 'utf-8');
+      await writeFile(
+        draftPath,
+        JSON.stringify(draftContent, null, 2),
+        'utf-8'
+      );
 
       // When command scans personas array
       const result = await discoverFoundation({
@@ -506,7 +593,10 @@ describe('Feature: Implement draft-driven discovery workflow with AI chaining', 
         solutionSpace: {
           overview: 'Gherkin-based spec management',
           capabilities: [
-            { name: 'Gherkin Validation', description: 'Validate feature files' },
+            {
+              name: 'Gherkin Validation',
+              description: 'Validate feature files',
+            },
           ],
         },
         personas: [
@@ -517,7 +607,11 @@ describe('Feature: Implement draft-driven discovery workflow with AI chaining', 
           },
         ],
       };
-      await writeFile(draftPath, JSON.stringify(draftContent, null, 2), 'utf-8');
+      await writeFile(
+        draftPath,
+        JSON.stringify(draftContent, null, 2),
+        'utf-8'
+      );
 
       // When command re-scans
       const result = await discoverFoundation({
@@ -544,14 +638,18 @@ describe('Feature: Implement draft-driven discovery workflow with AI chaining', 
         problemSpace: {
           primaryProblem: {
             title: 'Specification Management',
-            description: 'AI agents need structured workflow for specifications',
+            description:
+              'AI agents need structured workflow for specifications',
             impact: 'high',
           },
         },
         solutionSpace: {
           overview: 'Gherkin-based specification management',
           capabilities: [
-            { name: 'Gherkin Validation', description: 'Validate feature files' },
+            {
+              name: 'Gherkin Validation',
+              description: 'Validate feature files',
+            },
           ],
         },
         personas: [
@@ -562,7 +660,11 @@ describe('Feature: Implement draft-driven discovery workflow with AI chaining', 
           },
         ],
       };
-      await writeFile(draftPath, JSON.stringify(completeDraft, null, 2), 'utf-8');
+      await writeFile(
+        draftPath,
+        JSON.stringify(completeDraft, null, 2),
+        'utf-8'
+      );
 
       // When command re-scans draft
       const result = await discoverFoundation({
@@ -583,14 +685,18 @@ describe('Feature: Implement draft-driven discovery workflow with AI chaining', 
 
       // Then command should create spec/foundation.json from draft
       expect(result.finalCreated).toBe(true);
-      const foundationExists = await stat(join(tmpDir, 'spec', 'foundation.json'))
+      const foundationExists = await stat(
+        join(tmpDir, 'spec', 'foundation.json')
+      )
         .then(() => true)
         .catch(() => false);
       expect(foundationExists).toBe(true);
 
       // And command should delete spec/foundation.json.draft
       expect(result.draftDeleted).toBe(true);
-      const draftExists = await stat(draftPath).then(() => true).catch(() => false);
+      const draftExists = await stat(draftPath)
+        .then(() => true)
+        .catch(() => false);
       expect(draftExists).toBe(false);
 
       // And command should AUTOMATICALLY run "fspec generate-foundation-md"
@@ -614,11 +720,21 @@ describe('Feature: Implement draft-driven discovery workflow with AI chaining', 
           vision: '[QUESTION: What is the vision?]',
           projectType: '[DETECTED: cli-tool]',
         },
-        problemSpace: { primaryProblem: { title: '[QUESTION:]', description: '[QUESTION:]', impact: 'high' } },
+        problemSpace: {
+          primaryProblem: {
+            title: '[QUESTION:]',
+            description: '[QUESTION:]',
+            impact: 'high',
+          },
+        },
         solutionSpace: { overview: '[QUESTION:]', capabilities: [] },
         personas: [],
       };
-      await writeFile(draftPath, JSON.stringify(draftContent, null, 2), 'utf-8');
+      await writeFile(
+        draftPath,
+        JSON.stringify(draftContent, null, 2),
+        'utf-8'
+      );
 
       // Store last known state
       const lastKnownContent = JSON.stringify(draftContent);
@@ -628,7 +744,11 @@ describe('Feature: Implement draft-driven discovery workflow with AI chaining', 
         ...draftContent,
         project: { ...draftContent.project, name: 'manually-edited-name' },
       };
-      await writeFile(draftPath, JSON.stringify(manuallyEditedContent, null, 2), 'utf-8');
+      await writeFile(
+        draftPath,
+        JSON.stringify(manuallyEditedContent, null, 2),
+        'utf-8'
+      );
 
       // When command detects change
       const result = await discoverFoundation({
@@ -683,13 +803,26 @@ describe('Feature: Implement draft-driven discovery workflow with AI chaining', 
         },
         solutionSpace: {
           overview: 'Gherkin-based spec management',
-          capabilities: [{ name: 'Gherkin Validation', description: 'Validate feature files' }],
+          capabilities: [
+            {
+              name: 'Gherkin Validation',
+              description: 'Validate feature files',
+            },
+          ],
         },
         personas: [
-          { name: 'Developer using CLI', description: 'Uses fspec in terminal', goals: ['Manage specs'] },
+          {
+            name: 'Developer using CLI',
+            description: 'Uses fspec in terminal',
+            goals: ['Manage specs'],
+          },
         ],
       };
-      await writeFile(draftPath, JSON.stringify(invalidDraft, null, 2), 'utf-8');
+      await writeFile(
+        draftPath,
+        JSON.stringify(invalidDraft, null, 2),
+        'utf-8'
+      );
 
       // When command validates draft
       const result = await discoverFoundation({
@@ -703,7 +836,9 @@ describe('Feature: Implement draft-driven discovery workflow with AI chaining', 
       expect(result.valid).toBe(false);
 
       // And error should say "Missing required: problemSpace.primaryProblem.description"
-      expect(result.validationErrors).toContain('problemSpace.primaryProblem.description');
+      expect(result.validationErrors).toContain(
+        'problemSpace.primaryProblem.description'
+      );
 
       // And error should provide fix command with appropriate commands
       expect(result.validationErrors).toContain('fspec update-foundation');
@@ -711,12 +846,16 @@ describe('Feature: Implement draft-driven discovery workflow with AI chaining', 
       expect(result.validationErrors).toContain('fspec add-persona');
 
       // And draft should NOT be deleted
-      const draftExists = await stat(draftPath).then(() => true).catch(() => false);
+      const draftExists = await stat(draftPath)
+        .then(() => true)
+        .catch(() => false);
       expect(draftExists).toBe(true);
 
       // And foundation.json should NOT be created
       expect(result.finalCreated).toBeUndefined();
-      const foundationExists = await stat(join(tmpDir, 'spec', 'foundation.json'))
+      const foundationExists = await stat(
+        join(tmpDir, 'spec', 'foundation.json')
+      )
         .then(() => true)
         .catch(() => false);
       expect(foundationExists).toBe(false);
@@ -735,16 +874,26 @@ describe('Feature: Implement draft-driven discovery workflow with AI chaining', 
         problemSpace: {
           primaryProblem: {
             title: 'Specification Management',
-            description: 'AI agents need structured workflow for specifications', // FIXED
+            description:
+              'AI agents need structured workflow for specifications', // FIXED
             impact: 'high',
           },
         },
         solutionSpace: {
           overview: 'Gherkin-based spec management',
-          capabilities: [{ name: 'Gherkin Validation', description: 'Validate feature files' }],
+          capabilities: [
+            {
+              name: 'Gherkin Validation',
+              description: 'Validate feature files',
+            },
+          ],
         },
         personas: [
-          { name: 'Developer using CLI', description: 'Uses fspec in terminal', goals: ['Manage specs'] },
+          {
+            name: 'Developer using CLI',
+            description: 'Uses fspec in terminal',
+            goals: ['Manage specs'],
+          },
         ],
       };
       await writeFile(draftPath, JSON.stringify(fixedDraft, null, 2), 'utf-8');

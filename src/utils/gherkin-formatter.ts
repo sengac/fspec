@@ -80,7 +80,9 @@ export class GherkinFormatter {
     commentMap: Map<number, string>,
     lines: string[]
   ): void {
-    const sortedCommentLines = Array.from(commentMap.keys()).sort((a, b) => a - b);
+    const sortedCommentLines = Array.from(commentMap.keys()).sort(
+      (a, b) => a - b
+    );
 
     for (const commentLine of sortedCommentLines) {
       if (commentLine < currentLine) {
@@ -94,10 +96,18 @@ export class GherkinFormatter {
     }
   }
 
-  private formatFeature(feature: Feature, lines: string[], commentMap: Map<number, string>): void {
+  private formatFeature(
+    feature: Feature,
+    lines: string[],
+    commentMap: Map<number, string>
+  ): void {
     // Insert comments before tags
     if (feature.tags.length > 0) {
-      this.insertCommentsBeforeLine(feature.tags[0].location.line, commentMap, lines);
+      this.insertCommentsBeforeLine(
+        feature.tags[0].location.line,
+        commentMap,
+        lines
+      );
     } else {
       this.insertCommentsBeforeLine(feature.location.line, commentMap, lines);
     }
@@ -130,7 +140,10 @@ export class GherkinFormatter {
       }
 
       // Insert comments before child element
-      const childLocation = child.background?.location || child.scenario?.location || child.rule?.location;
+      const childLocation =
+        child.background?.location ||
+        child.scenario?.location ||
+        child.rule?.location;
       if (childLocation) {
         this.insertCommentsBeforeLine(childLocation.line, commentMap, lines);
       }
@@ -208,7 +221,12 @@ export class GherkinFormatter {
     });
   }
 
-  private formatRule(rule: Rule, lines: string[], baseIndent: number, commentMap: Map<number, string>): void {
+  private formatRule(
+    rule: Rule,
+    lines: string[],
+    baseIndent: number,
+    commentMap: Map<number, string>
+  ): void {
     const indent = this.getIndent(baseIndent + 1);
 
     // Tags
@@ -234,7 +252,12 @@ export class GherkinFormatter {
     });
   }
 
-  private formatStep(step: Step, lines: string[], indentLevel: number, commentMap: Map<number, string>): void {
+  private formatStep(
+    step: Step,
+    lines: string[],
+    indentLevel: number,
+    commentMap: Map<number, string>
+  ): void {
     const indent = this.getIndent(indentLevel);
 
     // Insert comments before step

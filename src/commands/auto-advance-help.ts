@@ -2,7 +2,8 @@ import type { CommandHelpConfig } from '../utils/help-formatter';
 
 const config: CommandHelpConfig = {
   name: 'auto-advance',
-  description: 'Automatically advance work units through workflow when criteria are met',
+  description:
+    'Automatically advance work units through workflow when criteria are met',
   usage: 'fspec auto-advance [options]',
   whenToUse:
     'Use to automatically move work units forward when they meet criteria (e.g., all questions answered → move to testing).',
@@ -16,7 +17,8 @@ const config: CommandHelpConfig = {
     {
       command: 'fspec auto-advance',
       description: 'Auto-advance eligible work units',
-      output: '✓ AUTH-001: specifying → testing (all questions answered)\n✓ AUTH-002: testing → implementing (tests written)\n\nAdvanced 2 work units',
+      output:
+        '✓ AUTH-001: specifying → testing (all questions answered)\n✓ AUTH-002: testing → implementing (tests written)\n\nAdvanced 2 work units',
     },
     {
       command: 'fspec auto-advance --dry-run',

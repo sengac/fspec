@@ -25,7 +25,7 @@ export function evaluateHookCondition(
   // Condition with tags: hook runs if work unit has ANY of the specified tags (OR logic)
   if (hook.condition.tags && hook.condition.tags.length > 0) {
     const workUnitTags = workUnit.tags || [];
-    const hasMatchingTag = hook.condition.tags.some((conditionTag) =>
+    const hasMatchingTag = hook.condition.tags.some(conditionTag =>
       workUnitTags.includes(conditionTag)
     );
     if (!hasMatchingTag) {
@@ -35,7 +35,7 @@ export function evaluateHookCondition(
 
   // Condition with prefix: hook runs if work unit ID starts with ANY of the specified prefixes (OR logic)
   if (hook.condition.prefix && hook.condition.prefix.length > 0) {
-    const hasMatchingPrefix = hook.condition.prefix.some((prefix) =>
+    const hasMatchingPrefix = hook.condition.prefix.some(prefix =>
       workUnit.id.startsWith(prefix)
     );
     if (!hasMatchingPrefix) {

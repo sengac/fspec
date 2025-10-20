@@ -2,14 +2,16 @@ import type { CommandHelpConfig } from '../utils/help-formatter';
 
 const config: CommandHelpConfig = {
   name: 'create-feature',
-  description: 'Create a new feature file with proper Gherkin structure template',
+  description:
+    'Create a new feature file with proper Gherkin structure template',
   usage: 'fspec create-feature <name>',
   whenToUse:
     'Use when starting a new feature specification in ACDD workflow. Creates a well-structured template with Background section, placeholder scenarios, and proper formatting.',
   arguments: [
     {
       name: 'name',
-      description: 'Feature name in sentence case (e.g., "User Authentication")',
+      description:
+        'Feature name in sentence case (e.g., "User Authentication")',
       required: true,
     },
   ],
@@ -28,7 +30,7 @@ const config: CommandHelpConfig = {
   relatedCommands: ['add-scenario', 'add-step', 'validate', 'format'],
   notes: [
     'Filename is automatically kebab-cased from the feature name',
-    'Creates spec/features/ directory if it doesn\'t exist',
+    "Creates spec/features/ directory if it doesn't exist",
     'Template includes Background section placeholder',
     'Template includes one example Scenario placeholder',
     'File is created with proper Gherkin formatting',

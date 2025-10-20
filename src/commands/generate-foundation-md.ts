@@ -57,10 +57,15 @@ export async function generateFoundationMdCommand(
 
     // Validate all Mermaid diagrams
     const diagramErrors: string[] = [];
-    if (foundationData.architectureDiagrams && foundationData.architectureDiagrams.length > 0) {
+    if (
+      foundationData.architectureDiagrams &&
+      foundationData.architectureDiagrams.length > 0
+    ) {
       for (let i = 0; i < foundationData.architectureDiagrams.length; i++) {
         const diagram = foundationData.architectureDiagrams[i];
-        const validationResult = await validateMermaidSyntax(diagram.mermaidCode);
+        const validationResult = await validateMermaidSyntax(
+          diagram.mermaidCode
+        );
 
         if (!validationResult.valid) {
           diagramErrors.push(
@@ -115,7 +120,9 @@ export async function generateFoundationMdCommandCLI(options: {
   output?: string;
 }): Promise<void> {
   try {
-    const result = await generateFoundationMdCommand({ output: options.output });
+    const result = await generateFoundationMdCommand({
+      output: options.output,
+    });
 
     if (!result.success) {
       console.error(chalk.red('Error:'), result.error);
@@ -134,6 +141,9 @@ export function registerGenerateFoundationMdCommand(program: Command): void {
   program
     .command('generate-foundation-md')
     .description('Generate FOUNDATION.md from foundation.json')
-    .option('--output <path>', 'Custom output path (default: spec/FOUNDATION.md)')
+    .option(
+      '--output <path>',
+      'Custom output path (default: spec/FOUNDATION.md)'
+    )
     .action(generateFoundationMdCommandCLI);
 }

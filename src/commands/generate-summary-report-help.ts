@@ -20,7 +20,8 @@ const config: CommandHelpConfig = {
     {
       command: 'fspec generate-summary-report --output report.md',
       description: 'Generate report',
-      output: '✓ Generated summary report: report.md\n  42 work units, 87% complete',
+      output:
+        '✓ Generated summary report: report.md\n  42 work units, 87% complete',
     },
   ],
   relatedCommands: ['query-metrics', 'board', 'query-work-units'],

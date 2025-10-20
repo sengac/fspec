@@ -48,28 +48,28 @@ const config: CommandHelpConfig = {
         'fspec update-step user-login "Valid user login" "Given I am on the login page" --text "I navigate to the login page"',
       description: 'Update step text, keep keyword',
       output:
-        '✓ Successfully updated step in scenario \'Valid user login\' in user-login.feature',
+        "✓ Successfully updated step in scenario 'Valid user login' in user-login.feature",
     },
     {
       command:
         'fspec update-step user-login "Valid user login" "Given I am logged out" --keyword When',
       description: 'Change step keyword from Given to When',
       output:
-        '✓ Successfully updated step in scenario \'Valid user login\' in user-login.feature',
+        "✓ Successfully updated step in scenario 'Valid user login' in user-login.feature",
     },
     {
       command:
         'fspec update-step user-login "Valid user login" "I enter credentials" --text "I submit the login form" --keyword When',
       description: 'Update both text and keyword',
       output:
-        '✓ Successfully updated step in scenario \'Valid user login\' in user-login.feature',
+        "✓ Successfully updated step in scenario 'Valid user login' in user-login.feature",
     },
     {
       command:
         'fspec update-step spec/features/auth/login.feature "Login scenario" "Given I am logged in" --text "the user is authenticated"',
       description: 'Update using full path',
       output:
-        '✓ Successfully updated step in scenario \'Login scenario\' in login.feature',
+        "✓ Successfully updated step in scenario 'Login scenario' in login.feature",
     },
   ],
   commonErrors: [
@@ -78,7 +78,7 @@ const config: CommandHelpConfig = {
       fix: 'Provide at least one of --text or --keyword options',
     },
     {
-      error: "Feature file not found: spec/features/user-login.feature",
+      error: 'Feature file not found: spec/features/user-login.feature',
       fix: 'Check feature name or provide full path. Use: fspec list-features',
     },
     {
@@ -86,7 +86,8 @@ const config: CommandHelpConfig = {
       fix: 'Verify scenario name matches exactly. Use: fspec show-feature <feature>',
     },
     {
-      error: "Step 'Given I am logged in' not found in scenario 'Login scenario'",
+      error:
+        "Step 'Given I am logged in' not found in scenario 'Login scenario'",
       fix: 'Check step text matches exactly (case-sensitive). Use: fspec show-feature <feature>',
     },
     {

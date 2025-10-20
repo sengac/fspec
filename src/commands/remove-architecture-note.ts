@@ -29,7 +29,9 @@ export async function removeArchitectureNote(
 
   // Validate architectureNotes exists and has items
   if (!workUnit.architectureNotes || workUnit.architectureNotes.length === 0) {
-    throw new Error(`Work unit '${options.workUnitId}' has no architecture notes`);
+    throw new Error(
+      `Work unit '${options.workUnitId}' has no architecture notes`
+    );
   }
 
   // Validate index is within bounds
@@ -65,7 +67,8 @@ export function registerRemoveArchitectureNoteCommand(program: Command): void {
         await removeArchitectureNote({ workUnitId, index });
         console.log(chalk.green('✓ Architecture note removed successfully'));
       } catch (error: unknown) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
         console.error(chalk.red('Error:'), errorMessage);
         process.exit(1);
       }

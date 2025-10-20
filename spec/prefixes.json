@@ -124,6 +124,16 @@
       "prefix": "DOCS",
       "description": "Documentation improvements and clarifications",
       "createdAt": "2025-10-19T12:10:38.903Z"
+    },
+    "REV": {
+      "prefix": "REV",
+      "description": "Reverse ACDD strategy planning and gap-filling commands",
+      "createdAt": "2025-10-19T20:57:22.638Z"
+    },
+    "UX": {
+      "prefix": "UX",
+      "description": "User Experience - CLI usability and AI guidance improvements",
+      "createdAt": "2025-10-19T21:40:42.556Z"
     }
   }
 }

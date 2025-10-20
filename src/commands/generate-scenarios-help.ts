@@ -2,7 +2,8 @@ import type { CommandHelpConfig } from '../utils/help-formatter';
 
 const config: CommandHelpConfig = {
   name: 'generate-scenarios',
-  description: 'Generate Gherkin scenarios from Example Mapping data (rules, examples, questions)',
+  description:
+    'Generate Gherkin scenarios from Example Mapping data (rules, examples, questions)',
   usage: 'fspec generate-scenarios <workUnitId> [--feature=<name>]',
   whenToUse:
     'Use after completing Example Mapping when all questions are answered and ready to create feature file scenarios.',
@@ -21,15 +22,18 @@ const config: CommandHelpConfig = {
   options: [
     {
       name: '--feature=<name>',
-      description: 'Override feature file name (without .feature extension). Defaults to work unit title converted to kebab-case.',
+      description:
+        'Override feature file name (without .feature extension). Defaults to work unit title converted to kebab-case.',
       required: false,
     },
   ],
   examples: [
     {
       command: 'fspec generate-scenarios AUTH-001',
-      description: 'Generate scenarios using work unit title as feature file name',
-      output: '✓ Generated 3 scenarios in spec/features/user-authentication.feature\n\nScenario: Login with valid email...\nScenario: Login with invalid email...',
+      description:
+        'Generate scenarios using work unit title as feature file name',
+      output:
+        '✓ Generated 3 scenarios in spec/features/user-authentication.feature\n\nScenario: Login with valid email...\nScenario: Login with invalid email...',
     },
     {
       command: 'fspec generate-scenarios AUTH-001 --feature=login',
@@ -37,7 +41,13 @@ const config: CommandHelpConfig = {
       output: '✓ Generated 3 scenarios in spec/features/login.feature',
     },
   ],
-  relatedCommands: ['add-rule', 'add-example', 'add-question', 'show-work-unit', 'create-feature'],
+  relatedCommands: [
+    'add-rule',
+    'add-example',
+    'add-question',
+    'show-work-unit',
+    'create-feature',
+  ],
   notes: [
     'Feature files are named after CAPABILITIES (what IS), not work unit IDs',
     'Defaults to work unit title converted to kebab-case (e.g., "User Authentication" → user-authentication.feature)',

@@ -16,7 +16,8 @@ const config: CommandHelpConfig = {
     {
       command: 'fspec repair-work-units',
       description: 'Repair all issues',
-      output: '✓ Repaired 3 work units\n  - Fixed broken dependency: AUTH-001 → AUTH-999 (deleted)\n  - Reset invalid status: UI-002',
+      output:
+        '✓ Repaired 3 work units\n  - Fixed broken dependency: AUTH-001 → AUTH-999 (deleted)\n  - Reset invalid status: UI-002',
     },
   ],
   relatedCommands: ['validate-work-units'],

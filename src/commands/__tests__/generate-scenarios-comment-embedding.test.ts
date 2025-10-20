@@ -117,8 +117,8 @@ describe('Feature: Preserve example mapping context as comments', () => {
       // And a system-reminder should tell AI to write scenarios
       expect(result.systemReminders).toBeDefined();
       expect(result.systemReminders!.length).toBeGreaterThan(0);
-      const reminder = result.systemReminders!.find(r =>
-        r.includes('write scenarios') || r.includes('EXAMPLES')
+      const reminder = result.systemReminders!.find(
+        r => r.includes('write scenarios') || r.includes('EXAMPLES')
       );
       expect(reminder).toBeDefined();
     });
@@ -222,7 +222,9 @@ describe('Feature: Preserve example mapping context as comments', () => {
 
       // And the block should be visually distinct when scrolling
       const lines = content.split('\n');
-      const separatorLines = lines.filter(line => /^#\s*={3,}/.test(line.trim()));
+      const separatorLines = lines.filter(line =>
+        /^#\s*={3,}/.test(line.trim())
+      );
       expect(separatorLines.length).toBeGreaterThanOrEqual(2); // Top and bottom borders
     });
   });
@@ -244,7 +246,11 @@ describe('Feature: Preserve example mapping context as comments', () => {
             status: 'specifying',
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
-            userStory: { role: 'user', action: 'authenticate', benefit: 'security' },
+            userStory: {
+              role: 'user',
+              action: 'authenticate',
+              benefit: 'security',
+            },
             rules: ['OAuth considered'],
             examples: ['User logs in with password'],
             questions: [
@@ -298,7 +304,11 @@ describe('Feature: Preserve example mapping context as comments', () => {
             status: 'specifying',
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
-            userStory: { role: 'user', action: 'register', benefit: 'create account' },
+            userStory: {
+              role: 'user',
+              action: 'register',
+              benefit: 'create account',
+            },
             rules: ['Email required'],
             examples: ['User registers with email'],
             questions: [],
@@ -327,7 +337,9 @@ describe('Feature: Preserve example mapping context as comments', () => {
       expect(content).toContain('# ASSUMPTIONS:');
 
       // And the section should list the email verification assumption
-      expect(content).toContain('Email verification handled by external service');
+      expect(content).toContain(
+        'Email verification handled by external service'
+      );
 
       // And AI agents know not to write scenarios for email verification
       expect(content).toContain('# ASSUMPTIONS:');

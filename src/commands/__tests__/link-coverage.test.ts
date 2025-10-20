@@ -135,15 +135,15 @@ describe('Feature: Link Coverage Command', () => {
       const updatedContent = await readFile(coverageFile, 'utf-8');
       const updatedCoverage: CoverageFile = JSON.parse(updatedContent);
 
-      expect(updatedCoverage.scenarios[0].testMappings[0].implMappings).toHaveLength(
-        1
-      );
-      expect(updatedCoverage.scenarios[0].testMappings[0].implMappings[0]).toEqual(
-        {
-          file: 'src/auth/login.ts',
-          lines: [10, 11, 12],
-        }
-      );
+      expect(
+        updatedCoverage.scenarios[0].testMappings[0].implMappings
+      ).toHaveLength(1);
+      expect(
+        updatedCoverage.scenarios[0].testMappings[0].implMappings[0]
+      ).toEqual({
+        file: 'src/auth/login.ts',
+        lines: [10, 11, 12],
+      });
 
       // And should display success message
       expect(result.message).toContain('Added implementation mapping');
@@ -213,7 +213,9 @@ describe('Feature: Link Coverage Command', () => {
       });
 
       // And should display success message
-      expect(result.message).toContain('Linked test mapping with implementation');
+      expect(result.message).toContain(
+        'Linked test mapping with implementation'
+      );
     });
   });
 
@@ -379,14 +381,15 @@ describe('Feature: Link Coverage Command', () => {
       const updatedContent = await readFile(coverageFile, 'utf-8');
       const updatedCoverage: CoverageFile = JSON.parse(updatedContent);
 
-      expect(updatedCoverage.scenarios[0].testMappings[0].implMappings).toHaveLength(
-        2
-      );
+      expect(
+        updatedCoverage.scenarios[0].testMappings[0].implMappings
+      ).toHaveLength(2);
 
       // Find the login.ts entry
-      const loginEntry = updatedCoverage.scenarios[0].testMappings[0].implMappings.find(
-        (m) => m.file === 'src/auth/login.ts'
-      );
+      const loginEntry =
+        updatedCoverage.scenarios[0].testMappings[0].implMappings.find(
+          m => m.file === 'src/auth/login.ts'
+        );
 
       expect(loginEntry).toBeDefined();
       expect(loginEntry!.lines).toEqual([20, 21, 22]);
@@ -552,6 +555,192 @@ describe('Feature: Link Coverage Command', () => {
           cwd: testDir,
         })
       ).rejects.toThrow('--test-file is required');
+    });
+  });
+
+  describe('Feature: System-reminder for missing scenarios in link-coverage (UX-001)', () => {
+    describe('Scenario: Scenario exists in feature file but not in coverage file', () => {
+      it('should emit system-reminder suggesting generate-coverage', async () => {
+        // Given: I have a feature file with a scenario "Login with valid credentials"
+        const featuresDir = join(testDir, 'spec', 'features');
+        await mkdir(featuresDir, { recursive: true });
+
+        const featureContent = `Feature: User Login
+  Scenario: Login with valid credentials
+    Given I am on the login page
+    When I enter valid credentials
+    Then I should be logged in`;
+
+        await writeFile(join(featuresDir, 'user-login.feature'), featureContent);
+
+        // And: the coverage file exists but does not contain that scenario
+        const coverageData: CoverageFile = {
+          scenarios: [
+            {
+              name: 'Different scenario',
+              testMappings: [],
+            },
+          ],
+          stats: {
+            totalScenarios: 1,
+            coveredScenarios: 0,
+            coveragePercent: 0,
+            testFiles: [],
+            implFiles: [],
+            totalLinesCovered: 0,
+          },
+        };
+
+        const coverageFile = join(featuresDir, 'user-login.feature.coverage');
+        await writeFile(coverageFile, JSON.stringify(coverageData, null, 2));
+
+        // When: I run "fspec link-coverage" for that scenario
+        const { linkCoverage } = await import('../link-coverage');
+
+        // Then: the command should fail with "Scenario not found" error
+        await expect(
+          linkCoverage('user-login', {
+            scenario: 'Login with valid credentials',
+            testFile: 'src/__tests__/auth.test.ts',
+            testLines: '10-20',
+            skipValidation: true,
+            cwd: testDir,
+          })
+        ).rejects.toThrow('Scenario not found');
+
+        // And: the output should contain a system-reminder wrapped in <system-reminder> tags
+        try {
+          await linkCoverage('user-login', {
+            scenario: 'Login with valid credentials',
+            testFile: 'src/__tests__/auth.test.ts',
+            testLines: '10-20',
+            skipValidation: true,
+            cwd: testDir,
+          });
+        } catch (error: any) {
+          expect(error.message).toContain('<system-reminder>');
+          expect(error.message).toContain('</system-reminder>');
+
+          // And: the system-reminder should suggest running "fspec generate-coverage" first
+          expect(error.message).toContain('fspec generate-coverage');
+          expect(error.message).toContain('coverage file is out of sync');
+        }
+      });
+    });
+
+    describe("Scenario: Scenario doesn't exist in feature file (typo)", () => {
+      it('should show normal error without system-reminder', async () => {
+        // Given: I have a feature file with scenarios
+        const featuresDir = join(testDir, 'spec', 'features');
+        await mkdir(featuresDir, { recursive: true });
+
+        const featureContent = `Feature: User Login
+  Scenario: Login with valid credentials
+    Given I am on the login page
+    When I enter valid credentials
+    Then I should be logged in`;
+
+        await writeFile(join(featuresDir, 'user-login.feature'), featureContent);
+
+        // And: the coverage file exists
+        const coverageData: CoverageFile = {
+          scenarios: [
+            {
+              name: 'Login with valid credentials',
+              testMappings: [],
+            },
+          ],
+          stats: {
+            totalScenarios: 1,
+            coveredScenarios: 0,
+            coveragePercent: 0,
+            testFiles: [],
+            implFiles: [],
+            totalLinesCovered: 0,
+          },
+        };
+
+        const coverageFile = join(featuresDir, 'user-login.feature.coverage');
+        await writeFile(coverageFile, JSON.stringify(coverageData, null, 2));
+
+        // When: I run "fspec link-coverage" with a scenario name that doesn't exist in the feature file
+        const { linkCoverage } = await import('../link-coverage');
+
+        // Then: the command should fail with "Scenario not found" error
+        await expect(
+          linkCoverage('user-login', {
+            scenario: 'Login with INVALID credentials', // Typo - doesn't exist
+            testFile: 'src/__tests__/auth.test.ts',
+            testLines: '10-20',
+            skipValidation: true,
+            cwd: testDir,
+          })
+        ).rejects.toThrow('Scenario not found');
+
+        // And: the output should list available scenarios
+        try {
+          await linkCoverage('user-login', {
+            scenario: 'Login with INVALID credentials',
+            testFile: 'src/__tests__/auth.test.ts',
+            testLines: '10-20',
+            skipValidation: true,
+            cwd: testDir,
+          });
+        } catch (error: any) {
+          expect(error.message).toContain('Available scenarios');
+          expect(error.message).toContain('Login with valid credentials');
+
+          // And: the output should NOT contain a system-reminder
+          expect(error.message).not.toContain('<system-reminder>');
+        }
+      });
+    });
+
+    describe('Scenario: Coverage file missing entirely', () => {
+      it('should emit system-reminder suggesting generate-coverage', async () => {
+        // Given: I have a feature file with a scenario "Login with valid credentials"
+        const featuresDir = join(testDir, 'spec', 'features');
+        await mkdir(featuresDir, { recursive: true });
+
+        const featureContent = `Feature: User Login
+  Scenario: Login with valid credentials
+    Given I am on the login page
+    When I enter valid credentials
+    Then I should be logged in`;
+
+        await writeFile(join(featuresDir, 'user-login.feature'), featureContent);
+
+        // And: the coverage file does not exist
+
+        // When: I run "fspec link-coverage" for that scenario
+        const { linkCoverage } = await import('../link-coverage');
+
+        // Then: the command should fail with an error
+        await expect(
+          linkCoverage('user-login', {
+            scenario: 'Login with valid credentials',
+            testFile: 'src/__tests__/auth.test.ts',
+            testLines: '10-20',
+            skipValidation: true,
+            cwd: testDir,
+          })
+        ).rejects.toThrow();
+
+        // And: the output should contain a system-reminder suggesting "fspec generate-coverage"
+        try {
+          await linkCoverage('user-login', {
+            scenario: 'Login with valid credentials',
+            testFile: 'src/__tests__/auth.test.ts',
+            testLines: '10-20',
+            skipValidation: true,
+            cwd: testDir,
+          });
+        } catch (error: any) {
+          expect(error.message).toContain('<system-reminder>');
+          expect(error.message).toContain('</system-reminder>');
+          expect(error.message).toContain('fspec generate-coverage');
+        }
+      });
     });
   });
 });

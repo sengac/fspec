@@ -26,7 +26,8 @@ const config: CommandHelpConfig = {
   examples: [
     {
       command: 'fspec update-work-unit-estimate AUTH-001 5',
-      description: 'Set estimate for story work unit (requires completed feature file)',
+      description:
+        'Set estimate for story work unit (requires completed feature file)',
       output: '✓ Work unit AUTH-001 estimate set to 5',
     },
     {

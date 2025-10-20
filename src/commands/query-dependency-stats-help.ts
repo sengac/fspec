@@ -16,7 +16,8 @@ const config: CommandHelpConfig = {
     {
       command: 'fspec query-dependency-stats',
       description: 'Show dependency stats',
-      output: 'Total dependencies: 42\nBlocking work units: 5\nBlocked work units: 8\nWork units with no dependencies: 20',
+      output:
+        'Total dependencies: 42\nBlocking work units: 5\nBlocked work units: 8\nWork units with no dependencies: 20',
     },
   ],
   relatedCommands: ['export-dependencies', 'add-dependency'],

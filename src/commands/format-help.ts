@@ -18,7 +18,8 @@ const config: CommandHelpConfig = {
     {
       command: 'fspec format',
       description: 'Format all feature files',
-      output: '✓ Formatted spec/features/login.feature\n✓ Formatted spec/features/signup.feature\n\nFormatted 2 files',
+      output:
+        '✓ Formatted spec/features/login.feature\n✓ Formatted spec/features/signup.feature\n\nFormatted 2 files',
     },
     {
       command: 'fspec format spec/features/login.feature',

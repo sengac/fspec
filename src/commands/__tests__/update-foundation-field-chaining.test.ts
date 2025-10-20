@@ -80,7 +80,9 @@ describe('Feature: update-foundation field chaining during discovery', () => {
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
-      expect(result.message).toContain('Updated "projectName" in foundation.json.draft');
+      expect(result.message).toContain(
+        'Updated "projectName" in foundation.json.draft'
+      );
 
       // And discoverFoundation should have been called in scanOnly mode
       // Note: This tests that the FUNCTION would be called, implementation needs to add this
@@ -134,7 +136,9 @@ describe('Feature: update-foundation field chaining during discovery', () => {
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
-      expect(result.message).toContain('Updated "projectVision" in foundation.json.draft');
+      expect(result.message).toContain(
+        'Updated "projectVision" in foundation.json.draft'
+      );
 
       // After implementation, expect:
       // - result.nextFieldGuidance with Field 3/8
@@ -183,7 +187,9 @@ describe('Feature: update-foundation field chaining during discovery', () => {
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
-      expect(result.message).toContain('Updated "solutionOverview" in foundation.json.draft');
+      expect(result.message).toContain(
+        'Updated "solutionOverview" in foundation.json.draft'
+      );
 
       // After implementation, expect:
       // - result.allFieldsComplete to be true

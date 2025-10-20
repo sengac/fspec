@@ -1,0 +1,28 @@
+graph TD
+    Start[Gap Analysis Complete] --> HasTests{Tests exist?}
+
+    HasTests -->|Yes| HasFeatures{Features exist?}
+    HasTests -->|No| HasFeaturesNoTests{Features exist?}
+
+    HasFeatures -->|Yes| HasCoverage{Coverage mapped?}
+    HasFeatures -->|No| StrategyA[Strategy A:<br/>Spec Gap Filling<br/><br/>Create features from tests<br/>Reverse engineer scenarios<br/>Link with --skip-validation]
+
+    HasCoverage -->|Yes| NothingToDo[✅ No gaps detected<br/>Project fully mapped]
+    HasCoverage -->|No| StrategyC[Strategy C:<br/>Coverage Mapping<br/><br/>Link existing tests to scenarios<br/>No new files needed<br/>Quick wins]
+
+    HasFeaturesNoTests -->|Yes| StrategyB[Strategy B:<br/>Test Gap Filling<br/><br/>Create test skeletons<br/>Map to scenarios<br/>Mark as TODO]
+    HasFeaturesNoTests -->|No| StrategyD[Strategy D:<br/>Full Reverse ACDD<br/><br/>Analyze implementation<br/>Create features + tests<br/>Create work units<br/>Highest effort]
+
+    StrategyA --> Execute[Execute Strategy<br/>with AI guidance]
+    StrategyB --> Execute
+    StrategyC --> Execute
+    StrategyD --> Execute
+    NothingToDo --> Done[Session complete]
+
+    Execute --> StepByStep[Step-by-step<br/>system-reminders<br/>guide AI through<br/>gap filling]
+
+    style StrategyA fill:#e1f5ff
+    style StrategyB fill:#fff4e1
+    style StrategyC fill:#e8ffe1
+    style StrategyD fill:#ffe1e1
+    style NothingToDo fill:#e1ffe8

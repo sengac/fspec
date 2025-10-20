@@ -46,6 +46,10 @@
       {
         "name": "Lifecycle Hooks",
         "description": "Execute custom scripts at command events for quality gates and workflow automation"
+      },
+      {
+        "name": "Interactive Reverse ACDD Strategy Planning",
+        "description": "Analyze project state to detect gaps (missing features, tests, coverage), suggest strategic approaches, and guide AI step-by-step through gap-filling workflow for existing codebases"
       }
     ]
   },

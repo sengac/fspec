@@ -71,22 +71,55 @@ export async function linkCoverage(
     ? featureName
     : `${featureName}.feature`;
   const coverageFile = join(featuresDir, `${fileName}.coverage`);
+  const featureFile = join(featuresDir, fileName);
 
   let coverage: CoverageFile;
   try {
     const content = await readFile(coverageFile, 'utf-8');
     coverage = JSON.parse(content);
   } catch (error: any) {
+    // Check if feature file exists to provide helpful system-reminder
+    const scenariosInFeature = await getScenariosFromFeatureFile(featureFile);
+    if (scenariosInFeature.length > 0) {
+      // Feature file exists - suggest generate-coverage
+      throw new Error(
+        wrapSystemReminder(
+          `Coverage file not found but feature file exists.\n` +
+          `The scenario "${scenario}" may exist in the feature file but coverage tracking is not set up.\n` +
+          `Run: fspec generate-coverage\n` +
+          `This will create coverage files for all feature files, then you can link coverage.`
+        ) +
+        `\n\nCoverage file not found: ${fileName}.coverage\nSuggestion: Run 'fspec generate-coverage' to create coverage tracking`
+      );
+    }
     throw new Error(
       `Coverage file not found: ${fileName}.coverage\nSuggestion: Run 'fspec create-feature' to create the feature with coverage tracking`
     );
   }
 
   // Find the scenario
-  const scenarioEntry = coverage.scenarios.find((s) => s.name === scenario);
+  const scenarioEntry = coverage.scenarios.find(s => s.name === scenario);
   if (!scenarioEntry) {
+    // Check if scenario exists in feature file
+    const scenariosInFeature = await getScenariosFromFeatureFile(featureFile);
+    const scenarioExistsInFeature = scenariosInFeature.some(s => s === scenario);
+
+    if (scenarioExistsInFeature) {
+      // Scenario exists in feature but not in coverage - need to regenerate
+      throw new Error(
+        wrapSystemReminder(
+          `Scenario "${scenario}" exists in feature file but not in coverage file.\n` +
+          `This means the coverage file is out of sync with the feature file.\n` +
+          `Run: fspec generate-coverage\n` +
+          `This will update the coverage file with the new scenario, then you can run link-coverage first.`
+        ) +
+        `\n\nScenario not found: "${scenario}"\nAvailable scenarios:\n${coverage.scenarios.map(s => `  - ${s.name}`).join('\n')}`
+      );
+    }
+
+    // Scenario doesn't exist in feature file - typo or wrong name
     throw new Error(
-      `Scenario not found: "${scenario}"\nAvailable scenarios:\n${coverage.scenarios.map((s) => `  - ${s.name}`).join('\n')}`
+      `Scenario not found: "${scenario}"\nAvailable scenarios:\n${coverage.scenarios.map(s => `  - ${s.name}`).join('\n')}`
     );
   }
 
@@ -184,7 +217,7 @@ function addTestMapping(
   });
 
   const count = scenarioEntry.testMappings.filter(
-    (tm) => tm.file === testFile
+    tm => tm.file === testFile
   ).length;
 
   if (count > 1) {
@@ -202,7 +235,7 @@ function addImplMapping(
 ): string {
   // Find the test mapping
   const testMapping = scenarioEntry.testMappings.find(
-    (tm) => tm.file === testFile
+    tm => tm.file === testFile
   );
 
   if (!testMapping) {
@@ -263,7 +296,7 @@ function parseImplLines(implLines: string): number[] {
   // Support both comma-separated and ranges
   if (implLines.includes('-')) {
     // Range format: "10-15" → [10, 11, 12, 13, 14, 15]
-    const [start, end] = implLines.split('-').map((n) => parseInt(n.trim(), 10));
+    const [start, end] = implLines.split('-').map(n => parseInt(n.trim(), 10));
     const result: number[] = [];
     for (let i = start; i <= end; i++) {
       result.push(i);
@@ -271,7 +304,7 @@ function parseImplLines(implLines: string): number[] {
     return result;
   } else {
     // Comma-separated: "10,11,12" → [10, 11, 12]
-    return implLines.split(',').map((n) => parseInt(n.trim(), 10));
+    return implLines.split(',').map(n => parseInt(n.trim(), 10));
   }
 }
 
@@ -330,6 +363,31 @@ function getRemovalHint(
   );
 }
 
+function wrapSystemReminder(content: string): string {
+  return `<system-reminder>\n${content}\n</system-reminder>`;
+}
+
+async function getScenariosFromFeatureFile(featureFilePath: string): Promise<string[]> {
+  try {
+    const content = await readFile(featureFilePath, 'utf-8');
+    const scenarios: string[] = [];
+
+    // Simple regex to extract scenario names
+    // Matches: "Scenario: Name" or "Scenario Outline: Name"
+    const scenarioRegex = /^\s*Scenario(?:\s+Outline)?:\s*(.+)$/gm;
+    let match;
+
+    while ((match = scenarioRegex.exec(content)) !== null) {
+      scenarios.push(match[1].trim());
+    }
+
+    return scenarios;
+  } catch {
+    // Feature file doesn't exist
+    return [];
+  }
+}
+
 export async function linkCoverageCommand(
   featureName: string,
   options: Omit<LinkCoverageOptions, 'cwd'>
@@ -354,12 +412,21 @@ export function registerLinkCoverageCommand(program: Command): void {
   program
     .command('link-coverage')
     .description('Link test and implementation files to feature scenarios')
-    .argument('<feature-name>', 'Feature name (e.g., "user-login" for user-login.feature)')
+    .argument(
+      '<feature-name>',
+      'Feature name (e.g., "user-login" for user-login.feature)'
+    )
     .requiredOption('--scenario <name>', 'Scenario name to link')
-    .option('--test-file <file>', 'Test file path (e.g., src/__tests__/auth.test.ts)')
+    .option(
+      '--test-file <file>',
+      'Test file path (e.g., src/__tests__/auth.test.ts)'
+    )
     .option('--test-lines <range>', 'Test line range (e.g., "45-62")')
     .option('--impl-file <file>', 'Implementation file path')
-    .option('--impl-lines <lines>', 'Implementation lines (e.g., "10,11,12" or "10-15")')
+    .option(
+      '--impl-lines <lines>',
+      'Implementation lines (e.g., "10,11,12" or "10-15")'
+    )
     .option('--skip-validation', 'Skip file validation (for forward planning)')
     .action(linkCoverageCommand);
 }

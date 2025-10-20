@@ -17,7 +17,10 @@ describe('Feature: Hook system documentation and examples', () => {
     it('should have complete configuration documentation', async () => {
       // Given I am reading the hook system documentation
       // When I look at the configuration section
-      const configDoc = await readFile(join(DOCS_DIR, 'configuration.md'), 'utf-8');
+      const configDoc = await readFile(
+        join(DOCS_DIR, 'configuration.md'),
+        'utf-8'
+      );
 
       // Then I should see a complete fspec-hooks.json example
       expect(configDoc).toContain('fspec-hooks.json');
@@ -52,7 +55,10 @@ describe('Feature: Hook system documentation and examples', () => {
     it('should have bash validation hook example', async () => {
       // Given I am looking at bash hook examples
       // When I read the validation hook example
-      const bashExample = await readFile(join(EXAMPLES_DIR, 'validate-feature.sh'), 'utf-8');
+      const bashExample = await readFile(
+        join(EXAMPLES_DIR, 'validate-feature.sh'),
+        'utf-8'
+      );
 
       // Then I should see how to read JSON from stdin
       expect(bashExample).toContain('read');
@@ -78,7 +84,10 @@ describe('Feature: Hook system documentation and examples', () => {
     it('should have python test runner hook example', async () => {
       // Given I am looking at python hook examples
       // When I read the test runner hook example
-      const pythonExample = await readFile(join(EXAMPLES_DIR, 'run-tests.py'), 'utf-8');
+      const pythonExample = await readFile(
+        join(EXAMPLES_DIR, 'run-tests.py'),
+        'utf-8'
+      );
 
       // Then I should see how to import json and sys modules
       expect(pythonExample).toContain('import json');
@@ -107,7 +116,10 @@ describe('Feature: Hook system documentation and examples', () => {
     it('should have node.js notification hook example', async () => {
       // Given I am looking at node.js hook examples
       // When I read the notification hook example
-      const nodeExample = await readFile(join(EXAMPLES_DIR, 'notify-slack.js'), 'utf-8');
+      const nodeExample = await readFile(
+        join(EXAMPLES_DIR, 'notify-slack.js'),
+        'utf-8'
+      );
 
       // Then I should see how to read stdin asynchronously
       expect(nodeExample).toMatch(/stdin|readline/);
@@ -134,7 +146,10 @@ describe('Feature: Hook system documentation and examples', () => {
     it('should have lint hook example with exit codes', async () => {
       // Given I am looking at common use case examples
       // When I read the linting hook example
-      const lintExample = await readFile(join(EXAMPLES_DIR, 'lint.sh'), 'utf-8');
+      const lintExample = await readFile(
+        join(EXAMPLES_DIR, 'lint.sh'),
+        'utf-8'
+      );
 
       // Then I should see exit code 0 for clean lint results
       expect(lintExample).toContain('exit 0');
@@ -158,7 +173,10 @@ describe('Feature: Hook system documentation and examples', () => {
     it('should have troubleshooting documentation', async () => {
       // Given I am reading the troubleshooting documentation
       // When I look for "Hook command not found" error
-      const troubleshootingDoc = await readFile(join(DOCS_DIR, 'troubleshooting.md'), 'utf-8');
+      const troubleshootingDoc = await readFile(
+        join(DOCS_DIR, 'troubleshooting.md'),
+        'utf-8'
+      );
 
       // Then I should see explanation of the error cause
       expect(troubleshootingDoc).toContain('Hook command not found');

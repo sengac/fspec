@@ -65,10 +65,7 @@ describe('Feature: Validate Mermaid diagrams in attachments', () => {
 
       // And I have a file flowchart.mmd with valid Mermaid syntax (graph TD)
       const mmdFile = join(tempDir, 'flowchart.mmd');
-      await fs.writeFile(
-        mmdFile,
-        'graph TD\n  A[Start] --> B[End]\n'
-      );
+      await fs.writeFile(mmdFile, 'graph TD\n  A[Start] --> B[End]\n');
 
       // When I run 'fspec add-attachment AUTH-001 flowchart.mmd'
       await addAttachment({

@@ -9,7 +9,11 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdir, writeFile, rm, chmod } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import type { HookDefinition, HookContext, HookExecutionResult } from '../types.js';
+import type {
+  HookDefinition,
+  HookContext,
+  HookExecutionResult,
+} from '../types.js';
 import { executeHook, executeHooks } from '../executor.js';
 
 let testDir: string;
@@ -29,7 +33,10 @@ describe('Feature: Hook execution engine', () => {
     it('should execute hook, capture output, and continue', async () => {
       // Given I have a hook configuration with a non-blocking hook "lint" for "post-implementing"
       const hookScript = join(testDir, 'spec/hooks/lint.sh');
-      await writeFile(hookScript, '#!/bin/bash\necho "Linting complete"\nexit 0');
+      await writeFile(
+        hookScript,
+        '#!/bin/bash\necho "Linting complete"\nexit 0'
+      );
       await chmod(hookScript, 0o755);
 
       const hook: HookDefinition = {
@@ -46,7 +53,11 @@ describe('Feature: Hook execution engine', () => {
       };
 
       // When I execute the hook for event "post-implementing"
-      const result: HookExecutionResult = await executeHook(hook, context, testDir);
+      const result: HookExecutionResult = await executeHook(
+        hook,
+        context,
+        testDir
+      );
 
       // Then the hook should be spawned as a child process
       // And the hook stdout should be captured and displayed
@@ -82,7 +93,11 @@ describe('Feature: Hook execution engine', () => {
       };
 
       // When I execute the hook for event "post-testing"
-      const result: HookExecutionResult = await executeHook(hook, context, testDir);
+      const result: HookExecutionResult = await executeHook(
+        hook,
+        context,
+        testDir
+      );
 
       // Then the hook should be spawned as a child process
       // And a warning should be displayed about the hook failure
@@ -98,7 +113,10 @@ describe('Feature: Hook execution engine', () => {
     it('should halt command execution on blocking hook failure', async () => {
       // Given I have a hook configuration with a blocking hook "validate" for "post-implementing"
       const hookScript = join(testDir, 'spec/hooks/validate.sh');
-      await writeFile(hookScript, '#!/bin/bash\necho "Validation failed"\nexit 1');
+      await writeFile(
+        hookScript,
+        '#!/bin/bash\necho "Validation failed"\nexit 1'
+      );
       await chmod(hookScript, 0o755);
 
       const hook: HookDefinition = {
@@ -115,7 +133,11 @@ describe('Feature: Hook execution engine', () => {
       };
 
       // When I execute the hook for event "post-implementing"
-      const result: HookExecutionResult = await executeHook(hook, context, testDir);
+      const result: HookExecutionResult = await executeHook(
+        hook,
+        context,
+        testDir
+      );
 
       // Then the hook should be spawned as a child process
       // And an error should be displayed about the hook failure
@@ -129,48 +151,48 @@ describe('Feature: Hook execution engine', () => {
   });
 
   describe('Scenario: Hook times out after configured duration', () => {
-    it(
-      'should kill hook process after timeout',
-      async () => {
-        // Given I have a hook configuration with a hook "slow-test" with timeout 1 second
-        const hookScript = join(testDir, 'spec/hooks/slow-test.sh');
-        // Use a Node.js script that properly handles signals
-        await writeFile(
-          hookScript,
-          '#!/usr/bin/env node\nconst start = Date.now();\nwhile (Date.now() - start < 10000) { /* busy loop */ }'
-        );
-        await chmod(hookScript, 0o755);
+    it('should kill hook process after timeout', async () => {
+      // Given I have a hook configuration with a hook "slow-test" with timeout 1 second
+      const hookScript = join(testDir, 'spec/hooks/slow-test.sh');
+      // Use a Node.js script that properly handles signals
+      await writeFile(
+        hookScript,
+        '#!/usr/bin/env node\nconst start = Date.now();\nwhile (Date.now() - start < 10000) { /* busy loop */ }'
+      );
+      await chmod(hookScript, 0o755);
 
-        const hook: HookDefinition = {
-          name: 'slow-test',
-          command: 'spec/hooks/slow-test.sh',
-          blocking: false,
-          timeout: 1,
-        };
+      const hook: HookDefinition = {
+        name: 'slow-test',
+        command: 'spec/hooks/slow-test.sh',
+        blocking: false,
+        timeout: 1,
+      };
 
-        const context: HookContext = {
-          workUnitId: 'TEST-001',
-          event: 'post-testing',
-          timestamp: new Date().toISOString(),
-        };
+      const context: HookContext = {
+        workUnitId: 'TEST-001',
+        event: 'post-testing',
+        timestamp: new Date().toISOString(),
+      };
 
-        // When I execute the hook for event "post-testing"
-        const startTime = Date.now();
-        const result: HookExecutionResult = await executeHook(hook, context, testDir);
-        const duration = Date.now() - startTime;
+      // When I execute the hook for event "post-testing"
+      const startTime = Date.now();
+      const result: HookExecutionResult = await executeHook(
+        hook,
+        context,
+        testDir
+      );
+      const duration = Date.now() - startTime;
 
-        // Then the hook process should be killed after ~1 second
-        expect(duration).toBeGreaterThan(900); // At least 0.9s
-        expect(duration).toBeLessThan(3000); // Less than 3s
+      // Then the hook process should be killed after ~1 second
+      expect(duration).toBeGreaterThan(900); // At least 0.9s
+      expect(duration).toBeLessThan(3000); // Less than 3s
 
-        // And a timeout should be indicated
-        expect(result.timedOut).toBe(true);
+      // And a timeout should be indicated
+      expect(result.timedOut).toBe(true);
 
-        // And a timeout error should be displayed
-        expect(result.success).toBe(false);
-      },
-      5000
-    ); // 5 second timeout for this test
+      // And a timeout error should be displayed
+      expect(result.success).toBe(false);
+    }, 5000); // 5 second timeout for this test
   });
 
   describe('Scenario: Hook receives context via stdin', () => {
@@ -198,7 +220,11 @@ describe('Feature: Hook execution engine', () => {
       };
 
       // When I execute the hook for event "post-implementing"
-      const result: HookExecutionResult = await executeHook(hook, context, testDir);
+      const result: HookExecutionResult = await executeHook(
+        hook,
+        context,
+        testDir
+      );
 
       // Then the hook should receive JSON context via stdin
       // And the context should include "workUnitId" field with value "AUTH-001"
@@ -286,7 +312,11 @@ describe('Feature: Hook execution engine', () => {
       };
 
       // When I execute the hook for event "post-testing"
-      const result: HookExecutionResult = await executeHook(hook, context, testDir);
+      const result: HookExecutionResult = await executeHook(
+        hook,
+        context,
+        testDir
+      );
 
       // Then the stdout message "Running tests..." should be captured
       expect(result.stdout).toContain('Running tests...');

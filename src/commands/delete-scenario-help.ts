@@ -24,15 +24,14 @@ const config: CommandHelpConfig = {
   ],
   examples: [
     {
-      command: 'fspec delete-scenario spec/features/login.feature "Deprecated scenario"',
+      command:
+        'fspec delete-scenario spec/features/login.feature "Deprecated scenario"',
       description: 'Delete scenario',
       output: '✓ Deleted scenario "Deprecated scenario"',
     },
   ],
   relatedCommands: ['add-scenario', 'delete-scenarios'],
-  notes: [
-    'Scenario name must match exactly (case-sensitive)',
-  ],
+  notes: ['Scenario name must match exactly (case-sensitive)'],
 };
 
 export default config;

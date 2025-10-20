@@ -87,11 +87,14 @@ export async function queryBottlenecks(
     }
 
     // Calculate all blocked work units (direct + transitive)
-    const blockedWorkUnits = calculateBlockedWorkUnits(data.workUnits, workUnit.id);
+    const blockedWorkUnits = calculateBlockedWorkUnits(
+      data.workUnits,
+      workUnit.id
+    );
 
     const directBlocks = Array.from(workUnit.blocks);
     const transitiveBlocks = Array.from(blockedWorkUnits).filter(
-      (id) => !workUnit.blocks?.includes(id)
+      id => !workUnit.blocks?.includes(id)
     );
 
     // Rule 3: Bottleneck score = total work units blocked
@@ -136,7 +139,9 @@ export function registerQueryBottlenecksCommand(program: Command): void {
             return;
           }
 
-          console.log(chalk.bold('Bottleneck Work Units (blocking 2+ work units):\n'));
+          console.log(
+            chalk.bold('Bottleneck Work Units (blocking 2+ work units):\n')
+          );
 
           for (const bottleneck of result.bottlenecks) {
             console.log(
@@ -144,9 +149,13 @@ export function registerQueryBottlenecksCommand(program: Command): void {
                 chalk.gray(` (${bottleneck.status})`) +
                 ` - ${bottleneck.title}`
             );
-            console.log(chalk.yellow(`  Bottleneck Score: ${bottleneck.score}`));
             console.log(
-              chalk.gray(`  Direct Blocks: ${bottleneck.directBlocks.join(', ')}`)
+              chalk.yellow(`  Bottleneck Score: ${bottleneck.score}`)
+            );
+            console.log(
+              chalk.gray(
+                `  Direct Blocks: ${bottleneck.directBlocks.join(', ')}`
+              )
             );
             if (bottleneck.transitiveBlocks.length > 0) {
               console.log(
@@ -159,13 +168,12 @@ export function registerQueryBottlenecksCommand(program: Command): void {
           }
 
           console.log(
-            chalk.bold(
-              `\nTotal bottlenecks: ${result.bottlenecks.length}`
-            )
+            chalk.bold(`\nTotal bottlenecks: ${result.bottlenecks.length}`)
           );
         }
       } catch (error: unknown) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
         console.error(chalk.red('✗ Query failed:'), errorMessage);
         process.exit(1);
       }

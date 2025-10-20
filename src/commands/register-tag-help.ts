@@ -14,7 +14,8 @@ const config: CommandHelpConfig = {
     },
     {
       name: 'category',
-      description: 'Tag category (e.g., "Phase Tags", "Component Tags", "Custom Tags")',
+      description:
+        'Tag category (e.g., "Phase Tags", "Component Tags", "Custom Tags")',
       required: true,
     },
     {
@@ -25,14 +26,13 @@ const config: CommandHelpConfig = {
   ],
   examples: [
     {
-      command: 'fspec register-tag @performance "Technical Tags" "Performance-critical features"',
+      command:
+        'fspec register-tag @performance "Technical Tags" "Performance-critical features"',
       description: 'Register a custom tag',
       output: '✓ Tag @performance registered\n  Category: Technical Tags',
     },
   ],
-  prerequisites: [
-    'spec/tags.json must exist (created by init)',
-  ],
+  prerequisites: ['spec/tags.json must exist (created by init)'],
   relatedCommands: ['list-tags', 'update-tag', 'delete-tag', 'validate-tags'],
   notes: [
     'Tags must start with @ symbol',

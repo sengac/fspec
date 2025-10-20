@@ -1,4 +1,4 @@
-import type { CommandHelpConfig} from '../utils/help-formatter';
+import type { CommandHelpConfig } from '../utils/help-formatter';
 
 const config: CommandHelpConfig = {
   name: 'query-work-units',
@@ -26,7 +26,8 @@ const config: CommandHelpConfig = {
     {
       command: 'fspec query-work-units --status=implementing --format=json',
       description: 'Query with filters',
-      output: '[{"id":"AUTH-001","status":"implementing","title":"Login feature"}]',
+      output:
+        '[{"id":"AUTH-001","status":"implementing","title":"Login feature"}]',
     },
   ],
   relatedCommands: ['list-work-units', 'export-work-units'],

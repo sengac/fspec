@@ -147,7 +147,10 @@ export function formatQuestionDisplay(
 /**
  * Validate answer
  */
-export function validateAnswer(answer: string, required: boolean): {
+export function validateAnswer(
+  answer: string,
+  required: boolean
+): {
   valid: boolean;
   error?: string;
 } {
@@ -166,7 +169,10 @@ export function validateAnswer(answer: string, required: boolean): {
 export function runQuestionnaire(options: QuestionnaireOptions): {
   questions: Question[];
   formatQuestion: (index: number) => string;
-  validate: (answer: string, questionId: string) => {
+  validate: (
+    answer: string,
+    questionId: string
+  ) => {
     valid: boolean;
     error?: string;
   };
@@ -185,7 +191,7 @@ export function runQuestionnaire(options: QuestionnaireOptions): {
       return formatQuestionDisplay(questions[index], state);
     },
     validate: (answer: string, questionId: string) => {
-      const question = questions.find((q) => q.id === questionId);
+      const question = questions.find(q => q.id === questionId);
       if (!question) {
         return { valid: false, error: 'Question not found' };
       }

@@ -58,7 +58,8 @@ export function registerAddArchitectureNoteCommand(program: Command): void {
         await addArchitectureNote({ workUnitId, note });
         console.log(chalk.green('✓ Architecture note added successfully'));
       } catch (error: unknown) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
         console.error(chalk.red('Error:'), errorMessage);
         process.exit(1);
       }

@@ -138,7 +138,9 @@ function generateExampleMappingComments(
 
   // Answered questions
   if (workUnit.questions && workUnit.questions.length > 0) {
-    const answeredQuestions = workUnit.questions.filter((q: QuestionItem) => q.selected);
+    const answeredQuestions = workUnit.questions.filter(
+      (q: QuestionItem) => q.selected
+    );
     if (answeredQuestions.length > 0) {
       lines.push('  # QUESTIONS (ANSWERED):');
       answeredQuestions.forEach((q: QuestionItem) => {
@@ -253,7 +255,10 @@ export async function generateScenarios(
   await mkdir(dirname(featureFile), { recursive: true });
 
   // Generate example mapping comment block
-  const commentBlock = generateExampleMappingComments(options.workUnitId, workUnit);
+  const commentBlock = generateExampleMappingComments(
+    options.workUnitId,
+    workUnit
+  );
 
   // Check if feature file exists
   const fileExists = existsSync(featureFile);
@@ -261,8 +266,8 @@ export async function generateScenarios(
   if (fileExists) {
     throw new Error(
       `Feature file ${featureFile} already exists.\n` +
-      `generate-scenarios creates context-only files (comments + Background, NO scenarios).\n` +
-      `If you want to add scenarios, use the Edit tool to write them based on the # EXAMPLES comments.`
+        `generate-scenarios creates context-only files (comments + Background, NO scenarios).\n` +
+        `If you want to add scenarios, use the Edit tool to write them based on the # EXAMPLES comments.`
     );
   }
 
@@ -287,7 +292,9 @@ export async function generateScenarios(
   let architectureDocstring: string;
   if (workUnit.architectureNotes && workUnit.architectureNotes.length > 0) {
     // Group notes by detected prefix (Dependency, Performance, Refactoring, etc.)
-    const categorizedNotes = categorizeArchitectureNotes(workUnit.architectureNotes);
+    const categorizedNotes = categorizeArchitectureNotes(
+      workUnit.architectureNotes
+    );
 
     const docstringLines = ['  """'];
     for (const [category, notes] of Object.entries(categorizedNotes)) {

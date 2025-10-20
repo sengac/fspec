@@ -95,12 +95,14 @@ export async function queryMetrics(options: {
     }
 
     const totalWorkUnits = workUnits.length;
-    const completedWorkUnits = workUnits.filter(wu => wu.status === 'done')
-      .length;
+    const completedWorkUnits = workUnits.filter(
+      wu => wu.status === 'done'
+    ).length;
 
     // Calculate average cycle time for completed work units
     const completedWithHistory = workUnits.filter(
-      wu => wu.status === 'done' && wu.stateHistory && wu.stateHistory.length > 0
+      wu =>
+        wu.status === 'done' && wu.stateHistory && wu.stateHistory.length > 0
     );
 
     let averageCycleTime: string | undefined;
@@ -119,7 +121,9 @@ export async function queryMetrics(options: {
     }
 
     // Break down by type if no type filter specified
-    let byType: Record<string, { count: number; averageCycleTime?: string }> | undefined;
+    let byType:
+      | Record<string, { count: number; averageCycleTime?: string }>
+      | undefined;
     if (!options.type) {
       byType = {};
       const types = ['story', 'task', 'bug'] as const;
@@ -130,7 +134,9 @@ export async function queryMetrics(options: {
         });
         const typeCompleted = typeWorkUnits.filter(
           wu =>
-            wu.status === 'done' && wu.stateHistory && wu.stateHistory.length > 0
+            wu.status === 'done' &&
+            wu.stateHistory &&
+            wu.stateHistory.length > 0
         );
 
         let typeAvgCycleTime: string | undefined;
@@ -217,7 +223,9 @@ export function registerQueryMetricsCommand(program: Command): void {
                     `  ${type}: ${data.count} work unit${data.count !== 1 ? 's' : ''}`
                   );
                   if (data.averageCycleTime) {
-                    console.log(`    Average Cycle Time: ${data.averageCycleTime}`);
+                    console.log(
+                      `    Average Cycle Time: ${data.averageCycleTime}`
+                    );
                   }
                 }
               }
@@ -229,7 +237,9 @@ export function registerQueryMetricsCommand(program: Command): void {
               if (result.timePerState) {
                 console.log('');
                 console.log(chalk.bold('Time Per State:'));
-                for (const [state, time] of Object.entries(result.timePerState)) {
+                for (const [state, time] of Object.entries(
+                  result.timePerState
+                )) {
                   console.log(`  ${state}: ${time}`);
                 }
               }

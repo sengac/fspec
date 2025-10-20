@@ -139,11 +139,19 @@ describe('Feature: generate-scenarios include architecture docstring', () => {
 
       // Then the file structure should be: tags → Feature → docstring → comments → Background
       // Find indices of key sections
-      const featureLineIndex = lines.findIndex(line => line.startsWith('Feature:'));
+      const featureLineIndex = lines.findIndex(line =>
+        line.startsWith('Feature:')
+      );
       const docstringStartIndex = lines.findIndex(line => line.includes('"""'));
-      const docstringEndIndex = lines.findIndex((line, i) => i > docstringStartIndex && line.includes('"""'));
-      const commentIndex = lines.findIndex(line => line.includes('# EXAMPLE MAPPING CONTEXT'));
-      const backgroundIndex = lines.findIndex(line => line.includes('Background:'));
+      const docstringEndIndex = lines.findIndex(
+        (line, i) => i > docstringStartIndex && line.includes('"""')
+      );
+      const commentIndex = lines.findIndex(line =>
+        line.includes('# EXAMPLE MAPPING CONTEXT')
+      );
+      const backgroundIndex = lines.findIndex(line =>
+        line.includes('Background:')
+      );
 
       // Verify ordering
       expect(featureLineIndex).toBeGreaterThan(-1);
@@ -159,7 +167,9 @@ describe('Feature: generate-scenarios include architecture docstring', () => {
       expect(content).toContain('TODO:');
 
       // And the structure should match files created with "fspec create-feature"
-      expect(content).toMatch(/"""[\s\S]*?Architecture notes:[\s\S]*?TODO:[\s\S]*?"""/);
+      expect(content).toMatch(
+        /"""[\s\S]*?Architecture notes:[\s\S]*?TODO:[\s\S]*?"""/
+      );
     });
   });
 

@@ -139,7 +139,10 @@ export function registerRepairWorkUnitsCommand(program: Command): void {
           );
         }
       } catch (error: any) {
-        console.error(chalk.red('✗ Failed to repair work units:'), error.message);
+        console.error(
+          chalk.red('✗ Failed to repair work units:'),
+          error.message
+        );
         process.exit(1);
       }
     });

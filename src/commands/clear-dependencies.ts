@@ -106,7 +106,9 @@ export function registerClearDependenciesCommand(program: Command): void {
           workUnitId,
           confirm: options.confirm,
         });
-        console.log(chalk.green(`✓ All dependencies cleared from ${workUnitId}`));
+        console.log(
+          chalk.green(`✓ All dependencies cleared from ${workUnitId}`)
+        );
       } catch (error: any) {
         console.error(
           chalk.red('✗ Failed to clear dependencies:'),

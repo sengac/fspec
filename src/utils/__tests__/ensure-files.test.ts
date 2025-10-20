@@ -174,7 +174,9 @@ describe('Feature: Automatic JSON File Initialization', () => {
 
       // When ensureWorkUnitsFile is called
       // Then error should mention the file path
-      await expect(ensureWorkUnitsFile(testDir)).rejects.toThrow(/work-units\.json/);
+      await expect(ensureWorkUnitsFile(testDir)).rejects.toThrow(
+        /work-units\.json/
+      );
     });
   });
 });

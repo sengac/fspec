@@ -2,7 +2,8 @@ import type { CommandHelpConfig } from '../utils/help-formatter';
 
 const config: CommandHelpConfig = {
   name: 'remove-tag-from-scenario',
-  description: 'Remove one or more tags from a specific scenario in a feature file',
+  description:
+    'Remove one or more tags from a specific scenario in a feature file',
   usage: 'fspec remove-tag-from-scenario <file> <scenario> <tags...>',
   whenToUse:
     'Use this command when you need to remove tags from a specific scenario, such as removing @wip after completing work, removing @deprecated before deletion, or cleaning up incorrect tags.',

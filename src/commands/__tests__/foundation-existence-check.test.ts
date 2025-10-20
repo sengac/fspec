@@ -56,7 +56,9 @@ describe('Feature: Foundation existence check in commands', () => {
       expect(result.stderr || result.stdout).toContain('foundation.json');
 
       // And the error message should instruct me to run 'fspec discover-foundation'
-      expect(result.stderr || result.stdout).toContain('fspec discover-foundation');
+      expect(result.stderr || result.stdout).toContain(
+        'fspec discover-foundation'
+      );
 
       // And a system reminder should tell me to retry 'fspec board' after discover-foundation completes
       expect(result.stderr || result.stdout).toContain('<system-reminder>');
@@ -87,7 +89,9 @@ describe('Feature: Foundation existence check in commands', () => {
       expect(result.stderr || result.stdout).toContain('foundation.json');
 
       // And the error message should instruct me to run 'fspec discover-foundation'
-      expect(result.stderr || result.stdout).toContain('fspec discover-foundation');
+      expect(result.stderr || result.stdout).toContain(
+        'fspec discover-foundation'
+      );
 
       // And a system reminder should include the original command to retry
       expect(result.stderr || result.stdout).toContain('<system-reminder>');
@@ -105,9 +109,17 @@ describe('Feature: Foundation existence check in commands', () => {
         join(tmpDir, 'spec', 'foundation.json'),
         JSON.stringify({
           version: '2.0.0',
-          project: { name: 'Test', vision: 'Test vision', projectType: 'cli-tool' },
+          project: {
+            name: 'Test',
+            vision: 'Test vision',
+            projectType: 'cli-tool',
+          },
           problemSpace: {
-            primaryProblem: { title: 'Test', description: 'Test', impact: 'high' },
+            primaryProblem: {
+              title: 'Test',
+              description: 'Test',
+              impact: 'high',
+            },
           },
           solutionSpace: { overview: 'Test', capabilities: [] },
           personas: [],

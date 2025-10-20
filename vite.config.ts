@@ -14,6 +14,7 @@ export default defineConfig({
         'chalk',
         'commander',
         'child_process',
+        'crypto',
         'util',
         'path',
         'os',

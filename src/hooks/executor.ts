@@ -4,7 +4,11 @@
 
 import { execa } from 'execa';
 import { join } from 'node:path';
-import type { HookDefinition, HookContext, HookExecutionResult } from './types.js';
+import type {
+  HookDefinition,
+  HookContext,
+  HookExecutionResult,
+} from './types.js';
 
 export async function executeHook(
   hook: HookDefinition,

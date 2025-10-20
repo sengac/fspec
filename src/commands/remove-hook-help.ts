@@ -15,7 +15,8 @@ const config: CommandHelpConfig = {
     },
     {
       name: 'name',
-      description: 'Name of the hook to remove (e.g., validate-feature, run-tests)',
+      description:
+        'Name of the hook to remove (e.g., validate-feature, run-tests)',
       required: true,
     },
   ],

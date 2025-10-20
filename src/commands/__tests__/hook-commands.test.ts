@@ -86,9 +86,13 @@ describe('Feature: Hook management CLI commands', () => {
       // Create the hook script file
       const hooksDir = join(testDir, 'spec', 'hooks');
       await mkdir(hooksDir, { recursive: true });
-      await writeFile(join(hooksDir, 'lint.sh'), '#!/bin/bash\necho "Linting..."', {
-        mode: 0o755,
-      });
+      await writeFile(
+        join(hooksDir, 'lint.sh'),
+        '#!/bin/bash\necho "Linting..."',
+        {
+          mode: 0o755,
+        }
+      );
 
       // When I run "fspec validate-hooks"
       const result = await validateHooks({ cwd: testDir });
@@ -125,7 +129,9 @@ describe('Feature: Hook management CLI commands', () => {
       expect(result.exitCode).toBe(1);
 
       // And the output should contain "Hook command not found: spec/hooks/missing.sh"
-      expect(result.errors).toContain('Hook command not found: spec/hooks/missing.sh');
+      expect(result.errors).toContain(
+        'Hook command not found: spec/hooks/missing.sh'
+      );
     });
   });
 
@@ -150,11 +156,15 @@ describe('Feature: Hook management CLI commands', () => {
       // And the hook should have blocking set to true
       // And the config file should be updated
       const { readFile } = await import('fs/promises');
-      const updatedConfig = JSON.parse(await readFile(configPath, 'utf-8')) as HookConfig;
+      const updatedConfig = JSON.parse(
+        await readFile(configPath, 'utf-8')
+      ) as HookConfig;
 
       expect(updatedConfig.hooks['post-implementing']).toHaveLength(1);
       expect(updatedConfig.hooks['post-implementing'][0].name).toBe('lint');
-      expect(updatedConfig.hooks['post-implementing'][0].command).toBe('spec/hooks/lint.sh');
+      expect(updatedConfig.hooks['post-implementing'][0].command).toBe(
+        'spec/hooks/lint.sh'
+      );
       expect(updatedConfig.hooks['post-implementing'][0].blocking).toBe(true);
     });
   });
@@ -190,7 +200,9 @@ describe('Feature: Hook management CLI commands', () => {
       // Then the hook "lint" should be removed from "post-implementing"
       // And the config file should be updated
       const { readFile } = await import('fs/promises');
-      const updatedConfig = JSON.parse(await readFile(configPath, 'utf-8')) as HookConfig;
+      const updatedConfig = JSON.parse(
+        await readFile(configPath, 'utf-8')
+      ) as HookConfig;
 
       expect(updatedConfig.hooks['post-implementing']).toHaveLength(1);
       expect(updatedConfig.hooks['post-implementing'][0].name).toBe('test');

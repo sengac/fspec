@@ -22,7 +22,9 @@ export async function loadHookConfig(projectRoot: string): Promise<HookConfig> {
   try {
     config = JSON.parse(rawConfig);
   } catch (error: unknown) {
-    throw new Error(`Invalid JSON in fspec-hooks.json: ${error instanceof Error ? error.message : String(error)}`);
+    throw new Error(
+      `Invalid JSON in fspec-hooks.json: ${error instanceof Error ? error.message : String(error)}`
+    );
   }
 
   // Validate hook command files exist

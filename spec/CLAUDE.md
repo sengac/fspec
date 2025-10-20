@@ -189,7 +189,7 @@ fspec list-work-units --help    # Comprehensive help for list-work-units
 
 ## Reverse ACDD for Existing Codebases
 
-For projects **without existing specifications**, fspec provides **Reverse ACDD** via the `/rspec` command in Claude Code.
+For projects **without existing specifications**, fspec provides **Reverse ACDD** via the `fspec reverse` command.
 
 ### What is Reverse ACDD?
 
@@ -200,21 +200,33 @@ Reverse ACDD reverse engineers existing codebases to discover user stories, pers
 - Projects transitioning to ACDD workflow
 - Understanding inherited code through BDD lens
 
-### Installing /rspec Command
+### Using fspec reverse
 
 ```bash
-# Initialize fspec (installs /fspec and /rspec commands)
-fspec init
+# Analyze project and detect gaps (missing features, tests, or coverage)
+fspec reverse
+
+# Choose a strategy (A=Spec Gap Filling, B=Test Gap Filling, C=Coverage Mapping, D=Full Reverse ACDD)
+fspec reverse --strategy=A
+
+# Continue to next step
+fspec reverse --continue
+
+# Check current status
+fspec reverse --status
+
+# Complete the session
+fspec reverse --complete
 ```
 
-This creates:
-- `.claude/commands/fspec.md` - Forward ACDD command
-- `.claude/commands/rspec.md` - Reverse ACDD command (reads fspec.md first)
-- `spec/CLAUDE.md` - This file
+For comprehensive help, run:
+```bash
+fspec reverse --help
+```
 
 ### Reverse ACDD Workflow
 
-When you run `/rspec` in Claude Code, the AI will:
+When you run `fspec reverse`, the tool will:
 
 1. **Analyze Codebase** - Identify user-facing interactions:
    - Web apps: Routes, API endpoints, UI components
@@ -299,7 +311,7 @@ After reverse ACDD, use forward ACDD for new features:
 
 ### Reference
 
-For complete reverse ACDD guidance, see `.claude/commands/rspec.md` installed by `fspec init`.
+For complete reverse ACDD guidance, run `fspec reverse --help` for comprehensive documentation.
 
 ## Specification Workflow (STEP 2)
 
@@ -446,7 +458,7 @@ Feature: User Login
 
 1. **Traceability** - Know which tests validate which scenarios and which code implements them
 2. **Gap Detection** - Identify uncovered scenarios or untested implementation
-3. **Reverse ACDD** - Critical for reverse engineering existing codebases (see `.claude/commands/rspec.md`)
+3. **Reverse ACDD** - Critical for reverse engineering existing codebases (use `fspec reverse`)
 4. **Refactoring Safety** - Understand impact of code changes on scenarios
 5. **Documentation** - Maintain living documentation of what code does what
 

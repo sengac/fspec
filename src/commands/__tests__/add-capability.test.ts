@@ -50,39 +50,39 @@ describe('Feature: Foundation discovery workflow - add-capability command', () =
       };
       await fs.writeFile(
         foundationPath,
-        JSON.stringify(initialFoundation, null, 2),
+        JSON.stringify(initialFoundation, null, 2)
       );
 
       // When I run "fspec add-capability 'Kanban Workflow' 'Enforces ACDD phases with visual board'"
       await addCapability(
         testDir,
         'Kanban Workflow',
-        'Enforces ACDD phases with visual board',
+        'Enforces ACDD phases with visual board'
       );
 
       // Then the foundation.json file should contain the new capability
       const updatedFoundation = JSON.parse(
-        await fs.readFile(foundationPath, 'utf-8'),
+        await fs.readFile(foundationPath, 'utf-8')
       );
       expect(updatedFoundation.solutionSpace.capabilities).toHaveLength(1);
 
       // And the capability should have name "Kanban Workflow"
       expect(updatedFoundation.solutionSpace.capabilities[0].name).toBe(
-        'Kanban Workflow',
+        'Kanban Workflow'
       );
 
       // And the capability should have description "Enforces ACDD phases with visual board"
-      expect(
-        updatedFoundation.solutionSpace.capabilities[0].description,
-      ).toBe('Enforces ACDD phases with visual board');
+      expect(updatedFoundation.solutionSpace.capabilities[0].description).toBe(
+        'Enforces ACDD phases with visual board'
+      );
 
       // And the foundation.json should pass schema validation
       expect(updatedFoundation.version).toBe('2.0.0');
       expect(updatedFoundation.solutionSpace.capabilities[0]).toHaveProperty(
-        'name',
+        'name'
       );
       expect(updatedFoundation.solutionSpace.capabilities[0]).toHaveProperty(
-        'description',
+        'description'
       );
     });
   });
@@ -116,38 +116,38 @@ describe('Feature: Foundation discovery workflow - add-capability command', () =
       };
       await fs.writeFile(
         foundationPath,
-        JSON.stringify(initialFoundation, null, 2),
+        JSON.stringify(initialFoundation, null, 2)
       );
 
       // When I run "fspec add-capability 'Example Mapping' 'Collaborative discovery with rules and examples'"
       await addCapability(
         testDir,
         'Example Mapping',
-        'Collaborative discovery with rules and examples',
+        'Collaborative discovery with rules and examples'
       );
 
       // And I run "fspec add-capability 'Coverage Tracking' 'Link scenarios to tests and implementation'"
       await addCapability(
         testDir,
         'Coverage Tracking',
-        'Link scenarios to tests and implementation',
+        'Link scenarios to tests and implementation'
       );
 
       // Then the foundation.json file should contain 3 capabilities total
       const updatedFoundation = JSON.parse(
-        await fs.readFile(foundationPath, 'utf-8'),
+        await fs.readFile(foundationPath, 'utf-8')
       );
       expect(updatedFoundation.solutionSpace.capabilities).toHaveLength(3);
 
       // And all capabilities should be preserved
       expect(updatedFoundation.solutionSpace.capabilities[0].name).toBe(
-        'Existing Capability',
+        'Existing Capability'
       );
       expect(updatedFoundation.solutionSpace.capabilities[1].name).toBe(
-        'Example Mapping',
+        'Example Mapping'
       );
       expect(updatedFoundation.solutionSpace.capabilities[2].name).toBe(
-        'Coverage Tracking',
+        'Coverage Tracking'
       );
     });
   });

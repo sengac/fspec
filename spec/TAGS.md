@@ -177,9 +177,11 @@ Tags for specific technical concerns or architectural patterns.
 | `@pattern-detection` | Features involving pattern detection and analysis from historical data |  |
 | `@push` | Push notification functionality |  |
 | `@reverse-engineering` | Reverse engineering existing code to create specifications |  |
+| `@session-based` | Session-based interactive command pattern (similar to discover-foundation) |  |
 | `@setup` | Setup and initialization commands |  |
 | `@slash-command` | Slash command features for Claude Code |  |
 | `@sms` | SMS-related functionality |  |
+| `@strategy-planning` | Strategy planning and decision-making features that guide user choices |  |
 | `@system-reminder` | Anti-drift pattern for AI agents using contextual reminders |  |
 | `@template` | Template System |  |
 | `@type-system` | Work item type system features for categorizing work (story, task, bug) |  |
@@ -277,8 +279,10 @@ Tags for automation integration and agentic coding workflows.
 
 | Tag | Description | Usage |
 |-----|-------------|-------|
-| `@execa` | Child process execution integration point |  |
 | `@acdd` | Acceptance Criteria Driven Development |  |
+| `@discovery-workflow` | Discovery workflow and bootstrapping processes |  |
+| `@draft-driven` | Draft-driven development and feedback loops |  |
+| `@execa` | Child process execution integration point |  |
 | `@spec-alignment` | Specification Alignment |  |
 
 **Rule**: Use automation tags to indicate integration points with automation systems and lifecycle hooks.
@@ -507,7 +511,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-10-17T10:17:58.513Z_
+_Last updated: 2025-10-19T22:53:42.574Z_
 
 **Update Command**: `fspec tag-stats`
 

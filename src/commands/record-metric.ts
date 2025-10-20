@@ -57,17 +57,19 @@ export function registerRecordMetricCommand(program: Command): void {
     .argument('<metric>', 'Metric name')
     .argument('<value>', 'Metric value')
     .option('--unit <unit>', 'Unit of measurement')
-    .action(async (metric: string, value: string, options: { unit?: string }) => {
-      try {
-        await recordMetric({
-          metric,
-          value: parseFloat(value),
-          unit: options.unit,
-        });
-        console.log(chalk.green(`✓ Metric recorded successfully`));
-      } catch (error: any) {
-        console.error(chalk.red('✗ Failed to record metric:'), error.message);
-        process.exit(1);
+    .action(
+      async (metric: string, value: string, options: { unit?: string }) => {
+        try {
+          await recordMetric({
+            metric,
+            value: parseFloat(value),
+            unit: options.unit,
+          });
+          console.log(chalk.green(`✓ Metric recorded successfully`));
+        } catch (error: any) {
+          console.error(chalk.red('✗ Failed to record metric:'), error.message);
+          process.exit(1);
+        }
       }
-    });
+    );
 }

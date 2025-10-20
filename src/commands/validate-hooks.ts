@@ -66,7 +66,9 @@ export async function validateHooks(
 export function registerValidateHooksCommand(program: Command): void {
   program
     .command('validate-hooks')
-    .description('Validate hook configuration and verify that all hook scripts exist')
+    .description(
+      'Validate hook configuration and verify that all hook scripts exist'
+    )
     .action(async (options: { cwd?: string }) => {
       await validateHooks(options);
     });

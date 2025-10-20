@@ -100,7 +100,9 @@ export async function generateSummaryReport(options: {
   }
 }
 
-function generateMarkdownReport(report: Omit<SummaryReport, 'outputFile'>): string {
+function generateMarkdownReport(
+  report: Omit<SummaryReport, 'outputFile'>
+): string {
   let md = '# Project Summary Report\n\n';
   md += `**Total Work Units:** ${report.totalWorkUnits}\n\n`;
   md += `**Total Story Points:** ${report.totalStoryPoints}\n\n`;
@@ -121,11 +123,7 @@ export function registerGenerateSummaryReportCommand(program: Command): void {
   program
     .command('generate-summary-report')
     .description('Generate a comprehensive project summary report')
-    .option(
-      '--format <format>',
-      'Output format: markdown or json',
-      'markdown'
-    )
+    .option('--format <format>', 'Output format: markdown or json', 'markdown')
     .option('--output <file>', 'Output file path')
     .action(async (options: { format?: string; output?: string }) => {
       try {

@@ -157,7 +157,12 @@ Feature: Test Feature
       const featuresDir = join(testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
-      const featureFile = join(testDir, 'spec', 'features', 'user-login.feature');
+      const featureFile = join(
+        testDir,
+        'spec',
+        'features',
+        'user-login.feature'
+      );
       await writeFile(
         featureFile,
         '@phase1\nFeature: User Login\n\n  Scenario: Test\n    Given test\n    When test\n    Then test\n'
@@ -210,7 +215,8 @@ Feature: Test Feature
       const featuresDir = join(testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
-      const featureContent = '@phase1\nFeature: User Login\n\n  Scenario: Test\n    Given test\n    When test\n    Then test\n';
+      const featureContent =
+        '@phase1\nFeature: User Login\n\n  Scenario: Test\n    Given test\n    When test\n    Then test\n';
       const featureFile = join(featuresDir, 'user-login.feature');
       await writeFile(featureFile, featureContent);
 

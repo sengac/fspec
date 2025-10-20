@@ -938,14 +938,14 @@ Feature: Test
 
       // Check for scenario-level work unit tag error
       const scenarioLevelError = errors.find(
-        e => e.tag === '@AUTH-002' && e.message.includes('must be at feature level')
+        e =>
+          e.tag === '@AUTH-002' &&
+          e.message.includes('must be at feature level')
       );
       expect(scenarioLevelError).toBeDefined();
 
       // Check for non-existent work unit error
-      const nonExistentError = errors.find(
-        e => e.tag === '@AUTH-999'
-      );
+      const nonExistentError = errors.find(e => e.tag === '@AUTH-999');
       expect(nonExistentError).toBeDefined();
     });
   });

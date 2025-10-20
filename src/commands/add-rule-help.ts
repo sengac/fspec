@@ -25,7 +25,12 @@ const config: CommandHelpConfig = {
       output: '✓ Rule added successfully',
     },
   ],
-  relatedCommands: ['add-question', 'add-example', 'generate-scenarios', 'remove-rule'],
+  relatedCommands: [
+    'add-question',
+    'add-example',
+    'generate-scenarios',
+    'remove-rule',
+  ],
 };
 
 export default config;

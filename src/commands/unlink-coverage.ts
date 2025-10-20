@@ -28,7 +28,13 @@ export async function unlinkCoverage(
   featureName: string,
   options: UnlinkCoverageOptions
 ): Promise<UnlinkCoverageResult> {
-  const { scenario, testFile, implFile, all = false, cwd = process.cwd() } = options;
+  const {
+    scenario,
+    testFile,
+    implFile,
+    all = false,
+    cwd = process.cwd(),
+  } = options;
 
   // Validate flag combinations
   if (!all && !testFile) {
@@ -64,11 +70,11 @@ export async function unlinkCoverage(
   }
 
   // Find the scenario
-  const scenarioEntry = coverage.scenarios.find((s) => s.name === scenario);
+  const scenarioEntry = coverage.scenarios.find(s => s.name === scenario);
   if (!scenarioEntry) {
     throw new Error(
       `Scenario not found: "${scenario}"\n` +
-        `Available scenarios:\n${coverage.scenarios.map((s) => `  - ${s.name}`).join('\n')}`
+        `Available scenarios:\n${coverage.scenarios.map(s => `  - ${s.name}`).join('\n')}`
     );
   }
 
@@ -81,7 +87,7 @@ export async function unlinkCoverage(
   } else if (testFile && implFile) {
     // Mode 2: Remove only implementation mapping
     const testMapping = scenarioEntry.testMappings.find(
-      (tm) => tm.file === testFile
+      tm => tm.file === testFile
     );
 
     if (!testMapping) {
@@ -92,7 +98,7 @@ export async function unlinkCoverage(
     }
 
     const implIndex = testMapping.implMappings.findIndex(
-      (im) => im.file === implFile
+      im => im.file === implFile
     );
 
     if (implIndex === -1) {
@@ -107,7 +113,7 @@ export async function unlinkCoverage(
   } else if (testFile) {
     // Mode 3: Remove entire test mapping (and all its impl mappings)
     const testIndex = scenarioEntry.testMappings.findIndex(
-      (tm) => tm.file === testFile
+      tm => tm.file === testFile
     );
 
     if (testIndex === -1) {
@@ -190,8 +196,13 @@ export async function unlinkCoverageCommand(
 export function registerUnlinkCoverageCommand(program: Command): void {
   program
     .command('unlink-coverage')
-    .description('Remove test or implementation links from scenario coverage mappings')
-    .argument('<feature-name>', 'Feature name (e.g., "user-login" for user-login.feature)')
+    .description(
+      'Remove test or implementation links from scenario coverage mappings'
+    )
+    .argument(
+      '<feature-name>',
+      'Feature name (e.g., "user-login" for user-login.feature)'
+    )
     .requiredOption('--scenario <name>', 'Scenario name to unlink')
     .option('--test-file <path>', 'Test file path to remove')
     .option('--impl-file <path>', 'Implementation file path to remove')

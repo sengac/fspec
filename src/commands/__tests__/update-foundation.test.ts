@@ -133,13 +133,11 @@ describe('Feature: Update Foundation Section Content', () => {
       );
 
       // And only the new content should be present in the section
+      expect(updatedFoundation.problemSpace.primaryProblem.description).toBe(
+        'Completely new reasoning'
+      );
       expect(
-        updatedFoundation.problemSpace.primaryProblem
-          .description
-      ).toBe('Completely new reasoning');
-      expect(
-        updatedFoundation.problemSpace.primaryProblem
-          .description
+        updatedFoundation.problemSpace.primaryProblem.description
       ).not.toContain('Original content');
     });
   });
@@ -227,10 +225,9 @@ describe('Feature: Update Foundation Section Content', () => {
         await readFile(foundationJsonPath, 'utf-8')
       );
 
-      expect(
-        updatedFoundation.problemSpace.primaryProblem
-          .description
-      ).toBe('Line 1\nLine 2\nLine 3');
+      expect(updatedFoundation.problemSpace.primaryProblem.description).toBe(
+        'Line 1\nLine 2\nLine 3'
+      );
 
       // And the lines should be properly formatted in FOUNDATION.md
       const foundationMdPath = join(testDir, 'spec', 'FOUNDATION.md');
@@ -308,15 +305,12 @@ describe('Feature: Update Foundation Section Content', () => {
       const updatedFoundation = JSON.parse(
         await readFile(foundationJsonPath, 'utf-8')
       );
-      expect(updatedFoundation.solutionSpace.overview).toBe(
-        'Updated overview'
-      );
+      expect(updatedFoundation.solutionSpace.overview).toBe('Updated overview');
 
       // And sections after it should be preserved
-      expect(
-        updatedFoundation.problemSpace.primaryProblem
-          .description
-      ).toBe('Test');
+      expect(updatedFoundation.problemSpace.primaryProblem.description).toBe(
+        'Test'
+      );
     });
   });
 
@@ -355,12 +349,12 @@ describe('Feature: Update Foundation Section Content', () => {
       const updatedFoundation = JSON.parse(
         await readFile(foundationJsonPath, 'utf-8')
       );
-      expect(
-        updatedFoundation.solutionSpace.overview
-      ).toBe('Updated plans');
+      expect(updatedFoundation.solutionSpace.overview).toBe('Updated plans');
 
       // And sections before it should be preserved
-      expect(updatedFoundation.problemSpace.primaryProblem.description).toBe('Test problem description');
+      expect(updatedFoundation.problemSpace.primaryProblem.description).toBe(
+        'Test problem description'
+      );
     });
   });
 
@@ -488,19 +482,16 @@ describe('Feature: Update Foundation Section Content', () => {
       const updatedFoundation = JSON.parse(
         await readFile(foundationJsonPath, 'utf-8')
       );
-      expect(
-        updatedFoundation.problemSpace.primaryProblem
-          .description
-      ).toBe('Second update');
+      expect(updatedFoundation.problemSpace.primaryProblem.description).toBe(
+        'Second update'
+      );
 
       // And previous content should not be present
       expect(
-        updatedFoundation.problemSpace.primaryProblem
-          .description
+        updatedFoundation.problemSpace.primaryProblem.description
       ).not.toContain('First update');
       expect(
-        updatedFoundation.problemSpace.primaryProblem
-          .description
+        updatedFoundation.problemSpace.primaryProblem.description
       ).not.toContain('Original');
     });
   });
@@ -549,8 +540,7 @@ describe('Feature: Update Foundation Section Content', () => {
       // And other foundation.json fields should be preserved
       expect(updatedFoundationJson.project.name).toBe('Test Project');
       expect(
-        updatedFoundationJson.problemSpace.primaryProblem
-          .description
+        updatedFoundationJson.problemSpace.primaryProblem.description
       ).toBe('Original problem description');
 
       // And FOUNDATION.md should be regenerated from foundation.json

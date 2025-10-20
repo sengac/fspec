@@ -92,9 +92,15 @@ Feature: Test Feature
 
       // And comments should be inserted at their original line positions
       const lines = formatted.split('\n');
-      const commentBeforeBackgroundIndex = lines.findIndex(line => line.includes('# Comment before Background'));
-      const backgroundIndex = lines.findIndex(line => line.includes('Background:'));
-      const commentBeforeScenarioIndex = lines.findIndex(line => line.includes('# Comment before scenario'));
+      const commentBeforeBackgroundIndex = lines.findIndex(line =>
+        line.includes('# Comment before Background')
+      );
+      const backgroundIndex = lines.findIndex(line =>
+        line.includes('Background:')
+      );
+      const commentBeforeScenarioIndex = lines.findIndex(line =>
+        line.includes('# Comment before scenario')
+      );
       const scenarioIndex = lines.findIndex(line => line.includes('Scenario:'));
 
       // And comments should appear before the elements they precede
@@ -158,8 +164,12 @@ Feature: Test Feature
 
       // And the comments should be in the same location
       const lines = formatted.split('\n');
-      const exampleMappingIndex = lines.findIndex(line => line.includes('# EXAMPLE MAPPING CONTEXT'));
-      const backgroundIndex = lines.findIndex(line => line.includes('Background:'));
+      const exampleMappingIndex = lines.findIndex(line =>
+        line.includes('# EXAMPLE MAPPING CONTEXT')
+      );
+      const backgroundIndex = lines.findIndex(line =>
+        line.includes('Background:')
+      );
       expect(exampleMappingIndex).toBeLessThan(backgroundIndex);
 
       // And no comments should be lost
@@ -211,8 +221,12 @@ Feature: Test Feature
 
       // And neither should overwrite the other
       const lines = formatted.split('\n');
-      const hasDocString = lines.some(line => line.includes('Architecture notes:'));
-      const hasComments = lines.some(line => line.includes('# EXAMPLE MAPPING CONTEXT'));
+      const hasDocString = lines.some(line =>
+        line.includes('Architecture notes:')
+      );
+      const hasComments = lines.some(line =>
+        line.includes('# EXAMPLE MAPPING CONTEXT')
+      );
       expect(hasDocString).toBe(true);
       expect(hasComments).toBe(true);
 

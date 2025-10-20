@@ -46,7 +46,9 @@ describe('Feature: Feature File Prefill Detection and CLI Enforcement', () => {
 
       // And a system-reminder should appear suggesting CLI commands to fix prefill
       expect(result.prefillDetection.systemReminder).toBeDefined();
-      expect(result.prefillDetection.systemReminder).toContain('set-user-story');
+      expect(result.prefillDetection.systemReminder).toContain(
+        'set-user-story'
+      );
       expect(result.prefillDetection.systemReminder).toContain('CLI');
     });
   });
@@ -69,7 +71,10 @@ describe('Feature: Feature File Prefill Detection and CLI Enforcement', () => {
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
             children: [],
-            examples: ['Example 1: Something happens', 'Example 2: Another thing'],
+            examples: [
+              'Example 1: Something happens',
+              'Example 2: Another thing',
+            ],
           },
         },
         states: {
@@ -102,7 +107,9 @@ describe('Feature: Feature File Prefill Detection and CLI Enforcement', () => {
       );
 
       // Verify placeholders exist in steps
-      expect(featureContent).toMatch(/\[precondition\]|\[action\]|\[expected outcome\]/);
+      expect(featureContent).toMatch(
+        /\[precondition\]|\[action\]|\[expected outcome\]/
+      );
 
       // Then a system-reminder should suggest using fspec add-step commands
       if (result.systemReminder) {

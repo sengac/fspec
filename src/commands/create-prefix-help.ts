@@ -2,7 +2,8 @@ import type { CommandHelpConfig } from '../utils/help-formatter';
 
 const config: CommandHelpConfig = {
   name: 'create-prefix',
-  description: 'Register a new work unit prefix for organizing work by component or area',
+  description:
+    'Register a new work unit prefix for organizing work by component or area',
   usage: 'fspec create-prefix <prefix> <description>',
   whenToUse:
     'Use when starting work on a new component or area that needs its own work unit namespace.',

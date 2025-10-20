@@ -56,12 +56,17 @@ describe('Feature: Clarify estimation timing in documentation and system-reminde
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       // When I run "fspec show-work-unit <work-unit-id>"
-      const result = await showWorkUnit({ workUnitId: 'TEST-001', cwd: testDir });
+      const result = await showWorkUnit({
+        workUnitId: 'TEST-001',
+        cwd: testDir,
+      });
 
       // Then the system-reminder should NOT suggest adding an estimate
       const reminders = result.systemReminders || [];
       const reminderText = reminders.join('\n');
-      expect(reminderText).not.toContain('Use Example Mapping results to estimate');
+      expect(reminderText).not.toContain(
+        'Use Example Mapping results to estimate'
+      );
       expect(reminderText).not.toContain('estimate story points');
 
       // And the status should be backlog
@@ -112,13 +117,20 @@ describe('Feature: Clarify estimation timing in documentation and system-reminde
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       // When I run "fspec show-work-unit <work-unit-id>"
-      const result = await showWorkUnit({ workUnitId: 'TEST-002', cwd: testDir });
+      const result = await showWorkUnit({
+        workUnitId: 'TEST-002',
+        cwd: testDir,
+      });
 
       // Then the system-reminder should say "After generating scenarios from Example Mapping, estimate based on feature file complexity"
       const reminders = result.systemReminders || [];
       const reminderText = reminders.join('\n');
-      expect(reminderText).toContain('After generating scenarios from Example Mapping');
-      expect(reminderText).toContain('estimate based on feature file complexity');
+      expect(reminderText).toContain(
+        'After generating scenarios from Example Mapping'
+      );
+      expect(reminderText).toContain(
+        'estimate based on feature file complexity'
+      );
 
       // And the system-reminder should NOT say "Use Example Mapping results to estimate story points"
       expect(reminderText).not.toContain(
@@ -166,7 +178,11 @@ describe('Feature: Clarify estimation timing in documentation and system-reminde
       // When I try to estimate with "fspec update-work-unit-estimate <work-unit-id> 3"
       let errorMessage = '';
       try {
-        await updateWorkUnitEstimate({ workUnitId: 'TEST-003', estimate: 3, cwd: testDir });
+        await updateWorkUnitEstimate({
+          workUnitId: 'TEST-003',
+          estimate: 3,
+          cwd: testDir,
+        });
       } catch (error: unknown) {
         const err = error as Error;
         errorMessage = err.message;

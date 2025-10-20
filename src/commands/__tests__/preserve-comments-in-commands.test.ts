@@ -62,7 +62,12 @@ Feature: Test Feature
     So that I can verify
 `;
 
-      const featureFile = join(tmpDir, 'spec', 'features', 'test-feature.feature');
+      const featureFile = join(
+        tmpDir,
+        'spec',
+        'features',
+        'test-feature.feature'
+      );
       await writeFile(featureFile, featureContent);
 
       // When I run "fspec add-scenario" to manually add a scenario
@@ -80,7 +85,9 @@ Feature: Test Feature
       expect(updatedContent).toContain('# EXAMPLES:');
 
       // And no comments should be removed
-      const commentLines = updatedContent.split('\n').filter(line => line.trim().startsWith('#'));
+      const commentLines = updatedContent
+        .split('\n')
+        .filter(line => line.trim().startsWith('#'));
       expect(commentLines.length).toBeGreaterThan(8); // At least 8 comment lines preserved
     });
   });
@@ -106,7 +113,12 @@ Feature: Test Feature
     So that old benefit
 `;
 
-      const featureFile = join(tmpDir, 'spec', 'features', 'test-feature.feature');
+      const featureFile = join(
+        tmpDir,
+        'spec',
+        'features',
+        'test-feature.feature'
+      );
       await writeFile(featureFile, featureContent);
 
       // When I run "fspec add-background" to update the user story
@@ -130,7 +142,9 @@ So that new benefit`,
       expect(updatedContent).toContain('#   1. Important rule');
 
       // And no comments should be lost
-      const commentLines = updatedContent.split('\n').filter(line => line.trim().startsWith('#'));
+      const commentLines = updatedContent
+        .split('\n')
+        .filter(line => line.trim().startsWith('#'));
       expect(commentLines.length).toBeGreaterThan(5);
     });
   });
@@ -153,20 +167,31 @@ Feature: Test Feature
     So that I can access my account
 `;
 
-      const featureFile = join(tmpDir, 'spec', 'features', 'test-feature.feature');
+      const featureFile = join(
+        tmpDir,
+        'spec',
+        'features',
+        'test-feature.feature'
+      );
       await writeFile(featureFile, featureContent);
 
       // When an AI agent writes scenarios based on the comments
       // Then the agent can create 3 separate scenarios
-      await addScenario('test-feature', 'User logs in with valid credentials', { cwd: tmpDir });
+      await addScenario('test-feature', 'User logs in with valid credentials', {
+        cwd: tmpDir,
+      });
       await addScenario('test-feature', 'User logs out', { cwd: tmpDir });
-      await addScenario('test-feature', 'User resets password', { cwd: tmpDir });
+      await addScenario('test-feature', 'User resets password', {
+        cwd: tmpDir,
+      });
 
       const updatedContent = await readFile(featureFile, 'utf-8');
 
       // And the agent can combine related examples into single scenario
       // And the agent decides based on semantic similarity
-      expect(updatedContent).toContain('Scenario: User logs in with valid credentials');
+      expect(updatedContent).toContain(
+        'Scenario: User logs in with valid credentials'
+      );
       expect(updatedContent).toContain('Scenario: User logs out');
       expect(updatedContent).toContain('Scenario: User resets password');
 
@@ -198,7 +223,12 @@ Feature: Test Feature
     So that I ensure quality
 `;
 
-      const featureFile = join(tmpDir, 'spec', 'features', 'test-feature.feature');
+      const featureFile = join(
+        tmpDir,
+        'spec',
+        'features',
+        'test-feature.feature'
+      );
       await writeFile(featureFile, featureContent);
 
       const content = await readFile(featureFile, 'utf-8');
@@ -213,7 +243,8 @@ Feature: Test Feature
       expect(content).toContain('As a developer');
 
       // And the user story should only appear in Background (FEAT-012 separation)
-      const userStoryOccurrences = (content.match(/As a developer/g) || []).length;
+      const userStoryOccurrences = (content.match(/As a developer/g) || [])
+        .length;
       expect(userStoryOccurrences).toBe(1);
     });
   });
@@ -234,7 +265,12 @@ Feature: User Authentication
     So that I can access my account
 `;
 
-      const featureFile = join(tmpDir, 'spec', 'features', 'test-feature.feature');
+      const featureFile = join(
+        tmpDir,
+        'spec',
+        'features',
+        'test-feature.feature'
+      );
       await writeFile(featureFile, featureContent);
 
       const content = await readFile(featureFile, 'utf-8');
@@ -266,7 +302,12 @@ Feature: Test Feature
     So that [benefit]
 `;
 
-      const featureFile = join(tmpDir, 'spec', 'features', 'test-feature.feature');
+      const featureFile = join(
+        tmpDir,
+        'spec',
+        'features',
+        'test-feature.feature'
+      );
       await writeFile(featureFile, featureContent);
 
       const content = await readFile(featureFile, 'utf-8');
@@ -309,7 +350,12 @@ Feature: Test Feature
     So that code review is easier
 `;
 
-      const featureFile = join(tmpDir, 'spec', 'features', 'test-feature.feature');
+      const featureFile = join(
+        tmpDir,
+        'spec',
+        'features',
+        'test-feature.feature'
+      );
       await writeFile(featureFile, featureContent);
 
       const content = await readFile(featureFile, 'utf-8');
@@ -344,7 +390,12 @@ Feature: Test Feature
     So that I benefit
 `;
 
-      const featureFile = join(tmpDir, 'spec', 'features', 'test-feature.feature');
+      const featureFile = join(
+        tmpDir,
+        'spec',
+        'features',
+        'test-feature.feature'
+      );
       await writeFile(featureFile, featureContent);
 
       // When I generate scenarios and add example mapping comments
@@ -383,7 +434,9 @@ Feature: Test Feature
       expect(content).toContain('# ========================================');
 
       // And no existing comments should be overwritten
-      const commentLines = content.split('\n').filter(line => line.trim().startsWith('#'));
+      const commentLines = content
+        .split('\n')
+        .filter(line => line.trim().startsWith('#'));
       expect(commentLines.length).toBeGreaterThan(5);
     });
   });
@@ -410,7 +463,12 @@ Feature: Test Feature
     So that I can access my account
 `;
 
-      const featureFile = join(tmpDir, 'spec', 'features', 'test-feature.feature');
+      const featureFile = join(
+        tmpDir,
+        'spec',
+        'features',
+        'test-feature.feature'
+      );
       await writeFile(featureFile, featureContent);
 
       const content = await readFile(featureFile, 'utf-8');
@@ -450,7 +508,12 @@ Feature: User Authentication
     So that I can access protected resources
 `;
 
-      const featureFile = join(tmpDir, 'spec', 'features', 'test-feature.feature');
+      const featureFile = join(
+        tmpDir,
+        'spec',
+        'features',
+        'test-feature.feature'
+      );
       await writeFile(featureFile, featureContent);
 
       const content = await readFile(featureFile, 'utf-8');

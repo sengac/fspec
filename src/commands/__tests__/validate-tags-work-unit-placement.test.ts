@@ -74,7 +74,9 @@ describe('Feature: Remove work unit ID tags from generate-scenarios', () => {
             },
             {
               name: 'Feature Group Tags',
-              tags: [{ name: '@validation', description: 'Validation features' }],
+              tags: [
+                { name: '@validation', description: 'Validation features' },
+              ],
             },
           ],
         },
@@ -130,12 +132,16 @@ Feature: Test Feature
       // And the error message should indicate scenario-level work unit ID tags are not allowed
       const errors = result.results[0].errors;
       const workUnitError = errors.find(e =>
-        e.message.includes('Work unit ID tag @AUTH-001 must be at feature level')
+        e.message.includes(
+          'Work unit ID tag @AUTH-001 must be at feature level'
+        )
       );
       expect(workUnitError).toBeDefined();
 
       // And the error should show which scenario has the invalid tag
-      expect(workUnitError?.message).toContain('feature level, not scenario level');
+      expect(workUnitError?.message).toContain(
+        'feature level, not scenario level'
+      );
       expect(workUnitError?.suggestion).toContain('coverage files');
     });
 

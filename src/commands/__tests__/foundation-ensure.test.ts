@@ -39,10 +39,14 @@ describe('Feature: Automatic JSON File Initialization', () => {
       expect(result.message).toBeDefined();
 
       // And spec/foundation.json should be created
-      await expect(access(join(testDir, 'spec/foundation.json'))).resolves.not.toThrow();
+      await expect(
+        access(join(testDir, 'spec/foundation.json'))
+      ).resolves.not.toThrow();
 
       // And spec/FOUNDATION.md should be regenerated
-      await expect(access(join(testDir, 'spec/FOUNDATION.md'))).resolves.not.toThrow();
+      await expect(
+        access(join(testDir, 'spec/FOUNDATION.md'))
+      ).resolves.not.toThrow();
     });
   });
 
@@ -60,7 +64,9 @@ describe('Feature: Automatic JSON File Initialization', () => {
       expect(result.output).toBeDefined();
 
       // And spec/foundation.json should be created
-      await expect(access(join(testDir, 'spec/foundation.json'))).resolves.not.toThrow();
+      await expect(
+        access(join(testDir, 'spec/foundation.json'))
+      ).resolves.not.toThrow();
 
       // And the output should contain formatted foundation data
       expect(result.output).toContain('PROJECT');
@@ -68,4 +74,3 @@ describe('Feature: Automatic JSON File Initialization', () => {
     });
   });
 });
-

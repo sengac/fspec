@@ -165,7 +165,10 @@ function formatFoundationAsText(foundation: any): string {
     lines.push('');
   }
 
-  if (foundation.architectureDiagrams && foundation.architectureDiagrams.length > 0) {
+  if (
+    foundation.architectureDiagrams &&
+    foundation.architectureDiagrams.length > 0
+  ) {
     lines.push('=== ARCHITECTURE DIAGRAMS ===');
     foundation.architectureDiagrams.forEach((diagram: any) => {
       lines.push(`- ${diagram.title}`);
@@ -211,7 +214,11 @@ export function registerShowFoundationCommand(program: Command): void {
     .command('show-foundation')
     .description('Display FOUNDATION.md content')
     .option('--section <section>', 'Show specific section only')
-    .option('--format <format>', 'Output format: text, markdown, or json', 'text')
+    .option(
+      '--format <format>',
+      'Output format: text, markdown, or json',
+      'text'
+    )
     .option('--output <file>', 'Write output to file')
     .option('--list-sections', 'List section names only', false)
     .option('--line-numbers', 'Show line numbers', false)

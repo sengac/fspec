@@ -19,7 +19,9 @@ export interface ListHooksResult {
   message?: string;
 }
 
-export async function listHooks(options: ListHooksOptions = {}): Promise<ListHooksResult> {
+export async function listHooks(
+  options: ListHooksOptions = {}
+): Promise<ListHooksResult> {
   const cwd = options.cwd ?? process.cwd();
   const configPath = join(cwd, 'spec', 'fspec-hooks.json');
 
@@ -29,7 +31,7 @@ export async function listHooks(options: ListHooksOptions = {}): Promise<ListHoo
 
     const events = Object.entries(config.hooks).map(([event, hooks]) => ({
       event,
-      hooks: hooks.map((h) => h.name),
+      hooks: hooks.map(h => h.name),
     }));
 
     return { events };

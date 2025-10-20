@@ -25,7 +25,11 @@ const PREFILL_PATTERNS = [
   // Background placeholders
   { regex: /\[role\]/gi, name: '[role]', command: 'fspec set-user-story' },
   { regex: /\[action\]/gi, name: '[action]', command: 'fspec set-user-story' },
-  { regex: /\[benefit\]/gi, name: '[benefit]', command: 'fspec set-user-story' },
+  {
+    regex: /\[benefit\]/gi,
+    name: '[benefit]',
+    command: 'fspec set-user-story',
+  },
 
   // Scenario/Step placeholders
   {
@@ -38,18 +42,34 @@ const PREFILL_PATTERNS = [
     name: '[expected outcome]',
     command: 'fspec add-step',
   },
-  { regex: /\[scenario name\]/gi, name: '[scenario name]', command: 'fspec add-scenario' },
+  {
+    regex: /\[scenario name\]/gi,
+    name: '[scenario name]',
+    command: 'fspec add-scenario',
+  },
 
   // Generic placeholders (but exclude Mermaid node labels like AI[label] or A-->B[label])
   // Only match standalone brackets with lowercase words or spaces (typical placeholders)
-  { regex: /\b\[(?![A-Z])[a-z\s]+\]/g, name: '[placeholder]', command: 'fspec commands' },
+  {
+    regex: /\b\[(?![A-Z])[a-z\s]+\]/g,
+    name: '[placeholder]',
+    command: 'fspec commands',
+  },
 
   // TODO markers
   { regex: /TODO:/gi, name: 'TODO:', command: 'fspec add-architecture' },
 
   // Generic tag placeholders (literal placeholders only, not valid tags like @phase1)
-  { regex: /@component(?!\w)/g, name: '@component', command: 'fspec add-tag-to-feature' },
-  { regex: /@feature-group(?!\w)/g, name: '@feature-group', command: 'fspec add-tag-to-feature' },
+  {
+    regex: /@component(?!\w)/g,
+    name: '@component',
+    command: 'fspec add-tag-to-feature',
+  },
+  {
+    regex: /@feature-group(?!\w)/g,
+    name: '@feature-group',
+    command: 'fspec add-tag-to-feature',
+  },
 ];
 
 /**

@@ -71,7 +71,9 @@ describe('Feature: Scalable help system for all commands', () => {
       }
 
       // Then WHEN TO USE section should be displayed
-      const output = consoleSpy.mock.calls.map(call => call.join(' ')).join('\n');
+      const output = consoleSpy.mock.calls
+        .map(call => call.join(' '))
+        .join('\n');
       expect(output).toContain('WHEN TO USE');
       expect(output).toContain('Use this when testing');
 
@@ -140,7 +142,13 @@ describe('Feature: Scalable help system for all commands', () => {
 
     it('should detect --help after other arguments', async () => {
       // When --help appears after other flags
-      process.argv = ['node', 'fspec', 'list-work-units', '--status=backlog', '--help'];
+      process.argv = [
+        'node',
+        'fspec',
+        'list-work-units',
+        '--status=backlog',
+        '--help',
+      ];
 
       const { handleCustomHelp } = await import('../help-interceptor');
 
@@ -216,7 +224,9 @@ describe('Feature: Scalable help system for all commands', () => {
 
   describe('Help Registry', () => {
     it('should contain all commands with custom help configs', async () => {
-      const { commandsWithCustomHelp } = await import('../../commands/help-registry');
+      const { commandsWithCustomHelp } = await import(
+        '../../commands/help-registry'
+      );
 
       // The registry should include existing help configs
       expect(commandsWithCustomHelp.has('create-epic')).toBe(true);
@@ -227,7 +237,9 @@ describe('Feature: Scalable help system for all commands', () => {
     });
 
     it('should not contain commands without help configs', async () => {
-      const { commandsWithCustomHelp } = await import('../../commands/help-registry');
+      const { commandsWithCustomHelp } = await import(
+        '../../commands/help-registry'
+      );
 
       // Random commands without help should not be in registry
       expect(commandsWithCustomHelp.has('nonexistent-command')).toBe(false);
@@ -236,7 +248,9 @@ describe('Feature: Scalable help system for all commands', () => {
 
   describe('Integration with existing help configs', () => {
     it('should work with existing create-epic-help config', async () => {
-      const { default: createEpicHelp } = await import('../../commands/create-epic-help');
+      const { default: createEpicHelp } = await import(
+        '../../commands/create-epic-help'
+      );
 
       expect(createEpicHelp.name).toBe('create-epic');
       expect(createEpicHelp.description).toBeTruthy();
@@ -245,7 +259,9 @@ describe('Feature: Scalable help system for all commands', () => {
     });
 
     it('should work with existing list-work-units-help config', async () => {
-      const { default: listWorkUnitsHelp } = await import('../../commands/list-work-units-help');
+      const { default: listWorkUnitsHelp } = await import(
+        '../../commands/list-work-units-help'
+      );
 
       expect(listWorkUnitsHelp.name).toBe('list-work-units');
       expect(listWorkUnitsHelp.whenToUse).toBeTruthy();

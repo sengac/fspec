@@ -24,12 +24,14 @@ const config: CommandHelpConfig = {
   ],
   examples: [
     {
-      command: 'fspec list-scenario-tags spec/features/login.feature "Login with invalid password"',
+      command:
+        'fspec list-scenario-tags spec/features/login.feature "Login with invalid password"',
       description: 'List scenario tags',
       output: '@edge-case\n@smoke',
     },
     {
-      command: 'fspec list-scenario-tags spec/features/login.feature "Valid user login" --show-categories',
+      command:
+        'fspec list-scenario-tags spec/features/login.feature "Valid user login" --show-categories',
       description: 'List tags with categories',
       output: '@WORK-UNIT-001 (Work Unit Tags)\n@smoke (Test Type Tags)',
     },

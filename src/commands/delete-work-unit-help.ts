@@ -32,7 +32,8 @@ const config: CommandHelpConfig = {
     {
       command: 'fspec delete-work-unit AUTH-999',
       description: 'Delete work unit (with confirmation)',
-      output: 'Are you sure? (y/N): y\n✓ Work unit AUTH-999 deleted successfully',
+      output:
+        'Are you sure? (y/N): y\n✓ Work unit AUTH-999 deleted successfully',
     },
     {
       command: 'fspec delete-work-unit AUTH-999 --skip-confirmation',
@@ -42,7 +43,8 @@ const config: CommandHelpConfig = {
     {
       command: 'fspec delete-work-unit AUTH-999 --cascade-dependencies',
       description: 'Delete and remove all dependencies',
-      output: '✓ Work unit AUTH-999 deleted successfully\n⚠ This work unit blocks 2 work unit(s): API-001, UI-001',
+      output:
+        '✓ Work unit AUTH-999 deleted successfully\n⚠ This work unit blocks 2 work unit(s): API-001, UI-001',
     },
     {
       command: 'fspec delete-work-unit AUTH-999 --force --skip-confirmation',
@@ -56,11 +58,13 @@ const config: CommandHelpConfig = {
       fix: 'Verify work unit ID with: fspec list-work-units',
     },
     {
-      error: 'Error: Cannot delete work unit with children: AUTH-002, AUTH-003. Delete children first or remove parent relationship.',
+      error:
+        'Error: Cannot delete work unit with children: AUTH-002, AUTH-003. Delete children first or remove parent relationship.',
       fix: 'Either delete child work units first, or remove the parent relationship from children',
     },
     {
-      error: 'Error: Work unit AUTH-001 has dependencies. Use --cascade-dependencies flag to remove dependencies and delete.',
+      error:
+        'Error: Work unit AUTH-001 has dependencies. Use --cascade-dependencies flag to remove dependencies and delete.',
       fix: 'Add --cascade-dependencies flag to remove all dependency relationships before deletion',
     },
   ],
@@ -78,12 +82,17 @@ const config: CommandHelpConfig = {
         '# Delete in automated scripts\nfspec delete-work-unit AUTH-999 --skip-confirmation --cascade-dependencies',
     },
   ],
-  relatedCommands: ['list-work-units', 'create-work-unit', 'show-work-unit', 'dependencies'],
+  relatedCommands: [
+    'list-work-units',
+    'create-work-unit',
+    'show-work-unit',
+    'dependencies',
+  ],
   notes: [
     'Deletion is permanent and cannot be undone',
     'Deletes all Example Mapping data associated with the work unit',
     'Removes work unit from all state arrays (backlog, specifying, etc.)',
-    'Removes work unit from parent\'s children array if it has a parent',
+    "Removes work unit from parent's children array if it has a parent",
     'Cannot delete work units that have children (delete children first)',
     'Use --cascade-dependencies to remove all dependency relationships automatically',
     '--force flag bypasses validation checks (use with caution)',

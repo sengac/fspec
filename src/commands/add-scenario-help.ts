@@ -18,9 +18,11 @@ const config: CommandHelpConfig = {
   ],
   examples: [
     {
-      command: 'fspec add-scenario spec/features/login.feature "Login with invalid password"',
+      command:
+        'fspec add-scenario spec/features/login.feature "Login with invalid password"',
       description: 'Add new scenario',
-      output: '✓ Added scenario "Login with invalid password" to spec/features/login.feature',
+      output:
+        '✓ Added scenario "Login with invalid password" to spec/features/login.feature',
     },
   ],
   relatedCommands: ['add-step', 'create-feature', 'delete-scenario'],

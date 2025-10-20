@@ -20,7 +20,8 @@ const config: CommandHelpConfig = {
   ],
   examples: [
     {
-      command: 'fspec add-assumption AUTH-001 "Users have valid email addresses"',
+      command:
+        'fspec add-assumption AUTH-001 "Users have valid email addresses"',
       description: 'Add assumption',
       output: '✓ Assumption added successfully',
     },

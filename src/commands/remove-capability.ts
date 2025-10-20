@@ -5,7 +5,7 @@ import type { GenericFoundation } from '../types/foundation';
 
 export async function removeCapability(
   cwd: string,
-  name: string,
+  name: string
 ): Promise<void> {
   const draftPath = join(cwd, 'spec', 'foundation.json.draft');
   const foundationPath = join(cwd, 'spec', 'foundation.json');
@@ -33,8 +33,8 @@ export async function removeCapability(
       console.error(chalk.red('✗ foundation.json not found'));
       console.error(
         chalk.yellow(
-          '  Run: fspec discover-foundation to create foundation.json',
-        ),
+          '  Run: fspec discover-foundation to create foundation.json'
+        )
       );
       throw new Error('foundation.json not found');
     }
@@ -53,7 +53,7 @@ export async function removeCapability(
 
   // Find capability by exact name match (case-sensitive)
   const index = foundation.solutionSpace.capabilities.findIndex(
-    c => c.name === name,
+    c => c.name === name
   );
   if (index === -1) {
     const availableNames = foundation.solutionSpace.capabilities
@@ -68,10 +68,7 @@ export async function removeCapability(
   foundation.solutionSpace.capabilities.splice(index, 1);
 
   // Write updated file (draft or final)
-  await fs.writeFile(
-    targetPath,
-    JSON.stringify(foundation, null, 2) + '\n',
-  );
+  await fs.writeFile(targetPath, JSON.stringify(foundation, null, 2) + '\n');
 
   const fileName = isDraft ? 'foundation.json.draft' : 'foundation.json';
   console.log(chalk.green(`✓ Removed capability "${name}" from ${fileName}`));

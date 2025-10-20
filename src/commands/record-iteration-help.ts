@@ -23,7 +23,8 @@ const config: CommandHelpConfig = {
   ],
   examples: [
     {
-      command: 'fspec record-iteration "Sprint 1" --start 2025-10-01 --end 2025-10-15',
+      command:
+        'fspec record-iteration "Sprint 1" --start 2025-10-01 --end 2025-10-15',
       description: 'Record iteration',
       output: '✓ Recorded iteration "Sprint 1"',
     },

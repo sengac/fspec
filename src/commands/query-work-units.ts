@@ -94,7 +94,9 @@ export async function queryWorkUnits(options: {
     }
 
     if (options.prefix) {
-      workUnits = workUnits.filter(wu => wu.id.startsWith(options.prefix + '-'));
+      workUnits = workUnits.filter(wu =>
+        wu.id.startsWith(options.prefix + '-')
+      );
     }
 
     // Filter by type
