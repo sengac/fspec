@@ -29,6 +29,7 @@ Tags that identify which architectural component a feature belongs to.
 
 | Tag | Description | Usage |
 |-----|-------------|-------|
+| `@algorithm` | Algorithmic components - similarity matching, scoring, deduplication algorithms |  |
 | `@cli` | Command-Line Interface |  |
 | `@file-ops` | File Operations |  |
 | `@formatter` | Formatting & Prettification |  |
@@ -118,6 +119,8 @@ Tags that categorize features by functional area.
 | `@reverse-acdd` | Features related to reverse ACDD for documenting existing codebases |  |
 | `@safety` | Safety and security features preventing accidental operations |  |
 | `@scaffolding` | Project Setup & Templates |  |
+| `@scenario-deduplication` | Scenario deduplication and refactoring detection features |  |
+| `@scenario-generation` | Features related to generating scenarios from example mapping |  |
 | `@schema-design` | Schema design and data structure definition |  |
 | `@soft-dependency` | Soft dependency relationships |  |
 | `@state-enforcement` | State transition enforcement |  |
@@ -179,6 +182,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@reverse-engineering` | Reverse engineering existing code to create specifications |  |
 | `@session-based` | Session-based interactive command pattern (similar to discover-foundation) |  |
 | `@setup` | Setup and initialization commands |  |
+| `@similarity-matching` | Text similarity and matching algorithms |  |
 | `@slash-command` | Slash command features for Claude Code |  |
 | `@sms` | SMS-related functionality |  |
 | `@strategy-planning` | Strategy planning and decision-making features that guide user choices |  |
@@ -511,7 +515,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-10-19T22:53:42.574Z_
+_Last updated: 2025-10-20T22:00:32.557Z_
 
 **Update Command**: `fspec tag-stats`
 

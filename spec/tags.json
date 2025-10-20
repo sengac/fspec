@@ -53,6 +53,10 @@
       "required": true,
       "tags": [
         {
+          "name": "@algorithm",
+          "description": "Algorithmic components - similarity matching, scoring, deduplication algorithms"
+        },
+        {
           "name": "@cli",
           "description": "Command-Line Interface",
           "scope": "All CLI commands, argument parsing, command handlers, user-facing terminal interactions (28 files)"
@@ -398,6 +402,14 @@
           "examples": "Initialize spec directory, create templates, setup structure (0 files)"
         },
         {
+          "name": "@scenario-deduplication",
+          "description": "Scenario deduplication and refactoring detection features"
+        },
+        {
+          "name": "@scenario-generation",
+          "description": "Features related to generating scenarios from example mapping"
+        },
+        {
           "name": "@schema-design",
           "description": "Schema design and data structure definition"
         },
@@ -624,6 +636,10 @@
         {
           "name": "@setup",
           "description": "Setup and initialization commands"
+        },
+        {
+          "name": "@similarity-matching",
+          "description": "Text similarity and matching algorithms"
         },
         {
           "name": "@slash-command",
@@ -1107,7 +1123,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-10-19T22:53:42.574Z",
+    "lastUpdated": "2025-10-20T22:00:32.557Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

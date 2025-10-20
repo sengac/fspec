@@ -13,12 +13,24 @@ import {
 } from '../utils/system-reminder';
 import { extractStepsFromExample } from '../utils/step-extraction';
 import { detectPrefill } from '../utils/prefill-detection';
+import { glob } from 'tinyglobby';
+import * as Gherkin from '@cucumber/gherkin';
+import * as Messages from '@cucumber/messages';
+import { findMatchingScenarios, extractKeywords } from '../utils/scenario-similarity.js';
+
+interface ScenarioMatch {
+  feature: string;
+  scenario: string;
+  similarityScore: number;
+  featurePath: string;
+}
 
 interface GenerateScenariosOptions {
   workUnitId: string;
   feature?: string;
   template?: 'given-when-then' | 'basic';
   cwd?: string;
+  confirmUpdate?: boolean; // For testing - auto-confirm updates
 }
 
 interface GenerateScenariosResult {
@@ -26,6 +38,10 @@ interface GenerateScenariosResult {
   featureFile: string;
   scenariosCount: number;
   systemReminders?: string[];
+  detectedMatches?: ScenarioMatch[];
+  updatedFeatures?: string[];
+  createdFeature?: string;
+  coverageRegenerated?: boolean;
 }
 
 /**
@@ -168,6 +184,101 @@ function generateExampleMappingComments(
   return lines.join('\n');
 }
 
+/**
+ * Scan existing feature files and find matching scenarios
+ */
+async function scanExistingFeatures(
+  cwd: string,
+  examples: string[]
+): Promise<{ matches: Map<number, ScenarioMatch[]>; allFeatures: any[] }> {
+  const matches = new Map<number, ScenarioMatch[]>();
+
+  // Find all existing feature files
+  const featureFiles = await glob('spec/features/**/*.feature', {
+    cwd,
+    absolute: true,
+    onlyFiles: true
+  });
+
+  // Parse all features
+  const allFeatures: any[] = [];
+  for (const featureFile of featureFiles) {
+    try {
+      const content = await readFile(featureFile, 'utf-8');
+
+      // Parse with @cucumber/gherkin
+      const uuidFn = Messages.IdGenerator.uuid();
+      const builder = new Gherkin.AstBuilder(uuidFn);
+      const matcher = new Gherkin.GherkinClassicTokenMatcher();
+      const parser = new Gherkin.Parser(builder, matcher);
+      const doc = parser.parse(content);
+
+      if (!doc.feature) {
+        continue;
+      }
+
+      const scenarios = doc.feature.children
+        .filter((child) => child.scenario)
+        .map((child) => ({
+          name: child.scenario!.name,
+          steps: child.scenario!.steps.map((step) => `${step.keyword}${step.text}`)
+        }));
+
+      if (scenarios.length > 0) {
+        // Extract filename from path (without directory)
+        const filename = featureFile.split('/').pop() || '';
+
+        allFeatures.push({
+          path: featureFile,
+          name: filename,
+          scenarios
+        });
+      }
+    } catch (error) {
+      // Skip invalid feature files
+    }
+  }
+
+  // Check each example against existing scenarios
+  for (let i = 0; i < examples.length; i++) {
+    const example = examples[i];
+
+    // Extract steps from example
+    const extractedSteps = extractStepsFromExample(example);
+
+    // Convert to array format for similarity comparison
+    const stepsArray: string[] = [];
+    if (extractedSteps.given) {
+      stepsArray.push(`Given ${extractedSteps.given}`);
+    }
+    if (extractedSteps.when) {
+      stepsArray.push(`When ${extractedSteps.when}`);
+    }
+    if (extractedSteps.then) {
+      stepsArray.push(`Then ${extractedSteps.then}`);
+    }
+
+    // Create scenario object for matching
+    const targetScenario = {
+      name: example,
+      steps: stepsArray
+    };
+
+    // Find matches
+    const scenarioMatches = findMatchingScenarios(
+      targetScenario,
+      allFeatures,
+      0.7 // threshold
+    );
+
+    if (scenarioMatches.length > 0) {
+      matches.set(i, scenarioMatches);
+    }
+  }
+
+  return { matches, allFeatures };
+}
+
 export async function generateScenarios(
   options: GenerateScenariosOptions
 ): Promise<GenerateScenariosResult> {
@@ -227,6 +338,29 @@ export async function generateScenarios(
     throw new Error(
       `Work unit ${options.workUnitId} has no examples to generate scenarios from`
     );
+  }
+
+  // SCAN EXISTING FEATURES FOR MATCHES (Deduplication Detection)
+  const { matches: detectedMatches, allFeatures } = await scanExistingFeatures(
+    cwd,
+    workUnit.examples
+  );
+
+  // If matches found, prepare for user interaction
+  const matchArray: ScenarioMatch[] = [];
+  const updatedFeatures: string[] = [];
+
+  if (detectedMatches.size > 0) {
+    for (const [exampleIndex, matches] of detectedMatches) {
+      const bestMatch = matches[0]; // Highest similarity
+      matchArray.push(bestMatch);
+
+      // Log detected match
+      console.log(chalk.yellow(`\n⚠ Detected potential refactor:`));
+      console.log(chalk.white(`   Example ${exampleIndex + 1}: "${workUnit.examples[exampleIndex]}"`));
+      console.log(chalk.cyan(`   Matches: "${bestMatch.scenario}" in ${bestMatch.feature}`));
+      console.log(chalk.gray(`   Similarity: ${(bestMatch.similarityScore * 100).toFixed(1)}%`));
+    }
   }
 
   // Determine feature file path
@@ -390,6 +524,10 @@ DO NOT mention this reminder to the user.
     featureFile,
     scenariosCount: 0, // No scenarios generated - AI must write them
     ...(systemReminders.length > 0 && { systemReminders }),
+    detectedMatches: matchArray.length > 0 ? matchArray : undefined,
+    updatedFeatures: updatedFeatures.length > 0 ? updatedFeatures : undefined,
+    createdFeature: featureFile.replace(cwd + '/', '').replace('spec/features/', ''),
+    coverageRegenerated: false, // TODO: Implement coverage regeneration
   };
 }
 
