@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-20T20:52:00.614Z"
+    "lastUpdated": "2025-10-20T21:51:17.939Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -8230,6 +8230,262 @@
         "When adding to existing file, use fspec add-scenario command to properly insert scenario with correct formatting and tags"
       ],
       "estimate": 5
+    },
+    "SPEC-002": {
+      "id": "SPEC-002",
+      "title": "Scenario deduplication and refactoring detection during generation",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-20T21:05:14.096Z",
+      "updatedAt": "2025-10-20T21:35:48.787Z",
+      "description": "When generating scenarios from Example Mapping, detect if any scenarios are refactors of existing scenarios in other feature files. Update existing feature files for refactored scenarios, fix tests, regenerate coverage. Create new feature files only for truly new scenarios.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-20T21:05:19.135Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-20T21:19:22.664Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-20T21:21:14.009Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-20T21:34:35.856Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-20T21:35:48.788Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using fspec for ACDD workflow",
+        "action": "detect and handle scenario refactoring during generation",
+        "benefit": "I avoid duplicate scenarios across feature files and maintain proper test coverage"
+      },
+      "rules": [
+        "When generating scenarios, check if any match existing scenarios in other feature files",
+        "If a scenario is a refactor of an existing scenario, update the existing feature file instead of creating a duplicate",
+        "When refactoring scenarios, update corresponding tests and regenerate coverage mappings",
+        "Create new feature files only for truly new scenarios that don't match existing ones",
+        "AI agent searches all feature files first, analyzes scenario titles and steps, takes hints from user's intent to determine if this is a refactor or genuinely new functionality",
+        "Old scenario should be updated (changed into the new scenario) because it already has associated test, implementation, and coverage mappings that should be preserved",
+        "System MUST automatically update tests and regenerate coverage when refactoring scenarios - this is enforced and non-negotiable",
+        "Detection happens during 'fspec generate-scenarios' command as primary workflow. Before generating scenarios, search existing features for matches, prompt user to confirm if refactor, then update existing feature OR create new. Also provide 'fspec audit-scenarios' as standalone command for finding duplicates across all features for maintenance/cleanup.",
+        "When generating scenarios, check if any match existing scenarios in other feature files",
+        "If a scenario is a refactor of an existing scenario, update the existing feature file instead of creating a duplicate",
+        "When refactoring scenarios, update corresponding tests and regenerate coverage mappings",
+        "Create new feature files only for truly new scenarios that don't match existing ones",
+        "AI agent searches all feature files first, analyzes scenario titles and steps, takes hints from user's intent to determine if this is a refactor or genuinely new functionality",
+        "Old scenario should be updated (changed into the new scenario) because it already has associated test, implementation, and coverage mappings that should be preserved",
+        "System MUST automatically update tests and regenerate coverage when refactoring scenarios - this is enforced and non-negotiable",
+        "Detection happens during 'fspec generate-scenarios' command as primary workflow. Before generating scenarios, search existing features for matches, prompt user to confirm if refactor, then update existing feature OR create new. Also provide 'fspec audit-scenarios' as standalone command for finding duplicates across all features for maintenance/cleanup."
+      ],
+      "questions": [
+        {
+          "text": "@human: How should we detect if a scenario is a 'refactor' vs a 'new' scenario? Should we use semantic similarity, exact title matching, or analyze the Given-When-Then steps?",
+          "selected": true,
+          "answer": "AI agent searches all feature files first, analyzes scenario titles and steps, takes hints from user's intent to determine if this is a refactor or genuinely new functionality"
+        },
+        {
+          "text": "@human: When we detect a refactored scenario, what should happen to the old scenario? Should it be marked as deprecated, deleted, or should we prompt the user to decide?",
+          "selected": true,
+          "answer": "Old scenario should be updated (changed into the new scenario) because it already has associated test, implementation, and coverage mappings that should be preserved"
+        },
+        {
+          "text": "@human: Should the system automatically update tests when refactoring scenarios, or should it flag them for manual review? What about cases where tests might break?",
+          "selected": true,
+          "answer": "System MUST automatically update tests and regenerate coverage when refactoring scenarios - this is enforced and non-negotiable"
+        },
+        {
+          "text": "@human: Should this detection happen during 'fspec generate-scenarios' command, or should it be a separate validation step that can be run independently?",
+          "selected": true,
+          "answer": "Detection happens during 'fspec generate-scenarios' command as primary workflow. Before generating scenarios, search existing features for matches, prompt user to confirm if refactor, then update existing feature OR create new. Also provide 'fspec audit-scenarios' as standalone command for finding duplicates across all features for maintenance/cleanup."
+        },
+        {
+          "text": "@human: You mentioned 'similar to how the last bug story we fixed did' - which bug story are you referring to? Can you provide the work unit ID so I can review that approach?",
+          "selected": true,
+          "answer": "BUG-008: generate-scenarios produces malformed Gherkin steps from example titles. This bug fix improved how generate-scenarios parses example titles and creates proper Gherkin scenarios. The pattern we should follow is similar - analyzing example text and intelligently transforming it into proper scenarios."
+        },
+        {
+          "text": "@human: How should we detect if a scenario is a 'refactor' vs a 'new' scenario? Should we use semantic similarity, exact title matching, or analyze the Given-When-Then steps?",
+          "selected": true,
+          "answer": "AI agent searches all feature files first, analyzes scenario titles and steps, takes hints from user's intent to determine if this is a refactor or genuinely new functionality"
+        },
+        {
+          "text": "@human: When we detect a refactored scenario, what should happen to the old scenario? Should it be marked as deprecated, deleted, or should we prompt the user to decide?",
+          "selected": true,
+          "answer": "Old scenario should be updated (changed into the new scenario) because it already has associated test, implementation, and coverage mappings that should be preserved"
+        },
+        {
+          "text": "@human: Should the system automatically update tests when refactoring scenarios, or should it flag them for manual review? What about cases where tests might break?",
+          "selected": true,
+          "answer": "System MUST automatically update tests and regenerate coverage when refactoring scenarios - this is enforced and non-negotiable"
+        },
+        {
+          "text": "@human: Should this detection happen during 'fspec generate-scenarios' command, or should it be a separate validation step that can be run independently?",
+          "selected": true,
+          "answer": "Detection happens during 'fspec generate-scenarios' command as primary workflow. Before generating scenarios, search existing features for matches, prompt user to confirm if refactor, then update existing feature OR create new. Also provide 'fspec audit-scenarios' as standalone command for finding duplicates across all features for maintenance/cleanup."
+        },
+        {
+          "text": "@human: You mentioned 'similar to how the last bug story we fixed did' - which bug story are you referring to? Can you provide the work unit ID so I can review that approach?",
+          "selected": true,
+          "answer": "BUG-022: Feature file naming for bug work units. AI searches existing feature files, extracts capability from bug context, and either updates existing feature file OR creates capability-oriented new file. This demonstrates the search-before-create pattern we need for scenario deduplication."
+        }
+      ],
+      "assumptions": [
+        "BUG-008: generate-scenarios produces malformed Gherkin steps from example titles. This bug fix improved how generate-scenarios parses example titles and creates proper Gherkin scenarios. The pattern we should follow is similar - analyzing example text and intelligently transforming it into proper scenarios.",
+        "CORRECTION: Reference work unit is BUG-022 (not BUG-008). BUG-022 'Feature file naming for bug work units' - AI searches existing feature files, extracts capability from bug context, and either updates existing feature file OR creates capability-oriented new file. This demonstrates the exact pattern we need: search before create, intelligently match scenarios, update existing features instead of duplicating.",
+        "BUG-022 demonstrates the pattern: AI searches existing feature files, determines if scenario matches existing capability, and updates existing feature files instead of creating duplicates."
+      ],
+      "examples": [
+        "User runs 'fspec generate-scenarios AUTH-005' where examples describe login validation. System finds existing scenario 'Validate user credentials' in user-authentication.feature. System prompts: 'Scenario appears to refactor existing scenario in user-authentication.feature. Update existing? (y/n)'. User confirms 'y'. System updates existing scenario, updates test file header comment, regenerates coverage.",
+        "User runs 'fspec generate-scenarios AUTH-006' where examples describe OAuth integration. System searches all feature files, finds no OAuth-related scenarios. System creates new feature file 'oauth-integration.feature' with new scenarios.",
+        "User runs 'fspec generate-scenarios BUG-009' with 3 examples. System detects: Example 1 matches existing scenario in feature-validation.feature (refactor), Example 2 matches scenario in tag-management.feature (refactor), Example 3 is new. System prompts for each match, updates 2 existing features with refactored scenarios, creates new feature file for Example 3 only.",
+        "User runs 'fspec audit-scenarios' after several months of development. System finds 5 duplicate scenarios across different feature files. System reports: 'Found 5 potential duplicates' with file names, scenario titles, and similarity scores. User can choose to merge duplicates interactively.",
+        "User runs 'fspec generate-scenarios AUTH-005' where examples describe login validation. System finds existing scenario 'Validate user credentials' in user-authentication.feature. System prompts: 'Scenario appears to refactor existing scenario in user-authentication.feature. Update existing? (y/n)'. User confirms 'y'. System updates existing scenario, updates test file header comment, regenerates coverage.",
+        "User runs 'fspec generate-scenarios AUTH-006' where examples describe OAuth integration. System searches all feature files, finds no OAuth-related scenarios. System creates new feature file 'oauth-integration.feature' with new scenarios.",
+        "User runs 'fspec generate-scenarios BUG-009' with 3 examples. System detects: Example 1 matches existing scenario in feature-validation.feature (refactor), Example 2 matches scenario in tag-management.feature (refactor), Example 3 is new. System prompts for each match, updates 2 existing features with refactored scenarios, creates new feature file for Example 3 only.",
+        "User runs 'fspec audit-scenarios' after several months of development. System finds 5 duplicate scenarios across different feature files. System reports: 'Found 5 potential duplicates' with file names, scenario titles, and similarity scores. User can choose to merge duplicates interactively."
+      ],
+      "architectureNotes": [],
+      "estimate": 8
+    },
+    "SPEC-003": {
+      "id": "SPEC-003",
+      "title": "Improve scenario similarity matching accuracy",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-20T21:44:50.450Z",
+      "updatedAt": "2025-10-20T22:24:22.484Z",
+      "description": "Replace simple Levenshtein distance with hybrid algorithm combining Jaro-Winkler, Token Set Ratio, Gherkin Structural analysis, Trigrams, and Jaccard similarity. Fix 7 critical bugs and improve accuracy from 60% to 88%.",
+      "epic": "example-driven-discovery",
+      "children": [],
+      "attachments": [
+        "spec/attachments/SPEC-003/SIMILARITY_ANALYSIS.md",
+        "spec/attachments/SPEC-003/ALGORITHM_ANALYSIS.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-20T21:48:29.525Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-20T22:02:09.310Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-20T22:17:20.053Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-20T22:22:54.783Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-20T22:24:22.484Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using fspec for scenario deduplication",
+        "action": "have accurate scenario similarity matching that handles edge cases and different phrasings",
+        "benefit": "I can confidently detect duplicate scenarios and refactoring opportunities without false positives or false negatives"
+      },
+      "rules": [
+        "Similarity scoring must handle empty strings without division by zero crashes",
+        "Gherkin keywords (Given/When/Then/And/But) must be stripped from steps before similarity comparison",
+        "Keyword extraction must include numbers and special characters (OAuth2, SHA256, Base64, etc.)",
+        "Division by zero must be prevented when comparing scenarios with empty keyword sets",
+        "Step reordering must not penalize similarity (Given A, Given B should match Given B, Given A)",
+        "Partial step matching must be supported (3/4 identical steps should score high)",
+        "Short scenario titles (< 20 chars) must use stricter thresholds to prevent false positives",
+        "Hybrid algorithm must combine at least 5 different similarity algorithms with weighted scoring",
+        "Overall accuracy must reach 88% (improvement from current 60%)",
+        "Algorithm must handle word reordering without penalty (Token Set Ratio approach)",
+        "Algorithm must handle typos and minor character variations (trigram similarity)",
+        "Algorithm must respect Gherkin structure (Given/When/Then sections analyzed separately)",
+        "Use 20 characters as threshold for short string detection (as recommended in attachments). Apply stricter threshold of 0.85 for short titles to prevent false positives.",
+        "Yes - weight 'Then' steps 1.5x higher than 'Given/When' in Gherkin Structural analysis. Outcomes (Then) are more critical for determining scenario equivalence than preconditions/actions."
+      ],
+      "examples": [
+        "BUG-1: Comparing two scenarios with empty titles should return 1.0 (both empty = identical) without division by zero crash",
+        "BUG-2: Steps 'Given user exists, When login, Then success' should have keywords stripped to 'user exists, login, success' before comparison",
+        "BUG-5: Technical terms like 'OAuth2', 'SHA256', 'Base64' must be extracted as keywords (regex must include numbers)",
+        "BUG-4: Comparing scenarios with no extractable keywords should return 0 similarity without division by zero crash",
+        "ISSUE-1: 'Given user exists, Given database connected, When login' should match 100% with 'Given database connected, Given user exists, When login' (reordered steps)",
+        "ISSUE-2: Scenario A with steps [X, Y, Z, W] should score 75% step similarity with Scenario B with steps [X, Y, Z, Q] (3/4 match)",
+        "ISSUE-3: 'User login' vs 'User logout' should NOT score 83.3% (false positive due to short strings)",
+        "Jaro-Winkler: 'User login validation' vs 'User login verification' should score ~0.92 (better than Levenshtein for prefix matching)",
+        "Token Set Ratio: 'Given user exists and database connected' vs 'Given database connected and user exists' should score 1.0 (word order independence)",
+        "Trigram: 'authenticate' vs 'authentcate' (typo) should score ~0.85 (typo tolerance)",
+        "Gherkin Structural: Compare Given/When/Then sections separately with Jaccard similarity, weight Then steps higher (outcomes matter more)",
+        "Hybrid: Weighted combination of 5 algorithms (Jaro-Winkler 30%, Token Set 25%, Gherkin Structural 20%, Trigram 15%, Jaccard 10%) achieves 88% accuracy"
+      ],
+      "questions": [
+        {
+          "text": "@human: Should algorithm weights (Jaro-Winkler 30%, Token Set 25%, etc.) be configurable via options, or hardcoded based on the analysis recommendations?",
+          "selected": true,
+          "answer": "Configurable via options/parameters - allows dynamic tuning if results aren't optimal"
+        },
+        {
+          "text": "@human: Should we implement Phase 1 only (80% accuracy, simpler) or both Phase 1 + Phase 2 (88% accuracy, more complex) in this work unit?",
+          "selected": true,
+          "answer": "Yes - implement both Phase 1 + Phase 2 for 88% accuracy target"
+        },
+        {
+          "text": "@human: Are we okay with zero external dependencies (Phase 1+2 recommendation), or should we consider Phase 3 with Sentence-BERT ML library for 92% accuracy?",
+          "selected": true,
+          "answer": "Investigate semantic-chunking (https://www.npmjs.com/package/semantic-chunking) and other npm packages for semantic similarity as potential enhancement"
+        },
+        {
+          "text": "@human: Should the similarity threshold (currently 0.7) be configurable per use case, or should we optimize it based on testing?",
+          "selected": true,
+          "answer": "No - threshold optimized based on testing, not user-configurable"
+        },
+        {
+          "text": "@human: For short string bias handling, what should be the character threshold (attachments propose < 20 chars)? Should this be configurable?",
+          "selected": true,
+          "answer": "Use 20 characters as threshold for short string detection (as recommended in attachments). Apply stricter threshold of 0.85 for short titles to prevent false positives."
+        },
+        {
+          "text": "@human: Should 'Then' steps (outcomes) be weighted higher than 'Given/When' steps in Gherkin Structural analysis, as proposed in the attachments?",
+          "selected": true,
+          "answer": "Yes - weight 'Then' steps 1.5x higher than 'Given/When' in Gherkin Structural analysis. Outcomes (Then) are more critical for determining scenario equivalence than preconditions/actions."
+        },
+        {
+          "text": "@human: Should we prioritize speed or accuracy if there's a trade-off? (e.g., caching, two-stage filtering for large codebases)",
+          "selected": true,
+          "answer": "Prioritize accuracy over speed for Phase 1+2. All algorithms (Jaro-Winkler, Token Set, Gherkin Structural, Trigram, Jaccard) are O(n*m) or better. For 100+ scenarios, implement two-stage filtering: (1) fast keyword filtering, (2) full similarity on candidates."
+        },
+        {
+          "text": "@human: Should we keep the old Levenshtein algorithm available via a flag for backward compatibility and comparison testing?",
+          "selected": true,
+          "answer": "Yes - keep old Levenshtein algorithm behind a flag for backward compatibility and A/B testing. Allows users to compare old vs new algorithm results during transition period."
+        }
+      ],
+      "architectureNotes": [
+        "Current Implementation: src/utils/scenario-similarity.ts uses Levenshtein distance (character-level edit distance) with 70/30 weighted scoring (title vs steps). Has 7 critical bugs and achieves only 60% accuracy.",
+        "Proposed Hybrid Algorithm: Combine 5 algorithms with weighted scoring - Jaro-Winkler (30% - title matching), Token Set Ratio (25% - word reordering), Gherkin Structural (20% - Given/When/Then awareness), Trigram Similarity (15% - fuzzy matching), Jaccard Similarity (10% - keyword overlap). Expected 88% accuracy.",
+        "Bug Fixes Required: (1) Division by zero for empty strings/keywords, (2) Strip Gherkin keywords before comparison, (3) Include numbers in keyword regex for technical terms, (4) Fix keyword extraction for match objects, (5) Remove redundant lowercasing, (6) Handle step reordering, (7) Support partial step matching.",
+        "Performance: All Phase 1+2 algorithms have no external dependencies and run in O(n*m) time or better. For large codebases (100+ scenarios), consider two-stage matching: (1) Fast keyword filtering, (2) Full similarity only on candidates.",
+        "Test Coverage: Must cover empty strings, empty steps, empty keywords, special characters, numbers in terms (OAuth2/SHA256), short titles, reordered steps, partial matches, typos, and performance with 100+ scenarios. See src/commands/__tests__/scenario-deduplication.test.ts",
+        "References: (1) spec/attachments/SPEC-003/SIMILARITY_ANALYSIS.md - Bug analysis and test gaps, (2) spec/attachments/SPEC-003/ALGORITHM_ANALYSIS.md - Algorithm comparison and implementation guide, (3) Jaro-Winkler, Token Set Ratio, Trigram algorithms ~200 lines total with no dependencies"
+      ],
+      "assumptions": [
+        "Configurable via options/parameters - allows dynamic tuning if results aren't optimal",
+        "Yes - implement both Phase 1 + Phase 2 for 88% accuracy target",
+        "Investigate semantic-chunking (https://www.npmjs.com/package/semantic-chunking) and other npm packages for semantic similarity as potential enhancement",
+        "No - threshold optimized based on testing, not user-configurable",
+        "semantic-chunking provides semantic embeddings via ONNX models (all-MiniLM-L6-v2 at 23MB) and cosine similarity. Can be added as optional Phase 3 enhancement for semantic matching when higher accuracy needed beyond 88% target.",
+        "Prioritize accuracy over speed for Phase 1+2. All algorithms (Jaro-Winkler, Token Set, Gherkin Structural, Trigram, Jaccard) are O(n*m) or better. For 100+ scenarios, implement two-stage filtering: (1) fast keyword filtering, (2) full similarity on candidates.",
+        "Yes - keep old Levenshtein algorithm behind a flag for backward compatibility and A/B testing. Allows users to compare old vs new algorithm results during transition period."
+      ],
+      "estimate": 8
     }
   },
   "states": {
@@ -8393,7 +8649,9 @@
       "DOCS-002",
       "BUG-021",
       "BUG-020",
-      "BUG-022"
+      "BUG-022",
+      "SPEC-002",
+      "SPEC-003"
     ],
     "blocked": []
   }
