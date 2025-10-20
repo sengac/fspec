@@ -1,0 +1,212 @@
+{
+  "scenarios": [
+    {
+      "name": "Bug scenario added to existing matching feature file",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/generate-scenarios-bug-naming.test.ts",
+          "lines": "59-120",
+          "implMappings": [
+            {
+              "file": "src/commands/example-mapping.ts",
+              "lines": [
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "New capability-oriented feature file created when no match found",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/generate-scenarios-bug-naming.test.ts",
+          "lines": "122-181",
+          "implMappings": [
+            {
+              "file": "src/commands/example-mapping.ts",
+              "lines": [
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Edge case scenario added to existing validation feature",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/generate-scenarios-bug-naming.test.ts",
+          "lines": "183-241",
+          "implMappings": [
+            {
+              "file": "src/commands/example-mapping.ts",
+              "lines": [
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Regression scenario added to existing formatting feature",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/generate-scenarios-bug-naming.test.ts",
+          "lines": "243-300",
+          "implMappings": [
+            {
+              "file": "src/commands/example-mapping.ts",
+              "lines": [
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/commands/__tests__/generate-scenarios-bug-naming.test.ts"
+    ],
+    "implFiles": [
+      "src/commands/example-mapping.ts"
+    ],
+    "totalLinesCovered": 371
+  }
+}

@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-20T20:37:55.535Z"
+    "lastUpdated": "2025-10-20T20:52:00.614Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -8155,6 +8155,81 @@
         }
       ],
       "estimate": 2
+    },
+    "BUG-022": {
+      "id": "BUG-022",
+      "title": "Feature file naming for bug work units",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-10-20T20:47:04.871Z",
+      "updatedAt": "2025-10-20T20:59:44.477Z",
+      "description": "When creating a bug work unit and generating scenarios, fspec creates feature files named after the bug description (task-oriented) instead of the capability being tested (capability-oriented). It should also check if an existing feature file covers the capability and either update that file or create a properly-named new file.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-20T20:47:35.812Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-20T20:53:30.604Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-20T20:55:16.828Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-20T20:58:32.397Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-20T20:59:44.477Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using fspec to fix bugs",
+        "action": "create feature files with capability-oriented names",
+        "benefit": "bug tests document capabilities, not problems"
+      },
+      "questions": [
+        {
+          "text": "@human: When generating feature files from bug work units, what rules should determine the capability name? Should we extract it from the bug description or ask the developer?",
+          "selected": true,
+          "answer": "AI should extract capability from bug context and search for existing feature files before creating new ones"
+        },
+        {
+          "text": "@human: Should the system check for existing feature files covering the same capability before creating a new file? How should it determine if a match exists?",
+          "selected": true,
+          "answer": "AI agent should determine if an existing feature file is suitable for the bug scenario"
+        },
+        {
+          "text": "@human: If an existing feature file is found that covers the capability, should we add a bug-fix scenario to that file or create a separate file?",
+          "selected": true,
+          "answer": "Add or update bug scenario in existing feature file (and update associated tests)"
+        }
+      ],
+      "rules": [
+        "AI should extract capability from bug context and search for existing feature files before creating new ones",
+        "AI agent should determine if an existing feature file is suitable for the bug scenario",
+        "Add or update bug scenario in existing feature file (and update associated tests)",
+        "Feature file names must be capability-oriented (what the system CAN DO), not task-oriented (the bug description)",
+        "AI should analyze existing feature descriptions, scenarios, and tags to determine capability match",
+        "If no suitable existing feature file exists, create new file with capability-oriented name derived from bug context"
+      ],
+      "examples": [
+        "Bug: 'fspec help displays hardcoded version 0.0.1' → AI searches features, finds 'help-command.feature' → Adds bug-fix scenario to existing file",
+        "Bug: 'fspec help displays hardcoded version 0.0.1' → AI searches features, no match found → Creates 'cli-version-display.feature' (capability-oriented name)",
+        "Bug: 'validate command crashes on empty file' → AI finds 'gherkin-validation.feature' → Adds edge-case scenario to existing file",
+        "Bug: 'format removes valid doc strings' → AI finds 'gherkin-formatting.feature' → Updates existing scenario or adds new regression scenario"
+      ],
+      "architectureNotes": [
+        "Fix should be in src/commands/generate-scenarios.ts - the command responsible for creating feature files from work units",
+        "Need to add capability extraction logic - analyze bug description to identify underlying capability being tested",
+        "Need to add existing feature search - use fspec list-features or directly scan spec/features/ directory with feature file parsing",
+        "When adding to existing file, use fspec add-scenario command to properly insert scenario with correct formatting and tags"
+      ],
+      "estimate": 5
     }
   },
   "states": {
@@ -8317,7 +8392,8 @@
       "UX-001",
       "DOCS-002",
       "BUG-021",
-      "BUG-020"
+      "BUG-020",
+      "BUG-022"
     ],
     "blocked": []
   }
