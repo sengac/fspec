@@ -1,0 +1,111 @@
+{
+  "scenarios": [
+    {
+      "name": "Display current version from package.json",
+      "testMappings": [
+        {
+          "file": "src/__tests__/version-display.test.ts",
+          "lines": "28-44",
+          "implMappings": [
+            {
+              "file": "src/help.ts",
+              "lines": [
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12
+              ]
+            },
+            {
+              "file": "src/utils/help-interceptor.ts",
+              "lines": [
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Display updated version after package.json change",
+      "testMappings": [
+        {
+          "file": "src/__tests__/version-display.test.ts",
+          "lines": "46-62",
+          "implMappings": [
+            {
+              "file": "src/help.ts",
+              "lines": [
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Omit version line when version cannot be read",
+      "testMappings": [
+        {
+          "file": "src/__tests__/version-display.test.ts",
+          "lines": "64-80",
+          "implMappings": [
+            {
+              "file": "src/help.ts",
+              "lines": [
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/__tests__/version-display.test.ts"
+    ],
+    "implFiles": [
+      "src/help.ts",
+      "src/utils/help-interceptor.ts"
+    ],
+    "totalLinesCovered": 92
+  }
+}

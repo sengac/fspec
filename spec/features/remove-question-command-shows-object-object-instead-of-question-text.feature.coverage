@@ -1,0 +1,50 @@
+{
+  "scenarios": [
+    {
+      "name": "Remove question displays actual question text",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/remove-question-display-bug.test.ts",
+          "lines": "40-76",
+          "implMappings": [
+            {
+              "file": "src/commands/remove-question.ts",
+              "lines": [
+                66
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Remove question with special characters displays correctly",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/remove-question-display-bug.test.ts",
+          "lines": "78-118",
+          "implMappings": [
+            {
+              "file": "src/commands/remove-question.ts",
+              "lines": [
+                66
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/commands/__tests__/remove-question-display-bug.test.ts"
+    ],
+    "implFiles": [
+      "src/commands/remove-question.ts"
+    ],
+    "totalLinesCovered": 80
+  }
+}

@@ -1,13 +1,15 @@
 import chalk from 'chalk';
 
 // Help functions (preserved from original)
-export function displayCustomHelpWithNote(): void {
+export function displayCustomHelpWithNote(version?: string): void {
   console.log(
     chalk.bold(
       '\nfspec - Feature Specification & Project Management for AI Agents'
     )
   );
-  console.log(chalk.dim('Version 0.0.1\n'));
+  if (version) {
+    console.log(chalk.dim(`Version ${version}\n`));
+  }
 
   console.log(chalk.bold('USAGE'));
   console.log('  fspec [command] [options]\n');
@@ -1242,9 +1244,9 @@ function displaySetupHelp(): void {
 }
 
 // Custom help command handler
-export function handleHelpCommand(group?: string): void {
+export function handleHelpCommand(group?: string, version?: string): void {
   if (!group) {
-    displayCustomHelpWithNote();
+    displayCustomHelpWithNote(version);
     return;
   }
 
