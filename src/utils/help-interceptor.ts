@@ -1,6 +1,9 @@
 import { displayCustomHelpWithNote } from '../help';
 import { helpConfigs } from '../commands/help-registry';
 import { displayHelpAndExit } from './help-formatter';
+import { readFileSync } from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 
 /**
  * Process-level help interceptor
@@ -9,6 +12,22 @@ import { displayHelpAndExit } from './help-formatter';
  * Uses pre-loaded help configs from help-registry (eagerly imported via import.meta.glob).
  * Falls back to Commander.js default help if no custom help exists.
  */
+
+// Read version from package.json
+function getVersion(): string | undefined {
+  try {
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = dirname(__filename);
+    const packageJsonPath = join(__dirname, '..', 'package.json');
+    const packageJson = JSON.parse(
+      readFileSync(packageJsonPath, 'utf-8')
+    );
+    return packageJson.version;
+  } catch (error) {
+    // Silently fail if package.json cannot be read
+    return undefined;
+  }
+}
 
 /**
  * Handle custom help if --help flag is present OR no arguments provided
@@ -29,7 +48,8 @@ export async function handleCustomHelp(): Promise<boolean> {
 
   if (!commandName) {
     // "fspec --help" or bare "fspec" without command -> show custom main help
-    displayCustomHelpWithNote();
+    const version = getVersion();
+    displayCustomHelpWithNote(version);
     return true; // Help was displayed, prevent Commander from showing help again
   }
 

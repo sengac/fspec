@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-19T21:40:53.643Z"
+    "lastUpdated": "2025-10-20T20:37:55.535Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -7828,11 +7828,47 @@
       "id": "BUG-020",
       "title": "remove-question command shows '[object Object]' instead of question text",
       "type": "bug",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2025-10-19T12:58:26.949Z",
-      "updatedAt": "2025-10-19T12:58:26.949Z",
+      "updatedAt": "2025-10-20T20:43:10.871Z",
       "description": "When running 'fspec remove-question <id> <index>', the success message displays 'Removed question: [object Object]' instead of showing the actual question text that was removed",
-      "children": []
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-20T20:37:44.322Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-20T20:39:47.790Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-20T20:41:22.510Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-20T20:42:02.948Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-20T20:43:10.871Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using fspec",
+        "action": "see the actual question text when removing a question",
+        "benefit": "I can confirm I'm removing the correct question"
+      },
+      "rules": [
+        "Success message must display the actual question text, not '[object Object]'",
+        "Message format should be 'Removed question: <question text>'"
+      ],
+      "examples": [
+        "Remove question 'Should we support OAuth?' displays 'Removed question: Should we support OAuth?'",
+        "Remove question with special characters '@human: What happens?' displays correctly"
+      ],
+      "estimate": 1
     },
     "REV-001": {
       "id": "REV-001",
@@ -8058,6 +8094,67 @@
         "Create src/commands/reverse-help.ts with sections: name, description, usage, whenToUse, options (--continue, --strategy, --status, --reset, --complete, --dry-run), examples, commonErrors, typicalWorkflow",
         "Add to foundation.json capabilities: {name: 'Interactive Reverse ACDD Strategy Planning', description: 'Analyzes project gaps and guides AI through reverse ACDD workflow with step-by-step system-reminders'}"
       ]
+    },
+    "BUG-021": {
+      "id": "BUG-021",
+      "title": "fspec --help displays hardcoded version 0.0.1 instead of package.json version",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-20T20:24:28.844Z",
+      "updatedAt": "2025-10-20T20:35:39.022Z",
+      "description": "The --help command shows 'Version 0.0.1' which appears to be hardcoded. It should dynamically read the version from package.json to stay in sync with releases.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-20T20:24:55.239Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-20T20:29:02.950Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-20T20:30:35.528Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-20T20:34:32.979Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-20T20:35:39.023Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using fspec",
+        "action": "run fspec --help to check version",
+        "benefit": "I see the current version from package.json, not a hardcoded value"
+      },
+      "rules": [
+        "Version displayed in --help must match package.json version exactly",
+        "Version should update automatically when package.json changes (no manual hardcoding)",
+        "Build time - version embedded in dist bundle during build (typical for CLI tools)",
+        "Don't display version string if unavailable"
+      ],
+      "examples": [
+        "When package.json has version 0.2.1, running 'fspec --help' displays 'Version 0.2.1'",
+        "After bumping package.json to version 0.3.0 and rebuilding, 'fspec --help' displays 'Version 0.3.0'",
+        "Currently shows 'Version 0.0.1' regardless of package.json value (bug to fix)"
+      ],
+      "questions": [
+        {
+          "text": "@human: Should version be read at build time (embedded in dist bundle) or runtime (reading package.json when --help runs)? Build-time is typical for CLI tools.",
+          "selected": true,
+          "answer": "Build time - version embedded in dist bundle during build (typical for CLI tools)"
+        },
+        {
+          "text": "@human: If we can't read the version (edge case), should we show 'unknown' or fallback to a default value?",
+          "selected": true,
+          "answer": "Don't display version string if unavailable"
+        }
+      ],
+      "estimate": 2
     }
   },
   "states": {
@@ -8066,8 +8163,7 @@
       "MCP-002",
       "MCP-003",
       "MCP-004",
-      "MCP-005",
-      "BUG-020"
+      "MCP-005"
     ],
     "specifying": [],
     "testing": [],
@@ -8219,7 +8315,9 @@
       "FEAT-016",
       "REV-001",
       "UX-001",
-      "DOCS-002"
+      "DOCS-002",
+      "BUG-021",
+      "BUG-020"
     ],
     "blocked": []
   }

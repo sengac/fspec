@@ -136,10 +136,15 @@ import { handleCustomHelp } from './utils/help-interceptor';
 const program = new Command();
 
 // Program configuration
+program.name('fspec');
+program.description('Feature Specification & Project Management for AI Agents');
+
+// Only set version if available
+if (version) {
+  program.version(version);
+}
+
 program
-  .name('fspec')
-  .description('Feature Specification & Project Management for AI Agents')
-  .version(version)
   .configureHelp({
     helpWidth: 100,
   })
@@ -151,7 +156,7 @@ program
   .command('help')
   .description('Display help for command groups')
   .argument('[group]', 'Help topic: spec, tags, foundation, query, project')
-  .action(handleHelpCommand);
+  .action((group?: string) => handleHelpCommand(group, version));
 
 // Register all commands
 registerAddArchitectureCommand(program);

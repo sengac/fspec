@@ -63,7 +63,7 @@ export async function removeQuestion(
 
   return {
     success: true,
-    removedQuestion,
+    removedQuestion: removedQuestion.text,
     remainingCount: workUnit.questions.length,
   };
 }
