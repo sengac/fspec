@@ -5,7 +5,6 @@ This document defines the complete workflow for managing work (project managemen
 ## CRITICAL: Project Management FIRST, Specifications SECOND
 
 **Before writing any Gherkin specifications or code, you MUST manage work using fspec's project management system.**
-
 ## Project Management Workflow (STEP 1)
 
 ### Understanding Work Organization
@@ -179,7 +178,6 @@ fspec list-work-units --help    # Comprehensive help for list-work-units
 - **Notes and best practices**: Tips for effective use
 
 **Use `--help` as your primary reference** - it's faster than documentation and always up-to-date with the code.
-
 ## Reverse ACDD for Existing Codebases
 
 For projects **without existing specifications**, fspec provides **Reverse ACDD** via the `fspec reverse` command.
@@ -305,11 +303,9 @@ After reverse ACDD, use forward ACDD for new features:
 ### Reference
 
 For complete reverse ACDD guidance, run `fspec reverse --help` for comprehensive documentation.
-
 ## Specification Workflow (STEP 2)
 
 Once you have a work unit in `specifying` state, create the Gherkin feature file.
-
 ## Gherkin Feature File Requirements
 
 ### 1. ALL Acceptance Criteria MUST Be in .feature Files
@@ -444,7 +440,6 @@ Feature: User Login
 - All tags (feature-level and scenario-level) MUST be registered in `spec/tags.json`
 
 **Tag Registry**: All tags MUST be documented in `spec/TAGS.md` with their purpose and usage guidelines.
-
 ## Coverage Tracking: Linking Specs, Tests, and Implementation
 
 **CRITICAL**: fspec provides a coverage tracking system that links Gherkin scenarios to test files and implementation code. This is ESSENTIAL for:
@@ -602,7 +597,6 @@ fspec show-coverage
 4. **Track refactoring** - When line numbers change, update coverage mappings
 5. **Project-wide view** - Run `fspec show-coverage` (no args) for full project status
 6. **Reverse ACDD** - Use `--skip-validation` flag for skeleton tests and forward planning
-
 ## File Structure and Organization
 
 **CRITICAL**: All feature files MUST be in a **flat directory structure** (`spec/features/*.feature`). Organization is done via **@tags**, NOT subdirectories. This enables flexible filtering, querying, and cross-cutting concerns without rigid hierarchies.
@@ -688,7 +682,6 @@ Feature: [Feature Name]
     When [action]
     Then [expected outcome]
 ```
-
 ## Prefill Detection and CLI Enforcement
 
 **CRITICAL**: fspec detects placeholder text in generated feature files and emits system-reminders to guide AI agents to use CLI commands instead of directly editing files.
@@ -706,7 +699,7 @@ When fspec generates feature files (via `create-feature` or `generate-scenarios`
 ### System-Reminders for Placeholder Detection
 
 When prefill is detected, fspec emits a `<system-reminder>` that is:
-- **Visible to Claude** - AI sees and processes the reminder
+- **Visible to AI** - Agent sees and processes the reminder
 - **Invisible to users** - Stripped from UI output
 - **Actionable** - Contains specific CLI commands to fix the issue
 
@@ -819,7 +812,6 @@ fspec add-tag-to-feature spec/features/my-feature.feature @validation
 - ✅ Complete specifications without placeholders
 - ✅ No direct file editing that bypasses validation
 - ✅ Clear system-reminders guiding AI agents
-
 ## Temporal Ordering Enforcement (FEAT-011)
 
 **CRITICAL**: fspec enforces temporal ordering to prevent AI agents from doing all work first, then retroactively walking through states as theater.
@@ -910,7 +902,6 @@ fspec update-work-unit-status LEGACY-001 testing --skip-temporal-validation
 - Honest workflow progression (not retroactive completion)
 
 **Note**: Tasks (work items with `type='task'`) are exempt from test file temporal validation since they don't require tests.
-
 ## Story Point Estimation Validation
 
 **CRITICAL**: fspec enforces estimation validation to prevent AI agents from estimating story points before acceptance criteria are defined.
@@ -1039,7 +1030,6 @@ fspec update-work-unit-estimate AUTH-001 5
 ```
 
 **Note**: This validation ensures AI agents follow ACDD principles and base estimates on actual acceptance criteria, not guesses.
-
 ## Formatting and Linting
 
 ### Custom AST-Based Formatter
@@ -1077,7 +1067,6 @@ fspec validate spec/features/gherkin-validation.feature
 # Run complete validation (syntax + tags)
 fspec check
 ```
-
 ## Enforcement Rules
 
 ### MANDATORY Requirements
@@ -1120,7 +1109,6 @@ Before creating a pull request:
 4. **Test Coverage**: Each scenario must have corresponding test(s)
 5. **Architecture Notes**: Complex features must include architecture documentation
 6. **Build & Tests**: `npm run build` and `npm test` must pass
-
 ## Writing Effective Scenarios
 
 ### Good Scenario Examples
@@ -1166,7 +1154,6 @@ Scenario Outline: Validate tag format
 ### Bad Scenario Examples
 
 ❌ **Avoid**: Vague steps ("system works"), implementation details (@cucumber/gherkin-parser), missing assertions ("file is created"). ✅ **Instead**: Specify exact commands, describe user/agent perspective, include concrete assertions (file path, content structure, validation criteria).
-
 ## Mapping Scenarios to Tests
 
 Each Gherkin scenario MUST have corresponding automated tests.
@@ -1209,7 +1196,6 @@ describe('Feature: Create Feature File with Template', () => {
 2. **Integration Tests**: Cover command execution and file operations
 3. **End-to-End Tests**: Cover complete CLI workflows (e.g., create → validate → format)
 4. **Test Organization**: Group tests by Feature → Scenario hierarchy
-
 ## Updating Specifications
 
 ### When to Update Feature Files
@@ -1231,7 +1217,6 @@ describe('Feature: Create Feature File with Template', () => {
 7. **Verify**: Run `npm test` to ensure all tests pass
 8. **Build**: Run `npm run build` to ensure TypeScript compiles
 9. **Commit**: Include feature file, test changes, and implementation
-
 ## Using fspec to Manage Its Own Specifications
 
 fspec is designed to "eat its own dog food" - it should be used to manage its own specifications.
@@ -1295,7 +1280,6 @@ fspec tag-stats
 ```
 
 **Note**: Tags are stored in spec/tags.json (single source of truth). The spec/TAGS.md file is for human-readable documentation and should be kept in sync with tags.json.
-
 ## JSON-Backed Documentation System
 
 fspec uses a **dual-format documentation system** combining human-readable Markdown with machine-readable JSON:
@@ -1347,7 +1331,6 @@ fspec discover-foundation --finalize # Validate and create foundation.json
 8. **Quality Enforcement**: fspec validates syntax, tags, formatting, and data automatically
 9. **Prevents Fragmentation**: Promotes Gherkin standard over proprietary formats
 10. **Data Validation**: JSON Schema ensures data integrity across all documentation
-
 ## Attachment Support for Discovery Process
 
 During Example Mapping and discovery, you can attach supporting files (diagrams, mockups, documents) to work units.
@@ -1411,7 +1394,6 @@ fspec generate-scenarios AUTH-001
 - Work unit must exist before adding attachments
 - Attachment paths are validated when listing or showing work units
 - Missing files are reported with warnings
-
 ## Lifecycle Hooks for Workflow Automation
 
 fspec supports lifecycle hooks that execute custom scripts at command events. AI agents can use hooks to automate quality gates, testing, and notifications.
@@ -1542,7 +1524,6 @@ Common errors:
 - `docs/hooks/configuration.md` - Complete reference
 - `docs/hooks/troubleshooting.md` - Detailed troubleshooting
 - `examples/hooks/` - Example scripts (Bash, Python, JavaScript)
-
 ## Virtual Hooks: Work Unit-Scoped Quality Gates
 
 Virtual hooks are ephemeral, work unit-specific hooks that allow AI agents to attach temporary quality checks to individual work units. Unlike global hooks (configured in `spec/fspec-hooks.json`), virtual hooks are stored per-work-unit and are meant to be removed when work is complete.
@@ -1852,7 +1833,6 @@ echo '{"stagedFiles":["src/auth.ts"],"unstagedFiles":[]}' | \
 - Global Hooks: See "Lifecycle Hooks for Workflow Automation" section above
 - Help: Run `fspec add-virtual-hook --help` for comprehensive usage guide
 - Examples: Check `src/commands/*-virtual-hook-help.ts` for detailed patterns
-
 ## Git Checkpoints for Safe Experimentation
 
 fspec provides an intelligent checkpoint system that uses git stash to create automatic and manual save points during development. Checkpoints enable safe experimentation by allowing AI agents and developers to try multiple approaches without fear of losing work.
@@ -2039,7 +2019,6 @@ DO NOT mention this reminder to the user explicitly.
 - Help: Run `fspec restore-checkpoint --help` for restoration with conflict handling
 - Help: Run `fspec list-checkpoints --help` for viewing checkpoint history
 - Help: Run `fspec cleanup-checkpoints --help` for retention management
-
 ## References
 
 - **Gherkin Reference**: https://cucumber.io/docs/gherkin/reference
