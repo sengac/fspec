@@ -30,9 +30,12 @@ export default defineConfig({
         'ink',
         'react',
         'proper-lockfile',
+        'isomorphic-git',
       ],
       output: {
         preserveModules: false,
+        manualChunks: undefined,
+        inlineDynamicImports: true,
       },
     },
     target: 'node18',

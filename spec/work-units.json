@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-21T02:38:30.011Z"
+    "lastUpdated": "2025-10-21T03:21:21.107Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -8827,14 +8827,97 @@
       "id": "GIT-002",
       "title": "Intelligent checkpoint system for workflow transitions",
       "type": "story",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2025-10-21T01:48:11.753Z",
-      "updatedAt": "2025-10-21T01:48:18.070Z",
+      "updatedAt": "2025-10-21T03:59:02.614Z",
       "description": "Implement automatic git stash/restore checkpointing when work units move through Kanban states, capturing all file changes (including fspec-modified files) for rollback capability",
       "children": [],
       "dependsOn": [
         "GIT-001"
-      ]
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-21T03:07:42.421Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-21T03:27:39.806Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-21T03:30:42.709Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-21T03:57:36.338Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-21T03:59:02.614Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using fspec",
+        "action": "automatically save my work at each workflow transition",
+        "benefit": "I can safely experiment without losing progress and recover from mistakes"
+      },
+      "rules": [
+        "Checkpoints are automatically created when work unit status changes (before leaving current state)",
+        "Users can create named checkpoints manually at any time for experiments",
+        "Checkpoints capture all file changes including untracked files (respecting .gitignore)",
+        "Automatic checkpoints use pattern '{work-unit-id}-auto-{state}', manual use user-provided names",
+        "Checkpoints persist until explicitly deleted (no automatic expiration)",
+        "Checkpoints stored as git stashes with special message format for filtering",
+        "When restoration causes conflicts, AI receives system-reminder to resolve using Read/Edit tools",
+        "All tests must run and pass after checkpoint restoration with conflicts",
+        "Show all checkpoints by default with clear visual indicators (emoji like 🤖 for auto, 📌 for manual) so users feel confident in the safety net",
+        "Use 'fspec checkpoint' (short form) for AI efficiency - less verbose, faster to type in conversations",
+        "Ask user interactively when dirty working directory detected - present options (commit first, stash and restore, force restore with merge) and explain risks of each approach"
+      ],
+      "examples": [
+        "User runs 'fspec update-work-unit-status GIT-002 implementing', system creates checkpoint 'GIT-002-auto-testing' before transition",
+        "User runs 'fspec create-checkpoint GIT-002 before-refactor', system creates named checkpoint for experimentation",
+        "User creates checkpoint 'baseline', tries approach A (fails), restores 'baseline', tries approach B (succeeds)",
+        "User restores checkpoint causing conflicts, AI receives system-reminder, reads conflicted files, resolves with Edit tool, tests run automatically, restoration completes when tests pass",
+        "User runs 'fspec list-checkpoints GIT-002', sees both automatic and manual checkpoints with timestamps",
+        "User runs 'fspec cleanup-checkpoints GIT-002 --keep-last 5', system deletes old checkpoints keeping 5 most recent"
+      ],
+      "architectureNotes": [
+        "Git stash message format: fspec-checkpoint:{work-unit-id}:{checkpoint-name}:{timestamp}",
+        "Use 'git stash push -u -m message' to include untracked files respecting .gitignore",
+        "Use 'git stash apply stash@{N}' for restoration (preserves stash for re-restoration)",
+        "Conflict detection: parse git output for CONFLICT markers and identify affected files",
+        "AI conflict resolution: emit system-reminder with conflicted files, AI uses Read/Edit to resolve",
+        "Test validation: automatically run 'npm test' after conflict resolution, block completion if tests fail",
+        "Leverage existing isomorphic-git integration for git operations"
+      ],
+      "questions": [
+        {
+          "text": "@human: Should automatic checkpoints be hidden by default in 'fspec list-checkpoints GIT-002' (require --show-auto flag to display)?",
+          "selected": true,
+          "answer": "Show all checkpoints by default with clear visual indicators (emoji like 🤖 for auto, 📌 for manual) so users feel confident in the safety net"
+        },
+        {
+          "text": "@human: Command naming preference: 'fspec checkpoint GIT-002 name' (short) or 'fspec create-checkpoint GIT-002 name' (explicit)?",
+          "selected": true,
+          "answer": "Use 'fspec checkpoint' (short form) for AI efficiency - less verbose, faster to type in conversations"
+        },
+        {
+          "text": "@human: Should restoration fail if working directory is dirty (uncommitted changes) even without conflicts?",
+          "selected": true,
+          "answer": "Ask user interactively when dirty working directory detected - present options (commit first, stash and restore, force restore with merge) and explain risks of each approach"
+        },
+        {
+          "text": "@human: Should test command be configurable (package.json 'test' script vs hardcoded 'npm test')?",
+          "selected": true,
+          "answer": "fspec does NOT run tests - it emits system-reminder to AI agent that tests must be run. AI chooses test command (npm test, vitest, etc). This is about the system-reminder message content only."
+        }
+      ],
+      "assumptions": [
+        "fspec does NOT run tests - it emits system-reminder to AI agent that tests must be run. AI chooses test command (npm test, vitest, etc). This is about the system-reminder message content only."
+      ],
+      "estimate": 8
     },
     "GIT-003": {
       "id": "GIT-003",
@@ -8900,8 +8983,7 @@
       "MCP-002",
       "MCP-003",
       "MCP-004",
-      "MCP-005",
-      "GIT-002"
+      "MCP-005"
     ],
     "specifying": [],
     "testing": [],
@@ -9063,7 +9145,8 @@
       "BUG-023",
       "HELP-003",
       "GIT-001",
-      "GIT-003"
+      "GIT-003",
+      "GIT-002"
     ],
     "blocked": []
   }

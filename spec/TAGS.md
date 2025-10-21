@@ -66,6 +66,7 @@ Tags that categorize features by functional area.
 | `@by-prefix` | Querying or filtering work units by prefix (e.g., AUTH-, DASH-) |  |
 | `@calculation` | Calculation operations |  |
 | `@cascade` | Cascade operations |  |
+| `@checkpoint` | Checkpoint and snapshot management for experimentation and recovery |  |
 | `@comparison` | Comparison operations |  |
 | `@completion` | Completion operations |  |
 | `@compound` | Compound query operations |  |
@@ -520,7 +521,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-10-21T02:40:42.020Z_
+_Last updated: 2025-10-21T03:27:09.179Z_
 
 **Update Command**: `fspec tag-stats`
 

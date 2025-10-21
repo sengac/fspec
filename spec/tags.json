@@ -181,6 +181,10 @@
           "description": "Cascade operations"
         },
         {
+          "name": "@checkpoint",
+          "description": "Checkpoint and snapshot management for experimentation and recovery"
+        },
+        {
           "name": "@comparison",
           "description": "Comparison operations"
         },
@@ -1143,7 +1147,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-10-21T02:40:42.020Z",
+    "lastUpdated": "2025-10-21T03:27:09.179Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

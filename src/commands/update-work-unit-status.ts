@@ -60,6 +60,11 @@ interface UpdateWorkUnitStatusResult {
   message?: string;
   warnings?: string[];
   systemReminder?: string;
+  checkpointCreated?: boolean;
+  checkpointName?: string;
+  newStatus?: string;
+  stashRef?: string;
+  capturedFiles?: string[];
 }
 
 export async function updateWorkUnitStatus(
@@ -363,6 +368,47 @@ export async function updateWorkUnitStatus(
     }
   }
 
+  // Create automatic checkpoint before state transition (GIT-002)
+  // Use lazy import to avoid loading git dependencies for all commands
+  let checkpointCreated = false;
+  let checkpointName = '';
+
+  try {
+    // Lazy load checkpoint utilities only when needed
+    const gitCheckpoint = await import('../utils/git-checkpoint.js');
+    const isDirty = await gitCheckpoint.isWorkingDirectoryDirty(cwd);
+
+    if (isDirty && currentStatus !== 'backlog') {
+      checkpointName = gitCheckpoint.createAutomaticCheckpointName(
+        options.workUnitId,
+        currentStatus
+      );
+      await gitCheckpoint.createCheckpoint({
+        workUnitId: options.workUnitId,
+        checkpointName,
+        cwd,
+        includeUntracked: true,
+      });
+      checkpointCreated = true;
+      console.log(
+        chalk.gray(
+          `🤖 Auto-checkpoint: "${checkpointName}" created before transition`
+        )
+      );
+    }
+  } catch (error: unknown) {
+    // Silently skip checkpoint creation if git operations fail
+    // This allows commands to work even without git repository
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    if (process.env.DEBUG) {
+      console.warn(
+        chalk.yellow(
+          `⚠️  Checkpoint skipped: ${errorMessage}`
+        )
+      );
+    }
+  }
+
   // Remove from current state array
   if (workUnitsData.states[currentStatus]) {
     workUnitsData.states[currentStatus] = workUnitsData.states[
@@ -444,6 +490,10 @@ export async function updateWorkUnitStatus(
     message: `✓ Work unit ${options.workUnitId} status updated to ${newStatus}`,
     ...(warnings.length > 0 && { warnings }),
     ...(systemReminder && { systemReminder }),
+    checkpointCreated,
+    ...(checkpointCreated && { checkpointName }),
+    newStatus,
+    ...(checkpointCreated && { stashRef: `stash@{0}` }),
   };
 }
 
