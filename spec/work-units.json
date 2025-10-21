@@ -8975,6 +8975,59 @@
         "benefit": "virtual hooks and checkpoint system work correctly with all git scenarios"
       },
       "estimate": 8
+    },
+    "EST-002": {
+      "id": "EST-002",
+      "title": "AI token usage tracking",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-10-21T05:25:26.138Z",
+      "updatedAt": "2025-10-21T05:25:26.138Z",
+      "description": "Enable AI agents to record token usage cumulatively against work units throughout the development lifecycle, providing visibility into AI resource consumption per story from start to completion. Track input tokens, output tokens, and total cost across all iterations and state transitions.",
+      "children": []
+    },
+    "TECH-001": {
+      "id": "TECH-001",
+      "title": "JSONL format investigation for work-units.json scalability",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-10-21T05:25:29.539Z",
+      "updatedAt": "2025-10-21T05:25:29.539Z",
+      "description": "Investigate migrating from JSON to JSONL (JSON Lines) format for work-units.json to address file size limitations as projects scale. Research: 1) performance comparison for large datasets (1000+ work units), 2) append-only operations vs full file rewrites, 3) streaming read/write capabilities, 4) git diff friendliness, 5) backward compatibility strategies, 6) migration path from JSON to JSONL. Deliver recommendation with proof-of-concept if beneficial.",
+      "children": []
+    },
+    "BOARD-002": {
+      "id": "BOARD-002",
+      "title": "Interactive Kanban board CLI",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-10-21T05:25:48.725Z",
+      "updatedAt": "2025-10-21T05:25:48.725Z",
+      "description": "Create an interactive terminal interface for fspec board that allows keyboard navigation across columns and work units. Press Enter to view full work unit details including description, attachments, example mapping data, dependencies, metrics, and more. Support vim-style navigation (hjkl), arrow keys, tab to switch columns, and quick actions (e.g., 's' for status change, 'e' to edit, 'a' for attachments).",
+      "epic": "interactive-cli",
+      "children": []
+    },
+    "DOC-005": {
+      "id": "DOC-005",
+      "title": "Enhanced tag usage documentation for AI guidance",
+      "type": "story",
+      "status": "specifying",
+      "createdAt": "2025-10-21T05:32:00.350Z",
+      "updatedAt": "2025-10-21T05:33:10.515Z",
+      "description": "Improve TAGS.md structure to provide comprehensive usage context for AI agents. Current tag registry lacks detailed usage information that would help AI understand when and how to apply tags correctly. Investigate: 1) What usage patterns exist across completed features? 2) Which tags commonly appear together? 3) What scenarios warrant specific tags? 4) How can we enforce 'usage' column completion? Deliverables: 1) Enhanced TAGS.md template with mandatory usage field, 2) Usage examples for each tag category, 3) Validation in 'fspec register-tag' to require usage info, 4) System-reminders for AI when tags lack usage context.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-21T05:33:10.033Z"
+        }
+      ],
+      "questions": [
+        {
+          "text": "@human: Why do we need phase tags? Is this a convention baked into fspec's design/documentation, or is there actual code enforcement? Are phase tags hardcoded requirements or just recommended practice?",
+          "selected": false
+        }
+      ]
     }
   },
   "states": {
@@ -8983,9 +9036,14 @@
       "MCP-002",
       "MCP-003",
       "MCP-004",
-      "MCP-005"
+      "MCP-005",
+      "EST-002",
+      "TECH-001",
+      "BOARD-002"
     ],
-    "specifying": [],
+    "specifying": [
+      "DOC-005"
+    ],
     "testing": [],
     "implementing": [],
     "validating": [],

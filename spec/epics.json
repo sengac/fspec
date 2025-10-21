@@ -148,6 +148,15 @@
       "workUnits": [
         "UX-001"
       ]
+    },
+    "interactive-cli": {
+      "id": "interactive-cli",
+      "title": "Interactive CLI Experience",
+      "createdAt": "2025-10-21T05:25:48.232Z",
+      "description": "Full-featured interactive terminal interface for navigating Kanban board, viewing work units, managing workflow, and exploring project state with keyboard shortcuts and rich UI",
+      "workUnits": [
+        "BOARD-002"
+      ]
     }
   }
 }
