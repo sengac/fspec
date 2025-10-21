@@ -9554,6 +9554,26 @@
       "updatedAt": "2025-10-21T13:01:52.637Z",
       "description": "Two test files pass when run individually but fail in full suite - indicates test isolation issues.\n\nCOMMAND HELP TEST:\n- File: src/commands/__tests__/command-help-system.test.ts:223\n- Scenario: Display help for Example Mapping command with patterns\n- Expected: exitCode 0, Actual: exitCode 1 (full suite) | exitCode 0 (isolated)\n- Command: node dist/index.js add-question --help\n\nFOUNDATION EXISTENCE CHECK TEST:\n- File: src/commands/__tests__/foundation-existence-check.test.ts:172\n- Scenario: Run validate command without foundation.json (read-only exempt)\n- Expected: exitCode 0, Actual: exitCode undefined (full suite) | exitCode 0 (isolated)\n- Command: fspec validate (using execa)\n\nROOT CAUSE HYPOTHESIS:\n- Global state pollution from earlier tests\n- Async cleanup issues (tests completing out of order)\n- File system state not properly isolated\n- CLI process state leaking between tests\n\nNEXT STEPS:\n1. Add beforeEach/afterEach hooks for clean state\n2. Check for process.exit() calls affecting exit codes\n3. Investigate test execution order to find polluting tests\n4. Use vitest --sequence.shuffle to identify order dependencies",
       "children": []
+    },
+    "INIT-007": {
+      "id": "INIT-007",
+      "title": "Agent-specific activation instructions in success message",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-10-21T13:27:47.865Z",
+      "updatedAt": "2025-10-21T13:27:47.865Z",
+      "description": "After running 'fspec init' in interactive mode, the success message says 'Run /fspec in your AI agent to activate' but not all agents use the /command format for slash commands. Need to display agent-specific instructions based on selected agent.\n\nResearch shows:\n- Claude Code: /fspec (nested slash commands)\n- Cursor: /fspec (flat slash commands)\n- Gemini CLI, Qwen Code: Use TOML format, may not have /command syntax\n- Other agents: Need to verify slash command syntax\n\nAcceptance Criteria:\n- Success message shows agent-specific activation instruction\n- Instructions accurate for each agent's slash command format\n- Uses research from INIT-004 attachments",
+      "children": []
+    },
+    "INIT-008": {
+      "id": "INIT-008",
+      "title": "Agent runtime detection for context-aware CLI output",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-10-21T13:28:51.970Z",
+      "updatedAt": "2025-10-21T13:31:05.264Z",
+      "description": "WHAT ALREADY EXISTS:\n1. Template generation time transformations (during 'fspec init'):\n   - removeMetaCognitivePrompts() strips 'ultrathink', 'deeply consider' for CLI agents\n   - stripSystemReminders() transforms <system-reminder> tags to bold text for non-Claude\n   - Agent registry has supportsMetaCognition and supportsSystemReminders flags\n   - This works great for generated files (AGENT.md, slash commands)\n\n2. Environment variable:\n   - FSPEC_DISABLE_REMINDERS=1 disables system-reminders entirely\n\nWHAT'S MISSING (THE ACTUAL PROBLEM):\n1. Runtime detection: fspec commands don't know which agent is running them\n   - 'fspec validate' emits <system-reminder> for ALL agents (only Claude understands)\n   - 'fspec update-work-unit-status' uses system-reminders regardless of agent\n   - Error messages don't adapt (all use <system-reminder> tags)\n   - Help commands don't tailor output based on agent\n\n2. CLI output adaptation:\n   - Commands should emit <system-reminder> for Claude Code\n   - Commands should emit **⚠️ IMPORTANT:** for Cursor/Cline/IDE agents  \n   - Commands should emit **IMPORTANT:** for CLI-only agents (Aider, Gemini)\n   - Currently everything uses <system-reminder> by default\n\n3. No detection mechanism:\n   - Can't tell if it's Claude vs Cursor vs Aider running the command\n   - No FSPEC_AGENT environment variable\n   - No config file (~/.fspec/config.json)\n   - No auto-detection from project files (.claude/, .cursor/)\n\nDetection strategies to implement:\n1. Environment variable: FSPEC_AGENT=claude (highest priority)\n2. Config file: ~/.fspec/config.json with {\"defaultAgent\": \"claude\"}\n3. Auto-detect from project: Check for .claude/, .cursor/, etc. in cwd\n4. Fallback: Safe default (plain text, no system-reminders)\n\nAcceptance Criteria:\n- Runtime agent detection using priority chain (env > config > auto-detect > default)\n- All CLI commands adapt output based on detected agent\n- System-reminders only emitted for Claude Code at runtime\n- Other agents get transformed output (bold text + emoji or plain)\n- Detection works across all 18 supported agents\n- Fallback to safe defaults if detection fails\n- Documentation for FSPEC_AGENT env var and ~/.fspec/config.json",
+      "children": []
     }
   },
   "states": {
@@ -9569,7 +9589,9 @@
       "CLEAN-001",
       "RES-001",
       "BUG-025",
-      "BUG-026"
+      "BUG-026",
+      "INIT-007",
+      "INIT-008"
     ],
     "specifying": [
       "DOC-005"
