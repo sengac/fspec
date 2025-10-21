@@ -9609,9 +9609,9 @@
       "id": "BUG-028",
       "title": "spec/AGENT.md files contain stub instead of comprehensive workflow",
       "type": "story",
-      "status": "validating",
+      "status": "done",
       "createdAt": "2025-10-21T21:09:20.138Z",
-      "updatedAt": "2025-10-21T22:49:52.538Z",
+      "updatedAt": "2025-10-21T23:15:31.966Z",
       "description": "The spec/AGENT.md files (spec/CLAUDE.md, spec/CURSOR.md, etc.) currently contain only a 17-line stub that creates circular references. According to INIT-004 Rule 16, these files should contain the full ACDD workflow documentation (same 1019-line content as slash commands) with agent-specific transformations applied. Current implementation in templateGenerator.ts uses BASE_AGENT_TEMPLATE (17 lines) instead of getSlashCommandTemplate() content (1019 lines).",
       "children": [],
       "stateHistory": [
@@ -9650,6 +9650,10 @@
         {
           "state": "validating",
           "timestamp": "2025-10-21T22:49:52.538Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-21T23:15:31.966Z"
         }
       ],
       "rules": [
@@ -9717,9 +9721,7 @@
     ],
     "testing": [],
     "implementing": [],
-    "validating": [
-      "BUG-028"
-    ],
+    "validating": [],
     "done": [
       "BUG-007",
       "BUG-008",
@@ -9881,7 +9883,8 @@
       "BUG-024",
       "INIT-004",
       "INIT-005",
-      "INIT-006"
+      "INIT-006",
+      "BUG-028"
     ],
     "blocked": []
   }
