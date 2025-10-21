@@ -4,7 +4,6 @@
 @phase1
 @FEAT-014
 Feature: Add remove-persona and remove-capability commands
-
   """
   New commands remove-persona and remove-capability mirror add-persona/add-capability with same draft-first priority logic. Commands find matching persona/capability by exact name (case-sensitive), remove from array, write updated file. If not found, show error listing available names for user guidance. Follows same pattern as add commands: check draft first with fs.access, fall back to foundation.json, maintain backward compatibility.
   """
@@ -25,7 +24,6 @@ Feature: Add remove-persona and remove-capability commands
   #   3. User runs 'fspec remove-persona NonExistent', shows error listing available personas
   #
   # ========================================
-
   Background: User Story
     As a user managing foundation document
     I want to remove unwanted personas and capabilities

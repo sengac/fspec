@@ -5,7 +5,6 @@
 @phase1
 @BUG-017
 Feature: update-foundation doesn't chain to next field during discovery
-
   """
   Architecture notes:
   - update-foundation command must call discoverFoundation({ scanOnly: true }) after updating draft
@@ -31,7 +30,6 @@ Feature: update-foundation doesn't chain to next field during discovery
   #   3. AI fills last field, sees success message PLUS system-reminder saying 'All fields complete. Run: fspec discover-foundation --finalize'
   #
   # ========================================
-
   Background: User Story
     As a AI agent using draft-driven discovery
     I want to automatically see next field guidance after updating a field

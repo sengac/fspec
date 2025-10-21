@@ -2,9 +2,10 @@
  * Hook configuration loading and validation
  */
 
-import { readFile, access } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { HookConfig, HookDefinition } from './types.js';
+import { isShellCommand, validateScriptExists } from './command-utils.js';
 
 const DEFAULT_TIMEOUT = 60;
 
@@ -27,14 +28,15 @@ export async function loadHookConfig(projectRoot: string): Promise<HookConfig> {
     );
   }
 
-  // Validate hook command files exist
+  // Validate hook command files exist (skip validation for shell commands)
   for (const [event, hooks] of Object.entries(config.hooks)) {
     for (const hook of hooks) {
-      const commandPath = join(projectRoot, hook.command);
-      try {
-        await access(commandPath);
-      } catch {
-        throw new Error(`Hook command not found: ${hook.command}`);
+      // Check if this is a shell command or script path
+      const isShell = await isShellCommand(hook.command, projectRoot);
+
+      // Only validate script paths, skip shell commands
+      if (!isShell) {
+        await validateScriptExists(hook.command, projectRoot);
       }
     }
   }

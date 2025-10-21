@@ -30,7 +30,11 @@ describe('Feature: fspec --help displays hardcoded version 0.0.1 instead of pack
       // Given package.json has version "0.2.1"
       const packageJson = JSON.parse(originalPackageJson);
       packageJson.version = '0.2.1';
-      writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2), 'utf-8');
+      writeFileSync(
+        packageJsonPath,
+        JSON.stringify(packageJson, null, 2),
+        'utf-8'
+      );
 
       // And the project has been built with npm run build
       execSync('npm run build', { stdio: 'ignore' });
@@ -48,7 +52,11 @@ describe('Feature: fspec --help displays hardcoded version 0.0.1 instead of pack
       // Given package.json has version "0.3.0"
       const packageJson = JSON.parse(originalPackageJson);
       packageJson.version = '0.3.0';
-      writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2), 'utf-8');
+      writeFileSync(
+        packageJsonPath,
+        JSON.stringify(packageJson, null, 2),
+        'utf-8'
+      );
 
       // And the project has been rebuilt with npm run build
       execSync('npm run build', { stdio: 'ignore' });
@@ -67,7 +75,11 @@ describe('Feature: fspec --help displays hardcoded version 0.0.1 instead of pack
       // (We'll simulate this by removing the version field)
       const packageJson = JSON.parse(originalPackageJson);
       delete packageJson.version;
-      writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2), 'utf-8');
+      writeFileSync(
+        packageJsonPath,
+        JSON.stringify(packageJson, null, 2),
+        'utf-8'
+      );
 
       // And rebuild
       execSync('npm run build', { stdio: 'ignore' });

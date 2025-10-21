@@ -84,7 +84,10 @@ export function calculateScenarioSimilarity(
   scenario2: Scenario
 ): number {
   // Weight title similarity heavily (70%)
-  const titleSimilarity = calculateStringSimilarity(scenario1.name, scenario2.name);
+  const titleSimilarity = calculateStringSimilarity(
+    scenario1.name,
+    scenario2.name
+  );
 
   // BUG-7 FIX: Apply short string bias (< 20 chars uses stricter threshold)
   const title1Length = scenario1.name.trim().length;
@@ -92,10 +95,10 @@ export function calculateScenarioSimilarity(
   const isShortString = title1Length < 20 || title2Length < 20;
 
   // BUG-2 FIX: Strip Gherkin keywords before comparison
-  const cleanSteps1 = scenario1.steps.map((s) =>
+  const cleanSteps1 = scenario1.steps.map(s =>
     s.replace(/^(Given|When|Then|And|But)\s+/i, '').toLowerCase()
   );
-  const cleanSteps2 = scenario2.steps.map((s) =>
+  const cleanSteps2 = scenario2.steps.map(s =>
     s.replace(/^(Given|When|Then|And|But)\s+/i, '').toLowerCase()
   );
 
@@ -149,7 +152,7 @@ export function findMatchingScenarios(
           feature: feature.name,
           scenario: scenario.name,
           similarityScore: similarity,
-          featurePath: feature.path
+          featurePath: feature.path,
         });
       }
     }
@@ -167,18 +170,61 @@ export function extractKeywords(scenario: Scenario): string[] {
 
   // Common words to exclude
   const stopWords = new Set([
-    'a', 'an', 'the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for',
-    'of', 'with', 'by', 'from', 'as', 'is', 'are', 'was', 'were', 'be',
-    'been', 'being', 'have', 'has', 'had', 'do', 'does', 'did', 'will',
-    'would', 'should', 'could', 'may', 'might', 'must', 'can', 'given',
-    'when', 'then', 'and', 'but', 'i', 'that', 'it', 'this'
+    'a',
+    'an',
+    'the',
+    'and',
+    'or',
+    'but',
+    'in',
+    'on',
+    'at',
+    'to',
+    'for',
+    'of',
+    'with',
+    'by',
+    'from',
+    'as',
+    'is',
+    'are',
+    'was',
+    'were',
+    'be',
+    'been',
+    'being',
+    'have',
+    'has',
+    'had',
+    'do',
+    'does',
+    'did',
+    'will',
+    'would',
+    'should',
+    'could',
+    'may',
+    'might',
+    'must',
+    'can',
+    'given',
+    'when',
+    'then',
+    'and',
+    'but',
+    'i',
+    'that',
+    'it',
+    'this',
   ]);
 
   // BUG-5 FIX: Extract words including numbers (OAuth2, SHA256, Base64, etc.)
   const words = text.match(/\b[a-z0-9]+\b/gi) || [];
 
   // Filter out stop words and short words
-  return words.filter((word) => word.length > 2 && !stopWords.has(word.toLowerCase()));
+  return words.filter(
+    word => word.length > 2 && !stopWords.has(word.toLowerCase())
+  );
 }
 
 /**
@@ -196,7 +242,8 @@ export function isLikelyRefactor(
 
   // Check if user intent suggests refactoring (contains words like "fix", "update", "refactor")
   if (userIntent) {
-    const refactorIndicators = /\b(fix|update|refactor|improve|enhance|change|modify)\b/i;
+    const refactorIndicators =
+      /\b(fix|update|refactor|improve|enhance|change|modify)\b/i;
     if (refactorIndicators.test(userIntent)) {
       return match.similarityScore > 0.65;
     }
@@ -206,11 +253,12 @@ export function isLikelyRefactor(
   const targetKeywords = new Set(extractKeywords(targetScenario));
   const matchKeywords = extractKeywords({
     name: match.scenario,
-    steps: [] // We don't have steps from the match object
+    steps: [], // We don't have steps from the match object
   });
 
-  const overlap = matchKeywords.filter((kw) => targetKeywords.has(kw)).length;
-  const overlapRatio = overlap / Math.max(targetKeywords.size, matchKeywords.length);
+  const overlap = matchKeywords.filter(kw => targetKeywords.has(kw)).length;
+  const overlapRatio =
+    overlap / Math.max(targetKeywords.size, matchKeywords.length);
 
   return match.similarityScore > 0.7 && overlapRatio > 0.6;
 }

@@ -5,7 +5,6 @@
 @phase1
 @DOCS-001
 Feature: Clarify estimation timing in documentation and system-reminders
-
   """
   Files to check: src/commands/show-work-unit.ts (system-reminder logic), src/commands/update-work-unit-status.ts (state transition reminders), CLAUDE.md (workflow documentation), .claude/commands/fspec.md (slash command docs)
   """
@@ -30,7 +29,6 @@ Feature: Clarify estimation timing in documentation and system-reminders
   #   A: true
   #
   # ========================================
-
   Background: User Story
     As a AI agent using fspec
     I want to understand when to estimate story points

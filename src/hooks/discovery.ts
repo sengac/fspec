@@ -3,6 +3,7 @@
  */
 
 import type { HookConfig, HookDefinition } from './types.js';
+import type { WorkUnit, VirtualHook } from '../types/index.js';
 
 export function discoverHooks(
   config: HookConfig,
@@ -18,6 +19,32 @@ export function discoverHooks(
 
   // Return matching hooks in config order
   return hooks;
+}
+
+export function discoverVirtualHooks(
+  workUnit: WorkUnit | null,
+  eventName: string
+): HookDefinition[] {
+  // If no work unit or no virtual hooks, return empty array
+  if (
+    !workUnit ||
+    !workUnit.virtualHooks ||
+    workUnit.virtualHooks.length === 0
+  ) {
+    return [];
+  }
+
+  // Filter virtual hooks for matching event
+  const matchingHooks = workUnit.virtualHooks.filter(
+    (hook: VirtualHook) => hook.event === eventName
+  );
+
+  // Convert VirtualHook to HookDefinition format
+  return matchingHooks.map((hook: VirtualHook) => ({
+    name: hook.name,
+    command: hook.command,
+    blocking: hook.blocking,
+  }));
 }
 
 export function generateEventNames(commandName: string): {

@@ -5,7 +5,6 @@
 @phase1
 @FOUND-007
 Feature: Foundation existence check in commands
-
   """
   Architecture notes:
   - Create utility function checkFoundationExists() in src/utils/foundation-check.ts
@@ -48,7 +47,6 @@ Feature: Foundation existence check in commands
   #   A: true
   #
   # ========================================
-
   Background: User Story
     As a AI agent using fspec
     I want to ensure foundation.json exists before running project management commands

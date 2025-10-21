@@ -9,6 +9,7 @@ import type {
   HookContext,
   HookExecutionResult,
 } from './types.js';
+import { isShellCommand } from './command-utils.js';
 
 export async function executeHook(
   hook: HookDefinition,
@@ -34,14 +35,30 @@ export async function executeHook(
     // Prepare context JSON for stdin
     const contextJson = JSON.stringify(context);
 
-    // Execute hook using execa with input option for stdin
-    const subprocess = execa(commandPath, [], {
-      cwd: projectRoot,
-      env: process.env,
-      input: contextJson + '\n',
-      cancelSignal: controller.signal,
-      all: true, // Capture interleaved stdout/stderr
-    });
+    // Determine if this is a shell command or script path
+    const isShell = await isShellCommand(hook.command, projectRoot);
+
+    // Execute hook using execa
+    let subprocess;
+    if (isShell) {
+      // Execute as shell command via sh -c
+      subprocess = execa('sh', ['-c', hook.command], {
+        cwd: projectRoot,
+        env: process.env,
+        input: contextJson + '\n',
+        cancelSignal: controller.signal,
+        all: true, // Capture interleaved stdout/stderr
+      });
+    } else {
+      // Execute as script path
+      subprocess = execa(commandPath, [], {
+        cwd: projectRoot,
+        env: process.env,
+        input: contextJson + '\n',
+        cancelSignal: controller.signal,
+        all: true, // Capture interleaved stdout/stderr
+      });
+    }
 
     const result = await subprocess;
 

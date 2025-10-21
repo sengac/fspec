@@ -33,34 +33,39 @@ describe('Feature: Scenario deduplication and refactoring detection during gener
       const workUnitsFile = join(tmpDir, 'spec/work-units.json');
       await writeFile(
         workUnitsFile,
-        JSON.stringify({
-          workUnits: {
-            'AUTH-005': {
-              id: 'AUTH-005',
-              title: 'User login validation',
-              type: 'story',
-              status: 'specifying',
-              rules: ['Validate user credentials before allowing access'],
-              examples: [
-                'Validate user credentials and grant access'
-              ],
-              questions: []
-            }
+        JSON.stringify(
+          {
+            workUnits: {
+              'AUTH-005': {
+                id: 'AUTH-005',
+                title: 'User login validation',
+                type: 'story',
+                status: 'specifying',
+                rules: ['Validate user credentials before allowing access'],
+                examples: ['Validate user credentials and grant access'],
+                questions: [],
+              },
+            },
+            states: {
+              backlog: [],
+              specifying: ['AUTH-005'],
+              testing: [],
+              implementing: [],
+              validating: [],
+              done: [],
+              blocked: [],
+            },
           },
-          states: {
-            backlog: [],
-            specifying: ['AUTH-005'],
-            testing: [],
-            implementing: [],
-            validating: [],
-            done: [],
-            blocked: []
-          }
-        }, null, 2)
+          null,
+          2
+        )
       );
 
       // And an existing feature file 'user-authentication.feature' contains scenario 'Validate user credentials'
-      const existingFeature = join(tmpDir, 'spec/features/user-authentication.feature');
+      const existingFeature = join(
+        tmpDir,
+        'spec/features/user-authentication.feature'
+      );
       await writeFile(
         existingFeature,
         `@AUTH-001
@@ -80,13 +85,20 @@ Feature: User Authentication
       );
 
       // When I run 'fspec generate-scenarios AUTH-005'
-      const result = await generateScenarios({ workUnitId: 'AUTH-005', cwd: tmpDir });
+      const result = await generateScenarios({
+        workUnitId: 'AUTH-005',
+        cwd: tmpDir,
+      });
 
       // Then the system should detect the match and prompt
       expect(result.detectedMatches).toBeDefined();
       expect(result.detectedMatches).toHaveLength(1);
-      expect(result.detectedMatches[0].feature).toBe('user-authentication.feature');
-      expect(result.detectedMatches[0].scenario).toBe('Validate user credentials and grant access');
+      expect(result.detectedMatches[0].feature).toBe(
+        'user-authentication.feature'
+      );
+      expect(result.detectedMatches[0].scenario).toBe(
+        'Validate user credentials and grant access'
+      );
       expect(result.detectedMatches[0].similarityScore).toBeGreaterThan(0.7);
     });
 
@@ -95,34 +107,39 @@ Feature: User Authentication
       const workUnitsFile = join(tmpDir, 'spec/work-units.json');
       await writeFile(
         workUnitsFile,
-        JSON.stringify({
-          workUnits: {
-            'AUTH-005': {
-              id: 'AUTH-005',
-              title: 'User login validation',
-              type: 'story',
-              status: 'specifying',
-              rules: ['Validate user credentials before allowing access'],
-              examples: [
-                'Validate user credentials and grant access'
-              ],
-              questions: []
-            }
+        JSON.stringify(
+          {
+            workUnits: {
+              'AUTH-005': {
+                id: 'AUTH-005',
+                title: 'User login validation',
+                type: 'story',
+                status: 'specifying',
+                rules: ['Validate user credentials before allowing access'],
+                examples: ['Validate user credentials and grant access'],
+                questions: [],
+              },
+            },
+            states: {
+              backlog: [],
+              specifying: ['AUTH-005'],
+              testing: [],
+              implementing: [],
+              validating: [],
+              done: [],
+              blocked: [],
+            },
           },
-          states: {
-            backlog: [],
-            specifying: ['AUTH-005'],
-            testing: [],
-            implementing: [],
-            validating: [],
-            done: [],
-            blocked: []
-          }
-        }, null, 2)
+          null,
+          2
+        )
       );
 
       // And an existing feature file 'user-authentication.feature' contains scenario 'Validate user credentials'
-      const existingFeature = join(tmpDir, 'spec/features/user-authentication.feature');
+      const existingFeature = join(
+        tmpDir,
+        'spec/features/user-authentication.feature'
+      );
       await writeFile(
         existingFeature,
         `@AUTH-001
@@ -145,7 +162,7 @@ Feature: User Authentication
       const result = await generateScenarios({
         workUnitId: 'AUTH-005',
         cwd: tmpDir,
-        confirmUpdate: true // Auto-confirm for testing
+        confirmUpdate: true, // Auto-confirm for testing
       });
 
       // Then detectedMatches should be populated
@@ -162,37 +179,44 @@ Feature: User Authentication
       const workUnitsFile = join(tmpDir, 'spec/work-units.json');
       await writeFile(
         workUnitsFile,
-        JSON.stringify({
-          workUnits: {
-            'AUTH-006': {
-              id: 'AUTH-006',
-              title: 'OAuth integration',
-              type: 'story',
-              status: 'specifying',
-              rules: ['Support OAuth 2.0 authentication flow'],
-              examples: [
-                'User clicks OAuth login button, redirected to provider'
-              ],
-              questions: []
-            }
+        JSON.stringify(
+          {
+            workUnits: {
+              'AUTH-006': {
+                id: 'AUTH-006',
+                title: 'OAuth integration',
+                type: 'story',
+                status: 'specifying',
+                rules: ['Support OAuth 2.0 authentication flow'],
+                examples: [
+                  'User clicks OAuth login button, redirected to provider',
+                ],
+                questions: [],
+              },
+            },
+            states: {
+              backlog: [],
+              specifying: ['AUTH-006'],
+              testing: [],
+              implementing: [],
+              validating: [],
+              done: [],
+              blocked: [],
+            },
           },
-          states: {
-            backlog: [],
-            specifying: ['AUTH-006'],
-            testing: [],
-            implementing: [],
-            validating: [],
-            done: [],
-            blocked: []
-          }
-        }, null, 2)
+          null,
+          2
+        )
       );
 
       // And no existing feature files contain OAuth-related scenarios
       // (no setup needed - tmpDir is empty except work units)
 
       // When I run 'fspec generate-scenarios AUTH-006'
-      const result = await generateScenarios({ workUnitId: 'AUTH-006', cwd: tmpDir });
+      const result = await generateScenarios({
+        workUnitId: 'AUTH-006',
+        cwd: tmpDir,
+      });
 
       // Then the system should create a new feature file 'oauth-integration.feature'
       expect(result.createdFeature).toBe('oauth-integration.feature');
@@ -214,32 +238,36 @@ Feature: User Authentication
       const workUnitsFile = join(tmpDir, 'spec/work-units.json');
       await writeFile(
         workUnitsFile,
-        JSON.stringify({
-          workUnits: {
-            'BUG-009': {
-              id: 'BUG-009',
-              title: 'Multiple validation fixes',
-              type: 'bug',
-              status: 'specifying',
-              rules: [],
-              examples: [
-                'Validate empty tags in feature files',
-                'Handle malformed tag JSON gracefully',
-                'Validate scenario ordering in features'
-              ],
-              questions: []
-            }
+        JSON.stringify(
+          {
+            workUnits: {
+              'BUG-009': {
+                id: 'BUG-009',
+                title: 'Multiple validation fixes',
+                type: 'bug',
+                status: 'specifying',
+                rules: [],
+                examples: [
+                  'Validate empty tags in feature files',
+                  'Handle malformed tag JSON gracefully',
+                  'Validate scenario ordering in features',
+                ],
+                questions: [],
+              },
+            },
+            states: {
+              backlog: [],
+              specifying: ['BUG-009'],
+              testing: [],
+              implementing: [],
+              validating: [],
+              done: [],
+              blocked: [],
+            },
           },
-          states: {
-            backlog: [],
-            specifying: ['BUG-009'],
-            testing: [],
-            implementing: [],
-            validating: [],
-            done: [],
-            blocked: []
-          }
-        }, null, 2)
+          null,
+          2
+        )
       );
 
       // And Example 1 matches an existing scenario in feature-validation.feature
@@ -271,13 +299,15 @@ Feature: User Authentication
       const result = await generateScenarios({
         workUnitId: 'BUG-009',
         cwd: tmpDir,
-        confirmUpdate: true // Auto-confirm all updates
+        confirmUpdate: true, // Auto-confirm all updates
       });
 
       // Then the system should prompt me for each match (Examples 1 and 2)
       expect(result.detectedMatches).toBeDefined();
       expect(result.detectedMatches).toHaveLength(2);
-      expect(result.detectedMatches[0].feature).toBe('feature-validation.feature');
+      expect(result.detectedMatches[0].feature).toBe(
+        'feature-validation.feature'
+      );
       expect(result.detectedMatches[1].feature).toBe('tag-management.feature');
 
       // Note: Full update logic and new feature creation not yet implemented

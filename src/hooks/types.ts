@@ -32,6 +32,8 @@ export interface HookContext {
   workUnitId?: string;
   event: string;
   timestamp: string;
+  stagedFiles?: string[];
+  unstagedFiles?: string[];
 }
 
 export interface HookExecutionResult {

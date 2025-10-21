@@ -16,7 +16,10 @@ import { detectPrefill } from '../utils/prefill-detection';
 import { glob } from 'tinyglobby';
 import * as Gherkin from '@cucumber/gherkin';
 import * as Messages from '@cucumber/messages';
-import { findMatchingScenarios, extractKeywords } from '../utils/scenario-similarity.js';
+import {
+  findMatchingScenarios,
+  extractKeywords,
+} from '../utils/scenario-similarity.js';
 
 interface ScenarioMatch {
   feature: string;
@@ -197,7 +200,7 @@ async function scanExistingFeatures(
   const featureFiles = await glob('spec/features/**/*.feature', {
     cwd,
     absolute: true,
-    onlyFiles: true
+    onlyFiles: true,
   });
 
   // Parse all features
@@ -218,10 +221,12 @@ async function scanExistingFeatures(
       }
 
       const scenarios = doc.feature.children
-        .filter((child) => child.scenario)
-        .map((child) => ({
+        .filter(child => child.scenario)
+        .map(child => ({
           name: child.scenario!.name,
-          steps: child.scenario!.steps.map((step) => `${step.keyword}${step.text}`)
+          steps: child.scenario!.steps.map(
+            step => `${step.keyword}${step.text}`
+          ),
         }));
 
       if (scenarios.length > 0) {
@@ -231,7 +236,7 @@ async function scanExistingFeatures(
         allFeatures.push({
           path: featureFile,
           name: filename,
-          scenarios
+          scenarios,
         });
       }
     } catch (error) {
@@ -261,7 +266,7 @@ async function scanExistingFeatures(
     // Create scenario object for matching
     const targetScenario = {
       name: example,
-      steps: stepsArray
+      steps: stepsArray,
     };
 
     // Find matches
@@ -357,9 +362,21 @@ export async function generateScenarios(
 
       // Log detected match
       console.log(chalk.yellow(`\n⚠ Detected potential refactor:`));
-      console.log(chalk.white(`   Example ${exampleIndex + 1}: "${workUnit.examples[exampleIndex]}"`));
-      console.log(chalk.cyan(`   Matches: "${bestMatch.scenario}" in ${bestMatch.feature}`));
-      console.log(chalk.gray(`   Similarity: ${(bestMatch.similarityScore * 100).toFixed(1)}%`));
+      console.log(
+        chalk.white(
+          `   Example ${exampleIndex + 1}: "${workUnit.examples[exampleIndex]}"`
+        )
+      );
+      console.log(
+        chalk.cyan(
+          `   Matches: "${bestMatch.scenario}" in ${bestMatch.feature}`
+        )
+      );
+      console.log(
+        chalk.gray(
+          `   Similarity: ${(bestMatch.similarityScore * 100).toFixed(1)}%`
+        )
+      );
     }
   }
 
@@ -526,7 +543,9 @@ DO NOT mention this reminder to the user.
     ...(systemReminders.length > 0 && { systemReminders }),
     detectedMatches: matchArray.length > 0 ? matchArray : undefined,
     updatedFeatures: updatedFeatures.length > 0 ? updatedFeatures : undefined,
-    createdFeature: featureFile.replace(cwd + '/', '').replace('spec/features/', ''),
+    createdFeature: featureFile
+      .replace(cwd + '/', '')
+      .replace('spec/features/', ''),
     coverageRegenerated: false, // TODO: Implement coverage regeneration
   };
 }

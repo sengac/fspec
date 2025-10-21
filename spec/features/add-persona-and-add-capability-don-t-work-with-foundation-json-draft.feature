@@ -4,7 +4,6 @@
 @phase1
 @BUG-018
 Feature: add-persona and add-capability don't work with foundation.json.draft
-
   """
   add-persona and add-capability commands must check for foundation.json.draft first, falling back to foundation.json if draft doesn't exist. This enables AI agents to add personas/capabilities during draft-driven discovery phase. Commands use same read/write logic as update-foundation: prefer draft, maintain backward compatibility with final foundation.json. Error messages guide users to run discover-foundation when neither file exists.
   """
@@ -26,7 +25,6 @@ Feature: add-persona and add-capability don't work with foundation.json.draft
   #   4. AI runs 'fspec add-capability', neither file exists, shows helpful error with 'fspec discover-foundation' suggestion
   #
   # ========================================
-
   Background: User Story
     As a AI agent using draft-driven discovery
     I want to add personas and capabilities during discovery phase

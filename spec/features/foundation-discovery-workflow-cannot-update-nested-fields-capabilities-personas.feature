@@ -4,7 +4,6 @@
 @phase1
 @BUG-015
 Feature: Foundation discovery workflow cannot update nested fields (capabilities, personas)
-
   """
   Root Cause: src/commands/discover-foundation.ts emits system-reminders with '--field <path> --value <value>' syntax, but src/commands/update-foundation.ts implements '<section> <content>' syntax with no --field option
   Impact: Breaks field-by-field discovery feedback loop documented in CLAUDE.md 'Foundation Document Discovery' section. AI cannot complete foundation without manual file editing.
@@ -46,7 +45,6 @@ Feature: Foundation discovery workflow cannot update nested fields (capabilities
   #   3. Append to arrays for add-capability and add-persona commands. This allows building up the foundation iteratively during discovery. Provide separate clear-capabilities and clear-personas commands if replacement is needed.
   #
   # ========================================
-
   Background: User Story
     As a AI agent using fspec discover-foundation workflow
     I want to update nested array fields in foundation.json through CLI commands

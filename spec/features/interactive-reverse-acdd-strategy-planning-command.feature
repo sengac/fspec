@@ -7,7 +7,6 @@
 @phase1
 @REV-001
 Feature: Interactive reverse ACDD strategy planning command
-
   """
   Session state stored in OS temp directory (tmpdir) with project-specific hash for isolation - ephemeral, OS-managed cleanup
   State machine phases: analyzing → gap-detection → strategy-planning → executing → complete (similar to discover-foundation feedback loop)
@@ -74,7 +73,6 @@ Feature: Interactive reverse ACDD strategy planning command
   #   3. Defer --strategy=custom to Phase 2 - start with four predefined strategies (A, B, C, D)
   #
   # ========================================
-
   Background: User Story
     As a AI agent (Claude) working on legacy codebase
     I want to plan and execute reverse ACDD strategy to fill specification/test gaps

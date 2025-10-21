@@ -14,7 +14,7 @@ import {
   calculateScenarioSimilarity,
   findMatchingScenarios,
   extractKeywords,
-  isLikelyRefactor
+  isLikelyRefactor,
 } from '../scenario-similarity';
 
 // Import new algorithms (will fail until implemented)
@@ -25,11 +25,10 @@ import {
   jaccardSimilarity,
   gherkinStructuralSimilarity,
   hybridSimilarity,
-  type SimilarityConfig
+  type SimilarityConfig,
 } from '../similarity-algorithms';
 
 describe('Feature: Improve scenario similarity matching accuracy', () => {
-
   // ========================================
   // Scenario 1: Handle empty scenario titles without division by zero crash
   // ========================================
@@ -69,7 +68,7 @@ describe('Feature: Improve scenario similarity matching accuracy', () => {
       // Given I have a scenario with steps "Given user exists, When login, Then success"
       const scenario: Scenario = {
         name: 'Test',
-        steps: ['Given user exists', 'When login', 'Then success']
+        steps: ['Given user exists', 'When login', 'Then success'],
       };
 
       // When I prepare steps for similarity comparison
@@ -97,7 +96,7 @@ describe('Feature: Improve scenario similarity matching accuracy', () => {
       // Given I have scenarios containing technical terms "OAuth2", "SHA256", "Base64"
       const scenario: Scenario = {
         name: 'Authenticate using OAuth2 and SHA256',
-        steps: ['Given Base64 encoding is enabled']
+        steps: ['Given Base64 encoding is enabled'],
       };
 
       // When I extract keywords from scenario text
@@ -121,11 +120,11 @@ describe('Feature: Improve scenario similarity matching accuracy', () => {
       // Given I have two scenarios with only stopwords
       const scenario1: Scenario = {
         name: 'a the and or',
-        steps: ['Given a', 'When the', 'Then and']
+        steps: ['Given a', 'When the', 'Then and'],
       };
       const scenario2: Scenario = {
         name: 'is are was',
-        steps: ['Given is', 'When are', 'Then was']
+        steps: ['Given is', 'When are', 'Then was'],
       };
 
       // When I calculate keyword-based similarity
@@ -151,13 +150,13 @@ describe('Feature: Improve scenario similarity matching accuracy', () => {
       // Given I have scenario A with steps "Given user exists, Given database connected, When login"
       const scenarioA: Scenario = {
         name: 'User login',
-        steps: ['Given user exists', 'Given database connected', 'When login']
+        steps: ['Given user exists', 'Given database connected', 'When login'],
       };
 
       // And I have scenario B with steps "Given database connected, Given user exists, When login"
       const scenarioB: Scenario = {
         name: 'User login',
-        steps: ['Given database connected', 'Given user exists', 'When login']
+        steps: ['Given database connected', 'Given user exists', 'When login'],
       };
 
       // When I calculate similarity between them
@@ -179,13 +178,13 @@ describe('Feature: Improve scenario similarity matching accuracy', () => {
       // Given I have scenario A with steps [X, Y, Z, W]
       const scenarioA: Scenario = {
         name: 'Test',
-        steps: ['Given X', 'When Y', 'Then Z', 'And W']
+        steps: ['Given X', 'When Y', 'Then Z', 'And W'],
       };
 
       // And I have scenario B with steps [X, Y, Z, Q]
       const scenarioB: Scenario = {
         name: 'Test',
-        steps: ['Given X', 'When Y', 'Then Z', 'And Q']
+        steps: ['Given X', 'When Y', 'Then Z', 'And Q'],
       };
 
       // When I calculate step similarity
@@ -240,7 +239,7 @@ describe('Feature: Improve scenario similarity matching accuracy', () => {
       const similarity = jaroWinklerSimilarity(title1, title2);
 
       // Then the similarity score should be approximately 0.92
-      expect(similarity).toBeGreaterThanOrEqual(0.90);
+      expect(similarity).toBeGreaterThanOrEqual(0.9);
       expect(similarity).toBeLessThanOrEqual(0.95);
 
       // And it should outperform Levenshtein for prefix matching
@@ -257,13 +256,13 @@ describe('Feature: Improve scenario similarity matching accuracy', () => {
       // Given I have scenario with steps "Given user exists and database connected"
       const scenario1: Scenario = {
         name: 'Test',
-        steps: ['Given user exists and database connected']
+        steps: ['Given user exists and database connected'],
       };
 
       // And I have scenario with steps "Given database connected and user exists"
       const scenario2: Scenario = {
         name: 'Test',
-        steps: ['Given database connected and user exists']
+        steps: ['Given database connected and user exists'],
       };
 
       // When I calculate similarity using Token Set Ratio algorithm
@@ -292,8 +291,8 @@ describe('Feature: Improve scenario similarity matching accuracy', () => {
       const similarity = trigramSimilarity(text1, text2);
 
       // Then the similarity score should be approximately 0.85
-      expect(similarity).toBeGreaterThanOrEqual(0.80);
-      expect(similarity).toBeLessThanOrEqual(0.90);
+      expect(similarity).toBeGreaterThanOrEqual(0.8);
+      expect(similarity).toBeLessThanOrEqual(0.9);
 
       // And minor character variations should be tolerated
       expect(similarity).toBeGreaterThan(0.7);
@@ -308,11 +307,11 @@ describe('Feature: Improve scenario similarity matching accuracy', () => {
       // Given I have two scenarios with different Given/When/Then structures
       const scenario1: Scenario = {
         name: 'Test',
-        steps: ['Given A', 'When B', 'Then C']
+        steps: ['Given A', 'When B', 'Then C'],
       };
       const scenario2: Scenario = {
         name: 'Test',
-        steps: ['Given X', 'When Y', 'Then C']
+        steps: ['Given X', 'When Y', 'Then C'],
       };
 
       // When I calculate similarity using Gherkin Structural algorithm
@@ -330,25 +329,31 @@ describe('Feature: Improve scenario similarity matching accuracy', () => {
     it('should weight Then steps higher than Given/When', () => {
       const scenario1: Scenario = {
         name: 'Test',
-        steps: ['Given A', 'When B', 'Then same_outcome']
+        steps: ['Given A', 'When B', 'Then same_outcome'],
       };
       const scenario2: Scenario = {
         name: 'Test',
-        steps: ['Given X', 'When Y', 'Then same_outcome']
+        steps: ['Given X', 'When Y', 'Then same_outcome'],
       };
 
-      const similarityWithSameThen = gherkinStructuralSimilarity(scenario1, scenario2);
+      const similarityWithSameThen = gherkinStructuralSimilarity(
+        scenario1,
+        scenario2
+      );
 
       const scenario3: Scenario = {
         name: 'Test',
-        steps: ['Given same_precondition', 'When B', 'Then C']
+        steps: ['Given same_precondition', 'When B', 'Then C'],
       };
       const scenario4: Scenario = {
         name: 'Test',
-        steps: ['Given same_precondition', 'When Y', 'Then Z']
+        steps: ['Given same_precondition', 'When Y', 'Then Z'],
       };
 
-      const similarityWithSameGiven = gherkinStructuralSimilarity(scenario3, scenario4);
+      const similarityWithSameGiven = gherkinStructuralSimilarity(
+        scenario3,
+        scenario4
+      );
 
       // Same Then should score higher than same Given
       expect(similarityWithSameThen).toBeGreaterThan(similarityWithSameGiven);
@@ -363,24 +368,24 @@ describe('Feature: Improve scenario similarity matching accuracy', () => {
       // Given I have configured the hybrid algorithm with 5 algorithms
       const config: SimilarityConfig = {
         // And Jaro-Winkler is weighted at 30%
-        jaroWinklerWeight: 0.30,
+        jaroWinklerWeight: 0.3,
         // And Token Set Ratio is weighted at 25%
         tokenSetWeight: 0.25,
         // And Gherkin Structural is weighted at 20%
-        gherkinStructuralWeight: 0.20,
+        gherkinStructuralWeight: 0.2,
         // And Trigram similarity is weighted at 15%
         trigramWeight: 0.15,
         // And Jaccard similarity is weighted at 10%
-        jaccardWeight: 0.10
+        jaccardWeight: 0.1,
       };
 
       const scenario1: Scenario = {
         name: 'User login validation',
-        steps: ['Given user exists', 'When login', 'Then success']
+        steps: ['Given user exists', 'When login', 'Then success'],
       };
       const scenario2: Scenario = {
         name: 'User authentication check',
-        steps: ['Given user exists', 'When authenticate', 'Then success']
+        steps: ['Given user exists', 'When authenticate', 'Then success'],
       };
 
       // When I run the hybrid algorithm on test dataset
@@ -397,18 +402,19 @@ describe('Feature: Improve scenario similarity matching accuracy', () => {
 
     it('should validate weights sum to 1.0', () => {
       const config: SimilarityConfig = {
-        jaroWinklerWeight: 0.30,
+        jaroWinklerWeight: 0.3,
         tokenSetWeight: 0.25,
-        gherkinStructuralWeight: 0.20,
+        gherkinStructuralWeight: 0.2,
         trigramWeight: 0.15,
-        jaccardWeight: 0.10
+        jaccardWeight: 0.1,
       };
 
-      const sum = config.jaroWinklerWeight +
-                  config.tokenSetWeight +
-                  config.gherkinStructuralWeight +
-                  config.trigramWeight +
-                  config.jaccardWeight;
+      const sum =
+        config.jaroWinklerWeight +
+        config.tokenSetWeight +
+        config.gherkinStructuralWeight +
+        config.trigramWeight +
+        config.jaccardWeight;
 
       expect(sum).toBeCloseTo(1.0, 5);
     });
@@ -421,28 +427,36 @@ describe('Feature: Improve scenario similarity matching accuracy', () => {
     it('should allow dynamic weight adjustment', () => {
       // Given I have a hybrid similarity matcher with default weights
       const defaultConfig: SimilarityConfig = {
-        jaroWinklerWeight: 0.30,
+        jaroWinklerWeight: 0.3,
         tokenSetWeight: 0.25,
-        gherkinStructuralWeight: 0.20,
+        gherkinStructuralWeight: 0.2,
         trigramWeight: 0.15,
-        jaccardWeight: 0.10
+        jaccardWeight: 0.1,
       };
 
       // When I adjust Jaro-Winkler weight from 30% to 40%
       // And I adjust Token Set Ratio weight from 25% to 20%
       const customConfig: SimilarityConfig = {
-        jaroWinklerWeight: 0.40,
-        tokenSetWeight: 0.20,
-        gherkinStructuralWeight: 0.20,
+        jaroWinklerWeight: 0.4,
+        tokenSetWeight: 0.2,
+        gherkinStructuralWeight: 0.2,
         trigramWeight: 0.15,
-        jaccardWeight: 0.05
+        jaccardWeight: 0.05,
       };
 
       const scenario1: Scenario = { name: 'Test validation', steps: [] };
       const scenario2: Scenario = { name: 'Test verification', steps: [] };
 
-      const defaultSimilarity = hybridSimilarity(scenario1, scenario2, defaultConfig);
-      const customSimilarity = hybridSimilarity(scenario1, scenario2, customConfig);
+      const defaultSimilarity = hybridSimilarity(
+        scenario1,
+        scenario2,
+        defaultConfig
+      );
+      const customSimilarity = hybridSimilarity(
+        scenario1,
+        scenario2,
+        customConfig
+      );
 
       // Then the algorithm should use the new weights
       expect(customSimilarity).toBeDefined();
@@ -469,23 +483,30 @@ describe('Feature: Improve scenario similarity matching accuracy', () => {
         tokenSetWeight: 0,
         gherkinStructuralWeight: 0,
         trigramWeight: 0,
-        jaccardWeight: 0
+        jaccardWeight: 0,
       };
 
-      const legacySimilarity = hybridSimilarity(scenario1, scenario2, legacyConfig);
+      const legacySimilarity = hybridSimilarity(
+        scenario1,
+        scenario2,
+        legacyConfig
+      );
 
       // Then the old Levenshtein algorithm should be used
-      const currentSimilarity = calculateScenarioSimilarity(scenario1, scenario2);
+      const currentSimilarity = calculateScenarioSimilarity(
+        scenario1,
+        scenario2
+      );
       expect(legacySimilarity).toBeCloseTo(currentSimilarity, 2);
 
       // And I should be able to compare old vs new results for A/B testing
       const newConfig: SimilarityConfig = {
         useLegacyLevenshtein: false,
-        jaroWinklerWeight: 0.30,
+        jaroWinklerWeight: 0.3,
         tokenSetWeight: 0.25,
-        gherkinStructuralWeight: 0.20,
+        gherkinStructuralWeight: 0.2,
         trigramWeight: 0.15,
-        jaccardWeight: 0.10
+        jaccardWeight: 0.1,
       };
 
       const newSimilarity = hybridSimilarity(scenario1, scenario2, newConfig);

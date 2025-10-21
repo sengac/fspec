@@ -297,7 +297,7 @@ async function findMatchingFeatureFile(
 
   try {
     const files = await readdir(featuresDir);
-    const featureFiles = files.filter((f) => f.endsWith('.feature'));
+    const featureFiles = files.filter(f => f.endsWith('.feature'));
 
     // Direct match
     if (featureFiles.includes(`${capability}.feature`)) {
@@ -309,14 +309,14 @@ async function findMatchingFeatureFile(
     const commandMatches = description.toLowerCase().match(/fspec\s+(\w+)/);
     if (commandMatches) {
       const command = commandMatches[1];
-      const commandFile = featureFiles.find((f) => f.includes(command));
+      const commandFile = featureFiles.find(f => f.includes(command));
       if (commandFile) {
         return commandFile;
       }
     }
 
     // Partial match (e.g., "help" matches "help-command.feature")
-    const partialMatch = featureFiles.find((f) =>
+    const partialMatch = featureFiles.find(f =>
       f.includes(capability.split('-')[0])
     );
     if (partialMatch) {
@@ -364,7 +364,11 @@ export async function generateScenarios(
     // For bugs: extract capability and search for existing file
     const capability = extractCapabilityFromBug(workUnit);
     if (capability) {
-      const existingFile = await findMatchingFeatureFile(capability, cwd, workUnit);
+      const existingFile = await findMatchingFeatureFile(
+        capability,
+        cwd,
+        workUnit
+      );
       if (existingFile) {
         // Found existing feature file - use it
         featureFileName = existingFile;

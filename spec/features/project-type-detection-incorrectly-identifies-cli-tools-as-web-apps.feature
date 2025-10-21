@@ -3,7 +3,6 @@
 @phase1
 @FOUND-010
 Feature: Project type detection incorrectly identifies CLI tools as web-apps
-
   """
   discover-foundation reads draft, prompts AI for each placeholder, AI uses fspec update-foundation commands (NOT manual editing)
   """
@@ -32,7 +31,6 @@ Feature: Project type detection incorrectly identifies CLI tools as web-apps
   #   5. Draft has [DETECTED: web-app] for projectType → Command prompts AI to verify → AI asks human 'Detected web-app, is this correct?' → Human: 'No, it's cli-tool' → AI runs: fspec update-foundation --field project.projectType --value cli-tool
   #
   # ========================================
-
   Background: User Story
     As a AI agent running discover-foundation
     I want to correctly detect CLI tool projects

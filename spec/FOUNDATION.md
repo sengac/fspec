@@ -36,6 +36,7 @@ Provides AI agents with a Kanban-based project management system that enforces A
 - **Tag Management**: Organize features with JSON-backed tag registry and validation
 - **Foundation Discovery**: AI-guided draft-driven workflow to bootstrap project foundation documentation
 - **Lifecycle Hooks**: Execute custom scripts at command events for quality gates and workflow automation
+- **Virtual Hooks**: Work unit-scoped ephemeral hooks for temporary quality checks with auto-generated git context scripts
 - **Interactive Reverse ACDD Strategy Planning**: Analyze project state to detect gaps (missing features, tests, coverage), suggest strategic approaches, and guide AI step-by-step through gap-filling workflow for existing codebases
 
 ---
@@ -130,7 +131,7 @@ graph TD
         DiscCmds[Discovery Commands<br/>add-question, add-example, generate-scenarios]
         TagCmds[Tag Commands<br/>register-tag, add-tag-to-feature, validate-tags]
         CovCmds[Coverage Commands<br/>link-coverage, show-coverage, audit-coverage]
-        HookCmds[Hook Commands<br/>add-hook, list-hooks, validate-hooks]
+        HookCmds[Hook Commands<br/>add-hook, list-hooks, validate-hooks, add-virtual-hook, list-virtual-hooks, remove-virtual-hook, clear-virtual-hooks, copy-virtual-hooks]
     end
     
     Commander -->|dispatches| SpecCmds
@@ -157,11 +158,15 @@ graph TD
         HookEngine[Hook Engine<br/>Executor]
         HookDiscovery[Hook Discovery<br/>Find matching hooks]
         HookConditions[Condition Evaluator<br/>Filter by tags/prefix]
+        ScriptGen[Script Generator<br/>Git context scripts]
+        GitContext[Git Context<br/>Staged/unstaged files]
     end
     
     WorkCmds -->|triggers| HookEngine
     HookEngine -->|uses| HookDiscovery
     HookEngine -->|uses| HookConditions
+    HookEngine -->|uses| GitContext
+    HookCmds -->|uses| ScriptGen
 ```
 
 ### Data Model
@@ -202,6 +207,7 @@ erDiagram
         array examples
         array questions
         array attachments
+        array virtualHooks
         object userStory
         array stateHistory
     }
@@ -321,8 +327,12 @@ graph TD
     Spec --> Epics[epics.json]
     Spec --> Prefixes[prefixes.json]
     Spec --> SpecAttachments[attachments/]
-    Spec --> Hooks[fspec-hooks.json]
+    Spec --> HooksDir[hooks/]
+    Spec --> HooksConfig[fspec-hooks.json]
     Spec --> ClaudeSpec[CLAUDE.md]
+    
+    HooksDir --> VirtualHooksDir[.virtual/]
+    VirtualHooksDir --> GeneratedScripts[<work-unit-id>-<hook-name>.sh]
     Spec --> TagsMd[TAGS.md]
     Spec --> FoundationMd[FOUNDATION.md]
     

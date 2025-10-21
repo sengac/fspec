@@ -5,7 +5,6 @@
 @phase1
 @FOUND-002
 Feature: Implement Automated Discovery - Code Analysis
-
   """
   Integration: Output from code analysis becomes INPUT to interactive questionnaire (FOUND-003). AI shows [DETECTED] values that human can confirm/edit/skip. This supports reverse ACDD for existing codebases.
   """
@@ -44,7 +43,6 @@ Feature: Implement Automated Discovery - Code Analysis
   #   A: true
   #
   # ========================================
-
   Background: User Story
     As a developer using fspec to document an existing codebase
     I want to automatically discover project structure and infer personas/capabilities
@@ -56,7 +54,6 @@ Feature: Implement Automated Discovery - Code Analysis
     Then AI should infer project type as 'cli-tool'
     And AI should infer persona 'Developer using CLI in terminal'
 
-
   Scenario: Discover web app project type with multiple personas
     Given I have guidance documentation for discovering web applications
     When AI analyzes codebase with Express routes and React components
@@ -64,13 +61,11 @@ Feature: Implement Automated Discovery - Code Analysis
     And AI should infer persona 'End User' from UI components
     And AI should infer persona 'API Consumer' from API routes
 
-
   Scenario: Discover library project type from package exports
     Given I have guidance documentation for discovering libraries
     When AI analyzes codebase with package.json exports field
     Then AI should infer project type as 'library'
     And AI should infer persona 'Developer integrating library into their codebase'
-
 
   Scenario: Infer capabilities focusing on WHAT not HOW
     Given I have guidance documentation for capability inference
@@ -78,10 +73,8 @@ Feature: Implement Automated Discovery - Code Analysis
     Then AI should infer capability 'User Interface' not 'Uses React hooks'
     And AI should focus on high-level features not implementation details
 
-
   Scenario: Infer problems as WHY not implementation details
     Given I have guidance documentation for problem inference
     When AI discovers a React app codebase
     Then AI should infer problem 'Users need interactive web UI' not 'Code needs React'
     And AI should focus on user needs not technical implementation choices
-

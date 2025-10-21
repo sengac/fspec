@@ -571,7 +571,10 @@ describe('Feature: Link Coverage Command', () => {
     When I enter valid credentials
     Then I should be logged in`;
 
-        await writeFile(join(featuresDir, 'user-login.feature'), featureContent);
+        await writeFile(
+          join(featuresDir, 'user-login.feature'),
+          featureContent
+        );
 
         // And: the coverage file exists but does not contain that scenario
         const coverageData: CoverageFile = {
@@ -640,7 +643,10 @@ describe('Feature: Link Coverage Command', () => {
     When I enter valid credentials
     Then I should be logged in`;
 
-        await writeFile(join(featuresDir, 'user-login.feature'), featureContent);
+        await writeFile(
+          join(featuresDir, 'user-login.feature'),
+          featureContent
+        );
 
         // And: the coverage file exists
         const coverageData: CoverageFile = {
@@ -708,7 +714,10 @@ describe('Feature: Link Coverage Command', () => {
     When I enter valid credentials
     Then I should be logged in`;
 
-        await writeFile(join(featuresDir, 'user-login.feature'), featureContent);
+        await writeFile(
+          join(featuresDir, 'user-login.feature'),
+          featureContent
+        );
 
         // And: the coverage file does not exist
 

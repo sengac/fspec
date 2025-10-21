@@ -7,6 +7,8 @@ import type { WorkUnitsData, QuestionItem, WorkItemType } from '../types';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
 import {
   getStatusChangeReminder,
+  getVirtualHooksReminder,
+  getVirtualHooksCleanupReminder,
   type WorkflowState,
 } from '../utils/system-reminder';
 import { checkWorkUnitFeatureForPrefill } from '../utils/prefill-detection';
@@ -402,11 +404,40 @@ export async function updateWorkUnitStatus(
   // Write updated work units
   await writeFile(workUnitsFile, JSON.stringify(workUnitsData, null, 2));
 
-  // Get system reminder for the new status
-  const systemReminder = getStatusChangeReminder(
+  // Collect all system reminders
+  const reminders: string[] = [];
+
+  // Get status change reminder
+  const statusReminder = getStatusChangeReminder(
     options.workUnitId,
     newStatus as WorkflowState
   );
+  if (statusReminder) {
+    reminders.push(statusReminder);
+  }
+
+  // Get virtual hooks reminder when transitioning from specifying → testing
+  if (currentStatus === 'specifying' && newStatus === 'testing') {
+    const virtualHooksReminder = getVirtualHooksReminder(options.workUnitId);
+    if (virtualHooksReminder) {
+      reminders.push(virtualHooksReminder);
+    }
+  }
+
+  // Get cleanup reminder when transitioning to done
+  if (newStatus === 'done') {
+    const virtualHooksCount = workUnit.virtualHooks?.length || 0;
+    const cleanupReminder = getVirtualHooksCleanupReminder(
+      options.workUnitId,
+      virtualHooksCount
+    );
+    if (cleanupReminder) {
+      reminders.push(cleanupReminder);
+    }
+  }
+
+  // Combine all reminders
+  const systemReminder = reminders.length > 0 ? reminders.join('\n\n') : undefined;
 
   return {
     success: true,

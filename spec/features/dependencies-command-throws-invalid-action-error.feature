@@ -5,7 +5,6 @@
 @phase1
 @BUG-019
 Feature: Dependencies command throws 'Invalid action' error
-
   """
   Root cause: registerDependenciesCommand() uses multi-action router pattern with .argument('<action>') expecting 'list', 'add', 'remove', etc. but help docs suggest direct work-unit-id usage
   Solution: Simplify to single-purpose command accepting .command('dependencies <work-unit-id>') and call showDependencies() directly with AI-friendly error handling
@@ -27,7 +26,6 @@ Feature: Dependencies command throws 'Invalid action' error
   #   3. AI runs 'fspec dependencies INVALID-999' and gets system-reminder with suggestions to run 'fspec list-work-units'
   #
   # ========================================
-
   Background: User Story
     As a AI agent using fspec CLI
     I want to query work unit dependencies with simple syntax

@@ -5,7 +5,6 @@
 @phase1
 @BUG-016
 Feature: discover-foundation --finalize doesn't show validation errors
-
   """
   Architecture notes:
   - Bug in CLI action handler for discover-foundation command
@@ -31,7 +30,6 @@ Feature: discover-foundation --finalize doesn't show validation errors
   #   3. User runs finalize with empty capabilities array, sees error: 'Missing required: solutionSpace.capabilities' with example command
   #
   # ========================================
-
   Background: User Story
     As a AI agent using draft-driven discovery workflow
     I want to see detailed validation errors when finalize fails
