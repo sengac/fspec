@@ -18,6 +18,12 @@ export interface CommandExample {
   output?: string;
 }
 
+export interface CommonPattern {
+  pattern: string;
+  example: string;
+  description: string;
+}
+
 export interface CommandHelpConfig {
   name: string;
   description: string;
@@ -29,7 +35,7 @@ export interface CommandHelpConfig {
   whenToUse?: string;
   whenNotToUse?: string;
   prerequisites?: string[];
-  commonPatterns?: string[];
+  commonPatterns?: string[] | CommonPattern[];
   typicalWorkflow?: string;
   commonErrors?: Array<{ error: string; fix: string }>;
   notes?: string[];
@@ -108,7 +114,16 @@ export function formatCommandHelp(config: CommandHelpConfig): string {
   if (config.commonPatterns && config.commonPatterns.length > 0) {
     lines.push(chalk.bold('COMMON PATTERNS'));
     config.commonPatterns.forEach(pattern => {
-      lines.push(`  • ${pattern}`);
+      if (typeof pattern === 'string') {
+        // Backward compatibility: string[] format
+        lines.push(`  • ${pattern}`);
+      } else {
+        // Object format: { pattern, example, description }
+        lines.push(`  • ${chalk.bold(pattern.pattern)}`);
+        lines.push(`    ${chalk.dim('Example:')} ${chalk.cyan(pattern.example)}`);
+        lines.push(`    ${pattern.description}`);
+        lines.push('');
+      }
     });
     lines.push('');
   }
