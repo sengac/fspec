@@ -18,41 +18,9 @@
 
 Think **Git for specifications** + **Kanban for AI agents** + **TDD enforcement** all in one.
 
-### The Problem
-
-Your AI agent writes code fast. Too fast. You end up with:
-
-- ❌ Code before tests, tests before specs (or no specs at all)
-- ❌ Context loss between sessions ("wait, what were we building?")
-- ❌ Implementing the wrong thing (AI guessed instead of asking)
-- ❌ Broken tests, missing coverage, drifting architecture docs
-- ❌ No way to track what's done, what's blocked, or why decisions were made
-
-**Flat TODO lists don't help.** They show "done" or "not done" but no workflow state, no dependencies, no traceability.
-
-### The Solution
-
-**fspec enforces the right order:**
-
-```
-Discovery → Specifications → Tests → Implementation → Validation → Done
-```
-
-Can't skip steps. Can't go backward without intention. Can't write code before tests. **The AI agent must follow ACDD** (Acceptance Criteria Driven Development).
-
-**And you get persistent state:**
-- Kanban board showing work in progress
-- Example mapping with rules, examples, and questions
-- Gherkin specs validated by Cucumber's official parser
-- Coverage tracking linking scenarios → tests → implementation
-- Git checkpoints for safe experimentation
-- Virtual hooks for work-unit-specific quality gates
-
 ---
 
-## See It in Action
-
-**30-second demo:**
+## Quick Start
 
 ```bash
 # Install
@@ -118,52 +86,6 @@ fspec init
 - ✅ **Foundation documentation** - AI discovers project vision, capabilities, personas
 - ✅ **Work unit management** - Track epics, dependencies, estimates, status
 - ✅ **Coverage tracking** - Know exactly what's tested and what's not
-
----
-
-## Quick Start
-
-### 1. Install
-
-```bash
-npm install -g @sengac/fspec
-```
-
-### 2. Initialize
-
-```bash
-cd /path/to/your/project
-fspec init
-```
-
-This creates:
-- `.claude/commands/fspec.md` - Forward ACDD for new features
-- `spec/CLAUDE.md` - Workflow guidelines for AI agents
-
-### 3. Build Features with AI
-
-**In Claude Code, tell it to create a work unit:**
-
-```
-/fspec Create a story for user login
-/fspec Create a bug for session timeout not working
-/fspec Create a task to refactor auth middleware
-```
-
-**Or just check the board:**
-
-```
-/fspec
-```
-
-The AI agent will:
-- Guide you through discovery (Example Mapping)
-- Generate validated Gherkin specifications
-- Write tests that map to scenarios
-- Implement code to pass tests
-- Run quality checks and validation
-
-**You don't run fspec commands directly.** The AI agent handles the workflow.
 
 ---
 
@@ -269,60 +191,6 @@ fspec help specs      # Gherkin commands
 fspec help work       # Kanban commands
 fspec help discovery  # Example mapping commands
 ```
-
----
-
-## What You Get
-
-✅ **AI agents that follow TDD/BDD religiously**
-✅ **Specifications that stay in sync with code**
-✅ **Full traceability from idea to implementation**
-✅ **Persistent state that survives context resets**
-✅ **Quality gates that actually enforce standards**
-✅ **Living documentation that never drifts**
-✅ **Safe experimentation with git checkpoints**
-✅ **Kanban workflow preventing shortcuts**
-
-**Stop fixing AI chaos. Start shipping quality.**
-
----
-
-## Works With Any AI Agent
-
-While designed for Claude Code, fspec works with:
-- GitHub Copilot
-- Cursor
-- Windsurf
-- Any AI agent that can run CLI commands
-
-Just map the `/fspec` command to your agent's command system.
-
----
-
-## Architecture
-
-**JSON-backed documentation** for machine-readable state:
-
-```
-spec/
-├── work-units.json              # Work unit state (single source of truth)
-├── tags.json                    # Tag registry
-├── foundation.json              # Project foundation
-├── features/*.feature           # Gherkin specifications
-└── features/*.feature.coverage  # Coverage mappings
-```
-
-**Design principles:**
-- JSON is authoritative, Markdown is documentation
-- Auto-generation prevents drift
-- Queryable state enables AI agents to reason about project
-- Coverage files enable reverse ACDD
-
----
-
-## License
-
-MIT
 
 ---
 
