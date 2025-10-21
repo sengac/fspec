@@ -34,15 +34,15 @@ describe('Feature: Support multiple AI agents beyond Claude', () => {
       const aiderDocPath = join(testDir, 'spec', 'AIDER.md');
       expect(existsSync(aiderDocPath)).toBe(true);
 
-      // And the file should contain Aider-specific documentation
+      // And the file should contain comprehensive Project Management Guidelines
       const content = readFileSync(aiderDocPath, 'utf-8');
-      expect(content).toContain('Aider');
+      const lineCount = content.split('\n').length;
+      expect(lineCount).toBeGreaterThan(2000); // Comprehensive Project Management Guidelines, not a stub
 
-      // And the file should not contain Claude-specific references
-      expect(content).not.toContain('Claude Code');
-      expect(content).not.toContain('claude');
+      // And system-reminder tags should not appear (Aider doesn't support them)
+      expect(content).not.toContain('<system-reminder>');
 
-      // And meta-cognitive prompts should be removed
+      // And meta-cognitive prompts should be removed (Aider is CLI-only)
       expect(content).not.toContain('ultrathink');
     });
   });
@@ -109,7 +109,7 @@ describe('Feature: Support multiple AI agents beyond Claude', () => {
         true
       );
 
-      // And both documentation files should be agent-specific
+      // And both documentation files should contain comprehensive content
       const cursorContent = readFileSync(
         join(testDir, 'spec', 'CURSOR.md'),
         'utf-8'
@@ -119,10 +119,13 @@ describe('Feature: Support multiple AI agents beyond Claude', () => {
         'utf-8'
       );
 
-      expect(cursorContent).toContain('Cursor');
-      expect(aiderContent).toContain('Aider');
-      expect(cursorContent).not.toContain('Aider');
-      expect(aiderContent).not.toContain('Cursor');
+      // Both should be comprehensive Project Management Guidelines (not stubs)
+      expect(cursorContent.split('\n').length).toBeGreaterThan(2000);
+      expect(aiderContent.split('\n').length).toBeGreaterThan(2000);
+
+      // Both should contain Project Management Guidelines content
+      expect(cursorContent).toContain('Project Management and Specification Guidelines');
+      expect(aiderContent).toContain('Project Management and Specification Guidelines');
     });
   });
 

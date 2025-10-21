@@ -1,0 +1,40 @@
+{
+  "scenarios": [
+    {
+      "name": "Interactive mode shows agent selector",
+      "testMappings": []
+    },
+    {
+      "name": "CLI mode skips interactive selector",
+      "testMappings": []
+    },
+    {
+      "name": "Deprecated code is removed",
+      "testMappings": []
+    },
+    {
+      "name": "Works after global npm install",
+      "testMappings": []
+    },
+    {
+      "name": "Agent-specific customization",
+      "testMappings": []
+    },
+    {
+      "name": "Embedded templates work independently",
+      "testMappings": []
+    },
+    {
+      "name": "Slash command files use correct format without YAML frontmatter",
+      "testMappings": []
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 0,
+    "coveragePercent": 0,
+    "testFiles": [],
+    "implFiles": [],
+    "totalLinesCovered": 0
+  }
+}

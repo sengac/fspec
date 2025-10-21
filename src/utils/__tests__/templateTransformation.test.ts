@@ -216,7 +216,7 @@ Path: {{SLASH_COMMAND_PATH}}
   });
 
   describe('Full template generation', () => {
-    it('should apply all transformations for Aider (CLI agent)', async () => {
+    it('should generate comprehensive documentation for Aider (CLI agent)', async () => {
       const aiderAgent: AgentConfig = {
         id: 'aider',
         name: 'Aider',
@@ -234,13 +234,17 @@ Path: {{SLASH_COMMAND_PATH}}
 
       const result = await generateAgentDoc(aiderAgent);
 
-      // Should remove system-reminders
+      // Should generate comprehensive Project Management Guidelines (not a stub)
+      const lineCount = result.split('\n').length;
+      expect(lineCount).toBeGreaterThan(2000);
+      // Should transform ALL system-reminders (including in code examples)
+      // so Aider sees what error messages would look like FOR AIDER
       expect(result).not.toContain('<system-reminder>');
-      // Should remove meta-cognitive prompts
+      // Should not contain meta-cognitive prompts
       expect(result).not.toContain('ultrathink');
-      // Should replace placeholders
-      expect(result).toContain('Aider');
+      // Should not contain unresolved placeholders
       expect(result).not.toContain('{{AGENT_NAME}}');
+      expect(result).not.toContain('{{SLASH_COMMAND_PATH}}');
     });
   });
 

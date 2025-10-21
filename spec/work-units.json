@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-21T11:47:47.282Z"
+    "lastUpdated": "2025-10-21T22:26:09.845Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -9574,6 +9574,122 @@
       "updatedAt": "2025-10-21T13:31:05.264Z",
       "description": "WHAT ALREADY EXISTS:\n1. Template generation time transformations (during 'fspec init'):\n   - removeMetaCognitivePrompts() strips 'ultrathink', 'deeply consider' for CLI agents\n   - stripSystemReminders() transforms <system-reminder> tags to bold text for non-Claude\n   - Agent registry has supportsMetaCognition and supportsSystemReminders flags\n   - This works great for generated files (AGENT.md, slash commands)\n\n2. Environment variable:\n   - FSPEC_DISABLE_REMINDERS=1 disables system-reminders entirely\n\nWHAT'S MISSING (THE ACTUAL PROBLEM):\n1. Runtime detection: fspec commands don't know which agent is running them\n   - 'fspec validate' emits <system-reminder> for ALL agents (only Claude understands)\n   - 'fspec update-work-unit-status' uses system-reminders regardless of agent\n   - Error messages don't adapt (all use <system-reminder> tags)\n   - Help commands don't tailor output based on agent\n\n2. CLI output adaptation:\n   - Commands should emit <system-reminder> for Claude Code\n   - Commands should emit **⚠️ IMPORTANT:** for Cursor/Cline/IDE agents  \n   - Commands should emit **IMPORTANT:** for CLI-only agents (Aider, Gemini)\n   - Currently everything uses <system-reminder> by default\n\n3. No detection mechanism:\n   - Can't tell if it's Claude vs Cursor vs Aider running the command\n   - No FSPEC_AGENT environment variable\n   - No config file (~/.fspec/config.json)\n   - No auto-detection from project files (.claude/, .cursor/)\n\nDetection strategies to implement:\n1. Environment variable: FSPEC_AGENT=claude (highest priority)\n2. Config file: ~/.fspec/config.json with {\"defaultAgent\": \"claude\"}\n3. Auto-detect from project: Check for .claude/, .cursor/, etc. in cwd\n4. Fallback: Safe default (plain text, no system-reminders)\n\nAcceptance Criteria:\n- Runtime agent detection using priority chain (env > config > auto-detect > default)\n- All CLI commands adapt output based on detected agent\n- System-reminders only emitted for Claude Code at runtime\n- Other agents get transformed output (bold text + emoji or plain)\n- Detection works across all 18 supported agents\n- Fallback to safe defaults if detection fails\n- Documentation for FSPEC_AGENT env var and ~/.fspec/config.json",
       "children": []
+    },
+    "TECH-002": {
+      "id": "TECH-002",
+      "title": "Audit AI agent files for .gitignore exclusions",
+      "type": "task",
+      "status": "backlog",
+      "createdAt": "2025-10-21T13:50:11.071Z",
+      "updatedAt": "2025-10-21T13:50:11.071Z",
+      "description": "Review all supported AI agents/tools and identify which files should be excluded from version control via .gitignore. Agents to investigate: Claude Code, Cursor, Windsurf, Copilot, and any other AI coding assistants we support. Look for: 1) Agent-specific configuration files, 2) Temporary files, 3) Cache directories, 4) Session state files, 5) Any generated files that shouldn't be committed. Create comprehensive .gitignore entries to prevent these files from being tracked.",
+      "children": []
+    },
+    "BUG-027": {
+      "id": "BUG-027",
+      "title": "Stash system not adding files before creating stash",
+      "type": "bug",
+      "status": "backlog",
+      "createdAt": "2025-10-21T13:51:56.223Z",
+      "updatedAt": "2025-10-21T13:51:56.223Z",
+      "description": "The stash/restore checkpoint system appears to not be stashing any files. Investigation suggests that files are not being added to git before creating the stash, resulting in empty stashes. Need to verify: 1) Are files being staged with 'git add' before 'git stash'? 2) Are untracked files being included? 3) Are there any error messages being suppressed? 4) Test with actual file modifications to confirm stash behavior.",
+      "children": []
+    },
+    "CLI-007": {
+      "id": "CLI-007",
+      "title": "Add convenience commands for work unit creation by type",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-10-21T13:51:58.078Z",
+      "updatedAt": "2025-10-21T13:51:58.078Z",
+      "description": "Replace generic 'create-work-unit' with type-specific commands to make it obvious to AI agents which command to use. Add: 1) 'fspec create-story' for story work units, 2) 'fspec create-bug' for bug work units, 3) 'fspec create-task' for task work units, 4) 'fspec create-refactor' for refactor work units. These should be aliases/wrappers that call create-work-unit with the appropriate --type flag. Update all documentation and help text to use the new commands. Consider deprecating direct use of create-work-unit in favor of these explicit commands.",
+      "children": []
+    },
+    "BUG-028": {
+      "id": "BUG-028",
+      "title": "spec/AGENT.md files contain stub instead of comprehensive workflow",
+      "type": "story",
+      "status": "validating",
+      "createdAt": "2025-10-21T21:09:20.138Z",
+      "updatedAt": "2025-10-21T22:49:52.538Z",
+      "description": "The spec/AGENT.md files (spec/CLAUDE.md, spec/CURSOR.md, etc.) currently contain only a 17-line stub that creates circular references. According to INIT-004 Rule 16, these files should contain the full ACDD workflow documentation (same 1019-line content as slash commands) with agent-specific transformations applied. Current implementation in templateGenerator.ts uses BASE_AGENT_TEMPLATE (17 lines) instead of getSlashCommandTemplate() content (1019 lines).",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-21T21:09:59.327Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-21T21:12:13.806Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-21T21:13:36.561Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-21T21:15:04.083Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-21T21:23:57.337Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-21T21:44:02.148Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-21T22:28:44.231Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-21T22:31:32.902Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-21T22:49:52.538Z"
+        }
+      ],
+      "rules": [
+        "spec/AGENT.md files must contain full Project Management Guidelines (2069 lines), not a 17-line stub",
+        "generateAgentDoc() must use getProjectManagementTemplate() as base content, not BASE_AGENT_TEMPLATE",
+        "Agent-specific transformations (stripSystemReminders, removeMetaCognitivePrompts, replacePlaceholders) must be applied to Project Management template",
+        "Create projectManagementTemplate.ts following same pattern as slashCommandTemplate.ts with section files",
+        "Keep BASE_AGENT_TEMPLATE only for root stub generation (CURSOR.md, AGENTS.md), use projectManagementTemplate for spec/AGENT.md",
+        "Slash command generation (generateSlashCommandContent) is ALREADY CORRECT and should not be changed"
+      ],
+      "examples": [
+        "Current spec/CLAUDE.md has 17 lines with circular reference: 'For using fspec commands and ACDD workflow: See spec/CLAUDE.md'",
+        "Expected spec/CLAUDE.md should have ~2069 lines with full Project Management Guidelines including work unit management, ACDD workflow, coverage tracking, hooks, checkpoints",
+        "Restored spec/CLAUDE.md (from GitHub) has 2069 lines titled 'Project Management and Specification Guidelines for fspec' - this content should be templated",
+        "Slash command file .claude/commands/fspec.md has 1019 lines of ACDD workflow - this is DIFFERENT from spec/CLAUDE.md and should NOT be changed",
+        "projectManagementTemplate.ts should follow same pattern as slashCommandTemplate.ts with section imports (getIntroSection, getProjectManagementSection, etc.)"
+      ],
+      "userStory": {
+        "role": "AI agent (Cursor, Aider, etc.) reading spec/AGENT.md",
+        "action": "read comprehensive ACDD workflow documentation",
+        "benefit": "I understand the full fspec process without needing to read slash commands"
+      },
+      "architectureNotes": [
+        "Create src/utils/projectManagementTemplate.ts following same pattern as slashCommandTemplate.ts",
+        "Break spec/CLAUDE.md (2069 lines) into section files in src/utils/projectManagementSections/ directory",
+        "Update generateAgentDoc() in src/utils/templateGenerator.ts to use getProjectManagementTemplate() instead of getSlashCommandTemplate()",
+        "generateSlashCommandContent() is ALREADY CORRECT - it uses getSlashCommandTemplate() for .claude/commands/fspec.md (1019 lines)",
+        "After fix, spec/CLAUDE.md should have ~2069 lines (Project Management Guidelines), .claude/commands/fspec.md should remain ~1019 lines (ACDD workflow)"
+      ],
+      "estimate": 2,
+      "questions": [
+        {
+          "text": "@human: Should spec/CLAUDE.md contain the 'Project Management Guidelines' (current 139 lines) or the 'ACDD workflow from slash command' (1019 lines)? What is the actual bug we're fixing?",
+          "selected": true,
+          "answer": "spec/CLAUDE.md should contain 'Project Management and Specification Guidelines' (2069 lines), NOT the ACDD workflow from slash command (1019 lines). My original implementation was WRONG - I copied the slash command template instead of using the Project Management Guidelines template."
+        }
+      ],
+      "attachments": [
+        "spec/attachments/BUG-028/BUG-028-implementation-plan.md"
+      ]
     }
   },
   "states": {
@@ -9591,14 +9707,19 @@
       "BUG-025",
       "BUG-026",
       "INIT-007",
-      "INIT-008"
+      "INIT-008",
+      "TECH-002",
+      "BUG-027",
+      "CLI-007"
     ],
     "specifying": [
       "DOC-005"
     ],
     "testing": [],
     "implementing": [],
-    "validating": [],
+    "validating": [
+      "BUG-028"
+    ],
     "done": [
       "BUG-007",
       "BUG-008",
