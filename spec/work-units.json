@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-21T03:21:21.107Z"
+    "lastUpdated": "2025-10-21T07:37:59.691Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -9045,9 +9045,73 @@
       "type": "story",
       "status": "backlog",
       "createdAt": "2025-10-21T05:58:37.972Z",
-      "updatedAt": "2025-10-21T05:58:37.972Z",
-      "description": "Enable fspec to work with different AI agents (Cursor, Aider, Continue.dev, etc.) through pre-configured templates and custom configuration. Includes agent-specific setup scripts, documentation templates, and an interactive configurator for custom agents.",
+      "updatedAt": "2025-10-21T07:23:38.150Z",
+      "description": "Support multiple AI agents beyond Claude by cloning other AI agent tools to understand their capabilities and configuration requirements. Research how agents like Cursor, Aider, and Continue.dev work to design fspec integration patterns.",
       "children": []
+    },
+    "RES-001": {
+      "id": "RES-001",
+      "title": "Interactive research command with multiple backend support",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-10-21T07:32:19.749Z",
+      "updatedAt": "2025-10-21T07:32:27.373Z",
+      "description": "Implement 'fspec research' command that provides AI agents with interactive choice of registered research endpoints during specifying phase (example mapping, architecture planning). Support multiple backends: (1) Perplexity via MCP (https://github.com/jsonallen/perplexity-mcp) for web search, (2) Nanobrowser via MCP for browser automation and web scraping, (3) Mindstrike via CLI for AI-powered knowledge queries. Command should register available endpoints, present interactive selection to AI agent, execute research query, and return formatted results.",
+      "epic": "example-driven-discovery",
+      "children": [],
+      "dependsOn": [
+        "MCP-002"
+      ]
+    },
+    "BUG-024": {
+      "id": "BUG-024",
+      "title": "Fix dependencies command error with work unit ID argument",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-21T07:33:29.645Z",
+      "updatedAt": "2025-10-21T07:50:38.438Z",
+      "description": "The 'fspec dependencies <id>' command throws 'Invalid action: <id>' error instead of showing dependency tree. Error occurs at dist/index.js:8359. Command should accept work unit ID as argument and display dependency relationships (dependsOn, blocks, blockedBy, relatesTo).",
+      "children": [],
+      "attachments": [
+        "spec/attachments/BUG-024/bug-024-error-details.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-21T07:35:58.546Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-21T07:38:45.398Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-21T07:49:54.638Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-21T07:50:09.592Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-21T07:50:38.438Z"
+        }
+      ],
+      "rules": [
+        "Legacy dependencies() function must be removed to prevent CLI routing conflicts"
+      ],
+      "examples": [
+        "User runs 'fspec dependencies RES-001' and receives dependency list instead of 'Invalid action' error",
+        "Command shows 'Dependencies for RES-001:' followed by relationship lists (blocks, blockedBy, dependsOn, relatesTo)"
+      ],
+      "architectureNotes": [
+        "Root Cause: Legacy dependencies() function (line 1017-1072 in src/commands/dependencies.ts) is still exported and callable. This function expects (action, workUnitId, options) but CLI passes (workUnitId, options) directly to it. Solution: Remove the legacy function since registerDependenciesCommand() now uses showDependencies() instead."
+      ],
+      "userStory": {
+        "role": "AI agent using fspec for project management",
+        "action": "view work unit dependencies using 'fspec dependencies <id>'",
+        "benefit": "I can understand dependency relationships and plan work order"
+      }
     }
   },
   "states": {
@@ -9061,7 +9125,8 @@
       "TECH-001",
       "BOARD-002",
       "CLEAN-001",
-      "INIT-004"
+      "INIT-004",
+      "RES-001"
     ],
     "specifying": [
       "DOC-005"
@@ -9226,7 +9291,8 @@
       "HELP-003",
       "GIT-001",
       "GIT-003",
-      "GIT-002"
+      "GIT-002",
+      "BUG-024"
     ],
     "blocked": []
   }

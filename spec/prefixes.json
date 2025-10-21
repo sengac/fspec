@@ -144,6 +144,11 @@
       "prefix": "TECH",
       "description": "Technical investigations and research",
       "createdAt": "2025-10-21T05:25:24.607Z"
+    },
+    "RES": {
+      "prefix": "RES",
+      "description": "Research commands for external API integration",
+      "createdAt": "2025-10-21T07:32:09.350Z"
     }
   }
 }

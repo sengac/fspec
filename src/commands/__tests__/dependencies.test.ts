@@ -1223,6 +1223,99 @@ describe('Feature: Work Unit Dependency Management', () => {
    * Bug fix (BUG-019): Command now accepts work-unit-id directly instead of requiring action argument.
    */
 
+  /**
+   * Feature: spec/features/fix-dependencies-command-error-with-work-unit-id-argument.feature
+   *
+   * BUG-024: Dependencies command should not throw "Invalid action" error when called with work unit ID.
+   * Root cause: Legacy dependencies() function still exported and being called with work-unit-id as action parameter.
+   */
+  describe('Feature: Fix dependencies command error with work unit ID argument (BUG-024)', () => {
+    describe('Scenario: Command accepts work unit ID without throwing Invalid action error', () => {
+      it('should not throw Invalid action error when querying RES-001 dependencies', async () => {
+        const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+        workUnits.workUnits['MCP-002'] = {
+          id: 'MCP-002',
+          title: 'MCP tool integration framework',
+          status: 'backlog',
+          relationships: {},
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+        workUnits.workUnits['RES-001'] = {
+          id: 'RES-001',
+          title: 'Interactive research command',
+          status: 'backlog',
+          relationships: {
+            dependsOn: ['MCP-002'],
+          },
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+        await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+
+        // This should NOT throw "Invalid action: RES-001"
+        const output = await showDependencies(
+          'RES-001',
+          { graph: false },
+          { cwd: testDir }
+        );
+
+        expect(output).toContain('Dependencies for RES-001:');
+        expect(output).not.toContain('Invalid action');
+      });
+    });
+
+    describe('Scenario: Command displays all relationship types correctly', () => {
+      it('should show all relationship types for work unit with multiple dependencies', async () => {
+        const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+        workUnits.workUnits['MCP-002'] = {
+          id: 'MCP-002',
+          status: 'backlog',
+          relationships: {},
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+        workUnits.workUnits['MCP-005'] = {
+          id: 'MCP-005',
+          status: 'backlog',
+          relationships: {},
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+        workUnits.workUnits['DOC-001'] = {
+          id: 'DOC-001',
+          status: 'backlog',
+          relationships: {},
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+        workUnits.workUnits['RES-001'] = {
+          id: 'RES-001',
+          status: 'backlog',
+          relationships: {
+            dependsOn: ['MCP-002'],
+            blocks: ['MCP-005'],
+            relatesTo: ['DOC-001'],
+          },
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+        await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+
+        const output = await showDependencies(
+          'RES-001',
+          { graph: false },
+          { cwd: testDir }
+        );
+
+        expect(output).toContain('Dependencies for RES-001:');
+        expect(output).toContain('Depends on: MCP-002');
+        expect(output).toContain('Blocks: MCP-005');
+        expect(output).toContain('Related to: DOC-001');
+      });
+    });
+  });
+
   describe('Feature: Dependencies command CLI interface (BUG-019)', () => {
     describe('Scenario: Query dependencies for work unit with no dependencies', () => {
       it('should show empty dependency list for work unit with no relationships', async () => {
