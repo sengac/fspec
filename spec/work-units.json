@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-21T02:35:43.500Z"
+    "lastUpdated": "2025-10-21T02:38:30.011Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -8840,9 +8840,9 @@
       "id": "GIT-003",
       "title": "Fix GIT-001 critical bugs and logic errors",
       "type": "story",
-      "status": "specifying",
+      "status": "done",
       "createdAt": "2025-10-21T02:35:34.991Z",
-      "updatedAt": "2025-10-21T02:36:32.338Z",
+      "updatedAt": "2025-10-21T03:03:08.487Z",
       "description": "Fix blocker test failure, critical logic bugs in getUnstagedFiles(), type safety violations, and add comprehensive test coverage for edge cases identified in ULTRATHINK analysis",
       "epic": "example-driven-discovery",
       "children": [],
@@ -8856,6 +8856,22 @@
         {
           "state": "specifying",
           "timestamp": "2025-10-21T02:36:12.870Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-21T02:41:19.861Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-21T03:02:35.465Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-21T03:02:43.916Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-21T03:03:08.488Z"
         }
       ],
       "rules": [
@@ -8869,7 +8885,13 @@
         "Failing test: File modified after commit in memfs not detected by getUnstagedFiles() - returns [] instead of ['modified.txt']",
         "Partial staging miss: echo v2 > file.txt && git add file.txt && echo v3 >> file.txt results in file appearing in staged but NOT unstaged (should be in both)",
         "Type safety violation: Passing { someMethod: () => {} } as fs option causes runtime error instead of compile-time error"
-      ]
+      ],
+      "userStory": {
+        "role": "developer maintaining fspec",
+        "action": "fix critical bugs and logic errors in GIT-001 isomorphic-git integration",
+        "benefit": "virtual hooks and checkpoint system work correctly with all git scenarios"
+      },
+      "estimate": 8
     }
   },
   "states": {
@@ -8881,9 +8903,7 @@
       "MCP-005",
       "GIT-002"
     ],
-    "specifying": [
-      "GIT-003"
-    ],
+    "specifying": [],
     "testing": [],
     "implementing": [],
     "validating": [],
@@ -9042,7 +9062,8 @@
       "HOOK-001",
       "BUG-023",
       "HELP-003",
-      "GIT-001"
+      "GIT-001",
+      "GIT-003"
     ],
     "blocked": []
   }

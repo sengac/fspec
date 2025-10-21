@@ -130,6 +130,7 @@ Tags that categorize features by functional area.
 | `@state-transition` | State transition operations |  |
 | `@statistics` | Statistical analysis |  |
 | `@tag-management` | TAGS.md Operations |  |
+| `@testing` | Testing and quality assurance features |  |
 | `@tracking` | Metric tracking operations |  |
 | `@ui-refinement` | UI refinement and enhancement operations |  |
 | `@update` | Update operations |  |
@@ -238,6 +239,7 @@ Tags tracking development status of features.
 | `@exmap-001` | Work unit: Redesign Example Mapping to match BDD technique |  |
 | `@init-001` | Work unit: Add ensureWorkUnitsFile to ALL 48+ commands |  |
 | `@partial` | Partially implemented feature - work in progress |  |
+| `@refactor` | Code refactoring and technical improvements |  |
 | `@refactoring` | Code that needs refactoring |  |
 | `@remind-008` | Feature file prefill detection and CLI enforcement work unit |  |
 | `@technical-debt` | Technical debt that should be addressed |  |
@@ -518,7 +520,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-10-21T02:09:30.638Z_
+_Last updated: 2025-10-21T02:40:42.020Z_
 
 **Update Command**: `fspec tag-stats`
 
