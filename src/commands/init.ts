@@ -192,21 +192,9 @@ Then read the comprehensive guide at spec/${agent.docTemplate} for full ACDD wor
 `;
   }
 
-  // Markdown format with YAML frontmatter (most agents)
+  // Markdown format (most agents)
   // Use embedded template (no filesystem dependency)
-  let template = getSlashCommandTemplate();
-
-  // Prepend YAML frontmatter if template doesn't have it
-  if (!template.startsWith('---')) {
-    template = `---
-name: fspec - Load Project Context
-description: Load fspec workflow and ACDD methodology
-category: Project
-tags: [fspec, acdd, workflow]
----
-
-${template}`;
-  }
+  const template = getSlashCommandTemplate();
 
   // Return the full template (which should be 1000+ lines)
   return template;
