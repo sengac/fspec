@@ -134,6 +134,11 @@
       "prefix": "UX",
       "description": "User Experience - CLI usability and AI guidance improvements",
       "createdAt": "2025-10-19T21:40:42.556Z"
+    },
+    "GIT": {
+      "prefix": "GIT",
+      "description": "Git integration and version control features",
+      "createdAt": "2025-10-21T01:48:08.663Z"
     }
   }
 }
