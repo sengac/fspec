@@ -120,7 +120,9 @@ export function formatCommandHelp(config: CommandHelpConfig): string {
       } else {
         // Object format: { pattern, example, description }
         lines.push(`  • ${chalk.bold(pattern.pattern)}`);
-        lines.push(`    ${chalk.dim('Example:')} ${chalk.cyan(pattern.example)}`);
+        lines.push(
+          `    ${chalk.dim('Example:')} ${chalk.cyan(pattern.example)}`
+        );
         lines.push(`    ${pattern.description}`);
         lines.push('');
       }

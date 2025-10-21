@@ -118,7 +118,10 @@ describe('Feature: Intelligent checkpoint system for workflow transitions', () =
     it('should create automatic checkpoint when changing work unit status', async () => {
       // Given: I have a work unit "GIT-002" in "testing" status
       // And: I have uncommitted changes in my working directory
-      await writeFile(join(testDir, 'test-file.txt'), 'Some uncommitted changes');
+      await writeFile(
+        join(testDir, 'test-file.txt'),
+        'Some uncommitted changes'
+      );
 
       // When: I run "fspec update-work-unit-status GIT-002 implementing"
       const result = await updateWorkUnitStatus({
@@ -158,7 +161,9 @@ describe('Feature: Intelligent checkpoint system for workflow transitions', () =
       expect(result.checkpointName).toBe('before-refactor');
 
       // And: the checkpoint should be stored as a git stash with message format
-      expect(result.stashMessage).toMatch(/fspec-checkpoint:GIT-002:before-refactor:[0-9]+/);
+      expect(result.stashMessage).toMatch(
+        /fspec-checkpoint:GIT-002:before-refactor:[0-9]+/
+      );
 
       // And: all file changes should be captured including untracked files
       expect(result.includedUntracked).toBe(true);
@@ -210,7 +215,9 @@ describe('Feature: Intelligent checkpoint system for workflow transitions', () =
         workUnitId: 'GIT-002',
         cwd: testDir,
       });
-      const baselineCheckpoint = result.checkpoints.find((c) => c.name === 'baseline');
+      const baselineCheckpoint = result.checkpoints.find(
+        c => c.name === 'baseline'
+      );
       expect(baselineCheckpoint).toBeDefined();
     });
   });
@@ -285,12 +292,14 @@ describe('Feature: Intelligent checkpoint system for workflow transitions', () =
       expect(result.checkpoints.length).toBeGreaterThanOrEqual(2);
 
       // And: manual checkpoints should show 📌 emoji
-      const manualCheckpoint = result.checkpoints.find((c) => c.name === 'baseline');
+      const manualCheckpoint = result.checkpoints.find(
+        c => c.name === 'baseline'
+      );
       expect(manualCheckpoint).toBeDefined();
       expect(manualCheckpoint?.displayIcon).toBe('📌');
 
       // And: each checkpoint should display its timestamp
-      result.checkpoints.forEach((checkpoint) => {
+      result.checkpoints.forEach(checkpoint => {
         expect(checkpoint.timestamp).toBeDefined();
         expect(checkpoint.timestamp).toMatch(/[0-9]{4}-[0-9]{2}-[0-9]{2}/);
       });
@@ -308,7 +317,7 @@ describe('Feature: Intelligent checkpoint system for workflow transitions', () =
           cwd: testDir,
         });
         // Small delay to ensure different timestamps
-        await new Promise((resolve) => setTimeout(resolve, 10));
+        await new Promise(resolve => setTimeout(resolve, 10));
       }
 
       // When: I run "fspec cleanup-checkpoints GIT-002 --keep-last 5"

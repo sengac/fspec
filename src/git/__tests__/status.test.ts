@@ -69,7 +69,10 @@ describe('Feature: Replace git CLI usage with isomorphic-git library', () => {
 
       // And the repository has unstaged files (modified after commit)
       // NOTE: File size must change for isomorphic-git to detect modification in memfs
-      fs.writeFileSync('/repo/modified.txt', 'changed content with different size');
+      fs.writeFileSync(
+        '/repo/modified.txt',
+        'changed content with different size'
+      );
 
       // When git-context.ts calls getUnstagedFiles()
       const unstagedFiles = await getUnstagedFiles('/repo', { fs });
@@ -350,7 +353,10 @@ describe('Feature: Replace git CLI usage with isomorphic-git library', () => {
       await git.add({ fs, dir: '/repo', filepath: 'partial.txt' });
 
       // And then modified AGAIN to v3 (without staging)
-      fs.writeFileSync('/repo/partial.txt', 'v3 unstaged changes after staging - much longer');
+      fs.writeFileSync(
+        '/repo/partial.txt',
+        'v3 unstaged changes after staging - much longer'
+      );
 
       // Then the file should appear in BOTH getStagedFiles() AND getUnstagedFiles()
       // Status matrix will be: [filepath='partial.txt', HEAD=1, WORKDIR=2, STAGE=3]
@@ -377,9 +383,9 @@ describe('Feature: Replace git CLI usage with isomorphic-git library', () => {
 
       // When operations are called in strict mode
       // Then should throw error (strict mode enabled)
-      await expect(getStagedFiles('/not-a-repo', { fs, strict: true }))
-        .rejects
-        .toThrow();
+      await expect(
+        getStagedFiles('/not-a-repo', { fs, strict: true })
+      ).rejects.toThrow();
     });
 
     it('should return empty array in non-strict mode when directory is not a git repo', async () => {

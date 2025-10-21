@@ -11,9 +11,7 @@ export interface CheckpointOptions {
   cwd: string;
 }
 
-export async function checkpoint(
-  options: CheckpointOptions
-): Promise<{
+export async function checkpoint(options: CheckpointOptions): Promise<{
   success: boolean;
   checkpointName: string;
   stashMessage: string;
@@ -29,8 +27,12 @@ export async function checkpoint(
       includeUntracked: true,
     });
 
-    console.log(chalk.green(`✓ Created checkpoint "${checkpointName}" for ${workUnitId}`));
-    console.log(chalk.gray(`  Captured ${result.capturedFiles.length} file(s)`));
+    console.log(
+      chalk.green(`✓ Created checkpoint "${checkpointName}" for ${workUnitId}`)
+    );
+    console.log(
+      chalk.gray(`  Captured ${result.capturedFiles.length} file(s)`)
+    );
 
     return {
       success: result.success,

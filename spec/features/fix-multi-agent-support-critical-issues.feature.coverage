@@ -1,0 +1,155 @@
+{
+  "scenarios": [
+    {
+      "name": "Non-destructive agent switching",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/init-bug-fixes.test.ts",
+          "lines": "29-72",
+          "implMappings": [
+            {
+              "file": "src/commands/init.ts",
+              "lines": [
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Path traversal attack prevention",
+      "testMappings": []
+    },
+    {
+      "name": "Duplicate agent path detection",
+      "testMappings": []
+    },
+    {
+      "name": "Nested system-reminder transformation",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/templateTransformation.test.ts",
+          "lines": "247-283",
+          "implMappings": [
+            {
+              "file": "src/utils/templateGenerator.ts",
+              "lines": [
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Safe meta-cognitive prompt removal",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/templateTransformation.test.ts",
+          "lines": "285-320",
+          "implMappings": [
+            {
+              "file": "src/utils/templateGenerator.ts",
+              "lines": [
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Helpful invalid agent error",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/init-bug-fixes.test.ts",
+          "lines": "113-140",
+          "implMappings": [
+            {
+              "file": "src/commands/init.ts",
+              "lines": [
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 4,
+    "coveragePercent": 67,
+    "testFiles": [
+      "src/commands/__tests__/init-bug-fixes.test.ts",
+      "src/utils/__tests__/templateTransformation.test.ts"
+    ],
+    "implFiles": [
+      "src/commands/init.ts",
+      "src/utils/templateGenerator.ts"
+    ],
+    "totalLinesCovered": 210
+  }
+}

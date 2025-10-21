@@ -34,7 +34,7 @@ export async function cleanupCheckpoints(
 
     if (result.deletedCount > 0) {
       console.log(chalk.red(`Deleted ${result.deletedCount} checkpoint(s):`));
-      result.deleted.forEach((cp) => {
+      result.deleted.forEach(cp => {
         console.log(chalk.gray(`  - ${cp.name} (${cp.timestamp})`));
       });
       console.log('');
@@ -44,7 +44,7 @@ export async function cleanupCheckpoints(
       console.log(
         chalk.green(`Preserved ${result.preservedCount} checkpoint(s):`)
       );
-      result.preserved.forEach((cp) => {
+      result.preserved.forEach(cp => {
         console.log(chalk.gray(`  - ${cp.name} (${cp.timestamp})`));
       });
       console.log('');
@@ -60,11 +60,11 @@ export async function cleanupCheckpoints(
       deletedCount: result.deletedCount,
       preservedCount: result.preservedCount,
       summary: {
-        deleted: result.deleted.map((cp) => ({
+        deleted: result.deleted.map(cp => ({
           name: cp.name,
           timestamp: cp.timestamp,
         })),
-        preserved: result.preserved.map((cp) => ({
+        preserved: result.preserved.map(cp => ({
           name: cp.name,
           timestamp: cp.timestamp,
         })),

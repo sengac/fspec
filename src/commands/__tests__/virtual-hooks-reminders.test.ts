@@ -119,7 +119,9 @@ describe('Virtual hooks system reminders', () => {
       expect(result.systemReminder).toContain('post-implementing');
 
       // And the reminder should include command examples
-      expect(result.systemReminder).toContain('fspec add-virtual-hook AUTH-001');
+      expect(result.systemReminder).toContain(
+        'fspec add-virtual-hook AUTH-001'
+      );
       expect(result.systemReminder).toContain('fspec list-virtual-hooks');
       expect(result.systemReminder).toContain('fspec remove-virtual-hook');
       expect(result.systemReminder).toContain('fspec clear-virtual-hooks');
