@@ -53,6 +53,10 @@
       "required": true,
       "tags": [
         {
+          "name": "@agent-registry",
+          "description": "Agent registry and configuration management"
+        },
+        {
           "name": "@algorithm",
           "description": "Algorithmic components - similarity matching, scoring, deduplication algorithms"
         },
@@ -93,6 +97,10 @@
           "name": "@parser",
           "description": "Gherkin Parser Integration",
           "scope": "@cucumber/gherkin-parser usage, syntax validation, AST processing (3 files)"
+        },
+        {
+          "name": "@templates",
+          "description": "Template generation and transformation system"
         },
         {
           "name": "@validator",
@@ -327,6 +335,10 @@
           "examples": "Update/delete scenarios, steps, tags, retag operations (11 files)"
         },
         {
+          "name": "@multi-agent-support",
+          "description": "Features related to supporting multiple AI coding agents beyond Claude"
+        },
+        {
           "name": "@operations",
           "description": "General operations"
         },
@@ -424,6 +436,10 @@
         {
           "name": "@schema-design",
           "description": "Schema design and data structure definition"
+        },
+        {
+          "name": "@security",
+          "description": "Security-related features and bug fixes"
         },
         {
           "name": "@soft-dependency",
@@ -1147,7 +1163,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-10-21T03:27:09.179Z",
+    "lastUpdated": "2025-10-21T10:54:45.007Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

@@ -29,6 +29,7 @@ Tags that identify which architectural component a feature belongs to.
 
 | Tag | Description | Usage |
 |-----|-------------|-------|
+| `@agent-registry` | Agent registry and configuration management |  |
 | `@algorithm` | Algorithmic components - similarity matching, scoring, deduplication algorithms |  |
 | `@cli` | Command-Line Interface |  |
 | `@file-ops` | File Operations |  |
@@ -38,6 +39,7 @@ Tags that identify which architectural component a feature belongs to.
 | `@hooks` | Hooks system and execution engine |  |
 | `@integration` | Cross-Component Integration |  |
 | `@parser` | Gherkin Parser Integration |  |
+| `@templates` | Template generation and transformation system |  |
 | `@validator` | Validation Logic |  |
 
 **Rule**: Every feature file MUST have at least ONE component tag (may have multiple if cross-component).
@@ -101,6 +103,7 @@ Tags that categorize features by functional area.
 | `@metrics-estimation` | Metrics and estimation tracking |  |
 | `@migration` | Migration & Data Transformation |  |
 | `@modification` | Feature Modification Operations |  |
+| `@multi-agent-support` | Features related to supporting multiple AI coding agents beyond Claude |  |
 | `@operations` | General operations |  |
 | `@orchestration` | Command orchestration features that coordinate multiple operations |  |
 | `@parent-child` | Parent-child work unit relationships |  |
@@ -125,6 +128,7 @@ Tags that categorize features by functional area.
 | `@scenario-deduplication` | Scenario deduplication and refactoring detection features |  |
 | `@scenario-generation` | Features related to generating scenarios from example mapping |  |
 | `@schema-design` | Schema design and data structure definition |  |
+| `@security` | Security-related features and bug fixes |  |
 | `@soft-dependency` | Soft dependency relationships |  |
 | `@state-enforcement` | State transition enforcement |  |
 | `@state-history` | State history tracking |  |
@@ -521,7 +525,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-10-21T03:27:09.179Z_
+_Last updated: 2025-10-21T10:54:45.007Z_
 
 **Update Command**: `fspec tag-stats`
 

@@ -2,8 +2,7 @@ import type { CommandHelpConfig } from '../utils/help-formatter';
 
 const config: CommandHelpConfig = {
   name: 'add-virtual-hook',
-  description:
-    'Add a work unit-scoped virtual hook for dynamic validation',
+  description: 'Add a work unit-scoped virtual hook for dynamic validation',
   usage: 'fspec add-virtual-hook <workUnitId> <event> <command> [options]',
   whenToUse:
     'Use this command to attach ephemeral validation hooks to specific work units. Virtual hooks are scoped to a single work unit and run BEFORE global hooks. Perfect for one-off quality checks (linting, type checking, security scans) that apply only to the current story/bug/task.',
@@ -21,8 +20,7 @@ const config: CommandHelpConfig = {
     },
     {
       name: 'command',
-      description:
-        'Command to execute (e.g., "npm run lint", "eslint src/")',
+      description: 'Command to execute (e.g., "npm run lint", "eslint src/")',
       required: true,
     },
   ],
@@ -44,31 +42,25 @@ const config: CommandHelpConfig = {
         'fspec add-virtual-hook AUTH-001 post-implementing "npm run lint" --blocking',
       description:
         'Add blocking lint check after implementing (prevents validating if lint fails)',
-      output:
-        '✓ Virtual hook added to AUTH-001\n  Total virtual hooks: 1',
+      output: '✓ Virtual hook added to AUTH-001\n  Total virtual hooks: 1',
     },
     {
       command:
         'fspec add-virtual-hook BUG-042 pre-validating "npm run typecheck" --blocking',
       description: 'Add type check before validation phase',
-      output:
-        '✓ Virtual hook added to BUG-042\n  Total virtual hooks: 1',
+      output: '✓ Virtual hook added to BUG-042\n  Total virtual hooks: 1',
     },
     {
       command:
         'fspec add-virtual-hook FEAT-123 post-implementing "eslint src/" --git-context --blocking',
-      description:
-        'Lint only changed files using git context (more efficient)',
-      output:
-        '✓ Virtual hook added to FEAT-123\n  Total virtual hooks: 1',
+      description: 'Lint only changed files using git context (more efficient)',
+      output: '✓ Virtual hook added to FEAT-123\n  Total virtual hooks: 1',
     },
     {
-      command:
-        'fspec add-virtual-hook AUTH-001 post-validating "npm audit"',
+      command: 'fspec add-virtual-hook AUTH-001 post-validating "npm audit"',
       description:
         'Run security audit (non-blocking - shows output but allows completion)',
-      output:
-        '✓ Virtual hook added to AUTH-001\n  Total virtual hooks: 2',
+      output: '✓ Virtual hook added to AUTH-001\n  Total virtual hooks: 2',
     },
   ],
   commonErrors: [

@@ -14,15 +14,17 @@ export interface GitContext {
  * @param projectRoot - Project root directory
  * @returns Git context with file lists
  */
-export async function getGitContext(
-  projectRoot: string
-): Promise<GitContext> {
+export async function getGitContext(projectRoot: string): Promise<GitContext> {
   try {
     // Detect staged files (git diff --cached --name-only)
-    const stagedResult = await execa('git', ['diff', '--cached', '--name-only'], {
-      cwd: projectRoot,
-      reject: false,
-    });
+    const stagedResult = await execa(
+      'git',
+      ['diff', '--cached', '--name-only'],
+      {
+        cwd: projectRoot,
+        reject: false,
+      }
+    );
 
     const stagedFiles =
       stagedResult.exitCode === 0 && stagedResult.stdout.trim()

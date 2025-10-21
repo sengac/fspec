@@ -34,11 +34,13 @@ export interface RestoreCheckpointResult {
 export async function restoreCheckpoint(
   options: RestoreCheckpointOptions
 ): Promise<RestoreCheckpointResult> {
-  const { workUnitId, checkpointName, cwd, workingDirectoryDirty, userChoice } = options;
+  const { workUnitId, checkpointName, cwd, workingDirectoryDirty, userChoice } =
+    options;
 
   try {
     // Check if working directory is dirty
-    const isDirty = workingDirectoryDirty ?? (await isWorkingDirectoryDirty(cwd));
+    const isDirty =
+      workingDirectoryDirty ?? (await isWorkingDirectoryDirty(cwd));
 
     if (isDirty && !userChoice) {
       // Show interactive prompt with risk explanations
@@ -46,7 +48,8 @@ export async function restoreCheckpoint(
         {
           name: 'Commit changes first',
           riskLevel: 'Low',
-          description: 'Safest option. Commits current changes before restoration.',
+          description:
+            'Safest option. Commits current changes before restoration.',
         },
         {
           name: 'Stash changes and restore',
@@ -102,7 +105,7 @@ export async function restoreCheckpoint(
     if (result.conflictsDetected) {
       console.error(chalk.red('✗ Merge conflicts detected during restoration'));
       console.log(chalk.yellow('\nConflicted files:'));
-      result.conflictedFiles.forEach((file) => {
+      result.conflictedFiles.forEach(file => {
         console.log(chalk.yellow(`  - ${file}`));
       });
       console.log(
@@ -117,7 +120,9 @@ export async function restoreCheckpoint(
       }
     } else {
       console.log(
-        chalk.green(`✓ Restored checkpoint "${checkpointName}" for ${workUnitId}`)
+        chalk.green(
+          `✓ Restored checkpoint "${checkpointName}" for ${workUnitId}`
+        )
       );
     }
 

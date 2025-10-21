@@ -45,7 +45,7 @@ const config: CommandHelpConfig = {
   ],
   commonErrors: [
     {
-      error: "--from option is required",
+      error: '--from option is required',
       fix: 'Specify source work unit: --from AUTH-001',
     },
     {
@@ -61,7 +61,7 @@ const config: CommandHelpConfig = {
       fix: 'Create target work unit first: fspec create-work-unit AUTH "Title"',
     },
     {
-      error: "No virtual hooks configured for source work unit AUTH-001",
+      error: 'No virtual hooks configured for source work unit AUTH-001',
       fix: 'Source must have hooks. Add hooks: fspec add-virtual-hook AUTH-001 ...',
     },
     {

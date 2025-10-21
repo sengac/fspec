@@ -724,7 +724,9 @@ function displayWorkHelp(): void {
   console.log('    Examples:');
   console.log('      fspec list-checkpoints AUTH-001');
   console.log('');
-  console.log('  ' + chalk.cyan('fspec cleanup-checkpoints <id> --keep-last <N>'));
+  console.log(
+    '  ' + chalk.cyan('fspec cleanup-checkpoints <id> --keep-last <N>')
+  );
   console.log('    Description: Delete old checkpoints, keep N most recent');
   console.log('    Examples:');
   console.log('      fspec cleanup-checkpoints AUTH-001 --keep-last 5');

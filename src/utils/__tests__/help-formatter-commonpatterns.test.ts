@@ -18,13 +18,17 @@ describe('Feature: commonPatterns displays [object Object] in help output', () =
         commonPatterns: [
           {
             pattern: 'Linting Before Implementation',
-            example: 'fspec add-virtual-hook AUTH-001 pre-implementing "npm run lint" --blocking',
-            description: 'Ensures code is clean before starting implementation. Prevents messy code from being committed.',
+            example:
+              'fspec add-virtual-hook AUTH-001 pre-implementing "npm run lint" --blocking',
+            description:
+              'Ensures code is clean before starting implementation. Prevents messy code from being committed.',
           },
           {
             pattern: 'Type Checking Before Validation',
-            example: 'fspec add-virtual-hook AUTH-001 pre-validating "npm run typecheck" --blocking',
-            description: 'Catches type errors before moving to validation phase. Strict quality gate.',
+            example:
+              'fspec add-virtual-hook AUTH-001 pre-validating "npm run typecheck" --blocking',
+            description:
+              'Catches type errors before moving to validation phase. Strict quality gate.',
           },
         ],
       };
@@ -40,12 +44,20 @@ describe('Feature: commonPatterns displays [object Object] in help output', () =
       expect(output).toContain('Type Checking Before Validation');
 
       // And each pattern should show the example command
-      expect(output).toContain('fspec add-virtual-hook AUTH-001 pre-implementing "npm run lint" --blocking');
-      expect(output).toContain('fspec add-virtual-hook AUTH-001 pre-validating "npm run typecheck" --blocking');
+      expect(output).toContain(
+        'fspec add-virtual-hook AUTH-001 pre-implementing "npm run lint" --blocking'
+      );
+      expect(output).toContain(
+        'fspec add-virtual-hook AUTH-001 pre-validating "npm run typecheck" --blocking'
+      );
 
       // And each pattern should show the description
-      expect(output).toContain('Ensures code is clean before starting implementation');
-      expect(output).toContain('Catches type errors before moving to validation phase');
+      expect(output).toContain(
+        'Ensures code is clean before starting implementation'
+      );
+      expect(output).toContain(
+        'Catches type errors before moving to validation phase'
+      );
 
       // And the output should NOT contain "[object Object]"
       expect(output).not.toContain('[object Object]');
@@ -71,7 +83,9 @@ describe('Feature: commonPatterns displays [object Object] in help output', () =
       expect(output).toContain('COMMON PATTERNS');
 
       // And each pattern should show as a bulleted string
-      expect(output).toContain('Use this pattern when you need simple guidance');
+      expect(output).toContain(
+        'Use this pattern when you need simple guidance'
+      );
       expect(output).toContain('Another simple pattern example');
 
       // And the formatter should not break existing string[] usage
@@ -88,8 +102,10 @@ describe('Feature: commonPatterns displays [object Object] in help output', () =
         commonPatterns: [
           {
             pattern: 'Multiple Quality Checks',
-            example: 'fspec add-virtual-hook AUTH-001 post-implementing "eslint src/" --blocking',
-            description: 'Adds multiple hooks to same event. Both must pass to proceed.',
+            example:
+              'fspec add-virtual-hook AUTH-001 post-implementing "eslint src/" --blocking',
+            description:
+              'Adds multiple hooks to same event. Both must pass to proceed.',
           },
         ],
       };
@@ -100,7 +116,9 @@ describe('Feature: commonPatterns displays [object Object] in help output', () =
       // Then the COMMON PATTERNS section should display formatted content
       expect(output).toContain('COMMON PATTERNS');
       expect(output).toContain('Multiple Quality Checks');
-      expect(output).toContain('fspec add-virtual-hook AUTH-001 post-implementing');
+      expect(output).toContain(
+        'fspec add-virtual-hook AUTH-001 post-implementing'
+      );
 
       // And no command should show "[object Object]" in help output
       expect(output).not.toContain('[object Object]');

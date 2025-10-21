@@ -34,15 +34,13 @@ export async function listCheckpoints(
 
     console.log(chalk.cyan(`\nCheckpoints for ${workUnitId}:\n`));
 
-    const displayCheckpoints = checkpoints.map((cp) => {
+    const displayCheckpoints = checkpoints.map(cp => {
       const icon = cp.isAutomatic ? '🤖' : '📌';
       const typeLabel = cp.isAutomatic
         ? chalk.gray('(automatic)')
         : chalk.blue('(manual)');
 
-      console.log(
-        `${icon}  ${chalk.bold(cp.name)} ${typeLabel}`
-      );
+      console.log(`${icon}  ${chalk.bold(cp.name)} ${typeLabel}`);
       console.log(chalk.gray(`   Created: ${cp.timestamp}`));
       console.log('');
 

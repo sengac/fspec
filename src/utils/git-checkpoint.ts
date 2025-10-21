@@ -77,7 +77,7 @@ export async function isWorkingDirectoryDirty(cwd: string): Promise<boolean> {
     });
 
     // Check if any files are modified, added, or deleted
-    return status.some((row) => {
+    return status.some(row => {
       const [, headStatus, workdirStatus, stageStatus] = row;
       return headStatus !== workdirStatus || workdirStatus !== stageStatus;
     });
@@ -89,9 +89,7 @@ export async function isWorkingDirectoryDirty(cwd: string): Promise<boolean> {
 /**
  * Create a checkpoint using git stash
  */
-export async function createCheckpoint(
-  options: CheckpointOptions
-): Promise<{
+export async function createCheckpoint(options: CheckpointOptions): Promise<{
   success: boolean;
   checkpointName: string;
   stashMessage: string;
@@ -110,11 +108,11 @@ export async function createCheckpoint(
   });
 
   const capturedFiles = status
-    .filter((row) => {
+    .filter(row => {
       const [, headStatus, workdirStatus] = row;
       return headStatus !== workdirStatus;
     })
-    .map((row) => row[0]);
+    .map(row => row[0]);
 
   // Create stash using isomorphic-git
   // Note: isomorphic-git doesn't have native stash, so we simulate it with commits
@@ -141,9 +139,7 @@ export async function createCheckpoint(
 /**
  * Restore a checkpoint
  */
-export async function restoreCheckpoint(
-  options: RestoreOptions
-): Promise<{
+export async function restoreCheckpoint(options: RestoreOptions): Promise<{
   success: boolean;
   conflictsDetected: boolean;
   conflictedFiles: string[];
@@ -172,7 +168,7 @@ export async function restoreCheckpoint(
     depth: 100,
   });
 
-  const checkpointCommit = commits.find((commit) => {
+  const checkpointCommit = commits.find(commit => {
     const parsed = parseCheckpointMessage(commit.commit.message);
     return (
       parsed &&
@@ -223,7 +219,7 @@ CHECKPOINT RESTORATION CONFLICT DETECTED
 Git merge conflicts occurred during checkpoint restoration.
 
 Conflicted files:
-${files.map((f) => `  - ${f}`).join('\n')}
+${files.map(f => `  - ${f}`).join('\n')}
 
 CRITICAL: AI must resolve conflicts using Read and Edit tools:
   1. Read each conflicted file to understand both versions
