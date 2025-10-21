@@ -235,16 +235,16 @@ export function registerInitCommand(program: Command): void {
 
             // Show interactive selector
             const selectedAgent = await new Promise<string>((resolve) => {
-              const { waitUntilExit } = render(
+              const { unmount } = render(
                 React.createElement(AgentSelector, {
                   agents: availableAgents,
                   preSelected: detected,
                   onSubmit: (selected) => {
+                    unmount();
                     resolve(selected);
                   },
                 })
               );
-              void waitUntilExit();
             });
 
             agentIds = [selectedAgent];
