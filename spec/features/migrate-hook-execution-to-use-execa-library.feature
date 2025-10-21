@@ -5,7 +5,6 @@
 @phase1
 @HOOK-010
 Feature: Migrate hook execution to use execa library
-
   """
   Use execa library (same as cage project) for better process management
   Modify src/hooks/executor.ts executeHook() function
@@ -46,7 +45,6 @@ Feature: Migrate hook execution to use execa library
   #   A: true
   #
   # ========================================
-
   Background: User Story
     As a fspec developer
     I want to use execa for hook execution instead of child_process.spawn

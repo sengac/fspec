@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-20T21:51:17.939Z"
+    "lastUpdated": "2025-10-21T00:34:39.664Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -5175,9 +5175,9 @@
       "id": "HOOK-001",
       "title": "Kanban Lifecycle Hooks System",
       "type": "story",
-      "status": "done",
+      "status": "specifying",
       "createdAt": "2025-10-15T10:55:43.651Z",
-      "updatedAt": "2025-10-15T13:28:40.738Z",
+      "updatedAt": "2025-10-20T22:40:32.637Z",
       "description": "Implement a hooks system similar to Claude Code hooks that allows executing custom commands before/after Kanban state transitions. Hooks are configured in spec/fspec-hooks.json and scripts live in spec/hooks/ directory. Enables quality gates, test automation, notifications, and CI/CD integration at each ACDD workflow stage.",
       "children": [
         "HOOK-002",
@@ -5209,6 +5209,10 @@
         {
           "state": "done",
           "timestamp": "2025-10-15T13:28:40.739Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-20T22:40:32.638Z"
         }
       ],
       "userStory": {
@@ -8486,6 +8490,183 @@
         "Yes - keep old Levenshtein algorithm behind a flag for backward compatibility and A/B testing. Allows users to compare old vs new algorithm results during transition period."
       ],
       "estimate": 8
+    },
+    "HOOK-011": {
+      "id": "HOOK-011",
+      "title": "Work unit-scoped hooks for dynamic validation",
+      "type": "story",
+      "status": "implementing",
+      "createdAt": "2025-10-20T22:40:29.609Z",
+      "updatedAt": "2025-10-20T23:57:49.686Z",
+      "description": "Enable AI agents to attach hooks to specific work units without modifying global hook configuration",
+      "children": [],
+      "userStory": {
+        "role": "AI agent working on a specific work unit",
+        "action": "attach validation hooks (like eslint) to this work unit dynamically",
+        "benefit": "I can enforce quality checks for this story without modifying global hook configuration"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-20T22:41:29.303Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-20T23:11:34.037Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-20T23:14:41.456Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-20T23:18:21.442Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-20T23:23:22.138Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-20T23:23:59.562Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-20T23:35:46.088Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-20T23:35:58.490Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-20T23:36:45.753Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-20T23:51:10.746Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-20T23:51:29.247Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-20T23:57:49.686Z"
+        }
+      ],
+      "questions": [
+        {
+          "text": "@human: Should work unit-scoped hooks be saved permanently (persisted in work-units.json) or ephemeral (exist only during the current session)?",
+          "selected": true,
+          "answer": "Ephemeral by default - hooks run once when requested without persisting. AI can offer to convert useful virtual hooks into permanent hooks (saved to spec/fspec-hooks.json) if the user wants to reuse them."
+        },
+        {
+          "text": "@human: How should the AI discover what virtual hooks are available? Should we have predefined templates (like 'eslint', 'prettier', 'test-coverage') or allow arbitrary commands (like 'npm run custom-lint'), or both?",
+          "selected": true,
+          "answer": "Virtual hooks are created conversationally - AI proactively asks user 'Do you want me to run anything at specific stages?' User names tools (e.g., 'eslint', 'stylelint'). AI then: 1) Checks if tools exist/are installed, 2) Looks up how to use them (help commands, web search), 3) Creates virtual hooks dynamically. No predefined registry needed."
+        },
+        {
+          "text": "@human: When should the AI ask 'Do you want me to run anything at specific stages?' - at the start of the story, at specific workflow stages (like before implementing), or any time during the story?",
+          "selected": true,
+          "answer": "At the end of specifying phase - after specifications are complete and before moving to testing. This is when AI has full context of what will be built and can meaningfully ask about quality checks."
+        },
+        {
+          "text": "@human: When a virtual hook executes (e.g., eslint at post-validating), should it only run for THIS work unit or apply globally to all work units until removed?",
+          "selected": true,
+          "answer": "Scoped to current work unit only by default. After the virtual hook executes successfully, AI should ask: 'This [tool] hook worked well. Do you want to make it permanent so it runs for all work units at this stage?' If yes, AI saves it to spec/fspec-hooks.json using 'fspec add-hook' command."
+        },
+        {
+          "text": "@human: If a virtual hook fails (e.g., eslint finds errors), should it be blocking (prevent workflow transition) or non-blocking (show output but allow transition)? Or should AI ask the user which behavior they want?",
+          "selected": true,
+          "answer": "AI asks user when setting up hook: 'Should I block transitions if [tool] fails?' If user says blocking: STRICT ENFORCEMENT with <system-reminder> wrapping the failure output, AI CANNOT proceed with workflow transition until issues are fixed. If non-blocking: show output but allow transition."
+        },
+        {
+          "text": "@human: What happens to virtual hooks when the work unit reaches 'done' status? Should they automatically be removed, or persist for potential future edits to this work unit?",
+          "selected": true,
+          "answer": "When work unit reaches 'done' status, AI asks user: 'Do you want to keep these virtual hooks for future edits to this story, or remove them?' If keep: hooks remain attached to work unit. If remove: hooks are cleaned up."
+        },
+        {
+          "text": "@human: Where should virtual hooks be stored temporarily? Should they be in work-units.json (in a 'virtualHooks' field), or in a separate temporary file, or in memory only during the AI session?",
+          "selected": true,
+          "answer": "Virtual hooks stored in work-units.json as a 'virtualHooks' array field on the work unit. This ties hooks to the story lifecycle, persists across sessions, visible in 'fspec show-work-unit', and can be cleaned up when story is done."
+        },
+        {
+          "text": "@human: When AI creates a virtual hook to run a tool (like eslint), should it: 1) Execute the command directly (e.g., store 'eslint src/' as the command), or 2) Generate a temporary script file in spec/hooks/.virtual/ that wraps the command?",
+          "selected": true,
+          "answer": "AI decides based on complexity: simple commands use direct execution (e.g., 'eslint src/'), complex ones generate script files in spec/hooks/.virtual/. If hook fails to execute (command not found, script errors, permission issues), AI must: 1) Detect execution failure, 2) Show error to user with <system-reminder>, 3) Offer to fix or remove the broken hook, 4) Ask user if they want to try a different approach."
+        },
+        {
+          "text": "@human: Can a user add multiple virtual hooks to different stages (e.g., eslint at post-implementing AND prettier at post-validating)? And can they add multiple hooks to the SAME stage (e.g., both eslint and stylelint at post-implementing)?",
+          "selected": true,
+          "answer": "Unlimited virtual hooks allowed. User can add multiple hooks to different stages (eslint at post-implementing, prettier at post-validating) AND multiple hooks to the same stage (eslint AND stylelint both at post-implementing). Hooks execute sequentially in the order they were added."
+        },
+        {
+          "text": "@human: How should users view and manage their virtual hooks after they're created? Should there be commands like 'fspec list-virtual-hooks HOOK-011' or should they appear in 'fspec show-work-unit HOOK-011' output? And how should users remove unwanted virtual hooks?",
+          "selected": true,
+          "answer": "Both dedicated commands AND AI conversational management. Commands: 'fspec add-virtual-hook HOOK-011 <event> <command>', 'fspec list-virtual-hooks HOOK-011', 'fspec remove-virtual-hook HOOK-011 <hook-name>'. Virtual hooks also appear in 'fspec show-work-unit HOOK-011' output. AI uses these commands when user says 'add eslint hook' or 'remove the prettier hook'. Commands MUST have comprehensive --help documentation so AI can use them correctly."
+        },
+        {
+          "text": "@human: If a work unit has a virtual hook AND there's a global hook configured for the same event (both at post-implementing), what order should they run? Virtual first then global, or global first then virtual?",
+          "selected": true,
+          "answer": "Virtual hooks run BEFORE global hooks. Execution order: 1) Virtual hooks (work unit-specific), 2) Global hooks (from spec/fspec-hooks.json). This allows work unit-specific validation to happen first before broader project-wide checks."
+        },
+        {
+          "text": "@human: How should users copy virtual hooks from one work unit to another? Should there be a command like 'fspec copy-virtual-hooks --from AUTH-001 --to HOOK-011', or should AI handle it conversationally ('use the same hooks as AUTH-001')? And should it copy all hooks or allow selecting specific ones?",
+          "selected": true,
+          "answer": "Both dedicated command AND AI conversational management. Command: 'fspec copy-virtual-hooks --from AUTH-001 --to HOOK-011' (copies all hooks) or 'fspec copy-virtual-hooks --from AUTH-001 --to HOOK-011 --hook-name eslint' (copies specific hook). AI can handle conversationally: 'use the same hooks as AUTH-001' (all) or 'copy the eslint hook from AUTH-001' (specific). Command must have comprehensive --help."
+        }
+      ],
+      "rules": [
+        "Ephemeral by default - hooks run once when requested without persisting. AI can offer to convert useful virtual hooks into permanent hooks (saved to spec/fspec-hooks.json) if the user wants to reuse them.",
+        "Virtual hooks are created conversationally - AI proactively asks user 'Do you want me to run anything at specific stages?' User names tools (e.g., 'eslint', 'stylelint'). AI then: 1) Checks if tools exist/are installed, 2) Looks up how to use them (help commands, web search), 3) Creates virtual hooks dynamically. No predefined registry needed.",
+        "When AI asks 'Do you want me to run anything at specific stages?', it MUST list the available hook events (post-implementing, post-testing, post-validating, pre-specifying, etc.) so the human knows their options",
+        "At the end of specifying phase - after specifications are complete and before moving to testing. This is when AI has full context of what will be built and can meaningfully ask about quality checks.",
+        "AI must phrase the question clearly with examples: 'Do you want me to run a command or program at any stage of this story? For example, I could run eslint after implementing, or run prettier before validating. Here are the available stages: [list stages]'",
+        "Scoped to current work unit only by default. After the virtual hook executes successfully, AI should ask: 'This [tool] hook worked well. Do you want to make it permanent so it runs for all work units at this stage?' If yes, AI saves it to spec/fspec-hooks.json using 'fspec add-hook' command.",
+        "AI asks user when setting up hook: 'Should I block transitions if [tool] fails?' If user says blocking: STRICT ENFORCEMENT with <system-reminder> wrapping the failure output, AI CANNOT proceed with workflow transition until issues are fixed. If non-blocking: show output but allow transition.",
+        "When work unit reaches 'done' status, AI asks user: 'Do you want to keep these virtual hooks for future edits to this story, or remove them?' If keep: hooks remain attached to work unit. If remove: hooks are cleaned up.",
+        "Virtual hooks stored in work-units.json as a 'virtualHooks' array field on the work unit. This ties hooks to the story lifecycle, persists across sessions, visible in 'fspec show-work-unit', and can be cleaned up when story is done.",
+        "AI decides based on complexity: simple commands use direct execution (e.g., 'eslint src/'), complex ones generate script files in spec/hooks/.virtual/. If hook fails to execute (command not found, script errors, permission issues), AI must: 1) Detect execution failure, 2) Show error to user with <system-reminder>, 3) Offer to fix or remove the broken hook, 4) Ask user if they want to try a different approach.",
+        "Unlimited virtual hooks allowed. User can add multiple hooks to different stages (eslint at post-implementing, prettier at post-validating) AND multiple hooks to the same stage (eslint AND stylelint both at post-implementing). Hooks execute sequentially in the order they were added.",
+        "Both dedicated commands AND AI conversational management. Commands: 'fspec add-virtual-hook HOOK-011 <event> <command>', 'fspec list-virtual-hooks HOOK-011', 'fspec remove-virtual-hook HOOK-011 <hook-name>'. Virtual hooks also appear in 'fspec show-work-unit HOOK-011' output. AI uses these commands when user says 'add eslint hook' or 'remove the prettier hook'. Commands MUST have comprehensive --help documentation so AI can use them correctly.",
+        "Virtual hooks run BEFORE global hooks. Execution order: 1) Virtual hooks (work unit-specific), 2) Global hooks (from spec/fspec-hooks.json). This allows work unit-specific validation to happen first before broader project-wide checks.",
+        "Both dedicated command AND AI conversational management. Command: 'fspec copy-virtual-hooks --from AUTH-001 --to HOOK-011' (copies all hooks) or 'fspec copy-virtual-hooks --from AUTH-001 --to HOOK-011 --hook-name eslint' (copies specific hook). AI can handle conversationally: 'use the same hooks as AUTH-001' (all) or 'copy the eslint hook from AUTH-001' (specific). Command must have comprehensive --help.",
+        "Virtual hooks can receive git context (staged/unstaged files) via hook context JSON. AI can create hooks that target specific changed files. For complex hooks needing git context, AI generates script files in spec/hooks/.virtual/ that process the file list.",
+        "Git context is OPTIONAL. When setting up a virtual hook, AI asks: 'Do you want this hook to target only changed files (staged/unstaged)? For example, I can run eslint only on your modified .ts files.' If yes: AI generates script that uses git context. If no: command runs as-is without git context (e.g., 'eslint src/' runs against entire codebase)."
+      ],
+      "examples": [
+        "User is working on AUTH-001. At end of specifying, AI asks: 'Do you want me to run a command or program at any stage? For example, eslint after implementing. Available stages: post-implementing, post-testing, post-validating.' User says: 'Yes, run eslint and prettier.' AI creates two virtual hooks, asks if blocking, stores in work-units.json.",
+        "Virtual hook 'eslint' runs at post-implementing. Eslint finds 3 errors. Hook is blocking. AI shows errors wrapped in <system-reminder>, CANNOT proceed to validating until user fixes errors. User fixes errors, re-runs transition, eslint passes, transition succeeds.",
+        "Virtual hook runs successfully. AI asks: 'The eslint hook worked well. Do you want to make it permanent for all work units?' User says yes. AI runs 'fspec add-hook post-implementing eslint spec/hooks/.virtual/eslint-HOOK-011.sh --blocking' to save to spec/fspec-hooks.json.",
+        "Work unit reaches done status. AI asks: 'Do you want to keep these virtual hooks for future edits to this story, or remove them?' User says remove. AI cleans up virtualHooks array from work-units.json and deletes generated script files.",
+        "User says 'use the same hooks as AUTH-001'. AI runs 'fspec copy-virtual-hooks --from AUTH-001 --to HOOK-011', copies all virtual hooks (eslint, prettier) with their configurations (blocking status, event names) to current work unit.",
+        "Virtual hook command 'eslint src/' fails to execute (command not found). AI detects execution failure, shows error in <system-reminder>: 'Hook failed to execute: eslint: command not found. Install eslint or check PATH.' AI offers to remove broken hook or try different command.",
+        "User runs 'fspec show-work-unit HOOK-011'. Output includes 'Virtual Hooks' section showing: 'post-implementing: eslint (blocking), prettier (non-blocking)', 'post-validating: test-coverage (blocking)'. User can see all active hooks at a glance.",
+        "User says 'run eslint only on changed files'. AI creates virtual hook with script in spec/hooks/.virtual/eslint-changed-files.sh. Hook context includes git info: {stagedFiles: ['src/auth.ts'], unstagedFiles: ['src/utils.ts']}. Script runs: eslint $STAGED_FILES. This is more efficient than linting entire codebase."
+      ],
+      "estimate": 8,
+      "virtualHooks": [
+        {
+          "name": "npm",
+          "event": "post-implementing",
+          "command": "npm run lint",
+          "blocking": true
+        }
+      ],
+      "attachments": [
+        "spec/attachments/HOOK-011/HOOK-011-issues-found.md"
+      ]
+    },
+    "BUG-023": {
+      "id": "BUG-023",
+      "title": "commonPatterns displays [object Object] in help output",
+      "type": "bug",
+      "status": "backlog",
+      "createdAt": "2025-10-21T00:28:59.162Z",
+      "updatedAt": "2025-10-21T00:30:08.330Z",
+      "children": [],
+      "description": "Detailed bug analysis in spec/bugs/BUG-023-commonpatterns-formatting.md\n\nThe COMMON PATTERNS section in command help displays '[object Object]' instead of formatted pattern information. \n\nRoot cause: Type mismatch between CommandHelpConfig interface (expects string[]) and help file implementations (use objects with pattern/example/description).\n\nAffects: All help files including add-hook-help.ts and all 5 new virtual-hook help files.\n\nSee attached markdown for full analysis, reproduction steps, and recommended solutions."
     }
   },
   "states": {
@@ -8494,11 +8675,16 @@
       "MCP-002",
       "MCP-003",
       "MCP-004",
-      "MCP-005"
+      "MCP-005",
+      "BUG-023"
     ],
-    "specifying": [],
+    "specifying": [
+      "HOOK-001"
+    ],
     "testing": [],
-    "implementing": [],
+    "implementing": [
+      "HOOK-011"
+    ],
     "validating": [],
     "done": [
       "BUG-007",
@@ -8609,7 +8795,6 @@
       "HOOK-008",
       "HOOK-009",
       "EXMAP-003",
-      "HOOK-001",
       "BUG-011",
       "FEAT-012",
       "FEAT-013",

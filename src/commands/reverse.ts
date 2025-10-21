@@ -484,7 +484,7 @@ async function reverseCommand(options: ReverseCommandOptions): Promise<void> {
     // Display suggestions if present
     if (result.suggestions && result.suggestions.length > 0) {
       console.log('\nNext steps:');
-      result.suggestions.forEach((suggestion) => {
+      result.suggestions.forEach(suggestion => {
         console.log(`  - ${suggestion}`);
       });
     }
@@ -516,11 +516,8 @@ export function registerReverseCommand(program: any): void {
     .option('--status', 'Show current session status and progress')
     .option('--reset', 'Delete session file and start fresh')
     .option('--complete', 'Mark session as complete and delete session file')
-    .option(
-      '--dry-run',
-      'Preview gap analysis without creating session file'
-    )
-    .action(async (options) => {
+    .option('--dry-run', 'Preview gap analysis without creating session file')
+    .action(async options => {
       await reverseCommand(options);
     });
 }

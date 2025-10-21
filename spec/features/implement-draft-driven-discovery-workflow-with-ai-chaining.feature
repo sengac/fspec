@@ -3,7 +3,6 @@
 @phase1
 @DISC-001
 Feature: Implement draft-driven discovery workflow with AI chaining
-
   """
   System-reminders are invisible to users but visible to AI - they guide AI through each field with: field N/M progress, field path, specific guidance (ULTRATHINK for codebase analysis, persona discovery from interactions, WHY/WHAT focus not HOW), exact command to run with field path.
   """
@@ -42,7 +41,6 @@ Feature: Implement draft-driven discovery workflow with AI chaining
   #   10. ERROR: Validation Failure → AI fills all fields → Command validates against schema → Validation FAILS: missing required field problemSpace.primaryProblem.description → Command emits: 'Schema validation failed. Missing required: problemSpace.primaryProblem.description. Draft NOT finalized. Fix by running appropriate commands: fspec update-foundation <section> "<value>", fspec add-capability "<name>" "<description>", or fspec add-persona "<name>" "<description>" --goal "<goal>". Then re-run discover-foundation to validate.' → Draft kept, foundation.json NOT created → AI fixes missing field and re-runs
   #
   # ========================================
-
   Background: User Story
     As a AI agent running discover-foundation
     I want to be guided step-by-step through filling foundation.json.draft

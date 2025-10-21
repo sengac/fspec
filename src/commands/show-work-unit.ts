@@ -225,6 +225,7 @@ export async function showWorkUnit(
       architectureNotes: workUnit.architectureNotes,
     }),
     ...(workUnit.attachments && { attachments: workUnit.attachments }),
+    ...(workUnit.virtualHooks && { virtualHooks: workUnit.virtualHooks }),
     createdAt: workUnit.createdAt,
     updatedAt: workUnit.updatedAt,
     linkedFeatures,
@@ -318,6 +319,32 @@ export async function showWorkUnitCommand(
         result.attachments.forEach((attachment, idx) => {
           console.log(`  ${idx + 1}. ${attachment}`);
         });
+      }
+
+      if (result.virtualHooks && result.virtualHooks.length > 0) {
+        console.log(chalk.cyan('\nVirtual Hooks:'));
+        const hooksByEvent: Record<string, any[]> = {};
+        for (const hook of result.virtualHooks) {
+          if (!hooksByEvent[hook.event]) {
+            hooksByEvent[hook.event] = [];
+          }
+          hooksByEvent[hook.event].push(hook);
+        }
+        for (const [event, hooks] of Object.entries(hooksByEvent)) {
+          console.log(`  ${chalk.yellow(event)}:`);
+          for (const hook of hooks) {
+            const blockingBadge = hook.blocking
+              ? chalk.red('(blocking)')
+              : chalk.gray('(non-blocking)');
+            const gitContextBadge = hook.gitContext
+              ? chalk.blue('[git-context]')
+              : '';
+            console.log(
+              `    • ${hook.name} ${blockingBadge} ${gitContextBadge}`
+            );
+            console.log(chalk.gray(`      ${hook.command}`));
+          }
+        }
       }
 
       if (result.linkedFeatures && result.linkedFeatures.length > 0) {

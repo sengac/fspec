@@ -20,9 +20,9 @@ export function formatHookOutput(
     parts.push(result.stderr);
   }
 
-  // Blocking hook stderr is wrapped in <system-reminder> tags
-  // Empty stderr produces no system-reminder (only if stderr has content)
-  if (isBlocking && result.stderr && !result.success) {
+  // Blocking hook failures are ALWAYS wrapped in <system-reminder> tags
+  // This makes failures highly visible to AI, even if no stderr
+  if (isBlocking && !result.success) {
     const systemReminder = formatSystemReminder(result);
     parts.push(systemReminder);
   }
@@ -36,10 +36,16 @@ function formatSystemReminder(result: HookExecutionResult): string {
     '<system-reminder>',
     `Hook: ${result.hookName}`,
     `Exit code: ${result.exitCode}`,
-    '',
-    result.stderr,
-    '</system-reminder>',
   ];
+
+  // Add stderr if present, otherwise add generic failure message
+  if (result.stderr) {
+    lines.push('', result.stderr);
+  } else {
+    lines.push('', '(Hook failed with no error output)');
+  }
+
+  lines.push('</system-reminder>');
 
   return lines.join('\n');
 }

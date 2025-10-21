@@ -4,7 +4,6 @@
 @phase1
 @FOUND-009
 Feature: Foundation missing error message is not imperative enough
-
   """
   Architecture notes:
   - Error message located in src/utils/foundation-check.ts buildFoundationMissingError()
@@ -26,7 +25,6 @@ Feature: Foundation missing error message is not imperative enough
   #   2. Error message shows: Step 1: fspec discover-foundation (creates draft), Step 2: Fill [QUESTION:] placeholders, Step 3: fspec discover-foundation --finalize
   #
   # ========================================
-
   Background: User Story
     As a AI agent without foundation.json
     I want to receive imperative guidance on foundation discovery workflow

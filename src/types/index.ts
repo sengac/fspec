@@ -12,6 +12,15 @@ export interface UserStory {
   benefit: string;
 }
 
+// Virtual Hook Interface
+export interface VirtualHook {
+  name: string;
+  event: string;
+  command: string;
+  blocking: boolean;
+  gitContext?: boolean;
+}
+
 // Work Item Type
 export type WorkItemType = 'story' | 'task' | 'bug';
 
@@ -45,6 +54,7 @@ export interface WorkUnit {
   architectureNotes?: string[];
   attachments?: string[]; // Relative paths to files in spec/attachments/<work-unit-id>/
   userStory?: UserStory;
+  virtualHooks?: VirtualHook[]; // Work unit-scoped hooks for dynamic validation
   stateHistory?: Array<{
     state: string;
     timestamp: string;

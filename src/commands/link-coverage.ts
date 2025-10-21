@@ -85,11 +85,11 @@ export async function linkCoverage(
       throw new Error(
         wrapSystemReminder(
           `Coverage file not found but feature file exists.\n` +
-          `The scenario "${scenario}" may exist in the feature file but coverage tracking is not set up.\n` +
-          `Run: fspec generate-coverage\n` +
-          `This will create coverage files for all feature files, then you can link coverage.`
+            `The scenario "${scenario}" may exist in the feature file but coverage tracking is not set up.\n` +
+            `Run: fspec generate-coverage\n` +
+            `This will create coverage files for all feature files, then you can link coverage.`
         ) +
-        `\n\nCoverage file not found: ${fileName}.coverage\nSuggestion: Run 'fspec generate-coverage' to create coverage tracking`
+          `\n\nCoverage file not found: ${fileName}.coverage\nSuggestion: Run 'fspec generate-coverage' to create coverage tracking`
       );
     }
     throw new Error(
@@ -102,18 +102,20 @@ export async function linkCoverage(
   if (!scenarioEntry) {
     // Check if scenario exists in feature file
     const scenariosInFeature = await getScenariosFromFeatureFile(featureFile);
-    const scenarioExistsInFeature = scenariosInFeature.some(s => s === scenario);
+    const scenarioExistsInFeature = scenariosInFeature.some(
+      s => s === scenario
+    );
 
     if (scenarioExistsInFeature) {
       // Scenario exists in feature but not in coverage - need to regenerate
       throw new Error(
         wrapSystemReminder(
           `Scenario "${scenario}" exists in feature file but not in coverage file.\n` +
-          `This means the coverage file is out of sync with the feature file.\n` +
-          `Run: fspec generate-coverage\n` +
-          `This will update the coverage file with the new scenario, then you can run link-coverage first.`
+            `This means the coverage file is out of sync with the feature file.\n` +
+            `Run: fspec generate-coverage\n` +
+            `This will update the coverage file with the new scenario, then you can run link-coverage first.`
         ) +
-        `\n\nScenario not found: "${scenario}"\nAvailable scenarios:\n${coverage.scenarios.map(s => `  - ${s.name}`).join('\n')}`
+          `\n\nScenario not found: "${scenario}"\nAvailable scenarios:\n${coverage.scenarios.map(s => `  - ${s.name}`).join('\n')}`
       );
     }
 
@@ -367,7 +369,9 @@ function wrapSystemReminder(content: string): string {
   return `<system-reminder>\n${content}\n</system-reminder>`;
 }
 
-async function getScenariosFromFeatureFile(featureFilePath: string): Promise<string[]> {
+async function getScenariosFromFeatureFile(
+  featureFilePath: string
+): Promise<string[]> {
   try {
     const content = await readFile(featureFilePath, 'utf-8');
     const scenarios: string[] = [];

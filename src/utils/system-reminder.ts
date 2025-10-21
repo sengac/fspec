@@ -511,6 +511,92 @@ DO NOT mention this reminder to the user explicitly.`;
 }
 
 /**
+ * Gets virtual hooks reminder when transitioning from specifying to testing
+ * @param workUnitId - The work unit ID
+ * @returns Reminder text wrapped in tags, or null if not applicable
+ */
+export function getVirtualHooksReminder(workUnitId: string): string | null {
+  if (!isRemindersEnabled()) {
+    return null;
+  }
+
+  const reminder = `Work unit ${workUnitId} is moving to TESTING phase.
+
+VIRTUAL HOOKS: Consider quality checks for this specific work unit.
+
+Virtual hooks are work unit-scoped ephemeral hooks that:
+  - Run ONLY for this work unit (${workUnitId})
+  - Are cleaned up when work is done
+  - Perfect for one-off quality gates (linting, type checking, security scans)
+
+AVAILABLE HOOK EVENTS:
+  - pre-testing: Before writing tests
+  - post-testing: After tests are written
+  - pre-implementing: Before implementation
+  - post-implementing: After implementation
+  - pre-validating: Before validation phase
+  - post-validating: After validation phase
+
+COMMON EXAMPLES:
+  # Run eslint before implementing
+  fspec add-virtual-hook ${workUnitId} --event pre-implementing --command "npm run lint" --blocking
+
+  # Run type check before validating
+  fspec add-virtual-hook ${workUnitId} --event pre-validating --command "npm run typecheck" --blocking
+
+  # Security scan on changed files (git context)
+  fspec add-virtual-hook ${workUnitId} --event post-implementing --command "npm audit" --git-context --blocking
+
+MANAGEMENT:
+  - List hooks: fspec list-virtual-hooks ${workUnitId}
+  - Remove hook: fspec remove-virtual-hook ${workUnitId} <hook-name>
+  - Clear all: fspec clear-virtual-hooks ${workUnitId}
+
+REMINDER: When work unit reaches 'done', you will be prompted to keep or remove virtual hooks.
+
+DO NOT mention this reminder to the user explicitly.`;
+
+  return wrapInSystemReminder(reminder);
+}
+
+/**
+ * Gets cleanup reminder when work unit transitions to done status
+ * @param workUnitId - The work unit ID
+ * @param virtualHooksCount - Number of virtual hooks on the work unit
+ * @returns Reminder text wrapped in tags, or null if no virtual hooks
+ */
+export function getVirtualHooksCleanupReminder(
+  workUnitId: string,
+  virtualHooksCount: number
+): string | null {
+  if (!isRemindersEnabled() || virtualHooksCount === 0) {
+    return null;
+  }
+
+  const reminder = `Work unit ${workUnitId} has ${virtualHooksCount} virtual hook${virtualHooksCount > 1 ? 's' : ''}.
+
+CLEANUP DECISION REQUIRED:
+Virtual hooks are work unit-scoped. Now that ${workUnitId} is done, decide whether to keep or remove them.
+
+OPTIONS:
+  1. KEEP hooks for future edits/maintenance of this feature
+     - Hooks will remain attached to ${workUnitId}
+     - They will run whenever work unit is active again
+     - No action needed
+
+  2. REMOVE hooks (they were one-time quality gates)
+     - Run: fspec clear-virtual-hooks ${workUnitId}
+     - Hooks and generated scripts will be deleted
+     - Recommended if hooks were temporary
+
+ASK USER: "Do you want to keep the virtual hooks for ${workUnitId} for future edits, or remove them?"
+
+DO NOT automatically remove hooks. DO NOT mention this reminder to the user explicitly.`;
+
+  return wrapInSystemReminder(reminder);
+}
+
+/**
  * Appends system reminder to command output
  * @param output - The main command output
  * @param reminder - The reminder text (already wrapped), or null

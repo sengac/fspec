@@ -3,10 +3,15 @@
  */
 
 import { loadHookConfig } from './config.js';
-import { discoverHooks, generateEventNames } from './discovery.js';
+import {
+  discoverHooks,
+  discoverVirtualHooks,
+  generateEventNames,
+} from './discovery.js';
 import { executeHooks } from './executor.js';
 import { evaluateHookCondition } from './conditions.js';
 import { formatHookOutput } from './formatting.js';
+import { getGitContext } from './git-context.js';
 import type { HookContext, HookExecutionResult } from './types.js';
 import type { WorkUnit } from '../types/work-units.js';
 import { readFile } from 'fs/promises';
@@ -50,21 +55,13 @@ export async function runCommandWithHooks<T>(
     timestamp: new Date().toISOString(),
   };
 
-  // Load hook configuration
+  // Load hook configuration (optional - virtual hooks work without it)
   let config;
   try {
     config = await loadHookConfig(projectRoot);
   } catch {
-    // No hooks configured, run command normally
-    commandResult = await commandFn(context);
-    return {
-      preHookResults: [],
-      postHookResults: [],
-      commandExecuted: true,
-      exitCode: 0,
-      output: '',
-      commandResult,
-    };
+    // No global hooks configured - use empty config
+    config = { hooks: {} };
   }
 
   // Load work unit if workUnitId is provided
@@ -80,10 +77,29 @@ export async function runCommandWithHooks<T>(
     }
   }
 
-  // Discover and filter pre-hooks
-  const preHooks = discoverHooks(config, preEvent).filter(hook =>
+  // Discover virtual hooks (run BEFORE global hooks)
+  const virtualPreHooks = discoverVirtualHooks(workUnit, preEvent);
+
+  // Discover and filter global pre-hooks
+  const globalPreHooks = discoverHooks(config, preEvent).filter(hook =>
     evaluateHookCondition(hook, hookContext, workUnit)
   );
+
+  // Combine: virtual hooks FIRST, then global hooks
+  const preHooks = [...virtualPreHooks, ...globalPreHooks];
+
+  // Check if any hooks need git context
+  const needsGitContext = preHooks.some(hook => {
+    // VirtualHook type has gitContext field
+    return 'gitContext' in hook && hook.gitContext === true;
+  });
+
+  // Add git context if needed
+  if (needsGitContext) {
+    const gitContext = await getGitContext(projectRoot);
+    hookContext.stagedFiles = gitContext.stagedFiles;
+    hookContext.unstagedFiles = gitContext.unstagedFiles;
+  }
 
   // Execute pre-hooks
   hookContext.event = preEvent;
@@ -129,10 +145,28 @@ export async function runCommandWithHooks<T>(
   commandResult = await commandFn(context);
   commandExecuted = true;
 
-  // Discover and filter post-hooks
-  const postHooks = discoverHooks(config, postEvent).filter(hook =>
+  // Discover virtual post-hooks (run BEFORE global hooks)
+  const virtualPostHooks = discoverVirtualHooks(workUnit, postEvent);
+
+  // Discover and filter global post-hooks
+  const globalPostHooks = discoverHooks(config, postEvent).filter(hook =>
     evaluateHookCondition(hook, hookContext, workUnit)
   );
+
+  // Combine: virtual hooks FIRST, then global hooks
+  const postHooks = [...virtualPostHooks, ...globalPostHooks];
+
+  // Check if any post-hooks need git context
+  const needsGitContextPost = postHooks.some(hook => {
+    return 'gitContext' in hook && hook.gitContext === true;
+  });
+
+  // Add git context if needed (refresh for post-hooks)
+  if (needsGitContextPost) {
+    const gitContext = await getGitContext(projectRoot);
+    hookContext.stagedFiles = gitContext.stagedFiles;
+    hookContext.unstagedFiles = gitContext.unstagedFiles;
+  }
 
   // Execute post-hooks
   hookContext.event = postEvent;

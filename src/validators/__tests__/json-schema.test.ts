@@ -83,8 +83,12 @@ describe('Feature: Validate JSON Files Against Schemas', () => {
       expect(result.errors.some(e => e.instancePath === '/project')).toBe(true);
 
       // And the error should mention "must have required property 'name'"
-      const projectError = result.errors.find(e => e.instancePath === '/project');
-      expect(projectError?.message).toContain("must have required property 'name'");
+      const projectError = result.errors.find(
+        e => e.instancePath === '/project'
+      );
+      expect(projectError?.message).toContain(
+        "must have required property 'name'"
+      );
     });
   });
 
@@ -271,7 +275,6 @@ describe('Feature: Validate JSON Files Against Schemas', () => {
       expect(nameError?.message).toContain('pattern');
     });
   });
-
 
   describe('Scenario: Handle malformed JSON file', () => {
     it('should throw a SyntaxError for invalid JSON syntax', async () => {

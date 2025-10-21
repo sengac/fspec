@@ -155,7 +155,7 @@ Feature: Help Command
         'version-display.feature',
       ];
 
-      const createdFile = capabilityFiles.find((file) =>
+      const createdFile = capabilityFiles.find(file =>
         existsSync(join(featuresDir, file))
       );
       expect(createdFile).toBeDefined();

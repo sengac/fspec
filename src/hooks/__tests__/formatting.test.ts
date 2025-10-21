@@ -96,8 +96,8 @@ describe('Feature: System reminder formatting for AI', () => {
     });
   });
 
-  describe('Scenario: Blocking hook fails with empty stderr produces no system-reminder', () => {
-    it('should not generate system-reminder when stderr is empty', () => {
+  describe('Scenario: Blocking hook fails with empty stderr produces system-reminder', () => {
+    it('should generate system-reminder even when stderr is empty', () => {
       // Given I have a blocking hook that fails with exit code 1
       // And the hook produces no stderr output
       const result: HookExecutionResult = {
@@ -114,8 +114,12 @@ describe('Feature: System reminder formatting for AI', () => {
       // When I format the hook output for display
       const formatted = formatHookOutput(result, isBlocking);
 
-      // Then no system-reminder should be generated
-      expect(formatted).not.toContain('<system-reminder>');
+      // Then system-reminder should be generated with generic message
+      expect(formatted).toContain('<system-reminder>');
+      expect(formatted).toContain('Hook: test');
+      expect(formatted).toContain('Exit code: 1');
+      expect(formatted).toContain('(Hook failed with no error output)');
+      expect(formatted).toContain('</system-reminder>');
     });
   });
 

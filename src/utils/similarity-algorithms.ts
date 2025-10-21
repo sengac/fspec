@@ -101,7 +101,10 @@ export function jaroWinklerSimilarity(str1: string, str2: string): number {
 
   // Calculate Jaro similarity
   const jaro =
-    (matches / len1 + matches / len2 + (matches - transpositions / 2) / matches) / 3;
+    (matches / len1 +
+      matches / len2 +
+      (matches - transpositions / 2) / matches) /
+    3;
 
   // Calculate common prefix length (up to 4 characters)
   let prefix = 0;
@@ -125,7 +128,10 @@ export function jaroWinklerSimilarity(str1: string, str2: string): number {
  * @param scenario2 - Second scenario
  * @returns Similarity score (0-1)
  */
-export function tokenSetRatio(scenario1: Scenario, scenario2: Scenario): number {
+export function tokenSetRatio(
+  scenario1: Scenario,
+  scenario2: Scenario
+): number {
   // Combine name and steps, strip Gherkin keywords
   const text1 = `${scenario1.name} ${scenario1.steps.join(' ')}`
     .toLowerCase()
@@ -137,8 +143,8 @@ export function tokenSetRatio(scenario1: Scenario, scenario2: Scenario): number 
     .trim();
 
   // Tokenize into words
-  const tokens1 = text1.split(/\s+/).filter((t) => t.length > 0);
-  const tokens2 = text2.split(/\s+/).filter((t) => t.length > 0);
+  const tokens1 = text1.split(/\s+/).filter(t => t.length > 0);
+  const tokens2 = text2.split(/\s+/).filter(t => t.length > 0);
 
   if (tokens1.length === 0 && tokens2.length === 0) {
     return 1.0;
@@ -152,9 +158,9 @@ export function tokenSetRatio(scenario1: Scenario, scenario2: Scenario): number 
   const set2 = new Set(tokens2);
 
   // Calculate intersection and differences
-  const intersection = new Set([...set1].filter((t) => set2.has(t)));
-  const diff1 = new Set([...set1].filter((t) => !set2.has(t)));
-  const diff2 = new Set([...set2].filter((t) => !set1.has(t)));
+  const intersection = new Set([...set1].filter(t => set2.has(t)));
+  const diff1 = new Set([...set1].filter(t => !set2.has(t)));
+  const diff2 = new Set([...set2].filter(t => !set1.has(t)));
 
   // Create sorted strings
   const sortedIntersection = [...intersection].sort().join(' ');
@@ -214,7 +220,7 @@ export function trigramSimilarity(str1: string, str2: string): number {
   // Count common trigrams
   const set1 = new Set(trigrams1);
   const set2 = new Set(trigrams2);
-  const intersection = [...set1].filter((t) => set2.has(t)).length;
+  const intersection = [...set1].filter(t => set2.has(t)).length;
 
   // Dice coefficient: 2 * |intersection| / (|set1| + |set2|)
   return (2 * intersection) / (set1.size + set2.size);
@@ -228,7 +234,10 @@ export function trigramSimilarity(str1: string, str2: string): number {
  * @param scenario2 - Second scenario
  * @returns Similarity score (0-1)
  */
-export function jaccardSimilarity(scenario1: Scenario, scenario2: Scenario): number {
+export function jaccardSimilarity(
+  scenario1: Scenario,
+  scenario2: Scenario
+): number {
   // Extract keywords (alphanumeric tokens, no stopwords)
   const extractKeywords = (scenario: Scenario): Set<string> => {
     const text = `${scenario.name} ${scenario.steps.join(' ')}`
@@ -236,19 +245,55 @@ export function jaccardSimilarity(scenario1: Scenario, scenario2: Scenario): num
       .replace(/\b(given|when|then|and|but)\b/gi, '');
 
     const stopWords = new Set([
-      'a', 'an', 'the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for',
-      'of', 'with', 'by', 'from', 'as', 'is', 'are', 'was', 'were', 'be',
-      'been', 'being', 'have', 'has', 'had', 'do', 'does', 'did', 'will',
-      'would', 'should', 'could', 'may', 'might', 'must', 'can', 'i', 'that',
-      'it', 'this'
+      'a',
+      'an',
+      'the',
+      'and',
+      'or',
+      'but',
+      'in',
+      'on',
+      'at',
+      'to',
+      'for',
+      'of',
+      'with',
+      'by',
+      'from',
+      'as',
+      'is',
+      'are',
+      'was',
+      'were',
+      'be',
+      'been',
+      'being',
+      'have',
+      'has',
+      'had',
+      'do',
+      'does',
+      'did',
+      'will',
+      'would',
+      'should',
+      'could',
+      'may',
+      'might',
+      'must',
+      'can',
+      'i',
+      'that',
+      'it',
+      'this',
     ]);
 
     const words = text.match(/\b[a-z0-9]+\b/gi) || [];
     const keywords = words.filter(
-      (word) => word.length > 2 && !stopWords.has(word.toLowerCase())
+      word => word.length > 2 && !stopWords.has(word.toLowerCase())
     );
 
-    return new Set(keywords.map((k) => k.toLowerCase()));
+    return new Set(keywords.map(k => k.toLowerCase()));
   };
 
   const keywords1 = extractKeywords(scenario1);
@@ -263,7 +308,7 @@ export function jaccardSimilarity(scenario1: Scenario, scenario2: Scenario): num
   }
 
   // Calculate intersection and union
-  const intersection = new Set([...keywords1].filter((k) => keywords2.has(k)));
+  const intersection = new Set([...keywords1].filter(k => keywords2.has(k)));
   const union = new Set([...keywords1, ...keywords2]);
 
   // Jaccard = |intersection| / |union|
@@ -278,7 +323,10 @@ export function jaccardSimilarity(scenario1: Scenario, scenario2: Scenario): num
  * @param scenario2 - Second scenario
  * @returns Similarity score (0-1)
  */
-export function gherkinStructuralSimilarity(scenario1: Scenario, scenario2: Scenario): number {
+export function gherkinStructuralSimilarity(
+  scenario1: Scenario,
+  scenario2: Scenario
+): number {
   // Parse steps by type
   const parseSteps = (scenario: Scenario) => {
     const given: string[] = [];
@@ -293,7 +341,10 @@ export function gherkinStructuralSimilarity(scenario1: Scenario, scenario2: Scen
         when.push(step.replace(/^when\s+/i, '').toLowerCase());
       } else if (normalizedStep.startsWith('then')) {
         then.push(step.replace(/^then\s+/i, '').toLowerCase());
-      } else if (normalizedStep.startsWith('and') || normalizedStep.startsWith('but')) {
+      } else if (
+        normalizedStep.startsWith('and') ||
+        normalizedStep.startsWith('but')
+      ) {
         // Add to the last category
         const cleaned = step.replace(/^(and|but)\s+/i, '').toLowerCase();
         if (then.length > 0) {
@@ -323,7 +374,7 @@ export function gherkinStructuralSimilarity(scenario1: Scenario, scenario2: Scen
 
     const set1 = new Set(steps1);
     const set2 = new Set(steps2);
-    const intersection = new Set([...set1].filter((s) => set2.has(s)));
+    const intersection = new Set([...set1].filter(s => set2.has(s)));
     const union = new Set([...set1, ...set2]);
 
     return intersection.size / union.size;
@@ -365,7 +416,10 @@ export function hybridSimilarity(
 
   const jaroWinklerScore = jaroWinklerSimilarity(titleText1, titleText2);
   const tokenSetScore = tokenSetRatio(scenario1, scenario2);
-  const gherkinStructuralScore = gherkinStructuralSimilarity(scenario1, scenario2);
+  const gherkinStructuralScore = gherkinStructuralSimilarity(
+    scenario1,
+    scenario2
+  );
 
   // Trigram on combined text
   const combinedText1 = `${scenario1.name} ${scenario1.steps.join(' ')}`;

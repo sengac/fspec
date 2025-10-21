@@ -5,7 +5,6 @@
 @phase1
 @BUG-020
 Feature: remove-question command shows '[object Object]' instead of question text
-
   """
   Bug in src/commands/remove-question.ts: Success message displays '[object Object]' instead of question text. Root cause: Passing entire question object to console.log instead of extracting the text property. Fix: Access question.question property before display.
   """
@@ -23,7 +22,6 @@ Feature: remove-question command shows '[object Object]' instead of question tex
   #   2. Remove question with special characters '@human: What happens?' displays correctly
   #
   # ========================================
-
   Background: User Story
     As a developer using fspec
     I want to see the actual question text when removing a question

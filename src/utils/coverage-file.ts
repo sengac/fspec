@@ -36,9 +36,7 @@ export interface CoverageFile {
  * Create a coverage file for a feature file
  * Returns status: 'created', 'skipped', 'recreated', or 'updated'
  */
-export async function createCoverageFile(
-  featureFilePath: string
-): Promise<{
+export async function createCoverageFile(featureFilePath: string): Promise<{
   status: 'created' | 'skipped' | 'recreated' | 'updated';
   message: string;
 }> {

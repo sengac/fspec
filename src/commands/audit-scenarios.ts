@@ -10,7 +10,10 @@ import { join } from 'path';
 import chalk from 'chalk';
 import * as Gherkin from '@cucumber/gherkin';
 import * as Messages from '@cucumber/messages';
-import { calculateScenarioSimilarity, extractKeywords } from '../utils/scenario-similarity.js';
+import {
+  calculateScenarioSimilarity,
+  extractKeywords,
+} from '../utils/scenario-similarity.js';
 
 interface DuplicateGroup {
   files: string[];
@@ -35,7 +38,9 @@ interface AuditOptions {
 /**
  * Audit all feature files for duplicate scenarios
  */
-export async function auditScenarios(options: AuditOptions = {}): Promise<AuditResult> {
+export async function auditScenarios(
+  options: AuditOptions = {}
+): Promise<AuditResult> {
   const cwd = options.cwd || process.cwd();
   const threshold = options.threshold || 0.75;
 
@@ -43,7 +48,7 @@ export async function auditScenarios(options: AuditOptions = {}): Promise<AuditR
   const featureFiles = await glob('spec/features/**/*.feature', {
     cwd,
     absolute: true,
-    onlyFiles: true
+    onlyFiles: true,
   });
 
   // Parse all features and extract scenarios
@@ -71,23 +76,27 @@ export async function auditScenarios(options: AuditOptions = {}): Promise<AuditR
       }
 
       const scenarios = doc.feature.children
-        .filter((child) => child.scenario)
-        .map((child) => ({
+        .filter(child => child.scenario)
+        .map(child => ({
           name: child.scenario!.name,
-          steps: child.scenario!.steps.map((step) => `${step.keyword}${step.text}`)
+          steps: child.scenario!.steps.map(
+            step => `${step.keyword}${step.text}`
+          ),
         }));
 
       if (scenarios.length > 0) {
         featureScenarios.push({
           file: featureFile.replace(cwd + '/', ''),
           name: doc.feature.name,
-          scenarios
+          scenarios,
         });
         totalScenarios += scenarios.length;
       }
     } catch (error) {
       // Skip invalid feature files
-      console.error(chalk.yellow(`⚠ Skipping ${featureFile}: ${(error as Error).message}`));
+      console.error(
+        chalk.yellow(`⚠ Skipping ${featureFile}: ${(error as Error).message}`)
+      );
     }
   }
 
@@ -109,7 +118,7 @@ export async function auditScenarios(options: AuditOptions = {}): Promise<AuditR
         files: [feature1.file],
         scenarios: [scenario1.name],
         similarityScore: 1.0,
-        keywords: extractKeywords(scenario1)
+        keywords: extractKeywords(scenario1),
       };
 
       // Compare with scenarios in other features
@@ -146,7 +155,10 @@ export async function auditScenarios(options: AuditOptions = {}): Promise<AuditR
     duplicates,
     mergeable: duplicates.length > 0,
     totalScenarios,
-    duplicateCount: duplicates.reduce((sum, group) => sum + group.files.length, 0)
+    duplicateCount: duplicates.reduce(
+      (sum, group) => sum + group.files.length,
+      0
+    ),
   };
 }
 
@@ -154,16 +166,20 @@ export async function auditScenarios(options: AuditOptions = {}): Promise<AuditR
  * Display audit results
  */
 export function displayAuditResults(result: AuditResult): void {
-  console.log(
-    chalk.bold(`\n📊 Scenario Audit Report\n${'='.repeat(50)}\n`)
-  );
+  console.log(chalk.bold(`\n📊 Scenario Audit Report\n${'='.repeat(50)}\n`));
 
   console.log(`Total scenarios scanned: ${chalk.cyan(result.totalScenarios)}`);
-  console.log(`Duplicate groups found: ${chalk.yellow(result.duplicates.length)}`);
-  console.log(`Total duplicate scenarios: ${chalk.yellow(result.duplicateCount)}\n`);
+  console.log(
+    `Duplicate groups found: ${chalk.yellow(result.duplicates.length)}`
+  );
+  console.log(
+    `Total duplicate scenarios: ${chalk.yellow(result.duplicateCount)}\n`
+  );
 
   if (result.duplicates.length === 0) {
-    console.log(chalk.green('✓ No duplicates found! All scenarios are unique.\n'));
+    console.log(
+      chalk.green('✓ No duplicates found! All scenarios are unique.\n')
+    );
     return;
   }
 
@@ -209,7 +225,10 @@ export async function command(options: AuditOptions = {}): Promise<void> {
       process.exit(1);
     }
   } catch (error) {
-    console.error(chalk.red('Error auditing scenarios:'), (error as Error).message);
+    console.error(
+      chalk.red('Error auditing scenarios:'),
+      (error as Error).message
+    );
     process.exit(1);
   }
 }

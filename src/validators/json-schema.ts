@@ -12,10 +12,7 @@ export interface ValidationResult {
 /**
  * Validate a JSON object against a JSON Schema
  */
-function validateJsonObject(
-  data: unknown,
-  schema: object
-): ValidationResult {
+function validateJsonObject(data: unknown, schema: object): ValidationResult {
   const ajv = new Ajv({ allErrors: true, verbose: true });
   addFormats(ajv); // Add format validation (uri, date-time, etc.)
 

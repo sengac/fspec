@@ -44,43 +44,37 @@ const config: CommandHelpConfig = {
   examples: [
     {
       command: 'fspec reverse',
-      description:
-        'Initial analysis: detect gaps and suggest strategy',
+      description: 'Initial analysis: detect gaps and suggest strategy',
       output:
         '<system-reminder>\nGap analysis complete.\nDetected: 3 test files without features\nSuggested: Strategy A (Spec Gap Filling)\nTo choose this strategy, run: fspec reverse --strategy=A\n</system-reminder>\n\nFound 3 test files without feature files\nSuggested Strategy: A (Spec Gap Filling)\nEstimated Effort: 6-9 story points',
     },
     {
       command: 'fspec reverse --strategy=A',
-      description:
-        'Choose Strategy A and receive first step guidance',
+      description: 'Choose Strategy A and receive first step guidance',
       output:
         '<system-reminder>\nStep 1 of 3\nStrategy: A (Spec Gap Filling)\nAfter completing this step, run: fspec reverse --continue\n</system-reminder>\n\nRead test file: src/__tests__/auth.test.ts\nThen create feature file\nThen run fspec link-coverage with --skip-validation',
     },
     {
       command: 'fspec reverse --continue',
-      description:
-        'Move to next step after completing current one',
+      description: 'Move to next step after completing current one',
       output:
         '<system-reminder>\nStep 2 of 3\nProcess file: src/__tests__/user.test.ts\nAfter completing this step, run: fspec reverse --continue\n</system-reminder>\n\nProcess test file: src/__tests__/user.test.ts...',
     },
     {
       command: 'fspec reverse --status',
-      description:
-        'Check current session status and progress',
+      description: 'Check current session status and progress',
       output:
         'Phase: executing\nStrategy: A (Spec Gap Filling)\nProgress: Step 2 of 3\nGaps Detected: 3 test files without features\nFiles:\n  [✓] src/__tests__/auth.test.ts (completed)\n  [→] src/__tests__/user.test.ts (in progress)\n  [ ] src/__tests__/product.test.ts (pending)',
     },
     {
       command: 'fspec reverse --complete',
-      description:
-        'Finalize session after completing all steps',
+      description: 'Finalize session after completing all steps',
       output:
         '<system-reminder>\nSession completed successfully.\nAll gaps filled.\n</system-reminder>\n\n✓ Reverse ACDD session complete',
     },
     {
       command: 'fspec reverse --dry-run',
-      description:
-        'Preview analysis without creating session',
+      description: 'Preview analysis without creating session',
       output:
         'DRY-RUN MODE: Analysis complete, no session created.\nDetected: 3 test files without features\nSuggested: Strategy A (Spec Gap Filling)\nEstimated Effort: 6-9 story points',
     },

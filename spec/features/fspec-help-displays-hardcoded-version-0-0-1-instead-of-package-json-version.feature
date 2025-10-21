@@ -4,7 +4,6 @@
 @phase1
 @BUG-021
 Feature: fspec --help displays hardcoded version 0.0.1 instead of package.json version
-
   """
   Version string is read from package.json at build time using TypeScript/Vite. Build process embeds version into dist bundle. If version cannot be read, the version line is omitted from --help output.
   """
@@ -32,7 +31,6 @@ Feature: fspec --help displays hardcoded version 0.0.1 instead of package.json v
   #   A: true
   #
   # ========================================
-
   Background: User Story
     As a developer using fspec
     I want to run fspec --help to check version
