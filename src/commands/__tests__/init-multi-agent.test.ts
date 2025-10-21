@@ -61,8 +61,8 @@ describe('Feature: Support multiple AI agents beyond Claude', () => {
       expect(content).toContain('ACDD');
       expect(content).toContain('Example Mapping');
 
-      // And the file should use Markdown format with YAML frontmatter
-      expect(content).toMatch(/^---\n/);
+      // And the file should be plain Markdown WITHOUT YAML frontmatter
+      expect(content).toMatch(/^# fspec Command/);
     });
   });
 

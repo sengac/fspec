@@ -9382,7 +9382,7 @@
       "type": "story",
       "status": "done",
       "createdAt": "2025-10-21T11:10:11.887Z",
-      "updatedAt": "2025-10-21T12:52:18.544Z",
+      "updatedAt": "2025-10-21T13:14:07.492Z",
       "description": "Update registerInitCommand to use new multi-agent system (installAgents, agent registry, interactive selector). Deprecate and remove old single-agent code (init function, generateTemplate, copyClaudeTemplate). The new infrastructure exists but isn't being called - fspec init still defaults to Claude-only installation.",
       "children": [],
       "stateHistory": [
@@ -9485,6 +9485,26 @@
         {
           "state": "done",
           "timestamp": "2025-10-21T12:52:18.545Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-21T13:09:33.571Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-21T13:10:54.118Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-21T13:12:16.851Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-21T13:12:24.992Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-21T13:14:07.492Z"
         }
       ],
       "rules": [

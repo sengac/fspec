@@ -144,4 +144,43 @@ describe('Feature: Wire up multi-agent support to fspec init command', () => {
       expect(cursorCmdContent).toContain('fspec');
     });
   });
+
+  describe('Scenario: Slash command files use correct format without YAML frontmatter', () => {
+    it('should generate markdown files without YAML frontmatter', async () => {
+      // Given: I run "fspec init --agent=claude"
+      await installAgents(testDir, ['claude']);
+
+      // When: The slash command file is generated
+      const slashCmdPath = join(testDir, '.claude', 'commands', 'fspec.md');
+      const slashCmdContent = await readFile(slashCmdPath, 'utf-8');
+
+      // Then: The markdown file should NOT contain YAML frontmatter (---)
+      const firstLines = slashCmdContent.split('\n').slice(0, 10).join('\n');
+      expect(slashCmdContent).not.toMatch(/^---\s*\n/);
+      expect(firstLines).not.toContain('name: fspec');
+      expect(firstLines).not.toContain('description: Load fspec');
+      expect(firstLines).not.toContain('category: Project');
+      expect(firstLines).not.toContain('tags: [fspec');
+
+      // And: The file should start with "# fspec Command"
+      expect(slashCmdContent).toMatch(/^# fspec Command/);
+    });
+
+    it('should generate TOML files with [command] section metadata', async () => {
+      // Given: I run "fspec init --agent=gemini"
+      await installAgents(testDir, ['gemini']);
+
+      // When: The slash command file is generated
+      const slashCmdPath = join(testDir, '.gemini', 'commands', 'fspec.toml');
+      const slashCmdContent = await readFile(slashCmdPath, 'utf-8');
+
+      // Then: TOML files (Gemini, Qwen) should have [command] section with metadata
+      expect(slashCmdContent).toContain('[command]');
+      expect(slashCmdContent).toContain('name = "fspec - Load Project Context"');
+      expect(slashCmdContent).toContain('description = "Load fspec workflow and ACDD methodology"');
+
+      // And: TOML files should NOT have YAML frontmatter
+      expect(slashCmdContent).not.toMatch(/^---\s*\n/);
+    });
+  });
 });
