@@ -1,3 +1,4 @@
+@setup
 @done
 @phase1
 @cli
@@ -59,10 +60,10 @@ Feature: Wire up multi-agent support to fspec init command
     And no --agent flag is provided
     When I run "fspec init"
     Then an interactive agent selector should be displayed
-    And auto-detected agents should be pre-selected
-    And I can navigate with arrow keys
-    And pressing Enter confirms the selection
-    And installAgents() is called with the selected agents
+    And cursor highlights the first available agent (or auto-detected agent if present)
+    And I can navigate with arrow keys (↑↓)
+    And pressing Enter immediately installs the highlighted agent
+    And installAgents() is called with the single selected agent
 
   Scenario: CLI mode skips interactive selector
     Given I am in a project directory
@@ -92,3 +93,9 @@ Feature: Wire up multi-agent support to fspec init command
     Then generated files should contain "Cursor" not "Claude Code"
     And the slash command path should be ".cursor/commands/"
     And the documentation should reference "CURSOR.md"
+
+  Scenario: Embedded templates work independently
+    When I run fspec init in any directory
+    Then templates are loaded from embedded TypeScript modules
+    And the command works without requiring external template files
+    And all agents receive consistent template content

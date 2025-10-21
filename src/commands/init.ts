@@ -2,9 +2,13 @@ import { mkdir, writeFile, rm } from 'fs/promises';
 import type { Command } from 'commander';
 import { join } from 'path';
 import chalk from 'chalk';
-import { getAgentById, type AgentConfig } from '../utils/agentRegistry';
+import React from 'react';
+import { render } from 'ink';
+import { getAgentById, type AgentConfig, AGENT_REGISTRY } from '../utils/agentRegistry';
 import { generateAgentDoc } from '../utils/templateGenerator';
 import { getSlashCommandTemplate } from '../utils/slashCommandTemplate';
+import { detectAgents } from '../utils/agentDetection';
+import { AgentSelector } from '../components/AgentSelector';
 
 /**
  * Install fspec for multiple agents
@@ -158,7 +162,7 @@ async function installSlashCommand(
   const commandPath = join(commandsDir, filename);
 
   // Generate slash command content
-  const content = await generateSlashCommandContent(cwd, agent);
+  const content = generateSlashCommandContent(agent);
 
   await writeFile(commandPath, content, 'utf-8');
 }
@@ -166,10 +170,9 @@ async function installSlashCommand(
 /**
  * Generate slash command content
  */
-async function generateSlashCommandContent(
-  cwd: string,
+function generateSlashCommandContent(
   agent: AgentConfig
-): Promise<string> {
+): string {
   if (agent.slashCommandFormat === 'toml') {
     // TOML format for Gemini CLI, Qwen Code
     return `[command]
@@ -225,7 +228,42 @@ export function registerInitCommand(program: Command): void {
       async (options: { agent: string[] }) => {
         try {
           const cwd = process.cwd();
-          const agentIds = options.agent.length > 0 ? options.agent : ['claude'];
+          let agentIds: string[];
+
+          // Interactive mode: no --agent flag provided
+          if (options.agent.length === 0) {
+            // Check if stdin supports raw mode (required for interactive selection)
+            if (!process.stdin.isTTY || !process.stdin.setRawMode) {
+              throw new Error(
+                'Interactive mode requires a TTY. Use --agent flag instead:\n' +
+                '  fspec init --agent=claude\n' +
+                '  fspec init --agent=cursor --agent=claude'
+              );
+            }
+
+            // Auto-detect agents in current directory
+            const detected = await detectAgents(cwd);
+            const availableAgents = AGENT_REGISTRY.filter(a => a.available);
+
+            // Show interactive selector
+            const selectedAgent = await new Promise<string>((resolve) => {
+              const { waitUntilExit } = render(
+                React.createElement(AgentSelector, {
+                  agents: availableAgents,
+                  preSelected: detected,
+                  onSubmit: (selected) => {
+                    resolve(selected);
+                  },
+                })
+              );
+              void waitUntilExit();
+            });
+
+            agentIds = [selectedAgent];
+          } else {
+            // CLI mode: --agent flag(s) provided
+            agentIds = options.agent;
+          }
 
           // Install agents using new multi-agent system
           await installAgents(cwd, agentIds);
