@@ -39,7 +39,7 @@ Next steps:
   2. Use fspec CLI commands (NOT Write/Edit tools)
   3. Then estimate based on completed acceptance criteria
 
-DO NOT attempt to estimate before removing placeholders.`,
+DO NOT mention this reminder to the user explicitly.`,
     agent
   );
 

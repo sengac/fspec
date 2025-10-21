@@ -103,5 +103,5 @@ export function getProjectManagementTemplate(agent: AgentConfig): string {
     getVirtualHooksSection(agent),
     getGitCheckpointsSection(agent),
     getReferencesSection()
-  ].join('\n');
+  ].join('\n\n');
 }

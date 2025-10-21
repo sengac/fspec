@@ -32,7 +32,7 @@ When fspec generates feature files (via \`create-feature\` or \`generate-scenari
 ### ${agent.supportsSystemReminders ? 'System-Reminders' : 'Warning Messages'} for Placeholder Detection
 
 When prefill is detected, fspec emits a ${agent.supportsSystemReminders ? '\`<system-reminder>\`' : 'warning message'} that is:
-- **Visible to AI** - Agent sees and processes the message
+- **Visible to AI** - Agent sees and processes the ${agent.supportsSystemReminders ? 'reminder' : 'message'}
 - **Invisible to users** - Stripped from UI output
 - **Actionable** - Contains specific CLI commands to fix the issue
 
