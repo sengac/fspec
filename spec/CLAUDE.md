@@ -2349,6 +2349,267 @@ echo '{"stagedFiles":["src/auth.ts"],"unstagedFiles":[]}' | \
 - Help: Run `fspec add-virtual-hook --help` for comprehensive usage guide
 - Examples: Check `src/commands/*-virtual-hook-help.ts` for detailed patterns
 
+## Git Checkpoints for Safe Experimentation
+
+fspec provides an intelligent checkpoint system that uses git stash to create automatic and manual save points during development. Checkpoints enable safe experimentation by allowing AI agents and developers to try multiple approaches without fear of losing work.
+
+### What Are Checkpoints?
+
+**Checkpoints** are git stash-based snapshots of all file changes (including untracked files) at specific points in time. They:
+
+- **Capture complete state** - All modified and untracked files (respecting .gitignore)
+- **Persist until deleted** - No automatic expiration or cleanup
+- **Enable re-restoration** - Same checkpoint can be restored multiple times
+- **Support experiments** - Create baseline, try approach A, restore baseline, try approach B
+- **Integrate with workflow** - Automatic checkpoints created on status transitions
+
+**Checkpoint Types:**
+
+| Type | Trigger | Naming Pattern | Visual Indicator |
+|------|---------|----------------|------------------|
+| Automatic | Status transition | `{work-unit-id}-auto-{state}` | 🤖 |
+| Manual | Explicit command | User-provided name | 📌 |
+
+### Automatic Checkpoints
+
+**When created:**
+- Before every workflow state transition (except from `backlog`)
+- Only if working directory has uncommitted changes
+
+**Example:**
+```bash
+# You have uncommitted changes in AUTH-001
+$ fspec update-work-unit-status AUTH-001 implementing
+🤖 Auto-checkpoint: "AUTH-001-auto-testing" created before transition
+✓ Work unit AUTH-001 status updated to implementing
+```
+
+**Why automatic checkpoints matter:**
+- Recovery from mistakes during implementation
+- Rollback if new status proves premature
+- Safety net for AI agents making rapid changes
+
+### Manual Checkpoints
+
+**Create checkpoints for:**
+- Experimentation with multiple approaches
+- Before risky refactoring or major changes
+- Creating named baselines for comparison
+- Saving progress before switching contexts
+
+#### Creating Checkpoints
+
+```bash
+# Create checkpoint before trying new approach
+fspec checkpoint AUTH-001 baseline
+
+# Create checkpoint with descriptive name
+fspec checkpoint UI-002 before-refactor
+
+# Create checkpoint for experiment
+fspec checkpoint BUG-003 working-version
+```
+
+#### Listing Checkpoints
+
+```bash
+# View all checkpoints for work unit
+$ fspec list-checkpoints AUTH-001
+
+Checkpoints for AUTH-001:
+
+📌  before-refactor (manual)
+   Created: 2025-10-21T14:30:00.000Z
+
+📌  baseline (manual)
+   Created: 2025-10-21T13:15:00.000Z
+
+🤖  AUTH-001-auto-testing (automatic)
+   Created: 2025-10-21T10:00:00.000Z
+```
+
+#### Restoring Checkpoints
+
+```bash
+# Restore to baseline
+fspec restore-checkpoint AUTH-001 baseline
+
+# Restore after failed experiment
+fspec restore-checkpoint UI-002 before-refactor
+```
+
+**Restoration behavior:**
+- Uses `git stash apply` (preserves checkpoint for re-restoration)
+- Detects working directory status (prompts if dirty)
+- Handles conflicts with AI-assisted resolution
+
+#### Cleaning Up Checkpoints
+
+```bash
+# Keep last 5 checkpoints, delete older ones
+$ fspec cleanup-checkpoints AUTH-001 --keep-last 5
+
+Cleaning up checkpoints for AUTH-001 (keeping last 5)...
+
+Deleted 7 checkpoint(s):
+  - experiment-1 (2025-10-20T10:00:00.000Z)
+  - experiment-2 (2025-10-20T11:00:00.000Z)
+  ...
+
+Preserved 5 checkpoint(s):
+  - current-state (2025-10-21T14:30:00.000Z)
+  - working-version (2025-10-21T13:15:00.000Z)
+  ...
+
+✓ Cleanup complete: 7 deleted, 5 preserved
+```
+
+### Workflow Patterns
+
+#### Pattern 1: Multiple Experiments from Baseline
+
+```bash
+# 1. Create baseline
+fspec checkpoint AUTH-001 baseline
+
+# 2. Try approach A
+# ... make changes
+# ... doesn't work
+
+# 3. Restore baseline
+fspec restore-checkpoint AUTH-001 baseline
+
+# 4. Try approach B
+# ... make changes
+# ... works!
+
+# 5. Continue with approach B
+```
+
+#### Pattern 2: Before Risky Refactoring
+
+```bash
+# 1. Create checkpoint before refactoring
+fspec checkpoint REFACTOR-001 before-extraction
+
+# 2. Refactor code
+# ... extract large function
+# ... tests fail
+
+# 3. Restore and try different approach
+fspec restore-checkpoint REFACTOR-001 before-extraction
+
+# 4. Try smaller refactoring
+# ... tests pass
+```
+
+#### Pattern 3: Experimentation with Cleanup
+
+```bash
+# 1. Create checkpoints during experimentation
+fspec checkpoint UI-002 experiment-tabs
+# ... implement tabs
+fspec restore-checkpoint UI-002 baseline
+
+fspec checkpoint UI-002 experiment-accordion
+# ... implement accordion
+fspec restore-checkpoint UI-002 baseline
+
+fspec checkpoint UI-002 experiment-carousel
+# ... implement carousel (winner!)
+
+# 2. Cleanup old experiments
+fspec cleanup-checkpoints UI-002 --keep-last 2
+# Keeps: experiment-carousel, baseline
+```
+
+### Dirty Working Directory Handling
+
+When restoring a checkpoint with uncommitted changes, fspec prompts with risk-aware options:
+
+```bash
+$ fspec restore-checkpoint AUTH-001 baseline
+⚠️  Working directory has uncommitted changes
+
+Choose how to proceed:
+  1. Commit changes first [Low risk]
+     Safest option. Commits current changes before restoration.
+  2. Stash changes and restore [Medium risk]
+     Temporarily saves changes. Can restore later, but may cause conflicts.
+  3. Force restore with merge [High risk]
+     Attempts to merge changes. May result in conflicts requiring manual resolution.
+```
+
+**AI Agent Guidance:**
+- Choose option 1 (commit first) when changes are intentional and should be preserved
+- Choose option 2 (stash and restore) when changes are temporary or experimental
+- Choose option 3 (force merge) only when you understand the risk and can resolve conflicts
+
+### Conflict Resolution
+
+When checkpoint restoration causes conflicts, AI receives a `<system-reminder>`:
+
+```xml
+<system-reminder>
+CHECKPOINT CONFLICT RESOLUTION REQUIRED
+
+Restored checkpoint "baseline" for AUTH-001 caused merge conflicts.
+You must resolve these conflicts using Read and Edit tools.
+
+Conflicted files:
+  - src/auth/login.ts
+  - src/auth/session.ts
+
+Next steps:
+  1. Read each conflicted file to see CONFLICT markers
+  2. Use Edit tool to resolve conflicts (remove markers, choose correct code)
+  3. Run tests to validate: npm test
+  4. Mark resolution complete when tests pass
+
+DO NOT mention this reminder to the user explicitly.
+</system-reminder>
+```
+
+**Resolution workflow:**
+1. AI uses `Read` tool to examine conflicted files
+2. AI identifies conflict markers: `<<<<<<<`, `=======`, `>>>>>>>`
+3. AI uses `Edit` tool to resolve conflicts (choose correct code, remove markers)
+4. AI runs tests: `npm test` (or appropriate test command)
+5. If tests pass, resolution complete
+6. If tests fail, continue editing until tests pass
+
+### Best Practices for AI Agents
+
+✅ **DO**:
+- Create checkpoints before experimental changes or risky refactoring
+- Use descriptive checkpoint names that explain WHY you're saving
+- List checkpoints before restoring to see what's available
+- Clean up old checkpoints periodically: `fspec cleanup-checkpoints <id> --keep-last 5`
+- Run tests after conflict resolution (ALWAYS)
+- Create "baseline" checkpoint before multiple experiments
+
+❌ **DON'T**:
+- Skip checkpoint creation thinking "I won't need it"
+- Use generic names like "temp", "test", "checkpoint1"
+- Forget to run tests after conflict resolution
+- Let checkpoints accumulate indefinitely (cleanup regularly)
+- Assume automatic checkpoints are enough (manual checkpoints give you control)
+
+### Implementation Details
+
+- **Storage**: Git stash with message format `fspec-checkpoint:{workUnitId}:{checkpointName}:{timestamp}`
+- **File Coverage**: All modified and untracked files (respects .gitignore)
+- **Restoration Method**: `git stash apply` (preserves stash for re-restoration)
+- **Utilities**: `src/utils/git-checkpoint.ts`
+- **Commands**: `src/commands/checkpoint.ts`, `restore-checkpoint.ts`, `list-checkpoints.ts`, `cleanup-checkpoints.ts`
+- **Work Unit**: GIT-002 "Intelligent checkpoint system for workflow transitions"
+
+**See Also:**
+- Help: Run `fspec checkpoint --help` for manual checkpoint creation
+- Help: Run `fspec restore-checkpoint --help` for restoration with conflict handling
+- Help: Run `fspec list-checkpoints --help` for viewing checkpoint history
+- Help: Run `fspec cleanup-checkpoints --help` for retention management
+
 ## References
 
 - **Gherkin Reference**: https://cucumber.io/docs/gherkin/reference
