@@ -1,13 +1,10 @@
-import { mkdir, writeFile, readFile, rm } from 'fs/promises';
+import { mkdir, writeFile, rm } from 'fs/promises';
 import type { Command } from 'commander';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { join } from 'path';
 import chalk from 'chalk';
 import { getAgentById, type AgentConfig } from '../utils/agentRegistry';
 import { generateAgentDoc } from '../utils/templateGenerator';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+import { getSlashCommandTemplate } from '../utils/slashCommandTemplate';
 
 /**
  * Install fspec for multiple agents
@@ -108,7 +105,7 @@ export async function installAgentFiles(
 async function installRootStub(cwd: string, agent: AgentConfig): Promise<void> {
   const stubPath = join(cwd, agent.rootStubFile);
 
-  // Generate short stub content
+  // Generate short stub content with agent-specific paths
   const stubContent = `# ${agent.name} - fspec Project
 
 This project uses **fspec** for Acceptance Criteria Driven Development (ACDD).
@@ -116,6 +113,7 @@ This project uses **fspec** for Acceptance Criteria Driven Development (ACDD).
 **Quick Start**:
 - Run the \`/fspec\` slash command to load full workflow
 - Or read \`spec/${agent.docTemplate}\` for complete documentation
+- Slash commands are located in \`${agent.slashCommandPath}\`
 
 **Commands**:
 - \`fspec board\` - View Kanban board
@@ -160,7 +158,7 @@ async function installSlashCommand(
   const commandPath = join(commandsDir, filename);
 
   // Generate slash command content
-  const content = await generateSlashCommandContent(agent);
+  const content = await generateSlashCommandContent(cwd, agent);
 
   await writeFile(commandPath, content, 'utf-8');
 }
@@ -169,6 +167,7 @@ async function installSlashCommand(
  * Generate slash command content
  */
 async function generateSlashCommandContent(
+  cwd: string,
   agent: AgentConfig
 ): Promise<string> {
   if (agent.slashCommandFormat === 'toml') {
@@ -191,43 +190,8 @@ Then read the comprehensive guide at spec/${agent.docTemplate} for full ACDD wor
   }
 
   // Markdown format with YAML frontmatter (most agents)
-  // Load the existing fspec.md template
-  const possiblePaths = [
-    join(__dirname, '.claude', 'commands', 'fspec.md'),
-    join(__dirname, '..', '..', '.claude', 'commands', 'fspec.md'),
-  ];
-
-  let template: string | null = null;
-  for (const path of possiblePaths) {
-    try {
-      template = await readFile(path, 'utf-8');
-      break;
-    } catch {
-      continue;
-    }
-  }
-
-  if (!template) {
-    // Fallback to basic template
-    return `---
-name: fspec - Load Project Context
-description: Load fspec workflow and ACDD methodology
-category: Project
-tags: [fspec, acdd, workflow]
----
-
-# fspec Command - Load Full Context
-
-Run these commands to load fspec context:
-
-1. \`fspec --help\`
-2. \`fspec help specs\`
-3. \`fspec help work\`
-4. \`fspec help discovery\`
-
-Then read the comprehensive guide at \`spec/${agent.docTemplate}\` for full ACDD workflow.
-`;
-  }
+  // Use embedded template (no filesystem dependency)
+  let template = getSlashCommandTemplate();
 
   // Prepend YAML frontmatter if template doesn't have it
   if (!template.startsWith('---')) {

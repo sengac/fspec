@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-21T11:11:05.821Z"
+    "lastUpdated": "2025-10-21T11:47:47.282Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -9382,7 +9382,7 @@
       "type": "story",
       "status": "done",
       "createdAt": "2025-10-21T11:10:11.887Z",
-      "updatedAt": "2025-10-21T11:39:48.433Z",
+      "updatedAt": "2025-10-21T12:13:16.564Z",
       "description": "Update registerInitCommand to use new multi-agent system (installAgents, agent registry, interactive selector). Deprecate and remove old single-agent code (init function, generateTemplate, copyClaudeTemplate). The new infrastructure exists but isn't being called - fspec init still defaults to Claude-only installation.",
       "children": [],
       "stateHistory": [
@@ -9405,18 +9405,50 @@
         {
           "state": "done",
           "timestamp": "2025-10-21T11:39:48.433Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-21T11:49:45.027Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-21T11:50:30.315Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-21T12:01:28.869Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-21T12:04:45.819Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-21T12:05:34.971Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-21T12:07:20.322Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-21T12:13:16.564Z"
         }
       ],
       "rules": [
         "registerInitCommand must call installAgents() with interactive selector when no --agent flag provided",
         "Old init() function, generateTemplate(), and copyClaudeTemplate() must be removed after migration",
         "Command must accept --agent flag (can be repeated) for non-interactive mode",
-        "Interactive selector must use agent auto-detection to pre-select detected agents"
+        "Interactive selector must use agent auto-detection to pre-select detected agents",
+        "fspec init must work after global npm install without requiring local files",
+        "Generated files must be customized for each agent (agent-specific names, paths, features)"
       ],
       "examples": [
         "User runs 'fspec init' with no flags, sees interactive agent selector with auto-detected agents pre-selected",
         "User runs 'fspec init --agent=cursor', skips interactive selector and installs Cursor directly",
-        "After migration, old init(), generateTemplate(), copyClaudeTemplate() functions are deleted from init.ts"
+        "After migration, old init(), generateTemplate(), copyClaudeTemplate() functions are deleted from init.ts",
+        "User installs fspec globally with 'npm install -g fspec', then runs 'fspec init' in new project - command works without errors",
+        "After running 'fspec init --agent=cursor', generated files contain 'Cursor' not 'Claude Code' in agent names"
       ],
       "userStory": {
         "role": "developer using any AI coding agent",
