@@ -61,34 +61,6 @@ fspec init
 
 ---
 
-## Key Benefits
-
-### For You (The Developer)
-
-- ✅ **AI agents that actually follow TDD/BDD** - No more code-first disasters
-- ✅ **Persistent queryable state** - Survives context resets, session switches
-- ✅ **Stop repeating yourself** - AI reads the board, knows what's in flight
-- ✅ **Safe experimentation** - Git checkpoints let AI try multiple approaches
-- ✅ **Quality gates that actually run** - Virtual hooks enforce linting, testing, validation
-
-### For Your Team
-
-- ✅ **Shared understanding** - Example Mapping captures decisions and rationale
-- ✅ **Living documentation** - Specs stay synchronized with code automatically
-- ✅ **Full traceability** - Every scenario links to tests and implementation
-- ✅ **Reverse ACDD for existing code** - Document what you already built
-- ✅ **Workflow enforcement** - Kanban prevents cutting corners
-
-### For Your Project
-
-- ✅ **Validated Gherkin** - Official @cucumber/gherkin parser, no syntax errors
-- ✅ **Tag discipline** - JSON-backed registry prevents tag chaos
-- ✅ **Foundation documentation** - AI discovers project vision, capabilities, personas
-- ✅ **Work unit management** - Track epics, dependencies, estimates, status
-- ✅ **Coverage tracking** - Know exactly what's tested and what's not
-
----
-
 ## Core Features
 
 ### 🎯 ACDD Workflow Enforcement
