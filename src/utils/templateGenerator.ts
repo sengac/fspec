@@ -2,17 +2,26 @@
  * Template Generator - Transform base templates for different agents
  */
 
-import { readFile, access } from 'fs/promises';
-import { join } from 'path';
 import type { AgentConfig } from './agentRegistry';
+
+// Embedded base template (replaces filesystem read)
+const BASE_AGENT_TEMPLATE = `# {{AGENT_NAME}} Development Guidelines for fspec
+
+This document provides guidelines for AI assistants (particularly {{AGENT_NAME}}) working on the **fspec codebase**.
+
+**For using fspec commands and ACDD workflow**: See [spec/{{DOC_TEMPLATE}}](spec/{{DOC_TEMPLATE}})
+
+For complete project context, refer to \`spec/{{DOC_TEMPLATE}}\` for fspec usage.
+
+Slash commands are available at {{SLASH_COMMAND_PATH}}.
+`;
 
 /**
  * Generate agent-specific documentation from base template
  */
 export async function generateAgentDoc(agent: AgentConfig): Promise<string> {
-  // Read base template
-  const templatePath = await resolveTemplatePath('base/AGENT.md');
-  let content = await readFile(templatePath, 'utf-8');
+  // Use embedded template (no filesystem dependency)
+  let content = BASE_AGENT_TEMPLATE;
 
   // Apply transformations
   content = stripSystemReminders(content, agent);
@@ -138,29 +147,7 @@ export function replacePlaceholders(
 ): string {
   return content
     .replace(/\{\{AGENT_NAME\}\}/g, agent.name)
+    .replace(/\{\{DOC_TEMPLATE\}\}/g, agent.docTemplate)
     .replace(/\{\{SLASH_COMMAND_PATH\}\}/g, agent.slashCommandPath)
     .replace(/\{\{AGENT_ID\}\}/g, agent.id);
-}
-
-/**
- * Resolve template path (production or dev)
- */
-async function resolveTemplatePath(relativePath: string): Promise<string> {
-  // Try production path first (dist/spec/templates/)
-  const prodPath = join(
-    __dirname,
-    '..',
-    '..',
-    'spec',
-    'templates',
-    relativePath
-  );
-
-  try {
-    await access(prodPath);
-    return prodPath;
-  } catch {
-    // Fall back to dev path (spec/templates/)
-    return join(process.cwd(), 'spec', 'templates', relativePath);
-  }
 }
