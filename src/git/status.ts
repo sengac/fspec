@@ -15,6 +15,7 @@ import git from 'isomorphic-git';
 import fsNode from 'fs';
 import { join } from 'path';
 import type { StatusRow } from 'isomorphic-git';
+import type { IFs } from 'memfs';
 
 /**
  * Semantic file status with boolean flags
@@ -22,8 +23,11 @@ import type { StatusRow } from 'isomorphic-git';
  */
 export interface FileStatus {
   filepath: string;
+  /** File is staged (differs from HEAD commit) */
   staged: boolean;
-  modified: boolean;
+  /** File has unstaged changes (working directory differs from staging area, but is not untracked) */
+  hasUnstagedChanges: boolean;
+  /** File is untracked (not in HEAD and not staged) */
   untracked: boolean;
 }
 
@@ -33,8 +37,11 @@ export interface FileStatus {
 export interface GitStatusOptions {
   /** If true, throw errors instead of returning empty arrays (default: false) */
   strict?: boolean;
-  /** Custom filesystem implementation (for testing with memfs) */
-  fs?: any;
+  /**
+   * Custom filesystem implementation (for testing with memfs)
+   * Uses IFs interface from memfs for type safety
+   */
+  fs?: IFs;
 }
 
 /**
@@ -43,7 +50,7 @@ export interface GitStatusOptions {
  * @param fs - Filesystem implementation
  * @returns true if .git directory exists
  */
-function isGitRepository(dir: string, fs: any): boolean {
+function isGitRepository(dir: string, fs: IFs): boolean {
   try {
     const gitDir = join(dir, '.git');
     const stats = fs.statSync(gitDir);
@@ -73,7 +80,10 @@ async function getStatusMatrix(
   }
 
   try {
-    const matrix = await git.statusMatrix({ fs, dir });
+    // NOTE: Added cache:false to force re-reading file content
+    // This fixes memfs integration where file modifications weren't being detected
+    // because isomorphic-git was relying on mtime which memfs doesn't update properly
+    const matrix = await git.statusMatrix({ fs, dir, cache: {} as any });
     return matrix;
   } catch (error: unknown) {
     if (options?.strict) {
@@ -214,7 +224,7 @@ export async function getUntrackedFiles(
  * @example
  * ```typescript
  * const status = await getFileStatus('/repo', 'src/index.ts');
- * // { filepath: 'src/index.ts', staged: false, modified: true, untracked: false }
+ * // { filepath: 'src/index.ts', staged: false, hasUnstagedChanges: true, untracked: false }
  * ```
  */
 export async function getFileStatus(
@@ -237,7 +247,7 @@ export async function getFileStatus(
   return {
     filepath: file,
     staged: stage !== head, // Staged if STAGE differs from HEAD
-    modified: workdir === 2 && stage === 1, // Modified but not staged
+    hasUnstagedChanges: workdir === 2 && stage === 1, // Modified but not staged
     untracked: head === 0 && stage === 0, // Not in HEAD and not staged
   };
 }

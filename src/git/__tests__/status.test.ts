@@ -53,8 +53,8 @@ describe('Feature: Replace git CLI usage with isomorphic-git library', () => {
     it('should return unstaged files when files are modified but not added', async () => {
       // Given a git repository with committed files
       vol.fromJSON({
-        '/repo/committed.txt': 'initial content',
-        '/repo/modified.txt': 'initial content',
+        '/repo/committed.txt': 'initial',
+        '/repo/modified.txt': 'initial',
       });
 
       await git.init({ fs, dir: '/repo', defaultBranch: 'main' });
@@ -68,7 +68,8 @@ describe('Feature: Replace git CLI usage with isomorphic-git library', () => {
       });
 
       // And the repository has unstaged files (modified after commit)
-      fs.writeFileSync('/repo/modified.txt', 'changed content');
+      // NOTE: File size must change for isomorphic-git to detect modification in memfs
+      fs.writeFileSync('/repo/modified.txt', 'changed content with different size');
 
       // When git-context.ts calls getUnstagedFiles()
       const unstagedFiles = await getUnstagedFiles('/repo', { fs });
@@ -288,14 +289,82 @@ describe('Feature: Replace git CLI usage with isomorphic-git library', () => {
       // Should return semantic type, not raw [filepath, HEAD, WORKDIR, STAGE] array
       expect(status).toHaveProperty('filepath');
       expect(status).toHaveProperty('staged');
-      expect(status).toHaveProperty('modified');
+      expect(status).toHaveProperty('hasUnstagedChanges');
       expect(status).toHaveProperty('untracked');
 
       // Values should be semantic booleans
       expect(status?.filepath).toBe('file.txt');
       expect(status?.staged).toBe(false);
-      expect(status?.modified).toBe(true);
+      expect(status?.hasUnstagedChanges).toBe(true);
       expect(status?.untracked).toBe(false);
+    });
+
+    it('should use clear field name hasUnstagedChanges instead of ambiguous modified (S2 Issue #3 - FIXED)', async () => {
+      // This test verifies the fix for S2 Issue #3 semantic ambiguity
+      vol.fromJSON({
+        '/repo/file.txt': 'initial',
+      });
+
+      await git.init({ fs, dir: '/repo', defaultBranch: 'main' });
+      await git.add({ fs, dir: '/repo', filepath: 'file.txt' });
+      await git.commit({
+        fs,
+        dir: '/repo',
+        message: 'Initial',
+        author: { name: 'Test', email: 'test@test.com' },
+      });
+
+      // Modify file and stage it
+      fs.writeFileSync('/repo/file.txt', 'modified and staged');
+      await git.add({ fs, dir: '/repo', filepath: 'file.txt' });
+
+      const status = await getFileStatus('/repo', 'file.txt', { fs });
+
+      // File is staged (v2 differs from HEAD v1)
+      expect(status?.staged).toBe(true);
+
+      // Field name hasUnstagedChanges is clear: file has NO unstaged changes (all changes are staged)
+      expect(status?.hasUnstagedChanges).toBe(false); // ✅ CLEAR: No unstaged changes
+    });
+  });
+
+  describe('S2 Critical: Partial staging scenario (file modified after staging)', () => {
+    it('should detect files in BOTH staged and unstaged when file is modified after staging', async () => {
+      // Given a git repository with a committed file
+      vol.fromJSON({
+        '/repo/partial.txt': 'v1 initial',
+      });
+
+      await git.init({ fs, dir: '/repo', defaultBranch: 'main' });
+      await git.add({ fs, dir: '/repo', filepath: 'partial.txt' });
+      await git.commit({
+        fs,
+        dir: '/repo',
+        message: 'Initial commit',
+        author: { name: 'Test', email: 'test@test.com' },
+      });
+
+      // When the file is modified to v2 and staged
+      // NOTE: Must change size for isomorphic-git to detect change in memfs
+      fs.writeFileSync('/repo/partial.txt', 'v2 staged version here');
+      await git.add({ fs, dir: '/repo', filepath: 'partial.txt' });
+
+      // And then modified AGAIN to v3 (without staging)
+      fs.writeFileSync('/repo/partial.txt', 'v3 unstaged changes after staging - much longer');
+
+      // Then the file should appear in BOTH getStagedFiles() AND getUnstagedFiles()
+      // Status matrix will be: [filepath='partial.txt', HEAD=1, WORKDIR=2, STAGE=3]
+      // - getStagedFiles(): stage !== head → 3 !== 1 → true ✅
+      // - getUnstagedFiles(): workdir !== stage → 2 !== 3 → true ✅
+      const staged = await getStagedFiles('/repo', { fs });
+      const unstaged = await getUnstagedFiles('/repo', { fs });
+
+      // File should be in staged (because v2 is staged)
+      expect(staged).toContain('partial.txt');
+
+      // File should ALSO be in unstaged (because v3 differs from staged v2)
+      // VERIFIED: Current logic handles this correctly - not a bug!
+      expect(unstaged).toContain('partial.txt');
     });
   });
 

@@ -447,6 +447,10 @@
           "examples": "Register tag, validate tags, list tags, tag statistics (7 files)"
         },
         {
+          "name": "@testing",
+          "description": "Testing and quality assurance features"
+        },
+        {
           "name": "@tracking",
           "description": "Metric tracking operations"
         },
@@ -788,6 +792,10 @@
         {
           "name": "@partial",
           "description": "Partially implemented feature - work in progress"
+        },
+        {
+          "name": "@refactor",
+          "description": "Code refactoring and technical improvements"
         },
         {
           "name": "@refactoring",
@@ -1135,7 +1143,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-10-21T02:09:30.638Z",
+    "lastUpdated": "2025-10-21T02:40:42.020Z",
     "phaseStats": [
       {
         "phase": "Phase 1",
