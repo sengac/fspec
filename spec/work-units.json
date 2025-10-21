@@ -9028,6 +9028,26 @@
           "selected": false
         }
       ]
+    },
+    "CLEAN-001": {
+      "id": "CLEAN-001",
+      "title": "Add ESLint and Prettier for code quality",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-10-21T05:53:29.407Z",
+      "updatedAt": "2025-10-21T05:53:29.407Z",
+      "description": "Set up ESLint and Prettier to enforce consistent code style and catch common errors. This includes configuration, fixing existing violations, and integrating with the development workflow.",
+      "children": []
+    },
+    "INIT-004": {
+      "id": "INIT-004",
+      "title": "Support multiple AI agents beyond Claude",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-10-21T05:58:37.972Z",
+      "updatedAt": "2025-10-21T05:58:37.972Z",
+      "description": "Enable fspec to work with different AI agents (Cursor, Aider, Continue.dev, etc.) through pre-configured templates and custom configuration. Includes agent-specific setup scripts, documentation templates, and an interactive configurator for custom agents.",
+      "children": []
     }
   },
   "states": {
@@ -9039,7 +9059,9 @@
       "MCP-005",
       "EST-002",
       "TECH-001",
-      "BOARD-002"
+      "BOARD-002",
+      "CLEAN-001",
+      "INIT-004"
     ],
     "specifying": [
       "DOC-005"
