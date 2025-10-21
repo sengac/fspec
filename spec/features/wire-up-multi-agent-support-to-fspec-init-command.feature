@@ -99,3 +99,10 @@ Feature: Wire up multi-agent support to fspec init command
     Then templates are loaded from embedded TypeScript modules
     And the command works without requiring external template files
     And all agents receive consistent template content
+
+  Scenario: Slash command files use correct format without YAML frontmatter
+    Given I run "fspec init --agent=claude"
+    When the slash command file is generated
+    Then the markdown file should NOT contain YAML frontmatter (---)
+    And the file should start with "# fspec Command"
+    And TOML files (Gemini, Qwen) should have [command] section with metadata
