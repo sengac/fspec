@@ -259,7 +259,8 @@ The feedback loop ensures AI agents discover foundation through deep analysis, n
 - 🏷️ **JSON-Backed Tag Registry** - Single source of truth with auto-generated docs
 - 🎨 **Auto-Formatting** - Custom AST-based formatter for Gherkin files
 - 🪝 **Lifecycle Hooks** - Execute custom scripts at command events (quality gates, automation)
-- ⚡ **Virtual Hooks** - Work unit-scoped ephemeral quality gates with auto-generated git context scripts
+- ⚡ **Virtual Hooks** - Work unit-scoped quality gates that pass git context to any CLI tool (linters, formatters, tests)
+- 💾 **Git Checkpoints** - Automatic and manual checkpointing for safe experimentation with rollback
 - 🤖 **AI Agent Friendly** - Designed for Claude Code integration with persistent queryable state
 
 ## Documentation

@@ -501,6 +501,7 @@ function displayWorkHelp(): void {
   console.log('  • Block work units when progress is prevented');
   console.log('  • Display the Kanban board showing current state');
   console.log('  • Auto-advance ready work units through workflow');
+  console.log('  • Create checkpoints for safe experimentation and rollback');
   console.log('  • Update work unit details (title, description, estimates)\n');
 
   console.log(chalk.bold('WORK UNITS'));
@@ -704,6 +705,29 @@ function displayWorkHelp(): void {
   console.log('    Description: Check if work unit can auto-advance');
   console.log('    Examples:');
   console.log('      fspec workflow-automation AUTH-001');
+  console.log('');
+
+  console.log(chalk.bold('CHECKPOINTS (Experimentation & Recovery)'));
+  console.log('  ' + chalk.cyan('fspec checkpoint <id> <name>'));
+  console.log('    Description: Create manual checkpoint for experimentation');
+  console.log('    Examples:');
+  console.log('      fspec checkpoint AUTH-001 baseline');
+  console.log('      fspec checkpoint AUTH-001 before-refactor');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec restore-checkpoint <id> <name>'));
+  console.log('    Description: Restore previously created checkpoint');
+  console.log('    Examples:');
+  console.log('      fspec restore-checkpoint AUTH-001 baseline');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec list-checkpoints <id>'));
+  console.log('    Description: List all checkpoints (🤖 auto, 📌 manual)');
+  console.log('    Examples:');
+  console.log('      fspec list-checkpoints AUTH-001');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec cleanup-checkpoints <id> --keep-last <N>'));
+  console.log('    Description: Delete old checkpoints, keep N most recent');
+  console.log('    Examples:');
+  console.log('      fspec cleanup-checkpoints AUTH-001 --keep-last 5');
   console.log('');
 }
 

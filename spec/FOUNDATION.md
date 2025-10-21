@@ -569,4 +569,41 @@ graph TD
     style FeatureFile fill:#fff4e1
 ```
 
+### Checkpoint System Flow
+
+```mermaid
+graph TB
+    A[Work Unit Status Change] -->|Dirty Working Dir?| B{Check Git Status}
+    B -->|Yes| C[Create Auto Checkpoint]
+    B -->|No| D[Skip Checkpoint]
+    C --> E[Git Stash with fspec-checkpoint Message]
+    E --> F[Update Work Unit Status]
+    D --> F
+    
+    G[Manual Checkpoint Command] --> H[Capture All Changes]
+    H --> E
+    
+    I[Restore Checkpoint] -->|Dirty Working Dir?| J{Interactive Prompt}
+    J -->|Commit First| K[Git Commit]
+    J -->|Stash & Restore| L[Git Stash Current]
+    J -->|Force Merge| M[Git Stash Apply]
+    K --> M
+    L --> M
+    M -->|Conflicts?| N{Detect Conflicts}
+    N -->|Yes| O[Emit System-Reminder]
+    N -->|No| P[Restoration Complete]
+    O --> Q[AI Resolves with Read/Edit]
+    Q --> R[Run Tests]
+    R -->|Pass| P
+    R -->|Fail| Q
+    
+    S[List Checkpoints] --> T[Query Git Stashes]
+    T --> U[Filter by fspec-checkpoint Pattern]
+    U --> V[Display with Emoji Indicators]
+    
+    W[Cleanup Checkpoints] --> X[List All Checkpoints]
+    X --> Y[Sort by Timestamp]
+    Y --> Z[Delete Oldest, Keep N Recent]
+```
+
 ---
