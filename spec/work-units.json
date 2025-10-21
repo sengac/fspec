@@ -9524,6 +9524,16 @@
       "updatedAt": "2025-10-21T11:38:00.009Z",
       "description": "The test 'Feature: Command Help System > Scenario: Main help mentions individual command help availability' fails intermittently in the full test suite with exit code 1, but passes when run individually. This suggests a test isolation or timing issue. The test has been temporarily skipped in src/commands/__tests__/command-help-system.test.ts:198.",
       "children": []
+    },
+    "BUG-026": {
+      "id": "BUG-026",
+      "title": "Flaky tests: command-help-system and foundation-existence-check fail in full suite but pass individually",
+      "type": "bug",
+      "status": "backlog",
+      "createdAt": "2025-10-21T13:01:16.689Z",
+      "updatedAt": "2025-10-21T13:01:52.637Z",
+      "description": "Two test files pass when run individually but fail in full suite - indicates test isolation issues.\n\nCOMMAND HELP TEST:\n- File: src/commands/__tests__/command-help-system.test.ts:223\n- Scenario: Display help for Example Mapping command with patterns\n- Expected: exitCode 0, Actual: exitCode 1 (full suite) | exitCode 0 (isolated)\n- Command: node dist/index.js add-question --help\n\nFOUNDATION EXISTENCE CHECK TEST:\n- File: src/commands/__tests__/foundation-existence-check.test.ts:172\n- Scenario: Run validate command without foundation.json (read-only exempt)\n- Expected: exitCode 0, Actual: exitCode undefined (full suite) | exitCode 0 (isolated)\n- Command: fspec validate (using execa)\n\nROOT CAUSE HYPOTHESIS:\n- Global state pollution from earlier tests\n- Async cleanup issues (tests completing out of order)\n- File system state not properly isolated\n- CLI process state leaking between tests\n\nNEXT STEPS:\n1. Add beforeEach/afterEach hooks for clean state\n2. Check for process.exit() calls affecting exit codes\n3. Investigate test execution order to find polluting tests\n4. Use vitest --sequence.shuffle to identify order dependencies",
+      "children": []
     }
   },
   "states": {
@@ -9538,7 +9548,8 @@
       "BOARD-002",
       "CLEAN-001",
       "RES-001",
-      "BUG-025"
+      "BUG-025",
+      "BUG-026"
     ],
     "specifying": [
       "DOC-005"
