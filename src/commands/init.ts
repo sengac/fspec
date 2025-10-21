@@ -235,16 +235,16 @@ export function registerInitCommand(program: Command): void {
 
             // Show interactive selector
             const selectedAgent = await new Promise<string>((resolve) => {
-              const { unmount } = render(
+              const { waitUntilExit } = render(
                 React.createElement(AgentSelector, {
                   agents: availableAgents,
                   preSelected: detected,
                   onSubmit: (selected) => {
-                    unmount();
                     resolve(selected);
                   },
                 })
               );
+              void waitUntilExit();
             });
 
             agentIds = [selectedAgent];
@@ -256,13 +256,15 @@ export function registerInitCommand(program: Command): void {
           // Install agents using new multi-agent system
           await installAgents(cwd, agentIds);
 
-          // Success message
-          const agentNames = agentIds.join(', ');
-          console.log(
-            chalk.green(
-              `✓ Installed fspec for ${agentNames}\n\nNext steps:\nRun /fspec in your AI agent to activate`
-            )
-          );
+          // Success message (only for CLI mode, interactive mode shows in React component)
+          if (options.agent.length > 0) {
+            const agentNames = agentIds.join(', ');
+            console.log(
+              chalk.green(
+                `✓ Installed fspec for ${agentNames}\n\nNext steps:\nRun /fspec in your AI agent to activate`
+              )
+            );
+          }
           process.exit(0);
         } catch (error: any) {
           console.error(chalk.red('✗ Init failed:'), error.message);

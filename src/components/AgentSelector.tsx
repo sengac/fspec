@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Box, Text, useInput } from 'ink';
+import React, { useState, useEffect } from 'react';
+import { Box, Text, useInput, useApp } from 'ink';
 import type { AgentConfig } from '../utils/agentRegistry';
 
 interface AgentSelectorProps {
@@ -18,17 +18,45 @@ export const AgentSelector: React.FC<AgentSelectorProps> = ({
     ? agents.findIndex(a => a.id === preSelected[0])
     : 0;
   const [cursor, setCursor] = useState(initialCursor >= 0 ? initialCursor : 0);
+  const [selectedAgent, setSelectedAgent] = useState<string | null>(null);
+  const { exit } = useApp();
 
   useInput((input, key) => {
+    if (selectedAgent) {
+      return;
+    }
+
     if (key.upArrow) {
       setCursor(Math.max(0, cursor - 1));
     } else if (key.downArrow) {
       setCursor(Math.min(agents.length - 1, cursor + 1));
     } else if (key.return) {
-      // Select the agent at current cursor position
-      onSubmit(agents[cursor].id);
+      // Select the agent
+      setSelectedAgent(agents[cursor].id);
     }
   });
+
+  useEffect(() => {
+    if (selectedAgent) {
+      onSubmit(selectedAgent);
+      // Exit after a brief delay to show the success message
+      setTimeout(() => {
+        exit();
+      }, 100);
+    }
+  }, [selectedAgent, onSubmit, exit]);
+
+  if (selectedAgent) {
+    const agentName = agents.find(a => a.id === selectedAgent)?.name || selectedAgent;
+    return (
+      <Box flexDirection="column">
+        <Text color="green">✓ Installed fspec for {agentName}</Text>
+        <Text> </Text>
+        <Text>Next steps:</Text>
+        <Text>Run /fspec in your AI agent to activate</Text>
+      </Box>
+    );
+  }
 
   return (
     <Box flexDirection="column">
