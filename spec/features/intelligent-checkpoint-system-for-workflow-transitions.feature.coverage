@@ -1,0 +1,84 @@
+{
+  "scenarios": [
+    {
+      "name": "Automatic checkpoint created on workflow state transition",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/checkpoint.test.ts",
+          "lines": "23-52",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Create manual checkpoint for experimentation",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/checkpoint.test.ts",
+          "lines": "54-73",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Multiple experiments from same baseline checkpoint",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/checkpoint.test.ts",
+          "lines": "75-107",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "AI-assisted conflict resolution during checkpoint restoration",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/checkpoint.test.ts",
+          "lines": "109-144",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "List all checkpoints with visual indicators",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/checkpoint.test.ts",
+          "lines": "146-183",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Cleanup old checkpoints keeping most recent",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/checkpoint.test.ts",
+          "lines": "185-211",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Interactive prompt when restoring with dirty working directory",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/checkpoint.test.ts",
+          "lines": "213-254",
+          "implMappings": []
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/commands/__tests__/checkpoint.test.ts"
+    ],
+    "implFiles": [],
+    "totalLinesCovered": 226
+  }
+}
