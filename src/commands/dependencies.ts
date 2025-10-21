@@ -1014,62 +1014,10 @@ export async function exportDependencies(
   await writeFile(output, content);
 }
 
-export async function dependencies(
-  action: string,
-  workUnitId: string | undefined,
-  options: {
-    blocks?: string;
-    blockedBy?: string;
-    dependsOn?: string;
-    relatesTo?: string;
-    type?: 'blocks' | 'blockedBy' | 'dependsOn' | 'relatesTo' | 'all';
-    format?: 'json' | 'mermaid';
-    graph?: boolean;
-    cwd?: string;
-  }
-): Promise<void> {
-  const cwd = options.cwd || process.cwd();
-
-  if (action === 'add' && workUnitId) {
-    const relationship: {
-      blocks?: string;
-      blockedBy?: string;
-      dependsOn?: string;
-      relatesTo?: string;
-    } = {};
-    if (options.blocks) relationship.blocks = options.blocks;
-    if (options.blockedBy) relationship.blockedBy = options.blockedBy;
-    if (options.dependsOn) relationship.dependsOn = options.dependsOn;
-    if (options.relatesTo) relationship.relatesTo = options.relatesTo;
-    await addDependency(workUnitId, relationship, { cwd });
-  } else if (action === 'remove' && workUnitId) {
-    const relationship: {
-      blocks?: string;
-      blockedBy?: string;
-      dependsOn?: string;
-      relatesTo?: string;
-    } = {};
-    if (options.blocks) relationship.blocks = options.blocks;
-    if (options.blockedBy) relationship.blockedBy = options.blockedBy;
-    if (options.dependsOn) relationship.dependsOn = options.dependsOn;
-    if (options.relatesTo) relationship.relatesTo = options.relatesTo;
-    await removeDependency(workUnitId, relationship, { cwd });
-  } else if (action === 'list' && workUnitId) {
-    await listDependencies(workUnitId, { cwd, type: options.type });
-  } else if (action === 'validate') {
-    await validateDependencies({ cwd });
-  } else if (action === 'repair') {
-    await repairDependencies({ cwd });
-  } else if (action === 'graph') {
-    await getDependencyGraph({ cwd, format: options.format });
-  } else if (action === 'critical') {
-    await calculateCriticalPath({ cwd });
-  } else if (action === 'impact' && workUnitId) {
-    await analyzeImpact(workUnitId, { cwd });
-  } else {
-    throw new Error(`Invalid action: ${action}`);
-  }
-}
+// Legacy dependencies() function removed (BUG-024)
+// This function was never called by any CLI command - registerDependenciesCommand() uses showDependencies() directly.
+// The existence of this exported function caused confusion and potential routing conflicts.
+// All dependency operations now use dedicated commands with their own registration functions.
 
 export function registerDependenciesCommand(program: Command): void {
   program
