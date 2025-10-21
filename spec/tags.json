@@ -77,6 +77,10 @@
           "scope": "Feature file templates, scaffolding, boilerplate generation (1 file)"
         },
         {
+          "name": "@git",
+          "description": "Git operations and version control integration"
+        },
+        {
           "name": "@hooks",
           "description": "Hooks system and execution engine"
         },
@@ -287,6 +291,10 @@
         {
           "name": "@impact-analysis",
           "description": "Impact analysis and dependency chains"
+        },
+        {
+          "name": "@infrastructure",
+          "description": "Core infrastructure and shared utilities"
         },
         {
           "name": "@kanban",
@@ -593,6 +601,10 @@
           "name": "@internal",
           "description": "Internal Utility",
           "useCases": "Internal utilities and helpers, not user-facing commands"
+        },
+        {
+          "name": "@isomorphic-git",
+          "description": "Uses isomorphic-git library for pure JavaScript git operations"
         },
         {
           "name": "@json-backed",
@@ -1123,7 +1135,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-10-20T22:00:32.557Z",
+    "lastUpdated": "2025-10-21T02:09:30.638Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

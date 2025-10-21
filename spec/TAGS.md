@@ -34,6 +34,7 @@ Tags that identify which architectural component a feature belongs to.
 | `@file-ops` | File Operations |  |
 | `@formatter` | Formatting & Prettification |  |
 | `@generator` | Template Generation |  |
+| `@git` | Git operations and version control integration |  |
 | `@hooks` | Hooks system and execution engine |  |
 | `@integration` | Cross-Component Integration |  |
 | `@parser` | Gherkin Parser Integration |  |
@@ -92,6 +93,7 @@ Tags that categorize features by functional area.
 | `@help-system` | Help system and documentation features |  |
 | `@help-text` | Help and documentation features |  |
 | `@impact-analysis` | Impact analysis and dependency chains |  |
+| `@infrastructure` | Core infrastructure and shared utilities |  |
 | `@kanban` | Kanban board and workflow management |  |
 | `@list` | List operations |  |
 | `@metrics` | Metrics and measurements |  |
@@ -172,6 +174,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@idempotent` | Operations that can be safely repeated without changing results |  |
 | `@initialization` | File and system initialization features |  |
 | `@internal` | Internal Utility |  |
+| `@isomorphic-git` | Uses isomorphic-git library for pure JavaScript git operations |  |
 | `@json-backed` | JSON-Backed Documentation |  |
 | `@json-output` | JSON format output support |  |
 | `@json-schema` | JSON Schema Validation |  |
@@ -515,7 +518,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-10-20T22:00:32.557Z_
+_Last updated: 2025-10-21T02:09:30.638Z_
 
 **Update Command**: `fspec tag-stats`
 

@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-21T01:40:58.959Z"
+    "lastUpdated": "2025-10-21T02:35:43.500Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -8759,6 +8759,117 @@
         }
       ],
       "estimate": 1
+    },
+    "GIT-001": {
+      "id": "GIT-001",
+      "title": "Replace git CLI usage with isomorphic-git library",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-21T01:48:10.185Z",
+      "updatedAt": "2025-10-21T02:21:42.908Z",
+      "description": "Replace all external git command calls with isomorphic-git, a pure JavaScript git implementation that can be bundled into fspec without external dependencies",
+      "children": [],
+      "attachments": [
+        "spec/attachments/GIT-001/isomorphic-git-research.md",
+        "spec/attachments/GIT-001/testing-patterns.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-21T01:52:37.646Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-21T02:10:46.791Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-21T02:14:18.345Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-21T02:20:14.711Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-21T02:21:42.908Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer maintaining fspec",
+        "action": "replace git CLI calls with isomorphic-git library",
+        "benefit": "fspec can be bundled as a single executable without external dependencies"
+      },
+      "rules": [
+        "Must create comprehensive git abstraction layer in src/git/ with common operations (status, add, commit, log) following best practices patterns",
+        "Git abstraction layer must be architected as core shared infrastructure for all git operations across fspec",
+        "Keep execa dependency (used for lifecycle hooks execution) but replace all git CLI calls with isomorphic-git",
+        "Git abstraction layer must support configurable strict mode - callers can choose whether errors are thrown or silently return empty results",
+        "No barrel exports (index.ts) - consumers must import directly from specific modules like src/git/status.ts",
+        "Use modular structure with separate files per operation area: status.ts, add.ts, commit.ts, log.ts in src/git/ directory",
+        "Create semantic wrapper types that hide isomorphic-git implementation details - consumers should not depend on library-specific types like StatusRow",
+        "Internal modules can use isomorphic-git types internally but must transform to semantic types (e.g., FileStatus) at module boundaries",
+        "Use isomorphic-git testing patterns from official documentation - research and document mock filesystem approach for unit tests",
+        "No performance benchmarking required - isomorphic-git performance is acceptable for fspec use case",
+        "Complete replacement of git-context.ts implementation - no feature flags or parallel implementations",
+        "Must update existing feature file, tests, and coverage mappings to align with new isomorphic-git implementation"
+      ],
+      "examples": [
+        "Virtual hook with git-context flag needs to get list of staged and unstaged files to pass to hook script (e.g., eslint only on changed files)",
+        "Checkpoint system (GIT-002 dependency) needs to detect all modified, staged, and untracked files before creating intelligent stash snapshot",
+        "Empty repository (git init, no commits yet) - should handle gracefully, treat all files as untracked without crashing",
+        "Repository with .gitignore - operations should respect .gitignore by default, exclude ignored files (node_modules, dist, etc.) from status results",
+        "Clean repository (no changes) - returns empty arrays efficiently for staged, unstaged, and untracked files"
+      ],
+      "estimate": 8
+    },
+    "GIT-002": {
+      "id": "GIT-002",
+      "title": "Intelligent checkpoint system for workflow transitions",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-10-21T01:48:11.753Z",
+      "updatedAt": "2025-10-21T01:48:18.070Z",
+      "description": "Implement automatic git stash/restore checkpointing when work units move through Kanban states, capturing all file changes (including fspec-modified files) for rollback capability",
+      "children": [],
+      "dependsOn": [
+        "GIT-001"
+      ]
+    },
+    "GIT-003": {
+      "id": "GIT-003",
+      "title": "Fix GIT-001 critical bugs and logic errors",
+      "type": "story",
+      "status": "specifying",
+      "createdAt": "2025-10-21T02:35:34.991Z",
+      "updatedAt": "2025-10-21T02:36:32.338Z",
+      "description": "Fix blocker test failure, critical logic bugs in getUnstagedFiles(), type safety violations, and add comprehensive test coverage for edge cases identified in ULTRATHINK analysis",
+      "epic": "example-driven-discovery",
+      "children": [],
+      "attachments": [
+        "spec/attachments/GIT-003/git-001-critical-analysis.md"
+      ],
+      "dependsOn": [
+        "GIT-001"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-21T02:36:12.870Z"
+        }
+      ],
+      "rules": [
+        "BLOCKER (S1): Fix failing test - getUnstagedFiles() returns empty array for modified files in memfs environment",
+        "CRITICAL (S2): Fix logic bug - getUnstagedFiles() misses files that are staged then modified again (partial staging scenario)",
+        "CRITICAL (S2): Fix FileStatus.modified semantic ambiguity - rename to hasUnstagedModifications or add separate hasUnstagedChanges field",
+        "HIGH (S3): Replace fs parameter type 'any' with proper IFs interface type for type safety",
+        "MEDIUM (S4): Add comprehensive test coverage for 14 missing scenarios including deleted files, nested directories, partial staging, and edge cases"
+      ],
+      "examples": [
+        "Failing test: File modified after commit in memfs not detected by getUnstagedFiles() - returns [] instead of ['modified.txt']",
+        "Partial staging miss: echo v2 > file.txt && git add file.txt && echo v3 >> file.txt results in file appearing in staged but NOT unstaged (should be in both)",
+        "Type safety violation: Passing { someMethod: () => {} } as fs option causes runtime error instead of compile-time error"
+      ]
     }
   },
   "states": {
@@ -8767,9 +8878,12 @@
       "MCP-002",
       "MCP-003",
       "MCP-004",
-      "MCP-005"
+      "MCP-005",
+      "GIT-002"
     ],
-    "specifying": [],
+    "specifying": [
+      "GIT-003"
+    ],
     "testing": [],
     "implementing": [],
     "validating": [],
@@ -8927,7 +9041,8 @@
       "HOOK-011",
       "HOOK-001",
       "BUG-023",
-      "HELP-003"
+      "HELP-003",
+      "GIT-001"
     ],
     "blocked": []
   }
