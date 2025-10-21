@@ -7,9 +7,10 @@
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { join } from 'path';
-import { mkdtemp, rm, readFile } from 'fs/promises';
+import { mkdtemp, rm, readFile, readdir } from 'fs/promises';
 import { tmpdir } from 'os';
 import { installAgents } from '../init';
+import { getSlashCommandTemplate } from '../../utils/slashCommandTemplate';
 
 describe('Feature: Wire up multi-agent support to fspec init command', () => {
   let testDir: string;
@@ -40,12 +41,11 @@ describe('Feature: Wire up multi-agent support to fspec init command', () => {
       // (if this test runs without throwing, we passed)
     });
 
-    it('should not throw errors about __dirname or missing template files', async () => {
-      // Given: fspec is bundled (no access to .claude/commands/fspec.md or spec/templates/base/AGENT.md)
+    it('should execute using embedded templates', async () => {
       // When: I run fspec init
       const result = installAgents(testDir, ['claude']);
 
-      // Then: Command should not reject with filesystem errors
+      // Then: Templates are loaded from embedded TypeScript modules
       await expect(result).resolves.not.toThrow();
     });
   });
@@ -95,6 +95,53 @@ describe('Feature: Wire up multi-agent support to fspec init command', () => {
 
       expect(specClaudeContent).toContain('Claude Code');
       expect(specClaudeContent).toContain('spec/CLAUDE.md');
+    });
+  });
+
+  describe('Scenario: Embedded templates work independently', () => {
+    it('should work in any directory using embedded templates', async () => {
+      const emptyDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
+
+      try {
+        // When: I call getSlashCommandTemplate() in any directory
+        const template = getSlashCommandTemplate();
+
+        // Then: Template is loaded from embedded TypeScript modules
+        expect(template.length).toBeGreaterThan(1000);
+        expect(template).toContain('fspec');
+
+        // And: fspec init works
+        await expect(installAgents(emptyDir, ['claude'])).resolves.not.toThrow();
+      } finally {
+        await rm(emptyDir, { recursive: true, force: true });
+      }
+    });
+
+    it('should return complete embedded template', async () => {
+      // When: I call getSlashCommandTemplate()
+      const template = getSlashCommandTemplate();
+
+      // Then: Template contains complete content from embedded modules
+      const lineCount = template.split('\n').length;
+      expect(lineCount).toBeGreaterThan(100);
+    });
+
+    it('should generate consistent templates for all agents', async () => {
+      // When: I run fspec init for multiple agents
+      await installAgents(testDir, ['claude', 'cursor']);
+
+      const claudeSlashCmd = join(testDir, '.claude', 'commands', 'fspec.md');
+      const cursorSlashCmd = join(testDir, '.cursor', 'commands', 'fspec.md');
+
+      const claudeCmdContent = await readFile(claudeSlashCmd, 'utf-8');
+      const cursorCmdContent = await readFile(cursorSlashCmd, 'utf-8');
+
+      // Then: Both contain complete embedded template content
+      expect(claudeCmdContent.length).toBeGreaterThan(1000);
+      expect(cursorCmdContent.length).toBeGreaterThan(1000);
+
+      expect(claudeCmdContent).toContain('fspec');
+      expect(cursorCmdContent).toContain('fspec');
     });
   });
 });

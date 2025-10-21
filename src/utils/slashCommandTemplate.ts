@@ -1,30 +1,42 @@
 /**
- * Slash Command Template
+ * Slash Command Template - Main Entry Point
  *
- * Embedded from .claude/commands/fspec.md to avoid filesystem dependencies.
- * This file is large (~1000 lines) but necessary for bundle-safe operation.
+ * This file combines all template sections into the complete fspec slash command.
+ * NO filesystem reads - all content is embedded as TypeScript string literals.
  */
 
-import { readFileSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { getHeaderSection } from './slashCommandSections/header';
+import { getAcddConceptSection } from './slashCommandSections/acddConcept';
+import { getLoadContextSection } from './slashCommandSections/loadContext';
+import { getBootstrapFoundationSection } from './slashCommandSections/bootstrapFoundation';
+import { getExampleMappingSection } from './slashCommandSections/exampleMapping';
+import { getEstimationSection } from './slashCommandSections/estimation';
+import { getKanbanWorkflowSection } from './slashCommandSections/kanbanWorkflow';
+import { getCriticalRulesSection } from './slashCommandSections/criticalRules';
+import { getAcddWorkflowExampleSection } from './slashCommandSections/acddWorkflowExample';
+import { getMonitoringProgressSection } from './slashCommandSections/monitoringProgress';
+import { getAcddPrinciplesSection} from './slashCommandSections/acddPrinciples';
+import { getCoverageTrackingSection } from './slashCommandSections/coverageTracking';
+import { getReadyToStartSection } from './slashCommandSections/readyToStart';
 
-// Read template at module load time (Vite will bundle this)
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-// Development: read from .claude/commands/fspec.md
-// Production: this gets bundled by Vite
-let SLASH_COMMAND_TEMPLATE: string;
-
-try {
-  const templatePath = join(__dirname, '..', '..', '.claude', 'commands', 'fspec.md');
-  SLASH_COMMAND_TEMPLATE = readFileSync(templatePath, 'utf-8');
-} catch {
-  // Fallback if file not found (shouldn't happen in dev or production)
-  SLASH_COMMAND_TEMPLATE = '# fspec Command\n\nBasic fallback template.';
-}
-
+/**
+ * Get the complete fspec slash command template.
+ * Combines all sections - no filesystem reads required.
+ */
 export function getSlashCommandTemplate(): string {
-  return SLASH_COMMAND_TEMPLATE;
+  return [
+    getHeaderSection(),
+    getAcddConceptSection(),
+    getLoadContextSection(),
+    getBootstrapFoundationSection(),
+    getExampleMappingSection(),
+    getEstimationSection(),
+    getKanbanWorkflowSection(),
+    getCriticalRulesSection(),
+    getAcddWorkflowExampleSection(),
+    getMonitoringProgressSection(),
+    getAcddPrinciplesSection(),
+    getCoverageTrackingSection(),
+    getReadyToStartSection()
+  ].join('\n');
 }

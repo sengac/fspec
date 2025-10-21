@@ -9382,7 +9382,7 @@
       "type": "story",
       "status": "done",
       "createdAt": "2025-10-21T11:10:11.887Z",
-      "updatedAt": "2025-10-21T12:13:16.564Z",
+      "updatedAt": "2025-10-21T12:52:18.544Z",
       "description": "Update registerInitCommand to use new multi-agent system (installAgents, agent registry, interactive selector). Deprecate and remove old single-agent code (init function, generateTemplate, copyClaudeTemplate). The new infrastructure exists but isn't being called - fspec init still defaults to Claude-only installation.",
       "children": [],
       "stateHistory": [
@@ -9433,6 +9433,58 @@
         {
           "state": "done",
           "timestamp": "2025-10-21T12:13:16.564Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-21T12:16:35.634Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-21T12:19:06.529Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-21T12:21:12.211Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-21T12:31:51.329Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-21T12:34:59.166Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-21T12:36:46.905Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-21T12:45:27.354Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-21T12:45:47.085Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-21T12:47:53.774Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-21T12:49:29.009Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-21T12:49:35.452Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-21T12:52:10.515Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-21T12:52:18.545Z"
         }
       ],
       "rules": [
@@ -9441,14 +9493,20 @@
         "Command must accept --agent flag (can be repeated) for non-interactive mode",
         "Interactive selector must use agent auto-detection to pre-select detected agents",
         "fspec init must work after global npm install without requiring local files",
-        "Generated files must be customized for each agent (agent-specific names, paths, features)"
+        "Generated files must be customized for each agent (agent-specific names, paths, features)",
+        "Interactive selector uses single-select navigation (arrow keys + ENTER), NOT checkboxes",
+        "Cursor highlights currently selected agent, ENTER key immediately installs that agent",
+        "NO multi-select - user can only select ONE agent at a time in interactive mode"
       ],
       "examples": [
         "User runs 'fspec init' with no flags, sees interactive agent selector with auto-detected agents pre-selected",
         "User runs 'fspec init --agent=cursor', skips interactive selector and installs Cursor directly",
         "After migration, old init(), generateTemplate(), copyClaudeTemplate() functions are deleted from init.ts",
         "User installs fspec globally with 'npm install -g fspec', then runs 'fspec init' in new project - command works without errors",
-        "After running 'fspec init --agent=cursor', generated files contain 'Cursor' not 'Claude Code' in agent names"
+        "After running 'fspec init --agent=cursor', generated files contain 'Cursor' not 'Claude Code' in agent names",
+        "After completing migration, old code paths (reading from project's .claude/commands/fspec.md) are completely removed",
+        "User runs 'fspec init', sees list with cursor on first agent, presses down arrow twice to move cursor to Cline, presses ENTER, Cline is selected and installation starts",
+        "User runs 'fspec init' in a directory with .claude/ folder, cursor starts on Claude Code (auto-detected), user presses ENTER, Claude Code is installed"
       ],
       "userStory": {
         "role": "developer using any AI coding agent",
