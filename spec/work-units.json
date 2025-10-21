@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-21T00:34:39.664Z"
+    "lastUpdated": "2025-10-21T01:40:58.959Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -5175,9 +5175,9 @@
       "id": "HOOK-001",
       "title": "Kanban Lifecycle Hooks System",
       "type": "story",
-      "status": "specifying",
+      "status": "done",
       "createdAt": "2025-10-15T10:55:43.651Z",
-      "updatedAt": "2025-10-20T22:40:32.637Z",
+      "updatedAt": "2025-10-21T00:50:35.164Z",
       "description": "Implement a hooks system similar to Claude Code hooks that allows executing custom commands before/after Kanban state transitions. Hooks are configured in spec/fspec-hooks.json and scripts live in spec/hooks/ directory. Enables quality gates, test automation, notifications, and CI/CD integration at each ACDD workflow stage.",
       "children": [
         "HOOK-002",
@@ -5213,6 +5213,22 @@
         {
           "state": "specifying",
           "timestamp": "2025-10-20T22:40:32.638Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-21T00:50:33.128Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-21T00:50:34.521Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-21T00:50:34.844Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-21T00:50:35.168Z"
         }
       ],
       "userStory": {
@@ -8495,9 +8511,9 @@
       "id": "HOOK-011",
       "title": "Work unit-scoped hooks for dynamic validation",
       "type": "story",
-      "status": "implementing",
+      "status": "done",
       "createdAt": "2025-10-20T22:40:29.609Z",
-      "updatedAt": "2025-10-20T23:57:49.686Z",
+      "updatedAt": "2025-10-21T00:52:25.364Z",
       "description": "Enable AI agents to attach hooks to specific work units without modifying global hook configuration",
       "children": [],
       "userStory": {
@@ -8553,6 +8569,14 @@
         {
           "state": "implementing",
           "timestamp": "2025-10-20T23:57:49.686Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-21T00:48:39.048Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-21T00:48:55.509Z"
         }
       ],
       "questions": [
@@ -8646,14 +8670,7 @@
         "User says 'run eslint only on changed files'. AI creates virtual hook with script in spec/hooks/.virtual/eslint-changed-files.sh. Hook context includes git info: {stagedFiles: ['src/auth.ts'], unstagedFiles: ['src/utils.ts']}. Script runs: eslint $STAGED_FILES. This is more efficient than linting entire codebase."
       ],
       "estimate": 8,
-      "virtualHooks": [
-        {
-          "name": "npm",
-          "event": "post-implementing",
-          "command": "npm run lint",
-          "blocking": true
-        }
-      ],
+      "virtualHooks": [],
       "attachments": [
         "spec/attachments/HOOK-011/HOOK-011-issues-found.md"
       ]
@@ -8662,11 +8679,86 @@
       "id": "BUG-023",
       "title": "commonPatterns displays [object Object] in help output",
       "type": "bug",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2025-10-21T00:28:59.162Z",
-      "updatedAt": "2025-10-21T00:30:08.330Z",
+      "updatedAt": "2025-10-21T01:38:22.549Z",
       "children": [],
-      "description": "Detailed bug analysis in spec/bugs/BUG-023-commonpatterns-formatting.md\n\nThe COMMON PATTERNS section in command help displays '[object Object]' instead of formatted pattern information. \n\nRoot cause: Type mismatch between CommandHelpConfig interface (expects string[]) and help file implementations (use objects with pattern/example/description).\n\nAffects: All help files including add-hook-help.ts and all 5 new virtual-hook help files.\n\nSee attached markdown for full analysis, reproduction steps, and recommended solutions."
+      "description": "Detailed bug analysis in spec/bugs/BUG-023-commonpatterns-formatting.md\n\nThe COMMON PATTERNS section in command help displays '[object Object]' instead of formatted pattern information. \n\nRoot cause: Type mismatch between CommandHelpConfig interface (expects string[]) and help file implementations (use objects with pattern/example/description).\n\nAffects: All help files including add-hook-help.ts and all 5 new virtual-hook help files.\n\nSee attached markdown for full analysis, reproduction steps, and recommended solutions.",
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-21T01:32:35.146Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-21T01:34:32.725Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-21T01:35:33.322Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-21T01:38:06.003Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-21T01:38:22.550Z"
+        }
+      ],
+      "userStory": {
+        "role": "AI agent using fspec CLI",
+        "action": "view properly formatted COMMON PATTERNS in help output",
+        "benefit": "I can understand usage patterns without seeing [object Object]"
+      },
+      "rules": [
+        "Help formatter must support both string[] and object[] formats for commonPatterns (backward compatibility)",
+        "Object format commonPatterns must display pattern name, example command, and description",
+        "Interface must accept both formats: string[] | Array<{pattern,example,description}>"
+      ],
+      "examples": [
+        "Running 'fspec add-virtual-hook --help' displays formatted patterns with name, example, and description instead of [object Object]",
+        "All 20+ affected help commands display COMMON PATTERNS section correctly after fix",
+        "Help commands still using string[] format continue to work (backward compatibility)"
+      ],
+      "estimate": 2
+    },
+    "HELP-003": {
+      "id": "HELP-003",
+      "title": "Regenerate help output for 20+ commands after BUG-023 fix",
+      "type": "task",
+      "status": "done",
+      "createdAt": "2025-10-21T01:32:08.102Z",
+      "updatedAt": "2025-10-21T01:41:10.513Z",
+      "description": "After fixing the commonPatterns formatting bug (BUG-023), regenerate and verify help output for all affected commands to ensure proper display of COMMON PATTERNS section",
+      "children": [],
+      "attachments": [
+        "spec/attachments/HELP-003/affected-help-files.md",
+        "spec/attachments/HELP-003/verification-report.md",
+        "spec/attachments/HELP-003/verify-help-patterns.sh"
+      ],
+      "dependsOn": [
+        "BUG-023"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-21T01:39:35.953Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-21T01:39:37.906Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-21T01:41:01.813Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-21T01:41:10.514Z"
+        }
+      ],
+      "estimate": 1
     }
   },
   "states": {
@@ -8675,16 +8767,11 @@
       "MCP-002",
       "MCP-003",
       "MCP-004",
-      "MCP-005",
-      "BUG-023"
+      "MCP-005"
     ],
-    "specifying": [
-      "HOOK-001"
-    ],
+    "specifying": [],
     "testing": [],
-    "implementing": [
-      "HOOK-011"
-    ],
+    "implementing": [],
     "validating": [],
     "done": [
       "BUG-007",
@@ -8836,7 +8923,11 @@
       "BUG-020",
       "BUG-022",
       "SPEC-002",
-      "SPEC-003"
+      "SPEC-003",
+      "HOOK-011",
+      "HOOK-001",
+      "BUG-023",
+      "HELP-003"
     ],
     "blocked": []
   }
