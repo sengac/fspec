@@ -9841,6 +9841,60 @@
         "benefit": "all 1360 tests pass and the codebase is clean"
       },
       "estimate": 3
+    },
+    "BUG-030": {
+      "id": "BUG-030",
+      "title": "Agent-specific activation message not customized in fspec init success output",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-10-22T08:19:08.142Z",
+      "updatedAt": "2025-10-22T08:21:43.239Z",
+      "description": "The 'Run /fspec in your AI agent to activate' message appears in 2 places in the fspec init command output. This message is generic and doesn't provide agent-specific instructions. For example, Claude Code users see this message, but Gemini users would also see the same message, which may not be applicable. The message should be customized based on the detected AI agent (Claude Code, Gemini, Cursor, etc.) to provide relevant activation instructions. Related to INIT-008 (agent runtime detection).",
+      "children": [],
+      "dependsOn": [
+        "INIT-008"
+      ]
+    },
+    "BUG-031": {
+      "id": "BUG-031",
+      "title": "No support for ULTRATHINK in discovery-driven feedback loop",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-10-22T08:19:09.971Z",
+      "updatedAt": "2025-10-22T08:21:45.105Z",
+      "description": "The discover-foundation command uses the term 'ULTRATHINK' in its guidance system-reminders to instruct AI agents to perform deep analysis. However, not all AI agents support extended thinking or use this terminology. Claude Code may understand 'ULTRATHINK', but Gemini, Cursor, and other agents do not. The discovery-driven feedback loop needs agent-specific language that adapts to the capabilities of the detected AI agent. For agents without extended thinking support, the term should be removed and replaced with standard instructions. This should integrate with INIT-008 (agent runtime detection) to provide appropriate guidance per agent.",
+      "children": [],
+      "dependsOn": [
+        "INIT-008"
+      ]
+    },
+    "FEAT-017": {
+      "id": "FEAT-017",
+      "title": "Duplicate scenario detection in generate-scenarios command",
+      "type": "story",
+      "status": "specifying",
+      "createdAt": "2025-10-22T08:26:22.211Z",
+      "updatedAt": "2025-10-22T08:27:30.719Z",
+      "description": "When 'fspec generate-scenarios' is run, it should check for existing scenarios across all feature files that might be duplicates. Existing code already exists to search for duplicate scenarios and provide results back to the LLM. This work unit refactors generate-scenarios to:\n\n1. Search for possible duplicate scenarios before generating new ones\n2. If duplicates reach a similarity threshold, display them with clear instructions\n3. Emit a system-reminder with:\n   - List of existing feature files that contain similar scenarios\n   - Guidance on what to investigate\n   - Instructions on how to ignore the warning if it's a false positive\n4. Add '--ignore-possible-duplicates' flag to bypass the check and continue generation\n5. Ensure the warning is actionable and prevents accidental duplication\n\nAcceptance Criteria:\n- Search existing feature files for similar scenarios during generate-scenarios\n- Display duplicate matches if similarity threshold is met\n- Emit system-reminder with clear next steps (investigate files, or use --ignore flag)\n- Add '--ignore-possible-duplicates' flag to skip duplicate check\n- Document the duplicate detection behavior in command help\n- Ensure existing duplicate search code is properly integrated",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-22T08:27:15.376Z"
+        }
+      ],
+      "rules": [
+        "Existing code already exists to search for duplicate scenarios and provide results to LLM",
+        "System-reminder must provide CLEAR instructions on what to do next",
+        "Must show which existing feature files to investigate when duplicates are detected",
+        "Must provide instructions on how to ignore warning if it's not valid",
+        "Command must accept --ignore-possible-duplicates flag to bypass duplicate check"
+      ],
+      "examples": [
+        "User runs 'fspec generate-scenarios WORK-001', duplicate scenarios are found above threshold, system-reminder shows list of feature files to investigate with clear next steps",
+        "User reviews system-reminder, investigates suggested feature files, determines it's a false positive, runs 'fspec generate-scenarios WORK-001 --ignore-possible-duplicates' to proceed",
+        "User runs 'fspec generate-scenarios WORK-001', no duplicates found, scenarios are generated normally without any warnings"
+      ]
     }
   },
   "states": {
@@ -9857,9 +9911,13 @@
       "RES-001",
       "INIT-007",
       "INIT-008",
-      "CLI-007"
+      "CLI-007",
+      "BUG-030",
+      "BUG-031"
     ],
-    "specifying": [],
+    "specifying": [
+      "FEAT-017"
+    ],
     "testing": [],
     "implementing": [],
     "validating": [],
