@@ -227,12 +227,20 @@ async function removeOtherAgentFiles(
 export async function installAgentFiles(
   cwd: string,
   agent: AgentConfig
-): Promise<void> {
+): Promise<string[]> {
+  const filesInstalled: string[] = [];
+
   // 1. Install full documentation (spec/AGENT.md)
   await installFullDoc(cwd, agent);
+  filesInstalled.push(`spec/${agent.docTemplate}`);
 
   // 2. Install slash command file
   await installSlashCommand(cwd, agent);
+  const filename =
+    agent.slashCommandFormat === 'toml' ? 'fspec.toml' : 'fspec.md';
+  filesInstalled.push(`${agent.slashCommandPath}${filename}`);
+
+  return filesInstalled;
 }
 
 /**
@@ -357,10 +365,8 @@ export function registerInitCommand(program: Command): void {
         // Install agents using new multi-agent system
         await installAgents(cwd, agentIds);
 
-        // Write agent config for runtime detection (INIT-008 integration)
-        if (agentIds.length > 0) {
-          writeAgentConfig(cwd, agentIds[0]);
-        }
+        // Write agent config ONCE (removed duplicate - config written in installAgents)
+        writeAgentConfig(cwd, agentIds[0]);
 
         // Success message (only for CLI mode, interactive mode shows in React component)
         if (options.agent.length > 0) {
