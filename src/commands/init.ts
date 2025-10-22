@@ -13,6 +13,8 @@ import { generateAgentDoc } from '../utils/templateGenerator';
 import { getSlashCommandTemplate } from '../utils/slashCommandTemplate';
 import { detectAgents } from '../utils/agentDetection';
 import { AgentSelector } from '../components/AgentSelector';
+import { getActivationMessage } from '../utils/activationMessage';
+import { writeAgentConfig } from '../utils/agentRuntimeConfig';
 
 /**
  * Install fspec for multiple agents
@@ -226,12 +228,21 @@ export function registerInitCommand(program: Command): void {
         // Install agents using new multi-agent system
         await installAgents(cwd, agentIds);
 
+        // Write agent config for runtime detection (INIT-008 integration)
+        if (agentIds.length > 0) {
+          writeAgentConfig(cwd, agentIds[0]);
+        }
+
         // Success message (only for CLI mode, interactive mode shows in React component)
         if (options.agent.length > 0) {
           const agentNames = agentIds.join(', ');
+          const agent = getAgentById(agentIds[0]);
+          const activationMessage = agent
+            ? getActivationMessage(agent)
+            : 'Run /fspec in your AI agent to activate';
           console.log(
             chalk.green(
-              `✓ Installed fspec for ${agentNames}\n\nNext steps:\nRun /fspec in your AI agent to activate`
+              `✓ Installed fspec for ${agentNames}\n\nNext steps:\n${activationMessage}`
             )
           );
         }

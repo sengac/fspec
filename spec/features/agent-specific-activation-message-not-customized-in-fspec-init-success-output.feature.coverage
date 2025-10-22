@@ -1,0 +1,95 @@
+{
+  "scenarios": [
+    {
+      "name": "Claude Code user sees agent-specific activation message",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/activationMessage.test.ts",
+          "lines": "11-21",
+          "implMappings": [
+            {
+              "file": "src/utils/activationMessage.ts",
+              "lines": [
+                13,
+                14,
+                15,
+                16
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Cursor user sees IDE-specific activation instructions",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/activationMessage.test.ts",
+          "lines": "24-35",
+          "implMappings": [
+            {
+              "file": "src/utils/activationMessage.ts",
+              "lines": [
+                18,
+                19,
+                20,
+                21
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Aider user sees CLI-specific activation instructions",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/activationMessage.test.ts",
+          "lines": "38-49",
+          "implMappings": [
+            {
+              "file": "src/utils/activationMessage.ts",
+              "lines": [
+                23,
+                24,
+                25,
+                26
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Unknown agent receives generic fallback message",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/activationMessage.test.ts",
+          "lines": "52-67",
+          "implMappings": [
+            {
+              "file": "src/utils/activationMessage.ts",
+              "lines": [
+                38,
+                39,
+                40
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/utils/__tests__/activationMessage.test.ts"
+    ],
+    "implFiles": [
+      "src/utils/activationMessage.ts"
+    ],
+    "totalLinesCovered": 66
+  }
+}

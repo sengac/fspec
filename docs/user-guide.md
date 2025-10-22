@@ -40,7 +40,11 @@ fspec init --agent=cline      # Cline (VS Code)
 **Creates:**
 - **Agent-specific slash command** (e.g., `.claude/commands/fspec.md`, `.cursor/commands/fspec.md`)
 - **Workflow documentation** (e.g., `spec/CLAUDE.md`, `spec/CURSOR.md`)
+- **Runtime configuration** (`spec/fspec-config.json` - stores detected agent for context-aware output)
 - **Project structure** (`spec/` directory, `work-units.json`, `tags.json`)
+
+**Output:**
+Shows agent-specific activation instructions (e.g., "Run /fspec in Claude Code" for Claude, "Open .cursor/commands/ in Cursor" for Cursor).
 
 **When to use:** Once per project, before starting any work. Run again with different `--agent` to support multiple agents simultaneously.
 

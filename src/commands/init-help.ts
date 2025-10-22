@@ -27,12 +27,12 @@ const config: CommandHelpConfig = {
     {
       command: 'fspec init --agent=claude',
       description: 'Initialize with Claude Code directly',
-      output: '✓ Initialized fspec for Claude Code\n  Created .claude/commands/fspec.md\n  Created spec/CLAUDE.md',
+      output: '✓ Installed fspec for Claude Code\n\nNext steps:\nRun /fspec in Claude Code to activate',
     },
     {
       command: 'fspec init --agent=cursor',
       description: 'Initialize with Cursor directly',
-      output: '✓ Initialized fspec for Cursor\n  Created .cursor/commands/fspec.md\n  Created spec/CURSOR.md',
+      output: '✓ Installed fspec for Cursor\n\nNext steps:\nOpen .cursor/commands/ in Cursor to activate',
     },
   ],
   prerequisites: ['Project should have package.json or be a git repository'],
@@ -41,6 +41,8 @@ const config: CommandHelpConfig = {
     'Supports 18 AI agents: Claude Code, Cursor, Windsurf, Cline, Aider, and more',
     'Creates agent-specific slash command (e.g., .claude/commands/fspec.md)',
     'Creates agent-specific workflow docs (e.g., spec/CLAUDE.md)',
+    'Creates spec/fspec-config.json for runtime agent detection',
+    'Shows agent-specific activation instructions (customized per agent)',
     'Can be run multiple times with different --agent to support multiple agents',
     'Use "fspec reverse" command for reverse ACDD workflow on existing codebases',
     'Creates spec/ directory structure',

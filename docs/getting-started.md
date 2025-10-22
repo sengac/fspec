@@ -57,7 +57,18 @@ fspec init --agent=windsurf  # Windsurf
 **What this creates:**
 - **Agent-specific slash command** (e.g., `.claude/commands/fspec.md`, `.cursor/commands/fspec.md`)
 - **Workflow documentation** (e.g., `spec/CLAUDE.md`, `spec/CURSOR.md`)
+- **Runtime configuration** (`spec/fspec-config.json` - stores detected agent for context-aware output)
 - **Project structure** (`spec/` directory for features, work units, tags)
+
+**Example output:**
+```
+✓ Installed fspec for Claude Code
+
+Next steps:
+Run /fspec in Claude Code to activate
+```
+
+*Note: The activation message is customized per agent (e.g., Cursor shows "Open .cursor/commands/ in Cursor to activate")*
 
 ---
 

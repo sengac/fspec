@@ -34,6 +34,7 @@ Tags that categorize features by functional area.
 | Tag | Description |
 |-----|-------------|
 | `@accuracy` | Accuracy measurement |
+| `@agent-detection` | Agent detection and runtime configuration features |
 | `@answer-question` | Question answering operations |
 | `@assumption-management` | Assumption tracking in Example Mapping |
 | `@attachments` | Feature related to work unit attachments (diagrams, documents, mockups) |
@@ -172,6 +173,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@pattern-detection` | Features involving pattern detection and analysis from historical data |
 | `@push` | Push notification functionality |
 | `@reverse-engineering` | Reverse engineering existing code to create specifications |
+| `@runtime` | Runtime behavior and dynamic configuration |
 | `@session-based` | Session-based interactive command pattern (similar to discover-foundation) |
 | `@setup` | Setup and initialization commands |
 | `@similarity-matching` | Text similarity and matching algorithms |
@@ -510,7 +512,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-10-22T01:41:40.974Z_
+_Last updated: 2025-10-22T08:40:34.039Z_
 
 **Update Command**: `fspec tag-stats`
 

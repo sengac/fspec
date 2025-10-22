@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Text, useInput, useApp } from 'ink';
 import type { AgentConfig } from '../utils/agentRegistry';
+import { getActivationMessage } from '../utils/activationMessage';
 
 interface AgentSelectorProps {
   agents: AgentConfig[];
@@ -47,13 +48,17 @@ export const AgentSelector: React.FC<AgentSelectorProps> = ({
   }, [selectedAgent, onSubmit, exit]);
 
   if (selectedAgent) {
-    const agentName = agents.find(a => a.id === selectedAgent)?.name || selectedAgent;
+    const agent = agents.find(a => a.id === selectedAgent);
+    const agentName = agent?.name || selectedAgent;
+    const activationMessage = agent
+      ? getActivationMessage(agent)
+      : 'Run /fspec in your AI agent to activate';
     return (
       <Box flexDirection="column">
         <Text color="green">✓ Installed fspec for {agentName}</Text>
         <Text> </Text>
         <Text>Next steps:</Text>
-        <Text>Run /fspec in your AI agent to activate</Text>
+        <Text>{activationMessage}</Text>
       </Box>
     );
   }

@@ -66,6 +66,10 @@
           "description": "Accuracy measurement"
         },
         {
+          "name": "@agent-detection",
+          "description": "Agent detection and runtime configuration features"
+        },
+        {
           "name": "@answer-question",
           "description": "Question answering operations"
         },
@@ -590,6 +594,10 @@
           "description": "Reverse engineering existing code to create specifications"
         },
         {
+          "name": "@runtime",
+          "description": "Runtime behavior and dynamic configuration"
+        },
+        {
           "name": "@session-based",
           "description": "Session-based interactive command pattern (similar to discover-foundation)"
         },
@@ -1009,26 +1017,26 @@
       "Use lowercase",
       "Use hyphens for multi-word tags (@cross-platform, not @crossplatform)",
       "Be specific and descriptive (@cucumber-parser not @parser-integration)",
-      "Avoid redundancy (@cli-commands \u2192 just @cli)",
+      "Avoid redundancy (@cli-commands → just @cli)",
       "Keep concise (prefer @wip over @work-in-progress)"
     ],
     "antiPatterns": {
       "dont": [
         {
           "description": "Create overlapping tags",
-          "example": "@validate and @validation \u2192 use @validation"
+          "example": "@validate and @validation → use @validation"
         },
         {
           "description": "Use vague tags",
-          "example": "@important \u2192 use @critical, @high, etc."
+          "example": "@important → use @critical, @high, etc."
         },
         {
           "description": "Create single-use tags",
-          "example": "@login-feature \u2192 use combination of existing tags"
+          "example": "@login-feature → use combination of existing tags"
         },
         {
           "description": "Mix concerns",
-          "example": "@cli-validation \u2192 use @cli @validation"
+          "example": "@cli-validation → use @cli @validation"
         }
       ],
       "do": [
@@ -1074,7 +1082,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-10-22T01:41:40.974Z",
+    "lastUpdated": "2025-10-22T08:40:34.039Z",
     "phaseStats": [
       {
         "phase": "Phase 1",
