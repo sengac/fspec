@@ -3,18 +3,15 @@ import type { CommandHelpConfig } from '../utils/help-formatter';
 const config: CommandHelpConfig = {
   name: 'init',
   description:
-    'Initialize fspec in a project, creating /fspec Claude Code slash command',
+    'Initialize fspec in a project with AI agent integration (supports 18 agents)',
   usage: 'fspec init [options]',
   whenToUse:
-    'Use once when setting up fspec in a new project to install Claude Code integration.',
+    'Use once when setting up fspec in a new project. Shows interactive menu to select AI agent(s), or use --agent flag to specify directly.',
   options: [
     {
-      flag: '--type <type>',
-      description: 'Installation type: claude-code (default) or custom',
-    },
-    {
-      flag: '--path <path>',
-      description: 'Custom installation path (required if --type=custom)',
+      flag: '--agent <agent>',
+      description:
+        'Specify agent directly: claude, cursor, windsurf, cline, aider, etc. (18 agents supported)',
     },
     {
       flag: '--yes',
@@ -24,16 +21,28 @@ const config: CommandHelpConfig = {
   examples: [
     {
       command: 'fspec init',
-      description: 'Initialize with Claude Code',
-      output: '✓ Initialized fspec\n  Created .claude/commands/fspec.md',
+      description: 'Interactive agent selection (menu)',
+      output: '? Select your AI agent(s):\n  ❯◯ Claude Code\n   ◯ Cursor\n   ◯ Windsurf\n   ...',
+    },
+    {
+      command: 'fspec init --agent=claude',
+      description: 'Initialize with Claude Code directly',
+      output: '✓ Initialized fspec for Claude Code\n  Created .claude/commands/fspec.md\n  Created spec/CLAUDE.md',
+    },
+    {
+      command: 'fspec init --agent=cursor',
+      description: 'Initialize with Cursor directly',
+      output: '✓ Initialized fspec for Cursor\n  Created .cursor/commands/fspec.md\n  Created spec/CURSOR.md',
     },
   ],
   prerequisites: ['Project should have package.json or be a git repository'],
   relatedCommands: ['create-feature', 'create-work-unit'],
   notes: [
-    'Creates .claude/commands/ directory',
-    'Installs /fspec slash command for Claude Code',
-    'Use "fspec reverse" command for reverse ACDD workflow',
+    'Supports 18 AI agents: Claude Code, Cursor, Windsurf, Cline, Aider, and more',
+    'Creates agent-specific slash command (e.g., .claude/commands/fspec.md)',
+    'Creates agent-specific workflow docs (e.g., spec/CLAUDE.md)',
+    'Can be run multiple times with different --agent to support multiple agents',
+    'Use "fspec reverse" command for reverse ACDD workflow on existing codebases',
     'Creates spec/ directory structure',
     'Initializes tags.json and foundation.json',
   ],

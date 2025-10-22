@@ -36,13 +36,28 @@ cd /path/to/your/project
 fspec init
 ```
 
-**What this creates:**
-- `.claude/commands/fspec.md` - Forward ACDD command for Claude Code
-- `spec/CLAUDE.md` - Comprehensive workflow guidelines for AI agents
+**This will show an interactive menu** to select your AI agent:
 
-**If you're not using Claude Code:**
-- Rename `spec/CLAUDE.md` to `spec/AGENTS.md`
-- Map the `/fspec` command to your AI agent's system
+```
+? Select your AI agent(s) (use spacebar to select, enter to confirm):
+❯◯ Claude Code - AI assistant with chat interface
+ ◯ Cursor - AI-first code editor
+ ◯ Windsurf - AI-powered IDE
+ ◯ Cline - VS Code extension
+ ... and 14 more options
+```
+
+**Or specify directly:**
+```bash
+fspec init --agent=claude    # Claude Code
+fspec init --agent=cursor    # Cursor
+fspec init --agent=windsurf  # Windsurf
+```
+
+**What this creates:**
+- **Agent-specific slash command** (e.g., `.claude/commands/fspec.md`, `.cursor/commands/fspec.md`)
+- **Workflow documentation** (e.g., `spec/CLAUDE.md`, `spec/CURSOR.md`)
+- **Project structure** (`spec/` directory for features, work units, tags)
 
 ---
 
@@ -50,10 +65,12 @@ fspec init
 
 ### Tell Your AI Agent What to Build
 
-**In Claude Code:**
+**Using the `/fspec` slash command:**
 ```
 /fspec Create a story for user login feature
 ```
+
+*Available in: Claude Code, Cursor, Windsurf, Cline, Aider, and more*
 
 **What happens next:**
 
@@ -224,7 +241,7 @@ See what's in progress:
 ```
 
 ```
-Claude: Let me check the fspec board...
+AI: Let me check the fspec board...
 
 ┌─────────┬────────────┬─────────┬───────────────┬───────────┬──────┐
 │ Backlog │ Specifying │ Testing │ Implementing  │Validating │ Done │
