@@ -10,7 +10,7 @@ import { execSync } from 'child_process';
 import { readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
 
-describe('Feature: fspec --help displays hardcoded version 0.0.1 instead of package.json version', () => {
+describe.sequential('Feature: fspec --help displays hardcoded version 0.0.1 instead of package.json version', () => {
   const projectRoot = join(process.cwd());
   const packageJsonPath = join(projectRoot, 'package.json');
   let originalPackageJson: string;

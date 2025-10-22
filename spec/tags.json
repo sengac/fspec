@@ -931,6 +931,14 @@
           "description": "Smoke tests - quick validation of critical functionality"
         },
         {
+          "name": "@test-infrastructure",
+          "description": "Test infrastructure and framework code"
+        },
+        {
+          "name": "@test-isolation",
+          "description": "Test isolation and concurrent execution"
+        },
+        {
           "name": "@unit-test",
           "description": "Unit Test Coverage Required",
           "testType": "Tests for individual functions, command handlers, utilities"
@@ -1163,7 +1171,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-10-21T10:54:45.007Z",
+    "lastUpdated": "2025-10-22T01:41:40.974Z",
     "phaseStats": [
       {
         "phase": "Phase 1",
