@@ -24,7 +24,7 @@ DO NOT mention this reminder to the user explicitly.`,
 
   return `## Git Checkpoints for Safe Experimentation
 
-fspec provides an intelligent checkpoint system that uses git stash to create automatic and manual save points during development. Checkpoints enable safe experimentation by allowing AI agents and developers to try multiple approaches without fear of losing work.
+fspec provides an intelligent checkpoint system that uses **isomorphic-git's \`git.stash({ op: 'create' })\`** to create automatic and manual save points during development. Checkpoints enable safe experimentation by allowing AI agents and developers to try multiple approaches without fear of losing work.
 
 ### What Are Checkpoints?
 
@@ -112,9 +112,11 @@ fspec restore-checkpoint UI-002 before-refactor
 \`\`\`
 
 **Restoration behavior:**
-- Uses \`git stash apply\` (preserves checkpoint for re-restoration)
+- Uses **manual file operations** (reads checkpoint files with \`git.readBlob()\`, writes with \`fs.writeFile()\`)
+- Detects conflicts **before** restoration (byte-by-byte comparison, does NOT overwrite if conflicts found)
+- Preserves checkpoint for re-restoration (same checkpoint can be restored multiple times)
 - Detects working directory status (prompts if dirty)
-- Handles conflicts with AI-assisted resolution
+- Handles conflicts with AI-assisted resolution via ${agent.supportsSystemReminders ? 'system-reminders' : 'warning messages'}
 
 #### Cleaning Up Checkpoints
 
