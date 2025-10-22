@@ -26,11 +26,17 @@ Think **Git for specifications** + **Kanban for AI agents** + **TDD enforcement*
 # Install
 npm install -g @sengac/fspec
 
-# Initialize in your project
+# Initialize in your project (interactive agent selection)
 cd /path/to/your/project
 fspec init
 
-# Tell Claude Code to create a feature
+# Or specify your AI agent directly
+fspec init --agent=claude    # Claude Code
+fspec init --agent=cursor    # Cursor
+fspec init --agent=windsurf  # Windsurf
+# ... and 15 more agents
+
+# Tell your AI agent to create a feature
 /fspec Create a story for user authentication
 ```
 

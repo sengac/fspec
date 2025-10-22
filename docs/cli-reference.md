@@ -9,8 +9,14 @@ For complete documentation: [User Guide](./user-guide.md)
 ## Setup & Initialization
 
 ```bash
-# Initialize new project
+# Initialize new project (interactive agent selection)
 fspec init
+
+# Or specify agent directly
+fspec init --agent=claude     # Claude Code
+fspec init --agent=cursor     # Cursor
+fspec init --agent=windsurf   # Windsurf
+# ... 18 agents supported
 
 # Bootstrap foundation from existing codebase
 fspec bootstrap

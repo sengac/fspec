@@ -23,17 +23,26 @@ This guide covers all fspec commands organized by workflow stage. Remember: **yo
 
 ### fspec init
 
-Initialize fspec in your project.
+Initialize fspec in your project with multi-agent support.
 
 ```bash
+# Interactive menu to select AI agent(s)
 fspec init
+
+# Or specify agent directly
+fspec init --agent=claude     # Claude Code
+fspec init --agent=cursor     # Cursor
+fspec init --agent=windsurf   # Windsurf
+fspec init --agent=cline      # Cline (VS Code)
+# ... supports 18 AI agents
 ```
 
 **Creates:**
-- `.claude/commands/fspec.md` - Forward ACDD slash command
-- `spec/CLAUDE.md` - Workflow guidelines for AI agents
+- **Agent-specific slash command** (e.g., `.claude/commands/fspec.md`, `.cursor/commands/fspec.md`)
+- **Workflow documentation** (e.g., `spec/CLAUDE.md`, `spec/CURSOR.md`)
+- **Project structure** (`spec/` directory, `work-units.json`, `tags.json`)
 
-**When to use:** Once per project, before starting any work.
+**When to use:** Once per project, before starting any work. Run again with different `--agent` to support multiple agents simultaneously.
 
 ---
 
