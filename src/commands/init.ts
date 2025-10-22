@@ -16,12 +16,19 @@ import { AgentSelector } from '../components/AgentSelector';
 import { getActivationMessage } from '../utils/activationMessage';
 import { writeAgentConfig } from '../utils/agentRuntimeConfig';
 
+interface InstallOptions {
+  shouldSwitch?: boolean;
+  interactiveMode?: boolean;
+  selectedAgent?: string;
+}
+
 /**
  * Install fspec for multiple agents
  */
 export async function installAgents(
   cwd: string,
-  agentIds: string[]
+  agentIds: string[],
+  options?: InstallOptions
 ): Promise<void> {
   // Validate agent IDs
   for (const agentId of agentIds) {
@@ -37,6 +44,11 @@ export async function installAgents(
     }
   }
 
+  // Check if user cancelled agent switch
+  if (options?.shouldSwitch === false) {
+    throw new Error('Agent switch cancelled by user');
+  }
+
   // Remove old agent files if switching agents (idempotent behavior)
   await removeOtherAgentFiles(cwd, agentIds);
 
@@ -46,6 +58,11 @@ export async function installAgents(
     if (agent) {
       await installAgentFiles(cwd, agent);
     }
+  }
+
+  // Write agent config for runtime detection
+  if (agentIds.length > 0) {
+    writeAgentConfig(cwd, agentIds[0]);
   }
 }
 

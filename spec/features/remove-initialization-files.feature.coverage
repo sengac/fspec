@@ -1,0 +1,161 @@
+{
+  "scenarios": [
+    {
+      "name": "Remove all files including config",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/remove-init-files.test.ts",
+          "lines": "31-63",
+          "implMappings": [
+            {
+              "file": "src/commands/remove-init-files.ts",
+              "lines": [
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Keep config and remove only agent files",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/remove-init-files.test.ts",
+          "lines": "67-99",
+          "implMappings": [
+            {
+              "file": "src/commands/remove-init-files.ts",
+              "lines": [
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Remove only detected agent files",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/remove-init-files.test.ts",
+          "lines": "103-138",
+          "implMappings": [
+            {
+              "file": "src/commands/remove-init-files.ts",
+              "lines": [
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Handle missing files gracefully",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/remove-init-files.test.ts",
+          "lines": "142-173",
+          "implMappings": [
+            {
+              "file": "src/commands/remove-init-files.ts",
+              "lines": [
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/commands/__tests__/remove-init-files.test.ts"
+    ],
+    "implFiles": [
+      "src/commands/remove-init-files.ts"
+    ],
+    "totalLinesCovered": 215
+  }
+}

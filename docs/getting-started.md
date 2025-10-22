@@ -54,6 +54,18 @@ fspec init --agent=cursor    # Cursor
 fspec init --agent=windsurf  # Windsurf
 ```
 
+**Switch between agents:**
+```bash
+# Auto-detects existing agent and prompts for confirmation
+fspec init --agent=cursor    # Switches from claude to cursor
+```
+
+**Remove agent initialization files:**
+```bash
+# Removes agent-specific files (slash commands, workflow docs)
+fspec remove-init-files
+```
+
 **What this creates:**
 - **Agent-specific slash command** (e.g., `.claude/commands/fspec.md`, `.cursor/commands/fspec.md`)
 - **Workflow documentation** (e.g., `spec/CLAUDE.md`, `spec/CURSOR.md`)

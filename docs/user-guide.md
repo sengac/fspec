@@ -48,6 +48,40 @@ Shows agent-specific activation instructions (e.g., "Run /fspec in Claude Code" 
 
 **When to use:** Once per project, before starting any work. Run again with different `--agent` to support multiple agents simultaneously.
 
+**Agent switching:**
+When running `fspec init` with a different agent than currently installed, fspec auto-detects the existing agent and prompts to switch:
+- Option 1: "Switch to [NewAgent]" (removes old agent files, installs new agent)
+- Option 2: "Cancel" (keeps existing setup, aborts installation)
+- Config file (`spec/fspec-config.json`) is updated to reflect the new agent
+- Interactive mode pre-selects the detected agent for easy confirmation or switching
+- Same agent reinstall is idempotent (refreshes files without prompts)
+
+### fspec remove-init-files
+
+Remove fspec initialization files for the currently installed agent.
+
+```bash
+fspec remove-init-files
+```
+
+**What this removes:**
+- **Agent-specific slash command** (e.g., `.claude/commands/fspec.md`)
+- **Workflow documentation** (e.g., `spec/CLAUDE.md`)
+- **Runtime configuration** (`spec/fspec-config.json`)
+
+**What this preserves:**
+- `spec/features/` directory (your feature files)
+- `spec/work-units.json` (your project work)
+- `spec/tags.json` (your tag registry)
+- `spec/foundation.json` (your project foundation)
+
+**When to use:**
+- Uninstalling fspec completely
+- Switching to a different agent (use `fspec init --agent=newagent` afterward)
+- Cleaning up after testing
+
+**Note:** Auto-detects the installed agent using `spec/fspec-config.json` and file detection. Silently skips files that are already deleted (idempotent behavior).
+
 ---
 
 ## Foundation Discovery
