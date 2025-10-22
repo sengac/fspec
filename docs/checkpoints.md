@@ -15,10 +15,16 @@
 
 ## How It Works
 
-Checkpoints use git stash under the hood to save:
-- All modified files (staged and unstaged)
+Checkpoints use **isomorphic-git's `git.stash({ op: 'create' })`** to save:
+- All modified tracked files
 - All untracked files (respecting .gitignore)
 - Complete working directory state
+
+**Implementation details:**
+- `git.stash({ op: 'create' })` creates a stash commit **without modifying** working directory or refs
+- Files are staged with `git.add()` before stashing (isomorphic-git requires this for untracked files)
+- Index is reset after checkpoint creation to avoid polluting user's staging area
+- Checkpoint refs stored in custom namespace: `refs/fspec-checkpoints/{workUnitId}/{checkpointName}`
 
 **Stash format:** `fspec-checkpoint:{workUnitId}:{checkpointName}:{timestamp}`
 
@@ -114,7 +120,14 @@ fspec restore-checkpoint AUTH-001 baseline
 ```
 
 **Restoration behavior:**
-- Uses `git stash apply` (preserves checkpoint for re-restoration)
+- Uses **manual file operations** (not `git stash apply`):
+  - Reads checkpoint commit using `git.readBlob()` for each file
+  - Writes files back to working directory using `fs.writeFile()`
+  - Preserves checkpoint for re-restoration (same checkpoint can be restored multiple times)
+- Detects conflicts **before** restoration:
+  - Compares file contents byte-by-byte
+  - Emits system-reminder with conflicted file paths
+  - Does NOT overwrite files if conflicts detected (unless `--force` used)
 - Detects working directory status (prompts if dirty)
 - Handles conflicts with AI-assisted resolution
 

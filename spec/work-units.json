@@ -9601,9 +9601,9 @@
       "id": "BUG-027",
       "title": "Stash system not adding files before creating stash",
       "type": "bug",
-      "status": "validating",
+      "status": "done",
       "createdAt": "2025-10-21T13:51:56.223Z",
-      "updatedAt": "2025-10-22T01:07:08.885Z",
+      "updatedAt": "2025-10-22T01:07:49.222Z",
       "description": "The stash/restore checkpoint system appears to not be stashing any files. Investigation suggests that files are not being added to git before creating the stash, resulting in empty stashes. Need to verify: 1) Are files being staged with 'git add' before 'git stash'? 2) Are untracked files being included? 3) Are there any error messages being suppressed? 4) Test with actual file modifications to confirm stash behavior.",
       "children": [],
       "stateHistory": [
@@ -9622,6 +9622,10 @@
         {
           "state": "validating",
           "timestamp": "2025-10-22T01:07:08.885Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-22T01:07:49.222Z"
         }
       ],
       "questions": [
@@ -9816,9 +9820,7 @@
     ],
     "testing": [],
     "implementing": [],
-    "validating": [
-      "BUG-027"
-    ],
+    "validating": [],
     "done": [
       "BUG-007",
       "BUG-008",
@@ -9981,7 +9983,8 @@
       "INIT-005",
       "INIT-006",
       "BUG-028",
-      "DOCS-002"
+      "DOCS-002",
+      "BUG-027"
     ],
     "blocked": []
   }
