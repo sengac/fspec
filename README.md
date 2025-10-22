@@ -36,6 +36,12 @@ fspec init --agent=cursor    # Cursor
 fspec init --agent=windsurf  # Windsurf
 # ... and 15 more agents
 
+# Switch agents (auto-detects and prompts for confirmation)
+fspec init --agent=cursor    # Switches from claude to cursor
+
+# Remove agent initialization files
+fspec remove-init-files
+
 # Tell your AI agent to create a feature
 /fspec Create a story for user authentication
 ```

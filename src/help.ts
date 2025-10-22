@@ -1069,6 +1069,9 @@ function displaySetupHelp(): void {
   console.log(chalk.dim('Configure project structure\n'));
 
   console.log('Use this when you need to:');
+  console.log('  • Initialize fspec for AI coding agents');
+  console.log('  • Switch between different AI agents');
+  console.log('  • Remove agent initialization files');
   console.log('  • Register tags in the centralized registry');
   console.log('  • Update or delete tags across all files');
   console.log('  • Bulk rename tags (retag operations)');
@@ -1078,6 +1081,33 @@ function displaySetupHelp(): void {
   console.log('  • Update foundation documentation');
   console.log('  • Manage feature-level and scenario-level tags');
   console.log('  • Validate tag usage across the project\n');
+
+  console.log(chalk.bold('INITIALIZATION'));
+  console.log('  ' + chalk.cyan('fspec init [options]'));
+  console.log('    Description: Initialize fspec for AI coding agents');
+  console.log('    Options:');
+  console.log(
+    '      --agent <agent>                  Specify agent directly (18 agents supported)'
+  );
+  console.log('      --yes                            Skip confirmation prompts');
+  console.log('    Examples:');
+  console.log('      fspec init');
+  console.log('      fspec init --agent=claude');
+  console.log('      fspec init --agent=cursor');
+  console.log(
+    '    Notes: Auto-detects existing agent installations and prompts to switch when different agent requested'
+  );
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec remove-init-files'));
+  console.log(
+    '    Description: Remove fspec initialization files for installed agents'
+  );
+  console.log('    Examples:');
+  console.log('      fspec remove-init-files');
+  console.log(
+    '    Notes: Auto-detects installed agent and removes configuration files'
+  );
+  console.log('');
 
   console.log(chalk.bold('TAG REGISTRY'));
   console.log(
