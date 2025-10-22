@@ -18,7 +18,7 @@ afterEach(async () => {
   await rm(testDir, { recursive: true, force: true });
 });
 
-describe('Feature: Complete CLI Command Registration', () => {
+describe.sequential('Feature: Complete CLI Command Registration', () => {
   describe('Scenario: Verify all 41 missing commands are registered', () => {
     it('should have all commands accessible via CLI', () => {
       // Given I have a list of 41 missing commands (excluding dependencies, estimation, query, workflow-automation)

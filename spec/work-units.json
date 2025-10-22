@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-22T00:49:17.230Z"
+    "lastUpdated": "2025-10-22T01:52:55.718Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -9551,21 +9551,101 @@
       "id": "BUG-025",
       "title": "Intermittent test failure: command-help-system main help test",
       "type": "bug",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2025-10-21T11:38:00.009Z",
-      "updatedAt": "2025-10-21T11:38:00.009Z",
+      "updatedAt": "2025-10-22T01:46:07.007Z",
       "description": "The test 'Feature: Command Help System > Scenario: Main help mentions individual command help availability' fails intermittently in the full test suite with exit code 1, but passes when run individually. This suggests a test isolation or timing issue. The test has been temporarily skipped in src/commands/__tests__/command-help-system.test.ts:198.",
-      "children": []
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-22T01:38:08.404Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-22T01:42:10.310Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-22T01:42:20.544Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-22T01:45:20.920Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-22T01:45:54.840Z"
+        }
+      ],
+      "rules": [
+        "Tests must not rebuild dist/index.js during execution as it causes race conditions"
+      ],
+      "examples": [
+        "version-display.test.ts runs 'npm run build' while command-help-system.test.ts executes node dist/index.js --help, causing exit code 1 or undefined",
+        "Test passes when run in isolation but fails when run with full suite due to dist/index.js being rebuilt by version-display.test.ts"
+      ],
+      "architectureNotes": [
+        "Root cause: version-display.test.ts rebuilds dist/index.js during test execution, causing race condition with command-help-system.test.ts",
+        "Solution: Mark version-display.test.ts with test.sequential() to prevent parallel execution with other CLI tests"
+      ],
+      "userStory": {
+        "role": "developer running fspec test suite",
+        "action": "run all tests concurrently without race conditions",
+        "benefit": "tests are reliable and pass consistently"
+      },
+      "estimate": 2
     },
     "BUG-026": {
       "id": "BUG-026",
       "title": "Flaky tests: command-help-system and foundation-existence-check fail in full suite but pass individually",
       "type": "bug",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2025-10-21T13:01:16.689Z",
-      "updatedAt": "2025-10-21T13:01:52.637Z",
+      "updatedAt": "2025-10-22T01:54:20.584Z",
       "description": "Two test files pass when run individually but fail in full suite - indicates test isolation issues.\n\nCOMMAND HELP TEST:\n- File: src/commands/__tests__/command-help-system.test.ts:223\n- Scenario: Display help for Example Mapping command with patterns\n- Expected: exitCode 0, Actual: exitCode 1 (full suite) | exitCode 0 (isolated)\n- Command: node dist/index.js add-question --help\n\nFOUNDATION EXISTENCE CHECK TEST:\n- File: src/commands/__tests__/foundation-existence-check.test.ts:172\n- Scenario: Run validate command without foundation.json (read-only exempt)\n- Expected: exitCode 0, Actual: exitCode undefined (full suite) | exitCode 0 (isolated)\n- Command: fspec validate (using execa)\n\nROOT CAUSE HYPOTHESIS:\n- Global state pollution from earlier tests\n- Async cleanup issues (tests completing out of order)\n- File system state not properly isolated\n- CLI process state leaking between tests\n\nNEXT STEPS:\n1. Add beforeEach/afterEach hooks for clean state\n2. Check for process.exit() calls affecting exit codes\n3. Investigate test execution order to find polluting tests\n4. Use vitest --sequence.shuffle to identify order dependencies",
-      "children": []
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-22T01:47:09.811Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-22T01:54:05.760Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-22T01:54:07.340Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-22T01:54:09.258Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-22T01:54:09.990Z"
+        }
+      ],
+      "rules": [
+        "Tests that execute dist/index.js must not run in parallel with tests that rebuild it"
+      ],
+      "examples": [
+        "command-help-system.test.ts executes 'node dist/index.js add-question --help' and gets exit code 1 when version-display.test.ts rebuilds dist/index.js in parallel",
+        "foundation-existence-check.test.ts executes 'fspec validate' and gets exit code undefined when version-display.test.ts rebuilds dist/index.js in parallel",
+        "After fixing BUG-025 (marking version-display.test.ts as sequential), both tests pass consistently in full suite"
+      ],
+      "architectureNotes": [
+        "Root cause: Same as BUG-025 - version-display.test.ts rebuilding dist/index.js created race conditions with ALL CLI tests",
+        "Solution: Fixed by BUG-025 solution - marking version-display.test.ts with describe.sequential() prevents parallel execution",
+        "Impact: Both command-help-system.test.ts:223 and foundation-existence-check.test.ts:172 now pass consistently in full suite (verified across multiple runs)"
+      ],
+      "userStory": {
+        "role": "developer running full test suite",
+        "action": "have all CLI tests pass reliably",
+        "benefit": "I can trust test results without intermittent failures"
+      },
+      "estimate": 1
     },
     "INIT-007": {
       "id": "INIT-007",
@@ -9808,8 +9888,6 @@
       "BOARD-002",
       "CLEAN-001",
       "RES-001",
-      "BUG-025",
-      "BUG-026",
       "INIT-007",
       "INIT-008",
       "TECH-002",
@@ -9984,7 +10062,9 @@
       "INIT-006",
       "BUG-028",
       "DOCS-002",
-      "BUG-027"
+      "BUG-027",
+      "BUG-025",
+      "BUG-026"
     ],
     "blocked": []
   }

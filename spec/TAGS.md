@@ -279,6 +279,8 @@ Tags for test-related scenarios and requirements.
 | `@regression` | Regression tests - comprehensive validation of existing functionality |  |
 | `@simple-command` | Simple command with minimal options |  |
 | `@smoke` | Smoke tests - quick validation of critical functionality |  |
+| `@test-infrastructure` | Test infrastructure and framework code |  |
+| `@test-isolation` | Test isolation and concurrent execution |  |
 | `@unit-test` | Unit Test Coverage Required |  |
 | `@unregistered-scenario-tag` | Example tag used in test scenarios to demonstrate error handling |  |
 | `@unregistered-tag1` | Example tag used in test scenarios to demonstrate error handling |  |
@@ -525,7 +527,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-10-21T10:54:45.007Z_
+_Last updated: 2025-10-22T01:41:40.974Z_
 
 **Update Command**: `fspec tag-stats`
 
