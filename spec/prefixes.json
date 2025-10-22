@@ -149,6 +149,11 @@
       "prefix": "RES",
       "description": "Research commands for external API integration",
       "createdAt": "2025-10-21T07:32:09.350Z"
+    },
+    "AGENT": {
+      "prefix": "AGENT",
+      "description": "Agent compatibility testing stories",
+      "createdAt": "2025-10-22T13:54:49.235Z"
     }
   }
 }
