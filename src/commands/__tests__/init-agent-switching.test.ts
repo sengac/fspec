@@ -11,6 +11,7 @@ import { existsSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
 import { installAgents } from '../init';
+import { writeAgentConfig } from '../../utils/agentRuntimeConfig';
 
 describe('Feature: Agent switching prompt in fspec init', () => {
   let testDir: string;
@@ -48,6 +49,9 @@ describe('Feature: Agent switching prompt in fspec init', () => {
       // When I select 'Switch to Cursor'
       // (Mock user confirming switch - this will be handled in implementation)
       await installAgents(testDir, ['cursor'], { shouldSwitch: true });
+
+      // Write config (now done separately from installAgents)
+      writeAgentConfig(testDir, 'cursor');
 
       // Then Claude files should be removed
       expect(existsSync(claudeMdPath)).toBe(false);

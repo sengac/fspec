@@ -5,6 +5,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { mkdir, rm, readFile, writeFile } from 'fs/promises';
 import { mkdirSync, rmSync, existsSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
@@ -13,14 +14,14 @@ import { installAgents, installAgentFiles } from '../init';
 describe('Feature: Support multiple AI agents beyond Claude', () => {
   let testDir: string;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     testDir = join(tmpdir(), `fspec-test-${Date.now()}`);
-    mkdirSync(testDir, { recursive: true });
+    await mkdir(testDir, { recursive: true });
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     if (existsSync(testDir)) {
-      rmSync(testDir, { recursive: true, force: true });
+      await rm(testDir, { recursive: true, force: true });
     }
   });
 
