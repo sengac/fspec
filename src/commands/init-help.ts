@@ -3,7 +3,7 @@ import type { CommandHelpConfig } from '../utils/help-formatter';
 const config: CommandHelpConfig = {
   name: 'init',
   description:
-    'Initialize fspec in a project, creating /fspec and /rspec Claude Code slash commands',
+    'Initialize fspec in a project, creating /fspec Claude Code slash command',
   usage: 'fspec init [options]',
   whenToUse:
     'Use once when setting up fspec in a new project to install Claude Code integration.',
@@ -26,14 +26,15 @@ const config: CommandHelpConfig = {
       command: 'fspec init',
       description: 'Initialize with Claude Code',
       output:
-        '✓ Initialized fspec\n  Created .claude/commands/fspec.md\n  Created .claude/commands/rspec.md',
+        '✓ Initialized fspec\n  Created .claude/commands/fspec.md',
     },
   ],
   prerequisites: ['Project should have package.json or be a git repository'],
   relatedCommands: ['create-feature', 'create-work-unit'],
   notes: [
     'Creates .claude/commands/ directory',
-    'Installs /fspec (forward ACDD) and /rspec (reverse ACDD) commands',
+    'Installs /fspec slash command for Claude Code',
+    'Use "fspec reverse" command for reverse ACDD workflow',
     'Creates spec/ directory structure',
     'Initializes tags.json and foundation.json',
   ],

@@ -134,7 +134,7 @@
       "id": "reverse-acdd-refactor",
       "title": "Reverse ACDD Refactor",
       "createdAt": "2025-10-19T20:57:21.648Z",
-      "description": "Refactor reverse ACDD workflow from prescriptive /rspec command to interactive strategy planning session",
+      "description": "Implement interactive reverse ACDD strategy planning with 'fspec reverse' command for gap detection and guided workflow",
       "workUnits": [
         "REV-001",
         "DOCS-002",
