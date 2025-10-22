@@ -4797,88 +4797,6 @@
         "benefit": "ACDD methodology is actually enforced, not just theatrical state walking"
       }
     },
-    "BUG-009": {
-      "id": "BUG-009",
-      "title": "remove-tag-from-scenario command doesn't properly remove tags",
-      "type": "story",
-      "status": "specifying",
-      "createdAt": "2025-10-15T07:11:37.663Z",
-      "updatedAt": "2025-10-22T07:21:00.090Z",
-      "description": "The remove-tag-from-scenario command is not working correctly - it claims to remove tags but they remain at scenario level in the feature files. This breaks tag validation because work unit ID tags (@COV-XXX) must be at feature level only.",
-      "children": [],
-      "userStory": {
-        "role": "developer using fspec",
-        "action": "remove scenario-level tags that should be at feature level",
-        "benefit": "tag validation passes and work unit tags are correctly positioned"
-      },
-      "stateHistory": [
-        {
-          "state": "specifying",
-          "timestamp": "2025-10-15T07:14:19.063Z"
-        },
-        {
-          "state": "testing",
-          "timestamp": "2025-10-15T07:22:07.019Z"
-        },
-        {
-          "state": "implementing",
-          "timestamp": "2025-10-15T07:24:11.287Z"
-        },
-        {
-          "state": "validating",
-          "timestamp": "2025-10-15T07:25:32.534Z"
-        },
-        {
-          "state": "done",
-          "timestamp": "2025-10-15T07:26:51.372Z"
-        },
-        {
-          "state": "specifying",
-          "timestamp": "2025-10-22T07:21:00.090Z"
-        }
-      ],
-      "rules": [
-        "Command must actually remove tags from scenario lines in the feature file, not just claim success",
-        "Command output should show success message when tags are removed",
-        "If tag doesn't exist on scenario, command should still succeed (idempotent)",
-        "Command must preserve file formatting and not corrupt Gherkin syntax",
-        "Must handle scenario names with special characters or partial matches",
-        "Use Edit tool for proper validation and formatting. Avoid sed/grep/perl for file modifications per CLAUDE.md guidelines.",
-        "Succeed silently (idempotent behavior). If scenario not found, log a warning but exit with code 0. This matches Rule 3 idempotency requirement.",
-        "Remove all occurrences of the tag from the scenario line. If '@COV-010 @COV-010' appears, both should be removed in a single operation."
-      ],
-      "examples": [
-        "Run 'fspec remove-tag-from-scenario spec/features/test.feature \"Login scenario\" @COV-010' and tag is actually removed from file",
-        "Tag appears on scenario line with 2-space indentation: '  @COV-010', command removes entire line",
-        "Multiple tags on scenario, remove one specific tag, other tags remain intact",
-        "Remove tag from scenario using wildcard scenario name '*', removes from all matching scenarios",
-        "Tag validation shows '@COV-010 must be at feature level', run remove command, validation passes after removal"
-      ],
-      "questions": [
-        {
-          "text": "@human: Should the command use Edit tool or direct file manipulation (sed/grep/perl)?",
-          "selected": true,
-          "answer": "Use Edit tool for proper validation and formatting. Avoid sed/grep/perl for file modifications per CLAUDE.md guidelines."
-        },
-        {
-          "text": "@human: Should command fail if scenario name not found, or succeed silently?",
-          "selected": true,
-          "answer": "Succeed silently (idempotent behavior). If scenario not found, log a warning but exit with code 0. This matches Rule 3 idempotency requirement."
-        },
-        {
-          "text": "@human: What should happen if tag appears multiple times on same scenario line?",
-          "selected": true,
-          "answer": "Remove all occurrences of the tag from the scenario line. If '@COV-010 @COV-010' appears, both should be removed in a single operation."
-        }
-      ],
-      "assumptions": [
-        "Issue only affects scenario-level tags, not feature-level tags",
-        "Bug was discovered during tag validation fix for FEAT-011 temporal ordering",
-        "Workaround exists using grep/sed/perl for manual removal",
-        "Bug affects all fspec versions with remove-tag-from-scenario command"
-      ],
-      "estimate": 2
-    },
     "DOC-004": {
       "id": "DOC-004",
       "title": "Validate Mermaid diagrams during foundation.json regeneration",
@@ -9941,9 +9859,7 @@
       "INIT-008",
       "CLI-007"
     ],
-    "specifying": [
-      "BUG-009"
-    ],
+    "specifying": [],
     "testing": [],
     "implementing": [],
     "validating": [],
