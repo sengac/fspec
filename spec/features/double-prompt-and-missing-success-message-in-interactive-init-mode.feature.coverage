@@ -1,0 +1,90 @@
+{
+  "scenarios": [
+    {
+      "name": "Interactive mode skips second confirmation prompt when switching agents",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/init-interactive-mode-prompts.test.ts",
+          "lines": "38-78",
+          "implMappings": [
+            {
+              "file": "src/commands/init.ts",
+              "lines": [
+                366,
+                367,
+                368,
+                369
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI mode still shows agent switch confirmation prompt",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/init-interactive-mode-prompts.test.ts",
+          "lines": "82-117",
+          "implMappings": [
+            {
+              "file": "src/commands/init.ts",
+              "lines": [
+                366,
+                367,
+                368,
+                369
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Interactive mode shows success message for same agent reinstall",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/init-interactive-mode-prompts.test.ts",
+          "lines": "120-158",
+          "implMappings": [
+            {
+              "file": "src/commands/init.ts",
+              "lines": [
+                379
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Success message format is identical in both interactive and CLI modes",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/init-interactive-mode-prompts.test.ts",
+          "lines": "161-202",
+          "implMappings": [
+            {
+              "file": "src/commands/init.ts",
+              "lines": [
+                379
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/commands/__tests__/init-interactive-mode-prompts.test.ts"
+    ],
+    "implFiles": [
+      "src/commands/init.ts"
+    ],
+    "totalLinesCovered": 168
+  }
+}
