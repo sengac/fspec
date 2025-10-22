@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-22T10:19:43.042Z"
+    "lastUpdated": "2025-10-22T12:06:36.267Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -10286,6 +10286,78 @@
         "docs/getting-started.md shows how to remove fspec if user wants to uninstall"
       ],
       "estimate": 2
+    },
+    "BUG-033": {
+      "id": "BUG-033",
+      "title": "Incomplete implementation of INIT-009 and INIT-010 features",
+      "type": "story",
+      "status": "implementing",
+      "createdAt": "2025-10-22T11:58:47.689Z",
+      "updatedAt": "2025-10-22T12:14:46.380Z",
+      "description": "Agent switching and remove-init-files features have passing tests but incomplete implementations. Interactive prompts missing, agent detection not integrated into action handlers, misleading help documentation.",
+      "children": [],
+      "attachments": [
+        "spec/attachments/BUG-033/incomplete-implementation-analysis.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-22T11:59:56.902Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-22T12:08:47.604Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-22T12:14:46.380Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using fspec",
+        "action": "have complete implementations of remove-init-files and init agent switching",
+        "benefit": "the CLI actually works as documented and passes real user acceptance tests"
+      },
+      "rules": [
+        "remove-init-files MUST prompt user with interactive Yes/No for keeping spec/fspec-config.json",
+        "init command MUST detect existing agent before installation and compare with requested agent",
+        "init command MUST prompt for agent switch confirmation when existing agent differs from requested agent",
+        "Success messages MUST show detailed list of files removed/installed to match help documentation",
+        "Agent config MUST be written only once (remove duplicate writeAgentConfig calls)",
+        "Create a generic ConfirmPrompt.tsx component that can be reused for both cases (and future confirmations). Interface: ConfirmPrompt({ message, confirmLabel?, cancelLabel?, onSubmit }) returns boolean. This follows DRY principle and keeps components focused.",
+        "Unit test the action handlers (not just internal functions). Mock ConfirmPrompt component responses. This is sufficient and provides faster feedback than E2E tests.",
+        "Add --keep-config and --no-keep-config flags for explicit control in non-interactive environments. When flags are provided, skip the interactive prompt. When no flag provided, show interactive prompt (normal behavior). This is clear and unambiguous."
+      ],
+      "examples": [
+        "User runs 'fspec remove-init-files', sees interactive prompt 'Keep spec/fspec-config.json?', selects 'Yes', config remains, agent files removed",
+        "User runs 'fspec remove-init-files', sees interactive prompt, selects 'No', all files including config removed, detailed output shown",
+        "User runs 'fspec init --agent=cursor' when Claude is installed, sees 'Switch from Claude to Cursor?' prompt, selects 'Switch', Claude files removed, Cursor installed",
+        "User runs 'fspec init --agent=cursor' when Claude is installed, sees switch prompt, selects 'Cancel', Claude files remain, process exits cleanly",
+        "User runs 'fspec init --agent=claude' when Claude is already installed, no prompt shown, files reinstalled idempotently"
+      ],
+      "questions": [
+        {
+          "text": "@human: Should we create new React/Ink components (KeepConfigPrompt.tsx, AgentSwitchPrompt.tsx) or integrate into existing AgentSelector component?",
+          "selected": true,
+          "answer": "Create a generic ConfirmPrompt.tsx component that can be reused for both cases (and future confirmations). Interface: ConfirmPrompt({ message, confirmLabel?, cancelLabel?, onSubmit }) returns boolean. This follows DRY principle and keeps components focused."
+        },
+        {
+          "text": "@human: Should we add E2E tests that spawn actual CLI processes, or is unit testing the action handlers sufficient?",
+          "selected": true,
+          "answer": "Unit test the action handlers (not just internal functions). Mock ConfirmPrompt component responses. This is sufficient and provides faster feedback than E2E tests."
+        },
+        {
+          "text": "@human: What should happen if user runs remove-init-files in non-interactive environment (CI/CD)? Should we have a --yes flag to skip prompts?",
+          "selected": true,
+          "answer": "Add --keep-config and --no-keep-config flags for explicit control in non-interactive environments. When flags are provided, skip the interactive prompt. When no flag provided, show interactive prompt (normal behavior). This is clear and unambiguous."
+        }
+      ],
+      "architectureNotes": [
+        "Implementation requires: 1) Create src/components/ConfirmPrompt.tsx (reusable Yes/No prompt), 2) Update remove-init-files action handler to use ConfirmPrompt, 3) Update init action handler to detect existing agent and show switch prompt, 4) Remove duplicate writeAgentConfig call in init.ts, 5) Update success messages to show detailed file lists",
+        "Testing strategy: Unit test action handlers (not internal functions). Mock ConfirmPrompt component responses using vitest. Ensure tests call the actual action handler path that real users trigger.",
+        "Files to modify: src/commands/remove-init-files.ts (action handler), src/commands/init.ts (action handler + remove duplicate), src/components/ConfirmPrompt.tsx (create new), src/commands/__tests__/remove-init-files.test.ts (fix tests), src/commands/__tests__/init-agent-switching.test.ts (fix tests)"
+      ],
+      "estimate": 5
     }
   },
   "states": {
@@ -10308,7 +10380,9 @@
       "FEAT-017"
     ],
     "testing": [],
-    "implementing": [],
+    "implementing": [
+      "BUG-033"
+    ],
     "validating": [],
     "done": [
       "BUG-007",
