@@ -16,6 +16,7 @@ export async function checkpoint(options: CheckpointOptions): Promise<{
   checkpointName: string;
   stashMessage: string;
   includedUntracked: boolean;
+  capturedFiles: string[];
 }> {
   const { workUnitId, checkpointName, cwd } = options;
 
@@ -39,6 +40,7 @@ export async function checkpoint(options: CheckpointOptions): Promise<{
       checkpointName: result.checkpointName,
       stashMessage: result.stashMessage,
       includedUntracked: result.includedUntracked,
+      capturedFiles: result.capturedFiles,
     };
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : String(error);

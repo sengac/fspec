@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-21T22:26:09.845Z"
+    "lastUpdated": "2025-10-22T00:49:17.230Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -9601,11 +9601,95 @@
       "id": "BUG-027",
       "title": "Stash system not adding files before creating stash",
       "type": "bug",
-      "status": "backlog",
+      "status": "validating",
       "createdAt": "2025-10-21T13:51:56.223Z",
-      "updatedAt": "2025-10-21T13:51:56.223Z",
+      "updatedAt": "2025-10-22T01:07:08.885Z",
       "description": "The stash/restore checkpoint system appears to not be stashing any files. Investigation suggests that files are not being added to git before creating the stash, resulting in empty stashes. Need to verify: 1) Are files being staged with 'git add' before 'git stash'? 2) Are untracked files being included? 3) Are there any error messages being suppressed? 4) Test with actual file modifications to confirm stash behavior.",
-      "children": []
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-22T00:27:04.797Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-22T00:52:31.871Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-22T00:54:13.903Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-22T01:07:08.885Z"
+        }
+      ],
+      "questions": [
+        {
+          "text": "@human: What is the stash system currently doing wrong? When I create a checkpoint, what files should be saved and what actually gets saved?",
+          "selected": true,
+          "answer": "The stash system is using isomorphic-git which doesn't support git stash. It tries to simulate stashing with git.commit() but never stages files first with git.add(), resulting in empty commits that capture nothing. Files should be stashed using real 'git stash push -u -m message' command via execa (which the project already uses elsewhere)."
+        },
+        {
+          "text": "@human: Should the checkpoint system stash both tracked modified files AND untracked new files? Or only tracked files?",
+          "selected": true,
+          "answer": "Yes, both tracked modified files AND untracked new files should be included using 'git stash push -u' where -u flag includes untracked files while respecting .gitignore. This matches the feature specification line 11."
+        },
+        {
+          "text": "@human: Should we update the feature specification (intelligent-checkpoint-system-for-workflow-transitions.feature line 11) to document that files must be staged before stashing, not using native git -u flag?",
+          "selected": true,
+          "answer": "Yes, update the feature spec to document that isomorphic-git requires staging untracked files with git.add() before git.stash({ op: 'create' }) can capture them. This is a limitation of isomorphic-git, not native git."
+        },
+        {
+          "text": "@human: For checkpoint restoration, should we attempt to detect and handle merge conflicts (if user modified files since checkpoint), or simply overwrite with checkpoint contents?",
+          "selected": true,
+          "answer": "Detect and handle conflicts. Compare file contents byte-by-byte. If conflicts detected, emit system-reminder with conflicted files and recommend creating new checkpoint first. Do NOT overwrite without user awareness."
+        },
+        {
+          "text": "@human: Should checkpoint restoration preserve file permissions and timestamps, or just content?",
+          "selected": true,
+          "answer": "Just content. File permissions and timestamps are not critical for checkpoint use case (experimentation and rollback). Focus on content restoration only."
+        }
+      ],
+      "rules": [
+        "isomorphic-git HAS native git.stash() API with 'create' operation that creates stash commit without modifying working directory or refs",
+        "isomorphic-git stash only handles TRACKED files - untracked files must be staged with git.add() BEFORE creating checkpoint for them to be captured",
+        "Must reset index after checkpoint creation to avoid polluting user's staging area",
+        "Store checkpoint refs in custom namespace (refs/fspec-checkpoints/{work-unit-id}/{checkpoint-name}) for organization and easy listing",
+        "Checkpoints must capture both modified tracked files AND new untracked files (respecting .gitignore)",
+        "Restoration reads checkpoint from custom ref (refs/fspec-checkpoints/{work-unit-id}/{checkpoint-name}) then manually restores files using git.readBlob() and fs.writeFile()",
+        "Conflict detection compares working directory file contents vs checkpoint file contents byte-by-byte - if different, file is marked as conflicted",
+        "If conflicts detected, emit system-reminder with conflicted files list and recommended actions (create new checkpoint first) - do NOT modify any files",
+        "Files in checkpoint but not in working directory are restored (recreated) - files in working directory but not in checkpoint are ignored (left untouched)",
+        "Cannot use git.stash({ op: 'apply' }) because our custom ref namespace (refs/fspec-checkpoints) is incompatible with isomorphic-git's reflog-based stash access",
+        "Detect and handle conflicts. Compare file contents byte-by-byte. If conflicts detected, emit system-reminder with conflicted files and recommend creating new checkpoint first. Do NOT overwrite without user awareness."
+      ],
+      "examples": [
+        "Current bug: git.commit() called without git.add(), creates empty commit that captures nothing",
+        "User modifies tracked file README.md, runs checkpoint, file is staged then stashed with git.stash({ op: 'create' }), working directory unchanged",
+        "User creates new untracked file auth.test.ts, runs checkpoint, file is staged with git.add() then captured by stash, working directory unchanged",
+        "User modifies README.md and creates new.ts, runs checkpoint, both files staged and captured, index reset afterward, working directory unchanged",
+        "User restores checkpoint, files from stash commit are read and written back to working directory, all files (tracked + previously-staged untracked) restored",
+        "User creates checkpoint 'baseline', modifies files more, runs restore, all files read from checkpoint commit using git.readBlob() and written to working directory",
+        "User creates checkpoint with file A (v1), modifies file A to v2, runs restore, conflict detected (contents differ), system-reminder emitted, file A NOT overwritten (stays v2)",
+        "User creates checkpoint with file A, deletes file A from working directory, runs restore, file A is recreated from checkpoint (no conflict)",
+        "User creates checkpoint, adds new file B (not in checkpoint), runs restore, file B is left untouched (ignored), only checkpoint files restored",
+        "User tries to restore non-existent checkpoint name, git.resolveRef() throws error, restoration returns success=false with 'checkpoint not found' message"
+      ],
+      "attachments": [
+        "spec/attachments/BUG-027/checkpoint-implementation-strategy.md",
+        "spec/attachments/BUG-027/checkpoint-restoration-strategy.md"
+      ],
+      "assumptions": [
+        "Yes, update the feature spec to document that isomorphic-git requires staging untracked files with git.add() before git.stash({ op: 'create' }) can capture them. This is a limitation of isomorphic-git, not native git.",
+        "Just content. File permissions and timestamps are not critical for checkpoint use case (experimentation and rollback). Focus on content restoration only."
+      ],
+      "userStory": {
+        "role": "developer using fspec checkpoints",
+        "action": "create and restore checkpoints that actually capture all file changes",
+        "benefit": "I can safely experiment and rollback without losing work"
+      },
+      "estimate": 5
     },
     "CLI-007": {
       "id": "CLI-007",
@@ -9725,7 +9809,6 @@
       "INIT-007",
       "INIT-008",
       "TECH-002",
-      "BUG-027",
       "CLI-007"
     ],
     "specifying": [
@@ -9733,7 +9816,9 @@
     ],
     "testing": [],
     "implementing": [],
-    "validating": [],
+    "validating": [
+      "BUG-027"
+    ],
     "done": [
       "BUG-007",
       "BUG-008",

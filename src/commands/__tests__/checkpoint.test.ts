@@ -387,4 +387,215 @@ describe('Feature: Intelligent checkpoint system for workflow transitions', () =
       expect(result.requiresUserChoice).toBe(true);
     });
   });
+
+  // ================================================================
+  // BUG-027: Tests for checkpoint creation and restoration fixes
+  // Feature: spec/features/stash-system-not-adding-files-before-creating-stash.feature
+  // ================================================================
+
+  describe('BUG-027: Checkpoint creation with git.stash({ op: "create" })', () => {
+    it('should stage and capture modified tracked files', async () => {
+      // Given: I have modified tracked file "README.md"
+      await writeFile(join(testDir, 'README.md'), '# Modified Content');
+
+      // When: I run checkpoint
+      const result = await checkpoint({
+        workUnitId: 'GIT-002',
+        checkpointName: 'test-checkpoint',
+        cwd: testDir,
+      });
+
+      // Then: file should be staged and captured
+      expect(result.success).toBe(true);
+      expect(result.capturedFiles).toContain('README.md');
+
+      // And: working directory should remain unchanged
+      const content = await fs.promises.readFile(join(testDir, 'README.md'), 'utf-8');
+      expect(content).toBe('# Modified Content');
+
+      // And: checkpoint ref should exist in custom namespace
+      const checkpointOid = await git.resolveRef({
+        fs,
+        dir: testDir,
+        ref: 'refs/fspec-checkpoints/GIT-002/test-checkpoint',
+      });
+      expect(checkpointOid).toBeDefined();
+    });
+
+    it('should stage and capture new untracked files', async () => {
+      // Given: I have created new untracked file
+      await writeFile(join(testDir, 'new-file.ts'), 'console.log("new");');
+
+      // When: I run checkpoint
+      const result = await checkpoint({
+        workUnitId: 'GIT-002',
+        checkpointName: 'untracked-test',
+        cwd: testDir,
+      });
+
+      // Then: untracked file should be captured
+      expect(result.success).toBe(true);
+      expect(result.capturedFiles).toContain('new-file.ts');
+
+      // And: working directory should remain unchanged
+      const exists = await fs.promises.access(join(testDir, 'new-file.ts'))
+        .then(() => true)
+        .catch(() => false);
+      expect(exists).toBe(true);
+    });
+
+    it('should reset index after checkpoint creation', async () => {
+      // Given: I have modified a file
+      await writeFile(join(testDir, 'test.ts'), 'const x = 1;');
+
+      // When: I create checkpoint
+      await checkpoint({
+        workUnitId: 'GIT-002',
+        checkpointName: 'index-reset-test',
+        cwd: testDir,
+      });
+
+      // Then: index should be clean (no staged files)
+      const status = await git.statusMatrix({ fs, dir: testDir });
+      const stagedFiles = status.filter(row => {
+        const [, headStatus, workdirStatus, stageStatus] = row;
+        return stageStatus === 2; // 2 = staged
+      });
+      expect(stagedFiles.length).toBe(0);
+    });
+  });
+
+  describe('BUG-027: Checkpoint restoration with manual file operations', () => {
+    it('should restore files by reading from checkpoint commit', async () => {
+      // Given: I have created a checkpoint with file
+      await writeFile(join(testDir, 'restore-test.ts'), 'const original = 1;');
+      await checkpoint({
+        workUnitId: 'GIT-002',
+        checkpointName: 'restore-baseline',
+        cwd: testDir,
+      });
+
+      // And: I modify the file
+      await writeFile(join(testDir, 'restore-test.ts'), 'const modified = 2;');
+
+      // When: I restore checkpoint (force mode to overwrite dirty files)
+      const result = await restoreCheckpoint({
+        workUnitId: 'GIT-002',
+        checkpointName: 'restore-baseline',
+        cwd: testDir,
+        force: true,
+      });
+
+      // Then: file should be restored to original content
+      expect(result.success).toBe(true);
+      const content = await fs.promises.readFile(join(testDir, 'restore-test.ts'), 'utf-8');
+      expect(content).toBe('const original = 1;');
+    });
+
+    it('should detect conflicts when file modified since checkpoint', async () => {
+      // Given: I have created checkpoint with file v1
+      await writeFile(join(testDir, 'conflict.ts'), 'version 1');
+      await checkpoint({
+        workUnitId: 'GIT-002',
+        checkpointName: 'conflict-test',
+        cwd: testDir,
+      });
+
+      // And: I modify file to v2
+      await writeFile(join(testDir, 'conflict.ts'), 'version 2');
+
+      // When: I try to restore checkpoint
+      const result = await restoreCheckpoint({
+        workUnitId: 'GIT-002',
+        checkpointName: 'conflict-test',
+        cwd: testDir,
+      });
+
+      // Then: conflict should be detected
+      expect(result.success).toBe(false);
+      expect(result.conflictsDetected).toBe(true);
+      expect(result.conflictedFiles).toContain('conflict.ts');
+
+      // And: system-reminder should be emitted
+      expect(result.systemReminder).toContain('CONFLICT DETECTED');
+
+      // And: file should NOT be overwritten (stays v2)
+      const content = await fs.promises.readFile(join(testDir, 'conflict.ts'), 'utf-8');
+      expect(content).toBe('version 2');
+    });
+
+    it('should recreate deleted files from checkpoint', async () => {
+      // Given: I have created checkpoint with file
+      await writeFile(join(testDir, 'deletable.ts'), 'will be deleted');
+      await checkpoint({
+        workUnitId: 'GIT-002',
+        checkpointName: 'deletion-test',
+        cwd: testDir,
+      });
+
+      // And: I delete the file
+      await fs.promises.unlink(join(testDir, 'deletable.ts'));
+
+      // When: I restore checkpoint
+      const result = await restoreCheckpoint({
+        workUnitId: 'GIT-002',
+        checkpointName: 'deletion-test',
+        cwd: testDir,
+      });
+
+      // Then: file should be recreated
+      expect(result.success).toBe(true);
+      const exists = await fs.promises.access(join(testDir, 'deletable.ts'))
+        .then(() => true)
+        .catch(() => false);
+      expect(exists).toBe(true);
+      const content = await fs.promises.readFile(join(testDir, 'deletable.ts'), 'utf-8');
+      expect(content).toBe('will be deleted');
+    });
+
+    it('should ignore files not in checkpoint', async () => {
+      // Given: I have created checkpoint with file A
+      await writeFile(join(testDir, 'fileA.ts'), 'file A');
+      await checkpoint({
+        workUnitId: 'GIT-002',
+        checkpointName: 'ignore-test',
+        cwd: testDir,
+      });
+
+      // And: I add new file B (not in checkpoint)
+      await writeFile(join(testDir, 'fileB.ts'), 'file B');
+
+      // When: I restore checkpoint (force mode to skip prompt)
+      const result = await restoreCheckpoint({
+        workUnitId: 'GIT-002',
+        checkpointName: 'ignore-test',
+        cwd: testDir,
+        force: true,
+      });
+
+      // Then: file B should be left untouched
+      expect(result.success).toBe(true);
+      const exists = await fs.promises.access(join(testDir, 'fileB.ts'))
+        .then(() => true)
+        .catch(() => false);
+      expect(exists).toBe(true);
+      const content = await fs.promises.readFile(join(testDir, 'fileB.ts'), 'utf-8');
+      expect(content).toBe('file B');
+    });
+
+    it('should error when restoring non-existent checkpoint', async () => {
+      // Given: checkpoint does not exist
+
+      // When: I try to restore non-existent checkpoint
+      const result = await restoreCheckpoint({
+        workUnitId: 'GIT-002',
+        checkpointName: 'does-not-exist',
+        cwd: testDir,
+      });
+
+      // Then: should fail with appropriate error
+      expect(result.success).toBe(false);
+      expect(result.systemReminder).toContain('not found');
+    });
+  });
 });
