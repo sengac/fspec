@@ -159,6 +159,31 @@
         "BOARD-002",
         "BOARD-003"
       ]
+    },
+    "agent-testing": {
+      "id": "agent-testing",
+      "title": "AI Agent Compatibility Testing",
+      "createdAt": "2025-10-22T13:54:38.481Z",
+      "description": "Comprehensive testing of fspec init and workflow for all 17 supported AI coding agents (excluding Claude Code which is already tested)",
+      "workUnits": [
+        "AGENT-001",
+        "AGENT-002",
+        "AGENT-003",
+        "AGENT-004",
+        "AGENT-005",
+        "AGENT-006",
+        "AGENT-007",
+        "AGENT-008",
+        "AGENT-009",
+        "AGENT-010",
+        "AGENT-011",
+        "AGENT-012",
+        "AGENT-013",
+        "AGENT-014",
+        "AGENT-015",
+        "AGENT-016",
+        "AGENT-017"
+      ]
     }
   }
 }
