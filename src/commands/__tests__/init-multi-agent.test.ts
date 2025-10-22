@@ -139,11 +139,9 @@ describe('Feature: Support multiple AI agents beyond Claude', () => {
       await installAgents(testDir, ['claude']);
 
       // And files exist
-      const claudeMd = join(testDir, 'CLAUDE.md');
       const specClaudeMd = join(testDir, 'spec', 'CLAUDE.md');
       const claudeSlashCmd = join(testDir, '.claude', 'commands', 'fspec.md');
 
-      expect(existsSync(claudeMd)).toBe(true);
       expect(existsSync(specClaudeMd)).toBe(true);
       expect(existsSync(claudeSlashCmd)).toBe(true);
 
@@ -151,12 +149,10 @@ describe('Feature: Support multiple AI agents beyond Claude', () => {
       await installAgents(testDir, ['cursor']);
 
       // Then Claude-specific files should be removed
-      expect(existsSync(claudeMd)).toBe(false);
       expect(existsSync(specClaudeMd)).toBe(false);
       expect(existsSync(claudeSlashCmd)).toBe(false);
 
       // And Cursor-specific files should be created
-      expect(existsSync(join(testDir, 'CURSOR.md'))).toBe(true);
       expect(existsSync(join(testDir, 'spec', 'CURSOR.md'))).toBe(true);
       expect(existsSync(join(testDir, '.cursor', 'commands', 'fspec.md'))).toBe(
         true
@@ -226,22 +222,4 @@ describe('Feature: Support multiple AI agents beyond Claude', () => {
     });
   });
 
-  describe('Scenario: Install root stub for auto-loading agents', () => {
-    it('should create root stub file with pointer to full documentation', async () => {
-      // When I run "fspec init --agent=cursor"
-      await installAgents(testDir, ['cursor']);
-
-      // Then a file "CURSOR.md" should be created in the project root
-      const rootStub = join(testDir, 'CURSOR.md');
-      expect(existsSync(rootStub)).toBe(true);
-
-      // And the file should be a short pointer to "spec/CURSOR.md"
-      const content = readFileSync(rootStub, 'utf-8');
-      expect(content).toContain('spec/CURSOR.md');
-
-      // And the file should contain a quick start guide
-      expect(content.length).toBeLessThan(1000); // Short stub file
-      expect(content).toMatch(/quick|start|guide/i);
-    });
-  });
 });

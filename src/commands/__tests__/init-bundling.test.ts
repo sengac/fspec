@@ -30,11 +30,11 @@ describe('Feature: Wire up multi-agent support to fspec init command', () => {
       await installAgents(testDir, ['claude']);
 
       // Then: The command should execute successfully
-      // And: Agent-specific files should be created with correct content
-      const claudeMdPath = join(testDir, 'CLAUDE.md');
-      const claudeMdContent = await readFile(claudeMdPath, 'utf-8');
+      // And: spec/CLAUDE.md should be created with correct content
+      const specClaudeMdPath = join(testDir, 'spec', 'CLAUDE.md');
+      const claudeMdContent = await readFile(specClaudeMdPath, 'utf-8');
 
-      expect(claudeMdContent).toContain('Claude Code');
+      expect(claudeMdContent).toContain('Project Management and Specification Guidelines');
       expect(claudeMdContent).toContain('fspec');
 
       // And: No errors about missing files or templates should occur
@@ -56,17 +56,7 @@ describe('Feature: Wire up multi-agent support to fspec init command', () => {
       await installAgents(testDir, ['cursor']);
 
       // When: The installation completes
-      // Then: Generated files should contain "Cursor" not "Claude Code"
-      const cursorMdPath = join(testDir, 'CURSOR.md');
-      const cursorMdContent = await readFile(cursorMdPath, 'utf-8');
-
-      expect(cursorMdContent).toContain('Cursor');
-      expect(cursorMdContent).not.toContain('Claude Code');
-
-      // And: The slash command path should be ".cursor/commands/"
-      expect(cursorMdContent).toContain('.cursor/commands/');
-
-      // And: The spec/CURSOR.md should contain comprehensive Project Management Guidelines
+      // Then: spec/CURSOR.md should contain comprehensive Project Management Guidelines
       const specCursorPath = join(testDir, 'spec', 'CURSOR.md');
       const specCursorContent = await readFile(specCursorPath, 'utf-8');
 
@@ -82,17 +72,7 @@ describe('Feature: Wire up multi-agent support to fspec init command', () => {
       await installAgents(testDir, ['claude']);
 
       // When: The installation completes
-      // Then: Generated files should contain "Claude Code"
-      const claudeMdPath = join(testDir, 'CLAUDE.md');
-      const claudeMdContent = await readFile(claudeMdPath, 'utf-8');
-
-      expect(claudeMdContent).toContain('Claude Code');
-      expect(claudeMdContent).not.toContain('Cursor');
-
-      // And: The slash command path should be ".claude/commands/"
-      expect(claudeMdContent).toContain('.claude/commands/');
-
-      // And: The spec/CLAUDE.md should contain comprehensive Project Management Guidelines
+      // Then: spec/CLAUDE.md should contain comprehensive Project Management Guidelines
       const specClaudePath = join(testDir, 'spec', 'CLAUDE.md');
       const specClaudeContent = await readFile(specClaudePath, 'utf-8');
 

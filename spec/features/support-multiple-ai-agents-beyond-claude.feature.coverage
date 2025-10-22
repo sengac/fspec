@@ -138,10 +138,6 @@
       "testMappings": []
     },
     {
-      "name": "Install root stub for auto-loading agents",
-      "testMappings": []
-    },
-    {
       "name": "Agent registry with all capabilities",
       "testMappings": [
         {
@@ -446,9 +442,9 @@
     }
   ],
   "stats": {
-    "totalScenarios": 17,
+    "totalScenarios": 16,
     "coveredScenarios": 3,
-    "coveragePercent": 18,
+    "coveragePercent": 19,
     "testFiles": [
       "src/commands/__tests__/init-multi-agent.test.ts",
       "src/utils/__tests__/templateTransformation.test.ts",

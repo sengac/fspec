@@ -1199,10 +1199,14 @@
           ]
         }
       ]
+    },
+    {
+      "name": "Validate scenario tags do not require component/feature-group tags",
+      "testMappings": []
     }
   ],
   "stats": {
-    "totalScenarios": 24,
+    "totalScenarios": 25,
     "coveredScenarios": 24,
     "coveragePercent": 100,
     "testFiles": [
