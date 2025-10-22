@@ -1,0 +1,88 @@
+{
+  "scenarios": [
+    {
+      "name": "init.ts calls getActivationMessage() to show agent-specific instructions",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/init-integration.test.ts",
+          "lines": "59-99",
+          "implMappings": [
+            {
+              "file": "src/commands/init.ts",
+              "lines": [
+                239,
+                240,
+                241,
+                242
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "AgentSelector.tsx calls getActivationMessage() for dynamic UI text",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/init-integration.test.ts",
+          "lines": "59-99",
+          "implMappings": [
+            {
+              "file": "src/components/AgentSelector.tsx",
+              "lines": [
+                51,
+                52,
+                53,
+                54,
+                55,
+                61
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "fspec init calls writeAgentConfig() to create runtime config file",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/init-integration.test.ts",
+          "lines": "30-55",
+          "implMappings": [
+            {
+              "file": "src/commands/init.ts",
+              "lines": [
+                232,
+                233,
+                234
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Integration tests verify end-to-end behavior",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/init-integration.test.ts",
+          "lines": "1-101",
+          "implMappings": []
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/commands/__tests__/init-integration.test.ts"
+    ],
+    "implFiles": [
+      "src/commands/init.ts",
+      "src/components/AgentSelector.tsx"
+    ],
+    "totalLinesCovered": 222
+  }
+}

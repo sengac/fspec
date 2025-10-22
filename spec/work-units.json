@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-22T07:21:15.250Z"
+    "lastUpdated": "2025-10-22T09:07:10.150Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -9561,11 +9561,74 @@
       "id": "INIT-008",
       "title": "Agent runtime detection for context-aware CLI output",
       "type": "story",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2025-10-21T13:28:51.970Z",
-      "updatedAt": "2025-10-21T13:31:05.264Z",
+      "updatedAt": "2025-10-22T08:46:47.154Z",
       "description": "WHAT ALREADY EXISTS:\n1. Template generation time transformations (during 'fspec init'):\n   - removeMetaCognitivePrompts() strips 'ultrathink', 'deeply consider' for CLI agents\n   - stripSystemReminders() transforms <system-reminder> tags to bold text for non-Claude\n   - Agent registry has supportsMetaCognition and supportsSystemReminders flags\n   - This works great for generated files (AGENT.md, slash commands)\n\n2. Environment variable:\n   - FSPEC_DISABLE_REMINDERS=1 disables system-reminders entirely\n\nWHAT'S MISSING (THE ACTUAL PROBLEM):\n1. Runtime detection: fspec commands don't know which agent is running them\n   - 'fspec validate' emits <system-reminder> for ALL agents (only Claude understands)\n   - 'fspec update-work-unit-status' uses system-reminders regardless of agent\n   - Error messages don't adapt (all use <system-reminder> tags)\n   - Help commands don't tailor output based on agent\n\n2. CLI output adaptation:\n   - Commands should emit <system-reminder> for Claude Code\n   - Commands should emit **⚠️ IMPORTANT:** for Cursor/Cline/IDE agents  \n   - Commands should emit **IMPORTANT:** for CLI-only agents (Aider, Gemini)\n   - Currently everything uses <system-reminder> by default\n\n3. No detection mechanism:\n   - Can't tell if it's Claude vs Cursor vs Aider running the command\n   - No FSPEC_AGENT environment variable\n   - No config file (~/.fspec/config.json)\n   - No auto-detection from project files (.claude/, .cursor/)\n\nDetection strategies to implement:\n1. Environment variable: FSPEC_AGENT=claude (highest priority)\n2. Config file: ~/.fspec/config.json with {\"defaultAgent\": \"claude\"}\n3. Auto-detect from project: Check for .claude/, .cursor/, etc. in cwd\n4. Fallback: Safe default (plain text, no system-reminders)\n\nAcceptance Criteria:\n- Runtime agent detection using priority chain (env > config > auto-detect > default)\n- All CLI commands adapt output based on detected agent\n- System-reminders only emitted for Claude Code at runtime\n- Other agents get transformed output (bold text + emoji or plain)\n- Detection works across all 18 supported agents\n- Fallback to safe defaults if detection fails\n- Documentation for FSPEC_AGENT env var and ~/.fspec/config.json",
-      "children": []
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-22T08:28:46.801Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-22T08:41:15.717Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-22T08:44:03.360Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-22T08:45:18.471Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-22T08:46:47.154Z"
+        }
+      ],
+      "rules": [
+        "Detection must use priority chain: FSPEC_AGENT env var > config file > auto-detect from project files > safe default",
+        "System-reminders only emitted for Claude Code at runtime",
+        "Cursor/Cline/IDE agents receive **⚠️ IMPORTANT:** with bold text and emoji",
+        "CLI-only agents (Aider, Gemini) receive **IMPORTANT:** plain text without emoji",
+        "Must support all 18 agents defined in existing agent registry",
+        "Must fallback to safe default (plain text, no system-reminders) if detection fails",
+        "Per-project config file at spec/fspec-config.json (consistent with other fspec config files like spec/fspec-hooks.json)",
+        "No runtime auto-detection needed. Agent is detected during 'fspec init' (using existing detection logic) and written to spec/fspec-config.json. All subsequent commands read from config file.",
+        "Agent registry already exists with all needed metadata. 'fspec init' detects agent and writes to config. Runtime commands read config to determine output format (system-reminder for Claude, bold+emoji for IDE agents, plain for CLI agents)."
+      ],
+      "examples": [
+        "User sets FSPEC_AGENT=claude, runs 'fspec validate', output contains <system-reminder> tags",
+        "Cursor user (no env var) runs 'fspec validate' in project with .cursor/ directory, output contains **⚠️ IMPORTANT:** with emoji",
+        "Aider user runs 'fspec validate' with no env var or config, auto-detects CLI-only agent, output contains **IMPORTANT:** plain text",
+        "User has ~/.fspec/config.json with defaultAgent=cursor but FSPEC_AGENT=claude is set, Claude is used (env var takes priority)",
+        "Unknown environment with no detection clues, system falls back to safe default (plain text output, no system-reminders)"
+      ],
+      "questions": [
+        {
+          "text": "@human: Should config file be global (~/.fspec/config.json) or per-project (.fspec/config.json) or both with priority?",
+          "selected": true,
+          "answer": "Per-project config file at spec/fspec-config.json (consistent with other fspec config files like spec/fspec-hooks.json)"
+        },
+        {
+          "text": "@human: What are the exact directory/file patterns for auto-detection (e.g., .claude/, .cursor/, .aider/config)?",
+          "selected": true,
+          "answer": "No runtime auto-detection needed. Agent is detected during 'fspec init' (using existing detection logic) and written to spec/fspec-config.json. All subsequent commands read from config file."
+        },
+        {
+          "text": "@human: Should the agent registry be extended with output format preferences (system-reminder vs bold vs plain)?",
+          "selected": true,
+          "answer": "Agent registry already exists with all needed metadata. 'fspec init' detects agent and writes to config. Runtime commands read config to determine output format (system-reminder for Claude, bold+emoji for IDE agents, plain for CLI agents)."
+        }
+      ],
+      "userStory": {
+        "role": "AI agent (Claude Code, Cursor, Aider, etc.) running fspec commands",
+        "action": "have CLI output adapted to my capabilities (system-reminders, bold text, plain text)",
+        "benefit": "I can understand and act on fspec guidance effectively without confusion or unsupported syntax"
+      },
+      "estimate": 5
     },
     "TECH-002": {
       "id": "TECH-002",
@@ -9846,14 +9909,64 @@
       "id": "BUG-030",
       "title": "Agent-specific activation message not customized in fspec init success output",
       "type": "story",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2025-10-22T08:19:08.142Z",
-      "updatedAt": "2025-10-22T08:21:43.239Z",
+      "updatedAt": "2025-10-22T08:54:43.782Z",
       "description": "The 'Run /fspec in your AI agent to activate' message appears in 2 places in the fspec init command output. This message is generic and doesn't provide agent-specific instructions. For example, Claude Code users see this message, but Gemini users would also see the same message, which may not be applicable. The message should be customized based on the detected AI agent (Claude Code, Gemini, Cursor, etc.) to provide relevant activation instructions. Related to INIT-008 (agent runtime detection).",
       "children": [],
       "dependsOn": [
         "INIT-008"
-      ]
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-22T08:49:32.630Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-22T08:51:50.634Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-22T08:52:50.210Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-22T08:53:24.438Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-22T08:54:43.782Z"
+        }
+      ],
+      "rules": [
+        "Activation message must be customized based on detected agent (from INIT-008 implementation)",
+        "Message appears in 2 places in fspec init output and both must be updated",
+        "Claude Code users should see: 'Run /fspec in Claude Code to activate'",
+        "CLI agents (Aider, Gemini) should see agent-specific command format",
+        "IDE agents (Cursor, Cline) should see instructions relevant to their IDE integration",
+        "Default/unknown agents should see generic fallback message",
+        "Two places: (1) src/commands/init.ts:234 in CLI success message (2) src/components/AgentSelector.tsx:56 in UI component"
+      ],
+      "examples": [
+        "User runs 'fspec init' with Claude Code detected, sees 'Run /fspec in Claude Code to activate' in 2 places in output",
+        "User runs 'fspec init' with Cursor detected, sees 'Open .cursor/commands/ in Cursor to activate' in output",
+        "User runs 'fspec init' with Aider detected, sees 'Add .aider/ to your Aider configuration to activate' in output",
+        "User runs 'fspec init' with unknown agent, sees generic fallback: 'Refer to your AI agent documentation to activate fspec'"
+      ],
+      "questions": [
+        {
+          "text": "@human: Where exactly are the 2 places in the init command output where this message appears?",
+          "selected": true,
+          "answer": "Two places: (1) src/commands/init.ts:234 in CLI success message (2) src/components/AgentSelector.tsx:56 in UI component"
+        }
+      ],
+      "userStory": {
+        "role": "developer running fspec init",
+        "action": "see agent-specific activation instructions in the success message",
+        "benefit": "I know exactly how to activate fspec in my specific AI agent"
+      },
+      "estimate": 2
     },
     "BUG-031": {
       "id": "BUG-031",
@@ -9895,6 +10008,82 @@
         "User reviews system-reminder, investigates suggested feature files, determines it's a false positive, runs 'fspec generate-scenarios WORK-001 --ignore-possible-duplicates' to proceed",
         "User runs 'fspec generate-scenarios WORK-001', no duplicates found, scenarios are generated normally without any warnings"
       ]
+    },
+    "BUG-032": {
+      "id": "BUG-032",
+      "title": "INIT-008 and BUG-030 implementation not integrated into actual codebase",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-22T09:02:16.255Z",
+      "updatedAt": "2025-10-22T09:34:09.061Z",
+      "description": "CRITICAL: The implementations for INIT-008 (agent runtime detection) and BUG-030 (agent-specific activation messages) exist as isolated utility functions with passing tests, but are NOT integrated into the actual codebase where they should be used.\n\nSYMPTOMS:\n1. BUG-030: getActivationMessage() function exists but init.ts:234 and AgentSelector.tsx:56 still show hardcoded generic message\n2. INIT-008: agentRuntimeConfig.ts functions (getAgentConfig, writeAgentConfig, formatAgentOutput) exist but are never called by any commands\n3. spec/fspec-config.json is never created during fspec init\n4. All commands still emit <system-reminder> tags unconditionally (formatAgentOutput not used)\n\nIMPACT:\n- Tests pass but user-facing functionality unchanged\n- Original bugs still exist in production code\n- 7 story points marked as 'done' but features not actually delivered\n- Integration gap between unit tests and real behavior\n\nROOT CAUSE:\n- TDD practiced at unit level only (isolated functions)\n- Missing integration/E2E tests showing actual command behavior\n- Work units marked 'done' without verifying end-to-end functionality\n- ACDD followed for isolated modules but not for system integration\n\nACCEPTANCE CRITERIA:\n- getActivationMessage() called from init.ts and AgentSelector.tsx\n- writeAgentConfig() called during fspec init (creates spec/fspec-config.json)\n- formatAgentOutput() used by all commands emitting system-reminders\n- Integration tests prove E2E functionality works\n- Manual testing confirms bugs are actually fixed\n\nRelated: INIT-008, BUG-030",
+      "children": [],
+      "attachments": [
+        "spec/attachments/BUG-032/bug-032-integration-analysis.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-22T09:06:49.671Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-22T09:10:29.488Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-22T09:11:30.623Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-22T09:13:17.184Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-22T09:14:43.250Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-22T09:23:11.940Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-22T09:23:19.872Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-22T09:32:51.649Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-22T09:33:43.933Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-22T09:33:49.940Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-22T09:34:09.061Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer who completed INIT-008 and BUG-030",
+        "action": "have the utility functions actually integrated into the codebase",
+        "benefit": "the features work for end users instead of just passing unit tests"
+      },
+      "rules": [
+        "getActivationMessage() must be called from src/commands/init.ts:234 to show agent-specific activation instructions",
+        "getActivationMessage() must be called from src/components/AgentSelector.tsx:56 to show agent-specific UI text",
+        "writeAgentConfig() must be called during fspec init to create spec/fspec-config.json with detected agent",
+        "Integration tests must verify end-to-end behavior, not just unit test isolation"
+      ],
+      "examples": [
+        "Before: init.ts shows generic 'Run /fspec in your AI agent to activate'. After: init.ts calls getActivationMessage() and shows 'Run /fspec in Claude Code to activate' for Claude users",
+        "Before: AgentSelector.tsx shows hardcoded text. After: AgentSelector calls getActivationMessage() and dynamically renders agent-specific text",
+        "Before: fspec init completes but no spec/fspec-config.json created. After: init calls writeAgentConfig() and creates {'agent': 'claude'}"
+      ],
+      "estimate": 5
     }
   },
   "states": {
@@ -9910,9 +10099,7 @@
       "CLEAN-001",
       "RES-001",
       "INIT-007",
-      "INIT-008",
       "CLI-007",
-      "BUG-030",
       "BUG-031"
     ],
     "specifying": [
@@ -10087,7 +10274,10 @@
       "BUG-025",
       "BUG-026",
       "BUG-029",
-      "TECH-002"
+      "TECH-002",
+      "INIT-008",
+      "BUG-030",
+      "BUG-032"
     ],
     "blocked": []
   }

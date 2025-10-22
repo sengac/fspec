@@ -22,6 +22,13 @@ fspec init --agent=windsurf   # Windsurf
 fspec bootstrap
 ```
 
+**What `fspec init` creates:**
+- Agent-specific slash commands and documentation
+- `spec/fspec-config.json` - Runtime configuration for agent detection
+- Project structure for features, work units, and tags
+
+**Note:** The init command shows agent-specific activation instructions (e.g., "Run /fspec in Claude Code" vs "Open .cursor/commands/ in Cursor")
+
 ---
 
 ## Work Units
