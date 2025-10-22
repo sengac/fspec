@@ -1,7 +1,6 @@
 @done
 @validation
 @cli
-@phase1
 @BUG-005
 Feature: Remove work unit ID tags from generate-scenarios
 

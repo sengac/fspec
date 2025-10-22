@@ -1,7 +1,6 @@
 @done
 @coverage-tracking
 @cli
-@phase2
 @COV-005
 Feature: Audit Coverage Command
 

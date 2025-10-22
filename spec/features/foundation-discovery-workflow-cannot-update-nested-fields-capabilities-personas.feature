@@ -1,7 +1,6 @@
 @done
 @foundation
 @cli
-@phase1
 @BUG-015
 Feature: Foundation discovery workflow cannot update nested fields (capabilities, personas)
   """

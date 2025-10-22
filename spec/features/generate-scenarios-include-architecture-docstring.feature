@@ -3,7 +3,6 @@
 @example-mapping
 @bug
 @generator
-@phase1
 Feature: generate-scenarios missing architecture docstring
 
   # ========================================

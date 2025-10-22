@@ -1,6 +1,4 @@
 @COV-033
-@phase4
-@phase8
 @cli
 @querying
 @tag-management
@@ -43,18 +41,18 @@ Feature: Get Scenarios by Tag
     So that I can review, update, or delete them in bulk
 
   Scenario: Get scenarios from features with single tag
-    Given I have 3 feature files tagged with @phase1
+    Given I have 3 feature files tagged with
     And each feature has 2 scenarios
-    When I run `fspec get-scenarios --tag=@phase1`
+    When I run `fspec get-scenarios --tag=@critical`
     Then the command should exit with code 0
     And the output should show 6 scenarios total
     And each scenario should show feature path, scenario name, and line number
 
   Scenario: Get scenarios with multiple tags (AND logic)
-    Given I have feature files with tags @phase1 @critical
-    And I have feature files with only @phase1
+    Given I have feature files with tags @critical
+    And I have feature files with only
     And I have feature files with only @critical
-    When I run `fspec get-scenarios --tag=@phase1 --tag=@critical`
+    When I run `fspec get-scenarios --tag=--tag=@critical`
     Then the output should only show scenarios from features with both tags
     And features with only one of the tags should be excluded
 
@@ -74,14 +72,14 @@ Feature: Get Scenarios by Tag
 
   Scenario: Handle missing spec/features directory
     Given spec/features/ directory does not exist
-    When I run `fspec get-scenarios --tag=@phase1`
+    When I run `fspec get-scenarios --tag=@critical`
     Then the command should exit with code 1
     And the output should show error "spec/features directory not found"
 
   Scenario: Skip invalid feature files with warning
-    Given I have 2 valid feature files tagged @phase1
+    Given I have 2 valid feature files tagged
     And I have 1 invalid feature file with syntax errors
-    When I run `fspec get-scenarios --tag=@phase1`
+    When I run `fspec get-scenarios --tag=@critical`
     Then the command should exit with code 0
     And the output should show scenarios from the 2 valid files
     And the output should show warning about the invalid file
@@ -94,15 +92,15 @@ Feature: Get Scenarios by Tag
     And the output should show total count of scenarios
 
   Scenario: Handle features with no scenarios
-    Given I have a feature file tagged @phase1 with no scenarios
-    And I have a feature file tagged @phase1 with 3 scenarios
-    When I run `fspec get-scenarios --tag=@phase1`
+    Given I have a feature file tagged with no scenarios
+    And I have a feature file tagged with 3 scenarios
+    When I run `fspec get-scenarios --tag=@critical`
     Then the output should only show the 3 scenarios
     And the empty feature should not appear in output
 
   Scenario: Format output as JSON
-    Given I have feature files tagged @phase1 with scenarios
-    When I run `fspec get-scenarios --tag=@phase1 --format=json`
+    Given I have feature files tagged with scenarios
+    When I run `fspec get-scenarios --tag=--format=json`
     Then the output should be valid JSON
     And each scenario should have feature, name, and line properties
     And the JSON should be parseable by other tools
@@ -183,7 +181,7 @@ Feature: Get Scenarios by Tag
   Scenario: Match scenarios with inherited feature tags
     Given I have a feature file with feature-level tags:
       """
-      @phase1
+
       @authentication
       Feature: User Login
 
@@ -198,14 +196,14 @@ Feature: Get Scenarios by Tag
           When I run it
           Then it passes
       """
-    When I run `fspec get-scenarios --tag=@phase1`
+    When I run `fspec get-scenarios --tag=@critical`
     Then the output should show both scenarios
-    And both scenarios inherit the @phase1 tag from the feature
+    And both scenarios inherit the tag from the feature
 
   Scenario: Filter scenarios combining feature tags and scenario tags
     Given I have a feature file with both feature and scenario tags:
       """
-      @phase1
+
       @authentication
       Feature: User Login
 
@@ -246,7 +244,7 @@ Feature: Get Scenarios by Tag
     Given I have a feature file with work unit tag:
       """
       @auth-001
-      @phase1
+
       @authentication
       Feature: OAuth Login
 
@@ -269,7 +267,7 @@ Feature: Get Scenarios by Tag
   Scenario: Filter scenarios by work unit tag (scenario-level)
     Given I have a feature file with scenario-level work unit tags:
       """
-      @phase1
+
       @authentication
       Feature: OAuth Login
 
@@ -300,7 +298,7 @@ Feature: Get Scenarios by Tag
     Given I have a feature file:
       """
       @auth-001
-      @phase1
+
       @authentication
       Feature: OAuth Login
 

@@ -21,7 +21,9 @@ Slash commands are available at {{SLASH_COMMAND_PATH}}.
  */
 export async function generateAgentDoc(agent: AgentConfig): Promise<string> {
   // Import template
-  const { getProjectManagementTemplate } = await import('./projectManagementTemplate');
+  const { getProjectManagementTemplate } = await import(
+    './projectManagementTemplate'
+  );
 
   // Get full Project Management Guidelines template with agent-specific examples (2069 lines)
   let content = getProjectManagementTemplate(agent);

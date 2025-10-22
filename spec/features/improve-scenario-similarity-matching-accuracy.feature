@@ -2,7 +2,6 @@
 @similarity-matching
 @scenario-deduplication
 @algorithm
-@phase2
 @SPEC-003
 Feature: Improve scenario similarity matching accuracy
   """

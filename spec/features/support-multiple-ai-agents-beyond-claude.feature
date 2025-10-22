@@ -1,5 +1,4 @@
 @INIT-004
-@phase1
 @cli
 @initialization
 @multi-agent-support

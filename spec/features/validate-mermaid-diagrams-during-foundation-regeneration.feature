@@ -1,6 +1,5 @@
 @done
 @DOC-004
-@phase7
 @cli
 @generator
 @foundation-management

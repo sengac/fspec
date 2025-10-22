@@ -3,7 +3,6 @@
 @discovery
 @help-text
 @documentation
-@phase1
 @FOUND-006
 Feature: Update Documentation and Help
   """

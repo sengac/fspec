@@ -1,7 +1,6 @@
 @validator
 @schema-design
 @foundation
-@phase1
 @FOUND-001
 Feature: Design Generic Foundation Schema
   """

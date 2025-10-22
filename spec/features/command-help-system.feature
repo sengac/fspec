@@ -1,4 +1,3 @@
-@phase1
 @cli
 @help-system
 @documentation

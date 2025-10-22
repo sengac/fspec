@@ -1,7 +1,6 @@
 @done
 @workflow-automation
 @hooks
-@phase1
 @HOOK-005
 Feature: Hook condition evaluation
 
@@ -54,7 +53,7 @@ Feature: Hook condition evaluation
 
   Scenario: Hook with tag condition does not match work unit without tag
     Given I have a hook with condition tags ["@security"]
-    And I have a work unit "DASH-001" with tags ["@ui", "@phase1"]
+    And I have a work unit "DASH-001" with tags ["@ui", "@critical"]
     When I evaluate if the hook should run
     Then the hook should not match
     And the hook should be excluded from execution

@@ -9,7 +9,7 @@ describe('Feature: Remove work unit ID tags from generate-scenarios', () => {
   describe('Scenario: Script moves scenario-level work unit ID tags to feature level', () => {
     it('should move scenario-level work unit ID tags to feature-level', () => {
       // Given I have a feature file with scenario-level work unit ID tags
-      const inputFeatureContent = `@phase1
+      const inputFeatureContent = `@critical
 @cli
 Feature: Example Feature
 

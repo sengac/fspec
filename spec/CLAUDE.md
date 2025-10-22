@@ -324,7 +324,7 @@ Following the Gherkin specification, user stories belong in the `Background` sec
 
 **Format**:
 ```gherkin
-@phase1 @cli @feature-management
+@critical @cli @feature-management
 Feature: Create Feature File with Template
 
   Background: User Story
@@ -347,7 +347,7 @@ Use Gherkin's doc string syntax (""") for architecture notes, implementation det
 
 **Format**:
 ```gherkin
-@phase1 @parser @validation @gherkin
+@critical @parser @validation @gherkin
 Feature: Gherkin Syntax Validation
 
   """
@@ -386,7 +386,7 @@ Tags can be applied at both **feature level** and **scenario level** following t
 Every feature file MUST have these tags at the top:
 
 **Required Tags**:
-- **Phase Tag**: `@phase1`, `@phase2`, `@phase3` (from FOUNDATION.md phases)
+- **Phase Tag**: `@critical`, `@high`, `@medium` (from FOUNDATION.md phases)
 - **Component Tag**: `@cli`, `@parser`, `@generator`, `@validator`, `@formatter`, `@file-ops` (architectural component)
 - **Feature Group Tag**: `@feature-management`, `@tag-management`, `@validation`, `@querying`, etc. (functional area)
 
@@ -400,7 +400,7 @@ Every feature file MUST have these tags at the top:
 
 **Feature-Level Example**:
 ```gherkin
-@phase1 @cli @parser @validation @gherkin @cucumber-parser @cross-platform @critical @integration-test
+@critical @cli @parser @validation @gherkin @cucumber-parser @cross-platform @critical @integration-test
 Feature: Gherkin Syntax Validation
 ```
 
@@ -417,7 +417,7 @@ Individual scenarios can have their own tags for more granular organization:
 
 **Scenario-Level Example**:
 ```gherkin
-@phase1
+@critical
 @authentication
 @cli
 Feature: User Login
@@ -641,7 +641,7 @@ spec/
 
 **Note**: `.coverage` files are JSON files automatically created when you run `fspec create-feature`. They track scenario-to-test-to-implementation mappings.
 
-**Note**: Features are organized by tags (e.g., @phase1, @phase2), NOT by directory structure. All feature files live in the flat `spec/features/` directory.
+**Note**: Features are organized by tags (e.g., @critical, @high), NOT by directory structure. All feature files live in the flat `spec/features/` directory.
 
 ## CRITICAL: Feature File and Test File Naming
 
@@ -659,7 +659,7 @@ Feature files are **living documentation** that must make sense AFTER implementa
 ### Feature File Template
 
 ```gherkin
-@phase[N] @component @feature-group @technical-tags @priority
+@component @feature-group @technical-tags @priority
 Feature: [Feature Name]
 
   """
@@ -699,7 +699,7 @@ When fspec generates feature files (via `create-feature` or `generate-scenarios`
 - `[role]`, `[action]`, `[benefit]` in Background sections
 - `[precondition]`, `[expected outcome]` in scenario steps
 - `TODO:` markers in architecture notes
-- Generic tags like `@phase1`, `@component`
+- Generic tags like `@critical`, `@component`
 
 **Instead of using Write/Edit tools to replace these placeholders, AI agents MUST use fspec CLI commands.**
 
@@ -796,11 +796,11 @@ fspec add-architecture <feature-name> "Uses @cucumber/gherkin for parsing. Suppo
 
 ### Fixing Generic Tags
 
-For placeholder tags like `@phase1`, `@component`:
+For placeholder tags like `@critical`, `@component`:
 
 ```bash
 # Add proper tags to feature file
-fspec add-tag-to-feature spec/features/my-feature.feature @phase2
+fspec add-tag-to-feature spec/features/my-feature.feature @high
 fspec add-tag-to-feature spec/features/my-feature.feature @cli
 fspec add-tag-to-feature spec/features/my-feature.feature @validation
 ```
@@ -1156,9 +1156,9 @@ Scenario Outline: Validate tag format
 
   Examples:
     | tag              | result |
-    | @phase1          | pass   |
+    | @critical          | pass   |
     | @Phase1          | fail   |
-    | @phase-1         | fail   |
+    | @cli-test        | pass   |
     | phase1           | fail   |
     | @my-custom-tag   | pass   |
 ```
@@ -1253,7 +1253,7 @@ fspec add-scenario advanced-query-operations "Filter features by multiple tags"
 
 # Add steps to the scenario
 fspec add-step advanced-query-operations "Filter features by multiple tags" given "I have feature files with various tags"
-fspec add-step advanced-query-operations "Filter features by multiple tags" when "I run 'fspec list-features --tag=@phase1 --tag=@critical'"
+fspec add-step advanced-query-operations "Filter features by multiple tags" when "I run 'fspec list-features --tag=@critical --tag=@critical'"
 fspec add-step advanced-query-operations "Filter features by multiple tags" then "only features with both tags should be listed"
 ```
 

@@ -1,5 +1,4 @@
 @BOARD-001
-@phase7
 @cli
 @project-management
 @workflow

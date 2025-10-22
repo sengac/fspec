@@ -1,7 +1,6 @@
 @done
 @foundation
 @cli
-@phase1
 @FEAT-014
 Feature: Add remove-persona and remove-capability commands
   """

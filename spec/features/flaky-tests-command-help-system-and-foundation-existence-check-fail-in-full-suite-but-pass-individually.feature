@@ -4,7 +4,6 @@
 @test-isolation
 @test-infrastructure
 @cli
-@phase1
 @BUG-026
 Feature: Flaky tests: command-help-system and foundation-existence-check fail in full suite but pass individually
   """

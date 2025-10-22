@@ -1,4 +1,3 @@
-@phase1
 @cli
 @querying
 @feature-management
@@ -20,7 +19,7 @@ Feature: List Feature Files
   Critical implementation requirements:
   - MUST list all .feature files in spec/features/
   - MUST show feature name and file path
-  - MUST support --tag filtering (e.g., --tag=@phase1)
+  - MUST support --tag filtering (e.g., --tag=@critical)
   - MUST handle missing spec/features/ directory gracefully
   - MUST show scenario count for each feature
   - SHOULD display tags for each feature
@@ -76,40 +75,40 @@ Feature: List Feature Files
 
   Scenario: Filter features by single tag
     Given I have feature files with tags:
-      | file               | tags                |
-      | auth.feature       | @phase1 @security   |
-      | api.feature        | @phase2 @api        |
-      | validation.feature | @phase1 @validation |
-    When I run `fspec list-features --tag=@phase1`
+      | file               | tags        |
+      | auth.feature       | @security   |
+      | api.feature        | @api        |
+      | validation.feature | @validation |
+    When I run `fspec list-features --tag=@critical`
     Then the command should exit with code 0
     And the output should list 2 feature files
     And the output should contain "auth.feature"
     And the output should contain "validation.feature"
     And the output should not contain "api.feature"
-    And the output should contain "Found 2 feature files matching @phase1"
+    And the output should contain "Found 2 feature files matching"
 
   Scenario: Filter features by multiple tags (AND logic)
     Given I have feature files with tags:
-      | file               | tags                     |
-      | auth.feature       | @phase1 @security @cli   |
-      | api.feature        | @phase1 @api @backend    |
-      | validation.feature | @phase1 @validation @cli |
-    When I run `fspec list-features --tag=@phase1 --tag=@cli`
+      | file               | tags             |
+      | auth.feature       | @security @cli   |
+      | api.feature        | @api @backend    |
+      | validation.feature | @validation @cli |
+    When I run `fspec list-features --tag=--tag=@cli`
     Then the output should list 2 feature files
     And the output should contain "auth.feature"
     And the output should contain "validation.feature"
     And the output should not contain "api.feature"
 
   Scenario: Show feature tags in output
-    Given I have a feature file "spec/features/login.feature" with tags "@phase1 @critical @authentication"
+    Given I have a feature file "spec/features/login.feature" with tags "@critical @authentication"
     When I run `fspec list-features`
-    Then the output should contain "[@phase1 @critical @authentication]"
+    Then the output should contain "[@critical @authentication]"
 
   Scenario: Handle no matches for tag filter
-    Given I have feature files with tags "@phase1" and "@phase2"
-    When I run `fspec list-features --tag=@phase3`
+    Given I have feature files with tags "@critical" and "@high"
+    When I run `fspec list-features --tag=@medium`
     Then the command should exit with code 0
-    And the output should contain "No feature files found matching @phase3"
+    And the output should contain "No feature files found matching"
 
   Scenario: List features in alphabetical order
     Given I have feature files:

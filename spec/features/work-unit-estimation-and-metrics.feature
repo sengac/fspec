@@ -1,5 +1,4 @@
 @wip
-@phase7
 @cli
 @project-management
 @estimation

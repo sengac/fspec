@@ -1,6 +1,4 @@
 @test-001
-@phase2
-@phase8
 @validator
 @tag-management
 @validation
@@ -14,7 +12,7 @@ Feature: Validate Feature File Tags Against Registry
   - Parses feature files to extract tags (@tag syntax)
   - Reads tags.json to build registry of valid tags
   - Reports unregistered tags with file locations
-  - Checks for required tag categories (phase, component, feature-group)
+  - Checks for required tag categories (component, feature-group)
   - Can validate single file or all files
   - Validates work unit tags (@WORK-001) against spec/work-units.json
   - Distinguishes work unit tags from regular tags by pattern
@@ -23,7 +21,7 @@ Feature: Validate Feature File Tags Against Registry
   - MUST read spec/tags.json to build tag registry
   - MUST parse all .feature files to extract tags
   - MUST report any tag not in tags.json
-  - MUST check for required tags (phase, component, feature-group)
+  - MUST check for required tags (component, feature-group)
   - MUST show file and line number for violations
   - Exit code 0 if all valid, 1 if violations found
   - SHOULD suggest registering unregistered tags
@@ -32,13 +30,12 @@ Feature: Validate Feature File Tags Against Registry
   - MUST validate both feature-level and scenario-level work unit tags
 
   Tag extraction:
-  - Parse tags from feature-level (@phase1 @cli @validation)
+  - Parse tags from feature-level (@cli @validation)
   - Parse tags from scenario-level (less common but valid)
   - Skip tags in comments or doc strings
   - Detect work unit tags by pattern: @[A-Z]{2,6}-\\d+
 
   Required tag validation:
-  - Every feature MUST have one @phase tag
   - Every feature MUST have at least one component tag
   - Every feature MUST have at least one feature-group tag
 
@@ -60,14 +57,14 @@ Feature: Validate Feature File Tags Against Registry
     So that tags remain meaningful and searchable across the project
 
   Scenario: Validate tags in a compliant feature file
-    Given I have a feature file "spec/features/auth.feature" with tags "@phase1 @cli @authentication"
+    Given I have a feature file "spec/features/auth.feature" with tags "@cli @authentication"
     And all tags are registered in "spec/tags.json"
     When I run `fspec validate-tags spec/features/auth.feature`
     Then the command should exit with code 0
     And the output should contain "✓ All tags in spec/features/auth.feature are registered"
 
   Scenario: Detect unregistered tag
-    Given I have a feature file "spec/features/api.feature" with tags "@phase1 @api @custom-tag"
+    Given I have a feature file "spec/features/api.feature" with tags "@api @custom-tag"
     And the tag "@custom-tag" is not in "spec/tags.json"
     When I run `fspec validate-tags spec/features/api.feature`
     Then the command should exit with code 1
@@ -82,16 +79,8 @@ Feature: Validate Feature File Tags Against Registry
     And the output should list all files with unregistered tags
     And the output should contain a summary of violations
 
-  Scenario: Detect missing required phase tag
-    Given I have a feature file "spec/features/broken.feature" with tags "@cli @validation"
-    And the file is missing a @phase tag
-    When I run `fspec validate-tags spec/features/broken.feature`
-    Then the command should exit with code 1
-    And the output should contain "Missing required phase tag (@phase1, @phase2, etc.)"
-    And the output should suggest "Add a phase tag to the feature"
-
   Scenario: Detect missing required component tag
-    Given I have a feature file with tags "@phase1 @validation"
+    Given I have a feature file with tags "@validation"
     And the file is missing a component tag (@cli, @parser, etc.)
     When I run `fspec validate-tags spec/features/broken.feature`
     Then the command should exit with code 1
@@ -99,7 +88,7 @@ Feature: Validate Feature File Tags Against Registry
     And the output should suggest available component tags
 
   Scenario: Detect missing required feature-group tag
-    Given I have a feature file with tags "@phase1 @cli"
+    Given I have a feature file with tags "@cli"
     And the file is missing a feature-group tag
     When I run `fspec validate-tags spec/features/broken.feature`
     Then the command should exit with code 1
@@ -120,7 +109,7 @@ Feature: Validate Feature File Tags Against Registry
     And the output should suggest "Replace @component and @feature-group with actual tags"
 
   Scenario: Report multiple violations in one file
-    Given I have a feature file with tags "@phase1 @unknown1 @unknown2"
+    Given I have a feature file with tags "@unknown1 @unknown2"
     And both "@unknown1" and "@unknown2" are unregistered
     When I run `fspec validate-tags spec/features/multi.feature`
     Then the output should list both unregistered tags
@@ -156,7 +145,7 @@ Feature: Validate Feature File Tags Against Registry
   Scenario: Validate scenario-level tags are registered
     Given I have a feature file with scenario-level tags:
       """
-      @phase1
+
       @cli
       @authentication
       Feature: User Login
@@ -176,7 +165,7 @@ Feature: Validate Feature File Tags Against Registry
   Scenario: Detect unregistered scenario-level tag
     Given I have a feature file with an unregistered scenario tag:
       """
-      @phase1
+
       @cli
       @authentication
       Feature: User Login
@@ -197,7 +186,7 @@ Feature: Validate Feature File Tags Against Registry
   Scenario: Validate both feature-level and scenario-level tags
     Given I have a feature file with tags at both levels:
       """
-      @phase1
+
       @cli
       @authentication
       Feature: User Login
@@ -223,7 +212,7 @@ Feature: Validate Feature File Tags Against Registry
   Scenario: Detect mix of registered and unregistered scenario tags
     Given I have a feature file with multiple scenarios:
       """
-      @phase1
+
       @cli
       @authentication
       Feature: User Login
@@ -247,10 +236,10 @@ Feature: Validate Feature File Tags Against Registry
     And the output should list both unregistered tags
     And the output should specify which scenarios contain the invalid tags
 
-  Scenario: Validate scenario tags do not require phase/component/feature-group tags
+  Scenario: Validate scenario tags do not require component/feature-group tags
     Given I have a feature file with properly tagged feature and minimal scenario tags:
       """
-      @phase1
+
       @cli
       @authentication
       Feature: User Login
@@ -263,7 +252,7 @@ Feature: Validate Feature File Tags Against Registry
       """
     When I run `fspec validate-tags spec/features/login.feature`
     Then the command should exit with code 0
-    And scenario tags should not be required to have phase/component/feature-group tags
+    And scenario tags should not be required to have component/feature-group tags
     And only feature-level tags should be checked for required categories
 
   @work-unit-linking
@@ -287,7 +276,7 @@ Feature: Validate Feature File Tags Against Registry
   Scenario: Validate scenario-level work unit tags
     Given I have a feature file with scenario-level work unit tag:
       """
-      @phase1
+
       @cli
       @authentication
       Feature: User Login
@@ -314,7 +303,7 @@ Feature: Validate Feature File Tags Against Registry
     Given I have a feature file with work unit tags:
       """
       @auth-001
-      @phase1
+
       @cli
       Feature: OAuth Login
 
@@ -350,7 +339,7 @@ Feature: Validate Feature File Tags Against Registry
     Given I have a feature file with mixed tags:
       """
       @auth-001
-      @phase1
+
       @cli
       @authentication
       Feature: User Login

@@ -1,4 +1,3 @@
-@phase7
 @cli
 @project-management
 @example-mapping

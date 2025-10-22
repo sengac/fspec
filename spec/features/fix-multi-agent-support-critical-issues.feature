@@ -1,4 +1,3 @@
-@phase1
 @cli
 @multi-agent-support
 @bug-fix

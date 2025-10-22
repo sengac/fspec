@@ -21,7 +21,7 @@ describe('Feature: Scenario-Level Tag Management', () => {
           name: 'Phase Tags',
           description: 'Phase tags',
           required: true,
-          tags: [{ name: '@phase1', description: 'Phase 1' }],
+          tags: [{ name: '@critical', description: 'Phase 1' }],
         },
         {
           name: 'Component Tags',
@@ -102,7 +102,7 @@ describe('Feature: Scenario-Level Tag Management', () => {
     it('should add tag and show success message', async () => {
       // Given I have a feature file with scenario "Login with valid credentials"
       // And the scenario has no tags
-      const featureContent = `@phase1
+      const featureContent = `@critical
 Feature: User Login
 
   Scenario: Login with valid credentials
@@ -149,7 +149,7 @@ Feature: User Login
     it('should add multiple tags and show count', async () => {
       // Given I have a feature file with scenario "Login with valid credentials"
       // And the scenario has tag @smoke
-      const featureContent = `@phase1
+      const featureContent = `@critical
 Feature: User Login
 
   @smoke
@@ -435,9 +435,9 @@ Feature: User Login
 
   describe('Scenario: Preserve feature-level tags when modifying scenario tags', () => {
     it('should preserve feature tags unchanged', async () => {
-      // Given I have a feature with tags @phase1 @authentication
+      // Given I have a feature with tags @critical @authentication
       // And a scenario "Login" with tag @smoke
-      const featureContent = `@phase1
+      const featureContent = `@critical
 @authentication
 Feature: User Login
 
@@ -469,8 +469,8 @@ Feature: User Login
       expect(updatedContent).toContain('@smoke');
       expect(updatedContent).toContain('@critical');
 
-      // And the feature should still have tags @phase1 @authentication
-      expect(updatedContent).toContain('@phase1');
+      // And the feature should still have tags @critical @authentication
+      expect(updatedContent).toContain('@critical');
       expect(updatedContent).toContain('@authentication');
 
       // And the file should remain valid Gherkin

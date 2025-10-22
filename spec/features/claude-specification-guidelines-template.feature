@@ -1,6 +1,5 @@
 @done
 @INIT-003
-@phase1
 @critical
 @cli
 @initialization

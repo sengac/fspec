@@ -1,7 +1,6 @@
 @done
 @workflow-automation
 @hooks
-@phase1
 @HOOK-003
 Feature: Hook execution engine
 

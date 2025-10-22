@@ -33,7 +33,7 @@ describe('Feature: Generate TAGS.md from tags.json', () => {
             name: 'Phase Tags',
             description: 'Phase identification',
             required: true,
-            tags: [{ name: '@phase1', description: 'Phase 1' }],
+            tags: [{ name: '@critical', description: 'Phase 1' }],
           },
         ],
         combinationExamples: [],
@@ -145,9 +145,8 @@ describe('Feature: Generate TAGS.md from tags.json', () => {
             required: true,
             tags: [
               {
-                name: '@phase1',
+                name: '@critical',
                 description: 'Phase 1: Core Validation',
-                usage: 'Features: Gherkin validation, feature creation',
               },
             ],
             rule: 'Every feature file MUST have exactly ONE phase tag.',
@@ -159,10 +158,8 @@ describe('Feature: Generate TAGS.md from tags.json', () => {
 
       expect(markdown).toContain('### Phase Tags (Required)');
       expect(markdown).toContain('Tags that identify development phase');
-      expect(markdown).toContain('| Tag | Description | Usage |');
-      expect(markdown).toContain(
-        '| `@phase1` | Phase 1: Core Validation | Features: Gherkin validation, feature creation |'
-      );
+      expect(markdown).toContain('| Tag | Description |');
+      expect(markdown).toContain('| `@critical` | Phase 1: Core Validation |');
       expect(markdown).toContain(
         '**Rule**: Every feature file MUST have exactly ONE phase tag.'
       );
@@ -176,7 +173,7 @@ describe('Feature: Generate TAGS.md from tags.json', () => {
         combinationExamples: [
           {
             title: 'Example 1: Phase 1 Feature File Creation',
-            tags: '@phase1 @cli @generator @feature-management',
+            tags: '@critical @cli @generator @feature-management',
             interpretation: [
               'Phase 1 feature',
               'Belongs to CLI component',
@@ -192,7 +189,9 @@ describe('Feature: Generate TAGS.md from tags.json', () => {
         '### Example 1: Phase 1 Feature File Creation'
       );
       expect(markdown).toContain('```gherkin');
-      expect(markdown).toContain('@phase1 @cli @generator @feature-management');
+      expect(markdown).toContain(
+        '@critical @cli @generator @feature-management'
+      );
       expect(markdown).toContain('Feature: Create Feature File with Template');
       expect(markdown).toContain('```');
       expect(markdown).toContain('**Interpretation**:');

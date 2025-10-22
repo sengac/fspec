@@ -13,7 +13,7 @@ Following the Gherkin specification, user stories belong in the \`Background\` s
 
 **Format**:
 \`\`\`gherkin
-@phase1 @cli @feature-management
+@critical @cli @feature-management
 Feature: Create Feature File with Template
 
   Background: User Story
@@ -36,7 +36,7 @@ Use Gherkin's doc string syntax (""") for architecture notes, implementation det
 
 **Format**:
 \`\`\`gherkin
-@phase1 @parser @validation @gherkin
+@critical @parser @validation @gherkin
 Feature: Gherkin Syntax Validation
 
   """
@@ -75,7 +75,7 @@ Tags can be applied at both **feature level** and **scenario level** following t
 Every feature file MUST have these tags at the top:
 
 **Required Tags**:
-- **Phase Tag**: \`@phase1\`, \`@phase2\`, \`@phase3\` (from FOUNDATION.md phases)
+- **Phase Tag**: \`@critical\`, \`@high\`, \`@medium\` (from FOUNDATION.md phases)
 - **Component Tag**: \`@cli\`, \`@parser\`, \`@generator\`, \`@validator\`, \`@formatter\`, \`@file-ops\` (architectural component)
 - **Feature Group Tag**: \`@feature-management\`, \`@tag-management\`, \`@validation\`, \`@querying\`, etc. (functional area)
 
@@ -89,7 +89,7 @@ Every feature file MUST have these tags at the top:
 
 **Feature-Level Example**:
 \`\`\`gherkin
-@phase1 @cli @parser @validation @gherkin @cucumber-parser @cross-platform @critical @integration-test
+@critical @cli @parser @validation @gherkin @cucumber-parser @cross-platform @critical @integration-test
 Feature: Gherkin Syntax Validation
 \`\`\`
 
@@ -106,7 +106,7 @@ Individual scenarios can have their own tags for more granular organization:
 
 **Scenario-Level Example**:
 \`\`\`gherkin
-@phase1
+@critical
 @authentication
 @cli
 Feature: User Login

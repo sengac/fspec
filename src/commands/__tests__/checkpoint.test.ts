@@ -410,7 +410,10 @@ describe('Feature: Intelligent checkpoint system for workflow transitions', () =
       expect(result.capturedFiles).toContain('README.md');
 
       // And: working directory should remain unchanged
-      const content = await fs.promises.readFile(join(testDir, 'README.md'), 'utf-8');
+      const content = await fs.promises.readFile(
+        join(testDir, 'README.md'),
+        'utf-8'
+      );
       expect(content).toBe('# Modified Content');
 
       // And: checkpoint ref should exist in custom namespace
@@ -438,7 +441,8 @@ describe('Feature: Intelligent checkpoint system for workflow transitions', () =
       expect(result.capturedFiles).toContain('new-file.ts');
 
       // And: working directory should remain unchanged
-      const exists = await fs.promises.access(join(testDir, 'new-file.ts'))
+      const exists = await fs.promises
+        .access(join(testDir, 'new-file.ts'))
         .then(() => true)
         .catch(() => false);
       expect(exists).toBe(true);
@@ -488,7 +492,10 @@ describe('Feature: Intelligent checkpoint system for workflow transitions', () =
 
       // Then: file should be restored to original content
       expect(result.success).toBe(true);
-      const content = await fs.promises.readFile(join(testDir, 'restore-test.ts'), 'utf-8');
+      const content = await fs.promises.readFile(
+        join(testDir, 'restore-test.ts'),
+        'utf-8'
+      );
       expect(content).toBe('const original = 1;');
     });
 
@@ -520,7 +527,10 @@ describe('Feature: Intelligent checkpoint system for workflow transitions', () =
       expect(result.systemReminder).toContain('CONFLICT DETECTED');
 
       // And: file should NOT be overwritten (stays v2)
-      const content = await fs.promises.readFile(join(testDir, 'conflict.ts'), 'utf-8');
+      const content = await fs.promises.readFile(
+        join(testDir, 'conflict.ts'),
+        'utf-8'
+      );
       expect(content).toBe('version 2');
     });
 
@@ -545,11 +555,15 @@ describe('Feature: Intelligent checkpoint system for workflow transitions', () =
 
       // Then: file should be recreated
       expect(result.success).toBe(true);
-      const exists = await fs.promises.access(join(testDir, 'deletable.ts'))
+      const exists = await fs.promises
+        .access(join(testDir, 'deletable.ts'))
         .then(() => true)
         .catch(() => false);
       expect(exists).toBe(true);
-      const content = await fs.promises.readFile(join(testDir, 'deletable.ts'), 'utf-8');
+      const content = await fs.promises.readFile(
+        join(testDir, 'deletable.ts'),
+        'utf-8'
+      );
       expect(content).toBe('will be deleted');
     });
 
@@ -575,11 +589,15 @@ describe('Feature: Intelligent checkpoint system for workflow transitions', () =
 
       // Then: file B should be left untouched
       expect(result.success).toBe(true);
-      const exists = await fs.promises.access(join(testDir, 'fileB.ts'))
+      const exists = await fs.promises
+        .access(join(testDir, 'fileB.ts'))
         .then(() => true)
         .catch(() => false);
       expect(exists).toBe(true);
-      const content = await fs.promises.readFile(join(testDir, 'fileB.ts'), 'utf-8');
+      const content = await fs.promises.readFile(
+        join(testDir, 'fileB.ts'),
+        'utf-8'
+      );
       expect(content).toBe('file B');
     });
 

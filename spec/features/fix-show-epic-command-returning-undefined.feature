@@ -1,7 +1,6 @@
 @querying
 @bug-fix
 @cli
-@phase1
 @BUG-012
 Feature: Fix show-epic command returning undefined
   """

@@ -1,4 +1,3 @@
-@phase2
 @cli
 @querying
 @tag-management
@@ -16,7 +15,7 @@ Feature: List Registered Tags from Registry
   Critical implementation requirements:
   - MUST load spec/tags.json
   - MUST parse categories array from JSON
-  - MUST support --category filter (e.g., --category="Phase Tags")
+  - MUST support --category filter (e.g., --category="Component Tags")
   - MUST display tags grouped by category
   - MUST show tag descriptions
   - MUST handle missing tags.json gracefully
@@ -45,15 +44,15 @@ Feature: List Registered Tags from Registry
     When I run `fspec list-tags`
     Then the command should exit with code 0
     And the output should display tags grouped by category
-    And the output should show "Phase Tags:", "Component Tags:", "Feature Group Tags:"
+    And the output should show "Component Tags:", "Feature Group Tags:"
     And each tag should be displayed with its description
 
   Scenario: Filter tags by category
     Given I have a tags.json file with tags in multiple categories
-    When I run `fspec list-tags --category="Phase Tags"`
+    When I run `fspec list-tags --category="Component Tags"`
     Then the command should exit with code 0
-    And the output should only show tags from "Phase Tags" category
-    And the output should contain "@phase1", "@phase2", "@phase3"
+    And the output should only show tags from "Component Tags" category
+    And the output should contain "@cli", "@parser", "@generator"
     And the output should not contain tags from other categories
 
   Scenario: Handle missing tags.json file
@@ -66,22 +65,21 @@ Feature: List Registered Tags from Registry
   Scenario: Display tag count per category
     Given I have a tags.json file with tags:
       | Category           | Tag Count |
-      | Phase Tags         | 3         |
       | Component Tags     | 7         |
       | Feature Group Tags | 7         |
       | Technical Tags     | 8         |
     When I run `fspec list-tags`
     Then the output should show the count for each category
-    And the output should contain "(3 tags)" for Phase Tags
     And the output should contain "(7 tags)" for Component Tags
+    And the output should contain "(7 tags)" for Feature Group Tags
 
   Scenario: List tags in alphabetical order within category
-    Given I have Phase Tags in tags.json: "@phase3", "@phase1", "@phase2"
-    When I run `fspec list-tags --category="Phase Tags"`
+    Given I have Component Tags in tags.json: "@parser", "@cli", "@generator"
+    When I run `fspec list-tags --category="Component Tags"`
     Then the tags should be displayed in alphabetical order:
-      | @phase1 |
-      | @phase2 |
-      | @phase3 |
+      | @cli       |
+      | @generator |
+      | @parser    |
 
   Scenario: Handle invalid category name
     Given I have a tags.json file
@@ -91,7 +89,7 @@ Feature: List Registered Tags from Registry
     And the output should list available categories
 
   Scenario: Show all categories even if empty
-    Given I have a tags.json file with only Phase Tags populated
+    Given I have a tags.json file with only Component Tags populated
     When I run `fspec list-tags`
     Then the output should show all category headers
     And empty categories should show "(0 tags)"

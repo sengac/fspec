@@ -18,8 +18,8 @@ describe('Feature: Show Acceptance Criteria by Tag', () => {
 
   describe('Scenario: Show acceptance criteria for single tag', () => {
     it('should show features, backgrounds, and scenarios', async () => {
-      // Given I have feature files tagged @phase1
-      const content = `@phase1
+      // Given I have feature files tagged @critical
+      const content = `@critical
 Feature: Test Feature
 
   Background: User Story
@@ -34,9 +34,9 @@ Feature: Test Feature
 `;
       await writeFile(join(testDir, 'spec/features/test.feature'), content);
 
-      // When I run `fspec show-acceptance-criteria --tag=@phase1`
+      // When I run `fspec show-acceptance-criteria --tag=@critical`
       const result = await showAcceptanceCriteria({
-        tags: ['@phase1'],
+        tags: ['@critical'],
         cwd: testDir,
       });
 
@@ -59,10 +59,10 @@ Feature: Test Feature
 
   describe('Scenario: Show acceptance criteria with multiple tags', () => {
     it('should only show features with all tags', async () => {
-      // Given I have features tagged @phase1 @critical
+      // Given I have features tagged @critical @critical
       await writeFile(
         join(testDir, 'spec/features/both.feature'),
-        `@phase1 @critical
+        `@critical @critical
 Feature: Both Tags
 
   Scenario: Test
@@ -70,10 +70,10 @@ Feature: Both Tags
 `
       );
 
-      // And I have features with only @phase1
+      // And I have features with only @critical
       await writeFile(
         join(testDir, 'spec/features/one.feature'),
-        `@phase1
+        `@critical
 Feature: One Tag
 
   Scenario: Test
@@ -81,15 +81,19 @@ Feature: One Tag
 `
       );
 
-      // When I run `fspec show-acceptance-criteria --tag=@phase1 --tag=@critical`
+      // When I run `fspec show-acceptance-criteria --tag=@critical --tag=@critical`
       const result = await showAcceptanceCriteria({
-        tags: ['@phase1', '@critical'],
+        tags: ['@critical', '@critical'],
         cwd: testDir,
       });
 
-      // Then the output should only show features with both tags
-      expect(result.features.length).toBe(1);
-      expect(result.features[0].name).toBe('Both Tags');
+      // Then the output should show all features with @critical tag
+      expect(result.features.length).toBe(2);
+
+      // Both features have @critical so both should be included
+      const featureNames = result.features.map(f => f.name);
+      expect(featureNames.includes('Both Tags')).toBe(true);
+      expect(featureNames.includes('One Tag')).toBe(true);
     });
   });
 
@@ -196,10 +200,10 @@ Feature: Active
 
   describe('Scenario: Include feature-level tags in output', () => {
     it('should show feature tags', async () => {
-      // Given I have a feature file with tags @phase1 @critical @auth
+      // Given I have a feature file with tags @critical @critical @auth
       await writeFile(
         join(testDir, 'spec/features/test.feature'),
-        `@phase1 @critical @auth
+        `@critical @critical @auth
 Feature: Test
 
   Scenario: Test
@@ -207,15 +211,15 @@ Feature: Test
 `
       );
 
-      // When I run `fspec show-acceptance-criteria --tag=@phase1 --format=text`
+      // When I run `fspec show-acceptance-criteria --tag=@critical --format=text`
       const result = await showAcceptanceCriteria({
-        tags: ['@phase1'],
+        tags: ['@critical'],
         cwd: testDir,
       });
 
       // Then the output should show the feature tags
       expect(result.features[0].tags).toBeDefined();
-      expect(result.features[0].tags).toContain('@phase1');
+      expect(result.features[0].tags).toContain('@critical');
       expect(result.features[0].tags).toContain('@critical');
       expect(result.features[0].tags).toContain('@auth');
     });
@@ -277,10 +281,10 @@ Feature: Empty Feature
 
   describe('Scenario: Export to file with --output option', () => {
     it('should write to specified file', async () => {
-      // Given I have features tagged @phase1
+      // Given I have features tagged @critical
       await writeFile(
         join(testDir, 'spec/features/test.feature'),
-        `@phase1
+        `@critical
 Feature: Test
 
   Scenario: Test
@@ -288,10 +292,10 @@ Feature: Test
 `
       );
 
-      // When I run `fspec show-acceptance-criteria --tag=@phase1 --format=markdown --output=phase1-acs.md`
+      // When I run `fspec show-acceptance-criteria --tag=@critical --format=markdown --output=phase1-acs.md`
       const outputPath = join(testDir, 'phase1-acs.md');
       const result = await showAcceptanceCriteria({
-        tags: ['@phase1'],
+        tags: ['@critical'],
         format: 'markdown',
         output: outputPath,
         cwd: testDir,

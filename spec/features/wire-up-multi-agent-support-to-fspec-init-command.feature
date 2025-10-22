@@ -1,6 +1,5 @@
 @setup
 @done
-@phase1
 @cli
 @initialization
 @multi-agent-support

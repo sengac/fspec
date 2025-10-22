@@ -2,7 +2,6 @@
 @done
 @coverage-tracking
 @cli
-@phase2
 @COV-006
 Feature: ACDD Workflow Integration
 

@@ -49,7 +49,7 @@ describe('Feature: Create Feature File with Template', () => {
 
       // And the file should have required tags
       const tags = gherkinDocument.feature!.tags.map(t => t.name);
-      expect(tags).toContain('@phase1');
+      expect(tags).toContain('@critical');
       expect(tags).toContain('@component');
       expect(tags).toContain('@feature-group');
 
@@ -206,7 +206,7 @@ describe('Feature: Create Feature File with Template', () => {
       const content = await readFile(featureFile, 'utf-8');
 
       // And the file should have tag placeholders
-      expect(content).toContain('@phase1');
+      expect(content).toContain('@critical');
       expect(content).toContain('@component');
       expect(content).toContain('@feature-group');
 

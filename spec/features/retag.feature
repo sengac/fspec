@@ -1,4 +1,3 @@
-@phase5
 @cli
 @bulk-operations
 @modification
@@ -33,12 +32,12 @@ Feature: Bulk Rename Tags Across Files
 
   Scenario: Rename tag across multiple feature files
     Given I have 5 feature files
-    And 3 files use the tag @phase1
-    When I run `fspec retag --from=@phase1 --to=@phase-one`
+    And 3 files use the tag
+    When I run `fspec retag --from=--to=@release-one`
     Then the command should exit with code 0
-    And all @phase1 tags should be changed to @phase-one
+    And all tags should be changed to @release-one
     And the 3 files should be updated
-    And the output should show "Renamed @phase1 to @phase-one in 3 file(s) (5 occurrence(s))"
+    And the output should show "Renamed to @release-one in 3 file(s) (5 occurrence(s))"
 
   Scenario: Rename feature-level tag
     Given I have a feature file with tag @deprecated at feature level
@@ -71,8 +70,8 @@ Feature: Bulk Rename Tags Across Files
     And no files should be modified
 
   Scenario: Prevent rename to invalid tag format
-    Given I have files with tag @phase1
-    When I run `fspec retag --from=@phase1 --to=Phase1`
+    Given I have files with tag
+    When I run `fspec retag --from=--to=Phase1`
     Then the command should exit with code 1
     And the output should show "Invalid tag format"
     And no files should be modified
@@ -93,8 +92,8 @@ Feature: Bulk Rename Tags Across Files
     And files should remain valid Gherkin
 
   Scenario: Rename tag preserves other tags
-    Given I have a feature with tags @phase1 @critical @api
-    When I run `fspec retag --from=@phase1 --to=@v1`
+    Given I have a feature with tags @critical @api
+    When I run `fspec retag --from=--to=@v1`
     Then the command should exit with code 0
     And the feature should have tags @v1 @critical @api
     And tag order should be preserved

@@ -2,7 +2,6 @@
 @workflow
 @documentation
 @cli
-@phase1
 @DOCS-001
 Feature: Clarify estimation timing in documentation and system-reminders
   """

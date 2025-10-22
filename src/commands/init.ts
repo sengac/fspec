@@ -4,7 +4,11 @@ import { join } from 'path';
 import chalk from 'chalk';
 import React from 'react';
 import { render } from 'ink';
-import { getAgentById, type AgentConfig, AGENT_REGISTRY } from '../utils/agentRegistry';
+import {
+  getAgentById,
+  type AgentConfig,
+  AGENT_REGISTRY,
+} from '../utils/agentRegistry';
 import { generateAgentDoc } from '../utils/templateGenerator';
 import { getSlashCommandTemplate } from '../utils/slashCommandTemplate';
 import { detectAgents } from '../utils/agentDetection';
@@ -170,9 +174,7 @@ async function installSlashCommand(
 /**
  * Generate slash command content
  */
-function generateSlashCommandContent(
-  agent: AgentConfig
-): string {
+function generateSlashCommandContent(agent: AgentConfig): string {
   if (agent.slashCommandFormat === 'toml') {
     // TOML format for Gemini CLI, Qwen Code
     return `[command]
@@ -212,64 +214,62 @@ export function registerInitCommand(program: Command): void {
       },
       []
     )
-    .action(
-      async (options: { agent: string[] }) => {
-        try {
-          const cwd = process.cwd();
-          let agentIds: string[];
+    .action(async (options: { agent: string[] }) => {
+      try {
+        const cwd = process.cwd();
+        let agentIds: string[];
 
-          // Interactive mode: no --agent flag provided
-          if (options.agent.length === 0) {
-            // Check if stdin supports raw mode (required for interactive selection)
-            if (!process.stdin.isTTY || !process.stdin.setRawMode) {
-              throw new Error(
-                'Interactive mode requires a TTY. Use --agent flag instead:\n' +
+        // Interactive mode: no --agent flag provided
+        if (options.agent.length === 0) {
+          // Check if stdin supports raw mode (required for interactive selection)
+          if (!process.stdin.isTTY || !process.stdin.setRawMode) {
+            throw new Error(
+              'Interactive mode requires a TTY. Use --agent flag instead:\n' +
                 '  fspec init --agent=claude\n' +
                 '  fspec init --agent=cursor --agent=claude'
-              );
-            }
-
-            // Auto-detect agents in current directory
-            const detected = await detectAgents(cwd);
-            const availableAgents = AGENT_REGISTRY.filter(a => a.available);
-
-            // Show interactive selector
-            const selectedAgent = await new Promise<string>((resolve) => {
-              const { waitUntilExit } = render(
-                React.createElement(AgentSelector, {
-                  agents: availableAgents,
-                  preSelected: detected,
-                  onSubmit: (selected) => {
-                    resolve(selected);
-                  },
-                })
-              );
-              void waitUntilExit();
-            });
-
-            agentIds = [selectedAgent];
-          } else {
-            // CLI mode: --agent flag(s) provided
-            agentIds = options.agent;
-          }
-
-          // Install agents using new multi-agent system
-          await installAgents(cwd, agentIds);
-
-          // Success message (only for CLI mode, interactive mode shows in React component)
-          if (options.agent.length > 0) {
-            const agentNames = agentIds.join(', ');
-            console.log(
-              chalk.green(
-                `✓ Installed fspec for ${agentNames}\n\nNext steps:\nRun /fspec in your AI agent to activate`
-              )
             );
           }
-          process.exit(0);
-        } catch (error: any) {
-          console.error(chalk.red('✗ Init failed:'), error.message);
-          process.exit(1);
+
+          // Auto-detect agents in current directory
+          const detected = await detectAgents(cwd);
+          const availableAgents = AGENT_REGISTRY.filter(a => a.available);
+
+          // Show interactive selector
+          const selectedAgent = await new Promise<string>(resolve => {
+            const { waitUntilExit } = render(
+              React.createElement(AgentSelector, {
+                agents: availableAgents,
+                preSelected: detected,
+                onSubmit: selected => {
+                  resolve(selected);
+                },
+              })
+            );
+            void waitUntilExit();
+          });
+
+          agentIds = [selectedAgent];
+        } else {
+          // CLI mode: --agent flag(s) provided
+          agentIds = options.agent;
         }
+
+        // Install agents using new multi-agent system
+        await installAgents(cwd, agentIds);
+
+        // Success message (only for CLI mode, interactive mode shows in React component)
+        if (options.agent.length > 0) {
+          const agentNames = agentIds.join(', ');
+          console.log(
+            chalk.green(
+              `✓ Installed fspec for ${agentNames}\n\nNext steps:\nRun /fspec in your AI agent to activate`
+            )
+          );
+        }
+        process.exit(0);
+      } catch (error: any) {
+        console.error(chalk.red('✗ Init failed:'), error.message);
+        process.exit(1);
       }
-    );
+    });
 }

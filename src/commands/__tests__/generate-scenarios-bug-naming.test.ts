@@ -79,7 +79,7 @@ describe('Feature: Feature file naming for bug work units', () => {
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       // And an existing feature file "spec/features/help-command.feature" exists covering CLI help functionality
-      const helpFeatureContent = `@phase1 @cli @help
+      const helpFeatureContent = `@critical @cli @help
 Feature: Help Command
 
   Background: User Story
@@ -202,7 +202,7 @@ Feature: Help Command
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       // And an existing feature file "spec/features/gherkin-validation.feature" exists
-      const validationFeatureContent = `@phase1 @parser @validation
+      const validationFeatureContent = `@critical @parser @validation
 Feature: Gherkin Syntax Validation
 
   Background: User Story
@@ -260,7 +260,7 @@ Feature: Gherkin Syntax Validation
 
       // And an existing feature file "spec/features/gherkin-formatting.feature" exists
       // And the feature already has a scenario covering doc string formatting
-      const formattingFeatureContent = `@phase1 @formatter @formatting
+      const formattingFeatureContent = `@critical @formatter @formatting
 Feature: Gherkin Feature File Formatting
 
   Background: User Story

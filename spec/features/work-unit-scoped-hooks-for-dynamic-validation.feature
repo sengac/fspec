@@ -2,7 +2,6 @@
 @cli
 @workflow-automation
 @hooks
-@phase2
 @HOOK-011
 Feature: Work unit-scoped hooks for dynamic validation
   """

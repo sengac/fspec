@@ -18,12 +18,12 @@ describe('Feature: Feature-Level Tag Management', () => {
       $schema: '../src/schemas/tags.schema.json',
       categories: [
         {
-          name: 'Phase Tags',
-          description: 'Phase tags',
-          required: true,
+          name: 'Priority Tags',
+          description: 'Priority tags',
+          required: false,
           tags: [
-            { name: '@phase1', description: 'Phase 1' },
-            { name: '@phase2', description: 'Phase 2' },
+            { name: '@critical', description: 'Critical priority' },
+            { name: '@high', description: 'High priority' },
           ],
         },
         {
@@ -36,12 +36,12 @@ describe('Feature: Feature-Level Tag Management', () => {
           ],
         },
         {
-          name: 'Priority Tags',
-          description: 'Priority tags',
-          required: false,
+          name: 'Feature Group Tags',
+          description: 'Feature group tags',
+          required: true,
           tags: [
-            { name: '@critical', description: 'Critical priority' },
-            { name: '@high', description: 'High priority' },
+            { name: '@feature-management', description: 'Feature management' },
+            { name: '@validation', description: 'Validation' },
           ],
         },
         {
@@ -99,9 +99,9 @@ describe('Feature: Feature-Level Tag Management', () => {
   describe('Scenario: Add single tag to feature file', () => {
     it('should add tag and show success message', async () => {
       // Given I have a feature file "spec/features/login.feature"
-      // And the feature has tags @phase1 @authentication
-      const featureContent = `@phase1
-@authentication
+      // And the feature has tags @authentication @validation
+      const featureContent = `@authentication
+@validation
 Feature: User Login
 
   Background: User Story
@@ -127,14 +127,14 @@ Feature: User Login
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      // And the feature should have tags @phase1 @authentication @critical
+      // And the feature should have tags @authentication @validation @critical
       const updatedContent = await readFile(
         join(testDir, 'spec/features/login.feature'),
         'utf-8'
       );
-      expect(updatedContent).toContain('@phase1');
-      expect(updatedContent).toContain('@authentication');
       expect(updatedContent).toContain('@critical');
+      expect(updatedContent).toContain('@authentication');
+      expect(updatedContent).toContain('@validation');
 
       // And the file should remain valid Gherkin
       expect(result.valid).toBe(true);
@@ -148,9 +148,9 @@ Feature: User Login
   describe('Scenario: Add multiple tags to feature file', () => {
     it('should add multiple tags and show count', async () => {
       // Given I have a feature file "spec/features/login.feature"
-      // And the feature has tags @phase1 @authentication
-      const featureContent = `@phase1
-@authentication
+      // And the feature has tags @authentication @validation
+      const featureContent = `@authentication
+@validation
 Feature: User Login
 
   Scenario: Login
@@ -171,14 +171,14 @@ Feature: User Login
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      // And the feature should have tags @phase1 @authentication @critical @security
+      // And the feature should have tags @authentication @validation @critical @security
       const updatedContent = await readFile(
         join(testDir, 'spec/features/login.feature'),
         'utf-8'
       );
-      expect(updatedContent).toContain('@phase1');
-      expect(updatedContent).toContain('@authentication');
       expect(updatedContent).toContain('@critical');
+      expect(updatedContent).toContain('@authentication');
+      expect(updatedContent).toContain('@validation');
       expect(updatedContent).toContain('@security');
 
       // And the output should show "Added @critical, @security to spec/features/login.feature"
@@ -188,9 +188,11 @@ Feature: User Login
 
   describe('Scenario: Prevent adding duplicate tag', () => {
     it('should error when tag already exists', async () => {
-      // Given I have a feature file with tags @phase1 @critical
-      const featureContent = `@phase1
+      // Given I have a feature file with tags @critical @critical
+      const featureContent = `@cli
 @critical
+@critical
+@validation
 Feature: Login
 
   Scenario: Test
@@ -226,8 +228,10 @@ Feature: Login
 
   describe('Scenario: Validate tag format when adding', () => {
     it('should reject invalid tag format', async () => {
-      // Given I have a feature file with tags @phase1
-      const featureContent = `@phase1
+      // Given I have a feature file with tags @critical
+      const featureContent = `@cli
+@critical
+@validation
 Feature: Login
 
   Scenario: Test
@@ -263,9 +267,11 @@ Feature: Login
 
   describe('Scenario: Add tag with registry validation', () => {
     it('should succeed when tag is registered', async () => {
-      // Given I have a feature file with tags @phase1
+      // Given I have a feature file with tags @critical
       // And the tag @custom-tag is registered in spec/tags.json
-      const featureContent = `@phase1
+      const featureContent = `@cli
+@critical
+@validation
 Feature: Login
 
   Scenario: Test
@@ -286,21 +292,23 @@ Feature: Login
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      // And the feature should have tags @phase1 @custom-tag
+      // And the feature should have tags @critical @custom-tag
       const updatedContent = await readFile(
         join(testDir, 'spec/features/login.feature'),
         'utf-8'
       );
-      expect(updatedContent).toContain('@phase1');
+      expect(updatedContent).toContain('@critical');
       expect(updatedContent).toContain('@custom-tag');
     });
   });
 
   describe('Scenario: Prevent adding unregistered tag with validation enabled', () => {
     it('should error when tag not in registry', async () => {
-      // Given I have a feature file with tags @phase1
+      // Given I have a feature file with tags @critical
       // And the tag @unregistered is NOT in spec/tags.json
-      const featureContent = `@phase1
+      const featureContent = `@cli
+@critical
+@validation
 Feature: Login
 
   Scenario: Test
@@ -337,10 +345,10 @@ Feature: Login
 
   describe('Scenario: Remove single tag from feature file', () => {
     it('should remove tag and show success message', async () => {
-      // Given I have a feature file with tags @phase1 @critical @authentication
-      const featureContent = `@phase1
-@critical
+      // Given I have a feature file with tags @critical @authentication @validation
+      const featureContent = `@critical
 @authentication
+@validation
 Feature: Login
 
   Scenario: Test
@@ -361,14 +369,14 @@ Feature: Login
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      // And the feature should have tags @phase1 @authentication
+      // And the feature should have tags @authentication @validation (without @critical)
       const updatedContent = await readFile(
         join(testDir, 'spec/features/login.feature'),
         'utf-8'
       );
-      expect(updatedContent).toContain('@phase1');
-      expect(updatedContent).toContain('@authentication');
       expect(updatedContent).not.toContain('@critical');
+      expect(updatedContent).toContain('@authentication');
+      expect(updatedContent).toContain('@validation');
 
       // And the file should remain valid Gherkin
       expect(result.valid).toBe(true);
@@ -381,10 +389,10 @@ Feature: Login
 
   describe('Scenario: Remove multiple tags from feature file', () => {
     it('should remove multiple tags and show count', async () => {
-      // Given I have a feature file with tags @phase1 @critical @authentication @wip
-      const featureContent = `@phase1
-@critical
+      // Given I have a feature file with tags @critical @authentication @validation @wip
+      const featureContent = `@critical
 @authentication
+@validation
 @wip
 Feature: Login
 
@@ -406,15 +414,15 @@ Feature: Login
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      // And the feature should have tags @phase1 @authentication
+      // And the feature should have tags @authentication @validation (without @critical or @wip)
       const updatedContent = await readFile(
         join(testDir, 'spec/features/login.feature'),
         'utf-8'
       );
-      expect(updatedContent).toContain('@phase1');
-      expect(updatedContent).toContain('@authentication');
       expect(updatedContent).not.toContain('@critical');
       expect(updatedContent).not.toContain('@wip');
+      expect(updatedContent).toContain('@authentication');
+      expect(updatedContent).toContain('@validation');
 
       // And the output should show "Removed @critical, @wip from spec/features/login.feature"
       expect(result.message).toContain('Removed @critical, @wip');
@@ -423,9 +431,9 @@ Feature: Login
 
   describe('Scenario: Attempt to remove non-existent tag', () => {
     it('should error when tag does not exist', async () => {
-      // Given I have a feature file with tags @phase1 @authentication
-      const featureContent = `@phase1
-@authentication
+      // Given I have a feature file with tags @authentication @validation
+      const featureContent = `@authentication
+@validation
 Feature: Login
 
   Scenario: Test
@@ -461,10 +469,10 @@ Feature: Login
 
   describe('Scenario: List all feature-level tags', () => {
     it('should list all tags', async () => {
-      // Given I have a feature file with tags @phase1 @critical @authentication @api
-      const featureContent = `@phase1
-@critical
+      // Given I have a feature file with tags @critical @authentication @validation @api
+      const featureContent = `@critical
 @authentication
+@validation
 @api
 Feature: Login
 
@@ -485,9 +493,9 @@ Feature: Login
       expect(result.success).toBe(true);
 
       // And the output should show all tags
-      expect(result.tags).toContain('@phase1');
       expect(result.tags).toContain('@critical');
       expect(result.tags).toContain('@authentication');
+      expect(result.tags).toContain('@validation');
       expect(result.tags).toContain('@api');
       expect(result.tags.length).toBe(4);
     });
@@ -522,9 +530,10 @@ Feature: Login
 
   describe('Scenario: Preserve scenario-level tags when modifying feature tags', () => {
     it('should preserve scenario tags unchanged', async () => {
-      // Given I have a feature file with tags @phase1 at feature level
+      // Given I have a feature file with tags at feature level
       // And scenarios with tags @smoke and @regression at scenario level
-      const featureContent = `@phase1
+      const featureContent = `@cli
+@validation
 Feature: Login
 
   @smoke
@@ -550,12 +559,13 @@ Feature: Login
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      // And the feature should have tags @phase1 @critical
+      // And the feature should have tags @cli @validation @critical
       const updatedContent = await readFile(
         join(testDir, 'spec/features/login.feature'),
         'utf-8'
       );
-      expect(updatedContent).toContain('@phase1');
+      expect(updatedContent).toContain('@cli');
+      expect(updatedContent).toContain('@validation');
       expect(updatedContent).toContain('@critical');
 
       // And the scenario tags should remain @smoke and @regression
@@ -570,44 +580,8 @@ Feature: Login
   describe('Scenario: Add tag to feature file without existing tags', () => {
     it('should create tags section with first tag', async () => {
       // Given I have a feature file with no tags
-      const featureContent = `Feature: Login
-
-  Scenario: Test
-    Given test
-`;
-      await writeFile(
-        join(testDir, 'spec/features/login.feature'),
-        featureContent
-      );
-
-      // When I run `fspec add-tag-to-feature spec/features/login.feature @phase1`
-      const result = await addTagToFeature(
-        'spec/features/login.feature',
-        ['@phase1'],
-        { cwd: testDir }
-      );
-
-      // Then the command should exit with code 0
-      expect(result.success).toBe(true);
-
-      // And the feature should have tag @phase1
-      const updatedContent = await readFile(
-        join(testDir, 'spec/features/login.feature'),
-        'utf-8'
-      );
-      expect(updatedContent).toContain('@phase1');
-      expect(updatedContent).toContain('Feature: Login');
-
-      // And the file should remain valid Gherkin
-      expect(result.valid).toBe(true);
-    });
-  });
-
-  describe('Scenario: Remove all tags from feature file', () => {
-    it('should remove all tags and leave clean feature', async () => {
-      // Given I have a feature file with tags @phase1 @critical
-      const featureContent = `@phase1
-@critical
+      const featureContent = `@cli
+@validation
 Feature: Login
 
   Scenario: Test
@@ -618,10 +592,50 @@ Feature: Login
         featureContent
       );
 
-      // When I run `fspec remove-tag-from-feature spec/features/login.feature @phase1 @critical`
+      // When I run `fspec add-tag-to-feature spec/features/login.feature @critical`
+      const result = await addTagToFeature(
+        'spec/features/login.feature',
+        ['@critical'],
+        { cwd: testDir }
+      );
+
+      // Then the command should exit with code 0
+      expect(result.success).toBe(true);
+
+      // And the feature should have tag @critical
+      const updatedContent = await readFile(
+        join(testDir, 'spec/features/login.feature'),
+        'utf-8'
+      );
+      expect(updatedContent).toContain('@critical');
+      expect(updatedContent).toContain('Feature: Login');
+
+      // And the file should remain valid Gherkin
+      expect(result.valid).toBe(true);
+    });
+  });
+
+  describe('Scenario: Remove all tags from feature file', () => {
+    it('should remove all tags and leave clean feature', async () => {
+      // Given I have a feature file with tags @critical @critical
+      const featureContent = `@cli
+@critical
+@critical
+@validation
+Feature: Login
+
+  Scenario: Test
+    Given test
+`;
+      await writeFile(
+        join(testDir, 'spec/features/login.feature'),
+        featureContent
+      );
+
+      // When I run `fspec remove-tag-from-feature spec/features/login.feature @critical @critical`
       const result = await removeTagFromFeature(
         'spec/features/login.feature',
-        ['@phase1', '@critical'],
+        ['@critical', '@critical'],
         { cwd: testDir }
       );
 
@@ -633,7 +647,7 @@ Feature: Login
         join(testDir, 'spec/features/login.feature'),
         'utf-8'
       );
-      expect(updatedContent).not.toContain('@phase1');
+      expect(updatedContent).not.toContain('@critical');
       expect(updatedContent).not.toContain('@critical');
       expect(updatedContent).toContain('Feature: Login');
 
@@ -647,10 +661,10 @@ Feature: Login
       // Given the file "spec/features/nonexistent.feature" does not exist
       // (file does not exist)
 
-      // When I run `fspec add-tag-to-feature spec/features/nonexistent.feature @phase1`
+      // When I run `fspec add-tag-to-feature spec/features/nonexistent.feature @critical`
       const result = await addTagToFeature(
         'spec/features/nonexistent.feature',
-        ['@phase1'],
+        ['@critical'],
         { cwd: testDir }
       );
 
@@ -665,8 +679,9 @@ Feature: Login
 
   describe('Scenario: Preserve file formatting after tag modification', () => {
     it('should maintain formatting including doc strings', async () => {
-      // Given I have a properly formatted feature file with tags @phase1
-      const featureContent = `@phase1
+      // Given I have a properly formatted feature file
+      const featureContent = `@cli
+@validation
 Feature: Login
   """
   Architecture notes:

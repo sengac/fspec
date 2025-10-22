@@ -2,7 +2,6 @@
 @mermaid
 @file-ops
 @validation
-@phase2
 @FEAT-015
 Feature: Validate Mermaid diagrams in attachments
   """

@@ -279,7 +279,7 @@ export function getMissingRequiredTagsReminder(
   }
 
   const tagExamples: Record<string, string> = {
-    phase: '@phase1, @phase2, @phase3',
+    phase: '@critical, @high, @medium',
     component: '@cli, @parser, @validator, @formatter',
     'feature-group': '@feature-management, @validation, @querying',
   };
@@ -374,7 +374,7 @@ export function getPostGenerationReminder(
 
 CRITICAL: Review and refine generated scenarios:
   1. Validate Gherkin syntax: fspec validate ${featureFile}
-  2. Add required tags: fspec add-tag-to-feature ${featureFile} @phase[N] @component @feature-group
+  2. Add required tags: fspec add-tag-to-feature ${featureFile} @component @component @feature-group
   3. Review scenarios for accuracy and completeness
   4. Move to testing phase: fspec update-work-unit-status ${workUnitId} testing
 

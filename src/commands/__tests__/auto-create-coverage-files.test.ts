@@ -54,7 +54,7 @@ describe('Feature: Auto-create Coverage Files', () => {
       await mkdir(featuresDir, { recursive: true });
 
       // Create a feature file with known scenario name
-      const featureContent = `@phase1
+      const featureContent = `@critical
 Feature: User Login
 
   Scenario: Login with valid credentials
@@ -109,7 +109,7 @@ Feature: User Login
       const featuresDir = join(testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
-      const featureContent = `@phase1
+      const featureContent = `@critical
 Feature: Test Feature
 
   Scenario: First scenario
@@ -165,7 +165,7 @@ Feature: Test Feature
       );
       await writeFile(
         featureFile,
-        '@phase1\nFeature: User Login\n\n  Scenario: Test\n    Given test\n    When test\n    Then test\n'
+        '@critical\nFeature: User Login\n\n  Scenario: Test\n    Given test\n    When test\n    Then test\n'
       );
 
       // And a valid coverage file "spec/features/user-login.feature.coverage" already exists
@@ -216,7 +216,7 @@ Feature: Test Feature
       await mkdir(featuresDir, { recursive: true });
 
       const featureContent =
-        '@phase1\nFeature: User Login\n\n  Scenario: Test\n    Given test\n    When test\n    Then test\n';
+        '@critical\nFeature: User Login\n\n  Scenario: Test\n    Given test\n    When test\n    Then test\n';
       const featureFile = join(featuresDir, 'user-login.feature');
       await writeFile(featureFile, featureContent);
 
@@ -245,7 +245,7 @@ Feature: Test Feature
       const featuresDir = join(testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
-      const featureContent = `@phase1
+      const featureContent = `@critical
 Feature: Test
 
   Scenario: Login With Valid Credentials

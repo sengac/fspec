@@ -1,7 +1,6 @@
 @done
 @help-system
 @cli
-@phase1
 @BUG-021
 Feature: fspec --help displays hardcoded version 0.0.1 instead of package.json version
   """

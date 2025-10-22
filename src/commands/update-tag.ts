@@ -161,7 +161,7 @@ export function registerUpdateTagCommand(program: Command): void {
   program
     .command('update-tag')
     .description('Update an existing tag in TAGS.md registry')
-    .argument('<tag>', 'Tag name (e.g., "@phase1")')
+    .argument('<tag>', 'Tag name (e.g., "@critical")')
     .option('--category <category>', 'New category name')
     .option('--description <description>', 'New description')
     .action(updateTagCommand);

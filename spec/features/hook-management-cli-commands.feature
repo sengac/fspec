@@ -3,7 +3,6 @@
 @cli
 @workflow-automation
 @hooks
-@phase1
 @HOOK-007
 Feature: Hook management CLI commands
 

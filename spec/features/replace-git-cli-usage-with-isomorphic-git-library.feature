@@ -3,7 +3,6 @@
 @isomorphic-git
 @infrastructure
 @git
-@phase1
 @GIT-001
 Feature: Replace git CLI usage with isomorphic-git library
   """

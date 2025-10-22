@@ -56,7 +56,9 @@ describe('Feature: spec/AGENT.md files contain stub instead of comprehensive wor
       const result = await generateAgentDoc(claudeAgent);
 
       // And spec/CLAUDE.md should be titled "Project Management and Specification Guidelines for fspec"
-      expect(result).toContain('# Project Management and Specification Guidelines for fspec');
+      expect(result).toContain(
+        '# Project Management and Specification Guidelines for fspec'
+      );
     });
 
     it('should include work unit management documentation', async () => {
@@ -126,7 +128,9 @@ describe('Feature: spec/AGENT.md files contain stub instead of comprehensive wor
       const result = await generateAgentDoc(claudeAgent);
 
       // And spec/CLAUDE.md should include coverage tracking system documentation
-      expect(result).toContain('## Coverage Tracking: Linking Specs, Tests, and Implementation');
+      expect(result).toContain(
+        '## Coverage Tracking: Linking Specs, Tests, and Implementation'
+      );
       expect(result).toContain('fspec link-coverage');
       expect(result).toContain('.feature.coverage');
     });
@@ -280,7 +284,9 @@ describe('Feature: spec/AGENT.md files contain stub instead of comprehensive wor
       // And the file should contain the full Project Management Guidelines with transformations applied
       const lineCount = result.split('\n').length;
       expect(lineCount).toBeGreaterThan(2000); // Should be comprehensive, not a stub
-      expect(result).toContain('Project Management and Specification Guidelines');
+      expect(result).toContain(
+        'Project Management and Specification Guidelines'
+      );
     });
   });
 

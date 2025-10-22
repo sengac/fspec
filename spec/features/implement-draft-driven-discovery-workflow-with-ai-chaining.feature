@@ -1,6 +1,5 @@
 @foundation-management
 @cli
-@phase1
 @DISC-001
 Feature: Implement draft-driven discovery workflow with AI chaining
   """

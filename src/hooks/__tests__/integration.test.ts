@@ -45,7 +45,7 @@ describe('Feature: Integrate hooks into all commands', () => {
             title: 'Dashboard Work Unit',
             type: 'story',
             status: 'backlog',
-            tags: ['@ui', '@phase1'],
+            tags: ['@ui', '@critical'],
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           },

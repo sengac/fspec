@@ -55,9 +55,9 @@ describe('Feature: Fix multi-agent support critical issues', () => {
       await installAgents(testDir, ['cursor']);
 
       // Then the system should delete only .claude/commands/fspec.md
-      expect(
-        existsSync(join(testDir, '.claude', 'commands', 'fspec.md'))
-      ).toBe(false);
+      expect(existsSync(join(testDir, '.claude', 'commands', 'fspec.md'))).toBe(
+        false
+      );
 
       // And the system should preserve all other files in .claude/commands/
       expect(existsSync(customFile1)).toBe(true);

@@ -4,7 +4,6 @@
 @read
 @coverage-tracking
 @cli
-@phase2
 Feature: Show Coverage Statistics
 
   Background: User Story

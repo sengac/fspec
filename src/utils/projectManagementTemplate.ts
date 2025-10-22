@@ -32,13 +32,17 @@ import { getReferencesSection } from './projectManagementSections/references';
 /**
  * Helper function to generate system-reminder examples in the correct format for each agent
  */
-export function formatSystemReminder(content: string, agent: AgentConfig): string {
+export function formatSystemReminder(
+  content: string,
+  agent: AgentConfig
+): string {
   if (agent.supportsSystemReminders) {
     return `<system-reminder>\n${content}\n</system-reminder>`;
   }
 
   // Transform to visible instruction for non-Claude agents
-  const supportsEmoji = agent.category === 'ide' || agent.category === 'extension';
+  const supportsEmoji =
+    agent.category === 'ide' || agent.category === 'extension';
   const prefix = supportsEmoji ? '**⚠️ IMPORTANT:**' : '**IMPORTANT:**';
 
   const lines = content.trim().split('\n');
@@ -102,6 +106,6 @@ export function getProjectManagementTemplate(agent: AgentConfig): string {
     getLifecycleHooksSection(agent),
     getVirtualHooksSection(agent),
     getGitCheckpointsSection(agent),
-    getReferencesSection()
+    getReferencesSection(),
   ].join('\n\n');
 }

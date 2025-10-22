@@ -23,14 +23,14 @@ const config: CommandHelpConfig = {
     {
       command: 'fspec list-feature-tags spec/features/login.feature',
       description: 'List all tags on a feature file',
-      output: '@phase1\n@authentication\n@cli\n@critical',
+      output: '@critical\n@authentication\n@cli\n@critical',
     },
     {
       command:
         'fspec list-feature-tags spec/features/login.feature --show-categories',
       description: 'List tags with their categories',
       output:
-        '@phase1 (Phase Tags)\n@authentication (Feature Group Tags)\n@cli (Component Tags)\n@critical (Priority Tags)',
+        '@critical (Phase Tags)\n@authentication (Feature Group Tags)\n@cli (Component Tags)\n@critical (Priority Tags)',
     },
   ],
   relatedCommands: [

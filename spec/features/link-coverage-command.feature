@@ -2,7 +2,6 @@
 @modification
 @coverage-tracking
 @cli
-@phase2
 Feature: Link Coverage Command
 
   Background: User Story

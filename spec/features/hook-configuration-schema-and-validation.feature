@@ -1,7 +1,6 @@
 @done
 @configuration
 @hooks
-@phase1
 @HOOK-002
 Feature: Hook configuration schema and validation
 

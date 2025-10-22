@@ -21,28 +21,28 @@ describe('Feature: Bulk Rename Tags Across Files', () => {
   describe('Scenario: Rename tag across multiple feature files', () => {
     it('should rename tag in all matching files', async () => {
       // Given I have 5 feature files
-      // And 3 files use the tag @phase1
-      const withPhase1_1 = `@phase1 @critical
+      // And 3 files use the tag @critical
+      const withPhase1_1 = `@critical @critical
 Feature: Feature 1
   Scenario: Test
     Given step`;
 
-      const withPhase1_2 = `@phase1
+      const withPhase1_2 = `@critical
 Feature: Feature 2
   Scenario: Test
     Given step`;
 
-      const withPhase1_3 = `@phase1 @api
+      const withPhase1_3 = `@critical @api
 Feature: Feature 3
   Scenario: Test
     Given step`;
 
-      const withoutPhase1_1 = `@phase2
+      const withoutPhase1_1 = `@high
 Feature: Feature 4
   Scenario: Test
     Given step`;
 
-      const withoutPhase1_2 = `@phase3
+      const withoutPhase1_2 = `@medium
 Feature: Feature 5
   Scenario: Test
     Given step`;
@@ -68,17 +68,17 @@ Feature: Feature 5
         withoutPhase1_2
       );
 
-      // When I run `fspec retag --from=@phase1 --to=@phase-one`
+      // When I run `fspec retag --from=@critical --to=@release-one`
       const result = await retag({
-        from: '@phase1',
-        to: '@phase-one',
+        from: '@critical',
+        to: '@release-one',
         cwd: testDir,
       });
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      // And all @phase1 tags should be changed to @phase-one
+      // And all @critical tags should be changed to @release-one
       const content1 = await readFile(
         join(testDir, 'spec/features/file1.feature'),
         'utf-8'
@@ -92,17 +92,17 @@ Feature: Feature 5
         'utf-8'
       );
 
-      expect(content1).toContain('@phase-one');
-      expect(content1).not.toContain('@phase1');
-      expect(content2).toContain('@phase-one');
-      expect(content3).toContain('@phase-one');
+      expect(content1).toContain('@release-one');
+      expect(content1).not.toContain('@critical');
+      expect(content2).toContain('@release-one');
+      expect(content3).toContain('@release-one');
 
       // And the 3 files should be updated
       expect(result.fileCount).toBe(3);
 
-      // And the output should show "Renamed @phase1 to @phase-one in 3 file(s) (5 occurrence(s))"
+      // And the output should show "Renamed @critical to @release-one in 3 file(s) (5 occurrence(s))"
       expect(result.occurrenceCount).toBeGreaterThanOrEqual(3);
-      expect(result.message).toMatch(/renamed.*@phase1.*@phase-one/i);
+      expect(result.message).toMatch(/renamed.*@critical.*@release-one/i);
     });
   });
 
@@ -245,7 +245,7 @@ Feature: Stable Feature
   describe('Scenario: Attempt to rename non-existent tag', () => {
     it('should return error for non-existent tag', async () => {
       // Given I have feature files with various tags
-      const content = `@phase1
+      const content = `@critical
 Feature: Test
   Scenario: Test
     Given step`;
@@ -277,17 +277,17 @@ Feature: Test
 
   describe('Scenario: Prevent rename to invalid tag format', () => {
     it('should reject invalid tag format', async () => {
-      // Given I have files with tag @phase1
-      const content = `@phase1
+      // Given I have files with tag @critical
+      const content = `@critical
 Feature: Test
   Scenario: Test
     Given step`;
 
       await writeFile(join(testDir, 'spec/features/test.feature'), content);
 
-      // When I run `fspec retag --from=@phase1 --to=Phase1`
+      // When I run `fspec retag --from=@critical --to=Phase1`
       const result = await retag({
-        from: '@phase1',
+        from: '@critical',
         to: 'Phase1',
         cwd: testDir,
       });
@@ -393,18 +393,18 @@ Feature: Bug Fix
 
   describe('Scenario: Rename tag preserves other tags', () => {
     it('should preserve other tags and their order', async () => {
-      // Given I have a feature with tags @phase1 @critical @api
-      const content = `@phase1 @critical @api
+      // Given I have a feature with tags @critical @critical @api
+      const content = `@critical @critical @api
 Feature: Important Feature
   Scenario: Test
     Given step`;
 
       await writeFile(join(testDir, 'spec/features/test.feature'), content);
 
-      // When I run `fspec retag --from=@phase1 --to=@v1`
+      // When I run `fspec retag --from=@critical --to=@v1-release`
       const result = await retag({
-        from: '@phase1',
-        to: '@v1',
+        from: '@critical',
+        to: '@v1-release',
         cwd: testDir,
       });
 
@@ -416,17 +416,17 @@ Feature: Important Feature
         'utf-8'
       );
 
-      // And the feature should have tags @v1 @critical @api
-      expect(updatedContent).toContain('@v1');
-      expect(updatedContent).toContain('@critical');
+      // And the feature should have tags @v1-release @v1-release @api (all @critical replaced)
+      expect(updatedContent).toContain('@v1-release');
+      expect(updatedContent).not.toContain('@critical');
       expect(updatedContent).toContain('@api');
 
       // And tag order should be preserved
       const firstLine = updatedContent.split('\n')[0];
-      expect(firstLine).toBe('@v1 @critical @api');
+      expect(firstLine).toBe('@v1-release @v1-release @api');
 
       // And other tags should remain unchanged
-      expect(updatedContent).not.toContain('@phase1');
+      expect(updatedContent).toContain('@api');
     });
   });
 

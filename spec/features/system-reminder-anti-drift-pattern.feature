@@ -2,7 +2,6 @@
 @REMIND-001
 @done
 @workflow
-@phase1
 @cli
 @anti-drift
 @ai-guidance
@@ -29,7 +28,7 @@ Feature: System Reminder Anti-Drift Pattern
   - Status change to "validating" → Remind to run ALL tests, not just new ones
   - Missing estimate → Remind about Fibonacci scale (1,2,3,5,8,13)
   - Empty backlog → Remind to create new work units or check priorities
-  - Tag violations → Remind about required tags (@phase, @component, @feature-group)
+  - Tag violations → Remind about required tags (@component, @feature-group)
 
   References:
   - Claude Code CLI source: cli.js:339009-339024 (wrapper and filter functions)

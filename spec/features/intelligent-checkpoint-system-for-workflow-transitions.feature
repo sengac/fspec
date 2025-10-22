@@ -3,7 +3,6 @@
 @workflow-automation
 @checkpoint
 @git
-@phase2
 @GIT-002
 Feature: Intelligent checkpoint system for workflow transitions
   """

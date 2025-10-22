@@ -2,7 +2,6 @@
 @file-ops
 @coverage-tracking
 @cli
-@phase2
 Feature: Auto-create Coverage Files
   """
   Architecture notes:

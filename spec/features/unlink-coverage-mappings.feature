@@ -3,7 +3,6 @@
 @modification
 @coverage-tracking
 @cli
-@phase2
 Feature: Unlink Coverage Mappings
   """
   Architecture notes:

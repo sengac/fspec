@@ -94,7 +94,7 @@ describe('Feature: Delete Tag from Registry', () => {
 
   describe('Scenario: Attempt to delete tag in use', () => {
     it('should fail when tag is used in feature files', async () => {
-      // Given I have a tag @phase1 registered in TAGS.md
+      // Given I have a tag @critical registered in TAGS.md
       const tagsJsonPath = join(testDir, 'spec', 'tags.json');
       const tagsData = {
         $schema: '../src/schemas/tags.schema.json',
@@ -103,7 +103,7 @@ describe('Feature: Delete Tag from Registry', () => {
             name: 'Phase Tags',
             description: 'Phase tags',
             required: false,
-            tags: [{ name: '@phase1', description: 'Phase 1' }],
+            tags: [{ name: '@critical', description: 'Phase 1' }],
           },
         ],
         combinationExamples: [],
@@ -139,24 +139,24 @@ describe('Feature: Delete Tag from Registry', () => {
 
       await writeFile(tagsJsonPath, JSON.stringify(tagsData, null, 2));
 
-      // And the tag @phase1 is used in 5 feature files
+      // And the tag @critical is used in 5 feature files
       await mkdir(join(testDir, 'spec', 'features'), { recursive: true });
       for (let i = 1; i <= 5; i++) {
         await writeFile(
           join(testDir, 'spec', 'features', `feature${i}.feature`),
-          `@phase1\nFeature: Feature ${i}\n  Scenario: Test\n    Given test`
+          `@critical\nFeature: Feature ${i}\n  Scenario: Test\n    Given test`
         );
       }
 
-      // When I run `fspec delete-tag @phase1`
-      const result = await deleteTag({ tag: '@phase1', cwd: testDir });
+      // When I run `fspec delete-tag @critical`
+      const result = await deleteTag({ tag: '@critical', cwd: testDir });
 
       // Then the command should exit with code 1
       expect(result.success).toBe(false);
 
-      // And the output should show "Tag @phase1 is used in 5 feature file(s)"
+      // And the output should show "Tag @critical is used in 5 feature file(s)"
       expect(result.error).toContain(
-        'Tag @phase1 is used in 5 feature file(s)'
+        'Tag @critical is used in 5 feature file(s)'
       );
 
       // And the output should list the feature files using the tag
@@ -168,7 +168,7 @@ describe('Feature: Delete Tag from Registry', () => {
         (c: any) => c.name === 'Phase Tags'
       );
       expect(
-        phaseTags.tags.find((t: any) => t.name === '@phase1')
+        phaseTags.tags.find((t: any) => t.name === '@critical')
       ).toBeDefined();
 
       // And the output should suggest using --force to delete anyway
@@ -328,7 +328,7 @@ describe('Feature: Delete Tag from Registry', () => {
 
   describe('Scenario: Delete tag preserves other tags in same category', () => {
     it('should preserve other tags in category', async () => {
-      // Given I have tags @phase1, @phase2, @phase3 in category "Tag Categories"
+      // Given I have tags @critical, @high, @medium in category "Tag Categories"
       const tagsJsonPath = join(testDir, 'spec', 'tags.json');
       const tagsData = {
         $schema: '../src/schemas/tags.schema.json',
@@ -338,9 +338,9 @@ describe('Feature: Delete Tag from Registry', () => {
             description: 'Tag categories',
             required: false,
             tags: [
-              { name: '@phase1', description: 'Phase 1' },
-              { name: '@phase2', description: 'Phase 2' },
-              { name: '@phase3', description: 'Phase 3' },
+              { name: '@critical', description: 'Phase 1' },
+              { name: '@high', description: 'Phase 2' },
+              { name: '@medium', description: 'Phase 3' },
             ],
           },
         ],
@@ -377,22 +377,22 @@ describe('Feature: Delete Tag from Registry', () => {
 
       await writeFile(tagsJsonPath, JSON.stringify(tagsData, null, 2));
 
-      // When I run `fspec delete-tag @phase2`
-      const result = await deleteTag({ tag: '@phase2', cwd: testDir });
+      // When I run `fspec delete-tag @high`
+      const result = await deleteTag({ tag: '@high', cwd: testDir });
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      // And @phase1 and @phase3 should remain in TAGS.md
+      // And @critical and @medium should remain in TAGS.md
       const updatedTags = JSON.parse(await readFile(tagsJsonPath, 'utf-8'));
       const tagCategory = updatedTags.categories.find(
         (c: any) => c.name === 'Tag Categories'
       );
       expect(
-        tagCategory.tags.find((t: any) => t.name === '@phase1')
+        tagCategory.tags.find((t: any) => t.name === '@critical')
       ).toBeDefined();
       expect(
-        tagCategory.tags.find((t: any) => t.name === '@phase3')
+        tagCategory.tags.find((t: any) => t.name === '@medium')
       ).toBeDefined();
 
       // And the category "Tag Categories" should remain intact

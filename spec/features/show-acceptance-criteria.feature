@@ -1,5 +1,4 @@
 @COV-037
-@phase4
 @cli
 @querying
 @documentation
@@ -35,18 +34,18 @@ Feature: Show Acceptance Criteria by Tag
     other tools
 
   Scenario: Show acceptance criteria for single tag
-    Given I have feature files tagged @phase1
+    Given I have feature files tagged
     And each feature has background and scenarios
-    When I run `fspec show-acceptance-criteria --tag=@phase1`
+    When I run `fspec show-acceptance-criteria --tag=@critical`
     Then the command should exit with code 0
     And the output should show all feature names
     And the output should show background user stories
     And the output should show all scenarios with their steps
 
   Scenario: Show acceptance criteria with multiple tags
-    Given I have features tagged @phase1 @critical
-    And I have features with only @phase1
-    When I run `fspec show-acceptance-criteria --tag=@phase1 --tag=@critical`
+    Given I have features tagged @critical
+    And I have features with only
+    When I run `fspec show-acceptance-criteria --tag=--tag=@critical`
     Then the output should only show features with both tags
     And each feature should show complete acceptance criteria
 
@@ -74,8 +73,8 @@ Feature: Show Acceptance Criteria by Tag
     And the output should show "No features found matching tags: @deprecated"
 
   Scenario: Include feature-level tags in output
-    Given I have a feature file with tags @phase1 @critical @auth
-    When I run `fspec show-acceptance-criteria --tag=@phase1 --format=text`
+    Given I have a feature file with tags @critical @auth
+    When I run `fspec show-acceptance-criteria --tag=--format=text`
     Then the output should show the feature tags
     And tags should be displayed at the top of each feature
 
@@ -100,8 +99,8 @@ Feature: Show Acceptance Criteria by Tag
     And the output should be readable and well-formatted
 
   Scenario: Export to file with --output option
-    Given I have features tagged @phase1
-    When I run `fspec show-acceptance-criteria --tag=@phase1 --format=markdown --output=phase1-acs.md`
+    Given I have features tagged
+    When I run `fspec show-acceptance-criteria --tag=--format=markdown --output=phase1-acs.md`
     Then a file "phase1-acs.md" should be created
     And the file should contain all acceptance criteria in markdown format
     And the command output should show "Acceptance criteria written to phase1-acs.md"

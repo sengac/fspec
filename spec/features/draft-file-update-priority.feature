@@ -1,4 +1,3 @@
-@phase1
 @foundation
 @discovery-workflow
 @cli

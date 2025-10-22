@@ -20,11 +20,11 @@ describe('Feature: Show Tag Usage Statistics', () => {
     it('should show total files, unique tags, and total occurrences', async () => {
       // Given I have 5 feature files with various tags
       const features = [
-        { name: 'f1.feature', tags: '@phase1 @cli' },
-        { name: 'f2.feature', tags: '@phase1 @parser' },
-        { name: 'f3.feature', tags: '@phase2 @cli' },
-        { name: 'f4.feature', tags: '@phase2 @formatter' },
-        { name: 'f5.feature', tags: '@phase3' },
+        { name: 'f1.feature', tags: '@critical @cli' },
+        { name: 'f2.feature', tags: '@critical @parser' },
+        { name: 'f3.feature', tags: '@high @cli' },
+        { name: 'f4.feature', tags: '@high @formatter' },
+        { name: 'f5.feature', tags: '@medium' },
       ];
 
       for (const feature of features) {
@@ -62,8 +62,8 @@ describe('Feature: Show Tag Usage Statistics', () => {
             description: 'Development phase tags',
             required: false,
             tags: [
-              { name: '@phase1', description: 'Phase 1 features' },
-              { name: '@phase2', description: 'Phase 2 features' },
+              { name: '@critical', description: 'Phase 1 features' },
+              { name: '@high', description: 'Phase 2 features' },
             ],
           },
           {
@@ -90,15 +90,15 @@ describe('Feature: Show Tag Usage Statistics', () => {
 
       await writeFile(
         join(testDir, 'spec/features/f1.feature'),
-        '@phase1 @cli\nFeature: F1\n  Scenario: Test\n    Given test\n'
+        '@critical @cli\nFeature: F1\n  Scenario: Test\n    Given test\n'
       );
       await writeFile(
         join(testDir, 'spec/features/f2.feature'),
-        '@phase1 @parser\nFeature: F2\n  Scenario: Test\n    Given test\n'
+        '@critical @parser\nFeature: F2\n  Scenario: Test\n    Given test\n'
       );
       await writeFile(
         join(testDir, 'spec/features/f3.feature'),
-        '@phase2 @cli\nFeature: F3\n  Scenario: Test\n    Given test\n'
+        '@high @cli\nFeature: F3\n  Scenario: Test\n    Given test\n'
       );
 
       // When I run `fspec tag-stats`
@@ -132,7 +132,7 @@ describe('Feature: Show Tag Usage Statistics', () => {
 
   describe('Scenario: Show most used tags', () => {
     it('should sort tags by count in descending order', async () => {
-      // Given I have feature files where @phase1 is used 4 times and @phase2 is used 2 times
+      // Given I have feature files where @critical is used 4 times and @high is used 2 times
       const tagsJson = {
         $schema: '../src/schemas/tags.schema.json',
         categories: [
@@ -141,8 +141,8 @@ describe('Feature: Show Tag Usage Statistics', () => {
             description: 'Development phase tags',
             required: false,
             tags: [
-              { name: '@phase1', description: 'Phase 1' },
-              { name: '@phase2', description: 'Phase 2' },
+              { name: '@critical', description: 'Phase 1' },
+              { name: '@high', description: 'Phase 2' },
             ],
           },
         ],
@@ -161,14 +161,14 @@ describe('Feature: Show Tag Usage Statistics', () => {
       for (let i = 1; i <= 4; i++) {
         await writeFile(
           join(testDir, 'spec/features', `phase1-${i}.feature`),
-          '@phase1\nFeature: Test\n  Scenario: Test\n    Given test\n'
+          '@critical\nFeature: Test\n  Scenario: Test\n    Given test\n'
         );
       }
 
       for (let i = 1; i <= 2; i++) {
         await writeFile(
           join(testDir, 'spec/features', `phase2-${i}.feature`),
-          '@phase2\nFeature: Test\n  Scenario: Test\n    Given test\n'
+          '@high\nFeature: Test\n  Scenario: Test\n    Given test\n'
         );
       }
 
@@ -179,19 +179,17 @@ describe('Feature: Show Tag Usage Statistics', () => {
         c => c.name === 'Phase Tags'
       );
 
-      // Then @phase1 should appear before @phase2 in the output
+      // Then @critical should appear before @high in the output
       const phase1Index = phaseCategory!.tags.findIndex(
-        t => t.tag === '@phase1'
+        t => t.tag === '@critical'
       );
-      const phase2Index = phaseCategory!.tags.findIndex(
-        t => t.tag === '@phase2'
-      );
+      const phase2Index = phaseCategory!.tags.findIndex(t => t.tag === '@high');
       expect(phase1Index).toBeLessThan(phase2Index);
 
-      // And the count for @phase1 should be 4
+      // And the count for @critical should be 4
       expect(phaseCategory!.tags[phase1Index].count).toBe(4);
 
-      // And the count for @phase2 should be 2
+      // And the count for @high should be 2
       expect(phaseCategory!.tags[phase2Index].count).toBe(2);
     });
   });
@@ -207,9 +205,9 @@ describe('Feature: Show Tag Usage Statistics', () => {
             description: 'Development phase tags',
             required: false,
             tags: [
-              { name: '@phase1', description: 'Phase 1' },
-              { name: '@phase2', description: 'Phase 2' },
-              { name: '@phase3', description: 'Phase 3' },
+              { name: '@critical', description: 'Phase 1' },
+              { name: '@high', description: 'Phase 2' },
+              { name: '@medium', description: 'Phase 3' },
             ],
           },
           {
@@ -242,7 +240,7 @@ describe('Feature: Show Tag Usage Statistics', () => {
       // And only 7 of those tags are used in feature files
       await writeFile(
         join(testDir, 'spec/features/f1.feature'),
-        '@phase1 @cli @parser @formatter @validator @generator @file-ops\nFeature: Test\n  Scenario: Test\n    Given test\n'
+        '@critical @cli @parser @formatter @validator @generator @file-ops\nFeature: Test\n  Scenario: Test\n    Given test\n'
       );
 
       // When I run `fspec tag-stats`
@@ -255,8 +253,8 @@ describe('Feature: Show Tag Usage Statistics', () => {
       expect(result.unusedTags.length).toBe(3);
 
       // And the unused tags should be the ones not present in any feature file
-      expect(result.unusedTags).toContain('@phase2');
-      expect(result.unusedTags).toContain('@phase3');
+      expect(result.unusedTags).toContain('@high');
+      expect(result.unusedTags).toContain('@medium');
       expect(result.unusedTags).toContain('@integration');
     });
   });
@@ -317,7 +315,7 @@ describe('Feature: Show Tag Usage Statistics', () => {
             name: 'Phase Tags',
             description: 'Development phase tags',
             required: false,
-            tags: [{ name: '@phase1', description: 'Phase 1' }],
+            tags: [{ name: '@critical', description: 'Phase 1' }],
           },
         ],
         combinationExamples: [],
@@ -334,7 +332,7 @@ describe('Feature: Show Tag Usage Statistics', () => {
 
       await writeFile(
         join(testDir, 'spec/features/f1.feature'),
-        '@phase1 @custom-tag\nFeature: F1\n  Scenario: Test\n    Given test\n'
+        '@critical @custom-tag\nFeature: F1\n  Scenario: Test\n    Given test\n'
       );
       await writeFile(
         join(testDir, 'spec/features/f2.feature'),
@@ -429,7 +427,7 @@ describe('Feature: Show Tag Usage Statistics', () => {
       // And no feature files use any testing tags
       await writeFile(
         join(testDir, 'spec/features/f1.feature'),
-        '@phase1\nFeature: F1\n  Scenario: Test\n    Given test\n'
+        '@critical\nFeature: F1\n  Scenario: Test\n    Given test\n'
       );
 
       // When I run `fspec tag-stats`
@@ -495,9 +493,9 @@ describe('Feature: Show Tag Usage Statistics', () => {
             description: 'Development phase tags',
             required: false,
             tags: [
-              { name: '@phase1', description: 'Phase 1 features' },
-              { name: '@phase2', description: 'Phase 2 features' },
-              { name: '@phase3', description: 'Phase 3 features' },
+              { name: '@critical', description: 'Phase 1 features' },
+              { name: '@high', description: 'Phase 2 features' },
+              { name: '@medium', description: 'Phase 3 features' },
             ],
           },
           {
@@ -538,15 +536,15 @@ describe('Feature: Show Tag Usage Statistics', () => {
       // And I have feature files using tags from different categories
       await writeFile(
         join(testDir, 'spec/features/f1.feature'),
-        '@phase1 @cli @feature-management\nFeature: F1\n  Scenario: Test\n    Given test\n'
+        '@critical @cli @feature-management\nFeature: F1\n  Scenario: Test\n    Given test\n'
       );
       await writeFile(
         join(testDir, 'spec/features/f2.feature'),
-        '@phase2 @parser @tag-management\nFeature: F2\n  Scenario: Test\n    Given test\n'
+        '@high @parser @tag-management\nFeature: F2\n  Scenario: Test\n    Given test\n'
       );
       await writeFile(
         join(testDir, 'spec/features/f3.feature'),
-        '@phase1 @formatter @feature-management\nFeature: F3\n  Scenario: Test\n    Given test\n'
+        '@critical @formatter @feature-management\nFeature: F3\n  Scenario: Test\n    Given test\n'
       );
 
       // When I run `fspec tag-stats`
@@ -575,13 +573,13 @@ describe('Feature: Show Tag Usage Statistics', () => {
       // And each category should show accurate tag counts
       expect(phaseCategory!.tags).toEqual(
         expect.arrayContaining([
-          expect.objectContaining({ tag: '@phase1', count: 2 }),
-          expect.objectContaining({ tag: '@phase2', count: 1 }),
+          expect.objectContaining({ tag: '@critical', count: 2 }),
+          expect.objectContaining({ tag: '@high', count: 1 }),
         ])
       );
 
       // And unused registered tags should be identified correctly
-      expect(result.unusedTags).toContain('@phase3');
+      expect(result.unusedTags).toContain('@medium');
 
       // And the command should exit with code 0
       expect(result.success).toBe(true);

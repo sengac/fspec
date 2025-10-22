@@ -2,7 +2,6 @@
 @feature-management
 @discovery
 @cli
-@phase1
 @BUG-020
 Feature: remove-question command shows '[object Object]' instead of question text
   """

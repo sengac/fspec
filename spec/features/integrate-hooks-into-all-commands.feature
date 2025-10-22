@@ -3,7 +3,6 @@
 @cli
 @workflow-automation
 @hooks
-@phase1
 @HOOK-008
 Feature: Integrate hooks into all commands
 
@@ -93,7 +92,7 @@ Feature: Integrate hooks into all commands
     Given I have a hook with condition tags ["@security"]
     And the hook is configured for "post-update-work-unit-status"
     And work unit "AUTH-001" has tags ["@security", "@critical"]
-    And work unit "DASH-001" has tags ["@ui", "@phase1"]
+    And work unit "DASH-001" has tags ["@ui", "@critical"]
     When I run "fspec update-work-unit-status AUTH-001 implementing"
     Then the hook should execute because work unit has @security tag
     When I run "fspec update-work-unit-status DASH-001 implementing"

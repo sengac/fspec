@@ -25,7 +25,7 @@ When fspec generates feature files (via \`create-feature\` or \`generate-scenari
 - \`[role]\`, \`[action]\`, \`[benefit]\` in Background sections
 - \`[precondition]\`, \`[expected outcome]\` in scenario steps
 - \`TODO:\` markers in architecture notes
-- Generic tags like \`@phase1\`, \`@component\`
+- Generic tags like \`@critical\`, \`@component\`
 
 **Instead of using Write/Edit tools to replace these placeholders, AI agents MUST use fspec CLI commands.**
 
@@ -112,11 +112,11 @@ fspec add-architecture <feature-name> "Uses @cucumber/gherkin for parsing. Suppo
 
 ### Fixing Generic Tags
 
-For placeholder tags like \`@phase1\`, \`@component\`:
+For placeholder tags like \`@critical\`, \`@component\`:
 
 \`\`\`bash
 # Add proper tags to feature file
-fspec add-tag-to-feature spec/features/my-feature.feature @phase2
+fspec add-tag-to-feature spec/features/my-feature.feature @high
 fspec add-tag-to-feature spec/features/my-feature.feature @cli
 fspec add-tag-to-feature spec/features/my-feature.feature @validation
 \`\`\`

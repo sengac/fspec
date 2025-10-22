@@ -1,5 +1,4 @@
 @done
-@phase1
 @cli
 @example-mapping
 @bug-fix

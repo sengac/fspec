@@ -9,7 +9,6 @@
 @COV-040
 @COV-039
 @wip
-@phase7
 @cli
 @project-management
 @dependencies

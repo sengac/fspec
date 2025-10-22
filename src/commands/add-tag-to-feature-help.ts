@@ -12,7 +12,7 @@ const config: CommandHelpConfig = {
     },
     {
       name: 'tags...',
-      description: 'One or more tags to add (e.g., @phase1 @critical)',
+      description: 'One or more tags to add (e.g., @critical @critical)',
       required: true,
     },
   ],
@@ -24,15 +24,16 @@ const config: CommandHelpConfig = {
   ],
   examples: [
     {
-      command: 'fspec add-tag-to-feature spec/features/login.feature @phase1',
+      command: 'fspec add-tag-to-feature spec/features/login.feature @critical',
       description: 'Add single tag',
-      output: '✓ Added tag @phase1 to spec/features/login.feature',
+      output: '✓ Added tag @critical to spec/features/login.feature',
     },
     {
       command:
-        'fspec add-tag-to-feature spec/features/login.feature @phase1 @critical',
+        'fspec add-tag-to-feature spec/features/login.feature @critical @critical',
       description: 'Add multiple tags',
-      output: '✓ Added tags @phase1, @critical to spec/features/login.feature',
+      output:
+        '✓ Added tags @critical, @critical to spec/features/login.feature',
     },
     {
       command:

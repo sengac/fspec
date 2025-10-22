@@ -3,7 +3,6 @@
 @system-reminder
 @error-handling
 @cli
-@phase1
 @UX-001
 Feature: System-reminder for missing scenarios in link-coverage
   """

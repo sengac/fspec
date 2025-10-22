@@ -3,7 +3,6 @@
 @file-ops
 @coverage-tracking
 @cli
-@phase2
 Feature: Generate Coverage Files for Existing Features
   """
   Architecture notes:

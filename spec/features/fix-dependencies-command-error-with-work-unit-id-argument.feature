@@ -2,10 +2,8 @@
 @bug-fix
 @dependencies
 @cli
-@phase1
 @BUG-024
 Feature: Fix dependencies command error with work unit ID argument
-
   """
   Root Cause: Legacy dependencies() function (line 1017-1072 in src/commands/dependencies.ts) is still exported and callable. This function expects (action, workUnitId, options) but CLI passes (workUnitId, options) directly to it. Solution: Remove the legacy function since registerDependenciesCommand() now uses showDependencies() instead.
   """
@@ -22,7 +20,6 @@ Feature: Fix dependencies command error with work unit ID argument
   #   2. Command shows 'Dependencies for RES-001:' followed by relationship lists (blocks, blockedBy, dependsOn, relatesTo)
   #
   # ========================================
-
   Background: User Story
     As a AI agent using fspec for project management
     I want to view work unit dependencies using 'fspec dependencies <id>'
@@ -37,10 +34,10 @@ Feature: Fix dependencies command error with work unit ID argument
 
   Scenario: Command displays all relationship types correctly
     Given I have a work unit "RES-001" with the following relationships:
-      | type       | target  |
-      | dependsOn  | MCP-002 |
-      | blocks     | MCP-005 |
-      | relatesTo  | DOC-001 |
+      | type      | target  |
+      | dependsOn | MCP-002 |
+      | blocks    | MCP-005 |
+      | relatesTo | DOC-001 |
     When I run "fspec dependencies RES-001"
     Then the output should contain "Dependencies for RES-001:"
     And the output should contain "Depends on: MCP-002"

@@ -2,7 +2,6 @@
 @example-mapping
 @file-ops
 @discovery
-@phase1
 @FEAT-013
 Feature: Attachment support for discovery process
   """

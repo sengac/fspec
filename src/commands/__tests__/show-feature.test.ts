@@ -447,7 +447,7 @@ Feature: Broken Feature
     it('should display linked work units from feature-level tags', async () => {
       // Given I have a feature file "oauth-login.feature" tagged with "@AUTH-001"
       const featureContent = `@AUTH-001
-@phase1
+@critical
 @authentication
 Feature: OAuth Login
 
@@ -525,7 +525,7 @@ Feature: OAuth Login
     it('should display work units from both feature and scenario tags', async () => {
       // Given I have a feature file with mixed tags
       const featureContent = `@AUTH-001
-@phase1
+@critical
 @authentication
 Feature: OAuth Login
 
@@ -603,7 +603,7 @@ Feature: OAuth Login
   describe('Scenario: Display work units when feature has no work unit tag', () => {
     it('should show "Work Units: None" when no work unit tags present', async () => {
       // Given I have a feature file without work unit tags
-      const featureContent = `@phase1
+      const featureContent = `@critical
 @cli
 Feature: Untagged Feature
 
@@ -635,7 +635,7 @@ Feature: Untagged Feature
     it('should include work units in JSON output', async () => {
       // Given I have a feature file tagged with "@API-001"
       const featureContent = `@API-001
-@phase1
+@critical
 @api
 Feature: API Integration
 

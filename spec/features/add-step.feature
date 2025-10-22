@@ -1,4 +1,3 @@
-@phase3
 @cli
 @feature-management
 @modification

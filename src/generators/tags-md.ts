@@ -31,12 +31,11 @@ export async function generateTagsMd(tags: Tags): Promise<string> {
 
       // Tag table
       if (category.tags && category.tags.length > 0) {
-        sections.push('| Tag | Description | Usage |');
-        sections.push('|-----|-------------|-------|');
+        sections.push('| Tag | Description |');
+        sections.push('|-----|-------------|');
 
         for (const tag of category.tags) {
-          const usage = tag.usage || '';
-          sections.push(`| \`${tag.name}\` | ${tag.description} | ${usage} |`);
+          sections.push(`| \`${tag.name}\` | ${tag.description} |`);
         }
         sections.push('');
       }

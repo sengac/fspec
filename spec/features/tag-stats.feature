@@ -1,4 +1,3 @@
-@phase2
 @cli
 @querying
 @tag-management
@@ -61,11 +60,11 @@ Feature: Show Tag Usage Statistics
     And tags should be sorted by count in descending order within each category
 
   Scenario: Show most used tags
-    Given I have feature files where @phase1 is used 4 times and @phase2 is used 2 times
+    Given I have feature files where is used 4 times and is used 2 times
     When I run `fspec tag-stats`
-    Then @phase1 should appear before @phase2 in the output
-    And the count for @phase1 should be 4
-    And the count for @phase2 should be 2
+    Then should appear before in the output
+    And the count for should be 4
+    And the count for should be 2
 
   Scenario: Identify unused registered tags
     Given I have tags.json with 10 registered tags

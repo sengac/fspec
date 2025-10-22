@@ -1,7 +1,6 @@
 @done
 @foundation
 @cli
-@phase1
 @BUG-018
 Feature: add-persona and add-capability don't work with foundation.json.draft
   """

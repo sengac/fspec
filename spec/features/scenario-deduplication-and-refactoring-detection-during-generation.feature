@@ -3,7 +3,6 @@
 @coverage-tracking
 @scenario-generation
 @cli
-@phase2
 @SPEC-002
 Feature: Scenario deduplication and refactoring detection during generation
   """

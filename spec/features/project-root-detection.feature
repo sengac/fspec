@@ -1,7 +1,6 @@
 @done
 @safety
 @file-ops
-@phase1
 Feature: Prevent spec directory creation outside project root
   """
   Architecture notes:

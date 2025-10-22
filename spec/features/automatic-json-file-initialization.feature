@@ -9,7 +9,6 @@
 @COV-011
 @COV-010
 @INIT-002
-@phase1
 @critical
 @cli
 @project-management
@@ -182,11 +181,11 @@ Feature: Automatic JSON File Initialization
   Scenario: Register tag command auto-creates spec/tags.json when missing
     Given I have a fresh project with spec/ directory
     Given spec/tags.json does not exist
-    When I run "fspec register-tag @my-tag 'Phase Tags' 'My custom tag'"
+    When I run "fspec register-tag @my-tag 'Component Tags' 'My custom tag'"
     Then the command should succeed
     And spec/tags.json should be created
     And the file should contain valid Tags JSON structure with default categories
-    And the tag @my-tag should be added to the Phase Tags category
+    And the tag @my-tag should be added to the Component Tags category
 
   Scenario: Update foundation command auto-creates spec/foundation.json when missing
     Given I have a fresh project with spec/ directory

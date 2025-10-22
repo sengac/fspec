@@ -70,7 +70,7 @@ describe('Feature: Prefill Detection in Feature Files', () => {
   describe('Scenario: Detect generic placeholder tags', () => {
     it('should detect @component and @feature-group placeholders', () => {
       // Given: Feature file with placeholder tags
-      const content = `@phase1 @component @feature-group
+      const content = `@critical @component @feature-group
 Feature: Test`;
 
       // When: I detect prefill
@@ -88,7 +88,7 @@ Feature: Test`;
   describe('Scenario: No prefill detected in complete feature', () => {
     it('should return no prefill for complete feature file', () => {
       // Given: Feature file without any placeholders
-      const content = `@phase1 @cli @validation
+      const content = `@critical @cli @validation
 Feature: Complete Feature
 
   Background: User Story

@@ -52,7 +52,7 @@ describe('Feature: Add system-reminder to generate-coverage command', () => {
       const featuresDir = join(testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
-      const featureContent = `@phase1
+      const featureContent = `@critical
 Feature: Test Feature
 
   Scenario: Test scenario
@@ -118,7 +118,7 @@ Feature: Test Feature
       const featuresDir = join(testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
-      const featureContent = `@phase1
+      const featureContent = `@critical
 Feature: Test Feature
 
   Scenario: Test scenario
@@ -164,7 +164,7 @@ Feature: Test Feature
       const featuresDir = join(testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
-      const featureContent = `@phase1
+      const featureContent = `@critical
 Feature: Test Feature
 
   Scenario: Test scenario
@@ -210,7 +210,7 @@ Feature: Test Feature
       const featuresDir = join(testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
-      const featureContent = `@phase1
+      const featureContent = `@critical
 Feature: Test Feature
 
   Scenario: Test scenario

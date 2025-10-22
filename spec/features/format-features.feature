@@ -1,4 +1,3 @@
-@phase1
 @cli
 @formatter
 @formatting
@@ -142,7 +141,7 @@ Feature: Format Feature Files with Custom AST Formatter
     And both """ and ``` delimiters should be supported
 
   Scenario: Format multiple feature-level tags
-    Given I have a feature with tags @phase1 @cli @formatter
+    Given I have a feature with tags @cli @formatter
     When I run `fspec format spec/features/tags.feature`
     Then each tag should be on its own line
     And tags should have zero indentation
@@ -177,7 +176,7 @@ Feature: Format Feature Files with Custom AST Formatter
   Scenario: Format both feature-level and scenario-level tags
     Given I have a feature file with tags at both levels:
       """
-      @phase1 @authentication
+      @authentication
       Feature: User Authentication
         @smoke
         Scenario: Login with valid credentials

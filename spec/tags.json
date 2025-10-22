@@ -1,53 +1,6 @@
 {
   "categories": [
     {
-      "name": "Phase Tags",
-      "description": "Tags that identify which development phase a feature belongs to (from FOUNDATION.md).",
-      "required": true,
-      "tags": [
-        {
-          "name": "@phase1",
-          "description": "Phase 1: Core Validation & Feature Management",
-          "usage": "Features: Gherkin syntax validation, feature file creation, formatting, basic querying (5 files)"
-        },
-        {
-          "name": "@phase2",
-          "description": "Phase 2: Tag Registry & Management",
-          "usage": "Features: TAGS.md operations, tag validation, architecture/background documentation (7 files)"
-        },
-        {
-          "name": "@phase3",
-          "description": "Phase 3: Advanced Feature Editing",
-          "usage": "Features: Add scenarios and steps to existing features (2 files)"
-        },
-        {
-          "name": "@phase4",
-          "description": "Phase 4: CRUD Operations & Tag-Based Queries",
-          "usage": "Features: Query/display scenarios by tag, update/delete operations (4 files)"
-        },
-        {
-          "name": "@phase5",
-          "description": "Phase 5: Advanced CRUD & Bulk Operations",
-          "usage": "Features: Update scenarios/steps, bulk delete, retag operations (7 files)"
-        },
-        {
-          "name": "@phase6",
-          "description": "Phase 6: Architecture Documentation",
-          "usage": "Features: FOUNDATION.md management, Mermaid diagrams (3 files)"
-        },
-        {
-          "name": "@phase7",
-          "description": "Phase 7: JSON-Backed Documentation",
-          "usage": "Features: JSON schema validation, MD generation from JSON, migration tools (6 files)"
-        },
-        {
-          "name": "@phase8",
-          "description": "Phase 8: Incomplete Features - missed functionality that needs implementation"
-        }
-      ],
-      "rule": "Every feature file MUST have exactly ONE phase tag."
-    },
-    {
       "name": "Component Tags",
       "description": "Tags that identify which architectural component a feature belongs to.",
       "required": true,
@@ -62,23 +15,19 @@
         },
         {
           "name": "@cli",
-          "description": "Command-Line Interface",
-          "scope": "All CLI commands, argument parsing, command handlers, user-facing terminal interactions (28 files)"
+          "description": "Command-Line Interface"
         },
         {
           "name": "@file-ops",
-          "description": "File Operations",
-          "scope": "Reading/writing feature files, FOUNDATION.md, TAGS.md management (1 file)"
+          "description": "File Operations"
         },
         {
           "name": "@formatter",
-          "description": "Formatting & Prettification",
-          "scope": "Prettier integration, Gherkin formatting, code style enforcement (1 file)"
+          "description": "Formatting & Prettification"
         },
         {
           "name": "@generator",
-          "description": "Template Generation",
-          "scope": "Feature file templates, scaffolding, boilerplate generation (1 file)"
+          "description": "Template Generation"
         },
         {
           "name": "@git",
@@ -90,13 +39,11 @@
         },
         {
           "name": "@integration",
-          "description": "Cross-Component Integration",
-          "scope": "Features spanning multiple components, end-to-end flows (0 files)"
+          "description": "Cross-Component Integration"
         },
         {
           "name": "@parser",
-          "description": "Gherkin Parser Integration",
-          "scope": "@cucumber/gherkin-parser usage, syntax validation, AST processing (3 files)"
+          "description": "Gherkin Parser Integration"
         },
         {
           "name": "@templates",
@@ -104,8 +51,7 @@
         },
         {
           "name": "@validator",
-          "description": "Validation Logic",
-          "scope": "Syntax validation, tag validation, consistency checks (1 file)"
+          "description": "Validation Logic"
         }
       ],
       "rule": "Every feature file MUST have at least ONE component tag (may have multiple if cross-component)."
@@ -169,8 +115,7 @@
         },
         {
           "name": "@bulk-operations",
-          "description": "Bulk Multi-File Operations",
-          "examples": "Bulk delete scenarios/features by tag (3 files)"
+          "description": "Bulk Multi-File Operations"
         },
         {
           "name": "@burndown",
@@ -242,8 +187,7 @@
         },
         {
           "name": "@documentation",
-          "description": "Documentation Display",
-          "examples": "Show acceptance criteria, show feature, show foundation (2 files)"
+          "description": "Documentation Display"
         },
         {
           "name": "@epics",
@@ -263,8 +207,7 @@
         },
         {
           "name": "@feature-management",
-          "description": "Feature File Operations",
-          "examples": "Create feature, add scenario, add step, add architecture notes (11 files)"
+          "description": "Feature File Operations"
         },
         {
           "name": "@filtering",
@@ -276,8 +219,7 @@
         },
         {
           "name": "@formatting",
-          "description": "Auto-Formatting",
-          "examples": "Prettier execution, Gherkin formatting, consistency enforcement (1 file)"
+          "description": "Auto-Formatting"
         },
         {
           "name": "@foundation",
@@ -285,8 +227,7 @@
         },
         {
           "name": "@foundation-management",
-          "description": "FOUNDATION.md Operations",
-          "examples": "Add Mermaid diagram, update foundation sections, show foundation (3 files)"
+          "description": "FOUNDATION.md Operations"
         },
         {
           "name": "@generate-scenarios",
@@ -326,13 +267,11 @@
         },
         {
           "name": "@migration",
-          "description": "Migration & Data Transformation",
-          "examples": "One-time migration operations, MD to JSON conversion (1 file)"
+          "description": "Migration & Data Transformation"
         },
         {
           "name": "@modification",
-          "description": "Feature Modification Operations",
-          "examples": "Update/delete scenarios, steps, tags, retag operations (11 files)"
+          "description": "Feature Modification Operations"
         },
         {
           "name": "@multi-agent-support",
@@ -384,8 +323,7 @@
         },
         {
           "name": "@querying",
-          "description": "Query & Search Operations",
-          "examples": "List features, show feature, find by tag, search scenarios (6 files)"
+          "description": "Query & Search Operations"
         },
         {
           "name": "@read",
@@ -393,8 +331,7 @@
         },
         {
           "name": "@read-only",
-          "description": "Read-Only Operations",
-          "examples": "Display operations that don't modify files (2 files)"
+          "description": "Read-Only Operations"
         },
         {
           "name": "@recommendations",
@@ -422,8 +359,7 @@
         },
         {
           "name": "@scaffolding",
-          "description": "Project Setup & Templates",
-          "examples": "Initialize spec directory, create templates, setup structure (0 files)"
+          "description": "Project Setup & Templates"
         },
         {
           "name": "@scenario-deduplication",
@@ -463,8 +399,7 @@
         },
         {
           "name": "@tag-management",
-          "description": "TAGS.md Operations",
-          "examples": "Register tag, validate tags, list tags, tag statistics (7 files)"
+          "description": "TAGS.md Operations"
         },
         {
           "name": "@testing",
@@ -484,13 +419,11 @@
         },
         {
           "name": "@utility",
-          "description": "Utility & Helper Commands",
-          "examples": "Multi-validation commands, aggregate operations (1 file)"
+          "description": "Utility & Helper Commands"
         },
         {
           "name": "@validation",
-          "description": "Syntax & Structure Validation",
-          "examples": "Gherkin syntax check, tag compliance, formatting validation (3 files)"
+          "description": "Syntax & Structure Validation"
         },
         {
           "name": "@velocity",
@@ -542,8 +475,7 @@
         },
         {
           "name": "@ast",
-          "description": "Abstract Syntax Tree",
-          "useCases": "Working with Gherkin AST from parser (custom formatter)"
+          "description": "Abstract Syntax Tree"
         },
         {
           "name": "@auth-001",
@@ -571,8 +503,7 @@
         },
         {
           "name": "@cucumber-parser",
-          "description": "Cucumber Parser Integration",
-          "useCases": "Direct usage of @cucumber/gherkin-parser"
+          "description": "Cucumber Parser Integration"
         },
         {
           "name": "@discovery",
@@ -584,8 +515,7 @@
         },
         {
           "name": "@error-handling",
-          "description": "Error Handling",
-          "useCases": "Error scenarios, validation failures, recovery"
+          "description": "Error Handling"
         },
         {
           "name": "@file-initialization",
@@ -597,13 +527,11 @@
         },
         {
           "name": "@file-system",
-          "description": "File System Operations",
-          "useCases": "Reading/writing files, directory operations, path handling"
+          "description": "File System Operations"
         },
         {
           "name": "@gherkin",
-          "description": "Gherkin Specification Compliance",
-          "useCases": "Features ensuring Gherkin spec adherence"
+          "description": "Gherkin Specification Compliance"
         },
         {
           "name": "@graceful-degradation",
@@ -623,8 +551,7 @@
         },
         {
           "name": "@internal",
-          "description": "Internal Utility",
-          "useCases": "Internal utilities and helpers, not user-facing commands"
+          "description": "Internal Utility"
         },
         {
           "name": "@isomorphic-git",
@@ -632,8 +559,7 @@
         },
         {
           "name": "@json-backed",
-          "description": "JSON-Backed Documentation",
-          "useCases": "Features using JSON schemas and auto-generation of markdown"
+          "description": "JSON-Backed Documentation"
         },
         {
           "name": "@json-output",
@@ -641,8 +567,7 @@
         },
         {
           "name": "@json-schema",
-          "description": "JSON Schema Validation",
-          "useCases": "JSON Schema validation using Ajv library"
+          "description": "JSON Schema Validation"
         },
         {
           "name": "@learning",
@@ -650,8 +575,7 @@
         },
         {
           "name": "@mermaid",
-          "description": "Mermaid Diagram Support",
-          "useCases": "Inserting/validating Mermaid diagrams in FOUNDATION.md"
+          "description": "Mermaid Diagram Support"
         },
         {
           "name": "@pattern-detection",
@@ -695,8 +619,7 @@
         },
         {
           "name": "@template",
-          "description": "Template System",
-          "useCases": "Template generation, variable substitution, scaffolding"
+          "description": "Template System"
         },
         {
           "name": "@type-system",
@@ -716,23 +639,19 @@
         },
         {
           "name": "@cross-platform",
-          "description": "Cross-Platform Requirement",
-          "whenToUse": "Features that MUST work on all platforms, path normalization"
+          "description": "Cross-Platform Requirement"
         },
         {
           "name": "@linux",
-          "description": "Linux-Specific",
-          "whenToUse": "Linux distributions, Unix behaviors, shell compatibility"
+          "description": "Linux-Specific"
         },
         {
           "name": "@macos",
-          "description": "macOS-Specific",
-          "whenToUse": "Unix paths, macOS-specific behaviors, Darwin platform"
+          "description": "macOS-Specific"
         },
         {
           "name": "@windows",
-          "description": "Windows-Specific",
-          "whenToUse": "Windows paths, PowerShell compatibility, CMD behaviors"
+          "description": "Windows-Specific"
         }
       ],
       "rule": "Use platform tags when a scenario has platform-specific behavior or requirements."
@@ -744,23 +663,19 @@
       "tags": [
         {
           "name": "@critical",
-          "description": "Critical Priority - Must Have",
-          "criteria": "Core functionality, blocking features, foundation requirements"
+          "description": "Critical Priority - Must Have"
         },
         {
           "name": "@high",
-          "description": "High Priority - Should Have",
-          "criteria": "Important features, significant user value, automation integration needs"
+          "description": "High Priority - Should Have"
         },
         {
           "name": "@medium",
-          "description": "Medium Priority - Nice to Have",
-          "criteria": "Enhancements, convenience features, improved UX"
+          "description": "Medium Priority - Nice to Have"
         },
         {
           "name": "@low",
-          "description": "Low Priority - Future Enhancement",
-          "criteria": "Optional features, advanced querying, cosmetic improvements"
+          "description": "Low Priority - Future Enhancement"
         }
       ],
       "rule": "Use priority tags to guide implementation order within a phase."
@@ -780,8 +695,7 @@
         },
         {
           "name": "@blocked",
-          "description": "Blocked",
-          "meaning": "Feature cannot proceed due to dependencies or external factors"
+          "description": "Blocked"
         },
         {
           "name": "@bug",
@@ -793,13 +707,11 @@
         },
         {
           "name": "@deprecated",
-          "description": "Deprecated",
-          "meaning": "Feature is being phased out, replaced by newer implementation"
+          "description": "Deprecated"
         },
         {
           "name": "@done",
-          "description": "Complete",
-          "meaning": "Feature is fully implemented, all tests passing, documented"
+          "description": "Complete"
         },
         {
           "name": "@exmap-001",
@@ -835,13 +747,11 @@
         },
         {
           "name": "@todo",
-          "description": "To Do",
-          "meaning": "Feature is planned but not started, scenarios defined but no code"
+          "description": "To Do"
         },
         {
           "name": "@wip",
-          "description": "Work In Progress",
-          "meaning": "Feature is currently being implemented, tests may be incomplete"
+          "description": "Work In Progress"
         }
       ],
       "rule": "Update status tags as features progress through development lifecycle."
@@ -881,8 +791,7 @@
         },
         {
           "name": "@e2e-test",
-          "description": "End-to-End Test Required",
-          "testType": "Complete command flows, automation integration, full scenarios"
+          "description": "End-to-End Test Required"
         },
         {
           "name": "@edge-case",
@@ -894,8 +803,7 @@
         },
         {
           "name": "@integration-test",
-          "description": "Integration Test Required",
-          "testType": "Tests across components, parser integration, file operations"
+          "description": "Integration Test Required"
         },
         {
           "name": "@main-help",
@@ -903,8 +811,7 @@
         },
         {
           "name": "@manual-test",
-          "description": "Requires Manual Testing",
-          "testType": "Visual verification, platform-specific checks, edge cases"
+          "description": "Requires Manual Testing"
         },
         {
           "name": "@medium-command",
@@ -940,8 +847,7 @@
         },
         {
           "name": "@unit-test",
-          "description": "Unit Test Coverage Required",
-          "testType": "Tests for individual functions, command handlers, utilities"
+          "description": "Unit Test Coverage Required"
         },
         {
           "name": "@unregistered-scenario-tag",
@@ -969,8 +875,7 @@
       "tags": [
         {
           "name": "@acdd",
-          "description": "Acceptance Criteria Driven Development",
-          "useCases": "Features following ACDD methodology"
+          "description": "Acceptance Criteria Driven Development"
         },
         {
           "name": "@discovery-workflow",
@@ -982,13 +887,11 @@
         },
         {
           "name": "@execa",
-          "description": "Child process execution integration point",
-          "useCases": "Features invoked via Node.js child process (execa) from automation hooks"
+          "description": "Child process execution integration point"
         },
         {
           "name": "@spec-alignment",
-          "description": "Specification Alignment",
-          "useCases": "Features ensuring code-spec synchronization"
+          "description": "Specification Alignment"
         }
       ],
       "rule": "Use automation tags to indicate integration points with automation systems and lifecycle hooks."
@@ -1106,26 +1009,26 @@
       "Use lowercase",
       "Use hyphens for multi-word tags (@cross-platform, not @crossplatform)",
       "Be specific and descriptive (@cucumber-parser not @parser-integration)",
-      "Avoid redundancy (@cli-commands → just @cli)",
+      "Avoid redundancy (@cli-commands \u2192 just @cli)",
       "Keep concise (prefer @wip over @work-in-progress)"
     ],
     "antiPatterns": {
       "dont": [
         {
           "description": "Create overlapping tags",
-          "example": "@validate and @validation → use @validation"
+          "example": "@validate and @validation \u2192 use @validation"
         },
         {
           "description": "Use vague tags",
-          "example": "@important → use @critical, @high, etc."
+          "example": "@important \u2192 use @critical, @high, etc."
         },
         {
           "description": "Create single-use tags",
-          "example": "@login-feature → use combination of existing tags"
+          "example": "@login-feature \u2192 use combination of existing tags"
         },
         {
           "description": "Mix concerns",
-          "example": "@cli-validation → use @cli @validation"
+          "example": "@cli-validation \u2192 use @cli @validation"
         }
       ],
       "do": [

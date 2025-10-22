@@ -2,7 +2,6 @@
 @workflow-automation
 @refactoring
 @hooks
-@phase1
 @HOOK-010
 Feature: Migrate hook execution to use execa library
   """
