@@ -51,13 +51,6 @@ export default defineConfig({
           recursive: true,
         });
 
-        // Bundle entire .claude/ directory
-        cpSync(
-          resolve(__dirname, '.claude'),
-          resolve(__dirname, 'dist', '.claude'),
-          { recursive: true }
-        );
-
         // Bundle schemas directory
         cpSync(
           resolve(__dirname, 'src', 'schemas'),
