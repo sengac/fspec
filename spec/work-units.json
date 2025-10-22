@@ -9649,11 +9649,29 @@
       "id": "TECH-002",
       "title": "Audit AI agent files for .gitignore exclusions",
       "type": "task",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2025-10-21T13:50:11.071Z",
-      "updatedAt": "2025-10-21T13:50:11.071Z",
+      "updatedAt": "2025-10-22T06:55:51.180Z",
       "description": "Review all supported AI agents/tools and identify which files should be excluded from version control via .gitignore. Agents to investigate: Claude Code, Cursor, Windsurf, Copilot, and any other AI coding assistants we support. Look for: 1) Agent-specific configuration files, 2) Temporary files, 3) Cache directories, 4) Session state files, 5) Any generated files that shouldn't be committed. Create comprehensive .gitignore entries to prevent these files from being tracked.",
-      "children": []
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-22T06:52:28.874Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-22T06:52:35.525Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-22T06:55:49.589Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-22T06:55:51.180Z"
+        }
+      ]
     },
     "BUG-027": {
       "id": "BUG-027",
@@ -9917,7 +9935,6 @@
       "RES-001",
       "INIT-007",
       "INIT-008",
-      "TECH-002",
       "CLI-007"
     ],
     "specifying": [],
@@ -10090,7 +10107,8 @@
       "BUG-027",
       "BUG-025",
       "BUG-026",
-      "BUG-029"
+      "BUG-029",
+      "TECH-002"
     ],
     "blocked": []
   }
