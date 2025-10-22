@@ -64,7 +64,6 @@ describe('Feature: Fix multi-agent support critical issues', () => {
       expect(existsSync(customFile2)).toBe(true);
 
       // And the system should install Cursor-specific files
-      expect(existsSync(join(testDir, 'CURSOR.md'))).toBe(true);
       expect(existsSync(join(testDir, 'spec', 'CURSOR.md'))).toBe(true);
       expect(existsSync(join(testDir, '.cursor', 'commands', 'fspec.md'))).toBe(
         true

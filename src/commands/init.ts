@@ -97,42 +97,11 @@ export async function installAgentFiles(
   cwd: string,
   agent: AgentConfig
 ): Promise<void> {
-  // 1. Install root stub file (e.g., CURSOR.md or AGENTS.md)
-  await installRootStub(cwd, agent);
-
-  // 2. Install full documentation (spec/AGENT.md)
+  // 1. Install full documentation (spec/AGENT.md)
   await installFullDoc(cwd, agent);
 
-  // 3. Install slash command file
+  // 2. Install slash command file
   await installSlashCommand(cwd, agent);
-}
-
-/**
- * Install root stub file for auto-loading
- */
-async function installRootStub(cwd: string, agent: AgentConfig): Promise<void> {
-  const stubPath = join(cwd, agent.rootStubFile);
-
-  // Generate short stub content with agent-specific paths
-  const stubContent = `# ${agent.name} - fspec Project
-
-This project uses **fspec** for Acceptance Criteria Driven Development (ACDD).
-
-**Quick Start**:
-- Run the \`/fspec\` slash command to load full workflow
-- Or read \`spec/${agent.docTemplate}\` for complete documentation
-- Slash commands are located in \`${agent.slashCommandPath}\`
-
-**Commands**:
-- \`fspec board\` - View Kanban board
-- \`fspec --help\` - See all commands
-- \`fspec help specs\` - Gherkin management
-- \`fspec help work\` - Kanban workflow
-
-**Learn more**: https://github.com/sengac/fspec
-`;
-
-  await writeFile(stubPath, stubContent, 'utf-8');
 }
 
 /**

@@ -607,10 +607,14 @@
           ]
         }
       ]
+    },
+    {
+      "name": "Register new tag in Component Tags category",
+      "testMappings": []
     }
   ],
   "stats": {
-    "totalScenarios": 7,
+    "totalScenarios": 8,
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [

@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-22T06:29:05.678Z"
+    "lastUpdated": "2025-10-22T07:21:15.250Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -4801,9 +4801,9 @@
       "id": "BUG-009",
       "title": "remove-tag-from-scenario command doesn't properly remove tags",
       "type": "story",
-      "status": "done",
+      "status": "specifying",
       "createdAt": "2025-10-15T07:11:37.663Z",
-      "updatedAt": "2025-10-16T23:24:13.114Z",
+      "updatedAt": "2025-10-22T07:21:00.090Z",
       "description": "The remove-tag-from-scenario command is not working correctly - it claims to remove tags but they remain at scenario level in the feature files. This breaks tag validation because work unit ID tags (@COV-XXX) must be at feature level only.",
       "children": [],
       "userStory": {
@@ -4831,6 +4831,10 @@
         {
           "state": "done",
           "timestamp": "2025-10-15T07:26:51.372Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-22T07:21:00.090Z"
         }
       ],
       "rules": [
@@ -9937,7 +9941,9 @@
       "INIT-008",
       "CLI-007"
     ],
-    "specifying": [],
+    "specifying": [
+      "BUG-009"
+    ],
     "testing": [],
     "implementing": [],
     "validating": [],
@@ -10038,7 +10044,6 @@
       "COV-038",
       "FEAT-006",
       "FEAT-011",
-      "BUG-009",
       "DOC-004",
       "BUG-010",
       "EXMAP-002",

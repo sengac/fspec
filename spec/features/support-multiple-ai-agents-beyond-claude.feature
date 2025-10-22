@@ -254,13 +254,6 @@ Feature: Support multiple AI agents beyond Claude
     And the file should use TOML format
     And the file should contain workflow documentation
 
-  Scenario: Install root stub for auto-loading agents
-    Given I am in a project directory
-    When I run "fspec init --agent=cursor"
-    Then a file "CURSOR.md" should be created in the project root
-    And the file should be a short pointer to "spec/CURSOR.md"
-    And the file should contain a quick start guide
-
   Scenario: Agent registry with all capabilities
     Given the agent registry is loaded
     When I query the configuration for "claude"
