@@ -355,7 +355,6 @@ graph TD
     Src --> Validators[validators/]
     
     Claude --> FspecCmd[commands/fspec.md]
-    Claude --> RspecCmd[commands/rspec.md]
     
     style WorkUnits fill:#e1f5ff
     style Tags fill:#e1f5ff
