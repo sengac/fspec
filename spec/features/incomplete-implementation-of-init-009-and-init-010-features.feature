@@ -1,8 +1,8 @@
+@done
 @feature-management
 @cli
 @initialization
 @bug-fix
-@wip
 @BUG-033
 Feature: Incomplete implementation of INIT-009 and INIT-010 features
   """

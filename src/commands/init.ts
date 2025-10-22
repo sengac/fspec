@@ -362,24 +362,36 @@ export function registerInitCommand(program: Command): void {
           agentIds = options.agent;
         }
 
-        // Install agents using new multi-agent system
-        await installAgents(cwd, agentIds);
+        // Execute init with agent detection and switch prompting
+        // In interactive mode, pass promptAgentSwitch to auto-confirm (skip second prompt)
+        const result = await executeInit({
+          agentIds,
+          promptAgentSwitch: options.agent.length === 0 ? async () => true : undefined,
+        });
 
-        // Write agent config ONCE (removed duplicate - config written in installAgents)
-        writeAgentConfig(cwd, agentIds[0]);
+        // Check if user cancelled
+        if (result.cancelled) {
+          console.log(chalk.yellow('Init cancelled'));
+          process.exit(0);
+        }
 
-        // Success message (only for CLI mode, interactive mode shows in React component)
-        if (options.agent.length > 0) {
+        // Success message (show for both CLI and interactive modes)
+        if (result.success) {
           const agentNames = agentIds.join(', ');
+          console.log(chalk.green(`✓ Installed fspec for ${agentNames}`));
+
+          // Show detailed list of installed files
+          if (result.filesInstalled.length > 0) {
+            result.filesInstalled.forEach(file => {
+              console.log(chalk.dim(`  - ${file}`));
+            });
+          }
+
           const agent = getAgentById(agentIds[0]);
           const activationMessage = agent
             ? getActivationMessage(agent)
             : 'Run /fspec in your AI agent to activate';
-          console.log(
-            chalk.green(
-              `✓ Installed fspec for ${agentNames}\n\nNext steps:\n${activationMessage}`
-            )
-          );
+          console.log(chalk.green(`\nNext steps:\n${activationMessage}`));
         }
         process.exit(0);
       } catch (error: any) {

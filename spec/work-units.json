@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-22T12:06:36.267Z"
+    "lastUpdated": "2025-10-22T13:10:57.439Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -10291,9 +10291,9 @@
       "id": "BUG-033",
       "title": "Incomplete implementation of INIT-009 and INIT-010 features",
       "type": "story",
-      "status": "implementing",
+      "status": "done",
       "createdAt": "2025-10-22T11:58:47.689Z",
-      "updatedAt": "2025-10-22T12:14:46.380Z",
+      "updatedAt": "2025-10-22T13:00:23.524Z",
       "description": "Agent switching and remove-init-files features have passing tests but incomplete implementations. Interactive prompts missing, agent detection not integrated into action handlers, misleading help documentation.",
       "children": [],
       "attachments": [
@@ -10311,6 +10311,14 @@
         {
           "state": "implementing",
           "timestamp": "2025-10-22T12:14:46.380Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-22T12:59:13.127Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-22T13:00:23.524Z"
         }
       ],
       "userStory": {
@@ -10358,6 +10366,100 @@
         "Files to modify: src/commands/remove-init-files.ts (action handler), src/commands/init.ts (action handler + remove duplicate), src/components/ConfirmPrompt.tsx (create new), src/commands/__tests__/remove-init-files.test.ts (fix tests), src/commands/__tests__/init-agent-switching.test.ts (fix tests)"
       ],
       "estimate": 5
+    },
+    "BUG-034": {
+      "id": "BUG-034",
+      "title": "Double prompt and missing success message in interactive init mode",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-22T13:08:50.031Z",
+      "updatedAt": "2025-10-22T13:29:07.162Z",
+      "description": "Interactive mode shows confusing double prompts (AgentSelector + switch confirmation) and no success message after installation. Users select agent, then must confirm again, then see no feedback about success.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-22T13:08:57.055Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-22T13:17:16.070Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-22T13:21:32.203Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-22T13:23:47.459Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-22T13:29:07.163Z"
+        }
+      ],
+      "attachments": [
+        "spec/attachments/BUG-034/bug-034-analysis.md"
+      ],
+      "userStory": {
+        "role": "developer using fspec init",
+        "action": "select an agent and see clear confirmation",
+        "benefit": "I know the installation succeeded and what to do next"
+      },
+      "rules": [
+        "Interactive mode MUST NOT show double prompts (AgentSelector selection IS user confirmation)",
+        "Interactive mode MUST show success message with file list and activation instructions",
+        "CLI mode (--agent flag) SHOULD still show agent switch confirmation prompt",
+        "Both interactive and CLI modes MUST show identical success messages"
+      ],
+      "examples": [
+        "User runs 'fspec init', selects Cursor from menu, sees NO second confirmation prompt, sees success message with file list",
+        "User runs 'fspec init --agent=cursor' when Claude installed, sees 'Switch from Claude to Cursor?' prompt, confirms, sees success message",
+        "User runs 'fspec init', selects same agent (Claude), sees NO prompt, sees success message showing reinstallation",
+        "Success message shows: checkmark, agent name, indented file list, activation instructions - identical format for both modes"
+      ],
+      "architectureNotes": [
+        "Fix 1: Pass promptAgentSwitch parameter to executeInit() in interactive mode that returns true (auto-confirm). This skips the second prompt while preserving CLI mode behavior.",
+        "Fix 2: Change success message condition from 'if (options.agent.length > 0)' to 'if (result.success)' so both interactive and CLI modes show feedback.",
+        "Files to modify: src/commands/init.ts (action handler lines 366 and 375). NO changes needed to executeInit(), installAgents(), or AgentSelector component."
+      ],
+      "estimate": 3
+    },
+    "GIT-004": {
+      "id": "GIT-004",
+      "title": "Interactive checkpoint viewer with diff and commit capabilities",
+      "type": "story",
+      "status": "specifying",
+      "createdAt": "2025-10-22T13:35:44.893Z",
+      "updatedAt": "2025-10-22T13:36:18.008Z",
+      "description": "Add an interactive TUI for viewing checkpoints, examining file changes, seeing diffs, viewing staged/unstaged files, generating conventional commits, and performing git operations directly from the checkpoint view",
+      "children": [],
+      "dependsOn": [
+        "GIT-002"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-22T13:36:02.558Z"
+        }
+      ],
+      "questions": [
+        {
+          "text": "@human: How should users access the interactive checkpoint viewer? New command, integrated into kanban board, or integrated into show-work-unit?",
+          "selected": false
+        }
+      ]
+    },
+    "BOARD-003": {
+      "id": "BOARD-003",
+      "title": "Real-time board updates with git stash and file inspection",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-10-22T13:42:12.487Z",
+      "updatedAt": "2025-10-22T13:42:12.487Z",
+      "description": "Add real-time board updates to the interactive Kanban CLI. Display git stashes and changed files (staged/unstaged) that users can click to inspect. Board should refresh automatically when work unit status changes. Support keyboard navigation to inspect stash details and file diffs.",
+      "epic": "interactive-cli",
+      "children": []
     }
   },
   "states": {
@@ -10374,15 +10476,15 @@
       "RES-001",
       "INIT-007",
       "CLI-007",
-      "BUG-031"
+      "BUG-031",
+      "BOARD-003"
     ],
     "specifying": [
-      "FEAT-017"
+      "FEAT-017",
+      "GIT-004"
     ],
     "testing": [],
-    "implementing": [
-      "BUG-033"
-    ],
+    "implementing": [],
     "validating": [],
     "done": [
       "BUG-007",
@@ -10556,7 +10658,9 @@
       "BUG-032",
       "INIT-009",
       "INIT-010",
-      "DOC-005"
+      "DOC-005",
+      "BUG-033",
+      "BUG-034"
     ],
     "blocked": []
   }
