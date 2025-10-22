@@ -3,11 +3,23 @@ import { existsSync } from 'fs';
 import { join } from 'path';
 import type { Command } from 'commander';
 import chalk from 'chalk';
+import React from 'react';
+import { render } from 'ink';
 import { getAgentById } from '../utils/agentRegistry';
 import { detectAgents } from '../utils/agentDetection';
+import { ConfirmPrompt } from '../components/ConfirmPrompt';
 
 interface RemoveOptions {
   keepConfig: boolean;
+}
+
+interface ExecuteRemoveOptions {
+  keepConfig?: boolean;
+  promptKeepConfig?: (message: string) => Promise<boolean>;
+}
+
+interface RemoveResult {
+  filesRemoved: string[];
 }
 
 /**
@@ -16,7 +28,7 @@ interface RemoveOptions {
 export async function removeInitFiles(
   cwd: string,
   options: RemoveOptions
-): Promise<void> {
+): Promise<string[]> {
   // Detect which agent is installed
   const detectedAgentId = await detectInstalledAgent(cwd);
 
@@ -31,14 +43,66 @@ export async function removeInitFiles(
     throw new Error(`Unknown agent: ${detectedAgentId}`);
   }
 
+  const filesRemoved: string[] = [];
+
   // Remove agent-specific files
-  await removeAgentFiles(cwd, agent.id);
+  const agentFiles = await removeAgentFiles(cwd, agent.id);
+  filesRemoved.push(...agentFiles);
 
   // Optionally remove config file
   if (!options.keepConfig) {
     const configPath = join(cwd, 'spec', 'fspec-config.json');
     await rm(configPath, { force: true });
+    filesRemoved.push('spec/fspec-config.json');
   }
+
+  return filesRemoved;
+}
+
+/**
+ * Execute remove-init-files with optional interactive prompt
+ * (Testable function for action handler)
+ */
+export async function executeRemoveInitFiles(
+  options: ExecuteRemoveOptions = {}
+): Promise<RemoveResult> {
+  const cwd = process.cwd();
+  let keepConfig: boolean;
+
+  // If keepConfig is explicitly set, use it
+  if (options.keepConfig !== undefined) {
+    keepConfig = options.keepConfig;
+  }
+  // If promptKeepConfig function provided (for testing), use it
+  else if (options.promptKeepConfig) {
+    keepConfig = await options.promptKeepConfig('Keep spec/fspec-config.json?');
+  }
+  // Otherwise, show interactive prompt
+  else {
+    keepConfig = await showKeepConfigPrompt();
+  }
+
+  const filesRemoved = await removeInitFiles(cwd, { keepConfig });
+  return { filesRemoved };
+}
+
+/**
+ * Show interactive prompt for keeping config
+ */
+async function showKeepConfigPrompt(): Promise<boolean> {
+  return new Promise<boolean>(resolve => {
+    const { waitUntilExit } = render(
+      React.createElement(ConfirmPrompt, {
+        message: 'Keep spec/fspec-config.json?',
+        confirmLabel: 'Yes',
+        cancelLabel: 'No',
+        onSubmit: (confirmed: boolean) => {
+          resolve(confirmed);
+        },
+      })
+    );
+    void waitUntilExit();
+  });
 }
 
 /**
@@ -68,38 +132,50 @@ async function detectInstalledAgent(cwd: string): Promise<string | null> {
 /**
  * Remove files for a specific agent
  */
-async function removeAgentFiles(cwd: string, agentId: string): Promise<void> {
+async function removeAgentFiles(cwd: string, agentId: string): Promise<string[]> {
   const agent = getAgentById(agentId);
   if (!agent) {
-    return;
+    return [];
   }
+
+  const filesRemoved: string[] = [];
 
   // Remove spec/AGENT.md (e.g., spec/CLAUDE.md)
   const docPath = join(cwd, 'spec', agent.docTemplate);
   await rm(docPath, { force: true });
+  filesRemoved.push(`spec/${agent.docTemplate}`);
 
   // Remove slash command file (e.g., .claude/commands/fspec.md)
   const filename =
     agent.slashCommandFormat === 'toml' ? 'fspec.toml' : 'fspec.md';
   const slashCmdPath = join(cwd, agent.slashCommandPath, filename);
   await rm(slashCmdPath, { force: true });
+  filesRemoved.push(`${agent.slashCommandPath}${filename}`);
+
+  return filesRemoved;
 }
 
 export function registerRemoveInitFilesCommand(program: Command): void {
   program
     .command('remove-init-files')
     .description('Remove fspec initialization files')
-    .action(async () => {
+    .option('--keep-config', 'Keep spec/fspec-config.json (remove only agent files)')
+    .option('--no-keep-config', 'Remove all files including spec/fspec-config.json')
+    .action(async (options: { keepConfig?: boolean }) => {
       try {
-        const cwd = process.cwd();
+        // Execute remove-init-files with explicit flags or interactive prompt
+        const result = await executeRemoveInitFiles({
+          keepConfig: options.keepConfig,
+        });
 
-        // TODO: Add interactive prompt for keepConfig
-        // For now, hardcode to false (remove everything)
-        const options: RemoveOptions = { keepConfig: false };
-
-        await removeInitFiles(cwd, options);
-
+        // Show success message with details
         console.log(chalk.green('✓ Successfully removed fspec init files'));
+        if (result.filesRemoved.length > 0) {
+          result.filesRemoved.forEach(file => {
+            console.log(chalk.dim(`  - ${file}`));
+          });
+        }
+
         process.exit(0);
       } catch (error: any) {
         console.error(chalk.red('✗ Failed to remove init files:'), error.message);

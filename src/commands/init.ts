@@ -1,6 +1,7 @@
-import { mkdir, writeFile, rm } from 'fs/promises';
+import { mkdir, writeFile, rm, readFile } from 'fs/promises';
 import type { Command } from 'commander';
 import { join } from 'path';
+import { existsSync } from 'fs';
 import chalk from 'chalk';
 import React from 'react';
 import { render } from 'ink';
@@ -13,6 +14,7 @@ import { generateAgentDoc } from '../utils/templateGenerator';
 import { getSlashCommandTemplate } from '../utils/slashCommandTemplate';
 import { detectAgents } from '../utils/agentDetection';
 import { AgentSelector } from '../components/AgentSelector';
+import { ConfirmPrompt } from '../components/ConfirmPrompt';
 import { getActivationMessage } from '../utils/activationMessage';
 import { writeAgentConfig } from '../utils/agentRuntimeConfig';
 
@@ -22,6 +24,64 @@ interface InstallOptions {
   selectedAgent?: string;
 }
 
+interface ExecuteInitOptions {
+  agentIds: string[];
+  promptAgentSwitch?: (existingAgent: string, newAgent: string) => Promise<boolean>;
+  trackConfigWrites?: (agent: string) => void;
+}
+
+interface InitResult {
+  filesInstalled: string[];
+  cancelled: boolean;
+  success: boolean;
+}
+
+/**
+ * Execute init with agent detection and switch prompting
+ * (Testable function for action handler)
+ */
+export async function executeInit(
+  options: ExecuteInitOptions
+): Promise<InitResult> {
+  const cwd = process.cwd();
+  const { agentIds, promptAgentSwitch, trackConfigWrites } = options;
+
+  // Detect existing agent
+  const existingAgent = await detectInstalledAgent(cwd);
+
+  // If existing agent differs from requested, prompt for switch
+  if (existingAgent && existingAgent !== agentIds[0]) {
+    const shouldSwitch = promptAgentSwitch
+      ? await promptAgentSwitch(existingAgent, agentIds[0])
+      : await showAgentSwitchPrompt(existingAgent, agentIds[0]);
+
+    if (!shouldSwitch) {
+      return {
+        filesInstalled: [],
+        cancelled: true,
+        success: false,
+      };
+    }
+  }
+
+  // Install agents
+  const filesInstalled = await installAgents(cwd, agentIds, {});
+
+  // Track config writes (for testing)
+  if (trackConfigWrites) {
+    trackConfigWrites(agentIds[0]);
+  }
+
+  // Write agent config (removed duplicate from action handler)
+  writeAgentConfig(cwd, agentIds[0]);
+
+  return {
+    filesInstalled,
+    cancelled: false,
+    success: true,
+  };
+}
+
 /**
  * Install fspec for multiple agents
  */
@@ -29,7 +89,7 @@ export async function installAgents(
   cwd: string,
   agentIds: string[],
   options?: InstallOptions
-): Promise<void> {
+): Promise<string[]> {
   // Validate agent IDs
   for (const agentId of agentIds) {
     const agent = getAgentById(agentId);
@@ -52,18 +112,70 @@ export async function installAgents(
   // Remove old agent files if switching agents (idempotent behavior)
   await removeOtherAgentFiles(cwd, agentIds);
 
+  const filesInstalled: string[] = [];
+
   // Install each agent
   for (const agentId of agentIds) {
     const agent = getAgentById(agentId);
     if (agent) {
-      await installAgentFiles(cwd, agent);
+      const files = await installAgentFiles(cwd, agent);
+      filesInstalled.push(...files);
     }
   }
 
-  // Write agent config for runtime detection
-  if (agentIds.length > 0) {
-    writeAgentConfig(cwd, agentIds[0]);
+  return filesInstalled;
+}
+
+/**
+ * Detect installed agent from config or file detection
+ */
+async function detectInstalledAgent(cwd: string): Promise<string | null> {
+  // Try reading spec/fspec-config.json first
+  const configPath = join(cwd, 'spec', 'fspec-config.json');
+
+  if (existsSync(configPath)) {
+    try {
+      const content = await readFile(configPath, 'utf-8');
+      const config = JSON.parse(content);
+      if (config.agent) {
+        return config.agent;
+      }
+    } catch {
+      // Fall through to detection
+    }
   }
+
+  // Fall back to file detection
+  const detected = await detectAgents(cwd);
+  return detected.length > 0 ? detected[0] : null;
+}
+
+/**
+ * Show interactive prompt for agent switching
+ */
+async function showAgentSwitchPrompt(
+  existingAgent: string,
+  newAgent: string
+): Promise<boolean> {
+  const existingAgentConfig = getAgentById(existingAgent);
+  const newAgentConfig = getAgentById(newAgent);
+
+  const existingName = existingAgentConfig?.name || existingAgent;
+  const newName = newAgentConfig?.name || newAgent;
+
+  return new Promise<boolean>(resolve => {
+    const { waitUntilExit } = render(
+      React.createElement(ConfirmPrompt, {
+        message: `Switch from ${existingName} to ${newName}?`,
+        confirmLabel: `Switch to ${newName}`,
+        cancelLabel: 'Cancel',
+        onSubmit: (confirmed: boolean) => {
+          resolve(confirmed);
+        },
+      })
+    );
+    void waitUntilExit();
+  });
 }
 
 /**
