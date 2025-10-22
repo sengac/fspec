@@ -21,7 +21,7 @@ describe('Feature: Format Feature Files with Custom AST Formatter', () => {
       const featuresDir = join(testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
-      const unformattedContent = `@phase1
+      const unformattedContent = `@critical
 Feature: Login
 Scenario: User logs in
 Given I am on login page
@@ -284,7 +284,7 @@ Then all users should be imported`;
       await mkdir(featuresDir, { recursive: true });
 
       // When I create a feature file
-      const unformattedContent = `@phase1
+      const unformattedContent = `@critical
 Feature: Data Export
 Scenario: Export data
 Given data exists
@@ -431,11 +431,11 @@ Then it should succeed`;
 
   describe('Scenario: Format multiple tags', () => {
     it('should format each tag on its own line with zero indentation', async () => {
-      // Given I have a feature with tags @phase1 @cli @formatter
+      // Given I have a feature with tags @critical @cli @formatter
       const featuresDir = join(testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
-      const withTags = `@phase1 @cli @formatter
+      const withTags = `@critical @cli @formatter
 Feature: Tags Test
 Scenario: Test scenario
 Given a step`;
@@ -451,7 +451,7 @@ Given a step`;
 
       // Then each tag should be on its own line
       const content = await readFile(filePath, 'utf-8');
-      expect(content).toMatch(/^@phase1$/m);
+      expect(content).toMatch(/^@critical$/m);
       expect(content).toMatch(/^@cli$/m);
       expect(content).toMatch(/^@formatter$/m);
     });

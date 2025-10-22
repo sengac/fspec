@@ -1,5 +1,4 @@
 @COV-032
-@phase7
 @cli
 @generator
 @tag-management
@@ -64,41 +63,6 @@ Feature: Generate TAGS.md from tags.json
       <!-- Edit spec/tags.json and run: fspec generate-tags -->
       """
 
-  Scenario: Tag category with table is generated correctly
-    Given I have "spec/tags.json" with a tag category:
-      """json
-      {
-        "categories": [
-          {
-            "name": "Phase Tags",
-            "description": "Tags that identify development phase",
-            "required": true,
-            "tags": [
-              {
-                "name": "@phase1",
-                "description": "Phase 1: Core Validation",
-                "usage": "Features: Gherkin validation, feature creation"
-              }
-            ],
-            "rule": "Every feature file MUST have exactly ONE phase tag."
-          }
-        ]
-      }
-      """
-    When I run `fspec generate-tags`
-    Then "spec/TAGS.md" should contain:
-      """
-      ### Phase Tags (Required)
-
-      Tags that identify development phase
-
-      | Tag | Description | Usage |
-      |-----|-------------|-------|
-      | `@phase1` | Phase 1: Core Validation | Features: Gherkin validation, feature creation |
-
-      **Rule**: Every feature file MUST have exactly ONE phase tag.
-      """
-
   Scenario: Tag combination examples are formatted correctly
     Given I have "spec/tags.json" with combination examples:
       """json
@@ -106,7 +70,7 @@ Feature: Generate TAGS.md from tags.json
         "combinationExamples": [
           {
             "title": "Example 1: Phase 1 Feature File Creation",
-            "tags": "@phase1 @cli @generator @feature-management",
+            "tags": "@cli @generator @feature-management",
             "interpretation": [
               "Phase 1 feature",
               "Belongs to CLI component",
@@ -122,7 +86,7 @@ Feature: Generate TAGS.md from tags.json
       ### Example 1: Phase 1 Feature File Creation
 
       ```gherkin
-      @phase1 @cli @generator @feature-management
+      @cli @generator @feature-management
       Feature: Create Feature File with Template
       ```
 

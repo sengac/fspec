@@ -242,7 +242,6 @@ export async function addTagToFeature(
 
   // Check for missing required tags
   const allTags = [...existingTags, ...tags];
-  const hasPhaseTag = allTags.some(t => /^@phase\d+$/.test(t));
   const hasComponentTag = allTags.some(t =>
     [
       '@cli',
@@ -268,9 +267,6 @@ export async function addTagToFeature(
   );
 
   const missingTags: string[] = [];
-  if (!hasPhaseTag) {
-    missingTags.push('phase');
-  }
   if (!hasComponentTag) {
     missingTags.push('component');
   }

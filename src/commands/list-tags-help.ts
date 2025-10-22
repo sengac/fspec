@@ -16,12 +16,12 @@ const config: CommandHelpConfig = {
       command: 'fspec list-tags',
       description: 'List all tags',
       output:
-        'Phase Tags:\n  @phase1 - Phase 1 features\n  @phase2 - Phase 2 features\n\nComponent Tags:\n  @cli - CLI commands\n  @parser - Parser features',
+        'Phase Tags:\n  @critical - Phase 1 features\n  @high - Phase 2 features\n\nComponent Tags:\n  @cli - CLI commands\n  @parser - Parser features',
     },
     {
       command: 'fspec list-tags --category="Phase Tags"',
       description: 'List tags in specific category',
-      output: '@phase1 - Phase 1 features\n@phase2 - Phase 2 features',
+      output: '@critical - Phase 1 features\n@high - Phase 2 features',
     },
   ],
   relatedCommands: ['register-tag', 'validate-tags', 'tag-stats'],

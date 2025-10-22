@@ -2,7 +2,6 @@
 @COV-050
 @COV-049
 @wip
-@phase7
 @cli
 @project-management
 @querying

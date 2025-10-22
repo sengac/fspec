@@ -124,8 +124,12 @@ describe('Feature: Support multiple AI agents beyond Claude', () => {
       expect(aiderContent.split('\n').length).toBeGreaterThan(2000);
 
       // Both should contain Project Management Guidelines content
-      expect(cursorContent).toContain('Project Management and Specification Guidelines');
-      expect(aiderContent).toContain('Project Management and Specification Guidelines');
+      expect(cursorContent).toContain(
+        'Project Management and Specification Guidelines'
+      );
+      expect(aiderContent).toContain(
+        'Project Management and Specification Guidelines'
+      );
     });
   });
 

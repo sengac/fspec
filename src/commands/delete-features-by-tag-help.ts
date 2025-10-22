@@ -6,7 +6,7 @@ const config: CommandHelpConfig = {
     'Bulk delete feature files by tag using AND logic (all tags must match)',
   usage: 'fspec delete-features --tag <tag> [--tag <tag>] [options]',
   whenToUse:
-    'Use this command to bulk delete feature files by tag (e.g., removing all @deprecated, @phase1, or @spike features). Essential for cleanup after major refactoring or phase completion. ALWAYS use --dry-run first to preview deletions.',
+    'Use this command to bulk delete feature files by tag (e.g., removing all @deprecated, @critical, or @spike features). Essential for cleanup after major refactoring or phase completion. ALWAYS use --dry-run first to preview deletions.',
   prerequisites: [
     'spec/features/ directory exists with feature files',
     'Feature files have tags at feature level',
@@ -16,7 +16,7 @@ const config: CommandHelpConfig = {
     {
       flag: '--tag <tag>',
       description:
-        'Filter by tag (can specify multiple times for AND logic). Example: @phase1, @deprecated',
+        'Filter by tag (can specify multiple times for AND logic). Example: @critical, @deprecated',
     },
     {
       flag: '--dry-run',
@@ -38,13 +38,13 @@ const config: CommandHelpConfig = {
         '✓ Deleted 3 feature file(s)\n\nDeleted files:\n  - spec/features/legacy-auth.feature\n  - spec/features/old-api.feature\n  - spec/features/prototype-ui.feature',
     },
     {
-      command: 'fspec delete-features --tag @phase1 --tag @spike --dry-run',
+      command: 'fspec delete-features --tag @critical --tag @spike --dry-run',
       description: 'Preview deletion with AND logic (both tags required)',
       output:
         'Dry run mode - no files modified\n\nWould delete 2 feature file(s):\n\n  - spec/features/phase1-exploration.feature\n  - spec/features/phase1-prototype.feature',
     },
     {
-      command: 'fspec delete-features --tag @phase1 --tag @complete',
+      command: 'fspec delete-features --tag @critical --tag @complete',
       description: 'Delete completed phase1 features',
       output:
         '✓ Deleted 5 feature file(s)\n\nDeleted files:\n  - spec/features/phase1-auth.feature\n  ...',
@@ -70,7 +70,7 @@ const config: CommandHelpConfig = {
     {
       pattern: 'Phase Cleanup',
       example:
-        '# After completing a phase, remove phase1 features\nfspec list-features --tag @phase1\nfspec delete-features --tag @phase1 --tag @complete --dry-run\nfspec delete-features --tag @phase1 --tag @complete\n\n# Commit cleanup\ngit add . && git commit -m "Remove completed phase1 features"',
+        '# After completing a phase, remove phase1 features\nfspec list-features --tag @critical\nfspec delete-features --tag @critical --tag @complete --dry-run\nfspec delete-features --tag @critical --tag @complete\n\n# Commit cleanup\ngit add . && git commit -m "Remove completed phase1 features"',
     },
     {
       pattern: 'Deprecated Feature Removal',

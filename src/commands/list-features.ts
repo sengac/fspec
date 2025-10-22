@@ -152,6 +152,6 @@ export function registerListFeaturesCommand(program: Command): void {
   program
     .command('list-features')
     .description('List all feature files')
-    .option('--tag <tag>', 'Filter by tag (e.g., --tag=@phase1)')
+    .option('--tag <tag>', 'Filter by tag (e.g., --tag=@critical)')
     .action(listFeaturesCommand);
 }

@@ -176,7 +176,7 @@ eslint $ALL_FILES
 **Blocking Hooks** (\`--blocking\` flag):
 - Failure **prevents** workflow transition (for pre-hooks)
 - Failure **sets exit code to 1** (for post-hooks)
-- Stderr wrapped in ${agent.supportsSystemReminders ? '\`<system-reminder>\` tags' : (agent.category === 'ide' || agent.category === 'extension' ? '**⚠️ IMPORTANT:** blocks' : '**IMPORTANT:** blocks')} for AI visibility
+- Stderr wrapped in ${agent.supportsSystemReminders ? '\`<system-reminder>\` tags' : agent.category === 'ide' || agent.category === 'extension' ? '**⚠️ IMPORTANT:** blocks' : '**IMPORTANT:** blocks'} for AI visibility
 - Use for critical quality gates (linting, type checking, tests)
 
 **Non-Blocking Hooks** (default):

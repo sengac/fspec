@@ -1,7 +1,6 @@
 @system-reminder
 @coverage-tracking
 @cli
-@phase1
 Feature: Add system-reminder to generate-coverage command
 
   # ========================================

@@ -1,7 +1,6 @@
 @foundation-management
 @error-handling
 @cli
-@phase1
 @FOUND-009
 Feature: Foundation missing error message is not imperative enough
   """

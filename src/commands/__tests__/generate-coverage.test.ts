@@ -39,7 +39,7 @@ describe('Feature: Generate Coverage Files for Existing Features', () => {
       await mkdir(featuresDir, { recursive: true });
 
       // And there are 3 .feature files with no .coverage files
-      const featureContent = `@phase1
+      const featureContent = `@critical
 Feature: Test Feature
 
   Scenario: Test scenario
@@ -72,7 +72,7 @@ Feature: Test Feature
       const featuresDir = join(testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
-      const featureContent = `@phase1
+      const featureContent = `@critical
 Feature: Test Feature
 
   Scenario: Test scenario
@@ -142,7 +142,7 @@ Feature: Test Feature
       const featuresDir = join(testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
-      const featureContent = `@phase1
+      const featureContent = `@critical
 Feature: User Login
 
   Scenario: Login with valid credentials
@@ -184,7 +184,7 @@ Feature: User Login
       const featuresDir = join(testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
-      const featureContent = `@phase1
+      const featureContent = `@critical
 Feature: Test Feature
 
   Scenario: Test scenario

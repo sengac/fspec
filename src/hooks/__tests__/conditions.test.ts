@@ -88,7 +88,7 @@ describe('Feature: Hook condition evaluation', () => {
         },
       };
 
-      // And I have a work unit "DASH-001" with tags ["@ui", "@phase1"]
+      // And I have a work unit "DASH-001" with tags ["@ui", "@critical"]
       const context: HookContext = {
         workUnitId: 'DASH-001',
         event: 'post-implementing',
@@ -99,7 +99,7 @@ describe('Feature: Hook condition evaluation', () => {
         id: 'DASH-001',
         title: 'Test',
         status: 'implementing',
-        tags: ['@ui', '@phase1'],
+        tags: ['@ui', '@critical'],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };

@@ -25,8 +25,8 @@ describe('Feature: Validate Feature File Tags Against Registry', () => {
           description: 'Development phase tags',
           required: false,
           tags: [
-            { name: '@phase1', description: 'Phase 1' },
-            { name: '@phase2', description: 'Phase 2' },
+            { name: '@critical', description: 'Phase 1' },
+            { name: '@high', description: 'Phase 2' },
           ],
         },
         {
@@ -85,7 +85,7 @@ describe('Feature: Validate Feature File Tags Against Registry', () => {
       const featuresDir = join(testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
-      const validContent = `@phase1 @cli @authentication
+      const validContent = `@critical @cli @authentication
 Feature: User Authentication
 
   Scenario: Login
@@ -116,7 +116,7 @@ Feature: User Authentication
       const featuresDir = join(testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
-      const invalidContent = `@phase1 @cli @validation @custom-tag
+      const invalidContent = `@critical @cli @validation @custom-tag
 Feature: API Endpoints
 
   Scenario: Test
@@ -149,12 +149,12 @@ Feature: API Endpoints
 
       await writeFile(
         join(featuresDir, 'valid.feature'),
-        '@phase1 @cli @authentication\nFeature: Valid\n  Scenario: Test\n    Given test'
+        '@critical @cli @authentication\nFeature: Valid\n  Scenario: Test\n    Given test'
       );
 
       await writeFile(
         join(featuresDir, 'invalid.feature'),
-        '@phase1 @cli @validation @experimental\nFeature: Invalid\n  Scenario: Test\n    Given test'
+        '@critical @cli @validation @experimental\nFeature: Invalid\n  Scenario: Test\n    Given test'
       );
 
       // When I run validate-tags
@@ -167,43 +167,13 @@ Feature: API Endpoints
     });
   });
 
-  describe('Scenario: Detect missing required phase tag', () => {
-    it('should report missing phase tag', async () => {
-      // Given I have a feature file without a phase tag
-      const featuresDir = join(testDir, 'spec', 'features');
-      await mkdir(featuresDir, { recursive: true });
-
-      const noPhaseContent = `@cli @validation
-Feature: Broken Feature
-
-  Scenario: Test
-    Given something`;
-
-      await writeFile(join(featuresDir, 'broken.feature'), noPhaseContent);
-
-      // When I run validate-tags
-      const result = await validateTags({
-        file: 'spec/features/broken.feature',
-        cwd: testDir,
-      });
-
-      // Then it should report missing phase tag
-      expect(result.results[0].valid).toBe(false);
-      const phaseError = result.results[0].errors.find(e =>
-        e.message.includes('phase tag')
-      );
-      expect(phaseError).toBeDefined();
-      expect(phaseError!.suggestion).toContain('Add a phase tag');
-    });
-  });
-
   describe('Scenario: Detect missing required component tag', () => {
     it('should report missing component tag', async () => {
       // Given I have a feature file without a component tag
       const featuresDir = join(testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
-      const noComponentContent = `@phase1 @validation
+      const noComponentContent = `@critical @validation
 Feature: Broken Feature
 
   Scenario: Test
@@ -232,7 +202,7 @@ Feature: Broken Feature
       const featuresDir = join(testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
-      const noFeatureGroupContent = `@phase1 @cli
+      const noFeatureGroupContent = `@critical @cli
 Feature: Broken Feature
 
   Scenario: Test
@@ -280,7 +250,7 @@ Feature: Broken Feature
       const featuresDir = join(testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
-      const placeholderContent = `@phase1 @component @feature-group
+      const placeholderContent = `@critical @component @feature-group
 Feature: New Feature
 
   Scenario: Test
@@ -313,7 +283,7 @@ Feature: New Feature
       const featuresDir = join(testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
-      const multipleErrorsContent = `@phase1 @unknown1 @unknown2
+      const multipleErrorsContent = `@critical @unknown1 @unknown2
 Feature: Multi Error Feature
 
   Scenario: Test
@@ -346,9 +316,9 @@ Feature: Multi Error Feature
       await mkdir(featuresDir, { recursive: true });
 
       const validFeature =
-        '@phase1 @cli @authentication\nFeature: Valid\n  Scenario: Test\n    Given test';
+        '@critical @cli @authentication\nFeature: Valid\n  Scenario: Test\n    Given test';
       const invalidFeature =
-        '@phase1 @cli @validation @invalid-tag\nFeature: Invalid\n  Scenario: Test\n    Given test';
+        '@critical @cli @validation @invalid-tag\nFeature: Invalid\n  Scenario: Test\n    Given test';
 
       for (let i = 1; i <= 8; i++) {
         await writeFile(join(featuresDir, `valid${i}.feature`), validFeature);
@@ -377,7 +347,7 @@ Feature: Multi Error Feature
       const featuresDir = join(testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
-      const unregisteredContent = `@phase1 @cli @validation @unregistered-tag
+      const unregisteredContent = `@critical @cli @validation @unregistered-tag
 Feature: Test Feature
 
   Scenario: Test
@@ -395,7 +365,7 @@ Feature: Test Feature
       expect(result.results[0].valid).toBe(false);
 
       // And the AI agent can fix tags before proceeding
-      const fixedContent = `@phase1 @cli @authentication
+      const fixedContent = `@critical @cli @authentication
 Feature: Test Feature
 
   Scenario: Test
@@ -417,7 +387,7 @@ Feature: Test Feature
       const featuresDir = join(testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
-      const featureWithScenarioTags = `@phase1
+      const featureWithScenarioTags = `@critical
 @cli
 @authentication
 Feature: User Login
@@ -454,7 +424,7 @@ Feature: User Login
       const featuresDir = join(testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
-      const featureWithUnregisteredTag = `@phase1
+      const featureWithUnregisteredTag = `@critical
 @cli
 @authentication
 Feature: User Login
@@ -497,7 +467,7 @@ Feature: User Login
       const featuresDir = join(testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
-      const featureWithBothLevels = `@phase1
+      const featureWithBothLevels = `@critical
 @cli
 @authentication
 Feature: User Login
@@ -540,7 +510,7 @@ Feature: User Login
       const featuresDir = join(testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
-      const featureWithMixedTags = `@phase1
+      const featureWithMixedTags = `@critical
 @cli
 @authentication
 Feature: User Login
@@ -587,7 +557,7 @@ Feature: User Login
       const featuresDir = join(testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
-      const featureWithMinimalScenarioTags = `@phase1
+      const featureWithMinimalScenarioTags = `@critical
 @cli
 @authentication
 Feature: User Login
@@ -627,12 +597,12 @@ Feature: User Login
       // And I have feature files using both registered and unregistered tags
       await writeFile(
         join(featuresDir, 'valid.feature'),
-        '@phase1 @cli @authentication\nFeature: Valid\n  Scenario: Test\n    Given test'
+        '@critical @cli @authentication\nFeature: Valid\n  Scenario: Test\n    Given test'
       );
 
       await writeFile(
         join(featuresDir, 'invalid.feature'),
-        '@phase1 @cli @validation @unregistered-tag\nFeature: Invalid\n  Scenario: Test\n    Given test'
+        '@critical @cli @validation @unregistered-tag\nFeature: Invalid\n  Scenario: Test\n    Given test'
       );
 
       // When I run `fspec validate-tags`
@@ -690,8 +660,8 @@ describe('Feature: Validate Work Unit Tags Against work-units.json', () => {
           description: 'Development phase tags',
           required: false,
           tags: [
-            { name: '@phase1', description: 'Phase 1' },
-            { name: '@phase2', description: 'Phase 2' },
+            { name: '@critical', description: 'Phase 1' },
+            { name: '@high', description: 'Phase 2' },
           ],
         },
         {
@@ -758,7 +728,7 @@ describe('Feature: Validate Work Unit Tags Against work-units.json', () => {
       );
 
       const featureContent = `@AUTH-001
-@phase1
+@critical
 @cli
 @authentication
 Feature: OAuth Login
@@ -792,7 +762,7 @@ Feature: OAuth Login
       );
 
       const featureContent = `@AUTH-999
-@phase1
+@critical
 @cli
 @authentication
 Feature: Test
@@ -845,7 +815,7 @@ Feature: Test
         JSON.stringify(workUnits, null, 2)
       );
 
-      const featureContent = `@phase1
+      const featureContent = `@critical
 @cli
 @authentication
 Feature: Test
@@ -908,7 +878,7 @@ Feature: Test
       );
 
       const featureContent = `@AUTH-001
-@phase1
+@critical
 @cli
 @authentication
 Feature: Test
@@ -961,7 +931,7 @@ Feature: Test
       );
 
       const featureContent = `@auth-001
-@phase1
+@critical
 @cli
 @authentication
 Feature: Test
@@ -1008,7 +978,7 @@ Feature: Test
       );
 
       const featureContent = `@AUTH-001
-@phase1
+@critical
 @cli
 @authentication
 Feature: Test

@@ -4,7 +4,6 @@
 @critical
 @reverse-acdd
 @cli
-@phase1
 @REV-001
 Feature: Interactive reverse ACDD strategy planning command
   """

@@ -2,7 +2,6 @@
 @scaffolding
 @documentation
 @hooks
-@phase1
 @HOOK-009
 Feature: Hook system documentation and examples
 

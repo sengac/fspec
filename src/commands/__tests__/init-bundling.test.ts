@@ -72,7 +72,9 @@ describe('Feature: Wire up multi-agent support to fspec init command', () => {
 
       const lineCount = specCursorContent.split('\n').length;
       expect(lineCount).toBeGreaterThan(2000); // Comprehensive Project Management Guidelines, not a stub
-      expect(specCursorContent).toContain('Project Management and Specification Guidelines'); // Contains guidelines
+      expect(specCursorContent).toContain(
+        'Project Management and Specification Guidelines'
+      ); // Contains guidelines
     });
 
     it('should generate Claude-specific content when --agent=claude is used', async () => {
@@ -96,7 +98,9 @@ describe('Feature: Wire up multi-agent support to fspec init command', () => {
 
       const lineCount = specClaudeContent.split('\n').length;
       expect(lineCount).toBeGreaterThan(2000); // Comprehensive Project Management Guidelines, not a stub
-      expect(specClaudeContent).toContain('Project Management and Specification Guidelines'); // Contains guidelines
+      expect(specClaudeContent).toContain(
+        'Project Management and Specification Guidelines'
+      ); // Contains guidelines
     });
   });
 
@@ -113,7 +117,9 @@ describe('Feature: Wire up multi-agent support to fspec init command', () => {
         expect(template).toContain('fspec');
 
         // And: fspec init works
-        await expect(installAgents(emptyDir, ['claude'])).resolves.not.toThrow();
+        await expect(
+          installAgents(emptyDir, ['claude'])
+        ).resolves.not.toThrow();
       } finally {
         await rm(emptyDir, { recursive: true, force: true });
       }
@@ -178,8 +184,12 @@ describe('Feature: Wire up multi-agent support to fspec init command', () => {
 
       // Then: TOML files (Gemini, Qwen) should have [command] section with metadata
       expect(slashCmdContent).toContain('[command]');
-      expect(slashCmdContent).toContain('name = "fspec - Load Project Context"');
-      expect(slashCmdContent).toContain('description = "Load fspec workflow and ACDD methodology"');
+      expect(slashCmdContent).toContain(
+        'name = "fspec - Load Project Context"'
+      );
+      expect(slashCmdContent).toContain(
+        'description = "Load fspec workflow and ACDD methodology"'
+      );
 
       // And: TOML files should NOT have YAML frontmatter
       expect(slashCmdContent).not.toMatch(/^---\s*\n/);

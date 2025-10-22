@@ -164,11 +164,11 @@ describe('Feature: Bulk Delete Scenarios by Tag', () => {
       // Given I have scenarios tagged with various combinations
       const featureContent = `Feature: Test Feature
 
-  @phase1 @deprecated
+  @critical @deprecated
   Scenario: Both tags 1
     Given step 1
 
-  @phase1
+  @critical
   Scenario: Only phase1
     Given step 2
 
@@ -176,15 +176,15 @@ describe('Feature: Bulk Delete Scenarios by Tag', () => {
   Scenario: Only deprecated
     Given step 3
 
-  @phase1 @deprecated
+  @critical @deprecated
   Scenario: Both tags 2
     Given step 4
 
-  @phase1
+  @critical
   Scenario: Only phase1 again
     Given step 5
 
-  @phase1
+  @critical
   Scenario: Only phase1 third
     Given step 6
 `;
@@ -193,9 +193,9 @@ describe('Feature: Bulk Delete Scenarios by Tag', () => {
         featureContent
       );
 
-      // When I run `fspec delete-scenarios --tag=@phase1 --tag=@deprecated`
+      // When I run `fspec delete-scenarios --tag=@critical --tag=@deprecated`
       const result = await deleteScenariosByTag({
-        tags: ['@phase1', '@deprecated'],
+        tags: ['@critical', '@deprecated'],
         cwd: testDir,
       });
 
@@ -530,11 +530,11 @@ Feature: Test Feature
       // Given I have feature files with various scenarios
       const featureContent = `Feature: Test Feature
 
-  @phase1
+  @critical
   Scenario: Scenario 1
     Given step 1
 
-  @phase2
+  @high
   Scenario: Scenario 2
     Given step 2
 `;

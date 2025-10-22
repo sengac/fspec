@@ -20,7 +20,7 @@ fspec add-scenario advanced-query-operations "Filter features by multiple tags"
 
 # Add steps to the scenario
 fspec add-step advanced-query-operations "Filter features by multiple tags" given "I have feature files with various tags"
-fspec add-step advanced-query-operations "Filter features by multiple tags" when "I run 'fspec list-features --tag=@phase1 --tag=@critical'"
+fspec add-step advanced-query-operations "Filter features by multiple tags" when "I run 'fspec list-features --tag=@critical --tag=@critical'"
 fspec add-step advanced-query-operations "Filter features by multiple tags" then "only features with both tags should be listed"
 \`\`\`
 

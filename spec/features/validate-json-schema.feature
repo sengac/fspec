@@ -1,5 +1,4 @@
 @COV-038
-@phase7
 @validator
 @validation
 @json-schema

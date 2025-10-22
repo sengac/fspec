@@ -25,9 +25,9 @@ describe('Feature: List Registered Tags from Registry', () => {
           description: 'Development phase tags',
           required: false,
           tags: [
-            { name: '@phase1', description: 'Phase 1: Core features' },
-            { name: '@phase2', description: 'Phase 2: Advanced features' },
-            { name: '@phase3', description: 'Phase 3: Future features' },
+            { name: '@critical', description: 'Phase 1: Core features' },
+            { name: '@high', description: 'Phase 2: Advanced features' },
+            { name: '@medium', description: 'Phase 3: Future features' },
           ],
         },
         {
@@ -120,7 +120,7 @@ describe('Feature: List Registered Tags from Registry', () => {
       const phaseTags = result.categories.find(c => c.name === 'Phase Tags');
       expect(phaseTags?.tags).toHaveLength(3);
       expect(phaseTags?.tags[0]).toEqual({
-        tag: '@phase1',
+        tag: '@critical',
         description: 'Phase 1: Core features',
       });
     });
@@ -139,11 +139,11 @@ describe('Feature: List Registered Tags from Registry', () => {
       expect(result.categories).toHaveLength(1);
       expect(result.categories[0].name).toBe('Phase Tags');
 
-      // And the output should contain "@phase1", "@phase2", "@phase3"
+      // And the output should contain "@critical", "@high", "@medium"
       const tags = result.categories[0].tags.map(t => t.tag);
-      expect(tags).toContain('@phase1');
-      expect(tags).toContain('@phase2');
-      expect(tags).toContain('@phase3');
+      expect(tags).toContain('@critical');
+      expect(tags).toContain('@high');
+      expect(tags).toContain('@medium');
 
       // And the output should not contain tags from other categories
       expect(tags).not.toContain('@cli');
@@ -196,13 +196,13 @@ describe('Feature: List Registered Tags from Registry', () => {
 
   describe('Scenario: List tags in alphabetical order within category', () => {
     it('should display tags alphabetically', async () => {
-      // Given I have Phase Tags: "@phase3", "@phase1", "@phase2"
+      // Given I have Phase Tags: "@medium", "@critical", "@high"
       // When I run `fspec list-tags --category="Phase Tags"`
       const result = await listTags({ category: 'Phase Tags', cwd: testDir });
 
       // Then the tags should be displayed in alphabetical order
       const tags = result.categories[0].tags.map(t => t.tag);
-      expect(tags).toEqual(['@phase1', '@phase2', '@phase3']);
+      expect(tags).toEqual(['@critical', '@high', '@medium']);
     });
   });
 
@@ -234,7 +234,7 @@ describe('Feature: List Registered Tags from Registry', () => {
             name: 'Phase Tags',
             description: 'Development phase tags',
             required: false,
-            tags: [{ name: '@phase1', description: 'Phase 1' }],
+            tags: [{ name: '@critical', description: 'Phase 1' }],
           },
           {
             name: 'Component Tags',
@@ -406,7 +406,7 @@ describe('Feature: List Registered Tags from Registry', () => {
 
       // Then these tags should be recognized by validate-tags
       const allTags = result.categories.flatMap(c => c.tags.map(t => t.tag));
-      expect(allTags).toContain('@phase1');
+      expect(allTags).toContain('@critical');
       expect(allTags).toContain('@cli');
       expect(allTags).toContain('@validation');
 

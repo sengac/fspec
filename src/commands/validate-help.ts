@@ -38,7 +38,7 @@ const config: CommandHelpConfig = {
       command: 'fspec validate --verbose',
       description: 'Validate with detailed output',
       output:
-        '✓ spec/features/login.feature is valid\n  - 3 scenarios, 12 steps\n  - Tags: @phase1, @authentication',
+        '✓ spec/features/login.feature is valid\n  - 3 scenarios, 12 steps\n  - Tags: @critical, @authentication',
     },
   ],
   commonErrors: [

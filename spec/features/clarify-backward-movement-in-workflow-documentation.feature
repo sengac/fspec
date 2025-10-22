@@ -2,7 +2,6 @@
 @cli
 @workflow
 @documentation
-@phase1
 @DOC-003
 Feature: Clarify backward movement in workflow documentation
 

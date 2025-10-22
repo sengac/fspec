@@ -34,9 +34,9 @@ Scenario Outline: Validate tag format
 
   Examples:
     | tag              | result |
-    | @phase1          | pass   |
+    | @critical          | pass   |
     | @Phase1          | fail   |
-    | @phase-1         | fail   |
+    | @cli-test        | pass   |
     | phase1           | fail   |
     | @my-custom-tag   | pass   |
 \`\`\`

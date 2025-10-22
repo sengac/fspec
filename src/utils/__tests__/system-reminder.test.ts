@@ -258,7 +258,7 @@ describe('Feature: System Reminder Anti-Drift Pattern', () => {
 
       it('should return null when tag is registered', () => {
         // Given: A registered tag
-        const tag = '@phase1';
+        const tag = '@critical';
         const isRegistered = true;
 
         // When: Getting unregistered tag reminder

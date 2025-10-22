@@ -28,7 +28,6 @@ interface TagValidationResult {
 interface TagRegistry {
   validTags: Set<string>;
   requiredCategories: {
-    phase: string[];
     component: string[];
     featureGroup: string[];
   };
@@ -116,7 +115,6 @@ async function loadTagRegistry(cwd: string): Promise<TagRegistry> {
 
   // Extract all valid tags from categories
   const validTags = new Set<string>();
-  const phaseTags: string[] = [];
   const componentTags: string[] = [];
   const featureGroupTags: string[] = [];
 
@@ -125,9 +123,7 @@ async function loadTagRegistry(cwd: string): Promise<TagRegistry> {
       validTags.add(tag.name);
 
       // Categorize tags based on category name
-      if (category.name === 'Phase Tags') {
-        phaseTags.push(tag.name);
-      } else if (category.name === 'Component Tags') {
+      if (category.name === 'Component Tags') {
         componentTags.push(tag.name);
       } else if (category.name === 'Feature Group Tags') {
         featureGroupTags.push(tag.name);
@@ -136,7 +132,6 @@ async function loadTagRegistry(cwd: string): Promise<TagRegistry> {
   }
 
   const requiredCategories = {
-    phase: phaseTags,
     component: componentTags,
     featureGroup: featureGroupTags,
   };
@@ -334,19 +329,6 @@ async function validateFileTags(
           });
         }
       }
-    }
-
-    // Check for required phase tag
-    const hasPhaseTag = tags.some(tag =>
-      registry.requiredCategories.phase.includes(tag)
-    );
-    if (!hasPhaseTag) {
-      result.valid = false;
-      result.errors.push({
-        tag: '',
-        message: 'Missing required phase tag (@phase1, @phase2, etc.)',
-        suggestion: 'Add a phase tag to the feature',
-      });
     }
 
     // Check for required component tag

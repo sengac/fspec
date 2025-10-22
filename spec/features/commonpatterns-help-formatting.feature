@@ -3,10 +3,8 @@
 @bug-fix
 @formatting
 @cli
-@phase1
 @BUG-023
 Feature: commonPatterns displays [object Object] in help output
-
   """
   Uses CommandHelpConfig interface in src/utils/help-formatter.ts. Type safety enforced via TypeScript. Formatter must handle union type: string[] | CommonPattern[] where CommonPattern = { pattern: string; example: string; description: string }. Backward compatibility required for existing help files using string[] format.
   """
@@ -26,7 +24,6 @@ Feature: commonPatterns displays [object Object] in help output
   #   3. Help commands still using string[] format continue to work (backward compatibility)
   #
   # ========================================
-
   Background: User Story
     As a AI agent using fspec CLI
     I want to view properly formatted COMMON PATTERNS in help output

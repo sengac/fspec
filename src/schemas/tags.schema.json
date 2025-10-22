@@ -52,38 +52,6 @@
                 "description": {
                   "type": "string",
                   "description": "Tag description"
-                },
-                "usage": {
-                  "type": "string",
-                  "description": "Usage information (for phase tags)"
-                },
-                "scope": {
-                  "type": "string",
-                  "description": "Scope information (for component tags)"
-                },
-                "examples": {
-                  "type": "string",
-                  "description": "Examples (for feature group tags)"
-                },
-                "useCases": {
-                  "type": "string",
-                  "description": "Use cases (for technical tags)"
-                },
-                "whenToUse": {
-                  "type": "string",
-                  "description": "When to use (for platform tags)"
-                },
-                "criteria": {
-                  "type": "string",
-                  "description": "Criteria (for priority tags)"
-                },
-                "meaning": {
-                  "type": "string",
-                  "description": "Meaning (for status tags)"
-                },
-                "testType": {
-                  "type": "string",
-                  "description": "Test type (for testing tags)"
                 }
               }
             }

@@ -1,4 +1,3 @@
-@phase5
 @cli
 @bulk-operations
 @modification
@@ -15,8 +14,8 @@ Feature: Bulk Delete Scenarios by Tag
   - Provides dry-run preview and confirmation counts
 
   Critical implementation requirements:
-  - MUST support single tag filter (--tag=@phase1)
-  - MUST support multiple tag filters with AND logic (--tag=@phase1 --tag=@critical)
+  - MUST support single tag filter (--tag=@critical)
+  - MUST support multiple tag filters with AND logic (--tag=--tag=@critical)
 
 
   - MUST preserve feature file structure after scenario deletion
@@ -55,10 +54,10 @@ Feature: Bulk Delete Scenarios by Tag
 
   Scenario: Delete scenarios by multiple tags with AND logic
     Given I have scenarios tagged with various combinations
-    And 2 scenarios have both @phase1 and @deprecated tags
-    And 3 scenarios have only @phase1 tag
+    And 2 scenarios have both and @deprecated tags
+    And 3 scenarios have only tag
     And 1 scenario has only @deprecated tag
-    When I run `fspec delete-scenarios --tag=@phase1 --tag=@deprecated`
+    When I run `fspec delete-scenarios --tag=--tag=@deprecated`
     Then the command should exit with code 0
     And only the 2 scenarios with both tags should be removed
     And the 4 scenarios without both tags should remain

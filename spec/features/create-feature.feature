@@ -1,4 +1,3 @@
-@phase1
 @cli
 @generator
 @feature-management
@@ -21,7 +20,7 @@ Feature: Create Feature File with Template
   - MUST create valid Gherkin syntax files
   - MUST use kebab-case for file names (e.g., "User Login" →
   "user-login.feature")
-  - MUST include template tags (@phase1, @component, @feature-group
+  - MUST include template tags (@critical, @component, @feature-group
   placeholders)
 
   - MUST include Background section with user story template
@@ -30,7 +29,7 @@ Feature: Create Feature File with Template
   - File MUST pass gherkin validation after creation
 
   Template structure:
-  - Tags: @phase1 @component @feature-group
+  - Tags: @component @feature-group
   - Feature: <name>
   - Doc string (\"\"\") with architecture notes placeholder
   - Background: User Story (As a... I want... So that...)
@@ -55,7 +54,7 @@ Feature: Create Feature File with Template
     And the file should contain "Feature: User Authentication"
     And the file should include a Background section with user story template
     And the file should include a Scenario placeholder
-    And the file should include tag placeholders "@phase1 @component @feature-group"
+    And the file should include tag placeholders "@component @feature-group"
     And the file should pass gherkin validation
 
   Scenario: Convert feature name to kebab-case

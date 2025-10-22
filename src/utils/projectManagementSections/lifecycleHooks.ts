@@ -115,7 +115,7 @@ fspec remove-hook pre-implementing lint
 - Update project dashboards
 
 **IMPORTANT for AI Agents:**
-- Blocking hook failures emit ${agent.supportsSystemReminders ? '\`<system-reminder>\` tags' : (agent.category === 'ide' || agent.category === 'extension' ? '**⚠️ IMPORTANT:** blocks' : '**IMPORTANT:** blocks')} wrapping stderr
+- Blocking hook failures emit ${agent.supportsSystemReminders ? '\`<system-reminder>\` tags' : agent.category === 'ide' || agent.category === 'extension' ? '**⚠️ IMPORTANT:** blocks' : '**IMPORTANT:** blocks'} wrapping stderr
 - This makes failures highly visible in {{AGENT_NAME}}
 - Pre-hook failures prevent command execution
 - Post-hook failures set exit code to 1 but don't prevent completion

@@ -1,7 +1,6 @@
 @done
 @feature-management
 @cli
-@phase2
 @BUG-022
 Feature: Feature file naming for bug work units
   """

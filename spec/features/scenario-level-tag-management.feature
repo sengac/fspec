@@ -1,5 +1,4 @@
 @COV-036
-@phase2
 @cli
 @tag-management
 @feature-management
@@ -128,12 +127,12 @@ Feature: Scenario-Level Tag Management
       | @regression | Test Type Tags |
 
   Scenario: Preserve feature-level tags when modifying scenario tags
-    Given I have a feature with tags @phase1 @authentication
+    Given I have a feature with tags @authentication
     And a scenario "Login" with tag @smoke
     When I run `fspec add-tag-to-scenario spec/features/login.feature "Login" @critical`
     Then the command should exit with code 0
     And the scenario should have tags @smoke @critical
-    And the feature should still have tags @phase1 @authentication
+    And the feature should still have tags @authentication
     And the file should remain valid Gherkin
 
   Scenario: Preserve other scenarios when modifying one scenario's tags

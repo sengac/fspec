@@ -72,7 +72,7 @@ BACKLOG → SPECIFYING → TESTING → IMPLEMENTING → VALIDATING → DONE
 **Work is tracked using:**
 1. **Work Unit IDs**: EXAMPLE-006, EXAMPLE-008, EXAMPLE-009, etc.
 2. **Kanban States**: Track progress through ACDD phases
-3. **Feature Tags**: `@wip` (in progress), `@done` (completed), `@critical`, `@phase1`, etc.
+3. **Feature Tags**: `@wip` (in progress), `@done` (completed), `@critical`, `@critical`, etc.
 4. **Test-Feature Links**: Comments at top of test files reference feature files
 5. **Coverage Files**: `*.feature.coverage` files track scenario-to-test-to-implementation mappings for traceability
 
@@ -650,7 +650,7 @@ fspec update-work-unit-status EXAMPLE-006 testing
 - `@done` - Completed and validated
 - `@blocked` - Cannot proceed (add blocker reason to work unit)
 - `@critical` - High priority
-- `@phase1`, `@phase2` - Release phase
+- `@critical`, `@high` - Release phase
 
 **Update tags as you progress:**
 ```bash

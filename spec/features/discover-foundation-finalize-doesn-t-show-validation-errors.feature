@@ -2,7 +2,6 @@
 @validation
 @foundation
 @cli
-@phase1
 @BUG-016
 Feature: discover-foundation --finalize doesn't show validation errors
   """

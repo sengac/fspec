@@ -23,7 +23,7 @@ describe('Feature: List Feature Files', () => {
 
       await writeFile(
         join(featuresDir, 'gherkin-validation.feature'),
-        `@phase1 @validation
+        `@critical @validation
 Feature: Gherkin Syntax Validation
 
   Scenario: Validate syntax
@@ -40,7 +40,7 @@ Feature: Gherkin Syntax Validation
 
       await writeFile(
         join(featuresDir, 'create-feature.feature'),
-        `@phase1 @generator
+        `@critical @generator
 Feature: Create Feature File
 
   Scenario: Create file
@@ -145,7 +145,7 @@ Feature: Create Feature File
 
       await writeFile(
         join(featuresDir, 'auth.feature'),
-        `@phase1 @security
+        `@critical @security
 Feature: Authentication
 
   Scenario: Login
@@ -157,7 +157,7 @@ Feature: Authentication
 
       await writeFile(
         join(featuresDir, 'api.feature'),
-        `@phase2 @api
+        `@high @api
 Feature: API Endpoints
 
   Scenario: Get data
@@ -169,7 +169,7 @@ Feature: API Endpoints
 
       await writeFile(
         join(featuresDir, 'validation.feature'),
-        `@phase1 @validation
+        `@critical @validation
 Feature: Validation
 
   Scenario: Validate
@@ -179,8 +179,8 @@ Feature: Validation
 `
       );
 
-      // When I run `fspec list-features --tag=@phase1`
-      const result = await listFeatures({ cwd: testDir, tag: '@phase1' });
+      // When I run `fspec list-features --tag=@critical`
+      const result = await listFeatures({ cwd: testDir, tag: '@critical' });
 
       // Then it should list only phase1 features
       expect(result.features).toHaveLength(2);
@@ -198,7 +198,7 @@ Feature: Validation
 
       await writeFile(
         join(featuresDir, 'login.feature'),
-        `@phase1 @critical @authentication
+        `@critical @critical @authentication
 Feature: User Login
 
   Scenario: Login
@@ -212,7 +212,7 @@ Feature: User Login
       const result = await listFeatures({ cwd: testDir });
 
       // Then the result should include tags
-      expect(result.features[0].tags).toContain('@phase1');
+      expect(result.features[0].tags).toContain('@critical');
       expect(result.features[0].tags).toContain('@critical');
       expect(result.features[0].tags).toContain('@authentication');
     });
@@ -257,7 +257,7 @@ Feature: User Login
 
       await writeFile(
         join(featuresDir, 'auth.feature'),
-        `@phase1 @security @cli
+        `@critical @security @cli
 Feature: Authentication
 
   Scenario: Login
@@ -269,7 +269,7 @@ Feature: Authentication
 
       await writeFile(
         join(featuresDir, 'api.feature'),
-        `@phase1 @api @backend
+        `@critical @api @backend
 Feature: API Endpoints
 
   Scenario: Get data
@@ -281,7 +281,7 @@ Feature: API Endpoints
 
       await writeFile(
         join(featuresDir, 'validation.feature'),
-        `@phase1 @validation @cli
+        `@critical @validation @cli
 Feature: Validation
 
   Scenario: Validate
@@ -291,12 +291,15 @@ Feature: Validation
 `
       );
 
-      // When I run `fspec list-features --tag=@phase1 --tag=@cli`
+      // When I run `fspec list-features --tag=@critical --tag=@cli`
       // Note: Current implementation only supports single tag, this documents desired behavior
-      const resultPhase1 = await listFeatures({ cwd: testDir, tag: '@phase1' });
+      const resultPhase1 = await listFeatures({
+        cwd: testDir,
+        tag: '@critical',
+      });
       const resultCli = await listFeatures({ cwd: testDir, tag: '@cli' });
 
-      // Then features with @phase1 should include all three
+      // Then features with @critical should include all three
       expect(resultPhase1.features).toHaveLength(3);
 
       // And features with @cli should include auth and validation only
@@ -311,22 +314,22 @@ Feature: Validation
 
   describe('Scenario: Handle no matches for tag filter', () => {
     it('should return empty array when no features match tag', async () => {
-      // Given I have feature files with tags @phase1 and @phase2
+      // Given I have feature files with tags @critical and @high
       const featuresDir = join(testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       await writeFile(
         join(featuresDir, 'feature1.feature'),
-        `@phase1\nFeature: Feature 1\n  Scenario: Test\n    Given test\n`
+        `@critical\nFeature: Feature 1\n  Scenario: Test\n    Given test\n`
       );
 
       await writeFile(
         join(featuresDir, 'feature2.feature'),
-        `@phase2\nFeature: Feature 2\n  Scenario: Test\n    Given test\n`
+        `@high\nFeature: Feature 2\n  Scenario: Test\n    Given test\n`
       );
 
-      // When I run `fspec list-features --tag=@phase3`
-      const result = await listFeatures({ cwd: testDir, tag: '@phase3' });
+      // When I run `fspec list-features --tag=@medium`
+      const result = await listFeatures({ cwd: testDir, tag: '@medium' });
 
       // Then the result should be empty
       expect(result.features).toHaveLength(0);

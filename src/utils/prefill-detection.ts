@@ -59,7 +59,7 @@ const PREFILL_PATTERNS = [
   // TODO markers
   { regex: /TODO:/gi, name: 'TODO:', command: 'fspec add-architecture' },
 
-  // Generic tag placeholders (literal placeholders only, not valid tags like @phase1)
+  // Generic tag placeholders (literal placeholders only, not valid tags like @cli)
   {
     regex: /@component(?!\w)/g,
     name: '@component',

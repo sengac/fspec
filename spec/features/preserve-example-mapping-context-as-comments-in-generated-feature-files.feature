@@ -1,6 +1,5 @@
 @done
 @EXMAP-002
-@phase7
 @cli
 @generator
 @example-mapping

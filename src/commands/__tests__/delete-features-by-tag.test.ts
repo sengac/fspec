@@ -88,27 +88,27 @@ Feature: New Feature
   describe('Scenario: Delete feature files by multiple tags with AND logic', () => {
     it('should delete only files with all specified tags', async () => {
       // Given I have feature files with various tag combinations
-      const bothTags1 = `@phase1 @deprecated
+      const bothTags1 = `@critical @deprecated
 Feature: Both 1
   Scenario: Test
     Given step`;
 
-      const bothTags2 = `@phase1 @deprecated
+      const bothTags2 = `@critical @deprecated
 Feature: Both 2
   Scenario: Test
     Given step`;
 
-      const onlyPhase1_1 = `@phase1
+      const onlyPhase1_1 = `@critical
 Feature: Only Phase1 A
   Scenario: Test
     Given step`;
 
-      const onlyPhase1_2 = `@phase1
+      const onlyPhase1_2 = `@critical
 Feature: Only Phase1 B
   Scenario: Test
     Given step`;
 
-      const onlyPhase1_3 = `@phase1
+      const onlyPhase1_3 = `@critical
 Feature: Only Phase1 C
   Scenario: Test
     Given step`;
@@ -137,9 +137,9 @@ Feature: Only Deprecated
         onlyDeprecated
       );
 
-      // When I run `fspec delete-features --tag=@phase1 --tag=@deprecated`
+      // When I run `fspec delete-features --tag=@critical --tag=@deprecated`
       const result = await deleteFeaturesByTag({
-        tags: ['@phase1', '@deprecated'],
+        tags: ['@critical', '@deprecated'],
         cwd: testDir,
       });
 
@@ -219,12 +219,12 @@ Feature: Obsolete ${i}
   describe('Scenario: Attempt to delete with no matching files', () => {
     it('should report no matches without errors', async () => {
       // Given I have feature files with various tags
-      const file1 = `@phase1
+      const file1 = `@critical
 Feature: Phase 1
   Scenario: Test
     Given step`;
 
-      const file2 = `@phase2
+      const file2 = `@high
 Feature: Phase 2
   Scenario: Test
     Given step`;
@@ -471,9 +471,9 @@ Feature: Keep
 
   describe('Scenario: Confirm deletion of multiple files', () => {
     it('should list all deleted files', async () => {
-      // Given I have 8 feature files tagged with @phase0
+      // Given I have 8 feature files tagged with @deprecated
       for (let i = 1; i <= 8; i++) {
-        const content = `@phase0
+        const content = `@deprecated
 Feature: Phase 0 Feature ${i}
   Scenario: Test
     Given step`;
@@ -483,9 +483,9 @@ Feature: Phase 0 Feature ${i}
         );
       }
 
-      // When I run `fspec delete-features --tag=@phase0`
+      // When I run `fspec delete-features --tag=@deprecated`
       const result = await deleteFeaturesByTag({
-        tags: ['@phase0'],
+        tags: ['@deprecated'],
         cwd: testDir,
       });
 

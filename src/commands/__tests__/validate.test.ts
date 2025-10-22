@@ -135,7 +135,7 @@ describe('Feature: Gherkin Syntax Validation', () => {
       const featuresDir = join(testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
-      const brokenContent = `@phase1
+      const brokenContent = `@critical
 User Login
 
   Scenario: Login successfully
@@ -295,7 +295,7 @@ Then I should be logged in`;
       const featuresDir = join(testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
-      const validContent = `@phase1 @critical
+      const validContent = `@critical @critical
 Feature: Tagged Feature
 
   @smoke
@@ -352,7 +352,7 @@ Feature: Tagged Feature
       const featuresDir = join(testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
-      const validContent = `@phase1
+      const validContent = `@critical
 @authentication
 Feature: User Login
 

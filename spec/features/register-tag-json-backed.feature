@@ -1,6 +1,5 @@
 @COV-035
 @COV-034
-@phase7
 @cli
 @tag-management
 @modification
@@ -43,34 +42,20 @@ Feature: Register Tag in JSON-Backed Registry
     I want `fspec register-tag` to edit tags.json and regenerate TAGS.md
     So that the tag registry stays consistent and properly formatted
 
-  Scenario: Register new tag in Phase Tags category
+  Scenario: Register new tag in Component Tags category
     Given I have a valid file "spec/tags.json"
-    When I run `fspec register-tag @phase7 "Phase Tags" "Phase 7: JSON-Backed Documentation"`
+    When I run `fspec register-tag @v2-backend "Component Tags" "Version 2.0 Backend Services"`
     Then the command should exit with code 0
     And "spec/tags.json" should contain the new tag:
       """json
       {
-        "name": "@phase7",
-        "description": "Phase 7: JSON-Backed Documentation",
-        "usage": ""
+        "name": "@v2-backend",
+        "description": "Version 2.0 Backend Services"
       }
       """
     And "spec/TAGS.md" should be regenerated
-    And the output should display "✓ Registered tag @phase7 in category 'Phase Tags'"
+    And the output should display "✓ Registered tag in category 'Component Tags'"
     And the output should display "✓ Regenerated spec/TAGS.md"
-
-  Scenario: Register tag with usage information
-    Given I have a valid file "spec/tags.json"
-    When I run `fspec register-tag @json-backed "Technical Tags" "JSON-backed documentation features" --usage="Features using JSON schemas and generators"`
-    Then "spec/tags.json" should contain:
-      """json
-      {
-        "name": "@json-backed",
-        "description": "JSON-backed documentation features",
-        "useCases": "Features using JSON schemas and generators"
-      }
-      """
-    And "spec/TAGS.md" should be regenerated
 
   Scenario: Fail if category does not exist
     Given I have a valid file "spec/tags.json"
@@ -82,22 +67,22 @@ Feature: Register Tag in JSON-Backed Registry
 
   Scenario: Fail if tag already exists
     Given I have a valid file "spec/tags.json"
-    And the tag "@phase1" already exists
-    When I run `fspec register-tag @phase1 "Phase Tags" "Duplicate tag"`
+    And the tag "@cli" already exists
+    When I run `fspec register-tag @cli "Component Tags" "Duplicate tag"`
     Then the command should exit with code 1
-    And the output should display "✗ Tag @phase1 already exists in registry"
+    And the output should display "✗ Tag already exists in registry"
     And "spec/tags.json" should not be modified
 
   Scenario: Fail if tag name is invalid format
     Given I have a valid file "spec/tags.json"
-    When I run `fspec register-tag phase1 "Phase Tags" "Missing @ prefix"`
+    When I run `fspec register-tag InvalidTag "Component Tags" "Missing @ prefix"`
     Then the command should exit with code 1
     And the output should display "✗ Invalid tag name: must start with @ and contain only lowercase letters, numbers, and hyphens"
     And "spec/tags.json" should not be modified
 
   Scenario: Rollback if markdown generation fails
     Given I have a valid file "spec/tags.json"
-    When I run `fspec register-tag @new-tag "Phase Tags" "Description"`
+    When I run `fspec register-tag @new-tag "Component Tags" "Description"`
     And markdown generation fails due to template error
     Then the command should exit with code 1
     And "spec/tags.json" should be rolled back to previous state

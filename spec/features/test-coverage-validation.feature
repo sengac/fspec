@@ -1,4 +1,3 @@
-@phase1
 @validation
 @cli
 @unit-test

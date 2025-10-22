@@ -15,7 +15,7 @@ import { getKanbanWorkflowSection } from './slashCommandSections/kanbanWorkflow'
 import { getCriticalRulesSection } from './slashCommandSections/criticalRules';
 import { getAcddWorkflowExampleSection } from './slashCommandSections/acddWorkflowExample';
 import { getMonitoringProgressSection } from './slashCommandSections/monitoringProgress';
-import { getAcddPrinciplesSection} from './slashCommandSections/acddPrinciples';
+import { getAcddPrinciplesSection } from './slashCommandSections/acddPrinciples';
 import { getCoverageTrackingSection } from './slashCommandSections/coverageTracking';
 import { getReadyToStartSection } from './slashCommandSections/readyToStart';
 
@@ -37,6 +37,6 @@ export function getSlashCommandTemplate(): string {
     getMonitoringProgressSection(),
     getAcddPrinciplesSection(),
     getCoverageTrackingSection(),
-    getReadyToStartSection()
+    getReadyToStartSection(),
   ].join('\n');
 }

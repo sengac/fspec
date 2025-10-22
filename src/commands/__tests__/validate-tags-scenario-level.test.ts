@@ -29,7 +29,7 @@ describe('Feature: Remove work unit ID tags from generate-scenarios', () => {
       await mkdir(join(testDir, 'spec', 'features'), { recursive: true });
       await mkdir(join(testDir, 'spec'), { recursive: true });
 
-      const featureContent = `@phase1
+      const featureContent = `@critical
 Feature: Test Feature
 
   Background: User Story
@@ -54,7 +54,7 @@ Feature: Test Feature
         categories: [
           {
             name: 'Phase Tags',
-            tags: [{ name: '@phase1', description: 'Phase 1' }],
+            tags: [{ name: '@critical', description: 'Phase 1' }],
           },
         ],
         combinationExamples: [],
@@ -131,7 +131,7 @@ Feature: Test Feature
       await mkdir(join(testDir, 'spec', 'features'), { recursive: true });
       await mkdir(join(testDir, 'spec'), { recursive: true });
 
-      const featureContent = `@phase1
+      const featureContent = `@critical
 @AUTH-002
 Feature: Valid Feature
 
@@ -156,7 +156,7 @@ Feature: Valid Feature
         categories: [
           {
             name: 'Phase Tags',
-            tags: [{ name: '@phase1', description: 'Phase 1' }],
+            tags: [{ name: '@critical', description: 'Phase 1' }],
           },
         ],
         combinationExamples: [],

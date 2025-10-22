@@ -1,5 +1,3 @@
-@phase6
-@phase8
 @cli
 @foundation-management
 @modification

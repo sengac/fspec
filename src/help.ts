@@ -127,7 +127,7 @@ export function displayCustomHelpWithNote(version?: string): void {
   console.log('  ' + chalk.dim('$ fspec validate spec/features/login.feature'));
   console.log('');
   console.log('  # Filter features by tag');
-  console.log('  ' + chalk.dim('$ fspec list-features --tag=@phase1'));
+  console.log('  ' + chalk.dim('$ fspec list-features --tag=@critical'));
   console.log('');
   console.log('  # Add scenario to feature');
   console.log(
@@ -141,7 +141,7 @@ export function displayCustomHelpWithNote(version?: string): void {
   console.log(
     '  ' +
       chalk.dim(
-        '$ fspec get-scenarios --tag=@phase1 --tag=@critical --format=json'
+        '$ fspec get-scenarios --tag=@critical --tag=@critical --format=json'
       )
   );
   console.log('');
@@ -186,7 +186,7 @@ function displaySpecsHelp(): void {
   console.log('    Options:');
   console.log('      --tag=<tag>                      Filter by tag');
   console.log('    Examples:');
-  console.log('      fspec list-features --tag=@phase1');
+  console.log('      fspec list-features --tag=@critical');
   console.log('');
   console.log(
     '  ' +
@@ -250,7 +250,7 @@ function displaySpecsHelp(): void {
   );
   console.log('      --format=<format>                Output: text or json');
   console.log('    Examples:');
-  console.log('      fspec get-scenarios --tag=@phase1 --tag=@critical');
+  console.log('      fspec get-scenarios --tag=@critical --tag=@critical');
   console.log('');
   console.log(
     '  ' +
@@ -265,7 +265,7 @@ function displaySpecsHelp(): void {
   console.log('      --output=<file>                  Write to file');
   console.log('    Examples:');
   console.log(
-    '      fspec show-acceptance-criteria --tag=@phase1 --format=markdown'
+    '      fspec show-acceptance-criteria --tag=@critical --format=markdown'
   );
   console.log('');
   console.log(

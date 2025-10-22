@@ -1,5 +1,3 @@
-@phase5
-@phase8
 @cli
 @tag-management
 @modification
@@ -63,11 +61,11 @@ Feature: Delete Tag from Registry
     And the output should show "Successfully deleted tag @deprecated"
 
   Scenario: Attempt to delete tag in use
-    Given I have a tag @phase1 registered in TAGS.md
-    And the tag @phase1 is used in 5 feature files
-    When I run `fspec delete-tag @phase1`
+    Given I have a tag registered in TAGS.md
+    And the tag is used in 5 feature files
+    When I run `fspec delete-tag`
     Then the command should exit with code 1
-    And the output should show "Tag @phase1 is used in 5 feature file(s)"
+    And the output should show "Tag is used in 5 feature file(s)"
     And the output should list the feature files using the tag
     And the tag should remain in TAGS.md
     And the output should suggest using --force to delete anyway
@@ -89,10 +87,10 @@ Feature: Delete Tag from Registry
     And TAGS.md should remain unchanged
 
   Scenario: Delete tag preserves other tags in same category
-    Given I have tags @phase1, @phase2, @phase3 in category "Tag Categories"
-    When I run `fspec delete-tag @phase2`
+    Given I have tags,, in category "Tag Categories"
+    When I run `fspec delete-tag`
     Then the command should exit with code 0
-    And @phase1 and @phase3 should remain in TAGS.md
+    And and should remain in TAGS.md
     And the category "Tag Categories" should remain intact
 
   Scenario: Delete tag from specific category

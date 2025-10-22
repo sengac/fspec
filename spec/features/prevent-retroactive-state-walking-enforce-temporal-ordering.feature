@@ -1,6 +1,5 @@
 @validator
 @FEAT-011
-@phase1
 @workflow
 @validation
 @acdd

@@ -19,7 +19,7 @@ describe('Feature: Add Scenario to Existing Feature File', () => {
   describe('Scenario: Add scenario to feature file with template', () => {
     it('should add scenario with Given/When/Then placeholders', async () => {
       // Given I have a feature file "spec/features/login.feature"
-      const featureContent = `@phase1 @auth
+      const featureContent = `@critical @auth
 Feature: User Login
 
   Background: User Story
@@ -179,7 +179,7 @@ Feature: User Login
   describe('Scenario: Preserve existing content when adding scenario', () => {
     it('should preserve tags, background, and existing scenarios', async () => {
       // Given I have a feature file with tags, background, and existing scenarios
-      const featureContent = `@phase1 @important
+      const featureContent = `@critical @important
 Feature: My Feature
 
   Background: Setup
@@ -202,7 +202,7 @@ Feature: My Feature
       );
 
       // Then all existing tags should be preserved
-      expect(updatedContent).toContain('@phase1');
+      expect(updatedContent).toContain('@critical');
       expect(updatedContent).toContain('@important');
 
       // And the background section should be preserved

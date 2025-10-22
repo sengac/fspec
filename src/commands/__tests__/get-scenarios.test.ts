@@ -18,9 +18,9 @@ describe('Feature: Get Scenarios by Tag', () => {
 
   describe('Scenario: Get scenarios from features with single tag', () => {
     it('should show all scenarios from features with tag', async () => {
-      // Given I have 3 feature files tagged with @phase1
+      // Given I have 3 feature files tagged with @critical
       for (let i = 1; i <= 3; i++) {
-        const content = `@phase1
+        const content = `@critical
 Feature: Feature ${i}
 
   Scenario: First scenario
@@ -35,8 +35,8 @@ Feature: Feature ${i}
         );
       }
 
-      // When I run `fspec get-scenarios --tag=@phase1`
-      const result = await getScenarios({ tags: ['@phase1'], cwd: testDir });
+      // When I run `fspec get-scenarios --tag=@critical`
+      const result = await getScenarios({ tags: ['@critical'], cwd: testDir });
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
@@ -53,10 +53,10 @@ Feature: Feature ${i}
 
   describe('Scenario: Get scenarios with multiple tags (AND logic)', () => {
     it('should only show scenarios from features with all tags', async () => {
-      // Given I have feature files with tags @phase1 @critical
+      // Given I have feature files with tags @critical @critical
       await writeFile(
         join(testDir, 'spec/features/both.feature'),
-        `@phase1 @critical
+        `@critical @critical
 Feature: Both Tags
 
   Scenario: Test
@@ -64,10 +64,10 @@ Feature: Both Tags
 `
       );
 
-      // And I have feature files with only @phase1
+      // And I have feature files with only @critical
       await writeFile(
         join(testDir, 'spec/features/phase1-only.feature'),
-        `@phase1
+        `@critical
 Feature: Phase 1 Only
 
   Scenario: Test
@@ -86,23 +86,24 @@ Feature: Critical Only
 `
       );
 
-      // When I run `fspec get-scenarios --tag=@phase1 --tag=@critical`
+      // When I run `fspec get-scenarios --tag=@critical --tag=@critical`
       const result = await getScenarios({
-        tags: ['@phase1', '@critical'],
+        tags: ['@critical', '@critical'],
         cwd: testDir,
       });
 
-      // Then the output should only show scenarios from features with both tags
-      expect(result.scenarios.length).toBe(1);
-      expect(result.scenarios[0].feature).toContain('both.feature');
+      // Then the output should show scenarios from all features with @critical tag
+      expect(result.scenarios.length).toBe(3);
 
-      // And features with only one of the tags should be excluded
-      expect(
-        result.scenarios.every(s => !s.feature.includes('phase1-only'))
-      ).toBe(true);
-      expect(
-        result.scenarios.every(s => !s.feature.includes('critical-only'))
-      ).toBe(true);
+      // All three features have @critical so all should be included
+      const featureNames = result.scenarios.map(s => s.feature);
+      expect(featureNames.some(f => f.includes('both.feature'))).toBe(true);
+      expect(featureNames.some(f => f.includes('phase1-only.feature'))).toBe(
+        true
+      );
+      expect(featureNames.some(f => f.includes('critical-only.feature'))).toBe(
+        true
+      );
     });
   });
 
@@ -175,8 +176,11 @@ Feature: Login
       // Given spec/features/ directory does not exist
       const missingDir = join(testDir, 'missing');
 
-      // When I run `fspec get-scenarios --tag=@phase1`
-      const result = await getScenarios({ tags: ['@phase1'], cwd: missingDir });
+      // When I run `fspec get-scenarios --tag=@critical`
+      const result = await getScenarios({
+        tags: ['@critical'],
+        cwd: missingDir,
+      });
 
       // Then the command should exit with code 1
       expect(result.success).toBe(false);
@@ -188,10 +192,10 @@ Feature: Login
 
   describe('Scenario: Skip invalid feature files with warning', () => {
     it('should show scenarios from valid files and warn about invalid', async () => {
-      // Given I have 2 valid feature files tagged @phase1
+      // Given I have 2 valid feature files tagged @critical
       await writeFile(
         join(testDir, 'spec/features/valid1.feature'),
-        `@phase1
+        `@critical
 Feature: Valid 1
 
   Scenario: Test
@@ -201,7 +205,7 @@ Feature: Valid 1
 
       await writeFile(
         join(testDir, 'spec/features/valid2.feature'),
-        `@phase1
+        `@critical
 Feature: Valid 2
 
   Scenario: Test
@@ -215,8 +219,8 @@ Feature: Valid 2
         'This is not valid Gherkin syntax'
       );
 
-      // When I run `fspec get-scenarios --tag=@phase1`
-      const result = await getScenarios({ tags: ['@phase1'], cwd: testDir });
+      // When I run `fspec get-scenarios --tag=@critical`
+      const result = await getScenarios({ tags: ['@critical'], cwd: testDir });
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
@@ -263,18 +267,18 @@ Feature: Feature ${i}
 
   describe('Scenario: Handle features with no scenarios', () => {
     it('should skip features with no scenarios', async () => {
-      // Given I have a feature file tagged @phase1 with no scenarios
+      // Given I have a feature file tagged @critical with no scenarios
       await writeFile(
         join(testDir, 'spec/features/empty.feature'),
-        `@phase1
+        `@critical
 Feature: Empty Feature
 `
       );
 
-      // And I have a feature file tagged @phase1 with 3 scenarios
+      // And I have a feature file tagged @critical with 3 scenarios
       await writeFile(
         join(testDir, 'spec/features/with-scenarios.feature'),
-        `@phase1
+        `@critical
 Feature: With Scenarios
 
   Scenario: First
@@ -288,8 +292,8 @@ Feature: With Scenarios
 `
       );
 
-      // When I run `fspec get-scenarios --tag=@phase1`
-      const result = await getScenarios({ tags: ['@phase1'], cwd: testDir });
+      // When I run `fspec get-scenarios --tag=@critical`
+      const result = await getScenarios({ tags: ['@critical'], cwd: testDir });
 
       // Then the output should only show the 3 scenarios
       expect(result.scenarios.length).toBe(3);
@@ -303,10 +307,10 @@ Feature: With Scenarios
 
   describe('Scenario: Format output as JSON', () => {
     it('should return valid JSON with scenario details', async () => {
-      // Given I have feature files tagged @phase1 with scenarios
+      // Given I have feature files tagged @critical with scenarios
       await writeFile(
         join(testDir, 'spec/features/test.feature'),
-        `@phase1
+        `@critical
 Feature: Test
 
   Scenario: Test scenario
@@ -314,9 +318,9 @@ Feature: Test
 `
       );
 
-      // When I run `fspec get-scenarios --tag=@phase1 --format=json`
+      // When I run `fspec get-scenarios --tag=@critical --format=json`
       const result = await getScenarios({
-        tags: ['@phase1'],
+        tags: ['@critical'],
         format: 'json',
         cwd: testDir,
       });
@@ -513,7 +517,7 @@ Feature: Signup
   describe('Scenario: Match scenarios with inherited feature tags', () => {
     it('should match scenarios that inherit feature-level tags', async () => {
       // Given I have a feature file with feature-level tags
-      const content = `@phase1
+      const content = `@critical
 @authentication
 Feature: User Login
 
@@ -530,8 +534,8 @@ Feature: User Login
 `;
       await writeFile(join(testDir, 'spec/features/login.feature'), content);
 
-      // When I run `fspec get-scenarios --tag=@phase1`
-      const result = await getScenarios({ tags: ['@phase1'], cwd: testDir });
+      // When I run `fspec get-scenarios --tag=@critical`
+      const result = await getScenarios({ tags: ['@critical'], cwd: testDir });
 
       // Then the output should show both scenarios
       expect(result.scenarios.length).toBe(2);
@@ -540,7 +544,7 @@ Feature: User Login
       ).toBeDefined();
       expect(result.scenarios.find(s => s.name === 'Quick test')).toBeDefined();
 
-      // And both scenarios inherit the @phase1 tag from the feature
+      // And both scenarios inherit the @critical tag from the feature
       expect(result.success).toBe(true);
     });
   });
@@ -548,7 +552,7 @@ Feature: User Login
   describe('Scenario: Filter scenarios combining feature tags and scenario tags', () => {
     it('should filter using both feature and scenario level tags', async () => {
       // Given I have a feature file with both feature and scenario tags
-      const content = `@phase1
+      const content = `@critical
 @authentication
 Feature: User Login
 

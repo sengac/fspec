@@ -4,10 +4,8 @@
 @workflow-automation
 @checkpoint
 @git
-@phase2
 @BUG-027
 Feature: Stash system not adding files before creating stash
-
   """
   Restoration uses manual file operations: git.readBlob() to read checkpoint files, fs.writeFile() to restore. Conflict detection compares byte-by-byte file contents and emits system-reminders before any modifications.
   """
@@ -62,7 +60,6 @@ Feature: Stash system not adding files before creating stash
   #   2. Just content. File permissions and timestamps are not critical for checkpoint use case (experimentation and rollback). Focus on content restoration only.
   #
   # ========================================
-
   Background: User Story
     As a developer using fspec checkpoints
     I want to create and restore checkpoints that actually capture all file changes

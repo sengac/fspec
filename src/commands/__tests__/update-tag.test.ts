@@ -18,7 +18,7 @@ describe('Feature: Update Tag in Registry', () => {
 
   describe('Scenario: Update tag description only', () => {
     it('should update only description and preserve category', async () => {
-      // Given I have a tag @phase1 registered in TAGS.md with description "Phase 1 features"
+      // Given I have a tag @critical registered in TAGS.md with description "Phase 1 features"
       const tagsJsonPath = join(testDir, 'spec', 'tags.json');
       const minimalTags = {
         $schema: '../src/schemas/tags.schema.json',
@@ -29,7 +29,7 @@ describe('Feature: Update Tag in Registry', () => {
             required: false,
             tags: [
               {
-                name: '@phase1',
+                name: '@critical',
                 description: 'Phase 1 features',
               },
             ],
@@ -68,9 +68,9 @@ describe('Feature: Update Tag in Registry', () => {
 
       await writeFile(tagsJsonPath, JSON.stringify(minimalTags, null, 2));
 
-      // When I run `fspec update-tag @phase1 --description="Phase 1 - Core validation and feature management"`
+      // When I run `fspec update-tag @critical --description="Phase 1 - Core validation and feature management"`
       const result = await updateTag({
-        tag: '@phase1',
+        tag: '@critical',
         description: 'Phase 1 - Core validation and feature management',
         cwd: testDir,
       });
@@ -78,23 +78,23 @@ describe('Feature: Update Tag in Registry', () => {
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      // And the output should show "Successfully updated @phase1"
-      expect(result.message).toContain('Successfully updated @phase1');
+      // And the output should show "Successfully updated @critical"
+      expect(result.message).toContain('Successfully updated @critical');
 
       const updatedTagsJson = JSON.parse(await readFile(tagsJsonPath, 'utf-8'));
 
-      // And the tag @phase1 description should be updated in TAGS.md
+      // And the tag @critical description should be updated in TAGS.md
       const phaseCategory = updatedTagsJson.categories.find(
         (c: any) => c.name === 'Phase Tags'
       );
       const phase1Tag = phaseCategory.tags.find(
-        (t: any) => t.name === '@phase1'
+        (t: any) => t.name === '@critical'
       );
       expect(phase1Tag.description).toBe(
         'Phase 1 - Core validation and feature management'
       );
 
-      // And the tag @phase1 category should remain unchanged
+      // And the tag @critical category should remain unchanged
       expect(phaseCategory.name).toBe('Phase Tags');
     });
   });
@@ -192,7 +192,7 @@ describe('Feature: Update Tag in Registry', () => {
 
   describe('Scenario: Update both category and description', () => {
     it('should update both fields simultaneously', async () => {
-      // Given I have a tag @phase1 registered with category "Tag Categories" and description "Phase 1"
+      // Given I have a tag @critical registered with category "Tag Categories" and description "Phase 1"
       const tagsJsonPath = join(testDir, 'spec', 'tags.json');
       const minimalTags = {
         $schema: '../src/schemas/tags.schema.json',
@@ -203,7 +203,7 @@ describe('Feature: Update Tag in Registry', () => {
             required: false,
             tags: [
               {
-                name: '@phase1',
+                name: '@critical',
                 description: 'Phase 1',
               },
             ],
@@ -242,9 +242,9 @@ describe('Feature: Update Tag in Registry', () => {
 
       await writeFile(tagsJsonPath, JSON.stringify(minimalTags, null, 2));
 
-      // When I run `fspec update-tag @phase1 --category="Tag Categories" --description="Phase 1 - Core validation and feature management"`
+      // When I run `fspec update-tag @critical --category="Tag Categories" --description="Phase 1 - Core validation and feature management"`
       const result = await updateTag({
-        tag: '@phase1',
+        tag: '@critical',
         category: 'Tag Categories',
         description: 'Phase 1 - Core validation and feature management',
         cwd: testDir,
@@ -255,15 +255,15 @@ describe('Feature: Update Tag in Registry', () => {
 
       const updatedTagsJson = JSON.parse(await readFile(tagsJsonPath, 'utf-8'));
 
-      // And the tag @phase1 category should be "Tag Categories"
+      // And the tag @critical category should be "Tag Categories"
       const tagCategoriesCategory = updatedTagsJson.categories.find(
         (c: any) => c.name === 'Tag Categories'
       );
       expect(tagCategoriesCategory).toBeDefined();
 
-      // And the tag @phase1 description should be "Phase 1 - Core validation and feature management"
+      // And the tag @critical description should be "Phase 1 - Core validation and feature management"
       const phase1Tag = tagCategoriesCategory.tags.find(
-        (t: any) => t.name === '@phase1'
+        (t: any) => t.name === '@critical'
       );
       expect(phase1Tag).toBeDefined();
       expect(phase1Tag.description).toBe(
@@ -336,7 +336,7 @@ describe('Feature: Update Tag in Registry', () => {
 
   describe('Scenario: Update tag with invalid category', () => {
     it('should fail with non-existent category', async () => {
-      // Given I have a tag @phase1 registered in TAGS.md
+      // Given I have a tag @critical registered in TAGS.md
       const tagsJsonPath = join(testDir, 'spec', 'tags.json');
       const minimalTags = {
         $schema: '../src/schemas/tags.schema.json',
@@ -347,7 +347,7 @@ describe('Feature: Update Tag in Registry', () => {
             required: false,
             tags: [
               {
-                name: '@phase1',
+                name: '@critical',
                 description: 'Phase 1',
               },
             ],
@@ -386,9 +386,9 @@ describe('Feature: Update Tag in Registry', () => {
 
       await writeFile(tagsJsonPath, JSON.stringify(minimalTags, null, 2));
 
-      // When I run `fspec update-tag @phase1 --category="Invalid Category"`
+      // When I run `fspec update-tag @critical --category="Invalid Category"`
       const result = await updateTag({
-        tag: '@phase1',
+        tag: '@critical',
         category: 'Invalid Category',
         cwd: testDir,
       });
@@ -407,7 +407,7 @@ describe('Feature: Update Tag in Registry', () => {
 
   describe('Scenario: Update tag without any changes', () => {
     it('should handle no-op update gracefully', async () => {
-      // Given I have a tag @phase1 registered in TAGS.md
+      // Given I have a tag @critical registered in TAGS.md
       const tagsJsonPath = join(testDir, 'spec', 'tags.json');
       const minimalTags = {
         $schema: '../src/schemas/tags.schema.json',
@@ -418,7 +418,7 @@ describe('Feature: Update Tag in Registry', () => {
             required: false,
             tags: [
               {
-                name: '@phase1',
+                name: '@critical',
                 description: 'Phase 1',
               },
             ],
@@ -457,9 +457,9 @@ describe('Feature: Update Tag in Registry', () => {
 
       await writeFile(tagsJsonPath, JSON.stringify(minimalTags, null, 2));
 
-      // When I run `fspec update-tag @phase1` without --category or --description
+      // When I run `fspec update-tag @critical` without --category or --description
       const result = await updateTag({
-        tag: '@phase1',
+        tag: '@critical',
         cwd: testDir,
       });
 
@@ -486,11 +486,11 @@ describe('Feature: Update Tag in Registry', () => {
             required: false,
             tags: [
               {
-                name: '@phase1',
+                name: '@critical',
                 description: 'Phase 1',
               },
               {
-                name: '@phase2',
+                name: '@high',
                 description: 'Phase 2',
               },
             ],
@@ -540,14 +540,14 @@ describe('Feature: Update Tag in Registry', () => {
 
       await writeFile(tagsJsonPath, JSON.stringify(minimalTags, null, 2));
 
-      // When I run `fspec update-tag @phase1 --description="Updated description"`
+      // When I run `fspec update-tag @critical --description="Updated description"`
       const result = await updateTag({
-        tag: '@phase1',
+        tag: '@critical',
         description: 'Updated description',
         cwd: testDir,
       });
 
-      // Then only @phase1 should be modified
+      // Then only @critical should be modified
       expect(result.success).toBe(true);
 
       const updatedTagsJson = JSON.parse(await readFile(tagsJsonPath, 'utf-8'));
@@ -556,14 +556,12 @@ describe('Feature: Update Tag in Registry', () => {
         (c: any) => c.name === 'Phase Tags'
       );
       const phase1Tag = phaseCategory.tags.find(
-        (t: any) => t.name === '@phase1'
+        (t: any) => t.name === '@critical'
       );
       expect(phase1Tag.description).toBe('Updated description');
 
       // And all other tags should remain unchanged
-      const phase2Tag = phaseCategory.tags.find(
-        (t: any) => t.name === '@phase2'
-      );
+      const phase2Tag = phaseCategory.tags.find((t: any) => t.name === '@high');
       expect(phase2Tag.description).toBe('Phase 2');
 
       const technicalCategory = updatedTagsJson.categories.find(

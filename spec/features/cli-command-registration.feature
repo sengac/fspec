@@ -5,7 +5,6 @@
 @COV-022
 @COV-021
 @COV-020
-@phase1
 @cli
 @command-registration
 @critical

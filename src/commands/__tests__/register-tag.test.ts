@@ -21,10 +21,10 @@ describe('Feature: Register New Tag in Tag Registry', () => {
       $schema: '../src/schemas/tags.schema.json',
       categories: [
         {
-          name: 'Phase Tags',
+          name: 'Priority Tags',
           description: 'Phase tags',
           required: true,
-          tags: [{ name: '@phase1', description: 'Phase 1' }],
+          tags: [{ name: '@critical', description: 'Phase 1' }],
         },
         {
           name: 'Component Tags',
@@ -196,7 +196,7 @@ describe('Feature: Register New Tag in Tag Registry', () => {
         'utf-8'
       );
       expect(tagsContent).toContain('<!-- THIS FILE IS AUTO-GENERATED');
-      expect(tagsContent).toContain('## Phase Tags');
+      expect(tagsContent).toContain('## Priority Tags');
       expect(tagsContent).toContain('## Component Tags');
       expect(tagsContent).toContain('## Technical Tags');
 
@@ -255,7 +255,7 @@ describe('Feature: Register New Tag in Tag Registry', () => {
       } catch (error: any) {
         expect(error.message).toContain('Invalid category');
         expect(error.message).toMatch(
-          /Phase Tags|Component Tags|Technical Tags/
+          /Priority Tags|Component Tags|Technical Tags/
         );
       }
     });
@@ -289,8 +289,8 @@ describe('Feature: Register New Tag in Tag Registry', () => {
         join(testDir, 'spec', 'TAGS.md'),
         'utf-8'
       );
-      expect(newContent).toContain('## Phase Tags');
-      expect(newContent).toContain('@phase1');
+      expect(newContent).toContain('## Priority Tags');
+      expect(newContent).toContain('@critical');
       expect(newContent).toContain('`@new-tag`');
 
       // And existing tags should remain present
@@ -357,17 +357,22 @@ describe('Feature: Register New Tag in Tag Registry', () => {
   describe('Scenario: Register tag in all major categories', () => {
     it('should register tags in different categories', async () => {
       // Given I have a TAGS.md file
-      // When I run `fspec register-tag @phase4 "Phase Tags" "Phase 4: Future features"`
-      await registerTag('@phase4', 'Phase Tags', 'Phase 4: Future features', {
-        cwd: testDir,
-      });
+      // When I run `fspec register-tag @v2-release "Priority Tags" "Phase 4: Future features"`
+      await registerTag(
+        '@v2-release',
+        'Priority Tags',
+        'Phase 4: Future features',
+        {
+          cwd: testDir,
+        }
+      );
 
-      // Then the tag should be added to Phase Tags section
+      // Then the tag should be added to Priority Tags section
       let tagsContent = await readFile(
         join(testDir, 'spec', 'TAGS.md'),
         'utf-8'
       );
-      expect(tagsContent).toContain('`@phase4`');
+      expect(tagsContent).toContain('`@v2-release`');
 
       // When I run `fspec register-tag @new-component "Component Tags" "New component"`
       await registerTag('@new-component', 'Component Tags', 'New component', {
@@ -391,7 +396,7 @@ describe('Feature: Register New Tag in Tag Registry', () => {
       expect(tagsContent).toContain('`@new-group`');
 
       // And all registrations should maintain proper formatting
-      expect(tagsContent).toMatch(/## Phase Tags/);
+      expect(tagsContent).toMatch(/## Priority Tags/);
       expect(tagsContent).toMatch(/## Component Tags/);
       expect(tagsContent).toMatch(/## Feature Group Tags/);
     });
@@ -511,7 +516,7 @@ describe('Feature: Register New Tag in Tag Registry', () => {
         await readFile(tagsJsonPath, 'utf-8')
       );
 
-      // When I run `fspec register-tag @new-tag "Phase Tags" "Description"`
+      // When I run `fspec register-tag @new-tag "Priority Tags" "Description"`
       // And markdown generation fails due to template error (simulated by mocking)
       // Mock the generateTagsMd function to throw an error
       const { generateTagsMd } = await import('../../generators/tags-md');
@@ -520,7 +525,7 @@ describe('Feature: Register New Tag in Tag Registry', () => {
       // Create a version that will fail - we'll intercept by corrupting the tags file after write
       try {
         // Register the tag which should succeed initially
-        await registerTag('@new-tag', 'Phase Tags', 'Description', {
+        await registerTag('@new-tag', 'Priority Tags', 'Description', {
           cwd: testDir,
         });
 
@@ -529,7 +534,7 @@ describe('Feature: Register New Tag in Tag Registry', () => {
           await readFile(tagsJsonPath, 'utf-8')
         );
         const phaseCategory = updatedTagsJson.categories.find(
-          (c: any) => c.name === 'Phase Tags'
+          (c: any) => c.name === 'Priority Tags'
         );
         expect(
           phaseCategory.tags.find((t: any) => t.name === '@new-tag')

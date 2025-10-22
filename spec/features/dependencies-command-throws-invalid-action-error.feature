@@ -2,7 +2,6 @@
 @bug-fix
 @dependency-management
 @cli
-@phase1
 @BUG-019
 Feature: Dependencies command throws 'Invalid action' error
   """

@@ -1,5 +1,5 @@
 export function generateFeatureTemplate(featureName: string): string {
-  return `@phase1 @component @feature-group
+  return `@critical @component @feature-group
 Feature: ${featureName}
 
   """

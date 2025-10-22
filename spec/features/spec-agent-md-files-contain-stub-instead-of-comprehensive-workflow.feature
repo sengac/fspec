@@ -1,7 +1,6 @@
 @done
 @multi-agent-support
 @templates
-@phase1
 @critical
 @BUG-028
 Feature: spec/AGENT.md files contain stub instead of comprehensive workflow

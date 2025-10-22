@@ -66,7 +66,7 @@ describe('Feature: Remove work unit ID tags from generate-scenarios', () => {
           categories: [
             {
               name: 'Phase Tags',
-              tags: [{ name: '@phase1', description: 'Phase 1' }],
+              tags: [{ name: '@critical', description: 'Phase 1' }],
             },
             {
               name: 'Component Tags',
@@ -100,7 +100,7 @@ describe('Feature: Remove work unit ID tags from generate-scenarios', () => {
       const featureFile = join(featuresDir, 'test.feature');
       await writeFile(
         featureFile,
-        `@phase1
+        `@critical
 @cli
 @validation
 @AUTH-001
@@ -150,7 +150,7 @@ Feature: Test Feature
       const featureFile = join(featuresDir, 'test.feature');
       await writeFile(
         featureFile,
-        `@phase1
+        `@critical
 @cli
 @validation
 @AUTH-001

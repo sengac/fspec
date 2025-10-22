@@ -1,7 +1,6 @@
 @done
 @workflow-automation
 @hooks
-@phase1
 @HOOK-004
 Feature: Hook discovery and event naming
 

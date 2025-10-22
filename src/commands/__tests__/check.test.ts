@@ -24,7 +24,7 @@ describe('Feature: Run All Validations', () => {
           {
             name: 'Phase Tags',
             title: 'Phase Tags',
-            tags: [{ name: '@phase1', description: 'Phase 1 features' }],
+            tags: [{ name: '@critical', description: 'Phase 1 features' }],
           },
           {
             name: 'Component Tags',
@@ -44,7 +44,7 @@ describe('Feature: Run All Validations', () => {
         JSON.stringify(tagsData, null, 2)
       );
 
-      const feature1 = `@phase1
+      const feature1 = `@critical
 @cli
 @testing
 Feature: Feature 1
@@ -53,7 +53,7 @@ Feature: Feature 1
     Given step
 `;
 
-      const feature2 = `@phase1
+      const feature2 = `@critical
 @cli
 @testing
 Feature: Feature 2
@@ -62,7 +62,7 @@ Feature: Feature 2
     Given step
 `;
 
-      const feature3 = `@phase1
+      const feature3 = `@critical
 @cli
 @testing
 Feature: Feature 3
@@ -143,7 +143,7 @@ Feature: Broken
         categories: [
           {
             title: 'Phase Tags',
-            tags: [{ name: '@phase1', description: 'Phase 1 features' }],
+            tags: [{ name: '@critical', description: 'Phase 1 features' }],
           },
         ],
       };
@@ -223,7 +223,7 @@ Feature: Broken
         categories: [
           {
             title: 'Phase Tags',
-            tags: [{ name: '@phase1', description: 'Phase 1 features' }],
+            tags: [{ name: '@critical', description: 'Phase 1 features' }],
           },
         ],
       };
@@ -297,7 +297,7 @@ Given step`;
           {
             name: 'Phase Tags',
             title: 'Phase Tags',
-            tags: [{ name: '@phase1', description: 'Phase 1 features' }],
+            tags: [{ name: '@critical', description: 'Phase 1 features' }],
           },
           {
             name: 'Component Tags',
@@ -318,7 +318,7 @@ Given step`;
       );
 
       for (let i = 1; i <= 10; i++) {
-        const feature = `@phase1
+        const feature = `@critical
 @cli
 @testing
 Feature: Feature ${i}
@@ -390,7 +390,7 @@ Feature: Feature 5
           {
             name: 'Phase Tags',
             title: 'Phase Tags',
-            tags: [{ name: '@phase1', description: 'Phase 1 features' }],
+            tags: [{ name: '@critical', description: 'Phase 1 features' }],
           },
           {
             name: 'Component Tags',
@@ -411,7 +411,7 @@ Feature: Feature 5
       );
 
       for (let i = 1; i <= 3; i++) {
-        const feature = `@phase1
+        const feature = `@critical
 @cli
 @testing
 Feature: Feature ${i}
@@ -447,7 +447,7 @@ Feature: Feature ${i}
           {
             name: 'Phase Tags',
             title: 'Phase Tags',
-            tags: [{ name: '@phase1', description: 'Phase 1 features' }],
+            tags: [{ name: '@critical', description: 'Phase 1 features' }],
           },
           {
             name: 'Component Tags',
@@ -468,7 +468,7 @@ Feature: Feature ${i}
       );
 
       for (let i = 1; i <= 100; i++) {
-        const feature = `@phase1
+        const feature = `@critical
 @cli
 @testing
 Feature: Feature ${i}

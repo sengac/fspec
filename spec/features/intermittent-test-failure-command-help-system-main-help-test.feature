@@ -4,7 +4,6 @@
 @cli
 @test-isolation
 @test-infrastructure
-@phase1
 @BUG-025
 Feature: Intermittent test failure: command-help-system main help test
   """

@@ -27,7 +27,7 @@ describe('Feature: Generate TAGS.md from tags.json', () => {
             name: 'Phase Tags',
             description: 'Development phase tracking',
             required: true,
-            tags: [{ name: '@phase1', description: 'Phase 1: Foundation' }],
+            tags: [{ name: '@critical', description: 'Phase 1: Foundation' }],
           },
         ],
         combinationExamples: [],
@@ -92,7 +92,7 @@ describe('Feature: Generate TAGS.md from tags.json', () => {
 
       // And TAGS.md should match the content from tags.json
       expect(tagsMd).toContain('Phase Tags');
-      expect(tagsMd).toContain('@phase1');
+      expect(tagsMd).toContain('@critical');
     });
   });
 
@@ -189,9 +189,8 @@ describe('Feature: Generate TAGS.md from tags.json', () => {
             required: true,
             tags: [
               {
-                name: '@phase1',
+                name: '@critical',
                 description: 'Phase 1: Core Validation',
-                usage: 'Features: Gherkin validation, feature creation',
               },
             ],
             rule: 'Every feature file MUST have exactly ONE phase tag.',
@@ -250,11 +249,8 @@ describe('Feature: Generate TAGS.md from tags.json', () => {
       const tagsMd = await readFile(join(testDir, 'spec/TAGS.md'), 'utf-8');
       expect(tagsMd).toContain('### Phase Tags (Required)');
       expect(tagsMd).toContain('Tags that identify development phase');
-      expect(tagsMd).toContain('`@phase1`');
+      expect(tagsMd).toContain('`@critical`');
       expect(tagsMd).toContain('Phase 1: Core Validation');
-      expect(tagsMd).toContain(
-        'Features: Gherkin validation, feature creation'
-      );
       expect(tagsMd).toContain(
         '**Rule**: Every feature file MUST have exactly ONE phase tag.'
       );
@@ -270,7 +266,7 @@ describe('Feature: Generate TAGS.md from tags.json', () => {
         combinationExamples: [
           {
             title: 'Example 1: Phase 1 Feature File Creation',
-            tags: '@phase1 @cli @generator @feature-management',
+            tags: '@critical @cli @generator @feature-management',
             interpretation: [
               'Phase 1 feature',
               'Belongs to CLI component',
@@ -330,7 +326,7 @@ describe('Feature: Generate TAGS.md from tags.json', () => {
       const tagsMd = await readFile(join(testDir, 'spec/TAGS.md'), 'utf-8');
       expect(tagsMd).toContain('### Example 1: Phase 1 Feature File Creation');
       expect(tagsMd).toContain('```gherkin');
-      expect(tagsMd).toContain('@phase1 @cli @generator @feature-management');
+      expect(tagsMd).toContain('@critical @cli @generator @feature-management');
       expect(tagsMd).toContain('**Interpretation**:');
       expect(tagsMd).toContain('- Phase 1 feature');
       expect(tagsMd).toContain('- Belongs to CLI component');
@@ -534,7 +530,7 @@ describe('Feature: Generate TAGS.md from tags.json', () => {
             name: 'Phase Tags',
             description: 'Phase tracking',
             required: true,
-            tags: [{ name: '@phase1', description: 'Phase 1' }],
+            tags: [{ name: '@critical', description: 'Phase 1' }],
           },
         ],
         combinationExamples: [],
@@ -616,7 +612,7 @@ describe('Feature: Generate TAGS.md from tags.json', () => {
             required: true,
             tags: [
               {
-                name: '@phase1',
+                name: '@critical',
                 description: 'Phase 1 tag',
               },
             ],
@@ -687,7 +683,7 @@ describe('Feature: Generate TAGS.md from tags.json', () => {
         'utf-8'
       );
       expect(customOutput).toContain('Phase Tags');
-      expect(customOutput).toContain('@phase1');
+      expect(customOutput).toContain('@critical');
       expect(customOutput).toContain('THIS FILE IS AUTO-GENERATED');
 
       // And "spec/TAGS.md" should not be modified

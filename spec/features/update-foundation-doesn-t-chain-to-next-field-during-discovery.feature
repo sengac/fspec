@@ -2,7 +2,6 @@
 @validation
 @foundation
 @cli
-@phase1
 @BUG-017
 Feature: update-foundation doesn't chain to next field during discovery
   """

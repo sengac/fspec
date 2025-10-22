@@ -9,7 +9,7 @@ const config: CommandHelpConfig = {
       command: 'fspec tag-stats',
       description: 'Show tag usage statistics',
       output:
-        'Tag Usage Statistics:\n\n@phase1: 45 features, 123 scenarios\n@phase2: 12 features, 34 scenarios\n@cli: 30 features\n@parser: 15 features',
+        'Tag Usage Statistics:\n\n@critical: 45 features, 123 scenarios\n@high: 12 features, 34 scenarios\n@cli: 30 features\n@parser: 15 features',
     },
   ],
   relatedCommands: ['list-tags', 'validate-tags', 'register-tag'],

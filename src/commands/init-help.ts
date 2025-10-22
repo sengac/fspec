@@ -25,8 +25,7 @@ const config: CommandHelpConfig = {
     {
       command: 'fspec init',
       description: 'Initialize with Claude Code',
-      output:
-        '✓ Initialized fspec\n  Created .claude/commands/fspec.md',
+      output: '✓ Initialized fspec\n  Created .claude/commands/fspec.md',
     },
   ],
   prerequisites: ['Project should have package.json or be a git repository'],

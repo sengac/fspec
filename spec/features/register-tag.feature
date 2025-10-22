@@ -1,4 +1,3 @@
-@phase2
 @cli
 @file-ops
 @tag-management
@@ -115,8 +114,6 @@ Feature: Register New Tag in Tag Registry
 
   Scenario: Register tag in all major categories
     Given I have a TAGS.md file
-    When I run `fspec register-tag @phase4 "Phase Tags" "Phase 4: Future features"`
-    Then the tag should be added to Phase Tags section
     When I run `fspec register-tag @new-component "Component Tags" "New component"`
     Then the tag should be added to Component Tags section
     When I run `fspec register-tag @new-group "Feature Group Tags" "New feature group"`

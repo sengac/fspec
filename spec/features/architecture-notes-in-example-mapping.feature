@@ -2,7 +2,6 @@
 @cli
 @generator
 @example-mapping
-@phase1
 Feature: Capture architecture notes during Example Mapping
   """
   Adds architectureNotes array field to WorkUnit interface in src/types/index.ts. Creates new CLI commands: add-architecture-note, remove-architecture-note. Enhances generate-scenarios to populate docstring from captured notes instead of TODO placeholders. Integrates architecture questions into Example Mapping Step 3 (Ask Questions phase).

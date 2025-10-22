@@ -1,7 +1,6 @@
 @done
 @workflow-automation
 @hooks
-@phase1
 @HOOK-006
 Feature: System reminder formatting for AI
 

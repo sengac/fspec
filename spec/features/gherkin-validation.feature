@@ -1,4 +1,3 @@
-@phase1
 @cli
 @parser
 @validation
@@ -60,7 +59,7 @@ Feature: Gherkin Syntax Validation
   Scenario: Detect missing Feature keyword
     Given I have a file "spec/features/broken.feature" with content:
       """
-      @phase1
+
       User Login
 
       Scenario: Login successfully
@@ -128,7 +127,7 @@ Feature: Gherkin Syntax Validation
   Scenario: Validate feature file with feature-level tags
     Given I have a feature file with tags at feature level:
       """
-      @phase1
+
       @authentication
       @critical
       Feature: User Login
@@ -167,7 +166,7 @@ Feature: Gherkin Syntax Validation
   Scenario: Validate feature file with both feature-level and scenario-level tags
     Given I have a feature file with tags at both feature and scenario levels:
       """
-      @phase1
+
       @authentication
       Feature: User Login
 

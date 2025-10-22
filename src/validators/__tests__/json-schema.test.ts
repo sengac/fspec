@@ -104,7 +104,7 @@ describe('Feature: Validate JSON Files Against Schemas', () => {
             required: true,
             tags: [
               {
-                name: '@phase1',
+                name: '@critical',
                 description: 'Phase 1',
                 usage: 'Core features',
               },
@@ -114,7 +114,7 @@ describe('Feature: Validate JSON Files Against Schemas', () => {
         combinationExamples: [
           {
             title: 'Example 1',
-            tags: '@phase1 @cli',
+            tags: '@critical @cli',
             interpretation: ['Phase 1', 'CLI component'],
           },
         ],
@@ -122,17 +122,17 @@ describe('Feature: Validate JSON Files Against Schemas', () => {
           requiredCombinations: {
             title: 'Required',
             requirements: ['Phase tag', 'Component tag'],
-            minimumExample: '@phase1 @cli @feature-management',
+            minimumExample: '@critical @cli @feature-management',
           },
           recommendedCombinations: {
             title: 'Recommended',
             includes: ['Technical tags'],
-            recommendedExample: '@phase1 @cli @feature-management @gherkin',
+            recommendedExample: '@critical @cli @feature-management @gherkin',
           },
           orderingConvention: {
             title: 'Order',
             order: ['Phase', 'Component', 'Feature group'],
-            example: '@phase1 @cli @feature-management',
+            example: '@critical @cli @feature-management',
           },
         },
         addingNewTags: {
@@ -148,7 +148,7 @@ describe('Feature: Validate JSON Files Against Schemas', () => {
           examples: [
             {
               description: 'All phase 1',
-              command: 'fspec list-features --tag=@phase1',
+              command: 'fspec list-features --tag=@critical',
             },
           ],
         },

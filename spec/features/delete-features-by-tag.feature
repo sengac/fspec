@@ -1,4 +1,3 @@
-@phase5
 @cli
 @bulk-operations
 @modification
@@ -16,7 +15,7 @@ Feature: Bulk Delete Feature Files by Tag
 
   Critical implementation requirements:
   - MUST support single tag filter (--tag=@deprecated)
-  - MUST support multiple tag filters with AND logic (--tag=@phase1 --tag=@deprecated)
+  - MUST support multiple tag filters with AND logic (--tag=--tag=@deprecated)
 
 
   - MUST delete entire feature files (not just scenarios)
@@ -45,10 +44,10 @@ Feature: Bulk Delete Feature Files by Tag
 
   Scenario: Delete feature files by multiple tags with AND logic
     Given I have feature files with various tag combinations
-    And 2 files have both @phase1 and @deprecated tags
-    And 3 files have only @phase1 tag
+    And 2 files have both and @deprecated tags
+    And 3 files have only tag
     And 1 file has only @deprecated tag
-    When I run `fspec delete-features --tag=@phase1 --tag=@deprecated`
+    When I run `fspec delete-features --tag=--tag=@deprecated`
     Then the command should exit with code 0
     And only the 2 files with both tags should be deleted
     And the 4 files without both tags should remain
@@ -115,8 +114,8 @@ Feature: Bulk Delete Feature Files by Tag
     And the remaining files should be intact
 
   Scenario: Confirm deletion of multiple files
-    Given I have 8 feature files tagged with @phase0
-    When I run `fspec delete-features --tag=@phase0`
+    Given I have 8 feature files tagged with
+    When I run `fspec delete-features --tag=@deprecated`
     Then the command should exit with code 0
     And all 8 files should be deleted
     And the output should list each deleted file

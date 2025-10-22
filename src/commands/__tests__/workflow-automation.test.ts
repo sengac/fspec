@@ -116,7 +116,7 @@ describe('Feature: Workflow Automation', () => {
       await mkdir(join(testDir, 'spec', 'features'), { recursive: true });
       await writeFile(
         join(testDir, 'spec', 'features', 'test.feature'),
-        '@phase1\nFeature: Test\n  Scenario: No tag\n    Given test'
+        '@critical\nFeature: Test\n  Scenario: No tag\n    Given test'
       );
 
       // When I run "fspec validate-spec-alignment AUTH-001"

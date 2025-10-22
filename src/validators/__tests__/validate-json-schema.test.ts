@@ -88,7 +88,7 @@ describe('Feature: Internal JSON Schema Validation', () => {
             name: 'Phase Tags',
             description: 'Test',
             required: false,
-            tags: [{ name: '@phase1', description: 'Phase 1' }],
+            tags: [{ name: '@critical', description: 'Phase 1' }],
           },
         ],
         combinationExamples: [],

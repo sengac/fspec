@@ -1,7 +1,6 @@
 @work-unit-management
 @cli
 @FEAT-006
-@phase2
 @work-units
 @type-system
 Feature: Work item types for stories, tasks, and bugs

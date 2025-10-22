@@ -1,5 +1,4 @@
 @COV-031
-@phase7
 @cli
 @generator
 @foundation-management

@@ -7,10 +7,8 @@
 @bug-fix
 @refactor
 @infrastructure
-@phase1
 @GIT-003
 Feature: Fix GIT-001 critical bugs and logic errors
-
   """
   Fixes critical bugs in src/git/status.ts identified through ULTRATHINK analysis. Addresses memfs integration issues, status matrix logic errors, type safety violations, and missing test coverage. See spec/attachments/GIT-003/git-001-critical-analysis.md for complete analysis. Must maintain backward compatibility with existing git-context.ts consumers.
   """
@@ -32,7 +30,6 @@ Feature: Fix GIT-001 critical bugs and logic errors
   #   3. Type safety violation: Passing { someMethod: () => {} } as fs option causes runtime error instead of compile-time error
   #
   # ========================================
-
   Background: User Story
     As a developer maintaining fspec
     I want to fix critical bugs and logic errors in GIT-001 isomorphic-git integration
@@ -45,7 +42,6 @@ Feature: Fix GIT-001 critical bugs and logic errors
     Then the modified file should be detected and included in results
     And the function should return ['modified.txt'] instead of []
 
-
   Scenario: Fix partial staging detection (staged then modified)
     Given a git repository with a committed file
     And the file is modified and staged (git add)
@@ -55,11 +51,9 @@ Feature: Fix GIT-001 critical bugs and logic errors
     And staged should contain the file (has staged changes)
     And unstaged should contain the file (has unstaged changes)
 
-
   Scenario: Replace any type with IFs interface for type safety
     Given the fs parameter in GitStatusOptions uses 'any' type
     When the type is changed to proper IFs interface from memfs
     Then TypeScript should catch invalid fs implementations at compile time
     And passing an object missing required methods should cause type error
     And IntelliSense should provide autocomplete for fs methods
-

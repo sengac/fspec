@@ -1,6 +1,5 @@
 @done
 @bug-fix
-@phase2
 @cli
 @workflow
 @BUG-006

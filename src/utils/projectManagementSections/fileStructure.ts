@@ -37,7 +37,7 @@ spec/
 
 **Note**: \`.coverage\` files are JSON files automatically created when you run \`fspec create-feature\`. They track scenario-to-test-to-implementation mappings.
 
-**Note**: Features are organized by tags (e.g., @phase1, @phase2), NOT by directory structure. All feature files live in the flat \`spec/features/\` directory.
+**Note**: Features are organized by tags (e.g., @critical, @high), NOT by directory structure. All feature files live in the flat \`spec/features/\` directory.
 
 ## CRITICAL: Feature File and Test File Naming
 
@@ -55,7 +55,7 @@ Feature files are **living documentation** that must make sense AFTER implementa
 ### Feature File Template
 
 \`\`\`gherkin
-@phase[N] @component @feature-group @technical-tags @priority
+@component @feature-group @technical-tags @priority
 Feature: [Feature Name]
 
   """

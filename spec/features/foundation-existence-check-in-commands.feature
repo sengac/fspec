@@ -2,7 +2,6 @@
 @foundation
 @discovery
 @cli
-@phase1
 @FOUND-007
 Feature: Foundation existence check in commands
   """

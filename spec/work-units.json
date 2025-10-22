@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-22T01:52:55.718Z"
+    "lastUpdated": "2025-10-22T06:29:05.678Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -9019,28 +9019,6 @@
       "epic": "interactive-cli",
       "children": []
     },
-    "DOC-005": {
-      "id": "DOC-005",
-      "title": "Enhanced tag usage documentation for AI guidance",
-      "type": "story",
-      "status": "specifying",
-      "createdAt": "2025-10-21T05:32:00.350Z",
-      "updatedAt": "2025-10-21T05:33:10.515Z",
-      "description": "Improve TAGS.md structure to provide comprehensive usage context for AI agents. Current tag registry lacks detailed usage information that would help AI understand when and how to apply tags correctly. Investigate: 1) What usage patterns exist across completed features? 2) Which tags commonly appear together? 3) What scenarios warrant specific tags? 4) How can we enforce 'usage' column completion? Deliverables: 1) Enhanced TAGS.md template with mandatory usage field, 2) Usage examples for each tag category, 3) Validation in 'fspec register-tag' to require usage info, 4) System-reminders for AI when tags lack usage context.",
-      "children": [],
-      "stateHistory": [
-        {
-          "state": "specifying",
-          "timestamp": "2025-10-21T05:33:10.033Z"
-        }
-      ],
-      "questions": [
-        {
-          "text": "@human: Why do we need phase tags? Is this a convention baked into fspec's design/documentation, or is there actual code enforcement? Are phase tags hardcoded requirements or just recommended practice?",
-          "selected": false
-        }
-      ]
-    },
     "CLEAN-001": {
       "id": "CLEAN-001",
       "title": "Add ESLint and Prettier for code quality",
@@ -9874,6 +9852,55 @@
       "attachments": [
         "spec/attachments/BUG-028/BUG-028-implementation-plan.md"
       ]
+    },
+    "BUG-029": {
+      "id": "BUG-029",
+      "title": "Fix failing tests after phase tag removal",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-10-22T06:13:05.750Z",
+      "updatedAt": "2025-10-22T06:47:21.878Z",
+      "description": "14 tests are failing after removing phase tags from the codebase. Tests in feature-level-tag-management.test.ts, get-scenarios.test.ts, register-tag.test.ts, retag.test.ts, show-acceptance-criteria.test.ts, and hooks tests need to be updated to reflect that phase tags no longer exist and are not required.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-22T06:13:31.902Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-22T06:31:30.323Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-22T06:31:44.751Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-22T06:44:27.847Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-22T06:47:21.878Z"
+        }
+      ],
+      "rules": [
+        "All test features must have both @component and @feature-group tags to pass validation",
+        "Test expectations for TAGS.md must not check for Usage column (removed)",
+        "Remove or update scenarios in feature files that test phase tag validation or usage metadata"
+      ],
+      "examples": [
+        "feature-level-tag-management.test.ts expects result.success=true but gets false because validation fails",
+        "generate-tags-md.test.ts and tags-md.test.ts check for Usage column in output but it no longer exists",
+        "get-scenarios.test.ts expects 1 scenario but gets 3 because test features now have more tags after adding required @component/@feature-group",
+        "retag.test.ts expects '@critical' in output but feature now has @cli @validation instead of @critical"
+      ],
+      "userStory": {
+        "role": "developer maintaining test suite",
+        "action": "fix failing tests after removing phase tags and usage metadata",
+        "benefit": "all 1360 tests pass and the codebase is clean"
+      },
+      "estimate": 3
     }
   },
   "states": {
@@ -9893,9 +9920,7 @@
       "TECH-002",
       "CLI-007"
     ],
-    "specifying": [
-      "DOC-005"
-    ],
+    "specifying": [],
     "testing": [],
     "implementing": [],
     "validating": [],
@@ -10064,7 +10089,8 @@
       "DOCS-002",
       "BUG-027",
       "BUG-025",
-      "BUG-026"
+      "BUG-026",
+      "BUG-029"
     ],
     "blocked": []
   }

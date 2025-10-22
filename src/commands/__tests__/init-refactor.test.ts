@@ -31,7 +31,9 @@ describe('Feature: Wire up multi-agent support to fspec init command', () => {
 
       // Then the init() function should not exist (old single-agent version)
       // This should look for the specific signature of the old init function
-      const hasOldInitFunction = initFileContent.includes('export async function init(options: InitOptions)');
+      const hasOldInitFunction = initFileContent.includes(
+        'export async function init(options: InitOptions)'
+      );
 
       expect(hasOldInitFunction).toBe(false);
     });
@@ -41,7 +43,9 @@ describe('Feature: Wire up multi-agent support to fspec init command', () => {
       const initFileContent = readFileSync(initFilePath, 'utf-8');
 
       // Then the generateTemplate() function should not exist
-      const hasGenerateTemplate = initFileContent.includes('async function generateTemplate()');
+      const hasGenerateTemplate = initFileContent.includes(
+        'async function generateTemplate()'
+      );
 
       expect(hasGenerateTemplate).toBe(false);
     });
@@ -51,7 +55,9 @@ describe('Feature: Wire up multi-agent support to fspec init command', () => {
       const initFileContent = readFileSync(initFilePath, 'utf-8');
 
       // Then the copyClaudeTemplate() function should not exist
-      const hasCopyClaudeTemplate = initFileContent.includes('async function copyClaudeTemplate(');
+      const hasCopyClaudeTemplate = initFileContent.includes(
+        'async function copyClaudeTemplate('
+      );
 
       expect(hasCopyClaudeTemplate).toBe(false);
     });

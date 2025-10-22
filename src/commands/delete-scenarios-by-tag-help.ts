@@ -39,10 +39,10 @@ const config: CommandHelpConfig = {
     },
     {
       command:
-        'fspec delete-scenarios --tag @deprecated --tag @phase1 --dry-run',
+        'fspec delete-scenarios --tag @deprecated --tag @critical --dry-run',
       description: 'Preview deletion with AND logic (both tags required)',
       output:
-        'Dry run mode - no files modified\n\nWould delete 2 scenario(s) from 1 file(s):\n\nspec/features/legacy-api.feature:\n  - Old login flow (@deprecated @phase1)\n  - Legacy token refresh (@deprecated @phase1)',
+        'Dry run mode - no files modified\n\nWould delete 2 scenario(s) from 1 file(s):\n\nspec/features/legacy-api.feature:\n  - Old login flow (@deprecated @critical)\n  - Legacy token refresh (@deprecated @critical)',
     },
     {
       command: 'fspec delete-scenarios --tag @todo',
@@ -86,7 +86,7 @@ const config: CommandHelpConfig = {
     {
       pattern: 'Phase-Specific Cleanup',
       example:
-        '# Remove completed phase1 spike scenarios\nfspec delete-scenarios --tag @phase1 --tag @spike --dry-run\nfspec delete-scenarios --tag @phase1 --tag @spike\n\n# Commit changes\ngit add . && git commit -m "Remove phase1 spike scenarios"',
+        '# Remove completed phase1 spike scenarios\nfspec delete-scenarios --tag @critical --tag @spike --dry-run\nfspec delete-scenarios --tag @critical --tag @spike\n\n# Commit changes\ngit add . && git commit -m "Remove phase1 spike scenarios"',
     },
   ],
   relatedCommands: [

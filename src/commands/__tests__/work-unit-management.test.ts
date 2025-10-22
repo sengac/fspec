@@ -1877,7 +1877,7 @@ describe('Feature: Work Unit Management', () => {
 
       // And a feature file "oauth-login.feature" is tagged with "@AUTH-001"
       const featureContent = `@AUTH-001
-@phase1
+@critical
 @authentication
 Feature: OAuth Login
 
@@ -1981,7 +1981,7 @@ Feature: OAuth Login
 
       // And a feature file has feature-level tag "@AUTH-001" and scenario with "@AUTH-002"
       const featureContent = `@AUTH-001
-@phase1
+@critical
 Feature: OAuth
 
   Scenario: Login
@@ -2114,7 +2114,7 @@ Feature: OAuth
 
       // And a feature file "oauth.feature" is tagged with "@AUTH-001" and has 2 scenarios
       const featureContent = `@AUTH-001
-@phase1
+@critical
 Feature: OAuth
 
   Scenario: First scenario
@@ -2294,7 +2294,7 @@ Feature: OAuth Refresh
             name: 'Phase Tags',
             description: 'Development phase tags',
             required: false,
-            tags: [{ name: '@phase1', description: 'Phase 1' }],
+            tags: [{ name: '@critical', description: 'Phase 1' }],
           },
           {
             name: 'Component Tags',
@@ -2327,7 +2327,7 @@ Feature: OAuth Refresh
       );
 
       // And a feature file "oauth-login.feature" exists without work unit tags
-      const featureContent = `@phase1
+      const featureContent = `@critical
 @authentication
 @feature-management
 Feature: OAuth Login
@@ -2492,7 +2492,7 @@ Feature: OAuth Login
 
       // And a feature file "oauth-login.feature" is tagged with "@AUTH-001"
       const featureContent = `@AUTH-001
-@phase1
+@critical
 @authentication
 Feature: OAuth Login
 

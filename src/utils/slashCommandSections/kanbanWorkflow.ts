@@ -96,7 +96,7 @@ fspec update-work-unit-status EXAMPLE-006 testing
 - \`@done\` - Completed and validated
 - \`@blocked\` - Cannot proceed (add blocker reason to work unit)
 - \`@critical\` - High priority
-- \`@phase1\`, \`@phase2\` - Release phase
+- \`@critical\`, \`@high\` - Release phase
 
 **Update tags as you progress:**
 \`\`\`bash

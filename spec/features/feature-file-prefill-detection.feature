@@ -7,7 +7,6 @@
 @system-reminder
 @example-mapping
 @cli
-@phase2
 Feature: Feature File Prefill Detection and CLI Enforcement
 
   Background: User Story

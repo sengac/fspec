@@ -1,4 +1,3 @@
-@phase2
 @cli
 @feature-management
 @read-only

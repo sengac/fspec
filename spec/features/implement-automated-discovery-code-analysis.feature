@@ -2,7 +2,6 @@
 @guidance
 @reverse-acdd
 @discovery
-@phase1
 @FOUND-002
 Feature: Implement Automated Discovery - Code Analysis
   """
