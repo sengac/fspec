@@ -20,10 +20,13 @@ Slash commands are available at {{SLASH_COMMAND_PATH}}.
  * Generate agent-specific documentation from base template
  */
 export async function generateAgentDoc(agent: AgentConfig): Promise<string> {
-  // Use embedded template (no filesystem dependency)
-  let content = BASE_AGENT_TEMPLATE;
+  // Import template
+  const { getProjectManagementTemplate } = await import('./projectManagementTemplate');
 
-  // Apply transformations
+  // Get full Project Management Guidelines template with agent-specific examples (2069 lines)
+  let content = getProjectManagementTemplate(agent);
+
+  // Apply agent-specific transformations
   content = stripSystemReminders(content, agent);
   content = removeMetaCognitivePrompts(content, agent);
   content = replacePlaceholders(content, agent);

@@ -1,0 +1,177 @@
+{
+  "scenarios": [
+    {
+      "name": "spec/AGENT.md contains comprehensive ACDD workflow documentation",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/templateGenerator-comprehensive.test.ts",
+          "lines": "11-145",
+          "implMappings": [
+            {
+              "file": "src/utils/templateGenerator.ts",
+              "lines": [
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Agent-specific transformations are applied to full template",
+      "testMappings": []
+    },
+    {
+      "name": "Root stub files remain concise",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/init-multi-agent.test.ts",
+          "lines": "225-242",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Fix eliminates circular reference in spec/CLAUDE.md",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/templateGenerator-comprehensive.test.ts",
+          "lines": "281-357",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "spec/AGENT.md contains comprehensive Project Management Guidelines",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/templateGenerator-comprehensive.test.ts",
+          "lines": "13-179",
+          "implMappings": [
+            {
+              "file": "src/utils/templateGenerator.ts",
+              "lines": [
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35
+              ]
+            },
+            {
+              "file": "src/utils/projectManagementTemplate.ts",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Agent-specific transformations are applied to Project Management template",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/templateGenerator-comprehensive.test.ts",
+          "lines": "181-279",
+          "implMappings": []
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 5,
+    "coveragePercent": 83,
+    "testFiles": [
+      "src/utils/__tests__/templateGenerator-comprehensive.test.ts",
+      "src/commands/__tests__/init-multi-agent.test.ts"
+    ],
+    "implFiles": [
+      "src/utils/templateGenerator.ts",
+      "src/utils/projectManagementTemplate.ts"
+    ],
+    "totalLinesCovered": 584
+  }
+}

@@ -66,12 +66,13 @@ describe('Feature: Wire up multi-agent support to fspec init command', () => {
       // And: The slash command path should be ".cursor/commands/"
       expect(cursorMdContent).toContain('.cursor/commands/');
 
-      // And: The documentation should reference "CURSOR.md"
+      // And: The spec/CURSOR.md should contain comprehensive Project Management Guidelines
       const specCursorPath = join(testDir, 'spec', 'CURSOR.md');
       const specCursorContent = await readFile(specCursorPath, 'utf-8');
 
-      expect(specCursorContent).toContain('Cursor');
-      expect(specCursorContent).toContain('spec/CURSOR.md');
+      const lineCount = specCursorContent.split('\n').length;
+      expect(lineCount).toBeGreaterThan(2000); // Comprehensive Project Management Guidelines, not a stub
+      expect(specCursorContent).toContain('Project Management and Specification Guidelines'); // Contains guidelines
     });
 
     it('should generate Claude-specific content when --agent=claude is used', async () => {
@@ -89,12 +90,13 @@ describe('Feature: Wire up multi-agent support to fspec init command', () => {
       // And: The slash command path should be ".claude/commands/"
       expect(claudeMdContent).toContain('.claude/commands/');
 
-      // And: The documentation should reference "CLAUDE.md"
+      // And: The spec/CLAUDE.md should contain comprehensive Project Management Guidelines
       const specClaudePath = join(testDir, 'spec', 'CLAUDE.md');
       const specClaudeContent = await readFile(specClaudePath, 'utf-8');
 
-      expect(specClaudeContent).toContain('Claude Code');
-      expect(specClaudeContent).toContain('spec/CLAUDE.md');
+      const lineCount = specClaudeContent.split('\n').length;
+      expect(lineCount).toBeGreaterThan(2000); // Comprehensive Project Management Guidelines, not a stub
+      expect(specClaudeContent).toContain('Project Management and Specification Guidelines'); // Contains guidelines
     });
   });
 
