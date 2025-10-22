@@ -14,6 +14,7 @@ export interface RestoreCheckpointOptions {
   cwd: string;
   workingDirectoryDirty?: boolean;
   userChoice?: string;
+  force?: boolean; // Skip interactive prompt for testing
 }
 
 export interface RestoreCheckpointResult {
@@ -34,15 +35,29 @@ export interface RestoreCheckpointResult {
 export async function restoreCheckpoint(
   options: RestoreCheckpointOptions
 ): Promise<RestoreCheckpointResult> {
-  const { workUnitId, checkpointName, cwd, workingDirectoryDirty, userChoice } =
-    options;
+  const {
+    workUnitId,
+    checkpointName,
+    cwd,
+    workingDirectoryDirty,
+    userChoice,
+    force = false,
+  } = options;
 
   try {
     // Check if working directory is dirty
     const isDirty =
       workingDirectoryDirty ?? (await isWorkingDirectoryDirty(cwd));
 
-    if (isDirty && !userChoice) {
+    if (isDirty && !userChoice && !force) {
+      // First, detect conflicts to provide context in the prompt
+      const conflictCheck = await restoreCheckpointUtil({
+        workUnitId,
+        checkpointName,
+        cwd,
+        force: false, // Check for conflicts
+      });
+
       // Show interactive prompt with risk explanations
       const promptOptions = [
         {
@@ -84,10 +99,10 @@ export async function restoreCheckpoint(
 
       return {
         success: false,
-        conflictsDetected: false,
-        conflictedFiles: [],
-        systemReminder: 'User choice required',
-        requiresTestValidation: false,
+        conflictsDetected: conflictCheck.conflictsDetected,
+        conflictedFiles: conflictCheck.conflictedFiles,
+        systemReminder: conflictCheck.systemReminder || 'User choice required',
+        requiresTestValidation: conflictCheck.requiresTestValidation,
         promptShown: true,
         options: promptOptions,
         requiresUserChoice: true,
@@ -99,7 +114,7 @@ export async function restoreCheckpoint(
       workUnitId,
       checkpointName,
       cwd,
-      force: isDirty && userChoice === 'Force restore with merge',
+      force: force || (isDirty && userChoice === 'Force restore with merge'),
     });
 
     if (result.conflictsDetected) {

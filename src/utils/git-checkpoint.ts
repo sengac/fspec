@@ -67,6 +67,67 @@ function parseCheckpointMessage(message: string): {
 }
 
 /**
+ * Get path to checkpoint index file
+ */
+function getCheckpointIndexPath(cwd: string, workUnitId: string): string {
+  return join(cwd, '.git', 'fspec-checkpoints-index', `${workUnitId}.json`);
+}
+
+/**
+ * Update checkpoint index file
+ */
+async function updateCheckpointIndex(
+  cwd: string,
+  workUnitId: string,
+  checkpointName: string,
+  message: string
+): Promise<void> {
+  const indexPath = getCheckpointIndexPath(cwd, workUnitId);
+  const indexDir = join(cwd, '.git', 'fspec-checkpoints-index');
+
+  // Ensure directory exists
+  await fs.promises.mkdir(indexDir, { recursive: true });
+
+  // Read existing index or create new one
+  let index: { checkpoints: { name: string; message: string }[] } = {
+    checkpoints: [],
+  };
+
+  try {
+    const content = await fs.promises.readFile(indexPath, 'utf-8');
+    index = JSON.parse(content);
+  } catch (error) {
+    // File doesn't exist, use empty index
+  }
+
+  // Add checkpoint to index if not already present
+  const exists = index.checkpoints.some(cp => cp.name === checkpointName);
+  if (!exists) {
+    index.checkpoints.push({ name: checkpointName, message });
+  }
+
+  // Write updated index
+  await fs.promises.writeFile(indexPath, JSON.stringify(index, null, 2));
+}
+
+/**
+ * Read checkpoint index file
+ */
+async function readCheckpointIndex(
+  cwd: string,
+  workUnitId: string
+): Promise<{ checkpoints: { name: string; message: string }[] }> {
+  const indexPath = getCheckpointIndexPath(cwd, workUnitId);
+
+  try {
+    const content = await fs.promises.readFile(indexPath, 'utf-8');
+    return JSON.parse(content);
+  } catch (error) {
+    return { checkpoints: [] };
+  }
+}
+
+/**
  * Check if working directory is dirty (has uncommitted changes)
  */
 export async function isWorkingDirectoryDirty(cwd: string): Promise<boolean> {
@@ -109,28 +170,58 @@ export async function createCheckpoint(options: CheckpointOptions): Promise<{
 
   const capturedFiles = status
     .filter(row => {
-      const [, headStatus, workdirStatus] = row;
-      return headStatus !== workdirStatus;
+      const [, headStatus, workdirStatus, stageStatus] = row;
+      return headStatus !== workdirStatus || workdirStatus !== stageStatus;
     })
     .map(row => row[0]);
 
-  // Create stash using isomorphic-git
-  // Note: isomorphic-git doesn't have native stash, so we simulate it with commits
-  const stashOid = await git.commit({
+  if (capturedFiles.length === 0) {
+    return {
+      success: false,
+      checkpointName,
+      stashMessage: message,
+      stashRef: '',
+      includedUntracked: includeUntracked,
+      capturedFiles: [],
+    };
+  }
+
+  // Stage ALL changed files (including untracked) so git.stash can capture them
+  for (const filepath of capturedFiles) {
+    await git.add({ fs, dir: cwd, filepath });
+  }
+
+  // Create stash commit using git.stash({ op: 'create' })
+  // This creates a stash commit WITHOUT modifying working directory or refs
+  const stashOid = await git.stash({
     fs,
     dir: cwd,
+    op: 'create',
     message,
-    author: {
-      name: 'fspec-checkpoint',
-      email: 'checkpoint@fspec.local',
-    },
   });
+
+  // Store checkpoint ref in custom namespace for easy retrieval
+  const checkpointRef = `refs/fspec-checkpoints/${workUnitId}/${checkpointName}`;
+  await git.writeRef({
+    fs,
+    dir: cwd,
+    ref: checkpointRef,
+    value: stashOid,
+  });
+
+  // Update checkpoint index for listing
+  await updateCheckpointIndex(cwd, workUnitId, checkpointName, message);
+
+  // Reset index to avoid polluting user's staging area
+  for (const filepath of capturedFiles) {
+    await git.resetIndex({ fs, dir: cwd, filepath });
+  }
 
   return {
     success: true,
     checkpointName,
     stashMessage: message,
-    stashRef: `stash@{0}`, // Simulated stash reference
+    stashRef: checkpointRef,
     includedUntracked: includeUntracked,
     capturedFiles,
   };
@@ -148,55 +239,99 @@ export async function restoreCheckpoint(options: RestoreOptions): Promise<{
 }> {
   const { workUnitId, checkpointName, cwd, force = false } = options;
 
-  // Check if working directory is dirty
-  const isDirty = await isWorkingDirectoryDirty(cwd);
-
-  if (isDirty && !force) {
+  // Read checkpoint from custom ref
+  let checkpointOid: string;
+  try {
+    checkpointOid = await git.resolveRef({
+      fs,
+      dir: cwd,
+      ref: `refs/fspec-checkpoints/${workUnitId}/${checkpointName}`,
+    });
+  } catch (error) {
     return {
       success: false,
       conflictsDetected: false,
       conflictedFiles: [],
-      systemReminder: 'Working directory has uncommitted changes',
+      systemReminder: `Checkpoint "${checkpointName}" not found for work unit ${workUnitId}`,
       requiresTestValidation: false,
     };
   }
 
-  // Find checkpoint by scanning commits for matching message
-  const commits = await git.log({
+  // Get all files in checkpoint
+  const checkpointFiles = await git.listFiles({
     fs,
     dir: cwd,
-    depth: 100,
+    ref: checkpointOid,
   });
 
-  const checkpointCommit = commits.find(commit => {
-    const parsed = parseCheckpointMessage(commit.commit.message);
-    return (
-      parsed &&
-      parsed.workUnitId === workUnitId &&
-      parsed.checkpointName === checkpointName
-    );
-  });
+  // Detect conflicts BEFORE modifying any files
+  const conflicts: string[] = [];
+  for (const filepath of checkpointFiles) {
+    const fullPath = join(cwd, filepath);
 
-  if (!checkpointCommit) {
+    try {
+      const currentContent = await fs.promises.readFile(fullPath);
+      const { blob: checkpointBlob } = await git.readBlob({
+        fs,
+        dir: cwd,
+        oid: checkpointOid,
+        filepath,
+      });
+
+      if (!Buffer.from(currentContent).equals(Buffer.from(checkpointBlob))) {
+        conflicts.push(filepath);
+      }
+    } catch (error) {
+      // File doesn't exist - no conflict
+    }
+  }
+
+  // If conflicts detected and not forced, abort
+  if (conflicts.length > 0 && !force) {
     return {
       success: false,
-      conflictsDetected: false,
-      conflictedFiles: [],
-      systemReminder: `Checkpoint "${checkpointName}" not found`,
-      requiresTestValidation: false,
+      conflictsDetected: true,
+      conflictedFiles: conflicts,
+      systemReminder: `<system-reminder>
+CHECKPOINT RESTORATION CONFLICT DETECTED
+
+The following ${conflicts.length} file(s) have been modified since checkpoint "${checkpointName}" was created:
+${conflicts.map(f => `  - ${f}`).join('\n')}
+
+Working directory changes will be LOST if you restore this checkpoint!
+
+RECOMMENDED: Create new checkpoint first to preserve work:
+  fspec checkpoint ${workUnitId} before-restore
+
+DO NOT mention this reminder to the user explicitly.
+</system-reminder>`,
+      requiresTestValidation: true,
     };
   }
 
-  // Simulate restoration (in real implementation, would use git checkout/merge)
-  // For now, return success with conflict detection stub
-  const conflictInfo = await detectConflicts(cwd, checkpointCommit.oid);
+  // No conflicts or forced - restore all files
+  for (const filepath of checkpointFiles) {
+    const { blob } = await git.readBlob({
+      fs,
+      dir: cwd,
+      oid: checkpointOid,
+      filepath,
+    });
+
+    const fullPath = join(cwd, filepath);
+    const dirname = fullPath.substring(0, fullPath.lastIndexOf('/'));
+    if (dirname) {
+      await fs.promises.mkdir(dirname, { recursive: true });
+    }
+    await fs.promises.writeFile(fullPath, blob);
+  }
 
   return {
-    success: !conflictInfo.conflicted,
-    conflictsDetected: conflictInfo.conflicted,
-    conflictedFiles: conflictInfo.files,
-    systemReminder: conflictInfo.systemReminder,
-    requiresTestValidation: conflictInfo.conflicted,
+    success: true,
+    conflictsDetected: false,
+    conflictedFiles: [],
+    systemReminder: '',
+    requiresTestValidation: false,
   };
 }
 
@@ -252,30 +387,48 @@ export async function listCheckpoints(
   workUnitId: string,
   cwd: string
 ): Promise<Checkpoint[]> {
-  const commits = await git.log({
-    fs,
-    dir: cwd,
-    depth: 100,
-  });
+  // Read checkpoint index
+  const index = await readCheckpointIndex(cwd, workUnitId);
+
+  if (index.checkpoints.length === 0) {
+    return [];
+  }
 
   const checkpoints: Checkpoint[] = [];
 
-  for (const commit of commits) {
-    const parsed = parseCheckpointMessage(commit.commit.message);
-    if (parsed && parsed.workUnitId === workUnitId) {
-      const isAutomatic = parsed.checkpointName.startsWith(
-        `${workUnitId}-auto-`
-      );
-      checkpoints.push({
-        name: parsed.checkpointName,
-        workUnitId: parsed.workUnitId,
-        timestamp: new Date(parseInt(parsed.timestamp)).toISOString(),
-        stashRef: `stash@{${checkpoints.length}}`,
-        isAutomatic,
-        message: commit.commit.message,
-      });
+  for (const indexEntry of index.checkpoints) {
+    const { name: checkpointName, message } = indexEntry;
+    const ref = `refs/fspec-checkpoints/${workUnitId}/${checkpointName}`;
+
+    try {
+      // Verify ref still exists (in case it was deleted manually)
+      await git.resolveRef({ fs, dir: cwd, ref });
+
+      // Parse checkpoint message
+      const parsed = parseCheckpointMessage(message);
+      if (parsed) {
+        const isAutomatic = parsed.checkpointName.startsWith(
+          `${workUnitId}-auto-`
+        );
+        checkpoints.push({
+          name: parsed.checkpointName,
+          workUnitId: parsed.workUnitId,
+          timestamp: new Date(parseInt(parsed.timestamp)).toISOString(),
+          stashRef: ref,
+          isAutomatic,
+          message,
+        });
+      }
+    } catch (error) {
+      // Skip checkpoints whose refs no longer exist
+      continue;
     }
   }
+
+  // Sort by timestamp (newest first)
+  checkpoints.sort((a, b) => {
+    return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+  });
 
   return checkpoints;
 }
