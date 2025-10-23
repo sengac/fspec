@@ -1,0 +1,20 @@
+{
+  "scenarios": [
+    {
+      "name": "Build once before tests to prevent crashes",
+      "testMappings": []
+    },
+    {
+      "name": "Remove sequential test configuration after build separation",
+      "testMappings": []
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 0,
+    "coveragePercent": 0,
+    "testFiles": [],
+    "implFiles": [],
+    "totalLinesCovered": 0
+  }
+}

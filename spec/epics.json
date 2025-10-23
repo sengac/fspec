@@ -185,6 +185,17 @@
         "AGENT-016",
         "AGENT-017"
       ]
+    },
+    "research-tools": {
+      "id": "research-tools",
+      "title": "External Research Tool Integration",
+      "createdAt": "2025-10-23T21:16:06.452Z",
+      "workUnits": [
+        "RES-002",
+        "RES-003",
+        "RES-004",
+        "RES-005"
+      ]
     }
   }
 }
