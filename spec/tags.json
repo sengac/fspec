@@ -632,6 +632,10 @@
         {
           "name": "@type-system",
           "description": "Work item type system features for categorizing work (story, task, bug)"
+        },
+        {
+          "name": "@vitest",
+          "description": "Vitest testing framework related features"
         }
       ],
       "rule": "Use technical tags to highlight specific architectural concerns."
@@ -1082,7 +1086,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-10-22T08:40:34.039Z",
+    "lastUpdated": "2025-10-23T05:59:29.402Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

@@ -13,7 +13,7 @@
     "install:local": "./scripts/install-local.sh",
     "format": "prettier --write 'src/**/*.ts'",
     "format:spec": "fspec format",
-    "test": "vitest run",
+    "test": "npm run build && vitest run",
     "test:watch": "vitest --watch"
   },
   "keywords": [
@@ -81,6 +81,6 @@
     "prettier": "^3.6.2",
     "typescript": "^5.9.2",
     "vite": "^7.1.5",
-    "vitest": "^2.1.8"
+    "vitest": "^4.0.1"
   }
 }

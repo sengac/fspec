@@ -114,19 +114,19 @@ export async function showFeature(
 
       if (workUnits.length > 0) {
         textOutput += '\n\n';
-        textOutput += chalk.bold('Work Units:') + '\n';
+        textOutput += 'Work Units:\n';
         for (const wu of workUnits) {
           const levelText =
             wu.level === 'feature' ? 'feature-level' : 'scenario-level';
-          textOutput += `\n  ${chalk.cyan(wu.id)} (${levelText}) - ${wu.title}\n`;
+          textOutput += `\n  ${wu.id} (${levelText}) - ${wu.title}\n`;
           for (const scenario of wu.scenarios) {
             const fileName = featurePath.split('/').pop() || '';
-            textOutput += `    ${chalk.gray(`${fileName}:${scenario.line}`)} - ${scenario.name}\n`;
+            textOutput += `    ${fileName}:${scenario.line} - ${scenario.name}\n`;
           }
         }
       } else {
         textOutput += '\n\n';
-        textOutput += chalk.bold('Work Units:') + ' None\n';
+        textOutput += 'Work Units: None\n';
       }
 
       outputContent = textOutput;

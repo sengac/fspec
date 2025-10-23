@@ -193,14 +193,6 @@ async function removeOtherAgentFiles(
       continue;
     }
 
-    // Remove root stub file
-    const rootStubPath = join(cwd, agent.rootStubFile);
-    try {
-      await rm(rootStubPath, { force: true });
-    } catch {
-      // File may not exist
-    }
-
     // Remove full doc file
     const docPath = join(cwd, 'spec', agent.docTemplate);
     try {

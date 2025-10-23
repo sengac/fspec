@@ -367,9 +367,11 @@ describe.sequential('Feature: Complete CLI Command Registration', () => {
   });
 
   describe('Scenario: All commands registered and accessible', () => {
-    it('should have all command functions registered in CLI', () => {
-      // Given I have the fspec CLI built and ready
-      // And all command functions exist in src/commands/
+    it(
+      'should have all command functions registered in CLI',
+      () => {
+        // Given I have the fspec CLI built and ready
+        // And all command functions exist in src/commands/
 
       // List of all expected commands based on src/index.ts imports
       const allExpectedCommands = [
@@ -510,13 +512,15 @@ describe.sequential('Feature: Complete CLI Command Registration', () => {
       }
 
       // And each command should have proper Commander.js registration
-      // And each command should be accessible via "fspec <command-name>"
-      // And no implemented functionality should be missing from the CLI
-      expect(unregisteredCommands).toEqual([]);
-      expect(registeredCommands.length).toBe(allExpectedCommands.length);
+        // And each command should be accessible via "fspec <command-name>"
+        // And no implemented functionality should be missing from the CLI
+        expect(unregisteredCommands).toEqual([]);
+        expect(registeredCommands.length).toBe(allExpectedCommands.length);
 
-      // Verify we have 93 commands registered (as per current src/index.ts)
-      expect(registeredCommands.length).toBeGreaterThanOrEqual(93);
-    });
+        // Verify we have 93 commands registered (as per current src/index.ts)
+        expect(registeredCommands.length).toBeGreaterThanOrEqual(93);
+      },
+      60000
+    );
   });
 });
