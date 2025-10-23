@@ -183,6 +183,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@system-reminder` | Anti-drift pattern for AI agents using contextual reminders |
 | `@template` | Template System |
 | `@type-system` | Work item type system features for categorizing work (story, task, bug) |
+| `@vitest` | Vitest testing framework related features |
 
 **Rule**: Use technical tags to highlight specific architectural concerns.
 
@@ -512,7 +513,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-10-22T08:40:34.039Z_
+_Last updated: 2025-10-23T05:59:29.402Z_
 
 **Update Command**: `fspec tag-stats`
 

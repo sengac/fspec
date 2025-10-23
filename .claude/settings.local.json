@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cat:*)",
+      "Bash(./dist/index.js:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

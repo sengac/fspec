@@ -50,15 +50,9 @@ export const AgentSelector: React.FC<AgentSelectorProps> = ({
   if (selectedAgent) {
     const agent = agents.find(a => a.id === selectedAgent);
     const agentName = agent?.name || selectedAgent;
-    const activationMessage = agent
-      ? getActivationMessage(agent)
-      : 'Run /fspec in your AI agent to activate';
     return (
       <Box flexDirection="column">
         <Text color="green">✓ Installed fspec for {agentName}</Text>
-        <Text> </Text>
-        <Text>Next steps:</Text>
-        <Text>{activationMessage}</Text>
       </Box>
     );
   }

@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-22T13:10:57.439Z"
+    "lastUpdated": "2025-10-23T06:51:01.419Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -10465,11 +10465,55 @@
       "id": "BUG-035",
       "title": "Duplicate 'Next steps' message in fspec init output",
       "type": "story",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2025-10-22T13:52:15.040Z",
-      "updatedAt": "2025-10-22T13:52:15.040Z",
+      "updatedAt": "2025-10-23T01:24:23.529Z",
       "description": "When running 'fspec init', the success message displays 'Next steps: Run /fspec in Claude Code to activate' twice - once after claude installation and once after Claude Code installation. Should only display once at the end.",
-      "children": []
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-23T01:16:17.617Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-23T01:19:53.264Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-23T01:22:36.653Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-23T01:23:50.179Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-23T01:24:23.530Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using fspec init interactively",
+        "action": "complete the initialization process",
+        "benefit": "I see clear next steps only once"
+      },
+      "rules": [
+        "Next steps message should only appear once in init output",
+        "AgentSelector component shows success message with Next steps in interactive mode",
+        "Action handler also shows success message with Next steps for all modes",
+        "CLI mode should not be affected by this fix"
+      ],
+      "examples": [
+        "Developer runs 'fspec init' interactively, selects Claude, sees 'Next steps' message twice",
+        "Developer runs 'fspec init --agent=claude' in CLI mode, sees 'Next steps' message once",
+        "After fix: interactive mode should show success message only once with Next steps at the end"
+      ],
+      "architectureNotes": [
+        "AgentSelector component (src/components/AgentSelector.tsx:58-61) displays success message with 'Next steps' when agent is selected",
+        "Action handler in init.ts (line 394) also displays success message with 'Next steps' after executeInit completes",
+        "Solution: Remove 'Next steps' section from AgentSelector component (lines 60-61), keep only in action handler"
+      ],
+      "estimate": 1
     },
     "AGENT-001": {
       "id": "AGENT-001",
@@ -10657,6 +10701,260 @@
       "description": "Verify fspec init --agent=codex-cli works correctly: creates .codex/commands/fspec.md, creates spec/CODEX-CLI.md, shows correct activation instructions, and supports full ACDD workflow",
       "epic": "agent-testing",
       "children": []
+    },
+    "BUG-036": {
+      "id": "BUG-036",
+      "title": "Tests rebuilding dist causing system crashes",
+      "type": "bug",
+      "status": "implementing",
+      "createdAt": "2025-10-23T01:52:20.098Z",
+      "updatedAt": "2025-10-23T05:31:37.876Z",
+      "description": "Tests are executing code that rebuilds dist/ directory during test execution, causing system instability and crashes. Tests appear to run in parallel despite sequential configuration, leading to race conditions and complete system failure.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-23T01:52:25.179Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-23T02:45:59.253Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-23T02:46:10.101Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-23T02:46:56.251Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-23T05:31:37.876Z"
+        }
+      ],
+      "questions": [
+        {
+          "text": "@human: Which test files are executing CLI commands that use ./dist/index.js?",
+          "selected": true,
+          "answer": "Build ONCE before tests start. Change npm test script to 'npm run build && vitest'. Remove sequential test configuration since parallel builds won't be an issue anymore. Tests can still execute ./dist/index.js but never rebuild during test execution."
+        },
+        {
+          "text": "@human: What's actually causing the crash - tests running in parallel, unnecessary npm run build calls, or both?",
+          "selected": true,
+          "answer": "Uncertain, but likely tests running in parallel despite sequential configuration. Some tests may be calling 'npm run build' unnecessarily, which is bad practice if avoidable. The combination causes system crashes."
+        },
+        {
+          "text": "@human: What's the desired fix approach?",
+          "selected": true,
+          "answer": "Build ONCE before tests start. Change npm test script to 'npm run build && vitest'. Remove sequential test configuration since parallel builds won't be an issue anymore. Tests can still execute ./dist/index.js but never rebuild during test execution."
+        }
+      ],
+      "rules": [
+        "Integration tests in src/commands/__tests__/ and other test areas that spawn child processes to run actual fspec commands (e.g., exec('./dist/index.js validate')). These tests execute the CLI end-to-end.",
+        "Uncertain, but likely tests running in parallel despite sequential configuration. Some tests may be calling 'npm run build' unnecessarily, which is bad practice if avoidable. The combination causes system crashes.",
+        "Build ONCE before tests start. Change npm test script to 'npm run build && vitest'. Remove sequential test configuration since parallel builds won't be an issue anymore. Tests can still execute ./dist/index.js but never rebuild during test execution.",
+        "Tests must NEVER call 'npm run build' during execution",
+        "Build must happen ONCE before all tests start",
+        "Uncertain, but likely tests running in parallel despite sequential configuration. Some tests may be calling 'npm run build' unnecessarily, which is bad practice if avoidable. The combination causes system crashes.",
+        "Build ONCE before tests start. Change npm test script to 'npm run build && vitest'. Remove sequential test configuration since parallel builds won't be an issue anymore. Tests can still execute ./dist/index.js but never rebuild during test execution."
+      ],
+      "examples": [
+        "BEFORE: npm test runs vitest directly, tests rebuild dist/ and crash. AFTER: npm test runs 'npm run build && vitest', dist/ built once, tests run safely.",
+        "BEFORE: Sequential test config needed to prevent parallel build conflicts. AFTER: Can remove sequential config, tests run in parallel safely."
+      ],
+      "userStory": {
+        "role": "developer running tests",
+        "action": "run tests without system crashes from parallel dist rebuilds",
+        "benefit": "I have reliable test execution with stable ./dist/index.js binary"
+      },
+      "estimate": 2
+    },
+    "DEP-002": {
+      "id": "DEP-002",
+      "title": "Upgrade Vitest from 2.1.8 to 4.0.0",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-23T05:55:26.427Z",
+      "updatedAt": "2025-10-23T06:02:38.051Z",
+      "description": "Upgrade Vitest testing framework to version 4.0.0 (released October 22, 2025) which includes browser mode stabilization, visual regression testing support, and improved stability. This upgrade requires migration guide review, configuration updates, and comprehensive testing to ensure no breaking changes affect existing test suite.",
+      "epic": "test-coverage",
+      "children": [],
+      "architectureNotes": [
+        "Vitest 4.0 Release Notes (Oct 22, 2025):\n- Browser Mode stabilization (no longer experimental)\n- Visual regression testing with toMatchScreenshot assertion\n- Context import changed from @vitest/browser/context to vitest/browser\n- Pool default remains 'forks' (introduced in 2.0)\n- Migration guide: https://vitest.dev/blog/vitest-4"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-23T05:56:09.489Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-23T05:59:48.049Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-23T05:59:52.769Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-23T06:02:34.367Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-23T06:02:38.051Z"
+        }
+      ],
+      "rules": [
+        "All existing tests must pass after upgrade with no modifications",
+        "Configuration changes must maintain safety settings (singleFork, fileParallelism: false)",
+        "Must review official Vitest 4.0 migration guide before upgrading"
+      ],
+      "examples": [
+        "Run npm install -D vitest@^4.0.0 to upgrade package",
+        "Update vitest.config.ts if breaking changes affect configuration syntax",
+        "Run full test suite with npm test to verify compatibility",
+        "Check npm run build to ensure TypeScript compilation still works"
+      ],
+      "questions": [
+        {
+          "text": "@human: Should we explore browser mode features in Vitest 4.0 or keep using node environment only?",
+          "selected": true,
+          "answer": "Keep node environment only - fspec is a CLI tool with no browser requirements"
+        },
+        {
+          "text": "@human: Do we want to adopt visual regression testing features or defer for future work?",
+          "selected": true,
+          "answer": "Defer visual regression testing - not applicable to CLI tools"
+        }
+      ],
+      "userStory": {
+        "role": "fspec developer",
+        "action": "upgrade Vitest to version 4.0 for improved stability and latest features",
+        "benefit": "I benefit from bug fixes, performance improvements, and maintain compatibility with the latest testing ecosystem"
+      },
+      "estimate": 2
+    },
+    "BUG-037": {
+      "id": "BUG-037",
+      "title": "Fix 2 failing test suites (version-display and cli-command-registration timeout)",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-23T06:29:08.901Z",
+      "updatedAt": "2025-10-23T06:34:40.910Z",
+      "description": "Test suite failures preventing npm test from passing: 1) version-display.test.ts has no active tests (all commented out), 2) cli-command-registration.test.ts times out after 30s because it executes 93+ CLI commands sequentially using execSync",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-23T06:29:24.460Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-23T06:31:23.142Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-23T06:31:49.455Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-23T06:32:39.053Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-23T06:34:40.910Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer running npm test",
+        "action": "have all tests pass successfully",
+        "benefit": "I can verify code quality and ensure CI/CD pipeline succeeds"
+      },
+      "rules": [
+        "All test files must contain at least one active test suite or be removed",
+        "CLI command registration tests must complete within 30 seconds",
+        "Tests that execute many CLI commands should use parallelization or mocking to reduce execution time"
+      ],
+      "examples": [
+        "version-display.test.ts has all tests commented out, causing Vitest to report 'No test suite found in file'",
+        "cli-command-registration.test.ts executes 93+ commands sequentially with execSync, taking over 30 seconds and timing out",
+        "After fixing version-display.test.ts, running 'npm test' should not show 'No test suite found' error",
+        "After optimizing cli-command-registration.test.ts, the test should complete in under 30 seconds"
+      ],
+      "estimate": 2
+    },
+    "BUG-038": {
+      "id": "BUG-038",
+      "title": "show-feature test failures - Work Units display assertions failing",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-10-23T06:49:57.837Z",
+      "updatedAt": "2025-10-23T07:05:47.975Z",
+      "description": "Three tests in show-feature.test.ts are failing with toContain assertions even though the expected content appears to be present in the output. Tests: 1) Display work units linked to feature (feature-level tags), 2) Display multiple work units from scenario-level tags, 3) Display work units when feature has no work unit tag. The content IS in the output but toContain is failing.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-23T06:50:51.336Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-23T06:59:18.606Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-23T07:03:12.372Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-23T07:03:48.010Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-23T07:05:47.975Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer running tests",
+        "action": "verify show-feature output contains expected work unit information",
+        "benefit": "I can validate the command output without ANSI escape codes interfering with assertions"
+      },
+      "rules": [
+        "Test assertions must work on plain text output without ANSI escape codes",
+        "showFeature function must return content that can be tested with .toContain() assertions",
+        "ANSI codes should only be present in stdout display, not in returned content for testing",
+        "Option C: Remove chalk from showFeature() function. This is architecturally correct (separation of concerns), fixes the file-writing bug, makes tests pass without changes, and follows Single Responsibility Principle - the function generates data, the command handles display."
+      ],
+      "examples": [
+        "Test checks for 'AUTH-001 (feature-level)' and it matches without ANSI codes",
+        "Test checks for 'Work Units: None' and it matches exactly",
+        "Running showFeature with format=text returns plain text in result.content"
+      ],
+      "questions": [
+        {
+          "text": "@human: Should we strip ANSI codes from result.content (option A), or return both raw and formatted content with a flag (option B)?",
+          "selected": true,
+          "answer": "Option C: Remove chalk from showFeature() function. This is architecturally correct (separation of concerns), fixes the file-writing bug, makes tests pass without changes, and follows Single Responsibility Principle - the function generates data, the command handles display."
+        }
+      ],
+      "estimate": 1
+    },
+    "BUG-039": {
+      "id": "BUG-039",
+      "title": "init command incorrectly deletes project root CLAUDE.md file",
+      "type": "story",
+      "status": "specifying",
+      "createdAt": "2025-10-23T07:25:06.416Z",
+      "updatedAt": "2025-10-23T07:25:24.545Z",
+      "description": "The removeOtherAgentFiles function in init.ts deletes agent.rootStubFile for all agents not being installed. For Claude, this is CLAUDE.md, which conflicts with the legitimate project documentation file at the root. This causes user data loss when switching agents or running init commands.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-23T07:25:24.546Z"
+        }
+      ]
     }
   },
   "states": {
@@ -10675,7 +10973,6 @@
       "CLI-007",
       "BUG-031",
       "BOARD-003",
-      "BUG-035",
       "AGENT-001",
       "AGENT-002",
       "AGENT-003",
@@ -10696,10 +10993,13 @@
     ],
     "specifying": [
       "FEAT-017",
-      "GIT-004"
+      "GIT-004",
+      "BUG-039"
     ],
     "testing": [],
-    "implementing": [],
+    "implementing": [
+      "BUG-036"
+    ],
     "validating": [],
     "done": [
       "BUG-007",
@@ -10875,7 +11175,11 @@
       "INIT-010",
       "DOC-005",
       "BUG-033",
-      "BUG-034"
+      "BUG-034",
+      "BUG-035",
+      "DEP-002",
+      "BUG-037",
+      "BUG-038"
     ],
     "blocked": []
   }

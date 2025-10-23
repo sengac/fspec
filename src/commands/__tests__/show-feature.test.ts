@@ -1,3 +1,10 @@
+/**
+ * Feature: spec/features/show-feature.feature
+ *
+ * This test file validates the acceptance criteria defined in the feature file.
+ * Scenarios in this test map directly to scenarios in the Gherkin feature.
+ */
+
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdir, writeFile, rm, readFile, access } from 'fs/promises';
 import { join } from 'path';

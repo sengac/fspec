@@ -1,3 +1,5 @@
+@done
+@BUG-038
 @cli
 @feature-management
 @read-only

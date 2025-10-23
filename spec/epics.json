@@ -64,7 +64,8 @@
         "COV-049",
         "COV-050",
         "COV-051",
-        "BUG-007"
+        "BUG-007",
+        "DEP-002"
       ]
     },
     "work-item-types": {
