@@ -1,5 +1,5 @@
 /**
- * Feature: spec/features/duplicate-next-steps-message-in-fspec-init-output.feature
+ * Feature: spec/features/duplicate-installation-success-message-in-fspec-init.feature
  *
  * This test file validates the acceptance criteria defined in the feature file.
  * Scenarios in this test map directly to scenarios in the Gherkin feature.
@@ -11,7 +11,7 @@ import React from 'react';
 import { AgentSelector } from '../AgentSelector';
 import type { AgentConfig } from '../../utils/agentRegistry';
 
-describe('Feature: Duplicate "Next steps" message in fspec init output', () => {
+describe('Feature: Duplicate installation success message in fspec init', () => {
   const mockAgents: AgentConfig[] = [
     {
       id: 'claude',
@@ -30,10 +30,10 @@ describe('Feature: Duplicate "Next steps" message in fspec init output', () => {
     },
   ];
 
-  describe('Scenario: Interactive mode shows single "Next steps" message (AFTER FIX)', () => {
-    it('should NOT show "Next steps:" in AgentSelector when agent is selected (FIXED BEHAVIOR)', async () => {
-      // Given I run 'fspec init' in interactive mode
-      // When I select Claude from the agent menu
+  describe('Scenario: Initialize fspec for Claude Code without duplicate message', () => {
+    it('should NOT display duplicate success message from AgentSelector component', async () => {
+      // Given: I am in a project directory without fspec initialized
+      // When: I run 'fspec init' and select Claude Code (simulated by pressing Enter)
       const { lastFrame, stdin } = render(
         React.createElement(AgentSelector, {
           agents: mockAgents,
@@ -54,11 +54,14 @@ describe('Feature: Duplicate "Next steps" message in fspec init output', () => {
 
       const output = lastFrame();
 
-      // Then the AgentSelector component displays a success message WITHOUT 'Next steps:'
-      // This is the DESIRED behavior after the fix
-      expect(output).toContain('✓ Installed fspec for Claude Code');
-      expect(output).not.toContain('Next steps:');
-      expect(output).not.toContain('Run /fspec in Claude Code to activate');
+      // Then: The AgentSelector should NOT display any success message
+      // The success message should ONLY come from init.ts action handler
+      // This prevents duplicate messages (one from component, one from action handler)
+      expect(output).not.toContain('✓ Installed fspec for');
+      expect(output).not.toContain('✓ Installed fspec for Claude Code');
+
+      // The component should exit silently after submitting the selection
+      // allowing the action handler to display the comprehensive success message with file list
     });
   });
 });

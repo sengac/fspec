@@ -48,13 +48,9 @@ export const AgentSelector: React.FC<AgentSelectorProps> = ({
   }, [selectedAgent, onSubmit, exit]);
 
   if (selectedAgent) {
-    const agent = agents.find(a => a.id === selectedAgent);
-    const agentName = agent?.name || selectedAgent;
-    return (
-      <Box flexDirection="column">
-        <Text color="green">✓ Installed fspec for {agentName}</Text>
-      </Box>
-    );
+    // Exit silently - success message will be displayed by init.ts action handler
+    // This prevents duplicate success messages
+    return null;
   }
 
   return (

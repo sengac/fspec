@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-23T06:51:01.419Z"
+    "lastUpdated": "2025-10-23T21:16:57.711Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -10955,6 +10955,165 @@
           "timestamp": "2025-10-23T07:25:24.546Z"
         }
       ]
+    },
+    "BUG-040": {
+      "id": "BUG-040",
+      "title": "Duplicate installation success message in fspec init",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-23T21:04:30.882Z",
+      "updatedAt": "2025-10-23T21:39:37.842Z",
+      "description": "fspec init displays two similar messages: '✓ Installed fspec for claude' and '✓ Installed fspec for Claude Code'. The last message is redundant and should be removed.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-23T21:04:35.481Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-23T21:33:27.411Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-23T21:36:15.622Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-23T21:36:51.749Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-23T21:39:37.842Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using fspec",
+        "action": "see clear non-duplicate success messages after initialization",
+        "benefit": "I understand installation status without confusion"
+      },
+      "rules": [
+        "Only one success message should be displayed after installation completes",
+        "The success message should include agent name, installed files, and next steps",
+        "The duplicate final message (\"✓ Installed fspec for Claude Code\") should be removed"
+      ],
+      "examples": [
+        "Running 'fspec init' for Claude Code shows: '✓ Installed fspec for claude' with file list and next steps, then '✓ Installed fspec for Claude Code' (CURRENT BEHAVIOR - duplicate)",
+        "Running 'fspec init' for Claude Code should show: '✓ Installed fspec for claude' with file list and next steps, WITHOUT the final duplicate message (EXPECTED BEHAVIOR)",
+        "Other agents (Cursor, Cline, Windsurf, etc.) should also show only one success message without duplicates"
+      ],
+      "estimate": 2
+    },
+    "RES-002": {
+      "id": "RES-002",
+      "title": "Research framework with custom script integration",
+      "type": "story",
+      "status": "specifying",
+      "createdAt": "2025-10-23T21:16:17.909Z",
+      "updatedAt": "2025-10-23T21:32:29.283Z",
+      "description": "Create core research framework that allows users to select from available research endpoints (custom scripts like hooks) during Example Mapping. Should prompt users to research questions before/during Example Mapping sessions, display available tools, and execute selected research scripts.",
+      "epic": "research-tools",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-23T21:16:48.878Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using fspec during Example Mapping",
+        "action": "research questions using external tools before defining acceptance criteria",
+        "benefit": "I make informed decisions based on external knowledge sources"
+      },
+      "questions": [
+        {
+          "text": "@human: Should the research command be interactive (prompts user step-by-step) or CLI-based with flags (e.g., fspec research --tool=perplexity --query='question')?",
+          "selected": true,
+          "answer": "CLI-based with flags. Running 'fspec research' without flags displays instructional output for AI agents: lists available tools, their descriptions, and usage examples with --tool= flag. Example: 'fspec research --tool=perplexity --query=\"question\"'. The instructional output guides AI to use the correct tool and syntax."
+        },
+        {
+          "text": "@human: How should research scripts be stored? Should we use a similar structure to hooks (e.g., spec/research-scripts/)?",
+          "selected": true,
+          "answer": "Yes, use similar structure to hooks. Research scripts stored in spec/research-scripts/ directory. Each tool is a script file (e.g., spec/research-scripts/perplexity.sh, spec/research-scripts/jira.sh, spec/research-scripts/confluence.sh)."
+        },
+        {
+          "text": "@human: Should research results be automatically attached to work units, or should the user manually decide what to attach?",
+          "selected": true,
+          "answer": "Prompt user to attach research results. After research completes, ask: 'Attach research results to work unit RES-XXX? (y/n)'. If yes, save as attachment and optionally add to architecture notes/example mapping data. If no, display results only (user can refine query or run additional research)."
+        },
+        {
+          "text": "@human: Should fspec prompt to research during Example Mapping automatically, or should it be manually invoked with 'fspec research'?",
+          "selected": true,
+          "answer": "Automatically prompt during Example Mapping. When user adds a question with 'fspec add-question', system asks: 'Would you like to research this question? (y/n)'. If yes, display available research tools and guide user to run 'fspec research --tool=<name> --query=\"question\"'. User can also manually invoke 'fspec research' anytime."
+        },
+        {
+          "text": "@human: What should the research script interface look like? Should scripts receive JSON context via stdin (like hooks) and return JSON results via stdout?",
+          "selected": true,
+          "answer": "Research scripts are standalone CLI tools (like fspec). Each script defines its own interface, flags, and output format. When 'fspec research' lists tools, it shows how to get help (e.g., 'perplexity --help'). AI agents learn tool usage from tool's own documentation/help output. Tools return results in their chosen format (JSON, text, markdown, etc.), and AI interprets the response. No mandated stdin/stdout contract."
+        },
+        {
+          "text": "@human: Should there be a registry of available research tools (similar to tags.json), or should tools be auto-discovered from the research-scripts directory?",
+          "selected": true,
+          "answer": "Auto-discover tools from spec/research-scripts/ directory. No registry file needed. fspec scans directory for executable scripts, lists them when running 'fspec research' without flags. Tool names derived from filenames (e.g., perplexity.sh → 'perplexity'). Discovery happens dynamically at runtime."
+        }
+      ],
+      "rules": [
+        "CLI-based with flags. Running 'fspec research' without flags displays instructional output for AI agents: lists available tools, their descriptions, and usage examples with --tool= flag. Example: 'fspec research --tool=perplexity --query=\"question\"'. The instructional output guides AI to use the correct tool and syntax.",
+        "Yes, use similar structure to hooks. Research scripts stored in spec/research-scripts/ directory. Each tool is a script file (e.g., spec/research-scripts/perplexity.sh, spec/research-scripts/jira.sh, spec/research-scripts/confluence.sh).",
+        "Yes, automatically attach research results to work units. Results saved as attachments and referenced in example mapping data. Architecture notes in feature files should reference research findings where appropriate. Example: 'Research via Perplexity on 2025-10-24: [summary]' in architecture notes section.",
+        "Prompt user to attach research results. After research completes, ask: 'Attach research results to work unit RES-XXX? (y/n)'. If yes, save as attachment and optionally add to architecture notes/example mapping data. If no, display results only (user can refine query or run additional research).",
+        "Automatically prompt during Example Mapping. When user adds a question with 'fspec add-question', system asks: 'Would you like to research this question? (y/n)'. If yes, display available research tools and guide user to run 'fspec research --tool=<name> --query=\"question\"'. User can also manually invoke 'fspec research' anytime.",
+        "Research scripts are standalone CLI tools (like fspec). Each script defines its own interface, flags, and output format. When 'fspec research' lists tools, it shows how to get help (e.g., 'perplexity --help'). AI agents learn tool usage from tool's own documentation/help output. Tools return results in their chosen format (JSON, text, markdown, etc.), and AI interprets the response. No mandated stdin/stdout contract.",
+        "Auto-discover tools from spec/research-scripts/ directory. No registry file needed. fspec scans directory for executable scripts, lists them when running 'fspec research' without flags. Tool names derived from filenames (e.g., perplexity.sh → 'perplexity'). Discovery happens dynamically at runtime."
+      ],
+      "examples": [
+        "Developer runs 'fspec research' without flags, sees list of available tools: perplexity, jira, confluence, with descriptions and usage examples for each",
+        "Developer runs 'fspec research --tool=perplexity --query=\"How does OAuth2 work?\"', tool executes and returns formatted results, system asks 'Attach research results to work unit? (y/n)'",
+        "During Example Mapping, developer runs 'fspec add-question AUTH-001 \"@human: Should we support OAuth2?\"', system prompts 'Would you like to research this question? (y/n)'",
+        "Developer chooses to attach results, research output saved to spec/attachments/AUTH-001/perplexity-oauth2-research-2025-10-24.md and referenced in work unit"
+      ]
+    },
+    "RES-003": {
+      "id": "RES-003",
+      "title": "Perplexity research tool integration",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-10-23T21:16:30.953Z",
+      "updatedAt": "2025-10-23T21:16:37.879Z",
+      "description": "Create custom script for Perplexity API integration. Allows users to research questions using Perplexity during Example Mapping. Script should accept question input, call Perplexity API, and return formatted research results.",
+      "epic": "research-tools",
+      "children": [],
+      "dependsOn": [
+        "RES-002"
+      ]
+    },
+    "RES-004": {
+      "id": "RES-004",
+      "title": "JIRA research tool integration",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-10-23T21:16:31.444Z",
+      "updatedAt": "2025-10-23T21:16:38.364Z",
+      "description": "Create custom script for JIRA API integration. Allows users to search JIRA issues, tickets, and documentation during Example Mapping. Script should support querying by project, labels, status, and return relevant issue details.",
+      "epic": "research-tools",
+      "children": [],
+      "dependsOn": [
+        "RES-002"
+      ]
+    },
+    "RES-005": {
+      "id": "RES-005",
+      "title": "Confluence research tool integration",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-10-23T21:16:31.938Z",
+      "updatedAt": "2025-10-23T21:16:38.846Z",
+      "description": "Create custom script for Confluence API integration. Allows users to search Confluence pages and documentation during Example Mapping. Script should support full-text search and return page summaries with links.",
+      "epic": "research-tools",
+      "children": [],
+      "dependsOn": [
+        "RES-002"
+      ]
     }
   },
   "states": {
@@ -10989,12 +11148,16 @@
       "AGENT-014",
       "AGENT-015",
       "AGENT-016",
-      "AGENT-017"
+      "AGENT-017",
+      "RES-003",
+      "RES-004",
+      "RES-005"
     ],
     "specifying": [
       "FEAT-017",
       "GIT-004",
-      "BUG-039"
+      "BUG-039",
+      "RES-002"
     ],
     "testing": [],
     "implementing": [
@@ -11179,7 +11342,8 @@
       "BUG-035",
       "DEP-002",
       "BUG-037",
-      "BUG-038"
+      "BUG-038",
+      "BUG-040"
     ],
     "blocked": []
   }

@@ -1,0 +1,41 @@
+{
+  "scenarios": [
+    {
+      "name": "Initialize fspec for Claude Code without duplicate message",
+      "testMappings": [
+        {
+          "file": "src/components/__tests__/agent-selector-duplicate-message.test.tsx",
+          "lines": "34-65",
+          "implMappings": [
+            {
+              "file": "src/components/AgentSelector.tsx",
+              "lines": [
+                50,
+                51,
+                52,
+                53,
+                54
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Initialize fspec for other agents without duplicate message",
+      "testMappings": []
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 1,
+    "coveragePercent": 50,
+    "testFiles": [
+      "src/components/__tests__/agent-selector-duplicate-message.test.tsx"
+    ],
+    "implFiles": [
+      "src/components/AgentSelector.tsx"
+    ],
+    "totalLinesCovered": 37
+  }
+}
