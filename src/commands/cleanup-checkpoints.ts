@@ -3,6 +3,7 @@
  */
 
 import chalk from 'chalk';
+import type { Command } from 'commander';
 import { cleanupCheckpoints as cleanupCheckpointsUtil } from '../utils/git-checkpoint.js';
 
 export interface CleanupCheckpointsOptions {
@@ -77,4 +78,41 @@ export async function cleanupCheckpoints(
     );
     throw error;
   }
+}
+
+async function cleanupCheckpointsCommand(
+  workUnitId: string,
+  options: { keepLast: string }
+): Promise<void> {
+  try {
+    const keepLast = parseInt(options.keepLast, 10);
+
+    if (isNaN(keepLast) || keepLast < 1) {
+      throw new Error('--keep-last must be a positive number');
+    }
+
+    await cleanupCheckpoints({
+      workUnitId,
+      keepLast,
+      cwd: process.cwd(),
+    });
+
+    process.exit(0);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error(chalk.red('Error:'), error.message);
+    } else {
+      console.error(chalk.red('Error: Unknown error occurred'));
+    }
+    process.exit(1);
+  }
+}
+
+export function registerCleanupCheckpointsCommand(program: Command): void {
+  program
+    .command('cleanup-checkpoints')
+    .description('Cleanup old checkpoints, keeping most recent N')
+    .argument('<work-unit-id>', 'Work unit ID (e.g., AUTH-001)')
+    .requiredOption('--keep-last <number>', 'Number of checkpoints to keep')
+    .action(cleanupCheckpointsCommand);
 }

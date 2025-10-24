@@ -3,6 +3,7 @@
  */
 
 import chalk from 'chalk';
+import type { Command } from 'commander';
 import { listCheckpoints as listCheckpointsUtil } from '../utils/git-checkpoint.js';
 
 export interface ListCheckpointsOptions {
@@ -58,4 +59,30 @@ export async function listCheckpoints(
     console.error(chalk.red(`✗ Failed to list checkpoints: ${errorMessage}`));
     throw error;
   }
+}
+
+async function listCheckpointsCommand(workUnitId: string): Promise<void> {
+  try {
+    await listCheckpoints({
+      workUnitId,
+      cwd: process.cwd(),
+    });
+
+    process.exit(0);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error(chalk.red('Error:'), error.message);
+    } else {
+      console.error(chalk.red('Error: Unknown error occurred'));
+    }
+    process.exit(1);
+  }
+}
+
+export function registerListCheckpointsCommand(program: Command): void {
+  program
+    .command('list-checkpoints')
+    .description('List all checkpoints for a work unit')
+    .argument('<work-unit-id>', 'Work unit ID (e.g., AUTH-001)')
+    .action(listCheckpointsCommand);
 }

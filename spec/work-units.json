@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-24T06:00:53.028Z"
+    "lastUpdated": "2025-10-24T06:29:11.848Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -11458,6 +11458,55 @@
           "timestamp": "2025-10-24T02:50:36.405Z"
         }
       ]
+    },
+    "GIT-005": {
+      "id": "GIT-005",
+      "title": "Wire up checkpoint CLI commands",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-10-24T06:28:46.772Z",
+      "updatedAt": "2025-10-24T06:35:23.743Z",
+      "description": "Checkpoint commands (checkpoint, list-checkpoints, restore-checkpoint, cleanup-checkpoints) exist but are not registered in src/index.ts, making them inaccessible from CLI",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-24T06:28:52.895Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-24T06:31:20.857Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-24T06:31:56.619Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-24T06:33:16.613Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-24T06:35:23.743Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using fspec",
+        "action": "use checkpoint commands from the CLI",
+        "benefit": "I can create, list, restore, and cleanup checkpoints for safe experimentation"
+      },
+      "rules": [
+        "All checkpoint command files must export a registerXCommand function that takes a Commander program instance",
+        "All checkpoint commands must be imported and registered in src/index.ts",
+        "Command registration must follow existing patterns (checkpoint, list-checkpoints, restore-checkpoint, cleanup-checkpoints)"
+      ],
+      "examples": [
+        "Running './dist/index.js checkpoint AUTH-001 baseline' creates a checkpoint named 'baseline' for work unit AUTH-001",
+        "Running './dist/index.js list-checkpoints AUTH-001' shows all checkpoints for AUTH-001 with emoji indicators",
+        "Running './dist/index.js restore-checkpoint AUTH-001 baseline' restores the baseline checkpoint for AUTH-001",
+        "Running './dist/index.js cleanup-checkpoints AUTH-001 --keep-last 5' deletes old checkpoints, keeping only the 5 most recent"
+      ],
+      "estimate": 2
     }
   },
   "states": {
@@ -11688,7 +11737,8 @@
       "CLI-010",
       "REFAC-002",
       "BUG-031",
-      "FEAT-017"
+      "FEAT-017",
+      "GIT-005"
     ],
     "blocked": []
   }
