@@ -107,6 +107,7 @@ Tags that categorize features by functional area.
 | `@remove` | Remove operations |
 | `@repair` | Data repair operations |
 | `@reporting` | Reporting and statistics |
+| `@research` | Research and discovery tools |
 | `@reverse-acdd` | Features related to reverse ACDD for documenting existing codebases |
 | `@safety` | Safety and security features preventing accidental operations |
 | `@scaffolding` | Project Setup & Templates |
@@ -212,8 +213,9 @@ Tags indicating implementation priority or criticality.
 |-----|-------------|
 | `@critical` | Critical Priority - Must Have |
 | `@high` | High Priority - Should Have |
-| `@medium` | Medium Priority - Nice to Have |
 | `@low` | Low Priority - Future Enhancement |
+| `@medium` | Medium Priority - Nice to Have |
+| `@phase-1` | Phase 1 features - core functionality |
 
 **Rule**: Use priority tags to guide implementation order within a phase.
 
@@ -516,7 +518,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-10-24T05:21:28.901Z_
+_Last updated: 2025-10-24T12:41:10.130Z_
 
 **Update Command**: `fspec tag-stats`
 

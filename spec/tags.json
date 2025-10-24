@@ -358,6 +358,10 @@
           "description": "Reporting and statistics"
         },
         {
+          "name": "@research",
+          "description": "Research and discovery tools"
+        },
+        {
           "name": "@reverse-acdd",
           "description": "Features related to reverse ACDD for documenting existing codebases"
         },
@@ -694,12 +698,16 @@
           "description": "High Priority - Should Have"
         },
         {
+          "name": "@low",
+          "description": "Low Priority - Future Enhancement"
+        },
+        {
           "name": "@medium",
           "description": "Medium Priority - Nice to Have"
         },
         {
-          "name": "@low",
-          "description": "Low Priority - Future Enhancement"
+          "name": "@phase-1",
+          "description": "Phase 1 features - core functionality"
         }
       ],
       "rule": "Use priority tags to guide implementation order within a phase."
@@ -1098,7 +1106,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-10-24T05:21:28.901Z",
+    "lastUpdated": "2025-10-24T12:41:10.130Z",
     "phaseStats": [
       {
         "phase": "Phase 1",
