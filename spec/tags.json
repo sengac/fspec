@@ -342,6 +342,10 @@
           "description": "Recommendation features providing suggestions based on historical data"
         },
         {
+          "name": "@release-management",
+          "description": "Release and version management features"
+        },
+        {
           "name": "@remove",
           "description": "Remove operations"
         },
@@ -436,6 +440,10 @@
         {
           "name": "@visualization",
           "description": "Data visualization"
+        },
+        {
+          "name": "@work-management",
+          "description": "Work unit management and Kanban workflow operations"
         },
         {
           "name": "@work-unit-linking",
@@ -1086,7 +1094,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-10-23T05:59:29.402Z",
+    "lastUpdated": "2025-10-24T00:45:01.445Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

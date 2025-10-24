@@ -33,10 +33,10 @@ export async function prioritizeWorkUnit(
 
   const workUnit = workUnitsData.workUnits[options.workUnitId];
 
-  // Validate work unit is in backlog
-  if (workUnit.status !== 'backlog') {
+  // Validate work unit is NOT in done status
+  if (workUnit.status === 'done') {
     throw new Error(
-      `Can only prioritize work units in backlog state. ${options.workUnitId} is in '${workUnit.status}' state.`
+      `Cannot prioritize work units in done column. Done items are ordered by completion time and cannot be manually reordered. Only backlog, specifying, testing, implementing, validating, blocked can be prioritized.`
     );
   }
 
@@ -48,13 +48,38 @@ export async function prioritizeWorkUnit(
     throw new Error(`Work unit '${options.after}' does not exist`);
   }
 
-  const backlog = [...workUnitsData.states.backlog];
-
-  // Remove work unit from current position
-  const currentIndex = backlog.indexOf(options.workUnitId);
-  if (currentIndex !== -1) {
-    backlog.splice(currentIndex, 1);
+  // Validate cross-column prioritization (CRITICAL: cannot prioritize across different columns)
+  if (options.before) {
+    const beforeWorkUnit = workUnitsData.workUnits[options.before];
+    if (beforeWorkUnit.status !== workUnit.status) {
+      throw new Error(
+        `Cannot prioritize across columns. ${options.workUnitId} (${workUnit.status}) and ${options.before} (${beforeWorkUnit.status}) are in different columns.`
+      );
+    }
   }
+  if (options.after) {
+    const afterWorkUnit = workUnitsData.workUnits[options.after];
+    if (afterWorkUnit.status !== workUnit.status) {
+      throw new Error(
+        `Cannot prioritize across columns. ${options.workUnitId} (${workUnit.status}) and ${options.after} (${afterWorkUnit.status}) are in different columns.`
+      );
+    }
+  }
+
+  // Get the current column (state array) based on work unit status
+  const currentStatus = workUnit.status;
+
+  // Validate data integrity: work unit should be in the array matching its status
+  if (!workUnitsData.states[currentStatus].includes(options.workUnitId)) {
+    throw new Error(
+      `Data integrity error: Work unit ${options.workUnitId} has status '${currentStatus}' but is not in states.${currentStatus} array. Run 'fspec repair-work-units' to fix data corruption.`
+    );
+  }
+
+  // Remove work unit from current position (use filter to safely handle any duplicates)
+  const column = workUnitsData.states[currentStatus].filter(
+    id => id !== options.workUnitId
+  );
 
   // Determine new position
   let newIndex = 0;
@@ -62,22 +87,39 @@ export async function prioritizeWorkUnit(
   if (options.position === 'top') {
     newIndex = 0;
   } else if (options.position === 'bottom') {
-    newIndex = backlog.length;
+    newIndex = column.length;
   } else if (typeof options.position === 'number') {
-    newIndex = options.position;
+    // Convert from 1-based (user input) to 0-based (array index)
+    newIndex = options.position - 1;
+    // Validate bounds
+    if (newIndex < 0) {
+      throw new Error(
+        `Invalid position: ${options.position}. Position must be >= 1 (1-based index)`
+      );
+    }
+    // Allow positions beyond array length (splice will insert at end)
   } else if (options.before) {
-    newIndex = backlog.indexOf(options.before);
-    if (newIndex === -1) newIndex = 0;
+    newIndex = column.indexOf(options.before);
+    if (newIndex === -1) {
+      throw new Error(
+        `Data integrity error: Work unit ${options.before} has status '${currentStatus}' but is not in states.${currentStatus} array. Run 'fspec repair-work-units' to fix data corruption.`
+      );
+    }
   } else if (options.after) {
-    newIndex = backlog.indexOf(options.after) + 1;
-    if (newIndex === 0) newIndex = backlog.length;
+    newIndex = column.indexOf(options.after);
+    if (newIndex === -1) {
+      throw new Error(
+        `Data integrity error: Work unit ${options.after} has status '${currentStatus}' but is not in states.${currentStatus} array. Run 'fspec repair-work-units' to fix data corruption.`
+      );
+    }
+    newIndex = newIndex + 1;
   }
 
   // Insert at new position
-  backlog.splice(newIndex, 0, options.workUnitId);
+  column.splice(newIndex, 0, options.workUnitId);
 
   // Update states
-  workUnitsData.states.backlog = backlog;
+  workUnitsData.states[currentStatus] = column;
 
   // Write updated work units
   await writeFile(workUnitsFile, JSON.stringify(workUnitsData, null, 2));
@@ -88,7 +130,7 @@ export async function prioritizeWorkUnit(
 export function registerPrioritizeWorkUnitCommand(program: Command): void {
   program
     .command('prioritize-work-unit')
-    .description('Change the priority order of a work unit in the backlog')
+    .description('Reorder work units in any Kanban column except done')
     .argument('<workUnitId>', 'Work unit ID to prioritize')
     .option('--position <position>', 'Position: top, bottom, or numeric index')
     .option('--before <workUnitId>', 'Place before this work unit')

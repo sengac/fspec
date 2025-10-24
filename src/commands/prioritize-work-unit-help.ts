@@ -2,11 +2,14 @@ import type { CommandHelpConfig } from '../utils/help-formatter';
 
 const config: CommandHelpConfig = {
   name: 'prioritize-work-unit',
-  description: 'Change the priority order of a work unit in the backlog',
+  description: 'Reorder work units in any Kanban column except done',
   usage: 'fspec prioritize-work-unit <workUnitId> [options]',
   whenToUse:
-    'Use this command to reorder work units in the backlog to reflect changing priorities. Move critical work to the top, defer less important work to the bottom, or position work relative to other work units.',
-  prerequisites: ['Work unit must exist and be in backlog status'],
+    'Use this command to reorder work units within their current column (backlog, specifying, testing, implementing, validating, blocked). Move critical work to the top, defer less important work to the bottom, or position work relative to other work units in the same column. CRITICAL: Can only reorder within the same column - cannot move work units between columns.',
+  prerequisites: [
+    'Work unit must exist',
+    'Work unit must NOT be in done status',
+  ],
   arguments: [
     {
       name: 'workUnitId',
@@ -22,37 +25,43 @@ const config: CommandHelpConfig = {
     },
     {
       flag: '--before <workUnitId>',
-      description: 'Place before this work unit in the backlog',
+      description:
+        'Place before this work unit (must be in same column as target)',
     },
     {
       flag: '--after <workUnitId>',
-      description: 'Place after this work unit in the backlog',
+      description:
+        'Place after this work unit (must be in same column as target)',
     },
   ],
   examples: [
     {
       command: 'fspec prioritize-work-unit AUTH-001 --position top',
-      description: 'Move AUTH-001 to highest priority (top of backlog)',
+      description:
+        'Move AUTH-001 to top of its current column (e.g., backlog)',
       output: '✓ Work unit AUTH-001 prioritized successfully',
     },
     {
-      command: 'fspec prioritize-work-unit PERF-003 --position bottom',
-      description: 'Move PERF-003 to lowest priority (bottom of backlog)',
-      output: '✓ Work unit PERF-003 prioritized successfully',
+      command: 'fspec prioritize-work-unit FEAT-017 --position top',
+      description:
+        'Move FEAT-017 to top of specifying column (if in specifying status)',
+      output: '✓ Work unit FEAT-017 prioritized successfully',
     },
     {
       command: 'fspec prioritize-work-unit API-002 --before AUTH-001',
-      description: 'Place API-002 immediately before AUTH-001',
+      description:
+        'Place API-002 before AUTH-001 (both must be in same column)',
       output: '✓ Work unit API-002 prioritized successfully',
     },
     {
-      command: 'fspec prioritize-work-unit UI-005 --after AUTH-001',
-      description: 'Place UI-005 immediately after AUTH-001',
-      output: '✓ Work unit UI-005 prioritized successfully',
+      command: 'fspec prioritize-work-unit BUG-003 --position bottom',
+      description: 'Move BUG-003 to bottom of implementing column',
+      output: '✓ Work unit BUG-003 prioritized successfully',
     },
     {
       command: 'fspec prioritize-work-unit DB-001 --position 3',
-      description: 'Move DB-001 to 3rd position in backlog (1-based index)',
+      description:
+        'Move DB-001 to 3rd position in its current column (1-based index)',
       output: '✓ Work unit DB-001 prioritized successfully',
     },
   ],
@@ -63,8 +72,13 @@ const config: CommandHelpConfig = {
     },
     {
       error:
-        'Error: Can only prioritize work units in backlog state. AUTH-001 is in "implementing" state.',
-      fix: 'Only backlog items can be reprioritized. Work units in other states have their order determined by workflow.',
+        'Error: Cannot prioritize work units in done column. Done items are ordered by completion time...',
+      fix: 'Cannot reorder done items. Only backlog, specifying, testing, implementing, validating, blocked can be prioritized.',
+    },
+    {
+      error:
+        'Error: Cannot prioritize across columns. FEAT-017 (specifying) and AUTH-001 (testing) are in different columns.',
+      fix: 'Work units must be in the same column. Remove --before/--after or choose work unit in same column.',
     },
     {
       error:
@@ -73,7 +87,7 @@ const config: CommandHelpConfig = {
     },
   ],
   typicalWorkflow:
-    '1. Review backlog: fspec list-work-units --status backlog → 2. Identify critical work → 3. fspec prioritize-work-unit <id> --position top → 4. Verify order: fspec board',
+    '1. Review column: fspec list-work-units --status <column> or fspec board → 2. Identify critical work → 3. fspec prioritize-work-unit <id> --position top → 4. Verify order: fspec board',
   commonPatterns: [
     {
       pattern: 'Sprint Planning - Prioritize Critical Items',
@@ -93,11 +107,12 @@ const config: CommandHelpConfig = {
     'update-work-unit-status',
   ],
   notes: [
-    'Only works for work units in backlog status',
-    'Numeric positions are 1-based (1 = first item in backlog)',
+    'Works for all columns EXCEPT done (backlog, specifying, testing, implementing, validating, blocked)',
+    'CRITICAL: Can only reorder within same column - cannot move between columns',
+    'Done items are ordered by completion time and cannot be manually reordered',
+    'Numeric positions are 1-based (1 = first item in column)',
     'Relative positioning (--before/--after) is preferred for clarity',
     'Priority order affects display in board and list-work-units commands',
-    'Work units in other states (specifying, testing, etc.) maintain workflow order',
   ],
 };
 

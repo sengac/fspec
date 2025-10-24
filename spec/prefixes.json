@@ -154,6 +154,11 @@
       "prefix": "AGENT",
       "description": "Agent compatibility testing stories",
       "createdAt": "2025-10-22T13:54:49.235Z"
+    },
+    "CONFIG": {
+      "prefix": "CONFIG",
+      "description": "Configuration management and utilities",
+      "createdAt": "2025-10-23T23:38:52.050Z"
     }
   }
 }

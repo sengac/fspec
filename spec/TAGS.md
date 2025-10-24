@@ -103,6 +103,7 @@ Tags that categorize features by functional area.
 | `@read` | Read operations |
 | `@read-only` | Read-Only Operations |
 | `@recommendations` | Recommendation features providing suggestions based on historical data |
+| `@release-management` | Release and version management features |
 | `@remove` | Remove operations |
 | `@repair` | Data repair operations |
 | `@reporting` | Reporting and statistics |
@@ -127,6 +128,7 @@ Tags that categorize features by functional area.
 | `@validation` | Syntax & Structure Validation |
 | `@velocity` | Velocity calculation |
 | `@visualization` | Data visualization |
+| `@work-management` | Work unit management and Kanban workflow operations |
 | `@work-unit-linking` | Scenarios related to work unit and feature file linking functionality |
 | `@work-unit-management` | Work unit lifecycle and status management |
 | `@work-units` | Work unit CRUD operations |
@@ -513,7 +515,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-10-23T05:59:29.402Z_
+_Last updated: 2025-10-24T00:45:01.445Z_
 
 **Update Command**: `fspec tag-stats`
 
