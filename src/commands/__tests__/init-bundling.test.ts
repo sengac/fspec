@@ -34,7 +34,9 @@ describe('Feature: Wire up multi-agent support to fspec init command', () => {
       const specClaudeMdPath = join(testDir, 'spec', 'CLAUDE.md');
       const claudeMdContent = await readFile(specClaudeMdPath, 'utf-8');
 
-      expect(claudeMdContent).toContain('Project Management and Specification Guidelines');
+      expect(claudeMdContent).toContain(
+        'Project Management and Specification Guidelines'
+      );
       expect(claudeMdContent).toContain('fspec');
 
       // And: No errors about missing files or templates should occur

@@ -22,7 +22,6 @@ describe('Feature: Duplicate installation success message in fspec init', () => 
       supportsSystemReminders: true,
       supportsMetaCognition: true,
       docTemplate: 'CLAUDE.md',
-      rootStubFile: 'CLAUDE.md',
       detectionPaths: ['.claude/'],
       available: true,
       category: 'cli',

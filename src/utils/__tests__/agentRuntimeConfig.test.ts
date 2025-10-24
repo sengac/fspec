@@ -6,9 +6,19 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { existsSync, mkdirSync, writeFileSync, unlinkSync, rmdirSync } from 'fs';
+import {
+  existsSync,
+  mkdirSync,
+  writeFileSync,
+  unlinkSync,
+  rmdirSync,
+} from 'fs';
 import { join } from 'path';
-import { getAgentConfig, writeAgentConfig, formatAgentOutput } from '../agentRuntimeConfig';
+import {
+  getAgentConfig,
+  writeAgentConfig,
+  formatAgentOutput,
+} from '../agentRuntimeConfig';
 
 describe('Feature: Agent runtime detection for context-aware CLI output', () => {
   const testDir = join(__dirname, '__test-runtime-config__');
@@ -87,7 +97,9 @@ describe('Feature: Agent runtime detection for context-aware CLI output', () => 
       expect(existsSync(configPath)).toBe(true);
 
       // And it should contain {"agent": "claude"}
-      const config = JSON.parse(require('fs').readFileSync(configPath, 'utf-8'));
+      const config = JSON.parse(
+        require('fs').readFileSync(configPath, 'utf-8')
+      );
       expect(config.agent).toBe('claude');
 
       // And subsequent commands should read this config for output formatting
@@ -106,7 +118,10 @@ describe('Feature: Agent runtime detection for context-aware CLI output', () => 
 
       // When I run "fspec update-work-unit-status WORK-001 testing"
       const agent = getAgentConfig(testDir);
-      const output = formatAgentOutput(agent, 'IMPORTANT: Complete testing phase first');
+      const output = formatAgentOutput(
+        agent,
+        'IMPORTANT: Complete testing phase first'
+      );
 
       // Then the output should contain <system-reminder> tags
       expect(output).toContain('<system-reminder>');
@@ -127,7 +142,10 @@ describe('Feature: Agent runtime detection for context-aware CLI output', () => 
 
       // When I run "fspec update-work-unit-status WORK-001 testing"
       const agent = getAgentConfig(testDir);
-      const output = formatAgentOutput(agent, 'IMPORTANT: Complete testing phase first');
+      const output = formatAgentOutput(
+        agent,
+        'IMPORTANT: Complete testing phase first'
+      );
 
       // Then the output should contain "**⚠️ IMPORTANT:**"
       expect(output).toContain('**⚠️ IMPORTANT:**');
@@ -148,7 +166,10 @@ describe('Feature: Agent runtime detection for context-aware CLI output', () => 
 
       // When I run "fspec update-work-unit-status WORK-001 testing"
       const agent = getAgentConfig(testDir);
-      const output = formatAgentOutput(agent, 'IMPORTANT: Complete testing phase first');
+      const output = formatAgentOutput(
+        agent,
+        'IMPORTANT: Complete testing phase first'
+      );
 
       // Then the output should contain "**IMPORTANT:**"
       expect(output).toContain('**IMPORTANT:**');
@@ -173,7 +194,10 @@ describe('Feature: Agent runtime detection for context-aware CLI output', () => 
 
       // When I run "fspec validate"
       const agent = getAgentConfig(testDir);
-      const output = formatAgentOutput(agent, 'IMPORTANT: Fix validation errors');
+      const output = formatAgentOutput(
+        agent,
+        'IMPORTANT: Fix validation errors'
+      );
 
       // Then the output should use plain text format
       expect(output).toContain('**IMPORTANT:**');

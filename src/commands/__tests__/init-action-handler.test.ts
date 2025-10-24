@@ -62,7 +62,7 @@ describe('Feature: Agent switching prompt in fspec init - Action Handler', () =>
       // When I run 'fspec init --agent=cursor'
       const result = await executeInit({
         agentIds: ['cursor'],
-        promptAgentSwitch: mockPromptSwitch
+        promptAgentSwitch: mockPromptSwitch,
       });
 
       // Then the prompt should ask 'Switch from Claude to Cursor?'
@@ -117,7 +117,7 @@ describe('Feature: Agent switching prompt in fspec init - Action Handler', () =>
       // When I select 'Cancel'
       const result = await executeInit({
         agentIds: ['cursor'],
-        promptAgentSwitch: mockPromptSwitch
+        promptAgentSwitch: mockPromptSwitch,
       });
 
       // Then the prompt should have been shown
@@ -167,7 +167,7 @@ describe('Feature: Agent switching prompt in fspec init - Action Handler', () =>
       // When I run 'fspec init --agent=claude'
       const result = await executeInit({
         agentIds: ['claude'],
-        promptAgentSwitch: mockPromptSwitch
+        promptAgentSwitch: mockPromptSwitch,
       });
 
       // Then no switch prompt should appear
@@ -203,7 +203,7 @@ describe('Feature: Agent switching prompt in fspec init - Action Handler', () =>
       // When I run 'fspec init --agent=claude'
       const result = await executeInit({
         agentIds: ['claude'],
-        trackConfigWrites: (agent: string) => configWrites.push(agent)
+        trackConfigWrites: (agent: string) => configWrites.push(agent),
       });
 
       // Then agent config should be written exactly once

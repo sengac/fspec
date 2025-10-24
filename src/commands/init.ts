@@ -26,7 +26,10 @@ interface InstallOptions {
 
 interface ExecuteInitOptions {
   agentIds: string[];
-  promptAgentSwitch?: (existingAgent: string, newAgent: string) => Promise<boolean>;
+  promptAgentSwitch?: (
+    existingAgent: string,
+    newAgent: string
+  ) => Promise<boolean>;
   trackConfigWrites?: (agent: string) => void;
 }
 
@@ -358,7 +361,8 @@ export function registerInitCommand(program: Command): void {
         // In interactive mode, pass promptAgentSwitch to auto-confirm (skip second prompt)
         const result = await executeInit({
           agentIds,
-          promptAgentSwitch: options.agent.length === 0 ? async () => true : undefined,
+          promptAgentSwitch:
+            options.agent.length === 0 ? async () => true : undefined,
         });
 
         // Check if user cancelled

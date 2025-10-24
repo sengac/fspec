@@ -22,17 +22,20 @@ const config: CommandHelpConfig = {
     {
       command: 'fspec init',
       description: 'Interactive agent selection (menu)',
-      output: '? Select your AI agent(s):\n  ❯◯ Claude Code\n   ◯ Cursor\n   ◯ Windsurf\n   ...',
+      output:
+        '? Select your AI agent(s):\n  ❯◯ Claude Code\n   ◯ Cursor\n   ◯ Windsurf\n   ...',
     },
     {
       command: 'fspec init --agent=claude',
       description: 'Initialize with Claude Code directly',
-      output: '✓ Installed fspec for Claude Code\n\nNext steps:\nRun /fspec in Claude Code to activate',
+      output:
+        '✓ Installed fspec for Claude Code\n\nNext steps:\nRun /fspec in Claude Code to activate',
     },
     {
       command: 'fspec init --agent=cursor',
       description: 'Initialize with Cursor directly',
-      output: '✓ Installed fspec for Cursor\n\nNext steps:\nOpen .cursor/commands/ in Cursor to activate',
+      output:
+        '✓ Installed fspec for Cursor\n\nNext steps:\nOpen .cursor/commands/ in Cursor to activate',
     },
   ],
   prerequisites: ['Project should have package.json or be a git repository'],

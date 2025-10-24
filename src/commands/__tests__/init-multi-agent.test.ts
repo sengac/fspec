@@ -222,5 +222,4 @@ describe('Feature: Support multiple AI agents beyond Claude', () => {
       expect(content).toContain('ACDD');
     });
   });
-
 });

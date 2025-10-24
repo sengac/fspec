@@ -37,8 +37,7 @@ const config: CommandHelpConfig = {
   examples: [
     {
       command: 'fspec prioritize-work-unit AUTH-001 --position top',
-      description:
-        'Move AUTH-001 to top of its current column (e.g., backlog)',
+      description: 'Move AUTH-001 to top of its current column (e.g., backlog)',
       output: '✓ Work unit AUTH-001 prioritized successfully',
     },
     {
