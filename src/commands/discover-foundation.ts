@@ -12,6 +12,7 @@ import { writeFile, mkdir, readFile, unlink } from 'fs/promises';
 import { dirname } from 'path';
 import chalk from 'chalk';
 import { generateFoundationMdCommand } from './generate-foundation-md';
+import { getAgentConfig } from '../utils/agentRuntimeConfig';
 
 export interface DiscoverFoundationOptions {
   outputPath?: string;
@@ -21,6 +22,7 @@ export interface DiscoverFoundationOptions {
   lastKnownState?: string;
   detectManualEdit?: boolean;
   autoGenerateMd?: boolean;
+  cwd?: string;
 }
 
 /**
@@ -85,14 +87,17 @@ function scanDraftForNextField(draft: GenericFoundation): {
 }
 
 /**
- * Generate field-specific system-reminder with ULTRATHINK guidance
+ * Generate field-specific system-reminder with agent-aware guidance
  */
 function generateFieldReminder(
   fieldPath: string,
   fieldNum: number,
   totalFields: number,
+  cwd: string,
   detectedValue?: string
 ): string {
+  // Detect current agent to provide appropriate guidance
+  const agent = getAgentConfig(cwd);
   const reminders: Record<string, string> = {
     'project.name': `Field ${fieldNum}/${totalFields}: project.name
 
@@ -102,7 +107,7 @@ Run: fspec update-foundation projectName "<name>"`,
 
     'project.vision': `Field ${fieldNum}/${totalFields}: project.vision (elevator pitch)
 
-ULTRATHINK: Read ALL code, understand the system deeply. What is the core PURPOSE?
+${agent.supportsMetaCognition ? 'ULTRATHINK: Read ALL code, understand the system deeply.' : 'Carefully analyze the codebase to understand its purpose.'} What is the core PURPOSE?
 Focus on WHY this exists, not HOW it works.
 
 Ask human to confirm vision.
@@ -190,6 +195,7 @@ export async function discoverFoundation(
   mdGenerated?: boolean;
   completionMessage?: string;
 }> {
+  const cwd = options.cwd || process.cwd();
   const draftPath = options.draftPath || 'spec/foundation.json.draft';
 
   // Handle manual editing detection
@@ -260,6 +266,7 @@ Reverting your changes. Draft restored to last valid state. Try again with prope
         scan.fieldPath,
         scan.fieldNumber,
         scan.totalFields,
+        cwd,
         detectedValue
       );
 
@@ -416,10 +423,21 @@ Foundation is ready.`;
   // Scan for first field
   const scan = scanDraftForNextField(draftFoundation);
   const firstFieldReminder = scan.fieldPath
-    ? generateFieldReminder(scan.fieldPath, scan.fieldNumber, scan.totalFields)
+    ? generateFieldReminder(
+        scan.fieldPath,
+        scan.fieldNumber,
+        scan.totalFields,
+        cwd
+      )
     : '';
 
-  const systemReminder = `Draft created. To complete foundation, you must ULTRATHINK the entire codebase.
+  // Detect agent for initial draft guidance
+  const agent = getAgentConfig(cwd);
+  const thinkingInstruction = agent.supportsMetaCognition
+    ? 'you must ULTRATHINK the entire codebase'
+    : 'you must thoroughly analyze the entire codebase';
+
+  const systemReminder = `Draft created. To complete foundation, ${thinkingInstruction}.
 
 Analyze EVERYTHING: code structure, entry points, user interactions, documentation.
 Understand HOW it works, then determine WHY it exists and WHAT users can do.

@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-24T00:46:35.203Z"
+    "lastUpdated": "2025-10-24T05:19:09.194Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -7527,69 +7527,6 @@
       ],
       "estimate": 3
     },
-    "MCP-001": {
-      "id": "MCP-001",
-      "title": "Attachment categorization system",
-      "type": "story",
-      "status": "backlog",
-      "createdAt": "2025-10-18T23:26:49.209Z",
-      "updatedAt": "2025-10-18T23:26:49.209Z",
-      "description": "Add metadata to attachments to categorize them as 'architecture', 'example', 'mockup', or 'diagram'. This enables system-reminders to distinguish code examples from other attachments when transitioning workflow states.",
-      "epic": "example-driven-discovery",
-      "children": []
-    },
-    "MCP-002": {
-      "id": "MCP-002",
-      "title": "MCP tool integration framework",
-      "type": "story",
-      "status": "backlog",
-      "createdAt": "2025-10-18T23:26:50.151Z",
-      "updatedAt": "2025-10-18T23:26:50.151Z",
-      "description": "Implement client integration for Model Context Protocol (MCP), including configuration for MCP servers, abstraction layer for invoking MCP tools, and error handling for external tool failures.",
-      "epic": "example-driven-discovery",
-      "children": []
-    },
-    "MCP-003": {
-      "id": "MCP-003",
-      "title": "Attachment-aware workflow transitions",
-      "type": "story",
-      "status": "backlog",
-      "createdAt": "2025-10-18T23:26:51.165Z",
-      "updatedAt": "2025-10-18T23:26:51.165Z",
-      "description": "Emit system-reminders when transitioning to testing or implementing states if work unit has attachments. Reminders should list attached examples and prompt AI to review them before writing tests or code.",
-      "epic": "example-driven-discovery",
-      "children": []
-    },
-    "MCP-004": {
-      "id": "MCP-004",
-      "title": "Context7 code discovery command",
-      "type": "story",
-      "status": "backlog",
-      "createdAt": "2025-10-18T23:26:52.165Z",
-      "updatedAt": "2025-10-18T23:27:05.300Z",
-      "description": "Implement 'fspec discover-code-examples <work-unit-id> <query>' command that uses context7 MCP tool to search codebase for relevant patterns, generates markdown summaries, and auto-attaches results to work unit.",
-      "epic": "example-driven-discovery",
-      "children": [],
-      "dependsOn": [
-        "MCP-002",
-        "MCP-001"
-      ]
-    },
-    "MCP-005": {
-      "id": "MCP-005",
-      "title": "Enhanced discovery prompts with example guidance",
-      "type": "story",
-      "status": "backlog",
-      "createdAt": "2025-10-18T23:26:53.140Z",
-      "updatedAt": "2025-10-18T23:27:07.168Z",
-      "description": "Update system-reminders during specifying state to encourage AI to use 'fspec discover-code-examples' and attach architectural examples. Update CLAUDE.md with guidance on example-driven discovery workflow.",
-      "epic": "example-driven-discovery",
-      "children": [],
-      "dependsOn": [
-        "MCP-003",
-        "MCP-004"
-      ]
-    },
     "BUG-019": {
       "id": "BUG-019",
       "title": "Dependencies command throws 'Invalid action' error",
@@ -9972,14 +9909,76 @@
       "id": "BUG-031",
       "title": "No support for ULTRATHINK in discovery-driven feedback loop",
       "type": "story",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2025-10-22T08:19:09.971Z",
-      "updatedAt": "2025-10-22T08:21:45.105Z",
+      "updatedAt": "2025-10-24T05:36:24.012Z",
       "description": "The discover-foundation command uses the term 'ULTRATHINK' in its guidance system-reminders to instruct AI agents to perform deep analysis. However, not all AI agents support extended thinking or use this terminology. Claude Code may understand 'ULTRATHINK', but Gemini, Cursor, and other agents do not. The discovery-driven feedback loop needs agent-specific language that adapts to the capabilities of the detected AI agent. For agents without extended thinking support, the term should be removed and replaced with standard instructions. This should integrate with INIT-008 (agent runtime detection) to provide appropriate guidance per agent.",
       "children": [],
       "dependsOn": [
         "INIT-008"
-      ]
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-24T05:17:04.908Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-24T05:24:00.191Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-24T05:25:56.326Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-24T05:31:49.250Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-24T05:36:24.012Z"
+        }
+      ],
+      "attachments": [
+        "spec/attachments/BUG-031/bug-031-investigation-findings.md"
+      ],
+      "userStory": {
+        "role": "AI agent (non-Claude) using fspec discover-foundation",
+        "action": "receive guidance in language my agent understands",
+        "benefit": "I can successfully complete foundation discovery without confusion"
+      },
+      "rules": [
+        "Claude Code is the only agent that supports 'ULTRATHINK' terminology (supportsMetaCognition flag)",
+        "Non-Claude agents must receive generic 'analyze' or 'examine' language instead of ULTRATHINK",
+        "Agent detection must use existing INIT-008 infrastructure (getAgentConfig from agentRuntimeConfig.ts)",
+        "Output format must match agent type: system-reminder for Claude, bold+emoji for IDE agents, plain bold for CLI agents",
+        "ULTRATHINK appears in exactly 2 locations: initial draft reminder and project.vision field guidance",
+        "Focus only on locations with ULTRATHINK (initial draft + project.vision). Other fields don't have Claude-specific language. Keep scope minimal for quick fix (Option 1)."
+      ],
+      "examples": [
+        "Claude Code agent runs discover-foundation, sees 'ULTRATHINK: Read ALL code, understand deeply' in system-reminder",
+        "Cursor agent runs discover-foundation, sees 'Carefully analyze the entire codebase' with **⚠️ IMPORTANT:** format",
+        "Aider CLI agent runs discover-foundation, sees 'Thoroughly examine the codebase' with **IMPORTANT:** plain text format",
+        "Unknown/default agent runs discover-foundation, sees safe generic language without system-reminder tags",
+        "discover-foundation initial draft creation uses agent.supportsMetaCognition to conditionally include ULTRATHINK",
+        "project.vision field guidance checks agent capabilities before using ULTRATHINK terminology"
+      ],
+      "questions": [
+        {
+          "text": "@human: Should we add agent-specific variations for ALL field guidance prompts, or just focus on project.vision which currently has ULTRATHINK?",
+          "selected": true,
+          "answer": "Focus only on locations with ULTRATHINK (initial draft + project.vision). Other fields don't have Claude-specific language. Keep scope minimal for quick fix (Option 1)."
+        },
+        {
+          "text": "@human: Should help documentation (discover-foundation-help.ts) also be updated to remove ULTRATHINK references, or can we keep it as an example of Claude-specific guidance?",
+          "selected": true,
+          "answer": "Update help docs to mention this is Claude-specific and explain agent-aware messaging. Add note: 'Non-Claude agents will see generic analysis language.' Documentation should reflect multi-agent reality."
+        }
+      ],
+      "assumptions": [
+        "Update help docs to mention this is Claude-specific and explain agent-aware messaging. Add note: 'Non-Claude agents will see generic analysis language.' Documentation should reflect multi-agent reality."
+      ],
+      "estimate": 3
     },
     "FEAT-017": {
       "id": "FEAT-017",
@@ -11441,11 +11440,6 @@
   },
   "states": {
     "backlog": [
-      "MCP-001",
-      "MCP-002",
-      "MCP-003",
-      "MCP-004",
-      "MCP-005",
       "EST-002",
       "TECH-001",
       "BOARD-002",
@@ -11453,7 +11447,6 @@
       "RES-001",
       "INIT-007",
       "CLI-007",
-      "BUG-031",
       "BOARD-003",
       "AGENT-001",
       "AGENT-002",
@@ -11672,7 +11665,8 @@
       "CLI-008",
       "CLI-009",
       "CLI-010",
-      "REFAC-002"
+      "REFAC-002",
+      "BUG-031"
     ],
     "blocked": []
   }

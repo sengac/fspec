@@ -1,7 +1,32 @@
 {
-  "scenarios": [],
+  "scenarios": [
+    {
+      "name": "Determine semver bump from conventional commits and create release",
+      "testMappings": []
+    },
+    {
+      "name": "Update package.json version and create release commit",
+      "testMappings": []
+    },
+    {
+      "name": "Format release commit message with structured release notes",
+      "testMappings": []
+    },
+    {
+      "name": "Handle first release when no previous tag exists",
+      "testMappings": []
+    },
+    {
+      "name": "Pre-release validation with uncommitted changes",
+      "testMappings": []
+    },
+    {
+      "name": "Generate conventional commit message for uncommitted changes",
+      "testMappings": []
+    }
+  ],
   "stats": {
-    "totalScenarios": 0,
+    "totalScenarios": 6,
     "coveredScenarios": 0,
     "coveragePercent": 0,
     "testFiles": [],

@@ -1,19 +1,19 @@
 {
   "scenarios": [
     {
-      "name": "Publish new version when git tag and package.json match and differ from npm",
+      "name": "Position 1 means first item",
       "testMappings": []
     },
     {
-      "name": "Fail when git tag and package.json versions mismatch",
+      "name": "Position 3 means third item",
       "testMappings": []
     },
     {
-      "name": "Skip publishing when version already exists on npm",
+      "name": "Reject position 0 as invalid",
       "testMappings": []
     },
     {
-      "name": "Publish after successful release without tests or build",
+      "name": "Reject negative position as invalid",
       "testMappings": []
     }
   ],

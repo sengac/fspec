@@ -5,6 +5,11 @@
       "Bash(./dist/index.js:*)"
     ],
     "deny": [],
-    "ask": []
-  }
+    "ask": [
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git checkout:*)"
+    ]
+  },
+  "includeCoAuthoredBy": false
 }
