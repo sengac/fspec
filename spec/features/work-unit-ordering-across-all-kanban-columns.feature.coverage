@@ -1,0 +1,167 @@
+{
+  "scenarios": [
+    {
+      "name": "Prioritize work unit within specifying column",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/work-unit-ordering-across-all-kanban-columns.test.ts",
+          "lines": "36-97",
+          "implMappings": [
+            {
+              "file": "src/commands/prioritize-work-unit.ts",
+              "lines": [
+                36,
+                37,
+                38,
+                39,
+                40,
+                41
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Prioritize work unit within implementing column",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/work-unit-ordering-across-all-kanban-columns.test.ts",
+          "lines": "101-156",
+          "implMappings": [
+            {
+              "file": "src/commands/prioritize-work-unit.ts",
+              "lines": [
+                36,
+                37,
+                38,
+                39,
+                40,
+                41
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Error when prioritizing across columns using --before",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/work-unit-ordering-across-all-kanban-columns.test.ts",
+          "lines": "158-215",
+          "implMappings": [
+            {
+              "file": "src/commands/prioritize-work-unit.ts",
+              "lines": [
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Error when prioritizing work unit in done column",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/work-unit-ordering-across-all-kanban-columns.test.ts",
+          "lines": "217-272",
+          "implMappings": [
+            {
+              "file": "src/commands/prioritize-work-unit.ts",
+              "lines": [
+                36,
+                37,
+                38,
+                39,
+                40,
+                41
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Single work unit in column succeeds as no-op",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/work-unit-ordering-across-all-kanban-columns.test.ts",
+          "lines": "274-320",
+          "implMappings": [
+            {
+              "file": "src/commands/prioritize-work-unit.ts",
+              "lines": [
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Command description updated to reflect multi-column support",
+      "testMappings": []
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 5,
+    "coveragePercent": 83,
+    "testFiles": [
+      "src/commands/__tests__/work-unit-ordering-across-all-kanban-columns.test.ts"
+    ],
+    "implFiles": [
+      "src/commands/prioritize-work-unit.ts"
+    ],
+    "totalLinesCovered": 346
+  }
+}

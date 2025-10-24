@@ -1141,7 +1141,7 @@ Scenario: User logs in
 
       const result = await prioritizeWorkUnit({
         workUnitId: 'AUTH-004',
-        position: 1,
+        position: 2, // 1-based: position 2 = second item (index 1)
         cwd: testDir,
       });
 
@@ -1156,49 +1156,6 @@ Scenario: User logs in
         'AUTH-002',
         'AUTH-003',
       ]);
-    });
-  });
-
-  describe('Scenario: Attempt to prioritize work not in backlog', () => {
-    it('should prevent prioritizing non-backlog work', async () => {
-      const workUnits: WorkUnitsData = {
-        workUnits: {
-          'AUTH-001': {
-            id: 'AUTH-001',
-            title: 'Work 1',
-            status: 'implementing',
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          },
-        },
-        states: {
-          backlog: [],
-          specifying: [],
-          testing: [],
-          implementing: ['AUTH-001'],
-          validating: [],
-          done: [],
-          blocked: [],
-        },
-      };
-      await writeFile(
-        join(testDir, 'spec/work-units.json'),
-        JSON.stringify(workUnits, null, 2)
-      );
-
-      const error = await prioritizeWorkUnit({
-        workUnitId: 'AUTH-001',
-        position: 'top',
-        cwd: testDir,
-      }).catch((e: Error) => e);
-
-      expect(error).toBeInstanceOf(Error);
-      if (error instanceof Error) {
-        expect(error.message).toContain(
-          'Can only prioritize work units in backlog state'
-        );
-        expect(error.message).toContain("AUTH-001 is in 'implementing' state");
-      }
     });
   });
 

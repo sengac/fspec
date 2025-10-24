@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-23T21:16:57.711Z"
+    "lastUpdated": "2025-10-24T00:46:35.203Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -10702,74 +10702,6 @@
       "epic": "agent-testing",
       "children": []
     },
-    "BUG-036": {
-      "id": "BUG-036",
-      "title": "Tests rebuilding dist causing system crashes",
-      "type": "bug",
-      "status": "implementing",
-      "createdAt": "2025-10-23T01:52:20.098Z",
-      "updatedAt": "2025-10-23T05:31:37.876Z",
-      "description": "Tests are executing code that rebuilds dist/ directory during test execution, causing system instability and crashes. Tests appear to run in parallel despite sequential configuration, leading to race conditions and complete system failure.",
-      "children": [],
-      "stateHistory": [
-        {
-          "state": "specifying",
-          "timestamp": "2025-10-23T01:52:25.179Z"
-        },
-        {
-          "state": "testing",
-          "timestamp": "2025-10-23T02:45:59.253Z"
-        },
-        {
-          "state": "implementing",
-          "timestamp": "2025-10-23T02:46:10.101Z"
-        },
-        {
-          "state": "validating",
-          "timestamp": "2025-10-23T02:46:56.251Z"
-        },
-        {
-          "state": "implementing",
-          "timestamp": "2025-10-23T05:31:37.876Z"
-        }
-      ],
-      "questions": [
-        {
-          "text": "@human: Which test files are executing CLI commands that use ./dist/index.js?",
-          "selected": true,
-          "answer": "Build ONCE before tests start. Change npm test script to 'npm run build && vitest'. Remove sequential test configuration since parallel builds won't be an issue anymore. Tests can still execute ./dist/index.js but never rebuild during test execution."
-        },
-        {
-          "text": "@human: What's actually causing the crash - tests running in parallel, unnecessary npm run build calls, or both?",
-          "selected": true,
-          "answer": "Uncertain, but likely tests running in parallel despite sequential configuration. Some tests may be calling 'npm run build' unnecessarily, which is bad practice if avoidable. The combination causes system crashes."
-        },
-        {
-          "text": "@human: What's the desired fix approach?",
-          "selected": true,
-          "answer": "Build ONCE before tests start. Change npm test script to 'npm run build && vitest'. Remove sequential test configuration since parallel builds won't be an issue anymore. Tests can still execute ./dist/index.js but never rebuild during test execution."
-        }
-      ],
-      "rules": [
-        "Integration tests in src/commands/__tests__/ and other test areas that spawn child processes to run actual fspec commands (e.g., exec('./dist/index.js validate')). These tests execute the CLI end-to-end.",
-        "Uncertain, but likely tests running in parallel despite sequential configuration. Some tests may be calling 'npm run build' unnecessarily, which is bad practice if avoidable. The combination causes system crashes.",
-        "Build ONCE before tests start. Change npm test script to 'npm run build && vitest'. Remove sequential test configuration since parallel builds won't be an issue anymore. Tests can still execute ./dist/index.js but never rebuild during test execution.",
-        "Tests must NEVER call 'npm run build' during execution",
-        "Build must happen ONCE before all tests start",
-        "Uncertain, but likely tests running in parallel despite sequential configuration. Some tests may be calling 'npm run build' unnecessarily, which is bad practice if avoidable. The combination causes system crashes.",
-        "Build ONCE before tests start. Change npm test script to 'npm run build && vitest'. Remove sequential test configuration since parallel builds won't be an issue anymore. Tests can still execute ./dist/index.js but never rebuild during test execution."
-      ],
-      "examples": [
-        "BEFORE: npm test runs vitest directly, tests rebuild dist/ and crash. AFTER: npm test runs 'npm run build && vitest', dist/ built once, tests run safely.",
-        "BEFORE: Sequential test config needed to prevent parallel build conflicts. AFTER: Can remove sequential config, tests run in parallel safely."
-      ],
-      "userStory": {
-        "role": "developer running tests",
-        "action": "run tests without system crashes from parallel dist rebuilds",
-        "benefit": "I have reliable test execution with stable ./dist/index.js binary"
-      },
-      "estimate": 2
-    },
     "DEP-002": {
       "id": "DEP-002",
       "title": "Upgrade Vitest from 2.1.8 to 4.0.0",
@@ -11010,7 +10942,7 @@
       "type": "story",
       "status": "specifying",
       "createdAt": "2025-10-23T21:16:17.909Z",
-      "updatedAt": "2025-10-23T21:32:29.283Z",
+      "updatedAt": "2025-10-23T23:44:43.043Z",
       "description": "Create core research framework that allows users to select from available research endpoints (custom scripts like hooks) during Example Mapping. Should prompt users to research questions before/during Example Mapping sessions, display available tools, and execute selected research scripts.",
       "epic": "research-tools",
       "children": [],
@@ -11064,13 +10996,15 @@
         "Prompt user to attach research results. After research completes, ask: 'Attach research results to work unit RES-XXX? (y/n)'. If yes, save as attachment and optionally add to architecture notes/example mapping data. If no, display results only (user can refine query or run additional research).",
         "Automatically prompt during Example Mapping. When user adds a question with 'fspec add-question', system asks: 'Would you like to research this question? (y/n)'. If yes, display available research tools and guide user to run 'fspec research --tool=<name> --query=\"question\"'. User can also manually invoke 'fspec research' anytime.",
         "Research scripts are standalone CLI tools (like fspec). Each script defines its own interface, flags, and output format. When 'fspec research' lists tools, it shows how to get help (e.g., 'perplexity --help'). AI agents learn tool usage from tool's own documentation/help output. Tools return results in their chosen format (JSON, text, markdown, etc.), and AI interprets the response. No mandated stdin/stdout contract.",
-        "Auto-discover tools from spec/research-scripts/ directory. No registry file needed. fspec scans directory for executable scripts, lists them when running 'fspec research' without flags. Tool names derived from filenames (e.g., perplexity.sh → 'perplexity'). Discovery happens dynamically at runtime."
+        "Auto-discover tools from spec/research-scripts/ directory. No registry file needed. fspec scans directory for executable scripts, lists them when running 'fspec research' without flags. Tool names derived from filenames (e.g., perplexity.sh → 'perplexity'). Discovery happens dynamically at runtime.",
+        "Auto-discover research tools by scanning spec/research-scripts/ for ANY executable files (not just .sh - could be .py, .js, compiled binaries, etc.). Check executable bit, not file extension."
       ],
       "examples": [
         "Developer runs 'fspec research' without flags, sees list of available tools: perplexity, jira, confluence, with descriptions and usage examples for each",
         "Developer runs 'fspec research --tool=perplexity --query=\"How does OAuth2 work?\"', tool executes and returns formatted results, system asks 'Attach research results to work unit? (y/n)'",
         "During Example Mapping, developer runs 'fspec add-question AUTH-001 \"@human: Should we support OAuth2?\"', system prompts 'Would you like to research this question? (y/n)'",
-        "Developer chooses to attach results, research output saved to spec/attachments/AUTH-001/perplexity-oauth2-research-2025-10-24.md and referenced in work unit"
+        "Developer chooses to attach results, research output saved to spec/attachments/AUTH-001/perplexity-oauth2-research-2025-10-24.md and referenced in work unit",
+        "Research directory contains perplexity.py (Python), jira (compiled binary), confluence.js (Node). fspec auto-discovers all three by executable bit, derives names: 'perplexity', 'jira', 'confluence'."
       ]
     },
     "RES-003": {
@@ -11114,6 +11048,383 @@
       "dependsOn": [
         "RES-002"
       ]
+    },
+    "BOARD-004": {
+      "id": "BOARD-004",
+      "title": "Work unit ordering across all Kanban columns",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-23T22:15:34.560Z",
+      "updatedAt": "2025-10-24T00:03:50.764Z",
+      "description": "Enable prioritize-work-unit command to work on all Kanban columns (backlog, specifying, testing, implementing, validating, blocked) except done. Currently limited to backlog only.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-23T22:15:39.164Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-23T23:50:36.338Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-23T23:54:44.248Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-24T00:03:35.959Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-24T00:03:50.764Z"
+        }
+      ],
+      "rules": [
+        "Currently: prioritize-work-unit only works for backlog status, throws error for other statuses",
+        "Change: Allow prioritize-work-unit to work on backlog, specifying, testing, implementing, validating, blocked statuses (NOT done)",
+        "CRITICAL: prioritize-work-unit can ONLY reorder within the same column (same status). Cannot move work units between columns or reference work units in different columns.",
+        "If --before or --after references a work unit in a different column, throw error with clear message",
+        "If work unit is in done status, throw error AND emit system-reminder explaining done work units cannot be reordered",
+        "Files requiring updates: src/commands/prioritize-work-unit.ts (lines 36-41, 91), src/commands/prioritize-work-unit-help.ts (lines 5, 8, 9, 25, 29, examples, commonErrors 66-67, typicalWorkflow 76, notes 96+100), src/help.ts (prioritize section), spec/features/kanban-workflow-state-management.feature (prioritize scenarios and validation)",
+        "Update command description to: 'Reorder work units in any Kanban column except done'",
+        "If work unit is the only item in its column, allow prioritization and succeed as no-op (idempotent operation)",
+        "Update spec/features/kanban-workflow-state-management.feature: modify existing prioritize scenarios to test multi-column prioritization, remove validation scenario that tests 'Can only prioritize work units in backlog state' error (no longer valid)",
+        "Update test files (src/commands/__tests__/kanban-workflow-state-management.test.ts and others): modify tests to cover multi-column prioritization, remove tests that specifically validate 'backlog-only' constraint (no longer valid)"
+      ],
+      "examples": [
+        "User runs 'fspec prioritize-work-unit FEAT-017 --position top' where FEAT-017 is in specifying status. Command reorders FEAT-017 to top of specifying column (states.specifying array).",
+        "User runs 'fspec prioritize-work-unit FEAT-017 --before AUTH-001' where FEAT-017 is in specifying and AUTH-001 is in testing. Command throws error: 'Cannot prioritize across columns. FEAT-017 (specifying) and AUTH-001 (testing) are in different columns.'",
+        "User runs 'fspec prioritize-work-unit AUTH-001 --position top' where AUTH-001 is in done status. Command throws error and emits: '<system-reminder>Cannot prioritize work units in done column. Done items are ordered by completion time and cannot be manually reordered. Only backlog, specifying, testing, implementing, validating, blocked can be prioritized.</system-reminder>'",
+        "Help text shows: 'fspec prioritize-work-unit - Reorder work units in any Kanban column except done'",
+        "AUTH-001 is only item in implementing column. User runs 'fspec prioritize-work-unit AUTH-001 --position top'. Command succeeds with message: '✓ Work unit AUTH-001 prioritized successfully' (no error, no-op).",
+        "Old scenario: 'Attempt to prioritize work not in backlog' tests error when implementing work unit is prioritized. REMOVE this scenario (no longer an error). Add new scenarios testing prioritization in specifying, testing, implementing, validating, blocked columns.",
+        "Old test: 'should throw error when prioritizing work unit in implementing status' - REMOVE (no longer an error). Add new tests: 'should prioritize work unit in specifying column', 'should prioritize work unit in implementing column', etc."
+      ],
+      "userStory": {
+        "role": "developer managing work priorities",
+        "action": "reorder work units in any Kanban column except done",
+        "benefit": "I can adjust priorities throughout the workflow, not just in backlog"
+      }
+    },
+    "CLI-008": {
+      "id": "CLI-008",
+      "title": "Release command for reviewing changes and creating tagged releases",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-23T22:43:00.893Z",
+      "updatedAt": "2025-10-24T00:50:36.088Z",
+      "description": "Add /release slash command that: 1) Reviews all code changes since last git tag, 2) Creates commit with Roland Quast <rquast@rolandquast.com> details (not Claude's), 3) Tags the release, 4) Does NOT push (manual step). Command analyzes commit history and code changes for release notes.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-23T22:43:08.685Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-24T00:47:26.404Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-24T00:47:47.538Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-24T00:49:56.096Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-24T00:50:36.088Z"
+        }
+      ],
+      "rules": [
+        "Implement as slash command for Claude Code in .claude/commands/release.md (NOT an fspec CLI command)",
+        "Commit author must be Roland Quast <rquast@rolandquast.com>, NOT Claude's default author",
+        "Review all git commits since last tag using git log",
+        "Analyze code changes in those commits for release notes",
+        "Create git tag for the release version",
+        "Do NOT push to remote (user must push manually)",
+        "Use conventional commits to determine semver bump: BREAKING CHANGE = major, feat = minor, fix = patch",
+        "Review ALL code changes line-by-line since last tag (not just commit messages)",
+        "Combine conventional commit analysis with actual code diff review to generate comprehensive release notes",
+        "Update package.json version field to match the new release version",
+        "Release commit message format: 'chore(release): v{version}' with full release notes in commit body (breaking changes, features, fixes sections)",
+        "If no previous git tag exists, use current package.json version as base for semver bump",
+        "Before creating release: 1) Stage and commit all uncommitted changes with descriptive message, 2) Run npm test, 3) Run npm run build, 4) Abort release if tests or build fail",
+        "When committing uncommitted changes before release: analyze changes and generate appropriate conventional commit message (not generic message)"
+      ],
+      "examples": [
+        "Last tag is v0.3.0. Commits since: 'feat: add new command', 'fix: resolve bug'. Code diff shows 500 lines added. Claude reviews line-by-line, determines minor bump (feat), creates v0.3.1 tag with release notes combining commit analysis + code review.",
+        "Last tag v0.3.0, new version v0.3.1 determined. Command updates package.json from 'version: 0.3.0' to 'version: 0.3.1', creates commit with updated package.json, then creates v0.3.1 tag.",
+        "Commit message: 'chore(release): v0.3.1' with body containing '## Breaking Changes\\n(none)\\n\\n## Features\\n- Add new command\\n\\n## Fixes\\n- Resolve critical bug'",
+        "No previous tag. package.json shows 'version: 0.3.0'. Commits contain 'feat: new feature'. Bump to v0.4.0 (minor bump from package.json version).",
+        "User runs /release with uncommitted files. Command commits changes first, runs npm test (passes), runs npm run build (passes), then proceeds with release. If either fails, release is aborted with error message.",
+        "Uncommitted changes include new test file and bug fix. Pre-release commit message: 'fix: resolve authentication bug and add test coverage' before proceeding with release commit."
+      ],
+      "userStory": {
+        "role": "developer using Claude Code",
+        "action": "create tagged releases with comprehensive release notes",
+        "benefit": "I can automate version bumping and release documentation based on conventional commits"
+      },
+      "estimate": 5
+    },
+    "CLI-009": {
+      "id": "CLI-009",
+      "title": "Publish command for conditional npm publishing",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-23T22:43:01.389Z",
+      "updatedAt": "2025-10-24T00:50:36.869Z",
+      "description": "Add /publish slash command that: 1) Checks npm registry for @sengac/fspec current version, 2) Compares with local release tag, 3) Only publishes if version differs, 4) Prevents accidental duplicate publishing. Depends on release command being available.",
+      "children": [],
+      "dependsOn": [
+        "CLI-008"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-23T22:50:47.930Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-24T00:47:27.186Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-24T00:47:48.316Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-24T00:49:56.870Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-24T00:50:36.869Z"
+        }
+      ],
+      "rules": [
+        "Implement as slash command for Claude Code in .claude/commands/publish.md (NOT an fspec CLI command)",
+        "Verify git tag matches package.json version before comparing with npm registry (fail if mismatch)",
+        "Compare package.json version with npm registry for @sengac/fspec - only publish if different",
+        "If version already exists on npm registry, show message and exit successfully (not an error)",
+        "No pre-publish testing or building - assume /release already validated. Only check version differences before publishing."
+      ],
+      "examples": [
+        "Git tag: v0.3.1, package.json: 0.3.1, npm registry: 0.3.0. Versions match locally, differs from npm. Command proceeds with npm publish.",
+        "Git tag: v0.3.1, package.json: 0.3.0, npm registry: 0.3.0. Mismatch detected. Command fails with error: 'Version mismatch: git tag (v0.3.1) does not match package.json (0.3.0). Run /release first.'",
+        "Git tag: v0.3.0, package.json: 0.3.0, npm registry: 0.3.0. Command shows: 'Version 0.3.0 already published to npm. Skipping.' and exits successfully (exit code 0).",
+        "User runs /publish after /release. Command checks: git tag (v0.3.1) matches package.json (0.3.1), differs from npm (0.3.0). Runs npm publish directly without tests/build."
+      ],
+      "userStory": {
+        "role": "developer using Claude Code",
+        "action": "publish releases to npm only if version differs from registry",
+        "benefit": "I prevent accidental duplicate publishing"
+      },
+      "estimate": 3
+    },
+    "CLI-010": {
+      "id": "CLI-010",
+      "title": "Commit command with conventional commits and custom author",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-23T22:44:53.779Z",
+      "updatedAt": "2025-10-24T00:50:37.643Z",
+      "description": "Add /commit slash command that: 1) Analyzes all unstaged and staged files, 2) Stages all unstaged files, 3) Generates conventional commit message based on changes, 4) Creates commit with Roland Quast <rquast@rolandquast.com> author details (not Claude's), 5) Does NOT push (manual step).",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-23T22:53:59.997Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-24T00:47:27.962Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-24T00:47:49.117Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-24T00:49:57.642Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-24T00:50:37.643Z"
+        }
+      ],
+      "rules": [
+        "Implement as slash command for Claude Code in .claude/commands/commit.md (NOT an fspec CLI command)",
+        "Commit author must be Roland Quast <rquast@rolandquast.com>, NOT Claude's default author",
+        "Stage all unstaged files before committing (git add .)",
+        "Generate conventional commit message by analyzing staged files and changes",
+        "Do NOT push to remote (user must push manually)",
+        "If no unstaged or staged files exist (clean working directory), show message and exit successfully (not an error)",
+        "Follow strict conventional commits spec: type(scope): description. Include body with detailed changes and footer with BREAKING CHANGE if applicable."
+      ],
+      "examples": [
+        "User runs /commit with clean working directory. Command shows: 'Nothing to commit, working directory clean.' and exits successfully.",
+        "Unstaged files: src/commands/new-feature.ts (new file), src/types.ts (modified). Generated commit: 'feat(commands): add new feature command\\n\\nImplement new-feature command with TypeScript types and CLI integration.'"
+      ],
+      "userStory": {
+        "role": "developer using Claude Code",
+        "action": "create conventional commits with automated message generation",
+        "benefit": "I maintain consistent commit history without manual message writing"
+      },
+      "estimate": 3
+    },
+    "RES-006": {
+      "id": "RES-006",
+      "title": "Stakeholder communication research script for unanswered questions",
+      "type": "story",
+      "status": "specifying",
+      "createdAt": "2025-10-23T23:34:32.464Z",
+      "updatedAt": "2025-10-23T23:43:29.518Z",
+      "description": "Create research script that contacts stakeholders via chat platforms (Teams, Slack) when questions arise during Example Mapping that require human input. Integrates with fspec research framework to send questions and receive answers from project stakeholders.",
+      "epic": "research-tools",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-23T23:34:38.818Z"
+        }
+      ],
+      "rules": [
+        "Use plugin architecture where communication platforms (Teams, Slack, etc.) can be added dynamically without modifying core script",
+        "Main script stored in spec/research-scripts/stakeholder.sh, platform plugins stored in spec/research-scripts/plugins/ directory",
+        "Script is one-way notification only: sends message to stakeholders and exits. Does NOT wait for response or handle callbacks.",
+        "Message sender identity should be configurable (who the message appears to come from)",
+        "Store platform credentials and settings in user-level config: ~/.fspec/fspec-config.json (NOT project-level spec/fspec-config.json)",
+        "Message should include full context: question text, work unit ID, work unit title, epic (if any), existing rules, existing examples, and all questions/answers so far from Example Mapping",
+        "AI asks human which platform(s) to use. If no preference specified, default to all configured platforms in ~/.fspec/fspec-config.json",
+        "Auto-discover platform plugins by scanning spec/research-scripts/plugins/ directory for .sh files (no manifest/registry required)",
+        "Auto-discover platform plugins by scanning spec/research-scripts/plugins/ directory for ANY executable files (not just .sh - could be .py, .js, compiled binaries, etc.)"
+      ],
+      "examples": [
+        "User runs 'fspec research --tool=stakeholder --platform=teams --question=\"Should we support OAuth2?\"'. Main script loads spec/research-scripts/plugins/teams.sh and sends question via Teams API.",
+        "AI runs 'fspec research --tool=stakeholder --platform=slack --question=\"OAuth support needed?\"'. Script sends message to configured Slack channel from configured user, then exits. Stakeholder sees notification and responds manually later in Claude Code session.",
+        "User-level config at ~/.fspec/fspec-config.json contains Slack token and Teams webhook URL. Script reads from user config (not project config) to send stakeholder notifications.",
+        "Message sent to Slack: 'Question for AUTH-001 (User Login, epic: user-management)\\n\\nQuestion: Should we support OAuth2?\\n\\nRules:\\n1. Password must be 8+ chars\\n\\nExamples:\\n1. Valid login with email/password\\n\\nPrevious Q&A:\\nQ: Support 2FA? A: Yes, in phase 2'",
+        "AI asks: 'Send to Teams, Slack, or both?' Human says 'both'. Script sends to both platforms. If human doesn't specify, script checks config and sends to all configured platforms by default.",
+        "Plugins directory contains teams.sh and slack.sh. Main script auto-discovers both platforms and can send to either/both based on config and user preference.",
+        "Plugins directory contains teams.py (Python), slack (compiled Go binary), and discord.js (Node script). Main script auto-discovers all three by checking executable bit, not file extension."
+      ],
+      "dependsOn": [
+        "CONFIG-001"
+      ],
+      "questions": [
+        {
+          "text": "@human: How should multiple stakeholders work? (A) Single destination per invocation, (B) Multiple destinations via repeated --platform flags, (C) Send to all configured platforms at once?",
+          "selected": true,
+          "answer": "AI asks human which platform(s) to use. If no preference specified, default to all configured platforms in ~/.fspec/fspec-config.json"
+        }
+      ]
+    },
+    "CONFIG-001": {
+      "id": "CONFIG-001",
+      "title": "Shared configuration management utilities for user and project config files",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-10-23T23:38:52.558Z",
+      "updatedAt": "2025-10-23T23:38:52.558Z",
+      "description": "Create shared code/functions to manage config files: user-level (~/.fspec/fspec-config.json) and project-level (spec/fspec-config.json). Utilities should handle reading, writing, merging, validating config across both scopes with proper precedence rules.",
+      "children": []
+    },
+    "BUG-041": {
+      "id": "BUG-041",
+      "title": "Data integrity validation missing in prioritize-work-unit",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-10-24T00:13:14.350Z",
+      "updatedAt": "2025-10-24T00:23:53.471Z",
+      "description": "prioritize-work-unit doesn't validate that work unit ID exists in the states array matching its status field, which could cause duplicates or silent failures if data is corrupted",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-24T00:13:42.487Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-24T00:16:25.424Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-24T00:17:51.849Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-24T00:23:51.839Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-24T00:23:53.471Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using prioritize-work-unit",
+        "action": "detect data corruption early with clear error messages",
+        "benefit": "I can fix corrupted data before it causes silent failures or duplicates"
+      },
+      "rules": [
+        "Work unit status field MUST match which states array it's in (e.g., status='specifying' must be in states.specifying)",
+        "If work unit status doesn't match its array location, throw error with repair suggestion",
+        "Validate work unit's own status matches its array before prioritizing",
+        "When using --before or --after, validate target work unit is in the same states array"
+      ],
+      "examples": [
+        "AUTH-001 has status='specifying' but is in states.testing array. User runs 'fspec prioritize-work-unit AUTH-001 --position top'. Command throws: 'Data integrity error: Work unit AUTH-001 has status specifying but is not in states.specifying array. Run fspec repair-work-units'",
+        "FEAT-017 is in specifying (correct). User runs 'fspec prioritize-work-unit FEAT-017 --before AUTH-001' where AUTH-001 status='specifying' but AUTH-001 is NOT in states.specifying. Command throws: 'Data integrity error: Work unit AUTH-001 has status specifying but is not in states.specifying array'",
+        "Work unit AUTH-001 has status='implementing' and IS in states.implementing array. User runs 'fspec prioritize-work-unit AUTH-001 --position top'. Command succeeds (data is valid)"
+      ]
+    },
+    "BUG-042": {
+      "id": "BUG-042",
+      "title": "1-based indexing not implemented in prioritize-work-unit",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-10-24T00:13:20.575Z",
+      "updatedAt": "2025-10-24T00:23:54.289Z",
+      "description": "Help text says numeric positions are 1-based (e.g., position 3 = third item) but code uses 0-based array indices, causing off-by-one errors",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-24T00:15:09.744Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-24T00:16:26.241Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-24T00:17:52.689Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-24T00:23:52.660Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-24T00:23:54.289Z"
+        }
+      ],
+      "userStory": {
+        "role": "user running prioritize-work-unit with numeric positions",
+        "action": "use intuitive 1-based positions matching help text",
+        "benefit": "position 3 means third item as documented, not fourth item"
+      },
+      "rules": [
+        "Help text says numeric positions are 1-based (position 1 = first item, position 3 = third item)",
+        "Code must convert 1-based user input to 0-based array indices (position - 1)",
+        "Position must be >= 1 (reject position 0 or negative)"
+      ],
+      "examples": [
+        "User runs 'fspec prioritize-work-unit AUTH-001 --position 1' expecting AUTH-001 to be first. AUTH-001 becomes first item (index 0).",
+        "User runs 'fspec prioritize-work-unit AUTH-001 --position 3' expecting AUTH-001 to be third. AUTH-001 becomes third item (index 2).",
+        "User runs 'fspec prioritize-work-unit AUTH-001 --position 0'. Command throws: 'Invalid position: 0. Position must be >= 1 (1-based index)'"
+      ]
     }
   },
   "states": {
@@ -11151,18 +11462,18 @@
       "AGENT-017",
       "RES-003",
       "RES-004",
-      "RES-005"
+      "RES-005",
+      "CONFIG-001"
     ],
     "specifying": [
       "FEAT-017",
       "GIT-004",
       "BUG-039",
-      "RES-002"
+      "RES-002",
+      "RES-006"
     ],
     "testing": [],
-    "implementing": [
-      "BUG-036"
-    ],
+    "implementing": [],
     "validating": [],
     "done": [
       "BUG-007",
@@ -11343,7 +11654,13 @@
       "DEP-002",
       "BUG-037",
       "BUG-038",
-      "BUG-040"
+      "BUG-040",
+      "BOARD-004",
+      "BUG-041",
+      "BUG-042",
+      "CLI-008",
+      "CLI-009",
+      "CLI-010"
     ],
     "blocked": []
   }
