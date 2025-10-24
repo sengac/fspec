@@ -44,7 +44,7 @@ describe('Feature: Support multiple AI agents beyond Claude', () => {
       expect(cursorConfig?.id).toBe('cursor');
       expect(cursorConfig?.name).toBe('Cursor');
       expect(cursorConfig?.supportsSystemReminders).toBe(false);
-      expect(cursorConfig?.supportsMetaCognition).toBe(true);
+      expect(cursorConfig?.supportsMetaCognition).toBe(false);
       expect(cursorConfig?.category).toBe('ide');
       expect(cursorConfig?.slashCommandFormat).toBe('markdown');
       expect(cursorConfig?.slashCommandPath).toBe('.cursor/commands/');

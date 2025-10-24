@@ -172,6 +172,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@json-schema` | JSON Schema Validation |
 | `@learning` | Machine learning and adaptive features based on usage patterns |
 | `@mermaid` | Mermaid Diagram Support |
+| `@multi-agent` | Multi-agent compatibility features and agent-specific customizations |
 | `@pattern-detection` | Features involving pattern detection and analysis from historical data |
 | `@push` | Push notification functionality |
 | `@reverse-engineering` | Reverse engineering existing code to create specifications |
@@ -515,7 +516,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-10-24T00:45:01.445Z_
+_Last updated: 2025-10-24T05:21:28.901Z_
 
 **Update Command**: `fspec tag-stats`
 

@@ -1,7 +1,28 @@
 {
-  "scenarios": [],
+  "scenarios": [
+    {
+      "name": "Handle clean working directory gracefully",
+      "testMappings": []
+    },
+    {
+      "name": "Generate conventional commit for new feature with multiple files",
+      "testMappings": []
+    },
+    {
+      "name": "Generate conventional commit for bug fix",
+      "testMappings": []
+    },
+    {
+      "name": "Generate conventional commit with breaking change",
+      "testMappings": []
+    },
+    {
+      "name": "Do not push to remote after commit",
+      "testMappings": []
+    }
+  ],
   "stats": {
-    "totalScenarios": 0,
+    "totalScenarios": 5,
     "coveredScenarios": 0,
     "coveragePercent": 0,
     "testFiles": [],

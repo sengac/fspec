@@ -590,6 +590,10 @@
           "description": "Mermaid Diagram Support"
         },
         {
+          "name": "@multi-agent",
+          "description": "Multi-agent compatibility features and agent-specific customizations"
+        },
+        {
           "name": "@pattern-detection",
           "description": "Features involving pattern detection and analysis from historical data"
         },
@@ -1094,7 +1098,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-10-24T00:45:01.445Z",
+    "lastUpdated": "2025-10-24T05:21:28.901Z",
     "phaseStats": [
       {
         "phase": "Phase 1",
