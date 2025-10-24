@@ -77,13 +77,11 @@ describe('Feature: Support multiple AI agents beyond Claude', () => {
       expect(cursorConfig?.detectionPaths).toContain('.cursor/');
     });
 
-    it('should have root stub file and doc template for each agent', () => {
+    it('should have doc template for each agent', () => {
       const agents = getAvailableAgents();
 
       agents.forEach(agent => {
-        expect(agent.rootStubFile).toBeDefined();
         expect(agent.docTemplate).toBeDefined();
-        expect(typeof agent.rootStubFile).toBe('string');
         expect(typeof agent.docTemplate).toBe('string');
       });
     });
@@ -109,7 +107,6 @@ describe('Feature: Support multiple AI agents beyond Claude', () => {
         expect(agent).toHaveProperty('supportsSystemReminders');
         expect(agent).toHaveProperty('supportsMetaCognition');
         expect(agent).toHaveProperty('docTemplate');
-        expect(agent).toHaveProperty('rootStubFile');
         expect(agent).toHaveProperty('detectionPaths');
         expect(agent).toHaveProperty('available');
         expect(agent).toHaveProperty('category');

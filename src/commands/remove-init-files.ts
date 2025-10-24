@@ -33,9 +33,7 @@ export async function removeInitFiles(
   const detectedAgentId = await detectInstalledAgent(cwd);
 
   if (!detectedAgentId) {
-    throw new Error(
-      'No fspec agent installation detected. Nothing to remove.'
-    );
+    throw new Error('No fspec agent installation detected. Nothing to remove.');
   }
 
   const agent = getAgentById(detectedAgentId);
@@ -132,7 +130,10 @@ async function detectInstalledAgent(cwd: string): Promise<string | null> {
 /**
  * Remove files for a specific agent
  */
-async function removeAgentFiles(cwd: string, agentId: string): Promise<string[]> {
+async function removeAgentFiles(
+  cwd: string,
+  agentId: string
+): Promise<string[]> {
   const agent = getAgentById(agentId);
   if (!agent) {
     return [];
@@ -159,8 +160,14 @@ export function registerRemoveInitFilesCommand(program: Command): void {
   program
     .command('remove-init-files')
     .description('Remove fspec initialization files')
-    .option('--keep-config', 'Keep spec/fspec-config.json (remove only agent files)')
-    .option('--no-keep-config', 'Remove all files including spec/fspec-config.json')
+    .option(
+      '--keep-config',
+      'Keep spec/fspec-config.json (remove only agent files)'
+    )
+    .option(
+      '--no-keep-config',
+      'Remove all files including spec/fspec-config.json'
+    )
     .action(async (options: { keepConfig?: boolean }) => {
       try {
         // Execute remove-init-files with explicit flags or interactive prompt
@@ -178,7 +185,10 @@ export function registerRemoveInitFilesCommand(program: Command): void {
 
         process.exit(0);
       } catch (error: any) {
-        console.error(chalk.red('✗ Failed to remove init files:'), error.message);
+        console.error(
+          chalk.red('✗ Failed to remove init files:'),
+          error.message
+        );
         process.exit(1);
       }
     });

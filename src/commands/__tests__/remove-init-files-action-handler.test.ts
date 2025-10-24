@@ -137,11 +137,13 @@ describe('Feature: Remove initialization files - Action Handler', () => {
 
       // When I run 'fspec remove-init-files' without flags
       const result = await executeRemoveInitFiles({
-        promptKeepConfig: mockPromptKeepConfig
+        promptKeepConfig: mockPromptKeepConfig,
       });
 
       // Then the interactive prompt should have been shown
-      expect(mockPromptKeepConfig).toHaveBeenCalledWith('Keep spec/fspec-config.json?');
+      expect(mockPromptKeepConfig).toHaveBeenCalledWith(
+        'Keep spec/fspec-config.json?'
+      );
 
       // Then spec/fspec-config.json should still exist (user said Yes)
       expect(existsSync(configPath)).toBe(true);
@@ -172,11 +174,13 @@ describe('Feature: Remove initialization files - Action Handler', () => {
 
       // When I run 'fspec remove-init-files' without flags
       const result = await executeRemoveInitFiles({
-        promptKeepConfig: mockPromptKeepConfig
+        promptKeepConfig: mockPromptKeepConfig,
       });
 
       // Then the interactive prompt should have been shown
-      expect(mockPromptKeepConfig).toHaveBeenCalledWith('Keep spec/fspec-config.json?');
+      expect(mockPromptKeepConfig).toHaveBeenCalledWith(
+        'Keep spec/fspec-config.json?'
+      );
 
       // Then all files including config should be removed (user said No)
       expect(existsSync(configPath)).toBe(false);

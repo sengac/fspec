@@ -10872,22 +10872,6 @@
       ],
       "estimate": 1
     },
-    "BUG-039": {
-      "id": "BUG-039",
-      "title": "init command incorrectly deletes project root CLAUDE.md file",
-      "type": "story",
-      "status": "specifying",
-      "createdAt": "2025-10-23T07:25:06.416Z",
-      "updatedAt": "2025-10-23T07:25:24.545Z",
-      "description": "The removeOtherAgentFiles function in init.ts deletes agent.rootStubFile for all agents not being installed. For Claude, this is CLAUDE.md, which conflicts with the legitimate project documentation file at the root. This causes user data loss when switching agents or running init commands.",
-      "children": [],
-      "stateHistory": [
-        {
-          "state": "specifying",
-          "timestamp": "2025-10-23T07:25:24.546Z"
-        }
-      ]
-    },
     "BUG-040": {
       "id": "BUG-040",
       "title": "Duplicate installation success message in fspec init",
@@ -11425,6 +11409,34 @@
         "User runs 'fspec prioritize-work-unit AUTH-001 --position 3' expecting AUTH-001 to be third. AUTH-001 becomes third item (index 2).",
         "User runs 'fspec prioritize-work-unit AUTH-001 --position 0'. Command throws: 'Invalid position: 0. Position must be >= 1 (1-based index)'"
       ]
+    },
+    "REFAC-002": {
+      "id": "REFAC-002",
+      "title": "Remove unused rootStubFile property from AgentConfig",
+      "type": "task",
+      "status": "done",
+      "createdAt": "2025-10-24T02:43:22.040Z",
+      "updatedAt": "2025-10-24T02:50:36.405Z",
+      "description": "The rootStubFile property in AgentConfig interface and all agent definitions is dead code. It was used by installRootStub() function which was removed in commit 9286b71 to fix the CLAUDE.md deletion bug. Property is defined but never used anywhere in the codebase.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-24T02:43:37.519Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-24T02:43:44.078Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-24T02:50:12.988Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-24T02:50:36.405Z"
+        }
+      ]
     }
   },
   "states": {
@@ -11468,7 +11480,6 @@
     "specifying": [
       "FEAT-017",
       "GIT-004",
-      "BUG-039",
       "RES-002",
       "RES-006"
     ],
@@ -11660,7 +11671,8 @@
       "BUG-042",
       "CLI-008",
       "CLI-009",
-      "CLI-010"
+      "CLI-010",
+      "REFAC-002"
     ],
     "blocked": []
   }

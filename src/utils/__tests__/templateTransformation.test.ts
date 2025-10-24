@@ -226,7 +226,6 @@ Path: {{SLASH_COMMAND_PATH}}
         supportsSystemReminders: false,
         supportsMetaCognition: false,
         docTemplate: 'AIDER.md',
-        rootStubFile: 'AIDER.md',
         detectionPaths: [],
         available: true,
         category: 'cli',

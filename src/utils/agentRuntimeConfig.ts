@@ -53,7 +53,6 @@ export function getAgentConfig(cwd: string): AgentConfig {
     supportsSystemReminders: false,
     supportsMetaCognition: false,
     docTemplate: '',
-    rootStubFile: '',
     detectionPaths: [],
     available: true,
     category: 'cli',

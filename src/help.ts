@@ -1089,7 +1089,9 @@ function displaySetupHelp(): void {
   console.log(
     '      --agent <agent>                  Specify agent directly (18 agents supported)'
   );
-  console.log('      --yes                            Skip confirmation prompts');
+  console.log(
+    '      --yes                            Skip confirmation prompts'
+  );
   console.log('    Examples:');
   console.log('      fspec init');
   console.log('      fspec init --agent=claude');

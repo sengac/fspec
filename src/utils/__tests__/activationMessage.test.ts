@@ -67,7 +67,9 @@ describe('Feature: Agent-specific activation message', () => {
       const message = getActivationMessage(unknownAgent as any);
 
       // Then the message should be generic fallback
-      expect(message).toContain('Refer to your AI agent documentation to activate fspec');
+      expect(message).toContain(
+        'Refer to your AI agent documentation to activate fspec'
+      );
     });
   });
 });

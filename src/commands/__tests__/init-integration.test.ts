@@ -33,10 +33,13 @@ describe('Feature: INIT-008 and BUG-030 implementation integration', () => {
 
       // When fspec init completes with --agent claude flag
       try {
-        execSync(`node ${join(process.cwd(), 'dist/index.js')} init --agent claude`, {
-          cwd: testDir,
-          stdio: 'pipe',
-        });
+        execSync(
+          `node ${join(process.cwd(), 'dist/index.js')} init --agent claude`,
+          {
+            cwd: testDir,
+            stdio: 'pipe',
+          }
+        );
       } catch (error) {
         // Init might fail in test environment, but we're checking if config was created
       }
@@ -63,10 +66,13 @@ describe('Feature: INIT-008 and BUG-030 implementation integration', () => {
       // When fspec init completes with --agent claude flag
       let output = '';
       try {
-        output = execSync(`node ${join(process.cwd(), 'dist/index.js')} init --agent claude`, {
-          cwd: testDir,
-          encoding: 'utf-8',
-        });
+        output = execSync(
+          `node ${join(process.cwd(), 'dist/index.js')} init --agent claude`,
+          {
+            cwd: testDir,
+            encoding: 'utf-8',
+          }
+        );
       } catch (error: any) {
         output = error.stdout || '';
       }
@@ -84,10 +90,13 @@ describe('Feature: INIT-008 and BUG-030 implementation integration', () => {
       // When fspec init completes with --agent cursor flag
       let output = '';
       try {
-        output = execSync(`node ${join(process.cwd(), 'dist/index.js')} init --agent cursor`, {
-          cwd: testDir,
-          encoding: 'utf-8',
-        });
+        output = execSync(
+          `node ${join(process.cwd(), 'dist/index.js')} init --agent cursor`,
+          {
+            cwd: testDir,
+            encoding: 'utf-8',
+          }
+        );
       } catch (error: any) {
         output = error.stdout || '';
       }
