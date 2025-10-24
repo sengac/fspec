@@ -16,6 +16,7 @@ import {
   findStateHistoryEntry,
   checkFileCreatedAfter,
 } from '../utils/temporal-validation';
+import * as gitCheckpoint from '../utils/git-checkpoint.js';
 
 type WorkUnitStatus =
   | 'backlog'
@@ -369,13 +370,10 @@ export async function updateWorkUnitStatus(
   }
 
   // Create automatic checkpoint before state transition (GIT-002)
-  // Use lazy import to avoid loading git dependencies for all commands
   let checkpointCreated = false;
   let checkpointName = '';
 
   try {
-    // Lazy load checkpoint utilities only when needed
-    const gitCheckpoint = await import('../utils/git-checkpoint.js');
     const isDirty = await gitCheckpoint.isWorkingDirectoryDirty(cwd);
 
     if (isDirty && currentStatus !== 'backlog') {
