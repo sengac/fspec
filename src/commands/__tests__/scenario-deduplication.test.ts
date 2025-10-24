@@ -84,10 +84,11 @@ Feature: User Authentication
 `
       );
 
-      // When I run 'fspec generate-scenarios AUTH-005'
+      // When I run 'fspec generate-scenarios AUTH-005 --ignore-possible-duplicates'
       const result = await generateScenarios({
         workUnitId: 'AUTH-005',
         cwd: tmpDir,
+        ignorePossibleDuplicates: true,
       });
 
       // Then the system should detect the match and prompt
@@ -163,6 +164,7 @@ Feature: User Authentication
         workUnitId: 'AUTH-005',
         cwd: tmpDir,
         confirmUpdate: true, // Auto-confirm for testing
+        ignorePossibleDuplicates: true, // Skip duplicate blocking
       });
 
       // Then detectedMatches should be populated
@@ -295,11 +297,12 @@ Feature: User Authentication
       // And Example 3 is completely new
       // (no matching feature exists)
 
-      // When I run 'fspec generate-scenarios BUG-009'
+      // When I run 'fspec generate-scenarios BUG-009 --ignore-possible-duplicates'
       const result = await generateScenarios({
         workUnitId: 'BUG-009',
         cwd: tmpDir,
         confirmUpdate: true, // Auto-confirm all updates
+        ignorePossibleDuplicates: true, // Skip duplicate blocking
       });
 
       // Then the system should prompt me for each match (Examples 1 and 2)
