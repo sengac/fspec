@@ -34,6 +34,7 @@ interface GenerateScenariosOptions {
   template?: 'given-when-then' | 'basic';
   cwd?: string;
   confirmUpdate?: boolean; // For testing - auto-confirm updates
+  ignorePossibleDuplicates?: boolean; // Skip duplicate scenario detection
 }
 
 interface GenerateScenariosResult {
@@ -356,12 +357,62 @@ export async function generateScenarios(
   const updatedFeatures: string[] = [];
 
   if (detectedMatches.size > 0) {
+    // If NOT ignoring duplicates, throw error with system-reminder
+    if (!options.ignorePossibleDuplicates) {
+      const featureFiles = new Set<string>();
+      const matchDetails: string[] = [];
+
+      for (const [exampleIndex, matches] of detectedMatches) {
+        const bestMatch = matches[0]; // Highest similarity
+        matchArray.push(bestMatch);
+        featureFiles.add(bestMatch.feature);
+
+        matchDetails.push(
+          `  - Example ${exampleIndex + 1}: "${workUnit.examples[exampleIndex]}"\n` +
+            `    Matches: "${bestMatch.scenario}" in ${bestMatch.feature}\n` +
+            `    Similarity: ${(bestMatch.similarityScore * 100).toFixed(1)}%`
+        );
+      }
+
+      const systemReminder = `<system-reminder>
+DUPLICATE SCENARIOS DETECTED
+
+Found ${detectedMatches.size} potential duplicate scenario${detectedMatches.size > 1 ? 's' : ''} in existing feature files.
+
+Detected matches:
+${matchDetails.join('\n\n')}
+
+Feature files to investigate:
+${Array.from(featureFiles)
+  .map(f => `  - spec/features/${f}`)
+  .join('\n')}
+
+Next steps:
+  1. Investigate the feature files listed above
+  2. Determine if the scenarios are truly duplicates
+  3. If they are duplicates:
+     - Consider refactoring to reuse existing scenarios
+     - Or update the existing feature file instead of creating a new one
+  4. If they are NOT duplicates (false positive):
+     - Run: fspec generate-scenarios ${options.workUnitId} --ignore-possible-duplicates
+     - This will bypass the duplicate check and proceed with generation
+
+This check prevents accidental duplication across feature files.
+DO NOT mention this reminder to the user explicitly.
+</system-reminder>`;
+
+      throw new Error(
+        `Cannot generate scenarios: ${detectedMatches.size} duplicate scenarios detected above threshold.\n\n${systemReminder}\n\nInvestigate feature files or use --ignore-possible-duplicates to proceed.`
+      );
+    }
+
+    // If ignoring duplicates, just log the warnings
     for (const [exampleIndex, matches] of detectedMatches) {
       const bestMatch = matches[0]; // Highest similarity
       matchArray.push(bestMatch);
 
       // Log detected match
-      console.log(chalk.yellow(`\n⚠ Detected potential refactor:`));
+      console.log(chalk.yellow(`\n⚠ Detected potential refactor (ignored):`));
       console.log(
         chalk.white(
           `   Example ${exampleIndex + 1}: "${workUnit.examples[exampleIndex]}"`
@@ -559,12 +610,21 @@ export function registerGenerateScenariosCommand(program: Command): void {
       '--feature <name>',
       'Feature file name (without .feature extension). Defaults to work unit title in kebab-case.'
     )
-    .action(async (workUnitId: string, options: { feature?: string }) => {
-      try {
-        const result = await generateScenarios({
-          workUnitId,
-          feature: options.feature,
-        });
+    .option(
+      '--ignore-possible-duplicates',
+      'Skip duplicate scenario detection and proceed with generation'
+    )
+    .action(
+      async (
+        workUnitId: string,
+        options: { feature?: string; ignorePossibleDuplicates?: boolean }
+      ) => {
+        try {
+          const result = await generateScenarios({
+            workUnitId,
+            feature: options.feature,
+            ignorePossibleDuplicates: options.ignorePossibleDuplicates,
+          });
         console.log(
           chalk.green(
             `✓ Created context-only feature file: ${result.featureFile}`

@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-24T05:19:09.194Z"
+    "lastUpdated": "2025-10-24T06:00:53.028Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -9984,15 +9984,31 @@
       "id": "FEAT-017",
       "title": "Duplicate scenario detection in generate-scenarios command",
       "type": "story",
-      "status": "specifying",
+      "status": "done",
       "createdAt": "2025-10-22T08:26:22.211Z",
-      "updatedAt": "2025-10-22T08:27:30.719Z",
+      "updatedAt": "2025-10-24T06:14:55.109Z",
       "description": "When 'fspec generate-scenarios' is run, it should check for existing scenarios across all feature files that might be duplicates. Existing code already exists to search for duplicate scenarios and provide results back to the LLM. This work unit refactors generate-scenarios to:\n\n1. Search for possible duplicate scenarios before generating new ones\n2. If duplicates reach a similarity threshold, display them with clear instructions\n3. Emit a system-reminder with:\n   - List of existing feature files that contain similar scenarios\n   - Guidance on what to investigate\n   - Instructions on how to ignore the warning if it's a false positive\n4. Add '--ignore-possible-duplicates' flag to bypass the check and continue generation\n5. Ensure the warning is actionable and prevents accidental duplication\n\nAcceptance Criteria:\n- Search existing feature files for similar scenarios during generate-scenarios\n- Display duplicate matches if similarity threshold is met\n- Emit system-reminder with clear next steps (investigate files, or use --ignore flag)\n- Add '--ignore-possible-duplicates' flag to skip duplicate check\n- Document the duplicate detection behavior in command help\n- Ensure existing duplicate search code is properly integrated",
       "children": [],
       "stateHistory": [
         {
           "state": "specifying",
           "timestamp": "2025-10-22T08:27:15.376Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-24T06:02:21.610Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-24T06:04:39.773Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-24T06:10:06.521Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-24T06:14:55.109Z"
         }
       ],
       "rules": [
@@ -10006,7 +10022,13 @@
         "User runs 'fspec generate-scenarios WORK-001', duplicate scenarios are found above threshold, system-reminder shows list of feature files to investigate with clear next steps",
         "User reviews system-reminder, investigates suggested feature files, determines it's a false positive, runs 'fspec generate-scenarios WORK-001 --ignore-possible-duplicates' to proceed",
         "User runs 'fspec generate-scenarios WORK-001', no duplicates found, scenarios are generated normally without any warnings"
-      ]
+      ],
+      "userStory": {
+        "role": "developer using fspec",
+        "action": "detect duplicate scenarios before generating new ones",
+        "benefit": "I avoid creating duplicate scenarios across feature files"
+      },
+      "estimate": 3
     },
     "BUG-032": {
       "id": "BUG-032",
@@ -11471,7 +11493,6 @@
       "CONFIG-001"
     ],
     "specifying": [
-      "FEAT-017",
       "GIT-004",
       "RES-002",
       "RES-006"
@@ -11666,7 +11687,8 @@
       "CLI-009",
       "CLI-010",
       "REFAC-002",
-      "BUG-031"
+      "BUG-031",
+      "FEAT-017"
     ],
     "blocked": []
   }
