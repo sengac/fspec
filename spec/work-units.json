@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-24T06:48:05.260Z"
+    "lastUpdated": "2025-10-24T13:05:07.217Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -10951,9 +10951,9 @@
       "id": "RES-002",
       "title": "Research framework with custom script integration",
       "type": "story",
-      "status": "specifying",
+      "status": "done",
       "createdAt": "2025-10-23T21:16:17.909Z",
-      "updatedAt": "2025-10-23T23:44:43.043Z",
+      "updatedAt": "2025-10-24T12:45:54.713Z",
       "description": "Create core research framework that allows users to select from available research endpoints (custom scripts like hooks) during Example Mapping. Should prompt users to research questions before/during Example Mapping sessions, display available tools, and execute selected research scripts.",
       "epic": "research-tools",
       "children": [],
@@ -10961,6 +10961,22 @@
         {
           "state": "specifying",
           "timestamp": "2025-10-23T21:16:48.878Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-24T12:41:20.597Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-24T12:42:53.619Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-24T12:43:43.757Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-24T12:45:54.713Z"
         }
       ],
       "userStory": {
@@ -11016,7 +11032,8 @@
         "During Example Mapping, developer runs 'fspec add-question AUTH-001 \"@human: Should we support OAuth2?\"', system prompts 'Would you like to research this question? (y/n)'",
         "Developer chooses to attach results, research output saved to spec/attachments/AUTH-001/perplexity-oauth2-research-2025-10-24.md and referenced in work unit",
         "Research directory contains perplexity.py (Python), jira (compiled binary), confluence.js (Node). fspec auto-discovers all three by executable bit, derives names: 'perplexity', 'jira', 'confluence'."
-      ]
+      ],
+      "estimate": 5
     },
     "RES-003": {
       "id": "RES-003",
@@ -11336,11 +11353,80 @@
       "id": "CONFIG-001",
       "title": "Shared configuration management utilities for user and project config files",
       "type": "story",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2025-10-23T23:38:52.558Z",
-      "updatedAt": "2025-10-23T23:38:52.558Z",
+      "updatedAt": "2025-10-24T13:10:08.190Z",
       "description": "Create shared code/functions to manage config files: user-level (~/.fspec/fspec-config.json) and project-level (spec/fspec-config.json). Utilities should handle reading, writing, merging, validating config across both scopes with proper precedence rules.",
-      "children": []
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-24T12:51:18.003Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-24T13:06:27.440Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-24T13:08:19.621Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-24T13:08:20.311Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-24T13:10:08.190Z"
+        }
+      ],
+      "questions": [
+        {
+          "text": "@human: What format should the config files use? Should both user-level and project-level use the same format?",
+          "selected": true,
+          "answer": "JSON format for both user-level (~/.fspec/fspec-config.json) and project-level (spec/fspec-config.json)"
+        },
+        {
+          "text": "@human: When both user-level and project-level config files have the same setting, which takes precedence?",
+          "selected": true,
+          "answer": "Project-level config overrides user-level config (for project-specific overrides)"
+        },
+        {
+          "text": "@human: How should nested config objects be merged? Deep merge (recursive) or shallow merge (replace entire objects)?",
+          "selected": true,
+          "answer": "Deep merge - merge nested objects recursively. This preserves user defaults while allowing project-specific overrides without duplication."
+        },
+        {
+          "text": "@human: What types of settings should the config support? Specific schemas or generic JSON structure?",
+          "selected": true,
+          "answer": "Keep it generic - accept any JSON structure and let different features define their own config namespaces. No schema enforcement at the config utility level."
+        },
+        {
+          "text": "@human: What should happen when config file doesn't exist, has invalid JSON, or is empty?",
+          "selected": true,
+          "answer": "File doesn't exist or is empty: return empty object {} (silent fallback). Invalid JSON syntax: throw error with helpful message (fail fast). Be lenient with absence, strict with mistakes."
+        }
+      ],
+      "rules": [
+        "JSON format for both user-level (~/.fspec/fspec-config.json) and project-level (spec/fspec-config.json)",
+        "Project-level config overrides user-level config (for project-specific overrides)",
+        "Deep merge - merge nested objects recursively. This preserves user defaults while allowing project-specific overrides without duplication.",
+        "Keep it generic - accept any JSON structure and let different features define their own config namespaces. No schema enforcement at the config utility level.",
+        "File doesn't exist or is empty: return empty object {} (silent fallback). Invalid JSON syntax: throw error with helpful message (fail fast). Be lenient with absence, strict with mistakes."
+      ],
+      "examples": [
+        "User has no config files. Call loadConfig() returns empty object {}. No errors thrown.",
+        "User has ~/.fspec/fspec-config.json with {\"timeout\": 60}. Project has no config. loadConfig() returns {\"timeout\": 60}.",
+        "User has {\"research\": {\"timeout\": 60, \"tools\": [\"perplexity\"]}}. Project has {\"research\": {\"tools\": [\"jira\"]}}. loadConfig() returns {\"research\": {\"timeout\": 60, \"tools\": [\"jira\"]}} via deep merge.",
+        "Project config has invalid JSON syntax (missing bracket). loadConfig() throws error with message: 'Invalid JSON in spec/fspec-config.json: Unexpected token...'.",
+        "Developer calls writeConfig('user', {\"newSetting\": true}) and it writes to ~/.fspec/fspec-config.json with proper formatting."
+      ],
+      "userStory": {
+        "role": "developer using fspec",
+        "action": "manage configuration across user-level and project-level scopes",
+        "benefit": "I can set personal defaults and project-specific overrides without duplication"
+      },
+      "estimate": 3
     },
     "BUG-041": {
       "id": "BUG-041",
@@ -11563,13 +11649,16 @@
   },
   "states": {
     "backlog": [
-      "TECH-001",
-      "BOARD-002",
       "CLEAN-001",
+      "RES-003",
+      "RES-004",
+      "RES-005",
       "RES-001",
-      "INIT-007",
       "CLI-007",
+      "INIT-007",
+      "BOARD-002",
       "BOARD-003",
+      "TECH-001",
       "AGENT-001",
       "AGENT-002",
       "AGENT-003",
@@ -11586,15 +11675,10 @@
       "AGENT-014",
       "AGENT-015",
       "AGENT-016",
-      "AGENT-017",
-      "RES-003",
-      "RES-004",
-      "RES-005",
-      "CONFIG-001"
+      "AGENT-017"
     ],
     "specifying": [
       "GIT-004",
-      "RES-002",
       "RES-006",
       "EST-002"
     ],
@@ -11791,7 +11875,9 @@
       "BUG-031",
       "FEAT-017",
       "GIT-005",
-      "BUG-043"
+      "BUG-043",
+      "RES-002",
+      "CONFIG-001"
     ],
     "blocked": []
   }
