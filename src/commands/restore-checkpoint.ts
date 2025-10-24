@@ -3,6 +3,7 @@
  */
 
 import chalk from 'chalk';
+import type { Command } from 'commander';
 import {
   restoreCheckpoint as restoreCheckpointUtil,
   isWorkingDirectoryDirty,
@@ -153,4 +154,46 @@ export async function restoreCheckpoint(
     console.error(chalk.red(`✗ Failed to restore checkpoint: ${errorMessage}`));
     throw error;
   }
+}
+
+async function restoreCheckpointCommand(
+  workUnitId: string,
+  checkpointName: string
+): Promise<void> {
+  try {
+    const result = await restoreCheckpoint({
+      workUnitId,
+      checkpointName,
+      cwd: process.cwd(),
+    });
+
+    if (result.requiresUserChoice) {
+      console.log(
+        chalk.cyan('\nRe-run with user choice to proceed with restoration')
+      );
+      process.exit(1);
+    }
+
+    if (result.success) {
+      process.exit(0);
+    } else {
+      process.exit(1);
+    }
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error(chalk.red('Error:'), error.message);
+    } else {
+      console.error(chalk.red('Error: Unknown error occurred'));
+    }
+    process.exit(1);
+  }
+}
+
+export function registerRestoreCheckpointCommand(program: Command): void {
+  program
+    .command('restore-checkpoint')
+    .description('Restore a checkpoint with conflict detection')
+    .argument('<work-unit-id>', 'Work unit ID (e.g., AUTH-001)')
+    .argument('<checkpoint-name>', 'Checkpoint name to restore')
+    .action(restoreCheckpointCommand);
 }

@@ -3,6 +3,7 @@
  */
 
 import chalk from 'chalk';
+import type { Command } from 'commander';
 import { createCheckpoint as createCheckpointUtil } from '../utils/git-checkpoint.js';
 
 export interface CheckpointOptions {
@@ -47,4 +48,39 @@ export async function checkpoint(options: CheckpointOptions): Promise<{
     console.error(chalk.red(`✗ Failed to create checkpoint: ${errorMessage}`));
     throw error;
   }
+}
+
+async function checkpointCommand(
+  workUnitId: string,
+  checkpointName: string
+): Promise<void> {
+  try {
+    const result = await checkpoint({
+      workUnitId,
+      checkpointName,
+      cwd: process.cwd(),
+    });
+
+    if (result.success) {
+      process.exit(0);
+    } else {
+      process.exit(1);
+    }
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error(chalk.red('Error:'), error.message);
+    } else {
+      console.error(chalk.red('Error: Unknown error occurred'));
+    }
+    process.exit(1);
+  }
+}
+
+export function registerCheckpointCommand(program: Command): void {
+  program
+    .command('checkpoint')
+    .description('Create a manual checkpoint for safe experimentation')
+    .argument('<work-unit-id>', 'Work unit ID (e.g., AUTH-001)')
+    .argument('<checkpoint-name>', 'Checkpoint name (e.g., baseline, before-refactor)')
+    .action(checkpointCommand);
 }
