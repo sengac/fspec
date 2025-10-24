@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-24T06:29:11.848Z"
+    "lastUpdated": "2025-10-24T06:48:05.260Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -8851,11 +8851,17 @@
       "id": "EST-002",
       "title": "AI token usage tracking",
       "type": "story",
-      "status": "backlog",
+      "status": "specifying",
       "createdAt": "2025-10-21T05:25:26.138Z",
-      "updatedAt": "2025-10-21T05:25:26.138Z",
+      "updatedAt": "2025-10-24T06:46:25.398Z",
       "description": "Enable AI agents to record token usage cumulatively against work units throughout the development lifecycle, providing visibility into AI resource consumption per story from start to completion. Track input tokens, output tokens, and total cost across all iterations and state transitions.",
-      "children": []
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-24T06:46:25.398Z"
+        }
+      ]
     },
     "TECH-001": {
       "id": "TECH-001",
@@ -11507,11 +11513,56 @@
         "Running './dist/index.js cleanup-checkpoints AUTH-001 --keep-last 5' deletes old checkpoints, keeping only the 5 most recent"
       ],
       "estimate": 2
+    },
+    "BUG-043": {
+      "id": "BUG-043",
+      "title": "Auto-checkpoints not working - lazy import fails in bundled dist",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-10-24T06:47:47.525Z",
+      "updatedAt": "2025-10-24T07:02:17.679Z",
+      "description": "Automatic checkpoints are not being created during work unit status transitions. Root cause: lazy import of git-checkpoint.js fails because Vite bundles everything into single dist/index.js file, but code tries to load ../utils/git-checkpoint.js which doesn't exist after bundling. The try-catch block silently swallows the import error, so checkpoints never run.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-24T06:48:03.903Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-24T06:49:38.213Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-24T06:52:17.885Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-24T06:55:32.218Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-24T07:02:17.679Z"
+        }
+      ],
+      "userStory": {
+        "role": "AI agent using fspec",
+        "action": "have automatic checkpoints created during work unit transitions",
+        "benefit": "I can safely experiment and recover from mistakes"
+      },
+      "rules": [
+        "Auto-checkpoints must be created before EVERY state transition (except from backlog)",
+        "Lazy imports must work after Vite bundling into single dist/index.js file"
+      ],
+      "examples": [
+        "User transitions from backlog to specifying with dirty working directory, sees '🤖 Auto-checkpoint created' message",
+        "User transitions from specifying to testing with uncommitted changes, checkpoint saved before transition"
+      ],
+      "estimate": 3
     }
   },
   "states": {
     "backlog": [
-      "EST-002",
       "TECH-001",
       "BOARD-002",
       "CLEAN-001",
@@ -11544,7 +11595,8 @@
     "specifying": [
       "GIT-004",
       "RES-002",
-      "RES-006"
+      "RES-006",
+      "EST-002"
     ],
     "testing": [],
     "implementing": [],
@@ -11738,7 +11790,8 @@
       "REFAC-002",
       "BUG-031",
       "FEAT-017",
-      "GIT-005"
+      "GIT-005",
+      "BUG-043"
     ],
     "blocked": []
   }
