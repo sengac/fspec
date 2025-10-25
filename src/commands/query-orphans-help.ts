@@ -70,7 +70,7 @@ const config: CommandHelpConfig = {
     {
       pattern: 'Bulk Work Unit Validation',
       example:
-        '# After creating multiple work units\nfspec create-work-unit AUTH-001 "Setup auth"\nfspec create-work-unit AUTH-002 "Login flow"\nfspec create-work-unit AUTH-003 "Logout flow"\n\n# Check for orphans\nfspec query-orphans\n\n# Assign epic to all\nfspec update-work-unit AUTH-001 --epic=authentication\nfspec update-work-unit AUTH-002 --epic=authentication\nfspec update-work-unit AUTH-003 --epic=authentication',
+        '# After creating multiple work units\nfspec create-story AUTH "Setup auth"\nfspec create-story AUTH "Login flow"\nfspec create-story AUTH "Logout flow"\n\n# Check for orphans\nfspec query-orphans\n\n# Assign epic to all\nfspec update-work-unit AUTH-001 --epic=authentication\nfspec update-work-unit AUTH-002 --epic=authentication\nfspec update-work-unit AUTH-003 --epic=authentication',
     },
     {
       pattern: 'JSON Export for Reporting',

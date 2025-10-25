@@ -30,7 +30,7 @@ Feature: Example Mapping for BDD Discovery
   - Red Cards (Questions): work unit's questions[] array - blockers
 
   Workflow:
-  1. Create work unit: fspec create-work-unit AUTH "User Login"
+  1. Create work unit: fspec create-story AUTH "User Login"
   2. Move to specifying: fspec update-work-unit-status AUTH-001 specifying
   3. Add rules: fspec add-rule AUTH-001 "Password must be 8+ characters"
   4. Add examples: fspec add-example AUTH-001 "User logs in with valid password"

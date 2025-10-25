@@ -43,7 +43,9 @@ const listWorkUnitsHelp: CommandHelpConfig = {
     'backlog → specifying → testing → implementing → validating → done. Use --status flag to see work units at each stage.',
   relatedCommands: [
     'show-work-unit',
-    'create-work-unit',
+    'create-story',
+    'create-bug',
+    'create-task',
     'update-work-unit-status',
     'board',
   ],

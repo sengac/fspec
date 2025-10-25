@@ -9,7 +9,7 @@ Feature: Foundation existence check in commands
   - Create utility function checkFoundationExists() in src/utils/foundation-check.ts
   - Function checks for spec/foundation.json file existence
   - Function returns error message with system reminder if missing
-  - Integrate check into PM commands: board, create-work-unit, update-work-unit-status, create-epic
+  - Integrate check into PM commands: board, create-story, create-bug, create-task, update-work-unit-status, create-epic
   - System reminder MUST include original command arguments for retry after discover-foundation
   - Read-only commands (show-foundation, list-features, validate) exempt from check
   - Error message format: User-visible + <system-reminder> block for AI agents
@@ -24,14 +24,14 @@ Feature: Foundation existence check in commands
   #   2. If foundation.json is missing, command MUST exit with error code 1 and display helpful message
   #   3. Error message MUST direct user to run 'fspec discover-foundation' command
   #   4. System reminder MUST tell AI agent to return to original task after discover-foundation completes
-  #   5. Check applies to: fspec board, create-work-unit, update-work-unit-status, create-epic, and other PM commands
+  #   5. Check applies to: fspec board, create-story, create-bug, create-task, update-work-unit-status, create-epic, and other PM commands
   #   6. Yes, include exact command arguments. System reminders in Claude Code are used for actionable guidance - including the original command makes it clear what to retry after discover-foundation completes.
   #   7. No, only create/modify commands need foundation.json. Read-only commands like show-foundation, list-features, validate can run without foundation.json.
   #   8. Check only spec/foundation.json - this is the canonical location used by show-foundation, update-foundation, and generate-foundation-md commands.
   #
   # EXAMPLES:
   #   1. AI runs 'fspec board' without foundation.json → Command exits with error, displays message with discover-foundation instructions, system reminder tells AI to run board again after discovery
-  #   2. AI runs 'fspec create-work-unit AUTH "Login"' without foundation.json → Command exits with error, system reminder includes original command to retry
+  #   2. AI runs 'fspec create-story AUTH "Login"' without foundation.json → Command exits with error, system reminder includes original command to retry
   #   3. AI runs 'fspec board' with foundation.json present → Command executes normally, no check triggered
   #   4. AI runs 'fspec validate' (non-PM command) without foundation.json → Command executes normally, foundation check not required for spec-only commands
   #
@@ -60,14 +60,14 @@ Feature: Foundation existence check in commands
     And the error message should instruct me to run 'fspec discover-foundation'
     And a system reminder should tell me to retry 'fspec board' after discover-foundation completes
 
-  Scenario: Run create-work-unit without foundation.json
+  Scenario: Run create-story without foundation.json
     Given I am in a project directory
     And the file "spec/foundation.json" does not exist
-    When I run 'fspec create-work-unit AUTH "Login"'
+    When I run 'fspec create-story AUTH "Login"'
     Then the command should exit with code 1
     And the output should display an error message
     And the error message should instruct me to run 'fspec discover-foundation'
-    And a system reminder should include the original command 'fspec create-work-unit AUTH "Login"' to retry
+    And a system reminder should include the original command 'fspec create-story AUTH "Login"' to retry
 
   Scenario: Run board command with foundation.json present
     Given I am in a project directory

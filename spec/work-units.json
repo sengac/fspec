@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-25T06:29:26.343Z"
+    "lastUpdated": "2025-10-25T08:07:33.766Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -12263,6 +12263,41 @@
         }
       ],
       "estimate": 3
+    },
+    "CLI-013": {
+      "id": "CLI-013",
+      "title": "Replace generic create-work-unit references with type-specific commands",
+      "type": "story",
+      "status": "specifying",
+      "createdAt": "2025-10-25T08:07:25.854Z",
+      "updatedAt": "2025-10-25T08:09:17.345Z",
+      "description": "Refactor all documentation and help text that references 'fspec create-work-unit' to use the specific commands: 'fspec create-story' for features/refactoring, 'fspec create-bug' for bug fixes, and 'fspec create-task' for operational tasks. Each instance requires manual review to determine the correct context.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-25T08:07:33.276Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer or AI agent using fspec",
+        "action": "see contextually appropriate command examples in documentation",
+        "benefit": "I understand which command to use for creating stories, bugs, or tasks"
+      },
+      "rules": [
+        "Each reference to 'create-work-unit' must be analyzed for context to determine if it should be 'create-story', 'create-bug', or 'create-task'",
+        "Documentation examples about new features or refactoring should use 'create-story'",
+        "Documentation examples about fixing bugs should use 'create-bug'",
+        "Documentation examples about operational work (setup, configuration, cleanup) should use 'create-task'",
+        "All changes must preserve the intent and accuracy of the original documentation"
+      ],
+      "examples": [
+        "In spec/CLAUDE.md, example showing 'fspec create-work-unit AUTH \"User login feature\"' should become 'fspec create-story AUTH \"User login feature\"'",
+        "In help text, example showing 'fspec create-work-unit DASH \"Dashboard\"' should become 'fspec create-story DASH \"Dashboard\"'",
+        "References to creating work for 'Add ESLint' should use 'fspec create-task' since it's operational setup",
+        "References to creating work for 'Fix validation bug' should use 'fspec create-bug'"
+      ],
+      "estimate": 8
     }
   },
   "states": {
@@ -12299,7 +12334,8 @@
       "GIT-004",
       "RES-006",
       "EST-002",
-      "LANG-001"
+      "LANG-001",
+      "CLI-013"
     ],
     "testing": [],
     "implementing": [],

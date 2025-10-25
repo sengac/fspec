@@ -10,7 +10,7 @@ const config: CommandHelpConfig = {
   whenNotToUse:
     'Do not use after generating scenarios (use update-work-unit to change fields). Do not use for technical implementation details (those go in architecture notes).',
   prerequisites: [
-    'Work unit must exist (create with fspec create-work-unit)',
+    'Work unit must exist (create with fspec create-story, create-bug, or create-task)',
     'Work unit should be in "specifying" status',
   ],
   arguments: [
@@ -54,7 +54,7 @@ const config: CommandHelpConfig = {
   commonErrors: [
     {
       error: "Error: Work unit 'AUTH-001' does not exist",
-      fix: 'Create work unit first: fspec create-work-unit AUTH "User Authentication"',
+      fix: 'Create work unit first: fspec create-story AUTH "User Authentication"',
     },
     {
       error: 'Error: Missing required option --role',
@@ -69,7 +69,9 @@ const config: CommandHelpConfig = {
     'ACDD Workflow: User story defines WHAT and WHY, scenarios define HOW',
   ],
   relatedCommands: [
-    'create-work-unit',
+    'create-story',
+    'create-bug',
+    'create-task',
     'generate-scenarios',
     'add-rule',
     'add-example',

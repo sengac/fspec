@@ -220,7 +220,7 @@ async function validateFileTags(
             result.errors.push({
               tag,
               message: `Work unit ${tag} not found in spec/work-units.json`,
-              suggestion: `Add work unit ${workUnitId} to spec/work-units.json or use 'fspec create-work-unit'`,
+              suggestion: `Add work unit ${workUnitId} to spec/work-units.json or use 'fspec create-story/create-bug/create-task'`,
             });
           }
           // If work unit exists and format is valid, it's valid - no error
@@ -305,7 +305,7 @@ async function validateFileTags(
             result.errors.push({
               tag,
               message: `Work unit ${tag} not found in spec/work-units.json`,
-              suggestion: `Add work unit ${workUnitId} to spec/work-units.json or use 'fspec create-work-unit'`,
+              suggestion: `Add work unit ${workUnitId} to spec/work-units.json or use 'fspec create-story/create-bug/create-task'`,
             });
           }
           // If work unit exists and format is valid, continue

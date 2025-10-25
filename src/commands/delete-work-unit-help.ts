@@ -84,7 +84,9 @@ const config: CommandHelpConfig = {
   ],
   relatedCommands: [
     'list-work-units',
-    'create-work-unit',
+    'create-story',
+    'create-bug',
+    'create-task',
     'show-work-unit',
     'dependencies',
   ],

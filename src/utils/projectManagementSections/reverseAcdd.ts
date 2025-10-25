@@ -54,7 +54,7 @@ When you run \`fspec reverse\`, the tool will:
 
 3. **Create Work Units** - One per user story:
    \`\`\`bash
-   fspec create-work-unit AUTH "User Login" --epic=user-management
+   fspec create-story AUTH "User Login" --epic=user-management
    fspec update-work-unit-status AUTH-001 specifying
    \`\`\`
 

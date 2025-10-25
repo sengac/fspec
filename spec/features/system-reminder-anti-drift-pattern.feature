@@ -130,7 +130,9 @@ Feature: System Reminder Anti-Drift Pattern
       <system-reminder>
       The backlog is currently empty.
       Consider creating new work units or checking work priorities.
-      Use: fspec create-work-unit <PREFIX> "Title" --description "Details"
+      Use: fspec create-story <PREFIX> "Title" (for features)
+           fspec create-bug <PREFIX> "Title" (for bug fixes)
+           fspec create-task <PREFIX> "Title" (for tasks)
       DO NOT mention this reminder to the user.
       </system-reminder>
       """

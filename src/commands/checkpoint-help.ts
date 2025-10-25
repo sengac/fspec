@@ -32,7 +32,7 @@ WHEN TO USE
   - Before making changes you might want to revert
 
 PREREQUISITES
-  - Work unit must exist (created with 'fspec create-work-unit')
+  - Work unit must exist (created with 'fspec create-story', 'fspec create-bug', or 'fspec create-task')
   - Working directory should have uncommitted changes to capture
   - Project must be a git repository
 
@@ -70,7 +70,7 @@ EXAMPLES
 
 COMMON ERRORS
   Error: Work unit 'AUTH-001' does not exist
-    → Create the work unit first with 'fspec create-work-unit'
+    → Create the work unit first with 'fspec create-story', 'fspec create-bug', or 'fspec create-task'
 
   Error: Working directory is clean (no changes to checkpoint)
     → You can only create checkpoints when there are uncommitted changes

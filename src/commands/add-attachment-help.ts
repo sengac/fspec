@@ -34,12 +34,12 @@ WHEN TO USE
   - Any time supporting files would help clarify the work unit
 
 PREREQUISITES
-  - Work unit must exist (created with 'fspec create-work-unit')
+  - Work unit must exist (created with 'fspec create-story', 'fspec create-bug', or 'fspec create-task')
   - Source file must exist at the specified path
   - Work unit should be in 'specifying' or earlier status
 
 TYPICAL WORKFLOW
-  1. Create work unit: fspec create-work-unit AUTH "User Authentication"
+  1. Create work unit: fspec create-story AUTH "User Authentication"
   2. Move to specifying: fspec update-work-unit-status AUTH-001 specifying
   3. Start Example Mapping: Add rules, examples, questions
   4. Add architecture notes: fspec add-architecture-note AUTH-001 "Uses JWT tokens"
@@ -71,7 +71,7 @@ EXAMPLES
 
 COMMON ERRORS
   Error: Work unit 'AUTH-001' does not exist
-    → Create the work unit first with 'fspec create-work-unit'
+    → Create the work unit first with 'fspec create-story', 'fspec create-bug', or 'fspec create-task'
 
   Error: Source file 'diagram.png' does not exist
     → Check the file path is correct (absolute or relative to current directory)

@@ -27,7 +27,9 @@ fspec list-work-units
 fspec show-work-unit WORK-001
 
 # Create a new work unit (if planning new work)
-fspec create-work-unit PREFIX "Title" --description "Details" --epic=epic-name
+fspec create-story PREFIX "Title" --description "Details" --epic=epic-name  # For features
+fspec create-bug PREFIX "Title" --description "Details" --epic=epic-name    # For bug fixes
+fspec create-task PREFIX "Title" --description "Details" --epic=epic-name   # For tasks
 
 # Set user story fields for work unit (used during Example Mapping)
 fspec set-user-story WORK-001 --role "user role" --action "what they want" --benefit "why they want it"
@@ -158,7 +160,9 @@ fspec <command> --help
 
 # Examples:
 fspec validate --help           # Comprehensive help for validate command
-fspec create-work-unit --help   # Comprehensive help for create-work-unit
+fspec create-story --help       # Comprehensive help for create-story
+fspec create-bug --help         # Comprehensive help for create-bug
+fspec create-task --help        # Comprehensive help for create-task
 fspec add-scenario --help       # Comprehensive help for add-scenario
 fspec list-work-units --help    # Comprehensive help for list-work-units
 \`\`\`

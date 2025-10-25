@@ -18,7 +18,7 @@ WHEN TO USE
   - When reviewing work unit context
 
 PREREQUISITES
-  - Work unit must exist (created with 'fspec create-work-unit')
+  - Work unit must exist (created with 'fspec create-story', 'fspec create-bug', or 'fspec create-task')
 
 TYPICAL WORKFLOW
   1. View work unit details: fspec show-work-unit AUTH-001
@@ -62,7 +62,7 @@ EXAMPLES
 
 COMMON ERRORS
   Error: Work unit 'AUTH-001' does not exist
-    → Create the work unit first with 'fspec create-work-unit'
+    → Create the work unit first with 'fspec create-story', 'fspec create-bug', or 'fspec create-task'
 
   No attachments found for work unit AUTH-001
     → The work unit exists but has no attachments

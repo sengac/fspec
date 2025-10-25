@@ -58,7 +58,7 @@ const config: CommandHelpConfig = {
     },
     {
       error: "Target work unit 'AUTH-888' does not exist",
-      fix: 'Create target work unit first: fspec create-work-unit AUTH "Title"',
+      fix: 'Create target work unit first: fspec create-story AUTH "Title" (or create-bug/create-task)',
     },
     {
       error: 'No virtual hooks configured for source work unit AUTH-001',

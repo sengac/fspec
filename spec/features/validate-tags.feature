@@ -270,7 +270,7 @@ Feature: Validate Feature File Tags Against Registry
     When I run `fspec validate-tags spec/features/auth.feature`
     Then the command should exit with code 1
     And the output should contain "Work unit @auth-999 not found in spec/work-units.json"
-    And the output should suggest "Create work unit with: fspec create-work-unit AUTH 'Title'"
+    And the output should suggest "Create work unit with: fspec create-story AUTH 'Title' (or create-bug/create-task)"
 
   @work-unit-linking
   Scenario: Validate scenario-level work unit tags

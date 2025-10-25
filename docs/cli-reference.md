@@ -37,16 +37,16 @@ fspec bootstrap
 
 ```bash
 # Create story (user-facing feature)
-fspec create-work-unit AUTH "User Login" --type story
+fspec create-story AUTH "User Login"
 
 # Create bug
-fspec create-work-unit BUG "Session timeout broken" --type bug
+fspec create-bug BUG "Session timeout broken"
 
 # Create task (non-user-facing)
-fspec create-work-unit TASK "Refactor auth middleware" --type task
+fspec create-task TASK "Refactor auth middleware"
 
 # Create with epic
-fspec create-work-unit AUTH "User Login" --type story --epic=USER-MGMT
+fspec create-story AUTH "User Login" --epic=USER-MGMT
 ```
 
 ### Update Work Units
@@ -431,7 +431,7 @@ fspec reverse --clear-session
 
 ```bash
 # 1. Create work unit
-fspec create-work-unit AUTH "User Login" --type story
+fspec create-story AUTH "User Login"
 fspec update-work-unit-status AUTH-001 specifying
 
 # 2. Example Mapping (Discovery)
@@ -525,7 +525,9 @@ fspec --help
 
 # Command help
 fspec validate --help
-fspec create-work-unit --help
+fspec create-story --help
+fspec create-bug --help
+fspec create-task --help
 fspec add-virtual-hook --help
 ```
 

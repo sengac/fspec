@@ -92,7 +92,7 @@ const config: CommandHelpConfig = {
     {
       pattern: 'Refine work unit details',
       example:
-        '# Initial creation\nfspec create-work-unit "User auth"\n\n# Refine after Example Mapping\nfspec update-work-unit AUTH-001 --title "OAuth 2.0 authentication" --description "Implement OAuth 2.0 flow with Google"',
+        '# Initial creation\nfspec create-story AUTH "User auth"\n\n# Refine after Example Mapping\nfspec update-work-unit AUTH-001 --title "OAuth 2.0 authentication" --description "Implement OAuth 2.0 flow with Google"',
     },
     {
       pattern: 'Reorganize epic structure',
@@ -102,14 +102,16 @@ const config: CommandHelpConfig = {
     {
       pattern: 'Create parent-child relationships',
       example:
-        '# Break large work unit into subtasks\nfspec create-work-unit "OAuth implementation" --parent AUTH-001\nfspec create-work-unit "OAuth testing" --parent AUTH-001\n\n# View hierarchy\nfspec show-work-unit AUTH-001',
+        '# Break large work unit into subtasks\nfspec create-story AUTH "OAuth implementation" --parent AUTH-001\nfspec create-task AUTH "OAuth testing" --parent AUTH-001\n\n# View hierarchy\nfspec show-work-unit AUTH-001',
     },
   ],
   relatedCommands: [
     'show-work-unit',
     'update-work-unit-status',
     'update-work-unit-estimate',
-    'create-work-unit',
+    'create-story',
+    'create-bug',
+    'create-task',
     'list-work-units',
   ],
   notes: [
