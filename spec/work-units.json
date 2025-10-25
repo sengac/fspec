@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-25T05:25:03.625Z"
+    "lastUpdated": "2025-10-25T06:10:24.580Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -9701,13 +9701,42 @@
     },
     "CLI-007": {
       "id": "CLI-007",
-      "title": "Add convenience commands for work unit creation by type",
+      "title": "Replace generic create-work-unit with type-specific commands",
       "type": "story",
-      "status": "backlog",
+      "status": "specifying",
       "createdAt": "2025-10-21T13:51:58.078Z",
-      "updatedAt": "2025-10-21T13:51:58.078Z",
-      "description": "Replace generic 'create-work-unit' with type-specific commands to make it obvious to AI agents which command to use. Add: 1) 'fspec create-story' for story work units, 2) 'fspec create-bug' for bug work units, 3) 'fspec create-task' for task work units, 4) 'fspec create-refactor' for refactor work units. These should be aliases/wrappers that call create-work-unit with the appropriate --type flag. Update all documentation and help text to use the new commands. Consider deprecating direct use of create-work-unit in favor of these explicit commands.",
-      "children": []
+      "updatedAt": "2025-10-25T06:10:46.886Z",
+      "description": "Remove create-work-unit command entirely. Add 4 type-specific commands: create-story, create-bug, create-refactor, create-task. Each command emits intelligent system-reminders that guide AI agents to the appropriate discovery workflow: stories use Example Mapping, bugs/refactors use research commands (search-scenarios, search-implementation, compare-implementations), tasks have minimal requirements. Add 'refactor' as 4th work item type. Breaking change (v2.0).",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-25T06:10:08.668Z"
+        }
+      ],
+      "userStory": {
+        "role": "AI agent creating work units in fspec",
+        "action": "use type-specific commands that guide me to the right discovery workflow",
+        "benefit": "I automatically know whether to use Example Mapping (stories) or research existing code (bugs/refactors)"
+      },
+      "rules": [
+        "Four type-specific commands must exist: create-story, create-bug, create-refactor, create-task",
+        "The generic create-work-unit command must be completely removed (breaking change)",
+        "The WorkItemType must include 'refactor' as a 4th type alongside story, bug, task",
+        "Each command must emit a type-specific system-reminder after creation guiding AI to the appropriate workflow",
+        "create-bug must guide AI to research commands: search-scenarios, search-implementation, show-coverage",
+        "create-refactor must guide AI to analysis commands: compare-implementations, show-test-patterns, search-implementation",
+        "create-story must guide AI to Example Mapping commands: add-rule, add-example, add-question, set-user-story",
+        "create-task must indicate minimal requirements (optional feature file, optional tests)"
+      ],
+      "examples": [
+        "AI runs 'fspec create-story AUTH \"User login\"' and sees system-reminder: 'Next steps - Example Mapping: 1. fspec add-rule AUTH-001 ..., 2. fspec add-example AUTH-001 ...'",
+        "AI runs 'fspec create-bug BUG \"Login validation broken\"' and sees system-reminder: 'CRITICAL: Research existing code FIRST: 1. fspec search-scenarios --query=\"login\", 2. fspec search-implementation --function=\"validateLogin\"'",
+        "AI runs 'fspec create-refactor REFAC \"Consolidate validation logic\"' and sees system-reminder: 'CRITICAL: Research existing implementation: 1. fspec compare-implementations --tag=@validation, 2. fspec show-test-patterns --tag=@validation'",
+        "AI runs 'fspec create-task TASK \"Setup CI/CD pipeline\"' and sees system-reminder: 'Task created. Tasks can skip feature files and tests for operational work.'",
+        "AI tries 'fspec create-work-unit AUTH \"Login\"' and gets error: 'Command not found. Use create-story, create-bug, create-refactor, or create-task instead.'",
+        "TypeScript interface shows: export type WorkItemType = 'story' | 'bug' | 'refactor' | 'task' (4 types including refactor)"
+      ]
     },
     "BUG-028": {
       "id": "BUG-028",
@@ -12154,119 +12183,6 @@
         }
       ],
       "estimate": 3
-    },
-    "REFAC-003": {
-      "id": "REFAC-003",
-      "title": "Remove semantic matching code from scenario-similarity.ts",
-      "type": "bug",
-      "status": "implementing",
-      "createdAt": "2025-10-25T03:59:17.968Z",
-      "updatedAt": "2025-10-25T04:33:58.563Z",
-      "description": "The scenario-similarity.ts module contains legacy Levenshtein-based matching code that claims to do 'semantic analysis' but is actually just basic string/keyword matching. True semantic understanding requires AI or comprehensive language dictionaries. We need to: 1) Remove all legacy Levenshtein code from scenario-similarity.ts, 2) Remove extractKeywords() and isLikelyRefactor() functions that falsely claim semantic capabilities, 3) Migrate calculateScenarioSimilarity() to use hybridSimilarity() from similarity-algorithms.ts, 4) Migrate findMatchingScenarios() to use hybridSimilarity(), 5) Update all commands (generate-scenarios, audit-scenarios) to use the hybrid algorithm",
-      "children": [],
-      "stateHistory": [
-        {
-          "state": "specifying",
-          "timestamp": "2025-10-25T03:59:23.971Z"
-        },
-        {
-          "state": "testing",
-          "timestamp": "2025-10-25T04:22:42.243Z"
-        },
-        {
-          "state": "implementing",
-          "timestamp": "2025-10-25T04:25:30.478Z"
-        },
-        {
-          "state": "specifying",
-          "timestamp": "2025-10-25T04:27:13.124Z"
-        },
-        {
-          "state": "testing",
-          "timestamp": "2025-10-25T04:32:18.691Z"
-        },
-        {
-          "state": "implementing",
-          "timestamp": "2025-10-25T04:33:58.564Z"
-        }
-      ],
-      "rules": [
-        "All scenario similarity calculations must use hybridSimilarity() from similarity-algorithms.ts",
-        "No code should claim to provide 'semantic analysis' without AI or comprehensive language dictionaries",
-        "The legacy Levenshtein-based matching code must be completely removed from scenario-similarity.ts",
-        "Completely rewrite scenario-similarity.ts to be a thin wrapper around hybridSimilarity() - no legacy code should remain",
-        "All functions claiming 'semantic' capability must be removed - we don't have AI or dictionaries for true semantic analysis",
-        "Replace BUG-7 hack with adaptive weighting + adaptive thresholds. Use SHORT_STRING_CONFIG (<20 chars) that emphasizes word-level algorithms (Token Set 35%, Jaccard 20%) over character-level (Jaro-Winkler 15%, Trigram 10%). Combine with adaptive thresholds: <10 chars=0.85, 10-20 chars=0.80, 20-40 chars=0.75, 40+ chars=0.70. More principled than arbitrary 0.85 multiplier.",
-        "YES - Create and export DEFAULT_SIMILARITY_CONFIG and SHORT_STRING_CONFIG constants in similarity-algorithms.ts. Make config parameter OPTIONAL in hybridSimilarity() with auto-detection (titleLength < 20 uses SHORT_STRING_CONFIG, else DEFAULT_SIMILARITY_CONFIG). Tests import constants for DRY. Matches intent: sensible defaults with customization option. Weights are public behavior (affect scores), not implementation details - transparency is good for debugging.",
-        "Remove all specific accuracy percentage claims. Replace with honest statements: 'Uses 5-algorithm hybrid approach for more robust matching than single-algorithm methods. No specific accuracy guarantees - effectiveness depends on scenario content.' Update comments, feature files, and tests to describe behavior and multi-algorithm approach, not unvalidated numbers. Focus on what the code actually does: weighted combination of Jaro-Winkler, Token Set, Trigram, Jaccard, and Gherkin Structural algorithms.",
-        "YES - Complete removal of legacy Levenshtein code and backward compatibility. DELETE: (1) useLegacyLevenshtein field from SimilarityConfig interface, (2) import of legacyCalculateScenarioSimilarity from similarity-algorithms.ts, (3) if (config.useLegacyLevenshtein) code path in hybridSimilarity(), (4) Scenario 14 'Maintain backward compatibility' from test file (lines 471-516), (5) Scenario 'Maintain backward compatibility with Levenshtein algorithm' from improve-scenario-similarity-matching-accuracy.feature (lines 182-186), (6) Rule 7 about keeping old algorithm behind flag (line 83 in feature file), (7) Question about backward compatibility flag (line 73 in feature file). Clean break - no legacy support.",
-        "YES - Delete isLikelyRefactor() entirely. It's dead code - not used by any commands, not used in tests, not called anywhere. Claims to detect 'refactor intent' but just does keyword matching ('fix', 'update', 'refactor'). 30+ lines of unused code with false semantic claims. Complete removal from scenario-similarity.ts (lines 232-264).",
-        "Keep default threshold = 0.7 for long strings (40+ chars), but implement adaptive thresholds from Question 1 answer: <10 chars=0.85, 10-20 chars=0.80, 20-40 chars=0.75, 40+ chars=0.70. The threshold parameter becomes the base/fallback for longest strings. Adaptive logic automatically applies stricter thresholds to shorter strings. Already designed in Question 1 - this is just confirming the base value.",
-        "Option A: Raw tokenization with NO stopword filtering. Tokenization (splitting text into words) and alphanumeric pattern matching are NOT semantic. Stopword filtering IS semantic (requires English dictionary knowledge). Keep extractKeywords() but remove stopword filtering - just extract alphanumeric tokens with regex. Refactor jaccardSimilarity() to NOT filter stopwords. Rename extractKeywords() to extractTokens() for honesty (not 'keywords' which implies semantic selection). Raw tokens are MORE informative than filtered. No shared utility needed - minimal duplication acceptable."
-      ],
-      "examples": [
-        "Developer calls calculateScenarioSimilarity(s1, s2). Function internally creates SimilarityConfig with default weights, calls hybridSimilarity(s1, s2, config), returns score between 0-1",
-        "generate-scenarios command finds duplicate scenarios. Uses findMatchingScenarios() which internally uses hybridSimilarity with 88% accuracy. No Levenshtein code executed",
-        "audit-scenarios command deduplicates 100 scenarios. Calls calculateScenarioSimilarity() for each pair, which uses hybridSimilarity internally. Legacy extractKeywords() and isLikelyRefactor() are removed and no longer available",
-        "Developer compares 'User login' vs 'User logout' (10 chars). hybridSimilarity detects short string, uses SHORT_STRING_CONFIG (Token Set 35%, Jaccard 20%, Jaro-Winkler 15%). Token Set=0.33, Jaccard=0.33 heavily weighted. Final score ~0.45. Adaptive threshold for <10 chars is 0.85. Score 0.45 < 0.85 = NO false positive detected",
-        "Developer compares 'User authentication with OAuth2 tokens' vs 'User authentication using JWT tokens' (40+ chars). hybridSimilarity uses DEFAULT_CONFIG (normal weights). Adaptive threshold for 40+ chars is 0.70. High similarity detected with lenient threshold = DUPLICATE found correctly",
-        "Developer calls hybridSimilarity(s1, s2) with NO config parameter. Function auto-detects title length. If <20 chars, uses SHORT_STRING_CONFIG. If >=20 chars, uses DEFAULT_SIMILARITY_CONFIG. Returns similarity score 0-1. Advanced users can override: hybridSimilarity(s1, s2, customConfig)",
-        "Test file imports DEFAULT_SIMILARITY_CONFIG from similarity-algorithms.ts. Uses in test: expect(hybridSimilarity(s1, s2, DEFAULT_SIMILARITY_CONFIG)).toBe(expected). No magic numbers repeated. Single source of truth for weight values. Easy to update all tests when tuning weights",
-        "Code comment in hybridSimilarity() states: 'Calculate hybrid similarity using weighted combination of 5 algorithms. Combines multiple techniques for more robust matching: Jaro-Winkler (prefix), Token Set (word reordering), Trigram (typo tolerance), Jaccard (keyword overlap), Gherkin Structural (Given/When/Then awareness). No specific accuracy guarantees.' Honest, describes actual behavior",
-        "Feature file scenario: 'Hybrid algorithm combines multiple matching techniques' tests that weighted scoring runs across all 5 algorithms and returns 0-1 score. Tests behavior (combining algorithms), not unvalidated performance claims. No percentage numbers in assertions",
-        "Developer tries to use useLegacyLevenshtein flag. TypeScript compilation fails - field does not exist on SimilarityConfig interface. Legacy code path completely removed. Only hybrid algorithm available. Forces migration to new approach",
-        "Developer searches codebase for isLikelyRefactor() usage. Finds zero call sites. Function exported but never used. Grep shows no imports in commands or tests. Delete entire function (lines 232-264) - no impact on functionality. Dead code removal",
-        "audit-scenarios displays duplicate groups with tokens. Calls extractTokens() which extracts alphanumeric tokens with regex (no stopword filtering). Output shows 'Tokens: user, logs, in, with, oauth2, credentials' - ALL tokens displayed, no semantic filtering. More informative than filtered output",
-        "jaccardSimilarity compares 'User logs in' vs 'User logs out'. Extracts raw tokens: {user, logs, in} vs {user, logs, out}. No stopword filtering. Jaccard = 2/4 = 0.5. Still differentiates correctly without semantic knowledge. Stopwords like 'in'/'out' are KEPT and contribute to differentiation"
-      ],
-      "userStory": {
-        "role": "developer using fspec for scenario deduplication",
-        "action": "have accurate similarity matching without false semantic claims",
-        "benefit": "I can trust the algorithm uses real fuzzy matching, not fake semantic analysis"
-      },
-      "estimate": 5,
-      "questions": [
-        {
-          "text": "@human: BUG-7 Fix - The old code has a short string bias penalty (< 20 chars) that prevents false positives like 'User login' vs 'User logout'. The hybrid algorithm doesn't have this. Should we port this fix to the new implementation or is it unnecessary with the hybrid approach?",
-          "selected": true,
-          "answer": "Replace BUG-7 hack with adaptive weighting + adaptive thresholds. Use SHORT_STRING_CONFIG (<20 chars) that emphasizes word-level algorithms (Token Set 35%, Jaccard 20%) over character-level (Jaro-Winkler 15%, Trigram 10%). Combine with adaptive thresholds: <10 chars=0.85, 10-20 chars=0.80, 20-40 chars=0.75, 40+ chars=0.70. More principled than arbitrary 0.85 multiplier."
-        },
-        {
-          "text": "@human: extractKeywords() is currently used by audit-scenarios to display keywords for duplicate groups (it's just stopword filtering). Should we: (A) Keep it but rename to getFilteredKeywords() to remove semantic claims, (B) Remove it and show raw text instead, or (C) Move it into jaccardSimilarity as an internal helper?",
-          "selected": true,
-          "answer": "Extract to shared utility. Create src/utils/text-processing.ts with extractContentWords() utility that does basic stopword filtering. Keep public API as getScenarioKeywords() in scenario-similarity.ts (calls extractContentWords internally). Refactor jaccardSimilarity to use extractContentWords(). Eliminates code duplication, maintains audit-scenarios functionality, removes false semantic claims. Honest naming: 'content words' not 'semantic analysis'."
-        },
-        {
-          "text": "@human: Default SimilarityConfig weights are scattered in tests (0.3, 0.25, 0.2, 0.15, 0.1). Should we create a DEFAULT_SIMILARITY_CONFIG constant and export it from similarity-algorithms.ts for consistency?",
-          "selected": true,
-          "answer": "YES - Create and export DEFAULT_SIMILARITY_CONFIG and SHORT_STRING_CONFIG constants in similarity-algorithms.ts. Make config parameter OPTIONAL in hybridSimilarity() with auto-detection (titleLength < 20 uses SHORT_STRING_CONFIG, else DEFAULT_SIMILARITY_CONFIG). Tests import constants for DRY. Matches intent: sensible defaults with customization option. Weights are public behavior (affect scores), not implementation details - transparency is good for debugging."
-        },
-        {
-          "text": "@human: The 88% accuracy claim is mentioned everywhere but there's NO benchmark test suite to validate it. Should we: (A) Remove the claim, (B) Create a benchmark test suite with labeled examples, or (C) Keep it as aspirational?",
-          "selected": true,
-          "answer": "Remove all specific accuracy percentage claims. Replace with honest statements: 'Uses 5-algorithm hybrid approach for more robust matching than single-algorithm methods. No specific accuracy guarantees - effectiveness depends on scenario content.' Update comments, feature files, and tests to describe behavior and multi-algorithm approach, not unvalidated numbers. Focus on what the code actually does: weighted combination of Jaro-Winkler, Token Set, Trigram, Jaccard, and Gherkin Structural algorithms."
-        },
-        {
-          "text": "@human: The useLegacyLevenshtein backward compatibility flag exists in hybridSimilarity(). You said no backward compatibility - should we completely remove this flag and the legacy code path?",
-          "selected": true,
-          "answer": "YES - Complete removal of legacy Levenshtein code and backward compatibility. DELETE: (1) useLegacyLevenshtein field from SimilarityConfig interface, (2) import of legacyCalculateScenarioSimilarity from similarity-algorithms.ts, (3) if (config.useLegacyLevenshtein) code path in hybridSimilarity(), (4) Scenario 14 'Maintain backward compatibility' from test file (lines 471-516), (5) Scenario 'Maintain backward compatibility with Levenshtein algorithm' from improve-scenario-similarity-matching-accuracy.feature (lines 182-186), (6) Rule 7 about keeping old algorithm behind flag (line 83 in feature file), (7) Question about backward compatibility flag (line 73 in feature file). Clean break - no legacy support."
-        },
-        {
-          "text": "@human: isLikelyRefactor() claims to detect 'refactor intent' but it's just keyword matching ('fix', 'update', 'refactor'). It's NOT used by any commands - it's dead code. Should we just delete it entirely?",
-          "selected": true,
-          "answer": "YES - Delete isLikelyRefactor() entirely. It's dead code - not used by any commands, not used in tests, not called anywhere. Claims to detect 'refactor intent' but just does keyword matching ('fix', 'update', 'refactor'). 30+ lines of unused code with false semantic claims. Complete removal from scenario-similarity.ts (lines 232-264)."
-        },
-        {
-          "text": "@human: The old code uses threshold=0.7 for duplicate detection. With the hybrid algorithm's different scoring, should this threshold change (higher/lower) or stay at 0.7?",
-          "selected": true,
-          "answer": "Keep default threshold = 0.7 for long strings (40+ chars), but implement adaptive thresholds from Question 1 answer: <10 chars=0.85, 10-20 chars=0.80, 20-40 chars=0.75, 40+ chars=0.70. The threshold parameter becomes the base/fallback for longest strings. Adaptive logic automatically applies stricter thresholds to shorter strings. Already designed in Question 1 - this is just confirming the base value."
-        },
-        {
-          "text": "@human: CRITICAL - extractKeywords() uses stopword filtering which IS semantic (requires English dictionary knowledge of words like 'the', 'and', 'is'). The old code has this in TWO places: extractKeywords() in scenario-similarity.ts AND internally in jaccardSimilarity(). What should we do: (A) Keep raw keyword extraction with NO stopword filtering (just split on whitespace and extract alphanumeric tokens), (B) Remove extractKeywords() entirely and don't show keywords in audit-scenarios output, or (C) Something else?",
-          "selected": true,
-          "answer": "Option A: Raw tokenization with NO stopword filtering. Tokenization (splitting text into words) and alphanumeric pattern matching are NOT semantic. Stopword filtering IS semantic (requires English dictionary knowledge). Keep extractKeywords() but remove stopword filtering - just extract alphanumeric tokens with regex. Refactor jaccardSimilarity() to NOT filter stopwords. Rename extractKeywords() to extractTokens() for honesty (not 'keywords' which implies semantic selection). Raw tokens are MORE informative than filtered. No shared utility needed - minimal duplication acceptable."
-        }
-      ]
     }
   },
   "states": {
@@ -12276,7 +12192,6 @@
       "RES-004",
       "RES-005",
       "RES-001",
-      "CLI-007",
       "INIT-007",
       "BOARD-002",
       "BOARD-003",
@@ -12304,12 +12219,11 @@
       "GIT-004",
       "RES-006",
       "EST-002",
-      "LANG-001"
+      "LANG-001",
+      "CLI-007"
     ],
     "testing": [],
-    "implementing": [
-      "REFAC-003"
-    ],
+    "implementing": [],
     "validating": [],
     "done": [
       "BUG-007",
