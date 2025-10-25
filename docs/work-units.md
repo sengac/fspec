@@ -413,6 +413,39 @@ Virtual Hooks:
   post-implementing: npm test (blocking)
 ```
 
+### Advanced Querying & Analysis
+
+Search and compare work units, scenarios, and implementations for patterns and consistency:
+
+```bash
+# Search scenarios across all features
+fspec search-scenarios --query="validation"
+fspec search-scenarios --query="user.*login" --regex --json
+
+# Find function usage across work units
+fspec search-implementation --function=validateInput
+fspec search-implementation --function=queryWorkUnits --show-work-units
+
+# Compare implementation approaches for tagged work units
+fspec compare-implementations --tag=@cli --show-coverage
+fspec compare-implementations --tag=@authentication --json
+
+# Analyze testing patterns across similar work units
+fspec show-test-patterns --tag=@high --include-coverage
+fspec show-test-patterns --tag=@cli --json
+
+# Query work units with enhanced filtering
+fspec query-work-units --status=done --tag=@cli --format=table
+fspec query-work-units --type=story --prefix=AUTH --format=json
+```
+
+**Use cases:**
+- Find similar scenarios to reuse patterns
+- Identify inconsistencies in testing approaches
+- Compare implementation strategies across features
+- Ensure architectural consistency
+- Discover function usage across the codebase
+
 ---
 
 ## Best Practices

@@ -378,6 +378,31 @@ fspec show-coverage
 
 ---
 
+## Analysis & Querying
+
+```bash
+# Search scenarios across features
+fspec search-scenarios --query="validation"
+fspec search-scenarios --query="user.*login" --regex
+
+# Search for function usage
+fspec search-implementation --function=validateInput
+fspec search-implementation --function=queryWorkUnits --show-work-units
+
+# Compare implementations
+fspec compare-implementations --tag=@cli
+fspec compare-implementations --tag=@authentication --show-coverage
+
+# Analyze test patterns
+fspec show-test-patterns --tag=@high
+fspec show-test-patterns --tag=@cli --include-coverage
+
+# Query work units (basic)
+fspec query-work-units --status=done --tag=@cli --format=table
+```
+
+---
+
 ## Reverse ACDD
 
 ```bash

@@ -97,6 +97,7 @@ Tags that categorize features by functional area.
 | `@priority` | Priority management and reordering |
 | `@progress` | Progress tracking and reporting |
 | `@project-management` | Project management features including work units, epics, and workflow |
+| `@quality-assurance` | Quality assurance and code review features |
 | `@query` | Query operations for searching and filtering |
 | `@query-reporting` | Query and reporting features |
 | `@querying` | Query & Search Operations |
@@ -153,6 +154,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@automation` | Automated workflow operations and state transitions |
 | `@bdd` | Behavior-Driven Development methodology |
 | `@build` | Build system configuration and bundling |
+| `@code-review` | Code review and quality analysis features |
 | `@command-registration` | CLI command registration features |
 | `@cucumber-parser` | Cucumber Parser Integration |
 | `@discovery` | BDD discovery technique used before writing Gherkin scenarios |
@@ -178,10 +180,12 @@ Tags for specific technical concerns or architectural patterns.
 | `@push` | Push notification functionality |
 | `@reverse-engineering` | Reverse engineering existing code to create specifications |
 | `@runtime` | Runtime behavior and dynamic configuration |
+| `@search` | Search and query functionality for finding scenarios, work units, and code patterns |
 | `@session-based` | Session-based interactive command pattern (similar to discover-foundation) |
 | `@setup` | Setup and initialization commands |
 | `@similarity-matching` | Text similarity and matching algorithms |
 | `@slash-command` | Slash command features for Claude Code |
+| `@slash-commands` | Claude Code slash command implementations |
 | `@sms` | SMS-related functionality |
 | `@strategy-planning` | Strategy planning and decision-making features that guide user choices |
 | `@system-reminder` | Anti-drift pattern for AI agents using contextual reminders |
@@ -518,7 +522,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-10-24T12:41:10.130Z_
+_Last updated: 2025-10-24T23:34:53.933Z_
 
 **Update Command**: `fspec tag-stats`
 

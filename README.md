@@ -169,6 +169,30 @@ Scenario → Test File (lines 45-62) → Implementation (lines 10-24)
 - Gap detection (untested scenarios)
 - Audit commands for validation
 
+### 🔍 Advanced Search & Comparison
+
+Find patterns, compare implementations, ensure consistency:
+
+```bash
+# Search scenarios across all features
+fspec search-scenarios --query="validation"
+
+# Find function usage across work units
+fspec search-implementation --function=validateInput --show-work-units
+
+# Compare implementation approaches for similar features
+fspec compare-implementations --tag=@cli --show-coverage
+
+# Analyze testing patterns for consistency
+fspec show-test-patterns --tag=@authentication --include-coverage
+```
+
+- Cross-feature scenario search (literal or regex)
+- Function usage analysis across codebase
+- Side-by-side implementation comparison
+- Testing pattern analysis and consistency checking
+- Identify architectural inconsistencies early
+
 ---
 
 ## Documentation

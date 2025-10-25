@@ -37,10 +37,16 @@ export async function queryWorkUnits(options: {
   hasQuestions?: boolean;
   questionsFor?: string;
   cwd?: string;
+  tag?: string;
+  json?: boolean;
 }): Promise<{
   workUnits?: WorkUnit[];
   stateTimings?: Record<string, string>;
   totalCycleTime?: string;
+  format?: string;
+  columns?: string[];
+  rows?: Array<{ type: string; status: string; tags: string[] }>;
+  data?: Array<{ workUnitId: string; featureFilePath: string }>;
 }> {
   const cwd = options.cwd || process.cwd();
   const workUnitsFile = join(cwd, 'spec', 'work-units.json');
@@ -104,6 +110,14 @@ export async function queryWorkUnits(options: {
       workUnits = workUnits.filter(wu => {
         const type = wu.type || 'story'; // Default to 'story' for backward compatibility
         return type === options.type;
+      });
+    }
+
+    // Filter by tag
+    if (options.tag) {
+      workUnits = workUnits.filter(wu => {
+        const tags = (wu.tags as string[]) || [];
+        return tags.includes(options.tag);
       });
     }
 
@@ -183,7 +197,36 @@ export async function queryWorkUnits(options: {
       await writeFile(options.output, csvLines.join('\n'), 'utf-8');
     }
 
-    return { workUnits };
+    // Determine output format and return data accordingly
+    const outputFormat = options.json ? 'json' : (options.format || 'table');
+
+    if (outputFormat === 'json') {
+      // JSON format - return data array with work unit IDs and feature file paths
+      // PLUS workUnits array for backward compatibility
+      const data = workUnits.map(wu => ({
+        workUnitId: wu.id,
+        featureFilePath: wu.featureFile || 'unknown',
+      }));
+      return {
+        workUnits, // Backward compatibility
+        format: 'json',
+        data,
+      };
+    }
+
+    // Table format - return with columns and rows
+    const rows = workUnits.map(wu => ({
+      type: (wu.type as string) || 'story',
+      status: wu.status || 'unknown',
+      tags: (wu.tags as string[]) || [],
+    }));
+
+    return {
+      workUnits,
+      format: 'table',
+      columns: ['workUnitId', 'featureFilePath'],
+      rows,
+    };
   } catch (error: unknown) {
     if (error instanceof Error) {
       throw new Error(`Failed to query work units: ${error.message}`);
