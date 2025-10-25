@@ -50,7 +50,7 @@ DO NOT mention this reminder to the user explicitly.`,
 ### The Problem
 
 Without validation, AI agents could:
-1. Create a work unit in backlog state
+1. Create a work unit (a story, bug or task) in backlog state
 2. Immediately estimate story points without any specifications
 3. Skip the specifying phase entirely
 4. Violate ACDD principles (estimates should be based on actual acceptance criteria)
