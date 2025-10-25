@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-24T23:32:41.469Z"
+    "lastUpdated": "2025-10-25T00:30:23.325Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -11906,6 +11906,111 @@
       "updatedAt": "2025-10-24T23:48:22.326Z",
       "description": "Extend fspec init to bootstrap multiple tools (fspec, mindstrike CLI, future tools) for AI agents. Centralize agent detection logic (Claude Code, Cursor, Windsurf, etc.) and template management in fspec instead of duplicating per tool. Allow tools to register templates with fspec via tool registry. When running 'fspec init', detect agent and copy bootstrap files for ALL registered tools (fspec.md, mindstrike.md, etc.). This makes fspec the universal bootstrap manager for AI coding tools, eliminating duplicate agent detection logic across projects.",
       "children": []
+    },
+    "CLI-012": {
+      "id": "CLI-012",
+      "title": "Review command with done status integration",
+      "type": "story",
+      "status": "specifying",
+      "createdAt": "2025-10-25T00:26:55.548Z",
+      "updatedAt": "2025-10-25T00:30:13.842Z",
+      "description": "Add 'fspec review' command that provides context for reviewing completed work units, and integrate system-reminder into done status transition to suggest reviews",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-25T00:27:02.445Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer or AI agent completing work",
+        "action": "review completed work units before finalizing them",
+        "benefit": "I ensure quality and completeness before marking work as truly done"
+      },
+      "questions": [
+        {
+          "text": "@human: When exactly should the system-reminder to suggest review appear? (A) When transitioning TO done status, (B) When work unit IS IN done status and user runs another command, or (C) Both scenarios?",
+          "selected": true,
+          "answer": "A - When transitioning TO done status. Emit system-reminder suggesting 'fspec review <work-unit-id>' to review the work before finalizing."
+        },
+        {
+          "text": "@human: What information should 'fspec review' provide? (A) Work unit summary, (B) Linked test/impl files from coverage, (C) Git diff for this work unit, (D) Validation checklist, (E) All of the above, or (F) Something else?",
+          "selected": true,
+          "answer": "E - All of the above. Use the same comprehensive review system from CLI-011's /review slash command, including work unit summary, coverage analysis, test/impl files, ACDD compliance, and coding standards validation."
+        },
+        {
+          "text": "@human: Should review be (A) Informational only - just display data for manual review, (B) Interactive checklist - with items to mark complete, or (C) Automated - run validation commands and report results?",
+          "selected": true,
+          "answer": "A - Informational only. Display comprehensive review data using the same ULTRATHINK analysis from /review command, but let user manually assess. The review command provides context and guidance."
+        },
+        {
+          "text": "@human: Should reviews be tracked/recorded? (A) Keep record that work unit was reviewed, (B) Require review confirmation before allowing done status, or (C) Optional review with reminder only (not mandatory)?",
+          "selected": true,
+          "answer": "C - Optional review with reminder only (not mandatory). System-reminder suggests using 'fspec review' when moving to done, but doesn't block the transition. Keeps workflow flexible."
+        },
+        {
+          "text": "@human: What about work units already in done status? Should they support 'fspec review <work-unit-id>' for retrospective review? Can review be run multiple times?",
+          "selected": true,
+          "answer": "Yes - 'fspec review <work-unit-id>' should work for any work unit in any status (backlog, specifying, testing, implementing, validating, done, blocked). Can be run multiple times. Provides context-aware analysis based on current state."
+        }
+      ],
+      "rules": [
+        "Review command must be 'fspec review <work-unit-id>' CLI command, not just a slash command",
+        "System-reminder must be emitted when transitioning to 'done' status in update-work-unit-status command",
+        "Review command must use same analysis approach as CLI-011's /review slash command (ULTRATHINK, coverage, ACDD compliance)",
+        "Review must work for work units in ANY status (not just done)",
+        "System-reminder must include exact command: 'fspec review <work-unit-id>' with actual work unit ID"
+      ],
+      "examples": [
+        "User runs 'fspec update-work-unit-status AUTH-001 done', system-reminder suggests 'Consider reviewing before finalizing: fspec review AUTH-001'",
+        "User runs 'fspec review CLI-011', output shows: Issues Found (critical/warnings), ACDD Compliance, Coverage Analysis, Summary with priority actions",
+        "User runs 'fspec review SPEC-001' (work unit in testing status), review shows current progress, missing test coverage, suggests next steps",
+        "User runs 'fspec review BUG-007' (completed bug fix), review validates fix quality, checks regression test coverage, confirms coding standards"
+      ],
+      "estimate": 5
+    },
+    "TEST-006": {
+      "id": "TEST-006",
+      "title": "Docstring-based test-to-scenario linking system",
+      "type": "story",
+      "status": "specifying",
+      "createdAt": "2025-10-25T00:26:56.043Z",
+      "updatedAt": "2025-10-25T00:30:37.780Z",
+      "description": "Create a docstring-based system for linking test scenarios/steps to Gherkin acceptance criteria, with tooling to sync and migrate existing unlinked tests",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-25T00:30:22.828Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer writing tests",
+        "action": "link test scenarios/steps to Gherkin acceptance criteria using docstrings",
+        "benefit": "I maintain traceability between tests and specs, and can keep them synchronized automatically"
+      },
+      "questions": [
+        {
+          "text": "@human: What should the docstring format look like? Should it reference scenario names, Given/When/Then steps, or both? Should it include feature file paths?",
+          "selected": false
+        },
+        {
+          "text": "@human: How should the tool detect existing tests without docstring links? Should it scan all test files in the project, or specific directories?",
+          "selected": false
+        },
+        {
+          "text": "@human: What should the migration tool do? (A) Interactive prompt for each unlinked test, (B) Batch analysis and suggested mappings, (C) Automatic linking based on test names, or (D) Something else?",
+          "selected": false
+        },
+        {
+          "text": "@human: Should the sync tool validate that docstring references match actual scenarios in feature files? What happens if they're out of sync?",
+          "selected": false
+        },
+        {
+          "text": "@human: Should this integrate with existing .feature.coverage files, or be a separate system? Should it replace or complement coverage tracking?",
+          "selected": false
+        }
+      ]
     }
   },
   "states": {
@@ -11940,6 +12045,8 @@
       "FEAT-018"
     ],
     "specifying": [
+      "CLI-012",
+      "TEST-006",
       "GIT-004",
       "RES-006",
       "EST-002",
