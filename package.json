@@ -1,6 +1,6 @@
 {
   "name": "@sengac/fspec",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Feature Specification & Project Management for AI Agents - Manage Gherkin specs and work units with ACDD workflow",
   "type": "module",
   "main": "./dist/index.js",
