@@ -104,12 +104,11 @@ fspec link-coverage example-feature --scenario "Validate feature file with valid
 fspec update-work-unit-status EXAMPLE-006 validating # Move to validating
 
 # 6. VALIDATE (Run ALL tests + quality checks)
-npm test                                         # Run ALL tests (ensure nothing broke)
-npm run check                                    # typecheck + lint + format + all tests
-example-project validate                                   # Gherkin syntax validation
-example-project validate-tags                              # Tag compliance check
-
-fspec update-work-unit-status EXAMPLE-006 done       # Move to done
+1. command(s) that run the tests                           # Run ALL tests (ensure nothing broke)
+2. command(s) that run code quality checking               # Ensure the code reaches a quality standard
+3. example-project validate                                # Gherkin syntax validation
+4. example-project validate-tags                           # Tag compliance check
+5. fspec update-work-unit-status EXAMPLE-006 done          # Move to done
 
 # 7. COMPLETE (Update feature file tags)
 fspec remove-tag-from-feature spec/features/example-feature.feature @wip

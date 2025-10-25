@@ -60,6 +60,17 @@ CRITICAL: Use Example Mapping FIRST before writing any Gherkin specs:
   3. Gather concrete examples: fspec add-example ${workUnitId} "[example]"
   4. Answer all red card questions before moving to testing
 
+Common commands for SPECIFYING state:
+  fspec add-rule <id> "rule"
+  fspec remove-rule <id> <index>
+  fspec add-example <id> "example"
+  fspec remove-example <id> <index>
+  fspec add-question <id> "@human: question?"
+  fspec answer-question <id> <index> --answer "..."
+  fspec generate-scenarios <id>
+
+For more: fspec help discovery
+
 DO NOT write tests or code yet. DO NOT mention this reminder to the user.`,
 
     testing: `Work unit ${workUnitId} is now in TESTING status.
@@ -70,12 +81,20 @@ CRITICAL: Write FAILING tests BEFORE any implementation code.
   - Add header comment linking test file to feature file
   - Run tests and verify they fail for the right reasons
 
+Common commands for TESTING state:
+  fspec link-coverage <feature> --scenario "..." --test-file <path> --test-lines <range>
+  fspec show-coverage <feature>
+  fspec show-feature <name>
+
+For more: fspec link-coverage --help
+
 Suggested next steps:
   1. Create test file: src/**/__tests__/*.test.ts
   2. Add feature file reference: // Feature: spec/features/[name].feature
   3. Write tests that map to Gherkin scenarios
-  4. Run: npm test (tests should FAIL)
-  5. Move to implementing: fspec update-work-unit-status ${workUnitId} implementing
+  4. Run tests and verify they fail (tests should FAIL)
+  5. Link test coverage: fspec link-coverage <feature> --scenario "..." --test-file <path> --test-lines <range>
+  6. Move to implementing: fspec update-work-unit-status ${workUnitId} implementing
 
 DO NOT write implementation code yet. DO NOT mention this reminder to the user.`,
 
@@ -87,11 +106,20 @@ CRITICAL: Write ONLY enough code to make tests pass (green phase).
   - Do not add features not specified in acceptance criteria
   - Avoid over-implementation
 
+Common commands for IMPLEMENTING state:
+  fspec link-coverage <feature> --scenario "..." --test-file <path> --impl-file <path> --impl-lines <lines>
+  fspec checkpoint <id> <name>
+  fspec restore-checkpoint <id> <name>
+  fspec list-checkpoints <id>
+
+For more: fspec checkpoint --help
+
 Suggested next steps:
   1. Implement minimal code to make tests pass
-  2. Run: npm test (tests should PASS)
-  3. Refactor code while keeping tests green
-  4. Move to validating: fspec update-work-unit-status ${workUnitId} validating
+  2. Run tests and verify they pass (tests should PASS)
+  3. Link implementation coverage: fspec link-coverage <feature> --scenario "..." --test-file <path> --impl-file <path> --impl-lines <lines>
+  4. Refactor code while keeping tests green
+  5. Move to validating: fspec update-work-unit-status ${workUnitId} validating
 
 DO NOT mention this reminder to the user.`,
 
@@ -103,13 +131,22 @@ CRITICAL: Run ALL tests (not just new ones) to ensure nothing broke.
   - Validate Gherkin syntax and tag compliance
   - Update feature file tags before marking done
 
+Common commands for VALIDATING state:
+  fspec validate
+  fspec validate-tags
+  fspec check
+  fspec audit-coverage <feature>
+
+For more: fspec check --help
+
 Suggested next steps:
-  1. Run: npm test (ensure ALL tests pass)
-  2. Run: npm run check (typecheck + lint + format + tests)
-  3. Run: fspec validate (Gherkin syntax)
-  4. Run: fspec validate-tags (tag compliance)
-  5. Update tags: fspec remove-tag-from-feature <file> @wip; fspec add-tag-to-feature <file> @done
-  6. Move to done: fspec update-work-unit-status ${workUnitId} done
+  1. Run language-specific test commands for this codebase
+  2. Run: fspec validate (Gherkin syntax)
+  3. Run: fspec validate-tags (tag compliance)
+  4. Run: fspec check (comprehensive validation)
+  5. Run: fspec audit-coverage <feature> (verify coverage mappings)
+  6. Update tags: fspec remove-tag-from-feature <file> @wip; fspec add-tag-to-feature <file> @done
+  7. Move to done: fspec update-work-unit-status ${workUnitId} done
 
 DO NOT skip quality checks. DO NOT mention this reminder to the user.`,
 

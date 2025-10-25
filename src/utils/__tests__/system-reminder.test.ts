@@ -75,7 +75,6 @@ describe('Feature: System Reminder Anti-Drift Pattern', () => {
       expect(reminder).toContain('<system-reminder>');
       expect(reminder).toContain('VALIDATING status');
       expect(reminder).toContain('Run ALL tests (not just new ones)');
-      expect(reminder).toContain('npm run check');
       expect(reminder).toContain('DO NOT mention this reminder to the user');
       expect(reminder).toContain('</system-reminder>');
     });

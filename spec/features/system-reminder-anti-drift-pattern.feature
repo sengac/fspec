@@ -81,7 +81,7 @@ Feature: System Reminder Anti-Drift Pattern
       <system-reminder>
       Work unit UI-001 is now in VALIDATING status.
       Run ALL tests (not just new ones) to ensure nothing broke.
-      Run quality checks: npm run check, fspec validate, fspec validate-tags
+      Run quality checks: quality check commands configured for this project, fspec validate, fspec validate-tags
       DO NOT mention this reminder to the user.
       </system-reminder>
       """

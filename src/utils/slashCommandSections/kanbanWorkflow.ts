@@ -32,7 +32,7 @@ fspec update-work-unit-status EXAMPLE-006 implementing
 fspec update-work-unit-status EXAMPLE-006 validating
 
 # 5. VALIDATE (quality checks)
-npm run check
+quality checking commands configured for this project, e.g. if it was a JavaScript/TypeScript project - npm check
 example-project validate
 example-project validate-tags
 fspec update-work-unit-status EXAMPLE-006 done
