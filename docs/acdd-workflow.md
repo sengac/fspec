@@ -115,6 +115,7 @@ npm run typecheck  # Type safety
 npm run lint       # Code quality
 fspec validate     # Gherkin syntax
 fspec check        # Complete validation
+fspec review <id>  # ACDD compliance and quality review
 ```
 
 **Goal:** Ensure nothing broke, quality standards met.
