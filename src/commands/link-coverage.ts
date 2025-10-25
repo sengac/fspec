@@ -3,6 +3,11 @@ import type { Command } from 'commander';
 import { join } from 'path';
 import chalk from 'chalk';
 import type { CoverageFile } from '../utils/coverage-file';
+import { getScenarioSteps } from '../utils/feature-parser';
+import {
+  validateSteps,
+  formatValidationError,
+} from '../utils/step-validation';
 
 interface LinkCoverageOptions {
   scenario: string;
@@ -11,6 +16,7 @@ interface LinkCoverageOptions {
   implFile?: string;
   implLines?: string;
   skipValidation?: boolean;
+  skipStepValidation?: boolean;
   cwd?: string;
 }
 
@@ -31,6 +37,7 @@ export async function linkCoverage(
     implFile,
     implLines,
     skipValidation = false,
+    skipStepValidation = false,
     cwd = process.cwd(),
   } = options;
 
@@ -123,6 +130,39 @@ export async function linkCoverage(
     throw new Error(
       `Scenario not found: "${scenario}"\nAvailable scenarios:\n${coverage.scenarios.map(s => `  - ${s.name}`).join('\n')}`
     );
+  }
+
+  // Step validation (if test file is being linked and step validation not skipped)
+  if (testFile && !skipStepValidation) {
+    try {
+      // Check if feature file exists before trying to parse it
+      await access(featureFile);
+
+      // Extract steps from feature file scenario
+      const featureSteps = await getScenarioSteps(featureFile, scenario);
+
+      // Read test file content
+      const testFilePath = join(cwd, testFile);
+      const testContent = await readFile(testFilePath, 'utf-8');
+
+      // Validate steps match
+      const validationResult = validateSteps(featureSteps, testContent);
+
+      if (!validationResult.valid) {
+        // Step validation failed - throw error with system-reminder
+        const errorMessage = formatValidationError(validationResult);
+        throw new Error(errorMessage + '\n\nStep validation failed');
+      }
+    } catch (error: any) {
+      // If feature file doesn't exist, skip step validation silently
+      if (error.code === 'ENOENT' && error.path === featureFile) {
+        // Feature file not found - skip step validation
+        // This allows forward planning where feature file may not exist yet
+      } else {
+        // Re-throw other errors (includes validation failures with system-reminder)
+        throw error;
+      }
+    }
   }
 
   let message = '';
@@ -432,5 +472,9 @@ export function registerLinkCoverageCommand(program: Command): void {
       'Implementation lines (e.g., "10,11,12" or "10-15")'
     )
     .option('--skip-validation', 'Skip file validation (for forward planning)')
+    .option(
+      '--skip-step-validation',
+      'Skip step comment validation (not recommended - use for edge cases)'
+    )
     .action(linkCoverageCommand);
 }

@@ -118,3 +118,42 @@ export function searchScenarios(
 
   return results;
 }
+
+/**
+ * Parse a single feature file and extract scenario steps
+ *
+ * @param featureFilePath - Absolute path to feature file
+ * @param scenarioName - Name of scenario to extract steps from
+ * @returns Array of step strings (e.g., ["Given I am on the login page", "When I click login"])
+ */
+export async function getScenarioSteps(
+  featureFilePath: string,
+  scenarioName: string
+): Promise<string[]> {
+  const content = await readFile(featureFilePath, 'utf-8');
+
+  const parser = new Gherkin.Parser(builder, matcher);
+  const gherkinDocument = parser.parse(content);
+
+  if (!gherkinDocument.feature) {
+    throw new Error(`No feature found in ${featureFilePath}`);
+  }
+
+  // Find the scenario
+  for (const child of gherkinDocument.feature.children) {
+    if (child.scenario && child.scenario.name === scenarioName) {
+      const steps: string[] = [];
+
+      for (const step of child.scenario.steps) {
+        // Format: "Given I am on the login page"
+        steps.push(`${step.keyword.trim()} ${step.text}`);
+      }
+
+      return steps;
+    }
+  }
+
+  throw new Error(
+    `Scenario "${scenarioName}" not found in ${featureFilePath}`
+  );
+}

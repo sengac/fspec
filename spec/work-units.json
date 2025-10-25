@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-25T04:58:36.625Z"
+    "lastUpdated": "2025-10-25T05:25:03.625Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -11989,21 +11989,45 @@
       "id": "TEST-006",
       "title": "Docstring-based test-to-scenario linking system",
       "type": "story",
-      "status": "specifying",
+      "status": "done",
       "createdAt": "2025-10-25T00:26:56.043Z",
-      "updatedAt": "2025-10-25T04:59:12.511Z",
+      "updatedAt": "2025-10-25T05:38:32.645Z",
       "description": "Create a docstring-based system for linking test scenarios/steps to Gherkin acceptance criteria, with tooling to sync and migrate existing unlinked tests",
       "children": [],
       "stateHistory": [
         {
           "state": "specifying",
           "timestamp": "2025-10-25T00:30:22.828Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-25T05:09:31.531Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-25T05:14:08.430Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-25T05:27:18.828Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-25T05:29:29.947Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-25T05:33:15.238Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-25T05:38:32.646Z"
         }
       ],
       "userStory": {
         "role": "developer using fspec for ACDD workflow",
-        "action": "link Gherkin scenarios to test files and implementation code",
-        "benefit": "I maintain traceability between acceptance criteria, tests, and code for refactoring safety and gap detection"
+        "action": "link test step comments to Gherkin feature file steps using @step prefix",
+        "benefit": "I maintain Cucumber-style step-level traceability and get validation when steps don't match"
       },
       "questions": [
         {
@@ -12040,19 +12064,38 @@
         "Audit-coverage verifies file paths exist and can auto-fix broken links with --fix flag",
         "Coverage files (.feature.coverage) are created automatically when create-feature command runs. Detection is implicit through show-coverage command which shows uncovered scenarios.",
         "Audit-coverage command validates file paths exist. Out-of-sync links can be detected (broken paths) and auto-fixed with --fix flag. Line number validation is NOT performed.",
-        "This IS the .feature.coverage system. Coverage files store scenario-to-test-to-implementation mappings. This complements feature files (acceptance criteria) with traceability data."
+        "This IS the .feature.coverage system. Coverage files store scenario-to-test-to-implementation mappings. This complements feature files (acceptance criteria) with traceability data.",
+        "Test files use comments (// Given, // When, // Then) that must match actual steps in feature file scenarios",
+        "System validates that test comments match feature file steps exactly (Cucumber-style step matching)",
+        "Step matching supports parameterized steps using hybrid similarity algorithm for fuzzy matching (e.g., '// Given I have 5 items' matches 'Given I have {int} items')",
+        "Existing fspec coverage commands (link-coverage, show-coverage, audit-coverage) are enhanced to validate step comments match feature file steps",
+        "Step comment validation is a HARD ERROR by default - command fails if test comments don't match feature steps",
+        "Override flag --skip-step-validation allows linking even when step comments don't match (escape hatch for edge cases)",
+        "When step validation fails, emit <system-reminder> showing: (1) which steps are missing/mismatched, (2) exact step text from feature file to copy, (3) how to override with --skip-step-validation flag",
+        "Step comments use '@step' prefix for fast searching: '// @step Given I am on the login page'",
+        "System is backward compatible - also recognizes plain step comments without @step prefix (e.g., '// Given I am on the login page')",
+        "show-coverage displays step-level validation status showing which steps have matching comments (✓ matched) vs missing (✗ MISSING STEP COMMENT)",
+        "Step matching uses existing hybrid similarity algorithm with adaptive thresholds: <10 chars=0.85, 10-20=0.80, 20-40=0.75, 40+=0.70"
       ],
       "examples": [
         "Developer writes test for 'Login with valid credentials' scenario at lines 45-62 in auth.test.ts, runs link-coverage command, coverage file updated with test mapping",
         "Developer implements login function at lines 10-24 in login.ts, runs link-coverage to add implementation mapping to existing test, coverage file shows full traceability",
         "Developer runs show-coverage for user-authentication feature, sees 50% coverage (1 of 2 scenarios covered), identifies uncovered scenario to work on next",
         "Developer refactors codebase and moves test files, runs audit-coverage, discovers broken file paths, runs audit-coverage --fix to remove stale mappings",
-        "Developer runs show-coverage with no arguments, sees project-wide report showing 65% overall coverage across all features, identifies features needing attention"
+        "Developer runs show-coverage with no arguments, sees project-wide report showing 65% overall coverage across all features, identifies features needing attention",
+        "Test has '// Given I have 5 items', feature has 'Given I have {int} items', hybrid similarity matches them with high confidence",
+        "Running 'fspec link-coverage user-auth --scenario Login...' validates that test file contains matching step comments for all Given/When/Then steps in the scenario",
+        "Test missing '// When I click login', link-coverage fails with system-reminder showing exact text to add: '// When I click the login button' and override option '--skip-step-validation'",
+        "Test file with '// @step Given I am on the login page' matches feature step 'Given I am on the login page'",
+        "Legacy test with '// Given I am logged in' (no @step prefix) still matches feature step 'Given I am logged in' for backward compatibility",
+        "show-coverage output shows: 'Scenario: Login (FULLY COVERED)' with step breakdown '✓ Given I am on login page (matched)' and '✗ Then I should be logged in (MISSING STEP COMMENT)'",
+        "Step '// @step Given I have 5 items' matches 'Given I have {int} items' using hybrid similarity with threshold 0.75 (medium length step)"
       ],
       "assumptions": [
         "Coverage tracking uses scenario-level traceability in .feature.coverage files, NOT step-level @step docstrings. This system complements scenario-level coverage, not replaces it.",
         "No migration tool exists. Coverage tracking is done manually via link-coverage command after writing tests and implementation. This is intentional - explicit linking ensures accuracy."
-      ]
+      ],
+      "estimate": 5
     },
     "REV-002": {
       "id": "REV-002",
@@ -12258,7 +12301,6 @@
       "FEAT-018"
     ],
     "specifying": [
-      "TEST-006",
       "GIT-004",
       "RES-006",
       "EST-002",
@@ -12465,7 +12507,8 @@
       "CLI-011",
       "QRY-002",
       "CLI-012",
-      "REV-002"
+      "REV-002",
+      "TEST-006"
     ],
     "blocked": []
   }

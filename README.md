@@ -162,12 +162,18 @@ Full traceability from acceptance criteria to implementation:
 
 ```
 Scenario → Test File (lines 45-62) → Implementation (lines 10-24)
+          ↓ Step Validation
+    // @step Given I am on the login page
+    // @step When I enter valid credentials
+    // @step Then I should be logged in
 ```
 
-- Scenario-to-test-to-implementation mappings
-- Coverage percentage reporting
-- Gap detection (untested scenarios)
-- Audit commands for validation
+- **Scenario-to-test-to-implementation mappings** - Track every line of code
+- **Step validation (NEW)** - Cucumber-style step matching in test comments
+- **Coverage percentage reporting** - Know exactly what's tested
+- **Gap detection** - Find untested scenarios
+- **Audit commands** - Verify traceability integrity
+- **Parameterized step matching** - Handles `{int}`, `{string}` placeholders
 
 ### 🔍 Advanced Search & Comparison
 

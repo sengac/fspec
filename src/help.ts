@@ -395,6 +395,9 @@ function displaySpecsHelp(): void {
   console.log(
     '      --skip-validation                Skip file validation (reverse ACDD)'
   );
+  console.log(
+    '      --skip-step-validation           Skip step comment validation (edge cases)'
+  );
   console.log('    Examples:');
   console.log(
     '      fspec link-coverage user-auth --scenario "Login" --test-file src/__tests__/auth.test.ts --test-lines 45-62'
