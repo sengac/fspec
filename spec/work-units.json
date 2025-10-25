@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-25T00:30:23.325Z"
+    "lastUpdated": "2025-10-25T00:52:08.775Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -11911,15 +11911,31 @@
       "id": "CLI-012",
       "title": "Review command with done status integration",
       "type": "story",
-      "status": "specifying",
+      "status": "done",
       "createdAt": "2025-10-25T00:26:55.548Z",
-      "updatedAt": "2025-10-25T00:30:13.842Z",
+      "updatedAt": "2025-10-25T00:47:19.259Z",
       "description": "Add 'fspec review' command that provides context for reviewing completed work units, and integrate system-reminder into done status transition to suggest reviews",
       "children": [],
       "stateHistory": [
         {
           "state": "specifying",
           "timestamp": "2025-10-25T00:27:02.445Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-25T00:35:37.381Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-25T00:43:30.816Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-25T00:43:31.567Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-25T00:47:19.259Z"
         }
       ],
       "userStory": {
@@ -12011,6 +12027,64 @@
           "selected": false
         }
       ]
+    },
+    "REV-002": {
+      "id": "REV-002",
+      "title": "Add agent-agnostic ultrathink to review command and update documentation",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-25T00:51:44.299Z",
+      "updatedAt": "2025-10-25T01:30:13.576Z",
+      "description": "Make review command use shared agent detection code (getAgentConfig) for agent-agnostic ultrathink support. Update all documentation (src/help.ts, command help files, CLAUDE.md autogenerator templates, README.md, docs/). Remove obsolete .claude/commands/review.md file.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-25T00:51:54.870Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-25T01:00:30.260Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-25T01:01:16.304Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-25T01:02:15.518Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-25T01:30:13.576Z"
+        }
+      ],
+      "userStory": {
+        "role": "AI agent (any type: Claude, Cursor, Aider, etc.)",
+        "action": "use the review command with agent-specific metacognition formatting",
+        "benefit": "I get properly formatted output that works with my capabilities"
+      },
+      "rules": [
+        "Review command must use shared agent detection code (getAgentConfig) from src/utils/agentRuntimeConfig.ts",
+        "Agent-specific formatting must use formatAgentOutput() for system-reminders (Claude) or bold text (other agents)",
+        "Documentation must be updated in: src/help.ts, src/commands/review-help.ts (if exists), autogenerator templates, README.md, and docs/ directory",
+        "Obsolete .claude/commands/review.md file must be removed (no longer used)",
+        "Yes - Review command help should detect agent using getAgentConfig() and show agent-specific examples (e.g., <system-reminder> for Claude, **⚠️ IMPORTANT:** for Cursor). If no agent configured, show generic examples."
+      ],
+      "examples": [
+        "Claude Code agent runs 'fspec review AUTH-001' and gets output with <system-reminder> tags for ULTRATHINK guidance",
+        "Cursor agent runs 'fspec review API-005' and gets output with **⚠️ IMPORTANT:** bold text formatting",
+        "Aider CLI agent runs 'fspec review DASH-003' and gets output with **IMPORTANT:** plain bold text",
+        "Review command detects agent from FSPEC_AGENT env var or spec/fspec-config.json or defaults to safe plain text"
+      ],
+      "questions": [
+        {
+          "text": "@human: Should the review command help include examples for different agent types (Claude, Cursor, Aider)?",
+          "selected": true,
+          "answer": "Yes - Review command help should detect agent using getAgentConfig() and show agent-specific examples (e.g., <system-reminder> for Claude, **⚠️ IMPORTANT:** for Cursor). If no agent configured, show generic examples."
+        }
+      ],
+      "estimate": 3
     }
   },
   "states": {
@@ -12045,7 +12119,6 @@
       "FEAT-018"
     ],
     "specifying": [
-      "CLI-012",
       "TEST-006",
       "GIT-004",
       "RES-006",
@@ -12249,7 +12322,9 @@
       "RES-002",
       "CONFIG-001",
       "CLI-011",
-      "QRY-002"
+      "QRY-002",
+      "CLI-012",
+      "REV-002"
     ],
     "blocked": []
   }

@@ -85,6 +85,9 @@ fspec list-work-units --epic=USER-MGMT
 
 # Show details
 fspec show-work-unit AUTH-001
+
+# Review work unit (ACDD compliance, quality checks, coverage)
+fspec review AUTH-001
 ```
 
 ---

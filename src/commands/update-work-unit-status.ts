@@ -474,6 +474,24 @@ export async function updateWorkUnitStatus(
     if (cleanupReminder) {
       reminders.push(cleanupReminder);
     }
+
+    // Add review suggestion reminder
+    const reviewReminder = `<system-reminder>
+Work unit ${options.workUnitId} has been marked as done.
+
+Consider reviewing the work unit before finalizing to ensure quality and completeness:
+
+  fspec review ${options.workUnitId}
+
+The review command provides comprehensive analysis including:
+  - Issues Found (critical issues and warnings)
+  - ACDD Compliance validation
+  - Coverage Analysis
+  - Summary with priority actions
+
+This is optional but recommended to catch any issues before moving on.
+</system-reminder>`;
+    reminders.push(reviewReminder);
   }
 
   // Combine all reminders
