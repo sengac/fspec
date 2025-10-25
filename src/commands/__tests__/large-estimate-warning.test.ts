@@ -162,7 +162,7 @@ Feature: Fix authentication bug
         'estimate is greater than 13 points'
       );
       expect(largeEstimateReminder).toContain('21 points is too large');
-      expect(largeEstimateReminder).toContain('fspec create-work-unit');
+      expect(largeEstimateReminder).toContain('fspec create-story');
       expect(largeEstimateReminder).toContain('fspec add-dependency');
 
       // And: The warning should persist until estimate changes to <= 13 or status changes to done
@@ -329,7 +329,7 @@ Feature: User Dashboard
       expect(largeEstimateReminder).toContain('REVIEW FEATURE FILE');
       expect(largeEstimateReminder).toContain('IDENTIFY BOUNDARIES');
       expect(largeEstimateReminder).toContain('CREATE CHILD WORK UNITS');
-      expect(largeEstimateReminder).toContain('fspec create-work-unit');
+      expect(largeEstimateReminder).toContain('fspec create-story');
       expect(largeEstimateReminder).toContain('fspec add-dependency');
       expect(largeEstimateReminder).toContain('fspec create-epic');
     });

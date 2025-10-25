@@ -134,7 +134,7 @@ export async function createTask(
   const systemReminder = `<system-reminder>
 Task ${nextId} created successfully.
 
-Tasks are operational work units (setup, configuration, infrastructure).
+Tasks are for operational work (setup, configuration, infrastructure).
 
 Minimal requirements:
   - Tasks have optional feature file (not required for operational work)

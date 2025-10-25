@@ -4681,10 +4681,10 @@
         "Yes, remove old rule #4. The corrected workflow is: backlog → specifying → implementing → validating → done. Tasks need 'specifying' for clarity but skip 'testing' since no tests required."
       ],
       "examples": [
-        "Create story work unit: 'fspec create-work-unit AUTH \"User Login\" --type=story' creates AUTH-XXX with type='story'",
-        "Create task work unit: 'fspec create-work-unit CLEAN \"Audit coverage files\" --type=task' creates CLEAN-XXX with type='task'",
-        "Create bug work unit: 'fspec create-work-unit BUG \"Login fails with @ symbol\" --type=bug' creates BUG-XXX with type='bug'",
-        "Default type: 'fspec create-work-unit AUTH \"Feature\"' creates work unit with type='story' (backward compatible)",
+        "Create story work unit: 'fspec create-story AUTH \"User Login\"' creates AUTH-XXX with type='story'",
+        "Create task work unit: 'fspec create-task CLEAN \"Audit coverage files\"' creates CLEAN-XXX with type='task'",
+        "Create bug work unit: 'fspec create-bug BUG \"Login fails with @ symbol\"' creates BUG-XXX with type='bug'",
+        "Default type: 'fspec create-story AUTH \"Feature\"' creates work unit with type='story' (backward compatible)",
         "Filter by type: 'fspec list-work-units --type=task' shows only task work units",
         "Task workflow: CLEAN-001 moves backlog → in-progress → done (skipping specifying/testing/implementing/validating)",
         "Story validation: Moving AUTH-001 (type=story) to testing without feature file shows error 'Cannot move to testing: no feature file linked'",
@@ -6739,7 +6739,7 @@
       ],
       "examples": [
         "AI runs 'fspec board' without foundation.json → Command exits with error, displays message with discover-foundation instructions, system reminder tells AI to run board again after discovery",
-        "AI runs 'fspec create-work-unit AUTH \"Login\"' without foundation.json → Command exits with error, system reminder includes original command to retry",
+        "AI runs 'fspec create-story AUTH \"Login\"' without foundation.json → Command exits with error, system reminder includes original command to retry",
         "AI runs 'fspec board' with foundation.json present → Command executes normally, no check triggered",
         "AI runs 'fspec validate' (non-PM command) without foundation.json → Command executes normally, foundation check not required for spec-only commands"
       ],
@@ -7695,10 +7695,10 @@
       ],
       "architectureNotes": [
         "TWO PLACEMENT POINTS: (1) update-work-unit-estimate.ts - immediate warning when estimate set, (2) show-work-unit.ts - persistent reminder via getLargeEstimateReminder() in system-reminder.ts",
-        "SYSTEM-REMINDER MUST BE HIGHLY SPECIFIC: Include exact fspec commands (create-work-unit, add-dependency, create-epic), not generic advice like 'break this down'",
+        "SYSTEM-REMINDER MUST BE HIGHLY SPECIFIC: Include exact fspec commands (create-story/create-bug/create-task, add-dependency, create-epic), not generic advice like 'break this down'",
         "GUIDE FEATURE FILE ANALYSIS: Remind AI to 'Review feature file linked to this work unit. Look for scenario groupings that could be separate stories. Each group should deliver incremental value.'",
         "PERSISTENCE STRATEGY: Warning appears in TWO contexts (immediate + show-work-unit) creating 'sticky' reminder. AI will see it multiple times, increasing likelihood of following through.",
-        "STEP-BY-STEP WORKFLOW IN WARNING: (1) Review feature file (or create if missing), (2) Identify boundaries, (3) Create child work units with fspec create-work-unit, (4) Link with fspec add-dependency --depends-on, (5) Optionally create epic to group, (6) Delete original work unit or convert to epic using fspec create-epic"
+        "STEP-BY-STEP WORKFLOW IN WARNING: (1) Review feature file (or create if missing), (2) Identify boundaries, (3) Create child work units with fspec create-story/create-bug/create-task, (4) Link with fspec add-dependency --depends-on, (5) Optionally create epic to group, (6) Delete original work unit or convert to epic using fspec create-epic"
       ],
       "questions": [],
       "estimate": 5

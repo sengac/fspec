@@ -39,7 +39,7 @@ const config: CommandHelpConfig = {
       command: 'fspec create-task TASK "Setup CI/CD pipeline"',
       description: 'Create simple task with minimal requirements',
       output:
-        '✓ Created task TASK-001\n  Title: Setup CI/CD pipeline\n\n<system-reminder>\nTask TASK-001 created successfully.\n\nTasks are operational work units.\n  - Tasks have optional feature file\n  - Tasks have optional tests\n  - Tasks can skip Example Mapping\n</system-reminder>',
+        '✓ Created task TASK-001\n  Title: Setup CI/CD pipeline\n\n<system-reminder>\nTask TASK-001 created successfully.\n\nTasks are for operational work.\n  - Tasks have optional feature file\n  - Tasks have optional tests\n  - Tasks can skip Example Mapping\n</system-reminder>',
     },
     {
       command:

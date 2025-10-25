@@ -54,8 +54,8 @@ describe('Feature: Foundation existence check in commands', () => {
       const foundationPath = join(tmpDir, 'spec', 'foundation.json');
       // File does not exist (not created)
 
-      // When I check foundation existence with command 'fspec create-work-unit AUTH "Login"'
-      const originalCommand = 'fspec create-work-unit AUTH "Login"';
+      // When I check foundation existence with command 'fspec create-story AUTH "Login"'
+      const originalCommand = 'fspec create-story AUTH "Login"';
       const result = checkFoundationExists(tmpDir, originalCommand);
 
       // Then the result should indicate an error
@@ -65,9 +65,9 @@ describe('Feature: Foundation existence check in commands', () => {
       // And the error message should instruct me to run 'fspec discover-foundation'
       expect(result.error).toContain('fspec discover-foundation');
 
-      // And a system reminder should include the original command 'fspec create-work-unit AUTH "Login"' to retry
+      // And a system reminder should include the original command 'fspec create-story AUTH "Login"' to retry
       expect(result.error).toContain('<system-reminder>');
-      expect(result.error).toContain('fspec create-work-unit AUTH "Login"');
+      expect(result.error).toContain('fspec create-story AUTH "Login"');
       expect(result.error).toContain('After completing discover-foundation');
     });
   });
@@ -143,7 +143,7 @@ describe('Feature: Foundation missing error message is not imperative enough', (
       // When AI agent attempts to create a work unit
       const result = checkFoundationExists(
         tmpDir,
-        'fspec create-work-unit AUTH "Login"'
+        'fspec create-story AUTH "Login"'
       );
 
       // Then error message must contain "NEVER manually create foundation.json"
