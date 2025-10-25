@@ -28,7 +28,7 @@ Feature: Support multiple AI agents beyond Claude
   #   5. Documentation must avoid hardcoded references to 'Claude' or 'Claude Code' in agent-agnostic sections
   #   6. Yes, support multiple agents: Allow 'fspec init --agent=aider --agent=cursor' to install configurations for multiple agents simultaneously. Generate spec/AGENT.md for each and install slash commands to respective directories
   #   7. Agent-specific prompting vocabulary (like 'ultrathink' for Claude) must be translated or removed for each agent based on their capabilities
-  #   8. fspec init must create slash commands for ALL major fspec CLI commands (validate, format, list-features, create-work-unit, etc.), not just documentation
+  #   8. fspec init must create slash commands for ALL major fspec CLI commands (validate, format, list-features, create-story, create-bug, create-task, etc.), not just documentation
   #   9. All agent templates must be bundled in fspec distribution using Vite copy plugin
   #   10. Template directory structure must support both flat (cursor) and nested (claude) slash command paths
   #   11. Generate on-the-fly using TemplateManager pattern: shared command body + agent-specific wrappers (frontmatter, path, argument placeholders). Avoids 360-540 template files, enables consistency across agents

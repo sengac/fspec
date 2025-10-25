@@ -48,7 +48,7 @@ const config: CommandHelpConfig = {
     },
     {
       error: 'ENOENT: no such file or directory, spec/work-units.json',
-      fix: 'Initialize work units with: fspec create-work-unit <title>',
+      fix: 'Initialize work units with: fspec create-story PREFIX "title" (or create-bug/create-task)',
     },
   ],
   typicalWorkflow:

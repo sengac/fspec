@@ -104,7 +104,7 @@ const config: CommandHelpConfig = {
     {
       error: 'Error: Work unit \'XYZ-999\' does not exist',
       solution:
-        'Check work unit ID with: fspec list-work-units\nEnsure work unit was created with: fspec create-work-unit',
+        'Check work unit ID with: fspec list-work-units\nEnsure work unit was created with: fspec create-story, create-bug, or create-task',
     },
   ],
   commonPatterns: [

@@ -12,28 +12,28 @@ Feature: Work unit types for stories, tasks, and bugs
 
   Scenario: Create story work unit with explicit type
     Given I am in a project with fspec initialized
-    When I run "fspec create-work-unit AUTH 'User Login' --type=story"
+    When I run "fspec create-story AUTH 'User Login'"
     Then a work unit should be created with id matching "AUTH-\d+"
     And the work unit should have type "story"
     And the work unit should have title "User Login"
 
   Scenario: Create task work unit with explicit type
     Given I am in a project with fspec initialized
-    When I run "fspec create-work-unit CLEAN 'Audit coverage files' --type=task"
+    When I run "fspec create-task CLEAN 'Audit coverage files'"
     Then a work unit should be created with id matching "CLEAN-\d+"
     And the work unit should have type "task"
     And the work unit should have title "Audit coverage files"
 
   Scenario: Create bug work unit with explicit type
     Given I am in a project with fspec initialized
-    When I run "fspec create-work-unit BUG 'Login fails with @ symbol' --type=bug"
+    When I run "fspec create-bug BUG 'Login fails with @ symbol'"
     Then a work unit should be created with id matching "BUG-\d+"
     And the work unit should have type "bug"
-    And the work unit should have title "Login fails with @ symbol"
+    And the work unit should have title "Login fails with @ symbol'"
 
   Scenario: Default type is story for backward compatibility
     Given I am in a project with fspec initialized
-    When I run "fspec create-work-unit AUTH 'Feature'" without specifying type
+    When I run "fspec create-story AUTH 'Feature'"
     Then a work unit should be created with type "story"
     And the work unit should have title "Feature"
 

@@ -119,7 +119,7 @@ Feature file has prefill placeholders must be removed first. Complete the featur
 
 \`\`\`bash
 # 1. Create work unit and move to specifying
-fspec create-work-unit AUTH "User Login" --type story
+fspec create-story AUTH "User Login"
 fspec update-work-unit-status AUTH-001 specifying
 
 # 2. Do Example Mapping

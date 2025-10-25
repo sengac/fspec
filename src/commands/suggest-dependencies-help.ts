@@ -56,17 +56,17 @@ const config: CommandHelpConfig = {
     {
       pattern: 'Bulk Dependency Setup',
       example:
-        '# Create work units with sequential IDs\nfspec create-work-unit AUTH-001 "Setup auth infrastructure"\nfspec create-work-unit AUTH-002 "Add login endpoint"\nfspec create-work-unit AUTH-003 "Add logout endpoint"\n\n# Get suggestions\nfspec suggest-dependencies\n\n# Apply HIGH confidence suggestions automatically\nfspec add-dependency AUTH-002 --depends-on AUTH-001\nfspec add-dependency AUTH-003 --depends-on AUTH-001',
+        '# Create work units with sequential IDs\nfspec create-story AUTH "Setup auth infrastructure"\nfspec create-story AUTH "Add login endpoint"\nfspec create-story AUTH "Add logout endpoint"\n\n# Get suggestions\nfspec suggest-dependencies\n\n# Apply HIGH confidence suggestions automatically\nfspec add-dependency AUTH-002 --depends-on AUTH-001\nfspec add-dependency AUTH-003 --depends-on AUTH-001',
     },
     {
       pattern: 'Test/Build Pattern Recognition',
       example:
-        '# Create build and test work units\nfspec create-work-unit BUILD-AUTH-001 "Build authentication module"\nfspec create-work-unit TEST-AUTH-001 "Test authentication module"\n\n# Get suggestions (will detect test depends on build)\nfspec suggest-dependencies\n\n# Apply suggested dependency\nfspec add-dependency TEST-AUTH-001 --depends-on BUILD-AUTH-001',
+        '# Create build and test work units\nfspec create-task BUILD "Build authentication module"\nfspec create-task TEST "Test authentication module"\n\n# Get suggestions (will detect test depends on build)\nfspec suggest-dependencies\n\n# Apply suggested dependency\nfspec add-dependency TEST-001 --depends-on BUILD-001',
     },
     {
       pattern: 'Infrastructure-First Pattern',
       example:
-        '# Create schema and feature work\nfspec create-work-unit SCHEMA-001 "Database schema setup"\nfspec create-work-unit ADD-USERS-001 "Add user management features"\n\n# Get suggestions (will detect feature depends on schema)\nfspec suggest-dependencies\n\n# Apply infrastructure dependency\nfspec add-dependency ADD-USERS-001 --depends-on SCHEMA-001',
+        '# Create schema and feature work\nfspec create-task SCHEMA "Database schema setup"\nfspec create-story ADD "Add user management features"\n\n# Get suggestions (will detect feature depends on schema)\nfspec suggest-dependencies\n\n# Apply infrastructure dependency\nfspec add-dependency ADD-001 --depends-on SCHEMA-001',
     },
   ],
   relatedCommands: [

@@ -12,7 +12,7 @@ const config: CommandHelpConfig = {
         'AUTH - Authentication features\nUI - User interface components\nAPI - API endpoints\n\nFound 3 prefixes',
     },
   ],
-  relatedCommands: ['create-prefix', 'create-work-unit'],
+  relatedCommands: ['create-prefix', 'create-story', 'create-bug', 'create-task'],
 };
 
 export default config;

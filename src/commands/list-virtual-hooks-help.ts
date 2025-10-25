@@ -48,7 +48,7 @@ const config: CommandHelpConfig = {
   commonErrors: [
     {
       error: "Work unit 'AUTH-001' does not exist",
-      fix: 'Check work unit ID spelling or create work unit first: fspec create-work-unit AUTH "Title"',
+      fix: 'Check work unit ID spelling or create work unit first: fspec create-story AUTH "Title" (or create-bug/create-task)',
     },
   ],
   typicalWorkflow:

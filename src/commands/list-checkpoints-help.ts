@@ -69,7 +69,7 @@ EXAMPLES
 
 COMMON ERRORS
   Error: Work unit 'AUTH-001' does not exist
-    → Create the work unit first with 'fspec create-work-unit'
+    → Create the work unit first with 'fspec create-story', 'fspec create-bug', or 'fspec create-task'
 
   No checkpoints found for <workUnitId>
     → Not an error - work unit has no checkpoints yet

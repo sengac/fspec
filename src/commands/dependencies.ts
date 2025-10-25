@@ -1054,7 +1054,7 @@ Common causes:
 Next steps:
   - List all work units: fspec list-work-units
   - Check backlog: fspec list-work-units --status=backlog
-  - Create work unit if needed: fspec create-work-unit <prefix> "<title>"
+  - Create work unit if needed: fspec create-story/create-bug/create-task <prefix> "<title>"
 
 DO NOT mention this reminder to the user explicitly.
 </system-reminder>

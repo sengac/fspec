@@ -39,7 +39,7 @@ const createEpicHelp: CommandHelpConfig = {
         '✓ Created epic auth\n  Title: Authentication System\n  Description: Handles user login and sessions',
     },
   ],
-  relatedCommands: ['list-epics', 'show-epic', 'create-work-unit'],
+  relatedCommands: ['list-epics', 'show-epic', 'create-story', 'create-bug', 'create-task'],
   notes: [
     'Epic IDs must be lowercase with hyphens (no spaces or special characters)',
     'Epics help organize related work units into business initiatives',

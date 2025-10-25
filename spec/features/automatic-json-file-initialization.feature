@@ -47,7 +47,7 @@ Feature: Automatic JSON File Initialization
   References:
   - Utility location: src/utils/ensure-files.ts
   - Example usage: src/commands/list-work-units.ts (line 29)
-  - Example usage: src/commands/create-work-unit.ts
+  - Example usage: src/commands/create-story.ts, create-bug.ts, create-task.ts
   """
 
   Background: User Story

@@ -41,7 +41,7 @@
 
 **Create:**
 ```bash
-fspec create-work-unit AUTH "User Login" --type story
+fspec create-story AUTH "User Login"
 ```
 
 ### Bug
@@ -66,7 +66,7 @@ fspec create-work-unit AUTH "User Login" --type story
 
 **Create:**
 ```bash
-fspec create-work-unit BUG "Session timeout not working" --type bug
+fspec create-bug BUG "Session timeout not working"
 ```
 
 **Note:** Bugs link to existing feature files or create new ones if specs missing.
@@ -95,7 +95,7 @@ fspec create-work-unit BUG "Session timeout not working" --type bug
 
 **Create:**
 ```bash
-fspec create-work-unit TASK "Refactor auth middleware" --type task
+fspec create-task TASK "Refactor auth middleware"
 ```
 
 **Note:** Tasks are exempt from test file temporal validation since tests are optional.
@@ -318,7 +318,7 @@ fspec create-epic "User Management" USER-MGMT "All user-related features"
 ### Associating Work Units
 
 ```bash
-fspec create-work-unit AUTH "User Login" --epic=USER-MGMT
+fspec create-story AUTH "User Login" --epic=USER-MGMT
 ```
 
 ### Epic Progress
@@ -556,7 +556,9 @@ fspec generate-summary-report
 
 ```bash
 # Create
-fspec create-work-unit <PREFIX> "<Title>" --type <story|bug|task>
+fspec create-story <PREFIX> "<Title>"
+fspec create-bug <PREFIX> "<Title>"
+fspec create-task <PREFIX> "<Title>"
 fspec create-epic "<Name>" <PREFIX> "<Description>"
 
 # Update

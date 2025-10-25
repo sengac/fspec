@@ -52,7 +52,7 @@ Feature: Work Unit Management
     Given I have a project with spec directory
     And the prefix "AUTH" is registered in spec/prefixes.json
     And no work units exist with prefix "AUTH"
-    When I run "fspec create-work-unit AUTH 'Implement OAuth login'"
+    When I run "fspec create-story AUTH 'Implement OAuth login'"
     Then the command should succeed
     And a work unit "AUTH-001" should be created in spec/work-units.json
     And the work unit should have title "Implement OAuth login"
@@ -66,7 +66,7 @@ Feature: Work Unit Management
     Given I have a project with spec directory
     And the prefix "AUTH" is registered
     And a work unit "AUTH-001" exists
-    When I run "fspec create-work-unit AUTH 'Add password reset'"
+    When I run "fspec create-story AUTH 'Add password reset'"
     Then the command should succeed
     And a work unit "AUTH-002" should be created
     And the work unit should have status "backlog"
@@ -77,7 +77,7 @@ Feature: Work Unit Management
     Given I have a project with spec directory
     And the prefix "AUTH" is registered
     And an epic "epic-user-management" exists
-    When I run "fspec create-work-unit AUTH 'OAuth integration' --epic=epic-user-management"
+    When I run "fspec create-story AUTH 'OAuth integration' --epic=epic-user-management"
     Then the command should succeed
     And the work unit "AUTH-001" should have epic "epic-user-management"
     And the epic should reference work unit "AUTH-001"
@@ -86,7 +86,7 @@ Feature: Work Unit Management
   Scenario: Create work unit with description
     Given I have a project with spec directory
     And the prefix "AUTH" is registered
-    When I run "fspec create-work-unit AUTH 'OAuth login' --description='Add OAuth 2.0 with Google and GitHub'"
+    When I run "fspec create-story AUTH 'OAuth login' --description='Add OAuth 2.0 with Google and GitHub'"
     Then the command should succeed
     And the work unit should have description "Add OAuth 2.0 with Google and GitHub"
 
@@ -95,7 +95,7 @@ Feature: Work Unit Management
     Given I have a project with spec directory
     And the prefix "AUTH" is registered
     And a work unit "AUTH-001" exists with title "OAuth integration"
-    When I run "fspec create-work-unit AUTH 'Google provider' --parent=AUTH-001"
+    When I run "fspec create-story AUTH 'Google provider' --parent=AUTH-001'"
     Then the command should succeed
     And the work unit "AUTH-002" should be created
     And the work unit "AUTH-002" should have parent "AUTH-001"
@@ -106,7 +106,7 @@ Feature: Work Unit Management
   Scenario: Attempt to create work unit with unregistered prefix
     Given I have a project with spec directory
     And the prefix "INVALID" is not registered
-    When I run "fspec create-work-unit INVALID 'Some work'"
+    When I run "fspec create-story INVALID 'Some work'"
     Then the command should fail
     And the error should contain "Prefix 'INVALID' is not registered"
     And the error should suggest "Run 'fspec create-prefix INVALID' first"
@@ -116,7 +116,7 @@ Feature: Work Unit Management
   Scenario: Attempt to create work unit with missing title
     Given I have a project with spec directory
     And the prefix "AUTH" is registered
-    When I run "fspec create-work-unit AUTH"
+    When I run "fspec create-story AUTH"
     Then the command should fail
     And the error should contain "Title is required"
 
@@ -126,7 +126,7 @@ Feature: Work Unit Management
     Given I have a project with spec directory
     And the prefix "AUTH" is registered
     And no work unit "AUTH-999" exists
-    When I run "fspec create-work-unit AUTH 'Child work' --parent=AUTH-999"
+    When I run "fspec create-story AUTH 'Child work' --parent=AUTH-999"
     Then the command should fail
     And the error should contain "Parent work unit 'AUTH-999' does not exist"
 
@@ -379,10 +379,10 @@ Feature: Work Unit Management
   Scenario: Create nested work unit hierarchy
     Given I have a project with spec directory
     And the prefix "AUTH" is registered
-    When I run "fspec create-work-unit AUTH 'OAuth 2.0 implementation'"
-    And I run "fspec create-work-unit AUTH 'Google provider' --parent=AUTH-001"
-    And I run "fspec create-work-unit AUTH 'GitHub provider' --parent=AUTH-001"
-    And I run "fspec create-work-unit AUTH 'Token storage' --parent=AUTH-001"
+    When I run "fspec create-story AUTH 'OAuth 2.0 implementation'"
+    And I run "fspec create-story AUTH 'Google provider' --parent=AUTH-001"
+    And I run "fspec create-story AUTH 'GitHub provider' --parent=AUTH-001"
+    And I run "fspec create-story AUTH 'Token storage' --parent=AUTH-001"
     Then work unit "AUTH-001" should have 3 children
     And the children should be "AUTH-002", "AUTH-003", "AUTH-004"
     And each child should have parent "AUTH-001"
@@ -406,7 +406,7 @@ Feature: Work Unit Management
       | AUTH-001 | null     |
       | AUTH-002 | AUTH-001 |
       | AUTH-003 | AUTH-002 |
-    When I run "fspec create-work-unit AUTH 'Too deep' --parent=AUTH-003"
+    When I run "fspec create-story AUTH 'Too deep' --parent=AUTH-003"
     Then the command should fail
     And the error should contain "Maximum nesting depth (3) exceeded"
 
@@ -437,7 +437,7 @@ Feature: Work Unit Management
     Given I have a project with spec directory
     And the file "spec/work-units.json" does not exist
     And the prefix "HOOK" is registered in spec/prefixes.json
-    When I run "fspec create-work-unit HOOK 'Hook Handler'"
+    When I run "fspec create-story HOOK 'Hook Handler'"
     Then the command should succeed
     And the file "spec/work-units.json" should be created with initial structure
     And the structure should include meta section with version and lastUpdated
@@ -464,7 +464,7 @@ Feature: Work Unit Management
     And the file "spec/epics.json" does not exist
     And the prefix "AUTH" is registered
     And spec/work-units.json exists
-    When I run "fspec create-work-unit AUTH 'Login feature' --epic=epic-auth"
+    When I run "fspec create-story AUTH 'Login feature' --epic=epic-auth"
     Then the command should fail
     And the error should contain "Epic 'epic-auth' does not exist"
     And the file "spec/epics.json" should be created with empty structure
@@ -476,7 +476,7 @@ Feature: Work Unit Management
     Given I have a project with spec directory
     And the prefix "AUTH" is registered in spec/prefixes.json
     And a feature file "oauth-login.feature" exists without work unit tags
-    When I run "fspec create-work-unit AUTH 'OAuth Login Implementation'"
+    When I run "fspec create-story AUTH 'OAuth Login Implementation'"
     Then the command should succeed
     And a work unit "AUTH-001" should be created with title "OAuth Login Implementation"
     When I run "fspec add-tag-to-feature oauth-login.feature @AUTH-001"

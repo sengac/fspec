@@ -8,7 +8,7 @@ const updateWorkUnitStatusHelp: CommandHelpConfig = {
   whenToUse:
     'Use this command when moving work through ACDD workflow stages: from backlog to specifying (writing feature files), to testing (writing tests), to implementing (writing code), to validating (quality checks), and finally to done.',
   prerequisites: [
-    'Work unit must exist (create with fspec create-work-unit)',
+    'Work unit must exist (create with fspec create-story, create-bug, or create-task)',
     'For transition to testing: All Example Mapping questions must be answered',
     'For transition to implementing: Tests must be written',
     'For transition to active states: All blocking dependencies must be completed (status: done)',

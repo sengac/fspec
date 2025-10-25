@@ -66,7 +66,7 @@ const config: CommandHelpConfig = {
   commonErrors: [
     {
       error: "Work unit 'AUTH-001' does not exist",
-      fix: 'Create the work unit first: fspec create-work-unit AUTH "Title"',
+      fix: 'Create the work unit first: fspec create-story AUTH "Title" (or create-bug/create-task)',
     },
     {
       error: 'Hook command not found: eslint',
@@ -93,7 +93,7 @@ const config: CommandHelpConfig = {
     'Non-blocking hooks show output but do not prevent workflow transitions',
   ],
   prerequisites: [
-    'Work unit must exist (fspec create-work-unit)',
+    'Work unit must exist (fspec create-story, create-bug, or create-task)',
     'Command/tool must be installed and available in PATH',
   ],
   commonPatterns: [

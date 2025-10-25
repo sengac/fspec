@@ -510,14 +510,17 @@ function displayWorkHelp(): void {
   console.log('  • Compare implementation approaches and testing patterns\n');
 
   console.log(chalk.bold('WORK UNITS'));
-  console.log('  ' + chalk.cyan('fspec create-work-unit <prefix> <title>'));
+  console.log('  ' + chalk.cyan('fspec create-story <prefix> <title>'));
+  console.log('  ' + chalk.cyan('fspec create-bug <prefix> <title>'));
+  console.log('  ' + chalk.cyan('fspec create-task <prefix> <title>'));
   console.log('    Options:');
   console.log('      -e, --epic <epic>                Associate with epic');
   console.log('      --description <desc>             Work unit description');
   console.log('    Examples:');
-  console.log('      fspec create-work-unit AUTH "User login feature"');
+  console.log('      fspec create-story AUTH "User login feature"');
+  console.log('      fspec create-bug AUTH "Fix login validation"');
   console.log(
-    '      fspec create-work-unit DASH "Dashboard" -e user-management'
+    '      fspec create-task DASH "Setup dashboard infrastructure" -e user-management'
   );
   console.log('');
   console.log('  ' + chalk.cyan('fspec list-work-units'));

@@ -5,10 +5,10 @@
 Feature: Warn AI when estimate is > 13 points to break down work unit
   """
   TWO PLACEMENT POINTS: (1) update-work-unit-estimate.ts - immediate warning when estimate set, (2) show-work-unit.ts - persistent reminder via getLargeEstimateReminder() in system-reminder.ts
-  SYSTEM-REMINDER MUST BE HIGHLY SPECIFIC: Include exact fspec commands (create-work-unit, add-dependency, create-epic), not generic advice like 'break this down'
+  SYSTEM-REMINDER MUST BE HIGHLY SPECIFIC: Include exact fspec commands (create-story/create-bug/create-task, add-dependency, create-epic), not generic advice like 'break this down'
   GUIDE FEATURE FILE ANALYSIS: Remind AI to 'Review feature file linked to this work unit. Look for scenario groupings that could be separate stories. Each group should deliver incremental value.'
   PERSISTENCE STRATEGY: Warning appears in TWO contexts (immediate + show-work-unit) creating 'sticky' reminder. AI will see it multiple times, increasing likelihood of following through.
-  STEP-BY-STEP WORKFLOW IN WARNING: (1) Review feature file (or create if missing), (2) Identify boundaries, (3) Create child work units with fspec create-work-unit, (4) Link with fspec add-dependency --depends-on, (5) Optionally create epic to group, (6) Delete original work unit or convert to epic using fspec create-epic
+  STEP-BY-STEP WORKFLOW IN WARNING: (1) Review feature file (or create if missing), (2) Identify boundaries, (3) Create child work units with fspec create-story/create-bug/create-task, (4) Link with fspec add-dependency --depends-on, (5) Optionally create epic to group, (6) Delete original work unit or convert to epic using fspec create-epic
   """
 
   # ========================================
@@ -65,7 +65,7 @@ Feature: Warn AI when estimate is > 13 points to break down work unit
     And the output should contain a system-reminder with step-by-step workflow guidance
     And the guidance should include: review feature file, identify boundaries, create child work units, link dependencies
     When I review the feature file for natural boundaries
-    And I create child work units for each scenario group using "fspec create-work-unit"
+    And I create child work units for each scenario group using "fspec create-story" (or create-bug/create-task)
     And I link child work units with "fspec add-dependency --depends-on STORY-007"
     And I estimate each child work unit (all <= 13 points)
     Then the original work unit can be deleted or converted to epic using "fspec create-epic"

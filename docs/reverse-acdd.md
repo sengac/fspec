@@ -525,9 +525,9 @@ Creating epics:
   fspec create-epic "Payment Processing" PAY "Payment and checkout"
 
 Creating work units:
-  fspec create-work-unit AUTH "User Login" --epic=AUTH
-  fspec create-work-unit AUTH "User Registration" --epic=AUTH
-  fspec create-work-unit PROF "Edit Profile" --epic=PROF
+  fspec create-story AUTH "User Login" --epic=AUTH
+  fspec create-story AUTH "User Registration" --epic=AUTH
+  fspec create-story PROF "Edit Profile" --epic=PROF
   ...
 ```
 
@@ -560,7 +560,7 @@ fspec board          # Work unit status
 
 1. **Create work unit**
    ```bash
-   fspec create-work-unit AUTH "Password Reset" --type story
+   fspec create-story AUTH "Password Reset"
    ```
 
 2. **Example Mapping** (Discovery)

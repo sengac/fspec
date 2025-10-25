@@ -153,7 +153,7 @@ fspec answer-question AUTH-001 2 --answer "Not in Phase 1, add to backlog as AUT
 
 **AI sets up the work unit:**
 ```bash
-fspec create-work-unit AUTH "User Login" --type story
+fspec create-story AUTH "User Login"
 fspec update-work-unit-status AUTH-001 specifying
 ```
 

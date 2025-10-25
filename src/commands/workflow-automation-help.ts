@@ -120,7 +120,9 @@ const config: CommandHelpConfig = {
   relatedCommands: [
     'update-work-unit-status',
     'show-work-unit',
-    'create-work-unit',
+    'create-story',
+    'create-bug',
+    'create-task',
     'list-features',
     'add-scenario',
   ],

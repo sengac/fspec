@@ -102,7 +102,9 @@ const config: CommandHelpConfig = {
   relatedCommands: [
     'list-work-units',
     'board',
-    'create-work-unit',
+    'create-story',
+    'create-bug',
+    'create-task',
     'update-work-unit-status',
   ],
   notes: [

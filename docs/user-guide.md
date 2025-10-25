@@ -167,19 +167,18 @@ fspec board
 └─────────┴────────────┴─────────┴───────────────┴───────────┴──────┘
 ```
 
-### fspec create-work-unit
+### fspec create-story / create-bug / create-task
 
-Create new work unit (story, bug, or task).
+Create new work units with specific types.
 
 ```bash
-fspec create-work-unit AUTH "User Login" --type story
-fspec create-work-unit BUG "Session timeout broken" --type bug
-fspec create-work-unit TASK "Refactor middleware" --type task
+fspec create-story AUTH "User Login"
+fspec create-bug BUG "Session timeout broken"
+fspec create-task TASK "Refactor middleware"
 ```
 
 **Options:**
-- `--type` - story (default), bug, or task
-- `--description` - Detailed description
+- `--description` - Work unit description
 - `--epic` - Epic ID to associate with
 
 ### fspec update-work-unit-status
@@ -823,7 +822,9 @@ fspec help hooks      # Lifecycle hook commands
 Get detailed help for specific command.
 
 ```bash
-fspec create-work-unit --help
+fspec create-story --help
+fspec create-bug --help
+fspec create-task --help
 fspec add-virtual-hook --help
 fspec generate-scenarios --help
 ```
@@ -847,7 +848,7 @@ fspec discover-foundation
 
 ### 2. Create Work
 ```bash
-fspec create-work-unit AUTH "User Login" --type story
+fspec create-story AUTH "User Login"
 fspec update-work-unit-status AUTH-001 specifying
 ```
 

@@ -183,7 +183,9 @@ export function getEmptyBacklogReminder(isEmpty: boolean): string | null {
 
   const reminder = `The backlog is currently empty.
 Consider creating new work units or checking work priorities.
-Use: fspec create-work-unit <PREFIX> "Title" --description "Details"
+Use: fspec create-story <PREFIX> "Title" (for features)
+     fspec create-bug <PREFIX> "Title" (for bug fixes)
+     fspec create-task <PREFIX> "Title" (for tasks)
 DO NOT mention this reminder to the user.`;
 
   return wrapInSystemReminder(reminder);
@@ -489,7 +491,9 @@ ${featureFileGuidance}
    - Each child work unit should be estimable at 1-13 points
 
 3. CREATE CHILD WORK UNITS:
-   - Run: fspec create-work-unit <PREFIX> "<Title>" --description "<Details>"
+   - Run: fspec create-story <PREFIX> "<Title>" (for features/refactoring)
+   - Run: fspec create-bug <PREFIX> "<Title>" (for bug fixes)
+   - Run: fspec create-task <PREFIX> "<Title>" (for operational tasks)
    - Create one child work unit for each logical grouping
 
 4. LINK DEPENDENCIES:

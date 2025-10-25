@@ -109,7 +109,9 @@ const config: CommandHelpConfig = {
     'link-coverage',
     'unlink-coverage',
     'generate-coverage',
-    'create-work-unit',
+    'create-story',
+    'create-bug',
+    'create-task',
   ],
   notes: [
     'This is a GUIDANCE tool, not an execution tool - AI must use other fspec commands to do the work',
