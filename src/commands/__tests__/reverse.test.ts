@@ -450,7 +450,7 @@ describe('Feature: Interactive reverse ACDD strategy planning command', () => {
 
       // And: the session should be in "gap-detection" phase
       // And: the output should show "10 implementation files without specs or tests"
-      expect(result.gaps.rawImplementation).toBe(10);
+      expect(result.gaps.unmappedImplementation).toBe(10);
 
       // And: the output should suggest "Strategy D: Full Reverse ACDD"
       expect(result.suggestedStrategy).toBe('D');

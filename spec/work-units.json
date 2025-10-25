@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-25T12:18:22.107Z"
+    "lastUpdated": "2025-10-25T23:33:15.720Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -12464,21 +12464,47 @@
       "id": "REV-003",
       "title": "Strategy D processes existing feature files instead of scanning src/ for implementation files",
       "type": "bug",
-      "status": "specifying",
+      "status": "done",
       "createdAt": "2025-10-25T12:34:33.055Z",
-      "updatedAt": "2025-10-25T12:34:37.648Z",
+      "updatedAt": "2025-10-25T23:57:33.345Z",
       "description": "When 'fspec reverse --strategy=D' is run, it processes existing .feature files in spec/features/ directory rather than scanning src/ directory for implementation files (.tsx, .ts, .jsx, .js) that lack corresponding feature files. Expected: Strategy D should discover implementation files in src/ (like MusicPlayer.tsx, usePlaylistStore.ts) and guide creation of feature files for them. Actual: Strategy D iterates through existing feature files (e.g., cli-command-interface-for-ai-agent-control.feature) with guidance to 'Read test file... Then create feature file' which is confusing since the feature file already exists.",
       "children": [],
       "stateHistory": [
         {
           "state": "specifying",
           "timestamp": "2025-10-25T12:34:33.733Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-25T23:35:11.086Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-25T23:39:25.827Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-25T23:44:24.297Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-25T23:48:46.955Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-25T23:52:57.267Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-25T23:57:33.345Z"
         }
       ],
       "rules": [
         "Strategy D should scan src/ directory recursively for .tsx, .ts, .jsx, .js files",
         "For each implementation file found, Strategy D should check if a corresponding feature file exists in spec/features/",
-        "Strategy D should only process implementation files that have NO corresponding feature file"
+        "Strategy D should only process implementation files that have NO corresponding feature file",
+        "Yes, use tinyglobby with pattern 'src/**/*.{ts,tsx,js,jsx}' to recursively find all implementation files, excluding test directories (__tests__, tests, test) and test files (*.test.ts, *.spec.ts)",
+        "Use filename similarity with kebab-case conversion algorithm: deriveFeatureName() converts camelCase/PascalCase implementation filenames to kebab-case (e.g., MusicPlayer.tsx → music-player.feature, usePlaylistStore.ts → use-playlist-store.feature). Then check if spec/features/{kebab-name}.feature exists. This is simpler and more predictable than import/export analysis."
       ],
       "examples": [
         "MindStrike project has MusicPlayer.tsx (1532 lines) with no feature file. Strategy D should detect this and guide: 'Analyze MusicPlayer.tsx implementation → Create feature file → Create test file → Link coverage'",
@@ -12487,13 +12513,21 @@
       "questions": [
         {
           "text": "@human: Should Strategy D use glob patterns to find implementation files (e.g., src/**/*.{ts,tsx,js,jsx})?",
-          "selected": false
+          "selected": true,
+          "answer": "Yes, use tinyglobby with pattern 'src/**/*.{ts,tsx,js,jsx}' to recursively find all implementation files, excluding test directories (__tests__, tests, test) and test files (*.test.ts, *.spec.ts)"
         },
         {
           "text": "@human: How should Strategy D match implementation files to feature files? By filename similarity (MusicPlayer.tsx → music-player.feature) or by analyzing imports/exports?",
-          "selected": false
+          "selected": true,
+          "answer": "Use filename similarity with kebab-case conversion algorithm: deriveFeatureName() converts camelCase/PascalCase implementation filenames to kebab-case (e.g., MusicPlayer.tsx → music-player.feature, usePlaylistStore.ts → use-playlist-store.feature). Then check if spec/features/{kebab-name}.feature exists. This is simpler and more predictable than import/export analysis."
         }
-      ]
+      ],
+      "userStory": {
+        "role": "AI agent using fspec reverse for codebases without prior fspec usage",
+        "action": "have Strategy D automatically discover implementation files in src/ and guide me through creating feature files for them",
+        "benefit": "I can apply outside-in BDD to existing codebases without manually specifying which files need features"
+      },
+      "estimate": 8
     }
   },
   "states": {
@@ -12530,8 +12564,7 @@
       "GIT-004",
       "RES-006",
       "EST-002",
-      "LANG-001",
-      "REV-003"
+      "LANG-001"
     ],
     "testing": [],
     "implementing": [],
@@ -12736,7 +12769,8 @@
       "FEAT-019",
       "FEAT-006",
       "FOUND-007",
-      "REMIND-009"
+      "REMIND-009",
+      "REV-003"
     ],
     "blocked": []
   }

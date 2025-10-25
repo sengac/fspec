@@ -15,7 +15,7 @@ export interface GapAnalysis {
   testsWithoutFeatures: number;
   featuresWithoutTests: number;
   unmappedScenarios: number;
-  rawImplementation: number;
+  unmappedImplementation: number;
   files: string[];
 }
 
