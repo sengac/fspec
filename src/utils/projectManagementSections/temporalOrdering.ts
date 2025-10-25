@@ -88,5 +88,5 @@ fspec update-work-unit-status LEGACY-001 testing --skip-temporal-validation
 - Red-Green-Refactor discipline (tests written before implementation)
 - Honest workflow progression (not retroactive completion)
 
-**Note**: Tasks (work items with \`type='task'\`) are exempt from test file temporal validation since they don't require tests.`;
+**Note**: Tasks (work units with \`type='task'\`) are exempt from test file temporal validation since they don't require tests.`;
 }

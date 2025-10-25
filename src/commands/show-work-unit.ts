@@ -5,7 +5,7 @@ import { join } from 'path';
 import { glob } from 'tinyglobby';
 import * as Gherkin from '@cucumber/gherkin';
 import * as Messages from '@cucumber/messages';
-import type { WorkUnitsData, QuestionItem, WorkItemType } from '../types';
+import type { WorkUnitsData, QuestionItem, WorkUnitType } from '../types';
 import { extractWorkUnitTags } from '../utils/work-unit-tags';
 import {
   getMissingEstimateReminder,
@@ -32,7 +32,7 @@ interface LinkedFeature {
 interface WorkUnitDetails {
   id: string;
   title: string;
-  type: WorkItemType;
+  type: WorkUnitType;
   status: string;
   description?: string;
   estimate?: number;
@@ -206,7 +206,7 @@ export async function showWorkUnit(
   return {
     id: workUnit.id,
     title: workUnit.title,
-    type: (workUnit.type || 'story') as WorkItemType, // Default to 'story' for backward compatibility
+    type: (workUnit.type || 'story') as WorkUnitType, // Default to 'story' for backward compatibility
     status: workUnit.status,
     ...(workUnit.description && { description: workUnit.description }),
     ...(workUnit.estimate !== undefined && { estimate: workUnit.estimate }),

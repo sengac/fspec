@@ -2,14 +2,14 @@ import { readFile } from 'fs/promises';
 import chalk from 'chalk';
 import type { Command } from 'commander';
 import { join } from 'path';
-import type { WorkUnitsData, WorkItemType } from '../types';
+import type { WorkUnitsData, WorkUnitType } from '../types';
 import { ensureWorkUnitsFile, ensurePrefixesFile } from '../utils/ensure-files';
 
 interface ListWorkUnitsOptions {
   status?: string;
   prefix?: string;
   epic?: string;
-  type?: WorkItemType;
+  type?: WorkUnitType;
   cwd?: string;
 }
 
@@ -77,7 +77,7 @@ export async function listWorkUnitsCommand(options: {
   status?: string;
   prefix?: string;
   epic?: string;
-  type?: WorkItemType;
+  type?: WorkUnitType;
 }): Promise<void> {
   const chalk = await import('chalk').then(m => m.default);
   try {
@@ -125,7 +125,7 @@ export function registerListWorkUnitsCommand(program: Command): void {
     .option('-e, --epic <epic>', 'Filter by epic')
     .option(
       '-t, --type <type>',
-      'Filter by work item type: story, task, or bug'
+      'Filter by work unit type: story, task, or bug'
     )
     .action(async (options: any) => {
       await listWorkUnitsCommand(options);

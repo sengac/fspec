@@ -3,7 +3,7 @@ import chalk from 'chalk';
 import type { Command } from 'commander';
 import { join } from 'path';
 import { glob } from 'tinyglobby';
-import type { WorkUnitsData, QuestionItem, WorkItemType } from '../types';
+import type { WorkUnitsData, QuestionItem, WorkUnitType } from '../types';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
 import {
   getStatusChangeReminder,
@@ -86,7 +86,7 @@ export async function updateWorkUnitStatus(
   const workUnit = workUnitsData.workUnits[options.workUnitId];
   const currentStatus = workUnit.status;
   const newStatus = options.status;
-  const workItemType: WorkItemType = workUnit.type || 'story'; // Default to 'story' for backward compatibility
+  const workUnitType: WorkUnitType = workUnit.type || 'story'; // Default to 'story' for backward compatibility
 
   // Validate state is allowed
   if (!ALLOWED_STATES.includes(newStatus)) {
@@ -96,7 +96,7 @@ export async function updateWorkUnitStatus(
   }
 
   // Validate type-specific workflow constraints
-  if (workItemType === 'task' && newStatus === 'testing') {
+  if (workUnitType === 'task' && newStatus === 'testing') {
     throw new Error(
       `Tasks do not have a testing phase. task workflow: backlog → specifying → implementing → validating → done.\n` +
         `Tasks are for operational work without testable acceptance criteria.\n` +
@@ -122,7 +122,7 @@ export async function updateWorkUnitStatus(
   if (currentStatus !== newStatus) {
     // Special case for tasks: allow specifying → implementing (skip testing)
     const isTaskSkippingTest =
-      workItemType === 'task' &&
+      workUnitType === 'task' &&
       currentStatus === 'specifying' &&
       newStatus === 'implementing';
 
@@ -139,7 +139,7 @@ export async function updateWorkUnitStatus(
       } else if (
         currentStatus === 'specifying' &&
         newStatus === 'implementing' &&
-        workItemType !== 'task'
+        workUnitType !== 'task'
       ) {
         errorMessages.push(`Must move to 'testing' state first.`);
         errorMessages.push(`ACDD requires tests before implementation.`);
@@ -209,7 +209,7 @@ export async function updateWorkUnitStatus(
   if (newStatus === 'testing' && currentStatus === 'specifying') {
     // Type-specific validation for bugs: must link to existing feature file
     // Bugs can use either linkedFeatures array or @WORK-UNIT-ID tags in scenarios
-    if (workItemType === 'bug') {
+    if (workUnitType === 'bug') {
       const linkedFeatures = workUnit.linkedFeatures || [];
       const hasLinkedFeatures = linkedFeatures.length > 0;
 
@@ -322,7 +322,7 @@ export async function updateWorkUnitStatus(
     newStatus === 'implementing' &&
     currentStatus === 'testing' &&
     !options.skipTemporalValidation &&
-    workItemType !== 'task' // Tasks don't have tests
+    workUnitType !== 'task' // Tasks don't have tests
   ) {
     const testingEntry = findStateHistoryEntry(workUnit, 'testing');
     if (testingEntry) {

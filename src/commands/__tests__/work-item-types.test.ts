@@ -20,7 +20,7 @@ import { updateWorkUnit } from '../update-work-unit';
 import { queryWorkUnits } from '../query-work-units';
 import { queryMetrics } from '../query-metrics';
 
-describe('Feature: Work item types for stories, tasks, and bugs', () => {
+describe('Feature: Work unit types for stories, tasks, and bugs', () => {
   let testDir: string;
 
   beforeEach(async () => {

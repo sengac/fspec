@@ -182,7 +182,7 @@ export function registerQueryMetricsCommand(program: Command): void {
     .command('query-metrics')
     .description('Query project metrics and statistics')
     .option('--work-unit-id <id>', 'Specific work unit to query metrics for')
-    .option('--type <type>', 'Filter by work item type: story, task, or bug')
+    .option('--type <type>', 'Filter by work unit type: story, task, or bug')
     .option('--format <format>', 'Output format: text or json', 'text')
     .action(
       async (options: {

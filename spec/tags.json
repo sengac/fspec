@@ -679,7 +679,7 @@
         },
         {
           "name": "@type-system",
-          "description": "Work item type system features for categorizing work (story, task, bug)"
+          "description": "Work unit type system features for categorizing work (story, task, bug)"
         },
         {
           "name": "@vitest",

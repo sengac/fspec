@@ -6,7 +6,7 @@ const config: CommandHelpConfig = {
     'Update work unit metadata including title, description, epic association, and parent relationship',
   usage: 'fspec update-work-unit <workUnitId> [options]',
   whenToUse:
-    'Use this command to modify work unit metadata after creation. Common use cases: refining title/description, changing epic association, or restructuring parent-child relationships. NOTE: Work item type (story/bug/task) is immutable and cannot be changed.',
+    'Use this command to modify work unit metadata after creation. Common use cases: refining title/description, changing epic association, or restructuring parent-child relationships. NOTE: Work unit type (story/bug/task) is immutable and cannot be changed.',
   prerequisites: ['Work unit must exist in spec/work-units.json'],
   arguments: [
     {
@@ -82,7 +82,7 @@ const config: CommandHelpConfig = {
       fix: 'Cannot set parent to a work unit that is already a descendant. Check hierarchy with: fspec show-work-unit <id>',
     },
     {
-      error: 'Work item type is immutable and cannot be changed after creation',
+      error: 'Work unit type is immutable and cannot be changed after creation',
       fix: 'Delete this work unit and create a new one with the correct type (story/bug/task)',
     },
   ],
@@ -114,7 +114,7 @@ const config: CommandHelpConfig = {
   ],
   notes: [
     'Provide at least one option (--title, --description, --epic, or --parent)',
-    'Work item type is immutable - delete and recreate to change type',
+    'Work unit type is immutable - delete and recreate to change type',
     'Changing epic moves work unit from old epic to new epic automatically',
     'Parent-child relationships are validated for circular references',
     'Epic references are automatically updated in spec/epics.json',
