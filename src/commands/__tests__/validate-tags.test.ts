@@ -782,7 +782,7 @@ Feature: Test
       );
       expect(workUnitError).toBeDefined();
       expect(workUnitError!.message).toContain('Work unit @AUTH-999 not found');
-      expect(workUnitError!.suggestion).toContain('fspec create-work-unit');
+      expect(workUnitError!.suggestion).toContain('fspec create-story');
     });
   });
 

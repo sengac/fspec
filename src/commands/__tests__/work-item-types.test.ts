@@ -72,7 +72,7 @@ describe('Feature: Work unit types for stories, tasks, and bugs', () => {
         JSON.stringify(workUnits, null, 2)
       );
 
-      // When I run "fspec create-work-unit AUTH 'User Login' --type=story"
+      // When I run "fspec create-story AUTH 'User Login'"
       const result = await createWorkUnit({
         prefix: 'AUTH',
         title: 'User Login',
@@ -132,7 +132,7 @@ describe('Feature: Work unit types for stories, tasks, and bugs', () => {
         JSON.stringify(workUnits, null, 2)
       );
 
-      // When I run "fspec create-work-unit CLEAN 'Audit coverage files' --type=task"
+      // When I run "fspec create-task CLEAN 'Audit coverage files'"
       const result = await createWorkUnit({
         prefix: 'CLEAN',
         title: 'Audit coverage files',
@@ -194,7 +194,7 @@ describe('Feature: Work unit types for stories, tasks, and bugs', () => {
         JSON.stringify(workUnits, null, 2)
       );
 
-      // When I run "fspec create-work-unit BUG 'Login fails with @ symbol' --type=bug"
+      // When I run "fspec create-bug BUG 'Login fails with @ symbol'"
       const result = await createWorkUnit({
         prefix: 'BUG',
         title: 'Login fails with @ symbol',
@@ -256,7 +256,7 @@ describe('Feature: Work unit types for stories, tasks, and bugs', () => {
         JSON.stringify(workUnits, null, 2)
       );
 
-      // When I run "fspec create-work-unit AUTH 'Feature'" without specifying type
+      // When I run "fspec create-story AUTH 'Feature'"
       const result = await createWorkUnit({
         prefix: 'AUTH',
         title: 'Feature',

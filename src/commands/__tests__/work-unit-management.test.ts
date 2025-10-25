@@ -64,7 +64,7 @@ describe('Feature: Work Unit Management', () => {
         JSON.stringify(workUnits, null, 2)
       );
 
-      // When I run "fspec create-work-unit AUTH 'Implement OAuth login'"
+      // When I run "fspec create-story AUTH 'Implement OAuth login'"
       const result = await createWorkUnit({
         prefix: 'AUTH',
         title: 'Implement OAuth login',
@@ -146,7 +146,7 @@ describe('Feature: Work Unit Management', () => {
         JSON.stringify(workUnits, null, 2)
       );
 
-      // When I run "fspec create-work-unit AUTH 'Add password reset'"
+      // When I run "fspec create-story AUTH 'Add password reset'"
       const result = await createWorkUnit({
         prefix: 'AUTH',
         title: 'Add password reset',
@@ -223,7 +223,7 @@ describe('Feature: Work Unit Management', () => {
         JSON.stringify(workUnits, null, 2)
       );
 
-      // When I run "fspec create-work-unit AUTH 'OAuth integration' --epic=epic-user-management"
+      // When I run "fspec create-story AUTH 'OAuth integration' --epic=epic-user-management"
       const result = await createWorkUnit({
         prefix: 'AUTH',
         title: 'OAuth integration',
@@ -293,7 +293,7 @@ describe('Feature: Work Unit Management', () => {
         JSON.stringify(workUnits, null, 2)
       );
 
-      // When I run "fspec create-work-unit AUTH 'OAuth login' --description='Add OAuth 2.0 with Google and GitHub'"
+      // When I run "fspec create-story AUTH 'OAuth login' --description='Add OAuth 2.0 with Google and GitHub'"
       const result = await createWorkUnit({
         prefix: 'AUTH',
         title: 'OAuth login',
@@ -362,7 +362,7 @@ describe('Feature: Work Unit Management', () => {
         JSON.stringify(workUnits, null, 2)
       );
 
-      // When I run "fspec create-work-unit AUTH 'Google provider' --parent=AUTH-001"
+      // When I run "fspec create-story AUTH 'Google provider' --parent=AUTH-001"
       const result = await createWorkUnit({
         prefix: 'AUTH',
         title: 'Google provider',
@@ -419,7 +419,7 @@ describe('Feature: Work Unit Management', () => {
         JSON.stringify(workUnits, null, 2)
       );
 
-      // When I run "fspec create-work-unit INVALID 'Some work'"
+      // When I run "fspec create-story INVALID 'Some work'"
       // Then the command should fail
       await expect(
         createWorkUnit({
@@ -479,7 +479,7 @@ describe('Feature: Work Unit Management', () => {
         JSON.stringify(workUnits, null, 2)
       );
 
-      // When I run "fspec create-work-unit AUTH"
+      // When I run "fspec create-story AUTH"
       // Then the command should fail
       await expect(
         createWorkUnit({
@@ -527,7 +527,7 @@ describe('Feature: Work Unit Management', () => {
         JSON.stringify(workUnits, null, 2)
       );
 
-      // When I run "fspec create-work-unit AUTH 'Child work' --parent=AUTH-999"
+      // When I run "fspec create-story AUTH 'Child work' --parent=AUTH-999"
       // Then the command should fail
       await expect(
         createWorkUnit({
@@ -1412,14 +1412,14 @@ describe('Feature: Work Unit Management', () => {
         JSON.stringify(workUnits, null, 2)
       );
 
-      // When I run "fspec create-work-unit AUTH 'OAuth 2.0 implementation'"
+      // When I run "fspec create-story AUTH 'OAuth 2.0 implementation'"
       await createWorkUnit({
         prefix: 'AUTH',
         title: 'OAuth 2.0 implementation',
         cwd: testDir,
       });
 
-      // And I run "fspec create-work-unit AUTH 'Google provider' --parent=AUTH-001"
+      // And I run "fspec create-story AUTH 'Google provider' --parent=AUTH-001"
       await createWorkUnit({
         prefix: 'AUTH',
         title: 'Google provider',
@@ -1427,7 +1427,7 @@ describe('Feature: Work Unit Management', () => {
         cwd: testDir,
       });
 
-      // And I run "fspec create-work-unit AUTH 'GitHub provider' --parent=AUTH-001"
+      // And I run "fspec create-story AUTH 'GitHub provider' --parent=AUTH-001"
       await createWorkUnit({
         prefix: 'AUTH',
         title: 'GitHub provider',
@@ -1435,7 +1435,7 @@ describe('Feature: Work Unit Management', () => {
         cwd: testDir,
       });
 
-      // And I run "fspec create-work-unit AUTH 'Token storage' --parent=AUTH-001"
+      // And I run "fspec create-story AUTH 'Token storage' --parent=AUTH-001"
       await createWorkUnit({
         prefix: 'AUTH',
         title: 'Token storage',
@@ -1576,7 +1576,7 @@ describe('Feature: Work Unit Management', () => {
         JSON.stringify(workUnits, null, 2)
       );
 
-      // When I run "fspec create-work-unit AUTH 'Too deep' --parent=AUTH-003"
+      // When I run "fspec create-story AUTH 'Too deep' --parent=AUTH-003"
       // Then the command should fail
       await expect(
         createWorkUnit({
@@ -1690,7 +1690,7 @@ describe('Feature: Work Unit Management', () => {
         JSON.stringify(prefixes, null, 2)
       );
 
-      // When I run "fspec create-work-unit HOOK 'Hook Handler'"
+      // When I run "fspec create-story HOOK 'Hook Handler'"
       const result = await createWorkUnit({
         prefix: 'HOOK',
         title: 'Hook Handler',
@@ -1825,7 +1825,7 @@ describe('Feature: Work Unit Management', () => {
         JSON.stringify(workUnits, null, 2)
       );
 
-      // When I run "fspec create-work-unit AUTH 'Login feature' --epic=epic-auth"
+      // When I run "fspec create-story AUTH 'Login feature' --epic=epic-auth"
       // Then the command should fail
       await expect(
         createWorkUnit({
@@ -2347,7 +2347,7 @@ Feature: OAuth Login
         featureContent
       );
 
-      // When I run "fspec create-work-unit AUTH 'OAuth Login Implementation'"
+      // When I run "fspec create-story AUTH 'OAuth Login Implementation'"
       const createResult = await createWorkUnit({
         prefix: 'AUTH',
         title: 'OAuth Login Implementation',

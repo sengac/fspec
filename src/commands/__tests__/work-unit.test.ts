@@ -89,7 +89,7 @@ describe('Feature: Work Unit Management', () => {
       // And no work units exist with prefix "AUTH"
       // (already initialized empty in beforeEach)
 
-      // When I run "fspec create-work-unit AUTH 'Implement OAuth login'"
+      // When I run "fspec create-story AUTH 'Implement OAuth login'"
       await createWorkUnit('AUTH', 'Implement OAuth login', { cwd: testDir });
 
       // Then the command should succeed
@@ -139,7 +139,7 @@ describe('Feature: Work Unit Management', () => {
       workUnits.states.backlog.push('AUTH-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
-      // When I run "fspec create-work-unit AUTH 'Add password reset'"
+      // When I run "fspec create-story AUTH 'Add password reset'"
       await createWorkUnit('AUTH', 'Add password reset', { cwd: testDir });
 
       // Then the command should succeed
@@ -174,7 +174,7 @@ describe('Feature: Work Unit Management', () => {
       };
       await writeFile(epicsFile, JSON.stringify(epics, null, 2));
 
-      // When I run "fspec create-work-unit AUTH 'OAuth integration' --epic=epic-user-management"
+      // When I run "fspec create-story AUTH 'OAuth integration' --epic=epic-user-management"
       await createWorkUnit('AUTH', 'OAuth integration', {
         cwd: testDir,
         epic: 'epic-user-management',
@@ -201,7 +201,7 @@ describe('Feature: Work Unit Management', () => {
       prefixes.prefixes.AUTH = { description: 'Authentication features' };
       await writeFile(prefixesFile, JSON.stringify(prefixes, null, 2));
 
-      // When I run "fspec create-work-unit AUTH 'OAuth login' --description='Add OAuth 2.0 with Google and GitHub'"
+      // When I run "fspec create-story AUTH 'OAuth login' --description='Add OAuth 2.0 with Google and GitHub'"
       await createWorkUnit('AUTH', 'OAuth login', {
         cwd: testDir,
         description: 'Add OAuth 2.0 with Google and GitHub',
@@ -237,7 +237,7 @@ describe('Feature: Work Unit Management', () => {
       workUnits.states.backlog.push('AUTH-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
-      // When I run "fspec create-work-unit AUTH 'Google provider' --parent=AUTH-001"
+      // When I run "fspec create-story AUTH 'Google provider' --parent=AUTH-001"
       await createWorkUnit('AUTH', 'Google provider', {
         cwd: testDir,
         parent: 'AUTH-001',
@@ -266,7 +266,7 @@ describe('Feature: Work Unit Management', () => {
       // And the prefix "INVALID" is not registered
       // (prefixes.json initialized empty in beforeEach)
 
-      // When I run "fspec create-work-unit INVALID 'Some work'"
+      // When I run "fspec create-story INVALID 'Some work'"
       // Then the command should fail
       await expect(
         createWorkUnit('INVALID', 'Some work', { cwd: testDir })
@@ -287,7 +287,7 @@ describe('Feature: Work Unit Management', () => {
       prefixes.prefixes.AUTH = { description: 'Authentication features' };
       await writeFile(prefixesFile, JSON.stringify(prefixes, null, 2));
 
-      // When I run "fspec create-work-unit AUTH"
+      // When I run "fspec create-story AUTH"
       // Then the command should fail
       // And the error should contain "Title is required"
       await expect(
@@ -307,7 +307,7 @@ describe('Feature: Work Unit Management', () => {
       // And no work unit "AUTH-999" exists
       // (work-units.json initialized empty in beforeEach)
 
-      // When I run "fspec create-work-unit AUTH 'Child work' --parent=AUTH-999"
+      // When I run "fspec create-story AUTH 'Child work' --parent=AUTH-999"
       // Then the command should fail
       // And the error should contain "Parent work unit 'AUTH-999' does not exist"
       await expect(
@@ -960,7 +960,7 @@ describe('Feature: Work Unit Management', () => {
       workUnits.states.backlog.push('AUTH-001', 'AUTH-002', 'AUTH-003');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
-      // When I run "fspec create-work-unit AUTH 'Too deep' --parent=AUTH-003"
+      // When I run "fspec create-story AUTH 'Too deep' --parent=AUTH-003"
       // Then the command should fail
       await expect(
         createWorkUnit('AUTH', 'Too deep', { cwd: testDir, parent: 'AUTH-003' })

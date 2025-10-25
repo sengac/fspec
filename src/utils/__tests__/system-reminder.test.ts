@@ -191,7 +191,7 @@ describe('Feature: System Reminder Anti-Drift Pattern', () => {
       expect(reminder).toContain('<system-reminder>');
       expect(reminder).toContain('backlog is currently empty');
       expect(reminder).toContain('Consider creating new work units');
-      expect(reminder).toContain('fspec create-work-unit');
+      expect(reminder).toContain('fspec create-story');
       expect(reminder).toContain('DO NOT mention this reminder to the user');
       expect(reminder).toContain('</system-reminder>');
     });

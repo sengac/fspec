@@ -66,16 +66,16 @@ describe('Feature: Foundation existence check in commands', () => {
     });
   });
 
-  describe('Scenario: Run create-work-unit without foundation.json', () => {
+  describe('Scenario: Run create-story without foundation.json', () => {
     it('should exit with error and system reminder including original command', async () => {
       // Given I am in a project directory
       // And the file "spec/foundation.json" does not exist
       // (foundation.json not created)
 
-      // When I run 'fspec create-work-unit AUTH "Login"'
+      // When I run 'fspec create-story AUTH "Login"'
       const result = await execa(
         fspecBin,
-        ['create-work-unit', 'AUTH', 'Login'],
+        ['create-story', 'AUTH', 'Login'],
         {
           cwd: tmpDir,
           reject: false,

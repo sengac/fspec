@@ -91,13 +91,13 @@ Here's how each stage of the SBE cycle maps to fspec features:
 
 **fspec Implementation**:
 - **Foundation Discovery**: `fspec discover-foundation` captures WHY (vision, problem space) and WHAT (capabilities, personas)
-- **Work Units**: Created with `fspec create-work-unit` to represent stories/bugs/tasks
+- **Work Units**: Created with `fspec create-story` (features), `fspec create-bug` (bug fixes), `fspec create-task` (tasks)
 - **Epics**: High-level business initiatives grouping related work
 - **Kanban Backlog**: Visual prioritization of scope
 
 ```bash
 # Derive scope from business goals
-fspec create-work-unit AUTH "User Login" --epic=user-management
+fspec create-story AUTH "User Login" --epic=user-management
 fspec create-epic user-management "User Management Features"
 ```
 
@@ -743,7 +743,7 @@ The SBE book was written for **human teams collaborating**, not AI agents. Key g
 
 | SBE Stage | SBE Practice | fspec Feature | fspec Command |
 |-----------|--------------|---------------|---------------|
-| 1. Derive scope | Business goals → user stories | Foundation + Work units + Epics | `fspec discover-foundation`<br/>`fspec create-work-unit` |
+| 1. Derive scope | Business goals → user stories | Foundation + Work units + Epics | `fspec discover-foundation`<br/>`fspec create-story/bug/task` |
 | 2. Illustrate | Concrete examples | Example Mapping | `fspec add-rule`<br/>`fspec add-example`<br/>`fspec add-question` |
 | 3. Specify | Transform to Given-When-Then | Generate scenarios | `fspec generate-scenarios` |
 | 4. Refine | Structure specifications | Gherkin feature files | `fspec validate`<br/>`fspec format` |
