@@ -92,10 +92,14 @@
           "implMappings": []
         }
       ]
+    },
+    {
+      "name": "Run create-story without foundation.json",
+      "testMappings": []
     }
   ],
   "stats": {
-    "totalScenarios": 4,
+    "totalScenarios": 5,
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [

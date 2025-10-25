@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-25T08:07:33.766Z"
+    "lastUpdated": "2025-10-25T11:29:33.878Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -12264,40 +12264,85 @@
       ],
       "estimate": 3
     },
-    "CLI-013": {
-      "id": "CLI-013",
-      "title": "Replace generic create-work-unit references with type-specific commands",
+    "REMIND-009": {
+      "id": "REMIND-009",
+      "title": "Context-aware system-reminders for workflow state transitions",
       "type": "story",
-      "status": "specifying",
-      "createdAt": "2025-10-25T08:07:25.854Z",
-      "updatedAt": "2025-10-25T08:09:17.345Z",
-      "description": "Refactor all documentation and help text that references 'fspec create-work-unit' to use the specific commands: 'fspec create-story' for features/refactoring, 'fspec create-bug' for bug fixes, and 'fspec create-task' for operational tasks. Each instance requires manual review to determine the correct context.",
+      "status": "done",
+      "createdAt": "2025-10-25T11:29:04.049Z",
+      "updatedAt": "2025-10-25T11:46:40.414Z",
+      "description": "When work units transition to a new workflow state (backlog→specifying→testing→implementing→validating), emit a system-reminder showing the most commonly used commands for that state, helping AI agents discover the right commands without guessing. Each reminder should be concise, action-oriented, and include pointers to help documentation.",
       "children": [],
       "stateHistory": [
         {
           "state": "specifying",
-          "timestamp": "2025-10-25T08:07:33.276Z"
+          "timestamp": "2025-10-25T11:29:23.862Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-25T11:41:40.734Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-25T11:42:57.867Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-25T11:46:23.443Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-25T11:46:40.414Z"
         }
       ],
       "userStory": {
-        "role": "developer or AI agent using fspec",
-        "action": "see contextually appropriate command examples in documentation",
-        "benefit": "I understand which command to use for creating stories, bugs, or tasks"
+        "role": "AI agent working on fspec project",
+        "action": "see relevant commands when entering a new workflow state",
+        "benefit": "I can discover and use the right commands without guessing or searching documentation"
       },
       "rules": [
-        "Each reference to 'create-work-unit' must be analyzed for context to determine if it should be 'create-story', 'create-bug', or 'create-task'",
-        "Documentation examples about new features or refactoring should use 'create-story'",
-        "Documentation examples about fixing bugs should use 'create-bug'",
-        "Documentation examples about operational work (setup, configuration, cleanup) should use 'create-task'",
-        "All changes must preserve the intent and accuracy of the original documentation"
+        "System-reminders should appear when work unit status changes via update-work-unit-status command",
+        "Each workflow state (backlog, specifying, testing, implementing, validating) has its own set of commonly used commands",
+        "Reminders must be concise - show only 5-7 most common commands per state, not every possible command",
+        "Each command should have brief syntax example showing arguments (e.g., 'fspec remove-rule <id> <index>' not just 'remove-rule')",
+        "Include pointer to help documentation at end (e.g., 'For complete reference: fspec help discovery' or 'fspec <command> --help')",
+        "Done and blocked states do not need command reminders (blocked needs issue resolution, done is complete)"
       ],
       "examples": [
-        "In spec/CLAUDE.md, example showing 'fspec create-work-unit AUTH \"User login feature\"' should become 'fspec create-story AUTH \"User login feature\"'",
-        "In help text, example showing 'fspec create-work-unit DASH \"Dashboard\"' should become 'fspec create-story DASH \"Dashboard\"'",
-        "References to creating work for 'Add ESLint' should use 'fspec create-task' since it's operational setup",
-        "References to creating work for 'Fix validation bug' should use 'fspec create-bug'"
+        "When work unit moves to SPECIFYING, AI sees reminder: 'Common commands: fspec add-rule <id> \"rule\" | fspec remove-rule <id> <index> | fspec add-example <id> \"example\" | fspec remove-example <id> <index> | fspec add-question <id> \"@human: question?\" | fspec answer-question <id> <index> --answer \"...\" | fspec generate-scenarios <id>. For more: fspec help discovery'",
+        "When work unit moves to TESTING, AI sees reminder: 'Common commands: fspec link-coverage <feature> --scenario \"...\" --test-file <path> --test-lines <range> | fspec show-coverage <feature> | fspec show-feature <name>. Write tests that map to Gherkin scenarios. For more: fspec link-coverage --help'",
+        "When work unit moves to IMPLEMENTING, AI sees reminder: 'Common commands: fspec link-coverage <feature> --scenario \"...\" --impl-file <path> --impl-lines <lines> | fspec checkpoint <id> <name> | fspec restore-checkpoint <id> <name> | fspec list-checkpoints <id>. Write minimal code to pass tests. For more: fspec checkpoint --help'",
+        "When work unit moves to VALIDATING, AI sees reminder: 'Common commands: fspec validate | fspec validate-tags | fspec check | fspec audit-coverage <feature> | npm test | npm run check. Run ALL tests to ensure nothing broke. For more: fspec check --help'",
+        "When work unit moves to BACKLOG (deprioritization), no command reminder is shown since backlog is a waiting state with no active work"
       ],
-      "estimate": 8
+      "questions": [
+        {
+          "text": "@human: Should the reminder show full command syntax with <placeholders> for arguments, or just command names with brief descriptions?",
+          "selected": true,
+          "answer": "Full command syntax with <placeholders> for arguments (e.g., 'fspec remove-rule <id> <index>') because it provides immediate usability and reduces ambiguity about argument order"
+        },
+        {
+          "text": "@human: Should commands be shown one per line (vertical list) or separated by pipe | (horizontal compact)?",
+          "selected": true,
+          "answer": "One per line (vertical list) because it's easier to scan, maintains clean structure in system-reminders, and remains readable regardless of command count"
+        },
+        {
+          "text": "@human: Should BACKLOG state show a reminder about prioritization commands (prioritize-work-unit, show-work-unit), or skip reminders entirely since it's a waiting state?",
+          "selected": true,
+          "answer": "Skip reminders entirely for BACKLOG state because it's a waiting state with no active work, and prioritization happens at board level rather than when transitioning individual work units"
+        },
+        {
+          "text": "@human: Should VALIDATING state include non-fspec commands (npm test, npm run check) in the reminder, or only fspec commands?",
+          "selected": true,
+          "answer": "Only fspec commands - no external commands (npm test, npm run check, etc.) because fspec is platform and language agnostic"
+        },
+        {
+          "text": "@human: Should the reminder appear every time status changes, or only the first time entering each state (cached per work unit)?",
+          "selected": true,
+          "answer": "Every time status changes because context switches between work units, backward movement in ACDD workflow, different conversation sessions, and low cost with high value for always having command context"
+        }
+      ],
+      "estimate": 5
     }
   },
   "states": {
@@ -12334,8 +12379,7 @@
       "GIT-004",
       "RES-006",
       "EST-002",
-      "LANG-001",
-      "CLI-013"
+      "LANG-001"
     ],
     "testing": [],
     "implementing": [],
@@ -12538,7 +12582,8 @@
       "CLI-012",
       "REV-002",
       "TEST-006",
-      "CLI-007"
+      "CLI-007",
+      "REMIND-009"
     ],
     "blocked": []
   }
