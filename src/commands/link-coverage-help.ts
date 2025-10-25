@@ -45,6 +45,11 @@ const config: CommandHelpConfig = {
       description:
         'Skip file path validation (useful for skeleton tests in reverse ACDD)',
     },
+    {
+      flag: '--skip-step-validation',
+      description:
+        'Skip step comment validation (not recommended - use for edge cases where test steps cannot match feature steps)',
+    },
   ],
   examples: [
     {
@@ -92,6 +97,10 @@ const config: CommandHelpConfig = {
       error: 'Error: Cannot link implementation without existing test mapping',
       fix: 'Link test file first, then link implementation to that test mapping.',
     },
+    {
+      error: 'Step validation failed: Missing step comment "When I click the login button"',
+      fix: 'Add step comments to test file: // @step When I click the login button\nOr use --skip-step-validation to bypass (not recommended)',
+    },
   ],
   typicalWorkflow:
     '1. Write tests (red phase) → 2. fspec link-coverage --test-file → 3. Implement code (green phase) → 4. fspec link-coverage --impl-file → 5. Verify with fspec show-coverage',
@@ -119,6 +128,10 @@ const config: CommandHelpConfig = {
     'Use --skip-validation in reverse ACDD for skeleton tests and forward planning',
     'Coverage tracking is CRITICAL for reverse ACDD to track mapping progress',
     'Line ranges: "45-62" for range, "10,11,12,23,24" for specific lines',
+    'Step validation: Test files must include step comments (// @step Given...) matching feature file steps',
+    'Step comments support both @step prefix (recommended) and plain format (backward compatible)',
+    'Parameterized steps ({int}, {string}) match via hybrid similarity algorithm',
+    'Step validation fails with helpful system-reminder showing exact text to add to test file',
   ],
 };
 
