@@ -95,7 +95,7 @@ describe('Feature: Foundation existence check in commands', () => {
 
       // And a system reminder should include the original command to retry
       expect(result.stderr || result.stdout).toContain('<system-reminder>');
-      expect(result.stderr || result.stdout).toContain('create-work-unit');
+      expect(result.stderr || result.stdout).toContain('create-story');
       expect(result.stderr || result.stdout).toContain('AUTH');
       expect(result.stderr || result.stdout).toContain('Login');
     });

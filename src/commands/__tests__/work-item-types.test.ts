@@ -12,7 +12,9 @@ import type { WorkUnitsData, PrefixesData } from '../../types';
 import { createMinimalFoundation } from '../../test-helpers/foundation-helper';
 
 // Import commands
-import { createWorkUnit } from '../create-work-unit';
+import { createStory } from '../create-story';
+import { createTask } from '../create-task';
+import { createBug } from '../create-bug';
 import { listWorkUnits } from '../list-work-units';
 import { updateWorkUnitStatus } from '../update-work-unit-status';
 import { showWorkUnit } from '../show-work-unit';
@@ -73,10 +75,9 @@ describe('Feature: Work unit types for stories, tasks, and bugs', () => {
       );
 
       // When I run "fspec create-story AUTH 'User Login'"
-      const result = await createWorkUnit({
+      const result = await createStory({
         prefix: 'AUTH',
         title: 'User Login',
-        type: 'story',
         cwd: testDir,
       });
 
@@ -133,10 +134,9 @@ describe('Feature: Work unit types for stories, tasks, and bugs', () => {
       );
 
       // When I run "fspec create-task CLEAN 'Audit coverage files'"
-      const result = await createWorkUnit({
+      const result = await createTask({
         prefix: 'CLEAN',
         title: 'Audit coverage files',
-        type: 'task',
         cwd: testDir,
       });
 
@@ -195,10 +195,9 @@ describe('Feature: Work unit types for stories, tasks, and bugs', () => {
       );
 
       // When I run "fspec create-bug BUG 'Login fails with @ symbol'"
-      const result = await createWorkUnit({
+      const result = await createBug({
         prefix: 'BUG',
         title: 'Login fails with @ symbol',
-        type: 'bug',
         cwd: testDir,
       });
 
@@ -257,10 +256,9 @@ describe('Feature: Work unit types for stories, tasks, and bugs', () => {
       );
 
       // When I run "fspec create-story AUTH 'Feature'"
-      const result = await createWorkUnit({
+      const result = await createStory({
         prefix: 'AUTH',
         title: 'Feature',
-        // type not specified
         cwd: testDir,
       });
 

@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-25T11:29:33.878Z"
+    "lastUpdated": "2025-10-25T12:18:22.107Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -4612,7 +4612,7 @@
       "title": "Work unit type system - Core foundation",
       "status": "done",
       "createdAt": "2025-10-15T05:44:47.532Z",
-      "updatedAt": "2025-10-15T06:39:15.374Z",
+      "updatedAt": "2025-10-25T19:37:42.828Z",
       "description": "Add support for different work unit types (story, task, bug) similar to JIRA, allowing better categorization of work units based on their nature (user-facing features vs operational work vs defects)",
       "children": [],
       "stateHistory": [
@@ -4653,6 +4653,14 @@
           "state": "done",
           "timestamp": "2025-10-15T06:39:15.377Z",
           "reason": "All child work units done, full test suite passes (1002/1002), build succeeds"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-25T12:34:02.868Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-25T19:37:42.829Z"
         }
       ],
       "userStory": {
@@ -6684,7 +6692,7 @@
       "type": "story",
       "status": "done",
       "createdAt": "2025-10-17T01:22:59.515Z",
-      "updatedAt": "2025-10-17T01:49:42.199Z",
+      "updatedAt": "2025-10-25T19:37:43.615Z",
       "description": "Add check for foundation.json existence in key commands (board, create-work-unit, etc.). Commands should exit with helpful message if foundation.json missing, directing user to run discover-foundation first. CRITICAL: System reminder must tell AI agent to return to the original task after completing discover-foundation command.",
       "epic": "foundation-document-redesign",
       "children": [],
@@ -6720,6 +6728,14 @@
         {
           "state": "done",
           "timestamp": "2025-10-17T01:49:42.199Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-25T12:34:11.337Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-25T19:37:43.615Z"
         }
       ],
       "userStory": {
@@ -12270,7 +12286,7 @@
       "type": "story",
       "status": "done",
       "createdAt": "2025-10-25T11:29:04.049Z",
-      "updatedAt": "2025-10-25T11:46:40.414Z",
+      "updatedAt": "2025-10-25T19:37:44.391Z",
       "description": "When work units transition to a new workflow state (backlog→specifying→testing→implementing→validating), emit a system-reminder showing the most commonly used commands for that state, helping AI agents discover the right commands without guessing. Each reminder should be concise, action-oriented, and include pointers to help documentation.",
       "children": [],
       "stateHistory": [
@@ -12293,6 +12309,14 @@
         {
           "state": "done",
           "timestamp": "2025-10-25T11:46:40.414Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-25T12:34:19.526Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-25T19:37:44.391Z"
         }
       ],
       "userStory": {
@@ -12343,6 +12367,133 @@
         }
       ],
       "estimate": 5
+    },
+    "FEAT-019": {
+      "id": "FEAT-019",
+      "title": "Reverse ACDD Strategy D Not Detecting Implementation Files",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-10-25T11:51:54.504Z",
+      "updatedAt": "2025-10-25T12:29:06.438Z",
+      "description": "When running 'fspec reverse' on a project with implementation files but no tests or features (like MusicPlayer.tsx, usePlaylistStore.ts), Strategy D (Full Reverse ACDD) is not detected. The tool only detects Strategy B (features without tests) based on unrelated feature files in the project. Expected: Strategy D should analyze implementation files in src/ and guide creation of feature files + tests. Actual: Strategy D not offered, manual specification fails with 'No active reverse session'.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-25T11:52:22.171Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-25T12:20:26.361Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-25T12:23:23.010Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-25T12:26:31.287Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-25T12:29:06.438Z"
+        }
+      ],
+      "rules": [
+        "Strategy D guides AI agents through outside-in BDD: Context → Personas → User Behavior → Example Maps → Features → Test Skeletons → Implementation Links",
+        "Strategy D uses foundation.json personas to help AI understand WHO uses the system and WHAT they want to accomplish (not HOW it's implemented)",
+        "AI provides implementation context as input, Strategy D helps transform it into user-centric feature specifications and example maps",
+        "Strategy D should fill gaps backward from behavior to implementation: Example Maps → Features → Tests → Coverage Links to existing code",
+        "Yes. Strategy D should actively prompt with persona-based questions using system-reminders to guide AI thinking. Example: 'WHO uses this? (Check foundation.json personas)' and 'WHAT does [persona] want to accomplish?'. This provides cognitive scaffolding to help AI shift from inside-out code-thinking to outside-in behavior-thinking. Prompts should be guiding (not blocking), conditional on foundation.json existence, and include examples of good persona-driven thinking.",
+        "Foundation.json must exist (run 'fspec discover-foundation' if missing as one-time setup). During Strategy D, when persona is needed but missing, prompt AI to add it incrementally via 'fspec add-persona <name> <description> --goal <goal>'. For granular code (APIs, functions), guide AI to identify which human persona BENEFITS (not which system calls it) using system-reminders: 'Not who calls calculateDiscount() but who benefits from accurate discounts? Answer: Shopper'. Skip feature files for pure utilities (formatDate, parseJSON) - test-only coverage.",
+        "Yes. Strategy D should provide transformation templates via system-reminders to help AI translate implementation → behavior. Templates: (1) UI Elements → User Actions (button → 'User clicks/taps [action]', input → 'User enters [data]'), (2) State → User Expectations (useState → 'User sees [state]', loading → 'User waits for [process]'), (3) API Endpoints → User Needs (POST /orders → 'User completes order'). Templates accelerate mental shift, ensure consistency, and reinforce outside-in thinking.",
+        "Pause for review with guided prompts. After AI creates example map, Strategy D emits system-reminder with review checklist: 'Do rules cover examples?', 'Are examples concrete?', 'All questions answered?', 'Examples map to personas?'. Then offers explicit choice: (1) Generate features now: fspec generate-scenarios, (2) Add more examples/rules. AI explicitly chooses when to generate (not automatic). Example Mapping is a conversation requiring reflection, not a form-filling exercise. Quality gate prevents garbage-in-garbage-out.",
+        "Semi-automatic with educational system-reminder. Strategy D auto-links coverage by default using 'fspec link-coverage --skip-validation' but emits system-reminder showing: (1) What was linked (scenario → test skeleton → implementation), (2) Exact command that was run (educational), (3) How to verify: 'fspec show-coverage', (4) How to fix if wrong: 'fspec unlink-coverage' then re-link manually. Balances low friction (automatic) with transparency (not a black box) and learning (AI sees the mechanism).",
+        "Feature-scoped sessions (multiple related files allowed). Strategy D allows multiple implementation files in one session if they deliver the SAME user-facing feature. System-reminder guides AI: 'Do these files deliver same user behavior?' YES → One work unit, one example map, one feature file, multiple test files (one per implementation). NO → Separate sessions. BDD focuses on user behavior which often spans multiple files. Track all files in work unit metadata under 'reverseSession.implementationFiles[]'. Link all via coverage to same feature file."
+      ],
+      "examples": [
+        "AI: 'I have MusicPlayer.tsx with play/pause/skip buttons' → Strategy D: 'Who uses this?' → AI sees foundation.json personas: Music Listener persona → Strategy D guides: 'What does Music Listener want?' → AI creates example map: 'Music Listener plays song', 'Music Listener pauses playback' → Generates feature file + test skeletons → Links coverage to MusicPlayer.tsx",
+        "AI: 'I have usePlaylistStore.ts with addSong(), removeSong(), clearPlaylist()' → Strategy D: 'What user behavior does this support?' → AI identifies: Managing playlists → Creates example map with rules: 'User can add songs', 'User can remove songs' → Generates playlist-management.feature → Creates test skeleton → Links to usePlaylistStore.ts implementation",
+        "Project has foundation.json with 'Mobile App User' persona (goal: Stream music on the go) → AI provides AudioPlayer.tsx context → Strategy D prompts: 'How does Mobile App User stream music?' → AI creates example map: 'User taps play', 'User adjusts volume', 'User sees album art' → Feature file generated with user-centric scenarios"
+      ],
+      "questions": [
+        {
+          "text": "@human: Should Strategy D scan src/ for files lacking feature files in spec/features?",
+          "selected": true,
+          "answer": "No. Strategy D should NOT scan src/ automatically. Instead, it should guide the AI agent through a context-driven discovery process: AI provides implementation context → Tool uses foundation.json personas → AI understands user behavior → Creates example maps → Generates features → Generates test skeletons → Links to implementation. This is outside-in BDD, not inside-out code scanning."
+        },
+        {
+          "text": "@human: When AI provides implementation context (e.g., 'MusicPlayer.tsx has play/pause buttons'), should Strategy D prompt with persona-based questions like 'Which persona from foundation.json uses this feature?' or 'What does [persona] want to accomplish?'",
+          "selected": true,
+          "answer": "Yes. Strategy D should actively prompt with persona-based questions using system-reminders to guide AI thinking. Example: 'WHO uses this? (Check foundation.json personas)' and 'WHAT does [persona] want to accomplish?'. This provides cognitive scaffolding to help AI shift from inside-out code-thinking to outside-in behavior-thinking. Prompts should be guiding (not blocking), conditional on foundation.json existence, and include examples of good persona-driven thinking."
+        },
+        {
+          "text": "@human: If foundation.json is missing or has no personas, should Strategy D guide AI through creating foundation first via 'fspec discover-foundation', or allow manual persona specification for this reverse session only?",
+          "selected": true,
+          "answer": "Foundation.json must exist (run 'fspec discover-foundation' if missing as one-time setup). During Strategy D, when persona is needed but missing, prompt AI to add it incrementally via 'fspec add-persona <name> <description> --goal <goal>'. For granular code (APIs, functions), guide AI to identify which human persona BENEFITS (not which system calls it) using system-reminders: 'Not who calls calculateDiscount() but who benefits from accurate discounts? Answer: Shopper'. Skip feature files for pure utilities (formatDate, parseJSON) - test-only coverage."
+        },
+        {
+          "text": "@human: Should Strategy D provide templates or prompts to help AI transform implementation details (buttons, functions, state) into user behavior descriptions (plays song, pauses playback, manages playlist)?",
+          "selected": true,
+          "answer": "Yes. Strategy D should provide transformation templates via system-reminders to help AI translate implementation → behavior. Templates: (1) UI Elements → User Actions (button → 'User clicks/taps [action]', input → 'User enters [data]'), (2) State → User Expectations (useState → 'User sees [state]', loading → 'User waits for [process]'), (3) API Endpoints → User Needs (POST /orders → 'User completes order'). Templates accelerate mental shift, ensure consistency, and reinforce outside-in thinking."
+        },
+        {
+          "text": "@human: After AI creates example maps (rules, examples, questions), should Strategy D automatically generate feature files and test skeletons, or should it prompt AI to review/refine the example map first?",
+          "selected": true,
+          "answer": "Pause for review with guided prompts. After AI creates example map, Strategy D emits system-reminder with review checklist: 'Do rules cover examples?', 'Are examples concrete?', 'All questions answered?', 'Examples map to personas?'. Then offers explicit choice: (1) Generate features now: fspec generate-scenarios, (2) Add more examples/rules. AI explicitly chooses when to generate (not automatic). Example Mapping is a conversation requiring reflection, not a form-filling exercise. Quality gate prevents garbage-in-garbage-out."
+        },
+        {
+          "text": "@human: Should Strategy D guide AI to link test skeletons to existing implementation using 'fspec link-coverage --skip-validation' automatically, or require AI to manually create coverage links?",
+          "selected": true,
+          "answer": "Semi-automatic with educational system-reminder. Strategy D auto-links coverage by default using 'fspec link-coverage --skip-validation' but emits system-reminder showing: (1) What was linked (scenario → test skeleton → implementation), (2) Exact command that was run (educational), (3) How to verify: 'fspec show-coverage', (4) How to fix if wrong: 'fspec unlink-coverage' then re-link manually. Balances low friction (automatic) with transparency (not a black box) and learning (AI sees the mechanism)."
+        },
+        {
+          "text": "@human: Should Strategy D track multiple implementation files in a single reverse session (e.g., MusicPlayer.tsx + usePlaylistStore.ts together), or require separate sessions per file?",
+          "selected": true,
+          "answer": "Feature-scoped sessions (multiple related files allowed). Strategy D allows multiple implementation files in one session if they deliver the SAME user-facing feature. System-reminder guides AI: 'Do these files deliver same user behavior?' YES → One work unit, one example map, one feature file, multiple test files (one per implementation). NO → Separate sessions. BDD focuses on user behavior which often spans multiple files. Track all files in work unit metadata under 'reverseSession.implementationFiles[]'. Link all via coverage to same feature file."
+        }
+      ],
+      "userStory": {
+        "role": "AI agent using fspec for reverse ACDD",
+        "action": "be guided through outside-in BDD discovery when I have implementation files without features",
+        "benefit": "I create user-centric specifications that trace behavior back to existing code, rather than just scanning files inside-out"
+      },
+      "estimate": 5
+    },
+    "REV-003": {
+      "id": "REV-003",
+      "title": "Strategy D processes existing feature files instead of scanning src/ for implementation files",
+      "type": "bug",
+      "status": "specifying",
+      "createdAt": "2025-10-25T12:34:33.055Z",
+      "updatedAt": "2025-10-25T12:34:37.648Z",
+      "description": "When 'fspec reverse --strategy=D' is run, it processes existing .feature files in spec/features/ directory rather than scanning src/ directory for implementation files (.tsx, .ts, .jsx, .js) that lack corresponding feature files. Expected: Strategy D should discover implementation files in src/ (like MusicPlayer.tsx, usePlaylistStore.ts) and guide creation of feature files for them. Actual: Strategy D iterates through existing feature files (e.g., cli-command-interface-for-ai-agent-control.feature) with guidance to 'Read test file... Then create feature file' which is confusing since the feature file already exists.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-25T12:34:33.733Z"
+        }
+      ],
+      "rules": [
+        "Strategy D should scan src/ directory recursively for .tsx, .ts, .jsx, .js files",
+        "For each implementation file found, Strategy D should check if a corresponding feature file exists in spec/features/",
+        "Strategy D should only process implementation files that have NO corresponding feature file"
+      ],
+      "examples": [
+        "MindStrike project has MusicPlayer.tsx (1532 lines) with no feature file. Strategy D should detect this and guide: 'Analyze MusicPlayer.tsx implementation → Create feature file → Create test file → Link coverage'",
+        "Running 'fspec reverse --strategy=D' outputs: 'Step 1 of 7: Read test file: spec/features/cli-command-interface-for-ai-agent-control.feature. Then create feature file.' This is wrong - it's reading a feature file (not implementation), and the feature already exists."
+      ],
+      "questions": [
+        {
+          "text": "@human: Should Strategy D use glob patterns to find implementation files (e.g., src/**/*.{ts,tsx,js,jsx})?",
+          "selected": false
+        },
+        {
+          "text": "@human: How should Strategy D match implementation files to feature files? By filename similarity (MusicPlayer.tsx → music-player.feature) or by analyzing imports/exports?",
+          "selected": false
+        }
+      ]
     }
   },
   "states": {
@@ -12379,7 +12530,8 @@
       "GIT-004",
       "RES-006",
       "EST-002",
-      "LANG-001"
+      "LANG-001",
+      "REV-003"
     ],
     "testing": [],
     "implementing": [],
@@ -12479,7 +12631,6 @@
       "COV-048",
       "COV-033",
       "COV-038",
-      "FEAT-006",
       "FEAT-011",
       "DOC-004",
       "BUG-010",
@@ -12503,7 +12654,6 @@
       "FOUND-003",
       "FOUND-005",
       "FOUND-006",
-      "FOUND-007",
       "FOUND-004",
       "FOUND-002",
       "BUG-014",
@@ -12583,6 +12733,9 @@
       "REV-002",
       "TEST-006",
       "CLI-007",
+      "FEAT-019",
+      "FEAT-006",
+      "FOUND-007",
       "REMIND-009"
     ],
     "blocked": []
