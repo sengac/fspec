@@ -219,6 +219,7 @@ Tags indicating implementation priority or criticality.
 
 | Tag | Description |
 |-----|-------------|
+| `@breaking-change` | Breaking changes requiring major version bump (v2.0+) |
 | `@critical` | Critical Priority - Must Have |
 | `@high` | High Priority - Should Have |
 | `@low` | Low Priority - Future Enhancement |
@@ -526,7 +527,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-10-25T05:01:12.771Z_
+_Last updated: 2025-10-25T06:46:49.935Z_
 
 **Update Command**: `fspec tag-stats`
 

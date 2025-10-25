@@ -722,6 +722,10 @@
       "required": false,
       "tags": [
         {
+          "name": "@breaking-change",
+          "description": "Breaking changes requiring major version bump (v2.0+)"
+        },
+        {
           "name": "@critical",
           "description": "Critical Priority - Must Have"
         },
@@ -1138,7 +1142,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-10-25T05:01:12.771Z",
+    "lastUpdated": "2025-10-25T06:46:49.935Z",
     "phaseStats": [
       {
         "phase": "Phase 1",
