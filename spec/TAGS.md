@@ -122,6 +122,7 @@ Tags that categorize features by functional area.
 | `@state-transition` | State transition operations |
 | `@statistics` | Statistical analysis |
 | `@tag-management` | TAGS.md Operations |
+| `@test-coverage` | Test coverage tracking and validation features |
 | `@testing` | Testing and quality assurance features |
 | `@tracking` | Metric tracking operations |
 | `@ui-refinement` | UI refinement and enhancement operations |
@@ -157,6 +158,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@code-review` | Code review and quality analysis features |
 | `@command-registration` | CLI command registration features |
 | `@cucumber-parser` | Cucumber Parser Integration |
+| `@cucumber-style` | Cucumber-style step definition and matching patterns |
 | `@discovery` | BDD discovery technique used before writing Gherkin scenarios |
 | `@email` | Email-related functionality |
 | `@error-handling` | Error Handling |
@@ -187,9 +189,11 @@ Tags for specific technical concerns or architectural patterns.
 | `@slash-command` | Slash command features for Claude Code |
 | `@slash-commands` | Claude Code slash command implementations |
 | `@sms` | SMS-related functionality |
+| `@step-validation` | Step-level validation and Gherkin step matching |
 | `@strategy-planning` | Strategy planning and decision-making features that guide user choices |
 | `@system-reminder` | Anti-drift pattern for AI agents using contextual reminders |
 | `@template` | Template System |
+| `@traceability` | Scenario-to-test-to-implementation traceability and coverage tracking |
 | `@type-system` | Work item type system features for categorizing work (story, task, bug) |
 | `@vitest` | Vitest testing framework related features |
 
@@ -522,7 +526,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-10-24T23:34:53.933Z_
+_Last updated: 2025-10-25T05:01:12.771Z_
 
 **Update Command**: `fspec tag-stats`
 

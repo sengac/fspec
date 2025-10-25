@@ -13,8 +13,7 @@ import type { Scenario } from '../scenario-similarity';
 import {
   calculateScenarioSimilarity,
   findMatchingScenarios,
-  extractKeywords,
-  isLikelyRefactor,
+  extractTokens,
 } from '../scenario-similarity';
 
 // Import new algorithms (will fail until implemented)
@@ -73,7 +72,7 @@ describe('Feature: Improve scenario similarity matching accuracy', () => {
 
       // When I prepare steps for similarity comparison
       // (This will be tested via internal function)
-      const keywords = extractKeywords(scenario);
+      const keywords = extractTokens(scenario);
 
       // Then the keywords should be stripped to "user exists, login, success"
       expect(keywords).toContain('user');
@@ -100,7 +99,7 @@ describe('Feature: Improve scenario similarity matching accuracy', () => {
       };
 
       // When I extract keywords from scenario text
-      const keywords = extractKeywords(scenario);
+      const keywords = extractTokens(scenario);
 
       // Then technical terms with numbers should be included in keyword set
       expect(keywords).toContain('oauth2');
@@ -117,7 +116,7 @@ describe('Feature: Improve scenario similarity matching accuracy', () => {
   // ========================================
   describe('Scenario: Handle scenarios with no extractable keywords', () => {
     it('should return 0 similarity for scenarios with only stopwords', () => {
-      // Given I have two scenarios with only stopwords
+      // Given I have two scenarios with only common words (NO stopword filtering)
       const scenario1: Scenario = {
         name: 'a the and or',
         steps: ['Given a', 'When the', 'Then and'],
@@ -127,13 +126,13 @@ describe('Feature: Improve scenario similarity matching accuracy', () => {
         steps: ['Given is', 'When are', 'Then was'],
       };
 
-      // When I calculate keyword-based similarity
-      const keywords1 = extractKeywords(scenario1);
-      const keywords2 = extractKeywords(scenario2);
+      // When I extract tokens (NO stopword filtering)
+      const tokens1 = extractTokens(scenario1);
+      const tokens2 = extractTokens(scenario2);
 
-      // Then the similarity score should be 0
-      expect(keywords1.length).toBe(0);
-      expect(keywords2.length).toBe(0);
+      // Then ALL tokens should be included (no filtering)
+      expect(tokens1.length).toBeGreaterThan(0); // NOT filtered!
+      expect(tokens2.length).toBeGreaterThan(0); // NOT filtered!
 
       // And no division by zero error should occur
       const jaccardSim = jaccardSimilarity(scenario1, scenario2);
@@ -187,17 +186,16 @@ describe('Feature: Improve scenario similarity matching accuracy', () => {
         steps: ['Given X', 'When Y', 'Then Z', 'And Q'],
       };
 
-      // When I calculate step similarity
+      // When I calculate step similarity using hybrid algorithm
       const similarity = calculateScenarioSimilarity(scenarioA, scenarioB);
 
-      // Then the similarity score should reflect 75% match
-      // Note: With identical titles (70% weight) and 75% step match (30% weight),
-      // expected score is 1.0 * 0.7 + 0.75 * 0.3 = 0.925
-      expect(similarity).toBeGreaterThanOrEqual(0.9);
-      expect(similarity).toBeLessThanOrEqual(0.95);
+      // Then hybrid algorithm should detect partial match
+      // Note: Hybrid uses 5 algorithms weighted - scores ~0.75 for 75% match
+      expect(similarity).toBeGreaterThanOrEqual(0.7);
+      expect(similarity).toBeLessThanOrEqual(0.8);
 
-      // And 3 out of 4 identical steps should score high
-      expect(similarity).toBeGreaterThan(0.9);
+      // And 3 out of 4 identical steps should score moderately high
+      expect(similarity).toBeGreaterThan(0.7);
     });
   });
 
@@ -467,41 +465,198 @@ describe('Feature: Improve scenario similarity matching accuracy', () => {
     });
   });
 
+
   // ========================================
-  // Scenario 14: Maintain backward compatibility with Levenshtein algorithm
+  // REFAC-003: Adaptive Weighting for Short Strings
   // ========================================
-  describe('Scenario: Maintain backward compatibility with Levenshtein algorithm', () => {
-    it('should support legacy Levenshtein mode', () => {
-      // Given I have the new hybrid similarity algorithm
+  describe('Scenario: Adaptive weighting for short strings', () => {
+    it('should use SHORT_STRING_CONFIG for strings < 20 chars', () => {
+      // Given I have two short scenarios (< 20 chars)
       const scenario1: Scenario = { name: 'User login', steps: [] };
       const scenario2: Scenario = { name: 'User logout', steps: [] };
 
-      // When I enable legacy mode flag
-      const legacyConfig: SimilarityConfig = {
-        useLegacyLevenshtein: true,
-        jaroWinklerWeight: 0,
+      // When I call hybridSimilarity without explicit config
+      const similarity = hybridSimilarity(scenario1, scenario2);
+
+      // Then it should auto-detect short string and apply SHORT_STRING_CONFIG
+      // Token Set (35%) and Jaccard (20%) should be heavily weighted
+      // Expected moderate score (not super low due to shared "user" and "log" prefix)
+      expect(similarity).toBeLessThan(0.7); // Different enough to not be duplicates
+    });
+
+    it('should use DEFAULT_SIMILARITY_CONFIG for strings >= 20 chars', () => {
+      // Given I have two long scenarios (>= 20 chars)
+      const scenario1: Scenario = {
+        name: 'User authentication with OAuth2 tokens',
+        steps: [],
+      };
+      const scenario2: Scenario = {
+        name: 'User authentication using JWT tokens',
+        steps: [],
+      };
+
+      // When I call hybridSimilarity without explicit config
+      const similarity = hybridSimilarity(scenario1, scenario2);
+
+      // Then it should use DEFAULT_SIMILARITY_CONFIG
+      // Expected high score due to similar meaning
+      expect(similarity).toBeGreaterThan(0.7);
+    });
+
+    it('should allow override with explicit config', () => {
+      // Given I have a custom config
+      const customConfig: SimilarityConfig = {
+        jaroWinklerWeight: 1.0,
         tokenSetWeight: 0,
         gherkinStructuralWeight: 0,
         trigramWeight: 0,
         jaccardWeight: 0,
       };
 
-      const legacySimilarity = hybridSimilarity(
-        scenario1,
-        scenario2,
-        legacyConfig
-      );
+      const scenario1: Scenario = { name: 'User login', steps: [] };
+      const scenario2: Scenario = { name: 'User logout', steps: [] };
 
-      // Then the old Levenshtein algorithm should be used
-      const currentSimilarity = calculateScenarioSimilarity(
-        scenario1,
-        scenario2
-      );
-      expect(legacySimilarity).toBeCloseTo(currentSimilarity, 2);
+      // When I pass explicit config
+      const similarity = hybridSimilarity(scenario1, scenario2, customConfig);
 
-      // And I should be able to compare old vs new results for A/B testing
-      const newConfig: SimilarityConfig = {
-        useLegacyLevenshtein: false,
+      // Then it should use my custom config, not auto-detected SHORT_STRING_CONFIG
+      // Jaro-Winkler alone should give high score for "User log" prefix
+      expect(similarity).toBeGreaterThan(0.6);
+    });
+  });
+
+  // ========================================
+  // REFAC-003: Adaptive Thresholds
+  // ========================================
+  describe('Scenario: Adaptive thresholds for findMatchingScenarios', () => {
+    it('should apply strict threshold (0.85) for very short strings (< 10 chars)', () => {
+      // Given I have a very short target scenario
+      const target: Scenario = { name: 'Add item', steps: [] };
+      const existing = [
+        {
+          path: 'test.feature',
+          name: 'Test',
+          scenarios: [
+            { name: 'Edit item', steps: [] }, // Similar but different
+          ],
+        },
+      ];
+
+      // When I call findMatchingScenarios
+      const matches = findMatchingScenarios(target, existing);
+
+      // Then strict threshold (0.85) should prevent false positive
+      // "Add item" vs "Edit item" should NOT match
+      expect(matches.length).toBe(0);
+    });
+
+    it('should apply moderate threshold (0.80) for short strings (10-20 chars)', () => {
+      // Given I have a short target scenario (10-20 chars)
+      const target: Scenario = { name: 'User logs in', steps: [] };
+      const existing = [
+        {
+          path: 'test.feature',
+          name: 'Test',
+          scenarios: [
+            { name: 'User logs out', steps: [] }, // Opposite meaning
+          ],
+        },
+      ];
+
+      // When I call findMatchingScenarios
+      const matches = findMatchingScenarios(target, existing);
+
+      // Then moderate threshold (0.80) should prevent false positive
+      expect(matches.length).toBe(0);
+    });
+
+    it('should apply lenient threshold (0.70) for long strings (40+ chars)', () => {
+      // Given I have a long target scenario (40+ chars)
+      const target: Scenario = {
+        name: 'User authenticates with OAuth2 authentication tokens',
+        steps: [],
+      };
+      const existing = [
+        {
+          path: 'test.feature',
+          name: 'Test',
+          scenarios: [
+            {
+              name: 'User authenticates using OAuth2 authentication tokens',
+              steps: [],
+            },
+          ],
+        },
+      ];
+
+      // When I call findMatchingScenarios
+      const matches = findMatchingScenarios(target, existing);
+
+      // Then lenient threshold (0.70) should allow similar matches
+      expect(matches.length).toBe(1);
+      expect(matches[0].similarityScore).toBeGreaterThanOrEqual(0.7);
+    });
+  });
+
+  // ========================================
+  // REFAC-003: Config Constants
+  // ========================================
+  describe('Scenario: Exported similarity config constants', () => {
+    it('should export DEFAULT_SIMILARITY_CONFIG with correct weights', async () => {
+      // Given I import similarity-algorithms module
+      const module = await import('../similarity-algorithms');
+
+      // Then DEFAULT_SIMILARITY_CONFIG should be exported
+      expect(module.DEFAULT_SIMILARITY_CONFIG).toBeDefined();
+
+      // And weights should sum to 1.0
+      const config = module.DEFAULT_SIMILARITY_CONFIG;
+      const sum =
+        config.jaroWinklerWeight +
+        config.tokenSetWeight +
+        config.gherkinStructuralWeight +
+        config.trigramWeight +
+        config.jaccardWeight;
+      expect(sum).toBeCloseTo(1.0, 5);
+
+      // And should have expected default values
+      expect(config.jaroWinklerWeight).toBe(0.3);
+      expect(config.tokenSetWeight).toBe(0.25);
+      expect(config.gherkinStructuralWeight).toBe(0.2);
+      expect(config.trigramWeight).toBe(0.15);
+      expect(config.jaccardWeight).toBe(0.1);
+    });
+
+    it('should export SHORT_STRING_CONFIG with rebalanced weights', async () => {
+      // Given I import similarity-algorithms module
+      const module = await import('../similarity-algorithms');
+
+      // Then SHORT_STRING_CONFIG should be exported
+      expect(module.SHORT_STRING_CONFIG).toBeDefined();
+
+      // And weights should sum to 1.0
+      const config = module.SHORT_STRING_CONFIG;
+      const sum =
+        config.jaroWinklerWeight +
+        config.tokenSetWeight +
+        config.gherkinStructuralWeight +
+        config.trigramWeight +
+        config.jaccardWeight;
+      expect(sum).toBeCloseTo(1.0, 5);
+
+      // And should emphasize word-level algorithms
+      expect(config.tokenSetWeight).toBe(0.35); // Higher than default
+      expect(config.jaccardWeight).toBe(0.2); // Higher than default
+      expect(config.jaroWinklerWeight).toBe(0.15); // Lower than default
+      expect(config.trigramWeight).toBe(0.1); // Lower than default
+    });
+
+    it('should NOT export useLegacyLevenshtein field', async () => {
+      // Given I import similarity-algorithms module
+      const module = await import('../similarity-algorithms');
+
+      // Then SimilarityConfig interface should not have useLegacyLevenshtein
+      const config: SimilarityConfig = {
         jaroWinklerWeight: 0.3,
         tokenSetWeight: 0.25,
         gherkinStructuralWeight: 0.2,
@@ -509,9 +664,122 @@ describe('Feature: Improve scenario similarity matching accuracy', () => {
         jaccardWeight: 0.1,
       };
 
-      const newSimilarity = hybridSimilarity(scenario1, scenario2, newConfig);
-      expect(newSimilarity).toBeDefined();
-      expect(legacySimilarity).toBeDefined();
+      // This should compile - no useLegacyLevenshtein field required
+      expect(config).toBeDefined();
+    });
+  });
+
+  // ========================================
+  // REFAC-003: extractTokens (NO Stopword Filtering)
+  // ========================================
+  describe('Scenario: Extract tokens without semantic filtering', () => {
+    it('should extract ALL alphanumeric tokens (no stopword filtering)', async () => {
+      // Given I import scenario-similarity module
+      const module = await import('../scenario-similarity');
+
+      // And I have a scenario with common words
+      const scenario: Scenario = {
+        name: 'User logs in with credentials',
+        steps: ['Given the user is authenticated'],
+      };
+
+      // When I call extractTokens
+      const tokens = module.extractTokens(scenario);
+
+      // Then ALL tokens should be included (no semantic filtering)
+      expect(tokens).toContain('user');
+      expect(tokens).toContain('logs');
+      expect(tokens).toContain('in'); // NOT filtered even though it's a "stopword"
+      expect(tokens).toContain('with'); // NOT filtered
+      expect(tokens).toContain('credentials');
+      expect(tokens).toContain('the'); // NOT filtered
+      expect(tokens).toContain('is'); // NOT filtered
+      expect(tokens).toContain('authenticated');
+    });
+
+    it('should be case insensitive', async () => {
+      // Given I import scenario-similarity module
+      const module = await import('../scenario-similarity');
+
+      const scenario: Scenario = {
+        name: 'User LOGIN Authentication',
+        steps: [],
+      };
+
+      // When I call extractTokens
+      const tokens = module.extractTokens(scenario);
+
+      // Then all tokens should be lowercase
+      expect(tokens).toContain('user');
+      expect(tokens).toContain('login');
+      expect(tokens).toContain('authentication');
+      expect(tokens.every(t => t === t.toLowerCase())).toBe(true);
+    });
+
+    it('should support alphanumeric tokens (OAuth2, SHA256)', async () => {
+      // Given I import scenario-similarity module
+      const module = await import('../scenario-similarity');
+
+      const scenario: Scenario = {
+        name: 'OAuth2 authentication with SHA256',
+        steps: [],
+      };
+
+      // When I call extractTokens
+      const tokens = module.extractTokens(scenario);
+
+      // Then alphanumeric tokens should be preserved
+      expect(tokens).toContain('oauth2');
+      expect(tokens).toContain('authentication');
+      expect(tokens).toContain('with'); // NOT filtered!
+      expect(tokens).toContain('sha256');
+    });
+
+    it('should NOT be named extractKeywords (renamed for honesty)', async () => {
+      // Given I import scenario-similarity module
+      const module = await import('../scenario-similarity');
+
+      // Then extractKeywords should NOT exist (renamed to extractTokens)
+      expect(module.extractKeywords).toBeUndefined();
+
+      // And extractTokens should exist
+      expect(module.extractTokens).toBeDefined();
+    });
+  });
+
+  // ========================================
+  // REFAC-003: jaccardSimilarity WITHOUT Stopword Filtering
+  // ========================================
+  describe('Scenario: Jaccard similarity on raw tokens', () => {
+    it('should calculate Jaccard on raw tokens (no stopword filtering)', () => {
+      // Given I have two scenarios differing by "stopwords"
+      const scenario1: Scenario = { name: 'User logs in', steps: [] };
+      const scenario2: Scenario = { name: 'User logs out', steps: [] };
+
+      // When I calculate Jaccard similarity
+      const similarity = jaccardSimilarity(scenario1, scenario2);
+
+      // Then "in" and "out" should be KEPT and contribute to differentiation
+      // Tokens: {user, logs, in} vs {user, logs, out}
+      // Intersection: {user, logs} = 2
+      // Union: {user, logs, in, out} = 4
+      // Jaccard = 2/4 = 0.5
+      expect(similarity).toBeCloseTo(0.5, 1);
+    });
+
+    it('should keep ALL tokens including common words', () => {
+      // Given I have scenarios with words that would be stopwords
+      const scenario1: Scenario = { name: 'Sign in to the system', steps: [] };
+      const scenario2: Scenario = { name: 'Sign up for the system', steps: [] };
+
+      // When I calculate Jaccard similarity
+      const similarity = jaccardSimilarity(scenario1, scenario2);
+
+      // Then words like "in", "to", "the", "for" should NOT be filtered
+      // They contribute to similarity calculation
+      // This proves NO stopword filtering is happening
+      expect(similarity).toBeLessThan(1.0); // Different ("in" vs "up")
+      expect(similarity).toBeGreaterThan(0); // Some overlap ("sign", "to", "the", "system")
     });
   });
 });

@@ -418,6 +418,10 @@
           "description": "TAGS.md Operations"
         },
         {
+          "name": "@test-coverage",
+          "description": "Test coverage tracking and validation features"
+        },
+        {
           "name": "@testing",
           "description": "Testing and quality assurance features"
         },
@@ -528,6 +532,10 @@
         {
           "name": "@cucumber-parser",
           "description": "Cucumber Parser Integration"
+        },
+        {
+          "name": "@cucumber-style",
+          "description": "Cucumber-style step definition and matching patterns"
         },
         {
           "name": "@discovery",
@@ -650,6 +658,10 @@
           "description": "SMS-related functionality"
         },
         {
+          "name": "@step-validation",
+          "description": "Step-level validation and Gherkin step matching"
+        },
+        {
           "name": "@strategy-planning",
           "description": "Strategy planning and decision-making features that guide user choices"
         },
@@ -660,6 +672,10 @@
         {
           "name": "@template",
           "description": "Template System"
+        },
+        {
+          "name": "@traceability",
+          "description": "Scenario-to-test-to-implementation traceability and coverage tracking"
         },
         {
           "name": "@type-system",
@@ -1122,7 +1138,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-10-24T23:34:53.933Z",
+    "lastUpdated": "2025-10-25T05:01:12.771Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

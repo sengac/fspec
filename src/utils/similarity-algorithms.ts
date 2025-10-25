@@ -10,8 +10,6 @@
  * - Hybrid Algorithm (weighted combination)
  */
 
-import { calculateScenarioSimilarity as legacyCalculateScenarioSimilarity } from './scenario-similarity';
-
 export interface Scenario {
   name: string;
   steps: string[];
@@ -24,10 +22,31 @@ export interface SimilarityConfig {
   gherkinStructuralWeight: number;
   trigramWeight: number;
   jaccardWeight: number;
-
-  // Backward compatibility
-  useLegacyLevenshtein?: boolean;
 }
+
+/**
+ * Default similarity configuration for normal-length strings (>= 20 chars)
+ * Weights emphasize character similarity and balanced multi-algorithm approach
+ */
+export const DEFAULT_SIMILARITY_CONFIG: SimilarityConfig = {
+  jaroWinklerWeight: 0.3,
+  tokenSetWeight: 0.25,
+  gherkinStructuralWeight: 0.2,
+  trigramWeight: 0.15,
+  jaccardWeight: 0.1,
+};
+
+/**
+ * Short string configuration for strings < 20 chars
+ * Emphasizes word-level algorithms over character-level to prevent false positives
+ */
+export const SHORT_STRING_CONFIG: SimilarityConfig = {
+  tokenSetWeight: 0.35, // ⬆️ Word-level changes critical
+  jaccardWeight: 0.2, // ⬆️ Keyword overlap important
+  gherkinStructuralWeight: 0.2,
+  jaroWinklerWeight: 0.15, // ⬇️ Character similarity misleading
+  trigramWeight: 0.1, // ⬇️ N-grams less meaningful
+};
 
 /**
  * Calculate Jaro-Winkler similarity between two strings
@@ -227,8 +246,8 @@ export function trigramSimilarity(str1: string, str2: string): number {
 }
 
 /**
- * Calculate Jaccard similarity between scenarios based on keywords
- * Set-based similarity for keyword overlap
+ * Calculate Jaccard similarity between scenarios based on raw tokens
+ * Set-based similarity for token overlap (NO stopword filtering)
  *
  * @param scenario1 - First scenario
  * @param scenario2 - Second scenario
@@ -238,78 +257,33 @@ export function jaccardSimilarity(
   scenario1: Scenario,
   scenario2: Scenario
 ): number {
-  // Extract keywords (alphanumeric tokens, no stopwords)
-  const extractKeywords = (scenario: Scenario): Set<string> => {
+  // Extract raw tokens (alphanumeric, NO stopword filtering)
+  const extractTokens = (scenario: Scenario): Set<string> => {
     const text = `${scenario.name} ${scenario.steps.join(' ')}`
       .toLowerCase()
       .replace(/\b(given|when|then|and|but)\b/gi, '');
 
-    const stopWords = new Set([
-      'a',
-      'an',
-      'the',
-      'and',
-      'or',
-      'but',
-      'in',
-      'on',
-      'at',
-      'to',
-      'for',
-      'of',
-      'with',
-      'by',
-      'from',
-      'as',
-      'is',
-      'are',
-      'was',
-      'were',
-      'be',
-      'been',
-      'being',
-      'have',
-      'has',
-      'had',
-      'do',
-      'does',
-      'did',
-      'will',
-      'would',
-      'should',
-      'could',
-      'may',
-      'might',
-      'must',
-      'can',
-      'i',
-      'that',
-      'it',
-      'this',
-    ]);
+    // Extract alphanumeric tokens (supports OAuth2, SHA256, etc.)
+    const tokens = text.match(/\b[a-z0-9]+\b/gi) || [];
 
-    const words = text.match(/\b[a-z0-9]+\b/gi) || [];
-    const keywords = words.filter(
-      word => word.length > 2 && !stopWords.has(word.toLowerCase())
-    );
-
-    return new Set(keywords.map(k => k.toLowerCase()));
+    // NO stopword filtering - raw tokenization only
+    return new Set(tokens.map(t => t.toLowerCase()));
   };
 
-  const keywords1 = extractKeywords(scenario1);
-  const keywords2 = extractKeywords(scenario2);
+  const tokens1 = extractTokens(scenario1);
+  const tokens2 = extractTokens(scenario2);
 
-  // BUG-4 FIX: Handle empty keyword sets without division by zero
-  if (keywords1.size === 0 && keywords2.size === 0) {
+  // Handle empty token sets without division by zero
+  if (tokens1.size === 0 && tokens2.size === 0) {
     return 1.0; // Both empty = identical
   }
-  if (keywords1.size === 0 || keywords2.size === 0) {
+  if (tokens1.size === 0 || tokens2.size === 0) {
     return 0.0; // One empty, one not = no similarity
   }
 
   // Calculate intersection and union
-  const intersection = new Set([...keywords1].filter(k => keywords2.has(k)));
-  const union = new Set([...keywords1, ...keywords2]);
+  const intersection = new Set([...tokens1].filter(t => tokens2.has(t)));
+  const union = new Set([...tokens1, ...tokens2]);
 
   // Jaccard = |intersection| / |union|
   return intersection.size / union.size;
@@ -392,23 +366,35 @@ export function gherkinStructuralSimilarity(
 }
 
 /**
- * Calculate hybrid similarity using weighted combination of all algorithms
- * Achieves 88% accuracy target
+ * Calculate hybrid similarity using weighted combination of 5 algorithms
+ *
+ * Combines multiple similarity techniques for more robust matching:
+ * - Jaro-Winkler: prefix matching
+ * - Token Set: word reordering tolerance
+ * - Trigram: typo tolerance
+ * - Jaccard: keyword overlap
+ * - Gherkin Structural: Given/When/Then awareness
+ *
+ * No specific accuracy guarantees - effectiveness depends on scenario content.
  *
  * @param scenario1 - First scenario
  * @param scenario2 - Second scenario
- * @param config - Algorithm weights configuration
+ * @param config - Optional algorithm weights configuration (auto-detects if not provided)
  * @returns Similarity score (0-1)
  */
 export function hybridSimilarity(
   scenario1: Scenario,
   scenario2: Scenario,
-  config: SimilarityConfig
+  config?: SimilarityConfig
 ): number {
-  // Backward compatibility: use legacy Levenshtein if requested
-  if (config.useLegacyLevenshtein) {
-    return legacyCalculateScenarioSimilarity(scenario1, scenario2);
-  }
+  // Auto-detect short strings and use appropriate config
+  const titleLength = Math.min(
+    scenario1.name.trim().length,
+    scenario2.name.trim().length
+  );
+
+  const effectiveConfig =
+    config || (titleLength < 20 ? SHORT_STRING_CONFIG : DEFAULT_SIMILARITY_CONFIG);
 
   // Calculate individual algorithm scores
   const titleText1 = scenario1.name;
@@ -430,11 +416,11 @@ export function hybridSimilarity(
 
   // Combine with configured weights
   const hybridScore =
-    jaroWinklerScore * config.jaroWinklerWeight +
-    tokenSetScore * config.tokenSetWeight +
-    gherkinStructuralScore * config.gherkinStructuralWeight +
-    trigramScore * config.trigramWeight +
-    jaccardScore * config.jaccardWeight;
+    jaroWinklerScore * effectiveConfig.jaroWinklerWeight +
+    tokenSetScore * effectiveConfig.tokenSetWeight +
+    gherkinStructuralScore * effectiveConfig.gherkinStructuralWeight +
+    trigramScore * effectiveConfig.trigramWeight +
+    jaccardScore * effectiveConfig.jaccardWeight;
 
   return hybridScore;
 }
