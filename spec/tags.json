@@ -318,6 +318,10 @@
           "description": "Project management features including work units, epics, and workflow"
         },
         {
+          "name": "@quality-assurance",
+          "description": "Quality assurance and code review features"
+        },
+        {
           "name": "@query",
           "description": "Query operations for searching and filtering"
         },
@@ -514,6 +518,10 @@
           "description": "Build system configuration and bundling"
         },
         {
+          "name": "@code-review",
+          "description": "Code review and quality analysis features"
+        },
+        {
           "name": "@command-registration",
           "description": "CLI command registration features"
         },
@@ -614,6 +622,10 @@
           "description": "Runtime behavior and dynamic configuration"
         },
         {
+          "name": "@search",
+          "description": "Search and query functionality for finding scenarios, work units, and code patterns"
+        },
+        {
           "name": "@session-based",
           "description": "Session-based interactive command pattern (similar to discover-foundation)"
         },
@@ -628,6 +640,10 @@
         {
           "name": "@slash-command",
           "description": "Slash command features for Claude Code"
+        },
+        {
+          "name": "@slash-commands",
+          "description": "Claude Code slash command implementations"
         },
         {
           "name": "@sms",
@@ -1106,7 +1122,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-10-24T12:41:10.130Z",
+    "lastUpdated": "2025-10-24T23:34:53.933Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

@@ -502,7 +502,9 @@ function displayWorkHelp(): void {
   console.log('  • Display the Kanban board showing current state');
   console.log('  • Auto-advance ready work units through workflow');
   console.log('  • Create checkpoints for safe experimentation and rollback');
-  console.log('  • Update work unit details (title, description, estimates)\n');
+  console.log('  • Update work unit details (title, description, estimates)');
+  console.log('  • Search scenarios and implementation code across work units');
+  console.log('  • Compare implementation approaches and testing patterns\n');
 
   console.log(chalk.bold('WORK UNITS'));
   console.log('  ' + chalk.cyan('fspec create-work-unit <prefix> <title>'));
@@ -589,11 +591,51 @@ function displayWorkHelp(): void {
   console.log('      --status <status>                Filter by status');
   console.log('      --prefix <prefix>                Filter by prefix');
   console.log('      --epic <epic>                    Filter by epic');
-  console.log('      --format <format>                Output: text or json');
+  console.log('      --tag <tag>                      Filter by tag');
+  console.log('      --format <format>                Output: text, table, or json');
   console.log('    Examples:');
   console.log(
     '      fspec query-work-units --status=implementing --format=json'
   );
+  console.log('      fspec query-work-units --tag=@cli --format=table');
+  console.log('');
+
+  console.log(chalk.bold('ANALYSIS & COMPARISON'));
+  console.log('  ' + chalk.cyan('fspec search-scenarios --query=<pattern>'));
+  console.log('    Description: Search scenarios across all feature files');
+  console.log('    Options:');
+  console.log('      --regex                          Use regex pattern matching');
+  console.log('      --json                           Output in JSON format');
+  console.log('    Examples:');
+  console.log('      fspec search-scenarios --query="validation"');
+  console.log('      fspec search-scenarios --query="user.*login" --regex');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec search-implementation --function=<name>'));
+  console.log('    Description: Search for function usage across work units');
+  console.log('    Options:');
+  console.log('      --show-work-units                Show which work units use each file');
+  console.log('      --json                           Output in JSON format');
+  console.log('    Examples:');
+  console.log('      fspec search-implementation --function=validateInput');
+  console.log('      fspec search-implementation --function=queryWorkUnits --show-work-units');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec compare-implementations --tag=<tag>'));
+  console.log('    Description: Compare implementation approaches across work units');
+  console.log('    Options:');
+  console.log('      --show-coverage                  Include coverage data');
+  console.log('      --json                           Output in JSON format');
+  console.log('    Examples:');
+  console.log('      fspec compare-implementations --tag=@cli');
+  console.log('      fspec compare-implementations --tag=@authentication --show-coverage');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec show-test-patterns --tag=<tag>'));
+  console.log('    Description: Analyze common testing patterns across work units');
+  console.log('    Options:');
+  console.log('      --include-coverage               Include coverage information');
+  console.log('      --json                           Output in JSON format');
+  console.log('    Examples:');
+  console.log('      fspec show-test-patterns --tag=@high');
+  console.log('      fspec show-test-patterns --tag=@cli --include-coverage');
   console.log('');
 
   console.log(chalk.bold('DEPENDENCIES'));

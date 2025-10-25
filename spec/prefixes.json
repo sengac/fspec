@@ -159,6 +159,11 @@
       "prefix": "CONFIG",
       "description": "Configuration management and utilities",
       "createdAt": "2025-10-23T23:38:52.050Z"
+    },
+    "LANG": {
+      "prefix": "LANG",
+      "description": "Internationalization and localization features",
+      "createdAt": "2025-10-24T22:27:49.656Z"
     }
   }
 }

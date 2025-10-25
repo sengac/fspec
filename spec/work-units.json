@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-24T13:05:07.217Z"
+    "lastUpdated": "2025-10-24T23:32:41.469Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -11645,6 +11645,255 @@
         "User transitions from specifying to testing with uncommitted changes, checkpoint saved before transition"
       ],
       "estimate": 3
+    },
+    "CLI-011": {
+      "id": "CLI-011",
+      "title": "Slash command for critical story review with ULTRATHINK",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-24T13:23:11.621Z",
+      "updatedAt": "2025-10-24T22:55:40.235Z",
+      "description": "Create /review slash command in .claude/commands that critically analyzes stories using ULTRATHINK to identify logical flaws, bugs, anti-patterns, and refactoring opportunities",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-24T13:23:18.623Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-24T22:37:39.740Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-24T22:40:01.575Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-24T22:41:43.753Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-24T22:55:40.235Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using Claude Code with fspec",
+        "action": "critically review a story's acceptance criteria, tests, implementation, and coverage",
+        "benefit": "I can identify logical flaws, bugs, anti-patterns, and refactoring opportunities before they become problems"
+      },
+      "rules": [
+        "Command must prompt user to specify work unit ID if none provided as argument",
+        "Must use ULTRATHINK mode for deep critical analysis of the story",
+        "Must analyze all aspects: acceptance criteria (feature file), tests, implementation code, and coverage mappings",
+        "Must identify: logical flaws, bugs introduced/created, anti-patterns, and refactoring opportunities",
+        "Must check if existing architecture/utilities could be reused instead of new code",
+        "Should read work unit metadata, linked feature file(s), test files from coverage, and implementation files from coverage",
+        "Review output should be structured: Issues Found, Recommendations, Refactoring Opportunities, ACDD Compliance",
+        "Yes, review should compare against similar completed stories using fspec query commands (get-scenarios, show-coverage, query-work-units) to identify inconsistencies in approach, naming conventions, and architectural patterns. If existing commands don't provide sufficient search capability, create a new story for enhanced search/comparison functionality as a dependency.",
+        "Yes, review must validate consistency with CLAUDE.md coding standards (no 'any' types, ES modules, proper imports, etc.) and FOUNDATION.md project requirements (alignment with project goals, personas, capabilities)",
+        "Yes, review must check if ACDD workflow was followed properly: verify temporal ordering (feature files created during specifying, tests before implementation), check for Example Mapping data (rules, examples, answered questions), validate state history timestamps align with file modification times",
+        "Yes, review output must include specific actionable next steps for each issue: show the problem, suggest the fix, and provide concrete commands or actions to resolve it (e.g., 'Issue: Using any type in file.ts:42 → Fix: Replace with proper interface. Action: Edit file.ts line 42 to use UserInterface type')",
+        "Yes, support reviewing multiple work units at once. Allow '/review CLI-001 CLI-002 CLI-003' syntax to review multiple stories in one go. Output should be structured per work unit with clear separators between reviews."
+      ],
+      "examples": [
+        "User runs '/review CLI-011', command loads work unit, reads feature file, analyzes tests and implementation, outputs structured review with identified issues",
+        "User runs '/review' without arguments, command asks 'Which work unit would you like me to review? Please provide the work unit ID (e.g., CLI-011)'",
+        "Review finds test that doesn't actually test the scenario it claims to test, suggests rewriting test to properly validate acceptance criteria",
+        "Review finds implementation using manual file operations when existing utility function in src/utils/ should be used instead, suggests refactoring",
+        "Review finds feature file scenario that doesn't have corresponding test coverage, flags as gap in coverage mapping",
+        "Review detects anti-pattern where code violates CLAUDE.md coding standards (using 'any' type instead of proper types), suggests specific fix"
+      ],
+      "questions": [
+        {
+          "text": "@human: Should the review compare against similar completed stories to identify inconsistencies or patterns?",
+          "selected": true,
+          "answer": "Yes, review should compare against similar completed stories using fspec query commands (get-scenarios, show-coverage, query-work-units) to identify inconsistencies in approach, naming conventions, and architectural patterns. If existing commands don't provide sufficient search capability, create a new story for enhanced search/comparison functionality as a dependency."
+        },
+        {
+          "text": "@human: Should it validate consistency with CLAUDE.md coding standards and FOUNDATION.md project requirements?",
+          "selected": true,
+          "answer": "Yes, review must validate consistency with CLAUDE.md coding standards (no 'any' types, ES modules, proper imports, etc.) and FOUNDATION.md project requirements (alignment with project goals, personas, capabilities)"
+        },
+        {
+          "text": "@human: Should it check if the ACDD workflow was followed properly (temporal ordering, Example Mapping before specs, tests before implementation)?",
+          "selected": true,
+          "answer": "Yes, review must check if ACDD workflow was followed properly: verify temporal ordering (feature files created during specifying, tests before implementation), check for Example Mapping data (rules, examples, answered questions), validate state history timestamps align with file modification times"
+        },
+        {
+          "text": "@human: Should the review output include specific actionable next steps, or just identify issues for the developer to address?",
+          "selected": true,
+          "answer": "Yes, review output must include specific actionable next steps for each issue: show the problem, suggest the fix, and provide concrete commands or actions to resolve it (e.g., 'Issue: Using any type in file.ts:42 → Fix: Replace with proper interface. Action: Edit file.ts line 42 to use UserInterface type')"
+        },
+        {
+          "text": "@human: Should it support reviewing multiple work units at once, or always single work unit reviews?",
+          "selected": true,
+          "answer": "Yes, support reviewing multiple work units at once. Allow '/review CLI-001 CLI-002 CLI-003' syntax to review multiple stories in one go. Output should be structured per work unit with clear separators between reviews."
+        }
+      ],
+      "estimate": 8,
+      "dependsOn": [
+        "QRY-002"
+      ]
+    },
+    "LANG-001": {
+      "id": "LANG-001",
+      "title": "Internationalization and localization support for multiple languages",
+      "type": "story",
+      "status": "specifying",
+      "createdAt": "2025-10-24T22:27:50.151Z",
+      "updatedAt": "2025-10-24T22:28:24.595Z",
+      "description": "Add i18n framework to fspec to support multiple languages for all user-facing text including CLI output, error messages, help text, and system-reminders",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-24T22:27:54.064Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer or AI agent using fspec in a non-English language environment",
+        "action": "see all CLI output, error messages, and help text in my preferred language",
+        "benefit": "I can use fspec effectively without language barriers"
+      },
+      "questions": [
+        {
+          "text": "@human: Which languages should be supported initially? (e.g., Spanish, French, German, Japanese, Chinese, etc.)",
+          "selected": false
+        },
+        {
+          "text": "@human: How should locale/language be configured? Environment variable (LANG), config file setting, CLI flag (--lang=es), or all three with precedence order?",
+          "selected": false
+        },
+        {
+          "text": "@human: Should Gherkin feature files remain in English (industry standard), or should they also be localizable?",
+          "selected": false
+        },
+        {
+          "text": "@human: Should system-reminders (for AI agents) be localized, or always remain in English since AI models typically understand English best?",
+          "selected": false
+        },
+        {
+          "text": "@human: What i18n library should be used? (e.g., i18next, FormatJS/react-intl for CLI, or custom solution)",
+          "selected": false
+        },
+        {
+          "text": "@human: Should translation files be JSON (easy to edit), YAML (human-readable), or .po/.pot files (professional translation tooling)?",
+          "selected": false
+        },
+        {
+          "text": "@human: Where should translation files be stored? Project-level (spec/i18n/), user-level (~/.fspec/i18n/), or both with merging?",
+          "selected": false
+        },
+        {
+          "text": "@human: Should date/time formatting, number formatting, and pluralization rules be supported (full i18n), or just text translation?",
+          "selected": false
+        },
+        {
+          "text": "@human: How should missing translations be handled? Fallback to English, show translation key, or throw error?",
+          "selected": false
+        },
+        {
+          "text": "@human: Should there be a command to extract translatable strings from source code (like 'fspec extract-translations')?",
+          "selected": false
+        }
+      ]
+    },
+    "QRY-002": {
+      "id": "QRY-002",
+      "title": "Enhanced search and comparison commands for similar story analysis",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-24T22:53:07.974Z",
+      "updatedAt": "2025-10-24T23:46:24.889Z",
+      "description": "Create advanced query commands that allow /review to search for similar completed stories by analyzing patterns, naming conventions, architectural approaches, and implementation strategies to enable cross-story consistency checking",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-24T23:32:29.028Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-24T23:35:23.604Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-24T23:36:56.856Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-24T23:46:15.218Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-24T23:46:24.889Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using /review command",
+        "action": "search for similar completed stories to compare patterns and approaches",
+        "benefit": "I can identify inconsistencies and ensure architectural consistency across the codebase"
+      },
+      "rules": [
+        "Search must support filtering by work unit type (story, bug, task)",
+        "Search must support filtering by status (done, backlog, implementing, etc.)",
+        "Search must support filtering by tags (single or multiple tags)",
+        "Search must support filtering by feature group (e.g., all CLI features, all authentication features)",
+        "Search results must show coverage information (test files and implementation files)",
+        "Search must support text search across scenario names, feature descriptions, and work unit titles",
+        "Search results must be sortable by date, story points, or work unit ID",
+        "both - return work unit IDs for traceability and feature file paths for direct access to specs",
+        "yes - side-by-side comparison helps identify pattern divergence and best practices",
+        "table for human readability with --json flag option for programmatic use",
+        "both - literal by default with --regex flag for advanced patterns",
+        "yes - automatic highlighting of naming convention differences (camelCase vs snake_case, different prefixes, etc.)"
+      ],
+      "examples": [
+        "Search for all completed CLI stories: fspec query-work-units --type=story --status=done --tag=@cli",
+        "Find scenarios with 'validation' in the name across all features: fspec search-scenarios --query=validation",
+        "Compare implementation approaches for authentication stories: fspec compare-implementations --tag=@authentication --show-coverage",
+        "Find all work units using a specific utility function: fspec search-implementation --function=loadConfig --show-work-units",
+        "List test patterns for high-priority features: fspec show-test-patterns --tag=@high --include-coverage"
+      ],
+      "questions": [
+        {
+          "text": "@human: Should search commands return work unit IDs, feature file paths, or both?",
+          "selected": true,
+          "answer": "both - return work unit IDs for traceability and feature file paths for direct access to specs"
+        },
+        {
+          "text": "@human: Should comparison commands show side-by-side diffs of implementation approaches?",
+          "selected": true,
+          "answer": "yes - side-by-side comparison helps identify pattern divergence and best practices"
+        },
+        {
+          "text": "@human: What output format should search results use (table, JSON, plain text)?",
+          "selected": true,
+          "answer": "table for human readability with --json flag option for programmatic use"
+        },
+        {
+          "text": "@human: Should search support regex patterns or just literal string matching?",
+          "selected": true,
+          "answer": "both - literal by default with --regex flag for advanced patterns"
+        },
+        {
+          "text": "@human: Should comparison commands highlight naming convention differences automatically?",
+          "selected": true,
+          "answer": "yes - automatic highlighting of naming convention differences (camelCase vs snake_case, different prefixes, etc.)"
+        }
+      ],
+      "estimate": 13
+    },
+    "FEAT-018": {
+      "id": "FEAT-018",
+      "title": "Multi-Tool Bootstrap System",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-10-24T23:48:22.326Z",
+      "updatedAt": "2025-10-24T23:48:22.326Z",
+      "description": "Extend fspec init to bootstrap multiple tools (fspec, mindstrike CLI, future tools) for AI agents. Centralize agent detection logic (Claude Code, Cursor, Windsurf, etc.) and template management in fspec instead of duplicating per tool. Allow tools to register templates with fspec via tool registry. When running 'fspec init', detect agent and copy bootstrap files for ALL registered tools (fspec.md, mindstrike.md, etc.). This makes fspec the universal bootstrap manager for AI coding tools, eliminating duplicate agent detection logic across projects.",
+      "children": []
     }
   },
   "states": {
@@ -11675,12 +11924,14 @@
       "AGENT-014",
       "AGENT-015",
       "AGENT-016",
-      "AGENT-017"
+      "AGENT-017",
+      "FEAT-018"
     ],
     "specifying": [
       "GIT-004",
       "RES-006",
-      "EST-002"
+      "EST-002",
+      "LANG-001"
     ],
     "testing": [],
     "implementing": [],
@@ -11877,7 +12128,9 @@
       "GIT-005",
       "BUG-043",
       "RES-002",
-      "CONFIG-001"
+      "CONFIG-001",
+      "CLI-011",
+      "QRY-002"
     ],
     "blocked": []
   }
