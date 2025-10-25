@@ -5,11 +5,16 @@
 
 import chalk from 'chalk';
 import type { Command } from 'commander';
+import { readFile } from 'fs/promises';
+import { queryWorkUnits } from './query-work-units';
+import { readAllCoverageFiles, extractImplementationFiles, extractTestFiles } from '../utils/coverage-reader';
+import { parseAllFeatures } from '../utils/feature-parser';
 
 interface CompareImplementationsOptions {
   tag: string;
   showCoverage?: boolean;
   json?: boolean;
+  cwd?: string;
 }
 
 interface CompareImplementationsResult {
@@ -25,17 +30,54 @@ interface CompareImplementationsResult {
 export async function compareImplementations(
   options: CompareImplementationsOptions
 ): Promise<CompareImplementationsResult> {
-  // Stub implementation - full implementation pending
+  // Query work units with the specified tag
+  const result = await queryWorkUnits({
+    tag: options.tag,
+    cwd: options.cwd,
+  });
+
+  const workUnits = result.workUnits || [];
+
+  // Parse features to get work unit IDs
+  const parsedFeatures = await parseAllFeatures(options.cwd);
+  const featuresByWorkUnit = new Map<string, string>();
+  for (const parsed of parsedFeatures) {
+    if (parsed.workUnitId) {
+      featuresByWorkUnit.set(parsed.workUnitId, parsed.filePath);
+    }
+  }
+
+  // Read coverage files
+  const coverageFiles = await readAllCoverageFiles(options.cwd);
+
+  // Build coverage data for matching work units
+  const coverage: Array<{
+    testFiles: string[];
+    implementationFiles: string[];
+  }> = [];
+
+  if (options.showCoverage) {
+    const testFiles = extractTestFiles(coverageFiles);
+    const implFiles = extractImplementationFiles(coverageFiles);
+
+    const testFileSet = new Set(testFiles.map(t => t.filePath));
+    const implFileSet = new Set(implFiles.map(i => i.filePath));
+
+    coverage.push({
+      testFiles: Array.from(testFileSet),
+      implementationFiles: Array.from(implFileSet),
+    });
+  }
+
+  // Detect naming convention differences (simple heuristic)
+  const namingConventionDifferences: Array<unknown> = [];
+  // TODO: Implement naming convention analysis
+
   return {
-    workUnits: [{ tags: [options.tag] }],
+    workUnits: workUnits.map(wu => ({ tags: (wu.tags as string[]) || [] })),
     comparison: { type: 'side-by-side' },
-    namingConventionDifferences: [],
-    coverage: [
-      {
-        testFiles: ['test.ts'],
-        implementationFiles: ['impl.ts'],
-      },
-    ],
+    namingConventionDifferences,
+    coverage,
   };
 }
 

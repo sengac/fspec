@@ -5,11 +5,15 @@
 
 import chalk from 'chalk';
 import type { Command } from 'commander';
+import { readFile } from 'fs/promises';
+import { readAllCoverageFiles, extractImplementationFiles } from '../utils/coverage-reader';
+import { queryWorkUnits } from './query-work-units';
 
 interface SearchImplementationOptions {
   function: string;
   showWorkUnits?: boolean;
   json?: boolean;
+  cwd?: string;
 }
 
 interface SearchImplementationResult {
@@ -24,16 +28,59 @@ interface SearchImplementationResult {
 export async function searchImplementation(
   options: SearchImplementationOptions
 ): Promise<SearchImplementationResult> {
-  // Stub implementation - full implementation pending
+  // Read all coverage files
+  const coverageFiles = await readAllCoverageFiles(options.cwd);
+
+  // Extract implementation files
+  const implFiles = extractImplementationFiles(coverageFiles);
+
+  // Search for function usage in implementation files
+  const matchingFiles = new Map<string, Set<string>>();
+
+  for (const implFile of implFiles) {
+    try {
+      const content = await readFile(implFile.filePath, 'utf-8');
+
+      // Check if file contains the function
+      if (content.includes(options.function)) {
+        if (!matchingFiles.has(implFile.filePath)) {
+          matchingFiles.set(implFile.filePath, new Set());
+        }
+        matchingFiles.get(implFile.filePath)?.add(implFile.featureName);
+      }
+    } catch (error) {
+      // Skip files that cannot be read
+      continue;
+    }
+  }
+
+  // Build result
+  const files = await Promise.all(
+    Array.from(matchingFiles.entries()).map(async ([filePath, featureNames]) => {
+      const content = await readFile(filePath, 'utf-8');
+
+      // Get work unit IDs from coverage data
+      const workUnitIds = new Set<string>();
+      for (const implFile of implFiles) {
+        if (implFile.filePath === filePath) {
+          // Feature name is used as work unit ID lookup
+          const featureName = implFile.featureName;
+          // Try to find work unit ID from parsed features
+          workUnitIds.add(featureName.toUpperCase().replace(/-/g, '-'));
+        }
+      }
+
+      return {
+        content,
+        filePath,
+        workUnits: Array.from(workUnitIds).map(id => ({ workUnitId: id })),
+      };
+    })
+  );
+
   return {
-    searchedFiles: 1,
-    files: [
-      {
-        content: `function ${options.function}() {}`,
-        filePath: 'src/utils/config.ts',
-        workUnits: [{ workUnitId: 'CONFIG-001' }],
-      },
-    ],
+    searchedFiles: implFiles.length,
+    files,
   };
 }
 

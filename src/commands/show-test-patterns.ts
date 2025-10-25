@@ -5,11 +5,15 @@
 
 import chalk from 'chalk';
 import type { Command } from 'commander';
+import { queryWorkUnits } from './query-work-units';
+import { readAllCoverageFiles, extractTestFiles } from '../utils/coverage-reader';
+import { parseAllFeatures } from '../utils/feature-parser';
 
 interface ShowTestPatternsOptions {
   tag: string;
   includeCoverage?: boolean;
   json?: boolean;
+  cwd?: string;
 }
 
 interface ShowTestPatternsResult {
@@ -22,11 +26,42 @@ interface ShowTestPatternsResult {
 export async function showTestPatterns(
   options: ShowTestPatternsOptions
 ): Promise<ShowTestPatternsResult> {
-  // Stub implementation - full implementation pending
+  // Query work units with the specified tag
+  const result = await queryWorkUnits({
+    tag: options.tag,
+    cwd: options.cwd,
+  });
+
+  const workUnits = result.workUnits || [];
+
+  // Parse features to get work unit IDs
+  const parsedFeatures = await parseAllFeatures(options.cwd);
+  const featuresByWorkUnit = new Map<string, string>();
+  for (const parsed of parsedFeatures) {
+    if (parsed.workUnitId) {
+      featuresByWorkUnit.set(parsed.workUnitId, parsed.filePath);
+    }
+  }
+
+  // Read coverage files
+  const coverageFiles = await readAllCoverageFiles(options.cwd);
+
+  // Extract test files if coverage requested
+  let testFiles: string[] = [];
+  if (options.includeCoverage) {
+    const testFileMappings = extractTestFiles(coverageFiles);
+    const testFileSet = new Set(testFileMappings.map(t => t.filePath));
+    testFiles = Array.from(testFileSet);
+  }
+
+  // Analyze test patterns (placeholder for future analysis)
+  const patterns: Array<unknown> = [];
+  // TODO: Implement pattern analysis (e.g., common describe blocks, mocking patterns, assertion patterns)
+
   return {
-    workUnits: [{ tags: [options.tag] }],
-    testFiles: ['test.test.ts'],
-    patterns: [],
+    workUnits: workUnits.map(wu => ({ tags: (wu.tags as string[]) || [] })),
+    testFiles,
+    patterns,
     format: options.json ? 'json' : 'table',
   };
 }

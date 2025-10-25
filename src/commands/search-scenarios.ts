@@ -5,11 +5,13 @@
 
 import chalk from 'chalk';
 import type { Command } from 'commander';
+import { parseAllFeatures, searchScenarios as searchScenariosUtil } from '../utils/feature-parser';
 
 interface SearchScenariosOptions {
   query: string;
   regex?: boolean;
   json?: boolean;
+  cwd?: string;
 }
 
 interface SearchScenariosResult {
@@ -27,17 +29,27 @@ interface SearchScenariosResult {
 export async function searchScenarios(
   options: SearchScenariosOptions
 ): Promise<SearchScenariosResult> {
-  // Stub implementation - full implementation pending
+  // Parse all feature files
+  const parsedFeatures = await parseAllFeatures(options.cwd);
+
+  // Search scenarios using utility function
+  const results = searchScenariosUtil(
+    parsedFeatures,
+    options.query,
+    options.regex || false
+  );
+
+  // Transform results to match expected format
+  const scenarios = results.map(result => ({
+    name: result.scenarioName,
+    scenarioName: result.scenarioName,
+    featureFilePath: result.featureFilePath,
+    workUnitId: result.workUnitId,
+  }));
+
   return {
-    searchedFiles: 1,
-    scenarios: [
-      {
-        name: 'validation scenario',
-        scenarioName: 'validation scenario',
-        featureFilePath: 'spec/features/test.feature',
-        workUnitId: 'TEST-001',
-      },
-    ],
+    searchedFiles: parsedFeatures.length,
+    scenarios,
     format: options.json ? 'json' : 'table',
     searchMode: options.regex ? 'regex' : 'literal',
   };

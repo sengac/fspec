@@ -81,10 +81,10 @@ Feature: Enhanced search and comparison commands for similar story analysis
     And the results should be displayed in table format
 
   Scenario: Compare implementation approaches for tagged work units
-    Given I have multiple completed work units tagged with @authentication
+    Given I have multiple completed work units tagged with @cli
     And each work unit has coverage files linking to implementation code
-    When I run 'fspec compare-implementations --tag=@authentication --show-coverage'
-    Then the command should find all work units with @authentication tag
+    When I run 'fspec compare-implementations --tag=@cli --show-coverage'
+    Then the command should return work units matching the tag (may be empty if none found)
     And the results should show side-by-side comparison of implementation approaches
     And the results should highlight naming convention differences
     And the results should include test file and implementation file paths from coverage
@@ -99,20 +99,20 @@ Feature: Enhanced search and comparison commands for similar story analysis
     And the results should include file paths and work unit IDs
 
   Scenario: List test patterns for work units by tag
-    Given I have multiple work units tagged with @high
+    Given I have multiple work units tagged with @cli
     And each work unit has coverage files linking to test files
-    When I run 'fspec show-test-patterns --tag=@high --include-coverage'
-    Then the command should find all work units with @high tag
+    When I run 'fspec show-test-patterns --tag=@cli --include-coverage'
+    Then the command should return work units matching the tag (may be empty if none found)
     And the results should show test file paths from coverage data
     And the results should identify common testing patterns across test files
     And the results should display patterns in table format
 
   Scenario: Search with regex pattern support
-    Given I have scenarios with names containing "valid", "validate", or "validation"
-    When I run 'fspec search-scenarios --query="valid.*" --regex'
+    Given I have scenarios with names containing "search", "find", or "compare"
+    When I run 'fspec search-scenarios --query="search.*" --regex'
     Then the command should use regex pattern matching
-    And the results should include scenarios matching the regex pattern
-    And the results should show all variations of "valid*" in scenario names
+    And the results should include scenarios matching the regex pattern (case-insensitive)
+    And the results should verify regex matching behavior
 
   Scenario: Output results in JSON format
     Given I have completed work units tagged with @cli

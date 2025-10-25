@@ -10,6 +10,14 @@ const config: CommandHelpConfig = {
       description: 'Filter by status',
     },
     {
+      flag: '--type <type>',
+      description: 'Filter by work item type: story, task, or bug',
+    },
+    {
+      flag: '--tag <tag>',
+      description: 'Filter by tag (e.g., @cli, @high)',
+    },
+    {
       flag: '--epic <epic>',
       description: 'Filter by epic',
     },
@@ -29,8 +37,14 @@ const config: CommandHelpConfig = {
       output:
         '[{"id":"AUTH-001","status":"implementing","title":"Login feature"}]',
     },
+    {
+      command: 'fspec query-work-units --type=story --status=done --tag=@cli',
+      description: 'Query completed stories tagged with @cli',
+      output:
+        '[{"id":"CLI-001","status":"done","title":"CLI commands"}]',
+    },
   ],
-  relatedCommands: ['list-work-units', 'export-work-units'],
+  relatedCommands: ['list-work-units', 'export-work-units', 'search-scenarios', 'compare-implementations'],
 };
 
 export default config;

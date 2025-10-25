@@ -243,6 +243,7 @@ export function registerQueryWorkUnitsCommand(program: Command): void {
     .option('--prefix <prefix>', 'Filter by prefix')
     .option('--epic <epic>', 'Filter by epic')
     .option('--type <type>', 'Filter by work item type: story, task, or bug')
+    .option('--tag <tag>', 'Filter by tag')
     .option('--format <format>', 'Output format: text or json', 'text')
     .action(
       async (options: {
@@ -250,21 +251,25 @@ export function registerQueryWorkUnitsCommand(program: Command): void {
         prefix?: string;
         epic?: string;
         type?: 'story' | 'task' | 'bug';
+        tag?: string;
         format?: string;
       }) => {
         try {
           const result = await queryWorkUnits({
-            status: options.status as any,
+            status: options.status,
             prefix: options.prefix,
             epic: options.epic,
             type: options.type,
+            tag: options.tag,
             format: options.format as 'text' | 'json',
           });
           if (options.format === 'json') {
             console.log(JSON.stringify(result, null, 2));
           }
-        } catch (error: any) {
-          console.error(chalk.red('✗ Query failed:'), error.message);
+        } catch (error: unknown) {
+          if (error instanceof Error) {
+            console.error(chalk.red('✗ Query failed:'), error.message);
+          }
           process.exit(1);
         }
       }
