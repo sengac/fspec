@@ -70,9 +70,9 @@
     },
     "work-item-types": {
       "id": "work-item-types",
-      "title": "Work Item Type System (Story/Task/Bug)",
+      "title": "Work Unit Type System (Story/Task/Bug)",
       "createdAt": "2025-10-15T06:15:07.594Z",
-      "description": "Epic for implementing work item type differentiation throughout fspec, allowing stories, tasks, and bugs to have different workflows and requirements",
+      "description": "Epic for implementing work unit type differentiation throughout fspec, allowing stories, tasks, and bugs to have different workflows and requirements",
       "workUnits": [
         "FEAT-006",
         "FEAT-007",

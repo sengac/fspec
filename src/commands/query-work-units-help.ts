@@ -11,7 +11,7 @@ const config: CommandHelpConfig = {
     },
     {
       flag: '--type <type>',
-      description: 'Filter by work item type: story, task, or bug',
+      description: 'Filter by work unit type: story, task, or bug',
     },
     {
       flag: '--tag <tag>',

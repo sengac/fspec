@@ -4609,11 +4609,11 @@
     },
     "FEAT-006": {
       "id": "FEAT-006",
-      "title": "Work item type system - Core foundation",
+      "title": "Work unit type system - Core foundation",
       "status": "done",
       "createdAt": "2025-10-15T05:44:47.532Z",
       "updatedAt": "2025-10-15T06:39:15.374Z",
-      "description": "Add support for different work item types (story, task, bug) similar to JIRA, allowing better categorization of work units based on their nature (user-facing features vs operational work vs defects)",
+      "description": "Add support for different work unit types (story, task, bug) similar to JIRA, allowing better categorization of work units based on their nature (user-facing features vs operational work vs defects)",
       "children": [],
       "stateHistory": [
         {
@@ -9703,10 +9703,10 @@
       "id": "CLI-007",
       "title": "Replace generic create-work-unit with type-specific commands",
       "type": "story",
-      "status": "testing",
+      "status": "done",
       "createdAt": "2025-10-21T13:51:58.078Z",
-      "updatedAt": "2025-10-25T06:48:17.495Z",
-      "description": "Remove create-work-unit command entirely. Add 4 type-specific commands: create-story, create-bug, create-refactor, create-task. Each command emits intelligent system-reminders that guide AI agents to the appropriate discovery workflow: stories use Example Mapping, bugs/refactors use research commands (search-scenarios, search-implementation, compare-implementations), tasks have minimal requirements. Add 'refactor' as 4th work item type. Breaking change (v2.0).",
+      "updatedAt": "2025-10-25T07:29:27.515Z",
+      "description": "Remove create-work-unit command entirely. Add 3 type-specific commands: create-story, create-bug, create-task. Each command emits intelligent system-reminders that guide AI agents to the appropriate discovery workflow: stories use Example Mapping, bugs use research commands (search-scenarios, search-implementation, show-coverage), tasks have minimal requirements. Breaking change (v2.0).",
       "children": [],
       "stateHistory": [
         {
@@ -9716,70 +9716,80 @@
         {
           "state": "testing",
           "timestamp": "2025-10-25T06:48:17.495Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-25T07:00:50.409Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-25T07:03:27.023Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-25T07:15:24.663Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-25T07:21:44.896Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-25T07:26:45.712Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-25T07:29:27.515Z"
         }
       ],
       "userStory": {
         "role": "AI agent using fspec",
         "action": "create work units with appropriate guidance for each type",
-        "benefit": "I follow the correct discovery workflow for stories, bugs, refactors, and tasks"
+        "benefit": "I follow the correct discovery workflow for stories, bugs, and tasks"
       },
       "rules": [
-        "Four type-specific commands must exist: create-story, create-bug, create-refactor, create-task",
         "The generic create-work-unit command must be completely removed (breaking change)",
-        "The WorkItemType must include 'refactor' as a 4th type alongside story, bug, task",
         "Each command must emit a type-specific system-reminder after creation guiding AI to the appropriate workflow",
         "create-bug must guide AI to research commands: search-scenarios, search-implementation, show-coverage",
-        "create-refactor must guide AI to analysis commands: compare-implementations, show-test-patterns, search-implementation",
         "create-story must guide AI to Example Mapping commands: add-rule, add-example, add-question, set-user-story",
         "create-task must indicate minimal requirements (optional feature file, optional tests)",
-        "Four type-specific commands must exist: create-story, create-bug, create-refactor, create-task",
         "The generic create-work-unit command must be completely removed (breaking change)",
-        "WorkItemType must include 'refactor' as 4th type alongside story, bug, task",
         "Each command must emit type-specific system-reminder after creation guiding AI to appropriate workflow",
         "create-story must guide AI to Example Mapping commands (add-rule, add-example, add-question, set-user-story)",
         "create-bug must guide AI to research commands (search-scenarios, search-implementation, show-coverage)",
-        "create-refactor must guide AI to analysis commands (compare-implementations, show-test-patterns, search-implementation)",
         "create-task must indicate minimal requirements (optional feature file, optional tests)",
-        "The group help in src/help.ts must be updated to reference create-story/bug/refactor/task instead of create-work-unit",
+        "The group help in src/help.ts must be updated to reference create-story/bug/task instead of create-work-unit",
         "All command help files in src/commands/*-help.ts must be updated to remove create-work-unit references and add new command help files",
         "README.md must be updated to replace all create-work-unit examples with type-specific command examples",
         "spec/CLAUDE.md (auto-generated) must be regenerated to reflect new commands in all workflow examples",
         "All documentation files in docs/ directory must be searched and updated to replace create-work-unit with type-specific commands",
         "All system-reminders in source code must be found and updated to reference new commands (search for 'create-work-unit' in all .ts files)",
         "All test files must be updated to test new commands and verify old command is removed",
-        "Commander.js registration in main CLI file must remove create-work-unit and register 4 new commands",
+        "Commander.js registration in main CLI file must remove create-work-unit and register 3 new commands",
         "Complete example commands (Option A) - more helpful for AI agents because they provide concrete patterns, reduce cognitive load, and enable immediate action",
-        "All options supported (Option A) - create-story/bug/refactor/task all support --epic, --description, --parent for consistency and because all types can legitimately have hierarchical relationships",
-        "ALL mentions of 'work unit' terminology must be replaced with type-specific terminology (stories, bugs, refactors, tasks) throughout the ENTIRE codebase",
-        "Variables named 'workUnit' must be renamed to contextually appropriate names (story, bug, refactor, task, or workItem for generic cases)",
-        "User-facing text saying 'work unit' must be replaced with 'story', 'bug', 'refactor', 'task', or collective term like 'work items'",
+        "All options supported (Option A) - create-story/bug/task all support --epic, --description, --parent for consistency and because all types can legitimately have hierarchical relationships",
+        "ALL mentions of 'work unit' terminology must be replaced with type-specific terminology (stories, bugs, tasks) throughout the ENTIRE codebase",
         "File names containing 'work-unit' must be evaluated for renaming to 'work-item' or type-specific names",
-        "Hard breaking change (Option A) - v2.0.0 immediately removes create-work-unit and all work unit terminology. Clean break, no deprecation period."
+        "Hard breaking change (Option A) - v2.0.0 immediately removes create-work-unit and all work unit terminology. Clean break, no deprecation period.",
+        "Variables named 'workUnit' must be renamed to contextually appropriate names (story, bug, task, or workUnit for generic cases)",
+        "User-facing text saying 'work unit' must be replaced with 'story', 'bug', 'task', or collective term like 'work units'"
       ],
       "examples": [
         "AI runs 'fspec create-story AUTH \"User login\"' and sees system-reminder: 'Next steps - Example Mapping: 1. fspec add-rule AUTH-001 ..., 2. fspec add-example AUTH-001 ...'",
         "AI runs 'fspec create-bug BUG \"Login validation broken\"' and sees system-reminder: 'CRITICAL: Research existing code FIRST: 1. fspec search-scenarios --query=\"login\", 2. fspec search-implementation --function=\"validateLogin\"'",
-        "AI runs 'fspec create-refactor REFAC \"Consolidate validation logic\"' and sees system-reminder: 'CRITICAL: Research existing implementation: 1. fspec compare-implementations --tag=@validation, 2. fspec show-test-patterns --tag=@validation'",
         "AI runs 'fspec create-task TASK \"Setup CI/CD pipeline\"' and sees system-reminder: 'Task created. Tasks can skip feature files and tests for operational work.'",
-        "AI tries 'fspec create-work-unit AUTH \"Login\"' and gets error: 'Command not found. Use create-story, create-bug, create-refactor, or create-task instead.'",
-        "TypeScript interface shows: export type WorkItemType = 'story' | 'bug' | 'refactor' | 'task' (4 types including refactor)",
         "AI runs 'fspec create-story AUTH \"User login\"' and sees system-reminder: 'Next steps - Example Mapping: 1. fspec add-rule AUTH-001 ..., 2. fspec add-example AUTH-001 ...'",
         "AI runs 'fspec create-bug BUG \"Login validation broken\"' and sees system-reminder: 'CRITICAL: Research existing code FIRST: 1. fspec search-scenarios --query=\"login\", 2. fspec search-implementation --function=\"validateLogin\"'",
-        "AI runs 'fspec create-refactor REFAC \"Consolidate validation logic\"' and sees system-reminder: 'CRITICAL: Research existing implementation: 1. fspec compare-implementations --tag=@validation, 2. fspec show-test-patterns --tag=@validation'",
         "AI runs 'fspec create-task TASK \"Setup CI/CD pipeline\"' and sees system-reminder: 'Task created. Tasks can skip feature files and tests for operational work.'",
-        "AI tries 'fspec create-work-unit AUTH \"Login\"' and gets error: 'Command not found. Use create-story, create-bug, create-refactor, or create-task instead.'",
-        "TypeScript interface shows: export type WorkItemType = 'story' | 'bug' | 'refactor' | 'task' (4 types including refactor)",
         "In src/help.ts, replace 'fspec create-work-unit PREFIX \"Title\"' with 'fspec create-story PREFIX \"Title\"' in work management help",
-        "Create 4 new help files: src/commands/create-story-help.ts, create-bug-help.ts, create-refactor-help.ts, create-task-help.ts",
         "Delete src/commands/create-work-unit-help.ts completely (breaking change)",
         "In README.md Quick Start section, replace 'fspec create-work-unit AUTH \"Login\"' with 'fspec create-story AUTH \"Login\"'",
         "Search all .ts files for 'create-work-unit' string and update to appropriate type-specific command based on context",
-        "In spec/CLAUDE.md examples, replace all 'fspec create-work-unit' occurrences with context-appropriate create-story/bug/refactor/task",
-        "Update TypeScript interface in src/types.ts: export type WorkItemType = 'story' | 'bug' | 'refactor' | 'task'",
+        "In spec/CLAUDE.md examples, replace all 'fspec create-work-unit' occurrences with context-appropriate create-story/bug/task",
         "Grep for system-reminder tags containing 'create-work-unit' and update each to reference new commands with type guidance",
         "Replace 'Work unit CLI-007' with 'Story CLI-007' in show-work-unit output",
-        "Rename function updateWorkUnitStatus() to updateWorkItemStatus() for generic cases, or updateStoryStatus() for type-specific",
-        "In docs, change 'work unit management' to 'work item management' or 'managing stories, bugs, refactors, and tasks'"
+        "Rename function updateWorkUnitStatus() to updateWorkUnitStatus() for generic cases, or updateStoryStatus() for type-specific",
+        "In docs, change 'work unit management' to 'work unit management' or 'managing stories, bugs, and tasks'"
       ],
       "questions": [
         {
@@ -9806,7 +9816,7 @@
       "assumptions": [
         "No migration guide (Option B) - Command should simply not exist. AI will adapt by using available commands."
       ],
-      "estimate": 8
+      "estimate": 5
     },
     "BUG-028": {
       "id": "BUG-028",
@@ -12291,9 +12301,7 @@
       "EST-002",
       "LANG-001"
     ],
-    "testing": [
-      "CLI-007"
-    ],
+    "testing": [],
     "implementing": [],
     "validating": [],
     "done": [
@@ -12493,7 +12501,8 @@
       "QRY-002",
       "CLI-012",
       "REV-002",
-      "TEST-006"
+      "TEST-006",
+      "CLI-007"
     ],
     "blocked": []
   }

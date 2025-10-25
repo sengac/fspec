@@ -328,7 +328,7 @@ Feature: Imported Feature
   });
 
   describe('Scenario: Tasks are exempt from test file temporal validation', () => {
-    it('should not validate test file timestamps for task work items', async () => {
+    it('should not validate test file timestamps for task work units', async () => {
       // Given I have a task work unit (tasks don't require tests)
       const workUnitsData: WorkUnitsData = await ensureWorkUnitsFile(tmpDir);
       const workUnitId = 'TASK-001';

@@ -194,7 +194,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@system-reminder` | Anti-drift pattern for AI agents using contextual reminders |
 | `@template` | Template System |
 | `@traceability` | Scenario-to-test-to-implementation traceability and coverage tracking |
-| `@type-system` | Work item type system features for categorizing work (story, task, bug) |
+| `@type-system` | Work unit type system features for categorizing work (story, task, bug) |
 | `@vitest` | Vitest testing framework related features |
 
 **Rule**: Use technical tags to highlight specific architectural concerns.

@@ -2,7 +2,7 @@ import { writeFile } from 'fs/promises';
 import chalk from 'chalk';
 import type { Command } from 'commander';
 import { join } from 'path';
-import type { WorkUnitsData, EpicsData, WorkItemType } from '../types';
+import type { WorkUnitsData, EpicsData, WorkUnitType } from '../types';
 import { ensureWorkUnitsFile, ensureEpicsFile } from '../utils/ensure-files';
 
 interface UpdateWorkUnitOptions {
@@ -11,7 +11,7 @@ interface UpdateWorkUnitOptions {
   description?: string;
   epic?: string;
   parent?: string;
-  type?: WorkItemType;
+  type?: WorkUnitType;
   cwd?: string;
 }
 
@@ -36,7 +36,7 @@ export async function updateWorkUnit(
   // Validate type immutability
   if (options.type !== undefined) {
     throw new Error(
-      `Work item type is immutable and cannot be changed after creation.\n\n` +
+      `Work unit type is immutable and cannot be changed after creation.\n\n` +
         `Current type: ${workUnitsData.workUnits[options.workUnitId].type || 'story'}\n` +
         `Attempted to change to: ${options.type}\n\n` +
         `If you need to change the type, Delete this work unit and create a new one with the correct type.`

@@ -3,7 +3,7 @@
 @FEAT-006
 @work-units
 @type-system
-Feature: Work item types for stories, tasks, and bugs
+Feature: Work unit types for stories, tasks, and bugs
 
   Background: User Story
     As an AI agent managing project work with fspec

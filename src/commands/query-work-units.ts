@@ -242,7 +242,7 @@ export function registerQueryWorkUnitsCommand(program: Command): void {
     .option('--status <status>', 'Filter by status')
     .option('--prefix <prefix>', 'Filter by prefix')
     .option('--epic <epic>', 'Filter by epic')
-    .option('--type <type>', 'Filter by work item type: story, task, or bug')
+    .option('--type <type>', 'Filter by work unit type: story, task, or bug')
     .option('--tag <tag>', 'Filter by tag')
     .option('--format <format>', 'Output format: text or json', 'text')
     .action(
