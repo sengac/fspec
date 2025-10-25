@@ -71,7 +71,7 @@ describe('Feature: Duplicate scenario detection in generate-scenarios command', 
           benefit: 'I avoid creating duplicate scenarios across feature files',
         },
         examples: [
-          'User logs in with valid credentials',
+          'Given I have valid credentials When I log in Then I should be logged in',
         ],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -141,7 +141,7 @@ Feature: User Authentication
           benefit: 'I avoid creating duplicate scenarios across feature files',
         },
         examples: [
-          'User logs in with valid credentials',
+          'Given I have valid credentials When I log in Then I should be logged in',
         ],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),

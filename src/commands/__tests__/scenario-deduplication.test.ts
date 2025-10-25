@@ -42,7 +42,7 @@ describe('Feature: Scenario deduplication and refactoring detection during gener
                 type: 'story',
                 status: 'specifying',
                 rules: ['Validate user credentials before allowing access'],
-                examples: ['Validate user credentials and grant access'],
+                examples: ['Given a user exists with valid credentials When the user logs in Then the system should validate credentials'],
                 questions: [],
               },
             },
@@ -117,7 +117,7 @@ Feature: User Authentication
                 type: 'story',
                 status: 'specifying',
                 rules: ['Validate user credentials before allowing access'],
-                examples: ['Validate user credentials and grant access'],
+                examples: ['Given a user exists with valid credentials When the user logs in Then the system should validate credentials'],
                 questions: [],
               },
             },
@@ -250,9 +250,9 @@ Feature: User Authentication
                 status: 'specifying',
                 rules: [],
                 examples: [
-                  'Validate empty tags in feature files',
-                  'Handle malformed tag JSON gracefully',
-                  'Validate scenario ordering in features',
+                  'Given a feature with empty tags When validation runs Then validation should fail',
+                  'Given a feature with malformed tag JSON When validation runs Then validation should fail gracefully',
+                  'Given a feature with mixed scenario ordering When validation runs Then scenarios should be reordered',
                 ],
                 questions: [],
               },
@@ -288,9 +288,9 @@ Feature: User Authentication
         join(tmpDir, 'spec/features/tag-management.feature'),
         `Feature: Tag Management
   Scenario: Handle malformed tag JSON gracefully
-    Given malformed tag JSON exists
-    When parser reads it
-    Then show error message
+    Given a feature with malformed tag JSON
+    When validation runs
+    Then validation should fail gracefully
 `
       );
 
@@ -339,9 +339,9 @@ Feature: User Authentication
         `Feature: Security
   Scenario: User login with valid credentials
     Given a user has valid credentials
-    When the user attempts to login
+    When the user logs in
     Then login succeeds
-    And user session is created
+    And user is authenticated
 `
       );
 

@@ -12,7 +12,7 @@ import * as Gherkin from '@cucumber/gherkin';
 import * as Messages from '@cucumber/messages';
 import {
   calculateScenarioSimilarity,
-  extractKeywords,
+  extractTokens,
 } from '../utils/scenario-similarity.js';
 
 interface DuplicateGroup {
@@ -118,7 +118,7 @@ export async function auditScenarios(
         files: [feature1.file],
         scenarios: [scenario1.name],
         similarityScore: 1.0,
-        keywords: extractKeywords(scenario1),
+        keywords: extractTokens(scenario1),
       };
 
       // Compare with scenarios in other features
