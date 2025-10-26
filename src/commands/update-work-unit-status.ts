@@ -16,7 +16,8 @@ import {
   findStateHistoryEntry,
   checkFileCreatedAfter,
 } from '../utils/temporal-validation';
-import * as gitCheckpoint from '../utils/git-checkpoint.js';
+import * as gitCheckpoint from '../utils/git-checkpoint';
+import { existsSync } from 'fs';
 
 type WorkUnitStatus =
   | 'backlog'
@@ -376,7 +377,12 @@ export async function updateWorkUnitStatus(
   try {
     const isDirty = await gitCheckpoint.isWorkingDirectoryDirty(cwd);
 
-    if (isDirty && currentStatus !== 'backlog') {
+    // Explicit boolean assignment prevents Vite optimizer from breaking execution flow
+    // Without this, optimizer transforms: 'const isDirty = await ...; if (isDirty && ...)'
+    // Into broken code: 'await Zn(t) && i !== "backlog" && (...)'
+    const shouldCreateCheckpoint = isDirty && currentStatus !== 'backlog';
+
+    if (shouldCreateCheckpoint) {
       checkpointName = gitCheckpoint.createAutomaticCheckpointName(
         options.workUnitId,
         currentStatus
@@ -573,7 +579,6 @@ async function checkCoverageCompleteness(
     );
 
     // Check if coverage file exists
-    const { existsSync } = await import('fs');
     if (!existsSync(coverageFilePath)) {
       // Coverage file doesn't exist, allow with warning
       return {
