@@ -5,7 +5,6 @@
 @high
 @REMIND-009
 Feature: Context-aware system-reminders for workflow state transitions
-
   """
   Modify update-work-unit-status command to emit state-specific system-reminders. Create mapping of workflow states to command lists. Format output as vertical list with full syntax placeholders. Reference existing system-reminder patterns in codebase for consistency.
   """
@@ -46,7 +45,6 @@ Feature: Context-aware system-reminders for workflow state transitions
   #   A: true
   #
   # ========================================
-
   Background: User Story
     As a AI agent working on fspec project
     I want to see relevant commands when entering a new workflow state

@@ -5,7 +5,6 @@
 @high
 @BOARD-004
 Feature: Work unit ordering across all Kanban columns
-
   """
   Done column is exempt from manual ordering (sorted by completion timestamp). Attempts to prioritize done work units emit system-reminders explaining the constraint and listing allowed columns for AI agent guidance.
   """
@@ -36,7 +35,6 @@ Feature: Work unit ordering across all Kanban columns
   #   7. Old test: 'should throw error when prioritizing work unit in implementing status' - REMOVE (no longer an error). Add new tests: 'should prioritize work unit in specifying column', 'should prioritize work unit in implementing column', etc.
   #
   # ========================================
-
   Background: User Story
     As a developer managing work priorities
     I want to reorder work units in any Kanban column except done

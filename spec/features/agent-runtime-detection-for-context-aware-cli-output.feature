@@ -5,7 +5,6 @@
 @high
 @INIT-008
 Feature: Agent runtime detection for context-aware CLI output
-
   """
   Output formats: Claude Code gets <system-reminder> tags, IDE agents (Cursor/Cline) get **⚠️ IMPORTANT:** with emoji, CLI-only agents (Aider/Gemini) get **IMPORTANT:** plain text.
   """
@@ -43,7 +42,6 @@ Feature: Agent runtime detection for context-aware CLI output
   #   A: true
   #
   # ========================================
-
   Background: User Story
     As a AI agent (Claude Code, Cursor, Aider, etc.) running fspec commands
     I want to have CLI output adapted to my capabilities (system-reminders, bold text, plain text)

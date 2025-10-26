@@ -6,14 +6,13 @@
 @medium
 @DEP-002
 Feature: Upgrade Vitest from 2.1.8 to 4.0.0
-
   """
   Vitest 4.0 Release Notes (Oct 22, 2025):
-- Browser Mode stabilization (no longer experimental)
-- Visual regression testing with toMatchScreenshot assertion
-- Context import changed from @vitest/browser/context to vitest/browser
-- Pool default remains 'forks' (introduced in 2.0)
-- Migration guide: https://vitest.dev/blog/vitest-4
+  - Browser Mode stabilization (no longer experimental)
+  - Visual regression testing with toMatchScreenshot assertion
+  - Context import changed from @vitest/browser/context to vitest/browser
+  - Pool default remains 'forks' (introduced in 2.0)
+  - Migration guide: https://vitest.dev/blog/vitest-4
   """
 
   # ========================================
@@ -39,7 +38,6 @@ Feature: Upgrade Vitest from 2.1.8 to 4.0.0
   #   A: true
   #
   # ========================================
-
   Background: User Story
     As a fspec developer
     I want to upgrade Vitest to version 4.0 for improved stability and latest features

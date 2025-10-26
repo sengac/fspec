@@ -4,26 +4,25 @@
 @parser
 @refactoring
 Feature: Scenario similarity matching with hybrid algorithm
-
   """
-  
+
   WHAT IS NOT SEMANTIC (Allowed):
   ✅ Tokenization - splitting text into words (language-agnostic pattern matching)
   ✅ Alphanumeric extraction - regex /\b[a-z0-9]+\b/gi (supports OAuth2, SHA256)
   ✅ Case normalization - toLowerCase() (simple transformation)
   ✅ Character-level algorithms - Jaro-Winkler, Trigram (no word meaning required)
   ✅ Set operations - Jaccard on raw tokens (just math on sets)
-  
+
   WHAT IS SEMANTIC (NOT Allowed):
   ❌ Stopword filtering - requires English dictionary knowledge
   ❌ Stemming - 'login' vs 'logs in' (requires linguistic rules)
   ❌ Synonyms - 'authenticate' vs 'login' (requires semantic dictionary)
   ❌ Word sense - 'bank' financial vs riverbank (requires context understanding)
   ❌ Intent detection - 'fix' vs 'refactor' keywords (requires semantic judgment)
-  
+
   RENAME: extractKeywords() → extractTokens()
   Honest naming: tokens are raw words, not semantically-selected keywords.
-  
+
   """
 
   # ========================================
@@ -41,7 +40,6 @@ Feature: Scenario similarity matching with hybrid algorithm
   #   2. Audit-scenarios command runs on 100 scenarios. Uses hybridSimilarity for deduplication. Correctly identifies near-duplicates.
   #
   # ========================================
-
   Background: User Story
     As a developer using fspec for ACDD
     I want to have accurate scenario duplicate detection

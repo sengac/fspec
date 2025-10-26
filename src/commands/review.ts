@@ -40,6 +40,130 @@ interface Recommendation {
   action: string;
 }
 
+/**
+ * Build AI-driven deep code analysis system-reminder
+ * Instructs AI to read implementation files, analyze code, and check FOUNDATION.md
+ */
+function buildAIAnalysisReminder(
+  workUnitId: string,
+  workUnit: { type?: string; title: string },
+  featureFile: string | null,
+  coverageData: {
+    scenarios?: Array<{
+      name: string;
+      testMappings?: Array<{
+        file: string;
+        implMappings?: Array<{
+          file: string;
+          lines: number[];
+        }>;
+      }>;
+    }>;
+  } | null,
+  cwd: string,
+  recommendations: Array<{ recommendation: string; rationale: string; action: string }>
+): string {
+  const lines: string[] = [];
+
+  // Include ACDD recommendations if present
+  if (recommendations.length > 0) {
+    lines.push('ACDD COMPLIANCE REVIEW');
+    lines.push('');
+    recommendations.forEach((rec, index) => {
+      lines.push(`${index + 1}. **Recommendation:** ${rec.recommendation}`);
+      lines.push(`   - **Rationale:** ${rec.rationale}`);
+      lines.push(`   - **Action:** ${rec.action}`);
+      lines.push('');
+    });
+  }
+
+  lines.push('AI-DRIVEN DEEP CODE REVIEW');
+  lines.push('');
+  lines.push(`Work Unit: ${workUnitId} - ${workUnit.title}`);
+  lines.push('');
+
+  // Collect all implementation files from coverage
+  const implFiles = new Set<string>();
+  if (coverageData?.scenarios) {
+    for (const scenario of coverageData.scenarios) {
+      if (scenario.testMappings) {
+        for (const mapping of scenario.testMappings) {
+          if (mapping.implMappings) {
+            for (const implMapping of mapping.implMappings) {
+              implFiles.add(implMapping.file);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  if (implFiles.size > 0) {
+    lines.push('STEP 1: Read Implementation Files');
+    lines.push('');
+    lines.push('Use the Read tool to examine the following implementation files:');
+    implFiles.forEach(file => {
+      lines.push(`  - ${file}`);
+    });
+    lines.push('');
+  }
+
+  lines.push('STEP 2: Analyze Code for Quality Issues');
+  lines.push('');
+  lines.push('Perform deep analysis to analyze the code you read. Look for bugs:');
+  lines.push('');
+  lines.push('  • Bugs and Logic Errors:');
+  lines.push('    - Off-by-one errors, null pointer exceptions');
+  lines.push('    - Incorrect edge case handling');
+  lines.push('    - Logic flaws in conditionals or loops');
+  lines.push('');
+  lines.push('  • Race Conditions:');
+  lines.push('    - Async operations without proper locking');
+  lines.push('    - File operations that could conflict');
+  lines.push('    - Concurrent access to shared resources');
+  lines.push('');
+  lines.push('  • Anti-Patterns:');
+  lines.push('    - God functions (>100 lines, large functions that need refactoring)');
+  lines.push('    - duplicated code across multiple files');
+  lines.push('    - Tight coupling between modules');
+  lines.push('    - Magic numbers without constants');
+  lines.push('');
+  lines.push('  • Refactoring Opportunities:');
+  lines.push('    - Similar code that could be extracted to shared utilities');
+  lines.push('    - large functions that should be split');
+  lines.push('    - Repeated validation logic that could be DRY');
+  lines.push('');
+
+  lines.push('STEP 3: Check FOUNDATION.md Alignment');
+  lines.push('');
+  lines.push('Read FOUNDATION.md or CLAUDE.md and verify code follows project principles:');
+  lines.push('  - File size limits (e.g., keep files under 300 lines)');
+  lines.push('  - Architectural patterns (e.g., use isomorphic-git not child_process)');
+  lines.push('  - Coding standards (e.g., no any types, use ES6 imports)');
+  lines.push('  - Project-specific conventions');
+  lines.push('');
+
+  lines.push('STEP 4: Report Findings');
+  lines.push('');
+  lines.push('After your analysis, report findings conversationally:');
+  lines.push('  - List bugs found with file:line references');
+  lines.push('  - Explain anti-patterns detected and why they\'re problematic');
+  lines.push('  - Suggest specific refactoring with code examples if helpful');
+  lines.push('  - Note FOUNDATION.md violations with exact principle violated');
+  lines.push('');
+  lines.push('Example:');
+  lines.push('  "I found a potential race condition in src/file-ops/save.ts:15-20.');
+  lines.push('   Two async writeFile calls happen without synchronization, which could');
+  lines.push('   corrupt the file if both execute simultaneously. Consider using a');
+  lines.push('   file locking pattern or atomic writes as mentioned in FOUNDATION.md."');
+  lines.push('');
+
+  lines.push('NOTE: The static analysis above already caught basic issues (any types, etc.).');
+  lines.push('Focus your analysis on deeper issues that require understanding context and logic.');
+
+  return lines.join('\n');
+}
+
 export async function review(
   workUnitId: string,
   options?: ReviewOptions
@@ -263,28 +387,20 @@ export async function review(
     output.push('');
   }
 
-  // Recommendations section (wrapped in agent-specific formatting)
+  // Recommendations section (plain output, will be included in system-reminder later)
   if (recommendations.length > 0) {
     output.push('## Recommendations');
     output.push('');
 
-    // Build recommendations message
-    const recommendationsMessage = recommendations
-      .map((rec, index) =>
-        `${index + 1}. **Recommendation:** ${rec.recommendation}\n` +
-        `   - **Rationale:** ${rec.rationale}\n` +
-        `   - **Action:** ${rec.action}`
-      )
-      .join('\n\n');
-
-    // Wrap in agent-specific formatting
-    const formattedRecommendations = formatAgentOutput(
-      agent,
-      `ACDD COMPLIANCE REVIEW\n\n${recommendationsMessage}`
-    );
-
-    output.push(formattedRecommendations);
+    output.push('**IMPORTANT:** ACDD COMPLIANCE REVIEW');
     output.push('');
+
+    recommendations.forEach((rec, index) => {
+      output.push(`${index + 1}. **Recommendation:** ${rec.recommendation}`);
+      output.push(`   - **Rationale:** ${rec.rationale}`);
+      output.push(`   - **Action:** ${rec.action}`);
+      output.push('');
+    });
   }
 
   // ACDD Compliance section
@@ -374,6 +490,19 @@ export async function review(
   priorityActions.forEach((action, index) => {
     output.push(`${index + 1}. ${action}`);
   });
+  output.push('');
+
+  // Build AI-driven deep analysis system-reminder (includes ACDD recommendations)
+  const systemReminder = buildAIAnalysisReminder(
+    workUnitId,
+    workUnit,
+    featureFile,
+    coverageData,
+    cwd,
+    recommendations
+  );
+
+  output.push(formatAgentOutput(agent, systemReminder));
   output.push('');
 
   return {

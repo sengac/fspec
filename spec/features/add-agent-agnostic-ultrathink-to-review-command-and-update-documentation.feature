@@ -5,7 +5,6 @@
 @medium
 @REV-002
 Feature: Add agent-agnostic ultrathink to review command and update documentation
-
   """
   Review command uses getAgentConfig() from src/utils/agentRuntimeConfig.ts to detect current agent. Agent detection priority: FSPEC_AGENT env var > spec/fspec-config.json > safe default. Output formatting uses formatAgentOutput() to wrap messages appropriately for each agent type.
   """
@@ -32,7 +31,6 @@ Feature: Add agent-agnostic ultrathink to review command and update documentatio
   #   A: true
   #
   # ========================================
-
   Background: User Story
     As a AI agent (any type: Claude, Cursor, Aider, etc.)
     I want to use the review command with agent-specific metacognition formatting
@@ -45,14 +43,12 @@ Feature: Add agent-agnostic ultrathink to review command and update documentatio
     Then the output should contain <system-reminder> tags
     And the system-reminder should contain ACDD compliance guidance
 
-
   Scenario: Review command outputs agent-specific formatting for Cursor IDE
     Given I am using Cursor IDE as my AI agent
     And spec/fspec-config.json contains agent: 'cursor'
     When I run 'fspec review API-005'
     Then the output should contain **⚠️ IMPORTANT:** prefix
     And the message should contain ACDD compliance guidance
-
 
   Scenario: Review command outputs agent-specific formatting for Aider CLI
     Given I am using Aider CLI as my AI agent
@@ -61,7 +57,6 @@ Feature: Add agent-agnostic ultrathink to review command and update documentatio
     Then the output should contain **IMPORTANT:** prefix
     And the message should contain ACDD compliance guidance
 
-
   Scenario: Review command uses agent detection with fallback to safe default
     Given no agent is configured in spec/fspec-config.json
     And FSPEC_AGENT environment variable is not set
@@ -69,4 +64,3 @@ Feature: Add agent-agnostic ultrathink to review command and update documentatio
     Then the output should use safe default formatting
     And the output should NOT contain <system-reminder> tags
     And the output should contain plain text ACDD compliance guidance
-

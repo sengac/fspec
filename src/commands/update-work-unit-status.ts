@@ -62,6 +62,7 @@ interface UpdateWorkUnitStatusResult {
   message?: string;
   warnings?: string[];
   systemReminder?: string;
+  output?: string;
   checkpointCreated?: boolean;
   checkpointName?: string;
   newStatus?: string;
@@ -481,32 +482,45 @@ export async function updateWorkUnitStatus(
       reminders.push(cleanupReminder);
     }
 
-    // Add review suggestion reminder
-    const reviewReminder = `<system-reminder>
-Work unit ${options.workUnitId} has been marked as done.
+    // Add review suggestion reminder (only for story and bug work units)
+    if (workUnit.type === 'story' || workUnit.type === 'bug') {
+      const reviewReminder = `<system-reminder>
+QUALITY CHECK OPPORTUNITY
 
-Consider reviewing the work unit before finalizing to ensure quality and completeness:
+Work unit ${options.workUnitId} is being marked as done.
 
-  fspec review ${options.workUnitId}
+Would you like me to run fspec review ${options.workUnitId} for a quality review before finalizing?
 
-The review command provides comprehensive analysis including:
-  - Issues Found (critical issues and warnings)
-  - ACDD Compliance validation
-  - Coverage Analysis
-  - Summary with priority actions
+Suggested workflow:
+  1. Run: fspec review ${options.workUnitId}
+  2. If findings exist: address findings and fix any issues
+  3. If no findings (or all fixed): then mark done
 
-This is optional but recommended to catch any issues before moving on.
+If yes: Run the quality review and address findings before marking done
+If no: Proceed with marking done
+
+This is optional but recommended to catch issues early.
 </system-reminder>`;
-    reminders.push(reviewReminder);
+      reminders.push(reviewReminder);
+    }
   }
 
   // Combine all reminders
   const systemReminder =
     reminders.length > 0 ? reminders.join('\n\n') : undefined;
 
+  // Build output string
+  const outputParts: string[] = [];
+  outputParts.push(`✓ Work unit ${options.workUnitId} status updated to ${newStatus}`);
+  if (systemReminder) {
+    outputParts.push(systemReminder);
+  }
+  const output = outputParts.join('\n\n');
+
   return {
     success: true,
     message: `✓ Work unit ${options.workUnitId} status updated to ${newStatus}`,
+    output,
     ...(warnings.length > 0 && { warnings }),
     ...(systemReminder && { systemReminder }),
     checkpointCreated,

@@ -3,7 +3,6 @@
 @cli
 @high
 Feature: Replace generic create-work-unit references with type-specific commands
-
   """
   This refactoring requires manual context analysis for each occurrence of 'create-work-unit'. No automated find-replace allowed since context determines the correct command. Files affected: spec/CLAUDE.md, help text files (src/commands/*-help.ts), README.md, and potentially other documentation files. Each instance must be evaluated to determine if it refers to a feature/refactoring (create-story), bug fix (create-bug), or operational task (create-task).
   """
@@ -26,7 +25,6 @@ Feature: Replace generic create-work-unit references with type-specific commands
   #   4. References to creating work for 'Fix validation bug' should use 'fspec create-bug'
   #
   # ========================================
-
   Background: User Story
     As a developer or AI agent using fspec
     I want to see contextually appropriate command examples in documentation

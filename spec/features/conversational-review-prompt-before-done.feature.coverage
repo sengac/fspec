@@ -1,0 +1,126 @@
+{
+  "scenarios": [
+    {
+      "name": "Story work unit transitioning to done shows review prompt",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/conversational-review-prompt-before-done.test.ts",
+          "lines": "34-91",
+          "implMappings": [
+            {
+              "file": "src/commands/update-work-unit-status.ts",
+              "lines": [
+                60,
+                61,
+                62,
+                63,
+                64,
+                65
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Bug work unit transitioning to done shows review prompt",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/conversational-review-prompt-before-done.test.ts",
+          "lines": "104-147",
+          "implMappings": [
+            {
+              "file": "src/commands/update-work-unit-status.ts",
+              "lines": [
+                60,
+                61,
+                62,
+                63,
+                64,
+                65
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Task work unit transitioning to done does NOT show review prompt",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/conversational-review-prompt-before-done.test.ts",
+          "lines": "169-220",
+          "implMappings": [
+            {
+              "file": "src/commands/update-work-unit-status.ts",
+              "lines": [
+                60,
+                61,
+                62,
+                63,
+                64,
+                65
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "AI workflow - user accepts review suggestion",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/conversational-review-prompt-before-done.test.ts",
+          "lines": "230-292",
+          "implMappings": [
+            {
+              "file": "src/commands/update-work-unit-status.ts",
+              "lines": [
+                60,
+                61,
+                62,
+                63,
+                64,
+                65
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "AI workflow - user declines review suggestion",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/conversational-review-prompt-before-done.test.ts",
+          "lines": "296-361",
+          "implMappings": [
+            {
+              "file": "src/commands/update-work-unit-status.ts",
+              "lines": [
+                60,
+                61,
+                62,
+                63,
+                64,
+                65
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/commands/__tests__/conversational-review-prompt-before-done.test.ts"
+    ],
+    "implFiles": [
+      "src/commands/update-work-unit-status.ts"
+    ],
+    "totalLinesCovered": 313
+  }
+}

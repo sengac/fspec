@@ -148,7 +148,9 @@
       "createdAt": "2025-10-19T21:40:41.616Z",
       "description": "Enhancements to CLI usability, error messages, and AI agent guidance",
       "workUnits": [
-        "UX-001"
+        "UX-001",
+        "REV-004",
+        "REV-005"
       ]
     },
     "interactive-cli": {

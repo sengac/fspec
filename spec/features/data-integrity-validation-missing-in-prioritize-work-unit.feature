@@ -4,7 +4,6 @@
 @validation
 @BUG-041
 Feature: Data integrity validation missing in prioritize-work-unit
-
   """
   Architecture notes:
   - Add validation check before prioritizing work unit to ensure workUnit.status matches the states array it's in
@@ -30,7 +29,6 @@ Feature: Data integrity validation missing in prioritize-work-unit
   #   3. Work unit AUTH-001 has status='implementing' and IS in states.implementing array. User runs 'fspec prioritize-work-unit AUTH-001 --position top'. Command succeeds (data is valid)
   #
   # ========================================
-
   Background: User Story
     As a developer using prioritize-work-unit
     I want to detect data corruption early with clear error messages

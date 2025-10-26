@@ -4,7 +4,6 @@
 @feature-management
 @BUG-034
 Feature: Double prompt and missing success message in interactive init mode
-
   """
   Fix 1: Pass promptAgentSwitch parameter to executeInit() in interactive mode that returns true (auto-confirm). This skips the second prompt while preserving CLI mode behavior.
   Fix 2: Change success message condition from 'if (options.agent.length > 0)' to 'if (result.success)' so both interactive and CLI modes show feedback.
@@ -28,7 +27,6 @@ Feature: Double prompt and missing success message in interactive init mode
   #   4. Success message shows: checkmark, agent name, indented file list, activation instructions - identical format for both modes
   #
   # ========================================
-
   Background: User Story
     As a developer using fspec init
     I want to select an agent and see clear confirmation
