@@ -12,6 +12,7 @@ import { getBootstrapFoundationSection } from './slashCommandSections/bootstrapF
 import { getExampleMappingSection } from './slashCommandSections/exampleMapping';
 import { getEstimationSection } from './slashCommandSections/estimation';
 import { getKanbanWorkflowSection } from './slashCommandSections/kanbanWorkflow';
+import { getToolConfigurationSection } from './slashCommandSections/toolConfiguration';
 import { getCriticalRulesSection } from './slashCommandSections/criticalRules';
 import { getAcddWorkflowExampleSection } from './slashCommandSections/acddWorkflowExample';
 import { getMonitoringProgressSection } from './slashCommandSections/monitoringProgress';
@@ -32,6 +33,7 @@ export function getSlashCommandTemplate(): string {
     getExampleMappingSection(),
     getEstimationSection(),
     getKanbanWorkflowSection(),
+    getToolConfigurationSection(),
     getCriticalRulesSection(),
     getAcddWorkflowExampleSection(),
     getMonitoringProgressSection(),
