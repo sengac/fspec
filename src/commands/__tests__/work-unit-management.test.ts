@@ -3,8 +3,8 @@ import { mkdir, writeFile, rm, readFile } from 'fs/promises';
 import { join } from 'path';
 import type { WorkUnitsData, PrefixesData, EpicsData } from '../../types';
 
-// Import commands (to be created)
-import { createWorkUnit } from '../create-work-unit';
+// Import commands
+import { createStory } from '../create-story';
 import { updateWorkUnit } from '../update-work-unit';
 import { showWorkUnit } from '../show-work-unit';
 import { listWorkUnits } from '../list-work-units';
@@ -65,7 +65,7 @@ describe('Feature: Work Unit Management', () => {
       );
 
       // When I run "fspec create-story AUTH 'Implement OAuth login'"
-      const result = await createWorkUnit({
+      const result = await createStory({
         prefix: 'AUTH',
         title: 'Implement OAuth login',
         cwd: testDir,
@@ -147,7 +147,7 @@ describe('Feature: Work Unit Management', () => {
       );
 
       // When I run "fspec create-story AUTH 'Add password reset'"
-      const result = await createWorkUnit({
+      const result = await createStory({
         prefix: 'AUTH',
         title: 'Add password reset',
         cwd: testDir,
@@ -224,7 +224,7 @@ describe('Feature: Work Unit Management', () => {
       );
 
       // When I run "fspec create-story AUTH 'OAuth integration' --epic=epic-user-management"
-      const result = await createWorkUnit({
+      const result = await createStory({
         prefix: 'AUTH',
         title: 'OAuth integration',
         epic: 'epic-user-management',
@@ -294,7 +294,7 @@ describe('Feature: Work Unit Management', () => {
       );
 
       // When I run "fspec create-story AUTH 'OAuth login' --description='Add OAuth 2.0 with Google and GitHub'"
-      const result = await createWorkUnit({
+      const result = await createStory({
         prefix: 'AUTH',
         title: 'OAuth login',
         description: 'Add OAuth 2.0 with Google and GitHub',
@@ -363,7 +363,7 @@ describe('Feature: Work Unit Management', () => {
       );
 
       // When I run "fspec create-story AUTH 'Google provider' --parent=AUTH-001"
-      const result = await createWorkUnit({
+      const result = await createStory({
         prefix: 'AUTH',
         title: 'Google provider',
         parent: 'AUTH-001',
@@ -422,7 +422,7 @@ describe('Feature: Work Unit Management', () => {
       // When I run "fspec create-story INVALID 'Some work'"
       // Then the command should fail
       await expect(
-        createWorkUnit({
+        createStory({
           prefix: 'INVALID',
           title: 'Some work',
           cwd: testDir,
@@ -431,7 +431,7 @@ describe('Feature: Work Unit Management', () => {
 
       // And the error should suggest "Run 'fspec create-prefix INVALID' first"
       try {
-        await createWorkUnit({
+        await createStory({
           prefix: 'INVALID',
           title: 'Some work',
           cwd: testDir,
@@ -482,7 +482,7 @@ describe('Feature: Work Unit Management', () => {
       // When I run "fspec create-story AUTH"
       // Then the command should fail
       await expect(
-        createWorkUnit({
+        createStory({
           prefix: 'AUTH',
           title: '',
           cwd: testDir,
@@ -530,13 +530,13 @@ describe('Feature: Work Unit Management', () => {
       // When I run "fspec create-story AUTH 'Child work' --parent=AUTH-999"
       // Then the command should fail
       await expect(
-        createWorkUnit({
+        createStory({
           prefix: 'AUTH',
           title: 'Child work',
           parent: 'AUTH-999',
           cwd: testDir,
         })
-      ).rejects.toThrow("Parent work unit 'AUTH-999' does not exist");
+      ).rejects.toThrow("Parent story 'AUTH-999' does not exist");
     });
   });
 
@@ -1413,14 +1413,14 @@ describe('Feature: Work Unit Management', () => {
       );
 
       // When I run "fspec create-story AUTH 'OAuth 2.0 implementation'"
-      await createWorkUnit({
+      await createStory({
         prefix: 'AUTH',
         title: 'OAuth 2.0 implementation',
         cwd: testDir,
       });
 
       // And I run "fspec create-story AUTH 'Google provider' --parent=AUTH-001"
-      await createWorkUnit({
+      await createStory({
         prefix: 'AUTH',
         title: 'Google provider',
         parent: 'AUTH-001',
@@ -1428,7 +1428,7 @@ describe('Feature: Work Unit Management', () => {
       });
 
       // And I run "fspec create-story AUTH 'GitHub provider' --parent=AUTH-001"
-      await createWorkUnit({
+      await createStory({
         prefix: 'AUTH',
         title: 'GitHub provider',
         parent: 'AUTH-001',
@@ -1436,7 +1436,7 @@ describe('Feature: Work Unit Management', () => {
       });
 
       // And I run "fspec create-story AUTH 'Token storage' --parent=AUTH-001"
-      await createWorkUnit({
+      await createStory({
         prefix: 'AUTH',
         title: 'Token storage',
         parent: 'AUTH-001',
@@ -1579,7 +1579,7 @@ describe('Feature: Work Unit Management', () => {
       // When I run "fspec create-story AUTH 'Too deep' --parent=AUTH-003"
       // Then the command should fail
       await expect(
-        createWorkUnit({
+        createStory({
           prefix: 'AUTH',
           title: 'Too deep',
           parent: 'AUTH-003',
@@ -1691,7 +1691,7 @@ describe('Feature: Work Unit Management', () => {
       );
 
       // When I run "fspec create-story HOOK 'Hook Handler'"
-      const result = await createWorkUnit({
+      const result = await createStory({
         prefix: 'HOOK',
         title: 'Hook Handler',
         cwd: testDir,
@@ -1828,7 +1828,7 @@ describe('Feature: Work Unit Management', () => {
       // When I run "fspec create-story AUTH 'Login feature' --epic=epic-auth"
       // Then the command should fail
       await expect(
-        createWorkUnit({
+        createStory({
           prefix: 'AUTH',
           title: 'Login feature',
           epic: 'epic-auth',
@@ -2348,7 +2348,7 @@ Feature: OAuth Login
       );
 
       // When I run "fspec create-story AUTH 'OAuth Login Implementation'"
-      const createResult = await createWorkUnit({
+      const createResult = await createStory({
         prefix: 'AUTH',
         title: 'OAuth Login Implementation',
         cwd: testDir,

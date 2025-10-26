@@ -114,12 +114,18 @@ export async function reverse(
 
   // Handle --strategy flag
   if (options.strategy) {
+    // Strategy D: Outside-in BDD with persona-driven guidance (can work without session)
+    if (options.strategy === 'D' && options.implementationContext) {
+      return await handleStrategyD(cwd, options.implementationContext);
+    }
+
     const session = await loadSession(cwd);
     if (!session) {
       return { message: 'No active reverse session', exitCode: 1 };
     }
 
     const strategyName = getStrategyName(options.strategy);
+
     const totalSteps = session.gaps.files.length;
     const updatedSession = setStrategy(
       session,
@@ -456,6 +462,78 @@ async function analyzeCoverage(
   return {
     unmappedCount,
     scenarios: unmappedScenarios,
+  };
+}
+
+/**
+ * Handle Strategy D: Outside-in BDD with persona-driven guidance
+ */
+async function handleStrategyD(
+  cwd: string,
+  implementationContext: string
+): Promise<ReverseCommandResult> {
+  // Load foundation.json to get personas
+  const foundationPath = join(cwd, 'spec', 'foundation.json');
+  let personas: Array<{ name: string; description: string; goals: string[] }> = [];
+
+  try {
+    const foundationContent = await fs.readFile(foundationPath, 'utf-8');
+    const foundation = JSON.parse(foundationContent);
+    personas = foundation.personas || [];
+  } catch {
+    // Foundation.json doesn't exist or is invalid
+  }
+
+  // Build persona-driven system reminder
+  let systemReminder = 'REVERSE ACDD - PERSONA-DRIVEN DISCOVERY\n\n';
+  systemReminder += `Implementation context: ${implementationContext}\n\n`;
+
+  if (personas.length > 0) {
+    systemReminder += 'WHO uses this? (Check foundation.json personas)\n';
+    personas.forEach(persona => {
+      systemReminder += `  - ${persona.name}\n`;
+      if (persona.goals && persona.goals.length > 0) {
+        systemReminder += `    Goals: ${persona.goals.join(', ')}\n`;
+      }
+    });
+    systemReminder += '\n';
+    systemReminder += `What does ${personas[0].name} want to accomplish?\n`;
+    systemReminder += 'Think outside-in (BDD approach):\n';
+    systemReminder += '  Not: "component has play/pause buttons"\n';
+    systemReminder += `  Instead: "${personas[0].name} controls playback"\n\n`;
+  } else {
+    systemReminder += 'Foundation.json not found or has no personas.\n';
+    systemReminder += 'Run: fspec discover-foundation\n\n';
+  }
+
+  systemReminder += 'What user behavior does this support?\n';
+  systemReminder += 'not which system calls it, but who BENEFITS?\n';
+  systemReminder += '  Not: "which system calls it"\n';
+  systemReminder += '  Instead: "who BENEFITS from accurate discounts" → Shopper\n\n';
+
+  systemReminder += 'Transformation templates (implementation → behavior):\n';
+  systemReminder += '  • UI Elements → User Actions\n';
+  systemReminder += '    button → "User clicks/taps ACTION"\n';
+  systemReminder += '    input → "User enters DATA"\n';
+  systemReminder += '  • State → User Expectations\n';
+  systemReminder += '    useState → "User sees STATE"\n';
+  systemReminder += '    loading → "User waits for PROCESS"\n';
+  systemReminder += '  • API Endpoints → User Needs\n';
+  systemReminder += '    POST /orders → "User completes order"\n\n';
+
+  systemReminder += 'Create user-centric scenarios based on persona goals.\n';
+
+  // Build guidance
+  let guidance = 'ACDD Workflow:\n';
+  guidance += '1. Use example mapping: fspec add-example <work-unit> "..."\n';
+  guidance += '2. Use example mapping: fspec add-rule <work-unit> "..."\n';
+  guidance += '3. Generate scenarios: fspec generate-scenarios <work-unit>\n';
+  guidance += '4. Create test skeletons based on scenarios\n';
+  guidance += '5. Link coverage: fspec link-coverage <feature> --scenario "..." --test-file <path> --test-lines <range> --skip-validation\n';
+
+  return {
+    systemReminder: wrapSystemReminder(systemReminder),
+    guidance,
   };
 }
 

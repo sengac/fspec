@@ -414,6 +414,10 @@
           "description": "Statistical analysis"
         },
         {
+          "name": "@strategy-detection",
+          "description": "Strategy detection and selection for reverse ACDD workflows"
+        },
+        {
           "name": "@tag-management",
           "description": "TAGS.md Operations"
         },
@@ -612,6 +616,10 @@
         {
           "name": "@multi-agent",
           "description": "Multi-agent compatibility features and agent-specific customizations"
+        },
+        {
+          "name": "@outside-in-bdd",
+          "description": "Outside-in BDD approach using personas and behavior-first thinking"
         },
         {
           "name": "@pattern-detection",
@@ -1142,7 +1150,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-10-25T06:46:49.935Z",
+    "lastUpdated": "2025-10-25T12:19:31.191Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

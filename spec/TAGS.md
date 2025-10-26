@@ -121,6 +121,7 @@ Tags that categorize features by functional area.
 | `@state-history` | State history tracking |
 | `@state-transition` | State transition operations |
 | `@statistics` | Statistical analysis |
+| `@strategy-detection` | Strategy detection and selection for reverse ACDD workflows |
 | `@tag-management` | TAGS.md Operations |
 | `@test-coverage` | Test coverage tracking and validation features |
 | `@testing` | Testing and quality assurance features |
@@ -178,6 +179,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@learning` | Machine learning and adaptive features based on usage patterns |
 | `@mermaid` | Mermaid Diagram Support |
 | `@multi-agent` | Multi-agent compatibility features and agent-specific customizations |
+| `@outside-in-bdd` | Outside-in BDD approach using personas and behavior-first thinking |
 | `@pattern-detection` | Features involving pattern detection and analysis from historical data |
 | `@push` | Push notification functionality |
 | `@reverse-engineering` | Reverse engineering existing code to create specifications |
@@ -527,7 +529,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-10-25T06:46:49.935Z_
+_Last updated: 2025-10-25T12:19:31.191Z_
 
 **Update Command**: `fspec tag-stats`
 

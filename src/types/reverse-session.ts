@@ -63,6 +63,12 @@ export interface ReverseCommandResult {
     page: number;
   };
   summary?: string;
+  existingSessionDetected?: boolean;
+  exitCode?: number;
+  currentPhase?: SessionPhase;
+  currentStrategy?: string;
+  currentProgress?: string;
+  suggestions?: string[];
 }
 
 export interface ReverseCommandOptions {
@@ -73,6 +79,7 @@ export interface ReverseCommandOptions {
   reset?: boolean;
   complete?: boolean;
   dryRun?: boolean;
+  implementationContext?: string;
 }
 
 export interface StrategyTemplate {
