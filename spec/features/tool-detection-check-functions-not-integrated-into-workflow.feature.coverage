@@ -1,0 +1,84 @@
+{
+  "scenarios": [
+    {
+      "name": "Emit system-reminder when moving to validating with no config",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/update-work-unit-status-tool-integration.test.ts",
+          "lines": "47-95",
+          "implMappings": [
+            {
+              "file": "src/commands/update-work-unit-status.ts",
+              "lines": [
+                21,
+                514,
+                515,
+                516,
+                518,
+                519
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Emit system-reminder when moving to validating with config present",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/update-work-unit-status-tool-integration.test.ts",
+          "lines": "97-134",
+          "implMappings": [
+            {
+              "file": "src/commands/update-work-unit-status.ts",
+              "lines": [
+                21,
+                514,
+                515,
+                516,
+                518,
+                519
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Emit quality check reminder when moving to validating",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/update-work-unit-status-tool-integration.test.ts",
+          "lines": "136-174",
+          "implMappings": [
+            {
+              "file": "src/commands/update-work-unit-status.ts",
+              "lines": [
+                21,
+                514,
+                518,
+                519
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Integration test verifies check functions are called",
+      "testMappings": []
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 3,
+    "coveragePercent": 75,
+    "testFiles": [
+      "src/commands/__tests__/update-work-unit-status-tool-integration.test.ts"
+    ],
+    "implFiles": [
+      "src/commands/update-work-unit-status.ts"
+    ],
+    "totalLinesCovered": 142
+  }
+}

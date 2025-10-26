@@ -440,11 +440,254 @@
           ]
         }
       ]
+    },
+    {
+      "name": "configure-tools command appears in help output",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/configure-tools.test.ts",
+          "lines": "214-228",
+          "implMappings": [
+            {
+              "file": "src/commands/configure-tools.ts",
+              "lines": [
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214
+              ]
+            },
+            {
+              "file": "src/index.ts",
+              "lines": [
+                55,
+                217
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "configure-tools command shows usage documentation",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/configure-tools.test.ts",
+          "lines": "228-255",
+          "implMappings": [
+            {
+              "file": "src/commands/configure-tools.ts",
+              "lines": [
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "configure-tools command stores test command in config file",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/configure-tools.test.ts",
+          "lines": "257-284",
+          "implMappings": [
+            {
+              "file": "src/commands/configure-tools.ts",
+              "lines": [
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "configure-tools command stores quality check commands in config file",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/configure-tools.test.ts",
+          "lines": "286-306",
+          "implMappings": [
+            {
+              "file": "src/commands/configure-tools.ts",
+              "lines": [
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
   "stats": {
-    "totalScenarios": 9,
-    "coveredScenarios": 9,
+    "totalScenarios": 13,
+    "coveredScenarios": 13,
     "coveragePercent": 100,
     "testFiles": [
       "src/commands/__tests__/configure-tools.test.ts",
@@ -456,8 +699,9 @@
       "src/commands/add-virtual-hook-help.ts",
       "src/utils/slashCommandSections/acddWorkflowExample.ts",
       "src/utils/system-reminder.ts",
-      "src/utils/templateGenerator.ts"
+      "src/utils/templateGenerator.ts",
+      "src/index.ts"
     ],
-    "totalLinesCovered": 709
+    "totalLinesCovered": 975
   }
 }

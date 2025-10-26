@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-26T11:23:49.236Z"
+    "lastUpdated": "2025-10-26T16:33:20.219Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -12920,7 +12920,7 @@
       "type": "story",
       "status": "done",
       "createdAt": "2025-10-26T02:51:30.219Z",
-      "updatedAt": "2025-10-26T10:59:06.521Z",
+      "updatedAt": "2025-10-26T12:28:53.072Z",
       "description": "Make fspec platform-agnostic by detecting test and quality check tools conversationally (like fspec review/reverse), replacing hardcoded npm references with AI-driven detection and setup via system-reminders",
       "children": [],
       "stateHistory": [
@@ -12991,6 +12991,26 @@
         {
           "state": "done",
           "timestamp": "2025-10-26T10:59:06.521Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-26T12:21:55.414Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-26T12:23:09.222Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-26T12:24:01.294Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-26T12:25:40.035Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-26T12:28:53.072Z"
         }
       ],
       "userStory": {
@@ -13013,7 +13033,10 @@
         "Yes, ALL hardcoded npm commands in documentation and help files MUST be replaced with dynamic placeholders like <test-command> and <quality-check-commands> that system-reminders will fill in based on fspec configure-tools configuration. This is required by Rule #9.",
         "Placeholders like <test-command> and <quality-check-commands> in documentation MUST be dynamically replaced with actual configured commands when spec/CLAUDE.md is generated",
         "When spec/fspec-config.json has tools.test.command configured, all <test-command> placeholders in generated spec/CLAUDE.md should be replaced with the actual command",
-        "When spec/fspec-config.json has tools.qualityCheck.commands configured, all <quality-check-commands> placeholders in generated spec/CLAUDE.md should be replaced with the chained command (joined with &&)"
+        "When spec/fspec-config.json has tools.qualityCheck.commands configured, all <quality-check-commands> placeholders in generated spec/CLAUDE.md should be replaced with the chained command (joined with &&)",
+        "configure-tools command MUST be registered in src/index.ts via registerConfigureToolsCommand() function",
+        "Registration function MUST follow existing pattern: export async function registerConfigureToolsCommand(program: Command)",
+        "Command MUST appear in --help output after registration"
       ],
       "examples": [
         "AI in validating phase, fspec checks spec/fspec-config.json for tools.test.command, finds none, emits system-reminder: 'No test command configured. Use Read/Glob to detect test framework, then run: fspec configure-tools --test-command <cmd>'",
@@ -13025,7 +13048,11 @@
         "AI runs 'fspec configure-tools --reconfigure', fspec re-emits system-reminder for detection, AI updates config with new tools",
         "AI reads slash command section with '<test-command>' placeholder, fspec generates spec/CLAUDE.md, replaces <test-command> with 'npm test' from fspec-config.json",
         "Python project with 'pytest' configured, <test-command> in documentation becomes 'pytest' in generated spec/CLAUDE.md",
-        "Rust project with 'cargo test' configured, quality commands ['cargo clippy', 'cargo fmt --check'], <quality-check-commands> becomes 'cargo clippy && cargo fmt --check' in spec/CLAUDE.md"
+        "Rust project with 'cargo test' configured, quality commands ['cargo clippy', 'cargo fmt --check'], <quality-check-commands> becomes 'cargo clippy && cargo fmt --check' in spec/CLAUDE.md",
+        "User runs 'fspec configure-tools --help' and sees usage documentation with --test-command and --quality-commands options",
+        "User runs 'fspec configure-tools --test-command \"npm test\"' and spec/fspec-config.json is updated with tools.test.command",
+        "User runs 'fspec --help' and configure-tools appears in the command list alphabetically",
+        "User runs 'fspec configure-tools --quality-commands \"npm run lint\" \"npm run typecheck\"' and spec/fspec-config.json has tools.qualityCheck.commands array"
       ],
       "questions": [
         {
@@ -13139,6 +13166,81 @@
         "fspec init command automatically embeds current package.json version into generated fspec.md: 'fspec --sync-version 0.7.0'"
       ],
       "estimate": 5
+    },
+    "CONFIG-003": {
+      "id": "CONFIG-003",
+      "title": "Tool detection check functions not integrated into workflow",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-10-26T16:13:38.381Z",
+      "updatedAt": "2025-10-26T16:43:37.697Z",
+      "description": "The checkTestCommand and checkQualityCommands functions exist and are tested but are never called during workflow transitions, preventing the conversational tool detection system from working as designed",
+      "children": [],
+      "attachments": [
+        "spec/attachments/CONFIG-003/CONFIG-003-integration-gap-analysis.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-26T16:15:07.361Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-26T16:34:33.358Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-26T16:36:19.862Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-26T16:40:04.023Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-26T16:42:47.394Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-26T16:43:23.827Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-26T16:43:29.425Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-26T16:43:37.697Z"
+        }
+      ],
+      "rules": [
+        "Check functions MUST be called during status transitions to 'validating' state",
+        "System-reminders MUST be emitted when config is missing to guide AI to run fspec configure-tools",
+        "System-reminders MUST be emitted when config exists to tell AI what commands to run",
+        "Integration MUST use existing checkTestCommand and checkQualityCommands functions without modification"
+      ],
+      "examples": [
+        "AI runs 'fspec update-work-unit-status AUTH-001 validating' with no config, sees system-reminder: 'NO TEST COMMAND CONFIGURED'",
+        "AI runs 'fspec update-work-unit-status AUTH-001 validating' with config present, sees system-reminder: 'Run tests: npm test'",
+        "AI receives reminder, runs 'fspec configure-tools --test-command npm test', then validation emits actual command",
+        "Integration test verifies checkTestCommand and checkQualityCommands are called during status transition"
+      ],
+      "questions": [
+        {
+          "text": "@human: Should --sync-version also emit tool configuration checks to help onboard new AI agents?",
+          "selected": true,
+          "answer": "Yes - sync-version should emit tool config checks. This helps onboard new AI agents by guiding them to configure tools immediately after version update, ensuring they have complete workflow setup."
+        }
+      ],
+      "assumptions": [
+        "Yes - sync-version should emit tool config checks. This helps onboard new AI agents by guiding them to configure tools immediately after version update, ensuring they have complete workflow setup."
+      ],
+      "userStory": {
+        "role": "AI agent validating work units",
+        "action": "receive system-reminders about test and quality check commands",
+        "benefit": "I know exactly what commands to run without guessing"
+      },
+      "estimate": 2
     }
   },
   "states": {
@@ -13385,8 +13487,9 @@
       "REV-004",
       "REV-005",
       "CLEAN-001",
+      "INIT-011",
       "CONFIG-002",
-      "INIT-011"
+      "CONFIG-003"
     ],
     "blocked": []
   }

@@ -18,6 +18,7 @@ import {
 } from '../utils/temporal-validation';
 import * as gitCheckpoint from '../utils/git-checkpoint';
 import { existsSync } from 'fs';
+import { checkTestCommand, checkQualityCommands } from './configure-tools.js';
 
 type WorkUnitStatus =
   | 'backlog'
@@ -508,6 +509,15 @@ This is optional but recommended to catch issues early.
   // Combine all reminders
   const systemReminder =
     reminders.length > 0 ? reminders.join('\n\n') : undefined;
+
+  // Check for tool configuration when moving to validating state
+  if (newStatus === 'validating') {
+    const testCheck = await checkTestCommand(cwd);
+    console.log(testCheck.message);
+
+    const qualityCheck = await checkQualityCommands(cwd);
+    console.log(qualityCheck.message);
+  }
 
   // Build output string
   const outputParts: string[] = [];
