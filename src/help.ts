@@ -60,6 +60,11 @@ export function displayCustomHelpWithNote(version?: string): void {
   );
   console.log(
     '  ' +
+      chalk.cyan('fspec configure-tools') +
+      '       - Configure test and quality check commands (required)'
+  );
+  console.log(
+    '  ' +
       chalk.cyan('fspec validate') +
       '              - Validate all Gherkin feature files'
   );

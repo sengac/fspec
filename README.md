@@ -36,6 +36,10 @@ fspec init --agent=cursor    # Cursor
 fspec init --agent=windsurf  # Windsurf
 # ... and 15 more agents
 
+# Configure test and quality check tools (REQUIRED for platform-agnostic workflows)
+fspec configure-tools --test-command "npm test" \
+  --quality-commands "npm run format" "npx tsc --noEmit"
+
 # Switch agents (auto-detects and prompts for confirmation)
 fspec init --agent=cursor    # Switches from claude to cursor
 
