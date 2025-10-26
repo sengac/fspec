@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-26T03:42:43.160Z"
+    "lastUpdated": "2025-10-26T11:23:49.236Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -13060,6 +13060,85 @@
         }
       ],
       "estimate": 8
+    },
+    "INIT-011": {
+      "id": "INIT-011",
+      "title": "Automatic version check and update for slash command files",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-26T11:23:10.274Z",
+      "updatedAt": "2025-10-26T11:55:42.485Z",
+      "description": "Add version check to fspec.md slash command that automatically detects outdated files and replaces them with latest version",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-26T11:23:15.359Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-26T11:37:48.248Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-26T11:41:22.057Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-26T11:49:28.700Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-26T11:55:42.486Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer who upgrades fspec to a new version",
+        "action": "have slash command files automatically update to match the new version",
+        "benefit": "I don't need to manually reinstall or update fspec configuration files"
+      },
+      "questions": [
+        {
+          "text": "@human: When the user runs /fspec, should version check happen BEFORE loading any help docs, or only when they try to execute fspec commands?",
+          "selected": true,
+          "answer": "Version check should happen as the FIRST command in fspec.md, before any help docs load. If version mismatch detected, it should STOP execution (exit 1) and tell the user to restart their AI agent."
+        },
+        {
+          "text": "@human: Where should the version number be stored in fspec.md? At the very top as a comment, or in a specific section?",
+          "selected": true,
+          "answer": "Version should be embedded as the first argument to fspec --sync-version command at the top of fspec.md. Example: 'fspec --sync-version 0.6.0'. No HTML comments, just plain markdown command call."
+        },
+        {
+          "text": "@human: Which files need version tracking and auto-replacement? Just .claude/commands/fspec.md, or also spec/CLAUDE.md, or both?",
+          "selected": true,
+          "answer": "Both files need tracking: .claude/commands/fspec.md (or equivalent for other agents) AND spec/CLAUDE.md. Both are updated when version mismatch detected."
+        },
+        {
+          "text": "@human: Should the auto-update be silent, or should it notify the user that files were updated?",
+          "selected": true,
+          "answer": "Show agent-specific restart instructions. Use agent detection from spec/fspec-config.json and generate appropriate message using similar logic to getActivationMessage(). Claude Code: 'Exit and start new conversation', Cursor: 'Restart Cursor', etc."
+        },
+        {
+          "text": "@human: What should happen if the version check command fails (network issue, file permissions, etc.)? Continue anyway or block execution?",
+          "selected": true,
+          "answer": "If version check fails (permissions, missing config, etc.), print warning but continue (exit 0). Only exit 1 for version mismatch. Include fallback: if can't detect agent, show generic 'Restart your AI agent' message."
+        }
+      ],
+      "rules": [
+        "Version check command must be the FIRST line executed in fspec.md before any help commands",
+        "Version embedded in fspec.md must match package.json version for check to pass",
+        "On version mismatch, command must update BOTH slash command file AND spec doc file",
+        "Exit code 1 on version mismatch (stops workflow), exit code 0 on match (continues workflow)",
+        "Restart instructions must be agent-specific using agent detection from fspec-config.json"
+      ],
+      "examples": [
+        "User upgrades: npm install -g @sengac/fspec@0.7.0, runs /fspec in Claude Code, sees 'fspec --sync-version 0.6.0' execute, command detects mismatch, updates files, prints 'Updated to v0.7.0. Exit this conversation and start new one. Run /fspec again.', exits with code 1",
+        "User with current version runs /fspec, 'fspec --sync-version 0.7.0' executes silently (versions match), exits 0, AI continues loading help commands normally",
+        "Cursor user upgrades to v0.7.0, runs /fspec, version check detects mismatch, updates .cursor/commands/fspec.md and spec/CURSOR.md, prints 'Updated to v0.7.0. Restart Cursor and run /fspec again.'",
+        "User deletes spec/fspec-config.json, version check can't detect agent, updates files anyway, shows generic message: 'Updated to v0.7.0. Restart your AI agent and run /fspec again.'",
+        "fspec init command automatically embeds current package.json version into generated fspec.md: 'fspec --sync-version 0.7.0'"
+      ],
+      "estimate": 5
     }
   },
   "states": {
@@ -13306,7 +13385,8 @@
       "REV-004",
       "REV-005",
       "CLEAN-001",
-      "CONFIG-002"
+      "CONFIG-002",
+      "INIT-011"
     ],
     "blocked": []
   }

@@ -35,6 +35,7 @@ Tags that categorize features by functional area.
 |-----|-------------|
 | `@accuracy` | Accuracy measurement |
 | `@agent-detection` | Agent detection and runtime configuration features |
+| `@agent-integration` | Features related to AI agent initialization, detection, and integration |
 | `@answer-question` | Question answering operations |
 | `@assumption-management` | Assumption tracking in Example Mapping |
 | `@attachments` | Feature related to work unit attachments (diagrams, documents, mockups) |
@@ -132,6 +133,7 @@ Tags that categorize features by functional area.
 | `@utility` | Utility & Helper Commands |
 | `@validation` | Syntax & Structure Validation |
 | `@velocity` | Velocity calculation |
+| `@version-management` | Features related to version checking, upgrading, and file synchronization |
 | `@visualization` | Data visualization |
 | `@work-management` | Work unit management and Kanban workflow operations |
 | `@work-unit-linking` | Scenarios related to work unit and feature file linking functionality |
@@ -536,7 +538,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-10-26T03:48:59.717Z_
+_Last updated: 2025-10-26T11:36:21.388Z_
 
 **Update Command**: `fspec tag-stats`
 

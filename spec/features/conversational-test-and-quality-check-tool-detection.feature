@@ -131,7 +131,6 @@ Feature: Conversational Test and Quality Check Tool Detection
     Then test should pass when all examples use <test-command> or <quality-check-commands> placeholders
     And test should fail if any npm test, npm run, or npm check hardcoded patterns found
 
-
   Scenario: Replace placeholders in generated spec/CLAUDE.md with configured commands
     Given slash command section generators (src/utils/slashCommandSections/*.ts) return content with <test-command> and <quality-check-commands> placeholders
     When fspec init command calls slash command section generators and assembles the output
@@ -142,4 +141,3 @@ Feature: Conversational Test and Quality Check Tool Detection
     Then the generated spec/CLAUDE.md file should have all <test-command> placeholders replaced with 'npm test'
     And placeholder replacement logic reads spec/fspec-config.json to get configured commands
     And the generated spec/CLAUDE.md file should have all <quality-check-commands> placeholders replaced with configured quality commands
-

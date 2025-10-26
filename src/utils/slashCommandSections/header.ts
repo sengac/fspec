@@ -1,5 +1,12 @@
+import { getVersion } from '../version';
+
 export function getHeaderSection(): string {
+  // Read current version from package.json
+  const version = getVersion();
+
   return `# fspec Command - Kanban-Based Project Management
+
+fspec --sync-version ${version}
 
 IMMEDIATELY - run these commands and store them into your context:
 

@@ -70,6 +70,10 @@
           "description": "Agent detection and runtime configuration features"
         },
         {
+          "name": "@agent-integration",
+          "description": "Features related to AI agent initialization, detection, and integration"
+        },
+        {
           "name": "@answer-question",
           "description": "Question answering operations"
         },
@@ -456,6 +460,10 @@
         {
           "name": "@velocity",
           "description": "Velocity calculation"
+        },
+        {
+          "name": "@version-management",
+          "description": "Features related to version checking, upgrading, and file synchronization"
         },
         {
           "name": "@visualization",
@@ -1178,7 +1186,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-10-26T03:48:59.717Z",
+    "lastUpdated": "2025-10-26T11:36:21.388Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

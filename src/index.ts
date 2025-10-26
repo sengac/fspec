@@ -81,6 +81,7 @@ import { registerGetScenariosCommand } from './commands/get-scenarios';
 import { registerImportExampleMapCommand } from './commands/import-example-map';
 import { registerInitCommand } from './commands/init';
 import { registerRemoveInitFilesCommand } from './commands/remove-init-files';
+import { syncVersion } from './commands/sync-version';
 import { registerLinkCoverageCommand } from './commands/link-coverage';
 import { registerListAttachmentsCommand } from './commands/list-attachments';
 import { registerListEpicsCommand } from './commands/list-epics';
@@ -307,6 +308,22 @@ registerValidateWorkUnitsCommand(program);
 registerWorkflowAutomationCommand(program);
 
 async function main(): Promise<void> {
+  // Handle --sync-version BEFORE any other processing
+  // This must run first to check version and update files if needed
+  const syncVersionIndex = process.argv.findIndex(arg =>
+    arg.startsWith('--sync-version')
+  );
+  if (syncVersionIndex !== -1) {
+    const versionArg = process.argv[syncVersionIndex];
+    const embeddedVersion =
+      versionArg.split('=')[1] || process.argv[syncVersionIndex + 1];
+
+    if (embeddedVersion) {
+      const exitCode = await syncVersion({ embeddedVersion });
+      process.exit(exitCode);
+    }
+  }
+
   // Handle custom help before Commander.js processes arguments
   const customHelpShown = await handleCustomHelp();
 
