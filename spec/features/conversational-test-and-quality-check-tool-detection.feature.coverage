@@ -262,18 +262,202 @@
           ]
         }
       ]
+    },
+    {
+      "name": "Validate all documentation uses dynamic command placeholders not hardcoded npm",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/documentation-validation.test.ts",
+          "lines": "14-107",
+          "implMappings": [
+            {
+              "file": "src/commands/add-virtual-hook-help.ts",
+              "lines": [
+                23,
+                42,
+                49,
+                103,
+                110
+              ]
+            },
+            {
+              "file": "src/utils/slashCommandSections/acddWorkflowExample.ts",
+              "lines": [
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128
+              ]
+            },
+            {
+              "file": "src/utils/system-reminder.ts",
+              "lines": [
+                583,
+                586,
+                589
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Replace placeholders in generated spec/CLAUDE.md with configured commands",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/placeholder-replacement.test.ts",
+          "lines": "28-98",
+          "implMappings": []
+        },
+        {
+          "file": "src/commands/__tests__/placeholder-replacement.test.ts",
+          "lines": "29-98",
+          "implMappings": [
+            {
+              "file": "src/utils/templateGenerator.ts",
+              "lines": [
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185
+              ]
+            }
+          ]
+        },
+        {
+          "file": "src/commands/__tests__/placeholder-replacement.test.ts",
+          "lines": "100-131",
+          "implMappings": [
+            {
+              "file": "src/utils/templateGenerator.ts",
+              "lines": [
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
   "stats": {
-    "totalScenarios": 7,
-    "coveredScenarios": 7,
+    "totalScenarios": 9,
+    "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
-      "src/commands/__tests__/configure-tools.test.ts"
+      "src/commands/__tests__/configure-tools.test.ts",
+      "src/commands/__tests__/documentation-validation.test.ts",
+      "src/commands/__tests__/placeholder-replacement.test.ts"
     ],
     "implFiles": [
-      "src/commands/configure-tools.ts"
+      "src/commands/configure-tools.ts",
+      "src/commands/add-virtual-hook-help.ts",
+      "src/utils/slashCommandSections/acddWorkflowExample.ts",
+      "src/utils/system-reminder.ts",
+      "src/utils/templateGenerator.ts"
     ],
-    "totalLinesCovered": 322
+    "totalLinesCovered": 709
   }
 }

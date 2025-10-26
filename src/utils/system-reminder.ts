@@ -579,14 +579,14 @@ AVAILABLE HOOK EVENTS:
   - post-validating: After validation phase
 
 COMMON EXAMPLES:
-  # Run eslint before implementing
-  fspec add-virtual-hook ${workUnitId} --event pre-implementing --command "npm run lint" --blocking
+  # Run quality checks before implementing
+  fspec add-virtual-hook ${workUnitId} --event pre-implementing --command "<quality-check-commands>" --blocking
 
-  # Run type check before validating
-  fspec add-virtual-hook ${workUnitId} --event pre-validating --command "npm run typecheck" --blocking
+  # Run quality checks before validating
+  fspec add-virtual-hook ${workUnitId} --event pre-validating --command "<quality-check-commands>" --blocking
 
   # Security scan on changed files (git context)
-  fspec add-virtual-hook ${workUnitId} --event post-implementing --command "npm audit" --git-context --blocking
+  fspec add-virtual-hook ${workUnitId} --event post-implementing --command "security-scan" --git-context --blocking
 
 MANAGEMENT:
   - List hooks: fspec list-virtual-hooks ${workUnitId}

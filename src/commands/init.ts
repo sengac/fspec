@@ -248,7 +248,7 @@ async function installFullDoc(cwd: string, agent: AgentConfig): Promise<void> {
   const docPath = join(specDir, agent.docTemplate);
 
   // Generate agent-specific documentation
-  const content = await generateAgentDoc(agent);
+  const content = await generateAgentDoc(agent, cwd);
 
   await writeFile(docPath, content, 'utf-8');
 }

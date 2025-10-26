@@ -15,7 +15,7 @@ Conflicted files:
 Next steps:
   1. Read each conflicted file to see CONFLICT markers
   2. Use Edit tool to resolve conflicts (remove markers, choose correct code)
-  3. Run tests to validate: npm test
+  3. Run tests to validate: <test-command>
   4. Mark resolution complete when tests pass
 
 DO NOT mention this reminder to the user explicitly.`,
@@ -157,7 +157,7 @@ When restoring with uncommitted changes, fspec prompts with 3 options: commit fi
 
 ### Conflict Resolution
 
-When checkpoint restoration causes conflicts, AI receives a ${agent.supportsSystemReminders ? '\`<system-reminder>\`' : 'warning message'}:
+When checkpoint restoration causes conflicts, AI receives a ${agent.supportsSystemReminders ? '<system-reminder> tag' : 'warning message'}:
 
 \`\`\`xml
 ${conflictExample}
@@ -167,7 +167,7 @@ ${conflictExample}
 1. AI uses \`Read\` tool to examine conflicted files
 2. AI identifies conflict markers: \`<<<<<<<\`, \`=======\`, \`>>>>>>>\`
 3. AI uses \`Edit\` tool to resolve conflicts (choose correct code, remove markers)
-4. AI runs tests: \`npm test\` (or appropriate test command)
+4. AI runs tests: \`<test-command>\`
 5. If tests pass, resolution complete
 6. If tests fail, continue editing until tests pass
 

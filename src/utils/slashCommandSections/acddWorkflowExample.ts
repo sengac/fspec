@@ -80,7 +80,7 @@ fspec update-work-unit-status EXAMPLE-006 testing    # Move to testing
 #   });
 # });
 
-npm test                                         # Tests MUST FAIL (red phase)
+<test-command>                                   # Tests MUST FAIL (red phase)
                                                  # If tests pass, you wrote code already!
 
 # IMMEDIATELY link test to scenario
@@ -93,7 +93,7 @@ fspec update-work-unit-status EXAMPLE-006 implementing # Move to implementing
 # Create: src/commands/validate.ts (lines 10-24)
 # Write ONLY enough code to make the tests pass
 
-npm test                                         # Tests MUST PASS (green phase)
+<test-command>                                   # Tests MUST PASS (green phase)
                                                  # Refactor if needed, keep tests green
 
 # IMMEDIATELY link implementation to test mapping
@@ -122,10 +122,10 @@ fspec board                                      # Verify work unit in DONE colu
 1. **Discovery FIRST** - Example Mapping conversation to clarify requirements (rules, examples, questions)
 2. **Generate/Write Feature SECOND** - Use \`fspec generate-scenarios\` or manually create feature file
 3. **Test THIRD** - \`validate.test.ts\` created with feature file link in header comment
-4. **Tests FAIL** - Run \`npm test\` and verify tests fail (proves they test real behavior)
+4. **Tests FAIL** - Run \`<test-command>\` and verify tests fail (proves they test real behavior)
 5. **Implement FOURTH** - \`validate.ts\` written with minimal code to pass tests
-6. **Tests PASS** - Run \`npm test\` and verify tests now pass (green)
-7. **Validate ALL** - Run \`npm test\` again to ensure ALL tests still pass (nothing broke)
+6. **Tests PASS** - Run \`<test-command>\` and verify tests now pass (green)
+7. **Validate ALL** - Run \`<test-command>\` again to ensure ALL tests still pass (nothing broke)
 8. **Tags Updated** - Remove \`@wip\`, add \`@done\` when complete
 
 `;

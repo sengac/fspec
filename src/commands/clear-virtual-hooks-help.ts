@@ -60,7 +60,7 @@ const config: CommandHelpConfig = {
     {
       pattern: 'Reset Work Unit Configuration',
       example:
-        'fspec clear-virtual-hooks AUTH-001\n# Start fresh with new hooks:\nfspec add-virtual-hook AUTH-001 post-implementing "npm run lint" --blocking',
+        'fspec clear-virtual-hooks AUTH-001\n# Start fresh with new hooks:\nfspec add-virtual-hook AUTH-001 post-implementing "<quality-check-commands>" --blocking',
       description:
         'Clear all existing hooks to start with a clean slate and add new configuration.',
     },

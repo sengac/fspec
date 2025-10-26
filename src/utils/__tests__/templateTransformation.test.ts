@@ -158,7 +158,7 @@ Before proceeding, ultrathink your next steps.
   });
 
   describe('Scenario: Template transformation with placeholders', () => {
-    it('should replace {{AGENT_NAME}} placeholder', () => {
+    it('should replace {{AGENT_NAME}} placeholder', async () => {
       const template = `
 # {{AGENT_NAME}} Documentation
 Welcome to {{AGENT_NAME}}!
@@ -170,7 +170,10 @@ Welcome to {{AGENT_NAME}}!
         slashCommandPath: '.cursor/commands/',
       };
 
-      const result = replacePlaceholders(template, cursorAgent as AgentConfig);
+      const result = await replacePlaceholders(
+        template,
+        cursorAgent as AgentConfig
+      );
 
       // Then "{{AGENT_NAME}}" placeholders should be replaced with "Cursor"
       expect(result).toContain('# Cursor Documentation');
@@ -178,7 +181,7 @@ Welcome to {{AGENT_NAME}}!
       expect(result).not.toContain('{{AGENT_NAME}}');
     });
 
-    it('should replace {{SLASH_COMMAND_PATH}} placeholder', () => {
+    it('should replace {{SLASH_COMMAND_PATH}} placeholder', async () => {
       const template = `
 Slash commands are located at {{SLASH_COMMAND_PATH}}.
 `;
@@ -189,14 +192,17 @@ Slash commands are located at {{SLASH_COMMAND_PATH}}.
         slashCommandPath: '.cursor/commands/',
       };
 
-      const result = replacePlaceholders(template, cursorAgent as AgentConfig);
+      const result = await replacePlaceholders(
+        template,
+        cursorAgent as AgentConfig
+      );
 
       // And "{{SLASH_COMMAND_PATH}}" placeholders should be replaced
       expect(result).toContain('.cursor/commands/');
       expect(result).not.toContain('{{SLASH_COMMAND_PATH}}');
     });
 
-    it('should ensure no unresolved placeholders remain', () => {
+    it('should ensure no unresolved placeholders remain', async () => {
       const template = `
 # {{AGENT_NAME}} - {{AGENT_ID}}
 Path: {{SLASH_COMMAND_PATH}}
@@ -208,7 +214,10 @@ Path: {{SLASH_COMMAND_PATH}}
         slashCommandPath: '.cursor/commands/',
       };
 
-      const result = replacePlaceholders(template, cursorAgent as AgentConfig);
+      const result = await replacePlaceholders(
+        template,
+        cursorAgent as AgentConfig
+      );
 
       // Then no unresolved placeholders should remain
       expect(result).not.toMatch(/\{\{[A-Z_]+\}\}/);

@@ -41,7 +41,7 @@ fspec audit-coverage <feature-name>
 \`\`\`bash
 # 4. TEST (Write the Test - BEFORE any implementation code)
 # Create: src/__tests__/validate.test.ts (lines 45-62)
-npm test  # Tests MUST FAIL (red phase)
+<test-command>  # Tests MUST FAIL (red phase)
 
 # IMMEDIATELY link test to scenario
 fspec link-coverage user-authentication --scenario "Login with valid credentials" \\
@@ -51,7 +51,7 @@ fspec update-work-unit-status EXAMPLE-006 implementing
 
 # 5. IMPLEMENT (Write minimal code to make tests pass)
 # Create: src/commands/validate.ts (lines 10,11,12,23,24)
-npm test  # Tests MUST PASS (green phase)
+<test-command>  # Tests MUST PASS (green phase)
 
 # IMMEDIATELY link implementation to test mapping
 fspec link-coverage user-authentication --scenario "Login with valid credentials" \\

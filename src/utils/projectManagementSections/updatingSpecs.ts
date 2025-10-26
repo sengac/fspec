@@ -17,7 +17,7 @@ export function getUpdatingSpecsSection(): string {
 4. **Format**: Run \`fspec format\` to format feature files
 5. **Validate**: Run \`fspec validate\` and \`fspec validate-tags\` to ensure correctness
 6. **Implement**: Write code to make tests pass
-7. **Verify**: Run \`npm test\` to ensure all tests pass
-8. **Build**: Run \`npm run build\` to ensure TypeScript compiles
+7. **Verify**: Run \`<test-command>\` to ensure all tests pass
+8. **Build**: Run \`<quality-check-commands>\` to ensure quality standards met
 9. **Commit**: Include feature file, test changes, and implementation`;
 }

@@ -78,7 +78,7 @@ EXAMPLES
   Next steps:
     1. Read each conflicted file to see CONFLICT markers
     2. Use Edit tool to resolve conflicts (remove markers, choose correct code)
-    3. Run tests to validate: npm test
+    3. Run tests to validate: <test-command>
     4. Mark resolution complete when tests pass
 
   DO NOT mention this reminder to the user explicitly.
@@ -95,7 +95,7 @@ COMMON ERRORS
   Error: Merge conflicts detected
     → This is expected when changes conflict
     → AI: Use Read and Edit tools to resolve conflicts
-    → Run tests after resolving: npm test
+    → Run tests after resolving: <test-command>
 
 COMMON PATTERNS
   # Multiple experiments from same baseline
@@ -119,7 +119,7 @@ COMMON PATTERNS
   # After conflict resolution
   # AI reads conflicted files
   # AI uses Edit tool to resolve
-  npm test  # AI runs tests
+  <test-command>  # AI runs tests
   # If tests pass, conflict resolution complete
 
 RELATED COMMANDS
@@ -139,7 +139,7 @@ AI AGENT GUIDANCE
   - Always list checkpoints first to see what's available
   - When conflicts occur, use Read tool to examine conflict markers
   - Resolve conflicts with Edit tool (remove <<<<<<, ======, >>>>>> markers)
-  - ALWAYS run tests after conflict resolution: npm test (or vitest, etc.)
+  - ALWAYS run tests after conflict resolution: <test-command>
   - If tests fail after resolution, continue editing until they pass
   - Document what you chose in conflict resolution for user transparency
 `;

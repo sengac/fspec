@@ -3,9 +3,10 @@
  */
 
 import type { AgentConfig } from './agentRegistry';
+import { loadConfig } from './config';
 
-// Embedded base template (replaces filesystem read)
-const BASE_AGENT_TEMPLATE = `# {{AGENT_NAME}} Development Guidelines for fspec
+// Embedded base template (replaces filesystem read) - DEPRECATED, kept for reference only
+const _BASE_AGENT_TEMPLATE = `# {{AGENT_NAME}} Development Guidelines for fspec
 
 This document provides guidelines for AI assistants (particularly {{AGENT_NAME}}) working on the **fspec codebase**.
 
@@ -19,7 +20,10 @@ Slash commands are available at {{SLASH_COMMAND_PATH}}.
 /**
  * Generate agent-specific documentation from base template
  */
-export async function generateAgentDoc(agent: AgentConfig): Promise<string> {
+export async function generateAgentDoc(
+  agent: AgentConfig,
+  cwd: string = process.cwd()
+): Promise<string> {
   // Import template
   const { getProjectManagementTemplate } = await import(
     './projectManagementTemplate'
@@ -31,7 +35,7 @@ export async function generateAgentDoc(agent: AgentConfig): Promise<string> {
   // Apply agent-specific transformations
   content = stripSystemReminders(content, agent);
   content = removeMetaCognitivePrompts(content, agent);
-  content = replacePlaceholders(content, agent);
+  content = await replacePlaceholders(content, agent, cwd);
 
   return content;
 }
@@ -144,15 +148,38 @@ export function removeMetaCognitivePrompts(
 }
 
 /**
- * Replace template placeholders with agent-specific values
+ * Replace template placeholders with agent-specific values and configured commands
  */
-export function replacePlaceholders(
+export async function replacePlaceholders(
   content: string,
-  agent: AgentConfig
-): string {
-  return content
+  agent: AgentConfig,
+  cwd: string = process.cwd()
+): Promise<string> {
+  // Replace agent-specific placeholders
+  let result = content
     .replace(/\{\{AGENT_NAME\}\}/g, agent.name)
     .replace(/\{\{DOC_TEMPLATE\}\}/g, agent.docTemplate)
     .replace(/\{\{SLASH_COMMAND_PATH\}\}/g, agent.slashCommandPath)
     .replace(/\{\{AGENT_ID\}\}/g, agent.id);
+
+  // Load config to get configured test and quality check commands
+  try {
+    const config = await loadConfig(cwd);
+
+    // Replace <test-command> with configured test command
+    if (config?.tools?.test?.command) {
+      result = result.replace(/<test-command>/g, config.tools.test.command);
+    }
+
+    // Replace <quality-check-commands> with chained quality check commands
+    if (config?.tools?.qualityCheck?.commands?.length > 0) {
+      const chainedCommands = config.tools.qualityCheck.commands.join(' && ');
+      result = result.replace(/<quality-check-commands>/g, chainedCommands);
+    }
+  } catch (_error) {
+    // If config loading fails, preserve placeholders (fallback behavior)
+    // This happens when spec/fspec-config.json doesn't exist yet
+  }
+
+  return result;
 }

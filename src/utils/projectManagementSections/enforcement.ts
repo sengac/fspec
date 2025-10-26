@@ -40,5 +40,5 @@ Before creating a pull request:
 3. **Tag Validation**: \`fspec validate-tags\` must pass (all tags exist in spec/TAGS.md or spec/tags.json)
 4. **Test Coverage**: Each scenario must have corresponding test(s)
 5. **Architecture Notes**: Complex features must include architecture documentation
-6. **Build & Tests**: \`npm run build\` and \`npm test\` must pass`;
+6. **Build & Tests**: \`<quality-check-commands>\` and \`<test-command>\` must pass`;
 }

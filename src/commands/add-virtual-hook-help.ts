@@ -20,7 +20,8 @@ const config: CommandHelpConfig = {
     },
     {
       name: 'command',
-      description: 'Command to execute (e.g., "npm run lint", "eslint src/")',
+      description:
+        'Command to execute (e.g., "<quality-check-commands>", "eslint src/")',
       required: true,
     },
   ],
@@ -39,14 +40,14 @@ const config: CommandHelpConfig = {
   examples: [
     {
       command:
-        'fspec add-virtual-hook AUTH-001 post-implementing "npm run lint" --blocking',
+        'fspec add-virtual-hook AUTH-001 post-implementing "<quality-check-commands>" --blocking',
       description:
         'Add blocking lint check after implementing (prevents validating if lint fails)',
       output: '✓ Virtual hook added to AUTH-001\n  Total virtual hooks: 1',
     },
     {
       command:
-        'fspec add-virtual-hook BUG-042 pre-validating "npm run typecheck" --blocking',
+        'fspec add-virtual-hook BUG-042 pre-validating "<quality-check-commands>" --blocking',
       description: 'Add type check before validation phase',
       output: '✓ Virtual hook added to BUG-042\n  Total virtual hooks: 1',
     },
@@ -100,14 +101,14 @@ const config: CommandHelpConfig = {
     {
       pattern: 'Linting Before Implementation',
       example:
-        'fspec add-virtual-hook AUTH-001 pre-implementing "npm run lint" --blocking',
+        'fspec add-virtual-hook AUTH-001 pre-implementing "<quality-check-commands>" --blocking',
       description:
         'Ensures code is clean before starting implementation. Prevents messy code from being committed.',
     },
     {
       pattern: 'Type Checking Before Validation',
       example:
-        'fspec add-virtual-hook AUTH-001 pre-validating "npm run typecheck" --blocking',
+        'fspec add-virtual-hook AUTH-001 pre-validating "<quality-check-commands>" --blocking',
       description:
         'Catches type errors before moving to validation phase. Strict quality gate.',
     },

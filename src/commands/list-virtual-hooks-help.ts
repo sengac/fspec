@@ -22,13 +22,13 @@ const config: CommandHelpConfig = {
 
   post-implementing:
     • eslint [blocking]
-      npm run lint
+      <quality-check-commands>
     • prettier [non-blocking]
       prettier --check .
 
   pre-validating:
     • typecheck [blocking]
-      npm run typecheck`,
+      <quality-check-commands>`,
     },
     {
       command: 'fspec list-virtual-hooks BUG-042',

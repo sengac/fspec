@@ -56,7 +56,7 @@ const config: CommandHelpConfig = {
     'clear-virtual-hooks',
   ],
   notes: [
-    'Hook name is auto-generated from command (e.g., "npm run lint" → "npm")',
+    'Hook name is auto-generated from command (e.g., "<quality-check-commands>" → based on actual tool)',
     'To find hook names, use: fspec list-virtual-hooks <workUnitId>',
     'Automatically cleans up script files in spec/hooks/.virtual/',
     'If multiple hooks have same name at different events, only first is removed',

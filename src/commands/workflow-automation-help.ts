@@ -99,7 +99,7 @@ const config: CommandHelpConfig = {
     {
       pattern: 'TDD Cycle Tracking',
       example:
-        '# Start testing phase\nfspec update-work-unit-status AUTH-001 testing\n\n# Red: write failing test\nnpm test  # Tests fail\nfspec workflow-automation record-iteration AUTH-001\n\n# Green: implement code\nnpm test  # Tests pass\nfspec workflow-automation auto-advance AUTH-001 --event tests-pass --from-state testing\n\n# Now in implementing state, ready for next feature',
+        '# Start testing phase\nfspec update-work-unit-status AUTH-001 testing\n\n# Red: write failing test\n<test-command>  # Tests fail\nfspec workflow-automation record-iteration AUTH-001\n\n# Green: implement code\n<test-command>  # Tests pass\nfspec workflow-automation auto-advance AUTH-001 --event tests-pass --from-state testing\n\n# Now in implementing state, ready for next feature',
     },
     {
       pattern: 'Token Usage Tracking',
