@@ -6,7 +6,10 @@
 import chalk from 'chalk';
 import type { Command } from 'commander';
 import { readFile } from 'fs/promises';
-import { readAllCoverageFiles, extractImplementationFiles } from '../utils/coverage-reader';
+import {
+  readAllCoverageFiles,
+  extractImplementationFiles,
+} from '../utils/coverage-reader';
 import { queryWorkUnits } from './query-work-units';
 
 interface SearchImplementationOptions {
@@ -56,26 +59,28 @@ export async function searchImplementation(
 
   // Build result
   const files = await Promise.all(
-    Array.from(matchingFiles.entries()).map(async ([filePath, featureNames]) => {
-      const content = await readFile(filePath, 'utf-8');
+    Array.from(matchingFiles.entries()).map(
+      async ([filePath, featureNames]) => {
+        const content = await readFile(filePath, 'utf-8');
 
-      // Get work unit IDs from coverage data
-      const workUnitIds = new Set<string>();
-      for (const implFile of implFiles) {
-        if (implFile.filePath === filePath) {
-          // Feature name is used as work unit ID lookup
-          const featureName = implFile.featureName;
-          // Try to find work unit ID from parsed features
-          workUnitIds.add(featureName.toUpperCase().replace(/-/g, '-'));
+        // Get work unit IDs from coverage data
+        const workUnitIds = new Set<string>();
+        for (const implFile of implFiles) {
+          if (implFile.filePath === filePath) {
+            // Feature name is used as work unit ID lookup
+            const featureName = implFile.featureName;
+            // Try to find work unit ID from parsed features
+            workUnitIds.add(featureName.toUpperCase().replace(/-/g, '-'));
+          }
         }
-      }
 
-      return {
-        content,
-        filePath,
-        workUnits: Array.from(workUnitIds).map(id => ({ workUnitId: id })),
-      };
-    })
+        return {
+          content,
+          filePath,
+          workUnits: Array.from(workUnitIds).map(id => ({ workUnitId: id })),
+        };
+      }
+    )
   );
 
   return {
@@ -87,7 +92,9 @@ export async function searchImplementation(
 export function registerSearchImplementationCommand(program: Command): void {
   program
     .command('search-implementation')
-    .description('Search implementation code for specific function usage across work units')
+    .description(
+      'Search implementation code for specific function usage across work units'
+    )
     .requiredOption('--function <name>', 'Function name to search for')
     .option('--show-work-units', 'Display which work units use each file')
     .option('--json', 'Output results in JSON format')
@@ -102,7 +109,11 @@ export function registerSearchImplementationCommand(program: Command): void {
           if (options.json) {
             console.log(JSON.stringify(result, null, 2));
           } else {
-            console.log(chalk.green(`✓ Found "${options.function}" in ${result.files.length} file(s)`));
+            console.log(
+              chalk.green(
+                `✓ Found "${options.function}" in ${result.files.length} file(s)`
+              )
+            );
           }
         } catch (error: unknown) {
           if (error instanceof Error) {

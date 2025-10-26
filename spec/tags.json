@@ -562,6 +562,10 @@
           "description": "Error Handling"
         },
         {
+          "name": "@eslint",
+          "description": "ESLint configuration and linting"
+        },
+        {
           "name": "@file-discovery",
           "description": "File discovery and pattern matching functionality"
         },
@@ -638,6 +642,10 @@
           "description": "Features involving pattern detection and analysis from historical data"
         },
         {
+          "name": "@prettier",
+          "description": "Prettier configuration and code formatting"
+        },
+        {
           "name": "@push",
           "description": "Push notification functionality"
         },
@@ -704,6 +712,10 @@
         {
           "name": "@type-system",
           "description": "Work unit type system features for categorizing work (story, task, bug)"
+        },
+        {
+          "name": "@typescript",
+          "description": "TypeScript-specific features and configuration"
         },
         {
           "name": "@vitest",
@@ -1166,7 +1178,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-10-26T01:47:22.994Z",
+    "lastUpdated": "2025-10-26T03:48:59.717Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

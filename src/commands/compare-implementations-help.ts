@@ -2,7 +2,8 @@ import type { CommandHelpConfig } from '../utils/help-formatter';
 
 const config: CommandHelpConfig = {
   name: 'compare-implementations',
-  description: 'Compare implementation approaches across work units to identify patterns and inconsistencies',
+  description:
+    'Compare implementation approaches across work units to identify patterns and inconsistencies',
   usage: 'fspec compare-implementations --tag=<tag> [options]',
   options: [
     {
@@ -12,7 +13,8 @@ const config: CommandHelpConfig = {
     },
     {
       flag: '--show-coverage',
-      description: 'Include test and implementation file paths from coverage data',
+      description:
+        'Include test and implementation file paths from coverage data',
     },
     {
       flag: '--json',
@@ -66,9 +68,7 @@ CLI-002: Validate Command
   commonPatterns: [
     {
       title: 'Find inconsistencies in CLI commands',
-      commands: [
-        'fspec compare-implementations --tag=@cli --show-coverage',
-      ],
+      commands: ['fspec compare-implementations --tag=@cli --show-coverage'],
     },
     {
       title: 'Review authentication approaches',
@@ -78,7 +78,11 @@ CLI-002: Validate Command
       ],
     },
   ],
-  relatedCommands: ['search-implementation', 'show-test-patterns', 'search-scenarios'],
+  relatedCommands: [
+    'search-implementation',
+    'show-test-patterns',
+    'search-scenarios',
+  ],
   notes: [
     'Automatically detects naming convention differences (camelCase, snake_case, kebab-case)',
     'Highlights architectural pattern divergence',

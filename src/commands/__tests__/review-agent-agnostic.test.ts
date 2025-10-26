@@ -84,7 +84,9 @@ Feature: User Login
       expect(result.output).toContain('<system-reminder>');
 
       // And the system-reminder should contain ACDD compliance guidance
-      expect(result.output).toMatch(/<system-reminder>[\s\S]*ACDD[\s\S]*<\/system-reminder>/);
+      expect(result.output).toMatch(
+        /<system-reminder>[\s\S]*ACDD[\s\S]*<\/system-reminder>/
+      );
     });
   });
 

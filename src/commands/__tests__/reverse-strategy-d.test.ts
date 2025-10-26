@@ -16,7 +16,11 @@ describe('Feature: Strategy D processes existing feature files instead of scanni
 
   beforeEach(async () => {
     // Create temporary test directory with random suffix to avoid conflicts
-    testDir = join(process.cwd(), 'tmp', `test-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`);
+    testDir = join(
+      process.cwd(),
+      'tmp',
+      `test-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+    );
     await fs.mkdir(testDir, { recursive: true });
 
     // Ensure no session file exists from previous runs
@@ -46,14 +50,19 @@ describe('Feature: Strategy D processes existing feature files instead of scanni
       const featureFiles: string[] = [];
 
       // @step When AI runs 'fspec reverse' to analyze project gaps
-      const { deriveFeatureName, hasFeatureFile } = await import('../reverse.js');
+      const { deriveFeatureName, hasFeatureFile } = await import(
+        '../reverse.js'
+      );
 
       // @step Then deriveFeatureName should convert MusicPlayer.tsx to music-player
       const featureName = deriveFeatureName('src/components/MusicPlayer.tsx');
       expect(featureName).toBe('music-player');
 
       // @step And hasFeatureFile should return false (no feature file exists)
-      const hasFeature = hasFeatureFile('src/components/MusicPlayer.tsx', featureFiles);
+      const hasFeature = hasFeatureFile(
+        'src/components/MusicPlayer.tsx',
+        featureFiles
+      );
       expect(hasFeature).toBe(false);
 
       // @step Then Strategy D (Full Reverse ACDD) should be suggested
@@ -79,7 +88,10 @@ describe('Feature: Strategy D processes existing feature files instead of scanni
 
       // @step When AI runs 'fspec reverse --strategy=D'
       const { hasFeatureFile } = await import('../reverse.js');
-      const hasFeature = hasFeatureFile('src/components/MusicPlayer.tsx', featureFiles);
+      const hasFeature = hasFeatureFile(
+        'src/components/MusicPlayer.tsx',
+        featureFiles
+      );
 
       // @step Then it should return false (cli-command-interface.feature doesn't match music-player.feature)
       expect(hasFeature).toBe(false);

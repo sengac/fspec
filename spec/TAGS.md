@@ -165,6 +165,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@discovery` | BDD discovery technique used before writing Gherkin scenarios |
 | `@email` | Email-related functionality |
 | `@error-handling` | Error Handling |
+| `@eslint` | ESLint configuration and linting |
 | `@file-discovery` | File discovery and pattern matching functionality |
 | `@file-initialization` | Scenarios testing initialization of project files |
 | `@file-structure` | File and directory structure validation |
@@ -184,6 +185,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@multi-agent` | Multi-agent compatibility features and agent-specific customizations |
 | `@outside-in-bdd` | Outside-in BDD approach using personas and behavior-first thinking |
 | `@pattern-detection` | Features involving pattern detection and analysis from historical data |
+| `@prettier` | Prettier configuration and code formatting |
 | `@push` | Push notification functionality |
 | `@reverse-engineering` | Reverse engineering existing code to create specifications |
 | `@review` | Code review and quality analysis |
@@ -201,6 +203,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@template` | Template System |
 | `@traceability` | Scenario-to-test-to-implementation traceability and coverage tracking |
 | `@type-system` | Work unit type system features for categorizing work (story, task, bug) |
+| `@typescript` | TypeScript-specific features and configuration |
 | `@vitest` | Vitest testing framework related features |
 
 **Rule**: Use technical tags to highlight specific architectural concerns.
@@ -533,7 +536,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-10-26T01:47:22.994Z_
+_Last updated: 2025-10-26T03:48:59.717Z_
 
 **Update Command**: `fspec tag-stats`
 

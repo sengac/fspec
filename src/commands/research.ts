@@ -57,7 +57,7 @@ async function discoverResearchTools(cwd: string): Promise<ResearchTool[]> {
           name: toolName,
           path: filePath,
           usage: `fspec research --tool=${toolName} --query="your question"`,
-          helpCommand: `${toolName} --help`
+          helpCommand: `${toolName} --help`,
         });
       }
     }
@@ -89,7 +89,7 @@ async function executeResearchTool(
 ): Promise<string> {
   return new Promise((resolve, reject) => {
     const child = spawn(toolPath, [query], {
-      stdio: ['pipe', 'pipe', 'pipe']
+      stdio: ['pipe', 'pipe', 'pipe'],
     });
 
     let output = '';
@@ -131,7 +131,7 @@ export async function research(
     return {
       tools,
       executed: false,
-      discoveryMethod: 'dynamic'
+      discoveryMethod: 'dynamic',
     };
   }
 
@@ -154,7 +154,7 @@ export async function research(
     toolName: options.tool,
     query: options.query,
     output,
-    promptForAttachment: !options.attach
+    promptForAttachment: !options.attach,
   };
 
   // Handle attachment if requested

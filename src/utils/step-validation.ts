@@ -50,7 +50,9 @@ export function extractStepComments(testContent: string): StepComment[] {
     const line = lines[i].trim();
 
     // Match: // @step Given text
-    const prefixMatch = line.match(/^\/\/\s*@step\s+(Given|When|Then|And|But)\s+(.+)$/);
+    const prefixMatch = line.match(
+      /^\/\/\s*@step\s+(Given|When|Then|And|But)\s+(.+)$/
+    );
     if (prefixMatch) {
       stepComments.push({
         keyword: prefixMatch[1] as StepComment['keyword'],
@@ -91,9 +93,9 @@ export function extractStepComments(testContent: string): StepComment[] {
 export function getAdaptiveThreshold(text: string): number {
   const length = text.length;
   if (length < 10) return 0.85;
-  if (length < 20) return 0.80;
+  if (length < 20) return 0.8;
   if (length < 40) return 0.75;
-  return 0.70;
+  return 0.7;
 }
 
 /**
@@ -120,7 +122,10 @@ export function matchStep(
   const [, featureKeyword, featureText] = stepMatch;
   const threshold = getAdaptiveThreshold(featureText);
 
-  let bestMatch: { comment: StepComment | null; score: number } = { comment: null, score: 0 };
+  let bestMatch: { comment: StepComment | null; score: number } = {
+    comment: null,
+    score: 0,
+  };
 
   for (const comment of testComments) {
     // Keywords must match (Given matches Given, not When)
@@ -185,7 +190,7 @@ export function validateSteps(
     }
   }
 
-  const unmatchedComments = testComments.filter((c) => !matchedComments.has(c));
+  const unmatchedComments = testComments.filter(c => !matchedComments.has(c));
 
   return {
     valid: missingSteps.length === 0,
@@ -215,7 +220,9 @@ export function formatValidationError(
   const lines: string[] = [];
 
   lines.push('<system-reminder>');
-  lines.push('STEP VALIDATION FAILED: Test file missing required step comments.');
+  lines.push(
+    'STEP VALIDATION FAILED: Test file missing required step comments.'
+  );
   lines.push('');
   lines.push('Missing step comments:');
 
@@ -234,14 +241,18 @@ export function formatValidationError(
   // Only show skip option for task work units
   if (workUnitType === 'task') {
     lines.push('To override validation (not recommended):');
-    lines.push('  fspec link-coverage <feature> --scenario <name> ... --skip-step-validation');
+    lines.push(
+      '  fspec link-coverage <feature> --scenario <name> ... --skip-step-validation'
+    );
     lines.push('');
   } else {
     // Story and bug work units: emphasize MANDATORY validation
     const typeLabel = workUnitType === 'story' ? 'story' : 'bug';
     lines.push(`⚠️  Step validation is MANDATORY for ${typeLabel} work units.`);
     lines.push('   There is NO skip option for story and bug work units.');
-    lines.push('   ACDD requires test-to-scenario traceability through docstring step comments.');
+    lines.push(
+      '   ACDD requires test-to-scenario traceability through docstring step comments.'
+    );
     lines.push('');
   }
 
@@ -257,7 +268,9 @@ export function formatValidationError(
  * @param testFilePath - Path to test file
  * @returns Array of step comments
  */
-export async function readStepComments(testFilePath: string): Promise<StepComment[]> {
+export async function readStepComments(
+  testFilePath: string
+): Promise<StepComment[]> {
   const content = await readFile(testFilePath, 'utf-8');
   return extractStepComments(content);
 }

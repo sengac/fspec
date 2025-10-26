@@ -102,7 +102,7 @@ const config: CommandHelpConfig = {
   ],
   commonErrors: [
     {
-      error: 'Error: Work unit \'XYZ-999\' does not exist',
+      error: "Error: Work unit 'XYZ-999' does not exist",
       solution:
         'Check work unit ID with: fspec list-work-units\nEnsure work unit was created with: fspec create-story, create-bug, or create-task',
     },
@@ -123,7 +123,7 @@ const config: CommandHelpConfig = {
       code:
         '# Check current state\n' +
         'fspec show-work-unit UI-003\n\n' +
-        '# Review what\'s done so far\n' +
+        "# Review what's done so far\n" +
         'fspec review UI-003\n\n' +
         '# Address issues found\n' +
         '# Continue implementation',

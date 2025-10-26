@@ -2,7 +2,8 @@ import type { CommandHelpConfig } from '../utils/help-formatter';
 
 const config: CommandHelpConfig = {
   name: 'search-implementation',
-  description: 'Search implementation code for specific function usage across work units',
+  description:
+    'Search implementation code for specific function usage across work units',
   usage: 'fspec search-implementation --function=<name> [options]',
   options: [
     {
@@ -37,7 +38,8 @@ src/utils/config-manager.ts (line 12)
 ...`,
     },
     {
-      command: 'fspec search-implementation --function=loadConfig --show-work-units',
+      command:
+        'fspec search-implementation --function=loadConfig --show-work-units',
       description: 'Show which work units use the function',
       output: `loadConfig usage across work units:
 
@@ -51,7 +53,8 @@ src/utils/config-manager.ts
   └─ CONFIG-001: Configuration utilities`,
     },
     {
-      command: 'fspec search-implementation --function="readFile|writeFile" --json',
+      command:
+        'fspec search-implementation --function="readFile|writeFile" --json',
       description: 'Search with pattern matching',
       output: `{
   "function": "readFile|writeFile",
@@ -81,7 +84,11 @@ src/utils/config-manager.ts
       ],
     },
   ],
-  relatedCommands: ['compare-implementations', 'search-scenarios', 'show-coverage'],
+  relatedCommands: [
+    'compare-implementations',
+    'search-scenarios',
+    'show-coverage',
+  ],
   notes: [
     'Searches implementation files linked in coverage data',
     'Uses simple text search (not AST analysis)',

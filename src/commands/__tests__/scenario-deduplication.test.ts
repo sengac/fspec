@@ -42,7 +42,9 @@ describe('Feature: Scenario deduplication and refactoring detection during gener
                 type: 'story',
                 status: 'specifying',
                 rules: ['Validate user credentials before allowing access'],
-                examples: ['Given a user exists with valid credentials When the user logs in Then the system should validate credentials'],
+                examples: [
+                  'Given a user exists with valid credentials When the user logs in Then the system should validate credentials',
+                ],
                 questions: [],
               },
             },
@@ -117,7 +119,9 @@ Feature: User Authentication
                 type: 'story',
                 status: 'specifying',
                 rules: ['Validate user credentials before allowing access'],
-                examples: ['Given a user exists with valid credentials When the user logs in Then the system should validate credentials'],
+                examples: [
+                  'Given a user exists with valid credentials When the user logs in Then the system should validate credentials',
+                ],
                 questions: [],
               },
             },

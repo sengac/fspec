@@ -2,7 +2,8 @@ import type { CommandHelpConfig } from '../utils/help-formatter';
 
 const config: CommandHelpConfig = {
   name: 'search-scenarios',
-  description: 'Search for scenarios across all feature files by text or regex pattern',
+  description:
+    'Search for scenarios across all feature files by text or regex pattern',
   usage: 'fspec search-scenarios --query=<pattern> [options]',
   options: [
     {
@@ -74,7 +75,11 @@ const config: CommandHelpConfig = {
       ],
     },
   ],
-  relatedCommands: ['get-scenarios', 'search-implementation', 'compare-implementations'],
+  relatedCommands: [
+    'get-scenarios',
+    'search-implementation',
+    'compare-implementations',
+  ],
   notes: [
     'Searches scenario names only (not step text)',
     'Regex mode uses JavaScript RegExp syntax',

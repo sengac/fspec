@@ -78,9 +78,7 @@ CLI-002: Validate
   commonPatterns: [
     {
       title: 'Review CLI test consistency',
-      commands: [
-        'fspec show-test-patterns --tag=@cli --include-coverage',
-      ],
+      commands: ['fspec show-test-patterns --tag=@cli --include-coverage'],
     },
     {
       title: 'Analyze critical feature testing',
@@ -90,7 +88,11 @@ CLI-002: Validate
       ],
     },
   ],
-  relatedCommands: ['show-coverage', 'compare-implementations', 'search-scenarios'],
+  relatedCommands: [
+    'show-coverage',
+    'compare-implementations',
+    'search-scenarios',
+  ],
   notes: [
     'Analyzes test files from coverage data',
     'Identifies common testing patterns and utilities',

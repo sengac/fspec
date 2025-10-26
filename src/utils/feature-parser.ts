@@ -153,7 +153,5 @@ export async function getScenarioSteps(
     }
   }
 
-  throw new Error(
-    `Scenario "${scenarioName}" not found in ${featureFilePath}`
-  );
+  throw new Error(`Scenario "${scenarioName}" not found in ${featureFilePath}`);
 }

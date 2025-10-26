@@ -350,15 +350,18 @@ export function deriveFeatureName(implPath: string): string {
   const nameWithoutExt = filename.replace(/\.(ts|tsx|js|jsx)$/, '');
 
   return nameWithoutExt
-    .replace(/([a-z])([A-Z])/g, '$1-$2')  // camelCase → kebab-case
-    .replace(/([A-Z])([A-Z][a-z])/g, '$1-$2')  // PascalCase → kebab-case
+    .replace(/([a-z])([A-Z])/g, '$1-$2') // camelCase → kebab-case
+    .replace(/([A-Z])([A-Z][a-z])/g, '$1-$2') // PascalCase → kebab-case
     .toLowerCase();
 }
 
 /**
  * Check if a feature file exists for an implementation file
  */
-export function hasFeatureFile(implPath: string, featureFiles: string[]): boolean {
+export function hasFeatureFile(
+  implPath: string,
+  featureFiles: string[]
+): boolean {
   const featureName = deriveFeatureName(implPath);
   const expectedPath = `spec/features/${featureName}.feature`;
 
@@ -406,7 +409,7 @@ function detectGaps(analysis: AnalysisResult): GapAnalysis {
   const unmappedImplFiles = findUnmappedImplementation(
     implementationFiles,
     featureFiles
-  ).filter(f => !isPureUtility(f));  // Exclude pure utilities
+  ).filter(f => !isPureUtility(f)); // Exclude pure utilities
 
   // Determine which files to process based on gap type
   let files: string[] = [];
@@ -553,7 +556,8 @@ async function handleStrategyD(
 ): Promise<ReverseCommandResult> {
   // Load foundation.json to get personas
   const foundationPath = join(cwd, 'spec', 'foundation.json');
-  let personas: Array<{ name: string; description: string; goals: string[] }> = [];
+  let personas: Array<{ name: string; description: string; goals: string[] }> =
+    [];
 
   try {
     const foundationContent = await fs.readFile(foundationPath, 'utf-8');
@@ -588,7 +592,8 @@ async function handleStrategyD(
   systemReminder += 'What user behavior does this support?\n';
   systemReminder += 'not which system calls it, but who BENEFITS?\n';
   systemReminder += '  Not: "which system calls it"\n';
-  systemReminder += '  Instead: "who BENEFITS from accurate discounts" → Shopper\n\n';
+  systemReminder +=
+    '  Instead: "who BENEFITS from accurate discounts" → Shopper\n\n';
 
   systemReminder += 'Transformation templates (implementation → behavior):\n';
   systemReminder += '  • UI Elements → User Actions\n';
@@ -608,7 +613,8 @@ async function handleStrategyD(
   guidance += '2. Use example mapping: fspec add-rule <work-unit> "..."\n';
   guidance += '3. Generate scenarios: fspec generate-scenarios <work-unit>\n';
   guidance += '4. Create test skeletons based on scenarios\n';
-  guidance += '5. Link coverage: fspec link-coverage <feature> --scenario "..." --test-file <path> --test-lines <range> --skip-validation\n';
+  guidance +=
+    '5. Link coverage: fspec link-coverage <feature> --scenario "..." --test-file <path> --test-lines <range> --skip-validation\n';
 
   return {
     systemReminder: wrapSystemReminder(systemReminder),

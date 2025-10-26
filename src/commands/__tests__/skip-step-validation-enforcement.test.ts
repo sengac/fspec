@@ -45,7 +45,9 @@ describe('Feature: AI agents skip docstring step validation by using --skip-step
 
       // Create work units file with story work unit
       const workUnitsData = {
-        prefixes: { AUTH: { description: 'Authentication', workUnitIds: ['AUTH-001'] } },
+        prefixes: {
+          AUTH: { description: 'Authentication', workUnitIds: ['AUTH-001'] },
+        },
         workUnits: {
           'AUTH-001': {
             id: 'AUTH-001',
@@ -55,8 +57,8 @@ describe('Feature: AI agents skip docstring step validation by using --skip-step
             status: 'testing',
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
-          }
-        }
+          },
+        },
       };
       await writeFile(workUnitsFile, JSON.stringify(workUnitsData, null, 2));
 
@@ -74,9 +76,19 @@ Feature: User Login
       // Create coverage file
       const coverageData = {
         scenarios: [{ name: 'Login with valid credentials', testMappings: [] }],
-        stats: { totalScenarios: 1, coveredScenarios: 0, coveragePercent: 0, testFiles: [], implFiles: [], totalLinesCovered: 0 }
+        stats: {
+          totalScenarios: 1,
+          coveredScenarios: 0,
+          coveragePercent: 0,
+          testFiles: [],
+          implFiles: [],
+          totalLinesCovered: 0,
+        },
       };
-      await writeFile(join(featuresDir, 'user-login.feature.coverage'), JSON.stringify(coverageData, null, 2));
+      await writeFile(
+        join(featuresDir, 'user-login.feature.coverage'),
+        JSON.stringify(coverageData, null, 2)
+      );
 
       // Create test file WITHOUT step comments
       const testContent = `describe('Login', () => {
@@ -110,12 +122,20 @@ Feature: User Login
         const errorMessage = error.message;
 
         // Verify strict error messages
-        expect(errorMessage).toContain('skip-step-validation flag is ONLY allowed for task work units');
-        expect(errorMessage).toContain('Story and bug work units require MANDATORY step validation');
-        expect(errorMessage).toContain('Attempting to skip step validation will be detected and require going back to fix docstrings');
+        expect(errorMessage).toContain(
+          'skip-step-validation flag is ONLY allowed for task work units'
+        );
+        expect(errorMessage).toContain(
+          'Story and bug work units require MANDATORY step validation'
+        );
+        expect(errorMessage).toContain(
+          'Attempting to skip step validation will be detected and require going back to fix docstrings'
+        );
 
         // Verify error message contains additional warnings
-        expect(errorMessage).toContain('There is NO bypass for story and bug work units');
+        expect(errorMessage).toContain(
+          'There is NO bypass for story and bug work units'
+        );
       }
     });
   });
@@ -141,7 +161,9 @@ Feature: User Login
 
       // Create work units file with bug work unit
       const workUnitsData = {
-        prefixes: { BUG: { description: 'Bug fixes', workUnitIds: ['BUG-044'] } },
+        prefixes: {
+          BUG: { description: 'Bug fixes', workUnitIds: ['BUG-044'] },
+        },
         workUnits: {
           'BUG-044': {
             id: 'BUG-044',
@@ -151,8 +173,8 @@ Feature: User Login
             status: 'testing',
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
-          }
-        }
+          },
+        },
       };
       await writeFile(workUnitsFile, JSON.stringify(workUnitsData, null, 2));
 
@@ -165,14 +187,27 @@ Feature: Fix validation bypass
     When I apply the fix
     Then validation should be enforced`;
 
-      await writeFile(join(featuresDir, 'fix-validation-bypass.feature'), featureContent);
+      await writeFile(
+        join(featuresDir, 'fix-validation-bypass.feature'),
+        featureContent
+      );
 
       // Create coverage file
       const coverageData = {
         scenarios: [{ name: 'Fix validation bypass', testMappings: [] }],
-        stats: { totalScenarios: 1, coveredScenarios: 0, coveragePercent: 0, testFiles: [], implFiles: [], totalLinesCovered: 0 }
+        stats: {
+          totalScenarios: 1,
+          coveredScenarios: 0,
+          coveragePercent: 0,
+          testFiles: [],
+          implFiles: [],
+          totalLinesCovered: 0,
+        },
       };
-      await writeFile(join(featuresDir, 'fix-validation-bypass.feature.coverage'), JSON.stringify(coverageData, null, 2));
+      await writeFile(
+        join(featuresDir, 'fix-validation-bypass.feature.coverage'),
+        JSON.stringify(coverageData, null, 2)
+      );
 
       // Create test file WITHOUT step comments
       const testContent = `describe('Validation', () => {
@@ -196,8 +231,12 @@ Feature: Fix validation bypass
         const errorMessage = error.message;
 
         // Verify strict error messages for bug work units
-        expect(errorMessage).toContain('skip-step-validation flag is ONLY allowed for task work units');
-        expect(errorMessage).toContain('Bug work units require MANDATORY step validation');
+        expect(errorMessage).toContain(
+          'skip-step-validation flag is ONLY allowed for task work units'
+        );
+        expect(errorMessage).toContain(
+          'Bug work units require MANDATORY step validation'
+        );
       }
     });
   });
@@ -233,8 +272,8 @@ Feature: Fix validation bypass
             status: 'testing',
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
-          }
-        }
+          },
+        },
       };
       await writeFile(workUnitsFile, JSON.stringify(workUnitsData, null, 2));
 
@@ -247,14 +286,27 @@ Feature: Infrastructure Setup
     When I run the setup script
     Then infrastructure should be configured`;
 
-      await writeFile(join(featuresDir, 'infrastructure-setup.feature'), featureContent);
+      await writeFile(
+        join(featuresDir, 'infrastructure-setup.feature'),
+        featureContent
+      );
 
       // Create coverage file
       const coverageData = {
         scenarios: [{ name: 'Setup infrastructure', testMappings: [] }],
-        stats: { totalScenarios: 1, coveredScenarios: 0, coveragePercent: 0, testFiles: [], implFiles: [], totalLinesCovered: 0 }
+        stats: {
+          totalScenarios: 1,
+          coveredScenarios: 0,
+          coveragePercent: 0,
+          testFiles: [],
+          implFiles: [],
+          totalLinesCovered: 0,
+        },
       };
-      await writeFile(join(featuresDir, 'infrastructure-setup.feature.coverage'), JSON.stringify(coverageData, null, 2));
+      await writeFile(
+        join(featuresDir, 'infrastructure-setup.feature.coverage'),
+        JSON.stringify(coverageData, null, 2)
+      );
 
       // Create test file WITHOUT step comments
       const testContent = `describe('Setup', () => {
@@ -279,7 +331,9 @@ Feature: Infrastructure Setup
 
       // Verify warning about skipped validation
       if (result.warnings) {
-        expect(result.warnings).toContain('Step validation skipped (task work unit)');
+        expect(result.warnings).toContain(
+          'Step validation skipped (task work unit)'
+        );
       }
     });
   });
@@ -308,7 +362,9 @@ Feature: Infrastructure Setup
 
       // Create work units file with story work unit
       const workUnitsData = {
-        prefixes: { AUTH: { description: 'Authentication', workUnitIds: ['AUTH-002'] } },
+        prefixes: {
+          AUTH: { description: 'Authentication', workUnitIds: ['AUTH-002'] },
+        },
         workUnits: {
           'AUTH-002': {
             id: 'AUTH-002',
@@ -317,8 +373,8 @@ Feature: Infrastructure Setup
             status: 'testing',
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
-          }
-        }
+          },
+        },
       };
       await writeFile(workUnitsFile, JSON.stringify(workUnitsData, null, 2));
 
@@ -330,13 +386,26 @@ Feature: Password Reset
     When I enter my email address
     Then I should receive a password reset email`;
 
-      await writeFile(join(featuresDir, 'password-reset.feature'), featureContent);
+      await writeFile(
+        join(featuresDir, 'password-reset.feature'),
+        featureContent
+      );
 
       const coverageData = {
         scenarios: [{ name: 'Password reset flow', testMappings: [] }],
-        stats: { totalScenarios: 1, coveredScenarios: 0, coveragePercent: 0, testFiles: [], implFiles: [], totalLinesCovered: 0 }
+        stats: {
+          totalScenarios: 1,
+          coveredScenarios: 0,
+          coveragePercent: 0,
+          testFiles: [],
+          implFiles: [],
+          totalLinesCovered: 0,
+        },
       };
-      await writeFile(join(featuresDir, 'password-reset.feature.coverage'), JSON.stringify(coverageData, null, 2));
+      await writeFile(
+        join(featuresDir, 'password-reset.feature.coverage'),
+        JSON.stringify(coverageData, null, 2)
+      );
 
       const testContent = `describe('Password reset', () => {
   it('should reset password', () => {
@@ -362,9 +431,15 @@ Feature: Password Reset
         expect(errorMessage).toContain('STEP VALIDATION FAILED');
 
         // Verify shows exact steps to add
-        expect(errorMessage).toContain('// @step Given I am on the password reset page');
-        expect(errorMessage).toContain('// @step When I enter my email address');
-        expect(errorMessage).toContain('// @step Then I should receive a password reset email');
+        expect(errorMessage).toContain(
+          '// @step Given I am on the password reset page'
+        );
+        expect(errorMessage).toContain(
+          '// @step When I enter my email address'
+        );
+        expect(errorMessage).toContain(
+          '// @step Then I should receive a password reset email'
+        );
 
         // Verify does NOT mention skip flag
         expect(errorMessage).not.toContain('--skip-step-validation');
@@ -400,7 +475,9 @@ Feature: Password Reset
 
       // Create work units file with bug work unit
       const workUnitsData = {
-        prefixes: { BUG: { description: 'Bug fixes', workUnitIds: ['BUG-045'] } },
+        prefixes: {
+          BUG: { description: 'Bug fixes', workUnitIds: ['BUG-045'] },
+        },
         workUnits: {
           'BUG-045': {
             id: 'BUG-045',
@@ -409,8 +486,8 @@ Feature: Password Reset
             status: 'testing',
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
-          }
-        }
+          },
+        },
       };
       await writeFile(workUnitsFile, JSON.stringify(workUnitsData, null, 2));
 
@@ -422,13 +499,26 @@ Feature: Fix Login Timeout
     When the timeout threshold is exceeded
     Then the user should see a timeout error`;
 
-      await writeFile(join(featuresDir, 'fix-login-timeout.feature'), featureContent);
+      await writeFile(
+        join(featuresDir, 'fix-login-timeout.feature'),
+        featureContent
+      );
 
       const coverageData = {
         scenarios: [{ name: 'Fix login timeout', testMappings: [] }],
-        stats: { totalScenarios: 1, coveredScenarios: 0, coveragePercent: 0, testFiles: [], implFiles: [], totalLinesCovered: 0 }
+        stats: {
+          totalScenarios: 1,
+          coveredScenarios: 0,
+          coveragePercent: 0,
+          testFiles: [],
+          implFiles: [],
+          totalLinesCovered: 0,
+        },
       };
-      await writeFile(join(featuresDir, 'fix-login-timeout.feature.coverage'), JSON.stringify(coverageData, null, 2));
+      await writeFile(
+        join(featuresDir, 'fix-login-timeout.feature.coverage'),
+        JSON.stringify(coverageData, null, 2)
+      );
 
       const testContent = `describe('Login timeout', () => {
   it('should handle timeout', () => {

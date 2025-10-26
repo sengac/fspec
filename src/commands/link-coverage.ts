@@ -4,10 +4,7 @@ import { join } from 'path';
 import chalk from 'chalk';
 import type { CoverageFile } from '../utils/coverage-file';
 import { getScenarioSteps } from '../utils/feature-parser';
-import {
-  validateSteps,
-  formatValidationError,
-} from '../utils/step-validation';
+import { validateSteps, formatValidationError } from '../utils/step-validation';
 import type { WorkUnitType } from '../types/work-units';
 
 interface LinkCoverageOptions {
@@ -190,7 +187,10 @@ export async function linkCoverage(
 
       if (!validationResult.valid) {
         // Step validation failed - throw error with system-reminder
-        const errorMessage = formatValidationError(validationResult, workUnitType);
+        const errorMessage = formatValidationError(
+          validationResult,
+          workUnitType
+        );
         throw new Error(errorMessage + '\n\nStep validation failed');
       }
     } catch (error: any) {

@@ -93,16 +93,26 @@ Feature: Test Feature
       // And the reminder should contain specific commands
       expect(result.systemReminder).toContain('fspec add-rule <id> "rule"');
       expect(result.systemReminder).toContain('fspec remove-rule <id> <index>');
-      expect(result.systemReminder).toContain('fspec add-example <id> "example"');
-      expect(result.systemReminder).toContain('fspec remove-example <id> <index>');
-      expect(result.systemReminder).toContain('fspec add-question <id> "@human: question?"');
-      expect(result.systemReminder).toContain('fspec answer-question <id> <index> --answer "..."');
+      expect(result.systemReminder).toContain(
+        'fspec add-example <id> "example"'
+      );
+      expect(result.systemReminder).toContain(
+        'fspec remove-example <id> <index>'
+      );
+      expect(result.systemReminder).toContain(
+        'fspec add-question <id> "@human: question?"'
+      );
+      expect(result.systemReminder).toContain(
+        'fspec answer-question <id> <index> --answer "..."'
+      );
       expect(result.systemReminder).toContain('fspec generate-scenarios <id>');
       expect(result.systemReminder).toContain('For more: fspec help discovery');
 
       // And commands should be displayed one per line
       const reminderContent = extractReminderContent(result.systemReminder!);
-      const commandLines = reminderContent.split('\n').filter(line => line.includes('fspec'));
+      const commandLines = reminderContent
+        .split('\n')
+        .filter(line => line.includes('fspec'));
       expect(commandLines.length).toBeGreaterThan(5); // Multiple commands on separate lines
     });
   });
@@ -130,14 +140,20 @@ Feature: Test Feature
       expect(result.systemReminder).toContain('<system-reminder>');
 
       // And the reminder should contain testing commands
-      expect(result.systemReminder).toContain('fspec link-coverage <feature> --scenario "..." --test-file <path> --test-lines <range>');
+      expect(result.systemReminder).toContain(
+        'fspec link-coverage <feature> --scenario "..." --test-file <path> --test-lines <range>'
+      );
       expect(result.systemReminder).toContain('fspec show-coverage <feature>');
       expect(result.systemReminder).toContain('fspec show-feature <name>');
-      expect(result.systemReminder).toContain('For more: fspec link-coverage --help');
+      expect(result.systemReminder).toContain(
+        'For more: fspec link-coverage --help'
+      );
 
       // And commands should be displayed one per line
       const reminderContent = extractReminderContent(result.systemReminder!);
-      const commandLines = reminderContent.split('\n').filter(line => line.includes('fspec'));
+      const commandLines = reminderContent
+        .split('\n')
+        .filter(line => line.includes('fspec'));
       expect(commandLines.length).toBeGreaterThanOrEqual(3);
     });
   });
@@ -145,8 +161,18 @@ Feature: Test Feature
   describe('Scenario: Show command reminder when transitioning to IMPLEMENTING state', () => {
     it('should emit system-reminder with implementation commands when moving to implementing', async () => {
       // Given I have a work unit in testing status
-      await updateWorkUnitStatus({ workUnitId: 'TEST-001', status: 'specifying', cwd: TEST_DIR, skipTemporalValidation: true });
-      await updateWorkUnitStatus({ workUnitId: 'TEST-001', status: 'testing', cwd: TEST_DIR, skipTemporalValidation: true });
+      await updateWorkUnitStatus({
+        workUnitId: 'TEST-001',
+        status: 'specifying',
+        cwd: TEST_DIR,
+        skipTemporalValidation: true,
+      });
+      await updateWorkUnitStatus({
+        workUnitId: 'TEST-001',
+        status: 'testing',
+        cwd: TEST_DIR,
+        skipTemporalValidation: true,
+      });
 
       // When I run "fspec update-work-unit-status TEST-001 implementing"
       const result = await updateWorkUnitStatus({
@@ -160,15 +186,23 @@ Feature: Test Feature
       expect(result.systemReminder).toContain('<system-reminder>');
 
       // And the reminder should contain implementation commands
-      expect(result.systemReminder).toContain('fspec link-coverage <feature> --scenario "..." --test-file <path> --impl-file <path> --impl-lines <lines>');
+      expect(result.systemReminder).toContain(
+        'fspec link-coverage <feature> --scenario "..." --test-file <path> --impl-file <path> --impl-lines <lines>'
+      );
       expect(result.systemReminder).toContain('fspec checkpoint <id> <name>');
-      expect(result.systemReminder).toContain('fspec restore-checkpoint <id> <name>');
+      expect(result.systemReminder).toContain(
+        'fspec restore-checkpoint <id> <name>'
+      );
       expect(result.systemReminder).toContain('fspec list-checkpoints <id>');
-      expect(result.systemReminder).toContain('For more: fspec checkpoint --help');
+      expect(result.systemReminder).toContain(
+        'For more: fspec checkpoint --help'
+      );
 
       // And commands should be displayed one per line
       const reminderContent = extractReminderContent(result.systemReminder);
-      const commandLines = reminderContent.split('\n').filter(line => line.includes('fspec'));
+      const commandLines = reminderContent
+        .split('\n')
+        .filter(line => line.includes('fspec'));
       expect(commandLines.length).toBeGreaterThanOrEqual(4);
     });
   });
@@ -176,9 +210,24 @@ Feature: Test Feature
   describe('Scenario: Show command reminder when transitioning to VALIDATING state', () => {
     it('should emit system-reminder with validation commands (fspec only) when moving to validating', async () => {
       // Given I have a work unit in implementing status
-      await updateWorkUnitStatus({ workUnitId: 'TEST-001', status: 'specifying', cwd: TEST_DIR, skipTemporalValidation: true });
-      await updateWorkUnitStatus({ workUnitId: 'TEST-001', status: 'testing', cwd: TEST_DIR, skipTemporalValidation: true });
-      await updateWorkUnitStatus({ workUnitId: 'TEST-001', status: 'implementing', cwd: TEST_DIR, skipTemporalValidation: true });
+      await updateWorkUnitStatus({
+        workUnitId: 'TEST-001',
+        status: 'specifying',
+        cwd: TEST_DIR,
+        skipTemporalValidation: true,
+      });
+      await updateWorkUnitStatus({
+        workUnitId: 'TEST-001',
+        status: 'testing',
+        cwd: TEST_DIR,
+        skipTemporalValidation: true,
+      });
+      await updateWorkUnitStatus({
+        workUnitId: 'TEST-001',
+        status: 'implementing',
+        cwd: TEST_DIR,
+        skipTemporalValidation: true,
+      });
 
       // When I run "fspec update-work-unit-status TEST-001 validating"
       const result = await updateWorkUnitStatus({
@@ -187,7 +236,6 @@ Feature: Test Feature
         cwd: TEST_DIR,
         skipTemporalValidation: true,
       });
-
 
       // Then a system-reminder should be emitted
       expect(result.systemReminder).toContain('<system-reminder>');
@@ -205,7 +253,9 @@ Feature: Test Feature
       expect(reminderContent).not.toContain('npm run check');
 
       // And commands should be displayed one per line
-      const commandLines = reminderContent.split('\n').filter(line => line.includes('fspec'));
+      const commandLines = reminderContent
+        .split('\n')
+        .filter(line => line.includes('fspec'));
       expect(commandLines.length).toBeGreaterThanOrEqual(4);
     });
   });
@@ -213,7 +263,12 @@ Feature: Test Feature
   describe('Scenario: No command reminder when transitioning to BACKLOG state', () => {
     it('should prevent moving back to backlog from other states', async () => {
       // Given I have a work unit in specifying status
-      await updateWorkUnitStatus({ workUnitId: 'TEST-001', status: 'specifying', cwd: TEST_DIR, skipTemporalValidation: true });
+      await updateWorkUnitStatus({
+        workUnitId: 'TEST-001',
+        status: 'specifying',
+        cwd: TEST_DIR,
+        skipTemporalValidation: true,
+      });
 
       // When I try to run "fspec update-work-unit-status TEST-001 backlog"
       // Then it should throw an error
@@ -224,17 +279,37 @@ Feature: Test Feature
           cwd: TEST_DIR,
           skipTemporalValidation: true,
         })
-      ).rejects.toThrow("Cannot move work back to backlog");
+      ).rejects.toThrow('Cannot move work back to backlog');
     });
   });
 
   describe('Scenario: No command reminder when transitioning to DONE state', () => {
     it('should not emit command reminder when moving to done', async () => {
       // Given I have a work unit in validating status
-      await updateWorkUnitStatus({ workUnitId: 'TEST-001', status: 'specifying', cwd: TEST_DIR, skipTemporalValidation: true });
-      await updateWorkUnitStatus({ workUnitId: 'TEST-001', status: 'testing', cwd: TEST_DIR, skipTemporalValidation: true });
-      await updateWorkUnitStatus({ workUnitId: 'TEST-001', status: 'implementing', cwd: TEST_DIR, skipTemporalValidation: true });
-      await updateWorkUnitStatus({ workUnitId: 'TEST-001', status: 'validating', cwd: TEST_DIR, skipTemporalValidation: true });
+      await updateWorkUnitStatus({
+        workUnitId: 'TEST-001',
+        status: 'specifying',
+        cwd: TEST_DIR,
+        skipTemporalValidation: true,
+      });
+      await updateWorkUnitStatus({
+        workUnitId: 'TEST-001',
+        status: 'testing',
+        cwd: TEST_DIR,
+        skipTemporalValidation: true,
+      });
+      await updateWorkUnitStatus({
+        workUnitId: 'TEST-001',
+        status: 'implementing',
+        cwd: TEST_DIR,
+        skipTemporalValidation: true,
+      });
+      await updateWorkUnitStatus({
+        workUnitId: 'TEST-001',
+        status: 'validating',
+        cwd: TEST_DIR,
+        skipTemporalValidation: true,
+      });
 
       // When I run "fspec update-work-unit-status TEST-001 done"
       const result = await updateWorkUnitStatus({
@@ -243,7 +318,6 @@ Feature: Test Feature
         cwd: TEST_DIR,
         skipTemporalValidation: true,
       });
-
 
       // Then no command reminder system-reminder should be emitted
       if (result.systemReminder.includes('<system-reminder>')) {
@@ -257,9 +331,24 @@ Feature: Test Feature
   describe('Scenario: No command reminder when transitioning to BLOCKED state', () => {
     it('should not emit command reminder when moving to blocked', async () => {
       // Given I have a work unit in implementing status
-      await updateWorkUnitStatus({ workUnitId: 'TEST-001', status: 'specifying', cwd: TEST_DIR, skipTemporalValidation: true });
-      await updateWorkUnitStatus({ workUnitId: 'TEST-001', status: 'testing', cwd: TEST_DIR, skipTemporalValidation: true });
-      await updateWorkUnitStatus({ workUnitId: 'TEST-001', status: 'implementing', cwd: TEST_DIR, skipTemporalValidation: true });
+      await updateWorkUnitStatus({
+        workUnitId: 'TEST-001',
+        status: 'specifying',
+        cwd: TEST_DIR,
+        skipTemporalValidation: true,
+      });
+      await updateWorkUnitStatus({
+        workUnitId: 'TEST-001',
+        status: 'testing',
+        cwd: TEST_DIR,
+        skipTemporalValidation: true,
+      });
+      await updateWorkUnitStatus({
+        workUnitId: 'TEST-001',
+        status: 'implementing',
+        cwd: TEST_DIR,
+        skipTemporalValidation: true,
+      });
 
       // When I run "fspec update-work-unit-status TEST-001 blocked"
       const result = await updateWorkUnitStatus({
@@ -270,24 +359,35 @@ Feature: Test Feature
         skipTemporalValidation: true,
       });
 
-
       // Then a system-reminder should be emitted with blocker guidance
       expect(result.systemReminder).toContain('<system-reminder>');
       expect(result.systemReminder).toContain('BLOCKED status');
 
       // But it should not have the "Common commands" section like other states
       const reminderContent = extractReminderContent(result.systemReminder);
-      expect(reminderContent).not.toContain('Common commands for BLOCKED state');
+      expect(reminderContent).not.toContain(
+        'Common commands for BLOCKED state'
+      );
     });
   });
 
   describe('Scenario: Show reminder every time status changes', () => {
     it('should show reminder again when returning to same state', async () => {
       // Given I have a work unit that has previously been in specifying status
-      await updateWorkUnitStatus({ workUnitId: 'TEST-001', status: 'specifying', cwd: TEST_DIR, skipTemporalValidation: true });
+      await updateWorkUnitStatus({
+        workUnitId: 'TEST-001',
+        status: 'specifying',
+        cwd: TEST_DIR,
+        skipTemporalValidation: true,
+      });
 
       // And I moved it to testing and saw a testing reminder
-      await updateWorkUnitStatus({ workUnitId: 'TEST-001', status: 'testing', cwd: TEST_DIR, skipTemporalValidation: true });
+      await updateWorkUnitStatus({
+        workUnitId: 'TEST-001',
+        status: 'testing',
+        cwd: TEST_DIR,
+        skipTemporalValidation: true,
+      });
 
       // When I move it back to specifying status
       const result = await updateWorkUnitStatus({
@@ -296,7 +396,6 @@ Feature: Test Feature
         cwd: TEST_DIR,
         skipTemporalValidation: true,
       });
-
 
       // Then a system-reminder for specifying state should be emitted again
       expect(result.systemReminder).toContain('<system-reminder>');

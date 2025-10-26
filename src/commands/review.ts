@@ -61,7 +61,11 @@ function buildAIAnalysisReminder(
     }>;
   } | null,
   cwd: string,
-  recommendations: Array<{ recommendation: string; rationale: string; action: string }>
+  recommendations: Array<{
+    recommendation: string;
+    rationale: string;
+    action: string;
+  }>
 ): string {
   const lines: string[] = [];
 
@@ -101,7 +105,9 @@ function buildAIAnalysisReminder(
   if (implFiles.size > 0) {
     lines.push('STEP 1: Read Implementation Files');
     lines.push('');
-    lines.push('Use the Read tool to examine the following implementation files:');
+    lines.push(
+      'Use the Read tool to examine the following implementation files:'
+    );
     implFiles.forEach(file => {
       lines.push(`  - ${file}`);
     });
@@ -110,7 +116,9 @@ function buildAIAnalysisReminder(
 
   lines.push('STEP 2: Analyze Code for Quality Issues');
   lines.push('');
-  lines.push('Perform deep analysis to analyze the code you read. Look for bugs:');
+  lines.push(
+    'Perform deep analysis to analyze the code you read. Look for bugs:'
+  );
   lines.push('');
   lines.push('  • Bugs and Logic Errors:');
   lines.push('    - Off-by-one errors, null pointer exceptions');
@@ -123,7 +131,9 @@ function buildAIAnalysisReminder(
   lines.push('    - Concurrent access to shared resources');
   lines.push('');
   lines.push('  • Anti-Patterns:');
-  lines.push('    - God functions (>100 lines, large functions that need refactoring)');
+  lines.push(
+    '    - God functions (>100 lines, large functions that need refactoring)'
+  );
   lines.push('    - duplicated code across multiple files');
   lines.push('    - Tight coupling between modules');
   lines.push('    - Magic numbers without constants');
@@ -136,9 +146,13 @@ function buildAIAnalysisReminder(
 
   lines.push('STEP 3: Check FOUNDATION.md Alignment');
   lines.push('');
-  lines.push('Read FOUNDATION.md or CLAUDE.md and verify code follows project principles:');
+  lines.push(
+    'Read FOUNDATION.md or CLAUDE.md and verify code follows project principles:'
+  );
   lines.push('  - File size limits (e.g., keep files under 300 lines)');
-  lines.push('  - Architectural patterns (e.g., use isomorphic-git not child_process)');
+  lines.push(
+    '  - Architectural patterns (e.g., use isomorphic-git not child_process)'
+  );
   lines.push('  - Coding standards (e.g., no any types, use ES6 imports)');
   lines.push('  - Project-specific conventions');
   lines.push('');
@@ -147,19 +161,31 @@ function buildAIAnalysisReminder(
   lines.push('');
   lines.push('After your analysis, report findings conversationally:');
   lines.push('  - List bugs found with file:line references');
-  lines.push('  - Explain anti-patterns detected and why they\'re problematic');
+  lines.push("  - Explain anti-patterns detected and why they're problematic");
   lines.push('  - Suggest specific refactoring with code examples if helpful');
   lines.push('  - Note FOUNDATION.md violations with exact principle violated');
   lines.push('');
   lines.push('Example:');
-  lines.push('  "I found a potential race condition in src/file-ops/save.ts:15-20.');
-  lines.push('   Two async writeFile calls happen without synchronization, which could');
-  lines.push('   corrupt the file if both execute simultaneously. Consider using a');
-  lines.push('   file locking pattern or atomic writes as mentioned in FOUNDATION.md."');
+  lines.push(
+    '  "I found a potential race condition in src/file-ops/save.ts:15-20.'
+  );
+  lines.push(
+    '   Two async writeFile calls happen without synchronization, which could'
+  );
+  lines.push(
+    '   corrupt the file if both execute simultaneously. Consider using a'
+  );
+  lines.push(
+    '   file locking pattern or atomic writes as mentioned in FOUNDATION.md."'
+  );
   lines.push('');
 
-  lines.push('NOTE: The static analysis above already caught basic issues (any types, etc.).');
-  lines.push('Focus your analysis on deeper issues that require understanding context and logic.');
+  lines.push(
+    'NOTE: The static analysis above already caught basic issues (any types, etc.).'
+  );
+  lines.push(
+    'Focus your analysis on deeper issues that require understanding context and logic.'
+  );
 
   return lines.join('\n');
 }
@@ -198,9 +224,13 @@ export async function review(
   const recommendations: Recommendation[] = [];
 
   // Build review header
-  output.push('================================================================================');
+  output.push(
+    '================================================================================'
+  );
   output.push(`REVIEW: ${workUnitId} - ${workUnit.title}`);
-  output.push('================================================================================');
+  output.push(
+    '================================================================================'
+  );
   output.push('');
 
   // Step 2: Read Feature Files
@@ -208,7 +238,10 @@ export async function review(
   let featureContent: string | null = null;
   let gherkinDocument: Messages.GherkinDocument | null = null;
 
-  if (workUnitDetails.linkedFeatures && workUnitDetails.linkedFeatures.length > 0) {
+  if (
+    workUnitDetails.linkedFeatures &&
+    workUnitDetails.linkedFeatures.length > 0
+  ) {
     featureFile = workUnitDetails.linkedFeatures[0].file;
     const featurePath = join(cwd, featureFile);
     featureContent = await readFile(featurePath, 'utf-8');
@@ -233,7 +266,7 @@ export async function review(
       issue: 'No linked feature files found',
       location: `Work unit ${workUnitId}`,
       fix: 'Create feature file with acceptance criteria',
-        action: `fspec create-feature "${workUnit.title}"`,
+      action: `fspec create-feature "${workUnit.title}"`,
     });
   }
 
@@ -269,23 +302,31 @@ export async function review(
 
   // Check Example Mapping
   if (workUnit.rules && workUnit.rules.length > 0) {
-    acddPassed.push(`Example Mapping completed (${workUnit.rules.length} rules, ${workUnit.examples?.length || 0} examples, ${workUnit.questions?.filter((q: { selected?: boolean }) => q.selected).length || 0} questions answered)`);
+    acddPassed.push(
+      `Example Mapping completed (${workUnit.rules.length} rules, ${workUnit.examples?.length || 0} examples, ${workUnit.questions?.filter((q: { selected?: boolean }) => q.selected).length || 0} questions answered)`
+    );
   } else if (workUnit.status !== 'backlog') {
     acddFailed.push('No Example Mapping data found (missing rules/examples)');
     recommendations.push({
       recommendation: 'Complete Example Mapping before specifying',
-      rationale: 'Example Mapping clarifies requirements and prevents building the wrong feature',
+      rationale:
+        'Example Mapping clarifies requirements and prevents building the wrong feature',
       action: `fspec add-rule ${workUnitId} "<rule>" and fspec add-example ${workUnitId} "<example>"`,
     });
   }
 
   // Check feature file creation during specifying phase
   if (featureFile && workUnit.stateHistory) {
-    const specifyingEntry = workUnit.stateHistory.find((h: { state: string }) => h.state === 'specifying');
+    const specifyingEntry = workUnit.stateHistory.find(
+      (h: { state: string }) => h.state === 'specifying'
+    );
     if (specifyingEntry) {
       acddPassed.push('Feature file created during specifying phase');
     }
-  } else if (workUnit.status !== 'backlog' && workUnit.status !== 'specifying') {
+  } else if (
+    workUnit.status !== 'backlog' &&
+    workUnit.status !== 'specifying'
+  ) {
     acddFailed.push('Feature file should be created during specifying phase');
   }
 
@@ -294,7 +335,9 @@ export async function review(
     if (coverageData.stats.coveragePercent === 100) {
       acddPassed.push('All scenarios have test coverage (100%)');
     } else if (coverageData.stats.coveragePercent > 0) {
-      acddFailed.push(`Incomplete test coverage (${coverageData.stats.coveragePercent}%)`);
+      acddFailed.push(
+        `Incomplete test coverage (${coverageData.stats.coveragePercent}%)`
+      );
       recommendations.push({
         recommendation: 'Add tests for uncovered scenarios',
         rationale: 'All acceptance criteria must have corresponding tests',
@@ -305,7 +348,9 @@ export async function review(
 
   // Check temporal ordering
   if (workUnit.stateHistory && workUnit.stateHistory.length > 0) {
-    acddPassed.push(`Temporal ordering verified (${workUnit.stateHistory.length} state transitions)`);
+    acddPassed.push(
+      `Temporal ordering verified (${workUnit.stateHistory.length} state transitions)`
+    );
   }
 
   // Step 5: Validate Coding Standards
@@ -426,7 +471,9 @@ export async function review(
   output.push('');
   if (coverageData && coverageData.stats) {
     output.push(`- **Total Scenarios:** ${coverageData.stats.totalScenarios}`);
-    output.push(`- **Covered Scenarios:** ${coverageData.stats.coveredScenarios} (${coverageData.stats.coveragePercent}%)`);
+    output.push(
+      `- **Covered Scenarios:** ${coverageData.stats.coveredScenarios} (${coverageData.stats.coveragePercent}%)`
+    );
 
     if (coverageData.scenarios) {
       const uncovered = coverageData.scenarios
@@ -476,7 +523,11 @@ export async function review(
   if (acddFailed.length > 0) {
     priorityActions.push('Address ACDD compliance violations');
   }
-  if (coverageData && coverageData.stats && coverageData.stats.coveragePercent < 100) {
+  if (
+    coverageData &&
+    coverageData.stats &&
+    coverageData.stats.coveragePercent < 100
+  ) {
     priorityActions.push('Complete test coverage for all scenarios');
   }
   if (workUnit.status !== 'done') {
@@ -484,7 +535,9 @@ export async function review(
   }
 
   if (priorityActions.length === 0) {
-    priorityActions.push('Work unit review complete - no critical actions needed');
+    priorityActions.push(
+      'Work unit review complete - no critical actions needed'
+    );
   }
 
   priorityActions.forEach((action, index) => {
@@ -515,7 +568,9 @@ export async function review(
 export function registerReviewCommand(program: Command): void {
   program
     .command('review <work-unit-id>')
-    .description('Perform comprehensive review of work unit with ACDD compliance and quality checks')
+    .description(
+      'Perform comprehensive review of work unit with ACDD compliance and quality checks'
+    )
     .action(async (workUnitId: string) => {
       try {
         const result = await review(workUnitId);

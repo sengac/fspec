@@ -625,28 +625,29 @@ export function registerGenerateScenariosCommand(program: Command): void {
             feature: options.feature,
             ignorePossibleDuplicates: options.ignorePossibleDuplicates,
           });
-        console.log(
-          chalk.green(
-            `✓ Created context-only feature file: ${result.featureFile}`
-          )
-        );
-        console.log(
-          chalk.yellow(
-            `  Contains example mapping context as comments (NO scenarios yet)`
-          )
-        );
-        // Display system reminders if any
-        if (result.systemReminders && result.systemReminders.length > 0) {
-          for (const reminder of result.systemReminders) {
-            console.log('\n' + reminder);
+          console.log(
+            chalk.green(
+              `✓ Created context-only feature file: ${result.featureFile}`
+            )
+          );
+          console.log(
+            chalk.yellow(
+              `  Contains example mapping context as comments (NO scenarios yet)`
+            )
+          );
+          // Display system reminders if any
+          if (result.systemReminders && result.systemReminders.length > 0) {
+            for (const reminder of result.systemReminders) {
+              console.log('\n' + reminder);
+            }
           }
+        } catch (error: any) {
+          console.error(
+            chalk.red('✗ Failed to generate scenarios:'),
+            error.message
+          );
+          process.exit(1);
         }
-      } catch (error: any) {
-        console.error(
-          chalk.red('✗ Failed to generate scenarios:'),
-          error.message
-        );
-        process.exit(1);
       }
-    });
+    );
 }

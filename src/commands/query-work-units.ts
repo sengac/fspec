@@ -198,7 +198,7 @@ export async function queryWorkUnits(options: {
     }
 
     // Determine output format and return data accordingly
-    const outputFormat = options.json ? 'json' : (options.format || 'table');
+    const outputFormat = options.json ? 'json' : options.format || 'table';
 
     if (outputFormat === 'json') {
       // JSON format - return data array with work unit IDs and feature file paths

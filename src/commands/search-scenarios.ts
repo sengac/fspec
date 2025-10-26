@@ -5,7 +5,10 @@
 
 import chalk from 'chalk';
 import type { Command } from 'commander';
-import { parseAllFeatures, searchScenarios as searchScenariosUtil } from '../utils/feature-parser';
+import {
+  parseAllFeatures,
+  searchScenarios as searchScenariosUtil,
+} from '../utils/feature-parser';
 
 interface SearchScenariosOptions {
   query: string;
@@ -58,22 +61,27 @@ export async function searchScenarios(
 export function registerSearchScenariosCommand(program: Command): void {
   program
     .command('search-scenarios')
-    .description('Search for scenarios across all feature files by text or regex pattern')
-    .requiredOption('--query <pattern>', 'Search pattern (literal text or regex)')
+    .description(
+      'Search for scenarios across all feature files by text or regex pattern'
+    )
+    .requiredOption(
+      '--query <pattern>',
+      'Search pattern (literal text or regex)'
+    )
     .option('--regex', 'Enable regex pattern matching (default: literal)')
     .option('--json', 'Output results in JSON format')
     .action(
-      async (options: {
-        query: string;
-        regex?: boolean;
-        json?: boolean;
-      }) => {
+      async (options: { query: string; regex?: boolean; json?: boolean }) => {
         try {
           const result = await searchScenarios(options);
           if (options.json) {
             console.log(JSON.stringify(result, null, 2));
           } else {
-            console.log(chalk.green(`✓ Found ${result.scenarios.length} scenarios matching "${options.query}"`));
+            console.log(
+              chalk.green(
+                `✓ Found ${result.scenarios.length} scenarios matching "${options.query}"`
+              )
+            );
           }
         } catch (error: unknown) {
           if (error instanceof Error) {

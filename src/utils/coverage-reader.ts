@@ -103,9 +103,7 @@ export function extractImplementationFiles(
 /**
  * Extract all test files from coverage data
  */
-export function extractTestFiles(
-  coverageFiles: CoverageFile[]
-): Array<{
+export function extractTestFiles(coverageFiles: CoverageFile[]): Array<{
   filePath: string;
   scenarioName: string;
   featureName: string;

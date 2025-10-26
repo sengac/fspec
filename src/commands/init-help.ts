@@ -39,7 +39,12 @@ const config: CommandHelpConfig = {
     },
   ],
   prerequisites: ['Project should have package.json or be a git repository'],
-  relatedCommands: ['create-feature', 'create-story', 'create-bug', 'create-task'],
+  relatedCommands: [
+    'create-feature',
+    'create-story',
+    'create-bug',
+    'create-task',
+  ],
   notes: [
     'Supports 18 AI agents: Claude Code, Cursor, Windsurf, Cline, Aider, and more',
     'Creates agent-specific slash command (e.g., .claude/commands/fspec.md)',
