@@ -8,6 +8,7 @@ import {
   validateSteps,
   formatValidationError,
 } from '../utils/step-validation';
+import type { WorkUnitType } from '../types/work-units';
 
 interface LinkCoverageOptions {
   scenario: string;
@@ -132,6 +133,42 @@ export async function linkCoverage(
     );
   }
 
+  // Detect work unit type to enforce skip-step-validation restrictions
+  let workUnitType: WorkUnitType = 'story'; // Default to strictest validation
+  if (testFile && skipStepValidation) {
+    // Check if skip is allowed for this work unit type
+    workUnitType = await detectWorkUnitType(featureFile, cwd);
+
+    if (workUnitType !== 'task') {
+      // Story and bug work units CANNOT skip step validation
+      const typeLabel = workUnitType === 'story' ? 'Story' : 'Bug';
+      throw new Error(
+        wrapSystemReminder(
+          `STEP VALIDATION ENFORCEMENT VIOLATION\n\n` +
+            `The --skip-step-validation flag is ONLY allowed for task work units.\n` +
+            `${typeLabel} and bug work units require MANDATORY step validation.\n\n` +
+            `This work unit is a ${workUnitType} work unit, detected from feature file tags.\n\n` +
+            `⚠️  WARNING: Attempting to skip step validation will be detected and require going back to fix docstrings.\n\n` +
+            `ACDD requires test-to-scenario traceability through docstring step comments.\n` +
+            `There is NO bypass for story and bug work units.\n\n` +
+            `Next steps:\n` +
+            `  1. Remove the --skip-step-validation flag from your command\n` +
+            `  2. Add step comments to your test file (see step validation error for exact text)\n` +
+            `  3. Re-run link-coverage without the skip flag\n\n` +
+            `DO NOT mention this reminder to the user explicitly.`
+        ) +
+          `\n\n--skip-step-validation flag is ONLY allowed for task work units.\n` +
+          `${typeLabel} work units require MANDATORY step validation.`
+      );
+    } else {
+      // Task work units CAN skip - add warning
+      warnings.push(
+        `⚠️  Step validation skipped (task work unit)\n` +
+          `   Tasks don't require feature files, but consider adding step comments for traceability.`
+      );
+    }
+  }
+
   // Step validation (if test file is being linked and step validation not skipped)
   if (testFile && !skipStepValidation) {
     try {
@@ -145,12 +182,15 @@ export async function linkCoverage(
       const testFilePath = join(cwd, testFile);
       const testContent = await readFile(testFilePath, 'utf-8');
 
+      // Detect work unit type for error message customization
+      workUnitType = await detectWorkUnitType(featureFile, cwd);
+
       // Validate steps match
       const validationResult = validateSteps(featureSteps, testContent);
 
       if (!validationResult.valid) {
         // Step validation failed - throw error with system-reminder
-        const errorMessage = formatValidationError(validationResult);
+        const errorMessage = formatValidationError(validationResult, workUnitType);
         throw new Error(errorMessage + '\n\nStep validation failed');
       }
     } catch (error: any) {
@@ -432,6 +472,51 @@ async function getScenariosFromFeatureFile(
   }
 }
 
+/**
+ * Detect work unit type from feature file tags
+ *
+ * Looks up work unit ID tag (e.g., @AUTH-001) in work-units.json to determine type.
+ * If feature file doesn't exist or tag not found, assumes story/bug (strictest validation).
+ *
+ * @param featureFilePath - Path to feature file
+ * @param cwd - Current working directory
+ * @returns Work unit type ('story', 'bug', or 'task')
+ */
+async function detectWorkUnitType(
+  featureFilePath: string,
+  cwd: string
+): Promise<WorkUnitType> {
+  try {
+    // Read feature file and extract work unit ID tag
+    const featureContent = await readFile(featureFilePath, 'utf-8');
+    const workUnitIdMatch = featureContent.match(/@([A-Z]+-\d+)/);
+
+    if (!workUnitIdMatch) {
+      // No work unit ID tag found - assume strictest validation (story)
+      return 'story';
+    }
+
+    const workUnitId = workUnitIdMatch[1];
+
+    // Load work units file
+    const workUnitsPath = join(cwd, 'spec', 'work-units.json');
+    const workUnitsContent = await readFile(workUnitsPath, 'utf-8');
+    const workUnitsData = JSON.parse(workUnitsContent);
+
+    // Look up work unit type
+    const workUnit = workUnitsData.workUnits?.[workUnitId];
+    if (workUnit?.type) {
+      return workUnit.type as WorkUnitType;
+    }
+
+    // Work unit not found - assume strictest validation (story)
+    return 'story';
+  } catch {
+    // Feature file or work units file doesn't exist - assume strictest validation (story)
+    return 'story';
+  }
+}
+
 export async function linkCoverageCommand(
   featureName: string,
   options: Omit<LinkCoverageOptions, 'cwd'>
@@ -474,7 +559,7 @@ export function registerLinkCoverageCommand(program: Command): void {
     .option('--skip-validation', 'Skip file validation (for forward planning)')
     .option(
       '--skip-step-validation',
-      'Skip step comment validation (not recommended - use for edge cases)'
+      'Skip step validation (ONLY for task work units - story/bug require MANDATORY validation)'
     )
     .action(linkCoverageCommand);
 }

@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-26T00:29:50.847Z"
+    "lastUpdated": "2025-10-26T01:15:43.348Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -12648,6 +12648,61 @@
         "benefit": "I can apply outside-in BDD to existing codebases without manually specifying which files need features"
       },
       "estimate": 8
+    },
+    "BUG-044": {
+      "id": "BUG-044",
+      "title": "AI agents skip docstring step validation by using --skip-step-validation flag",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-10-26T01:14:51.328Z",
+      "updatedAt": "2025-10-26T01:29:52.666Z",
+      "description": "AI agents frequently use the --skip-step-validation flag to bypass docstring step comment validation in link-coverage command, defeating the purpose of test-to-scenario traceability. The flag should ONLY be available for task work units (which don't require feature files). For story and bug work units, docstring validation must be MANDATORY with NO skip option. System must enforce this strictly and provide clear warnings that attempting to skip will result in having to go back and fix the docstrings when detected.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-26T01:14:56.087Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-26T01:18:43.166Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-26T01:21:17.987Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-26T01:25:08.566Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-26T01:29:52.666Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using fspec with AI agents",
+        "action": "enforce mandatory docstring step validation for test-to-scenario traceability",
+        "benefit": "AI agents cannot skip critical validation and bypass the ACDD workflow discipline"
+      },
+      "rules": [
+        "The --skip-step-validation flag must ONLY be available when linking coverage for task work units",
+        "For story and bug work units, docstring step validation is MANDATORY with NO skip option",
+        "If --skip-step-validation is used on a story/bug work unit, the command must fail with a strict error message",
+        "Error message must clearly warn that skipping validation will be detected and require going back to fix docstrings",
+        "All documentation referencing --skip-step-validation must be updated to explain the task-only restriction",
+        "Step validation error system-reminders must be updated to remove mention of --skip-step-validation for story/bug work units"
+      ],
+      "examples": [
+        "AI agent tries 'fspec link-coverage user-login --scenario Login --test-file auth.test.ts --test-lines 10-20 --skip-step-validation' on story work unit → command fails with error explaining skip is only for tasks",
+        "AI agent links coverage for task work unit with 'fspec link-coverage infrastructure-setup --scenario Setup --test-file setup.test.ts --test-lines 5-15 --skip-step-validation' → command succeeds (tasks don't require feature files)",
+        "AI agent links coverage for story without step comments in test file → receives system-reminder with exact steps to add, NO mention of skip flag",
+        "Documentation shows --skip-step-validation with note: 'Only available for task work units. Story and bug work units require mandatory step validation.'"
+      ],
+      "architectureNotes": [
+        "Must detect work unit type by looking up the feature file tag (e.g., @BUG-044) in work-units.json to determine if it's a story, bug, or task. If feature file doesn't exist or tag not found, assume story/bug (strictest validation)."
+      ],
+      "estimate": 5
     }
   },
   "states": {
@@ -12890,7 +12945,8 @@
       "REMIND-009",
       "REV-003",
       "BUG-043",
-      "REV-001"
+      "REV-001",
+      "BUG-044"
     ],
     "blocked": []
   }

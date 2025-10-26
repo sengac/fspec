@@ -48,7 +48,7 @@ const config: CommandHelpConfig = {
     {
       flag: '--skip-step-validation',
       description:
-        'Skip step comment validation (not recommended - use for edge cases where test steps cannot match feature steps)',
+        'Skip step comment validation (ONLY allowed for task work units - story and bug work units require MANDATORY step validation)',
     },
   ],
   examples: [
@@ -99,7 +99,7 @@ const config: CommandHelpConfig = {
     },
     {
       error: 'Step validation failed: Missing step comment "When I click the login button"',
-      fix: 'Add step comments to test file: // @step When I click the login button\nOr use --skip-step-validation to bypass (not recommended)',
+      fix: 'Add step comments to test file: // @step When I click the login button\nNote: --skip-step-validation is ONLY allowed for task work units',
     },
   ],
   typicalWorkflow:

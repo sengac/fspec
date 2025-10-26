@@ -396,7 +396,7 @@ function displaySpecsHelp(): void {
     '      --skip-validation                Skip file validation (reverse ACDD)'
   );
   console.log(
-    '      --skip-step-validation           Skip step comment validation (edge cases)'
+    '      --skip-step-validation           Skip step validation (ONLY for task work units)'
   );
   console.log('    Examples:');
   console.log(
