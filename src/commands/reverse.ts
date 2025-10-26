@@ -332,11 +332,92 @@ async function scanDirectory(
   }
 }
 
+/**
+ * Derive feature file name from implementation file path
+ * Examples:
+ *   src/components/MusicPlayer.tsx → music-player
+ *   src/hooks/usePlaylistStore.ts → use-playlist-store
+ *   src/utils/formatTime.js → format-time
+ */
+export function deriveFeatureName(implPath: string): string {
+  const filename = implPath.split('/').pop() || '';
+  const nameWithoutExt = filename.replace(/\.(ts|tsx|js|jsx)$/, '');
+
+  return nameWithoutExt
+    .replace(/([a-z])([A-Z])/g, '$1-$2')  // camelCase → kebab-case
+    .replace(/([A-Z])([A-Z][a-z])/g, '$1-$2')  // PascalCase → kebab-case
+    .toLowerCase();
+}
+
+/**
+ * Check if a feature file exists for an implementation file
+ */
+export function hasFeatureFile(implPath: string, featureFiles: string[]): boolean {
+  const featureName = deriveFeatureName(implPath);
+  const expectedPath = `spec/features/${featureName}.feature`;
+
+  // Check both full path match and filename match
+  return featureFiles.some(
+    f => f === expectedPath || f.includes(`/${featureName}.feature`)
+  );
+}
+
+/**
+ * Find implementation files that don't have corresponding feature files
+ */
+function findUnmappedImplementation(
+  implementationFiles: string[],
+  featureFiles: string[]
+): string[] {
+  return implementationFiles.filter(
+    implFile => !hasFeatureFile(implFile, featureFiles)
+  );
+}
+
+/**
+ * Check if a file is a pure utility (should skip feature file creation)
+ * Per FEAT-019 Rule 6: Skip utilities like formatDate, parseJSON
+ */
+function isPureUtility(implPath: string): boolean {
+  const utilityPatterns = [
+    /utils\/format/i,
+    /utils\/parse/i,
+    /utils\/validate/i,
+    /helpers\//i,
+    /constants\//i,
+  ];
+
+  return utilityPatterns.some(pattern => pattern.test(implPath));
+}
+
 function detectGaps(analysis: AnalysisResult): GapAnalysis {
   const { testFiles, featureFiles, implementationFiles, coverageAnalysis } =
     analysis;
 
   const unmappedCount = coverageAnalysis?.unmappedCount || 0;
+
+  // Find implementation files without feature files
+  const unmappedImplFiles = findUnmappedImplementation(
+    implementationFiles,
+    featureFiles
+  ).filter(f => !isPureUtility(f));  // Exclude pure utilities
+
+  // Determine which files to process based on gap type
+  let files: string[] = [];
+
+  if (testFiles.length > 0 && featureFiles.length === 0) {
+    // Strategy A: Tests exist, no features → Process test files
+    files = testFiles;
+  } else if (featureFiles.length > 0 && testFiles.length === 0) {
+    // Strategy B: Features exist, no tests → Process feature files
+    files = featureFiles;
+  } else if (unmappedCount > 0) {
+    // Strategy C: Both exist, but scenarios unmapped → Process scenarios
+    files = coverageAnalysis?.scenarios || [];
+  } else if (unmappedImplFiles.length > 0) {
+    // Strategy D: Implementation files without features → Process impl files
+    files = unmappedImplFiles;
+  }
 
   return {
     testsWithoutFeatures:
@@ -346,16 +427,8 @@ function detectGaps(analysis: AnalysisResult): GapAnalysis {
         ? featureFiles.length
         : 0,
     unmappedScenarios: unmappedCount,
-    rawImplementation:
-      testFiles.length === 0 && featureFiles.length === 0
-        ? implementationFiles.length
-        : 0,
-    files:
-      testFiles.length > 0 && featureFiles.length === 0
-        ? testFiles
-        : featureFiles.length > 0 && testFiles.length === 0
-          ? featureFiles
-          : coverageAnalysis?.scenarios || [],
+    unmappedImplementation: unmappedImplFiles.length,
+    files,
   };
 }
 
@@ -363,7 +436,7 @@ function suggestStrategy(gaps: GapAnalysis): 'A' | 'B' | 'C' | 'D' {
   if (gaps.testsWithoutFeatures > 0) return 'A';
   if (gaps.featuresWithoutTests > 0) return 'B';
   if (gaps.unmappedScenarios > 0) return 'C';
-  if (gaps.rawImplementation > 0) return 'D';
+  if (gaps.unmappedImplementation > 0) return 'D';
   return 'A'; // Default fallback
 }
 
@@ -387,8 +460,8 @@ function formatGaps(gaps: GapAnalysis): string {
   if (gaps.unmappedScenarios > 0) {
     return `${gaps.unmappedScenarios} scenarios without coverage mappings`;
   }
-  if (gaps.rawImplementation > 0) {
-    return `${gaps.rawImplementation} implementation files without specs or tests`;
+  if (gaps.unmappedImplementation > 0) {
+    return `${gaps.unmappedImplementation} implementation files without features`;
   }
   return 'No gaps detected';
 }
@@ -412,7 +485,7 @@ function getEffortEstimate(strategy: string, gaps: GapAnalysis): string {
     gaps.testsWithoutFeatures +
     gaps.featuresWithoutTests +
     gaps.unmappedScenarios +
-    gaps.rawImplementation;
+    gaps.unmappedImplementation;
 
   switch (strategy) {
     case 'A':

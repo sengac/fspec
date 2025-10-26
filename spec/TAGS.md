@@ -163,6 +163,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@discovery` | BDD discovery technique used before writing Gherkin scenarios |
 | `@email` | Email-related functionality |
 | `@error-handling` | Error Handling |
+| `@file-discovery` | File discovery and pattern matching functionality |
 | `@file-initialization` | Scenarios testing initialization of project files |
 | `@file-structure` | File and directory structure validation |
 | `@file-system` | File System Operations |
@@ -529,7 +530,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-10-25T12:19:31.191Z_
+_Last updated: 2025-10-25T23:34:28.861Z_
 
 **Update Command**: `fspec tag-stats`
 

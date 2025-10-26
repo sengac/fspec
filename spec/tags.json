@@ -554,6 +554,10 @@
           "description": "Error Handling"
         },
         {
+          "name": "@file-discovery",
+          "description": "File discovery and pattern matching functionality"
+        },
+        {
           "name": "@file-initialization",
           "description": "Scenarios testing initialization of project files"
         },
@@ -1150,7 +1154,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-10-25T12:19:31.191Z",
+    "lastUpdated": "2025-10-25T23:34:28.861Z",
     "phaseStats": [
       {
         "phase": "Phase 1",
