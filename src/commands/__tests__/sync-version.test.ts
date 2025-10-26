@@ -352,13 +352,13 @@ Old cursor content...`;
       // NOTE: This test will FAIL in RED phase - init doesn't embed version yet
       expect(fspecMd).toContain(`fspec --sync-version ${currentVersion}`);
 
-      // And the version check command should appear before "IMMEDIATELY - run these commands" section
+      // And the version check command should appear as first command in the list (after "IMMEDIATELY")
       const syncVersionIndex = fspecMd.indexOf('fspec --sync-version');
       const immediatelyIndex = fspecMd.indexOf(
         'IMMEDIATELY - run these commands'
       );
       expect(syncVersionIndex).toBeGreaterThan(0);
-      expect(syncVersionIndex).toBeLessThan(immediatelyIndex);
+      expect(syncVersionIndex).toBeGreaterThan(immediatelyIndex);
 
       // And it should create spec/CLAUDE.md
       const claudeMdExists = existsSync(join(testDir, 'spec', 'CLAUDE.md'));

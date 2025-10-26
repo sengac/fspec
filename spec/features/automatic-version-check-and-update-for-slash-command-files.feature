@@ -14,7 +14,7 @@ Feature: Automatic version check and update for slash command files
   # ========================================
   #
   # BUSINESS RULES:
-  #   1. Version check command must be the FIRST line executed in fspec.md before any help commands
+  #   1. Version check command must be the FIRST command in the command list (item 1 after "IMMEDIATELY - run these commands")
   #   2. Version embedded in fspec.md must match package.json version for check to pass
   #   3. On version mismatch, command must update BOTH slash command file AND spec doc file
   #   4. Exit code 1 on version mismatch (stops workflow), exit code 0 on match (continues workflow)
@@ -105,7 +105,7 @@ Feature: Automatic version check and update for slash command files
     Given I have fspec v0.6.0 installed
     When I run "fspec init --agent=claude"
     Then it should read version from package.json (0.6.0)
-    And it should generate .claude/commands/fspec.md with "fspec --sync-version 0.6.0" as first command
-    And the version check command should appear before "IMMEDIATELY - run these commands" section
+    And it should generate .claude/commands/fspec.md with "fspec --sync-version 0.6.0" as first command in the list
+    And the version check command should appear as item 1 in the command list (after "IMMEDIATELY - run these commands" section)
     And it should create spec/CLAUDE.md with latest documentation
     And it should create spec/fspec-config.json with agent "claude"
