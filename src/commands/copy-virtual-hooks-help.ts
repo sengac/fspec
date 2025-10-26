@@ -107,7 +107,7 @@ const config: CommandHelpConfig = {
     {
       pattern: 'Create Template and Copy to New Work Units',
       example:
-        '# Set up template:\nfspec add-virtual-hook TEMPLATE-001 post-implementing "npm run lint" --blocking\nfspec add-virtual-hook TEMPLATE-001 pre-validating "npm run typecheck" --blocking\n\n# Copy to actual work units:\nfspec copy-virtual-hooks --from TEMPLATE-001 --to AUTH-010\nfspec copy-virtual-hooks --from TEMPLATE-001 --to BUG-020',
+        '# Set up template:\nfspec add-virtual-hook TEMPLATE-001 post-implementing "<quality-check-commands>" --blocking\nfspec add-virtual-hook TEMPLATE-001 pre-validating "<quality-check-commands>" --blocking\n\n# Copy to actual work units:\nfspec copy-virtual-hooks --from TEMPLATE-001 --to AUTH-010\nfspec copy-virtual-hooks --from TEMPLATE-001 --to BUG-020',
       description:
         'Create a template work unit with standard hooks, then copy to new work units.',
     },

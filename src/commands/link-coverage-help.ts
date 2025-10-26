@@ -109,7 +109,7 @@ const config: CommandHelpConfig = {
     {
       pattern: 'Forward ACDD Workflow',
       example:
-        '# After writing tests\nnpm test  # Tests fail (red)\nfspec link-coverage user-auth --scenario "Login" --test-file src/__tests__/auth.test.ts --test-lines 45-62\n\n# After implementing\nnpm test  # Tests pass (green)\nfspec link-coverage user-auth --scenario "Login" --test-file src/__tests__/auth.test.ts --impl-file src/auth/login.ts --impl-lines 10-24',
+        '# After writing tests\n<test-command>  # Tests fail (red)\nfspec link-coverage user-auth --scenario "Login" --test-file src/__tests__/auth.test.ts --test-lines 45-62\n\n# After implementing\n<test-command>  # Tests pass (green)\nfspec link-coverage user-auth --scenario "Login" --test-file src/__tests__/auth.test.ts --impl-file src/auth/login.ts --impl-lines 10-24',
     },
     {
       pattern: 'Reverse ACDD Workflow',

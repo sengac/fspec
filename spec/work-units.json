@@ -12920,7 +12920,7 @@
       "type": "story",
       "status": "done",
       "createdAt": "2025-10-26T02:51:30.219Z",
-      "updatedAt": "2025-10-26T03:39:47.276Z",
+      "updatedAt": "2025-10-26T10:59:06.521Z",
       "description": "Make fspec platform-agnostic by detecting test and quality check tools conversationally (like fspec review/reverse), replacing hardcoded npm references with AI-driven detection and setup via system-reminders",
       "children": [],
       "stateHistory": [
@@ -12951,6 +12951,46 @@
         {
           "state": "done",
           "timestamp": "2025-10-26T03:39:47.276Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-26T04:42:53.351Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-26T04:45:19.349Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-26T04:47:16.364Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-26T04:56:19.983Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-26T04:58:48.749Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-26T05:00:07.697Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-26T05:02:49.611Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-26T07:05:49.052Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-26T10:58:41.547Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-26T10:59:06.521Z"
         }
       ],
       "userStory": {
@@ -12969,7 +13009,11 @@
         "Yes - 'fspec configure-tools' supports both initial setup AND reconfiguration. Includes --reconfigure flag for re-detection, manual override flags for explicit commands. Handles tool changes (switching frameworks, adding quality checks) conversationally.",
         "ALL documentation MUST be updated: src/help.ts, src/commands/*-help.ts, spec/CLAUDE.md, docs/, README.md for every aspect of tool configuration",
         "When AI detects multiple frameworks, chain them with && (e.g., '<framework1> && <framework2>'). All detected tools run sequentially.",
-        "Include date-aware search queries in system-reminders (e.g., 'best <platform> testing tools 2025'). Platform placeholder filled by fspec based on project detection."
+        "Include date-aware search queries in system-reminders (e.g., 'best <platform> testing tools 2025'). Platform placeholder filled by fspec based on project detection.",
+        "Yes, ALL hardcoded npm commands in documentation and help files MUST be replaced with dynamic placeholders like <test-command> and <quality-check-commands> that system-reminders will fill in based on fspec configure-tools configuration. This is required by Rule #9.",
+        "Placeholders like <test-command> and <quality-check-commands> in documentation MUST be dynamically replaced with actual configured commands when spec/CLAUDE.md is generated",
+        "When spec/fspec-config.json has tools.test.command configured, all <test-command> placeholders in generated spec/CLAUDE.md should be replaced with the actual command",
+        "When spec/fspec-config.json has tools.qualityCheck.commands configured, all <quality-check-commands> placeholders in generated spec/CLAUDE.md should be replaced with the chained command (joined with &&)"
       ],
       "examples": [
         "AI in validating phase, fspec checks spec/fspec-config.json for tools.test.command, finds none, emits system-reminder: 'No test command configured. Use Read/Glob to detect test framework, then run: fspec configure-tools --test-command <cmd>'",
@@ -12978,7 +13022,10 @@
         "AI uses Read/Glob to detect multiple test frameworks, chains them: fspec configure-tools --test-command '<framework1> && <framework2>', fspec stores chained command",
         "No test tools detected: system-reminder includes date-aware search query 'best <platform> testing tools 2025', AI searches, configures result",
         "AI detects quality check tools via Glob, runs: fspec configure-tools --quality-commands '<tool1>' '<tool2>' '<tool3>', fspec stores as array",
-        "AI runs 'fspec configure-tools --reconfigure', fspec re-emits system-reminder for detection, AI updates config with new tools"
+        "AI runs 'fspec configure-tools --reconfigure', fspec re-emits system-reminder for detection, AI updates config with new tools",
+        "AI reads slash command section with '<test-command>' placeholder, fspec generates spec/CLAUDE.md, replaces <test-command> with 'npm test' from fspec-config.json",
+        "Python project with 'pytest' configured, <test-command> in documentation becomes 'pytest' in generated spec/CLAUDE.md",
+        "Rust project with 'cargo test' configured, quality commands ['cargo clippy', 'cargo fmt --check'], <quality-check-commands> becomes 'cargo clippy && cargo fmt --check' in spec/CLAUDE.md"
       ],
       "questions": [
         {
@@ -13005,6 +13052,11 @@
           "text": "@human: Should system-reminders include search queries for best practices (e.g., 'Search for best Rust testing tools 2025') or just guide AI to search?",
           "selected": true,
           "answer": "Include specific, actionable search queries in system-reminders with current year (e.g., 'Query: best Rust testing frameworks 2025'). Provides date-aware guidance, reduces AI guesswork, ensures current best practices discovered."
+        },
+        {
+          "text": "@human: I found hardcoded 'npm test' and 'npm run' commands still in help files, slash command sections, project management sections, CLAUDE.md, and spec/CLAUDE.md. Should these ALL be replaced with dynamic placeholders like <test-command> that get filled in by system-reminders from fspec configure-tools?",
+          "selected": true,
+          "answer": "Yes, ALL hardcoded npm commands in documentation and help files MUST be replaced with dynamic placeholders like <test-command> and <quality-check-commands> that system-reminders will fill in based on fspec configure-tools configuration. This is required by Rule #9."
         }
       ],
       "estimate": 8
@@ -13253,8 +13305,8 @@
       "BUG-044",
       "REV-004",
       "REV-005",
-      "CONFIG-002",
-      "CLEAN-001"
+      "CLEAN-001",
+      "CONFIG-002"
     ],
     "blocked": []
   }

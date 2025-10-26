@@ -51,7 +51,7 @@ Virtual hooks are stored in \`spec/work-units.json\` under \`workUnit.virtualHoo
         {
           "name": "eslint",
           "event": "post-implementing",
-          "command": "npm run lint",
+          "command": "<quality-check-commands>",
           "blocking": true,
           "gitContext": false
         },
@@ -81,7 +81,7 @@ Virtual hooks are stored in \`spec/work-units.json\` under \`workUnit.virtualHoo
 
 \`\`\`bash
 # Basic virtual hook (simple command)
-fspec add-virtual-hook AUTH-001 post-implementing "npm run lint" --blocking
+fspec add-virtual-hook AUTH-001 post-implementing "<quality-check-commands>" --blocking
 
 # Git context hook (processes staged/unstaged files)
 fspec add-virtual-hook AUTH-001 pre-validating "eslint" --git-context --blocking
@@ -120,14 +120,14 @@ Within each category, hooks execute in the order they were added (array order).
 
 **Example**:
 \`\`\`bash
-# Work unit AUTH-001 has virtual hook: "npm run lint"
+# Work unit AUTH-001 has virtual hook: "<quality-check-commands>"
 # Global hooks have: "fspec validate"
 
 # When moving AUTH-001 to validating:
 fspec update-work-unit-status AUTH-001 validating
 
 # Execution order:
-# 1. AUTH-001 virtual hook: npm run lint
+# 1. AUTH-001 virtual hook: <quality-check-commands>
 # 2. Global hook: fspec validate
 \`\`\`
 
@@ -176,7 +176,7 @@ eslint $ALL_FILES
 **Blocking Hooks** (\`--blocking\` flag):
 - Failure **prevents** workflow transition (for pre-hooks)
 - Failure **sets exit code to 1** (for post-hooks)
-- Stderr wrapped in ${agent.supportsSystemReminders ? '\`<system-reminder>\` tags' : agent.category === 'ide' || agent.category === 'extension' ? '**⚠️ IMPORTANT:** blocks' : '**IMPORTANT:** blocks'} for AI visibility
+- Stderr wrapped in ${agent.supportsSystemReminders ? '<system-reminder> tags' : agent.category === 'ide' || agent.category === 'extension' ? '**⚠️ IMPORTANT:** blocks' : '**IMPORTANT:** blocks'} for AI visibility
 - Use for critical quality gates (linting, type checking, tests)
 
 **Non-Blocking Hooks** (default):
@@ -186,17 +186,17 @@ eslint $ALL_FILES
 **Example**:
 \`\`\`bash
 # Blocking - prevents validating if lint fails
-fspec add-virtual-hook AUTH-001 pre-validating "npm run lint" --blocking
+fspec add-virtual-hook AUTH-001 pre-validating "<quality-check-commands>" --blocking
 
 # Non-blocking - logs but doesn't prevent progression
-fspec add-virtual-hook AUTH-001 post-implementing "npm run notify"
+fspec add-virtual-hook AUTH-001 post-implementing "notify-script"
 \`\`\`
 
 ### Common Virtual Hook Patterns
 
 **Quality gates**:
 \`\`\`bash
-fspec add-virtual-hook AUTH-001 post-implementing "npm test" --blocking
+fspec add-virtual-hook AUTH-001 post-implementing "<test-command>" --blocking
 fspec add-virtual-hook AUTH-001 pre-validating "eslint" --git-context --blocking
 \`\`\`
 
@@ -233,7 +233,7 @@ Git context hooks generate script files automatically:
 
 ### System-Reminders for Blocking Hook Failures
 
-When a blocking virtual hook fails, stderr is wrapped in ${agent.supportsSystemReminders ? '\`<system-reminder>\` tags' : 'a warning block'}:
+When a blocking virtual hook fails, stderr is wrapped in ${agent.supportsSystemReminders ? '<system-reminder> tags' : 'a warning block'}:
 
 \`\`\`xml
 ${blockingHookExample}

@@ -72,14 +72,14 @@ fspec audit-coverage <feature-name>
 
 \`\`\`bash
 # AFTER writing tests (testing phase)
-npm test  # Tests MUST FAIL (red phase)
+<test-command>  # Tests MUST FAIL (red phase)
 
 # IMMEDIATELY link test to scenario
 fspec link-coverage user-authentication --scenario "Login with valid credentials" \\
   --test-file src/__tests__/auth.test.ts --test-lines 45-62
 
 # AFTER implementing code (implementing phase)
-npm test  # Tests MUST PASS (green phase)
+<test-command>  # Tests MUST PASS (green phase)
 
 # IMMEDIATELY link implementation to test mapping
 fspec link-coverage user-authentication --scenario "Login with valid credentials" \\
