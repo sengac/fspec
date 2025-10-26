@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-26T01:49:04.723Z"
+    "lastUpdated": "2025-10-26T03:42:43.160Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -8916,11 +8916,94 @@
       "id": "CLEAN-001",
       "title": "Add ESLint and Prettier for code quality",
       "type": "story",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2025-10-21T05:53:29.407Z",
-      "updatedAt": "2025-10-21T05:53:29.407Z",
+      "updatedAt": "2025-10-26T04:35:56.985Z",
       "description": "Set up ESLint and Prettier to enforce consistent code style and catch common errors. This includes configuration, fixing existing violations, and integrating with the development workflow.",
-      "children": []
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-26T03:42:35.790Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-26T03:49:41.728Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-26T04:03:22.774Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-26T04:05:17.712Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-26T04:07:35.182Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-26T04:08:08.945Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-26T04:10:45.800Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-26T04:13:53.425Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-26T04:22:05.705Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-26T04:23:16.009Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-26T04:24:15.665Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-26T04:25:18.384Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-26T04:28:55.408Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-26T04:32:53.837Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-26T04:35:56.985Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer contributing to fspec",
+        "action": "have ESLint and Prettier configured and running",
+        "benefit": "code quality is consistent and common errors are caught automatically"
+      },
+      "rules": [
+        "ESLint configuration MUST align with TypeScript strict mode and existing CLAUDE.md coding standards",
+        "Prettier MUST be configured to match existing code formatting (2-space indentation, single quotes, etc.)",
+        "All existing code violations MUST be fixed before integration (no warnings/errors in CI)",
+        "Integration MUST NOT break existing npm scripts (build, test, dev)",
+        "ESLint and Prettier MUST work together without conflicts (use eslint-config-prettier)"
+      ],
+      "examples": [
+        "Developer runs 'npm run lint' and all TypeScript files are checked with ESLint showing zero errors",
+        "Developer runs 'npm run format' and all files are formatted consistently with Prettier",
+        "Developer runs 'npm run build' and it completes successfully (lint doesn't break build)",
+        "Developer commits code and pre-commit hook runs ESLint+Prettier automatically",
+        "ESLint catches common TypeScript errors (unused vars, missing types, etc.) during development",
+        "Prettier formats code on save in VSCode/IDE with consistent 2-space indentation and single quotes"
+      ],
+      "estimate": 5
     },
     "INIT-004": {
       "id": "INIT-004",
@@ -12830,11 +12913,105 @@
         "Implementation location: src/commands/update-work-unit-status.ts. Add system-reminder emission when transitioning to 'done' status. Check workUnit.type: if story or bug, emit formatted system-reminder using formatAgentOutput(). Template: 'QUALITY CHECK OPPORTUNITY\\n\\nBefore marking {id} as done, consider running a quality review.\\n\\nSuggested action:\\n1. Ask user: Would you like me to run fspec review {id} to check for bugs, anti-patterns, and FOUNDATION.md alignment?\\n2. If yes: Run fspec review {id}, address findings, then mark done\\n3. If no: Proceed to mark done\\n\\nCommand: fspec review {id}'. Use existing getAgentConfig() for agent detection."
       ],
       "estimate": 3
+    },
+    "CONFIG-002": {
+      "id": "CONFIG-002",
+      "title": "Conversational Test and Quality Check Tool Detection",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-26T02:51:30.219Z",
+      "updatedAt": "2025-10-26T03:39:47.276Z",
+      "description": "Make fspec platform-agnostic by detecting test and quality check tools conversationally (like fspec review/reverse), replacing hardcoded npm references with AI-driven detection and setup via system-reminders",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-26T02:51:34.424Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-26T03:26:58.970Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-26T03:31:00.609Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-26T03:34:23.791Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-26T03:36:29.773Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-26T03:37:39.211Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-26T03:39:47.276Z"
+        }
+      ],
+      "userStory": {
+        "role": "AI agent using fspec across different platforms",
+        "action": "detect and configure test and quality check tools conversationally",
+        "benefit": "fspec works on any platform (Node.js, Python, Rust, Go, etc.) without hardcoded assumptions"
+      },
+      "rules": [
+        "fspec MUST NOT execute semantic code analysis - ALL detection done via system-reminders guiding AI",
+        "Tool detection MUST be conversational like fspec review and fspec reverse",
+        "Configuration MUST use same lookup system as system-reminder style detection",
+        "AI MUST detect existing tools OR guide setup if none exist using current best practices",
+        "All hardcoded npm test and npm check references MUST be replaced with platform-agnostic commands",
+        "Store in spec/fspec-config.json with a 'tools' section (extend existing file that already stores agent config)",
+        "One-time setup via explicit 'fspec configure-tools' command (like fspec init). Commands emit system-reminder if config missing, telling AI to run configure-tools. Detection happens once, used many times.",
+        "Yes - 'fspec configure-tools' supports both initial setup AND reconfiguration. Includes --reconfigure flag for re-detection, manual override flags for explicit commands. Handles tool changes (switching frameworks, adding quality checks) conversationally.",
+        "ALL documentation MUST be updated: src/help.ts, src/commands/*-help.ts, spec/CLAUDE.md, docs/, README.md for every aspect of tool configuration",
+        "When AI detects multiple frameworks, chain them with && (e.g., '<framework1> && <framework2>'). All detected tools run sequentially.",
+        "Include date-aware search queries in system-reminders (e.g., 'best <platform> testing tools 2025'). Platform placeholder filled by fspec based on project detection."
+      ],
+      "examples": [
+        "AI in validating phase, fspec checks spec/fspec-config.json for tools.test.command, finds none, emits system-reminder: 'No test command configured. Use Read/Glob to detect test framework, then run: fspec configure-tools --test-command <cmd>'",
+        "AI receives system-reminder, uses Read/Glob tools to detect test framework, runs: fspec configure-tools --test-command '<detected-command>', fspec writes to spec/fspec-config.json",
+        "Next validation, fspec reads spec/fspec-config.json, finds tools.test.command='<command>', emits system-reminder: 'Run tests: <command>'",
+        "AI uses Read/Glob to detect multiple test frameworks, chains them: fspec configure-tools --test-command '<framework1> && <framework2>', fspec stores chained command",
+        "No test tools detected: system-reminder includes date-aware search query 'best <platform> testing tools 2025', AI searches, configures result",
+        "AI detects quality check tools via Glob, runs: fspec configure-tools --quality-commands '<tool1>' '<tool2>' '<tool3>', fspec stores as array",
+        "AI runs 'fspec configure-tools --reconfigure', fspec re-emits system-reminder for detection, AI updates config with new tools"
+      ],
+      "questions": [
+        {
+          "text": "@human: Should fspec store detected tool configuration in spec/fspec-config.json or spec/.fspec/tools.json?",
+          "selected": true,
+          "answer": "Store in spec/fspec-config.json with a 'tools' section (extend existing file that already stores agent config)"
+        },
+        {
+          "text": "@human: Should the conversational detection happen ONLY on first run, or re-detect on every command if config is missing?",
+          "selected": true,
+          "answer": "One-time setup via explicit 'fspec configure-tools' command (like fspec init). Commands emit system-reminder if config missing, telling AI to run configure-tools. Detection happens once, used many times."
+        },
+        {
+          "text": "@human: Should there be an explicit 'fspec configure-tools' command for manual reconfiguration, or only automatic detection?",
+          "selected": true,
+          "answer": "Yes - 'fspec configure-tools' supports both initial setup AND reconfiguration. Includes --reconfigure flag for re-detection, manual override flags for explicit commands. Handles tool changes (switching frameworks, adding quality checks) conversationally."
+        },
+        {
+          "text": "@human: When multiple test frameworks detected (e.g., both Vitest and Jest), should AI ask which to use, or use heuristics to pick?",
+          "selected": true,
+          "answer": "Conversational approach - emit system-reminder with analysis (test file counts, config freshness), provide data-driven recommendation, AI asks human to choose via AskUserQuestion. Prevents silent wrong choices, respects human context."
+        },
+        {
+          "text": "@human: Should system-reminders include search queries for best practices (e.g., 'Search for best Rust testing tools 2025') or just guide AI to search?",
+          "selected": true,
+          "answer": "Include specific, actionable search queries in system-reminders with current year (e.g., 'Query: best Rust testing frameworks 2025'). Provides date-aware guidance, reduces AI guesswork, ensures current best practices discovered."
+        }
+      ],
+      "estimate": 8
     }
   },
   "states": {
     "backlog": [
-      "CLEAN-001",
       "RES-003",
       "RES-004",
       "RES-005",
@@ -13075,7 +13252,9 @@
       "REV-001",
       "BUG-044",
       "REV-004",
-      "REV-005"
+      "REV-005",
+      "CONFIG-002",
+      "CLEAN-001"
     ],
     "blocked": []
   }

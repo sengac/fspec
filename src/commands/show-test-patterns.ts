@@ -6,7 +6,10 @@
 import chalk from 'chalk';
 import type { Command } from 'commander';
 import { queryWorkUnits } from './query-work-units';
-import { readAllCoverageFiles, extractTestFiles } from '../utils/coverage-reader';
+import {
+  readAllCoverageFiles,
+  extractTestFiles,
+} from '../utils/coverage-reader';
 import { parseAllFeatures } from '../utils/feature-parser';
 
 interface ShowTestPatternsOptions {
@@ -69,9 +72,17 @@ export async function showTestPatterns(
 export function registerShowTestPatternsCommand(program: Command): void {
   program
     .command('show-test-patterns')
-    .description('Analyze and display common testing patterns across work units')
-    .requiredOption('--tag <tag>', 'Filter work units by tag (e.g., @high, @cli)')
-    .option('--include-coverage', 'Include test file paths and coverage information')
+    .description(
+      'Analyze and display common testing patterns across work units'
+    )
+    .requiredOption(
+      '--tag <tag>',
+      'Filter work units by tag (e.g., @high, @cli)'
+    )
+    .option(
+      '--include-coverage',
+      'Include test file paths and coverage information'
+    )
     .option('--json', 'Output results in JSON format')
     .action(
       async (options: {
@@ -84,7 +95,11 @@ export function registerShowTestPatternsCommand(program: Command): void {
           if (options.json) {
             console.log(JSON.stringify(result, null, 2));
           } else {
-            console.log(chalk.green(`✓ Analyzed testing patterns for ${result.workUnits.length} work units tagged with ${options.tag}`));
+            console.log(
+              chalk.green(
+                `✓ Analyzed testing patterns for ${result.workUnits.length} work units tagged with ${options.tag}`
+              )
+            );
           }
         } catch (error: unknown) {
           if (error instanceof Error) {

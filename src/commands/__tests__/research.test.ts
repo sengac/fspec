@@ -31,13 +31,22 @@ describe('Feature: Research framework with custom script integration', () => {
     it('should display list of available research tools when run without flags', async () => {
       // Given I have research scripts in spec/research-scripts/ directory
       // And the directory contains "perplexity.sh", "jira.py", and "confluence" (compiled binary)
-      await writeFile(join(researchScriptsDir, 'perplexity.sh'), '#!/bin/bash\necho "perplexity"');
+      await writeFile(
+        join(researchScriptsDir, 'perplexity.sh'),
+        '#!/bin/bash\necho "perplexity"'
+      );
       await chmod(join(researchScriptsDir, 'perplexity.sh'), 0o755);
 
-      await writeFile(join(researchScriptsDir, 'jira.py'), '#!/usr/bin/env python3\nprint("jira")');
+      await writeFile(
+        join(researchScriptsDir, 'jira.py'),
+        '#!/usr/bin/env python3\nprint("jira")'
+      );
       await chmod(join(researchScriptsDir, 'jira.py'), 0o755);
 
-      await writeFile(join(researchScriptsDir, 'confluence'), '#!/bin/bash\necho "confluence"');
+      await writeFile(
+        join(researchScriptsDir, 'confluence'),
+        '#!/bin/bash\necho "confluence"'
+      );
       await chmod(join(researchScriptsDir, 'confluence'), 0o755);
 
       // When I run "fspec research" without any flags
@@ -71,7 +80,8 @@ describe('Feature: Research framework with custom script integration', () => {
   describe('Scenario: Execute research tool and prompt for attachment', () => {
     it('should execute research tool and prompt for attachment to work unit', async () => {
       // Given I have a research tool "perplexity.sh" in spec/research-scripts/
-      const scriptContent = '#!/bin/bash\necho "OAuth2 is an authorization framework..."';
+      const scriptContent =
+        '#!/bin/bash\necho "OAuth2 is an authorization framework..."';
       await writeFile(join(researchScriptsDir, 'perplexity.sh'), scriptContent);
       await chmod(join(researchScriptsDir, 'perplexity.sh'), 0o755);
 
@@ -79,7 +89,7 @@ describe('Feature: Research framework with custom script integration', () => {
       const result = await research({
         cwd: testDir,
         tool: 'perplexity',
-        query: 'How does OAuth2 work?'
+        query: 'How does OAuth2 work?',
       });
 
       // Then the perplexity tool should execute with the query
@@ -100,15 +110,24 @@ describe('Feature: Research framework with custom script integration', () => {
     it('should auto-discover research tools with different file extensions', async () => {
       // Given I have research scripts with different extensions
       // And spec/research-scripts/ contains "perplexity.py" (Python script)
-      await writeFile(join(researchScriptsDir, 'perplexity.py'), '#!/usr/bin/env python3\nprint("perplexity")');
+      await writeFile(
+        join(researchScriptsDir, 'perplexity.py'),
+        '#!/usr/bin/env python3\nprint("perplexity")'
+      );
       await chmod(join(researchScriptsDir, 'perplexity.py'), 0o755);
 
       // And spec/research-scripts/ contains "jira" (compiled binary)
-      await writeFile(join(researchScriptsDir, 'jira'), '#!/bin/bash\necho "jira"');
+      await writeFile(
+        join(researchScriptsDir, 'jira'),
+        '#!/bin/bash\necho "jira"'
+      );
       await chmod(join(researchScriptsDir, 'jira'), 0o755);
 
       // And spec/research-scripts/ contains "confluence.js" (Node script)
-      await writeFile(join(researchScriptsDir, 'confluence.js'), '#!/usr/bin/env node\nconsole.log("confluence")');
+      await writeFile(
+        join(researchScriptsDir, 'confluence.js'),
+        '#!/usr/bin/env node\nconsole.log("confluence")'
+      );
       await chmod(join(researchScriptsDir, 'confluence.js'), 0o755);
 
       // And all three files have executable bit set (done above)
@@ -139,7 +158,7 @@ describe('Feature: Research framework with custom script integration', () => {
       const researchResult = await research({
         cwd: testDir,
         tool: 'perplexity',
-        query: 'OAuth2'
+        query: 'OAuth2',
       });
       expect(researchResult.executed).toBe(true);
 
@@ -149,11 +168,13 @@ describe('Feature: Research framework with custom script integration', () => {
         tool: 'perplexity',
         query: 'OAuth2',
         attach: true,
-        workUnit: 'AUTH-001'
+        workUnit: 'AUTH-001',
       });
 
       // Then research output should be saved to "spec/attachments/AUTH-001/perplexity-oauth2-research-YYYY-MM-DD.md"
-      expect(attachResult.attachmentPath).toMatch(/spec\/attachments\/AUTH-001\/perplexity-oauth2-research-\d{4}-\d{2}-\d{2}\.md/);
+      expect(attachResult.attachmentPath).toMatch(
+        /spec\/attachments\/AUTH-001\/perplexity-oauth2-research-\d{4}-\d{2}-\d{2}\.md/
+      );
 
       // And the attachment should be referenced in work unit AUTH-001 metadata
       expect(attachResult.workUnitUpdated).toBe(true);

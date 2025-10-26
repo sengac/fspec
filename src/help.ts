@@ -598,7 +598,9 @@ function displayWorkHelp(): void {
   console.log('      --prefix <prefix>                Filter by prefix');
   console.log('      --epic <epic>                    Filter by epic');
   console.log('      --tag <tag>                      Filter by tag');
-  console.log('      --format <format>                Output: text, table, or json');
+  console.log(
+    '      --format <format>                Output: text, table, or json'
+  );
   console.log('    Examples:');
   console.log(
     '      fspec query-work-units --status=implementing --format=json'
@@ -610,34 +612,50 @@ function displayWorkHelp(): void {
   console.log('  ' + chalk.cyan('fspec search-scenarios --query=<pattern>'));
   console.log('    Description: Search scenarios across all feature files');
   console.log('    Options:');
-  console.log('      --regex                          Use regex pattern matching');
+  console.log(
+    '      --regex                          Use regex pattern matching'
+  );
   console.log('      --json                           Output in JSON format');
   console.log('    Examples:');
   console.log('      fspec search-scenarios --query="validation"');
   console.log('      fspec search-scenarios --query="user.*login" --regex');
   console.log('');
-  console.log('  ' + chalk.cyan('fspec search-implementation --function=<name>'));
+  console.log(
+    '  ' + chalk.cyan('fspec search-implementation --function=<name>')
+  );
   console.log('    Description: Search for function usage across work units');
   console.log('    Options:');
-  console.log('      --show-work-units                Show which work units use each file');
+  console.log(
+    '      --show-work-units                Show which work units use each file'
+  );
   console.log('      --json                           Output in JSON format');
   console.log('    Examples:');
   console.log('      fspec search-implementation --function=validateInput');
-  console.log('      fspec search-implementation --function=queryWorkUnits --show-work-units');
+  console.log(
+    '      fspec search-implementation --function=queryWorkUnits --show-work-units'
+  );
   console.log('');
   console.log('  ' + chalk.cyan('fspec compare-implementations --tag=<tag>'));
-  console.log('    Description: Compare implementation approaches across work units');
+  console.log(
+    '    Description: Compare implementation approaches across work units'
+  );
   console.log('    Options:');
   console.log('      --show-coverage                  Include coverage data');
   console.log('      --json                           Output in JSON format');
   console.log('    Examples:');
   console.log('      fspec compare-implementations --tag=@cli');
-  console.log('      fspec compare-implementations --tag=@authentication --show-coverage');
+  console.log(
+    '      fspec compare-implementations --tag=@authentication --show-coverage'
+  );
   console.log('');
   console.log('  ' + chalk.cyan('fspec show-test-patterns --tag=<tag>'));
-  console.log('    Description: Analyze common testing patterns across work units');
+  console.log(
+    '    Description: Analyze common testing patterns across work units'
+  );
   console.log('    Options:');
-  console.log('      --include-coverage               Include coverage information');
+  console.log(
+    '      --include-coverage               Include coverage information'
+  );
   console.log('      --json                           Output in JSON format');
   console.log('    Examples:');
   console.log('      fspec show-test-patterns --tag=@high');

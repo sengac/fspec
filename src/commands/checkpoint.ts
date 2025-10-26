@@ -81,6 +81,9 @@ export function registerCheckpointCommand(program: Command): void {
     .command('checkpoint')
     .description('Create a manual checkpoint for safe experimentation')
     .argument('<work-unit-id>', 'Work unit ID (e.g., AUTH-001)')
-    .argument('<checkpoint-name>', 'Checkpoint name (e.g., baseline, before-refactor)')
+    .argument(
+      '<checkpoint-name>',
+      'Checkpoint name (e.g., baseline, before-refactor)'
+    )
     .action(checkpointCommand);
 }

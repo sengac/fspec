@@ -98,7 +98,8 @@ const config: CommandHelpConfig = {
       fix: 'Link test file first, then link implementation to that test mapping.',
     },
     {
-      error: 'Step validation failed: Missing step comment "When I click the login button"',
+      error:
+        'Step validation failed: Missing step comment "When I click the login button"',
       fix: 'Add step comments to test file: // @step When I click the login button\nNote: --skip-step-validation is ONLY allowed for task work units',
     },
   ],

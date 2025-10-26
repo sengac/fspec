@@ -511,7 +511,9 @@ This is optional but recommended to catch issues early.
 
   // Build output string
   const outputParts: string[] = [];
-  outputParts.push(`✓ Work unit ${options.workUnitId} status updated to ${newStatus}`);
+  outputParts.push(
+    `✓ Work unit ${options.workUnitId} status updated to ${newStatus}`
+  );
   if (systemReminder) {
     outputParts.push(systemReminder);
   }

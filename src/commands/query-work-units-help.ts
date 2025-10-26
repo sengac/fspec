@@ -40,11 +40,15 @@ const config: CommandHelpConfig = {
     {
       command: 'fspec query-work-units --type=story --status=done --tag=@cli',
       description: 'Query completed stories tagged with @cli',
-      output:
-        '[{"id":"CLI-001","status":"done","title":"CLI commands"}]',
+      output: '[{"id":"CLI-001","status":"done","title":"CLI commands"}]',
     },
   ],
-  relatedCommands: ['list-work-units', 'export-work-units', 'search-scenarios', 'compare-implementations'],
+  relatedCommands: [
+    'list-work-units',
+    'export-work-units',
+    'search-scenarios',
+    'compare-implementations',
+  ],
 };
 
 export default config;

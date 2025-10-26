@@ -306,7 +306,9 @@ Feature: File Operations
               {
                 file: 'src/__tests__/file-ops.test.ts',
                 lines: '10-25',
-                implMappings: [{ file: 'src/file-ops/save.ts', lines: [1, 2, 3, 4] }],
+                implMappings: [
+                  { file: 'src/file-ops/save.ts', lines: [1, 2, 3, 4] },
+                ],
               },
             ],
           },
@@ -388,7 +390,10 @@ ${Array(500)
 }`;
 
       await mkdir(join(testDir, 'src', 'processing'), { recursive: true });
-      await writeFile(join(testDir, 'src', 'processing', 'processor.ts'), godFunction);
+      await writeFile(
+        join(testDir, 'src', 'processing', 'processor.ts'),
+        godFunction
+      );
 
       const coverageData = {
         scenarios: [
@@ -399,7 +404,10 @@ ${Array(500)
                 file: 'src/__tests__/processing.test.ts',
                 lines: '5-20',
                 implMappings: [
-                  { file: 'src/processing/processor.ts', lines: Array.from({ length: 500 }, (_, i) => i + 1) },
+                  {
+                    file: 'src/processing/processor.ts',
+                    lines: Array.from({ length: 500 }, (_, i) => i + 1),
+                  },
                 ],
               },
             ],
@@ -497,7 +505,10 @@ Feature: Large File Feature
                 file: 'src/__tests__/large.test.ts',
                 lines: '5-15',
                 implMappings: [
-                  { file: 'src/large/big-file.ts', lines: Array.from({ length: 450 }, (_, i) => i + 1) },
+                  {
+                    file: 'src/large/big-file.ts',
+                    lines: Array.from({ length: 450 }, (_, i) => i + 1),
+                  },
                 ],
               },
             ],
@@ -507,7 +518,12 @@ Feature: Large File Feature
       };
 
       await writeFile(
-        join(testDir, 'spec', 'features', 'large-file-feature.feature.coverage'),
+        join(
+          testDir,
+          'spec',
+          'features',
+          'large-file-feature.feature.coverage'
+        ),
         JSON.stringify(coverageData, null, 2)
       );
 
@@ -587,7 +603,10 @@ Feature: Test Feature
 });`;
 
       await mkdir(join(testDir, 'src', '__tests__'), { recursive: true });
-      await writeFile(join(testDir, 'src', '__tests__', 'test.test.ts'), testContent);
+      await writeFile(
+        join(testDir, 'src', '__tests__', 'test.test.ts'),
+        testContent
+      );
 
       // @step And the work unit has incomplete test coverage (only 1 of 2 scenarios)
       const coverageData = {

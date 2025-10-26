@@ -174,7 +174,11 @@ describe('Feature: Auto-checkpoints not working - lazy import fails in bundled d
       );
 
       // Commit it so working directory is clean
-      await git.add({ fs, dir: testDir, filepath: 'spec/features/test.feature' });
+      await git.add({
+        fs,
+        dir: testDir,
+        filepath: 'spec/features/test.feature',
+      });
       await git.add({ fs, dir: testDir, filepath: 'spec/work-units.json' });
       await git.commit({
         fs,

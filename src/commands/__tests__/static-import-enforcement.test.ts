@@ -30,8 +30,8 @@ describe('Feature: Auto-checkpoints not working - lazy import fails in bundled d
         const lines = content.split('\n');
         const problematicLines = lines
           .map((line, index) => ({ line, index: index + 1 }))
-          .filter((item) => item.line.includes('await import('))
-          .map((item) => `  Line ${item.index}: ${item.line.trim()}`)
+          .filter(item => item.line.includes('await import('))
+          .map(item => `  Line ${item.index}: ${item.line.trim()}`)
           .join('\n');
 
         throw new Error(
@@ -56,10 +56,10 @@ describe('Feature: Auto-checkpoints not working - lazy import fails in bundled d
       // Find all import statements (should be at top of file)
       const importLines = lines
         .slice(0, 50) // Check first 50 lines for imports
-        .filter((line) => line.trim().startsWith('import '));
+        .filter(line => line.trim().startsWith('import '));
 
       // @step And the test should verify git-checkpoint is imported statically at top of file
-      const hasStaticGitCheckpointImport = importLines.some((line) =>
+      const hasStaticGitCheckpointImport = importLines.some(line =>
         line.includes('git-checkpoint')
       );
 
@@ -69,18 +69,21 @@ describe('Feature: Auto-checkpoints not working - lazy import fails in bundled d
         throw new Error(
           `Missing static import of git-checkpoint in update-work-unit-status.ts!\n\n` +
             `Expected: import * as gitCheckpoint from '../utils/git-checkpoint';\n\n` +
-            `Found imports:\n${importLines.map((l) => `  ${l.trim()}`).join('\n')}`
+            `Found imports:\n${importLines.map(l => `  ${l.trim()}`).join('\n')}`
         );
       }
 
       // Verify the import uses namespace import (* as)
-      const gitCheckpointImport = importLines.find((line) =>
+      const gitCheckpointImport = importLines.find(line =>
         line.includes('git-checkpoint')
       );
 
       expect(gitCheckpointImport).toMatch(/import \* as \w+ from/);
 
-      if (gitCheckpointImport && !gitCheckpointImport.match(/import \* as \w+ from/)) {
+      if (
+        gitCheckpointImport &&
+        !gitCheckpointImport.match(/import \* as \w+ from/)
+      ) {
         throw new Error(
           `git-checkpoint import should use namespace syntax!\n\n` +
             `Expected: import * as gitCheckpoint from '../utils/git-checkpoint';\n` +

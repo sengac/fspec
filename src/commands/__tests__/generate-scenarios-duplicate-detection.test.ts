@@ -208,7 +208,10 @@ Feature: User Authentication
       // (no existing features created)
 
       // When I run "fspec generate-scenarios WORK-001"
-      const result = await generateScenarios({ workUnitId: 'WORK-001', cwd: testDir });
+      const result = await generateScenarios({
+        workUnitId: 'WORK-001',
+        cwd: testDir,
+      });
 
       // Then the duplicate check should complete
       // And scenarios should be generated without warnings

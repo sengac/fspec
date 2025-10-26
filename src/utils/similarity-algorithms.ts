@@ -394,7 +394,8 @@ export function hybridSimilarity(
   );
 
   const effectiveConfig =
-    config || (titleLength < 20 ? SHORT_STRING_CONFIG : DEFAULT_SIMILARITY_CONFIG);
+    config ||
+    (titleLength < 20 ? SHORT_STRING_CONFIG : DEFAULT_SIMILARITY_CONFIG);
 
   // Calculate individual algorithm scores
   const titleText1 = scenario1.name;

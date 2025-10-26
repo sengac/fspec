@@ -73,14 +73,10 @@ describe('Feature: Foundation existence check in commands', () => {
       // (foundation.json not created)
 
       // When I run 'fspec create-story AUTH "Login"'
-      const result = await execa(
-        fspecBin,
-        ['create-story', 'AUTH', 'Login'],
-        {
-          cwd: tmpDir,
-          reject: false,
-        }
-      );
+      const result = await execa(fspecBin, ['create-story', 'AUTH', 'Login'], {
+        cwd: tmpDir,
+        reject: false,
+      });
 
       // Then the command should exit with code 1
       expect(result.exitCode).toBe(1);

@@ -1,0 +1,283 @@
+{
+  "scenarios": [
+    {
+      "name": "Run ESLint successfully with zero errors",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/eslint-prettier-integration.test.ts",
+          "lines": "13-27",
+          "implMappings": [
+            {
+              "file": "eslint.config.js",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38
+              ]
+            }
+          ]
+        },
+        {
+          "file": "src/commands/__tests__/eslint-prettier-integration.test.ts",
+          "lines": "14-38",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Run Prettier successfully formatting all files",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/eslint-prettier-integration.test.ts",
+          "lines": "29-59",
+          "implMappings": [
+            {
+              "file": ".prettierrc",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11
+              ]
+            }
+          ]
+        },
+        {
+          "file": "src/commands/__tests__/eslint-prettier-integration.test.ts",
+          "lines": "40-73",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Build completes successfully with linting integrated",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/eslint-prettier-integration.test.ts",
+          "lines": "61-77",
+          "implMappings": [
+            {
+              "file": "package.json",
+              "lines": [
+                14,
+                15
+              ]
+            }
+          ]
+        },
+        {
+          "file": "src/commands/__tests__/eslint-prettier-integration.test.ts",
+          "lines": "75-91",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "ESLint catches common TypeScript errors during development",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/eslint-prettier-integration.test.ts",
+          "lines": "98-119",
+          "implMappings": [
+            {
+              "file": "eslint.config.js",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38
+              ]
+            }
+          ]
+        },
+        {
+          "file": "src/commands/__tests__/eslint-prettier-integration.test.ts",
+          "lines": "114-147",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Pre-commit hook runs ESLint and Prettier automatically",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/eslint-prettier-integration.test.ts",
+          "lines": "97-128",
+          "implMappings": [
+            {
+              "file": ".husky/pre-commit",
+              "lines": [
+                1,
+                2,
+                3,
+                4
+              ]
+            },
+            {
+              "file": "package.json",
+              "lines": [
+                97,
+                98,
+                99,
+                100,
+                101,
+                102
+              ]
+            }
+          ]
+        },
+        {
+          "file": "src/commands/__tests__/eslint-prettier-integration.test.ts",
+          "lines": "79-96",
+          "implMappings": []
+        },
+        {
+          "file": "src/commands/__tests__/eslint-prettier-integration.test.ts",
+          "lines": "93-112",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Prettier formats code on save in IDE",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/eslint-prettier-integration.test.ts",
+          "lines": "160-176",
+          "implMappings": [
+            {
+              "file": ".prettierrc",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6
+              ]
+            },
+            {
+              "file": ".vscode/settings.json",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12
+              ]
+            }
+          ]
+        },
+        {
+          "file": "src/commands/__tests__/eslint-prettier-integration.test.ts",
+          "lines": "121-138",
+          "implMappings": []
+        },
+        {
+          "file": "src/commands/__tests__/eslint-prettier-integration.test.ts",
+          "lines": "149-177",
+          "implMappings": []
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/commands/__tests__/eslint-prettier-integration.test.ts"
+    ],
+    "implFiles": [
+      "eslint.config.js",
+      ".prettierrc",
+      "package.json",
+      ".husky/pre-commit",
+      ".vscode/settings.json"
+    ],
+    "totalLinesCovered": 446
+  }
+}

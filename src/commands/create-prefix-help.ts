@@ -26,7 +26,13 @@ const config: CommandHelpConfig = {
       output: '✓ Created prefix AUTH\n  Description: Authentication features',
     },
   ],
-  relatedCommands: ['list-prefixes', 'update-prefix', 'create-story', 'create-bug', 'create-task'],
+  relatedCommands: [
+    'list-prefixes',
+    'update-prefix',
+    'create-story',
+    'create-bug',
+    'create-task',
+  ],
   notes: [
     'Prefix must be uppercase',
     'Required before creating work units with that prefix',

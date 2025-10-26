@@ -29,7 +29,9 @@ describe('Feature: Wire up checkpoint CLI commands', () => {
       registerCheckpointCommand(program);
 
       // When: I run './dist/index.js checkpoint AUTH-001 baseline'
-      const checkpointCmd = program.commands.find(cmd => cmd.name() === 'checkpoint');
+      const checkpointCmd = program.commands.find(
+        cmd => cmd.name() === 'checkpoint'
+      );
 
       // Then: the command should be registered
       expect(checkpointCmd).toBeDefined();
@@ -40,7 +42,9 @@ describe('Feature: Wire up checkpoint CLI commands', () => {
   describe('Scenario: Register list-checkpoints command', () => {
     it('should register list-checkpoints command with proper arguments and action', async () => {
       // Given: the list-checkpoints.ts file exports a registerListCheckpointsCommand function
-      const { registerListCheckpointsCommand } = await import('../list-checkpoints.js');
+      const { registerListCheckpointsCommand } = await import(
+        '../list-checkpoints.js'
+      );
       expect(registerListCheckpointsCommand).toBeDefined();
       expect(typeof registerListCheckpointsCommand).toBe('function');
 
@@ -48,7 +52,9 @@ describe('Feature: Wire up checkpoint CLI commands', () => {
       registerListCheckpointsCommand(program);
 
       // When/Then: the command should be registered
-      const listCmd = program.commands.find(cmd => cmd.name() === 'list-checkpoints');
+      const listCmd = program.commands.find(
+        cmd => cmd.name() === 'list-checkpoints'
+      );
       expect(listCmd).toBeDefined();
       expect(listCmd?.name()).toBe('list-checkpoints');
     });
@@ -57,7 +63,9 @@ describe('Feature: Wire up checkpoint CLI commands', () => {
   describe('Scenario: Register restore-checkpoint command', () => {
     it('should register restore-checkpoint command with proper arguments and action', async () => {
       // Given: the restore-checkpoint.ts file exports a registerRestoreCheckpointCommand function
-      const { registerRestoreCheckpointCommand } = await import('../restore-checkpoint.js');
+      const { registerRestoreCheckpointCommand } = await import(
+        '../restore-checkpoint.js'
+      );
       expect(registerRestoreCheckpointCommand).toBeDefined();
       expect(typeof registerRestoreCheckpointCommand).toBe('function');
 
@@ -65,7 +73,9 @@ describe('Feature: Wire up checkpoint CLI commands', () => {
       registerRestoreCheckpointCommand(program);
 
       // When/Then: the command should be registered
-      const restoreCmd = program.commands.find(cmd => cmd.name() === 'restore-checkpoint');
+      const restoreCmd = program.commands.find(
+        cmd => cmd.name() === 'restore-checkpoint'
+      );
       expect(restoreCmd).toBeDefined();
       expect(restoreCmd?.name()).toBe('restore-checkpoint');
     });
@@ -74,7 +84,9 @@ describe('Feature: Wire up checkpoint CLI commands', () => {
   describe('Scenario: Register cleanup-checkpoints command', () => {
     it('should register cleanup-checkpoints command with proper arguments and action', async () => {
       // Given: the cleanup-checkpoints.ts file exports a registerCleanupCheckpointsCommand function
-      const { registerCleanupCheckpointsCommand } = await import('../cleanup-checkpoints.js');
+      const { registerCleanupCheckpointsCommand } = await import(
+        '../cleanup-checkpoints.js'
+      );
       expect(registerCleanupCheckpointsCommand).toBeDefined();
       expect(typeof registerCleanupCheckpointsCommand).toBe('function');
 
@@ -82,7 +94,9 @@ describe('Feature: Wire up checkpoint CLI commands', () => {
       registerCleanupCheckpointsCommand(program);
 
       // When/Then: the command should be registered
-      const cleanupCmd = program.commands.find(cmd => cmd.name() === 'cleanup-checkpoints');
+      const cleanupCmd = program.commands.find(
+        cmd => cmd.name() === 'cleanup-checkpoints'
+      );
       expect(cleanupCmd).toBeDefined();
       expect(cleanupCmd?.name()).toBe('cleanup-checkpoints');
     });

@@ -10,13 +10,19 @@ import { join } from 'path';
 /**
  * Get git author information from config with fallback defaults
  */
-async function getGitAuthor(cwd: string): Promise<{ name: string; email: string }> {
+async function getGitAuthor(
+  cwd: string
+): Promise<{ name: string; email: string }> {
   let name = 'fspec';
   let email = 'fspec@fspec.dev';
 
   try {
     const configName = await git.getConfig({ fs, dir: cwd, path: 'user.name' });
-    const configEmail = await git.getConfig({ fs, dir: cwd, path: 'user.email' });
+    const configEmail = await git.getConfig({
+      fs,
+      dir: cwd,
+      path: 'user.email',
+    });
 
     if (configName) name = configName;
     if (configEmail) email = configEmail;
@@ -217,7 +223,12 @@ export async function createCheckpoint(options: CheckpointOptions): Promise<{
   // Ensure git config has author info for stash operation
   // isomorphic-git.stash() reads from git config internally
   await git.setConfig({ fs, dir: cwd, path: 'user.name', value: author.name });
-  await git.setConfig({ fs, dir: cwd, path: 'user.email', value: author.email });
+  await git.setConfig({
+    fs,
+    dir: cwd,
+    path: 'user.email',
+    value: author.email,
+  });
 
   // Create stash commit using git.stash({ op: 'create' })
   // This creates a stash commit WITHOUT modifying working directory or refs

@@ -201,7 +201,12 @@ Feature: Incomplete Feature
       };
 
       await writeFile(
-        join(testDir, 'spec', 'features', 'incomplete-feature.feature.coverage'),
+        join(
+          testDir,
+          'spec',
+          'features',
+          'incomplete-feature.feature.coverage'
+        ),
         JSON.stringify(coverageContent, null, 2)
       );
 
@@ -217,7 +222,9 @@ Feature: Incomplete Feature
       expect(result.output).toMatch(/50%|Coverage/);
 
       // And the output should suggest next steps for completion
-      expect(result.output).toMatch(/Next Steps|Recommendations|Priority Actions/);
+      expect(result.output).toMatch(
+        /Next Steps|Recommendations|Priority Actions/
+      );
     });
   });
 });

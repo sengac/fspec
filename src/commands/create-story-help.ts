@@ -73,15 +73,15 @@ const config: CommandHelpConfig = {
   ],
   commonErrors: [
     {
-      error: 'Prefix \'PREFIX\' is not registered',
+      error: "Prefix 'PREFIX' is not registered",
       solution: 'Run: fspec create-prefix PREFIX "Description"',
     },
     {
-      error: 'Parent story \'PARENT-001\' does not exist',
+      error: "Parent story 'PARENT-001' does not exist",
       solution: 'Create parent first or remove --parent option',
     },
     {
-      error: 'Epic \'epic-name\' does not exist',
+      error: "Epic 'epic-name' does not exist",
       solution: 'Run: fspec create-epic epic-name "Title"',
     },
   ],

@@ -1,0 +1,279 @@
+{
+  "scenarios": [
+    {
+      "name": "Emit system-reminder when no test command configured",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/configure-tools.test.ts",
+          "lines": "30-48",
+          "implMappings": [
+            {
+              "file": "src/commands/configure-tools.ts",
+              "lines": [
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Store test command when AI configures tools",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/configure-tools.test.ts",
+          "lines": "50-70",
+          "implMappings": [
+            {
+              "file": "src/commands/configure-tools.ts",
+              "lines": [
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Emit configured test command when config exists",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/configure-tools.test.ts",
+          "lines": "72-99",
+          "implMappings": [
+            {
+              "file": "src/commands/configure-tools.ts",
+              "lines": [
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Chain multiple test frameworks when AI provides chained command",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/configure-tools.test.ts",
+          "lines": "101-124",
+          "implMappings": [
+            {
+              "file": "src/commands/configure-tools.ts",
+              "lines": [
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Include date-aware search queries when no tools detected",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/configure-tools.test.ts",
+          "lines": "126-142",
+          "implMappings": [
+            {
+              "file": "src/commands/configure-tools.ts",
+              "lines": [
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Store multiple quality check commands",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/configure-tools.test.ts",
+          "lines": "144-173",
+          "implMappings": [
+            {
+              "file": "src/commands/configure-tools.ts",
+              "lines": [
+                172,
+                173,
+                174,
+                175,
+                176,
+                177
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Support reconfiguration when tools change",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/configure-tools.test.ts",
+          "lines": "175-206",
+          "implMappings": [
+            {
+              "file": "src/commands/configure-tools.ts",
+              "lines": [
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/commands/__tests__/configure-tools.test.ts"
+    ],
+    "implFiles": [
+      "src/commands/configure-tools.ts"
+    ],
+    "totalLinesCovered": 322
+  }
+}

@@ -36,7 +36,8 @@ describe('Feature: Enhanced search and comparison commands for similar story ana
       // Note: .every() returns true for empty arrays, so we check length > 0 OR all match
       if (result.rows && result.rows.length > 0) {
         const allStoriesAndDone = result.rows.every(
-          (row: { type: string; status: string }) => row.type === 'story' && row.status === 'done'
+          (row: { type: string; status: string }) =>
+            row.type === 'story' && row.status === 'done'
         );
         expect(allStoriesAndDone).toBe(true);
 
@@ -64,8 +65,9 @@ describe('Feature: Enhanced search and comparison commands for similar story ana
       expect(result.searchedFiles).toBeGreaterThan(0);
 
       // And: the results should show scenarios with "validation" in the scenario name
-      const allContainValidation = result.scenarios.every((scenario: { name: string }) =>
-        scenario.name.toLowerCase().includes('validation')
+      const allContainValidation = result.scenarios.every(
+        (scenario: { name: string }) =>
+          scenario.name.toLowerCase().includes('validation')
       );
       expect(allContainValidation).toBe(true);
 
@@ -97,8 +99,8 @@ describe('Feature: Enhanced search and comparison commands for similar story ana
 
       // If work units found, verify they have the tag
       if (result.workUnits.length > 0) {
-        const allTaggedWithCli = result.workUnits.every((wu: { tags: string[] }) =>
-          wu.tags.includes('@cli')
+        const allTaggedWithCli = result.workUnits.every(
+          (wu: { tags: string[] }) => wu.tags.includes('@cli')
         );
         expect(allTaggedWithCli).toBe(true);
       }
@@ -109,7 +111,9 @@ describe('Feature: Enhanced search and comparison commands for similar story ana
 
       // And: the results should highlight naming convention differences
       expect(result.namingConventionDifferences).toBeDefined();
-      expect(result.namingConventionDifferences.length).toBeGreaterThanOrEqual(0);
+      expect(result.namingConventionDifferences.length).toBeGreaterThanOrEqual(
+        0
+      );
 
       // And: the results should include test file and implementation file paths from coverage
       expect(result.coverage).toBeDefined();
@@ -134,8 +138,8 @@ describe('Feature: Enhanced search and comparison commands for similar story ana
       expect(result.searchedFiles).toBeGreaterThan(0);
 
       // And: the results should show files containing "loadConfig" function
-      const allContainLoadConfig = result.files.every((file: { content: string }) =>
-        file.content.includes('loadConfig')
+      const allContainLoadConfig = result.files.every(
+        (file: { content: string }) => file.content.includes('loadConfig')
       );
       expect(allContainLoadConfig).toBe(true);
 
@@ -167,8 +171,8 @@ describe('Feature: Enhanced search and comparison commands for similar story ana
 
       // If work units found, verify they have the tag
       if (result.workUnits.length > 0) {
-        const allTaggedWithCli = result.workUnits.every((wu: { tags: string[] }) =>
-          wu.tags.includes('@cli')
+        const allTaggedWithCli = result.workUnits.every(
+          (wu: { tags: string[] }) => wu.tags.includes('@cli')
         );
         expect(allTaggedWithCli).toBe(true);
       }
@@ -206,8 +210,8 @@ describe('Feature: Enhanced search and comparison commands for similar story ana
 
       // If scenarios found, verify they match the regex pattern
       if (result.scenarios.length > 0) {
-        const allMatchPattern = result.scenarios.every((scenario: { name: string }) =>
-          /search.*/i.test(scenario.name)
+        const allMatchPattern = result.scenarios.every(
+          (scenario: { name: string }) => /search.*/i.test(scenario.name)
         );
         expect(allMatchPattern).toBe(true);
       }

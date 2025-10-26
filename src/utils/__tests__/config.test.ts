@@ -55,7 +55,10 @@ describe('Feature: Shared configuration management utilities', () => {
       // Given user-level config at ~/.fspec/fspec-config.json contains {"timeout": 60}
       const userConfigDir = join(testDir, '.fspec');
       await mkdir(userConfigDir, { recursive: true });
-      await writeFile(join(userConfigDir, 'fspec-config.json'), JSON.stringify({ timeout: 60 }));
+      await writeFile(
+        join(userConfigDir, 'fspec-config.json'),
+        JSON.stringify({ timeout: 60 })
+      );
 
       // And project-level config does not exist
       const cwd = join(testDir, 'project');
@@ -110,7 +113,7 @@ describe('Feature: Shared configuration management utilities', () => {
       await mkdir(projectConfigDir, { recursive: true });
       await writeFile(
         join(projectConfigDir, 'fspec-config.json'),
-        '{"invalid": "json"'  // Missing closing bracket
+        '{"invalid": "json"' // Missing closing bracket
       );
 
       // When I call loadConfig()
@@ -118,10 +121,14 @@ describe('Feature: Shared configuration management utilities', () => {
       await expect(loadConfig(cwd)).rejects.toThrow();
 
       // And the error message should contain "Invalid JSON in spec/fspec-config.json"
-      await expect(loadConfig(cwd)).rejects.toThrow(/Invalid JSON.*spec\/fspec-config\.json/);
+      await expect(loadConfig(cwd)).rejects.toThrow(
+        /Invalid JSON.*spec\/fspec-config\.json/
+      );
 
       // And the error message should contain parse error details
-      await expect(loadConfig(cwd)).rejects.toThrow(/(Unexpected token|Expected|position|column)/);
+      await expect(loadConfig(cwd)).rejects.toThrow(
+        /(Unexpected token|Expected|position|column)/
+      );
     });
   });
 
