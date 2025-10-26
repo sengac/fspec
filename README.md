@@ -46,6 +46,14 @@ fspec remove-init-files
 /fspec Create a story for user authentication
 ```
 
+**Version Sync (Automatic):**
+
+When you upgrade fspec (e.g., `npm install -g @sengac/fspec@0.7.0`), the next time you run `/fspec`:
+- **Version check runs first** - Compares embedded version in slash command file to package.json
+- **On mismatch** - Updates both `.claude/commands/fspec.md` (or equivalent) AND `spec/CLAUDE.md`, shows agent-specific restart message, exits
+- **On match** - Silent pass-through, AI continues loading normally
+- **Result:** Always up-to-date documentation without manual reinstall
+
 **What happens next:**
 
 1. **Discovery** - AI asks clarifying questions using Example Mapping
