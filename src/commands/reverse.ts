@@ -216,7 +216,7 @@ export async function reverse(
     gaps.testsWithoutFeatures +
     gaps.featuresWithoutTests +
     gaps.unmappedScenarios +
-    gaps.rawImplementation;
+    gaps.unmappedImplementation;
   const result: ReverseCommandResult = {
     analysis,
     gaps,
@@ -240,7 +240,13 @@ export async function reverse(
       page: 1,
     };
     result.summary = `Found ${formatGaps(gaps)}`;
-    result.guidance = `${result.guidance}\n\nUse --strategy=${suggestedStrategy} to narrow scope.`;
+
+    // Append pagination guidance to existing guidance (preserve original guidance)
+    if (result.guidance) {
+      result.guidance = `${result.guidance}\n\nUse --strategy=${suggestedStrategy} to narrow scope.`;
+    } else {
+      result.guidance = `Use --strategy=${suggestedStrategy} to narrow scope.`;
+    }
   }
 
   return result;

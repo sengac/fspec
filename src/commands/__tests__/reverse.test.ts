@@ -541,7 +541,7 @@ describe('Feature: Interactive reverse ACDD strategy planning command', () => {
 
   describe('Scenario: Handle large projects with pagination', () => {
     it('should paginate output when detecting 100+ gaps', async () => {
-      // Given: I have a project with 150 test files without features
+      // @step Given I have a project with 150 test files without features
       const testFilesDir = join(testDir, 'src', '__tests__');
       await fs.mkdir(testFilesDir, { recursive: true });
       for (let i = 1; i <= 150; i++) {
@@ -551,24 +551,24 @@ describe('Feature: Interactive reverse ACDD strategy planning command', () => {
         );
       }
 
-      // And: no reverse session exists
+      // @step And no reverse session exists
 
-      // When: I run "fspec reverse"
+      // @step When I run "fspec reverse"
       const result = await reverse({ cwd: testDir });
 
-      // Then: the command should analyze the project structure
-      // And: the output should show "150 test files without features"
+      // @step Then the command should analyze the project structure
+      // @step And the output should show "150 test files without features"
       expect(result.gaps.testsWithoutFeatures).toBe(150);
 
-      // And: the output should paginate the detailed gap list
+      // @step And the output should paginate the detailed gap list
       expect(result.pagination).toBeDefined();
       expect(result.pagination.total).toBe(150);
       expect(result.pagination.perPage).toBeLessThan(150);
 
-      // And: the output should show a summary with total counts
+      // @step And the output should show a summary with total counts
       expect(result.summary).toContain('150 test files');
 
-      // And: the guidance should suggest "Use --strategy=A to narrow scope"
+      // @step And the guidance should suggest "Use --strategy=A to narrow scope"
       expect(result.guidance).toContain('Use --strategy=A to narrow scope');
     });
   });

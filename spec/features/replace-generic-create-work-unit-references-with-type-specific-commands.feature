@@ -2,7 +2,6 @@
 @refactoring
 @cli
 @high
-@CLI-013
 Feature: Replace generic create-work-unit references with type-specific commands
 
   """

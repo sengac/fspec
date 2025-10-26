@@ -1,3 +1,5 @@
+@quality-assurance
+@cli
 @done
 @bug-fix
 @testing

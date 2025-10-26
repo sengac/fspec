@@ -1,5 +1,5 @@
+@checkpoint
 @done
-@phase1
 @cli
 @bug-fix
 @command-registration

@@ -4,7 +4,6 @@
 @testing
 @critical
 @bug
-@BUG-036
 Feature: Tests rebuilding dist causing system crashes
   """
 

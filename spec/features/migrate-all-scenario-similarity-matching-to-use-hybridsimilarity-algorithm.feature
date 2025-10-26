@@ -3,7 +3,6 @@
 @high
 @parser
 @refactoring
-@REFAC-003
 Feature: Scenario similarity matching with hybrid algorithm
 
   """
