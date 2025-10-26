@@ -133,11 +133,34 @@ Feature: Conversational Test and Quality Check Tool Detection
 
   Scenario: Replace placeholders in generated spec/CLAUDE.md with configured commands
     Given slash command section generators (src/utils/slashCommandSections/*.ts) return content with <test-command> and <quality-check-commands> placeholders
-    When fspec init command calls slash command section generators and assembles the output
-    Then the generated spec/CLAUDE.md file should have all <test-command> placeholders replaced with 'npm test'
-    Given slash command section generators (src/utils/slashCommandSections/*.ts) return content with <test-command> and <quality-check-commands> placeholders
     And spec/fspec-config.json has tools.test.command = 'npm test' configured
     When fspec init command calls slash command section generators and assembles the output
     Then the generated spec/CLAUDE.md file should have all <test-command> placeholders replaced with 'npm test'
     And placeholder replacement logic reads spec/fspec-config.json to get configured commands
     And the generated spec/CLAUDE.md file should have all <quality-check-commands> placeholders replaced with configured quality commands
+
+  Scenario: configure-tools command appears in help output
+    Given configure-tools command is registered in src/index.ts
+    When user runs 'fspec --help'
+    Then output should list configure-tools in the command list alphabetically
+    And configure-tools should appear between 'compare-implementations' and 'create-epic' commands
+
+  Scenario: configure-tools command shows usage documentation
+    Given configure-tools command is registered with help documentation
+    When user runs 'fspec configure-tools --help'
+    Then output should show usage: fspec configure-tools [options]
+    And output should document --test-command option
+    And output should document --quality-commands option
+    And output should document --reconfigure flag
+    And output should include examples with different platforms
+
+  Scenario: configure-tools command stores test command in config file
+    Given spec/fspec-config.json exists with agent configuration
+    When user runs 'fspec configure-tools --test-command "npm test"'
+    Then spec/fspec-config.json should be updated with tools.test.command = "npm test"
+    And existing agent configuration should be preserved
+
+  Scenario: configure-tools command stores quality check commands in config file
+    Given spec/fspec-config.json exists
+    When user runs 'fspec configure-tools --quality-commands "npm run lint" "npm run typecheck"'
+    Then spec/fspec-config.json should have tools.qualityCheck.commands = ["npm run lint", "npm run typecheck"]

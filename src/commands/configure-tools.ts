@@ -1,5 +1,6 @@
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
 import { join } from 'path';
+import type { Command } from 'commander';
 import { formatAgentOutput } from '../utils/agentRuntimeConfig.js';
 
 interface ToolsConfig {
@@ -171,4 +172,43 @@ Use Read/Glob tools to detect test frameworks and quality check tools, then run:
   }
 
   writeFileSync(configPath, JSON.stringify(config, null, 2), 'utf-8');
+}
+
+export async function registerConfigureToolsCommand(
+  program: Command
+): Promise<void> {
+  program
+    .command('configure-tools')
+    .description(
+      'Configure test and quality check commands for platform-agnostic workflow'
+    )
+    .option(
+      '--test-command <command>',
+      'Test command to run (e.g., "npm test", "pytest", "cargo test")'
+    )
+    .option(
+      '--quality-commands <commands...>',
+      'Quality check commands to run (e.g., "eslint ." "prettier --check .")'
+    )
+    .option('--reconfigure', 'Re-detect tools and update configuration')
+    .action(
+      async (options: {
+        testCommand?: string;
+        qualityCommands?: string[];
+        reconfigure?: boolean;
+      }) => {
+        const cwd = process.cwd();
+
+        await configureTools({
+          testCommand: options.testCommand,
+          qualityCommands: options.qualityCommands,
+          reconfigure: options.reconfigure,
+          cwd,
+        });
+
+        if (!options.reconfigure) {
+          console.log('✓ Tool configuration saved to spec/fspec-config.json');
+        }
+      }
+    );
 }
