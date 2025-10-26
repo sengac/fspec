@@ -3,14 +3,65 @@
     {
       "name": "Auto-checkpoint created on state transition with uncommitted changes",
       "testMappings": []
+    },
+    {
+      "name": "No auto-checkpoint created when transitioning FROM backlog",
+      "testMappings": []
+    },
+    {
+      "name": "No auto-checkpoint created with clean working directory",
+      "testMappings": []
+    },
+    {
+      "name": "Static imports enforced in update-work-unit-status.ts",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/static-import-enforcement.test.ts",
+          "lines": "13-102",
+          "implMappings": [
+            {
+              "file": "src/commands/update-work-unit-status.ts",
+              "lines": [
+                383
+              ]
+            },
+            {
+              "file": "src/utils/git-checkpoint.ts",
+              "lines": [
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
   "stats": {
-    "totalScenarios": 1,
-    "coveredScenarios": 0,
-    "coveragePercent": 0,
-    "testFiles": [],
-    "implFiles": [],
-    "totalLinesCovered": 0
+    "totalScenarios": 4,
+    "coveredScenarios": 1,
+    "coveragePercent": 25,
+    "testFiles": [
+      "src/commands/__tests__/static-import-enforcement.test.ts"
+    ],
+    "implFiles": [
+      "src/commands/update-work-unit-status.ts",
+      "src/utils/git-checkpoint.ts"
+    ],
+    "totalLinesCovered": 107
   }
 }

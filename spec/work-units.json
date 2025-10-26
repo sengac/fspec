@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-25T23:33:15.720Z"
+    "lastUpdated": "2025-10-26T00:29:50.847Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -11731,8 +11731,8 @@
       "type": "bug",
       "status": "done",
       "createdAt": "2025-10-24T06:47:47.525Z",
-      "updatedAt": "2025-10-24T07:02:17.679Z",
-      "description": "Automatic checkpoints are not being created during work unit status transitions. Root cause: lazy import of git-checkpoint.js fails because Vite bundles everything into single dist/index.js file, but code tries to load ../utils/git-checkpoint.js which doesn't exist after bundling. The try-catch block silently swallows the import error, so checkpoints never run.",
+      "updatedAt": "2025-10-26T00:45:17.530Z",
+      "description": "Automatic checkpoints are not being created during work unit status transitions. Root cause: Vite bundler incorrectly optimizes the conditional checkpoint logic, transforming 'const isDirty = await isWorkingDirectoryDirty(cwd); if (isDirty && currentStatus \\!== backlog)' into 'await Zn(t) && i \\!== backlog && (...)' which breaks execution flow. The checkpoint code never runs even when working directory is dirty.",
       "children": [],
       "stateHistory": [
         {
@@ -11754,22 +11754,130 @@
         {
           "state": "done",
           "timestamp": "2025-10-24T07:02:17.679Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-26T00:28:54.282Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-26T00:30:49.092Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-26T00:32:08.535Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-26T00:32:47.543Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-26T00:33:06.146Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-26T00:36:50.075Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-26T00:36:53.705Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-26T00:37:48.477Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-26T00:37:50.459Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-26T00:39:44.883Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-26T00:39:57.483Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-26T00:40:38.852Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-26T00:40:39.568Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-26T00:41:05.034Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-26T00:41:11.762Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-26T00:41:53.750Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-26T00:41:54.498Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-26T00:42:23.020Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-26T00:42:24.107Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-26T00:43:20.525Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-26T00:43:24.415Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-26T00:45:17.530Z"
         }
       ],
       "userStory": {
-        "role": "AI agent using fspec",
-        "action": "have automatic checkpoints created during work unit transitions",
-        "benefit": "I can safely experiment and recover from mistakes"
+        "role": "AI agent using fspec for ACDD workflow",
+        "action": "have automatic checkpoints created reliably during work unit transitions",
+        "benefit": "I can safely experiment and recover from mistakes without manual checkpoint creation"
       },
       "rules": [
         "Auto-checkpoints must be created before EVERY state transition (except from backlog)",
-        "Lazy imports must work after Vite bundling into single dist/index.js file"
+        "Lazy imports must work after Vite bundling into single dist/index.js file",
+        "Auto-checkpoints must be created before EVERY state transition (except from backlog)",
+        "Checkpoint creation logic must survive Vite bundler optimization without breaking execution flow",
+        "Tests must validate BUNDLED distribution (dist/index.js), not just source code",
+        "No dynamic imports (await import()) allowed in checkpoint-related code - ONLY static imports at top of file"
       ],
       "examples": [
         "User transitions from backlog to specifying with dirty working directory, sees '🤖 Auto-checkpoint created' message",
-        "User transitions from specifying to testing with uncommitted changes, checkpoint saved before transition"
+        "User transitions from specifying to testing with uncommitted changes, checkpoint saved before transition",
+        "User has uncommitted changes, runs 'fspec update-work-unit-status TEST-001 implementing' (from testing state), sees '🤖 Auto-checkpoint: TEST-001-auto-testing created before transition' message",
+        "User runs 'fspec list-checkpoints TEST-001' after transition, sees the auto-checkpoint in the list",
+        "User has clean working directory, runs status transition, NO checkpoint created (expected behavior)",
+        "User transitions FROM backlog state with uncommitted changes, NO checkpoint created (rule: except from backlog)",
+        "Integration test runs 'npm run build' then executes './dist/index.js update-work-unit-status' and verifies checkpoint is actually created",
+        "Static analysis test scans update-work-unit-status.ts for 'await import' and fails if found"
       ],
-      "estimate": 3
+      "estimate": 3,
+      "questions": [
+        {
+          "text": "@human: Should we fix this by refactoring the conditional logic (Option 1: if-else chain), using explicit boolean assignment (Option 2), or configuring Vite to disable optimization (Option 3)?",
+          "selected": true,
+          "answer": "Use Option 2: explicit boolean assignment - clearest intent, prevents optimizer issues, maintains readability"
+        }
+      ],
+      "assumptions": [
+        "Use Option 2: explicit boolean assignment - clearest intent, prevents optimizer issues, maintains readability"
+      ]
     },
     "CLI-011": {
       "id": "CLI-011",
@@ -12757,7 +12865,6 @@
       "BUG-031",
       "FEAT-017",
       "GIT-005",
-      "BUG-043",
       "RES-002",
       "CONFIG-001",
       "CLI-011",
@@ -12770,7 +12877,8 @@
       "FEAT-006",
       "FOUND-007",
       "REMIND-009",
-      "REV-003"
+      "REV-003",
+      "BUG-043"
     ],
     "blocked": []
   }
