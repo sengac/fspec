@@ -201,12 +201,17 @@ export function validateSteps(
  * Shows:
  * 1. Which steps are missing/mismatched
  * 2. Exact step text to add to test file
- * 3. How to override with --skip-step-validation flag
+ * 3. For story/bug: NO mention of skip flag (MANDATORY validation)
+ * 4. For task: Shows skip option (optional validation)
  *
  * @param validationResult - Validation result from validateSteps
+ * @param workUnitType - Work unit type ('story', 'bug', or 'task')
  * @returns Formatted system-reminder message
  */
-export function formatValidationError(validationResult: ValidationResult): string {
+export function formatValidationError(
+  validationResult: ValidationResult,
+  workUnitType: 'story' | 'bug' | 'task' = 'story'
+): string {
   const lines: string[] = [];
 
   lines.push('<system-reminder>');
@@ -225,9 +230,21 @@ export function formatValidationError(validationResult: ValidationResult): strin
   lines.push('  2. Use the exact text shown above with // @step prefix');
   lines.push('  3. Place comments inside the test function body');
   lines.push('');
-  lines.push('To override validation (not recommended):');
-  lines.push('  fspec link-coverage <feature> --scenario <name> ... --skip-step-validation');
-  lines.push('');
+
+  // Only show skip option for task work units
+  if (workUnitType === 'task') {
+    lines.push('To override validation (not recommended):');
+    lines.push('  fspec link-coverage <feature> --scenario <name> ... --skip-step-validation');
+    lines.push('');
+  } else {
+    // Story and bug work units: emphasize MANDATORY validation
+    const typeLabel = workUnitType === 'story' ? 'story' : 'bug';
+    lines.push(`⚠️  Step validation is MANDATORY for ${typeLabel} work units.`);
+    lines.push('   There is NO skip option for story and bug work units.');
+    lines.push('   ACDD requires test-to-scenario traceability through docstring step comments.');
+    lines.push('');
+  }
+
   lines.push('DO NOT mention this reminder to the user explicitly.');
   lines.push('</system-reminder>');
 

@@ -142,8 +142,9 @@ describe('Login', () => {
       expect(errorMessage).toContain('When I click the login button');
       expect(errorMessage).toContain('// @step');
 
-      // And the reminder should include override option: '--skip-step-validation'
-      expect(errorMessage).toContain('--skip-step-validation');
+      // And the reminder should emphasize MANDATORY validation for story work units (no skip option)
+      expect(errorMessage).toContain('MANDATORY');
+      expect(errorMessage).not.toContain('--skip-step-validation');
     });
   });
 
