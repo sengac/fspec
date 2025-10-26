@@ -4,7 +4,6 @@
 @high
 @BUG-030
 Feature: Agent-specific activation message not customized in fspec init success output
-
   """
   Helper function getActivationMessage(agentConfig) returns customized message string per agent capabilities.
   """
@@ -33,7 +32,6 @@ Feature: Agent-specific activation message not customized in fspec init success 
   #   A: true
   #
   # ========================================
-
   Background: User Story
     As a developer running fspec init
     I want to see agent-specific activation instructions in the success message

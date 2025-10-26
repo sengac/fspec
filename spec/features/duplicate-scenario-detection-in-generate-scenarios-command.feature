@@ -4,7 +4,6 @@
 @high
 @FEAT-017
 Feature: Duplicate scenario detection in generate-scenarios command
-
   """
   Command accepts --ignore-possible-duplicates flag to bypass duplicate checking when user determines matches are false positives.
   """
@@ -26,7 +25,6 @@ Feature: Duplicate scenario detection in generate-scenarios command
   #   3. User runs 'fspec generate-scenarios WORK-001', no duplicates found, scenarios are generated normally without any warnings
   #
   # ========================================
-
   Background: User Story
     As a developer using fspec
     I want to detect duplicate scenarios before generating new ones

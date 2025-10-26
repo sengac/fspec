@@ -53,6 +53,7 @@ Tags that categorize features by functional area.
 | `@calculation` | Calculation operations |
 | `@cascade` | Cascade operations |
 | `@checkpoint` | Checkpoint and snapshot management for experimentation and recovery |
+| `@code-quality` | Code quality validation and review features |
 | `@comparison` | Comparison operations |
 | `@completion` | Completion operations |
 | `@compound` | Compound query operations |
@@ -148,6 +149,7 @@ Tags for specific technical concerns or architectural patterns.
 
 | Tag | Description |
 |-----|-------------|
+| `@ai-driven` | AI-driven interactive and conversational commands |
 | `@ai-guidance` | Features that provide contextual guidance to AI agents |
 | `@anti-drift` | Features that prevent AI drift and maintain workflow discipline |
 | `@ast` | Abstract Syntax Tree |
@@ -184,6 +186,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@pattern-detection` | Features involving pattern detection and analysis from historical data |
 | `@push` | Push notification functionality |
 | `@reverse-engineering` | Reverse engineering existing code to create specifications |
+| `@review` | Code review and quality analysis |
 | `@runtime` | Runtime behavior and dynamic configuration |
 | `@search` | Search and query functionality for finding scenarios, work units, and code patterns |
 | `@session-based` | Session-based interactive command pattern (similar to discover-foundation) |
@@ -530,7 +533,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-10-25T23:34:28.861Z_
+_Last updated: 2025-10-26T01:47:22.994Z_
 
 **Update Command**: `fspec tag-stats`
 

@@ -4,7 +4,6 @@
 @validation
 @BUG-042
 Feature: 1-based indexing not implemented in prioritize-work-unit
-
   """
   Architecture notes:
   - Convert 1-based user input to 0-based array index: newIndex = options.position - 1
@@ -29,7 +28,6 @@ Feature: 1-based indexing not implemented in prioritize-work-unit
   #   3. User runs 'fspec prioritize-work-unit AUTH-001 --position 0'. Command throws: 'Invalid position: 0. Position must be >= 1 (1-based index)'
   #
   # ========================================
-
   Background: User Story
     As a user running prioritize-work-unit with numeric positions
     I want to use intuitive 1-based positions matching help text

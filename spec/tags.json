@@ -142,6 +142,10 @@
           "description": "Checkpoint and snapshot management for experimentation and recovery"
         },
         {
+          "name": "@code-quality",
+          "description": "Code quality validation and review features"
+        },
+        {
           "name": "@comparison",
           "description": "Comparison operations"
         },
@@ -494,6 +498,10 @@
       "required": false,
       "tags": [
         {
+          "name": "@ai-driven",
+          "description": "AI-driven interactive and conversational commands"
+        },
+        {
           "name": "@ai-guidance",
           "description": "Features that provide contextual guidance to AI agents"
         },
@@ -636,6 +644,10 @@
         {
           "name": "@reverse-engineering",
           "description": "Reverse engineering existing code to create specifications"
+        },
+        {
+          "name": "@review",
+          "description": "Code review and quality analysis"
         },
         {
           "name": "@runtime",
@@ -1154,7 +1166,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-10-25T23:34:28.861Z",
+    "lastUpdated": "2025-10-26T01:47:22.994Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

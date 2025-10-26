@@ -5,7 +5,6 @@
 @command-registration
 @GIT-005
 Feature: Wire up checkpoint CLI commands
-
   """
   Architecture notes:
   - Uses Commander.js registration pattern matching other fspec commands
@@ -31,7 +30,6 @@ Feature: Wire up checkpoint CLI commands
   #   4. Running './dist/index.js cleanup-checkpoints AUTH-001 --keep-last 5' deletes old checkpoints, keeping only the 5 most recent
   #
   # ========================================
-
   Background: User Story
     As a developer using fspec
     I want to use checkpoint commands from the CLI
@@ -45,7 +43,6 @@ Feature: Wire up checkpoint CLI commands
     Then the command should create a checkpoint named 'baseline' for work unit AUTH-001
     And the command should exit with code 0
 
-
   Scenario: Register list-checkpoints command
     Given the list-checkpoints.ts file exports a registerListCheckpointsCommand function
     And the registerListCheckpointsCommand function is imported in src/index.ts
@@ -53,7 +50,6 @@ Feature: Wire up checkpoint CLI commands
     When I run './dist/index.js list-checkpoints AUTH-001'
     Then the command should list all checkpoints for AUTH-001 with emoji indicators
     And the command should exit with code 0
-
 
   Scenario: Register restore-checkpoint command
     Given the restore-checkpoint.ts file exports a registerRestoreCheckpointCommand function
@@ -63,7 +59,6 @@ Feature: Wire up checkpoint CLI commands
     Then the command should restore the baseline checkpoint for AUTH-001
     And the command should exit with code 0
 
-
   Scenario: Register cleanup-checkpoints command
     Given the cleanup-checkpoints.ts file exports a registerCleanupCheckpointsCommand function
     And the registerCleanupCheckpointsCommand function is imported in src/index.ts
@@ -71,4 +66,3 @@ Feature: Wire up checkpoint CLI commands
     When I run './dist/index.js cleanup-checkpoints AUTH-001 --keep-last 5'
     Then the command should delete old checkpoints keeping only the 5 most recent
     And the command should exit with code 0
-

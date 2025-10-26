@@ -4,7 +4,6 @@
 @high
 @BUG-035
 Feature: Duplicate 'Next steps' message in fspec init output
-
   """
   AgentSelector component (src/components/AgentSelector.tsx:58-61) displays success message with 'Next steps' when agent is selected
   Action handler in init.ts (line 394) also displays success message with 'Next steps' after executeInit completes
@@ -27,7 +26,6 @@ Feature: Duplicate 'Next steps' message in fspec init output
   #   3. After fix: interactive mode should show success message only once with Next steps at the end
   #
   # ========================================
-
   Background: User Story
     As a developer using fspec init interactively
     I want to complete the initialization process

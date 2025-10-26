@@ -6,7 +6,6 @@
 @critical
 @BUG-044
 Feature: AI agents skip docstring step validation by using --skip-step-validation flag
-
   """
   Must detect work unit type by looking up the feature file tag (e.g., @BUG-044) in work-units.json to determine if it's a story, bug, or task. If feature file doesn't exist or tag not found, assume story/bug (strictest validation).
   """
@@ -30,7 +29,6 @@ Feature: AI agents skip docstring step validation by using --skip-step-validatio
   #   4. Documentation shows --skip-step-validation with note: 'Only available for task work units. Story and bug work units require mandatory step validation.'
   #
   # ========================================
-
   Background: User Story
     As a developer using fspec with AI agents
     I want to enforce mandatory docstring step validation for test-to-scenario traceability
@@ -68,8 +66,8 @@ Feature: AI agents skip docstring step validation by using --skip-step-validatio
   Scenario: Story work unit with missing step comments receives strict system-reminder without skip option
     Given I have a story work unit "AUTH-002" with a feature file
     And the feature file has a scenario "Password reset flow" with steps:
-      | Given I am on the password reset page    |
-      | When I enter my email address             |
+      | Given I am on the password reset page        |
+      | When I enter my email address                |
       | Then I should receive a password reset email |
     And I have a test file "src/__tests__/password-reset.test.ts" with test code
     But the test file is missing step comments
@@ -84,8 +82,8 @@ Feature: AI agents skip docstring step validation by using --skip-step-validatio
     Given I have a bug work unit "BUG-045" with a feature file
     And the feature file has a scenario "Fix login timeout" with steps:
       | Given the login service is slow to respond |
-      | When the timeout threshold is exceeded      |
-      | Then the user should see a timeout error    |
+      | When the timeout threshold is exceeded     |
+      | Then the user should see a timeout error   |
     And I have a test file "src/__tests__/login-timeout.test.ts" with test code
     But the test file is missing step comments
     When I run "fspec link-coverage fix-login-timeout --scenario 'Fix login timeout' --test-file src/__tests__/login-timeout.test.ts --test-lines 10-25"

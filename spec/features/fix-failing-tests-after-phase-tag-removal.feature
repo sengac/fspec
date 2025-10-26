@@ -3,7 +3,6 @@
 @validation
 @BUG-029
 Feature: Fix failing tests after phase tag removal
-
   """
   This bug fix updates test files after removing phase tags and usage metadata from the tag system. Test features must now have component tags and feature-group tags to pass validation. Test expectations checking for Usage column in TAGS.md must be removed.
   """
@@ -24,7 +23,6 @@ Feature: Fix failing tests after phase tag removal
   #   4. retag.test.ts expects '@critical' in output but feature now has @cli @validation instead of @critical
   #
   # ========================================
-
   Background: User Story
     As a developer maintaining test suite
     I want to fix failing tests after removing phase tags and usage metadata

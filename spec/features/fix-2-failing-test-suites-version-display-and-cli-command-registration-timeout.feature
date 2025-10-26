@@ -6,7 +6,6 @@
 @high
 @BUG-037
 Feature: Fix 2 failing test suites (version-display and cli-command-registration timeout)
-
   """
   Test file: src/__tests__/version-display.test.ts - All tests commented out with describe.skip\nTest file: src/commands/__tests__/cli-command-registration.test.ts - Executes 93+ CLI commands sequentially using execSync\nFix approach: 1) Either uncomment and fix version-display tests OR delete the file entirely, 2) Optimize cli-command-registration by increasing timeout or using direct imports instead of execSync\nTesting: All tests must pass with 'npm test' after fixes
   """
@@ -27,7 +26,6 @@ Feature: Fix 2 failing test suites (version-display and cli-command-registration
   #   4. After optimizing cli-command-registration.test.ts, the test should complete in under 30 seconds
   #
   # ========================================
-
   Background: User Story
     As a developer running npm test
     I want to have all tests pass successfully
