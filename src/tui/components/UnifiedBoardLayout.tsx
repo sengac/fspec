@@ -75,6 +75,61 @@ const centerText = (text: string, width: number): string => {
   return ' '.repeat(leftPadding) + text + ' '.repeat(rightPadding);
 };
 
+// Helper: Apply character-by-character shimmer gradient (BOARD-009)
+// Applies 3-level gradient: gray (dim) → base color → bright color → base color → gray
+const applyCharacterShimmer = (
+  text: string,
+  shimmerPosition: number,
+  type: 'story' | 'bug' | 'task'
+): string => {
+  const colors: Record<string, { base: string; bright: string }> = {
+    story: { base: 'white', bright: 'whiteBright' },
+    bug: { base: 'red', bright: 'redBright' },
+    task: { base: 'blue', bright: 'blueBright' },
+  };
+
+  // Default to story colors if type is unknown
+  const { base, bright } = colors[type] || colors.story;
+
+  return text
+    .split('')
+    .map((char, idx) => {
+      const distance = Math.abs(idx - shimmerPosition);
+      if (distance === 0) {
+        // Peak brightness at shimmer position
+        return (chalk as any)[bright](char);
+      } else if (distance === 1) {
+        // Adjacent characters: base color
+        return (chalk as any)[base](char);
+      } else {
+        // Further characters: dim (gray)
+        return chalk.gray(char);
+      }
+    })
+    .join('');
+};
+
+// Helper: Apply character-by-character background shimmer gradient (BOARD-009)
+// For selected + last-changed work units
+const applyBackgroundCharacterShimmer = (
+  text: string,
+  shimmerPosition: number
+): string => {
+  return text
+    .split('')
+    .map((char, idx) => {
+      const distance = Math.abs(idx - shimmerPosition);
+      if (distance === 0) {
+        // Peak brightness background at shimmer position
+        return chalk.bgGreenBright.black(char);
+      } else {
+        // All other characters: base green background
+        return chalk.bgGreen.black(char);
+      }
+    })
+    .join('');
+};
+
 // Helper: Build border row with separator type
 const buildBorderRow = (
   colWidth: number,
@@ -114,8 +169,8 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
   // Calculate column width reactively based on terminal width
   const colWidth = useMemo(() => calculateColumnWidth(terminalWidth), [terminalWidth]);
 
-  // Shimmer animation state (BOARD-008: toggles every 5 seconds)
-  const [shimmerState, setShimmerState] = useState<boolean>(false);
+  // Shimmer animation state (BOARD-009: character position for wave effect)
+  const [shimmerPosition, setShimmerPosition] = useState<number>(0);
 
   // Scroll offset per column (track scroll position for each column)
   const [scrollOffsets, setScrollOffsets] = useState<Record<string, number>>({
@@ -148,16 +203,27 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
     });
   }, [workUnits]);
 
-  // Shimmer animation effect (BOARD-008: toggles every 5 seconds)
+  // Shimmer animation effect (BOARD-009: advance character position every 100ms)
   useEffect(() => {
+    if (!lastChangedWorkUnit) return;
+
     const interval = setInterval(() => {
-      setShimmerState(prev => !prev);
-    }, 5000); // 5 seconds
+      setShimmerPosition(prev => {
+        // Calculate text length for the last changed work unit
+        const estimate = lastChangedWorkUnit.estimate || 0;
+        const storyPointsText = estimate > 0 ? ` [${estimate}]` : '';
+        const text = `${lastChangedWorkUnit.id}${storyPointsText}`;
+        const maxPosition = text.length;
+
+        // Loop back to start when reaching the end
+        return (prev + 1) % maxPosition;
+      });
+    }, 100); // 100ms per character
 
     return () => {
       clearInterval(interval);
     };
-  }, []);
+  }, [lastChangedWorkUnit]);
 
   // Automatic scrolling: adjust scroll offset to keep selected item visible (BUG-045)
   // This implements the navigateTo pattern from cage VirtualList
@@ -390,33 +456,20 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
       // Check if this work unit is the last changed (BOARD-009)
       const isLastChanged = lastChangedWorkUnit?.id === wu.id;
 
-      // Apply color-coding (BOARD-008 + BOARD-009):
-      // - Selected + last-changed: shimmer background (bgGreen ↔ bgGreenBright)
+      // Apply color-coding (BOARD-009 character-by-character shimmer):
+      // - Selected + last-changed: character shimmer on background (bgGreen with moving bgGreenBright)
       // - Selected only: green background (no shimmer)
-      // - Last-changed only: shimmer text color based on type
-      // - Normal: type-based color (white/red/blue)
+      // - Last-changed only: character shimmer on text color based on type
+      // - Normal: type-based color (white/red/blue, no shimmer)
       if (isSelected && isLastChanged) {
-        // Selected AND last-changed: shimmer background
-        if (shimmerState) {
-          return chalk.bgGreenBright.black(paddedText);
-        } else {
-          return chalk.bgGreen.black(paddedText);
-        }
+        // Selected AND last-changed: character-by-character background shimmer
+        return applyBackgroundCharacterShimmer(paddedText, shimmerPosition);
       } else if (isSelected) {
         // Selected only: green background (no shimmer)
         return chalk.bgGreen.black(paddedText);
       } else if (isLastChanged) {
-        // Last-changed only: shimmer text color based on type
-        if (wu.type === 'bug') {
-          // Bug: red ↔ redBright
-          return shimmerState ? chalk.redBright(paddedText) : chalk.red(paddedText);
-        } else if (wu.type === 'task') {
-          // Task: blue ↔ blueBright
-          return shimmerState ? chalk.blueBright(paddedText) : chalk.blue(paddedText);
-        } else {
-          // Story: white ↔ whiteBright
-          return shimmerState ? chalk.whiteBright(paddedText) : chalk.white(paddedText);
-        }
+        // Last-changed only: character-by-character text shimmer based on type
+        return applyCharacterShimmer(paddedText, shimmerPosition, wu.type);
       } else {
         // Normal: type-based color (no shimmer)
         if (wu.type === 'bug') {
