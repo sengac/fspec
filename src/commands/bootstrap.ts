@@ -6,7 +6,10 @@
  */
 
 import type { Command } from 'commander';
-import { getSlashCommandTemplate } from '../utils/slashCommandTemplate';
+import {
+  getSlashCommandTemplate,
+  getCompleteWorkflowDocumentation,
+} from '../utils/slashCommandTemplate';
 import {
   getSpecsHelpContent,
   getWorkHelpContent,
@@ -41,8 +44,9 @@ export async function bootstrap(
 ): Promise<string> {
   const cwd = options.cwd || process.cwd();
 
-  // Get the complete template content (header + ACDD workflow sections)
-  let output = getSlashCommandTemplate();
+  // Get the minimal template header + complete workflow documentation
+  let output =
+    getSlashCommandTemplate() + '\n\n' + getCompleteWorkflowDocumentation();
 
   // Add explainer section for AI agents
   output += `\n\n## Step 2: Load fspec Context
@@ -92,7 +96,7 @@ Below is the complete workflow documentation:
         const qualityCommands = config.tools.qualityCheck.commands.join(' && ');
         output = output.replace(/<quality-check-commands>/g, qualityCommands);
       }
-    } catch (error) {
+    } catch {
       // If config read fails, return template with placeholders intact
       // (This allows bootstrap to work even without configuration)
     }
@@ -105,7 +109,7 @@ Below is the complete workflow documentation:
  * Register bootstrap command
  */
 export function registerBootstrapCommand(program: Command): void {
-  program
+  const cmd = program
     .command('bootstrap')
     .description(
       'Load complete fspec documentation (required before using fspec commands)'
@@ -115,9 +119,22 @@ export function registerBootstrapCommand(program: Command): void {
         const output = await bootstrap();
         console.log(output);
         process.exit(0);
-      } catch (error: any) {
-        console.error(`Error running bootstrap: ${error.message}`);
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : 'Unknown error';
+        console.error(`Error running bootstrap: ${message}`);
         process.exit(1);
       }
     });
+
+  // Add comprehensive help
+  cmd.on('--help', () => {
+    Promise.all([import('./bootstrap-help'), import('../utils/help-formatter')])
+      .then(([helpModule, formatterModule]) => {
+        console.log(formatterModule.formatCommandHelp(helpModule.default));
+      })
+      .catch(() => {
+        // Graceful fallback if help not available
+      });
+  });
 }

@@ -5,7 +5,10 @@
  * NO filesystem reads - all content is embedded as TypeScript string literals.
  */
 
-import { getHeaderSection } from './slashCommandSections/header';
+import {
+  getHeaderSection,
+  getPersonaIntroSection,
+} from './slashCommandSections/header';
 import { getAcddConceptSection } from './slashCommandSections/acddConcept';
 import { getLoadContextSection } from './slashCommandSections/loadContext';
 import { getBootstrapFoundationSection } from './slashCommandSections/bootstrapFoundation';
@@ -21,12 +24,21 @@ import { getCoverageTrackingSection } from './slashCommandSections/coverageTrack
 import { getReadyToStartSection } from './slashCommandSections/readyToStart';
 
 /**
- * Get the complete fspec slash command template.
- * Combines all sections - no filesystem reads required.
+ * Get the minimal fspec slash command template.
+ * Returns ONLY the header (title + IMMEDIATELY section + two commands).
+ * All other content is generated dynamically by 'fspec bootstrap'.
  */
 export function getSlashCommandTemplate(): string {
+  return getHeaderSection();
+}
+
+/**
+ * Get the complete workflow documentation (used by bootstrap command).
+ * This is what was previously embedded in the template.
+ */
+export function getCompleteWorkflowDocumentation(): string {
   return [
-    getHeaderSection(),
+    getPersonaIntroSection(),
     getAcddConceptSection(),
     getLoadContextSection(),
     getBootstrapFoundationSection(),

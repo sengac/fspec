@@ -231,15 +231,12 @@ describe('Feature: Clarify estimation timing in documentation and system-reminde
 
   describe('Scenario: Slash command documentation should clarify estimation timing', () => {
     it('should show correct workflow order in Step 2.5', async () => {
-      // Given I read the .claude/commands/fspec.md slash command documentation
-      const projectRoot = process.cwd();
-      const fspecMd = await readFile(
-        join(projectRoot, '.claude/commands/fspec.md'),
-        'utf-8'
-      );
+      // Given I run bootstrap to get complete documentation
+      const { bootstrap } = await import('../bootstrap');
+      const bootstrapOutput = await bootstrap();
 
       // When I look at "Step 2.5: Story Point Estimation"
-      const step25Match = fspecMd.match(
+      const step25Match = bootstrapOutput.match(
         /Step 2\.5[:\s]+Story Point Estimation[\s\S]{0,500}/i
       );
       expect(step25Match).toBeTruthy();

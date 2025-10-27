@@ -5,11 +5,11 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdir, rm, readFile, writeFile } from 'fs/promises';
-import { mkdirSync, rmSync, existsSync, readFileSync, writeFileSync } from 'fs';
+import { mkdir, rm } from 'fs/promises';
+import { mkdirSync, existsSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
-import { installAgents, installAgentFiles } from '../init';
+import { installAgents } from '../init';
 
 describe('Feature: Support multiple AI agents beyond Claude', () => {
   let testDir: string;
@@ -57,36 +57,35 @@ describe('Feature: Support multiple AI agents beyond Claude', () => {
       const slashCommandPath = join(testDir, '.cursor', 'commands', 'fspec.md');
       expect(existsSync(slashCommandPath)).toBe(true);
 
-      // And the file should contain comprehensive ACDD workflow documentation
+      // And the file should contain minimal header with two commands (ACDD content in bootstrap)
       const content = readFileSync(slashCommandPath, 'utf-8');
-      expect(content).toContain('ACDD');
-      expect(content).toContain('Example Mapping');
+      expect(content).toContain('fspec --sync-version');
+      expect(content).toContain('fspec bootstrap');
+      expect(content).not.toContain('ACDD'); // ACDD content only in bootstrap output
 
       // And the file should be plain Markdown WITHOUT YAML frontmatter
       expect(content).toMatch(/^# fspec Command/);
     });
   });
 
-  describe('Scenario: Install comprehensive slash command documentation', () => {
-    it('should create comprehensive fspec.md with workflow documentation', async () => {
+  describe('Scenario: Install minimal slash command template with bootstrap command', () => {
+    it('should create minimal fspec.md with only header and two commands', async () => {
       await installAgents(testDir, ['cursor']);
 
       const slashCommandPath = join(testDir, '.cursor', 'commands', 'fspec.md');
       const content = readFileSync(slashCommandPath, 'utf-8');
 
-      // Then the file should be at least 1000 lines long
+      // Then the file should be minimal (around 10 lines)
       const lines = content.split('\n');
-      expect(lines.length).toBeGreaterThanOrEqual(1000);
+      expect(lines.length).toBeLessThanOrEqual(20); // Allow some buffer
 
-      // And the file should contain ACDD workflow documentation
-      expect(content).toContain('ACDD');
-      expect(content).toContain('Acceptance Criteria Driven Development');
+      // And the file should contain the two required commands
+      expect(content).toContain('fspec --sync-version');
+      expect(content).toContain('fspec bootstrap');
 
-      // And the file should contain Example Mapping documentation
-      expect(content).toContain('Example Mapping');
-
-      // And the file should contain coverage tracking documentation
-      expect(content).toContain('coverage');
+      // And the file should NOT contain ACDD workflow documentation (that's in bootstrap output)
+      expect(content).not.toContain('Acceptance Criteria Driven Development');
+      expect(content).not.toContain('You are a master of project management');
 
       // And a file "spec/CURSOR.md" should be created
       const cursorDocPath = join(testDir, 'spec', 'CURSOR.md');

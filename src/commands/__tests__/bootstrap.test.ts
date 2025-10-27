@@ -63,19 +63,14 @@ describe('Feature: Dynamic bootstrap command for slash command template', () => 
       );
       const template = getSlashCommandTemplate();
 
-      // Then: the command list should contain ONLY 2 commands in the header section
-      const headerSection = template.split('---')[0]; // Get everything before first ---
-      const commandMatches = headerSection.match(/^\d+\.\s+fspec\s+/gm);
-      expect(commandMatches).toHaveLength(2);
-
-      // And: the template should contain sync-version and bootstrap
+      // Then: the template should contain sync-version and bootstrap
       expect(template).toContain('fspec --sync-version');
       expect(template).toContain('fspec bootstrap');
 
       // @step And the template should NOT contain 'fspec --help', 'fspec help specs', etc.
-      expect(template).not.toMatch(/^\d+\.\s+fspec --help/m);
-      expect(template).not.toMatch(/^\d+\.\s+fspec help specs/m);
-      expect(template).not.toMatch(/^\d+\.\s+fspec help work/m);
+      expect(template).not.toContain('fspec --help');
+      expect(template).not.toContain('fspec help specs');
+      expect(template).not.toContain('fspec help work');
 
       // @step And the template should instruct AI to run both commands before continuing
       expect(template).toContain(
@@ -95,18 +90,12 @@ describe('Feature: Dynamic bootstrap command for slash command template', () => 
       );
       const newTemplate = getSlashCommandTemplate();
 
-      // Then: the new template should contain only 2 commands in the header section
-      const headerSection = newTemplate.split('---')[0]; // Get everything before first ---
-      const commandMatches = headerSection.match(/^\d+\.\s+fspec\s+/gm);
-      expect(commandMatches).toHaveLength(2);
-
-      // @step And the template contains 'fspec --sync-version 0.6.0'
-      // @step And it should call installAgentFiles() to regenerate template
-      // (Both steps tested via getSlashCommandTemplate() which is called by installAgentFiles)
-
-      // @step And the new template should contain only 2 commands: 'fspec --sync-version 0.7.0' and 'fspec bootstrap'
+      // Then: the new template should contain sync-version and bootstrap commands
       expect(newTemplate).toMatch(/fspec --sync-version \d+\.\d+\.\d+/);
       expect(newTemplate).toContain('fspec bootstrap');
+
+      // @step And it should call installAgentFiles() to regenerate template
+      // (Tested via getSlashCommandTemplate() which is called by installAgentFiles)
 
       // @step And it should exit with code 1 and tell user to restart
       // Note: Exit code 1 and restart message tested in sync-version.test.ts
@@ -295,6 +284,36 @@ describe('Feature: Dynamic bootstrap command for slash command template', () => 
       expect(hooksHelp).toContain('add-virtual-hook');
       expect(hooksHelp).toContain('list-hooks');
       expect(hooksHelp).not.toContain('and more');
+    });
+  });
+
+  describe('Scenario: Template contains only minimal header without duplication', () => {
+    it('should contain minimal header without persona description or ACDD workflow', async () => {
+      // Given: the slash command template is generated
+      const { getSlashCommandTemplate } = await import(
+        '../../utils/slashCommandTemplate'
+      );
+
+      // When: I read the template file
+      const template = getSlashCommandTemplate();
+
+      // Then: template should be concise (minimal header with commands only)
+      const lines = template.trim().split('\n');
+      expect(lines.length).toBeLessThanOrEqual(15); // Allow some flexibility for readability
+
+      // And: template should NOT contain persona description or ACDD workflow sections
+      expect(template).not.toContain('You are a master of project management');
+      expect(template).not.toContain('ACDD (Acceptance Criteria Driven');
+      expect(template).not.toContain('Example Mapping');
+      expect(template).not.toContain('Kanban Workflow');
+      expect(template).not.toContain('Story Point Estimation');
+
+      // And: bootstrap command output should contain all workflow documentation
+      const bootstrapOutput = await bootstrap({ cwd: tmpDir });
+      expect(bootstrapOutput).toContain('You are a master of project');
+      expect(bootstrapOutput).toContain('ACDD');
+      expect(bootstrapOutput).toContain('Example Mapping');
+      expect(bootstrapOutput).toContain('Kanban');
     });
   });
 });

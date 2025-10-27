@@ -118,3 +118,14 @@ Feature: Dynamic bootstrap command for slash command template
     And the explainer should explain what the content is (output from fspec help commands)
     And the explainer should explain WHY this information matters (complete command reference)
     And the explainer should explain HOW to access sections again (run individual help commands, NOT bootstrap)
+
+  Scenario: Template contains only minimal header without duplication
+    Given the slash command template is generated
+    When I read the template file
+    Then template should contain only 10 lines (title, IMMEDIATELY section, two commands)
+    Given the slash command template is generated
+    When I read the template file
+    Then template should contain only 10 lines (title, IMMEDIATELY section, two commands)
+    And template should NOT contain persona description or ACDD workflow sections
+    And bootstrap command output should contain all workflow documentation
+
