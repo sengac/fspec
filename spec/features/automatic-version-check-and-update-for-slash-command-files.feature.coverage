@@ -502,10 +502,14 @@
           ]
         }
       ]
+    },
+    {
+      "name": "Emit tool config checks when versions match",
+      "testMappings": []
     }
   ],
   "stats": {
-    "totalScenarios": 5,
+    "totalScenarios": 6,
     "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [

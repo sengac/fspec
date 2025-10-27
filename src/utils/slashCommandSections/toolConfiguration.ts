@@ -41,8 +41,8 @@ Once you know the platform, configure the commands:
 
 \`\`\`bash
 # Node.js with npm/Vitest
-fspec configure-tools --test-command "npm test" \\
-  --quality-commands "npm run format" "npx tsc --noEmit"
+fspec configure-tools --test-command "<test-command>" \\
+  --quality-commands "<quality-check-commands>"
 
 # Python with pytest
 fspec configure-tools --test-command "pytest" \\
@@ -72,10 +72,10 @@ Should contain:
   "agent": "claude",
   "tools": {
     "test": {
-      "command": "npm test"
+      "command": "<test-command>"
     },
     "qualityCheck": {
-      "commands": ["npm run format", "npx tsc --noEmit"]
+      "commands": ["<quality-check-command-1>", "<quality-check-command-2>"]
     }
   }
 }
@@ -88,11 +88,11 @@ After configuration, when you move work units to \`validating\`, fspec will tell
 \`\`\`
 **IMPORTANT:** RUN TESTS
 
-Run tests: npm test
+Run tests: <test-command>
 
 **IMPORTANT:** RUN QUALITY CHECKS
 
-Run quality checks: npm run format && npx tsc --noEmit
+Run quality checks: <quality-check-commands>
 \`\`\`
 
 Then run those commands as instructed.

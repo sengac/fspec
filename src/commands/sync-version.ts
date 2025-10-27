@@ -3,7 +3,7 @@
  *
  * Compares embedded version in fspec.md with current package.json version.
  * If mismatch detected: updates both slash command and spec doc files, shows restart message, exits 1.
- * If match: silent exit 0, allows workflow to continue.
+ * If match: emits tool configuration system-reminders (CONFIG-003), allows workflow to continue, exits 0.
  */
 
 import type { Command } from 'commander';
@@ -15,6 +15,7 @@ import { getAgentById } from '../utils/agentRegistry';
 import { installAgentFiles } from './init';
 import { detectAgents } from '../utils/agentDetection';
 import { getVersion } from '../utils/version';
+import { checkTestCommand, checkQualityCommands } from './configure-tools';
 
 interface SyncVersionOptions {
   embeddedVersion: string;
@@ -116,7 +117,32 @@ export async function syncVersion(
 
     // Compare versions
     if (embeddedVersion === currentVersion) {
-      // Versions match - silent exit 0
+      // Versions match - ensure agent config exists before checking tools
+      // This ensures check functions get correct agent capabilities
+      const detection = await detectAgent(cwd);
+      if (detection && !detection.fromConfig) {
+        // Agent detected from filesystem but not in config - write config
+        const { writeAgentConfig } = await import(
+          '../utils/agentRuntimeConfig.js'
+        );
+        writeAgentConfig(cwd, detection.agentId);
+      }
+
+      // Emit tool configuration checks
+      // This helps onboard new AI agents by guiding them to configure tools
+      // immediately after version update (per CONFIG-003)
+      const testResult = await checkTestCommand(cwd);
+      console.log(testResult.message);
+
+      const qualityResult = await checkQualityCommands(cwd);
+      console.log(qualityResult.message);
+
+      // CONFIG-003: Fail if tool configuration is missing
+      // This prevents AI from continuing workflow without proper setup
+      if (testResult.message.includes('NO TEST COMMAND CONFIGURED')) {
+        return 1;
+      }
+
       return 0;
     }
 

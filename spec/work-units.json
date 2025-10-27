@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-26T16:33:20.219Z"
+    "lastUpdated": "2025-10-26T23:53:00.760Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -13173,7 +13173,7 @@
       "type": "bug",
       "status": "done",
       "createdAt": "2025-10-26T16:13:38.381Z",
-      "updatedAt": "2025-10-26T16:43:37.697Z",
+      "updatedAt": "2025-10-27T00:10:36.712Z",
       "description": "The checkTestCommand and checkQualityCommands functions exist and are tested but are never called during workflow transitions, preventing the conversational tool detection system from working as designed",
       "children": [],
       "attachments": [
@@ -13211,19 +13211,89 @@
         {
           "state": "done",
           "timestamp": "2025-10-26T16:43:37.697Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-26T17:00:19.675Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-26T17:01:33.756Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-26T17:02:54.595Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-26T17:05:26.255Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-26T17:08:02.459Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-26T17:13:20.043Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-26T17:13:39.812Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-26T17:15:30.069Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-26T17:17:00.559Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-26T17:19:52.814Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-26T23:50:27.625Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-26T23:54:20.061Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-26T23:56:33.276Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-26T23:58:58.093Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-27T00:10:36.712Z"
         }
       ],
       "rules": [
         "Check functions MUST be called during status transitions to 'validating' state",
         "System-reminders MUST be emitted when config is missing to guide AI to run fspec configure-tools",
         "System-reminders MUST be emitted when config exists to tell AI what commands to run",
-        "Integration MUST use existing checkTestCommand and checkQualityCommands functions without modification"
+        "Integration MUST use existing checkTestCommand and checkQualityCommands functions without modification",
+        "sync-version MUST fail (exit 1) when tool configuration is missing to prevent AI from continuing workflow without proper setup",
+        "sync-version MUST fail (exit 1) when version is incorrect to prevent AI from continuing with wrong version",
+        "sync-version MUST emit system-reminder about configure-tools when tool configuration is completely missing (file does not exist)",
+        "configure-tools MUST regenerate agent templates (spec/CLAUDE.md, .claude/commands/fspec.md, etc.) after updating config to ensure templates reflect latest version",
+        "configure-tools MUST regenerate templates silently (no output to user about template regeneration) to avoid cluttering the output with implementation details"
       ],
       "examples": [
         "AI runs 'fspec update-work-unit-status AUTH-001 validating' with no config, sees system-reminder: 'NO TEST COMMAND CONFIGURED'",
         "AI runs 'fspec update-work-unit-status AUTH-001 validating' with config present, sees system-reminder: 'Run tests: npm test'",
         "AI receives reminder, runs 'fspec configure-tools --test-command npm test', then validation emits actual command",
-        "Integration test verifies checkTestCommand and checkQualityCommands are called during status transition"
+        "Integration test verifies checkTestCommand and checkQualityCommands are called during status transition",
+        "AI runs 'fspec --sync-version 0.6.0' with no tool config, sees system-reminder, command exits with code 1, AI cannot continue until tools are configured",
+        "AI runs 'fspec --sync-version 0.5.0' when actual version is 0.6.0, sees version mismatch error, command exits with code 1, AI cannot continue until correct version used",
+        "AI runs 'fspec --sync-version 0.6.0' when spec/fspec-config.json does not exist, sees system-reminder to run configure-tools, command exits with code 1, AI runs configure-tools then re-runs sync-version",
+        "AI runs 'fspec configure-tools --test-command npm test', command saves config AND regenerates spec/CLAUDE.md and .claude/commands/fspec.md with latest templates, ensuring AI has up-to-date documentation",
+        "AI runs 'fspec configure-tools --test-command npm test', sees only '✓ Tool configuration saved to spec/fspec-config.json' output, templates regenerated silently in background without additional messages"
       ],
       "questions": [
         {
@@ -13236,9 +13306,9 @@
         "Yes - sync-version should emit tool config checks. This helps onboard new AI agents by guiding them to configure tools immediately after version update, ensuring they have complete workflow setup."
       ],
       "userStory": {
-        "role": "AI agent validating work units",
-        "action": "receive system-reminders about test and quality check commands",
-        "benefit": "I know exactly what commands to run without guessing"
+        "role": "AI agent using fspec for ACDD workflow",
+        "action": "receive automatic guidance about tool configuration and version sync",
+        "benefit": "I can complete proper workflow setup without manual intervention and avoid continuing with incorrect configuration"
       },
       "estimate": 2
     }
