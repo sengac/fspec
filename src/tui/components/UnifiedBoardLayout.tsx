@@ -59,6 +59,17 @@ const fitToWidth = (text: string, width: number): string => {
   return text.padEnd(width, ' ');
 };
 
+// Helper: Center text within given width
+const centerText = (text: string, width: number): string => {
+  if (text.length >= width) {
+    return text.substring(0, width);
+  }
+  const totalPadding = width - text.length;
+  const leftPadding = Math.floor(totalPadding / 2);
+  const rightPadding = totalPadding - leftPadding;
+  return ' '.repeat(leftPadding) + text + ' '.repeat(rightPadding);
+};
+
 // Helper: Build border row with separator type
 const buildBorderRow = (
   colWidth: number,
@@ -264,8 +275,8 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
   // Footer separator (bottom - columns end above, no columns below)
   rows.push(buildBorderRow(colWidth, '├', '┴', '┤', 'bottom'));
 
-  // Footer row
-  rows.push('│' + fitToWidth('← → Columns | ↑↓ jk Work Units | ↵ Details | ESC Back', totalWidth) + '│');
+  // Footer row (centered)
+  rows.push('│' + centerText('← → Columns | ↑↓ jk Work Units | ↵ Details | ESC Back', totalWidth) + '│');
 
   // Bottom border (no columns below - use plain separator)
   rows.push(buildBorderRow(colWidth, '└', '─', '┘', 'plain'));
