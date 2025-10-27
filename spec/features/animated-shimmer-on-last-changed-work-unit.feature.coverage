@@ -1,0 +1,66 @@
+{
+  "scenarios": [
+    {
+      "name": "Story work unit with most recent timestamp displays with shimmering white text",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/BoardView-shimmer-last-changed.test.tsx",
+          "lines": "19-71",
+          "implMappings": [
+            {
+              "file": "src/tui/components/UnifiedBoardLayout.tsx",
+              "lines": [
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Bug work unit with most recent timestamp displays with shimmering red text",
+      "testMappings": []
+    },
+    {
+      "name": "Task work unit with most recent timestamp displays with shimmering blue text",
+      "testMappings": []
+    },
+    {
+      "name": "Selected work unit that is also last-changed displays with shimmering green background",
+      "testMappings": []
+    },
+    {
+      "name": "TUI startup identifies and shimmers most recently changed work unit from history",
+      "testMappings": []
+    },
+    {
+      "name": "Shimmer transfers to newly changed work unit",
+      "testMappings": []
+    },
+    {
+      "name": "Zustand store passes updated timestamp from work-units.json to components",
+      "testMappings": []
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 1,
+    "coveragePercent": 17,
+    "testFiles": [
+      "src/tui/__tests__/BoardView-shimmer-last-changed.test.tsx"
+    ],
+    "implFiles": [
+      "src/tui/components/UnifiedBoardLayout.tsx"
+    ],
+    "totalLinesCovered": 63
+  }
+}

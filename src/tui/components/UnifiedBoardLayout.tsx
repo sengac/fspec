@@ -24,6 +24,7 @@ interface WorkUnit {
   description?: string;
   dependencies?: string[];
   epic?: string;
+  updated?: string;
 }
 
 interface UnifiedBoardLayoutProps {
@@ -136,6 +137,17 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
     });
   }, [workUnits]);
 
+  // Compute last changed work unit (BOARD-009: find work unit with most recent updated timestamp)
+  const lastChangedWorkUnit = useMemo(() => {
+    if (workUnits.length === 0) return null;
+
+    return workUnits.reduce((latest, current) => {
+      const latestTime = latest.updated ? new Date(latest.updated).getTime() : 0;
+      const currentTime = current.updated ? new Date(current.updated).getTime() : 0;
+      return currentTime > latestTime ? current : latest;
+    });
+  }, [workUnits]);
+
   // Shimmer animation effect (BOARD-008: toggles every 5 seconds)
   useEffect(() => {
     const interval = setInterval(() => {
@@ -146,6 +158,51 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
       clearInterval(interval);
     };
   }, []);
+
+  // Automatic scrolling: adjust scroll offset to keep selected item visible (BUG-045)
+  // This implements the navigateTo pattern from cage VirtualList
+  useEffect(() => {
+    const currentColumn = STATES[focusedColumnIndex];
+    const columnUnits = groupedWorkUnits[focusedColumnIndex].units;
+
+    // Calculate new scroll offset to keep selected item visible
+    setScrollOffsets(prev => {
+      const currentOffset = prev[currentColumn] || 0;
+
+      // Calculate how many arrows will be visible (arrows consume viewport rows)
+      const willShowUpArrow = currentOffset > 0;
+      const willShowDownArrow = currentOffset + VIEWPORT_HEIGHT < columnUnits.length;
+      const arrowRowsConsumed = (willShowUpArrow ? 1 : 0) + (willShowDownArrow ? 1 : 0);
+
+      // Actual visible work items = VIEWPORT_HEIGHT - arrows
+      const effectiveVisibleHeight = VIEWPORT_HEIGHT - arrowRowsConsumed;
+
+      // If selected index is above visible area, scroll up
+      // Account for up arrow consuming row 0
+      const firstVisibleIndex = currentOffset + (willShowUpArrow ? 1 : 0);
+      if (selectedWorkUnitIndex < firstVisibleIndex) {
+        // Scroll up to show selected item at top (accounting for up arrow)
+        return {
+          ...prev,
+          [currentColumn]: Math.max(0, selectedWorkUnitIndex - 1),
+        };
+      }
+
+      // If selected index is below visible area, scroll down
+      // Account for down arrow consuming last row
+      const lastVisibleIndex = firstVisibleIndex + effectiveVisibleHeight - 1;
+      if (selectedWorkUnitIndex > lastVisibleIndex) {
+        // Scroll down to show selected item at bottom (accounting for down arrow)
+        return {
+          ...prev,
+          [currentColumn]: selectedWorkUnitIndex - VIEWPORT_HEIGHT + 2,
+        };
+      }
+
+      // Selected item is already visible, no scroll needed
+      return prev;
+    });
+  }, [selectedWorkUnitIndex, focusedColumnIndex, groupedWorkUnits]);
 
   // Handle keyboard input
   useInput((input, key) => {
@@ -320,30 +377,48 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
 
       const wu = column.units[itemIndex];
       const estimate = wu.estimate || 0;
-      const priorityIcon = estimate > 8 ? '🔴' : estimate >= 3 ? '🟡' : '🟢';
 
       // Build text without emoji icons (BOARD-008)
-      const text = `${wu.id} ${estimate}pt ${priorityIcon}`;
+      // Only show story points if > 0, format as [N]
+      const storyPointsText = estimate > 0 ? ` [${estimate}]` : '';
+      const text = `${wu.id}${storyPointsText}`;
       const paddedText = fitToWidth(text, colWidth);
 
       // Check if this work unit is selected
       const isSelected = colIndex === focusedColumnIndex && itemIndex === selectedWorkUnitIndex;
 
-      // Apply color-coding (BOARD-008):
-      // - Selected work units: green with shimmer background (overrides type color)
-      // - Story work units: white
-      // - Bug work units: red
-      // - Task work units: blue
-      if (isSelected) {
-        // Selected work unit displays in green with shimmer background
-        // Shimmer alternates between bgGreen and bgGreenBright every 5 seconds
+      // Check if this work unit is the last changed (BOARD-009)
+      const isLastChanged = lastChangedWorkUnit?.id === wu.id;
+
+      // Apply color-coding (BOARD-008 + BOARD-009):
+      // - Selected + last-changed: shimmer background (bgGreen ↔ bgGreenBright)
+      // - Selected only: green background (no shimmer)
+      // - Last-changed only: shimmer text color based on type
+      // - Normal: type-based color (white/red/blue)
+      if (isSelected && isLastChanged) {
+        // Selected AND last-changed: shimmer background
         if (shimmerState) {
           return chalk.bgGreenBright.black(paddedText);
         } else {
           return chalk.bgGreen.black(paddedText);
         }
+      } else if (isSelected) {
+        // Selected only: green background (no shimmer)
+        return chalk.bgGreen.black(paddedText);
+      } else if (isLastChanged) {
+        // Last-changed only: shimmer text color based on type
+        if (wu.type === 'bug') {
+          // Bug: red ↔ redBright
+          return shimmerState ? chalk.redBright(paddedText) : chalk.red(paddedText);
+        } else if (wu.type === 'task') {
+          // Task: blue ↔ blueBright
+          return shimmerState ? chalk.blueBright(paddedText) : chalk.blue(paddedText);
+        } else {
+          // Story: white ↔ whiteBright
+          return shimmerState ? chalk.whiteBright(paddedText) : chalk.white(paddedText);
+        }
       } else {
-        // Type-based color coding
+        // Normal: type-based color (no shimmer)
         if (wu.type === 'bug') {
           return chalk.red(paddedText);
         } else if (wu.type === 'task') {

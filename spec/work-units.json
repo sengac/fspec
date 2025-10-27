@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-27T10:41:15.685Z"
+    "lastUpdated": "2025-10-27T12:15:59.845Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -14517,12 +14517,12 @@
     },
     "BOARD-008": {
       "id": "BOARD-008",
-      "title": "Color-coded work units with animated shimmer for active item",
+      "title": "Color-coded work units without shimmer or priority icons",
       "type": "story",
       "status": "done",
       "createdAt": "2025-10-27T10:41:03.150Z",
-      "updatedAt": "2025-10-27T11:05:05.468Z",
-      "description": "Replace emoji icons with color-coded text. Story=white, Bug=red, Task=blue, Active/selected=green with animated shimmer background every 5 seconds",
+      "updatedAt": "2025-10-27T12:09:46.733Z",
+      "description": "Display work units with color-coding by type. Story=white, Bug=red, Task=blue, Selected=green background (no shimmer). Story points format: [N] when >0, hidden when 0. No priority emoticons.",
       "epic": "interactive-tui-foundation",
       "children": [],
       "stateHistory": [
@@ -14545,6 +14545,34 @@
         {
           "state": "done",
           "timestamp": "2025-10-27T11:05:05.468Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-27T11:28:43.485Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-27T11:57:25.619Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-27T12:04:39.836Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-27T12:06:10.449Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-27T12:06:52.396Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-27T12:07:10.279Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-27T12:09:46.733Z"
         }
       ],
       "userStory": {
@@ -14553,19 +14581,240 @@
         "benefit": "I can quickly scan the board and distinguish stories, bugs, and tasks at a glance"
       },
       "rules": [
-        "Remove all emoji icons (📖, 🐛, ⚙️) from work unit display",
-        "Story work units must be displayed in white color",
-        "Bug work units must be displayed in red color",
-        "Task work units must be displayed in blue color",
-        "Active/selected work unit must be displayed in green color (overrides type color)",
-        "Active/selected work unit must have animated shimmer background effect",
-        "Shimmer animation must trigger every 5 seconds"
+        "Story work units must display in white color",
+        "Bug work units must display in red color",
+        "Task work units must display in blue color",
+        "Selected work unit must display with green background (overrides type color)",
+        "Story points must be hidden when estimate is 0 or undefined",
+        "Story points must display as [N] format when estimate > 0",
+        "No priority emoticons must be displayed",
+        "No shimmer animation on selected work units",
+        "Story points must be hidden when estimate is 0 or undefined",
+        "Story points must display as [N] format when estimate > 0",
+        "No priority emoticons must be displayed",
+        "No shimmer animation on selected work units"
       ],
       "examples": [
-        "Story TECH-001 displays as white text without emoji icon",
-        "Bug BUG-001 displays as red text without emoji icon",
-        "Task TASK-001 displays as blue text without emoji icon",
-        "Selected story BOARD-008 displays as green text with shimmer background animation"
+        "Story TECH-001 with 0 estimate displays as 'TECH-001' in white (no story points shown)",
+        "Story FEAT-002 with 5 estimate displays as 'FEAT-002 [5]' in white",
+        "Bug BUG-001 with 3 estimate displays as 'BUG-001 [3]' in red",
+        "Task TASK-001 with no estimate displays as 'TASK-001' in blue",
+        "Selected story displays with green background, no shimmer, no priority icons",
+        "Story TECH-001 with 0 estimate displays as 'TECH-001' in white (no story points shown)",
+        "Story FEAT-002 with 5 estimate displays as 'FEAT-002 [5]' in white",
+        "Bug BUG-001 with 3 estimate displays as 'BUG-001 [3]' in red",
+        "Task TASK-001 with no estimate displays as 'TASK-001' in blue",
+        "Selected story displays with green background, no shimmer, no priority icons"
+      ],
+      "estimate": 5
+    },
+    "BOARD-009": {
+      "id": "BOARD-009",
+      "title": "Animated shimmer on last changed work unit",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-27T11:33:13.499Z",
+      "updatedAt": "2025-10-27T12:03:13.711Z",
+      "description": "Highlight the most recently modified work unit with green text color and animated left-to-right shimmer effect every 5 seconds",
+      "epic": "interactive-tui-foundation",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-27T11:33:18.483Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-27T11:47:08.680Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-27T11:50:59.702Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-27T11:53:28.774Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-27T11:56:01.740Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-27T11:58:23.414Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-27T11:59:20.940Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-27T11:59:50.434Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-27T12:00:15.328Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-27T12:03:13.711Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer viewing TUI board",
+        "action": "see which work unit was most recently changed",
+        "benefit": "I can quickly identify where recent activity occurred"
+      },
+      "questions": [
+        {
+          "text": "@human: What constitutes a 'change' to a work unit?",
+          "selected": true,
+          "answer": "Compute last-changed work unit by finding max(updated) timestamp across all work units. Don't store separately in Zustand - use existing updated field. Track only shimmer animation toggle state in component state."
+        },
+        {
+          "text": "@human: How should the shimmer animation work exactly?",
+          "selected": true,
+          "answer": "Alternate between shades of green (green → bright green → green), with pauses between 5-second cycles. No gradient sweep."
+        },
+        {
+          "text": "@human: What happens if multiple work units changed columns at the same time?",
+          "selected": true,
+          "answer": "Pick the work unit with the most recent timestamp change (use work unit's updated field to determine recency)."
+        },
+        {
+          "text": "@human: What happens when the last changed work unit is also the currently selected work unit?",
+          "selected": true,
+          "answer": "Shimmer the selector/background instead, from left to right in shades of green (bgGreen → bgGreenBright → bgGreen), with black text."
+        },
+        {
+          "text": "@human: Should the shimmer override the work unit type color (white/red/blue) or shimmer the existing type color?",
+          "selected": true,
+          "answer": "Shimmer the existing type color. Story (white → whiteBright → white), Bug (red → redBright → red), Task (blue → blueBright → blue)."
+        },
+        {
+          "text": "@human: When does the shimmer start and stop?",
+          "selected": true,
+          "answer": "On TUI startup, identify the work unit with the most recent 'updated' timestamp and start shimmering it immediately."
+        },
+        {
+          "text": "@human: How should Zustand track status changes?",
+          "selected": true,
+          "answer": "Compute last-changed work unit by finding max(updated) timestamp across all work units. Don't store separately in Zustand - use existing updated field. Track only shimmer animation toggle state in component state."
+        }
+      ],
+      "rules": [
+        "Last changed work unit is determined by status/column change, not other field updates",
+        "Find last changed work unit by computing max(updated) timestamp across all work units",
+        "Shimmer cycles every 5 seconds with pauses between cycles",
+        "When multiple work units have same timestamp, pick the one with most recent updated field",
+        "When last-changed work unit is NOT selected: shimmer text color (white→whiteBright, red→redBright, blue→blueBright)",
+        "When last-changed work unit IS selected: shimmer background color (bgGreen→bgGreenBright) with black text",
+        "Shimmer starts on TUI startup for the most recently changed work unit from history",
+        "Shimmer continues indefinitely until another work unit changes status",
+        "Zustand store WorkUnit interface must include updated and estimate fields to pass data from work-units.json to components"
+      ],
+      "examples": [
+        "Story TECH-001 with most recent timestamp displays with shimmering white text (white→whiteBright every 5s)",
+        "Bug BUG-007 with most recent timestamp displays with shimmering red text (red→redBright every 5s)",
+        "Task TASK-003 with most recent timestamp displays with shimmering blue text (blue→blueBright every 5s)",
+        "Selected work unit AUTH-001 that is also last-changed displays with shimmering green background (bgGreen→bgGreenBright) and black text",
+        "On TUI startup, BOARD-008 with updated='2025-10-27T21:30:00Z' is most recent, starts shimmering immediately",
+        "User moves FEAT-002 from testing to implementing, shimmer stops on BOARD-008 and starts on FEAT-002",
+        "Zustand store loads work unit with updated='2025-10-27T22:00:00Z' from work-units.json and passes it to UnifiedBoardLayout"
+      ],
+      "estimate": 5
+    },
+    "BUG-045": {
+      "id": "BUG-045",
+      "title": "Work items in columns don't scroll",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-10-27T12:13:55.515Z",
+      "updatedAt": "2025-10-27T12:31:56.470Z",
+      "description": "Work items in a column should scroll like the virtual lists in ~/projects/cage project, but currently they don't scroll at all. Need to implement scrollable list functionality similar to the cage project's virtual list implementation.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-27T12:14:59.940Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-27T12:20:01.437Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-27T12:21:58.025Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-27T12:23:05.935Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-27T12:25:14.138Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-27T12:27:25.459Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-27T12:29:50.004Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-27T12:30:44.993Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-27T12:31:48.192Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-27T12:31:56.470Z"
+        }
+      ],
+      "userStory": {
+        "role": "user navigating the fspec board TUI",
+        "action": "scroll through work items using arrow keys",
+        "benefit": "I can see all work items in a column without manually pressing Page Up/Down"
+      },
+      "rules": [
+        "Arrow key navigation (up/down) should automatically scroll the viewport when selection moves beyond visible area",
+        "Scrolling should follow the selected item, keeping it visible at all times",
+        "Implementation should match VirtualList pattern from cage project (navigateTo helper function)",
+        "Scroll indicators (↑ ↓) should show when there are items above/below visible viewport",
+        "No, only arrow keys should trigger automatic scrolling. Do not use j/k vim-style navigation.",
+        "Preserve scroll position per column. Each column maintains its own scroll offset state.",
+        "Yes, wrap-around navigation should work (down on last item goes to first, up on first item goes to last).",
+        "Scroll indicators (arrows) replace work items in viewport rows, reducing actual visible item count",
+        "Visible work item count = VIEWPORT_HEIGHT - (number of arrows shown: 0, 1, or 2)"
+      ],
+      "examples": [
+        "User presses down arrow 11 times in a column with 20 items (viewport shows 10). Selection moves to item 11, viewport scrolls to show items 2-11 with selection visible.",
+        "User at item 15 presses up arrow to item 5. Viewport scrolls up to show items 1-10 with item 5 selected.",
+        "Column with 5 items and viewport height 10: no scroll indicators show, all items visible.",
+        "Column with 20 items: ↓ indicator shows at bottom row when scrollOffset < (20 - 10), ↑ indicator shows at top row when scrollOffset > 0.",
+        "Column with 15 items, scrollOffset=5, VIEWPORT_HEIGHT=10: Shows up arrow at row 0, items 6-14 in rows 1-9, down arrow at row 9 (only 8 items visible)",
+        "Column with 25 items, scrollOffset=10, VIEWPORT_HEIGHT=10: Shows up arrow at row 0, items 11-19 in rows 1-9, but row 9 should show down arrow, so only items 11-18 visible (8 items total)"
+      ],
+      "questions": [
+        {
+          "text": "@human: Should vim-style navigation (j/k keys) also trigger automatic scrolling, matching the cage VirtualList pattern?",
+          "selected": true,
+          "answer": "No, only arrow keys should trigger automatic scrolling. Do not use j/k vim-style navigation."
+        },
+        {
+          "text": "@human: When switching columns with left/right arrows, should we reset scroll offset to 0 for the new column, or preserve scroll position per column?",
+          "selected": true,
+          "answer": "Preserve scroll position per column. Each column maintains its own scroll offset state."
+        },
+        {
+          "text": "@human: Should wrap-around navigation work (pressing down on last item goes to first item)?",
+          "selected": true,
+          "answer": "Yes, wrap-around navigation should work (down on last item goes to first, up on first item goes to last)."
+        }
       ],
       "estimate": 5
     }
@@ -14826,7 +15075,9 @@
       "BOARD-005",
       "BOARD-006",
       "BOARD-007",
-      "BOARD-008"
+      "BOARD-009",
+      "BOARD-008",
+      "BUG-045"
     ],
     "blocked": []
   }
