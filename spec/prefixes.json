@@ -164,6 +164,11 @@
       "prefix": "LANG",
       "description": "Internationalization and localization features",
       "createdAt": "2025-10-24T22:27:49.656Z"
+    },
+    "ITF": {
+      "prefix": "ITF",
+      "description": "Interactive TUI Foundation - Core infrastructure work units",
+      "createdAt": "2025-10-27T04:16:45.739Z"
     }
   }
 }
