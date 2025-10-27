@@ -180,6 +180,15 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
     return { status, units, count: units.length, totalPoints };
   });
 
+  // Compute currently selected work unit
+  const currentlySelectedWorkUnit = (() => {
+    const currentColumn = groupedWorkUnits[focusedColumnIndex];
+    if (currentColumn && currentColumn.units.length > 0) {
+      return currentColumn.units[selectedWorkUnitIndex] || null;
+    }
+    return null;
+  })();
+
   // Handle keyboard navigation
   useInput((input, key) => {
     if (key.escape) {
@@ -269,6 +278,7 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
       unstagedFiles={unstagedFiles}
       focusedColumnIndex={focusedColumnIndex}
       selectedWorkUnitIndex={selectedWorkUnitIndex}
+      selectedWorkUnit={currentlySelectedWorkUnit}
       onColumnChange={(delta) => {
         setFocusedColumnIndex(prev => {
           const newIndex = prev + delta;

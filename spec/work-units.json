@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-27T08:50:47.399Z"
+    "lastUpdated": "2025-10-27T10:26:47.413Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -14463,6 +14463,57 @@
         "Footer should display '← → Columns ◆ ↑↓ jk Work Units ◆ ↵ Details ◆ ESC Back' with diamond separators",
         "Headers should show 'BACKLOG', 'SPECIFYING', 'TESTING', 'IMPLEMENTING', 'VALIDATING', 'DONE', 'BLOCKED' without any additional text"
       ]
+    },
+    "BOARD-007": {
+      "id": "BOARD-007",
+      "title": "Consolidate Git info and add work unit details panel",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-27T10:26:36.107Z",
+      "updatedAt": "2025-10-27T10:35:14.760Z",
+      "description": "Merge Git Stashes and Changed Files into single panel, replace Changed Files section with work unit details panel showing type, title, description, dependencies for selected work unit",
+      "epic": "interactive-tui-foundation",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-27T10:26:40.856Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-27T10:29:02.609Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-27T10:29:58.305Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-27T10:35:07.683Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-27T10:35:14.760Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using TUI board",
+        "action": "see git context and selected work unit details in one view",
+        "benefit": "I can understand my current work context without switching views"
+      },
+      "rules": [
+        "Git Stashes and Changed Files must be combined into single 'Git Context' panel",
+        "Changed Files section must be replaced with Work Unit Details panel",
+        "Work Unit Details panel shows type icon, title, description, dependencies, and other metadata",
+        "Description must be truncated after few lines with indicator to press Enter for full details",
+        "When no work unit selected, display user-friendly message like 'No work unit selected'"
+      ],
+      "examples": [
+        "Git Context panel shows 'Git Stashes (2)' followed by stash list, then 'Changed Files (3 staged, 1 unstaged)' with file list",
+        "Work unit BOARD-001 selected: shows 📖 story icon, title, truncated description, dependencies list",
+        "No work unit selected in empty column: shows 'No work unit selected' message"
+      ],
+      "estimate": 5
     }
   },
   "states": {
@@ -14719,7 +14770,8 @@
       "BOARD-003",
       "ITF-005",
       "BOARD-005",
-      "BOARD-006"
+      "BOARD-006",
+      "BOARD-007"
     ],
     "blocked": []
   }

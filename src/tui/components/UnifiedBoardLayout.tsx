@@ -21,6 +21,9 @@ interface WorkUnit {
   type: 'story' | 'task' | 'bug';
   estimate?: number;
   status: string;
+  description?: string;
+  dependencies?: string[];
+  epic?: string;
 }
 
 interface UnifiedBoardLayoutProps {
@@ -30,6 +33,7 @@ interface UnifiedBoardLayoutProps {
   unstagedFiles?: string[];
   focusedColumnIndex?: number;
   selectedWorkUnitIndex?: number;
+  selectedWorkUnit?: WorkUnit | null;
   onColumnChange?: (delta: number) => void;
   onWorkUnitChange?: (delta: number) => void;
   onEnter?: () => void;
@@ -95,6 +99,7 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
   unstagedFiles = [],
   focusedColumnIndex = 0,
   selectedWorkUnitIndex = 0,
+  selectedWorkUnit = null,
   onColumnChange,
   onWorkUnitChange,
   onEnter,
@@ -178,7 +183,7 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
   // Top border (no columns above - use plain separator)
   rows.push(buildBorderRow(colWidth, '┌', '─', '┐', 'plain'));
 
-  // Git Stashes panel (integrated as table row)
+  // Git Context panel (combined Git Stashes and Changed Files)
   const totalWidth = colWidth * STATES.length + (STATES.length - 1);
   rows.push('│' + fitToWidth(`Git Stashes (${stashes.length})`, totalWidth) + '│');
   if (stashes.length > 0) {
@@ -204,14 +209,11 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
     rows.push('│' + fitToWidth('No stashes', totalWidth) + '│');
   }
 
-  // Separator after Git Stashes (plain - no columns above or below)
-  rows.push(buildBorderRow(colWidth, '├', '─', '┤', 'plain'));
-
-  // Changed Files panel (integrated as table row)
+  // Changed Files section (no separator - same panel)
   const fileCount = `${stagedFiles.length} staged, ${unstagedFiles.length} unstaged`;
   rows.push('│' + fitToWidth(`Changed Files (${fileCount})`, totalWidth) + '│');
   if (stagedFiles.length === 0 && unstagedFiles.length === 0) {
-    rows.push('│' + fitToWidth('No changes', totalWidth) + '│');
+    rows.push('│' + fitToWidth('  No changes', totalWidth) + '│');
   } else {
     // Display first few changed files (staged first, then unstaged)
     const allFiles = [
@@ -220,6 +222,53 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
     ];
     const filesDisplay = allFiles.slice(0, 3).map(f => fitToWidth(`  ${f}`, totalWidth / 3)).join(' ');
     rows.push('│' + fitToWidth(filesDisplay, totalWidth) + '│');
+  }
+
+  // Separator after Git Context panel
+  rows.push(buildBorderRow(colWidth, '├', '─', '┤', 'plain'));
+
+  // Work Unit Details panel
+  rows.push('│' + fitToWidth('Work Unit Details', totalWidth) + '│');
+  if (selectedWorkUnit) {
+    // Display selected work unit metadata
+    const typeIcon = selectedWorkUnit.type === 'bug' ? '🐛' : selectedWorkUnit.type === 'task' ? '⚙️' : '📖';
+    const titleLine = `${typeIcon} ${selectedWorkUnit.id}: ${selectedWorkUnit.title}`;
+    rows.push('│' + fitToWidth(`  ${titleLine}`, totalWidth) + '│');
+
+    // Truncate description to 3 lines
+    if (selectedWorkUnit.description) {
+      const descLines = selectedWorkUnit.description.split('\n');
+      const maxLines = 3;
+      for (let i = 0; i < Math.min(descLines.length, maxLines); i++) {
+        rows.push('│' + fitToWidth(`  ${descLines[i]}`, totalWidth) + '│');
+      }
+      if (descLines.length > maxLines) {
+        rows.push('│' + fitToWidth('  Press ↵ to view full details', totalWidth) + '│');
+      }
+    }
+
+    // Display dependencies
+    if (selectedWorkUnit.dependencies && selectedWorkUnit.dependencies.length > 0) {
+      rows.push('│' + fitToWidth(`  Dependencies: ${selectedWorkUnit.dependencies.join(', ')}`, totalWidth) + '│');
+    }
+
+    // Display other metadata
+    const metadata: string[] = [];
+    if (selectedWorkUnit.epic) {
+      metadata.push(`Epic: ${selectedWorkUnit.epic}`);
+    }
+    if (selectedWorkUnit.estimate !== undefined) {
+      metadata.push(`Estimate: ${selectedWorkUnit.estimate}pts`);
+    }
+    if (selectedWorkUnit.status) {
+      metadata.push(`Status: ${selectedWorkUnit.status}`);
+    }
+    if (metadata.length > 0) {
+      rows.push('│' + fitToWidth(`  ${metadata.join(' | ')}`, totalWidth) + '│');
+    }
+  } else {
+    // No work unit selected
+    rows.push('│' + centerText('No work unit selected', totalWidth) + '│');
   }
 
   // Separator after Changed Files (top - no columns above, columns start below)
