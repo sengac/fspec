@@ -73,3 +73,11 @@ Feature: Incorrect column dividers in non-columnar TUI sections
     When the bottom border is rendered at line 271
     Then it should use └────┘ with plain horizontal separators
     And it should NOT use └──┴──┘ with column dividers
+
+  Scenario: Footer help text is centered
+    Given UnifiedBoardLayout component renders the footer row
+    And the footer contains help text "← → Columns | ↑↓ jk Work Units | ↵ Details | ESC Back"
+    And the total table width is calculated from column widths
+    When the footer row is rendered at line 268
+    Then the help text should be horizontally centered
+    And equal padding should be added on left and right sides

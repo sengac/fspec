@@ -14327,7 +14327,7 @@
       "type": "bug",
       "status": "done",
       "createdAt": "2025-10-27T08:48:01.553Z",
-      "updatedAt": "2025-10-27T09:51:05.396Z",
+      "updatedAt": "2025-10-27T10:09:40.651Z",
       "description": "The TUI board displays column divider characters in separator lines that should only have them on one side or not at all. Need to distinguish between three separator types:\n\n1. NO COLUMNS (full-width sections):\n   - Line ABOVE Git Stashes: ├─────────┤ (no columns above or below)\n   - Line BETWEEN Git Stashes and Changed Files: ├─────────┤ (no columns above or below)\n   \n2. TRANSITION TO COLUMNS (from full-width to columnar):\n   - Line BETWEEN Changed Files and Kanban board: ├────┬────┬────┤ (no columns above, columns below)\n   \n3. COLUMNS (Kanban board section):\n   - Lines within Kanban board: ├────┼────┼────┤ (columns above and below)\n   \n4. TRANSITION FROM COLUMNS (from columnar to full-width):\n   - Line BETWEEN Kanban board and key mapping footer: ├────┴────┴────┤ (columns above, no columns below)\n   - Line BELOW key mapping footer: └────────────┘ (terminal edge)\n\nCurrent bug: All separators use column dividers (┼) regardless of context. Need to use ┬ (top junction), ┼ (cross junction), ┴ (bottom junction), or plain ─ (horizontal) based on what's above and below each line.",
       "epic": "interactive-tui-foundation",
       "children": [],
@@ -14371,6 +14371,26 @@
         {
           "state": "done",
           "timestamp": "2025-10-27T09:51:05.396Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-27T10:05:35.951Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-27T10:06:39.027Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-27T10:06:44.833Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-27T10:09:34.435Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-27T10:09:40.651Z"
         }
       ],
       "userStory": {
@@ -14386,7 +14406,8 @@
         "buildBorderRow helper must accept separator type parameter to distinguish between ─ (plain), ┬ (top), ┼ (cross), ┴ (bottom)",
         "Top border (┌─┐) should use plain horizontal separator (no columns above it)",
         "Bottom border (└─┘) should use plain horizontal separator (no columns below it)",
-        "Footer row content should NOT have pipe characters separating command help text"
+        "Footer row content should NOT have pipe characters separating command help text",
+        "Footer help text should be centered horizontally within the total table width"
       ],
       "examples": [
         "Line 184 currently shows ├──┼──┤ but should show ├────────┤ (no column dividers between Git Stashes and Changed Files)",
@@ -14395,7 +14416,8 @@
         "Lines 155 and 214 correctly use ├──┼──┤ for the Kanban board header separator",
         "Top border should show ┌────────┐ with NO column dividers (plain horizontal only)",
         "Bottom border should show └────────┘ with NO column dividers (plain horizontal only)",
-        "Footer text '← → Columns | ↑↓ jk Work Units | ↵ Details | ESC Back' should have pipe characters as CONTENT, not column dividers"
+        "Footer text '← → Columns | ↑↓ jk Work Units | ↵ Details | ESC Back' should have pipe characters as CONTENT, not column dividers",
+        "Footer text '← → Columns | ↑↓ jk Work Units | ↵ Details | ESC Back' should have equal padding on left and right to center it"
       ]
     }
   },
