@@ -14910,7 +14910,7 @@
       "type": "story",
       "status": "specifying",
       "createdAt": "2025-10-27T13:26:34.333Z",
-      "updatedAt": "2025-10-27T13:27:50.670Z",
+      "updatedAt": "2025-10-27T13:39:56.141Z",
       "description": "Allow users to reorder work units within a column using [ and ] keys to move items up/down in priority",
       "epic": "interactive-tui-foundation",
       "children": [],
@@ -14931,14 +14931,16 @@
         "Work unit order changes are persisted to work-units.json immediately",
         "Cannot move work unit up if it's already at the top of the column (first position)",
         "Cannot move work unit down if it's already at the bottom of the column (last position)",
-        "Order property in work-units.json tracks position within each column status"
+        "Order property in work-units.json tracks position within each column status",
+        "Manual reordering with [ and ] keys is only allowed in backlog, specifying, testing, implementing, validating, and blocked columns (not done column)"
       ],
       "examples": [
         "User selects BOARD-002 in backlog column (position 2), presses [, work unit moves to position 1",
         "User selects BOARD-001 in backlog column (position 1), presses [, nothing happens (already at top)",
         "User selects BOARD-003 in backlog column (position 2), presses ], work unit moves to position 3",
         "User selects last work unit in done column, presses ], nothing happens (already at bottom)",
-        "After moving work unit, order persists when restarting TUI (loaded from work-units.json)"
+        "After moving work unit, order persists when restarting TUI (loaded from work-units.json)",
+        "User in done column presses [ or ], nothing happens (done column order is automatic by completion time)"
       ],
       "estimate": 5
     },
