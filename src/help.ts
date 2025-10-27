@@ -1058,6 +1058,7 @@ function displayHooksHelp(): void {
   console.log('  • Add quality gates with blocking pre-hooks');
   console.log('  • Automate testing with post-hooks');
   console.log('  • Send notifications on workflow events');
+  console.log('  • Add work unit-scoped virtual hooks');
   console.log('  • Validate hook configurations');
   console.log('  • List and manage configured hooks\n');
 
@@ -1089,6 +1090,33 @@ function displayHooksHelp(): void {
   console.log('    Examples:');
   console.log('      fspec remove-hook pre-implementing lint');
   console.log('      fspec remove-hook post-implementing test');
+  console.log('');
+
+  console.log(chalk.bold('VIRTUAL HOOKS (Work Unit-Scoped)'));
+  console.log(
+    '  ' + chalk.cyan('fspec add-virtual-hook <id> <event> <command>')
+  );
+  console.log('    Options:');
+  console.log('      --blocking                       Make hook blocking');
+  console.log(
+    '      --git-context                    Run on changed files only'
+  );
+  console.log('    Examples:');
+  console.log(
+    '      fspec add-virtual-hook AUTH-001 pre-implementing "npm run lint" --blocking'
+  );
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec list-virtual-hooks <id>'));
+  console.log('    Examples:');
+  console.log('      fspec list-virtual-hooks AUTH-001');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec remove-virtual-hook <id> <name>'));
+  console.log('    Examples:');
+  console.log('      fspec remove-virtual-hook AUTH-001 lint');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec clear-virtual-hooks <id>'));
+  console.log('    Examples:');
+  console.log('      fspec clear-virtual-hooks AUTH-001');
   console.log('');
 
   console.log(chalk.bold('HOOK CONFIGURATION'));
@@ -1143,6 +1171,7 @@ function displaySetupHelp(): void {
   console.log('  • Initialize fspec for AI coding agents');
   console.log('  • Switch between different AI agents');
   console.log('  • Remove agent initialization files');
+  console.log('  • Configure test and quality check commands');
   console.log('  • Register tags in the centralized registry');
   console.log('  • Update or delete tags across all files');
   console.log('  • Bulk rename tags (retag operations)');
@@ -1180,6 +1209,21 @@ function displaySetupHelp(): void {
   console.log(
     '    Notes: Auto-detects installed agent and removes configuration files'
   );
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec configure-tools'));
+  console.log('    Description: Configure test and quality check commands');
+  console.log('    Options:');
+  console.log('      --test-command <cmd>             Test command to run');
+  console.log('      --quality-commands <cmd...>      Quality check commands');
+  console.log(
+    '      --reconfigure                    Reconfigure existing setup'
+  );
+  console.log('    Examples:');
+  console.log('      fspec configure-tools --test-command "npm test"');
+  console.log(
+    '      fspec configure-tools --test-command "npm test" --quality-commands "npm run lint" "npm run format"'
+  );
+  console.log('      fspec configure-tools --reconfigure');
   console.log('');
 
   console.log(chalk.bold('TAG REGISTRY'));
@@ -1423,4 +1467,57 @@ export function handleHelpCommand(group?: string, version?: string): void {
       );
       console.log('Use ' + chalk.cyan('fspec --help') + ' for main help\n');
   }
+}
+
+/**
+ * Get help content as strings (for bootstrap command)
+ * These functions return the same content as the display functions but as strings
+ */
+
+// Helper function to strip ANSI escape codes (chalk formatting)
+function stripAnsi(str: string): string {
+  // eslint-disable-next-line no-control-regex
+  return str.replace(/\x1b\[[0-9;]*m/g, '');
+}
+
+// Helper function to capture console.log output from a function
+function captureConsoleOutput(fn: () => void): string {
+  const originalLog = console.log;
+  const logs: string[] = [];
+
+  console.log = (...args: any[]) => {
+    logs.push(args.join(' '));
+  };
+
+  try {
+    fn();
+  } finally {
+    console.log = originalLog;
+  }
+
+  return stripAnsi(logs.join('\n'));
+}
+
+export function getSpecsHelpContent(): string {
+  return captureConsoleOutput(() => displaySpecsHelp());
+}
+
+export function getWorkHelpContent(): string {
+  return captureConsoleOutput(() => displayWorkHelp());
+}
+
+export function getDiscoveryHelpContent(): string {
+  return captureConsoleOutput(() => displayDiscoveryHelp());
+}
+
+export function getMetricsHelpContent(): string {
+  return captureConsoleOutput(() => displayMetricsHelp());
+}
+
+export function getSetupHelpContent(): string {
+  return captureConsoleOutput(() => displaySetupHelp());
+}
+
+export function getHooksHelpContent(): string {
+  return captureConsoleOutput(() => displayHooksHelp());
 }

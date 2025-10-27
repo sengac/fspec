@@ -1,18 +1,9 @@
 export function getLoadContextSection(): string {
   return `## Step 1: Load fspec Context
 
-Load essential fspec documentation:
+The \`fspec bootstrap\` command outputs complete fspec documentation by internally calling all help section functions.
 
-\`\`\`bash
-fspec --help
-fspec help specs       # Gherkin feature file commands
-fspec help work        # Kanban workflow commands
-fspec help discovery   # Example mapping commands
-fspec help metrics     # Progress tracking
-fspec help setup       # Tag registry and configuration
-fspec help hooks       # Lifecycle hooks for workflow automation
-\`\`\`
+Below is the complete workflow documentation:
 
-Then read \`spec/CLAUDE.md\` for fspec-specific workflow details.
 `;
 }

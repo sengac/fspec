@@ -203,6 +203,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@strategy-planning` | Strategy planning and decision-making features that guide user choices |
 | `@system-reminder` | Anti-drift pattern for AI agents using contextual reminders |
 | `@template` | Template System |
+| `@template-generation` | Template and documentation generation |
 | `@traceability` | Scenario-to-test-to-implementation traceability and coverage tracking |
 | `@type-system` | Work unit type system features for categorizing work (story, task, bug) |
 | `@typescript` | TypeScript-specific features and configuration |
@@ -538,7 +539,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-10-26T11:36:21.388Z_
+_Last updated: 2025-10-27T01:46:36.680Z_
 
 **Update Command**: `fspec tag-stats`
 

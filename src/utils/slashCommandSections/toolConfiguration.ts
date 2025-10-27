@@ -15,7 +15,7 @@ No test command configured. Use Read/Glob tools to detect test framework, then r
   fspec configure-tools --test-command <cmd>
 
 If no test tools detected, search for current best practices:
-  Query: "best <platform> testing tools 2025"
+  Query: "best <platform> testing tools"
 \`\`\`
 
 ### Configuring Tools

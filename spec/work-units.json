@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-26T23:53:00.760Z"
+    "lastUpdated": "2025-10-27T01:30:46.495Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -13094,7 +13094,7 @@
       "type": "story",
       "status": "done",
       "createdAt": "2025-10-26T11:23:10.274Z",
-      "updatedAt": "2025-10-26T11:55:42.485Z",
+      "updatedAt": "2025-10-27T02:52:57.441Z",
       "description": "Add version check to fspec.md slash command that automatically detects outdated files and replaces them with latest version",
       "children": [],
       "stateHistory": [
@@ -13117,6 +13117,26 @@
         {
           "state": "done",
           "timestamp": "2025-10-26T11:55:42.486Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-27T01:21:55.146Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-27T02:52:31.627Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-27T02:52:37.347Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-27T02:52:43.856Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-27T02:52:57.441Z"
         }
       ],
       "userStory": {
@@ -13311,6 +13331,196 @@
         "benefit": "I can complete proper workflow setup without manual intervention and avoid continuing with incorrect configuration"
       },
       "estimate": 2
+    },
+    "INIT-012": {
+      "id": "INIT-012",
+      "title": "Dynamic bootstrap command for slash command template",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-27T01:21:53.487Z",
+      "updatedAt": "2025-10-27T02:45:24.124Z",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-27T01:22:04.407Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-27T01:46:45.501Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-27T01:56:24.108Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-27T01:56:28.682Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-27T01:59:15.192Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-27T02:06:07.106Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-27T02:06:46.604Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-27T02:07:31.010Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-27T02:08:41.504Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-27T02:09:25.151Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-27T02:11:45.377Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-27T02:15:08.725Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-27T02:18:30.120Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-27T02:20:59.216Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-27T02:21:38.797Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-27T02:23:58.730Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-27T02:24:46.688Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-27T02:26:53.055Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-27T02:27:27.561Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-27T02:27:32.491Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-27T02:34:11.257Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-27T02:37:03.622Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-27T02:40:19.361Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-27T02:41:58.310Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-27T02:42:37.378Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-27T02:43:15.910Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-27T02:45:24.124Z"
+        }
+      ],
+      "userStory": {
+        "role": "AI agent using fspec",
+        "action": "load documentation dynamically via bootstrap command",
+        "benefit": "slash command template stays lightweight and content is always fresh"
+      },
+      "questions": [
+        {
+          "text": "@human: Should 'fspec bootstrap' output be identical to what's currently in the template after fspec --sync-version, or can we improve/reorganize it?",
+          "selected": true,
+          "answer": "'fspec bootstrap' command executes ALL section-generating functions internally (getHeaderSection(), getAcddConceptSection(), etc.) and outputs the combined template content. Uses existing slashCommandTemplate.ts functions. AI agent runs ONE Bash command (fspec bootstrap) instead of 8 separate help commands. See attachment: bootstrap-command-behavior.md"
+        },
+        {
+          "text": "@human: Should 'fspec bootstrap' be mandatory (fail if not run), or optional (gracefully handle if skipped)?",
+          "selected": true,
+          "answer": "Bootstrap is ABSOLUTELY MANDATORY. If skipped, fspec commands MUST FAIL with clear error message instructing user to run 'fspec bootstrap' first. No fspec workflow commands should work until bootstrap completes successfully."
+        },
+        {
+          "text": "@human: Should the bootstrap command check if documentation is already loaded (avoid duplicate loading in same session)?",
+          "selected": true,
+          "answer": "No need to track or prevent duplicate runs. If user runs 'fspec bootstrap' multiple times, it just outputs documentation again. No harm done."
+        },
+        {
+          "text": "@human: What should happen to existing .claude/commands/fspec.md files when users upgrade? Auto-migrate to new format, or require manual deletion?",
+          "selected": true,
+          "answer": "No special migration logic needed. Existing --sync-version mechanism handles it automatically. When version mismatch detected, installAgentFiles() regenerates template with new 2-command format. Clean, simple, follows existing architectural pattern."
+        },
+        {
+          "text": "@human: Should 'fspec bootstrap' accept arguments (like --skip-help or --minimal) to customize what gets loaded?",
+          "selected": true,
+          "answer": "NO customization allowed. 'fspec bootstrap' MUST output everything with NO options to skip sections. No --skip-help, no --minimal, no --skip-sections flags. Bootstrap outputs complete documentation ALWAYS."
+        }
+      ],
+      "rules": [
+        "The slash command template must contain ONLY two commands: 'fspec --sync-version X.X.X' and 'fspec bootstrap'",
+        "All documentation content currently after 'fspec --sync-version' must be moved to dynamically generated output of 'fspec bootstrap'",
+        "'fspec bootstrap' must execute the same help commands that are currently hardcoded (fspec --help, fspec help specs, etc.)",
+        "Keep output identical to current template. Use existing template generation functions (with string replacement for <test-command> and <quality-check-commands> placeholders)",
+        "Bootstrap is ABSOLUTELY MANDATORY. If skipped, fspec commands MUST FAIL with clear error message instructing user to run 'fspec bootstrap' first. No fspec workflow commands should work until bootstrap completes successfully.",
+        "NO customization allowed. 'fspec bootstrap' MUST output everything with NO options to skip sections. No --skip-help, no --minimal, no --skip-sections flags. Bootstrap outputs complete documentation ALWAYS.",
+        "Bootstrap command MUST internally execute these specific help commands that were removed from the template: 'fspec --help', 'fspec help specs', 'fspec help work', 'fspec help discovery', 'fspec help metrics', 'fspec help setup', 'fspec help hooks'",
+        "Bootstrap output MUST be byte-for-byte identical to what previously appeared in the template after running all 7 help commands (fspec --help, fspec help specs, fspec help work, fspec help discovery, fspec help metrics, fspec help setup, fspec help hooks)",
+        "The get*HelpContent() functions in src/help.ts MUST return the EXACT SAME content as their corresponding display*Help() functions, but as a string instead of console.log output",
+        "getSpecsHelpContent() currently returns 6-line stub text, but MUST return the full 333 lines from displaySpecsHelp() function (lines 164-496 in help.ts)",
+        "getWorkHelpContent() currently returns 6-line stub text, but MUST return the full 308 lines from displayWorkHelp() function (lines 498-805 in help.ts)",
+        "getDiscoveryHelpContent(), getMetricsHelpContent(), getSetupHelpContent(), and getHooksHelpContent() all return stub text and MUST return their full display function content",
+        "The display*Help() functions use console.log() and chalk for colored output - the get*HelpContent() functions MUST strip chalk formatting and return plain text strings",
+        "The get*HelpContent() functions MUST NOT duplicate code - they should call the existing display*Help() functions, capture the console.log output, strip chalk formatting, and return the plain text string",
+        "Use console interception or mock console.log to capture output from display*Help() functions, then strip ANSI escape codes (chalk formatting) using a utility function or regex",
+        "BEFORE the help command outputs, bootstrap MUST display an explainer section that tells the AI agent: (1) what the following content is (output from fspec help commands), (2) WHY this information is critical (complete command reference for all fspec features), (3) HOW to access specific sections again (run individual help commands like 'fspec help specs', 'fspec help work', etc. - NOT 'fspec bootstrap')",
+        "The explainer MUST appear immediately after the header sections (Step 1 and Step 1.5) and BEFORE the help command outputs (Step 2), so AI agents see it before reading the command documentation"
+      ],
+      "attachments": [
+        "spec/attachments/INIT-012/bootstrap-command-behavior.md"
+      ],
+      "examples": [
+        "User runs 'fspec board' without running 'fspec bootstrap' first, command exits with error: 'ERROR: fspec bootstrap must be run first. Run: fspec bootstrap'",
+        "User runs 'fspec --sync-version 0.6.0' then 'fspec bootstrap' successfully, then runs 'fspec board' - command executes normally",
+        "AI runs 'fspec bootstrap', command internally calls getHeaderSection(), getAcddConceptSection(), etc., combines output, applies string replacement, prints to stdout",
+        "AI runs 'fspec bootstrap' which internally executes: getHelpOutput(), getSpecsHelpOutput(), getWorkHelpOutput(), getDiscoveryHelpOutput(), getMetricsHelpOutput(), getSetupHelpOutput(), getHooksHelpOutput(), then combines and outputs all results",
+        "When AI runs 'fspec bootstrap', the output MUST include complete 'fspec --help' content showing all command groups (specs, work, discovery, metrics, setup, hooks)",
+        "When AI runs 'fspec bootstrap', the output MUST include complete 'fspec help specs' content with ALL commands: create-feature, add-scenario, add-step, validate, format, link-coverage, add-tag-to-feature, etc.",
+        "When AI runs 'fspec bootstrap', the output MUST include complete 'fspec help work' content with ALL commands: create-story, create-bug, create-task, update-work-unit-status, board, checkpoint, restore-checkpoint, list-checkpoints, cleanup-checkpoints, etc.",
+        "Currently 'fspec bootstrap' outputs stub text like 'Commands for creating and managing Gherkin feature files: create-feature, add-scenario, add-step, validate, format, and more.' This is WRONG - it must output the FULL command documentation",
+        "getSpecsHelpContent() calls displaySpecsHelp() internally, captures all console.log output into a string array, joins it with newlines, strips chalk ANSI codes, returns plain text",
+        "The explainer section should say something like: 'The following sections contain complete fspec command documentation. This is the output from running: fspec --help, fspec help specs, fspec help work, fspec help discovery, fspec help metrics, fspec help setup, fspec help hooks. You can run these commands individually at any time to refresh specific sections.'"
+      ],
+      "assumptions": [
+        "No need to track or prevent duplicate runs. If user runs 'fspec bootstrap' multiple times, it just outputs documentation again. No harm done.",
+        "No special migration logic needed. Existing --sync-version mechanism handles it automatically. When version mismatch detected, installAgentFiles() regenerates template with new 2-command format. Clean, simple, follows existing architectural pattern."
+      ],
+      "estimate": 5
     }
   },
   "states": {
@@ -13557,9 +13767,10 @@
       "REV-004",
       "REV-005",
       "CLEAN-001",
-      "INIT-011",
       "CONFIG-002",
-      "CONFIG-003"
+      "CONFIG-003",
+      "INIT-012",
+      "INIT-011"
     ],
     "blocked": []
   }

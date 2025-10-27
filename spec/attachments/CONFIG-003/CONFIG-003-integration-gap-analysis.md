@@ -91,7 +91,7 @@ The conversational tool detection feature (CONFIG-002) is **fully implemented an
      fspec configure-tools --test-command <cmd>
 
    If no test tools detected, search for current best practices:
-     Query: "best <platform> testing tools 2025"
+     Query: "best <platform> testing tools"
    </system-reminder>
 
 4. AI sees reminder, uses Read/Glob to detect framework:
@@ -150,6 +150,7 @@ The conversational tool detection feature (CONFIG-002) is **fully implemented an
 ### File: src/commands/update-work-unit-status.ts
 
 **Current State:**
+
 - No imports from `configure-tools.ts`
 - No calls to check functions
 - No system-reminders about tool configuration
@@ -175,6 +176,7 @@ if (newStatus === 'validating') {
 ```
 
 **Testing Requirements:**
+
 - Add integration test verifying system-reminders emitted
 - Test both "config missing" and "config exists" scenarios
 - Verify formatAgentOutput() wraps in correct tags for Claude
@@ -187,24 +189,27 @@ if (newStatus === 'validating') {
 
 **Current Placeholders Found:**
 
-| Placeholder | Line Numbers | Context |
-|-------------|--------------|---------|
-| `<test-command>` | 525, 532, 1126, 1235, 2011, 2022 | ACDD workflow examples |
+| Placeholder                | Line Numbers                                   | Context                         |
+| -------------------------- | ---------------------------------------------- | ------------------------------- |
+| `<test-command>`           | 525, 532, 1126, 1235, 2011, 2022               | ACDD workflow examples          |
 | `<quality-check-commands>` | 1126, 1236, 1589, 1619, 1658, 1665, 1724, 1734 | Virtual hooks, validation steps |
 
 **Replacement Logic Exists:**
+
 - Location: `src/utils/templateGenerator.ts:153-185`
 - Function: `replaceToolPlaceholders(content, config)`
 - Reads: `spec/fspec-config.json` for `tools.test.command` and `tools.qualityCheck.commands`
 - Replaces: All instances of placeholders with configured commands
 
 **Integration Status:**
+
 - ✅ Logic exists
 - ❓ Called during `fspec init`?
 - ❓ Updates spec/CLAUDE.md on the fly?
 - ❌ Current spec/CLAUDE.md still has placeholders (evidence it's not working)
 
 **Verification Needed:**
+
 1. Does `fspec init` call `replaceToolPlaceholders()`?
 2. Should it update spec/CLAUDE.md after `fspec configure-tools`?
 3. Or should placeholders remain for projects without tools configured?
@@ -335,20 +340,24 @@ rm -f spec/fspec-config.json
 ## Related Files
 
 ### Implementation:
+
 - `src/commands/configure-tools.ts` (check functions)
 - `src/commands/update-work-unit-status.ts` (integration point)
 - `src/utils/templateGenerator.ts` (placeholder replacement)
 - `src/utils/agentRuntimeConfig.ts` (formatAgentOutput)
 
 ### Tests:
+
 - `src/commands/__tests__/configure-tools.test.ts` (unit tests)
 - Need: Integration test in `update-work-unit-status.test.ts`
 
 ### Documentation:
+
 - `spec/features/conversational-test-and-quality-check-tool-detection.feature`
 - `spec/CLAUDE.md` (placeholder replacement target)
 
 ### Coverage:
+
 - `spec/features/conversational-test-and-quality-check-tool-detection.feature.coverage`
 
 ---

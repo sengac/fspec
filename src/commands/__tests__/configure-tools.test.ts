@@ -135,12 +135,12 @@ describe('Feature: Conversational Test and Quality Check Tool Detection', () => 
       const { checkTestCommand } = await import('../configure-tools.js');
       const result = await checkTestCommand(testDir);
 
-      // Then system-reminder should include search query: 'best <platform> testing tools 2025'
-      expect(result.message).toMatch(/best .* testing tools 2025/);
+      // Then system-reminder should include search query: 'best <platform> testing tools'
+      expect(result.message).toMatch(/best .* testing tools/);
 
       // And platform placeholder should be filled based on project detection
       // (This will be implemented to detect platform from project files)
-      expect(result.message).toContain('testing tools 2025');
+      expect(result.message).toContain('testing tools');
     });
   });
 

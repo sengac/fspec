@@ -714,6 +714,10 @@
           "description": "Template System"
         },
         {
+          "name": "@template-generation",
+          "description": "Template and documentation generation"
+        },
+        {
           "name": "@traceability",
           "description": "Scenario-to-test-to-implementation traceability and coverage tracking"
         },
@@ -1186,7 +1190,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-10-26T11:36:21.388Z",
+    "lastUpdated": "2025-10-27T01:46:36.680Z",
     "phaseStats": [
       {
         "phase": "Phase 1",
