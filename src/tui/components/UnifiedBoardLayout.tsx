@@ -256,48 +256,76 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
     };
   }, [lastChangedWorkUnit]);
 
-  // Automatic scrolling: adjust scroll offset to keep selected item visible (BUG-045)
+  // Automatic scrolling: adjust scroll offset to keep selected item visible (BOARD-012)
   // This implements the navigateTo pattern from cage VirtualList
   useEffect(() => {
     const currentColumn = STATES[focusedColumnIndex];
     const columnUnits = groupedWorkUnits[focusedColumnIndex].units;
 
+    // Skip if no items in column
+    if (columnUnits.length === 0) return;
+
     // Calculate new scroll offset to keep selected item visible
     setScrollOffsets(prev => {
       const currentOffset = prev[currentColumn] || 0;
 
-      // Calculate how many arrows will be visible (arrows consume viewport rows)
+      // Simple approach: calculate what offset would show the selected item
+      // Determine if we'll have arrows at this offset
       const willShowUpArrow = currentOffset > 0;
       const willShowDownArrow = currentOffset + VIEWPORT_HEIGHT < columnUnits.length;
-      const arrowRowsConsumed = (willShowUpArrow ? 1 : 0) + (willShowDownArrow ? 1 : 0);
+      const arrowsConsumed = (willShowUpArrow ? 1 : 0) + (willShowDownArrow ? 1 : 0);
+      const effectiveHeight = VIEWPORT_HEIGHT - arrowsConsumed;
 
-      // Actual visible work items = VIEWPORT_HEIGHT - arrows
-      const effectiveVisibleHeight = VIEWPORT_HEIGHT - arrowRowsConsumed;
+      // Calculate which items are visible with current offset
+      const firstVisible = currentOffset + (willShowUpArrow ? 1 : 0);
+      const lastVisible = firstVisible + effectiveHeight - 1;
 
-      // If selected index is above visible area, scroll up
-      // Account for up arrow consuming row 0
-      const firstVisibleIndex = currentOffset + (willShowUpArrow ? 1 : 0);
-      if (selectedWorkUnitIndex < firstVisibleIndex) {
-        // Scroll up to show selected item at top (accounting for up arrow)
-        return {
-          ...prev,
-          [currentColumn]: Math.max(0, selectedWorkUnitIndex - 1),
-        };
+      // Check if selected item is visible
+      if (selectedWorkUnitIndex >= firstVisible && selectedWorkUnitIndex <= lastVisible) {
+        // Already visible, no scroll needed
+        return prev;
       }
 
-      // If selected index is below visible area, scroll down
-      // Account for down arrow consuming last row
-      const lastVisibleIndex = firstVisibleIndex + effectiveVisibleHeight - 1;
-      if (selectedWorkUnitIndex > lastVisibleIndex) {
-        // Scroll down to show selected item at bottom (accounting for down arrow)
-        return {
-          ...prev,
-          [currentColumn]: selectedWorkUnitIndex - VIEWPORT_HEIGHT + 2,
-        };
+      // Need to scroll - calculate new offset
+      let newOffset;
+
+      if (selectedWorkUnitIndex < firstVisible) {
+        // Scroll up: position selected item near top
+        // If we'll have an up arrow, offset = selectedIndex - 1, else offset = selectedIndex
+        newOffset = Math.max(0, selectedWorkUnitIndex - 1);
+
+        // But if that would put us at offset 0, don't subtract 1
+        if (selectedWorkUnitIndex === 0) {
+          newOffset = 0;
+        }
+      } else {
+        // Scroll down: position selected item near bottom
+        // Work backwards from selected item
+        // We want: offset + (upArrow ? 1 : 0) + effectiveHeight - 1 = selectedWorkUnitIndex
+        // So: offset = selectedWorkUnitIndex - effectiveHeight + 1 - (upArrow ? 1 : 0)
+
+        // Assume we'll have both arrows when scrolled down
+        const estimatedEffectiveHeight = VIEWPORT_HEIGHT - 2; // Assume both arrows
+        newOffset = selectedWorkUnitIndex - estimatedEffectiveHeight + 1;
+
+        // But recalculate to be sure
+        const testUpArrow = newOffset > 0;
+        const testDownArrow = newOffset + VIEWPORT_HEIGHT < columnUnits.length;
+        const testArrows = (testUpArrow ? 1 : 0) + (testDownArrow ? 1 : 0);
+        const testEffectiveHeight = VIEWPORT_HEIGHT - testArrows;
+
+        // Adjust if needed
+        newOffset = selectedWorkUnitIndex - testEffectiveHeight + (testUpArrow ? 0 : 1);
       }
 
-      // Selected item is already visible, no scroll needed
-      return prev;
+      // Clamp to valid range
+      const maxOffset = Math.max(0, columnUnits.length - VIEWPORT_HEIGHT);
+      newOffset = Math.max(0, Math.min(newOffset, maxOffset));
+
+      return {
+        ...prev,
+        [currentColumn]: newOffset,
+      };
     });
   }, [selectedWorkUnitIndex, focusedColumnIndex, groupedWorkUnits]);
 

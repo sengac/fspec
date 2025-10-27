@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-27T14:40:49.966Z"
+    "lastUpdated": "2025-10-27T21:47:31.780Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -14796,7 +14796,7 @@
       "type": "bug",
       "status": "done",
       "createdAt": "2025-10-27T12:13:55.515Z",
-      "updatedAt": "2025-10-27T12:44:23.419Z",
+      "updatedAt": "2025-10-27T21:46:37.078Z",
       "description": "Work items in a column should scroll like the virtual lists in ~/projects/cage project, but currently they don't scroll at all. Need to implement scrollable list functionality similar to the cage project's virtual list implementation.",
       "children": [],
       "stateHistory": [
@@ -14859,6 +14859,30 @@
         {
           "state": "done",
           "timestamp": "2025-10-27T12:44:23.419Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-27T21:43:55.395Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-27T21:44:23.525Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-27T21:46:27.634Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-27T21:46:34.888Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-27T21:46:35.998Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-27T21:46:37.078Z"
         }
       ],
       "userStory": {
@@ -14875,7 +14899,9 @@
         "Preserve scroll position per column. Each column maintains its own scroll offset state.",
         "Yes, wrap-around navigation should work (down on last item goes to first, up on first item goes to last).",
         "Scroll indicators (arrows) replace work items in viewport rows, reducing actual visible item count",
-        "Visible work item count = VIEWPORT_HEIGHT - (number of arrows shown: 0, 1, or 2)"
+        "Visible work item count = VIEWPORT_HEIGHT - (number of arrows shown: 0, 1, or 2)",
+        "Tests should verify rendering at different scroll positions. The component should calculate scroll offset based on selectedWorkUnitIndex prop and render accordingly. Tests pass selectedWorkUnitIndex and verify the correct items are visible.",
+        "Tests should verify rendering logic. Component receives selectedWorkUnitIndex as prop and calculates scroll offset to keep that item visible. Tests pass different selectedWorkUnitIndex values and verify correct items are visible in output."
       ],
       "examples": [
         "User presses down arrow 11 times in a column with 20 items (viewport shows 10). Selection moves to item 11, viewport scrolls to show items 2-11 with selection visible.",
@@ -14889,7 +14915,7 @@
         {
           "text": "@human: Should vim-style navigation (j/k keys) also trigger automatic scrolling, matching the cage VirtualList pattern?",
           "selected": true,
-          "answer": "No, only arrow keys should trigger automatic scrolling. Do not use j/k vim-style navigation."
+          "answer": "Tests should verify rendering at different scroll positions. The component should calculate scroll offset based on selectedWorkUnitIndex prop and render accordingly. Tests pass selectedWorkUnitIndex and verify the correct items are visible."
         },
         {
           "text": "@human: When switching columns with left/right arrows, should we reset scroll offset to 0 for the new column, or preserve scroll position per column?",
@@ -14900,6 +14926,11 @@
           "text": "@human: Should wrap-around navigation work (pressing down on last item goes to first item)?",
           "selected": true,
           "answer": "Yes, wrap-around navigation should work (down on last item goes to first, up on first item goes to last)."
+        },
+        {
+          "text": "@human: The tests render with selectedWorkUnitIndex but don't simulate arrow key presses. Should tests actually press arrow keys to trigger scrolling, or just verify rendering at different scroll positions?",
+          "selected": true,
+          "answer": "Tests should verify rendering logic. Component receives selectedWorkUnitIndex as prop and calculates scroll offset to keep that item visible. Tests pass different selectedWorkUnitIndex values and verify correct items are visible in output."
         }
       ],
       "estimate": 5
@@ -15044,6 +15075,60 @@
         "benefit": "tests use test data not project data"
       },
       "estimate": 3
+    },
+    "BOARD-012": {
+      "id": "BOARD-012",
+      "title": "Column scrolling tests fail - tests don't trigger scrolling logic",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-10-27T21:46:45.776Z",
+      "updatedAt": "2025-10-27T22:04:31.655Z",
+      "description": "Tests in BoardView-column-scrolling.test.tsx don't actually simulate arrow key presses to trigger scrolling. They just render with selectedWorkUnitIndex but never call stdin.write() to press keys. Component needs to calculate scroll offset based on selectedWorkUnitIndex prop and auto-scroll viewport.",
+      "epic": "interactive-tui-foundation",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-27T21:46:51.477Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-27T21:50:03.890Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-27T21:50:11.238Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-27T22:04:03.943Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-27T22:04:31.655Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer running tests",
+        "action": "verify BoardView scrolling behavior",
+        "benefit": "I can confirm viewport auto-scrolls to keep selected items visible"
+      },
+      "rules": [
+        "Component must calculate scroll offset based on selectedWorkUnitIndex prop to keep selected item visible",
+        "When selectedWorkUnitIndex is beyond visible viewport, viewport must scroll to show that item",
+        "Scroll indicators (↑ ↓) show when there are items above/below visible viewport",
+        "Scroll indicators consume viewport rows: visible items = VIEWPORT_HEIGHT - number_of_arrows",
+        "Each column maintains its own scroll offset when switching between columns"
+      ],
+      "examples": [
+        "Column has 20 items, viewport height 10, selectedWorkUnitIndex=10 (item 11): viewport scrolls to show items 2-11 with item 11 visible",
+        "Column has 20 items, viewport height 10, selectedWorkUnitIndex=14 (item 15): viewport scrolls down, item 15 visible, items 1-5 scrolled out",
+        "Column has 5 items, viewport height 10: no scroll indicators shown, all items visible",
+        "Column has 20 items, selectedWorkUnitIndex=15: up arrow (↑) shown at top, down arrow (↓) shown at bottom",
+        "Column has 15 items, viewport height 10, both arrows visible: only 8 items visible (10 - 2 arrows = 8)",
+        "User at item 15 in column A, switches to column B, then back to column A: scroll position preserved, still at item 15"
+      ],
+      "estimate": 5
     }
   },
   "states": {
@@ -15304,10 +15389,11 @@
       "BOARD-006",
       "BOARD-007",
       "BOARD-008",
-      "BUG-045",
       "BOARD-009",
       "BOARD-011",
-      "BUG-046"
+      "BUG-046",
+      "BUG-045",
+      "BOARD-012"
     ],
     "blocked": []
   }
