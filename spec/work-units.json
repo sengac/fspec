@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-27T03:17:21.218Z"
+    "lastUpdated": "2025-10-27T04:17:08.578Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -8907,10 +8907,13 @@
       "type": "story",
       "status": "backlog",
       "createdAt": "2025-10-21T05:25:48.725Z",
-      "updatedAt": "2025-10-21T05:25:48.725Z",
+      "updatedAt": "2025-10-27T04:17:08.578Z",
       "description": "Create an interactive terminal interface for fspec board that allows keyboard navigation across columns and work units. Press Enter to view full work unit details including description, attachments, example mapping data, dependencies, metrics, and more. Support vim-style navigation (hjkl), arrow keys, tab to switch columns, and quick actions (e.g., 's' for status change, 'e' to edit, 'a' for attachments).",
       "epic": "interactive-cli",
-      "children": []
+      "children": [],
+      "attachments": [
+        "spec/attachments/BOARD-002/interactive-kanban-board-design.md"
+      ]
     },
     "CLEAN-001": {
       "id": "CLEAN-001",
@@ -9600,16 +9603,6 @@
         "benefit": "I can trust test results without intermittent failures"
       },
       "estimate": 1
-    },
-    "INIT-007": {
-      "id": "INIT-007",
-      "title": "Agent-specific activation instructions in success message",
-      "type": "story",
-      "status": "backlog",
-      "createdAt": "2025-10-21T13:27:47.865Z",
-      "updatedAt": "2025-10-21T13:27:47.865Z",
-      "description": "After running 'fspec init' in interactive mode, the success message says 'Run /fspec in your AI agent to activate' but not all agents use the /command format for slash commands. Need to display agent-specific instructions based on selected agent.\n\nResearch shows:\n- Claude Code: /fspec (nested slash commands)\n- Cursor: /fspec (flat slash commands)\n- Gemini CLI, Qwen Code: Use TOML format, may not have /command syntax\n- Other agents: Need to verify slash command syntax\n\nAcceptance Criteria:\n- Success message shows agent-specific activation instruction\n- Instructions accurate for each agent's slash command format\n- Uses research from INIT-004 attachments",
-      "children": []
     },
     "INIT-008": {
       "id": "INIT-008",
@@ -13614,6 +13607,31 @@
         }
       ],
       "estimate": 5
+    },
+    "ITF-001": {
+      "id": "ITF-001",
+      "title": "Scaffold TUI infrastructure with Ink and cage components",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-10-27T04:16:56.752Z",
+      "updatedAt": "2025-10-27T04:17:08.080Z",
+      "description": "Install Ink, @inkjs/ui, Zustand dependencies. Copy cage's shared components (VirtualList, FullScreenLayout, InputContext, useSafeInput). Create ViewManager, App.tsx, fspecStore. Add TUI command. Make 'fspec' with no args launch TUI.",
+      "epic": "interactive-tui-foundation",
+      "children": [],
+      "attachments": [
+        "spec/attachments/ITF-001/tui-foundation-architecture.md"
+      ]
+    },
+    "ITF-002": {
+      "id": "ITF-002",
+      "title": "Zustand state management setup for fspec data",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-10-27T04:16:57.254Z",
+      "updatedAt": "2025-10-27T04:16:57.254Z",
+      "description": "Create fspecStore with work units, epics, features, tags state. Add actions: loadWorkUnits, updateWorkUnit, createWorkUnit, deleteWorkUnit. Integrate with existing JSON file operations. Handle real-time updates with file watchers or polling.",
+      "epic": "interactive-tui-foundation",
+      "children": []
     }
   },
   "states": {
@@ -13622,7 +13640,6 @@
       "RES-004",
       "RES-005",
       "RES-001",
-      "INIT-007",
       "BOARD-002",
       "BOARD-003",
       "TECH-001",
@@ -13643,7 +13660,9 @@
       "AGENT-015",
       "AGENT-016",
       "AGENT-017",
-      "FEAT-018"
+      "FEAT-018",
+      "ITF-001",
+      "ITF-002"
     ],
     "specifying": [
       "GIT-004",

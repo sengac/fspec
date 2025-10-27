@@ -199,6 +199,16 @@
         "RES-005",
         "RES-006"
       ]
+    },
+    "interactive-tui-foundation": {
+      "id": "interactive-tui-foundation",
+      "title": "Interactive TUI Foundation",
+      "createdAt": "2025-10-27T04:16:46.157Z",
+      "description": "Scaffold core TUI infrastructure with Ink, Zustand, and cage's reusable components",
+      "workUnits": [
+        "ITF-001",
+        "ITF-002"
+      ]
     }
   }
 }
