@@ -14730,7 +14730,7 @@
       "type": "bug",
       "status": "done",
       "createdAt": "2025-10-27T12:13:55.515Z",
-      "updatedAt": "2025-10-27T12:31:56.470Z",
+      "updatedAt": "2025-10-27T12:44:23.419Z",
       "description": "Work items in a column should scroll like the virtual lists in ~/projects/cage project, but currently they don't scroll at all. Need to implement scrollable list functionality similar to the cage project's virtual list implementation.",
       "children": [],
       "stateHistory": [
@@ -14773,6 +14773,26 @@
         {
           "state": "done",
           "timestamp": "2025-10-27T12:31:56.470Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-27T12:36:07.963Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-27T12:38:34.207Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-27T12:40:09.876Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-27T12:41:07.048Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-27T12:44:23.419Z"
         }
       ],
       "userStory": {

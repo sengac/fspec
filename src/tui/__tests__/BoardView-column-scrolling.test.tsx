@@ -324,4 +324,44 @@ describe('Feature: TUI Board Column Scrolling', () => {
       expect(outputAfterReturn).toEqual(outputBeforeSwitch);
     });
   });
+
+  describe('Scenario: Verify j/k vim-style keys are NOT bound (regression test)', () => {
+    it('should only respond to arrow keys, not j/k keys', () => {
+      // @step Given I am viewing a column with 10 work items
+      const workUnits = createMockWorkUnits(10, 'backlog');
+      const mockColumnChange = vi.fn();
+      const mockWorkUnitChange = vi.fn();
+      const mockEnter = vi.fn();
+
+      // @step And I am at item 1
+      const { stdin } = render(
+        <UnifiedBoardLayout
+          workUnits={workUnits}
+          focusedColumnIndex={0}
+          selectedWorkUnitIndex={0}
+          onColumnChange={mockColumnChange}
+          onWorkUnitChange={mockWorkUnitChange}
+          onEnter={mockEnter}
+        />
+      );
+
+      // @step When I press 'j' key
+      stdin.write('j');
+
+      // @step Then the work unit selection should NOT change
+      expect(mockWorkUnitChange).not.toHaveBeenCalled();
+
+      // @step When I press 'k' key
+      stdin.write('k');
+
+      // @step Then the work unit selection should NOT change
+      expect(mockWorkUnitChange).not.toHaveBeenCalled();
+
+      // @step But when I press down arrow
+      stdin.write('\x1B[B'); // Down arrow escape sequence
+
+      // @step Then the work unit selection SHOULD change
+      expect(mockWorkUnitChange).toHaveBeenCalledWith(1);
+    });
+  });
 });

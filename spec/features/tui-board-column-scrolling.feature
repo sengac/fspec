@@ -30,13 +30,13 @@ Feature: Work items in columns don't scroll
   #
   # QUESTIONS (ANSWERED):
   #   Q: Should vim-style navigation (j/k keys) also trigger automatic scrolling, matching the cage VirtualList pattern?
-  #   A: true
+  #   A: No, only arrow keys should be used. No j/k vim-style navigation.
   #
   #   Q: When switching columns with left/right arrows, should we reset scroll offset to 0 for the new column, or preserve scroll position per column?
-  #   A: true
+  #   A: Preserve scroll position per column. Each column maintains its own scroll offset state.
   #
   #   Q: Should wrap-around navigation work (pressing down on last item goes to first item)?
-  #   A: true
+  #   A: Yes, wrap-around navigation should work (down on last item goes to first, up on first item goes to last).
   #
   # ========================================
   Background: User Story

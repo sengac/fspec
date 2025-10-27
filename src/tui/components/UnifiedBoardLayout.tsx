@@ -436,7 +436,7 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
   rows.push(buildBorderRow(colWidth, '├', '┴', '┤', 'bottom'));
 
   // Footer row (centered with diamond separators)
-  rows.push('│' + centerText('← → Columns ◆ ↑↓ jk Work Units ◆ ↵ Details ◆ ESC Back', totalWidth) + '│');
+  rows.push('│' + centerText('← → Columns ◆ ↑↓ Work Units ◆ ↵ Details ◆ ESC Back', totalWidth) + '│');
 
   // Bottom border (no columns below - use plain separator)
   rows.push(buildBorderRow(colWidth, '└', '─', '┘', 'plain'));
