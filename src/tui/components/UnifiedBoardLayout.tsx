@@ -59,9 +59,22 @@ const fitToWidth = (text: string, width: number): string => {
   return text.padEnd(width, ' ');
 };
 
-// Helper: Build border row
-const buildBorderRow = (colWidth: number, left: string, mid: string, right: string): string => {
-  return left + STATES.map(() => '─'.repeat(colWidth)).join(mid) + right;
+// Helper: Build border row with separator type
+const buildBorderRow = (
+  colWidth: number,
+  left: string,
+  mid: string,
+  right: string,
+  separatorType: 'plain' | 'top' | 'cross' | 'bottom' = 'cross'
+): string => {
+  const separatorChar = {
+    plain: '─',
+    top: '┬',
+    cross: '┼',
+    bottom: '┴',
+  }[separatorType];
+
+  return left + STATES.map(() => '─'.repeat(colWidth)).join(separatorChar) + right;
 };
 
 export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
@@ -151,8 +164,8 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
   // Build table rows
   const rows: string[] = [];
 
-  // Top border
-  rows.push(buildBorderRow(colWidth, '┌', '┬', '┐'));
+  // Top border (no columns above - use plain separator)
+  rows.push(buildBorderRow(colWidth, '┌', '─', '┐', 'plain'));
 
   // Git Stashes panel (integrated as table row)
   const totalWidth = colWidth * STATES.length + (STATES.length - 1);
@@ -180,8 +193,8 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
     rows.push('│' + fitToWidth('No stashes', totalWidth) + '│');
   }
 
-  // Separator after Git Stashes
-  rows.push(buildBorderRow(colWidth, '├', '┼', '┤'));
+  // Separator after Git Stashes (plain - no columns above or below)
+  rows.push(buildBorderRow(colWidth, '├', '─', '┤', 'plain'));
 
   // Changed Files panel (integrated as table row)
   const fileCount = `${stagedFiles.length} staged, ${unstagedFiles.length} unstaged`;
@@ -198,8 +211,8 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
     rows.push('│' + fitToWidth(filesDisplay, totalWidth) + '│');
   }
 
-  // Separator after Changed Files
-  rows.push(buildBorderRow(colWidth, '├', '┼', '┤'));
+  // Separator after Changed Files (top - no columns above, columns start below)
+  rows.push(buildBorderRow(colWidth, '├', '┬', '┤', 'top'));
 
   // Column headers (with focus highlighting using chalk)
   rows.push('│' + STATES.map((state, idx) => {
@@ -248,14 +261,14 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
     rows.push('│' + cells.join('│') + '│');
   }
 
-  // Footer separator
-  rows.push(buildBorderRow(colWidth, '├', '┼', '┤'));
+  // Footer separator (bottom - columns end above, no columns below)
+  rows.push(buildBorderRow(colWidth, '├', '┴', '┤', 'bottom'));
 
   // Footer row
   rows.push('│' + fitToWidth('← → Columns | ↑↓ jk Work Units | ↵ Details | ESC Back', totalWidth) + '│');
 
-  // Bottom border
-  rows.push(buildBorderRow(colWidth, '└', '┴', '┘'));
+  // Bottom border (no columns below - use plain separator)
+  rows.push(buildBorderRow(colWidth, '└', '─', '┘', 'plain'));
 
   return (
     <Box flexDirection="column" width={terminalWidth}>
