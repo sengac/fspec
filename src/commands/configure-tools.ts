@@ -195,7 +195,7 @@ Use Read/Glob tools to detect test frameworks and quality check tools, then run:
 export async function registerConfigureToolsCommand(
   program: Command
 ): Promise<void> {
-  program
+  const cmd = program
     .command('configure-tools')
     .description(
       'Configure test and quality check commands for platform-agnostic workflow'
@@ -229,4 +229,18 @@ export async function registerConfigureToolsCommand(
         }
       }
     );
+
+  // Add comprehensive help
+  cmd.on('--help', () => {
+    Promise.all([
+      import('./configure-tools-help'),
+      import('../utils/help-formatter'),
+    ])
+      .then(([helpModule, formatterModule]) => {
+        console.log(formatterModule.formatCommandHelp(helpModule.default));
+      })
+      .catch(() => {
+        // Graceful fallback if help not available
+      });
+  });
 }

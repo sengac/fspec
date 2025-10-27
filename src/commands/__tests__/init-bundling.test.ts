@@ -7,7 +7,7 @@
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { join } from 'path';
-import { mkdtemp, rm, readFile, readdir } from 'fs/promises';
+import { mkdtemp, rm, readFile } from 'fs/promises';
 import { tmpdir } from 'os';
 import { installAgents } from '../init';
 import { getSlashCommandTemplate } from '../../utils/slashCommandTemplate';
@@ -94,9 +94,10 @@ describe('Feature: Wire up multi-agent support to fspec init command', () => {
         // When: I call getSlashCommandTemplate() in any directory
         const template = getSlashCommandTemplate();
 
-        // Then: Template is loaded from embedded TypeScript modules
-        expect(template.length).toBeGreaterThan(1000);
-        expect(template).toContain('fspec');
+        // Then: Template is minimal (header + two commands only)
+        expect(template.length).toBeLessThan(700); // Minimal template with clear instructions
+        expect(template).toContain('fspec --sync-version');
+        expect(template).toContain('fspec bootstrap');
 
         // And: fspec init works
         await expect(
@@ -111,9 +112,9 @@ describe('Feature: Wire up multi-agent support to fspec init command', () => {
       // When: I call getSlashCommandTemplate()
       const template = getSlashCommandTemplate();
 
-      // Then: Template contains complete content from embedded modules
+      // Then: Template contains minimal header content from embedded modules
       const lineCount = template.split('\n').length;
-      expect(lineCount).toBeGreaterThan(100);
+      expect(lineCount).toBeLessThanOrEqual(25); // Minimal template with clear instructions
     });
 
     it('should generate consistent templates for all agents', async () => {
@@ -126,9 +127,9 @@ describe('Feature: Wire up multi-agent support to fspec init command', () => {
       const claudeCmdContent = await readFile(claudeSlashCmd, 'utf-8');
       const cursorCmdContent = await readFile(cursorSlashCmd, 'utf-8');
 
-      // Then: Both contain complete embedded template content
-      expect(claudeCmdContent.length).toBeGreaterThan(1000);
-      expect(cursorCmdContent.length).toBeGreaterThan(1000);
+      // Then: Both contain minimal embedded template content (header + two commands)
+      expect(claudeCmdContent.length).toBeLessThan(700);
+      expect(cursorCmdContent.length).toBeLessThan(700);
 
       expect(claudeCmdContent).toContain('fspec');
       expect(cursorCmdContent).toContain('fspec');
