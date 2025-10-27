@@ -197,17 +197,15 @@ describe('Feature: Fix TUI Kanban column layout to match table style', () => {
       await new Promise(resolve => setTimeout(resolve, 100));
 
       // @step When I view the work unit in the column
-      // @step Then I should see "📖 AUTH-001 3pt 🟡" format (may be truncated at small widths)
-      // @step And the type icon should indicate story type
+      // @step Then I should see "AUTH-001 3pt 🟡" format (may be truncated at small widths)
       // @step And the priority icon should reflect the estimate
       const frame = lastFrame();
 
-      // Should have work unit with format: typeIcon ID Xpt priorityIcon
+      // Should have work unit with format: ID Xpt priorityIcon (BOARD-008: emoji icons removed)
       // Note: At small terminal widths text will be truncated
-      // At 80 cols (test default), only type icon and partial ID fit
-      expect(frame).toMatch(/📖|🐛|⚙️/); // Type icon
-      expect(frame).toMatch(/[A-Z]+-[0-9]+/); // Work unit ID
-      // Priority icons may be truncated at small widths - that's expected responsive behavior
+      // At 80 cols (test default), ID and partial estimate fit
+      expect(frame).toMatch(/[A-Z]+-[0-9]+/); // Work unit ID pattern present
+      // Priority icons and estimate text may be truncated at small widths - that's expected responsive behavior
     });
   });
 
