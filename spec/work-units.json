@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-27T22:35:53.627Z"
+    "lastUpdated": "2025-10-27T23:13:53.884Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -15186,9 +15186,9 @@
       "id": "BOARD-014",
       "title": "Stretch board content to fill available viewport height",
       "type": "story",
-      "status": "done",
+      "status": "specifying",
       "createdAt": "2025-10-27T22:35:08.114Z",
-      "updatedAt": "2025-10-27T23:04:57.476Z",
+      "updatedAt": "2025-10-27T23:13:35.550Z",
       "description": "Make the work unit table expand vertically to use all available space within FullScreenWrapper. Currently the table has a fixed height and doesn't stretch to fill the terminal.",
       "children": [],
       "stateHistory": [
@@ -15243,6 +15243,14 @@
         {
           "state": "done",
           "timestamp": "2025-10-27T23:04:57.476Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-27T23:05:46.204Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-27T23:13:35.550Z"
         }
       ],
       "userStory": {
@@ -15269,6 +15277,57 @@
           "selected": true,
           "answer": "Option A: Restructure to use Ink's Box/flexGrow. Separate header panels (Git Stashes, Changed Files, Work Unit Details) from the work unit table. Use <Box flexGrow={1}> for the columns area to automatically fill available vertical space. This aligns with React/Ink best practices and eliminates manual row calculations."
         }
+      ]
+    },
+    "BOARD-015": {
+      "id": "BOARD-015",
+      "title": "Fix work unit details panel to be static 4 lines high",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-27T23:13:42.715Z",
+      "updatedAt": "2025-10-27T23:26:22.707Z",
+      "description": "The work unit details panel was dynamically sized, causing the third line (metadata) to disappear. Make it static 4 lines: title, description, metadata, empty spacing.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-27T23:13:47.864Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-27T23:17:16.407Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-27T23:21:12.308Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-27T23:24:34.686Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-27T23:26:22.707Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer viewing the TUI Kanban board",
+        "action": "see work unit details in a consistent layout",
+        "benefit": "the metadata line doesn't disappear when viewport calculations change"
+      },
+      "rules": [
+        "Work Unit Details panel must always be exactly 4 content lines high (plus 1 header line)",
+        "Line 1 must show: work unit ID and title",
+        "Line 2 must show: first line of description (or empty if no description)",
+        "Line 3 must show: metadata (Epic, Estimate, Status separated by |)",
+        "Line 4 must be: empty spacing line",
+        "Panel height must not change based on content - always 4 lines",
+        "Viewport height calculation must account for the 5-line Work Unit Details section (1 header + 4 content)"
+      ],
+      "examples": [
+        "Work unit TECH-001 with long description shows: Line 1: ID+title, Line 2: first desc line, Line 3: Status: backlog, Line 4: empty",
+        "Work unit with no description shows: Line 1: ID+title, Line 2: empty, Line 3: Epic: x | Estimate: 5pts | Status: implementing, Line 4: empty",
+        "No work unit selected shows: Line 1: 'No work unit selected' (centered), Lines 2-4: empty"
       ]
     }
   },
@@ -15303,7 +15362,8 @@
       "RES-006",
       "EST-002",
       "LANG-001",
-      "BOARD-010"
+      "BOARD-010",
+      "BOARD-014"
     ],
     "testing": [],
     "implementing": [],
@@ -15536,7 +15596,7 @@
       "BUG-045",
       "BOARD-012",
       "BOARD-013",
-      "BOARD-014"
+      "BOARD-015"
     ],
     "blocked": []
   }

@@ -1,0 +1,133 @@
+{
+  "scenarios": [
+    {
+      "name": "Work unit with description displays all 4 content lines",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/UnifiedBoardLayout-work-unit-details.test.tsx",
+          "lines": "23-75",
+          "implMappings": [
+            {
+              "file": "src/tui/components/UnifiedBoardLayout.tsx",
+              "lines": [
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Work unit without description maintains 4-line height",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/UnifiedBoardLayout-work-unit-details.test.tsx",
+          "lines": "77-115",
+          "implMappings": [
+            {
+              "file": "src/tui/components/UnifiedBoardLayout.tsx",
+              "lines": [
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "No work unit selected shows empty 4-line panel",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/UnifiedBoardLayout-work-unit-details.test.tsx",
+          "lines": "117-161",
+          "implMappings": [
+            {
+              "file": "src/tui/components/UnifiedBoardLayout.tsx",
+              "lines": [
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/__tests__/UnifiedBoardLayout-work-unit-details.test.tsx"
+    ],
+    "implFiles": [
+      "src/tui/components/UnifiedBoardLayout.tsx"
+    ],
+    "totalLinesCovered": 206
+  }
+}
