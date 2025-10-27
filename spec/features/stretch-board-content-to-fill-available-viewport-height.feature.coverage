@@ -1,0 +1,118 @@
+{
+  "scenarios": [
+    {
+      "name": "Columns fill vertical space in standard 80x24 terminal",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/BoardView-vertical-stretch.test.tsx",
+          "lines": "24-53",
+          "implMappings": [
+            {
+              "file": "src/tui/components/UnifiedBoardLayout.tsx",
+              "lines": [
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Columns fill vertical space in larger 120x40 terminal",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/BoardView-vertical-stretch.test.tsx",
+          "lines": "57-82",
+          "implMappings": [
+            {
+              "file": "src/tui/components/UnifiedBoardLayout.tsx",
+              "lines": [
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Column height adjusts when terminal is resized",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/BoardView-vertical-stretch.test.tsx",
+          "lines": "86-119",
+          "implMappings": [
+            {
+              "file": "src/tui/components/UnifiedBoardLayout.tsx",
+              "lines": [
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/__tests__/BoardView-vertical-stretch.test.tsx"
+    ],
+    "implFiles": [
+      "src/tui/components/UnifiedBoardLayout.tsx"
+    ],
+    "totalLinesCovered": 144
+  }
+}

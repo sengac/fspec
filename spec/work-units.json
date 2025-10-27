@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-27T21:47:31.780Z"
+    "lastUpdated": "2025-10-27T22:35:53.627Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -15129,6 +15129,127 @@
         "User at item 15 in column A, switches to column B, then back to column A: scroll position preserved, still at item 15"
       ],
       "estimate": 5
+    },
+    "BOARD-013": {
+      "id": "BOARD-013",
+      "title": "Full-Screen TUI Layout",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-27T22:17:54.321Z",
+      "updatedAt": "2025-10-27T22:33:11.994Z",
+      "description": "Make the Kanban board TUI fill the entire terminal screen like CAGE does, using responsive layout hooks and proper screen clearing",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-27T22:18:57.660Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-27T22:21:48.927Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-27T22:25:46.915Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-27T22:30:56.175Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-27T22:33:11.994Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using fspec board",
+        "action": "view the Kanban board in a full-screen TUI",
+        "benefit": "I can see all work units clearly without wasted screen space"
+      },
+      "rules": [
+        "Board must fill entire terminal width and height",
+        "Board must respond to terminal resize events automatically",
+        "Screen must be cleared before rendering to start from position (0,0)",
+        "Layout must use Ink Box with width and height set to terminal dimensions",
+        "No whitespace or padding should appear outside the board borders"
+      ],
+      "examples": [
+        "User opens board in 80x24 terminal, board fills entire 80x24 space",
+        "User opens board in 120x40 terminal, board fills entire 120x40 space",
+        "User resizes terminal from 80x24 to 120x40 while board is open, board automatically resizes to 120x40",
+        "Board renders with no extra whitespace above, below, left, or right of borders",
+        "Board uses useStdout hook to detect terminal dimensions and updates on resize"
+      ],
+      "estimate": 5
+    },
+    "BOARD-014": {
+      "id": "BOARD-014",
+      "title": "Stretch board content to fill available viewport height",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-27T22:35:08.114Z",
+      "updatedAt": "2025-10-27T23:00:28.691Z",
+      "description": "Make the work unit table expand vertically to use all available space within FullScreenWrapper. Currently the table has a fixed height and doesn't stretch to fill the terminal.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-27T22:35:47.315Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-27T22:37:34.167Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-27T22:38:36.675Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-27T22:49:40.611Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-27T22:51:24.491Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-27T22:59:56.714Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-27T23:00:02.325Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-27T23:00:28.691Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using fspec board",
+        "action": "see the work unit table fill the entire terminal vertically",
+        "benefit": "I can view more work units at once without wasted screen space"
+      },
+      "rules": [
+        "Work unit table must expand to fill all available vertical space within FullScreenWrapper",
+        "Column height must be calculated based on available viewport height minus headers and borders",
+        "No empty space should appear between the work unit rows and the bottom border",
+        "Table must respond to terminal resize by recalculating available height",
+        "Work unit columns area must use Ink Box component with flexGrow=1 to automatically fill available vertical space",
+        "Header panels (Git Stashes, Changed Files, Work Unit Details) must render separately from work unit table to minimize fixed height overhead"
+      ],
+      "examples": [
+        "In 80x24 terminal with 3-row header and 1-row footer, columns should have 20 rows for work units",
+        "In 120x40 terminal with same headers, columns should have 36 rows for work units",
+        "When terminal resizes from 24 to 40 rows, column height increases from 20 to 36 rows"
+      ],
+      "questions": [
+        {
+          "text": "@human: Current unified table layout (ITF-004) uses 10 fixed rows for headers/footers, leaving only 13 work unit rows in a 24-row terminal. To achieve 20 work unit rows as specified, should we: A) Restructure to use Ink's Box/flexGrow for dynamic stretching with separate header panels, B) Simplify headers to use fewer rows while keeping unified table, or C) Adjust test expectations to match current layout?",
+          "selected": true,
+          "answer": "Option A: Restructure to use Ink's Box/flexGrow. Separate header panels (Git Stashes, Changed Files, Work Unit Details) from the work unit table. Use <Box flexGrow={1}> for the columns area to automatically fill available vertical space. This aligns with React/Ink best practices and eliminates manual row calculations."
+        }
+      ]
     }
   },
   "states": {
@@ -15393,7 +15514,9 @@
       "BOARD-011",
       "BUG-046",
       "BUG-045",
-      "BOARD-012"
+      "BOARD-012",
+      "BOARD-013",
+      "BOARD-014"
     ],
     "blocked": []
   }

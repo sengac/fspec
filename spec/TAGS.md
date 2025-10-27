@@ -197,6 +197,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@prettier` | Prettier configuration and code formatting |
 | `@push` | Push notification functionality |
 | `@real-time` | Features with real-time data synchronization and live updates |
+| `@responsive` | Components that respond to viewport or terminal dimension changes |
 | `@reverse-engineering` | Reverse engineering existing code to create specifications |
 | `@review` | Code review and quality analysis |
 | `@runtime` | Runtime behavior and dynamic configuration |
@@ -548,7 +549,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-10-27T08:18:32.597Z_
+_Last updated: 2025-10-27T22:37:08.833Z_
 
 **Update Command**: `fspec tag-stats`
 

@@ -15,6 +15,7 @@ import fs from 'fs';
 import path from 'path';
 import { getStagedFiles, getUnstagedFiles } from '../../git/status';
 import { UnifiedBoardLayout } from './UnifiedBoardLayout';
+import { FullScreenWrapper } from './FullScreenWrapper';
 
 interface BoardViewProps {
   onExit?: () => void;
@@ -22,10 +23,13 @@ interface BoardViewProps {
   showFilesPanel?: boolean;
   focusedPanel?: 'board' | 'stash' | 'files';
   cwd?: string;
+  // BOARD-014: Optional terminal dimensions (for testing)
+  terminalWidth?: number;
+  terminalHeight?: number;
 }
 
 // UNIFIED TABLE LAYOUT IMPLEMENTATION (ITF-004)
-export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = true, showFilesPanel = true, focusedPanel: initialFocusedPanel = 'board', cwd }) => {
+export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = true, showFilesPanel = true, focusedPanel: initialFocusedPanel = 'board', cwd, terminalWidth, terminalHeight }) => {
   const workUnits = useFspecStore(state => state.workUnits);
   const stashes = useFspecStore(state => state.stashes);
   const stagedFiles = useFspecStore(state => state.stagedFiles);
@@ -245,17 +249,19 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
       const name = parts.length >= 3 ? parts[2] : 'Unknown';
 
       return (
-        <Box flexDirection="column" padding={1}>
-          <Text bold>{name}</Text>
-          <Text>Stash OID: {selectedStash.oid}</Text>
-          <Text>Message: {message}</Text>
-          <Text>{'\n'}Files in this stash:</Text>
-          {stashFiles.map(file => (
-            <Text key={file} dimColor>{file}</Text>
-          ))}
-          {stashFiles.length === 0 && <Text dimColor>Loading...</Text>}
-          <Text dimColor>{'\n'}Press ESC to return</Text>
-        </Box>
+        <FullScreenWrapper>
+          <Box flexDirection="column" padding={1}>
+            <Text bold>{name}</Text>
+            <Text>Stash OID: {selectedStash.oid}</Text>
+            <Text>Message: {message}</Text>
+            <Text>{'\n'}Files in this stash:</Text>
+            {stashFiles.map(file => (
+              <Text key={file} dimColor>{file}</Text>
+            ))}
+            {stashFiles.length === 0 && <Text dimColor>Loading...</Text>}
+            <Text dimColor>{'\n'}Press ESC to return</Text>
+          </Box>
+        </FullScreenWrapper>
       );
     }
   }
@@ -267,11 +273,13 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
 
     if (selectedFile) {
       return (
-        <Box flexDirection="column" padding={1}>
-          <Text bold>{selectedFile}</Text>
-          <Text>{'\n'}{fileDiff || 'Loading diff...'}</Text>
-          <Text dimColor>{'\n'}Press ESC to return</Text>
-        </Box>
+        <FullScreenWrapper>
+          <Box flexDirection="column" padding={1}>
+            <Text bold>{selectedFile}</Text>
+            <Text>{'\n'}{fileDiff || 'Loading diff...'}</Text>
+            <Text dimColor>{'\n'}Press ESC to return</Text>
+          </Box>
+        </FullScreenWrapper>
       );
     }
   }
@@ -279,62 +287,68 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
   // Work unit detail view
   if (viewMode === 'detail' && selectedWorkUnit) {
     return (
-      <Box flexDirection="column" padding={1}>
-        <Text bold>{selectedWorkUnit.id} - {selectedWorkUnit.title}</Text>
-        <Text>Type: {selectedWorkUnit.type}</Text>
-        <Text>Status: {selectedWorkUnit.status}</Text>
-        {selectedWorkUnit.estimate && <Text>Estimate: {selectedWorkUnit.estimate} points</Text>}
-        <Text>{'\n'}Description:</Text>
-        <Text>{selectedWorkUnit.description || 'No description'}</Text>
-        <Text dimColor>{'\n'}Press ESC to return</Text>
-      </Box>
+      <FullScreenWrapper>
+        <Box flexDirection="column" padding={1}>
+          <Text bold>{selectedWorkUnit.id} - {selectedWorkUnit.title}</Text>
+          <Text>Type: {selectedWorkUnit.type}</Text>
+          <Text>Status: {selectedWorkUnit.status}</Text>
+          {selectedWorkUnit.estimate && <Text>Estimate: {selectedWorkUnit.estimate} points</Text>}
+          <Text>{'\n'}Description:</Text>
+          <Text>{selectedWorkUnit.description || 'No description'}</Text>
+          <Text dimColor>{'\n'}Press ESC to return</Text>
+        </Box>
+      </FullScreenWrapper>
     );
   }
 
   return (
-    <UnifiedBoardLayout
-      workUnits={workUnits}
-      stashes={stashes}
-      stagedFiles={stagedFiles}
-      unstagedFiles={unstagedFiles}
-      focusedColumnIndex={focusedColumnIndex}
-      selectedWorkUnitIndex={selectedWorkUnitIndex}
-      selectedWorkUnit={currentlySelectedWorkUnit}
-      onColumnChange={(delta) => {
-        setFocusedColumnIndex(prev => {
-          const newIndex = prev + delta;
-          if (newIndex < 0) return columns.length - 1;
-          if (newIndex >= columns.length) return 0;
-          return newIndex;
-        });
-        setSelectedWorkUnitIndex(0);
-      }}
-      onWorkUnitChange={(delta) => {
-        const currentColumn = groupedWorkUnits[focusedColumnIndex];
-        if (currentColumn.units.length > 0) {
-          setSelectedWorkUnitIndex(prev => {
+    <FullScreenWrapper>
+      <UnifiedBoardLayout
+        workUnits={workUnits}
+        stashes={stashes}
+        stagedFiles={stagedFiles}
+        unstagedFiles={unstagedFiles}
+        focusedColumnIndex={focusedColumnIndex}
+        selectedWorkUnitIndex={selectedWorkUnitIndex}
+        selectedWorkUnit={currentlySelectedWorkUnit}
+        terminalWidth={terminalWidth}
+        terminalHeight={terminalHeight}
+        onColumnChange={(delta) => {
+          setFocusedColumnIndex(prev => {
             const newIndex = prev + delta;
-            if (newIndex < 0) return currentColumn.units.length - 1;
-            if (newIndex >= currentColumn.units.length) return 0;
+            if (newIndex < 0) return columns.length - 1;
+            if (newIndex >= columns.length) return 0;
             return newIndex;
           });
-        }
-      }}
-      onEnter={() => {
-        // Handle Enter key based on focused panel (BOARD-003)
-        if (focusedPanel === 'board') {
+          setSelectedWorkUnitIndex(0);
+        }}
+        onWorkUnitChange={(delta) => {
           const currentColumn = groupedWorkUnits[focusedColumnIndex];
           if (currentColumn.units.length > 0) {
-            const workUnit = currentColumn.units[selectedWorkUnitIndex];
-            setSelectedWorkUnit(workUnit);
-            setViewMode('detail');
+            setSelectedWorkUnitIndex(prev => {
+              const newIndex = prev + delta;
+              if (newIndex < 0) return currentColumn.units.length - 1;
+              if (newIndex >= currentColumn.units.length) return 0;
+              return newIndex;
+            });
           }
-        } else if (focusedPanel === 'stash' && stashes.length > 0) {
-          setViewMode('stash-detail');
-        } else if (focusedPanel === 'files' && (stagedFiles.length > 0 || unstagedFiles.length > 0)) {
-          setViewMode('file-diff');
-        }
-      }}
-    />
+        }}
+        onEnter={() => {
+          // Handle Enter key based on focused panel (BOARD-003)
+          if (focusedPanel === 'board') {
+            const currentColumn = groupedWorkUnits[focusedColumnIndex];
+            if (currentColumn.units.length > 0) {
+              const workUnit = currentColumn.units[selectedWorkUnitIndex];
+              setSelectedWorkUnit(workUnit);
+              setViewMode('detail');
+            }
+          } else if (focusedPanel === 'stash' && stashes.length > 0) {
+            setViewMode('stash-detail');
+          } else if (focusedPanel === 'files' && (stagedFiles.length > 0 || unstagedFiles.length > 0)) {
+            setViewMode('file-diff');
+          }
+        }}
+      />
+    </FullScreenWrapper>
   );
 };
