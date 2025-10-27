@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-27T12:15:59.845Z"
+    "lastUpdated": "2025-10-27T13:28:42.843Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -14903,6 +14903,96 @@
         }
       ],
       "estimate": 5
+    },
+    "BOARD-010": {
+      "id": "BOARD-010",
+      "title": "Keyboard priority reordering with bracket keys",
+      "type": "story",
+      "status": "specifying",
+      "createdAt": "2025-10-27T13:26:34.333Z",
+      "updatedAt": "2025-10-27T13:27:50.670Z",
+      "description": "Allow users to reorder work units within a column using [ and ] keys to move items up/down in priority",
+      "epic": "interactive-tui-foundation",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-27T13:26:34.982Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using TUI board",
+        "action": "reorder work units within a column using bracket keys",
+        "benefit": "I can quickly adjust priorities without leaving the keyboard"
+      },
+      "rules": [
+        "Press [ key to move selected work unit up one position in the current column",
+        "Press ] key to move selected work unit down one position in the current column",
+        "Work unit order changes are persisted to work-units.json immediately",
+        "Cannot move work unit up if it's already at the top of the column (first position)",
+        "Cannot move work unit down if it's already at the bottom of the column (last position)",
+        "Order property in work-units.json tracks position within each column status"
+      ],
+      "examples": [
+        "User selects BOARD-002 in backlog column (position 2), presses [, work unit moves to position 1",
+        "User selects BOARD-001 in backlog column (position 1), presses [, nothing happens (already at top)",
+        "User selects BOARD-003 in backlog column (position 2), presses ], work unit moves to position 3",
+        "User selects last work unit in done column, presses ], nothing happens (already at bottom)",
+        "After moving work unit, order persists when restarting TUI (loaded from work-units.json)"
+      ],
+      "estimate": 5
+    },
+    "BOARD-011": {
+      "id": "BOARD-011",
+      "title": "Order done column by completion time",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-27T13:28:41.647Z",
+      "updatedAt": "2025-10-27T13:38:04.064Z",
+      "description": "Display work units in the done column with most recently completed items at the top, ordered by when they were moved to done status",
+      "epic": "interactive-tui-foundation",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-27T13:28:42.315Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-27T13:30:21.761Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-27T13:33:16.619Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-27T13:37:45.870Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-27T13:38:04.064Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer viewing the board",
+        "action": "see completed work units ordered by completion time",
+        "benefit": "I can quickly see what was finished most recently"
+      },
+      "rules": [
+        "Done column displays work units with most recently completed at the top",
+        "Completion time is determined by the timestamp when work unit was moved to done status (last stateHistory entry with state=done)",
+        "Work units are sorted in descending order by completion timestamp (newest first)",
+        "When a work unit is moved back to done from another state, it uses the new timestamp (appears at top again)",
+        "Other columns (backlog, specifying, testing, implementing, validating, blocked) maintain existing order behavior"
+      ],
+      "examples": [
+        "BOARD-005 completed at 10:00, BOARD-003 completed at 11:00, BOARD-007 completed at 09:00 → done column shows: BOARD-003, BOARD-005, BOARD-007",
+        "BOARD-001 moved to done on Monday, BOARD-002 moved to done on Tuesday → BOARD-002 appears above BOARD-001",
+        "BOARD-003 completed yesterday, user moves it back to implementing, then back to done today → BOARD-003 now appears at top of done column with today's timestamp",
+        "On TUI startup, done column loads work units sorted by completion time from stateHistory timestamps"
+      ],
+      "estimate": 3
     }
   },
   "states": {
@@ -14935,7 +15025,8 @@
       "GIT-004",
       "RES-006",
       "EST-002",
-      "LANG-001"
+      "LANG-001",
+      "BOARD-010"
     ],
     "testing": [],
     "implementing": [],
@@ -15163,7 +15254,8 @@
       "BOARD-007",
       "BOARD-008",
       "BUG-045",
-      "BOARD-009"
+      "BOARD-009",
+      "BOARD-011"
     ],
     "blocked": []
   }

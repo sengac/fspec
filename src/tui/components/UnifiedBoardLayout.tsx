@@ -192,7 +192,26 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
   // Group work units by status
   const groupedWorkUnits = useMemo(() => {
     return STATES.map(status => {
-      const units = workUnits.filter(wu => wu.status === status);
+      let units = workUnits.filter(wu => wu.status === status);
+
+      // Sort done column by completion time (most recent first) - BOARD-011
+      if (status === 'done') {
+        units = [...units].sort((a, b) => {
+          // Find the last stateHistory entry with state='done' for each work unit
+          const aLastDone = a.stateHistory?.filter(h => h.state === 'done').pop();
+          const bLastDone = b.stateHistory?.filter(h => h.state === 'done').pop();
+
+          // If either work unit has no done timestamp, sort it to the end
+          if (!aLastDone) return 1;
+          if (!bLastDone) return -1;
+
+          // Sort by timestamp descending (newest first)
+          const aTime = new Date(aLastDone.timestamp).getTime();
+          const bTime = new Date(bLastDone.timestamp).getTime();
+          return bTime - aTime;
+        });
+      }
+
       const totalPoints = units.reduce((sum, wu) => sum + (wu.estimate || 0), 0);
       return { status, units, count: units.length, totalPoints };
     });
