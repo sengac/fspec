@@ -7,12 +7,16 @@
  * Coverage:
  * - ITF-001: Zustand store updates trigger Ink component re-renders
  * - ITF-002: Load and sync all fspec data from JSON files
+ * - ITF-005: Real-time file and git status watching in TUI
  */
 
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import { ensureWorkUnitsFile } from '../../utils/ensure-files';
 import { ensureEpicsFile } from '../../utils/ensure-files';
+import git from 'isomorphic-git';
+import fs from 'fs';
+import { getStagedFiles, getUnstagedFiles } from '../../git/status';
 
 interface WorkUnit {
   id: string;
@@ -34,11 +38,16 @@ interface Epic {
 interface FspecState {
   workUnits: WorkUnit[];
   epics: Epic[];
+  stashes: any[];
+  stagedFiles: string[];
+  unstagedFiles: string[];
   isLoaded: boolean;
   error: string | null;
 
   // Actions
   loadData: () => Promise<void>;
+  loadStashes: () => Promise<void>;
+  loadFileStatus: () => Promise<void>;
   updateWorkUnitStatus: (id: string, status: string) => void;
   addWorkUnit: (workUnit: WorkUnit) => void;
 
@@ -51,6 +60,9 @@ export const useFspecStore = create<FspecState>()(
   immer((set, get) => ({
     workUnits: [],
     epics: [],
+    stashes: [],
+    stagedFiles: [],
+    unstagedFiles: [],
     isLoaded: false,
     error: null,
 
@@ -70,6 +82,45 @@ export const useFspecStore = create<FspecState>()(
       } catch (error) {
         set(state => {
           state.error = (error as Error).message;
+        });
+      }
+    },
+
+    loadStashes: async () => {
+      try {
+        const cwd = process.cwd();
+        const logs = await git.log({
+          fs,
+          dir: cwd,
+          ref: 'refs/stash',
+          depth: 10,
+        });
+        set(state => {
+          state.stashes = logs;
+        });
+      } catch (error) {
+        // No stashes exist or error reading - set to empty array
+        set(state => {
+          state.stashes = [];
+        });
+      }
+    },
+
+    loadFileStatus: async () => {
+      try {
+        const cwd = process.cwd();
+        const [staged, unstaged] = await Promise.all([
+          getStagedFiles(cwd),
+          getUnstagedFiles(cwd),
+        ]);
+        set(state => {
+          state.stagedFiles = staged;
+          state.unstagedFiles = unstaged;
+        });
+      } catch (error) {
+        set(state => {
+          state.stagedFiles = [];
+          state.unstagedFiles = [];
         });
       }
     },
