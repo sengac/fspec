@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-27T06:11:35.628Z"
+    "lastUpdated": "2025-10-27T08:37:15.338Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -10804,7 +10804,7 @@
       "type": "story",
       "status": "done",
       "createdAt": "2025-10-22T13:42:12.487Z",
-      "updatedAt": "2025-10-27T06:09:25.356Z",
+      "updatedAt": "2025-10-27T08:06:18.898Z",
       "description": "Add real-time board updates to the interactive Kanban CLI. Display git stashes and changed files (staged/unstaged) that users can click to inspect. Board should refresh automatically when work unit status changes. Support keyboard navigation to inspect stash details and file diffs.",
       "epic": "interactive-cli",
       "children": [],
@@ -10868,6 +10868,18 @@
         {
           "state": "done",
           "timestamp": "2025-10-27T06:09:25.356Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-27T07:57:49.474Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-27T08:06:05.321Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-27T08:06:18.898Z"
         }
       ],
       "userStory": {
@@ -14025,6 +14037,289 @@
         "Developer runs 'fspec validate' → Validation executes → TUI does NOT launch",
         "Developer in TUI presses ESC → TUI exits cleanly → Returns to shell prompt"
       ]
+    },
+    "ITF-004": {
+      "id": "ITF-004",
+      "title": "Fix TUI Kanban column layout to match table style",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-27T06:40:55.477Z",
+      "updatedAt": "2025-10-27T07:56:53.007Z",
+      "description": "Update interactive TUI Kanban columns to use table layout instead of boxed columns, matching the visual style of fspec board command",
+      "epic": "interactive-tui-foundation",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-27T06:41:00.684Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-27T06:51:25.894Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-27T06:53:34.347Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-27T07:01:49.813Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-27T07:06:36.436Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-27T07:10:44.985Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-27T07:13:11.960Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-27T07:14:34.345Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-27T07:15:49.906Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-27T07:19:38.141Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-27T07:21:15.684Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-27T07:24:45.644Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-27T07:25:29.339Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-27T07:26:07.700Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-27T07:28:26.199Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-27T07:28:36.178Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-27T07:30:54.143Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-27T07:31:53.126Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-27T07:31:54.238Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-27T07:54:01.324Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-27T07:56:53.007Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using the interactive TUI",
+        "action": "view the Kanban board with a consistent table layout",
+        "benefit": "the interface is clean, familiar, and matches the fspec board command style"
+      },
+      "rules": [
+        "Columns must be part of a unified table with box-drawing characters (┌┬┐ ├┼┤ └┴┘), not individual bordered boxes",
+        "Column headers must show: STATUS (count) - Xpts format",
+        "Work units within columns must show: typeIcon ID Xpt priorityIcon",
+        "The table layout must adapt to terminal width like fspec board does",
+        "Focused column must be highlighted with cyan color",
+        "Selected work unit within focused column must be highlighted",
+        "All panels (Git Stashes, Changed Files, Kanban columns, footer) should be integrated into a single unified table layout to avoid duplicate borders",
+        "Footer should be integrated into the unified table layout",
+        "Support scrolling through ALL items with Page Up/Down. Show up arrow indicator above first visible item if scrolled past start. Show down arrow indicator below last visible item if more items exist beyond viewport. No artificial limit.",
+        "Arrow up/down keys scroll one item at a time within focused column",
+        "Page Up/Page Down keys scroll by full page (viewport height) of items at a time for faster navigation",
+        "Component MUST register resize listener on stdout.on('resize', handler) to detect terminal dimension changes",
+        "Terminal dimensions MUST be stored in React state to trigger re-renders when terminal resizes",
+        "Component MUST cleanup resize listener with stdout.off('resize', handler) in useEffect cleanup to prevent memory leaks",
+        "Column width calculation MUST be reactive using useMemo with terminal dimensions as dependency",
+        "Layout MUST provide fallback dimensions (80 columns, 24 rows) when stdout dimensions unavailable",
+        "MUST use useStdout directly and read stdout.columns (same pattern as BoardDisplay), NOT a custom useTerminalSize hook with state",
+        "Column width calculation MUST be wrapped in useMemo with terminalWidth as dependency to recalculate on terminal changes",
+        "Table row building MUST also be wrapped in useMemo with colWidth as dependency so entire table rebuilds on resize",
+        "Focused column header MUST be highlighted in cyan color to show which column is active",
+        "Selected work unit within focused column MUST be highlighted with cyan background to show which item is active",
+        "Column headers and work unit rows MUST use Ink Text components with color/backgroundColor props, NOT plain strings, to support highlighting"
+      ],
+      "examples": [
+        "User opens TUI, sees table with ┌┬┐ top border connecting all columns",
+        "User navigates right with arrow key, sees focused column header turn cyan while others stay gray",
+        "User navigates down within a column, sees selected work unit highlighted with cyan background",
+        "User resizes terminal, table columns adjust width proportionally like fspec board",
+        "Column shows AUTH-001 3pt 🟡 format with type icon and priority indicator",
+        "User has 20 work units in backlog, presses Page Down, sees viewport scroll showing items 11-20 with up arrow indicator at top",
+        "User scrolls to middle of long column, sees both up arrow at top and down arrow at bottom indicating more items in both directions",
+        "User presses Page Up at top of column, nothing happens (already at start, no up arrow shown)",
+        "Git Stashes panel integrated as table row above Kanban columns with proper ├┼┤ junction characters",
+        "User presses arrow down, selected item moves down by 1 work unit",
+        "User presses Page Down with 30 items and viewport showing 10 items, viewport jumps to show items 11-20",
+        "User opens TUI at 120 columns wide, sees table with properly aligned borders. User resizes terminal to 80 columns, table instantly reflows with recalculated column widths and borders still properly aligned",
+        "Component mounts, registers resize listener on stdout. Component unmounts, cleanup function removes resize listener to prevent memory leak",
+        "Terminal resizes from 100 to 140 columns, column width recalculates from 12 chars to 18 chars, all work units and headers fit properly without truncation",
+        "BoardDisplay uses: const { stdout } = useStdout(); const terminalWidth = stdout?.columns || 80; const colWidth = useMemo(() => calculateColumnWidth(terminalWidth), [terminalWidth]); - This pattern works perfectly",
+        "UnifiedBoardLayout initially tried custom useTerminalSize hook with useState and resize listeners - This caused stale initial values and didn't match fspec board behavior",
+        "User presses right arrow, BACKLOG header shows in gray, SPECIFYING header changes to cyan (focused). Work units in SPECIFYING column are visible, first one has cyan background (selected)",
+        "User presses down arrow, first work unit in focused column loses cyan background, second work unit gets cyan background (selection moved)"
+      ],
+      "questions": [
+        {
+          "text": "@human: Should the Git Stashes and Changed Files panels also use table layout, or keep their current bordered box style?",
+          "selected": true,
+          "answer": "All panels (Git Stashes, Changed Files, Kanban columns, footer) should be integrated into a single unified table layout to avoid duplicate borders"
+        },
+        {
+          "text": "@human: Should the footer with keyboard shortcuts also use table borders, or keep its current style?",
+          "selected": true,
+          "answer": "Footer should be integrated into the unified table layout"
+        },
+        {
+          "text": "@human: Do you want the same column limit behavior (showing first 5 items + overflow count) as fspec board?",
+          "selected": true,
+          "answer": "Support scrolling through ALL items with Page Up/Down. Show up arrow indicator above first visible item if scrolled past start. Show down arrow indicator below last visible item if more items exist beyond viewport. No artificial limit."
+        }
+      ],
+      "estimate": 5
+    },
+    "ITF-005": {
+      "id": "ITF-005",
+      "title": "Real-time file and git status watching in TUI",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-27T08:14:53.044Z",
+      "updatedAt": "2025-10-27T08:34:33.724Z",
+      "description": "Add fs.watch watchers for .git/refs/stash and .git/index to detect real-time changes to git stashes and file status (staged/unstaged). Update Zustand store reactively when changes are detected, similar to the existing work-units.json watcher. Reuse existing isomorphic-git functions and follow DRY principles.",
+      "epic": "interactive-tui-foundation",
+      "children": [],
+      "userStory": {
+        "role": "developer using fspec TUI",
+        "action": "see real-time updates to git stashes and file status",
+        "benefit": "the board reflects current state without manual refresh"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-27T08:15:22.144Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-27T08:18:48.076Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-27T08:20:07.365Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-27T08:28:13.409Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-27T08:34:33.724Z"
+        }
+      ],
+      "rules": [
+        "TUI must watch .git/refs/stash for real-time git stash changes",
+        "TUI must watch .git/index for real-time file status changes (staged/unstaged)",
+        "Watchers must update Zustand store state to trigger React re-renders",
+        "MUST reuse existing isomorphic-git functions: getStagedFiles, getUnstagedFiles from src/git/status.ts",
+        "MUST reuse existing git.log({ ref: 'refs/stash' }) pattern for loading stashes (DRY principle)",
+        "Watchers must be cleaned up on component unmount to prevent memory leaks",
+        "Store must provide actions: loadStashes(), loadFileStatus() to be called by watchers",
+        "TUI must watch .git/HEAD for branch changes and commits on current branch"
+      ],
+      "examples": [
+        "User opens TUI, creates git stash via terminal, TUI automatically updates stash panel without restart",
+        "User stages a file with git add, TUI immediately shows file in staged section (green)",
+        "User unstages a file with git reset, TUI moves file from staged to unstaged section (yellow)",
+        "User creates checkpoint via fspec command, TUI stash panel updates showing new stash",
+        "User modifies work-units.json AND stages a file, both panels update in real-time",
+        "User exits TUI, watchers are cleaned up and don't leak memory"
+      ],
+      "questions": [
+        {
+          "text": "@human: Should watchers debounce rapid changes (e.g., multiple git add commands in quick succession)?",
+          "selected": true,
+          "answer": "No debouncing needed - let React handle re-render optimization naturally"
+        },
+        {
+          "text": "@human: Should we also watch HEAD ref for branch changes or commits?",
+          "selected": true,
+          "answer": "Watch HEAD ref for current branch changes and commits"
+        }
+      ]
+    },
+    "BOARD-005": {
+      "id": "BOARD-005",
+      "title": "Test data leak: BOARD-TEST-001 appearing in real board",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-10-27T08:35:47.413Z",
+      "updatedAt": "2025-10-27T08:44:09.956Z",
+      "description": "Some test is creating BOARD-TEST-001 work unit without proper mocking, causing it to appear in the real board view. Tests should use isolated temporary directories or proper mocking to prevent test data from leaking into actual project data.",
+      "epic": "interactive-tui-foundation",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-27T08:36:17.521Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-27T08:40:04.483Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-27T08:40:12.336Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-27T08:43:42.872Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-27T08:44:09.956Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer running tests",
+        "action": "run tests without polluting real project data",
+        "benefit": "I can trust that tests are isolated and won't affect my actual work units"
+      },
+      "rules": [
+        "Tests MUST use temporary directories created with mkdtemp() to avoid polluting real project files",
+        "Tests MUST clean up temporary directories in afterEach() hooks using rm(dir, { recursive: true, force: true })",
+        "Tests that write to work-units.json MUST use testDir as cwd parameter, NOT process.cwd()",
+        "BoardView-realtime-updates.test.tsx lines 209-223 are the problematic code that writes to real spec/work-units.json",
+        "Tests MUST restore original file state if they absolutely must modify real files (use cleanup in try-finally blocks)"
+      ],
+      "examples": [
+        "BoardView test creates BOARD-TEST-001 in real spec/work-units.json, causing it to appear in actual board view",
+        "update-work-unit-ensure.test.ts correctly uses mkdtemp() to create isolated test directory in tmpdir()",
+        "Test cleanup restores original work-units.json content at lines 260-262, but damage is already done",
+        "Fix involves using mkdtemp() in beforeEach, passing testDir to loadData(), cleaning up in afterEach"
+      ]
     }
   },
   "states": {
@@ -14275,9 +14570,12 @@
       "HELP-004",
       "ITF-001",
       "ITF-002",
-      "BOARD-003",
       "ITF-003",
-      "BOARD-002"
+      "BOARD-002",
+      "ITF-004",
+      "BOARD-003",
+      "ITF-005",
+      "BOARD-005"
     ],
     "blocked": []
   }

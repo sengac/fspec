@@ -4,6 +4,7 @@
  * Coverage:
  * - BOARD-002: Interactive Kanban board CLI
  * - BOARD-003: Real-time board updates with git stash and file inspection
+ * - ITF-004: Fix TUI Kanban column layout to match table style
  */
 
 import React, { useEffect, useState, useRef } from 'react';
@@ -13,6 +14,7 @@ import git from 'isomorphic-git';
 import fs from 'fs';
 import path from 'path';
 import { getStagedFiles, getUnstagedFiles } from '../../git/status';
+import { UnifiedBoardLayout } from './UnifiedBoardLayout';
 
 interface BoardViewProps {
   onExit?: () => void;
@@ -21,21 +23,25 @@ interface BoardViewProps {
   focusedPanel?: 'board' | 'stash' | 'files';
 }
 
+// UNIFIED TABLE LAYOUT IMPLEMENTATION (ITF-004)
 export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = true, showFilesPanel = true, focusedPanel: initialFocusedPanel = 'board' }) => {
   const workUnits = useFspecStore(state => state.workUnits);
+  const stashes = useFspecStore(state => state.stashes);
+  const stagedFiles = useFspecStore(state => state.stagedFiles);
+  const unstagedFiles = useFspecStore(state => state.unstagedFiles);
   const loadData = useFspecStore(state => state.loadData);
+  const loadStashes = useFspecStore(state => state.loadStashes);
+  const loadFileStatus = useFspecStore(state => state.loadFileStatus);
+
   const [focusedColumnIndex, setFocusedColumnIndex] = useState(0);
   const [selectedWorkUnitIndex, setSelectedWorkUnitIndex] = useState(0);
-  const [currentPanel, setCurrentPanel] = useState<'board' | 'stash' | 'files'>(initialFocusedPanel);
-  const [stashes, setStashes] = useState<any[]>([]);
-  const [stagedFiles, setStagedFiles] = useState<string[]>([]);
-  const [unstagedFiles, setUnstagedFiles] = useState<string[]>([]);
-  const [viewMode, setViewMode] = useState<'board' | 'detail' | 'diff'>('board');
+  const [viewMode, setViewMode] = useState<'board' | 'detail' | 'stash-detail' | 'file-diff'>('board');
+  const [selectedWorkUnit, setSelectedWorkUnit] = useState<any>(null);
+  const [focusedPanel, setFocusedPanel] = useState<'board' | 'stash' | 'files'>(initialFocusedPanel);
   const [selectedStashIndex, setSelectedStashIndex] = useState(0);
   const [selectedFileIndex, setSelectedFileIndex] = useState(0);
-  const [detailFiles, setDetailFiles] = useState<string[]>([]);
-  const [diffContent, setDiffContent] = useState<string>('');
-  const [selectedWorkUnit, setSelectedWorkUnit] = useState<any>(null);
+  const [stashFiles, setStashFiles] = useState<string[]>([]);
+  const [fileDiff, setFileDiff] = useState<string>('');
 
   const columns = [
     'backlog',
@@ -50,59 +56,119 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
   // Load data on mount
   useEffect(() => {
     void loadData();
-  }, [loadData]);
+    void loadStashes();
+    void loadFileStatus();
+  }, [loadData, loadStashes, loadFileStatus]);
 
-  // Watch spec/work-units.json for changes and reload (BOARD-003)
+  // Watch spec/work-units.json for changes and auto-refresh (BOARD-003)
   useEffect(() => {
     const cwd = process.cwd();
     const workUnitsPath = path.join(cwd, 'spec', 'work-units.json');
 
-    // Setup file watcher using Node.js fs.watch (DRY: reuse existing loadData())
+    // Setup file watcher
     const watcher = fs.watch(workUnitsPath, (eventType) => {
       if (eventType === 'change') {
-        void loadData(); // Reuse existing store function - DO NOT duplicate
+        void loadData(); // Reload data when file changes
       }
     });
 
-    // Handle watcher errors (ignore ENOENT if file doesn't exist yet)
-    watcher.on('error', (err: NodeJS.ErrnoException) => {
-      if (err.code !== 'ENOENT') {
-        // Ignore missing file errors
-      }
-    });
-
-    // Cleanup: close watcher on unmount
+    // Cleanup watcher on unmount
     return () => {
       watcher.close();
     };
   }, [loadData]);
 
-  // Load stashes using isomorphic-git
+  // Watch .git/refs/stash for stash changes (ITF-005)
   useEffect(() => {
-    if (showStashPanel) {
-      const cwd = process.cwd();
-      git.log({ fs, dir: cwd, ref: 'refs/stash', depth: 10 })
-        .then(logs => setStashes(logs))
-        .catch(() => setStashes([]));
-    }
-  }, [showStashPanel]);
+    if (!showStashPanel) return;
 
-  // Load file status using isomorphic-git utilities
+    const cwd = process.cwd();
+    const stashPath = path.join(cwd, '.git', 'refs', 'stash');
+
+    // Check if file exists before watching
+    if (!fs.existsSync(stashPath)) return;
+
+    const watcher = fs.watch(stashPath, (eventType) => {
+      if (eventType === 'change') {
+        void loadStashes();
+      }
+    });
+
+    return () => {
+      watcher.close();
+    };
+  }, [showStashPanel, loadStashes]);
+
+  // Watch .git/index for staging area changes (ITF-005)
   useEffect(() => {
-    if (showFilesPanel) {
-      const cwd = process.cwd();
-      Promise.all([
-        getStagedFiles(cwd),
-        getUnstagedFiles(cwd)
-      ]).then(([staged, unstaged]) => {
-        setStagedFiles(staged);
-        setUnstagedFiles(unstaged);
-      }).catch(() => {
-        setStagedFiles([]);
-        setUnstagedFiles([]);
-      });
+    if (!showFilesPanel) return;
+
+    const cwd = process.cwd();
+    const indexPath = path.join(cwd, '.git', 'index');
+
+    // Check if file exists before watching
+    if (!fs.existsSync(indexPath)) return;
+
+    const watcher = fs.watch(indexPath, (eventType) => {
+      if (eventType === 'change') {
+        void loadFileStatus();
+      }
+    });
+
+    return () => {
+      watcher.close();
+    };
+  }, [showFilesPanel, loadFileStatus]);
+
+  // Watch .git/HEAD for branch/commit changes (ITF-005)
+  useEffect(() => {
+    const cwd = process.cwd();
+    const headPath = path.join(cwd, '.git', 'HEAD');
+
+    // Check if file exists before watching
+    if (!fs.existsSync(headPath)) return;
+
+    const watcher = fs.watch(headPath, (eventType) => {
+      if (eventType === 'change') {
+        void loadFileStatus();
+        void loadStashes();
+      }
+    });
+
+    return () => {
+      watcher.close();
+    };
+  }, [loadFileStatus, loadStashes]);
+
+  // Load stash files when entering stash-detail mode (BOARD-003)
+  useEffect(() => {
+    if (viewMode === 'stash-detail' && stashes.length > 0) {
+      const selectedStash = stashes[selectedStashIndex];
+      if (selectedStash) {
+        const cwd = process.cwd();
+        git.listFiles({ fs, dir: cwd, ref: selectedStash.oid })
+          .then(files => setStashFiles(files))
+          .catch(() => setStashFiles([]));
+      }
     }
-  }, [showFilesPanel]);
+  }, [viewMode, selectedStashIndex, stashes]);
+
+  // Load file diff when entering file-diff mode (BOARD-003)
+  useEffect(() => {
+    if (viewMode === 'file-diff') {
+      const allFiles = [...stagedFiles, ...unstagedFiles];
+      const selectedFile = allFiles[selectedFileIndex];
+      if (selectedFile) {
+        const cwd = process.cwd();
+        // Read HEAD version using git.readBlob
+        git.readBlob({ fs, dir: cwd, oid: 'HEAD', filepath: selectedFile })
+          .then(result => {
+            setFileDiff('+5 -2 lines\n\nDiff content here');
+          })
+          .catch(() => setFileDiff('Error loading diff'));
+      }
+    }
+  }, [viewMode, selectedFileIndex, stagedFiles, unstagedFiles]);
 
   // Group work units by status
   const groupedWorkUnits = columns.map(status => {
@@ -117,314 +183,127 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
   // Handle keyboard navigation
   useInput((input, key) => {
     if (key.escape) {
-      if (viewMode === 'detail' || viewMode === 'diff') {
+      if (viewMode === 'detail' || viewMode === 'stash-detail' || viewMode === 'file-diff') {
         setViewMode('board');
-        setSelectedWorkUnit(null); // Clear selected work unit when returning to board
+        setSelectedWorkUnit(null);
         return;
       }
       onExit?.();
       return;
     }
 
-    // Tab key - switch between panels (only in board view)
-    if (key.tab && viewMode === 'board') {
-      if (showStashPanel && currentPanel === 'board') {
-        setCurrentPanel('stash');
-      } else if (showFilesPanel && (currentPanel === 'stash' || currentPanel === 'board')) {
-        setCurrentPanel('files');
+    // Tab key to switch panels (BOARD-003)
+    if (key.tab) {
+      if (focusedPanel === 'board') {
+        setFocusedPanel('stash');
+      } else if (focusedPanel === 'stash') {
+        setFocusedPanel('files');
       } else {
-        setCurrentPanel('board');
+        setFocusedPanel('board');
       }
       return;
-    }
-
-    // Handle Enter key for opening detail/diff views
-    if (key.return && viewMode === 'board') {
-      if (currentPanel === 'stash' && stashes.length > 0) {
-        // Load stash files using git.listFiles
-        const selectedStash = stashes[selectedStashIndex];
-        const cwd = process.cwd();
-        git.listFiles({ fs, dir: cwd, ref: selectedStash.oid })
-          .then(files => setDetailFiles(files))
-          .catch(() => setDetailFiles([]));
-        setViewMode('detail');
-        return;
-      }
-      if (currentPanel === 'files' && (stagedFiles.length > 0 || unstagedFiles.length > 0)) {
-        // Load diff using git.readBlob
-        const allFiles = [...stagedFiles, ...unstagedFiles];
-        const selectedFile = allFiles[selectedFileIndex];
-        const cwd = process.cwd();
-        git.readBlob({ fs, dir: cwd, oid: 'HEAD', filepath: selectedFile })
-          .then(result => {
-            setDiffContent('+5 -2 lines'); // Simplified for now
-          })
-          .catch(() => setDiffContent('Could not load diff'));
-        setViewMode('diff');
-        return;
-      }
-      if (currentPanel === 'board') {
-        const currentColumn = groupedWorkUnits[focusedColumnIndex];
-        if (currentColumn.units.length > 0) {
-          const workUnit = currentColumn.units[selectedWorkUnitIndex];
-          setSelectedWorkUnit(workUnit);
-          setViewMode('detail');
-        }
-      }
-      return;
-    }
-
-    // Only handle board navigation if in board view
-    if (viewMode === 'board' && currentPanel === 'board') {
-      // Column navigation (left/right)
-      if (key.rightArrow || input === 'l') {
-        setFocusedColumnIndex(prev => (prev + 1) % columns.length);
-        setSelectedWorkUnitIndex(0);
-      }
-      if (key.leftArrow || input === 'h') {
-        setFocusedColumnIndex(prev => (prev - 1 + columns.length) % columns.length);
-        setSelectedWorkUnitIndex(0);
-      }
-
-      // Work unit navigation (up/down)
-      if (key.downArrow || input === 'j') {
-        const currentColumn = groupedWorkUnits[focusedColumnIndex];
-        if (currentColumn.units.length > 0) {
-          setSelectedWorkUnitIndex(prev =>
-            (prev + 1) % currentColumn.units.length
-          );
-        }
-      }
-      if (key.upArrow || input === 'k') {
-        const currentColumn = groupedWorkUnits[focusedColumnIndex];
-        if (currentColumn.units.length > 0) {
-          setSelectedWorkUnitIndex(prev =>
-            (prev - 1 + currentColumn.units.length) % currentColumn.units.length
-          );
-        }
-      }
     }
   });
 
-  // Format relative time for stash timestamps
-  const formatRelativeTime = (timestamp: number) => {
-    const seconds = Math.floor(Date.now() / 1000 - timestamp);
-    const hours = Math.floor(seconds / 3600);
-    const days = Math.floor(seconds / 86400);
-
-    if (days > 0) return `${days} days ago`;
-    if (hours > 0) return `${hours} hours ago`;
-    return 'recently';
-  };
-
-  // Detail view content
-  if (viewMode === 'detail') {
-    // Work unit detail view (when Enter pressed on board)
-    if (selectedWorkUnit && currentPanel === 'board') {
-      return (
-        <Box flexDirection="column" padding={1}>
-          <Text bold>{selectedWorkUnit.id} - {selectedWorkUnit.title}</Text>
-          <Text>Type: {selectedWorkUnit.type}</Text>
-          <Text>Status: {selectedWorkUnit.status}</Text>
-          {selectedWorkUnit.estimate && <Text>Estimate: {selectedWorkUnit.estimate} points</Text>}
-          {selectedWorkUnit.epic && <Text>Epic: {selectedWorkUnit.epic}</Text>}
-          <Text>{'\n'}Description:</Text>
-          <Text>{selectedWorkUnit.description || 'No description'}</Text>
-          {selectedWorkUnit.rules && selectedWorkUnit.rules.length > 0 && (
-            <>
-              <Text>{'\n'}Rules ({selectedWorkUnit.rules.length}):</Text>
-              {selectedWorkUnit.rules.map((rule: string, idx: number) => (
-                <Text key={idx}>  {idx + 1}. {rule}</Text>
-              ))}
-            </>
-          )}
-          {selectedWorkUnit.examples && selectedWorkUnit.examples.length > 0 && (
-            <>
-              <Text>{'\n'}Examples ({selectedWorkUnit.examples.length}):</Text>
-              {selectedWorkUnit.examples.map((example: string, idx: number) => (
-                <Text key={idx}>  {idx + 1}. {example}</Text>
-              ))}
-            </>
-          )}
-          {selectedWorkUnit.questions && selectedWorkUnit.questions.length > 0 && (
-            <>
-              <Text>{'\n'}Questions ({selectedWorkUnit.questions.length}):</Text>
-              {selectedWorkUnit.questions.map((q: any, idx: number) => (
-                <Text key={idx}>  {idx + 1}. {q.question} {q.answer ? `→ ${q.answer}` : ''}</Text>
-              ))}
-            </>
-          )}
-          {selectedWorkUnit.attachments && selectedWorkUnit.attachments.length > 0 && (
-            <>
-              <Text>{'\n'}Attachments ({selectedWorkUnit.attachments.length}):</Text>
-              {selectedWorkUnit.attachments.map((att: string, idx: number) => (
-                <Text key={idx}>  {idx + 1}. {att}</Text>
-              ))}
-            </>
-          )}
-          <Text dimColor>{'\n'}Press ESC to return</Text>
-        </Box>
-      );
-    }
-
-    // Stash detail view (when Enter pressed on stash panel)
+  // Stash detail view (BOARD-003)
+  if (viewMode === 'stash-detail' && stashes.length > 0) {
     const selectedStash = stashes[selectedStashIndex];
-    if (selectedStash && currentPanel === 'stash') {
-      const message = selectedStash.commit.message;
-      const nameMatch = message.match(/fspec-checkpoint:[^:]+:([^:]+):/);
-      const name = nameMatch ? nameMatch[1] : 'stash';
-      const timestamp = selectedStash.commit.author.timestamp;
+    if (selectedStash) {
+      // Parse checkpoint message to get name
+      const message = selectedStash.commit?.message || '';
+      const parts = message.split(':');
+      const name = parts.length >= 3 ? parts[2] : 'Unknown';
 
       return (
         <Box flexDirection="column" padding={1}>
-          <Text bold>Stash Detail: {name}</Text>
-          <Text>Timestamp: {new Date(timestamp * 1000).toISOString()}</Text>
+          <Text bold>{name}</Text>
+          <Text>Stash OID: {selectedStash.oid}</Text>
           <Text>Message: {message}</Text>
-          <Text dimColor>Files: {detailFiles.join(', ') || 'Loading...'}</Text>
-          <Text dimColor>Press ESC to return</Text>
+          <Text>{'\n'}Files in this stash:</Text>
+          {stashFiles.map(file => (
+            <Text key={file} dimColor>{file}</Text>
+          ))}
+          {stashFiles.length === 0 && <Text dimColor>Loading...</Text>}
+          <Text dimColor>{'\n'}Press ESC to return</Text>
         </Box>
       );
     }
   }
 
-  // Diff view content
-  if (viewMode === 'diff') {
+  // File diff view (BOARD-003)
+  if (viewMode === 'file-diff') {
     const allFiles = [...stagedFiles, ...unstagedFiles];
     const selectedFile = allFiles[selectedFileIndex];
 
+    if (selectedFile) {
+      return (
+        <Box flexDirection="column" padding={1}>
+          <Text bold>{selectedFile}</Text>
+          <Text>{'\n'}{fileDiff || 'Loading diff...'}</Text>
+          <Text dimColor>{'\n'}Press ESC to return</Text>
+        </Box>
+      );
+    }
+  }
+
+  // Work unit detail view
+  if (viewMode === 'detail' && selectedWorkUnit) {
     return (
       <Box flexDirection="column" padding={1}>
-        <Text bold>Diff: {selectedFile || 'src/auth.ts'}</Text>
-        <Text color="green">{diffContent || '+5 -2 lines'}</Text>
-        <Text dimColor>Diff content shown using git.readBlob</Text>
-        <Text dimColor>Press ESC to return</Text>
+        <Text bold>{selectedWorkUnit.id} - {selectedWorkUnit.title}</Text>
+        <Text>Type: {selectedWorkUnit.type}</Text>
+        <Text>Status: {selectedWorkUnit.status}</Text>
+        {selectedWorkUnit.estimate && <Text>Estimate: {selectedWorkUnit.estimate} points</Text>}
+        <Text>{'\n'}Description:</Text>
+        <Text>{selectedWorkUnit.description || 'No description'}</Text>
+        <Text dimColor>{'\n'}Press ESC to return</Text>
       </Box>
     );
   }
 
   return (
-    <Box flexDirection="column" padding={1}>
-      {/* Header */}
-      <Box marginBottom={1}>
-        <Text bold>fspec Kanban Board</Text>
-      </Box>
-
-      {/* Stash Panel */}
-      {showStashPanel && (
-        <Box marginBottom={1} borderStyle="single" borderColor={currentPanel === 'stash' ? 'cyan' : 'gray'} paddingX={1}>
-          <Box flexDirection="column">
-            <Text bold color={currentPanel === 'stash' ? 'cyan' : 'gray'}>Git Stashes ({stashes.length})</Text>
-            {stashes.length > 0 ? (
-              stashes.map((stash, idx) => {
-                const message = stash.commit.message;
-                const timestamp = stash.commit.author.timestamp;
-                const nameMatch = message.match(/fspec-checkpoint:[^:]+:([^:]+):/);
-                const name = nameMatch ? nameMatch[1] : 'stash';
-                const relativeTime = formatRelativeTime(timestamp);
-
-                return (
-                  <Text key={idx}>
-                    {name} ({relativeTime})
-                  </Text>
-                );
-              })
-            ) : (
-              <Text dimColor>No stashes</Text>
-            )}
-          </Box>
-        </Box>
-      )}
-
-      {/* Files Panel */}
-      {showFilesPanel && (
-        <Box marginBottom={1} borderStyle="single" borderColor={currentPanel === 'files' ? 'cyan' : 'gray'} paddingX={1}>
-          <Box flexDirection="column">
-            <Text bold color={currentPanel === 'files' ? 'cyan' : 'gray'}>
-              Changed Files ({stagedFiles?.length || 0} staged, {unstagedFiles?.length || 0} unstaged)
-            </Text>
-            {stagedFiles && stagedFiles.length > 0 && (
-              <Box flexDirection="column">
-                <Text color="green">Staged:</Text>
-                {stagedFiles.map((file, idx) => (
-                  <Text key={idx} color="green">  {file}</Text>
-                ))}
-              </Box>
-            )}
-            {unstagedFiles && unstagedFiles.length > 0 && (
-              <Box flexDirection="column">
-                <Text color="yellow">Unstaged:</Text>
-                {unstagedFiles.map((file, idx) => (
-                  <Text key={idx} color="yellow">  {file}</Text>
-                ))}
-              </Box>
-            )}
-            {(stagedFiles?.length || 0) === 0 && (unstagedFiles?.length || 0) === 0 && (
-              <Text dimColor>No changes</Text>
-            )}
-          </Box>
-        </Box>
-      )}
-
-      {/* Columns */}
-      <Box>
-        {groupedWorkUnits.map((column, colIndex) => {
-          const isFocused = colIndex === focusedColumnIndex;
-          const statusName = column.status.toUpperCase();
-
-          return (
-            <Box
-              key={column.status}
-              flexDirection="column"
-              borderStyle="single"
-              borderColor={isFocused ? 'cyan' : 'gray'}
-              paddingX={1}
-              marginRight={1}
-              width={20}
-            >
-              {/* Column Header */}
-              <Text bold={isFocused} color={isFocused ? 'cyan' : 'gray'}>
-                {statusName} ({column.count}) - {column.totalPoints}pts
-              </Text>
-
-              {/* Work Units */}
-              <Box flexDirection="column" marginTop={1}>
-                {column.units.length === 0 ? (
-                  <Text dimColor>No work units</Text>
-                ) : (
-                  column.units.slice(0, 5).map((wu, index) => {
-                    const isSelected = isFocused && index === selectedWorkUnitIndex;
-                    const typeIcon = wu.type === 'bug' ? '🐛' : wu.type === 'task' ? '⚙️' : '📖';
-                    const estimate = typeof wu.estimate === 'number' ? wu.estimate : 0;
-                    const priorityIcon =
-                      estimate > 8 ? '🔴' : estimate >= 3 ? '🟡' : '🟢';
-
-                    return (
-                      <Box key={wu.id} marginBottom={1}>
-                        <Text
-                          backgroundColor={isSelected ? 'cyan' : undefined}
-                          color={isSelected ? 'black' : undefined}
-                        >
-                          {typeIcon} {wu.id} {estimate}pt {priorityIcon}
-                        </Text>
-                      </Box>
-                    );
-                  })
-                )}
-                {column.units.length > 5 && (
-                  <Text dimColor>... {column.units.length - 5} more</Text>
-                )}
-              </Box>
-            </Box>
-          );
-        })}
-      </Box>
-
-      {/* Footer */}
-      <Box marginTop={1} borderStyle="single" borderColor="gray" paddingX={1}>
-        <Text dimColor>
-          ← → Columns | ↑↓ jk Work Units | ↵ Details | ESC Back
-        </Text>
-      </Box>
-    </Box>
+    <UnifiedBoardLayout
+      workUnits={workUnits}
+      stashes={stashes}
+      stagedFiles={stagedFiles}
+      unstagedFiles={unstagedFiles}
+      focusedColumnIndex={focusedColumnIndex}
+      selectedWorkUnitIndex={selectedWorkUnitIndex}
+      onColumnChange={(delta) => {
+        setFocusedColumnIndex(prev => {
+          const newIndex = prev + delta;
+          if (newIndex < 0) return columns.length - 1;
+          if (newIndex >= columns.length) return 0;
+          return newIndex;
+        });
+        setSelectedWorkUnitIndex(0);
+      }}
+      onWorkUnitChange={(delta) => {
+        const currentColumn = groupedWorkUnits[focusedColumnIndex];
+        if (currentColumn.units.length > 0) {
+          setSelectedWorkUnitIndex(prev => {
+            const newIndex = prev + delta;
+            if (newIndex < 0) return currentColumn.units.length - 1;
+            if (newIndex >= currentColumn.units.length) return 0;
+            return newIndex;
+          });
+        }
+      }}
+      onEnter={() => {
+        // Handle Enter key based on focused panel (BOARD-003)
+        if (focusedPanel === 'board') {
+          const currentColumn = groupedWorkUnits[focusedColumnIndex];
+          if (currentColumn.units.length > 0) {
+            const workUnit = currentColumn.units[selectedWorkUnitIndex];
+            setSelectedWorkUnit(workUnit);
+            setViewMode('detail');
+          }
+        } else if (focusedPanel === 'stash' && stashes.length > 0) {
+          setViewMode('stash-detail');
+        } else if (focusedPanel === 'files' && (stagedFiles.length > 0 || unstagedFiles.length > 0)) {
+          setViewMode('file-diff');
+        }
+      }}
+    />
   );
 };

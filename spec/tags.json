@@ -114,6 +114,10 @@
           "description": "Kanban board visualization"
         },
         {
+          "name": "@board-visualization",
+          "description": "Kanban board visualization and layout features"
+        },
+        {
           "name": "@bulk",
           "description": "Bulk operations"
         },
@@ -598,6 +602,10 @@
           "description": "File System Operations"
         },
         {
+          "name": "@file-watching",
+          "description": "Features using file system watchers (fs.watch) for change detection"
+        },
+        {
           "name": "@gherkin",
           "description": "Gherkin Specification Compliance"
         },
@@ -622,6 +630,10 @@
           "description": "Ink (React for CLIs) rendering engine"
         },
         {
+          "name": "@interactive",
+          "description": "Interactive terminal UI features using Ink"
+        },
+        {
           "name": "@internal",
           "description": "Internal Utility"
         },
@@ -640,6 +652,10 @@
         {
           "name": "@json-schema",
           "description": "JSON Schema Validation"
+        },
+        {
+          "name": "@layout",
+          "description": "Layout and visual presentation features"
         },
         {
           "name": "@learning",
@@ -668,6 +684,10 @@
         {
           "name": "@push",
           "description": "Push notification functionality"
+        },
+        {
+          "name": "@real-time",
+          "description": "Features with real-time data synchronization and live updates"
         },
         {
           "name": "@reverse-engineering",
@@ -1206,7 +1226,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-10-27T04:27:45.226Z",
+    "lastUpdated": "2025-10-27T08:18:32.597Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

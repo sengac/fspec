@@ -46,6 +46,7 @@ Tags that categorize features by functional area.
 | `@blocked-state` | Blocked state handling |
 | `@board` | Kanban board operations |
 | `@board-view` | Kanban board visualization |
+| `@board-visualization` | Kanban board visualization and layout features |
 | `@bulk` | Bulk operations |
 | `@bulk-add` | Bulk add operations |
 | `@bulk-export` | Bulk export operations |
@@ -174,17 +175,20 @@ Tags for specific technical concerns or architectural patterns.
 | `@file-initialization` | Scenarios testing initialization of project files |
 | `@file-structure` | File and directory structure validation |
 | `@file-system` | File System Operations |
+| `@file-watching` | Features using file system watchers (fs.watch) for change detection |
 | `@gherkin` | Gherkin Specification Compliance |
 | `@graceful-degradation` | Features that gracefully handle missing or invalid data |
 | `@guidance` | Features that provide AI guidance/prompts rather than code implementation |
 | `@idempotent` | Operations that can be safely repeated without changing results |
 | `@initialization` | File and system initialization features |
 | `@ink` | Ink (React for CLIs) rendering engine |
+| `@interactive` | Interactive terminal UI features using Ink |
 | `@internal` | Internal Utility |
 | `@isomorphic-git` | Uses isomorphic-git library for pure JavaScript git operations |
 | `@json-backed` | JSON-Backed Documentation |
 | `@json-output` | JSON format output support |
 | `@json-schema` | JSON Schema Validation |
+| `@layout` | Layout and visual presentation features |
 | `@learning` | Machine learning and adaptive features based on usage patterns |
 | `@mermaid` | Mermaid Diagram Support |
 | `@multi-agent` | Multi-agent compatibility features and agent-specific customizations |
@@ -192,6 +196,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@pattern-detection` | Features involving pattern detection and analysis from historical data |
 | `@prettier` | Prettier configuration and code formatting |
 | `@push` | Push notification functionality |
+| `@real-time` | Features with real-time data synchronization and live updates |
 | `@reverse-engineering` | Reverse engineering existing code to create specifications |
 | `@review` | Code review and quality analysis |
 | `@runtime` | Runtime behavior and dynamic configuration |
@@ -543,7 +548,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-10-27T04:27:45.226Z_
+_Last updated: 2025-10-27T08:18:32.597Z_
 
 **Update Command**: `fspec tag-stats`
 
