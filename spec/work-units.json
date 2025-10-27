@@ -15188,7 +15188,7 @@
       "type": "story",
       "status": "done",
       "createdAt": "2025-10-27T22:35:08.114Z",
-      "updatedAt": "2025-10-27T23:00:28.691Z",
+      "updatedAt": "2025-10-27T23:04:57.476Z",
       "description": "Make the work unit table expand vertically to use all available space within FullScreenWrapper. Currently the table has a fixed height and doesn't stretch to fill the terminal.",
       "children": [],
       "stateHistory": [
@@ -15223,6 +15223,26 @@
         {
           "state": "done",
           "timestamp": "2025-10-27T23:00:28.691Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-27T23:03:32.890Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-27T23:04:50.702Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-27T23:04:51.787Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-27T23:04:52.850Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-27T23:04:57.476Z"
         }
       ],
       "userStory": {
