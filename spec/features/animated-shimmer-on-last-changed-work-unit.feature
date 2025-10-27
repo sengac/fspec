@@ -1,4 +1,3 @@
-@done
 @board-visualization
 @interactive-cli
 @tui
@@ -11,7 +10,8 @@ Feature: Animated shimmer on last changed work unit
   - Shimmer effect uses 3-level brightness gradient: dim (gray) → base color → bright
   - At any frame, one character is at peak brightness with gradient falloff on both sides
   - Animation moves one character position per frame at ~100ms interval for smooth visual effect
-  - Compute lastChangedWorkUnit using useMemo by finding max(updated) timestamp
+  - Compute lastChangedWorkUnit using useMemo by finding most recent stateHistory timestamp
+  - Zustand store must include stateHistory array when loading work units
   - Use setInterval to advance shimmer position (not toggle entire string)
   - Apply chalk color variations based on work unit type: white/red/blue → whiteBright/redBright/blueBright
   - For selected+last-changed: apply gradient to background (bgGreen → bgGreenBright) with black text
@@ -24,33 +24,34 @@ Feature: Animated shimmer on last changed work unit
   #
   # BUSINESS RULES:
   #   1. Last changed work unit is determined by status/column change, not other field updates
-  #   2. Find last changed work unit by computing max(updated) timestamp across all work units
-  #   3. Shimmer cycles every 5 seconds with pauses between cycles
-  #   4. When multiple work units have same timestamp, pick the one with most recent updated field
-  #   5. When last-changed work unit is NOT selected: shimmer text color (white→whiteBright, red→redBright, blue→blueBright)
-  #   6. Shimmer starts on TUI startup for the most recently changed work unit from history
-  #   7. Shimmer continues indefinitely until another work unit changes status
-  #   8. Zustand store WorkUnit interface must include updated and estimate fields to pass data from work-units.json to components
-  #   9. Shimmer effect animates character-by-character from left to right across the entire string
-  #   10. At any given frame, one character is at peak brightness (whiteBright/redBright/blueBright), with darker gradient on both sides
-  #   11. Gradient uses 3 brightness levels: dim (gray), base color (white/red/blue), bright (whiteBright/redBright/blueBright)
-  #   12. Shimmer wave moves one character position per frame at smooth animation speed
-  #   13. When shimmer reaches end of string, it loops back to the beginning continuously
+  #   2. Find last changed work unit by getting the most recent stateHistory timestamp across all work units
+  #   3. Shimmer starts on TUI startup for the most recently changed work unit from history
+  #   4. Shimmer continues indefinitely until another work unit changes status
+  #   5. Zustand store must include stateHistory array when loading work units so components can access state transition timestamps
+  #   6. Shimmer effect animates character-by-character from left to right across the entire string
+  #   7. At any given frame, one character is at peak brightness (whiteBright/redBright/blueBright), with darker gradient on both sides
+  #   8. Gradient uses 3 brightness levels: dim (gray), base color (white/red/blue), bright (whiteBright/redBright/blueBright)
+  #   9. Shimmer wave moves one character position per frame at smooth animation speed
+  #   10. When shimmer reaches end of string, it loops back to the beginning continuously
+  #   11. The Zustand store must transform updatedAt field from work-units.json to updated field when loading work units
+  #   12. The lastChangedWorkUnit algorithm should use the most recent state transition timestamp from stateHistory array, not the updatedAt field which tracks any field modification
   #
   # EXAMPLES:
-  #   1. Story TECH-001 with most recent timestamp displays with shimmering white text (white→whiteBright every 5s)
-  #   2. Bug BUG-007 with most recent timestamp displays with shimmering red text (red→redBright every 5s)
-  #   3. Task TASK-003 with most recent timestamp displays with shimmering blue text (blue→blueBright every 5s)
+  #   1. Story TECH-001 with most recent stateHistory timestamp displays with shimmering white text
+  #   2. Bug BUG-007 with most recent stateHistory timestamp displays with shimmering red text
+  #   3. Task TASK-003 with most recent stateHistory timestamp displays with shimmering blue text
   #   4. Selected work unit AUTH-001 that is also last-changed displays with shimmering green background (bgGreen→bgGreenBright) and black text
-  #   5. On TUI startup, BOARD-008 with updated='2025-10-27T21:30:00Z' is most recent, starts shimmering immediately
-  #   6. User moves FEAT-002 from testing to implementing, shimmer stops on BOARD-008 and starts on FEAT-002
-  #   7. Zustand store loads work unit with updated='2025-10-27T22:00:00Z' from work-units.json and passes it to UnifiedBoardLayout
+  #   5. On TUI startup, shimmer identifies work unit with most recent stateHistory entry and starts immediately
+  #   6. User moves FEAT-002 from testing to implementing, shimmer stops on previous work unit and starts on FEAT-002
+  #   7. Zustand store loads work units with stateHistory array from work-units.json and passes to UnifiedBoardLayout
   #   8. String 'FEAT-001' with shimmer at position 0: [F]EAT-001 where F is whiteBright, E is white, A is gray
   #   9. String 'FEAT-001' with shimmer at position 3: FEA[T]-001 where T is whiteBright, A and - are white, E and 0 are gray
   #   10. Bug work unit 'BUG-007' uses red gradient: gray → red → redBright → red → gray
   #   11. Task work unit 'TASK-003' uses blue gradient: gray → blue → blueBright → blue → gray
   #   12. Animation speed: shimmer moves 1 character position every 100ms for smooth visual wave effect
   #   13. For selected work unit that is also last-changed: apply shimmer gradient to background color (bgGreen → bgGreenBright → bgGreen) with black text
+  #   14. Work unit BOARD-009 has stateHistory entry with timestamp 2025-10-27T13:13:46.292Z (most recent transition), should shimmer
+  #   15. Work unit EXMAP-001 has updatedAt 2025-10-10T23:20:00.252Z but last stateHistory entry is older than BOARD-009, should NOT shimmer
   #
   # QUESTIONS (ANSWERED):
   #   Q: What constitutes a 'change' to a work unit?
@@ -73,6 +74,9 @@ Feature: Animated shimmer on last changed work unit
   #
   #   Q: How should Zustand track status changes?
   #   A: true
+  #
+  #   Q: Should we use the last stateHistory timestamp (only status changes) or add a dedicated lastStatusChange field to work units?
+  #   A: Use the last stateHistory timestamp - this is the correct approach because it only tracks actual status/column changes (what users care about), not other field modifications like estimate changes. The stateHistory array is already part of the work unit data structure and is the source of truth for state transitions.
   #
   # ========================================
   Background: User Story

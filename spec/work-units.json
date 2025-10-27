@@ -14614,7 +14614,7 @@
       "type": "story",
       "status": "done",
       "createdAt": "2025-10-27T11:33:13.499Z",
-      "updatedAt": "2025-10-27T13:09:02.580Z",
+      "updatedAt": "2025-10-27T13:22:11.715Z",
       "description": "Highlight the most recently modified work unit with green text color and animated left-to-right shimmer effect every 5 seconds",
       "epic": "interactive-tui-foundation",
       "children": [],
@@ -14686,6 +14686,26 @@
         {
           "state": "done",
           "timestamp": "2025-10-27T13:09:02.580Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-27T13:13:46.293Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-27T13:17:04.125Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-27T13:18:38.247Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-27T13:21:53.297Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-27T13:22:11.715Z"
         }
       ],
       "userStory": {
@@ -14728,22 +14748,28 @@
           "text": "@human: How should Zustand track status changes?",
           "selected": true,
           "answer": "Compute last-changed work unit by finding max(updated) timestamp across all work units. Don't store separately in Zustand - use existing updated field. Track only shimmer animation toggle state in component state."
+        },
+        {
+          "text": "@human: Should we use the last stateHistory timestamp (only status changes) or add a dedicated lastStatusChange field to work units?",
+          "selected": true,
+          "answer": "Use the last stateHistory timestamp - this is the correct approach because it only tracks actual status/column changes (what users care about), not other field modifications like estimate changes. The stateHistory array is already part of the work unit data structure and is the source of truth for state transitions."
         }
       ],
       "rules": [
         "Last changed work unit is determined by status/column change, not other field updates",
         "Find last changed work unit by computing max(updated) timestamp across all work units",
-        "Shimmer cycles every 5 seconds with pauses between cycles",
         "When multiple work units have same timestamp, pick the one with most recent updated field",
-        "When last-changed work unit is NOT selected: shimmer text color (white→whiteBright, red→redBright, blue→blueBright)",
         "Shimmer starts on TUI startup for the most recently changed work unit from history",
         "Shimmer continues indefinitely until another work unit changes status",
         "Zustand store WorkUnit interface must include updated and estimate fields to pass data from work-units.json to components",
-        "Shimmer effect animates character-by-character from left to right across the entire string",
         "At any given frame, one character is at peak brightness (whiteBright/redBright/blueBright), with darker gradient on both sides",
         "Gradient uses 3 brightness levels: dim (gray), base color (white/red/blue), bright (whiteBright/redBright/blueBright)",
         "Shimmer wave moves one character position per frame at smooth animation speed",
-        "When shimmer reaches end of string, it loops back to the beginning continuously"
+        "When shimmer reaches end of string, it loops back to the beginning continuously",
+        "The Zustand store must transform updatedAt field from work-units.json to updated field when loading work units",
+        "The lastChangedWorkUnit algorithm should use the most recent state transition timestamp from stateHistory array, not the updatedAt field which tracks any field modification",
+        "Find last changed work unit by getting the most recent stateHistory timestamp across all work units",
+        "Zustand store must include stateHistory array when loading work units so components can access state transition timestamps"
       ],
       "examples": [
         "Story TECH-001 with most recent timestamp displays with shimmering white text (white→whiteBright every 5s)",
@@ -14758,7 +14784,9 @@
         "Bug work unit 'BUG-007' uses red gradient: gray → red → redBright → red → gray",
         "Task work unit 'TASK-003' uses blue gradient: gray → blue → blueBright → blue → gray",
         "Animation speed: shimmer moves 1 character position every 100ms for smooth visual wave effect",
-        "For selected work unit that is also last-changed: apply shimmer gradient to background color (bgGreen → bgGreenBright → bgGreen) with black text"
+        "For selected work unit that is also last-changed: apply shimmer gradient to background color (bgGreen → bgGreenBright → bgGreen) with black text",
+        "Work unit BOARD-009 has stateHistory entry with timestamp 2025-10-27T13:13:46.292Z (most recent transition), should shimmer",
+        "Work unit EXMAP-001 has updatedAt 2025-10-10T23:20:00.252Z but last stateHistory entry is older than BOARD-009, should NOT shimmer"
       ],
       "estimate": 5
     },
