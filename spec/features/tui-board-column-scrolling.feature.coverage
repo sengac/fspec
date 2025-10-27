@@ -1,0 +1,143 @@
+{
+  "scenarios": [
+    {
+      "name": "Automatic scroll when navigating beyond visible viewport",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/BoardView-column-scrolling.test.tsx",
+          "lines": "29-66",
+          "implMappings": [
+            {
+              "file": "src/tui/components/UnifiedBoardLayout.tsx",
+              "lines": [
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Scroll up when navigating backward through items",
+      "testMappings": []
+    },
+    {
+      "name": "No scroll indicators when all items fit in viewport",
+      "testMappings": []
+    },
+    {
+      "name": "Show scroll indicators when items exceed viewport",
+      "testMappings": []
+    },
+    {
+      "name": "Wrap-around navigation at column boundaries",
+      "testMappings": []
+    },
+    {
+      "name": "Preserve scroll position when switching columns",
+      "testMappings": []
+    },
+    {
+      "name": "Account for scroll indicators when calculating visible items",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/BoardView-column-scrolling.test.tsx",
+          "lines": "224-264",
+          "implMappings": [
+            {
+              "file": "src/tui/components/UnifiedBoardLayout.tsx",
+              "lines": [
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 2,
+    "coveragePercent": 29,
+    "testFiles": [
+      "src/tui/__tests__/BoardView-column-scrolling.test.tsx"
+    ],
+    "implFiles": [
+      "src/tui/components/UnifiedBoardLayout.tsx"
+    ],
+    "totalLinesCovered": 154
+  }
+}

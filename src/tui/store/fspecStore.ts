@@ -25,6 +25,8 @@ interface WorkUnit {
   type: string;
   description?: string;
   epic?: string;
+  estimate?: number;
+  updated?: string;
 }
 
 interface Epic {
