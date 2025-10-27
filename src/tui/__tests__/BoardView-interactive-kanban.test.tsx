@@ -193,7 +193,7 @@ describe('Feature: Interactive Kanban board CLI', () => {
       await new Promise(resolve => setTimeout(resolve, 100));
 
       // @step When viewing the footer
-      // @step Then it should display "← → Columns | ↑↓ jk Work Units | ↵ Details | ESC Back"
+      // @step Then it should display "← → Columns | ↑↓ Work Units | ↵ Details | ESC Back"
       const frame = lastFrame();
       expect(frame).toMatch(/←.*→.*Columns/);
       expect(frame).toMatch(/↑.*↓.*Work Units/);
