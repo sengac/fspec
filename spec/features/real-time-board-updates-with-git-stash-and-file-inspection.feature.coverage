@@ -1,0 +1,290 @@
+{
+  "scenarios": [
+    {
+      "name": "Display git stashes with timestamps",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/BoardView-realtime-updates.test.tsx",
+          "lines": "26-80",
+          "implMappings": [
+            {
+              "file": "src/tui/components/BoardView.tsx",
+              "lines": [
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56
+              ]
+            }
+          ]
+        },
+        {
+          "file": "src/tui/__tests__/BoardView-realtime-updates.test.tsx",
+          "lines": "35-80",
+          "implMappings": [
+            {
+              "file": "src/tui/components/BoardView.tsx",
+              "lines": [
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Display changed files with staged/unstaged indicators",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/BoardView-realtime-updates.test.tsx",
+          "lines": "82-112",
+          "implMappings": [
+            {
+              "file": "src/tui/components/BoardView.tsx",
+              "lines": [
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73
+              ]
+            }
+          ]
+        },
+        {
+          "file": "src/tui/__tests__/BoardView-realtime-updates.test.tsx",
+          "lines": "83-115",
+          "implMappings": [
+            {
+              "file": "src/tui/components/BoardView.tsx",
+              "lines": [
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Inspect stash details with Enter key",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/BoardView-realtime-updates.test.tsx",
+          "lines": "118-154",
+          "implMappings": [
+            {
+              "file": "src/tui/components/BoardView.tsx",
+              "lines": [
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "View file diff with Enter key",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/BoardView-realtime-updates.test.tsx",
+          "lines": "157-192",
+          "implMappings": [
+            {
+              "file": "src/tui/components/BoardView.tsx",
+              "lines": [
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Auto-refresh board on status change",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/BoardView-realtime-updates.test.tsx",
+          "lines": "195-264",
+          "implMappings": [
+            {
+              "file": "src/tui/components/BoardView.tsx",
+              "lines": [
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Switch focus between panels with tab key",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/BoardView-realtime-updates.test.tsx",
+          "lines": "267-284",
+          "implMappings": [
+            {
+              "file": "src/tui/components/BoardView.tsx",
+              "lines": [
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Return from detail view with ESC key",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/BoardView-realtime-updates.test.tsx",
+          "lines": "254-282",
+          "implMappings": [
+            {
+              "file": "src/tui/components/BoardView.tsx",
+              "lines": [
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97
+              ]
+            }
+          ]
+        },
+        {
+          "file": "src/tui/__tests__/BoardView-realtime-updates.test.tsx",
+          "lines": "287-312",
+          "implMappings": [
+            {
+              "file": "src/tui/components/BoardView.tsx",
+              "lines": [
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/__tests__/BoardView-realtime-updates.test.tsx"
+    ],
+    "implFiles": [
+      "src/tui/components/BoardView.tsx"
+    ],
+    "totalLinesCovered": 510
+  }
+}

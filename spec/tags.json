@@ -50,6 +50,10 @@
           "description": "Template generation and transformation system"
         },
         {
+          "name": "@tui",
+          "description": "Terminal User Interface components and infrastructure"
+        },
+        {
           "name": "@validator",
           "description": "Validation Logic"
         }
@@ -260,6 +264,10 @@
         {
           "name": "@infrastructure",
           "description": "Core infrastructure and shared utilities"
+        },
+        {
+          "name": "@interactive-cli",
+          "description": "Interactive CLI features and TUI workflows"
         },
         {
           "name": "@kanban",
@@ -610,6 +618,10 @@
           "description": "File and system initialization features"
         },
         {
+          "name": "@ink",
+          "description": "Ink (React for CLIs) rendering engine"
+        },
+        {
           "name": "@internal",
           "description": "Internal Utility"
         },
@@ -732,6 +744,10 @@
         {
           "name": "@vitest",
           "description": "Vitest testing framework related features"
+        },
+        {
+          "name": "@zustand",
+          "description": "Zustand state management library"
         }
       ],
       "rule": "Use technical tags to highlight specific architectural concerns."
@@ -1190,7 +1206,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-10-27T01:46:36.680Z",
+    "lastUpdated": "2025-10-27T04:27:45.226Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

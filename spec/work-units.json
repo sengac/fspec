@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-27T04:17:08.578Z"
+    "lastUpdated": "2025-10-27T06:11:35.628Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -8905,15 +8905,123 @@
       "id": "BOARD-002",
       "title": "Interactive Kanban board CLI",
       "type": "story",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2025-10-21T05:25:48.725Z",
-      "updatedAt": "2025-10-27T04:17:08.578Z",
+      "updatedAt": "2025-10-27T06:34:19.400Z",
       "description": "Create an interactive terminal interface for fspec board that allows keyboard navigation across columns and work units. Press Enter to view full work unit details including description, attachments, example mapping data, dependencies, metrics, and more. Support vim-style navigation (hjkl), arrow keys, tab to switch columns, and quick actions (e.g., 's' for status change, 'e' to edit, 'a' for attachments).",
       "epic": "interactive-cli",
       "children": [],
       "attachments": [
         "spec/attachments/BOARD-002/interactive-kanban-board-design.md"
-      ]
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-27T05:23:40.679Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-27T05:27:12.661Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-27T05:28:24.067Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-27T05:36:04.373Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-27T05:38:17.307Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-27T06:26:43.346Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-27T06:27:51.687Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-27T06:28:29.902Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-27T06:30:19.984Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-27T06:32:34.448Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-27T06:33:08.185Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-27T06:34:16.054Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-27T06:34:17.176Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-27T06:34:18.281Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-27T06:34:19.400Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer managing work units",
+        "action": "navigate and interact with Kanban board using keyboard shortcuts",
+        "benefit": "I can efficiently view, update, and manage work units without leaving the terminal"
+      },
+      "rules": [
+        "Board must display 7 Kanban columns: backlog, specifying, testing, implementing, validating, done, blocked",
+        "Arrow keys (←→ or hjkl) navigate between columns, ↑↓ (or jk) navigate work units within column",
+        "Enter key opens detailed view of selected work unit",
+        "Work unit cards show: type icon (📖/🐛/⚙️), ID, estimate, priority indicator (🔴🟡🟢), truncated title",
+        "Selected work unit highlighted with cyan background, focused column has cyan border",
+        "Board loads work units from Zustand store (fspecStore.loadData() on mount)",
+        "Empty columns display 'No work units' message",
+        "Column headers show: status name, count, total story points",
+        "ESC key returns to previous view or exits board",
+        "Detail view must display: work unit ID, title, description, type, status, estimate, epic, rules, examples, questions, attachments, dependencies, and 'Press ESC to return' message"
+      ],
+      "examples": [
+        "User presses → arrow - focus moves from BACKLOG to SPECIFYING column, first work unit in SPECIFYING is selected",
+        "User presses ↓ arrow - selection moves from RES-003 to RES-004 within BACKLOG column",
+        "User presses Enter on ITF-002 - opens detail view showing full description, Example Mapping data, attachments",
+        "BACKLOG column header shows: 'BACKLOG (26) - 78pts'",
+        "Work unit ITF-001 (story, 5pt estimate) displays as: 📖 ITF-001 5pt 🟡",
+        "Empty TESTING column shows 'No work units' message centered in column",
+        "Board loads on mount by calling fspecStore.loadData() and displaying work units grouped by status",
+        "Footer displays: '← → Columns | ↑↓ jk Work Units | ↵ Details | ESC Back'",
+        "User presses Enter on BOARD-002 (currently selected) → Detail view opens showing: 'BOARD-002', 'Interactive Kanban board CLI', full description, 9 rules, 8 examples, 3 questions (answered), 1 attachment, 'Press ESC to return'"
+      ],
+      "questions": [
+        {
+          "text": "Should column navigation wrap around (pressing → on BLOCKED goes to BACKLOG)?",
+          "selected": true,
+          "answer": "Yes - wrap around. Pressing → on BLOCKED wraps to BACKLOG, ← on BACKLOG wraps to BLOCKED. Same for work units: ↓ on last wraps to first, ↑ on first wraps to last."
+        },
+        {
+          "text": "Should work unit navigation within column wrap around (pressing ↓ on last item goes to first)?",
+          "selected": true,
+          "answer": "Yes - wrap around for seamless navigation. Pressing → on BLOCKED wraps to BACKLOG, pressing ← on BACKLOG wraps to BLOCKED."
+        },
+        {
+          "text": "What happens when navigating to an empty column - skip it or allow focus with no selection?",
+          "selected": true,
+          "answer": "Yes - work unit navigation wraps. Pressing ↓ on last work unit selects first work unit, pressing ↑ on first selects last."
+        }
+      ],
+      "estimate": 8
     },
     "CLEAN-001": {
       "id": "CLEAN-001",
@@ -10694,12 +10802,107 @@
       "id": "BOARD-003",
       "title": "Real-time board updates with git stash and file inspection",
       "type": "story",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2025-10-22T13:42:12.487Z",
-      "updatedAt": "2025-10-22T13:42:12.487Z",
+      "updatedAt": "2025-10-27T06:09:25.356Z",
       "description": "Add real-time board updates to the interactive Kanban CLI. Display git stashes and changed files (staged/unstaged) that users can click to inspect. Board should refresh automatically when work unit status changes. Support keyboard navigation to inspect stash details and file diffs.",
       "epic": "interactive-cli",
-      "children": []
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-27T05:38:39.225Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-27T05:41:53.905Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-27T05:43:07.455Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-27T05:44:53.992Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-27T05:46:34.390Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-27T05:58:46.491Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-27T05:59:52.547Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-27T06:00:33.304Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-27T06:02:39.451Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-27T06:07:24.261Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-27T06:07:53.144Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-27T06:08:56.316Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-27T06:09:00.977Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-27T06:09:15.768Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-27T06:09:25.356Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer managing work units",
+        "action": "see real-time status of work in progress",
+        "benefit": "I can quickly inspect changes and stash state without leaving the terminal"
+      },
+      "rules": [
+        "Board must display git stashes with timestamps and message previews",
+        "Board must show changed files with staged/unstaged indicators (green/yellow)",
+        "User can inspect stash details by selecting with Enter key",
+        "User can view file diffs for changed files by selecting with Enter key",
+        "Board refreshes automatically when work unit status changes",
+        "Keyboard navigation: tab/shift-tab to switch between board/stash/files panels",
+        "ESC key returns from detail view to board view",
+        "CRITICAL: NEVER use git CLI commands (git status, git diff, git stash) - ONLY use isomorphic-git library",
+        "Use existing utilities: getStagedFiles(), getUnstagedFiles() from src/git/status.ts",
+        "Stash operations use git.log() with ref 'refs/stash' to list stashes via isomorphic-git",
+        "File diffs generated using git.readBlob() and manual diff logic (NOT git diff CLI)"
+      ],
+      "examples": [
+        "User opens board with 2 stashes: shows 'GIT-001-auto-testing (2 hours ago)' and 'baseline (3 days ago)'",
+        "Board shows 3 staged files (green) and 2 unstaged files (yellow) in files panel",
+        "User presses Enter on stash: detail view shows stash message, timestamp, and changed files",
+        "User presses Enter on src/auth.ts: diff view shows +5 -2 lines with syntax highlighting",
+        "Status changes from implementing to validating: board automatically refreshes and updates column",
+        "User presses tab: focus switches from board to stash panel, border changes to cyan",
+        "User presses ESC in diff view: returns to board view with previous focus restored",
+        "Get staged files: import { getStagedFiles } from 'src/git/status'; const staged = await getStagedFiles(cwd); // ['src/auth.ts', 'README.md']",
+        "Get unstaged files: import { getUnstagedFiles } from 'src/git/status'; const unstaged = await getUnstagedFiles(cwd); // ['src/utils.ts']",
+        "List stashes: const logs = await git.log({ fs, dir: cwd, ref: 'refs/stash', depth: 10 }); // Returns stash commits",
+        "Read file from stash: const { blob } = await git.readBlob({ fs, dir: cwd, oid: stashOid, filepath: 'src/auth.ts' }); // Get file content",
+        "Generate diff: const headBlob = await git.readBlob({ fs, dir: cwd, oid: 'HEAD', filepath }); const workdirContent = await fs.readFile(filepath); const diff = computeDiff(headBlob, workdirContent);"
+      ],
+      "estimate": 8
     },
     "BUG-035": {
       "id": "BUG-035",
@@ -13612,26 +13815,216 @@
       "id": "ITF-001",
       "title": "Scaffold TUI infrastructure with Ink and cage components",
       "type": "story",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2025-10-27T04:16:56.752Z",
-      "updatedAt": "2025-10-27T04:17:08.080Z",
+      "updatedAt": "2025-10-27T04:38:23.326Z",
       "description": "Install Ink, @inkjs/ui, Zustand dependencies. Copy cage's shared components (VirtualList, FullScreenLayout, InputContext, useSafeInput). Create ViewManager, App.tsx, fspecStore. Add TUI command. Make 'fspec' with no args launch TUI.",
       "epic": "interactive-tui-foundation",
       "children": [],
       "attachments": [
         "spec/attachments/ITF-001/tui-foundation-architecture.md"
-      ]
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-27T04:19:50.184Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-27T04:28:41.448Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-27T04:31:32.718Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-27T04:34:11.761Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-27T04:38:23.326Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer building fspec's interactive TUI",
+        "action": "scaffold core TUI infrastructure with Ink, Zustand, and reusable components from cage",
+        "benefit": "I can build the interactive Kanban board and other TUI features on a solid, tested foundation"
+      },
+      "rules": [
+        "TUI infrastructure must use Ink (React for CLIs) as the rendering engine",
+        "State management must use Zustand with Immer for immutable updates",
+        "Component library must include @inkjs/ui for pre-built UI primitives",
+        "Components must be TypeScript with strict type safety (no 'any' types)",
+        "All components must be tested with ink-testing-library",
+        "Components must follow cage's architectural patterns (ViewManager, FullScreenLayout, modal input modes)"
+      ],
+      "examples": [
+        "Developer imports FullScreenLayout from src/tui/layouts and wraps a simple Text component - renders with title bar and footer",
+        "Developer uses ViewManager to navigate between two views - navigation works, back button returns to previous view",
+        "Developer creates Zustand store with fspec work units data - updates trigger re-renders in Ink components",
+        "Developer writes test with ink-testing-library's render() - can query rendered output and assert on text content",
+        "Developer creates modal input mode component - switches between normal and insert modes with 'i' key"
+      ],
+      "questions": [
+        {
+          "text": "@human: Should we copy components directly from cage or create similar components inspired by cage's patterns?",
+          "selected": true,
+          "answer": "Create similar components inspired by cage's patterns (not direct copies). This ensures fspec has full control over the codebase, follows fspec's TypeScript standards, and avoids cage-specific dependencies. Adapt patterns but write fresh TypeScript code."
+        },
+        {
+          "text": "@human: Do we need VirtualList component in Phase 1 scaffold or should it wait for ITF-002 (performance optimization)?",
+          "selected": true,
+          "answer": "VirtualList should be in Phase 1 scaffold. It's a foundational component needed for Kanban columns and work unit lists. Starting without it would require refactoring later. Include it in the initial scaffold."
+        },
+        {
+          "text": "@human: Should the scaffold include basic keyboard navigation hooks or just the component structure?",
+          "selected": true,
+          "answer": "Include basic keyboard navigation hooks (useSafeInput, InputModeContext) in scaffold. These are foundational and needed for all interactive components. Without them, every component would need to reinvent input handling."
+        }
+      ],
+      "estimate": 8
     },
     "ITF-002": {
       "id": "ITF-002",
       "title": "Zustand state management setup for fspec data",
       "type": "story",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2025-10-27T04:16:57.254Z",
-      "updatedAt": "2025-10-27T04:16:57.254Z",
+      "updatedAt": "2025-10-27T05:10:30.340Z",
       "description": "Create fspecStore with work units, epics, features, tags state. Add actions: loadWorkUnits, updateWorkUnit, createWorkUnit, deleteWorkUnit. Integrate with existing JSON file operations. Handle real-time updates with file watchers or polling.",
       "epic": "interactive-tui-foundation",
-      "children": []
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-27T04:58:56.621Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-27T05:01:58.555Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-27T05:03:46.531Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-27T05:08:22.056Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-27T05:10:30.340Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer building interactive TUI",
+        "action": "have Zustand store automatically load and sync all fspec data from JSON files",
+        "benefit": "the TUI can display real work units, epics, and features without manual data loading"
+      },
+      "rules": [
+        "Store must load data from spec/work-units.json, spec/epics.json, spec/features/ directory",
+        "Store must use Zustand with Immer for immutable state updates",
+        "Store actions must integrate with existing loadWorkUnits, loadEpics utility functions",
+        "Store must provide selectors for filtering work units by status, epic, prefix",
+        "Store initialization must be async to load JSON files from disk"
+      ],
+      "examples": [
+        "Store initializes and loads 206 work units from work-units.json - workUnits array has 206 items",
+        "Store loads 13 epics from epics.json - epics array has correct data structure with id, title, workUnits",
+        "Component calls useWorkUnitsByStatus('backlog') - returns filtered array of work units in backlog status",
+        "Component updates work unit status via store action - state updates immutably and component re-renders",
+        "Store provides getWorkUnitsByEpic selector - returns work units filtered by epic ID"
+      ],
+      "questions": [
+        {
+          "text": "@human: Should the store poll for file changes or use file watchers for real-time updates?",
+          "selected": true,
+          "answer": "For ITF-002, keep it simple: no file watchers or polling yet. Just load once on initialization. Real-time updates will be handled in BOARD-003."
+        },
+        {
+          "text": "@human: Should store initialization happen automatically on import or require explicit init() call?",
+          "selected": true,
+          "answer": "Require explicit init() call. This gives TUI control over when to load data and allows error handling during startup."
+        },
+        {
+          "text": "@human: Should the store cache data in memory or reload from disk on every access?",
+          "selected": true,
+          "answer": "Cache in memory after loading. TUI needs fast access to data for rendering. BOARD-003 will handle refreshing when files change."
+        }
+      ],
+      "estimate": 5
+    },
+    "ITF-003": {
+      "id": "ITF-003",
+      "title": "Launch interactive TUI when running fspec with no arguments",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-27T06:11:30.017Z",
+      "updatedAt": "2025-10-27T06:23:02.545Z",
+      "description": "Running 'fspec' with no arguments should launch the interactive Kanban board TUI instead of showing help text. This provides immediate visual feedback and makes the TUI the default interface.",
+      "epic": "interactive-tui-foundation",
+      "children": [],
+      "userStory": {
+        "role": "developer using fspec",
+        "action": "see my work units visually when I run fspec",
+        "benefit": "I get immediate visual feedback and can navigate my work interactively"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-27T06:11:45.400Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-27T06:13:52.454Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-27T06:14:51.816Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-27T06:19:05.928Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-27T06:21:27.950Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-27T06:21:52.480Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-27T06:22:59.197Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-27T06:23:00.321Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-27T06:23:01.434Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-27T06:23:02.545Z"
+        }
+      ],
+      "rules": [
+        "Running 'fspec' with no arguments MUST launch the interactive TUI (BoardView component)",
+        "Running 'fspec --help' MUST still show help text (not launch TUI)",
+        "Running 'fspec help' MUST still show help text (not launch TUI)",
+        "TUI MUST be rendered using existing BoardView component (DRY - reuse BOARD-002 implementation)",
+        "TUI MUST exit cleanly when user presses ESC or q key"
+      ],
+      "examples": [
+        "Developer runs 'fspec' → BoardView TUI launches → Shows Kanban board with work units",
+        "Developer runs 'fspec --help' → Help text displays → TUI does NOT launch",
+        "Developer runs 'fspec validate' → Validation executes → TUI does NOT launch",
+        "Developer in TUI presses ESC → TUI exits cleanly → Returns to shell prompt"
+      ]
     }
   },
   "states": {
@@ -13640,8 +14033,6 @@
       "RES-004",
       "RES-005",
       "RES-001",
-      "BOARD-002",
-      "BOARD-003",
       "TECH-001",
       "AGENT-001",
       "AGENT-002",
@@ -13660,9 +14051,7 @@
       "AGENT-015",
       "AGENT-016",
       "AGENT-017",
-      "FEAT-018",
-      "ITF-001",
-      "ITF-002"
+      "FEAT-018"
     ],
     "specifying": [
       "GIT-004",
@@ -13883,7 +14272,12 @@
       "CONFIG-003",
       "INIT-011",
       "INIT-012",
-      "HELP-004"
+      "HELP-004",
+      "ITF-001",
+      "ITF-002",
+      "BOARD-003",
+      "ITF-003",
+      "BOARD-002"
     ],
     "blocked": []
   }

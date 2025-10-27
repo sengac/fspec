@@ -6,6 +6,8 @@ import { fileURLToPath } from 'url';
 import { realpathSync } from 'fs';
 import { readFileSync } from 'fs';
 import { dirname, join } from 'path';
+import { render } from 'ink';
+import React from 'react';
 
 // Read version from package.json
 const __filename = fileURLToPath(import.meta.url);
@@ -152,6 +154,9 @@ import { registerWorkflowAutomationCommand } from './commands/workflow-automatio
 // Help functions
 import { displayCustomHelpWithNote, handleHelpCommand } from './help';
 import { handleCustomHelp } from './utils/help-interceptor';
+
+// TUI components
+import { BoardView } from './tui/components/BoardView';
 
 const program = new Command();
 
@@ -326,6 +331,32 @@ async function main(): Promise<void> {
       const exitCode = await syncVersion({ embeddedVersion });
       process.exit(exitCode);
     }
+  }
+
+  // Launch interactive TUI when no arguments provided
+  // process.argv = ['node', '/path/to/index.js'] when no args
+  if (process.argv.length === 2) {
+    // Check if stdin supports raw mode (required for Ink)
+    // Skip TUI in CI environments or when stdin is not a TTY
+    if (!process.stdin.isTTY || process.env.CI === 'true') {
+      console.error(
+        chalk.yellow('Interactive TUI requires a TTY environment.')
+      );
+      console.error(
+        chalk.yellow('Run with a command or use --help for available commands.')
+      );
+      process.exit(1);
+    }
+
+    const { waitUntilExit } = render(
+      React.createElement(BoardView, {
+        onExit: () => {
+          process.exit(0);
+        },
+      })
+    );
+    await waitUntilExit();
+    return;
   }
 
   // Handle custom help before Commander.js processes arguments

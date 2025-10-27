@@ -4,7 +4,6 @@
 @cli
 @HELP-004
 Feature: Add comprehensive help documentation for bootstrap and configure-tools commands
-
   """
   Architecture notes:
   - Help files follow CommandHelpConfig pattern from src/utils/help-formatter
@@ -41,7 +40,6 @@ Feature: Add comprehensive help documentation for bootstrap and configure-tools 
   #   A: true
   #
   # ========================================
-
   Background: User Story
     As a developer or AI agent using fspec
     I want to access comprehensive help documentation for bootstrap and configure-tools commands
