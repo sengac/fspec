@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-27T10:26:47.413Z"
+    "lastUpdated": "2025-10-27T10:41:15.685Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -14514,6 +14514,60 @@
         "No work unit selected in empty column: shows 'No work unit selected' message"
       ],
       "estimate": 5
+    },
+    "BOARD-008": {
+      "id": "BOARD-008",
+      "title": "Color-coded work units with animated shimmer for active item",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-27T10:41:03.150Z",
+      "updatedAt": "2025-10-27T11:05:05.468Z",
+      "description": "Replace emoji icons with color-coded text. Story=white, Bug=red, Task=blue, Active/selected=green with animated shimmer background every 5 seconds",
+      "epic": "interactive-tui-foundation",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-27T10:41:09.156Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-27T10:43:46.573Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-27T10:44:54.050Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-27T11:04:50.427Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-27T11:05:05.468Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer viewing TUI board",
+        "action": "identify work unit types by color instead of emoji",
+        "benefit": "I can quickly scan the board and distinguish stories, bugs, and tasks at a glance"
+      },
+      "rules": [
+        "Remove all emoji icons (📖, 🐛, ⚙️) from work unit display",
+        "Story work units must be displayed in white color",
+        "Bug work units must be displayed in red color",
+        "Task work units must be displayed in blue color",
+        "Active/selected work unit must be displayed in green color (overrides type color)",
+        "Active/selected work unit must have animated shimmer background effect",
+        "Shimmer animation must trigger every 5 seconds"
+      ],
+      "examples": [
+        "Story TECH-001 displays as white text without emoji icon",
+        "Bug BUG-001 displays as red text without emoji icon",
+        "Task TASK-001 displays as blue text without emoji icon",
+        "Selected story BOARD-008 displays as green text with shimmer background animation"
+      ],
+      "estimate": 5
     }
   },
   "states": {
@@ -14771,7 +14825,8 @@
       "ITF-005",
       "BOARD-005",
       "BOARD-006",
-      "BOARD-007"
+      "BOARD-007",
+      "BOARD-008"
     ],
     "blocked": []
   }

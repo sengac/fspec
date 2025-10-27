@@ -163,14 +163,13 @@ describe('Feature: Consolidate Git info and add work unit details panel', () => 
 
       await new Promise(resolve => setTimeout(resolve, 200));
 
-      // @step Then it should display the story icon 📖
-      // @step And it should display "BOARD-001: Test Feature" as the title
+      // @step Then it should display "BOARD-001: Test Feature" as the title
       // @step And it should display the first 3 lines of the description
       // @step And it should display "Press ↵ to view full details" indicator
       // @step And it should display "Dependencies: BOARD-002, BOARD-003"
       // @step And it should display epic, estimate, and status metadata
       const frame = lastFrame();
-      expect(frame).toContain('📖'); // Story icon
+      // BOARD-008: Story icon emoji removed
       expect(frame).toContain('BOARD-001');
       expect(frame).toContain('Test Feature');
       expect(frame).toMatch(/Press.*↵.*full details/i); // Indicator

@@ -113,6 +113,9 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
   // Calculate column width reactively based on terminal width
   const colWidth = useMemo(() => calculateColumnWidth(terminalWidth), [terminalWidth]);
 
+  // Shimmer animation state (BOARD-008: toggles every 5 seconds)
+  const [shimmerState, setShimmerState] = useState<boolean>(false);
+
   // Scroll offset per column (track scroll position for each column)
   const [scrollOffsets, setScrollOffsets] = useState<Record<string, number>>({
     backlog: 0,
@@ -132,6 +135,17 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
       return { status, units, count: units.length, totalPoints };
     });
   }, [workUnits]);
+
+  // Shimmer animation effect (BOARD-008: toggles every 5 seconds)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setShimmerState(prev => !prev);
+    }, 5000); // 5 seconds
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, []);
 
   // Handle keyboard input
   useInput((input, key) => {
@@ -230,9 +244,8 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
   // Work Unit Details panel
   rows.push('│' + fitToWidth('Work Unit Details', totalWidth) + '│');
   if (selectedWorkUnit) {
-    // Display selected work unit metadata
-    const typeIcon = selectedWorkUnit.type === 'bug' ? '🐛' : selectedWorkUnit.type === 'task' ? '⚙️' : '📖';
-    const titleLine = `${typeIcon} ${selectedWorkUnit.id}: ${selectedWorkUnit.title}`;
+    // Display selected work unit metadata (BOARD-008: no emoji icons)
+    const titleLine = `${selectedWorkUnit.id}: ${selectedWorkUnit.title}`;
     rows.push('│' + fitToWidth(`  ${titleLine}`, totalWidth) + '│');
 
     // Truncate description to 3 lines
@@ -306,16 +319,40 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
       }
 
       const wu = column.units[itemIndex];
-      const typeIcon = wu.type === 'bug' ? '🐛' : wu.type === 'task' ? '⚙️' : '📖';
       const estimate = wu.estimate || 0;
       const priorityIcon = estimate > 8 ? '🔴' : estimate >= 3 ? '🟡' : '🟢';
-      // Keep full "pt" text and let fitToWidth handle truncation
-      const text = `${typeIcon} ${wu.id} ${estimate}pt ${priorityIcon}`;
+
+      // Build text without emoji icons (BOARD-008)
+      const text = `${wu.id} ${estimate}pt ${priorityIcon}`;
       const paddedText = fitToWidth(text, colWidth);
 
-      // Highlight selected work unit in focused column with cyan background
+      // Check if this work unit is selected
       const isSelected = colIndex === focusedColumnIndex && itemIndex === selectedWorkUnitIndex;
-      return isSelected ? chalk.bgCyan.black(paddedText) : paddedText;
+
+      // Apply color-coding (BOARD-008):
+      // - Selected work units: green with shimmer background (overrides type color)
+      // - Story work units: white
+      // - Bug work units: red
+      // - Task work units: blue
+      if (isSelected) {
+        // Selected work unit displays in green with shimmer background
+        // Shimmer alternates between bgGreen and bgGreenBright every 5 seconds
+        if (shimmerState) {
+          return chalk.bgGreenBright.black(paddedText);
+        } else {
+          return chalk.bgGreen.black(paddedText);
+        }
+      } else {
+        // Type-based color coding
+        if (wu.type === 'bug') {
+          return chalk.red(paddedText);
+        } else if (wu.type === 'task') {
+          return chalk.blue(paddedText);
+        } else {
+          // story type defaults to white
+          return chalk.white(paddedText);
+        }
+      }
     });
     rows.push('│' + cells.join('│') + '│');
   }

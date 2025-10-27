@@ -141,9 +141,9 @@ describe('Feature: Interactive Kanban board CLI', () => {
       // @step And it should display "5pt"
       // @step And it should display priority indicator 🟡
       const frame = lastFrame();
-      // Verify type icons are displayed (pt text may be truncated at small widths)
-      expect(frame).toMatch(/📖|🐛|⚙️/);
-      // Note: "pt" text may be truncated at small terminal widths (e.g., 80 cols)
+      // Verify work unit ID pattern is displayed (BOARD-008: emoji icons removed)
+      expect(frame).toMatch(/[A-Z]+-[0-9]+/); // Work unit ID pattern
+      // Note: Estimate "pt" text may be truncated at small terminal widths (e.g., 80 cols)
     });
   });
 
