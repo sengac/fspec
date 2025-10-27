@@ -1,7 +1,10 @@
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
 import { join } from 'path';
 import type { Command } from 'commander';
-import { formatAgentOutput } from '../utils/agentRuntimeConfig.js';
+import {
+  formatAgentOutput,
+  getAgentConfig,
+} from '../utils/agentRuntimeConfig.js';
 
 interface ToolsConfig {
   test?: {
@@ -30,6 +33,7 @@ interface CheckResult {
 }
 
 export async function checkTestCommand(cwd: string): Promise<CheckResult> {
+  const agent = getAgentConfig(cwd);
   const configPath = join(cwd, 'spec', 'fspec-config.json');
 
   if (!existsSync(configPath)) {
@@ -37,7 +41,7 @@ export async function checkTestCommand(cwd: string): Promise<CheckResult> {
     return {
       type: 'system-reminder',
       message: formatAgentOutput(
-        cwd,
+        agent,
         `NO TEST COMMAND CONFIGURED
 
 No test command configured. Use Read/Glob tools to detect test framework, then run:
@@ -65,7 +69,7 @@ Example:
     return {
       type: 'system-reminder',
       message: formatAgentOutput(
-        cwd,
+        agent,
         `NO TEST COMMAND CONFIGURED
 
 No test command configured. Use Read/Glob tools to detect test framework, then run:
@@ -84,7 +88,7 @@ Replace <platform> with detected project type (Node.js, Python, Rust, Go, etc.)
   return {
     type: 'system-reminder',
     message: formatAgentOutput(
-      cwd,
+      agent,
       `RUN TESTS
 
 Run tests: ${config.tools.test.command}
@@ -94,12 +98,13 @@ Run tests: ${config.tools.test.command}
 }
 
 export async function checkQualityCommands(cwd: string): Promise<CheckResult> {
+  const agent = getAgentConfig(cwd);
   const configPath = join(cwd, 'spec', 'fspec-config.json');
 
   if (!existsSync(configPath)) {
     return {
       type: 'system-reminder',
-      message: formatAgentOutput(cwd, 'No quality check commands configured'),
+      message: formatAgentOutput(agent, 'No quality check commands configured'),
     };
   }
 
@@ -108,7 +113,7 @@ export async function checkQualityCommands(cwd: string): Promise<CheckResult> {
   if (!config.tools?.qualityCheck?.commands) {
     return {
       type: 'system-reminder',
-      message: formatAgentOutput(cwd, 'No quality check commands configured'),
+      message: formatAgentOutput(agent, 'No quality check commands configured'),
     };
   }
 
@@ -117,7 +122,7 @@ export async function checkQualityCommands(cwd: string): Promise<CheckResult> {
   return {
     type: 'system-reminder',
     message: formatAgentOutput(
-      cwd,
+      agent,
       `RUN QUALITY CHECKS
 
 Run quality checks: ${chainedCommand}
@@ -172,6 +177,19 @@ Use Read/Glob tools to detect test frameworks and quality check tools, then run:
   }
 
   writeFileSync(configPath, JSON.stringify(config, null, 2), 'utf-8');
+
+  // CONFIG-003: Regenerate agent templates silently after updating config
+  // This ensures AI has up-to-date documentation without cluttering output
+  if (config.agent) {
+    const { getAgentById } = await import('../utils/agentRegistry.js');
+    const { installAgentFiles } = await import('./init.js');
+
+    const agent = getAgentById(config.agent);
+    if (agent) {
+      // Regenerate templates silently (no console output)
+      await installAgentFiles(cwd, agent);
+    }
+  }
 }
 
 export async function registerConfigureToolsCommand(

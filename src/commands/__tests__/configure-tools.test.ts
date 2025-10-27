@@ -294,4 +294,119 @@ describe('Feature: Conversational Test and Quality Check Tool Detection', () => 
       ]);
     });
   });
+
+  describe('Scenario: configure-tools regenerates agent templates after updating config (CONFIG-003)', () => {
+    it('should regenerate spec/CLAUDE.md and .claude/commands/fspec.md with latest templates', async () => {
+      // Given spec/fspec-config.json exists with agent = 'claude'
+      const configPath = join(testDir, 'spec', 'fspec-config.json');
+      writeFileSync(configPath, JSON.stringify({ agent: 'claude' }, null, 2));
+
+      // And spec/CLAUDE.md exists (old template)
+      const oldClaudeMd = '# Old CLAUDE.md template from v0.5.0';
+      writeFileSync(join(testDir, 'spec', 'CLAUDE.md'), oldClaudeMd, 'utf-8');
+
+      // And .claude/commands/fspec.md exists (old template)
+      mkdirSync(join(testDir, '.claude', 'commands'), { recursive: true });
+      const oldFspecMd = '# Old fspec.md template from v0.5.0';
+      writeFileSync(
+        join(testDir, '.claude', 'commands', 'fspec.md'),
+        oldFspecMd,
+        'utf-8'
+      );
+
+      // When AI runs 'fspec configure-tools --test-command "npm test"'
+      const { configureTools } = await import('../configure-tools.js');
+      await configureTools({ testCommand: 'npm test', cwd: testDir });
+
+      // Then config should be updated with tools.test.command = "npm test"
+      const config = JSON.parse(readFileSync(configPath, 'utf-8'));
+      expect(config.tools?.test?.command).toBe('npm test');
+
+      // And spec/CLAUDE.md should be regenerated with latest template
+      const updatedClaudeMd = readFileSync(
+        join(testDir, 'spec', 'CLAUDE.md'),
+        'utf-8'
+      );
+      expect(updatedClaudeMd).not.toBe(oldClaudeMd);
+      expect(updatedClaudeMd.length).toBeGreaterThan(1000); // Latest template is comprehensive
+
+      // And .claude/commands/fspec.md should be regenerated with latest template
+      const updatedFspecMd = readFileSync(
+        join(testDir, '.claude', 'commands', 'fspec.md'),
+        'utf-8'
+      );
+      expect(updatedFspecMd).not.toBe(oldFspecMd);
+      expect(updatedFspecMd).toContain('fspec --sync-version'); // Latest template includes version sync
+
+      // And templates should reflect current fspec version
+      const packageJson = JSON.parse(
+        readFileSync(join(process.cwd(), 'package.json'), 'utf-8')
+      );
+      const currentVersion = packageJson.version;
+      expect(updatedFspecMd).toContain(currentVersion);
+    });
+  });
+
+  describe('Scenario: configure-tools regenerates templates silently without extra output (CONFIG-003)', () => {
+    it('should regenerate templates in background without mentioning them in console output', async () => {
+      // Given spec/fspec-config.json exists
+      const configPath = join(testDir, 'spec', 'fspec-config.json');
+      writeFileSync(configPath, JSON.stringify({ agent: 'claude' }, null, 2));
+
+      // Create old templates
+      writeFileSync(
+        join(testDir, 'spec', 'CLAUDE.md'),
+        '# Old template',
+        'utf-8'
+      );
+      mkdirSync(join(testDir, '.claude', 'commands'), { recursive: true });
+      writeFileSync(
+        join(testDir, '.claude', 'commands', 'fspec.md'),
+        '# Old template',
+        'utf-8'
+      );
+
+      // When AI runs 'fspec configure-tools --test-command "npm test"' via CLI
+      const fspecBin = join(process.cwd(), 'dist/index.js');
+      const { stdout } = await execAsync(
+        `node ${fspecBin} configure-tools --test-command "npm test"`,
+        { cwd: testDir }
+      );
+
+      // Then console output should contain: '✓ Tool configuration saved to spec/fspec-config.json'
+      expect(stdout).toContain(
+        '✓ Tool configuration saved to spec/fspec-config.json'
+      );
+
+      // And console output should NOT contain: 'Regenerating templates'
+      expect(stdout).not.toContain('Regenerating templates');
+      expect(stdout).not.toContain('regenerating');
+
+      // And console output should NOT contain: '✓ Templates updated'
+      expect(stdout).not.toContain('Templates updated');
+
+      // And console output should NOT mention spec/CLAUDE.md
+      expect(stdout).not.toContain('spec/CLAUDE.md');
+      expect(stdout).not.toContain('CLAUDE.md');
+
+      // And console output should NOT mention .claude/commands/fspec.md
+      expect(stdout).not.toContain('.claude/commands/fspec.md');
+      expect(stdout).not.toContain('fspec.md');
+
+      // But templates should be regenerated in the background
+      const updatedClaudeMd = readFileSync(
+        join(testDir, 'spec', 'CLAUDE.md'),
+        'utf-8'
+      );
+      expect(updatedClaudeMd).not.toBe('# Old template');
+      expect(updatedClaudeMd.length).toBeGreaterThan(1000);
+
+      const updatedFspecMd = readFileSync(
+        join(testDir, '.claude', 'commands', 'fspec.md'),
+        'utf-8'
+      );
+      expect(updatedFspecMd).not.toBe('# Old template');
+      expect(updatedFspecMd).toContain('fspec --sync-version');
+    });
+  });
 });

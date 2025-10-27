@@ -67,18 +67,197 @@
     {
       "name": "Integration test verifies check functions are called",
       "testMappings": []
+    },
+    {
+      "name": "Fail sync-version when tool configuration is missing",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/sync-version.test.ts",
+          "lines": "432-487",
+          "implMappings": [
+            {
+              "file": "src/commands/sync-version.ts",
+              "lines": [
+                129,
+                130,
+                131,
+                132,
+                133
+              ]
+            },
+            {
+              "file": "src/commands/init-help.ts",
+              "lines": [
+                56,
+                57
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Fail sync-version when version is incorrect",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/sync-version.test.ts",
+          "lines": "497-553",
+          "implMappings": [
+            {
+              "file": "src/commands/sync-version.ts",
+              "lines": [
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Emit system-reminder when config file completely missing during sync-version",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/sync-version.test.ts",
+          "lines": "555-600",
+          "implMappings": [
+            {
+              "file": "src/commands/sync-version.ts",
+              "lines": [
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "configure-tools regenerates agent templates after updating config",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/configure-tools.test.ts",
+          "lines": "298-348",
+          "implMappings": [
+            {
+              "file": "src/commands/configure-tools.ts",
+              "lines": [
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "configure-tools regenerates templates silently without extra output",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/configure-tools.test.ts",
+          "lines": "350-404",
+          "implMappings": [
+            {
+              "file": "src/commands/configure-tools.ts",
+              "lines": [
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
   "stats": {
-    "totalScenarios": 4,
-    "coveredScenarios": 3,
-    "coveragePercent": 75,
+    "totalScenarios": 9,
+    "coveredScenarios": 8,
+    "coveragePercent": 89,
     "testFiles": [
-      "src/commands/__tests__/update-work-unit-status-tool-integration.test.ts"
+      "src/commands/__tests__/update-work-unit-status-tool-integration.test.ts",
+      "src/commands/__tests__/sync-version.test.ts",
+      "src/commands/__tests__/configure-tools.test.ts"
     ],
     "implFiles": [
-      "src/commands/update-work-unit-status.ts"
+      "src/commands/update-work-unit-status.ts",
+      "src/commands/sync-version.ts",
+      "src/commands/init-help.ts",
+      "src/commands/configure-tools.ts"
     ],
-    "totalLinesCovered": 142
+    "totalLinesCovered": 496
   }
 }

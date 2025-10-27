@@ -109,3 +109,12 @@ Feature: Automatic version check and update for slash command files
     And the version check command should appear as item 1 in the command list (after "IMMEDIATELY - run these commands" section)
     And it should create spec/CLAUDE.md with latest documentation
     And it should create spec/fspec-config.json with agent "claude"
+
+  Scenario: Emit tool config checks when versions match
+    Given embedded version matches current package.json version
+    And spec/fspec-config.json does not have tools configured
+    When AI runs 'fspec --sync-version 0.6.0'
+    Then sync-version should call checkTestCommand function
+    And sync-version should call checkQualityCommands function
+    And system-reminders should be emitted: 'NO TEST COMMAND CONFIGURED'
+    And this helps onboard new AI agents to configure tools
