@@ -71,8 +71,8 @@ describe('Feature: Animated shimmer on last changed work unit', () => {
   describe('Scenario: Story work unit with most recent timestamp displays with character-by-character shimmer wave', () => {
     it('should display character-by-character shimmer wave for story with most recent timestamp', () => {
       // @step Given UnifiedBoardLayout renders with work units
-      // @step And story work unit TECH-001 has updated timestamp '2025-10-27T22:00:00Z'
-      // @step And all other work units have earlier timestamps
+      // @step And story work unit TECH-001 has stateHistory with most recent timestamp '2025-10-27T22:00:00Z'
+      // @step And all other work units have earlier stateHistory timestamps
       const workUnits: WorkUnit[] = [
         {
           id: 'TECH-001',
@@ -80,7 +80,9 @@ describe('Feature: Animated shimmer on last changed work unit', () => {
           type: 'story',
           status: 'backlog',
           estimate: 3,
-          updated: '2025-10-27T22:00:00Z', // Most recent
+          stateHistory: [
+            { state: 'backlog', timestamp: '2025-10-27T22:00:00Z' }, // Most recent
+          ],
         },
         {
           id: 'BUG-001',
@@ -88,7 +90,9 @@ describe('Feature: Animated shimmer on last changed work unit', () => {
           type: 'bug',
           status: 'testing',
           estimate: 2,
-          updated: '2025-10-27T21:00:00Z', // Earlier
+          stateHistory: [
+            { state: 'testing', timestamp: '2025-10-27T21:00:00Z' }, // Earlier
+          ],
         },
       ];
 
@@ -171,7 +175,9 @@ describe('Feature: Animated shimmer on last changed work unit', () => {
           type: 'bug',
           status: 'implementing',
           estimate: 2,
-          updated: '2025-10-27T22:00:00Z', // Most recent
+          stateHistory: [
+            { state: 'implementing', timestamp: '2025-10-27T22:00:00Z' }, // Most recent
+          ],
         },
         {
           id: 'TECH-001',
@@ -179,7 +185,9 @@ describe('Feature: Animated shimmer on last changed work unit', () => {
           type: 'story',
           status: 'backlog',
           estimate: 3,
-          updated: '2025-10-27T21:00:00Z', // Earlier
+          stateHistory: [
+            { state: 'backlog', timestamp: '2025-10-27T21:00:00Z' }, // Earlier
+          ],
         },
       ];
 
@@ -247,7 +255,9 @@ describe('Feature: Animated shimmer on last changed work unit', () => {
           type: 'task',
           status: 'testing',
           estimate: 1,
-          updated: '2025-10-27T22:00:00Z', // Most recent
+          stateHistory: [
+            { state: 'testing', timestamp: '2025-10-27T22:00:00Z' }, // Most recent
+          ],
         },
         {
           id: 'TECH-001',
@@ -255,7 +265,9 @@ describe('Feature: Animated shimmer on last changed work unit', () => {
           type: 'story',
           status: 'backlog',
           estimate: 3,
-          updated: '2025-10-27T21:00:00Z', // Earlier
+          stateHistory: [
+            { state: 'backlog', timestamp: '2025-10-27T21:00:00Z' }, // Earlier
+          ],
         },
       ];
 
@@ -323,7 +335,9 @@ describe('Feature: Animated shimmer on last changed work unit', () => {
           type: 'story',
           status: 'implementing',
           estimate: 5,
-          updated: '2025-10-27T22:00:00Z', // Most recent
+          stateHistory: [
+            { state: 'implementing', timestamp: '2025-10-27T22:00:00Z' }, // Most recent
+          ],
         },
         {
           id: 'TECH-001',
@@ -331,7 +345,9 @@ describe('Feature: Animated shimmer on last changed work unit', () => {
           type: 'story',
           status: 'backlog',
           estimate: 3,
-          updated: '2025-10-27T21:00:00Z', // Earlier
+          stateHistory: [
+            { state: 'backlog', timestamp: '2025-10-27T21:00:00Z' }, // Earlier
+          ],
         },
       ];
 
@@ -395,7 +411,7 @@ describe('Feature: Animated shimmer on last changed work unit', () => {
 
   describe('Scenario: TUI startup identifies and shimmers most recently changed work unit from history', () => {
     it('should identify and shimmer the most recent work unit on startup', () => {
-      // Given work-units.json contains work unit BOARD-008 with updated '2025-10-27T21:30:00Z'
+      // Given work-units.json contains work unit BOARD-008 with stateHistory '2025-10-27T21:30:00Z'
       const workUnits: WorkUnit[] = [
         {
           id: 'BOARD-008',
@@ -403,7 +419,9 @@ describe('Feature: Animated shimmer on last changed work unit', () => {
           type: 'story',
           status: 'implementing',
           estimate: 3,
-          updated: '2025-10-27T21:30:00Z', // Most recent
+          stateHistory: [
+            { state: 'implementing', timestamp: '2025-10-27T21:30:00Z' }, // Most recent
+          ],
         },
         {
           id: 'TECH-001',
@@ -411,7 +429,9 @@ describe('Feature: Animated shimmer on last changed work unit', () => {
           type: 'story',
           status: 'backlog',
           estimate: 3,
-          updated: '2025-10-27T20:00:00Z', // Earlier
+          stateHistory: [
+            { state: 'backlog', timestamp: '2025-10-27T20:00:00Z' }, // Earlier
+          ],
         },
       ];
 
@@ -446,7 +466,9 @@ describe('Feature: Animated shimmer on last changed work unit', () => {
           type: 'story',
           status: 'implementing',
           estimate: 3,
-          updated: '2025-10-27T21:30:00Z', // Currently most recent
+          stateHistory: [
+            { state: 'implementing', timestamp: '2025-10-27T21:30:00Z' }, // Currently most recent
+          ],
         },
         {
           id: 'FEAT-002',
@@ -454,7 +476,9 @@ describe('Feature: Animated shimmer on last changed work unit', () => {
           type: 'story',
           status: 'testing',
           estimate: 5,
-          updated: '2025-10-27T21:00:00Z', // Earlier
+          stateHistory: [
+            { state: 'testing', timestamp: '2025-10-27T21:00:00Z' }, // Earlier
+          ],
         },
       ];
 
@@ -479,7 +503,9 @@ describe('Feature: Animated shimmer on last changed work unit', () => {
           type: 'story',
           status: 'implementing',
           estimate: 3,
-          updated: '2025-10-27T21:30:00Z', // No longer most recent
+          stateHistory: [
+            { state: 'implementing', timestamp: '2025-10-27T21:30:00Z' }, // No longer most recent
+          ],
         },
         {
           id: 'FEAT-002',
@@ -487,7 +513,10 @@ describe('Feature: Animated shimmer on last changed work unit', () => {
           type: 'story',
           status: 'implementing',
           estimate: 5,
-          updated: '2025-10-27T22:05:00Z', // Now most recent
+          stateHistory: [
+            { state: 'testing', timestamp: '2025-10-27T21:00:00Z' },
+            { state: 'implementing', timestamp: '2025-10-27T22:05:00Z' }, // Now most recent
+          ],
         },
       ];
 

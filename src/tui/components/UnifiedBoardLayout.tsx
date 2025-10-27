@@ -15,6 +15,11 @@ import React, { useMemo, useEffect, useState } from 'react';
 import { Box, Text, useInput, useStdout } from 'ink';
 import chalk from 'chalk';
 
+interface StateHistoryEntry {
+  state: string;
+  timestamp: string;
+}
+
 interface WorkUnit {
   id: string;
   title: string;
@@ -25,6 +30,7 @@ interface WorkUnit {
   dependencies?: string[];
   epic?: string;
   updated?: string;
+  stateHistory?: StateHistoryEntry[];
 }
 
 interface UnifiedBoardLayoutProps {
@@ -197,9 +203,15 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
     if (workUnits.length === 0) return null;
 
     return workUnits.reduce((latest, current) => {
-      const latestTime = latest.updated ? new Date(latest.updated).getTime() : 0;
-      const currentTime = current.updated ? new Date(current.updated).getTime() : 0;
-      return currentTime > latestTime ? current : latest;
+      // Get the most recent stateHistory timestamp for each work unit
+      const latestStateTimestamp = latest.stateHistory && latest.stateHistory.length > 0
+        ? new Date(latest.stateHistory[latest.stateHistory.length - 1].timestamp).getTime()
+        : 0;
+      const currentStateTimestamp = current.stateHistory && current.stateHistory.length > 0
+        ? new Date(current.stateHistory[current.stateHistory.length - 1].timestamp).getTime()
+        : 0;
+
+      return currentStateTimestamp > latestStateTimestamp ? current : latest;
     });
   }, [workUnits]);
 

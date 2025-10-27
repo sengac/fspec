@@ -18,6 +18,11 @@ import git from 'isomorphic-git';
 import fs from 'fs';
 import { getStagedFiles, getUnstagedFiles } from '../../git/status';
 
+interface StateHistoryEntry {
+  state: string;
+  timestamp: string;
+}
+
 interface WorkUnit {
   id: string;
   title: string;
@@ -27,6 +32,7 @@ interface WorkUnit {
   epic?: string;
   estimate?: number;
   updated?: string;
+  stateHistory?: StateHistoryEntry[];
 }
 
 interface Epic {
