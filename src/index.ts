@@ -49,6 +49,7 @@ import { registerAnswerQuestionCommand } from './commands/answer-question';
 import { registerAuditCoverageCommand } from './commands/audit-coverage';
 import { registerAutoAdvanceCommand } from './commands/auto-advance';
 import { registerBoardCommand } from './commands/display-board';
+import { registerBootstrapCommand } from './commands/bootstrap';
 import { registerCheckCommand } from './commands/check';
 import { registerClearDependenciesCommand } from './commands/clear-dependencies';
 import { registerCompareImplementationsCommand } from './commands/compare-implementations';
@@ -181,6 +182,7 @@ program
 registerAddArchitectureCommand(program);
 registerAddArchitectureNoteCommand(program);
 registerAddAttachmentCommand(program);
+registerBootstrapCommand(program);
 registerAddAssumptionCommand(program);
 registerAddBackgroundCommand(program);
 registerAddCapabilityCommand(program);

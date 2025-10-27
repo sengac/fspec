@@ -9,13 +9,7 @@ export function getHeaderSection(): string {
 IMMEDIATELY - run these commands and store them into your context and do not continue if any of them fail:
 
 1. fspec --sync-version ${version}
-2. fspec --help
-3. fspec help specs
-4. fspec help work
-5. fspec help discovery
-6. fspec help metrics
-7. fspec help setup
-8. fspec help hooks
+2. fspec bootstrap
 
 fspec is a CLI program installed locally on this machine.
 
