@@ -14327,7 +14327,7 @@
       "type": "bug",
       "status": "done",
       "createdAt": "2025-10-27T08:48:01.553Z",
-      "updatedAt": "2025-10-27T10:13:25.497Z",
+      "updatedAt": "2025-10-27T10:21:53.879Z",
       "description": "The TUI board displays column divider characters in separator lines that should only have them on one side or not at all. Need to distinguish between three separator types:\n\n1. NO COLUMNS (full-width sections):\n   - Line ABOVE Git Stashes: ├─────────┤ (no columns above or below)\n   - Line BETWEEN Git Stashes and Changed Files: ├─────────┤ (no columns above or below)\n   \n2. TRANSITION TO COLUMNS (from full-width to columnar):\n   - Line BETWEEN Changed Files and Kanban board: ├────┬────┬────┤ (no columns above, columns below)\n   \n3. COLUMNS (Kanban board section):\n   - Lines within Kanban board: ├────┼────┼────┤ (columns above and below)\n   \n4. TRANSITION FROM COLUMNS (from columnar to full-width):\n   - Line BETWEEN Kanban board and key mapping footer: ├────┴────┴────┤ (columns above, no columns below)\n   - Line BELOW key mapping footer: └────────────┘ (terminal edge)\n\nCurrent bug: All separators use column dividers (┼) regardless of context. Need to use ┬ (top junction), ┼ (cross junction), ┴ (bottom junction), or plain ─ (horizontal) based on what's above and below each line.",
       "epic": "interactive-tui-foundation",
       "children": [],
@@ -14411,6 +14411,26 @@
         {
           "state": "done",
           "timestamp": "2025-10-27T10:13:25.497Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-27T10:14:26.919Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-27T10:15:05.810Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-27T10:15:06.875Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-27T10:21:48.954Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-27T10:21:53.879Z"
         }
       ],
       "userStory": {
@@ -14428,7 +14448,8 @@
         "Bottom border (└─┘) should use plain horizontal separator (no columns below it)",
         "Footer row content should NOT have pipe characters separating command help text",
         "Footer help text should be centered horizontally within the total table width",
-        "Footer help text should use diamond separator (◆) instead of pipe character (|) between command groups"
+        "Footer help text should use diamond separator (◆) instead of pipe character (|) between command groups",
+        "Column headers should display ONLY the state name in uppercase (e.g., BACKLOG, DONE, etc.) with no counts or story points"
       ],
       "examples": [
         "Line 184 currently shows ├──┼──┤ but should show ├────────┤ (no column dividers between Git Stashes and Changed Files)",
@@ -14439,7 +14460,8 @@
         "Bottom border should show └────────┘ with NO column dividers (plain horizontal only)",
         "Footer text '← → Columns | ↑↓ jk Work Units | ↵ Details | ESC Back' should have pipe characters as CONTENT, not column dividers",
         "Footer text '← → Columns | ↑↓ jk Work Units | ↵ Details | ESC Back' should have equal padding on left and right to center it",
-        "Footer should display '← → Columns ◆ ↑↓ jk Work Units ◆ ↵ Details ◆ ESC Back' with diamond separators"
+        "Footer should display '← → Columns ◆ ↑↓ jk Work Units ◆ ↵ Details ◆ ESC Back' with diamond separators",
+        "Headers should show 'BACKLOG', 'SPECIFYING', 'TESTING', 'IMPLEMENTING', 'VALIDATING', 'DONE', 'BLOCKED' without any additional text"
       ]
     }
   },

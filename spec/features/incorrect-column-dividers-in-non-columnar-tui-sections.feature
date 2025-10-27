@@ -83,3 +83,12 @@ Feature: Incorrect column dividers in non-columnar TUI sections
     And equal padding should be added on left and right sides
     And command groups should be separated with diamond character (◆)
     And the text should display "← → Columns ◆ ↑↓ jk Work Units ◆ ↵ Details ◆ ESC Back"
+
+  Scenario: Column headers show only state names
+    Given UnifiedBoardLayout component renders column headers
+    And work units exist in various states with counts and story points
+    When the column headers are rendered
+    Then each header should display ONLY the uppercase state name
+    And headers should NOT display work unit counts
+    And headers should NOT display story point totals
+    And the format should be "BACKLOG", "SPECIFYING", "TESTING", etc.

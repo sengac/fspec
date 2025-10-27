@@ -227,8 +227,7 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
 
   // Column headers (with focus highlighting using chalk)
   rows.push('│' + STATES.map((state, idx) => {
-    const column = groupedWorkUnits[idx];
-    const header = `${state.toUpperCase()} (${column.count}) - ${column.totalPoints}pts`;
+    const header = state.toUpperCase();
     const paddedHeader = fitToWidth(header, colWidth);
     // Highlight focused column in cyan
     return idx === focusedColumnIndex ? chalk.cyan(paddedHeader) : chalk.gray(paddedHeader);
