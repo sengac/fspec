@@ -128,4 +128,3 @@ Feature: Dynamic bootstrap command for slash command template
     Then template should contain only 10 lines (title, IMMEDIATELY section, two commands)
     And template should NOT contain persona description or ACDD workflow sections
     And bootstrap command output should contain all workflow documentation
-

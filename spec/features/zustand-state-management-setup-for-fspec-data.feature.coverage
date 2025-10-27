@@ -1,0 +1,173 @@
+{
+  "scenarios": [
+    {
+      "name": "Store loads work units from work-units.json",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/fspecStore-data-loading.test.ts",
+          "lines": "22-35",
+          "implMappings": []
+        },
+        {
+          "file": "src/tui/__tests__/fspecStore-data-loading.test.ts",
+          "lines": "24-38",
+          "implMappings": [
+            {
+              "file": "src/tui/store/fspecStore.ts",
+              "lines": [
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Store loads epics from epics.json",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/fspecStore-data-loading.test.ts",
+          "lines": "37-54",
+          "implMappings": []
+        },
+        {
+          "file": "src/tui/__tests__/fspecStore-data-loading.test.ts",
+          "lines": "41-58",
+          "implMappings": [
+            {
+              "file": "src/tui/store/fspecStore.ts",
+              "lines": [
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Selector filters work units by status",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/fspecStore-data-loading.test.ts",
+          "lines": "56-72",
+          "implMappings": []
+        },
+        {
+          "file": "src/tui/__tests__/fspecStore-data-loading.test.ts",
+          "lines": "60-73",
+          "implMappings": [
+            {
+              "file": "src/tui/store/fspecStore.ts",
+              "lines": [
+                92,
+                93,
+                94
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Selector filters work units by epic",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/fspecStore-data-loading.test.ts",
+          "lines": "74-89",
+          "implMappings": []
+        },
+        {
+          "file": "src/tui/__tests__/fspecStore-data-loading.test.ts",
+          "lines": "75-90",
+          "implMappings": [
+            {
+              "file": "src/tui/store/fspecStore.ts",
+              "lines": [
+                96,
+                97,
+                98
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Store updates are immutable",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/fspecStore-data-loading.test.ts",
+          "lines": "91-115",
+          "implMappings": []
+        },
+        {
+          "file": "src/tui/__tests__/fspecStore-data-loading.test.ts",
+          "lines": "94-121",
+          "implMappings": [
+            {
+              "file": "src/tui/store/fspecStore.ts",
+              "lines": [
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/__tests__/fspecStore-data-loading.test.ts"
+    ],
+    "implFiles": [
+      "src/tui/store/fspecStore.ts"
+    ],
+    "totalLinesCovered": 233
+  }
+}

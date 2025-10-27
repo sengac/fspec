@@ -207,7 +207,8 @@
       "description": "Scaffold core TUI infrastructure with Ink, Zustand, and cage's reusable components",
       "workUnits": [
         "ITF-001",
-        "ITF-002"
+        "ITF-002",
+        "ITF-003"
       ]
     }
   }

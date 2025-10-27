@@ -23,6 +23,7 @@ Tags that identify which architectural component a feature belongs to.
 | `@integration` | Cross-Component Integration |
 | `@parser` | Gherkin Parser Integration |
 | `@templates` | Template generation and transformation system |
+| `@tui` | Terminal User Interface components and infrastructure |
 | `@validator` | Validation Logic |
 
 **Rule**: Every feature file MUST have at least ONE component tag (may have multiple if cross-component).
@@ -83,6 +84,7 @@ Tags that categorize features by functional area.
 | `@help-text` | Help and documentation features |
 | `@impact-analysis` | Impact analysis and dependency chains |
 | `@infrastructure` | Core infrastructure and shared utilities |
+| `@interactive-cli` | Interactive CLI features and TUI workflows |
 | `@kanban` | Kanban board and workflow management |
 | `@list` | List operations |
 | `@metrics` | Metrics and measurements |
@@ -177,6 +179,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@guidance` | Features that provide AI guidance/prompts rather than code implementation |
 | `@idempotent` | Operations that can be safely repeated without changing results |
 | `@initialization` | File and system initialization features |
+| `@ink` | Ink (React for CLIs) rendering engine |
 | `@internal` | Internal Utility |
 | `@isomorphic-git` | Uses isomorphic-git library for pure JavaScript git operations |
 | `@json-backed` | JSON-Backed Documentation |
@@ -208,6 +211,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@type-system` | Work unit type system features for categorizing work (story, task, bug) |
 | `@typescript` | TypeScript-specific features and configuration |
 | `@vitest` | Vitest testing framework related features |
+| `@zustand` | Zustand state management library |
 
 **Rule**: Use technical tags to highlight specific architectural concerns.
 
@@ -539,7 +543,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-10-27T01:46:36.680Z_
+_Last updated: 2025-10-27T04:27:45.226Z_
 
 **Update Command**: `fspec tag-stats`
 

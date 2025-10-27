@@ -221,10 +221,26 @@
           ]
         }
       ]
+    },
+    {
+      "name": "Bootstrap internally executes all help commands",
+      "testMappings": []
+    },
+    {
+      "name": "Help content getter functions return complete documentation not stub text",
+      "testMappings": []
+    },
+    {
+      "name": "Bootstrap displays explainer about help command outputs",
+      "testMappings": []
+    },
+    {
+      "name": "Template contains only minimal header without duplication",
+      "testMappings": []
     }
   ],
   "stats": {
-    "totalScenarios": 4,
+    "totalScenarios": 8,
     "coveredScenarios": 4,
     "coveragePercent": 100,
     "testFiles": [
