@@ -74,10 +74,12 @@ Feature: Incorrect column dividers in non-columnar TUI sections
     Then it should use └────┘ with plain horizontal separators
     And it should NOT use └──┴──┘ with column dividers
 
-  Scenario: Footer help text is centered
+  Scenario: Footer help text is centered with diamond separators
     Given UnifiedBoardLayout component renders the footer row
-    And the footer contains help text "← → Columns | ↑↓ jk Work Units | ↵ Details | ESC Back"
+    And the footer contains command help text for navigation
     And the total table width is calculated from column widths
-    When the footer row is rendered at line 268
+    When the footer row is rendered at line 279
     Then the help text should be horizontally centered
     And equal padding should be added on left and right sides
+    And command groups should be separated with diamond character (◆)
+    And the text should display "← → Columns ◆ ↑↓ jk Work Units ◆ ↵ Details ◆ ESC Back"
