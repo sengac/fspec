@@ -217,7 +217,8 @@
         "BOARD-008",
         "BOARD-009",
         "BOARD-010",
-        "BOARD-011"
+        "BOARD-011",
+        "BUG-046"
       ]
     }
   }
