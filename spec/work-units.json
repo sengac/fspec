@@ -14614,7 +14614,7 @@
       "type": "story",
       "status": "done",
       "createdAt": "2025-10-27T11:33:13.499Z",
-      "updatedAt": "2025-10-27T12:03:13.711Z",
+      "updatedAt": "2025-10-27T13:09:02.580Z",
       "description": "Highlight the most recently modified work unit with green text color and animated left-to-right shimmer effect every 5 seconds",
       "epic": "interactive-tui-foundation",
       "children": [],
@@ -14658,6 +14658,34 @@
         {
           "state": "done",
           "timestamp": "2025-10-27T12:03:13.711Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-27T12:51:51.932Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-27T12:54:54.129Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-27T12:56:23.041Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-27T12:57:20.561Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-27T13:00:51.119Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-27T13:08:42.196Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-27T13:09:02.580Z"
         }
       ],
       "userStory": {
@@ -14708,10 +14736,14 @@
         "Shimmer cycles every 5 seconds with pauses between cycles",
         "When multiple work units have same timestamp, pick the one with most recent updated field",
         "When last-changed work unit is NOT selected: shimmer text color (white→whiteBright, red→redBright, blue→blueBright)",
-        "When last-changed work unit IS selected: shimmer background color (bgGreen→bgGreenBright) with black text",
         "Shimmer starts on TUI startup for the most recently changed work unit from history",
         "Shimmer continues indefinitely until another work unit changes status",
-        "Zustand store WorkUnit interface must include updated and estimate fields to pass data from work-units.json to components"
+        "Zustand store WorkUnit interface must include updated and estimate fields to pass data from work-units.json to components",
+        "Shimmer effect animates character-by-character from left to right across the entire string",
+        "At any given frame, one character is at peak brightness (whiteBright/redBright/blueBright), with darker gradient on both sides",
+        "Gradient uses 3 brightness levels: dim (gray), base color (white/red/blue), bright (whiteBright/redBright/blueBright)",
+        "Shimmer wave moves one character position per frame at smooth animation speed",
+        "When shimmer reaches end of string, it loops back to the beginning continuously"
       ],
       "examples": [
         "Story TECH-001 with most recent timestamp displays with shimmering white text (white→whiteBright every 5s)",
@@ -14720,7 +14752,13 @@
         "Selected work unit AUTH-001 that is also last-changed displays with shimmering green background (bgGreen→bgGreenBright) and black text",
         "On TUI startup, BOARD-008 with updated='2025-10-27T21:30:00Z' is most recent, starts shimmering immediately",
         "User moves FEAT-002 from testing to implementing, shimmer stops on BOARD-008 and starts on FEAT-002",
-        "Zustand store loads work unit with updated='2025-10-27T22:00:00Z' from work-units.json and passes it to UnifiedBoardLayout"
+        "Zustand store loads work unit with updated='2025-10-27T22:00:00Z' from work-units.json and passes it to UnifiedBoardLayout",
+        "String 'FEAT-001' with shimmer at position 0: [F]EAT-001 where F is whiteBright, E is white, A is gray",
+        "String 'FEAT-001' with shimmer at position 3: FEA[T]-001 where T is whiteBright, A and - are white, E and 0 are gray",
+        "Bug work unit 'BUG-007' uses red gradient: gray → red → redBright → red → gray",
+        "Task work unit 'TASK-003' uses blue gradient: gray → blue → blueBright → blue → gray",
+        "Animation speed: shimmer moves 1 character position every 100ms for smooth visual wave effect",
+        "For selected work unit that is also last-changed: apply shimmer gradient to background color (bgGreen → bgGreenBright → bgGreen) with black text"
       ],
       "estimate": 5
     },
@@ -15095,9 +15133,9 @@
       "BOARD-005",
       "BOARD-006",
       "BOARD-007",
-      "BOARD-009",
       "BOARD-008",
-      "BUG-045"
+      "BUG-045",
+      "BOARD-009"
     ],
     "blocked": []
   }
