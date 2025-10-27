@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-27T13:28:42.843Z"
+    "lastUpdated": "2025-10-27T14:40:49.966Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -14995,6 +14995,55 @@
         "On TUI startup, done column loads work units sorted by completion time from stateHistory timestamps"
       ],
       "estimate": 3
+    },
+    "BUG-046": {
+      "id": "BUG-046",
+      "title": "Fix failing BoardView TUI tests",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-10-27T14:39:22.122Z",
+      "updatedAt": "2025-10-27T14:49:22.499Z",
+      "description": "Fix multiple failing tests in BoardView components: done column filtering, work unit details display, and shimmer color handling",
+      "epic": "interactive-tui-foundation",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-27T14:39:29.608Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-27T14:42:31.674Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-27T14:42:39.259Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-27T14:48:50.171Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-27T14:49:22.499Z"
+        }
+      ],
+      "rules": [
+        "BoardView tests must use the test directory's work-units.json, not the project's work-units.json",
+        "Tests create temporary directories with test data but components load from process.cwd()",
+        "The fspecStore must accept an optional cwd parameter to support test isolation"
+      ],
+      "examples": [
+        "Test creates BOARD-001 in temp dir, but component shows TECH-001 from project dir",
+        "Test expects 'No work unit selected' but component shows TECH-001 details from project data",
+        "BoardView accepts optional cwd prop, passes to store for test directory isolation"
+      ],
+      "userStory": {
+        "role": "developer running TUI tests",
+        "action": "test BoardView component in isolation",
+        "benefit": "tests use test data not project data"
+      },
+      "estimate": 3
     }
   },
   "states": {
@@ -15257,7 +15306,8 @@
       "BOARD-008",
       "BUG-045",
       "BOARD-009",
-      "BOARD-011"
+      "BOARD-011",
+      "BUG-046"
     ],
     "blocked": []
   }

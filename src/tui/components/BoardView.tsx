@@ -21,14 +21,16 @@ interface BoardViewProps {
   showStashPanel?: boolean;
   showFilesPanel?: boolean;
   focusedPanel?: 'board' | 'stash' | 'files';
+  cwd?: string;
 }
 
 // UNIFIED TABLE LAYOUT IMPLEMENTATION (ITF-004)
-export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = true, showFilesPanel = true, focusedPanel: initialFocusedPanel = 'board' }) => {
+export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = true, showFilesPanel = true, focusedPanel: initialFocusedPanel = 'board', cwd }) => {
   const workUnits = useFspecStore(state => state.workUnits);
   const stashes = useFspecStore(state => state.stashes);
   const stagedFiles = useFspecStore(state => state.stagedFiles);
   const unstagedFiles = useFspecStore(state => state.unstagedFiles);
+  const setCwd = useFspecStore(state => state.setCwd);
   const loadData = useFspecStore(state => state.loadData);
   const loadStashes = useFspecStore(state => state.loadStashes);
   const loadFileStatus = useFspecStore(state => state.loadFileStatus);
@@ -36,6 +38,7 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
   const [focusedColumnIndex, setFocusedColumnIndex] = useState(0);
   const [selectedWorkUnitIndex, setSelectedWorkUnitIndex] = useState(0);
   const [viewMode, setViewMode] = useState<'board' | 'detail' | 'stash-detail' | 'file-diff'>('board');
+  const [initialFocusSet, setInitialFocusSet] = useState(false);
   const [selectedWorkUnit, setSelectedWorkUnit] = useState<any>(null);
   const [focusedPanel, setFocusedPanel] = useState<'board' | 'stash' | 'files'>(initialFocusedPanel);
   const [selectedStashIndex, setSelectedStashIndex] = useState(0);
@@ -52,6 +55,13 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
     'done',
     'blocked',
   ];
+
+  // Set cwd if provided (for test isolation)
+  useEffect(() => {
+    if (cwd) {
+      setCwd(cwd);
+    }
+  }, [cwd, setCwd]);
 
   // Load data on mount
   useEffect(() => {
@@ -179,6 +189,17 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
     }, 0);
     return { status, units, count: units.length, totalPoints };
   });
+
+  // Auto-focus first non-empty column on initial load
+  useEffect(() => {
+    if (!initialFocusSet && workUnits.length > 0) {
+      const firstNonEmptyIndex = groupedWorkUnits.findIndex(col => col.units.length > 0);
+      if (firstNonEmptyIndex >= 0) {
+        setFocusedColumnIndex(firstNonEmptyIndex);
+        setInitialFocusSet(true);
+      }
+    }
+  }, [workUnits, groupedWorkUnits, initialFocusSet]);
 
   // Compute currently selected work unit
   const currentlySelectedWorkUnit = (() => {

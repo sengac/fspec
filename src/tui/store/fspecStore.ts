@@ -51,8 +51,10 @@ interface FspecState {
   unstagedFiles: string[];
   isLoaded: boolean;
   error: string | null;
+  cwd: string;
 
   // Actions
+  setCwd: (cwd: string) => void;
   loadData: () => Promise<void>;
   loadStashes: () => Promise<void>;
   loadFileStatus: () => Promise<void>;
@@ -73,13 +75,20 @@ export const useFspecStore = create<FspecState>()(
     unstagedFiles: [],
     isLoaded: false,
     error: null,
+    cwd: process.cwd(),
+
+    setCwd: (cwd: string) => {
+      set(state => {
+        state.cwd = cwd;
+      });
+    },
 
     loadData: async () => {
       set(state => {
         state.error = null;
       });
       try {
-        const cwd = process.cwd();
+        const cwd = get().cwd;
         const workUnitsData = await ensureWorkUnitsFile(cwd);
         const epicsData = await ensureEpicsFile(cwd);
         set(state => {
@@ -96,7 +105,7 @@ export const useFspecStore = create<FspecState>()(
 
     loadStashes: async () => {
       try {
-        const cwd = process.cwd();
+        const cwd = get().cwd;
         const logs = await git.log({
           fs,
           dir: cwd,
@@ -116,7 +125,7 @@ export const useFspecStore = create<FspecState>()(
 
     loadFileStatus: async () => {
       try {
-        const cwd = process.cwd();
+        const cwd = get().cwd;
         const [staged, unstaged] = await Promise.all([
           getStagedFiles(cwd),
           getUnstagedFiles(cwd),

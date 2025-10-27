@@ -73,7 +73,7 @@ describe('Feature: Consolidate Git info and add work unit details panel', () => 
       vi.mocked(getUnstagedFiles).mockResolvedValue(['src/utils.ts']);
 
       // @step When the Git Context panel is rendered
-      const { lastFrame } = render(<BoardView />);
+      const { lastFrame } = render(<BoardView cwd={testDir} />);
 
       await new Promise(resolve => setTimeout(resolve, 100));
 
@@ -134,7 +134,7 @@ describe('Feature: Consolidate Git info and add work unit details panel', () => 
             id: 'BOARD-001',
             title: 'Test Feature',
             description:
-              'This is a longer description that spans multiple lines and needs to be truncated for display. Line 2. Line 3. Line 4. Line 5.',
+              'This is a longer description that spans multiple lines and needs to be truncated for display.\nLine 2 of the description.\nLine 3 of the description.\nLine 4 of the description.\nLine 5 of the description.',
             status: 'implementing',
             type: 'story',
             epic: 'test-epic',
@@ -159,7 +159,7 @@ describe('Feature: Consolidate Git info and add work unit details panel', () => 
       await writeFile(workUnitsPath, JSON.stringify(workUnitsData, null, 2));
 
       // @step When the Work Unit Details panel is rendered
-      const { lastFrame } = render(<BoardView />);
+      const { lastFrame } = render(<BoardView cwd={testDir} />);
 
       await new Promise(resolve => setTimeout(resolve, 200));
 
@@ -208,7 +208,7 @@ describe('Feature: Consolidate Git info and add work unit details panel', () => 
       await writeFile(workUnitsPath, JSON.stringify(workUnitsData, null, 2));
 
       // @step When the Work Unit Details panel is rendered
-      const { lastFrame } = render(<BoardView />);
+      const { lastFrame } = render(<BoardView cwd={testDir} />);
 
       await new Promise(resolve => setTimeout(resolve, 200));
 
