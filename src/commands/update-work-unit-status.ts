@@ -454,7 +454,18 @@ export async function updateWorkUnitStatus(
   // BOARD-016: Set 'updated' field to current timestamp when moving TO done
   // This happens AFTER sorting (which used the old 'updated' value if it existed)
   if (newStatus === 'done') {
-    workUnit.updated = new Date().toISOString();
+    const currentTimestamp = new Date().toISOString();
+    workUnit.updated = currentTimestamp;
+
+    // BOARD-016: Sort ENTIRE done array by 'updated' timestamp (most recent first)
+    // This fixes any existing mis-ordering in the done column
+    const doneArray = workUnitsData.states.done || [];
+
+    const sortedDoneArray = [...doneArray].sort((aId, bId) => {
+      return compareByUpdatedDescending(aId, bId, workUnitsData.workUnits);
+    });
+
+    workUnitsData.states.done = sortedDoneArray;
   }
 
   // Update blocked reason
