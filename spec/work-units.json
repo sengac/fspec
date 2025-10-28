@@ -14939,9 +14939,9 @@
       "id": "BOARD-010",
       "title": "Keyboard priority reordering with bracket keys",
       "type": "story",
-      "status": "specifying",
+      "status": "implementing",
       "createdAt": "2025-10-27T13:26:34.333Z",
-      "updatedAt": "2025-10-27T13:39:56.141Z",
+      "updatedAt": "2025-10-28T00:37:17.345Z",
       "description": "Allow users to reorder work units within a column using [ and ] keys to move items up/down in priority",
       "epic": "interactive-tui-foundation",
       "children": [],
@@ -14949,6 +14949,42 @@
         {
           "state": "specifying",
           "timestamp": "2025-10-27T13:26:34.982Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-28T00:01:07.899Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-28T00:03:35.764Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-28T00:20:50.787Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-28T00:22:23.137Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-28T00:23:47.930Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-28T00:23:49.101Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-28T00:35:42.604Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-28T00:37:09.629Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-28T00:37:17.345Z"
         }
       ],
       "userStory": {
@@ -14962,8 +14998,15 @@
         "Work unit order changes are persisted to work-units.json immediately",
         "Cannot move work unit up if it's already at the top of the column (first position)",
         "Cannot move work unit down if it's already at the bottom of the column (last position)",
-        "Order property in work-units.json tracks position within each column status",
-        "Manual reordering with [ and ] keys is only allowed in backlog, specifying, testing, implementing, validating, and blocked columns (not done column)"
+        "Manual reordering with [ and ] keys is only allowed in backlog, specifying, testing, implementing, validating, and blocked columns (not done column)",
+        "Work unit position is determined by its index in the states[columnName] array in work-units.json",
+        "To move work unit up: swap its position with the previous work unit ID in the states array",
+        "To move work unit down: swap its position with the next work unit ID in the states array",
+        "Key bindings [ and ] must be displayed in help text at bottom of TUI board",
+        "All keyboard input should be handled in a single unified location to prevent conflicts between multiple useInput hooks",
+        "Bracket key handlers should be in UnifiedBoardLayout's useInput hook (where arrow keys and Enter are handled), NOT in BoardView's useInput hook",
+        "UnifiedBoardLayout should call onMoveUp() and onMoveDown() callbacks (passed as props) when bracket keys are pressed",
+        "loadData() in fspecStore MUST load work units by iterating states arrays (not Object.values(workUnits)) to preserve display order"
       ],
       "examples": [
         "User selects BOARD-002 in backlog column (position 2), presses [, work unit moves to position 1",
@@ -14971,9 +15014,22 @@
         "User selects BOARD-003 in backlog column (position 2), presses ], work unit moves to position 3",
         "User selects last work unit in done column, presses ], nothing happens (already at bottom)",
         "After moving work unit, order persists when restarting TUI (loaded from work-units.json)",
-        "User in done column presses [ or ], nothing happens (done column order is automatic by completion time)"
+        "User in done column presses [ or ], nothing happens (done column order is automatic by completion time)",
+        "BoardView has useInput hook for ESC and Tab keys, UnifiedBoardLayout has useInput for arrow keys - bracket keys added to BoardView but not working, likely due to hook conflicts"
       ],
-      "estimate": 5
+      "estimate": 5,
+      "questions": [
+        {
+          "text": "@human: Where should the bracket key input handlers live - in BoardView or UnifiedBoardLayout? Currently we have useInput in BOTH components which might be causing conflicts.",
+          "selected": true,
+          "answer": "Bracket key handlers should live in UnifiedBoardLayout's useInput hook (where arrow keys and Enter are already handled). UnifiedBoardLayout will call onMoveUp/onMoveDown callbacks passed as props from BoardView."
+        },
+        {
+          "text": "CRITICAL ARCHITECTURE: How should loadData() load work units to respect states array order? Currently loads Object.values(workUnits) which is unordered!",
+          "selected": true,
+          "answer": "loadData() MUST build workUnits array from states arrays! Algorithm: 1) Iterate each column in states object 2) For each ID in states[column], lookup workUnit from workUnits object 3) Push to result array IN ORDER. This ensures display order matches states array order."
+        }
+      ]
     },
     "BOARD-011": {
       "id": "BOARD-011",
@@ -15329,14 +15385,24 @@
         "Work unit with no description shows: Line 1: ID+title, Line 2: empty, Line 3: Epic: x | Estimate: 5pts | Status: implementing, Line 4: empty",
         "No work unit selected shows: Line 1: 'No work unit selected' (centered), Lines 2-4: empty"
       ]
+    },
+    "LOG-001": {
+      "id": "LOG-001",
+      "title": "Add winston universal logger for fspec",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-10-28T00:29:38.433Z",
+      "updatedAt": "2025-10-28T00:29:38.433Z",
+      "description": "Add winston logging library as the universal logging solution for fspec. Configure winston with file transport (/tmp/fspec.log) and console transport. Support log levels (error, warn, info, debug). Replace all console.error calls with logger.error. Provide singleton logger instance importable throughout codebase.",
+      "children": []
     }
   },
   "states": {
     "backlog": [
       "RES-003",
       "RES-004",
-      "RES-005",
       "RES-001",
+      "RES-005",
       "TECH-001",
       "AGENT-001",
       "AGENT-002",
@@ -15355,18 +15421,20 @@
       "AGENT-015",
       "AGENT-016",
       "AGENT-017",
-      "FEAT-018"
+      "FEAT-018",
+      "LOG-001"
     ],
     "specifying": [
-      "GIT-004",
       "RES-006",
+      "GIT-004",
       "EST-002",
       "LANG-001",
-      "BOARD-010",
       "BOARD-014"
     ],
     "testing": [],
-    "implementing": [],
+    "implementing": [
+      "BOARD-010"
+    ],
     "validating": [],
     "done": [
       "BUG-007",

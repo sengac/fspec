@@ -4,7 +4,36 @@
 @BOARD-010
 Feature: Keyboard priority reordering with bracket keys
   """
-  Use Ink's useInput hook to capture [ and ] key presses. Implement swap logic in UnifiedBoardLayout to exchange positions of work units within same column. Update work-units.json order field for each work unit in affected column. Use Zustand store to trigger re-render after order change.
+  Architecture: CRITICAL ZUSTAND DATA FLOW ISSUE DISCOVERED!
+
+  Key handler flow:
+  1. UnifiedBoardLayout useInput detects [ or ] key press
+  2. Calls onMoveUp/onMoveDown callback (passed from BoardView as prop)
+  3. BoardView callback calls store.moveWorkUnitUp/Down(workUnitId)
+  4. Store method swaps IDs in states[columnName] array in work-units.json file
+  5. BoardView calls store.loadData() to reload from file
+  6. **CRITICAL**: loadData() MUST build workUnits array FROM states arrays!
+
+  WRONG Implementation (current):
+  - loadData() does: state.workUnits = Object.values(workUnitsData.workUnits)
+  - This loads from workUnits object which has NO ORDER
+  - States array changes are ignored!
+
+  CORRECT Implementation (required):
+  - loadData() MUST iterate states arrays to build workUnits in order:
+    1. For each column (backlog, specifying, testing, etc.)
+    2. For each ID in states.columnName array
+    3. Look up workUnit details from workUnitsData.workUnits by ID
+    4. Push to result array IN ORDER
+  - This ensures workUnits array reflects states array order
+  - Display order will match states array order
+
+  Key handler architecture:
+  - BoardView useInput: High-level keys (ESC, Tab)
+  - UnifiedBoardLayout useInput: Navigation keys (arrows, PageUp/Down, Enter, brackets)
+  - Pattern: UnifiedBoardLayout receives callbacks as props, calls them on key press
+
+  NO order field - position determined by array index in states[columnName].
   """
 
   # ========================================
@@ -14,11 +43,14 @@ Feature: Keyboard priority reordering with bracket keys
   # BUSINESS RULES:
   #   1. Press [ key to move selected work unit up one position in the current column
   #   2. Press ] key to move selected work unit down one position in the current column
-  #   3. Work unit order changes are persisted to work-units.json immediately
+  #   3. Work unit order changes are persisted to work-units.json states array immediately
   #   4. Cannot move work unit up if it's already at the top of the column (first position)
   #   5. Cannot move work unit down if it's already at the bottom of the column (last position)
-  #   6. Order property in work-units.json tracks position within each column status
-  #   7. Manual reordering with [ and ] keys is only allowed in backlog, specifying, testing, implementing, validating, and blocked columns (not done column)
+  #   6. Work unit position is determined by its index in the states[columnName] array in work-units.json
+  #   7. To move work unit up: swap its position with the previous work unit ID in the states array
+  #   8. To move work unit down: swap its position with the next work unit ID in the states array
+  #   9. Manual reordering with [ and ] keys is only allowed in backlog, specifying, testing, implementing, validating, and blocked columns (not done column)
+  #  10. Key bindings [ and ] must be displayed in help text at bottom of TUI board
   #
   # EXAMPLES:
   #   1. User selects BOARD-002 in backlog column (position 2), presses [, work unit moves to position 1
@@ -71,7 +103,7 @@ Feature: Keyboard priority reordering with bracket keys
     And the new order is: BOARD-003, BOARD-001, BOARD-002
     When I exit the TUI and restart it
     Then the backlog column should display work units in the saved order: BOARD-003, BOARD-001, BOARD-002
-    And the order field in work-units.json should reflect the new positions
+    And the states.backlog array in work-units.json should reflect the new positions
 
   Scenario: Manual reordering is disabled in done column
     Given the done column has work units ordered by completion time: BOARD-003, BOARD-005, BOARD-007

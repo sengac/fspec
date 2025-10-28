@@ -60,6 +60,8 @@ interface FspecState {
   loadFileStatus: () => Promise<void>;
   updateWorkUnitStatus: (id: string, status: string) => void;
   addWorkUnit: (workUnit: WorkUnit) => void;
+  moveWorkUnitUp: (workUnitId: string) => Promise<void>;
+  moveWorkUnitDown: (workUnitId: string) => Promise<void>;
 
   // Selectors
   getWorkUnitsByStatus: (status: string) => WorkUnit[];
@@ -91,8 +93,32 @@ export const useFspecStore = create<FspecState>()(
         const cwd = get().cwd;
         const workUnitsData = await ensureWorkUnitsFile(cwd);
         const epicsData = await ensureEpicsFile(cwd);
+
+        // BOARD-010: Build workUnits array FROM states arrays to preserve display order
+        // Iterate states arrays in column order, look up workUnit details by ID
+        const orderedWorkUnits: WorkUnit[] = [];
+        const columns = [
+          'backlog',
+          'specifying',
+          'testing',
+          'implementing',
+          'validating',
+          'done',
+          'blocked',
+        ];
+
+        for (const column of columns) {
+          const statesArray = workUnitsData.states[column] || [];
+          for (const workUnitId of statesArray) {
+            const workUnit = workUnitsData.workUnits[workUnitId];
+            if (workUnit) {
+              orderedWorkUnits.push(workUnit);
+            }
+          }
+        }
+
         set(state => {
-          state.workUnits = Object.values(workUnitsData.workUnits);
+          state.workUnits = orderedWorkUnits;
           state.epics = Object.values(epicsData.epics);
           state.isLoaded = true;
         });
@@ -155,6 +181,104 @@ export const useFspecStore = create<FspecState>()(
       set(state => {
         state.workUnits.push(workUnit);
       });
+    },
+
+    moveWorkUnitUp: async (workUnitId: string) => {
+      const state = get();
+      const workUnit = state.workUnits.find(wu => wu.id === workUnitId);
+      if (!workUnit) {
+        return;
+      }
+
+      // Don't allow reordering in done column
+      if (workUnit.status === 'done') {
+        return;
+      }
+
+      try {
+        const { ensureWorkUnitsFile } = await import(
+          '../../utils/ensure-files'
+        );
+        const { writeFile } = await import('fs/promises');
+        const { join } = await import('path');
+
+        const workUnitsData = await ensureWorkUnitsFile(state.cwd);
+
+        // Get the states array for this work unit's status
+        const statusKey = workUnit.status;
+        const statesArray = workUnitsData.states[statusKey] || [];
+        const currentIndex = statesArray.indexOf(workUnitId);
+
+        // Cannot move up if already at top
+        if (currentIndex <= 0) {
+          return;
+        }
+
+        // Swap with previous work unit in the states array
+        const newStatesArray = [...statesArray];
+        [newStatesArray[currentIndex - 1], newStatesArray[currentIndex]] = [
+          newStatesArray[currentIndex],
+          newStatesArray[currentIndex - 1],
+        ];
+
+        // Update states array
+        workUnitsData.states[statusKey] = newStatesArray;
+
+        // Write back to file
+        const workUnitsPath = join(state.cwd, 'spec', 'work-units.json');
+        await writeFile(workUnitsPath, JSON.stringify(workUnitsData, null, 2));
+      } catch (error) {
+        console.error('Failed to persist work unit order:', error);
+      }
+    },
+
+    moveWorkUnitDown: async (workUnitId: string) => {
+      const state = get();
+      const workUnit = state.workUnits.find(wu => wu.id === workUnitId);
+      if (!workUnit) {
+        return;
+      }
+
+      // Don't allow reordering in done column
+      if (workUnit.status === 'done') {
+        return;
+      }
+
+      try {
+        const { ensureWorkUnitsFile } = await import(
+          '../../utils/ensure-files'
+        );
+        const { writeFile } = await import('fs/promises');
+        const { join } = await import('path');
+
+        const workUnitsData = await ensureWorkUnitsFile(state.cwd);
+
+        // Get the states array for this work unit's status
+        const statusKey = workUnit.status;
+        const statesArray = workUnitsData.states[statusKey] || [];
+        const currentIndex = statesArray.indexOf(workUnitId);
+
+        // Cannot move down if already at bottom
+        if (currentIndex >= statesArray.length - 1 || currentIndex < 0) {
+          return;
+        }
+
+        // Swap with next work unit in the states array
+        const newStatesArray = [...statesArray];
+        [newStatesArray[currentIndex], newStatesArray[currentIndex + 1]] = [
+          newStatesArray[currentIndex + 1],
+          newStatesArray[currentIndex],
+        ];
+
+        // Update states array
+        workUnitsData.states[statusKey] = newStatesArray;
+
+        // Write back to file
+        const workUnitsPath = join(state.cwd, 'spec', 'work-units.json');
+        await writeFile(workUnitsPath, JSON.stringify(workUnitsData, null, 2));
+      } catch (error) {
+        console.error('Failed to persist work unit order:', error);
+      }
     },
 
     getWorkUnitsByStatus: (status: string) => {
