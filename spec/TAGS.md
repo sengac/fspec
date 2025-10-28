@@ -191,6 +191,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@json-schema` | JSON Schema Validation |
 | `@layout` | Layout and visual presentation features |
 | `@learning` | Machine learning and adaptive features based on usage patterns |
+| `@logging` | Logging and diagnostics features |
 | `@mermaid` | Mermaid Diagram Support |
 | `@multi-agent` | Multi-agent compatibility features and agent-specific customizations |
 | `@outside-in-bdd` | Outside-in BDD approach using personas and behavior-first thinking |
@@ -550,7 +551,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-10-28T05:33:12.358Z_
+_Last updated: 2025-10-28T09:28:40.211Z_
 
 **Update Command**: `fspec tag-stats`
 

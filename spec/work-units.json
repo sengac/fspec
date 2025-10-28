@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-28T06:39:37.416Z"
+    "lastUpdated": "2025-10-28T09:14:50.383Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -15430,11 +15430,52 @@
       "id": "LOG-001",
       "title": "Add winston universal logger for fspec",
       "type": "story",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2025-10-28T00:29:38.433Z",
-      "updatedAt": "2025-10-28T00:29:38.433Z",
+      "updatedAt": "2025-10-28T09:37:30.636Z",
       "description": "Add winston logging library as the universal logging solution for fspec. Configure winston with file transport (/tmp/fspec.log) and console transport. Support log levels (error, warn, info, debug). Replace all console.error calls with logger.error. Provide singleton logger instance importable throughout codebase.",
-      "children": []
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-28T09:14:42.459Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-28T09:29:52.250Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-28T09:32:46.981Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-28T09:35:14.151Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-28T09:37:30.637Z"
+        }
+      ],
+      "userStory": {
+        "role": "fspec developer",
+        "action": "have a universal logging system with winston",
+        "benefit": "I can debug issues, track command execution, and maintain consistent logging across the codebase"
+      },
+      "rules": [
+        "Log file must be stored in ~/.fspec/fspec.log (platform-agnostic home directory)",
+        "Winston must use append-only file transport (safe for concurrent writes)",
+        "Support log levels: error, warn, info, debug",
+        "Replace all console.error calls with logger.error throughout codebase",
+        "Provide singleton logger instance importable throughout codebase"
+      ],
+      "examples": [
+        "Developer imports logger and calls logger.error('message') - logs to ~/.fspec/fspec.log",
+        "Multiple fspec processes run concurrently - all append to same log file without corruption",
+        "Developer calls logger.debug('debug message') - logged only if debug level enabled"
+      ],
+      "estimate": 3,
+      "updated": "2025-10-28T09:37:30.636Z"
     },
     "BOARD-016": {
       "id": "BOARD-016",
@@ -15741,7 +15782,7 @@
       "type": "story",
       "status": "done",
       "createdAt": "2025-10-28T05:44:02.203Z",
-      "updatedAt": "2025-10-28T09:11:11.518Z",
+      "updatedAt": "2025-10-28T09:25:02.968Z",
       "children": [],
       "dependsOn": [
         "LOCK-001"
@@ -15766,6 +15807,14 @@
         {
           "state": "done",
           "timestamp": "2025-10-28T09:11:11.518Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-28T09:24:57.645Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-28T09:25:02.968Z"
         }
       ],
       "userStory": {
@@ -15813,7 +15862,7 @@
         "Implementation phases: (1) Create LockedFileManager singleton 2-3h, (2) Refactor ensure-files.ts 1-2h, (3) Refactor all commands 3-4h, (4) Refactor TUI store 1h, (5) Comprehensive testing 2-3h. Total estimate: 9-13 hours."
       ],
       "estimate": 13,
-      "updated": "2025-10-28T09:11:11.518Z"
+      "updated": "2025-10-28T09:25:02.968Z"
     },
     "BUG-047": {
       "id": "BUG-047",
@@ -15852,7 +15901,6 @@
   },
   "states": {
     "backlog": [
-      "LOG-001",
       "RES-003",
       "RES-004",
       "RES-001",
@@ -15888,6 +15936,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "LOG-001",
       "LOCK-002",
       "LOCK-001",
       "BOARD-014",
