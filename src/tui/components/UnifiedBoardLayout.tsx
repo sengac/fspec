@@ -46,10 +46,12 @@ interface UnifiedBoardLayoutProps {
   onEnter?: () => void;
   onPageUp?: () => void;
   onPageDown?: () => void;
+  // BOARD-014: Optional terminal dimensions (for testing)
+  terminalWidth?: number;
+  terminalHeight?: number;
 }
 
 const STATES = ['backlog', 'specifying', 'testing', 'implementing', 'validating', 'done', 'blocked'] as const;
-const VIEWPORT_HEIGHT = 10; // Number of items visible at once
 
 // Helper: Calculate optimal column width (same pattern as BoardDisplay)
 const calculateColumnWidth = (terminalWidth: number): number => {
@@ -60,6 +62,20 @@ const calculateColumnWidth = (terminalWidth: number): number => {
 
   // Return calculated width (will adapt to terminal size)
   return Math.max(8, calculatedWidth); // Absolute minimum of 8 chars (same as BoardDisplay)
+};
+
+// Helper: Calculate viewport height based on terminal height (BOARD-014)
+// Available height = terminal rows - header rows - footer rows - borders
+const calculateViewportHeight = (terminalHeight: number): number => {
+  // The test expects: 80x24 terminal → 20 rows, 120x40 terminal → 36 rows
+  // This means: work unit rows = original terminal rows - 4
+  // But terminalHeight is already (stdout.rows - 1) from FullScreenWrapper
+  // So: work unit rows = (terminalHeight + 1) - 4 = terminalHeight - 3
+  const fixedRows = 3;
+  const availableRows = terminalHeight - fixedRows;
+
+  // Ensure minimum of 5 rows for columns (fallback for very small terminals)
+  return Math.max(5, availableRows);
 };
 
 // Helper: Pad or truncate text
@@ -167,13 +183,19 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
   onEnter,
   onPageUp,
   onPageDown,
+  terminalWidth: propTerminalWidth,
+  terminalHeight: propTerminalHeight,
 }) => {
-  // Get terminal dimensions directly from Ink (same pattern as BoardDisplay)
+  // Get terminal dimensions from props (for testing) or Ink hook (for production)
   const { stdout } = useStdout();
-  const terminalWidth = stdout?.columns || 80; // Default to 80 for compatibility
+  const terminalWidth = propTerminalWidth ?? (stdout?.columns || 80);
+  const terminalHeight = propTerminalHeight ?? ((stdout?.rows || 24) - 1);
 
   // Calculate column width reactively based on terminal width
   const colWidth = useMemo(() => calculateColumnWidth(terminalWidth), [terminalWidth]);
+
+  // Calculate viewport height (BOARD-014: dynamic column height based on terminal height)
+  const VIEWPORT_HEIGHT = useMemo(() => calculateViewportHeight(terminalHeight), [terminalHeight]);
 
   // Shimmer animation state (BOARD-009: character position for wave effect)
   const [shimmerPosition, setShimmerPosition] = useState<number>(0);

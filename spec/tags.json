@@ -690,6 +690,10 @@
           "description": "Features with real-time data synchronization and live updates"
         },
         {
+          "name": "@responsive",
+          "description": "Components that respond to viewport or terminal dimension changes"
+        },
+        {
           "name": "@reverse-engineering",
           "description": "Reverse engineering existing code to create specifications"
         },
@@ -1226,7 +1230,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-10-27T08:18:32.597Z",
+    "lastUpdated": "2025-10-27T22:37:08.833Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

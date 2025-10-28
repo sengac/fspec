@@ -1,0 +1,139 @@
+{
+  "scenarios": [
+    {
+      "name": "Board fills entire terminal in standard 80x24 terminal",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/FullScreenWrapper.test.tsx",
+          "lines": "24-59",
+          "implMappings": []
+        },
+        {
+          "file": "src/tui/__tests__/FullScreenWrapper.test.tsx",
+          "lines": "24-59",
+          "implMappings": [
+            {
+              "file": "src/tui/components/FullScreenWrapper.tsx",
+              "lines": [
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Board fills entire terminal in larger 120x40 terminal",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/FullScreenWrapper.test.tsx",
+          "lines": "63-95",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Board automatically resizes when terminal dimensions change",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/FullScreenWrapper.test.tsx",
+          "lines": "99-143",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Screen is cleared before rendering to eliminate artifacts",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/FullScreenWrapper.test.tsx",
+          "lines": "147-178",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "BoardView uses useStdout hook for terminal dimension detection",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/FullScreenWrapper.test.tsx",
+          "lines": "182-223",
+          "implMappings": []
+        },
+        {
+          "file": "src/tui/__tests__/FullScreenWrapper.test.tsx",
+          "lines": "181-219",
+          "implMappings": [
+            {
+              "file": "src/tui/components/FullScreenWrapper.tsx",
+              "lines": [
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/__tests__/FullScreenWrapper.test.tsx"
+    ],
+    "implFiles": [
+      "src/tui/components/FullScreenWrapper.tsx"
+    ],
+    "totalLinesCovered": 314
+  }
+}
