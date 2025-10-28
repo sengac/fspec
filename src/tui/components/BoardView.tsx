@@ -16,6 +16,7 @@ import path from 'path';
 import { getStagedFiles, getUnstagedFiles } from '../../git/status';
 import { UnifiedBoardLayout } from './UnifiedBoardLayout';
 import { FullScreenWrapper } from './FullScreenWrapper';
+import { appendFileSync } from 'fs';
 
 interface BoardViewProps {
   onExit?: () => void;
@@ -38,6 +39,8 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
   const loadData = useFspecStore(state => state.loadData);
   const loadStashes = useFspecStore(state => state.loadStashes);
   const loadFileStatus = useFspecStore(state => state.loadFileStatus);
+  const moveWorkUnitUp = useFspecStore(state => state.moveWorkUnitUp);
+  const moveWorkUnitDown = useFspecStore(state => state.moveWorkUnitDown);
 
   const [focusedColumnIndex, setFocusedColumnIndex] = useState(0);
   const [selectedWorkUnitIndex, setSelectedWorkUnitIndex] = useState(0);
@@ -346,6 +349,34 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
             setViewMode('stash-detail');
           } else if (focusedPanel === 'files' && (stagedFiles.length > 0 || unstagedFiles.length > 0)) {
             setViewMode('file-diff');
+          }
+        }}
+        onMoveUp={async () => {
+          // BOARD-010: Move work unit up with [ key
+          appendFileSync('/tmp/board-debug.log', `[${new Date().toISOString()}] BoardView onMoveUp called\n`);
+          const currentColumn = groupedWorkUnits[focusedColumnIndex];
+          appendFileSync('/tmp/board-debug.log', `[${new Date().toISOString()}] BoardView: currentColumn=${currentColumn.status}, units.length=${currentColumn.units.length}\n`);
+          if (currentColumn.units.length > 0) {
+            const workUnit = currentColumn.units[selectedWorkUnitIndex];
+            appendFileSync('/tmp/board-debug.log', `[${new Date().toISOString()}] BoardView: calling moveWorkUnitUp(${workUnit.id})\n`);
+            await moveWorkUnitUp(workUnit.id);
+            appendFileSync('/tmp/board-debug.log', `[${new Date().toISOString()}] BoardView: moveWorkUnitUp completed, reloading data\n`);
+            await loadData();
+            appendFileSync('/tmp/board-debug.log', `[${new Date().toISOString()}] BoardView: loadData completed\n`);
+          }
+        }}
+        onMoveDown={async () => {
+          // BOARD-010: Move work unit down with ] key
+          appendFileSync('/tmp/board-debug.log', `[${new Date().toISOString()}] BoardView onMoveDown called\n`);
+          const currentColumn = groupedWorkUnits[focusedColumnIndex];
+          appendFileSync('/tmp/board-debug.log', `[${new Date().toISOString()}] BoardView: currentColumn=${currentColumn.status}, units.length=${currentColumn.units.length}\n`);
+          if (currentColumn.units.length > 0) {
+            const workUnit = currentColumn.units[selectedWorkUnitIndex];
+            appendFileSync('/tmp/board-debug.log', `[${new Date().toISOString()}] BoardView: calling moveWorkUnitDown(${workUnit.id})\n`);
+            await moveWorkUnitDown(workUnit.id);
+            appendFileSync('/tmp/board-debug.log', `[${new Date().toISOString()}] BoardView: moveWorkUnitDown completed, reloading data\n`);
+            await loadData();
+            appendFileSync('/tmp/board-debug.log', `[${new Date().toISOString()}] BoardView: loadData completed\n`);
           }
         }}
       />

@@ -169,6 +169,11 @@
       "prefix": "ITF",
       "description": "Interactive TUI Foundation - Core infrastructure work units",
       "createdAt": "2025-10-27T04:16:45.739Z"
+    },
+    "LOG": {
+      "prefix": "LOG",
+      "description": "Logging infrastructure",
+      "createdAt": "2025-10-28T00:29:20.548Z"
     }
   }
 }

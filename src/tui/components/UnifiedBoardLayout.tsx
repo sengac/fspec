@@ -14,6 +14,7 @@
 import React, { useMemo, useEffect, useState } from 'react';
 import { Box, Text, useInput, useStdout } from 'ink';
 import chalk from 'chalk';
+import { appendFileSync } from 'fs';
 
 interface StateHistoryEntry {
   state: string;
@@ -46,6 +47,8 @@ interface UnifiedBoardLayoutProps {
   onEnter?: () => void;
   onPageUp?: () => void;
   onPageDown?: () => void;
+  onMoveUp?: () => void;
+  onMoveDown?: () => void;
   // BOARD-014: Optional terminal dimensions (for testing)
   terminalWidth?: number;
   terminalHeight?: number;
@@ -193,6 +196,8 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
   onEnter,
   onPageUp,
   onPageDown,
+  onMoveUp,
+  onMoveDown,
   terminalWidth: propTerminalWidth,
   terminalHeight: propTerminalHeight,
 }) => {
@@ -363,6 +368,9 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
 
   // Handle keyboard input
   useInput((input, key) => {
+    // Debug ALL key presses
+    appendFileSync('/tmp/board-debug.log', `[${new Date().toISOString()}] UnifiedBoardLayout useInput: input="${input}" key=${JSON.stringify(key)}\n`);
+
     // Page Up/Down for scrolling
     if (key.pageDown) {
       const currentColumn = STATES[focusedColumnIndex];
@@ -402,6 +410,16 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
     }
     if (key.return) {
       onEnter?.();
+    }
+
+    // BOARD-010: Bracket keys for priority reordering
+    if (input === '[') {
+      appendFileSync('/tmp/board-debug.log', `[${new Date().toISOString()}] UnifiedBoardLayout: [ key pressed, calling onMoveUp (exists: ${!!onMoveUp})\n`);
+      onMoveUp?.();
+    }
+    if (input === ']') {
+      appendFileSync('/tmp/board-debug.log', `[${new Date().toISOString()}] UnifiedBoardLayout: ] key pressed, calling onMoveDown (exists: ${!!onMoveDown})\n`);
+      onMoveDown?.();
     }
   });
 
@@ -589,7 +607,7 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
   rows.push(buildBorderRow(colWidth, '├', '┴', '┤', 'bottom'));
 
   // Footer row (centered with diamond separators)
-  rows.push('│' + centerText('← → Columns ◆ ↑↓ Work Units ◆ ↵ Details ◆ ESC Back', totalWidth) + '│');
+  rows.push('│' + centerText('← → Columns ◆ ↑↓ Work Units ◆ [ Priority Up ◆ ] Priority Down ◆ ↵ Details ◆ ESC Back', totalWidth) + '│');
 
   // Bottom border (no columns below - use plain separator)
   rows.push(buildBorderRow(colWidth, '└', '─', '┘', 'plain'));
