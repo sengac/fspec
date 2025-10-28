@@ -445,31 +445,24 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
   // Separator after Git Context panel
   rows.push(buildBorderRow(colWidth, '├', '─', '┤', 'plain'));
 
-  // Work Unit Details panel
+  // Work Unit Details panel (BOARD-014: static 4 lines high)
   rows.push('│' + fitToWidth('Work Unit Details', totalWidth) + '│');
-  if (selectedWorkUnit) {
-    // Display selected work unit metadata (BOARD-008: no emoji icons)
-    const titleLine = `${selectedWorkUnit.id}: ${selectedWorkUnit.title}`;
-    rows.push('│' + fitToWidth(`  ${titleLine}`, totalWidth) + '│');
 
-    // Truncate description to 3 lines
+  const detailLines: string[] = [];
+  if (selectedWorkUnit) {
+    // Line 1: Title with ID
+    const titleLine = `${selectedWorkUnit.id}: ${selectedWorkUnit.title}`;
+    detailLines.push(fitToWidth(`  ${titleLine}`, totalWidth));
+
+    // Line 2: First line of description (if exists)
     if (selectedWorkUnit.description) {
       const descLines = selectedWorkUnit.description.split('\n');
-      const maxLines = 3;
-      for (let i = 0; i < Math.min(descLines.length, maxLines); i++) {
-        rows.push('│' + fitToWidth(`  ${descLines[i]}`, totalWidth) + '│');
-      }
-      if (descLines.length > maxLines) {
-        rows.push('│' + fitToWidth('  Press ↵ to view full details', totalWidth) + '│');
-      }
+      detailLines.push(fitToWidth(`  ${descLines[0]}`, totalWidth));
+    } else {
+      detailLines.push(fitToWidth('', totalWidth));
     }
 
-    // Display dependencies
-    if (selectedWorkUnit.dependencies && selectedWorkUnit.dependencies.length > 0) {
-      rows.push('│' + fitToWidth(`  Dependencies: ${selectedWorkUnit.dependencies.join(', ')}`, totalWidth) + '│');
-    }
-
-    // Display other metadata
+    // Line 3: Metadata (Epic, Estimate, Status)
     const metadata: string[] = [];
     if (selectedWorkUnit.epic) {
       metadata.push(`Epic: ${selectedWorkUnit.epic}`);
@@ -480,12 +473,17 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
     if (selectedWorkUnit.status) {
       metadata.push(`Status: ${selectedWorkUnit.status}`);
     }
-    if (metadata.length > 0) {
-      rows.push('│' + fitToWidth(`  ${metadata.join(' | ')}`, totalWidth) + '│');
-    }
+    detailLines.push(fitToWidth(`  ${metadata.join(' | ')}`, totalWidth));
   } else {
-    // No work unit selected
-    rows.push('│' + centerText('No work unit selected', totalWidth) + '│');
+    // No work unit selected - fill with empty lines
+    detailLines.push(centerText('No work unit selected', totalWidth));
+    detailLines.push(fitToWidth('', totalWidth));
+    detailLines.push(fitToWidth('', totalWidth));
+  }
+
+  // Always output exactly 3 detail lines (static height)
+  for (let i = 0; i < 3; i++) {
+    rows.push('│' + detailLines[i] + '│');
   }
 
   // Separator after Changed Files (top - no columns above, columns start below)
