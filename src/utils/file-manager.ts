@@ -13,6 +13,7 @@ import { readFile, writeFile, rename, unlink } from 'fs/promises';
 import { existsSync } from 'fs';
 import lockfile from 'proper-lockfile';
 import { randomUUID } from 'crypto';
+import { logger } from './logger';
 
 interface LockMetrics {
   lockType: 'READ' | 'WRITE';
@@ -132,7 +133,7 @@ class LockedFileManager {
    */
   private logMetrics(metrics: LockMetrics): void {
     if (process.env.FSPEC_DEBUG_LOCKS) {
-      console.log(
+      logger.debug(
         `[LOCK] Acquired ${metrics.lockType} lock on ${metrics.filePath} ` +
           `(waited ${metrics.waitTimeMs}ms, held ${metrics.holdDurationMs}ms, retries ${metrics.retries})`
       );
