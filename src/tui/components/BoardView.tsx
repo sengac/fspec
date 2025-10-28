@@ -101,20 +101,27 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
     };
   }, [loadData]);
 
-  // Watch .git/refs/stash for stash changes (ITF-005)
+  // Watch .git/refs/ directory for stash changes (BOARD-018: Fixed directory-based watching)
+  // NOTE: Watch the directory instead of the file to handle atomic rename operations
   useEffect(() => {
     if (!showStashPanel) return;
 
     const cwd = process.cwd();
-    const stashPath = path.join(cwd, '.git', 'refs', 'stash');
+    const gitRefsDir = path.join(cwd, '.git', 'refs');
 
-    // Check if file exists before watching
-    if (!fs.existsSync(stashPath)) return;
+    // Check if directory exists before watching
+    if (!fs.existsSync(gitRefsDir)) return;
 
-    const watcher = fs.watch(stashPath, (eventType) => {
-      if (eventType === 'change') {
+    const watcher = fs.watch(gitRefsDir, { persistent: false }, (eventType, filename) => {
+      // Filter for stash file only (ignore other refs like heads, tags)
+      if (filename === 'stash') {
         void loadStashes();
       }
+    });
+
+    // Add error handler to prevent silent failures (BOARD-018)
+    watcher.on('error', (error) => {
+      console.warn('Git refs watcher error:', error.message);
     });
 
     return () => {
@@ -122,46 +129,39 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
     };
   }, [showStashPanel, loadStashes]);
 
-  // Watch .git/index for staging area changes (ITF-005)
+  // Watch .git/ directory for index changes (BOARD-018: Fixed directory-based watching)
+  // NOTE: Watch the directory instead of the file to handle atomic rename operations
   useEffect(() => {
     if (!showFilesPanel) return;
 
     const cwd = process.cwd();
-    const indexPath = path.join(cwd, '.git', 'index');
+    const gitDir = path.join(cwd, '.git');
 
-    // Check if file exists before watching
-    if (!fs.existsSync(indexPath)) return;
+    // Check if directory exists before watching
+    if (!fs.existsSync(gitDir)) return;
 
-    const watcher = fs.watch(indexPath, (eventType) => {
-      if (eventType === 'change') {
+    const watcher = fs.watch(gitDir, { persistent: false }, (eventType, filename) => {
+      // Filter for index or HEAD files only
+      if (filename === 'index' || filename === 'HEAD') {
         void loadFileStatus();
+        // Also reload stashes when HEAD changes (new commits)
+        if (filename === 'HEAD') {
+          void loadStashes();
+        }
       }
+    });
+
+    // Add error handler to prevent silent failures (BOARD-018)
+    watcher.on('error', (error) => {
+      console.warn('Git directory watcher error:', error.message);
     });
 
     return () => {
       watcher.close();
     };
-  }, [showFilesPanel, loadFileStatus]);
+  }, [showFilesPanel, loadFileStatus, loadStashes]);
 
-  // Watch .git/HEAD for branch/commit changes (ITF-005)
-  useEffect(() => {
-    const cwd = process.cwd();
-    const headPath = path.join(cwd, '.git', 'HEAD');
-
-    // Check if file exists before watching
-    if (!fs.existsSync(headPath)) return;
-
-    const watcher = fs.watch(headPath, (eventType) => {
-      if (eventType === 'change') {
-        void loadFileStatus();
-        void loadStashes();
-      }
-    });
-
-    return () => {
-      watcher.close();
-    };
-  }, [loadFileStatus, loadStashes]);
+  // HEAD watcher removed (BOARD-018): Now handled by .git/ directory watcher above
 
   // Load stash files when entering stash-detail mode (BOARD-003)
   useEffect(() => {
