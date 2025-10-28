@@ -6,6 +6,7 @@ import chalk from 'chalk';
 import type { Tags } from '../types/tags';
 import { validateTagsJson } from '../validators/json-schema';
 import { generateTagsMd } from '../generators/tags-md';
+import { fileManager } from '../utils/file-manager';
 
 interface UpdateTagOptions {
   tag: string;
@@ -100,8 +101,10 @@ export async function updateTag(
       }
     }
 
-    // Write updated tags.json
-    await writeFile(tagsJsonPath, JSON.stringify(tagsData, null, 2), 'utf-8');
+    // LOCK-002: Use fileManager.transaction() for atomic write
+    await fileManager.transaction(tagsJsonPath, async fileData => {
+      Object.assign(fileData, tagsData);
+    });
 
     // Validate updated JSON against schema
     const validation = await validateTagsJson(tagsJsonPath);
@@ -114,6 +117,7 @@ export async function updateTag(
 
     // Regenerate TAGS.md from JSON
     const markdown = await generateTagsMd(tagsData);
+    // LOCK-002: Markdown files use regular writeFile (not JSON)
     await writeFile(tagsMdPath, markdown, 'utf-8');
 
     return {
