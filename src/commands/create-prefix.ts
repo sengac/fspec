@@ -1,8 +1,8 @@
-import { writeFile } from 'fs/promises';
 import chalk from 'chalk';
 import type { Command } from 'commander';
 import { join } from 'path';
 import { ensurePrefixesFile } from '../utils/ensure-files';
+import { fileManager } from '../utils/file-manager';
 
 interface Prefix {
   prefix: string;
@@ -48,8 +48,10 @@ export async function createPrefix(options: {
 
     data.prefixes[options.prefix] = newPrefix;
 
-    // Write back to file
-    await writeFile(prefixesFile, JSON.stringify(data, null, 2));
+    // LOCK-002: Use fileManager.transaction() for atomic write
+    await fileManager.transaction(prefixesFile, async fileData => {
+      Object.assign(fileData, data);
+    });
 
     return { success: true };
   } catch (error: unknown) {

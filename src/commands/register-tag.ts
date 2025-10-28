@@ -6,6 +6,7 @@ import type { Tags, TagCategory } from '../types/tags';
 import { validateTagsJson } from '../validators/json-schema';
 import { generateTagsMd } from '../generators/tags-md';
 import { ensureTagsFile } from '../utils/ensure-files';
+import { fileManager } from '../utils/file-manager';
 
 interface RegisterTagOptions {
   cwd?: string;
@@ -94,8 +95,10 @@ export async function registerTag(
   // Save original tags.json for rollback
   const originalTagsData = await ensureTagsFile(cwd);
 
-  // Write updated tags.json
-  await writeFile(tagsJsonPath, JSON.stringify(tagsData, null, 2), 'utf-8');
+  // LOCK-002: Use fileManager.transaction() for atomic write
+  await fileManager.transaction(tagsJsonPath, async fileData => {
+    Object.assign(fileData, tagsData);
+  });
 
   // Validate updated JSON against schema
   const validation = await validateTagsJson(tagsJsonPath);
@@ -108,14 +111,13 @@ export async function registerTag(
   // Regenerate TAGS.md from JSON with rollback on failure
   try {
     const markdown = await generateTagsMd(tagsData);
+    // LOCK-002: Markdown files use regular writeFile (not JSON)
     await writeFile(tagsMdPath, markdown, 'utf-8');
   } catch (error: any) {
     // Rollback tags.json to previous state
-    await writeFile(
-      tagsJsonPath,
-      JSON.stringify(originalTagsData, null, 2),
-      'utf-8'
-    );
+    await fileManager.transaction(tagsJsonPath, async fileData => {
+      Object.assign(fileData, originalTagsData);
+    });
     throw new Error(
       `Failed to regenerate TAGS.md - changes rolled back: ${error.message}`
     );

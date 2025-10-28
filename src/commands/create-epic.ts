@@ -1,7 +1,8 @@
-import { readFile, writeFile, mkdir } from 'fs/promises';
+import { readFile, mkdir } from 'fs/promises';
 import type { Command } from 'commander';
 import { join } from 'path';
 import chalk from 'chalk';
+import { fileManager } from '../utils/file-manager';
 
 interface Epic {
   id: string;
@@ -63,8 +64,10 @@ export async function createEpic(options: {
 
     data.epics[options.epicId] = newEpic;
 
-    // Write back to file
-    await writeFile(epicsFile, JSON.stringify(data, null, 2));
+    // LOCK-002: Use fileManager.transaction() for atomic write
+    await fileManager.transaction(epicsFile, async fileData => {
+      Object.assign(fileData, data);
+    });
 
     return { success: true };
   } catch (error: unknown) {
