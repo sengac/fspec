@@ -20,6 +20,7 @@ Tags that identify which architectural component a feature belongs to.
 | `@generator` | Template Generation |
 | `@git` | Git operations and version control integration |
 | `@hooks` | Hooks system and execution engine |
+| `@init` | Initialization and setup features |
 | `@integration` | Cross-Component Integration |
 | `@parser` | Gherkin Parser Integration |
 | `@templates` | Template generation and transformation system |
@@ -35,6 +36,7 @@ Tags that categorize features by functional area.
 | Tag | Description |
 |-----|-------------|
 | `@accuracy` | Accuracy measurement |
+| `@agent-compatibility` | Features ensuring correct behavior across all 18 supported AI agents |
 | `@agent-detection` | Agent detection and runtime configuration features |
 | `@agent-integration` | Features related to AI agent initialization, detection, and integration |
 | `@answer-question` | Question answering operations |
@@ -551,7 +553,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-10-28T09:28:40.211Z_
+_Last updated: 2025-10-28T11:16:34.380Z_
 
 **Update Command**: `fspec tag-stats`
 

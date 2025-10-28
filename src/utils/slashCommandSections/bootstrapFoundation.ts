@@ -59,7 +59,7 @@ fspec discover-foundation --finalize
 
 - ONLY if \`spec/foundation.json\` already exists
 
-**See also:** \`spec/CLAUDE.md\` section "Bootstrapping Foundation for New Projects" for complete guidance.
+**See also:** \`spec/{{DOC_TEMPLATE}}\` section "Bootstrapping Foundation for New Projects" for complete guidance.
 
 `;
 }

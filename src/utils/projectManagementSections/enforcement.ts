@@ -6,7 +6,7 @@ export function getEnforcementSection(): string {
 1. **NO Markdown-Based Specifications**
    - DO NOT create user stories or acceptance criteria in \`.md\` files
    - ALL specifications MUST be in \`.feature\` files using Gherkin syntax
-   - Exception: FOUNDATION.md, TAGS.md, and CLAUDE.md are meta-documentation
+   - Exception: FOUNDATION.md, TAGS.md, and {{DOC_TEMPLATE}} are meta-documentation
 
 2. **Tag Compliance**
    - Every \`.feature\` file MUST have at minimum: phase tag, component tag, and feature group tag

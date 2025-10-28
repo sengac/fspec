@@ -38,6 +38,10 @@
           "description": "Hooks system and execution engine"
         },
         {
+          "name": "@init",
+          "description": "Initialization and setup features"
+        },
+        {
           "name": "@integration",
           "description": "Cross-Component Integration"
         },
@@ -68,6 +72,10 @@
         {
           "name": "@accuracy",
           "description": "Accuracy measurement"
+        },
+        {
+          "name": "@agent-compatibility",
+          "description": "Features ensuring correct behavior across all 18 supported AI agents"
         },
         {
           "name": "@agent-detection",
@@ -1238,7 +1246,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-10-28T09:28:40.211Z",
+    "lastUpdated": "2025-10-28T11:16:34.380Z",
     "phaseStats": [
       {
         "phase": "Phase 1",
