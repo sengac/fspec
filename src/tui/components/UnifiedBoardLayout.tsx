@@ -65,13 +65,23 @@ const calculateColumnWidth = (terminalWidth: number): number => {
 };
 
 // Helper: Calculate viewport height based on terminal height (BOARD-014)
-// Available height = terminal rows - header rows - footer rows - borders
+// Available height = terminal rows - all fixed-height sections
 const calculateViewportHeight = (terminalHeight: number): number => {
-  // The test expects: 80x24 terminal → 20 rows, 120x40 terminal → 36 rows
-  // This means: work unit rows = original terminal rows - 4
-  // But terminalHeight is already (stdout.rows - 1) from FullScreenWrapper
-  // So: work unit rows = (terminalHeight + 1) - 4 = terminalHeight - 3
-  const fixedRows = 3;
+  // Fixed rows count:
+  // - Top border: 1
+  // - Git Stashes header + content: 2
+  // - Changed Files header + content: 2
+  // - Separator after git: 1
+  // - Work Unit Details header: 1
+  // - Work Unit Details content: 4
+  // - Separator before columns: 1
+  // - Column headers: 1
+  // - Header separator: 1
+  // - Bottom separator: 1
+  // - Footer: 1
+  // - Bottom border: 1
+  // Total: 17 fixed rows
+  const fixedRows = 17;
   const availableRows = terminalHeight - fixedRows;
 
   // Ensure minimum of 5 rows for columns (fallback for very small terminals)
@@ -448,16 +458,19 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
   // Work Unit Details panel (BOARD-014: static 4 lines high)
   rows.push('│' + fitToWidth('Work Unit Details', totalWidth) + '│');
 
+  // Always output exactly 4 detail lines (static height)
   const detailLines: string[] = [];
+
   if (selectedWorkUnit) {
     // Line 1: Title with ID
     const titleLine = `${selectedWorkUnit.id}: ${selectedWorkUnit.title}`;
     detailLines.push(fitToWidth(`  ${titleLine}`, totalWidth));
 
     // Line 2: First line of description (if exists)
-    if (selectedWorkUnit.description) {
+    if (selectedWorkUnit.description && selectedWorkUnit.description.trim().length > 0) {
       const descLines = selectedWorkUnit.description.split('\n');
-      detailLines.push(fitToWidth(`  ${descLines[0]}`, totalWidth));
+      const firstDescLine = descLines[0].trim();
+      detailLines.push(fitToWidth(`  ${firstDescLine}`, totalWidth));
     } else {
       detailLines.push(fitToWidth('', totalWidth));
     }
@@ -474,15 +487,23 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
       metadata.push(`Status: ${selectedWorkUnit.status}`);
     }
     detailLines.push(fitToWidth(`  ${metadata.join(' | ')}`, totalWidth));
-  } else {
-    // No work unit selected - fill with empty lines
-    detailLines.push(centerText('No work unit selected', totalWidth));
+
+    // Line 4: Empty line for spacing
     detailLines.push(fitToWidth('', totalWidth));
+  } else {
+    // No work unit selected - fill with 4 empty lines
+    for (let i = 0; i < 4; i++) {
+      detailLines.push(i === 0 ? centerText('No work unit selected', totalWidth) : fitToWidth('', totalWidth));
+    }
+  }
+
+  // Safety check: ensure we have exactly 4 lines
+  while (detailLines.length < 4) {
     detailLines.push(fitToWidth('', totalWidth));
   }
 
-  // Always output exactly 3 detail lines (static height)
-  for (let i = 0; i < 3; i++) {
+  // Output the 4 detail lines
+  for (let i = 0; i < 4; i++) {
     rows.push('│' + detailLines[i] + '│');
   }
 
