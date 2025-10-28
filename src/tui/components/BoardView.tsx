@@ -16,6 +16,8 @@ import path from 'path';
 import { getStagedFiles, getUnstagedFiles } from '../../git/status';
 import { UnifiedBoardLayout } from './UnifiedBoardLayout';
 import { FullScreenWrapper } from './FullScreenWrapper';
+import { VirtualList } from './VirtualList';
+import { useStdout } from 'ink';
 
 interface BoardViewProps {
   onExit?: () => void;
@@ -288,16 +290,43 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
 
   // Work unit detail view
   if (viewMode === 'detail' && selectedWorkUnit) {
+    const { stdout } = useStdout();
+    const availableHeight = (terminalHeight || stdout?.rows || 24) - 10; // Reserve space for header and footer
+
+    // Split description into lines for scrollable display
+    const descriptionText = selectedWorkUnit.description || 'No description';
+    const descriptionLines = descriptionText.split('\n');
+
+    // Render a single line with selection indicator
+    const renderLine = (line: string, _index: number, isSelected: boolean): React.ReactNode => {
+      const indicator = isSelected ? '>' : ' ';
+      return (
+        <Box width="100%">
+          <Text color={isSelected ? 'cyan' : 'white'}>
+            {indicator} {line || ' '}
+          </Text>
+        </Box>
+      );
+    };
+
     return (
       <FullScreenWrapper>
-        <Box flexDirection="column" padding={1}>
+        <Box flexDirection="column" padding={1} height="100%">
           <Text bold>{selectedWorkUnit.id} - {selectedWorkUnit.title}</Text>
           <Text>Type: {selectedWorkUnit.type}</Text>
           <Text>Status: {selectedWorkUnit.status}</Text>
           {selectedWorkUnit.estimate && <Text>Estimate: {selectedWorkUnit.estimate} points</Text>}
           <Text>{'\n'}Description:</Text>
-          <Text>{selectedWorkUnit.description || 'No description'}</Text>
-          <Text dimColor>{'\n'}Press ESC to return</Text>
+
+          <VirtualList
+            items={descriptionLines}
+            height={availableHeight}
+            renderItem={renderLine}
+            showScrollbar={true}
+            emptyMessage="No description"
+          />
+
+          <Text dimColor>{'\n'}Press ESC to return | Use ↑↓ or j/k to scroll | PgUp/PgDn, Home/End</Text>
         </Box>
       </FullScreenWrapper>
     );
