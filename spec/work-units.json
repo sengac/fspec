@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-28T22:30:21.180Z"
+    "lastUpdated": "2025-10-28T23:31:48.479Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -16513,6 +16513,55 @@
       ],
       "estimate": 5,
       "updated": "2025-10-28T23:28:14.899Z"
+    },
+    "ITF-007": {
+      "id": "ITF-007",
+      "title": "Fix stale tests and changed files watcher after ITF-006",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-10-28T23:31:02.790Z",
+      "updatedAt": "2025-10-28T23:45:29.163Z",
+      "description": "After replacing Git Stashes with Checkpoints (ITF-006), 12 tests fail expecting old 'Git Stashes' text. Also, changed files panel shows stale counts (14 staged, 0 unstaged) after commit when it should show 0/0. Need to update tests to expect 'Checkpoints' and fix chokidar watcher to refresh file counts after git operations.",
+      "epic": "interactive-tui-foundation",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-28T23:31:08.509Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-28T23:35:34.052Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-28T23:36:22.132Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-28T23:44:22.885Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-28T23:45:29.163Z"
+        }
+      ],
+      "rules": [
+        "All tests expecting 'Git Stashes' text must be updated to expect 'Checkpoints' instead",
+        "Changed files watcher must refresh counts immediately after git commit operations",
+        "Failing tests: BoardView-git-watcher-fix (4), BoardView-interactive-kanban (2), BoardView-realtime-updates (2), BoardView-table-layout (2), BoardView-git-context-work-unit-details (1) - total 11 tests"
+      ],
+      "examples": [
+        "After git commit, changed files panel shows '14 staged, 0 unstaged' but should show '0 staged, 0 unstaged' (clean working directory)",
+        "Test expects 'Git Stashes (2)' but component now displays 'Checkpoints: X Manual, Y Auto'",
+        "Test expects keybinding 'S View Stashes' but panel now shows 'C View Checkpoints'"
+      ],
+      "userStory": {
+        "role": "developer running tests",
+        "action": "have all tests pass after ITF-006 checkpoint integration",
+        "benefit": "I can verify the TUI works correctly with the new checkpoint system"
+      },
+      "updated": "2025-10-28T23:45:29.163Z"
     }
   },
   "states": {
@@ -16551,6 +16600,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "ITF-007",
       "ITF-006",
       "BOARD-019",
       "BOARD-018",

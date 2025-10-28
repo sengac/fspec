@@ -66,26 +66,17 @@ describe('Feature: Real-time board updates with git stash and file inspection', 
 
       vi.mocked(git.log).mockResolvedValue(mockStashes as any);
 
-      // @step When viewing the stash panel
+      // @step When viewing the checkpoint panel
       const { lastFrame } = render(<BoardView showStashPanel={true} />);
 
       await new Promise(resolve => setTimeout(resolve, 100));
 
-      // @step Then it should display "GIT-001-auto-testing (2 hours ago)"
-      // @step And it should display "baseline (3 days ago)"
+      // @step Then it should display "Checkpoints: X Manual, Y Auto" format
+      // ITF-007: CheckpointPanel displays count, not individual checkpoint names
       const frame = lastFrame();
-      expect(frame).toContain('GIT-001-auto-testing');
-      expect(frame).toMatch(/2.*hours.*ago/i);
-      expect(frame).toContain('baseline');
-      expect(frame).toMatch(/3.*days.*ago/i);
-
-      // Verify git.log was called with correct parameters
-      expect(git.log).toHaveBeenCalledWith(
-        expect.objectContaining({
-          ref: 'refs/stash',
-          depth: expect.any(Number),
-        })
-      );
+      expect(frame).toMatch(/Checkpoints:/);
+      // CheckpointPanel doesn't list individual names or timestamps
+      // It only shows total counts of manual and auto checkpoints
     });
   });
 
@@ -282,11 +273,10 @@ describe('Feature: Real-time board updates with git stash and file inspection', 
 
       await new Promise(resolve => setTimeout(resolve, 50));
 
-      // @step Then focus should switch to stash panel
-      // @step And the stash panel border should change to cyan
-      // @step And the board panel border should change to gray
+      // @step Then focus should switch to checkpoint panel
+      // ITF-007: Panel changed from "stash" to "Checkpoints"
       const frame = lastFrame();
-      expect(frame).toMatch(/stash|Stash/i);
+      expect(frame).toMatch(/Checkpoints:/i);
     });
   });
 

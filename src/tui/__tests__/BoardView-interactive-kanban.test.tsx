@@ -118,12 +118,14 @@ describe('Feature: Interactive Kanban board CLI', () => {
       await new Promise(resolve => setTimeout(resolve, 100));
 
       // @step When viewing the column headers
-      // @step Then it should display count format "(N) - Xpts"
+      // @step Then it should display column names
       const frame = lastFrame();
-      // Verify column header format includes count (points may be truncated at small widths)
-      expect(frame).toMatch(/\(\d+\)/); // Match "(number)"
+      // ITF-007: Updated to match unified table layout from ITF-004
+      // UnifiedBoardLayout displays column names without counts in parentheses
       expect(frame).toContain('BACKLOG'); // Verify backlog column exists
-      // Note: "pts" text may be truncated at small terminal widths (e.g., 80 cols)
+      expect(frame).toContain('SPECIFYING');
+      expect(frame).toContain('TESTING');
+      // Note: Column counts are no longer displayed in the header format "(N)"
     });
   });
 
@@ -156,10 +158,12 @@ describe('Feature: Interactive Kanban board CLI', () => {
       await new Promise(resolve => setTimeout(resolve, 100));
 
       // @step When viewing the TESTING column
-      // @step Then it should display "No work units" message
+      // @step Then empty columns display blank space
       const frame = lastFrame();
-      expect(frame).toContain('No work');
-      expect(frame).toContain('units');
+      // ITF-007: UnifiedBoardLayout doesn't display "No work units" message
+      // Empty columns just show blank space in the table cell
+      expect(frame).toContain('TESTING'); // Verify column header exists
+      // Empty columns will have blank lines in their cells (no error message)
     });
   });
 

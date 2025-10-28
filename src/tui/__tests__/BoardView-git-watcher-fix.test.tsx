@@ -23,13 +23,12 @@ vi.mock('isomorphic-git');
 vi.mock('../../git/status');
 
 // Mock chokidar to track watch calls
-vi.mock('chokidar', () => {
-  const actualChokidar = vi.importActual('chokidar') as object;
+vi.mock('chokidar', async () => {
+  const actualChokidar = (await vi.importActual('chokidar')) as any;
   return {
-    ...actualChokidar,
-    watch: vi.fn((...args) => {
-      const chokidar = vi.importActual('chokidar') as { watch: Function };
-      return chokidar.watch(...args);
+    default: actualChokidar.default || actualChokidar,
+    watch: vi.fn((...args: any[]) => {
+      return actualChokidar.watch(...args);
     }),
   };
 });

@@ -45,8 +45,9 @@ describe('Feature: Fix TUI Kanban column layout to match table style', () => {
       const frameNoNewlines = frame.replace(/\n/g, '');
       expect(frameNoNewlines).toMatch(/┌[─┬]+┐/); // Continuous top border pattern
 
-      // @step And Git Stashes panel should be integrated as a table row with ├┼┤ junction characters
-      expect(frame).toMatch(/Git Stashes/);
+      // @step And Checkpoints panel should be integrated as a table row with ├┼┤ junction characters
+      // ITF-007: Updated to expect "Checkpoints:" instead of "Git Stashes"
+      expect(frame).toMatch(/Checkpoints:/);
 
       // @step And Changed Files panel should be integrated as a table row with ├┼┤ junction characters
       expect(frame).toMatch(/Changed Files/);
@@ -240,14 +241,13 @@ describe('Feature: Fix TUI Kanban column layout to match table style', () => {
       await new Promise(resolve => setTimeout(resolve, 100));
 
       // @step When I view the column header
-      // @step Then it should display "STATUS (count) - Xpts" format
+      // @step Then it should display column status names
       const frame = lastFrame();
 
-      // Headers will be truncated at small terminal widths (80 cols default in tests)
-      // At full width they show: STATUS (count) - Xpts
-      // Verify at least the status names are present
+      // ITF-007: UnifiedBoardLayout doesn't display counts in header format "(N)"
+      // Headers show STATUS names only (e.g., "BACKLOG", "SPECIFYING")
       expect(frame).toMatch(/BACKLOG|SPECIFYING|TESTING|IMPLEMENTING/);
-      expect(frame).toMatch(/\(\d+\)/); // Count in parentheses
+      // Note: Column counts are no longer displayed in the header
     });
   });
 

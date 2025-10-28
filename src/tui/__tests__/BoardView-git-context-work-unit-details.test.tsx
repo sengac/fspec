@@ -77,30 +77,26 @@ describe('Feature: Consolidate Git info and add work unit details panel', () => 
 
       await new Promise(resolve => setTimeout(resolve, 100));
 
-      // @step Then it should display "Git Stashes (2)" as the first section
-      // @step And it should list the stash names below the header
-      // @step And it should display "Changed Files (3 staged, 1 unstaged)" below the stashes
-      // @step And it should list the changed files with staged/unstaged indicators
+      // @step Then it should display "Checkpoints: X Manual, Y Auto" as the first section
+      // @step And it should display "Changed Files: 3 staged, 1 unstaged" below checkpoints
       // @step And both sections should be in the same panel box
       const frame = lastFrame();
-      expect(frame).toContain('Git Stashes (2)');
-      expect(frame).toContain('baseline');
-      expect(frame).toContain('experiment');
-      expect(frame).toContain('Changed Files (3 staged, 1 unstaged)');
-      expect(frame).toContain('src/auth.ts');
-      expect(frame).toContain('src/utils.ts');
+      // ITF-007: Updated to expect "Checkpoints:" format instead of "Git Stashes"
+      expect(frame).toMatch(/Checkpoints:/);
+      expect(frame).toContain('Changed Files: 3 staged, 1 unstaged');
 
       // Verify both sections are in same panel (no separator between them)
       const lines = frame.split('\n');
-      let foundStashes = false;
+      let foundCheckpoints = false;
       let foundChangedFiles = false;
       let foundSeparatorBetween = false;
 
       for (let i = 0; i < lines.length; i++) {
-        if (lines[i].includes('Git Stashes')) {
-          foundStashes = true;
+        // ITF-007: Updated to check for "Checkpoints:" instead of "Git Stashes"
+        if (lines[i].includes('Checkpoints:')) {
+          foundCheckpoints = true;
         }
-        if (foundStashes && !foundChangedFiles && lines[i].includes('├')) {
+        if (foundCheckpoints && !foundChangedFiles && lines[i].includes('├')) {
           foundSeparatorBetween = true;
         }
         if (lines[i].includes('Changed Files')) {
@@ -108,7 +104,7 @@ describe('Feature: Consolidate Git info and add work unit details panel', () => 
         }
       }
 
-      expect(foundStashes).toBe(true);
+      expect(foundCheckpoints).toBe(true);
       expect(foundChangedFiles).toBe(true);
       expect(foundSeparatorBetween).toBe(false); // No separator = same panel
     });
