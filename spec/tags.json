@@ -666,6 +666,10 @@
           "description": "Machine learning and adaptive features based on usage patterns"
         },
         {
+          "name": "@logging",
+          "description": "Logging and diagnostics features"
+        },
+        {
           "name": "@mermaid",
           "description": "Mermaid Diagram Support"
         },
@@ -1234,7 +1238,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-10-28T05:33:12.358Z",
+    "lastUpdated": "2025-10-28T09:28:40.211Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

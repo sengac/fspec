@@ -1,0 +1,150 @@
+{
+  "scenarios": [
+    {
+      "name": "Log error message to file",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/logger.test.ts",
+          "lines": "31-56",
+          "implMappings": [
+            {
+              "file": "src/utils/logger.ts",
+              "lines": [
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Concurrent writes from multiple processes",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/logger.test.ts",
+          "lines": "58-84",
+          "implMappings": [
+            {
+              "file": "src/utils/logger.ts",
+              "lines": [
+                42,
+                43,
+                44,
+                45,
+                46,
+                47
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Debug level logging",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/logger.test.ts",
+          "lines": "86-115",
+          "implMappings": [
+            {
+              "file": "src/utils/logger.ts",
+              "lines": [
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Cross-platform log file path resolution",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/logger.test.ts",
+          "lines": "117-171",
+          "implMappings": [
+            {
+              "file": "src/utils/logger.ts",
+              "lines": [
+                25,
+                26
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/utils/__tests__/logger.test.ts"
+    ],
+    "implFiles": [
+      "src/utils/logger.ts"
+    ],
+    "totalLinesCovered": 208
+  }
+}
