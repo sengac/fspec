@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-28T20:49:21.210Z"
+    "lastUpdated": "2025-10-28T22:30:21.180Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -16402,6 +16402,117 @@
         }
       ],
       "updated": "2025-10-28T22:22:27.144Z"
+    },
+    "ITF-006": {
+      "id": "ITF-006",
+      "title": "Replace Git Stashes with Checkpoint Component",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-28T22:30:11.734Z",
+      "updatedAt": "2025-10-28T23:28:14.899Z",
+      "description": "Remove Git Stashes component and replace with Checkpoint component that dynamically tracks checkpoint count using fs.watch and updates keybindings (S→C for checkpoints, C→F for changed files)",
+      "children": [],
+      "userStory": {
+        "role": "developer using fspec TUI",
+        "action": "see checkpoint count dynamically in the status bar",
+        "benefit": "I know how many checkpoints are available for rollback"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-28T22:30:41.578Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-28T22:39:28.337Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-28T22:41:35.780Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-28T22:51:42.422Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-28T23:04:40.849Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-28T23:08:26.189Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-28T23:10:53.704Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-28T23:12:17.984Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-28T23:14:20.380Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-28T23:27:50.526Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-28T23:28:14.899Z"
+        }
+      ],
+      "rules": [
+        "Git Stashes component must be completely removed from TUI",
+        "Checkpoint component must replace Git Stashes in the same position",
+        "Checkpoint count must be tracked dynamically using fs.watch",
+        "Display format must be 'Checkpoints: None' (0), 'Checkpoints: 1' (1), 'Checkpoints: N' (N>1)",
+        "Keybinding 'S View Stashes' must change to 'C View Checkpoints'",
+        "Keybinding 'C View Changed Files' must change to 'F View Changed Files'",
+        "Checkpoints stored in two places: (1) Git refs at refs/fspec-checkpoints/{workUnitId}/{checkpointName}, (2) Index files at .git/fspec-checkpoints-index/{workUnitId}.json. For TUI watching, use chokidar to watch .git/fspec-checkpoints-index/ directory (cross-platform compatible, handles atomic operations like fs.rename). Example: chokidar.watch(path.join(cwd, '.git', 'fspec-checkpoints-index'), { ignoreInitial: true, persistent: false })",
+        "Checkpoints are git commit objects (in .git/objects/) referenced by git refs (refs/fspec-checkpoints/{workUnitId}/{checkpointName}). Index files are JSON at .git/fspec-checkpoints-index/{workUnitId}.json with format: {checkpoints: [{name, message}]}. To count: read all *.json files in index directory, parse each, sum checkpoint array lengths.",
+        "Count separately with labels. Display format: 'Manual: 2, Auto: 3'. When both are zero: 'Checkpoints: None'. When only one type exists, show both anyway for clarity (e.g., 'Manual: 0, Auto: 3' or 'Manual: 2, Auto: 0').",
+        "Real-time updates, no debouncing. Update checkpoint count immediately when chokidar detects changes in .git/fspec-checkpoints-index/ directory.",
+        "Show both auto (🤖) and manual (📌) checkpoints together in the list view when pressing 'C' key. Display them with their respective icons to distinguish between types."
+      ],
+      "examples": [
+        "TUI starts with no checkpoints, displays 'Checkpoints: None'",
+        "User creates one checkpoint via CLI, TUI automatically updates to 'Checkpoints: 1'",
+        "User creates second checkpoint, TUI updates to 'Checkpoints: 2'",
+        "User presses 'C' key, checkpoint list view opens (not stashes)",
+        "User presses 'F' key, changed files view opens",
+        "Checkpoint directory is watched with fs.watch, changes trigger count update automatically"
+      ],
+      "questions": [
+        {
+          "text": "@human: Where exactly are checkpoints stored? Is it .fspec/checkpoints/<work-unit-id>/ directory?",
+          "selected": true,
+          "answer": "Checkpoints stored in two places: (1) Git refs at refs/fspec-checkpoints/{workUnitId}/{checkpointName}, (2) Index files at .git/fspec-checkpoints-index/{workUnitId}.json. For TUI watching, use chokidar to watch .git/fspec-checkpoints-index/ directory (cross-platform compatible, handles atomic operations like fs.rename). Example: chokidar.watch(path.join(cwd, '.git', 'fspec-checkpoints-index'), { ignoreInitial: true, persistent: false })"
+        },
+        {
+          "text": "@human: What file format are checkpoints? Individual JSON files, directories, or something else?",
+          "selected": true,
+          "answer": "Checkpoints are git commit objects (in .git/objects/) referenced by git refs (refs/fspec-checkpoints/{workUnitId}/{checkpointName}). Index files are JSON at .git/fspec-checkpoints-index/{workUnitId}.json with format: {checkpoints: [{name, message}]}. To count: read all *.json files in index directory, parse each, sum checkpoint array lengths."
+        },
+        {
+          "text": "@human: Should we count auto checkpoints (🤖) and manual checkpoints (📌) separately or together in the count?",
+          "selected": true,
+          "answer": "Count separately with labels. Display format: 'Manual: 2, Auto: 3'. When both are zero: 'Checkpoints: None'. When only one type exists, show both anyway for clarity (e.g., 'Manual: 0, Auto: 3' or 'Manual: 2, Auto: 0')."
+        },
+        {
+          "text": "@human: Should checkpoint count update in real-time or with a debounce to avoid excessive updates?",
+          "selected": true,
+          "answer": "Real-time updates, no debouncing. Update checkpoint count immediately when chokidar detects changes in .git/fspec-checkpoints-index/ directory."
+        },
+        {
+          "text": "@human: When pressing 'C' to view checkpoints, should we show both auto and manual checkpoints in the list?",
+          "selected": true,
+          "answer": "Show both auto (🤖) and manual (📌) checkpoints together in the list view when pressing 'C' key. Display them with their respective icons to distinguish between types."
+        }
+      ],
+      "estimate": 5,
+      "updated": "2025-10-28T23:28:14.899Z"
     }
   },
   "states": {
@@ -16440,6 +16551,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "ITF-006",
       "BOARD-019",
       "BOARD-018",
       "INIT-014",

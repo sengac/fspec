@@ -26,7 +26,7 @@ export const ChangedFilesPanel: React.FC<ChangedFilesPanelProps> = ({
         Changed Files: {stagedCount} staged, {unstagedCount} unstaged
       </Text>
       <Text>{'─'.repeat(80)}</Text>
-      <Text>S View Stashes ◆ C View Changed Files</Text>
+      <Text>C View Checkpoints ◆ F View Changed Files</Text>
     </Box>
   );
 };

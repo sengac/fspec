@@ -367,6 +367,7 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
         selectedWorkUnit={currentlySelectedWorkUnit}
         terminalWidth={terminalWidth}
         terminalHeight={terminalHeight}
+        cwd={cwd}
         onColumnChange={(delta) => {
           setFocusedColumnIndex(prev => {
             const newIndex = prev + delta;
