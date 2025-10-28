@@ -19,6 +19,7 @@ Tags that identify which architectural component a feature belongs to.
 | `@formatter` | Formatting & Prettification |
 | `@generator` | Template Generation |
 | `@git` | Git operations and version control integration |
+| `@git-ops` | Git operations and version control features |
 | `@hooks` | Hooks system and execution engine |
 | `@init` | Initialization and setup features |
 | `@integration` | Cross-Component Integration |
@@ -165,9 +166,11 @@ Tags for specific technical concerns or architectural patterns.
 | `@automation` | Automated workflow operations and state transitions |
 | `@bdd` | Behavior-Driven Development methodology |
 | `@build` | Build system configuration and bundling |
+| `@checkpoints` | Git checkpoint and state restoration features |
 | `@code-review` | Code review and quality analysis features |
 | `@command-registration` | CLI command registration features |
 | `@concurrency` | Concurrent access coordination and file locking mechanisms |
+| `@config` | Configuration loading and management features |
 | `@cucumber-parser` | Cucumber Parser Integration |
 | `@cucumber-style` | Cucumber-style step definition and matching patterns |
 | `@discovery` | BDD discovery technique used before writing Gherkin scenarios |
@@ -198,6 +201,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@multi-agent` | Multi-agent compatibility features and agent-specific customizations |
 | `@outside-in-bdd` | Outside-in BDD approach using personas and behavior-first thinking |
 | `@pattern-detection` | Features involving pattern detection and analysis from historical data |
+| `@platform-agnostic` | Features supporting multiple platforms (Python, Rust, Go, JavaScript, etc.) |
 | `@prettier` | Prettier configuration and code formatting |
 | `@push` | Push notification functionality |
 | `@real-time` | Features with real-time data synchronization and live updates |
@@ -553,7 +557,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-10-28T11:16:34.380Z_
+_Last updated: 2025-10-28T11:33:59.244Z_
 
 **Update Command**: `fspec tag-stats`
 
