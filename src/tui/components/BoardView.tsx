@@ -79,14 +79,19 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
   }, [loadData, loadStashes, loadFileStatus]);
 
   // Watch spec/work-units.json for changes and auto-refresh (BOARD-003)
+  // NOTE: Watch the directory instead of the file to handle atomic rename operations
+  // from the LockedFileManager (LOCK-002). Atomic renames create new inodes,
+  // which breaks watchers on the original file.
   useEffect(() => {
     const cwd = process.cwd();
-    const workUnitsPath = path.join(cwd, 'spec', 'work-units.json');
+    const specDir = path.join(cwd, 'spec');
+    const workUnitsFileName = 'work-units.json';
 
-    // Setup file watcher
-    const watcher = fs.watch(workUnitsPath, (eventType) => {
-      if (eventType === 'change') {
-        void loadData(); // Reload data when file changes
+    // Setup directory watcher (watches for rename events from atomic writes)
+    const watcher = fs.watch(specDir, (eventType, filename) => {
+      // Reload when work-units.json changes or is renamed (atomic write pattern)
+      if (filename === workUnitsFileName) {
+        void loadData();
       }
     });
 
