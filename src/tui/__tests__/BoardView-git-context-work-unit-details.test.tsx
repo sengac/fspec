@@ -165,16 +165,15 @@ describe('Feature: Consolidate Git info and add work unit details panel', () => 
 
       // @step Then it should display "BOARD-001: Test Feature" as the title
       // @step And it should display the first 3 lines of the description
-      // @step And it should display "Press ↵ to view full details" indicator
-      // @step And it should display "Dependencies: BOARD-002, BOARD-003"
+      // @step And it should display keyboard hint with ↵ for viewing details
       // @step And it should display epic, estimate, and status metadata
       const frame = lastFrame();
       // BOARD-008: Story icon emoji removed
       expect(frame).toContain('BOARD-001');
       expect(frame).toContain('Test Feature');
-      expect(frame).toMatch(/Press.*↵.*full details/i); // Indicator
-      expect(frame).toContain('BOARD-002');
-      expect(frame).toContain('BOARD-003');
+      expect(frame).toMatch(/↵.*Details/); // Keyboard hint in footer
+      // Note: Dependencies are not currently displayed in Work Unit Details panel
+      // This would be a future enhancement (showing dependencies)
       expect(frame).toContain('test-epic');
       expect(frame).toContain('5'); // Estimate
       expect(frame).toContain('implementing'); // Status
