@@ -1,3 +1,8 @@
+@infrastructure
+@file-ops
+@concurrency
+@critical
+@done
 @LOCK-001
 Feature: Implement file locking for concurrent access safety
   """

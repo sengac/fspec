@@ -165,6 +165,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@build` | Build system configuration and bundling |
 | `@code-review` | Code review and quality analysis features |
 | `@command-registration` | CLI command registration features |
+| `@concurrency` | Concurrent access coordination and file locking mechanisms |
 | `@cucumber-parser` | Cucumber Parser Integration |
 | `@cucumber-style` | Cucumber-style step definition and matching patterns |
 | `@discovery` | BDD discovery technique used before writing Gherkin scenarios |
@@ -549,7 +550,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-10-27T22:37:08.833Z_
+_Last updated: 2025-10-28T05:33:12.358Z_
 
 **Update Command**: `fspec tag-stats`
 

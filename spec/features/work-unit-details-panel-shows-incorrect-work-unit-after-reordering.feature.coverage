@@ -723,10 +723,14 @@
           ]
         }
       ]
+    },
+    {
+      "name": "Moving work unit to done sorts entire done array",
+      "testMappings": []
     }
   ],
   "stats": {
-    "totalScenarios": 3,
+    "totalScenarios": 4,
     "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [

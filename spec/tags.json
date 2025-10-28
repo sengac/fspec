@@ -562,6 +562,10 @@
           "description": "CLI command registration features"
         },
         {
+          "name": "@concurrency",
+          "description": "Concurrent access coordination and file locking mechanisms"
+        },
+        {
           "name": "@cucumber-parser",
           "description": "Cucumber Parser Integration"
         },
@@ -1230,7 +1234,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-10-27T22:37:08.833Z",
+    "lastUpdated": "2025-10-28T05:33:12.358Z",
     "phaseStats": [
       {
         "phase": "Phase 1",
