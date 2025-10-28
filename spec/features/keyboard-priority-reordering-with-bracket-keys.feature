@@ -51,11 +51,12 @@ Feature: Keyboard priority reordering with bracket keys
   #   8. To move work unit down: swap its position with the next work unit ID in the states array
   #   9. Manual reordering with [ and ] keys is only allowed in backlog, specifying, testing, implementing, validating, and blocked columns (not done column)
   #  10. Key bindings [ and ] must be displayed in help text at bottom of TUI board
+  #  11. When moving work unit up or down, the selection cursor MUST follow the work unit to its new position
   #
   # EXAMPLES:
-  #   1. User selects BOARD-002 in backlog column (position 2), presses [, work unit moves to position 1
+  #   1. User selects BOARD-002 at position 2, presses [, work unit moves to position 1 AND selection cursor moves to position 1
   #   2. User selects BOARD-001 in backlog column (position 1), presses [, nothing happens (already at top)
-  #   3. User selects BOARD-003 in backlog column (position 2), presses ], work unit moves to position 3
+  #   3. User selects BOARD-002 at position 2, presses ], work unit moves to position 3 AND selection cursor moves to position 3
   #   4. User selects last work unit in done column, presses ], nothing happens (already at bottom)
   #   5. After moving work unit, order persists when restarting TUI (loaded from work-units.json)
   #   6. User in done column presses [ or ], nothing happens (done column order is automatic by completion time)
@@ -72,6 +73,7 @@ Feature: Keyboard priority reordering with bracket keys
     When I press the [ key
     Then BOARD-002 should move to position 1
     And the column order should be: BOARD-002, BOARD-001, BOARD-003
+    And the selection cursor should be at position 1
     And the order should be persisted to work-units.json
 
   Scenario: Cannot move work unit up when already at top
@@ -88,6 +90,7 @@ Feature: Keyboard priority reordering with bracket keys
     When I press the ] key
     Then BOARD-002 should move to position 3
     And the column order should be: BOARD-001, BOARD-003, BOARD-002
+    And the selection cursor should be at position 3
     And the order should be persisted to work-units.json
 
   Scenario: Cannot move work unit down when already at bottom
