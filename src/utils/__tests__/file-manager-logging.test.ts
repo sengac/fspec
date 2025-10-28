@@ -62,15 +62,21 @@ describe('Feature: Wire LockedFileManager errors to winston logger', () => {
       const testFile = join(testDir, 'test.json');
       await writeFile(testFile, JSON.stringify({ test: 'data' }));
 
-      await fileManager.transaction(testFile, async (data: any) => {
-        data.test = 'modified';
-      });
+      await fileManager.transaction(
+        testFile,
+        async (data: Record<string, unknown>) => {
+          data.test = 'modified';
+        }
+      );
 
       // @step Then winston should log at debug level
       expect(logger.debug).toHaveBeenCalled();
-      const debugCalls = (logger.debug as any).mock.calls;
-      const metricsLog = debugCalls.find((call: any[]) =>
-        call[0].includes('LOCK')
+      const debugCalls = (
+        logger.debug as unknown as { mock: { calls: unknown[][] } }
+      ).mock.calls;
+      const metricsLog = debugCalls.find(
+        (call: unknown[]) =>
+          typeof call[0] === 'string' && call[0].includes('LOCK')
       );
       expect(metricsLog).toBeDefined();
       if (metricsLog) {
@@ -94,9 +100,7 @@ describe('Feature: Wire LockedFileManager errors to winston logger', () => {
       await writeFile(testFile, '{ invalid json }');
 
       // When readJSON is called
-      await expect(
-        fileManager.readJSON(testFile, {})
-      ).rejects.toThrow();
+      await expect(fileManager.readJSON(testFile, {})).rejects.toThrow();
 
       // Then logger.error should be called
       // Note: Current implementation may not log parse errors - this will fail until implemented

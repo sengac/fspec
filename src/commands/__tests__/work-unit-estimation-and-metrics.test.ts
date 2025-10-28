@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdir, writeFile, rm, readFile } from 'fs/promises';
 import { join } from 'path';
 import { updateWorkUnitEstimate } from '../update-work-unit-estimate';
-import { recordMetric } from '../record-metric';
+import { recordTokens } from '../record-tokens';
 import { recordIteration } from '../record-iteration';
 import { queryMetrics } from '../query-metrics';
 import { queryEstimateAccuracy } from '../query-estimate-accuracy';
@@ -155,8 +155,8 @@ describe('Feature: Work Unit Estimation and Metrics', () => {
       };
       await writeFile(workUnitsFile, JSON.stringify(data, null, 2));
 
-      // When I run record-metric with tokens
-      const result = await recordMetric({
+      // When I run record-tokens with tokens
+      const result = await recordTokens({
         workUnitId: 'AUTH-001',
         tokens: 45000,
         cwd: testDir,

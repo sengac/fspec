@@ -18,6 +18,7 @@ interface WorkUnitsData {
 export async function recordTokens(options: {
   workUnitId: string;
   tokens: number;
+  operation?: string;
   cwd?: string;
 }): Promise<{ success: boolean; totalTokens?: number }> {
   const cwd = options.cwd || process.cwd();
