@@ -14,7 +14,6 @@
 import React, { useMemo, useEffect, useState } from 'react';
 import { Box, Text, useInput, useStdout } from 'ink';
 import chalk from 'chalk';
-import { appendFileSync } from 'fs';
 
 interface StateHistoryEntry {
   state: string;
@@ -368,9 +367,6 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
 
   // Handle keyboard input
   useInput((input, key) => {
-    // Debug ALL key presses
-    appendFileSync('/tmp/board-debug.log', `[${new Date().toISOString()}] UnifiedBoardLayout useInput: input="${input}" key=${JSON.stringify(key)}\n`);
-
     // Page Up/Down for scrolling
     if (key.pageDown) {
       const currentColumn = STATES[focusedColumnIndex];
@@ -414,11 +410,9 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
 
     // BOARD-010: Bracket keys for priority reordering
     if (input === '[') {
-      appendFileSync('/tmp/board-debug.log', `[${new Date().toISOString()}] UnifiedBoardLayout: [ key pressed, calling onMoveUp (exists: ${!!onMoveUp})\n`);
       onMoveUp?.();
     }
     if (input === ']') {
-      appendFileSync('/tmp/board-debug.log', `[${new Date().toISOString()}] UnifiedBoardLayout: ] key pressed, calling onMoveDown (exists: ${!!onMoveDown})\n`);
       onMoveDown?.();
     }
   });

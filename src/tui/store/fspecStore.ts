@@ -201,32 +201,34 @@ export const useFspecStore = create<FspecState>()(
         );
         const { writeFile } = await import('fs/promises');
         const { join } = await import('path');
+        const { moveWorkUnitInArray } = await import(
+          '../../utils/states-array'
+        );
 
         const workUnitsData = await ensureWorkUnitsFile(state.cwd);
 
-        // Get the states array for this work unit's status
-        const statusKey = workUnit.status;
-        const statesArray = workUnitsData.states[statusKey] || [];
-        const currentIndex = statesArray.indexOf(workUnitId);
+        // BOARD-016: Use shared utility for array manipulation
+        const updatedWorkUnitsData = moveWorkUnitInArray(
+          workUnitsData,
+          workUnitId,
+          workUnit.status,
+          'up'
+        );
 
-        // Cannot move up if already at top
-        if (currentIndex <= 0) {
-          return;
+        // Check if any change was made
+        if (
+          updatedWorkUnitsData.states[workUnit.status] ===
+          workUnitsData.states[workUnit.status]
+        ) {
+          return; // No change (already at top)
         }
-
-        // Swap with previous work unit in the states array
-        const newStatesArray = [...statesArray];
-        [newStatesArray[currentIndex - 1], newStatesArray[currentIndex]] = [
-          newStatesArray[currentIndex],
-          newStatesArray[currentIndex - 1],
-        ];
-
-        // Update states array
-        workUnitsData.states[statusKey] = newStatesArray;
 
         // Write back to file
         const workUnitsPath = join(state.cwd, 'spec', 'work-units.json');
-        await writeFile(workUnitsPath, JSON.stringify(workUnitsData, null, 2));
+        await writeFile(
+          workUnitsPath,
+          JSON.stringify(updatedWorkUnitsData, null, 2)
+        );
       } catch (error) {
         console.error('Failed to persist work unit order:', error);
       }
@@ -250,32 +252,34 @@ export const useFspecStore = create<FspecState>()(
         );
         const { writeFile } = await import('fs/promises');
         const { join } = await import('path');
+        const { moveWorkUnitInArray } = await import(
+          '../../utils/states-array'
+        );
 
         const workUnitsData = await ensureWorkUnitsFile(state.cwd);
 
-        // Get the states array for this work unit's status
-        const statusKey = workUnit.status;
-        const statesArray = workUnitsData.states[statusKey] || [];
-        const currentIndex = statesArray.indexOf(workUnitId);
+        // BOARD-016: Use shared utility for array manipulation
+        const updatedWorkUnitsData = moveWorkUnitInArray(
+          workUnitsData,
+          workUnitId,
+          workUnit.status,
+          'down'
+        );
 
-        // Cannot move down if already at bottom
-        if (currentIndex >= statesArray.length - 1 || currentIndex < 0) {
-          return;
+        // Check if any change was made
+        if (
+          updatedWorkUnitsData.states[workUnit.status] ===
+          workUnitsData.states[workUnit.status]
+        ) {
+          return; // No change (already at bottom)
         }
-
-        // Swap with next work unit in the states array
-        const newStatesArray = [...statesArray];
-        [newStatesArray[currentIndex], newStatesArray[currentIndex + 1]] = [
-          newStatesArray[currentIndex + 1],
-          newStatesArray[currentIndex],
-        ];
-
-        // Update states array
-        workUnitsData.states[statusKey] = newStatesArray;
 
         // Write back to file
         const workUnitsPath = join(state.cwd, 'spec', 'work-units.json');
-        await writeFile(workUnitsPath, JSON.stringify(workUnitsData, null, 2));
+        await writeFile(
+          workUnitsPath,
+          JSON.stringify(updatedWorkUnitsData, null, 2)
+        );
       } catch (error) {
         console.error('Failed to persist work unit order:', error);
       }

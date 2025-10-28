@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-27T23:13:53.884Z"
+    "lastUpdated": "2025-10-28T01:48:03.026Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -14939,9 +14939,9 @@
       "id": "BOARD-010",
       "title": "Keyboard priority reordering with bracket keys",
       "type": "story",
-      "status": "implementing",
+      "status": "done",
       "createdAt": "2025-10-27T13:26:34.333Z",
-      "updatedAt": "2025-10-28T00:41:40.893Z",
+      "updatedAt": "2025-10-28T00:50:41.136Z",
       "description": "Allow users to reorder work units within a column using [ and ] keys to move items up/down in priority",
       "epic": "interactive-tui-foundation",
       "children": [],
@@ -14997,6 +14997,14 @@
         {
           "state": "implementing",
           "timestamp": "2025-10-28T00:41:40.893Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-28T00:45:08.520Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-28T00:50:41.136Z"
         }
       ],
       "userStory": {
@@ -15410,6 +15418,93 @@
       "updatedAt": "2025-10-28T00:29:38.433Z",
       "description": "Add winston logging library as the universal logging solution for fspec. Configure winston with file transport (/tmp/fspec.log) and console transport. Support log levels (error, warn, info, debug). Replace all console.error calls with logger.error. Provide singleton logger instance importable throughout codebase.",
       "children": []
+    },
+    "BOARD-016": {
+      "id": "BOARD-016",
+      "title": "Work unit details panel shows incorrect work unit after reordering",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-10-28T01:27:18.527Z",
+      "updatedAt": "2025-10-28T02:06:16.024Z",
+      "description": "When using bracket keys to reorder work units, the Work Unit Details panel at the top of the board displays the wrong work unit. The selection cursor moves correctly, but the details panel doesn't update to show the newly selected work unit's information.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-28T01:27:53.427Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-28T01:28:34.324Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-28T01:28:40.250Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-28T01:29:40.013Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-28T01:43:50.612Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-28T01:49:11.783Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-28T01:55:52.760Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-28T02:03:26.775Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-28T02:06:16.024Z"
+        }
+      ],
+      "rules": [
+        "Done column work units are sorted by 'updated' timestamp in DESCENDING order (most recent first)",
+        "groupedWorkUnits for done column MUST apply sort BEFORE passing units to UnifiedBoardLayout",
+        "Work Unit Details panel selectedWorkUnit MUST match the visual position in the sorted done column display",
+        "When moving work unit TO done status, insert work unit ID into states.done array at CORRECT sorted position (most recent 'updated' timestamp first)",
+        "update-work-unit-status command MUST set 'updated' field to current ISO timestamp when transitioning TO done status",
+        "Display order in TUI should match file order - NO runtime sorting in BoardView or UnifiedBoardLayout",
+        "Use SHARED utility function for inserting/moving work units in states arrays (similar to moveWorkUnitUp/Down) - do NOT duplicate array manipulation logic",
+        "REFACTOR moveWorkUnitUp/Down into shared utility function for array manipulation, then reuse for sorted insertion into done column"
+      ],
+      "examples": [
+        "Done column has 3 work units: BOARD-001 (updated 10:00), BOARD-002 (updated 11:00), BOARD-003 (updated 09:00). Display order is BOARD-002, BOARD-001, BOARD-003. User selects position 0 (BOARD-002), details panel shows BOARD-002.",
+        "BOARD-005 currently in implementing status (updated: 2025-10-28T10:00:00Z). User runs 'fspec update-work-unit-status BOARD-005 done'. States.done array has [BOARD-003, BOARD-001]. BOARD-003.updated=11:00, BOARD-001.updated=09:00. BOARD-005 inserted at position 1 (after BOARD-003, before BOARD-001). Final states.done: [BOARD-003, BOARD-005, BOARD-001].",
+        "Done column states.done array: [BOARD-003, BOARD-005, BOARD-001]. TUI displays in exact file order: position 0=BOARD-003, position 1=BOARD-005, position 2=BOARD-001. User selects position 1, details panel shows BOARD-005 (NOT BOARD-001)."
+      ],
+      "questions": [
+        {
+          "text": "@human: Should the sorting be applied in the groupedWorkUnits computation in BoardView.tsx, or somewhere else?",
+          "selected": true,
+          "answer": "Sort should be applied when WRITING to work-units.json states.done array, NOT at display time. When work unit moves to done, insert it in the correct position based on updated timestamp (most recent first)."
+        },
+        {
+          "text": "@human: Are there any other columns besides 'done' that need special sorting, or is it only the done column?",
+          "selected": true,
+          "answer": "Only the done column needs special sorting. All other columns (backlog, specifying, testing, implementing, validating, blocked) maintain manual order from states arrays."
+        },
+        {
+          "text": "@human: The 'updated' field is optional in the WorkUnit interface - should we handle work units without an 'updated' timestamp? If so, how should they be sorted?",
+          "selected": true,
+          "answer": "Work units MUST have 'updated' field set when moving to done. The update-work-unit-status command should set 'updated' field to current timestamp when transitioning to done."
+        }
+      ],
+      "userStory": {
+        "role": "developer using TUI board",
+        "action": "see correct work unit details for selected item in done column",
+        "benefit": "I can verify completed work matches what's displayed on screen"
+      },
+      "estimate": 5,
+      "updated": "2025-10-28T02:06:16.024Z"
     }
   },
   "states": {
@@ -15447,11 +15542,10 @@
       "BOARD-014"
     ],
     "testing": [],
-    "implementing": [
-      "BOARD-010"
-    ],
+    "implementing": [],
     "validating": [],
     "done": [
+      "BOARD-016",
       "BUG-007",
       "BUG-008",
       "EXMAP-001",
@@ -15679,7 +15773,8 @@
       "BUG-045",
       "BOARD-012",
       "BOARD-013",
-      "BOARD-015"
+      "BOARD-015",
+      "BOARD-010"
     ],
     "blocked": []
   }
