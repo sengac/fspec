@@ -2,10 +2,11 @@
  * Add hook command
  */
 
-import { readFile, writeFile, mkdir } from 'fs/promises';
+import { readFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import type { Command } from 'commander';
 import type { HookConfig } from '../hooks/types.js';
+import { fileManager } from '../utils/file-manager';
 
 export interface AddHookOptions {
   name: string;
@@ -46,8 +47,10 @@ export async function addHook(options: AddHookOptions): Promise<void> {
   // Ensure spec directory exists
   await mkdir(join(cwd, 'spec'), { recursive: true });
 
-  // Write updated config
-  await writeFile(configPath, JSON.stringify(config, null, 2));
+  // LOCK-002: Use fileManager.transaction() for atomic write
+  await fileManager.transaction(configPath, async fileData => {
+    Object.assign(fileData, config);
+  });
 }
 
 export function registerAddHookCommand(program: Command): void {

@@ -2,10 +2,11 @@
  * Remove hook command
  */
 
-import { readFile, writeFile } from 'fs/promises';
+import { readFile } from 'fs/promises';
 import { join } from 'path';
 import type { Command } from 'commander';
 import type { HookConfig } from '../hooks/types.js';
+import { fileManager } from '../utils/file-manager';
 
 export interface RemoveHookOptions {
   name: string;
@@ -27,8 +28,10 @@ export async function removeHook(options: RemoveHookOptions): Promise<void> {
     );
   }
 
-  // Write updated config
-  await writeFile(configPath, JSON.stringify(config, null, 2));
+  // LOCK-002: Use fileManager.transaction() for atomic write
+  await fileManager.transaction(configPath, async fileData => {
+    Object.assign(fileData, config);
+  });
 }
 
 export function registerRemoveHookCommand(program: Command): void {
