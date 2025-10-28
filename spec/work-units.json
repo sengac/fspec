@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-28T10:57:23.047Z"
+    "lastUpdated": "2025-10-28T11:14:39.035Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -16038,6 +16038,57 @@
       ],
       "estimate": 2,
       "updated": "2025-10-28T11:08:10.538Z"
+    },
+    "INIT-013": {
+      "id": "INIT-013",
+      "title": "Replace hardcoded CLAUDE.md references with agent-agnostic placeholders",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-28T11:14:32.062Z",
+      "updatedAt": "2025-10-28T11:23:28.182Z",
+      "description": "Template files contain 3 hardcoded references to 'CLAUDE.md' instead of using {{DOC_TEMPLATE}} placeholder, causing all 18 agents to see incorrect references to CLAUDE.md in their generated documentation",
+      "children": [],
+      "userStory": {
+        "role": "developer using any of the 18 supported AI agents",
+        "action": "see correct references to my agent's documentation file in generated templates",
+        "benefit": "I'm not confused by incorrect references to CLAUDE.md when using Cursor, Aider, or other agents"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-28T11:14:53.439Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-28T11:17:10.175Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-28T11:18:00.100Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-28T11:18:49.657Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-28T11:23:28.183Z"
+        }
+      ],
+      "rules": [
+        "All template files must use {{DOC_TEMPLATE}} placeholder instead of hardcoded 'CLAUDE.md'",
+        "Template placeholders are replaced during generation by templateGenerator.ts replacePlaceholders() function",
+        "References to FOUNDATION.md and TAGS.md should remain hardcoded as they are universal across all agents"
+      ],
+      "examples": [
+        "File: src/utils/slashCommandSections/bootstrapFoundation.ts:62 contains 'spec/CLAUDE.md' → should be 'spec/{{DOC_TEMPLATE}}'",
+        "File: src/utils/projectManagementSections/fileStructure.ts:10 contains '├── CLAUDE.md' → should be '├── {{DOC_TEMPLATE}}'",
+        "File: src/utils/projectManagementSections/enforcement.ts:9 contains 'CLAUDE.md' → should be '{{DOC_TEMPLATE}}'",
+        "When Cursor user runs 'fspec init --agent=cursor', generated spec/CURSOR.md should reference 'spec/CURSOR.md' not 'spec/CLAUDE.md'",
+        "When Aider user runs 'fspec init --agent=aider', generated spec/AIDER.md should reference 'spec/AIDER.md' not 'spec/CLAUDE.md'"
+      ],
+      "estimate": 2,
+      "updated": "2025-10-28T11:23:28.182Z"
     }
   },
   "states": {
@@ -16076,6 +16127,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "INIT-013",
       "BOARD-017",
       "BUG-047",
       "LOG-002",

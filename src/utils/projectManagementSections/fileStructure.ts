@@ -7,7 +7,7 @@ export function getFileStructureSection(): string {
 
 \`\`\`
 spec/
-├── CLAUDE.md                    # This file - specification process guide
+├── {{DOC_TEMPLATE}}                    # This file - specification process guide
 ├── FOUNDATION.md                # Project foundation, architecture, and phases (human-readable)
 ├── foundation.json              # Machine-readable foundation data (diagrams, etc.)
 ├── TAGS.md                      # Tag registry documentation (human-readable)
