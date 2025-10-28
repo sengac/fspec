@@ -1,6 +1,7 @@
 import { readFile, writeFile } from 'fs/promises';
 import { join } from 'path';
 import type { Command } from 'commander';
+import { fileManager } from '../utils/file-manager';
 
 interface WorkUnit {
   id: string;
@@ -28,7 +29,10 @@ async function loadWorkUnits(cwd: string): Promise<WorkUnitsData> {
 
 async function saveWorkUnits(data: WorkUnitsData, cwd: string): Promise<void> {
   const workUnitsFile = join(cwd, 'spec', 'work-units.json');
-  await writeFile(workUnitsFile, JSON.stringify(data, null, 2));
+  // LOCK-002: Use fileManager.transaction() for atomic write
+  await fileManager.transaction(workUnitsFile, async fileData => {
+    Object.assign(fileData, data);
+  });
 }
 
 function detectCircularDependency(
@@ -171,7 +175,7 @@ export async function addDependency(
 
     // Auto-block if blockedBy dependency is added and blocker is not done
     if (targetUnit.status !== 'done' && workUnit.status !== 'blocked') {
-      workUnit.status = 'blocked' as 'blocked';
+      workUnit.status = 'blocked' as const;
       (workUnit as WorkUnit & { blockedReason?: string }).blockedReason =
         `Blocked by ${targetId}`;
 

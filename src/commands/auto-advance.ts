@@ -1,7 +1,8 @@
-import { readFile, writeFile } from 'fs/promises';
+import { readFile } from 'fs/promises';
 import chalk from 'chalk';
 import type { Command } from 'commander';
 import { join } from 'path';
+import { fileManager } from '../utils/file-manager';
 
 interface WorkUnit {
   id: string;
@@ -94,8 +95,10 @@ export async function autoAdvance(options: {
       workUnit.completedAt = new Date().toISOString();
     }
 
-    // Save work units
-    await writeFile(workUnitsFile, JSON.stringify(data, null, 2));
+    // LOCK-002: Use fileManager.transaction() for atomic write
+    await fileManager.transaction(workUnitsFile, async fileData => {
+      Object.assign(fileData, data);
+    });
 
     return {
       success: true,

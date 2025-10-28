@@ -1,4 +1,4 @@
-import { readFile, writeFile, access } from 'fs/promises';
+import { readFile, access } from 'fs/promises';
 import type { Command } from 'commander';
 import { join } from 'path';
 import chalk from 'chalk';
@@ -6,6 +6,7 @@ import type { CoverageFile } from '../utils/coverage-file';
 import { getScenarioSteps } from '../utils/feature-parser';
 import { validateSteps, formatValidationError } from '../utils/step-validation';
 import type { WorkUnitType } from '../types/work-units';
+import { fileManager } from '../utils/file-manager';
 
 interface LinkCoverageOptions {
   scenario: string;
@@ -237,8 +238,10 @@ export async function linkCoverage(
   // Recalculate stats
   updateStats(coverage);
 
-  // Write updated coverage file
-  await writeFile(coverageFile, JSON.stringify(coverage, null, 2), 'utf-8');
+  // LOCK-002: Use fileManager.transaction() for atomic write
+  await fileManager.transaction(coverageFile, async fileData => {
+    Object.assign(fileData, coverage);
+  });
 
   return {
     success: true,
