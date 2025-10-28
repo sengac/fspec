@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-28T10:01:55.231Z"
+    "lastUpdated": "2025-10-28T10:57:23.047Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -15990,6 +15990,54 @@
       "estimate": 2,
       "updated": "2025-10-28T09:51:28.247Z",
       "actualTokens": 140000
+    },
+    "BOARD-017": {
+      "id": "BOARD-017",
+      "title": "Remove 'No work units' placeholder from empty board columns",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-28T10:57:16.187Z",
+      "updatedAt": "2025-10-28T11:08:10.538Z",
+      "description": "Remove the 'No work units' text from empty Kanban columns in the TUI board view. Users prefer clean empty columns without placeholder text.",
+      "children": [],
+      "userStory": {
+        "role": "developer using fspec board",
+        "action": "see clean empty columns without placeholder text",
+        "benefit": "the board looks cleaner and less cluttered"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-28T10:57:37.239Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-28T11:00:24.671Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-28T11:02:21.622Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-28T11:02:52.959Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-28T11:08:10.538Z"
+        }
+      ],
+      "rules": [
+        "Empty columns should display nothing, not 'No work units'",
+        "Only the column header should be visible for empty columns"
+      ],
+      "examples": [
+        "Backlog column has 5 work units, Testing column is empty → Testing column shows only header",
+        "All columns are empty → All columns show only headers with no placeholder text",
+        "Done column has work units, all other columns empty → Only Done shows work units, others show just headers"
+      ],
+      "estimate": 2,
+      "updated": "2025-10-28T11:08:10.538Z"
     }
   },
   "states": {
@@ -16028,6 +16076,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "BOARD-017",
       "BUG-047",
       "LOG-002",
       "LOG-001",

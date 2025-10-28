@@ -534,7 +534,7 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
       }
 
       if (itemIndex >= column.units.length) {
-        return fitToWidth(itemIndex === 0 ? 'No work units' : '', colWidth);
+        return fitToWidth('', colWidth);
       }
 
       const wu = column.units[itemIndex];
