@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-28T11:53:25.419Z"
+    "lastUpdated": "2025-10-28T20:49:21.210Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -8881,7 +8881,7 @@
       "type": "story",
       "status": "specifying",
       "createdAt": "2025-10-21T05:25:26.138Z",
-      "updatedAt": "2025-10-24T06:46:25.398Z",
+      "updatedAt": "2025-10-28T20:44:49.755Z",
       "description": "Enable AI agents to record token usage cumulatively against work units throughout the development lifecycle, providing visibility into AI resource consumption per story from start to completion. Track input tokens, output tokens, and total cost across all iterations and state transitions.",
       "children": [],
       "stateHistory": [
@@ -8889,6 +8889,58 @@
           "state": "specifying",
           "timestamp": "2025-10-24T06:46:25.398Z"
         }
+      ],
+      "userStory": {
+        "role": "AI agent working on fspec stories",
+        "action": "record token usage cumulatively across the development lifecycle",
+        "benefit": "organizations can track AI resource consumption and cost per work unit"
+      },
+      "rules": [
+        "Token recordings MUST be cumulative (adding to existing totals, never replacing)",
+        "Token recordings MUST track input tokens, output tokens, model used, and timestamp",
+        "Cost calculation MUST use model-specific pricing (Sonnet $3/MTok input, $15/MTok output)",
+        "Token history MUST be preserved (append-only array) for audit trail",
+        "Token recording is OPTIONAL but RECOMMENDED (not enforced by workflow)",
+        "Failed attempts and rework MUST be tracked (all token usage counts, not just successful work)",
+        "Purely manual recording. Agent decides when to record at meaningful checkpoints (no automatic prompts).",
+        "Automatic prompts during state transitions. When agent moves between workflow states, system prompts to record tokens for the phase being completed.",
+        "Per command execution with accumulation. Each state transition prompts for tokens used during that phase, which accumulate into work unit totals. Maintains detailed history of recordings.",
+        "System tracks tokens internally as commands run. At state transitions, system presents accumulated tokens for that phase and prompts agent to confirm/record. Granularity: per workflow phase (specifying, testing, implementing, validating).",
+        "Track tokens only, no cost calculation. System records input tokens, output tokens, and totals. Users calculate costs externally based on their pricing.",
+        "Model-agnostic tracking. System records tokens only, does not track which AI model was used. Keeps implementation simple and flexible for any AI provider."
+      ],
+      "examples": [
+        "Agent completes BOARD-018 using 50K input, 40K output tokens with Sonnet → records: input=50000, output=40000, model=claude-sonnet-4, cost=$0.75",
+        "Agent records tokens twice for same story (specifying: 30K/20K, implementing: 20K/20K) → totals: 50K input, 40K output, $0.75 total",
+        "Show work unit EST-002 displays token summary: Total: 90K tokens, Cost: $0.75, Model: Sonnet, Recordings: 2",
+        "Token summary command shows all work units: AUTH-001: 120K tokens ($1.20), DASH-002: 80K tokens ($0.60), Total: 200K tokens ($1.80)",
+        "Agent switches from Sonnet to Opus mid-story → two recordings with different models → cost calculated per-model then summed"
+      ],
+      "questions": [
+        {
+          "text": "@human: Should token recording be prompted automatically during state transitions, or purely manual?",
+          "selected": true,
+          "answer": "Automatic prompts during state transitions. When agent moves between workflow states, system prompts to record tokens for the phase being completed."
+        },
+        {
+          "text": "@human: Should we support bulk import (e.g., from Claude Code session logs) or only manual recording?",
+          "selected": true,
+          "answer": "System tracks tokens internally as commands run. At state transitions, system presents accumulated tokens for that phase and prompts agent to confirm/record. Granularity: per workflow phase (specifying, testing, implementing, validating)."
+        },
+        {
+          "text": "@human: Do we need to track cache hits/misses (prompt caching can reduce input token costs significantly)?",
+          "selected": true,
+          "answer": "Track tokens only, no cost calculation. System records input tokens, output tokens, and totals. Users calculate costs externally based on their pricing."
+        },
+        {
+          "text": "@human: Should we support other models beyond Claude (GPT-4, Gemini) with their pricing?",
+          "selected": true,
+          "answer": "Model-agnostic tracking. System records tokens only, does not track which AI model was used. Keeps implementation simple and flexible for any AI provider."
+        }
+      ],
+      "assumptions": [
+        "Only manual recording for MVP. Bulk import from session logs is future enhancement.",
+        "Not for MVP. Track total tokens only. Prompt cache hit/miss tracking is future enhancement."
       ]
     },
     "TECH-001": {
@@ -16228,13 +16280,128 @@
     },
     "BOARD-019": {
       "id": "BOARD-019",
-      "title": "Git file watchers don't work on macOS due to unreliable filename parameter in fs.watch callback",
-      "type": "bug",
-      "status": "backlog",
-      "createdAt": "2025-10-28T12:10:38.950Z",
-      "updatedAt": "2025-10-28T12:10:38.950Z",
-      "description": "The BOARD-018 fix relies on the filename parameter in fs.watch() directory callbacks to filter events. However, on macOS, fs.watch() does NOT reliably provide the filename parameter when watching directories - it's often null or undefined. This means our filters (if filename === 'stash') never match and loadStashes() is never called. Need to either: (1) remove filename filtering and reload unconditionally, (2) use chokidar library for cross-platform file watching, or (3) fall back to direct file watching with a try/catch for atomic operations.",
-      "children": []
+      "title": "Add fspec logo to TUI header",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-28T20:49:12.586Z",
+      "updatedAt": "2025-10-28T22:22:27.144Z",
+      "description": "Display fspec ASCII logo in top-left corner of TUI, with Git Stashes and Changed Files panels positioned to the right of the logo in a separate container",
+      "children": [],
+      "userStory": {
+        "role": "developer using fspec TUI",
+        "action": "see the fspec logo in the TUI header",
+        "benefit": "I have clear visual branding and better understand which tool I'm using"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-28T20:49:39.367Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-28T20:52:52.804Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-28T20:54:00.928Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-28T21:00:08.420Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-28T21:06:39.503Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-28T21:07:43.276Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-28T21:28:09.971Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-28T21:37:58.292Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-28T21:40:04.955Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-28T21:41:04.647Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-28T21:51:14.177Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-28T22:22:27.145Z"
+        }
+      ],
+      "rules": [
+        "Logo MUST be ASCII art positioned in top-left corner of TUI",
+        "Logo container MUST be separate from Git Stashes/Changed Files container",
+        "Git Stashes and Changed Files panels MUST be positioned to the right of the logo",
+        "Logo format: 3 lines of ASCII art: ┏┓┏┓┏┓┏┓┏┓ / ┣ ┗┓┃┃┣ ┃ / ┻ ┗┛┣┛┗┛┗┛",
+        "Component structure: Logo (left fixed width) | GitPanels (right flex) | Board (below, full width)",
+        "UnifiedBoardLayout MUST keep state management: scroll offsets per column, shimmer animation state, terminal dimensions",
+        "UnifiedBoardLayout MUST keep computed values: column width calculation, viewport height, work unit grouping by status, last changed work unit",
+        "UnifiedBoardLayout MUST keep effects: auto-scroll to keep selection visible (lines 281-350), shimmer animation interval (lines 258-277)",
+        "UnifiedBoardLayout MUST keep keyboard input handling: arrow keys, Page Up/Down, Enter, bracket keys (lines 353-402)",
+        "HYBRID APPROACH: KEEP buildBorderRow() (lines 168-183) for table borders, KEEP border Text rows, REPLACE content rows with Box components",
+        "KEEP fitToWidth() (lines 94-99) for border alignment, REMOVE centerText() and logo injection hack (lines 593-615)",
+        "Content components (GitStashesPanel, ChangedFilesPanel, WorkUnitDetailsPanel, StatusColumn, WorkUnitCard, FooterPanel) return Box or Text with NO borders - borders added by UnifiedBoardLayout"
+      ],
+      "examples": [
+        "TUI displays logo in left container (3 lines tall), Git Stashes panel in right container beside it",
+        "Logo takes up minimal width (approx 11 characters), leaving maximum space for git panels",
+        "TUI layout: [Logo Container | Git Info Container] where Git Info contains stashes + changed files vertically stacked",
+        "TUI uses flexDirection='row' for Logo|GitPanels horizontal layout, flexDirection='column' for vertical stacking",
+        "Logo component: Box with width=11, contains 3 Text elements (logo lines)",
+        "WorkUnitCards: Individual Box components per work unit, not pre-rendered text strings",
+        "Terminal width handling: Use <Box width={terminalWidth}> as root container, Ink handles responsive layout automatically",
+        "StatusColumn receives props: status (string), units (WorkUnit[]), scrollOffset (number), focusedColumnIndex, selectedWorkUnitIndex, shimmerPosition, lastChangedWorkUnit",
+        "WorkUnitCard receives props: workUnit (WorkUnit), isSelected (boolean), isLastChanged (boolean), shimmerPosition (number) for character-by-character animation",
+        "GitStashesPanel receives props: stashes (array), displays first 3 stashes with checkpoint name and relative time (e.g., '2 days ago')",
+        "ChangedFilesPanel receives props: stagedFiles (string[]), unstagedFiles (string[]), displays first 3 files with '+' for staged and 'M' for unstaged",
+        "WorkUnitDetailsPanel receives props: selectedWorkUnit (WorkUnit | null), displays title, description (first line), metadata (epic, estimate, status)",
+        "UnifiedBoardLayout renders hybrid: Text rows for borders (┌─┬─┐, ├─┼─┤, └─┴─┘), Box components for content between borders",
+        "Content components render content ONLY with │ characters for side borders (if needed), no top/bottom borders - those are rendered by UnifiedBoardLayout as separate Text rows",
+        "Column width calculation (lines 59-67) MUST be kept - used by buildBorderRow() for correct table border alignment and passed to StatusColumn for content width"
+      ],
+      "estimate": 13,
+      "questions": [
+        {
+          "text": "@human: Should StatusColumn manage its own scroll state internally, or should scroll state be kept in UnifiedBoardLayout and passed down as props?",
+          "selected": true,
+          "answer": "Keep character-by-character chalk colors - existing shimmer animation works well and is already implemented (lines 114-165). Ink color props would require complete rewrite of shimmer logic."
+        },
+        {
+          "text": "@human: Should shimmer animation continue using character-by-character chalk colors, or use Ink color props?",
+          "selected": true,
+          "answer": "Calculate column width and pass to StatusColumn props - needed for proper alignment with table borders rendered by buildBorderRow(). Cannot rely on flex={1} alone because borders require exact widths."
+        },
+        {
+          "text": "@human: Should column width be calculated and passed to StatusColumn props, or let Ink flex={1} distribute space automatically?",
+          "selected": true,
+          "answer": "Keep selection state (focusedColumnIndex + selectedWorkUnitIndex) in UnifiedBoardLayout and pass isSelected boolean to WorkUnitCard. UnifiedBoardLayout needs central state to coordinate auto-scroll (lines 281-350) and keyboard navigation."
+        },
+        {
+          "text": "@human: Should work unit selection state (focusedColumnIndex + selectedWorkUnitIndex) remain in UnifiedBoardLayout, or pass isSelected boolean to each WorkUnitCard?",
+          "selected": true,
+          "answer": "YES - keep existing buildBorderRow() system and render borders as Text lines, with Box components BETWEEN the border rows. HYBRID APPROACH confirmed. This maintains the exact table borders (┌─┬─┐ ├─┼─┤ └─┴─┘) while allowing component-based content rendering."
+        },
+        {
+          "text": "@human: Should we keep the existing buildBorderRow() system and render borders as Text lines, with Box components BETWEEN the border rows? Or do you want a completely different approach for borders with flexbox?",
+          "selected": true,
+          "answer": "YES - keep existing buildBorderRow() system and render borders as Text lines, with Box components BETWEEN the border rows. HYBRID APPROACH confirmed. This maintains the exact table borders (┌─┬─┐ ├─┼─┤ └─┴─┘) while allowing component-based content rendering."
+        }
+      ],
+      "updated": "2025-10-28T22:22:27.144Z"
     }
   },
   "states": {
@@ -16261,8 +16428,7 @@
       "AGENT-015",
       "AGENT-016",
       "AGENT-017",
-      "FEAT-018",
-      "BOARD-019"
+      "FEAT-018"
     ],
     "specifying": [
       "GIT-004",
@@ -16274,6 +16440,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "BOARD-019",
       "BOARD-018",
       "INIT-014",
       "INIT-013",

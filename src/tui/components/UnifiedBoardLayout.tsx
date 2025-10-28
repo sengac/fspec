@@ -14,6 +14,9 @@
 import React, { useMemo, useEffect, useState } from 'react';
 import { Box, Text, useInput, useStdout } from 'ink';
 import chalk from 'chalk';
+import { Logo } from './Logo';
+import { GitStashesPanel } from './GitStashesPanel';
+import { ChangedFilesPanel } from './ChangedFilesPanel';
 
 interface StateHistoryEntry {
   state: string;
@@ -590,14 +593,32 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
   // Bottom border (no columns below - use plain separator)
   rows.push(buildBorderRow(colWidth, '└', '─', '┘', 'plain'));
 
+  // Split rows into sections for hybrid rendering
+  const separatorAfterGit = rows[5]; // Separator after header
+  const restOfRows = rows.slice(6); // Everything else (work details, columns, footer)
+
   return (
     <Box flexDirection="column" width={terminalWidth}>
-      <Text bold>fspec Kanban Board</Text>
-      {rows.map((row, idx) => {
-        const isHeader = idx === 8; // Column header row
+      {/* Header section: Box with borderStyle, master container inside with Logo + Git panels */}
+      <Box borderStyle="single" paddingX={1}>
+        <Box flexDirection="row">
+          <Logo />
+          <Box flexGrow={1} flexDirection="column" height={4}>
+            <GitStashesPanel stashes={stashes} />
+            <ChangedFilesPanel stagedFiles={stagedFiles} unstagedFiles={unstagedFiles} />
+          </Box>
+        </Box>
+      </Box>
+
+      {/* Separator after git panels */}
+      <Text>{separatorAfterGit}</Text>
+
+      {/* Rest of the board */}
+      {restOfRows.map((row, idx) => {
+        const isHeader = idx === 2; // Column header row (adjusted index)
         return (
           <Text
-            key={idx}
+            key={idx + 6}
             bold={isHeader}
             color={isHeader ? 'cyan' : undefined}
           >
