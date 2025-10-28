@@ -34,6 +34,10 @@
           "description": "Git operations and version control integration"
         },
         {
+          "name": "@git-ops",
+          "description": "Git operations and version control features"
+        },
+        {
           "name": "@hooks",
           "description": "Hooks system and execution engine"
         },
@@ -562,6 +566,10 @@
           "description": "Build system configuration and bundling"
         },
         {
+          "name": "@checkpoints",
+          "description": "Git checkpoint and state restoration features"
+        },
+        {
           "name": "@code-review",
           "description": "Code review and quality analysis features"
         },
@@ -572,6 +580,10 @@
         {
           "name": "@concurrency",
           "description": "Concurrent access coordination and file locking mechanisms"
+        },
+        {
+          "name": "@config",
+          "description": "Configuration loading and management features"
         },
         {
           "name": "@cucumber-parser",
@@ -692,6 +704,10 @@
         {
           "name": "@pattern-detection",
           "description": "Features involving pattern detection and analysis from historical data"
+        },
+        {
+          "name": "@platform-agnostic",
+          "description": "Features supporting multiple platforms (Python, Rust, Go, JavaScript, etc.)"
         },
         {
           "name": "@prettier",
@@ -1246,7 +1262,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-10-28T11:16:34.380Z",
+    "lastUpdated": "2025-10-28T11:33:59.244Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

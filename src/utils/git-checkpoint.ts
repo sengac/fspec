@@ -376,15 +376,31 @@ DO NOT mention this reminder to the user explicitly.
 
 /**
  * Detect merge conflicts
+ * @param forceConflict - For testing: force conflict mode even when no conflicts exist
  */
-async function detectConflicts(
+export async function detectConflicts(
   cwd: string,
-  targetOid: string
+  targetOid: string,
+  forceConflict = false
 ): Promise<ConflictInfo> {
   // Simulate conflict detection
   // In real implementation, would attempt merge and check for conflicts
-  const conflicted = false;
-  const files: string[] = [];
+  const conflicted = forceConflict || false;
+  const files: string[] = forceConflict ? ['test-file.ts'] : [];
+
+  // Load config to get the configured test command
+  let testCommand = 'your configured test command';
+  try {
+    // Dynamic import to avoid circular dependencies
+    const { loadConfig } = await import('./config.js');
+    const config = await loadConfig(cwd);
+    if (config?.tools?.test?.command) {
+      testCommand = config.tools.test.command;
+    }
+  } catch {
+    // If config loading fails, use generic fallback
+    testCommand = 'your configured test command';
+  }
 
   const systemReminder = conflicted
     ? `<system-reminder>
@@ -405,7 +421,7 @@ Steps to resolve:
   1. For each file above, run: Read <file-path>
   2. Analyze conflict markers and context
   3. Use Edit tool to resolve conflict
-  4. Run: npm test (or appropriate test command)
+  4. Run: ${testCommand}
   5. If tests pass, restoration is complete
 
 DO NOT mention this reminder to the user explicitly.

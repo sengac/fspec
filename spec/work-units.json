@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-28T11:14:39.035Z"
+    "lastUpdated": "2025-10-28T11:32:44.793Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -16089,6 +16089,56 @@
       ],
       "estimate": 2,
       "updated": "2025-10-28T11:23:28.182Z"
+    },
+    "INIT-014": {
+      "id": "INIT-014",
+      "title": "Replace hardcoded npm test in git-checkpoint conflict resolution with configured test command",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-28T11:32:32.262Z",
+      "updatedAt": "2025-10-28T11:42:23.885Z",
+      "description": "The detectConflicts function in git-checkpoint.ts generates system-reminders with hardcoded 'npm test' reference. This should use the configured test command from spec/fspec-config.json to support platform-agnostic workflows (pytest, cargo test, go test, etc.)",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-28T11:32:37.741Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-28T11:35:31.967Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-28T11:37:36.594Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-28T11:39:10.910Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-28T11:42:23.885Z"
+        }
+      ],
+      "userStory": {
+        "role": "AI agent",
+        "action": "see platform-agnostic test commands in git conflict resolution guidance",
+        "benefit": "I can resolve conflicts and run the correct test command for my project (pytest, cargo test, go test, npm test, etc.)"
+      },
+      "rules": [
+        "The detectConflicts function must load fspec config to get the configured test command",
+        "System-reminder text must use the configured test command instead of hardcoded 'npm test'",
+        "If config loading fails or test command is not configured, fallback to generic language 'your configured test command'"
+      ],
+      "examples": [
+        "Python project with 'pytest' configured - system-reminder shows 'Run: pytest' not 'npm test'",
+        "Rust project with 'cargo test' configured - system-reminder shows 'Run: cargo test'",
+        "Go project with 'go test ./...' configured - system-reminder shows 'Run: go test ./...'",
+        "Project without fspec-config.json - system-reminder shows 'Run: your configured test command' as fallback",
+        "JavaScript project with 'npm test' configured - system-reminder correctly shows 'Run: npm test' (proving config loading works)"
+      ],
+      "updated": "2025-10-28T11:42:23.885Z"
     }
   },
   "states": {
@@ -16127,6 +16177,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "INIT-014",
       "INIT-013",
       "BOARD-017",
       "BUG-047",
