@@ -1,3 +1,5 @@
+@ui-refinement
+@tui
 @BOARD-015
 Feature: Fix work unit details panel to be static 4 lines high
   """
