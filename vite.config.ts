@@ -31,6 +31,7 @@ export default defineConfig({
         'react',
         'proper-lockfile',
         'isomorphic-git',
+        'winston',
       ],
       output: {
         preserveModules: false,

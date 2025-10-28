@@ -18,6 +18,17 @@ import { join } from 'path';
 import { mkdir, rm, readFile, writeFile } from 'fs/promises';
 import { existsSync } from 'fs';
 import { fileManager } from '../file-manager';
+import { logger } from '../logger';
+
+// Mock winston logger
+vi.mock('../logger', () => ({
+  logger: {
+    error: vi.fn(),
+    warn: vi.fn(),
+    info: vi.fn(),
+    debug: vi.fn(),
+  },
+}));
 
 describe('Feature: Implement file locking for concurrent access safety', () => {
   // @step Given I have implemented src/utils/file-manager.ts
@@ -336,7 +347,7 @@ describe('Feature: Implement file locking for concurrent access safety', () => {
     it('should log lock metrics when FSPEC_DEBUG_LOCKS is enabled', async () => {
       // Given FSPEC_DEBUG_LOCKS environment variable is set
       process.env.FSPEC_DEBUG_LOCKS = '1';
-      const consoleSpy = vi.spyOn(console, 'log');
+      vi.clearAllMocks();
 
       // Given I have a JSON file
       const initialData = { value: 0 };
@@ -346,19 +357,18 @@ describe('Feature: Implement file locking for concurrent access safety', () => {
       await fileManager.readJSON(testFile, initialData);
 
       // Then debug metrics should be logged
-      expect(consoleSpy).toHaveBeenCalledWith(
+      expect(logger.debug).toHaveBeenCalledWith(
         expect.stringContaining('[LOCK]')
       );
 
       // Cleanup
       delete process.env.FSPEC_DEBUG_LOCKS;
-      consoleSpy.mockRestore();
     });
 
     it('should not log when FSPEC_DEBUG_LOCKS is not set', async () => {
       // Given FSPEC_DEBUG_LOCKS is not set
       delete process.env.FSPEC_DEBUG_LOCKS;
-      const consoleSpy = vi.spyOn(console, 'log');
+      vi.clearAllMocks();
 
       // Given I have a JSON file
       const initialData = { value: 0 };
@@ -368,12 +378,7 @@ describe('Feature: Implement file locking for concurrent access safety', () => {
       await fileManager.readJSON(testFile, initialData);
 
       // Then no debug logs should appear
-      const lockLogs = consoleSpy.mock.calls.filter(call =>
-        call[0]?.includes('[LOCK]')
-      );
-      expect(lockLogs).toHaveLength(0);
-
-      consoleSpy.mockRestore();
+      expect(logger.debug).not.toHaveBeenCalled();
     });
   });
 

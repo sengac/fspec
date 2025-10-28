@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-28T09:14:50.383Z"
+    "lastUpdated": "2025-10-28T09:40:51.442Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -15897,6 +15897,62 @@
           "selected": false
         }
       ]
+    },
+    "LOG-002": {
+      "id": "LOG-002",
+      "title": "Wire LockedFileManager errors to winston logger",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-28T09:39:57.419Z",
+      "updatedAt": "2025-10-28T09:51:28.247Z",
+      "description": "Integrate winston logger from LOG-001 with LockedFileManager from LOCK-001/LOCK-002. Log all file locking errors, timeouts, and lock compromises to ~/.fspec/fspec.log. Replace console.error calls in file-manager.ts with logger.error. Add structured logging with context (file path, operation type, lock metrics).",
+      "children": [],
+      "dependsOn": [
+        "LOG-001",
+        "LOCK-002"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-28T09:40:36.413Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-28T09:43:22.192Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-28T09:46:32.326Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-28T09:49:02.658Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-28T09:51:28.248Z"
+        }
+      ],
+      "userStory": {
+        "role": "fspec developer",
+        "action": "have file locking errors logged to winston",
+        "benefit": "I can debug concurrency issues and lock failures in production"
+      },
+      "rules": [
+        "Replace all console.error/console.log calls in file-manager.ts with logger.error/logger.debug",
+        "Log lock errors with context: file path, lock type (READ/WRITE), error message",
+        "Log lock metrics (wait time, hold duration, retries) at debug level when FSPEC_DEBUG_LOCKS enabled",
+        "Log lock compromises at error level with file path and details",
+        "Continue using existing logMetrics() function but route through winston instead of console.log"
+      ],
+      "examples": [
+        "Lock timeout occurs - logs 'Lock timeout for work-units.json (WRITE lock) after 10s' to winston at error level",
+        "Lock compromised during transaction - logs 'Lock compromised for epics.json' to winston at error level with stack trace",
+        "FSPEC_DEBUG_LOCKS=1 enabled - logs lock metrics 'Acquired READ lock on work-units.json (waited 50ms, held 100ms, retries 0)' at debug level",
+        "JSON parse error in readJSON - logs 'Failed to parse work-units.json: Unexpected token' at error level"
+      ],
+      "estimate": 2,
+      "updated": "2025-10-28T09:51:28.247Z"
     }
   },
   "states": {
@@ -15936,6 +15992,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "LOG-002",
       "LOG-001",
       "LOCK-002",
       "LOCK-001",
