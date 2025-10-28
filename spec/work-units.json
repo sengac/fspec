@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-28T01:48:03.026Z"
+    "lastUpdated": "2025-10-28T03:15:05.486Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -15265,9 +15265,9 @@
       "id": "BOARD-014",
       "title": "Stretch board content to fill available viewport height",
       "type": "story",
-      "status": "specifying",
+      "status": "done",
       "createdAt": "2025-10-27T22:35:08.114Z",
-      "updatedAt": "2025-10-27T23:13:35.550Z",
+      "updatedAt": "2025-10-28T02:55:49.519Z",
       "description": "Make the work unit table expand vertically to use all available space within FullScreenWrapper. Currently the table has a fixed height and doesn't stretch to fill the terminal.",
       "children": [],
       "stateHistory": [
@@ -15330,6 +15330,22 @@
         {
           "state": "specifying",
           "timestamp": "2025-10-27T23:13:35.550Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-28T02:55:35.532Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-28T02:55:39.841Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-28T02:55:44.186Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-28T02:55:49.520Z"
         }
       ],
       "userStory": {
@@ -15356,7 +15372,8 @@
           "selected": true,
           "answer": "Option A: Restructure to use Ink's Box/flexGrow. Separate header panels (Git Stashes, Changed Files, Work Unit Details) from the work unit table. Use <Box flexGrow={1}> for the columns area to automatically fill available vertical space. This aligns with React/Ink best practices and eliminates manual row calculations."
         }
-      ]
+      ],
+      "updated": "2025-10-28T02:55:49.519Z"
     },
     "BOARD-015": {
       "id": "BOARD-015",
@@ -15597,6 +15614,58 @@
       },
       "estimate": 5,
       "updated": "2025-10-28T02:48:17.335Z"
+    },
+    "LOCK-001": {
+      "id": "LOCK-001",
+      "title": "Implement file locking for concurrent access safety",
+      "type": "story",
+      "status": "specifying",
+      "createdAt": "2025-10-28T03:12:16.122Z",
+      "updatedAt": "2025-10-28T03:15:05.485Z",
+      "description": "Add three-layer file locking (proper-lockfile + readers-writer + atomic writes) to prevent JSON file corruption when multiple fspec instances run concurrently",
+      "children": [],
+      "userStory": {
+        "role": "developer running multiple fspec instances concurrently",
+        "action": "prevent JSON file corruption from race conditions",
+        "benefit": "I can safely run multiple commands and TUI simultaneously without data loss"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-28T03:12:31.138Z"
+        }
+      ],
+      "rules": [
+        "File locking MUST use three-layer architecture: (1) proper-lockfile for inter-process coordination, (2) readers-writer pattern for in-process optimization, (3) atomic write-replace for safe writes",
+        "Multiple readers can read the same file concurrently (readers-writer pattern allows parallel reads)",
+        "Only ONE writer can modify a file at a time (exclusive write lock blocks all readers and other writers)",
+        "All file writes MUST use atomic write-replace pattern (write to temp file + rename) to prevent partial writes",
+        "proper-lockfile MUST use stale lock detection (10 second timeout) to prevent deadlocks from crashed processes",
+        "Lock acquisition MUST use retry logic with exponential backoff (10 retries, 50-500ms timeout range)",
+        "LockedFileManager MUST be a singleton to ensure in-process lock coordination across all file operations",
+        "All JSON file operations (work-units.json, tags.json, foundation.json, etc.) MUST use LockedFileManager",
+        "Read-modify-write operations MUST use transaction() method to ensure atomicity of the entire operation",
+        "Lock release MUST happen in finally block to prevent lock leaks on errors"
+      ],
+      "examples": [
+        "User runs 'fspec list-work-units' in terminal 1 AND 'fspec update-work-unit-status BOARD-001 done' in terminal 2 simultaneously - Both commands acquire proper-lockfile locks, list-work-units reads while update-work-unit-status waits for write lock, no corruption occurs",
+        "TUI board is running (refreshing every 2 seconds) AND user runs 'fspec create-story PREFIX Title' - TUI's read lock and command's write lock coordinate via proper-lockfile, work-units.json is never corrupted, TUI sees new work unit after refresh",
+        "Three fspec commands run concurrently: (1) list-work-units, (2) show-work-unit BOARD-001, (3) update-work-unit-status BOARD-002 done - Commands 1 and 2 read concurrently with in-process readers lock, command 3 waits for exclusive write lock, all succeed without corruption",
+        "Process 1 acquires write lock on work-units.json and crashes mid-write - proper-lockfile's stale lock detection (10 second timeout) allows Process 2 to acquire lock after timeout, preventing permanent deadlock",
+        "Command writes to work-units.json using atomic pattern: (1) writes to work-units.json.tmp.abc123, (2) renames to work-units.json - If crash occurs during step 1, original file is intact; if during step 2, rename is atomic",
+        "Reader 1 and Reader 2 both call fileManager.readJSON('work-units.json') - Both acquire in-process read locks simultaneously (readers-writer pattern), both acquire proper-lockfile locks with retry, both read file concurrently",
+        "Writer calls fileManager.writeJSON('work-units.json', data) while Reader is active - Writer waits for Reader's in-process read lock to release, then acquires exclusive write lock, prevents read-during-write corruption"
+      ],
+      "architectureNotes": [
+        "Three-Layer Lock Architecture: Layer 1 (Inter-Process) = proper-lockfile with mkdir strategy for cross-process coordination; Layer 2 (In-Process) = Readers-writer pattern using promises and queues for concurrent reads; Layer 3 (Atomic Writes) = Temp file + rename for POSIX atomic write guarantees",
+        "LockedFileManager Singleton Pattern: Single instance coordinates all in-process locks via Map<string, number> for read counts and Set<string> for write locks, with separate waiting queues (Array<() => void>) for blocked readers and writers",
+        "proper-lockfile Configuration: stale=10000ms (10 second timeout for crashed processes), retries={retries:10, minTimeout:50ms, maxTimeout:500ms} for exponential backoff, realpath=false for symlink support and performance",
+        "Affected Files: work-units.json (230+ work units, high contention), foundation.json, tags.json, prefixes.json, epics.json, example-map.json, fspec-hooks.json - ALL must use LockedFileManager",
+        "Migration Strategy: (1) Create src/utils/file-manager.ts with LockedFileManager class, (2) Refactor ensure-files.ts to use fileManager singleton, (3) Update all commands to use fileManager.transaction() for read-modify-write, (4) Add comprehensive concurrency tests"
+      ],
+      "attachments": [
+        "spec/attachments/LOCK-001/file-locking-architecture.md"
+      ]
     }
   },
   "states": {
@@ -15631,12 +15700,13 @@
       "GIT-004",
       "EST-002",
       "LANG-001",
-      "BOARD-014"
+      "LOCK-001"
     ],
     "testing": [],
     "implementing": [],
     "validating": [],
     "done": [
+      "BOARD-014",
       "BOARD-016",
       "BOARD-015",
       "BOARD-013",
