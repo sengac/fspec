@@ -155,23 +155,24 @@ export function compareByUpdatedDescending(
   const aWorkUnit = workUnits[aId];
   const bWorkUnit = workUnits[bId];
 
-  const aUpdated = aWorkUnit?.updated;
-  const bUpdated = bWorkUnit?.updated;
+  // BOARD-016: Use 'updated' if present, otherwise fall back to 'createdAt'
+  const aTimestamp = aWorkUnit?.updated || aWorkUnit?.createdAt;
+  const bTimestamp = bWorkUnit?.updated || bWorkUnit?.createdAt;
 
-  // Handle missing timestamps (should not happen in done column, but be defensive)
-  if (!aUpdated && !bUpdated) {
+  // Handle missing timestamps (should not happen, but be defensive)
+  if (!aTimestamp && !bTimestamp) {
     return 0;
   }
-  if (!aUpdated) {
+  if (!aTimestamp) {
     return 1; // a goes after b
   }
-  if (!bUpdated) {
+  if (!bTimestamp) {
     return -1; // a goes before b
   }
 
   // Parse timestamps and compare (descending = most recent first)
-  const aTime = new Date(aUpdated).getTime();
-  const bTime = new Date(bUpdated).getTime();
+  const aTime = new Date(aTimestamp).getTime();
+  const bTime = new Date(bTimestamp).getTime();
 
   return bTime - aTime; // Descending order (most recent first)
 }
