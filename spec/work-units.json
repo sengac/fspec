@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-28T03:15:05.486Z"
+    "lastUpdated": "2025-10-28T05:14:23.264Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -15619,9 +15619,9 @@
       "id": "LOCK-001",
       "title": "Implement file locking for concurrent access safety",
       "type": "story",
-      "status": "specifying",
+      "status": "testing",
       "createdAt": "2025-10-28T03:12:16.122Z",
-      "updatedAt": "2025-10-28T03:43:20.157Z",
+      "updatedAt": "2025-10-28T05:16:06.302Z",
       "description": "Add three-layer file locking (proper-lockfile + readers-writer + atomic writes) to prevent JSON file corruption when multiple fspec instances run concurrently",
       "children": [],
       "userStory": {
@@ -15633,6 +15633,18 @@
         {
           "state": "specifying",
           "timestamp": "2025-10-28T03:12:31.138Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-28T04:30:21.953Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-28T04:31:18.647Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-28T05:16:06.302Z"
         }
       ],
       "rules": [
@@ -15650,7 +15662,13 @@
         "Throw error immediately after 10 retries with exponential backoff (50-500ms, ~5 seconds total). Simple, clean error message: 'Failed to acquire file lock. Check for stuck fspec processes.' Exit code 1.",
         "NEVER cache file contents. Always read from disk for consistency. Files are small (~200KB max), reads are fast (~3-5ms), caching adds complexity and risk of stale data across processes. Correctness > speed.",
         "Optional debug metrics via FSPEC_DEBUG_LOCKS environment variable. Logs lock acquisition time, wait time, retries, hold duration. Ties into LOG-001 logging infrastructure. Silent by default, verbose when debugging.",
-        "All-at-once migration (NOT incremental). MUST work 100% perfectly the first time. Complete implementation: LockedFileManager + refactor utilities + refactor all ~50 commands + refactor TUI store + comprehensive tests. No partial states, no gradual rollout."
+        "All-at-once migration (NOT incremental). MUST work 100% perfectly the first time. Complete implementation: LockedFileManager + refactor utilities + refactor all ~50 commands + refactor TUI store + comprehensive tests. No partial states, no gradual rollout.",
+        "ensure* functions use read-lock-first pattern: attempt read with READ lock, on ENOENT upgrade to WRITE lock with double-check before creating file",
+        "READ locks released immediately after JSON.parse() completes - data is in memory, lock no longer needed, allows other operations to proceed",
+        "transaction() method uses mutation-based API: callback receives data, mutates in place, returns void - fileManager writes mutated data automatically on completion",
+        "transaction() errors cause rollback: if callback throws error, no write occurs and file remains unchanged - error propagates to caller for proper logging and exit codes",
+        "Multi-file operations use sequential transactions (not atomic): each file gets separate transaction, if later transaction fails earlier transactions already committed - acceptable due to denormalized data, defensive querying, and repair utilities",
+        "Debug metrics enabled via FSPEC_DEBUG_LOCKS environment variable: logs lock type, file path, wait time, hold duration, retry count - silent by default, verbose when debugging - ties into LOG-001 logging infrastructure when available"
       ],
       "examples": [
         "User runs 'fspec list-work-units' in terminal 1 AND 'fspec update-work-unit-status BOARD-001 done' in terminal 2 simultaneously - Both commands acquire proper-lockfile locks, list-work-units reads while update-work-unit-status waits for write lock, no corruption occurs",
@@ -15659,7 +15677,11 @@
         "Process 1 acquires write lock on work-units.json and crashes mid-write - proper-lockfile's stale lock detection (10 second timeout) allows Process 2 to acquire lock after timeout, preventing permanent deadlock",
         "Command writes to work-units.json using atomic pattern: (1) writes to work-units.json.tmp.abc123, (2) renames to work-units.json - If crash occurs during step 1, original file is intact; if during step 2, rename is atomic",
         "Reader 1 and Reader 2 both call fileManager.readJSON('work-units.json') - Both acquire in-process read locks simultaneously (readers-writer pattern), both acquire proper-lockfile locks with retry, both read file concurrently",
-        "Writer calls fileManager.writeJSON('work-units.json', data) while Reader is active - Writer waits for Reader's in-process read lock to release, then acquires exclusive write lock, prevents read-during-write corruption"
+        "Writer calls fileManager.writeJSON('work-units.json', data) while Reader is active - Writer waits for Reader's in-process read lock to release, then acquires exclusive write lock, prevents read-during-write corruption",
+        "Command refactoring minimal change: Replace 'const data = await ensureWorkUnitsFile(cwd); ... await writeFile(file, JSON.stringify(data, 2))' with 'await fileManager.transaction(file, async (data) => { ... })' - same 400 lines of mutation logic unchanged",
+        "Transaction rollback on error: 'await fileManager.transaction(file, async (data) => { if (\\!valid) throw new Error(\"bad\"); data.x = 1; })' - Error thrown, no write occurs, file unchanged, error propagates to command catch block",
+        "Multi-file sequential transactions: 'await fileManager.transaction(workUnitsFile, async (data) => { data.workUnits[id] = newWorkUnit; }); await fileManager.transaction(epicsFile, async (data) => { data.epics[epicId].workUnits.push(id); });' - If second fails first committed, run fspec repair-work-units to fix",
+        "Debug metrics output: 'FSPEC_DEBUG_LOCKS=1 fspec update-work-unit-status AUTH-001 done' logs '[LOCK] Acquired WRITE lock on work-units.json (waited 2ms, held 15ms, retries 0)' - helps diagnose performance issues and lock contention"
       ],
       "architectureNotes": [
         "Three-Layer Lock Architecture: Layer 1 (Inter-Process) = proper-lockfile with mkdir strategy for cross-process coordination; Layer 2 (In-Process) = Readers-writer pattern using promises and queues for concurrent reads; Layer 3 (Atomic Writes) = Temp file + rename for POSIX atomic write guarantees",
@@ -15729,13 +15751,14 @@
       "FEAT-018"
     ],
     "specifying": [
-      "RES-006",
       "GIT-004",
+      "RES-006",
       "EST-002",
-      "LANG-001",
+      "LANG-001"
+    ],
+    "testing": [
       "LOCK-001"
     ],
-    "testing": [],
     "implementing": [],
     "validating": [],
     "done": [
