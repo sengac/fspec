@@ -1,9 +1,9 @@
-import { writeFile } from 'fs/promises';
 import chalk from 'chalk';
 import type { Command } from 'commander';
 import { join } from 'path';
 import type { WorkUnitsData } from '../types';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
+import { fileManager } from '../utils/file-manager';
 
 interface ClearDependenciesOptions {
   workUnitId: string;
@@ -87,7 +87,10 @@ export async function clearDependencies(
 
   workUnit.updatedAt = new Date().toISOString();
 
-  await writeFile(workUnitsFile, JSON.stringify(data, null, 2));
+  // LOCK-002: Use fileManager.transaction() for atomic write
+  await fileManager.transaction(workUnitsFile, async fileData => {
+    Object.assign(fileData, data);
+  });
 
   return {
     success: true,

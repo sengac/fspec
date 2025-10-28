@@ -1,9 +1,10 @@
-import { readFile, writeFile, mkdir, copyFile, access } from 'fs/promises';
+import { mkdir, copyFile, access } from 'fs/promises';
 import { join, basename, relative } from 'path';
 import chalk from 'chalk';
 import type { Command } from 'commander';
 import type { WorkUnitsData } from '../types';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
+import { fileManager } from '../utils/file-manager';
 import {
   shouldValidateMermaid,
   validateMermaidAttachment,
@@ -93,8 +94,10 @@ export async function addAttachment(
     data.meta.lastUpdated = new Date().toISOString();
   }
 
-  // Write back to file
-  await writeFile(workUnitsPath, JSON.stringify(data, null, 2));
+  // LOCK-002: Use fileManager.transaction() for atomic write
+  await fileManager.transaction(workUnitsPath, async fileData => {
+    Object.assign(fileData, data);
+  });
 
   console.log(chalk.green('✓ Attachment added successfully'));
   console.log(chalk.dim(`  File: ${relativePath}`));
