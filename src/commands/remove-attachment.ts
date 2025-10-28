@@ -1,9 +1,10 @@
-import { readFile, writeFile, unlink } from 'fs/promises';
+import { unlink } from 'fs/promises';
 import { join, basename } from 'path';
 import chalk from 'chalk';
 import type { Command } from 'commander';
 import type { WorkUnitsData } from '../types';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
+import { fileManager } from '../utils/file-manager';
 
 export interface RemoveAttachmentOptions {
   workUnitId: string;
@@ -80,8 +81,10 @@ export async function removeAttachment(
     data.meta.lastUpdated = new Date().toISOString();
   }
 
-  // Write back to file
-  await writeFile(workUnitsPath, JSON.stringify(data, null, 2));
+  // LOCK-002: Use fileManager.transaction() for atomic write
+  await fileManager.transaction(workUnitsPath, async fileData => {
+    Object.assign(fileData, data);
+  });
 }
 
 export function registerRemoveAttachmentCommand(program: Command): void {

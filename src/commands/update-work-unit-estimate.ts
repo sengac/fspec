@@ -1,8 +1,8 @@
-import { readFile, writeFile } from 'fs/promises';
 import chalk from 'chalk';
 import type { Command } from 'commander';
 import { join } from 'path';
 import { checkWorkUnitFeatureForPrefill } from '../utils/prefill-detection';
+import { fileManager } from '../utils/file-manager';
 
 interface WorkUnit {
   id: string;
@@ -35,9 +35,11 @@ export async function updateWorkUnitEstimate(options: {
       );
     }
 
-    // Read work units
-    const content = await readFile(workUnitsFile, 'utf-8');
-    const data: WorkUnitsData = JSON.parse(content);
+    // LOCK-002: Use fileManager.readJSON() for read operations
+    const data: WorkUnitsData = await fileManager.readJSON(workUnitsFile, {
+      workUnits: {},
+      states: {},
+    });
 
     // Check if work unit exists
     if (!data.workUnits[options.workUnitId]) {
@@ -120,8 +122,10 @@ Feature file has prefill placeholders must be removed first. Complete the featur
     data.workUnits[options.workUnitId].estimate = options.estimate;
     data.workUnits[options.workUnitId].updatedAt = new Date().toISOString();
 
-    // Write back to file
-    await writeFile(workUnitsFile, JSON.stringify(data, null, 2));
+    // LOCK-002: Use fileManager.transaction() for atomic write
+    await fileManager.transaction(workUnitsFile, async fileData => {
+      Object.assign(fileData, data);
+    });
 
     return { success: true };
   } catch (error: unknown) {
