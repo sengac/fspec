@@ -174,6 +174,11 @@
       "prefix": "LOG",
       "description": "Logging infrastructure",
       "createdAt": "2025-10-28T00:29:20.548Z"
+    },
+    "LOCK": {
+      "prefix": "LOCK",
+      "description": "File locking and concurrency safety features",
+      "createdAt": "2025-10-28T03:12:11.051Z"
     }
   }
 }
