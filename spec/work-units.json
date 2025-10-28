@@ -14941,7 +14941,7 @@
       "type": "story",
       "status": "implementing",
       "createdAt": "2025-10-27T13:26:34.333Z",
-      "updatedAt": "2025-10-28T00:37:17.345Z",
+      "updatedAt": "2025-10-28T00:41:40.893Z",
       "description": "Allow users to reorder work units within a column using [ and ] keys to move items up/down in priority",
       "epic": "interactive-tui-foundation",
       "children": [],
@@ -14985,6 +14985,18 @@
         {
           "state": "implementing",
           "timestamp": "2025-10-28T00:37:17.345Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-28T00:40:31.237Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-28T00:41:35.209Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-28T00:41:40.893Z"
         }
       ],
       "userStory": {
@@ -15006,7 +15018,8 @@
         "All keyboard input should be handled in a single unified location to prevent conflicts between multiple useInput hooks",
         "Bracket key handlers should be in UnifiedBoardLayout's useInput hook (where arrow keys and Enter are handled), NOT in BoardView's useInput hook",
         "UnifiedBoardLayout should call onMoveUp() and onMoveDown() callbacks (passed as props) when bracket keys are pressed",
-        "loadData() in fspecStore MUST load work units by iterating states arrays (not Object.values(workUnits)) to preserve display order"
+        "loadData() in fspecStore MUST load work units by iterating states arrays (not Object.values(workUnits)) to preserve display order",
+        "When moving work unit up or down, the selection cursor MUST follow the work unit to its new position"
       ],
       "examples": [
         "User selects BOARD-002 in backlog column (position 2), presses [, work unit moves to position 1",
@@ -15015,7 +15028,9 @@
         "User selects last work unit in done column, presses ], nothing happens (already at bottom)",
         "After moving work unit, order persists when restarting TUI (loaded from work-units.json)",
         "User in done column presses [ or ], nothing happens (done column order is automatic by completion time)",
-        "BoardView has useInput hook for ESC and Tab keys, UnifiedBoardLayout has useInput for arrow keys - bracket keys added to BoardView but not working, likely due to hook conflicts"
+        "BoardView has useInput hook for ESC and Tab keys, UnifiedBoardLayout has useInput for arrow keys - bracket keys added to BoardView but not working, likely due to hook conflicts",
+        "User selects BOARD-002 at position 2, presses [, BOARD-002 moves to position 1 AND selection cursor moves to position 1",
+        "User selects BOARD-002 at position 2, presses ], BOARD-002 moves to position 3 AND selection cursor moves to position 3"
       ],
       "estimate": 5,
       "questions": [
@@ -15399,6 +15414,7 @@
   },
   "states": {
     "backlog": [
+      "LOG-001",
       "RES-003",
       "RES-004",
       "RES-001",
@@ -15421,8 +15437,7 @@
       "AGENT-015",
       "AGENT-016",
       "AGENT-017",
-      "FEAT-018",
-      "LOG-001"
+      "FEAT-018"
     ],
     "specifying": [
       "RES-006",

@@ -356,13 +356,17 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
           appendFileSync('/tmp/board-debug.log', `[${new Date().toISOString()}] BoardView onMoveUp called\n`);
           const currentColumn = groupedWorkUnits[focusedColumnIndex];
           appendFileSync('/tmp/board-debug.log', `[${new Date().toISOString()}] BoardView: currentColumn=${currentColumn.status}, units.length=${currentColumn.units.length}\n`);
-          if (currentColumn.units.length > 0) {
+          if (currentColumn.units.length > 0 && selectedWorkUnitIndex > 0) {
             const workUnit = currentColumn.units[selectedWorkUnitIndex];
             appendFileSync('/tmp/board-debug.log', `[${new Date().toISOString()}] BoardView: calling moveWorkUnitUp(${workUnit.id})\n`);
             await moveWorkUnitUp(workUnit.id);
             appendFileSync('/tmp/board-debug.log', `[${new Date().toISOString()}] BoardView: moveWorkUnitUp completed, reloading data\n`);
             await loadData();
             appendFileSync('/tmp/board-debug.log', `[${new Date().toISOString()}] BoardView: loadData completed\n`);
+
+            // BOARD-010: Move selection cursor up with the work unit
+            setSelectedWorkUnitIndex(selectedWorkUnitIndex - 1);
+            appendFileSync('/tmp/board-debug.log', `[${new Date().toISOString()}] BoardView: moved selection cursor from ${selectedWorkUnitIndex} to ${selectedWorkUnitIndex - 1}\n`);
           }
         }}
         onMoveDown={async () => {
@@ -370,13 +374,17 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
           appendFileSync('/tmp/board-debug.log', `[${new Date().toISOString()}] BoardView onMoveDown called\n`);
           const currentColumn = groupedWorkUnits[focusedColumnIndex];
           appendFileSync('/tmp/board-debug.log', `[${new Date().toISOString()}] BoardView: currentColumn=${currentColumn.status}, units.length=${currentColumn.units.length}\n`);
-          if (currentColumn.units.length > 0) {
+          if (currentColumn.units.length > 0 && selectedWorkUnitIndex < currentColumn.units.length - 1) {
             const workUnit = currentColumn.units[selectedWorkUnitIndex];
             appendFileSync('/tmp/board-debug.log', `[${new Date().toISOString()}] BoardView: calling moveWorkUnitDown(${workUnit.id})\n`);
             await moveWorkUnitDown(workUnit.id);
             appendFileSync('/tmp/board-debug.log', `[${new Date().toISOString()}] BoardView: moveWorkUnitDown completed, reloading data\n`);
             await loadData();
             appendFileSync('/tmp/board-debug.log', `[${new Date().toISOString()}] BoardView: loadData completed\n`);
+
+            // BOARD-010: Move selection cursor down with the work unit
+            setSelectedWorkUnitIndex(selectedWorkUnitIndex + 1);
+            appendFileSync('/tmp/board-debug.log', `[${new Date().toISOString()}] BoardView: moved selection cursor from ${selectedWorkUnitIndex} to ${selectedWorkUnitIndex + 1}\n`);
           }
         }}
       />
