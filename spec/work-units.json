@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-28T05:14:23.264Z"
+    "lastUpdated": "2025-10-28T05:47:08.203Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -15734,6 +15734,68 @@
       ],
       "estimate": 8,
       "updated": "2025-10-28T05:32:31.219Z"
+    },
+    "LOCK-002": {
+      "id": "LOCK-002",
+      "title": "Implement file locking system (LockedFileManager + refactoring)",
+      "type": "story",
+      "status": "specifying",
+      "createdAt": "2025-10-28T05:44:02.203Z",
+      "updatedAt": "2025-10-28T05:50:23.175Z",
+      "children": [],
+      "dependsOn": [
+        "LOCK-001"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-28T05:44:53.719Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer implementing file locking",
+        "action": "refactor all JSON file operations to use LockedFileManager",
+        "benefit": "all file operations are protected by the three-layer locking system"
+      },
+      "rules": [
+        "Create src/utils/file-manager.ts with LockedFileManager singleton class (proper-lockfile + readers-writer pattern + atomic writes)",
+        "Refactor src/utils/ensure-files.ts to use LockedFileManager for all ensure* functions (ensureWorkUnitsFile, ensureTagsFile, ensureFoundationFile, ensurePrefixesFile, ensureEpicsFile, ensureExampleMapFile, ensureHooksFile)",
+        "Refactor all 54 command files that import from ensure-files.ts to use fileManager.transaction() for read-modify-write operations",
+        "Refactor src/tui/store/fspecStore.ts to use LockedFileManager for all JSON file reads (TUI refresh operations)",
+        "All read-modify-write operations MUST use fileManager.transaction() with mutation-based callback API",
+        "ensure* functions MUST use read-lock-first pattern: attempt READ lock, on ENOENT upgrade to WRITE lock with double-check"
+      ],
+      "examples": [
+        "NEW FILE: src/utils/file-manager.ts - Create LockedFileManager singleton with readJSON(), writeJSON(), transaction() methods",
+        "REFACTOR: src/utils/ensure-files.ts - All ensure* functions use fileManager.transaction() internally",
+        "REFACTOR: src/tui/store/fspecStore.ts - TUI store uses fileManager.readJSON() for all JSON reads (no writes, TUI is read-only)",
+        "REFACTOR: Work unit commands (20 files): update-work-unit.ts, update-work-unit-status.ts, create-task.ts, create-story.ts, create-bug.ts, delete-work-unit.ts, prioritize-work-unit.ts, repair-work-units.ts, validate-work-units.ts, set-user-story.ts, add-dependency.ts, remove-dependency.ts, clear-dependencies.ts, add-attachment.ts, remove-attachment.ts, add-architecture-note.ts, remove-architecture-note.ts, add-rule.ts, remove-rule.ts, add-example.ts, remove-example.ts, add-question.ts, remove-question.ts, answer-question.ts, add-assumption.ts",
+        "REFACTOR: Virtual hook commands (4 files): add-virtual-hook.ts, remove-virtual-hook.ts, clear-virtual-hooks.ts, copy-virtual-hooks.ts, list-virtual-hooks.ts",
+        "REFACTOR: Prefix and epic commands (2 files): update-prefix.ts, create-prefix.ts",
+        "REFACTOR: Tag commands (3 files): register-tag.ts, validate-tags.ts, list-tags.ts",
+        "REFACTOR: Foundation commands (3 files): update-foundation.ts, show-foundation.ts, add-diagram.ts",
+        "REFACTOR: Example mapping commands (3 files): generate-scenarios.ts, export-example-map.ts, import-example-map.ts",
+        "REFACTOR: Query/reporting commands (4 files): query-example-mapping-stats.ts, query-orphans.ts, query-dependency-stats.ts, suggest-dependencies.ts, export-dependencies.ts, list-work-units.ts, list-attachments.ts",
+        "REFACTOR: Board command (1 file): display-board.ts",
+        "CHECK: src/index.ts - May have direct JSON file access that needs refactoring",
+        "CHECK: src/utils/work-unit-tags.ts - May have direct JSON file access that needs refactoring",
+        "NEW TEST: src/utils/__tests__/file-manager.test.ts - Comprehensive unit tests for LockedFileManager (concurrency, retries, timeouts, atomic writes, readers-writer pattern)",
+        "UPDATE TEST: src/utils/__tests__/ensure-files.test.ts - Update tests to verify ensure* functions use fileManager.transaction()",
+        "UPDATE TEST: All command test files (50+ files) - Update mocks to use fileManager instead of direct file operations",
+        "UPDATE TEST: src/tui/__tests__/fspecStore-*.test.ts - Update TUI store tests to verify fileManager.readJSON() usage",
+        "UPDATE: package.json - Add proper-lockfile dependency (~4.1.2)",
+        "UPDATE: package.json - Add @types/proper-lockfile dev dependency",
+        "CHECK: src/hooks/integration.ts, src/hooks/config.ts, src/hooks/script-generation.ts - May have JSON file access that needs refactoring",
+        "CHECK: src/validators/validate-json-schema.ts, src/validators/generic-foundation-validator.ts, src/validators/json-schema.ts - May have JSON file access that needs refactoring"
+      ],
+      "attachments": [
+        "spec/attachments/LOCK-002/file-locking-architecture.md"
+      ],
+      "architectureNotes": [
+        "CRITICAL: This is an all-at-once migration. MUST work 100% perfectly the first time. Complete implementation includes: LockedFileManager + refactor utilities + refactor all ~50-60 commands + refactor TUI store + comprehensive concurrency tests. NO partial states, NO gradual rollout.",
+        "Implementation phases: (1) Create LockedFileManager singleton 2-3h, (2) Refactor ensure-files.ts 1-2h, (3) Refactor all commands 3-4h, (4) Refactor TUI store 1h, (5) Comprehensive testing 2-3h. Total estimate: 9-13 hours."
+      ],
+      "estimate": 13
     }
   },
   "states": {
@@ -15767,7 +15829,8 @@
       "GIT-004",
       "RES-006",
       "EST-002",
-      "LANG-001"
+      "LANG-001",
+      "LOCK-002"
     ],
     "testing": [],
     "implementing": [],
