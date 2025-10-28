@@ -1,4 +1,5 @@
-import { readFile, writeFile } from 'fs/promises';
+import { readFile } from 'fs/promises';
+import { fileManager } from '../utils/file-manager';
 import chalk from 'chalk';
 import type { Command } from 'commander';
 import { join } from 'path';
@@ -54,7 +55,7 @@ export async function createBug(
     );
   }
 
-  // Read work units (auto-create if missing)
+  // Read work units for validation (auto-create if missing)
   const workUnitsData = await ensureWorkUnitsFile(cwd);
 
   // Validate parent if provided
@@ -97,37 +98,37 @@ export async function createBug(
     ...(!options.parent && { children: [] }),
   };
 
-  workUnitsData.workUnits[nextId] = newBug;
-
-  // Add to states index
-  if (!workUnitsData.states.backlog) {
-    workUnitsData.states.backlog = [];
-  }
-  workUnitsData.states.backlog.push(nextId);
-
-  // Update parent's children array if parent exists
-  if (options.parent) {
-    if (!workUnitsData.workUnits[options.parent].children) {
-      workUnitsData.workUnits[options.parent].children = [];
-    }
-    workUnitsData.workUnits[options.parent].children.push(nextId);
-  }
-
-  // Write updated work units
+  // LOCK-002: Use fileManager.transaction() for atomic write
   const workUnitsFile = join(cwd, 'spec/work-units.json');
-  await writeFile(workUnitsFile, JSON.stringify(workUnitsData, null, 2));
+  await fileManager.transaction(workUnitsFile, async data => {
+    data.workUnits[nextId] = newBug;
+
+    // Add to states index
+    if (!data.states.backlog) {
+      data.states.backlog = [];
+    }
+    data.states.backlog.push(nextId);
+
+    // Update parent's children array if parent exists
+    if (options.parent) {
+      if (!data.workUnits[options.parent].children) {
+        data.workUnits[options.parent].children = [];
+      }
+      data.workUnits[options.parent].children.push(nextId);
+    }
+  });
 
   // Update epic if provided
   if (options.epic) {
     const epicsFile = join(cwd, 'spec/epics.json');
-    const epicsData = await ensureEpicsFile(cwd);
 
-    if (!epicsData.epics[options.epic].workUnits) {
-      epicsData.epics[options.epic].workUnits = [];
-    }
-    epicsData.epics[options.epic].workUnits.push(nextId);
-
-    await writeFile(epicsFile, JSON.stringify(epicsData, null, 2));
+    // LOCK-002: Use fileManager.transaction() for atomic write
+    await fileManager.transaction(epicsFile, async data => {
+      if (!data.epics[options.epic!].workUnits) {
+        data.epics[options.epic!].workUnits = [];
+      }
+      data.epics[options.epic!].workUnits.push(nextId);
+    });
   }
 
   // Generate research guidance system-reminder

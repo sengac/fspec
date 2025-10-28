@@ -1,4 +1,5 @@
-import { readFile, writeFile } from 'fs/promises';
+import { readFile } from 'fs/promises';
+import { fileManager } from '../utils/file-manager';
 import chalk from 'chalk';
 import type { Command } from 'commander';
 import { join } from 'path';
@@ -487,8 +488,13 @@ export async function updateWorkUnitStatus(
       options.blockedReason && { reason: options.blockedReason }),
   });
 
-  // Write updated work units
-  await writeFile(workUnitsFile, JSON.stringify(workUnitsData, null, 2));
+  // LOCK-002: Use fileManager.transaction() for atomic write
+  // Note: All modifications above already happened to workUnitsData in memory
+  // Now we need to write them atomically
+  await fileManager.transaction(workUnitsFile, async data => {
+    // Copy all modifications into the locked data
+    Object.assign(data, workUnitsData);
+  });
 
   // Collect all system reminders
   const reminders: string[] = [];

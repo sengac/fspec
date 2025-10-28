@@ -1,7 +1,7 @@
-import { writeFile } from 'fs/promises';
 import chalk from 'chalk';
 import type { Command } from 'commander';
 import { join } from 'path';
+import { fileManager } from '../utils/file-manager';
 import type { WorkUnitsData, EpicsData, WorkUnitType } from '../types';
 import { ensureWorkUnitsFile, ensureEpicsFile } from '../utils/ensure-files';
 
@@ -85,29 +85,25 @@ export async function updateWorkUnit(
     workUnitsData.workUnits[options.workUnitId].epic = options.epic;
 
     // Update epic references
-    const epicsData: EpicsData = await ensureEpicsFile(cwd);
     const epicsFile = join(cwd, 'spec/epics.json');
 
-    // Remove from old epic if exists
-    if (
-      oldEpic &&
-      epicsData.epics[oldEpic] &&
-      epicsData.epics[oldEpic].workUnits
-    ) {
-      epicsData.epics[oldEpic].workUnits = epicsData.epics[
-        oldEpic
-      ].workUnits.filter(id => id !== options.workUnitId);
-    }
+    // LOCK-002: Use fileManager.transaction() for atomic write
+    await fileManager.transaction(epicsFile, async data => {
+      // Remove from old epic if exists
+      if (oldEpic && data.epics[oldEpic] && data.epics[oldEpic].workUnits) {
+        data.epics[oldEpic].workUnits = data.epics[oldEpic].workUnits.filter(
+          id => id !== options.workUnitId
+        );
+      }
 
-    // Add to new epic
-    if (!epicsData.epics[options.epic].workUnits) {
-      epicsData.epics[options.epic].workUnits = [];
-    }
-    if (!epicsData.epics[options.epic].workUnits.includes(options.workUnitId)) {
-      epicsData.epics[options.epic].workUnits.push(options.workUnitId);
-    }
-
-    await writeFile(epicsFile, JSON.stringify(epicsData, null, 2));
+      // Add to new epic
+      if (!data.epics[options.epic!].workUnits) {
+        data.epics[options.epic!].workUnits = [];
+      }
+      if (!data.epics[options.epic!].workUnits.includes(options.workUnitId)) {
+        data.epics[options.epic!].workUnits.push(options.workUnitId);
+      }
+    });
   }
 
   if (options.parent !== undefined) {
@@ -141,8 +137,10 @@ export async function updateWorkUnit(
   workUnitsData.workUnits[options.workUnitId].updatedAt =
     new Date().toISOString();
 
-  // Write updated work units
-  await writeFile(workUnitsFile, JSON.stringify(workUnitsData, null, 2));
+  // LOCK-002: Use fileManager.transaction() for atomic write
+  await fileManager.transaction(workUnitsFile, async data => {
+    Object.assign(data, workUnitsData);
+  });
 
   return { success: true };
 }

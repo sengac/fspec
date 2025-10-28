@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-28T05:47:08.203Z"
+    "lastUpdated": "2025-10-28T06:39:37.416Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -15739,9 +15739,9 @@
       "id": "LOCK-002",
       "title": "Implement file locking system (LockedFileManager + refactoring)",
       "type": "story",
-      "status": "specifying",
+      "status": "implementing",
       "createdAt": "2025-10-28T05:44:02.203Z",
-      "updatedAt": "2025-10-28T05:50:23.175Z",
+      "updatedAt": "2025-10-28T06:39:37.416Z",
       "children": [],
       "dependsOn": [
         "LOCK-001"
@@ -15750,6 +15750,14 @@
         {
           "state": "specifying",
           "timestamp": "2025-10-28T05:44:53.719Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-28T06:11:09.325Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-28T06:17:19.377Z"
         }
       ],
       "userStory": {
@@ -15789,7 +15797,8 @@
         "CHECK: src/validators/validate-json-schema.ts, src/validators/generic-foundation-validator.ts, src/validators/json-schema.ts - May have JSON file access that needs refactoring"
       ],
       "attachments": [
-        "spec/attachments/LOCK-002/file-locking-architecture.md"
+        "spec/attachments/LOCK-002/file-locking-architecture.md",
+        "spec/attachments/LOCK-002/remaining-refactoring-checklist.md"
       ],
       "architectureNotes": [
         "CRITICAL: This is an all-at-once migration. MUST work 100% perfectly the first time. Complete implementation includes: LockedFileManager + refactor utilities + refactor all ~50-60 commands + refactor TUI store + comprehensive concurrency tests. NO partial states, NO gradual rollout.",
@@ -15829,11 +15838,12 @@
       "GIT-004",
       "RES-006",
       "EST-002",
-      "LANG-001",
-      "LOCK-002"
+      "LANG-001"
     ],
     "testing": [],
-    "implementing": [],
+    "implementing": [
+      "LOCK-002"
+    ],
     "validating": [],
     "done": [
       "LOCK-001",
