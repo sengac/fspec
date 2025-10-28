@@ -1,7 +1,8 @@
-import { readFile, writeFile } from 'fs/promises';
+import { readFile } from 'fs/promises';
 import { join } from 'path';
 import { glob } from 'tinyglobby';
 import type { Command } from 'commander';
+import { fileManager } from '../utils/file-manager';
 
 interface WorkUnit {
   id: string;
@@ -27,7 +28,10 @@ async function loadWorkUnits(cwd: string): Promise<WorkUnitsData> {
 
 async function saveWorkUnits(data: WorkUnitsData, cwd: string): Promise<void> {
   const workUnitsFile = join(cwd, 'spec', 'work-units.json');
-  await writeFile(workUnitsFile, JSON.stringify(data, null, 2));
+  // LOCK-002: Use fileManager.transaction() for atomic write
+  await fileManager.transaction(workUnitsFile, async fileData => {
+    Object.assign(fileData, data);
+  });
 }
 
 export async function recordWorkUnitIteration(

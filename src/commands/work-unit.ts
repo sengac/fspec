@@ -1,5 +1,6 @@
-import { readFile, writeFile, mkdir } from 'fs/promises';
+import { readFile, mkdir } from 'fs/promises';
 import { join } from 'path';
+import { fileManager } from '../utils/file-manager';
 
 interface QuestionItem {
   text: string;
@@ -72,7 +73,10 @@ async function loadWorkUnits(cwd: string): Promise<WorkUnitsData> {
 
 async function saveWorkUnits(data: WorkUnitsData, cwd: string): Promise<void> {
   const workUnitsFile = join(cwd, 'spec', 'work-units.json');
-  await writeFile(workUnitsFile, JSON.stringify(data, null, 2));
+  // LOCK-002: Use fileManager.transaction() for atomic write
+  await fileManager.transaction(workUnitsFile, async fileData => {
+    Object.assign(fileData, data);
+  });
 }
 
 async function loadPrefixes(cwd: string): Promise<PrefixesData> {
@@ -89,7 +93,10 @@ async function loadEpics(cwd: string): Promise<EpicsData> {
 
 async function saveEpics(data: EpicsData, cwd: string): Promise<void> {
   const epicsFile = join(cwd, 'spec', 'epics.json');
-  await writeFile(epicsFile, JSON.stringify(data, null, 2));
+  // LOCK-002: Use fileManager.transaction() for atomic write
+  await fileManager.transaction(epicsFile, async fileData => {
+    Object.assign(fileData, data);
+  });
 }
 
 function getNextWorkUnitId(

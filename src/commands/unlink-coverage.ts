@@ -5,11 +5,12 @@
  * Supports three modes: remove all, remove test mapping, remove only implementation.
  */
 
-import { readFile, writeFile } from 'fs/promises';
+import { readFile } from 'fs/promises';
 import type { Command } from 'commander';
 import { join } from 'path';
 import chalk from 'chalk';
 import type { CoverageFile } from '../utils/coverage-file';
+import { fileManager } from '../utils/file-manager';
 
 interface UnlinkCoverageOptions {
   scenario: string;
@@ -130,8 +131,10 @@ export async function unlinkCoverage(
   // Recalculate stats
   updateStats(coverage);
 
-  // Write updated coverage file
-  await writeFile(coverageFile, JSON.stringify(coverage, null, 2), 'utf-8');
+  // LOCK-002: Use fileManager.transaction() for atomic write
+  await fileManager.transaction(coverageFile, async fileData => {
+    Object.assign(fileData, coverage);
+  });
 
   return {
     success: true,
