@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-28T11:32:44.793Z"
+    "lastUpdated": "2025-10-28T11:53:25.419Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -16139,6 +16139,69 @@
         "JavaScript project with 'npm test' configured - system-reminder correctly shows 'Run: npm test' (proving config loading works)"
       ],
       "updated": "2025-10-28T11:42:23.885Z"
+    },
+    "BOARD-018": {
+      "id": "BOARD-018",
+      "title": "Git file watchers broken due to direct file watching and atomic operations",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-10-28T11:52:37.856Z",
+      "updatedAt": "2025-10-28T12:05:12.521Z",
+      "description": "CRITICAL: fs.watch implementation for git files (.git/refs/stash, .git/index, .git/HEAD) is broken due to watching files directly instead of directories. Git uses atomic file operations (write temp, rename to final) which create new inodes, breaking file-based watchers. Additionally missing event type filtering (only checks 'change', misses 'rename'), error handling, and platform-specific behavior handling.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-28T11:52:53.607Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-28T11:55:35.656Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-28T11:56:51.863Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-28T11:57:42.331Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-28T12:00:12.348Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-28T12:01:23.058Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-28T12:02:31.717Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-28T12:05:12.522Z"
+        }
+      ],
+      "rules": [
+        "Git file watchers MUST watch parent directories (not files directly) to handle atomic rename operations",
+        "Watchers MUST listen to ALL event types (both 'change' and 'rename'), not filter for specific types",
+        "Watchers MUST have error event handlers to prevent silent failures",
+        "Implementation MUST follow the working pattern from work-units.json watcher (BoardView.tsx:81-102)"
+      ],
+      "examples": [
+        "Watcher encounters permission error on .git/index, error handler logs warning, continues monitoring other files",
+        "Directory watcher filters events: only responds when filename='index' or 'stash' or 'HEAD', ignores other .git files",
+        "User runs TUI on Linux, atomic rename triggers 'rename' event (not 'change'), watcher correctly handles both event types",
+        "User runs 'git stash push', watcher detects event in .git/refs/ directory for filename='stash', triggers loadStashes()"
+      ],
+      "userStory": {
+        "role": "developer using fspec TUI",
+        "action": "see real-time git status updates that actually work",
+        "benefit": "the TUI reflects changes without missing events due to atomic file operations"
+      },
+      "estimate": 3,
+      "updated": "2025-10-28T12:05:12.521Z"
     }
   },
   "states": {
@@ -16177,6 +16240,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "BOARD-018",
       "INIT-014",
       "INIT-013",
       "BOARD-017",
