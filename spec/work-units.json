@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-28T09:40:51.442Z"
+    "lastUpdated": "2025-10-28T10:01:55.231Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -15868,18 +15868,38 @@
       "id": "BUG-047",
       "title": "Type mismatches in record-metric and record-tokens commands",
       "type": "bug",
-      "status": "specifying",
+      "status": "done",
       "createdAt": "2025-10-28T07:39:54.123Z",
-      "updatedAt": "2025-10-28T09:02:25.311Z",
+      "updatedAt": "2025-10-28T10:22:09.061Z",
       "description": "# Bug Report: BUG-047\n\n## Type Mismatches in record-metric and record-tokens Commands\n\n**Discovered during**: LOCK-002 file locking refactoring\n**Date**: 2025-10-28\n**Reporter**: Claude (AI Assistant)\n\n---\n\n## Summary\n\nTwo command files have type mismatches between their function signatures and how they're called in command registration:\n- `src/commands/record-metric.ts`\n- `src/commands/record-tokens.ts`\n\nThese bugs existed **before** the LOCK-002 refactoring work began.\n\n---\n\n## Detailed Findings\n\n### File 1: `src/commands/record-metric.ts`\n\n**Function Signature** (lines 19-23):\n```typescript\nexport async function recordMetric(options: {\n  workUnitId: string;\n  tokens: number;\n  cwd?: string;\n}): Promise<{ success: boolean; totalTokens?: number }>\n```\n\n**Command Registration Call** (lines 66-70):\n```typescript\nawait recordMetric({\n  metric,                    // ❌ Not in function signature\n  value: parseFloat(value),  // ❌ Not in function signature\n  unit: options.unit,        // ❌ Not in function signature\n});\n```\n\n**Command Arguments** (lines 60-62):\n```typescript\n.argument('<metric>', 'Metric name')\n.argument('<value>', 'Metric value')\n.option('--unit <unit>', 'Unit of measurement')\n```\n\n**Problem**: The function expects `{ workUnitId, tokens, cwd }` but is called with `{ metric, value, unit }`. These are completely different parameter sets.\n\n---\n\n### File 2: `src/commands/record-tokens.ts`\n\n**Function Signature** (lines 19-23):\n```typescript\nexport async function recordTokens(options: {\n  workUnitId: string;\n  tokens: number;\n  cwd?: string;\n}): Promise<{ success: boolean; totalTokens?: number }>\n```\n\n**Command Registration Call** (lines 76-79):\n```typescript\nawait recordTokens({\n  workUnitId,\n  tokens: parseInt(tokens, 10),\n  operation: options.operation,  // ❌ Not in function signature\n});\n```\n\n**Command Option** (lines 65-68):\n```typescript\n.option(\n  '--operation <operation>',\n  'Operation type (e.g., specification, implementation)'\n)\n```\n\n**Problem**: The function doesn't accept an `operation` parameter but the command tries to pass it anyway.\n\n---\n\n## Impact Analysis\n\n### Current State\n- TypeScript compilation may be passing due to the `[key: string]: unknown` index signature in the options interface\n- Commands may be silently failing or ignoring parameters\n- Tests may not be covering these code paths\n\n### Expected Behavior\nThe function signatures should match the command registration calls exactly.\n\n### Potential Fixes\n\n#### Option A: Update Function Signatures (Recommended)\nMatch the functions to what the commands actually need:\n\n**record-metric.ts:**\n```typescript\nexport async function recordMetric(options: {\n  metric: string;\n  value: number;\n  unit?: string;\n  cwd?: string;\n}): Promise<{ success: boolean }>\n```\n\n**record-tokens.ts:**\n```typescript\nexport async function recordTokens(options: {\n  workUnitId: string;\n  tokens: number;\n  operation?: string;\n  cwd?: string;\n}): Promise<{ success: boolean; totalTokens?: number }>\n```\n\n#### Option B: Update Command Registration\nChange how commands call the functions to match existing signatures (may require rethinking command purpose).\n\n---\n\n## Discovery Context\n\nThese bugs were discovered during LOCK-002 refactoring when:\n1. Systematically refactoring command files to use `fileManager.transaction()`\n2. Applied standard pattern to these files\n3. Ran full test suite: **103 tests failed**\n4. Investigated failures and found pre-existing type mismatches\n5. Reverted changes to these files to isolate the issue\n\n**Git References:**\n- Last good commit before discovery: `efee27c`\n- Files were at HEAD~1 when bug discovered\n\n---\n\n## Reproduction Steps\n\n1. Review `src/commands/record-metric.ts` lines 19-23 and 66-70\n2. Review `src/commands/record-tokens.ts` lines 19-23 and 76-79\n3. Note the parameter mismatch between function signatures and calls\n4. Run: `npm run build` - TypeScript may pass due to index signature\n5. Run: `npm test` - Tests may fail or pass if not covering these paths\n\n---\n\n## Recommended Actions\n\n1. **Investigate Intent**: Determine what these commands are supposed to do\n   - Are they for recording metrics OR token usage?\n   - Should they operate on work units?\n\n2. **Fix Type Signatures**: Align function signatures with command usage\n\n3. **Add Tests**: Ensure test coverage for these commands\n\n4. **Update Documentation**: Clarify command purpose and usage\n\n5. **Continue LOCK-002**: These files can be refactored after types are fixed\n\n---\n\n## Notes\n\n- These bugs existed **before LOCK-002 refactoring**\n- Type system may not catch due to index signature: `[key: string]: unknown`\n- May need to check if similar patterns exist in other command files\n- Should verify if commands are actually used in production\n\n---\n\n## Related Work Units\n\n- **LOCK-002**: File locking refactoring (blocked by this bug for these 2 files)",
       "children": [],
       "stateHistory": [
         {
           "state": "specifying",
           "timestamp": "2025-10-28T09:01:37.784Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-28T10:09:49.374Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-28T10:12:30.550Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-28T10:21:42.113Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-28T10:22:09.061Z"
         }
       ],
       "rules": [
+        "record-metric command accepts <metric> <value> arguments but function signature expects workUnitId and tokens",
+        "record-tokens command passes 'operation' option but function signature doesn't accept it",
+        "Function signatures must match their command action calls exactly",
+        "TypeScript compilation passes due to index signature [key: string]: unknown allowing extra properties",
         "record-metric command accepts <metric> <value> arguments but function signature expects workUnitId and tokens",
         "record-tokens command passes 'operation' option but function signature doesn't accept it",
         "Function signatures must match their command action calls exactly",
@@ -15889,14 +15909,30 @@
         "record-metric.ts: Function expects {workUnitId, tokens, cwd} but action calls with {metric, value, unit}",
         "record-metric.ts line 63-66: Passes 'metric', 'value', 'unit' but function doesn't accept these parameters",
         "record-tokens.ts: Function accepts {workUnitId, tokens, cwd} but action passes 'operation' which is not in signature",
+        "record-tokens.ts line 76: Passes 'operation' option but function signature at line 18-22 doesn't have operation parameter",
+        "record-metric.ts: Function expects {workUnitId, tokens, cwd} but action calls with {metric, value, unit}",
+        "record-metric.ts line 63-66: Passes 'metric', 'value', 'unit' but function doesn't accept these parameters",
+        "record-tokens.ts: Function accepts {workUnitId, tokens, cwd} but action passes 'operation' which is not in signature",
         "record-tokens.ts line 76: Passes 'operation' option but function signature at line 18-22 doesn't have operation parameter"
       ],
       "questions": [
         {
           "text": "@human: Looking at record-metric.ts, it seems there are TWO conflicting purposes: (1) The function implementation records token usage on work units, but (2) The command arguments suggest it should record arbitrary metrics (metric name, value, unit). Which behavior is intended? Should we align the function to match the command (generic metrics), or align the command to match the function (token tracking)?",
-          "selected": false
+          "selected": true,
+          "answer": "The function implementation in record-metric.ts actually records token usage on work units (identical to record-tokens). The command arguments suggesting generic metrics (metric name, value, unit) are incorrect. We should align the command to match the function: it should accept workUnitId and tokens, just like record-tokens does. The 'record-metric' command appears to be a duplicate/misnamed version of 'record-tokens' and should either be removed or fixed to match its actual implementation."
         }
-      ]
+      ],
+      "userStory": {
+        "role": "fspec developer",
+        "action": "fix type mismatches in record-metric and record-tokens commands",
+        "benefit": "commands work correctly with proper type safety"
+      },
+      "assumptions": [
+        "The function implementation in record-metric.ts actually records token usage on work units (identical to record-tokens). The command arguments suggesting generic metrics (metric name, value, unit) are incorrect. We should align the command to match the function: it should accept workUnitId and tokens, just like record-tokens does. The 'record-metric' command appears to be a duplicate/misnamed version of 'record-tokens' and should either be removed or fixed to match its actual implementation.",
+        "record-metric is a duplicate of record-tokens and should be deleted entirely. All references in documentation, tests, coverage files, and command registration must be removed."
+      ],
+      "estimate": 3,
+      "updated": "2025-10-28T10:22:09.061Z"
     },
     "LOG-002": {
       "id": "LOG-002",
@@ -15904,7 +15940,7 @@
       "type": "story",
       "status": "done",
       "createdAt": "2025-10-28T09:39:57.419Z",
-      "updatedAt": "2025-10-28T09:51:28.247Z",
+      "updatedAt": "2025-10-28T10:06:54.998Z",
       "description": "Integrate winston logger from LOG-001 with LockedFileManager from LOCK-001/LOCK-002. Log all file locking errors, timeouts, and lock compromises to ~/.fspec/fspec.log. Replace console.error calls in file-manager.ts with logger.error. Add structured logging with context (file path, operation type, lock metrics).",
       "children": [],
       "dependsOn": [
@@ -15952,7 +15988,8 @@
         "JSON parse error in readJSON - logs 'Failed to parse work-units.json: Unexpected token' at error level"
       ],
       "estimate": 2,
-      "updated": "2025-10-28T09:51:28.247Z"
+      "updated": "2025-10-28T09:51:28.247Z",
+      "actualTokens": 140000
     }
   },
   "states": {
@@ -15985,13 +16022,13 @@
       "GIT-004",
       "RES-006",
       "EST-002",
-      "LANG-001",
-      "BUG-047"
+      "LANG-001"
     ],
     "testing": [],
     "implementing": [],
     "validating": [],
     "done": [
+      "BUG-047",
       "LOG-002",
       "LOG-001",
       "LOCK-002",

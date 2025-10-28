@@ -268,7 +268,7 @@ describe('Feature: Dynamic bootstrap command for slash command template', () => 
       expect(discoveryHelp).not.toContain('and more');
 
       expect(metricsHelp).toContain('PROGRESS TRACKING & METRICS');
-      expect(metricsHelp).toContain('record-metric');
+      expect(metricsHelp).toContain('record-tokens');
       expect(metricsHelp).toContain('query-metrics');
       expect(metricsHelp).not.toContain('and more');
 

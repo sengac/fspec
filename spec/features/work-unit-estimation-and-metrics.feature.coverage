@@ -299,7 +299,7 @@
           "lines": "136-172",
           "implMappings": [
             {
-              "file": "src/commands/record-metric.ts",
+              "file": "src/commands/record-tokens.ts",
               "lines": [
                 1,
                 2,
@@ -1359,7 +1359,7 @@
     ],
     "implFiles": [
       "src/commands/update-work-unit-estimate.ts",
-      "src/commands/record-metric.ts",
+      "src/commands/record-tokens.ts",
       "src/commands/query-metrics.ts",
       "src/commands/query-estimate-accuracy.ts",
       "src/commands/query-estimation-guide.ts",

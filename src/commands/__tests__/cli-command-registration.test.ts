@@ -19,9 +19,9 @@ afterEach(async () => {
 });
 
 describe.sequential('Feature: Complete CLI Command Registration', () => {
-  describe('Scenario: Verify all 41 missing commands are registered', () => {
+  describe('Scenario: Verify all 40 missing commands are registered', () => {
     it('should have all commands accessible via CLI', () => {
-      // Given I have a list of 41 missing commands (excluding dependencies, estimation, query, workflow-automation)
+      // Given I have a list of 40 missing commands (excluding dependencies, estimation, query, workflow-automation)
       const missingCommands = [
         'add-assumption',
         'add-dependencies',
@@ -50,7 +50,6 @@ describe.sequential('Feature: Complete CLI Command Registration', () => {
         'query-metrics',
         'query-work-units',
         'record-iteration',
-        'record-metric',
         'record-tokens',
         'remove-dependency',
         'remove-example',
@@ -432,7 +431,6 @@ describe.sequential('Feature: Complete CLI Command Registration', () => {
         'query-metrics',
         'query-work-units',
         'record-iteration',
-        'record-metric',
         'record-tokens',
         'register-tag',
         'remove-dependency',
@@ -515,8 +513,8 @@ describe.sequential('Feature: Complete CLI Command Registration', () => {
       expect(unregisteredCommands).toEqual([]);
       expect(registeredCommands.length).toBe(allExpectedCommands.length);
 
-      // Verify we have 93 commands registered (as per current src/index.ts)
-      expect(registeredCommands.length).toBeGreaterThanOrEqual(93);
+      // Verify we have 92 commands registered (as per current src/index.ts)
+      expect(registeredCommands.length).toBeGreaterThanOrEqual(92);
     }, 60000);
   });
 });

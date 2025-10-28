@@ -73,7 +73,7 @@ Feature: Work Unit Estimation and Metrics
   Scenario: Record tokens consumed during implementation
     Given I have a project with spec directory
     And a work unit "AUTH-001" exists with status "implementing"
-    When I run "fspec record-metric AUTH-001 --tokens=45000"
+    When I run "fspec record-tokens AUTH-001 45000"
     Then the command should succeed
     And the work unit should have actualTokens of 45000
 
@@ -167,7 +167,7 @@ Feature: Work Unit Estimation and Metrics
   Scenario: Record 45k tokens consumed
     Given I have a project with spec directory
     And a work unit "AUTH-001" exists with status "implementing"
-    When I run "fspec record-metric AUTH-001 --tokens=45000"
+    When I run "fspec record-tokens AUTH-001 45000"
     Then the command should succeed
     And the work unit should have actualTokens of 45000
     And the metric should be tracked for future analysis

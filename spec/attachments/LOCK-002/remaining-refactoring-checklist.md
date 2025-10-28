@@ -147,10 +147,9 @@ For ALL files listed below, perform these exact steps:
 - [ ] **src/commands/generate-foundation-md.ts** - Markdown generation (NOT JSON - skip)
 - [ ] **src/commands/generate-tags-md.ts** - Markdown generation (NOT JSON - skip)
 
-## Metrics/Telemetry Commands (3 files)
+## Metrics/Telemetry Commands (2 files)
 
 - [ ] **src/commands/record-iteration.ts** - 1 writeFile call (metrics JSON)
-- [ ] **src/commands/record-metric.ts** - 1 writeFile call (metrics JSON)
 - [ ] **src/commands/record-tokens.ts** - 1 writeFile call (metrics JSON)
 - [ ] **src/commands/estimation.ts** - CHECK if has writeFile
 

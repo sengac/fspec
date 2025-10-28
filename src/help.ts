@@ -996,10 +996,6 @@ function displayMetricsHelp(): void {
   console.log('  • Query dependency statistics and bottlenecks\n');
 
   console.log(chalk.bold('RECORDING METRICS'));
-  console.log('  ' + chalk.cyan('fspec record-metric <id> <name> <value>'));
-  console.log('    Examples:');
-  console.log('      fspec record-metric AUTH-001 time-spent 120');
-  console.log('');
   console.log('  ' + chalk.cyan('fspec record-tokens <id> <tokens>'));
   console.log('    Examples:');
   console.log('      fspec record-tokens AUTH-001 15000');

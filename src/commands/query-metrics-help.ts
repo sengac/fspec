@@ -26,7 +26,7 @@ const config: CommandHelpConfig = {
         'Velocity: 23 points/week\nCycle time: 3.5 days avg\nThroughput: 5 work units/week',
     },
   ],
-  relatedCommands: ['record-metric', 'generate-summary-report'],
+  relatedCommands: ['record-tokens', 'generate-summary-report'],
 };
 
 export default config;
