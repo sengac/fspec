@@ -1,7 +1,7 @@
-import { readFile, writeFile } from 'fs/promises';
 import chalk from 'chalk';
 import type { Command } from 'commander';
 import { join } from 'path';
+import { fileManager } from '../utils/file-manager';
 
 interface Epic {
   id: string;
@@ -43,46 +43,38 @@ export async function deleteEpic(options: {
   const workUnitsFile = join(cwd, 'spec', 'work-units.json');
 
   try {
-    // Read and update epics.json
-    const epicsContent = await readFile(epicsFile, 'utf-8');
-    const epicsData: EpicsData = JSON.parse(epicsContent);
-
-    if (!epicsData.epics[options.epicId]) {
-      throw new Error(`Epic ${options.epicId} not found`);
-    }
-
-    // Delete the epic
-    delete epicsData.epics[options.epicId];
-    await writeFile(epicsFile, JSON.stringify(epicsData, null, 2));
-
-    // Update prefixes.json - remove epic references
-    try {
-      const prefixesContent = await readFile(prefixesFile, 'utf-8');
-      const prefixesData: PrefixesData = JSON.parse(prefixesContent);
-
-      for (const prefix of Object.values(prefixesData.prefixes)) {
-        if (prefix.epicId === options.epicId) {
-          delete prefix.epicId;
-        }
+    // LOCK-002: Use fileManager.transaction() for atomic read-modify-write
+    await fileManager.transaction(epicsFile, async epicsData => {
+      if (!epicsData.epics[options.epicId]) {
+        throw new Error(`Epic ${options.epicId} not found`);
       }
 
-      await writeFile(prefixesFile, JSON.stringify(prefixesData, null, 2));
+      // Delete the epic
+      delete epicsData.epics[options.epicId];
+    });
+
+    // LOCK-002: Update prefixes.json - remove epic references
+    try {
+      await fileManager.transaction(prefixesFile, async prefixesData => {
+        for (const prefix of Object.values(prefixesData.prefixes)) {
+          if (prefix.epicId === options.epicId) {
+            delete prefix.epicId;
+          }
+        }
+      });
     } catch {
       // No prefixes file yet
     }
 
-    // Update work-units.json - remove epic references
+    // LOCK-002: Update work-units.json - remove epic references
     try {
-      const workUnitsContent = await readFile(workUnitsFile, 'utf-8');
-      const workUnitsData: WorkUnitsData = JSON.parse(workUnitsContent);
-
-      for (const workUnit of Object.values(workUnitsData.workUnits)) {
-        if (workUnit.epic === options.epicId) {
-          delete workUnit.epic;
+      await fileManager.transaction(workUnitsFile, async workUnitsData => {
+        for (const workUnit of Object.values(workUnitsData.workUnits)) {
+          if (workUnit.epic === options.epicId) {
+            delete workUnit.epic;
+          }
         }
-      }
-
-      await writeFile(workUnitsFile, JSON.stringify(workUnitsData, null, 2));
+      });
     } catch {
       // No work units file yet
     }

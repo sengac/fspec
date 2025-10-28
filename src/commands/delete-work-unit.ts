@@ -1,9 +1,9 @@
-import { writeFile } from 'fs/promises';
 import chalk from 'chalk';
 import type { Command } from 'commander';
 import { join } from 'path';
 import type { WorkUnitsData } from '../types';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
+import { fileManager } from '../utils/file-manager';
 
 interface DeleteWorkUnitOptions {
   workUnitId: string;
@@ -127,8 +127,10 @@ export async function deleteWorkUnit(
   // Delete work unit
   delete workUnitsData.workUnits[options.workUnitId];
 
-  // Write updated work units
-  await writeFile(workUnitsFile, JSON.stringify(workUnitsData, null, 2));
+  // LOCK-002: Use fileManager.transaction() for atomic write
+  await fileManager.transaction(workUnitsFile, async data => {
+    Object.assign(data, workUnitsData);
+  });
 
   return {
     success: true,

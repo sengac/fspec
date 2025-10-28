@@ -1,9 +1,9 @@
-import { writeFile } from 'fs/promises';
 import type { Command } from 'commander';
 import { join } from 'path';
 import chalk from 'chalk';
 import type { WorkUnitsData, UserStory } from '../types';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
+import { fileManager } from '../utils/file-manager';
 
 interface SetUserStoryOptions {
   role: string;
@@ -38,7 +38,10 @@ export async function setUserStory(
     data.meta.lastUpdated = new Date().toISOString();
   }
 
-  await writeFile(workUnitsPath, JSON.stringify(data, null, 2));
+  // LOCK-002: Use fileManager.transaction() for atomic write
+  await fileManager.transaction(workUnitsPath, async fileData => {
+    Object.assign(fileData, data);
+  });
 }
 
 export async function setUserStoryCommand(

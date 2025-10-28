@@ -14,6 +14,7 @@ import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import { ensureWorkUnitsFile } from '../../utils/ensure-files';
 import { ensureEpicsFile } from '../../utils/ensure-files';
+import { fileManager } from '../../utils/file-manager';
 import git from 'isomorphic-git';
 import fs from 'fs';
 import { getStagedFiles, getUnstagedFiles } from '../../git/status';
@@ -196,39 +197,34 @@ export const useFspecStore = create<FspecState>()(
       }
 
       try {
-        const { ensureWorkUnitsFile } = await import(
-          '../../utils/ensure-files'
-        );
-        const { writeFile } = await import('fs/promises');
         const { join } = await import('path');
         const { moveWorkUnitInArray } = await import(
           '../../utils/states-array'
         );
 
-        const workUnitsData = await ensureWorkUnitsFile(state.cwd);
-
-        // BOARD-016: Use shared utility for array manipulation
-        const updatedWorkUnitsData = moveWorkUnitInArray(
-          workUnitsData,
-          workUnitId,
-          workUnit.status,
-          'up'
-        );
-
-        // Check if any change was made
-        if (
-          updatedWorkUnitsData.states[workUnit.status] ===
-          workUnitsData.states[workUnit.status]
-        ) {
-          return; // No change (already at top)
-        }
-
-        // Write back to file
         const workUnitsPath = join(state.cwd, 'spec', 'work-units.json');
-        await writeFile(
-          workUnitsPath,
-          JSON.stringify(updatedWorkUnitsData, null, 2)
-        );
+
+        // LOCK-002: Use fileManager.transaction() for atomic read-modify-write
+        await fileManager.transaction(workUnitsPath, async workUnitsData => {
+          // BOARD-016: Use shared utility for array manipulation
+          const updatedWorkUnitsData = moveWorkUnitInArray(
+            workUnitsData,
+            workUnitId,
+            workUnit.status,
+            'up'
+          );
+
+          // Check if any change was made
+          if (
+            updatedWorkUnitsData.states[workUnit.status] ===
+            workUnitsData.states[workUnit.status]
+          ) {
+            return; // No change (already at top)
+          }
+
+          // Mutate data in place (transaction pattern)
+          Object.assign(workUnitsData, updatedWorkUnitsData);
+        });
       } catch (error) {
         console.error('Failed to persist work unit order:', error);
       }
@@ -247,39 +243,34 @@ export const useFspecStore = create<FspecState>()(
       }
 
       try {
-        const { ensureWorkUnitsFile } = await import(
-          '../../utils/ensure-files'
-        );
-        const { writeFile } = await import('fs/promises');
         const { join } = await import('path');
         const { moveWorkUnitInArray } = await import(
           '../../utils/states-array'
         );
 
-        const workUnitsData = await ensureWorkUnitsFile(state.cwd);
-
-        // BOARD-016: Use shared utility for array manipulation
-        const updatedWorkUnitsData = moveWorkUnitInArray(
-          workUnitsData,
-          workUnitId,
-          workUnit.status,
-          'down'
-        );
-
-        // Check if any change was made
-        if (
-          updatedWorkUnitsData.states[workUnit.status] ===
-          workUnitsData.states[workUnit.status]
-        ) {
-          return; // No change (already at bottom)
-        }
-
-        // Write back to file
         const workUnitsPath = join(state.cwd, 'spec', 'work-units.json');
-        await writeFile(
-          workUnitsPath,
-          JSON.stringify(updatedWorkUnitsData, null, 2)
-        );
+
+        // LOCK-002: Use fileManager.transaction() for atomic read-modify-write
+        await fileManager.transaction(workUnitsPath, async workUnitsData => {
+          // BOARD-016: Use shared utility for array manipulation
+          const updatedWorkUnitsData = moveWorkUnitInArray(
+            workUnitsData,
+            workUnitId,
+            workUnit.status,
+            'down'
+          );
+
+          // Check if any change was made
+          if (
+            updatedWorkUnitsData.states[workUnit.status] ===
+            workUnitsData.states[workUnit.status]
+          ) {
+            return; // No change (already at bottom)
+          }
+
+          // Mutate data in place (transaction pattern)
+          Object.assign(workUnitsData, updatedWorkUnitsData);
+        });
       } catch (error) {
         console.error('Failed to persist work unit order:', error);
       }

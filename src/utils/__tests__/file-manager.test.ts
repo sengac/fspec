@@ -1,10 +1,16 @@
 /**
- * Feature: spec/features/implement-file-locking-for-concurrent-access-safety.feature
+ * Feature: spec/features/implement-file-locking-system-lockedfilemanager-refactoring.feature
+ *
+ * Tests for LOCK-002: Implement file locking system (LockedFileManager + refactoring)
  *
  * Tests for LockedFileManager - Three-layer file locking architecture
  * Layer 1: Inter-process coordination via proper-lockfile
  * Layer 2: In-process readers-writer pattern
  * Layer 3: Atomic write-replace pattern
+ *
+ * NOTE: These tests were written for LOCK-001 and pass because LockedFileManager
+ * was implemented in that story. LOCK-002 focuses on refactoring all commands to USE
+ * LockedFileManager. This test file validates the core LockedFileManager functionality.
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
@@ -14,6 +20,18 @@ import { existsSync } from 'fs';
 import { fileManager } from '../file-manager';
 
 describe('Feature: Implement file locking for concurrent access safety', () => {
+  // @step Given I have implemented src/utils/file-manager.ts
+  // @step When I create src/utils/__tests__/file-manager.test.ts
+  // @step Then the test file should have concurrency tests for multiple readers
+  // @step And the test file should have concurrency tests for reader+writer blocking
+  // @step And the test file should have concurrency tests for multiple writers blocking
+  // @step And the test file should have retry logic tests with exponential backoff
+  // @step And the test file should have timeout tests for lock acquisition
+  // @step And the test file should have atomic write-replace tests
+  // @step And the test file should have readers-writer pattern tests
+  // @step And the test file should have stale lock detection tests
+  // @step And the test file should have transaction rollback tests on error
+
   let testDir: string;
   let testFile: string;
 

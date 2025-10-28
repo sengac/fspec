@@ -1,5 +1,5 @@
-import { readFile, writeFile } from 'fs/promises';
 import { join } from 'path';
+import { fileManager } from '../utils/file-manager';
 
 interface Epic {
   id: string;
@@ -39,8 +39,7 @@ interface WorkUnitsData {
 async function loadEpics(cwd: string): Promise<EpicsData> {
   const epicsFile = join(cwd, 'spec', 'epics.json');
   try {
-    const content = await readFile(epicsFile, 'utf-8');
-    return JSON.parse(content);
+    return await fileManager.readJSON(epicsFile, { epics: {} });
   } catch {
     return { epics: {} };
   }
@@ -48,14 +47,16 @@ async function loadEpics(cwd: string): Promise<EpicsData> {
 
 async function saveEpics(data: EpicsData, cwd: string): Promise<void> {
   const epicsFile = join(cwd, 'spec', 'epics.json');
-  await writeFile(epicsFile, JSON.stringify(data, null, 2));
+  // LOCK-002: Use fileManager.transaction() for atomic write
+  await fileManager.transaction(epicsFile, async fileData => {
+    Object.assign(fileData, data);
+  });
 }
 
 async function loadPrefixes(cwd: string): Promise<PrefixesData> {
   const prefixesFile = join(cwd, 'spec', 'prefixes.json');
   try {
-    const content = await readFile(prefixesFile, 'utf-8');
-    return JSON.parse(content);
+    return await fileManager.readJSON(prefixesFile, { prefixes: {} });
   } catch {
     return { prefixes: {} };
   }
@@ -63,13 +64,18 @@ async function loadPrefixes(cwd: string): Promise<PrefixesData> {
 
 async function savePrefixes(data: PrefixesData, cwd: string): Promise<void> {
   const prefixesFile = join(cwd, 'spec', 'prefixes.json');
-  await writeFile(prefixesFile, JSON.stringify(data, null, 2));
+  // LOCK-002: Use fileManager.transaction() for atomic write
+  await fileManager.transaction(prefixesFile, async fileData => {
+    Object.assign(fileData, data);
+  });
 }
 
 async function loadWorkUnits(cwd: string): Promise<WorkUnitsData> {
   const workUnitsFile = join(cwd, 'spec', 'work-units.json');
-  const content = await readFile(workUnitsFile, 'utf-8');
-  return JSON.parse(content);
+  return await fileManager.readJSON(workUnitsFile, {
+    workUnits: {},
+    states: {},
+  });
 }
 
 export async function createEpic(
@@ -285,20 +291,15 @@ export async function deleteEpic(
   // If force flag is set, clear epic field from all work units
   if (force) {
     try {
-      const workUnitsData = await loadWorkUnits(cwd);
-      let updated = false;
-
-      for (const workUnit of Object.values(workUnitsData.workUnits)) {
-        if (workUnit.epic === epicId) {
-          delete workUnit.epic;
-          updated = true;
+      const workUnitsFile = join(cwd, 'spec', 'work-units.json');
+      // LOCK-002: Use fileManager.transaction() for atomic read-modify-write
+      await fileManager.transaction(workUnitsFile, async workUnitsData => {
+        for (const workUnit of Object.values(workUnitsData.workUnits)) {
+          if (workUnit.epic === epicId) {
+            delete workUnit.epic;
+          }
         }
-      }
-
-      if (updated) {
-        const workUnitsFile = join(cwd, 'spec', 'work-units.json');
-        await writeFile(workUnitsFile, JSON.stringify(workUnitsData, null, 2));
-      }
+      });
     } catch {
       // If work-units.json doesn't exist, that's fine
     }
