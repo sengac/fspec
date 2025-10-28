@@ -1,3 +1,5 @@
+@board-visualization
+@tui
 @BOARD-008
 Feature: Color-coded work units without shimmer or priority icons
 
