@@ -19,6 +19,10 @@ import {
 import * as gitCheckpoint from '../utils/git-checkpoint';
 import { existsSync } from 'fs';
 import { checkTestCommand, checkQualityCommands } from './configure-tools.js';
+import {
+  insertWorkUnitSorted,
+  compareByUpdatedDescending,
+} from '../utils/states-array';
 
 type WorkUnitStatus =
   | 'backlog'
@@ -411,24 +415,47 @@ export async function updateWorkUnitStatus(
     }
   }
 
-  // Remove from current state array
-  if (workUnitsData.states[currentStatus]) {
-    workUnitsData.states[currentStatus] = workUnitsData.states[
-      currentStatus
-    ].filter(id => id !== options.workUnitId);
+  // BOARD-016: Use shared utility for states array manipulation
+  // Done column uses sorted insertion (by 'updated' timestamp, most recent first)
+  // IMPORTANT: Must do sorting BEFORE setting new 'updated' timestamp
+  // If moving to done, use existing 'updated' field for sort position (or current time if not set)
+  // Then update the timestamp after sorting
+
+  // Set temporary 'updated' field if moving to done and not already set (for sorting)
+  const hadUpdatedField = !!workUnit.updated;
+  if (newStatus === 'done' && !workUnit.updated) {
+    workUnit.updated = new Date().toISOString();
   }
 
-  // Add to new state array
-  if (!workUnitsData.states[newStatus]) {
-    workUnitsData.states[newStatus] = [];
-  }
-  if (!workUnitsData.states[newStatus].includes(options.workUnitId)) {
-    workUnitsData.states[newStatus].push(options.workUnitId);
-  }
+  const updatedWorkUnitsData =
+    newStatus === 'done'
+      ? insertWorkUnitSorted(
+          workUnitsData,
+          options.workUnitId,
+          currentStatus,
+          newStatus,
+          compareByUpdatedDescending
+        )
+      : insertWorkUnitSorted(
+          workUnitsData,
+          options.workUnitId,
+          currentStatus,
+          newStatus
+          // No comparator - appends to end
+        );
+
+  // Update workUnitsData reference to use sorted result
+  workUnitsData.states = updatedWorkUnitsData.states;
 
   // Update work unit status
   workUnit.status = newStatus;
   workUnit.updatedAt = new Date().toISOString();
+
+  // BOARD-016: Set 'updated' field to current timestamp when moving TO done
+  // This happens AFTER sorting (which used the old 'updated' value if it existed)
+  if (newStatus === 'done') {
+    workUnit.updated = new Date().toISOString();
+  }
 
   // Update blocked reason
   if (newStatus === 'blocked' && options.blockedReason) {

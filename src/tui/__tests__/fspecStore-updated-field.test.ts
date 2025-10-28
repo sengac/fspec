@@ -51,6 +51,15 @@ describe('Feature: Animated shimmer on last changed work unit', () => {
             updated: '2025-10-27T21:30:00Z',
           },
         },
+        states: {
+          backlog: [],
+          specifying: [],
+          testing: ['BOARD-008'],
+          implementing: ['BOARD-009'],
+          validating: [],
+          done: [],
+          blocked: [],
+        },
       };
 
       const mockEpicsData = {
@@ -120,6 +129,15 @@ describe('Feature: Animated shimmer on last changed work unit', () => {
             type: 'task',
             // No estimate or updated fields
           },
+        },
+        states: {
+          backlog: ['TASK-001'],
+          specifying: [],
+          testing: [],
+          implementing: [],
+          validating: [],
+          done: [],
+          blocked: [],
         },
       };
 
