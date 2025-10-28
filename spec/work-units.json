@@ -16146,7 +16146,7 @@
       "type": "bug",
       "status": "done",
       "createdAt": "2025-10-28T11:52:37.856Z",
-      "updatedAt": "2025-10-28T12:05:12.521Z",
+      "updatedAt": "2025-10-28T12:18:30.493Z",
       "description": "CRITICAL: fs.watch implementation for git files (.git/refs/stash, .git/index, .git/HEAD) is broken due to watching files directly instead of directories. Git uses atomic file operations (write temp, rename to final) which create new inodes, breaking file-based watchers. Additionally missing event type filtering (only checks 'change', misses 'rename'), error handling, and platform-specific behavior handling.",
       "children": [],
       "stateHistory": [
@@ -16181,19 +16181,42 @@
         {
           "state": "done",
           "timestamp": "2025-10-28T12:05:12.522Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-28T12:12:01.716Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-28T12:15:22.839Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-28T12:16:35.944Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-28T12:18:11.576Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-28T12:18:30.494Z"
         }
       ],
       "rules": [
         "Git file watchers MUST watch parent directories (not files directly) to handle atomic rename operations",
-        "Watchers MUST listen to ALL event types (both 'change' and 'rename'), not filter for specific types",
         "Watchers MUST have error event handlers to prevent silent failures",
-        "Implementation MUST follow the working pattern from work-units.json watcher (BoardView.tsx:81-102)"
+        "Implementation MUST follow the working pattern from work-units.json watcher (BoardView.tsx:81-102)",
+        "Git file watchers MUST use chokidar library for cross-platform compatibility (fs.watch filename parameter unreliable on macOS)",
+        "Chokidar watchers MUST watch specific files (.git/refs/stash, .git/index, .git/HEAD) not directories",
+        "Chokidar configuration MUST use ignoreInitial: true to prevent initial file scan triggering change events"
       ],
       "examples": [
         "Watcher encounters permission error on .git/index, error handler logs warning, continues monitoring other files",
         "Directory watcher filters events: only responds when filename='index' or 'stash' or 'HEAD', ignores other .git files",
         "User runs TUI on Linux, atomic rename triggers 'rename' event (not 'change'), watcher correctly handles both event types",
-        "User runs 'git stash push', watcher detects event in .git/refs/ directory for filename='stash', triggers loadStashes()"
+        "User runs 'git stash push', watcher detects event in .git/refs/ directory for filename='stash', triggers loadStashes()",
+        "User runs 'git stash push', chokidar detects change to .git/refs/stash file, triggers loadStashes() on macOS"
       ],
       "userStory": {
         "role": "developer using fspec TUI",
@@ -16201,7 +16224,17 @@
         "benefit": "the TUI reflects changes without missing events due to atomic file operations"
       },
       "estimate": 3,
-      "updated": "2025-10-28T12:05:12.521Z"
+      "updated": "2025-10-28T12:18:30.493Z"
+    },
+    "BOARD-019": {
+      "id": "BOARD-019",
+      "title": "Git file watchers don't work on macOS due to unreliable filename parameter in fs.watch callback",
+      "type": "bug",
+      "status": "backlog",
+      "createdAt": "2025-10-28T12:10:38.950Z",
+      "updatedAt": "2025-10-28T12:10:38.950Z",
+      "description": "The BOARD-018 fix relies on the filename parameter in fs.watch() directory callbacks to filter events. However, on macOS, fs.watch() does NOT reliably provide the filename parameter when watching directories - it's often null or undefined. This means our filters (if filename === 'stash') never match and loadStashes() is never called. Need to either: (1) remove filename filtering and reload unconditionally, (2) use chokidar library for cross-platform file watching, or (3) fall back to direct file watching with a try/catch for atomic operations.",
+      "children": []
     }
   },
   "states": {
@@ -16228,7 +16261,8 @@
       "AGENT-015",
       "AGENT-016",
       "AGENT-017",
-      "FEAT-018"
+      "FEAT-018",
+      "BOARD-019"
     ],
     "specifying": [
       "GIT-004",

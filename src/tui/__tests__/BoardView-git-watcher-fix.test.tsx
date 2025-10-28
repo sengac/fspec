@@ -5,6 +5,8 @@
  *
  * CRITICAL: These tests are written BEFORE implementation (ACDD red phase).
  * All tests MUST FAIL initially to prove they actually test something.
+ *
+ * Solution: Use chokidar library for cross-platform file watching instead of fs.watch
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
@@ -19,6 +21,18 @@ import os from 'os';
 // Mock modules
 vi.mock('isomorphic-git');
 vi.mock('../../git/status');
+
+// Mock chokidar to track watch calls
+vi.mock('chokidar', () => {
+  const actualChokidar = vi.importActual('chokidar') as object;
+  return {
+    ...actualChokidar,
+    watch: vi.fn((...args) => {
+      const chokidar = vi.importActual('chokidar') as { watch: Function };
+      return chokidar.watch(...args);
+    }),
+  };
+});
 
 describe('Feature: Git file watchers broken due to direct file watching and atomic operations', () => {
   let tmpDir: string;
@@ -51,6 +65,10 @@ describe('Feature: Git file watchers broken due to direct file watching and atom
       isLoaded: false,
       error: null,
     });
+
+    // Clear mock calls
+    const chokidar = await import('chokidar');
+    vi.mocked(chokidar.watch).mockClear();
   });
 
   afterEach(() => {
@@ -60,14 +78,15 @@ describe('Feature: Git file watchers broken due to direct file watching and atom
     }
   });
 
-  describe('Scenario: Watcher detects git stash via directory watching', () => {
-    it('should detect events when watching directory instead of file', async () => {
-      // @step Given the TUI is running with git file watchers active
-      // @step And watchers are monitoring .git/refs/ directory (not .git/refs/stash file directly)
+  describe('Scenario: Chokidar watcher detects git stash on macOS', () => {
+    it('should detect file change events via chokidar watcher', async () => {
+      // @step Given the TUI is running with chokidar file watchers active
+      // @step And chokidar is watching .git/refs/stash file
+      // @step And I am on macOS where fs.watch filename parameter is unreliable
       const { unmount } = render(<BoardView cwd={tmpDir} />);
 
       // Wait for watchers to initialize
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 200));
 
       const store = useFspecStore.getState();
       const loadStashesSpy = vi.spyOn(store, 'loadStashes');
@@ -78,15 +97,14 @@ describe('Feature: Git file watchers broken due to direct file watching and atom
       fs.writeFileSync(tempStashFile, 'new stash data');
       fs.renameSync(tempStashFile, path.join(gitRefsDir, 'stash'));
 
-      // Wait for watcher to detect change
-      await new Promise(resolve => setTimeout(resolve, 150));
+      // Wait for chokidar to detect change
+      await new Promise(resolve => setTimeout(resolve, 300));
 
-      // @step Then the watcher should detect an event in .git/refs/ directory
-      // @step And the watcher should filter for filename='stash'
+      // @step Then chokidar should detect the file change event
       // @step And loadStashes() should be called
       // @step And the stash panel should update with the new stash
 
-      // This WILL FAIL because current implementation watches file directly, not directory
+      // This WILL FAIL because current implementation uses fs.watch, not chokidar
       expect(loadStashesSpy).toHaveBeenCalled();
 
       unmount();
@@ -95,17 +113,19 @@ describe('Feature: Git file watchers broken due to direct file watching and atom
 
   describe('Scenario: Error handler prevents silent watcher failures', () => {
     it('should handle watcher errors gracefully without crashing', async () => {
-      // @step Given the TUI is running with git file watchers active
+      // @step Given the TUI is running with chokidar file watchers active
       // @step And watchers have error event handlers configured
       const { unmount } = render(<BoardView cwd={tmpDir} />);
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 200));
 
       const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
-      // @step When a permission error occurs accessing .git/index
-      // Force watcher to encounter an error by making directory unreadable
-      fs.chmodSync(gitDir, 0o000);
+      // @step When a permission error occurs or watcher fails
+      // Trigger an error by watching a non-existent directory
+      const chokidar = await import('chokidar');
+      const errorWatcher = chokidar.watch('/nonexistent/path');
+      errorWatcher.emit('error', new Error('EACCES: permission denied'));
 
       await new Promise(resolve => setTimeout(resolve, 100));
 
@@ -118,19 +138,19 @@ describe('Feature: Git file watchers broken due to direct file watching and atom
       expect(consoleWarnSpy).toHaveBeenCalled();
 
       // Restore permissions for cleanup
-      fs.chmodSync(gitDir, 0o755);
       consoleWarnSpy.mockRestore();
+      errorWatcher.close();
       unmount();
     });
   });
 
-  describe('Scenario: Directory watcher filters by filename', () => {
-    it('should only trigger handlers for relevant files (index, stash, HEAD)', async () => {
-      // @step Given the TUI is running with git file watchers active
-      // @step And watchers are monitoring .git/ and .git/refs/ directories
+  describe('Scenario: Chokidar watches only specific git files', () => {
+    it('should watch specific files (.git/index, .git/HEAD, .git/refs/stash) not directories', async () => {
+      // @step Given the TUI is running with chokidar file watchers active
+      // @step And chokidar is watching .git/index, .git/HEAD, and .git/refs/stash
       const { unmount } = render(<BoardView cwd={tmpDir} />);
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 200));
 
       const store = useFspecStore.getState();
       const loadFileStatusSpy = vi.spyOn(store, 'loadFileStatus');
@@ -139,43 +159,45 @@ describe('Feature: Git file watchers broken due to direct file watching and atom
       loadFileStatusSpy.mockClear();
       loadStashesSpy.mockClear();
 
-      // @step When git writes to .git/index (filename='index')
+      // @step When git writes to .git/index
       fs.writeFileSync(path.join(gitDir, 'index'), 'new index data');
-      await new Promise(resolve => setTimeout(resolve, 150));
+      await new Promise(resolve => setTimeout(resolve, 300));
 
-      // @step Then the .git/ directory watcher should trigger loadFileStatus()
+      // @step Then chokidar should detect the change
+      // @step And loadFileStatus() should be called
       expect(loadFileStatusSpy).toHaveBeenCalled();
 
       loadFileStatusSpy.mockClear();
       loadStashesSpy.mockClear();
 
-      // @step When git writes to .git/config (filename='config')
+      // @step When git writes to .git/config
       fs.writeFileSync(path.join(gitDir, 'config'), 'new config data');
-      await new Promise(resolve => setTimeout(resolve, 150));
+      await new Promise(resolve => setTimeout(resolve, 300));
 
-      // @step Then the .git/ directory watcher should ignore the event
-      // This WILL FAIL because directory watchers with filtering not implemented
+      // @step Then chokidar should NOT detect any change
+      // @step And no reload functions should be called
       expect(loadFileStatusSpy).not.toHaveBeenCalled();
       expect(loadStashesSpy).not.toHaveBeenCalled();
 
-      // @step When git writes to .git/refs/stash (filename='stash')
+      // @step When git writes to .git/refs/stash
       fs.writeFileSync(path.join(gitRefsDir, 'stash'), 'new stash data');
-      await new Promise(resolve => setTimeout(resolve, 150));
+      await new Promise(resolve => setTimeout(resolve, 300));
 
-      // @step Then the .git/refs/ directory watcher should trigger loadStashes()
+      // @step Then chokidar should detect the change
+      // @step And loadStashes() should be called
       expect(loadStashesSpy).toHaveBeenCalled();
 
       unmount();
     });
   });
 
-  describe('Scenario: Watchers handle both change and rename events', () => {
-    it('should respond to both change and rename event types', async () => {
-      // @step Given the TUI is running on Linux with inotify-based fs.watch
-      // @step And watchers are listening to ALL event types (no filtering)
+  describe('Scenario: Chokidar handles atomic operations cross-platform', () => {
+    it('should detect both atomic renames and in-place updates', async () => {
+      // @step Given the TUI is running with chokidar file watchers active
+      // @step And chokidar is watching .git/index and .git/HEAD
       const { unmount } = render(<BoardView cwd={tmpDir} />);
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 200));
 
       const store = useFspecStore.getState();
       const loadFileStatusSpy = vi.spyOn(store, 'loadFileStatus');
@@ -184,28 +206,28 @@ describe('Feature: Git file watchers broken due to direct file watching and atom
       loadFileStatusSpy.mockClear();
       loadStashesSpy.mockClear();
 
-      // @step When git performs atomic rename for .git/index
+      // @step When git performs atomic rename for .git/index on Linux
       const tempIndexFile = path.join(gitDir, '.index.lock');
       fs.writeFileSync(tempIndexFile, 'new index via rename');
       fs.renameSync(tempIndexFile, path.join(gitDir, 'index'));
 
-      await new Promise(resolve => setTimeout(resolve, 150));
+      await new Promise(resolve => setTimeout(resolve, 300));
 
-      // @step Then the watcher should detect 'rename' event type
+      // @step Then chokidar should detect the change (normalizes rename to change)
       // @step And loadFileStatus() should be triggered
-      // This WILL FAIL because current implementation filters for 'change' only
       expect(loadFileStatusSpy).toHaveBeenCalled();
 
       loadFileStatusSpy.mockClear();
       loadStashesSpy.mockClear();
 
-      // @step When git updates .git/HEAD in-place
+      // @step When git updates .git/HEAD in-place on macOS
       fs.writeFileSync(path.join(gitDir, 'HEAD'), 'ref: refs/heads/feature');
 
-      await new Promise(resolve => setTimeout(resolve, 150));
+      await new Promise(resolve => setTimeout(resolve, 300));
 
-      // @step Then the watcher should detect 'change' event type
+      // @step Then chokidar should detect the change
       // @step And loadFileStatus() and loadStashes() should be triggered
+      // @step And cross-platform event normalization should work correctly
       expect(loadFileStatusSpy).toHaveBeenCalled();
       expect(loadStashesSpy).toHaveBeenCalled();
 

@@ -9,14 +9,17 @@
 Feature: Git file watchers broken due to direct file watching and atomic operations
   """
   Architecture notes:
-  - CRITICAL BUG: fs.watch on files directly breaks with atomic operations (git uses write-temp + rename pattern)
-  - Root cause: fs.watch watches inodes, not paths. Atomic renames create new inodes, breaking watchers
-  - Solution: Watch parent directories (.git/, .git/refs/) and filter by filename (like work-units.json pattern)
-  - MUST remove event type filtering: listen to both 'change' and 'rename' events (atomic ops emit 'rename')
-  - MUST add error event handlers for permission issues and watcher failures
-  - Platform behavior: macOS (FSEvents) more reliable, Linux (inotify) breaks easily, Windows different event types
-  - Working reference pattern: BoardView.tsx:81-102 (work-units.json directory watcher)
-  - Broken code locations: BoardView.tsx:104-123 (stash), 125-144 (index), 146-164 (HEAD)
+  - CRITICAL BUG: fs.watch() has cross-platform reliability issues
+  - Root cause 1: fs.watch watches inodes, not paths. Atomic renames create new inodes
+  - Root cause 2: fs.watch filename parameter is unreliable on macOS (often null/undefined)
+  - Solution: Use chokidar library for cross-platform file watching
+  - Chokidar normalizes events across platforms (macOS FSEvents, Linux inotify, Windows)
+  - Watch specific files: .git/refs/stash, .git/index, .git/HEAD
+  - Chokidar config: ignoreInitial: true (prevent initial scan triggering events)
+  - Chokidar handles atomic operations automatically across all platforms
+  - Add error handlers for watcher failures
+  - Broken code locations: BoardView.tsx:104-130 (refs watcher), 132-162 (git dir watcher)
+  - Dependencies: Add chokidar to package.json
   """
 
   # ========================================
@@ -43,40 +46,44 @@ Feature: Git file watchers broken due to direct file watching and atomic operati
     I want to see real-time git status updates that actually work
     So that the TUI reflects changes without missing events due to atomic file operations
 
-  Scenario: Watcher detects git stash via directory watching
-    Given the TUI is running with git file watchers active
-    And watchers are monitoring .git/refs/ directory (not .git/refs/stash file directly)
+  Scenario: Chokidar watcher detects git stash on macOS
+    Given the TUI is running with chokidar file watchers active
+    And chokidar is watching .git/refs/stash file
+    And I am on macOS where fs.watch filename parameter is unreliable
     When I run "git stash push" which triggers atomic rename operation
-    Then the watcher should detect an event in .git/refs/ directory
-    And the watcher should filter for filename='stash'
+    Then chokidar should detect the file change event
     And loadStashes() should be called
     And the stash panel should update with the new stash
 
   Scenario: Error handler prevents silent watcher failures
-    Given the TUI is running with git file watchers active
+    Given the TUI is running with chokidar file watchers active
     And watchers have error event handlers configured
-    When a permission error occurs accessing .git/index
+    When a permission error occurs or watcher fails
     Then the error event handler should catch the error
     And a warning should be logged to the console
     And the watcher should continue monitoring other git files
     And the TUI should not crash or hang
 
-  Scenario: Directory watcher filters by filename
-    Given the TUI is running with git file watchers active
-    And watchers are monitoring .git/ and .git/refs/ directories
-    When git writes to .git/index (filename='index')
-    Then the .git/ directory watcher should trigger loadFileStatus()
-    When git writes to .git/config (filename='config')
-    Then the .git/ directory watcher should ignore the event
-    When git writes to .git/refs/stash (filename='stash')
-    Then the .git/refs/ directory watcher should trigger loadStashes()
+  Scenario: Chokidar watches only specific git files
+    Given the TUI is running with chokidar file watchers active
+    And chokidar is watching .git/index, .git/HEAD, and .git/refs/stash
+    When git writes to .git/index
+    Then chokidar should detect the change
+    And loadFileStatus() should be called
+    When git writes to .git/config
+    Then chokidar should NOT detect any change
+    And no reload functions should be called
+    When git writes to .git/refs/stash
+    Then chokidar should detect the change
+    And loadStashes() should be called
 
-  Scenario: Watchers handle both change and rename events
-    Given the TUI is running on Linux with inotify-based fs.watch
-    And watchers are listening to ALL event types (no filtering)
-    When git performs atomic rename for .git/index
-    Then the watcher should detect 'rename' event type
+  Scenario: Chokidar handles atomic operations cross-platform
+    Given the TUI is running with chokidar file watchers active
+    And chokidar is watching .git/index and .git/HEAD
+    When git performs atomic rename for .git/index on Linux
+    Then chokidar should detect the change (normalizes rename to change)
     And loadFileStatus() should be triggered
-    When git updates .git/HEAD in-place
-    Then the watcher should detect 'change' event type
+    When git updates .git/HEAD in-place on macOS
+    Then chokidar should detect the change
     And loadFileStatus() and loadStashes() should be triggered
+    And cross-platform event normalization should work correctly

@@ -13,6 +13,7 @@ import { useFspecStore } from '../store/fspecStore';
 import git from 'isomorphic-git';
 import fs from 'fs';
 import path from 'path';
+import chokidar from 'chokidar';
 import { getStagedFiles, getUnstagedFiles } from '../../git/status';
 import { UnifiedBoardLayout } from './UnifiedBoardLayout';
 import { FullScreenWrapper } from './FullScreenWrapper';
@@ -101,22 +102,26 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
     };
   }, [loadData]);
 
-  // Watch .git/refs/ directory for stash changes (BOARD-018: Fixed directory-based watching)
-  // NOTE: Watch the directory instead of the file to handle atomic rename operations
+  // Watch .git/refs/stash for stash changes using chokidar (BOARD-018: Cross-platform file watching)
+  // NOTE: Use chokidar instead of fs.watch for reliable cross-platform atomic operation handling
   useEffect(() => {
     if (!showStashPanel) return;
 
     const cwd = process.cwd();
-    const gitRefsDir = path.join(cwd, '.git', 'refs');
+    const stashPath = path.join(cwd, '.git', 'refs', 'stash');
 
-    // Check if directory exists before watching
-    if (!fs.existsSync(gitRefsDir)) return;
+    // Check if file exists before watching
+    if (!fs.existsSync(stashPath)) return;
 
-    const watcher = fs.watch(gitRefsDir, { persistent: false }, (eventType, filename) => {
-      // Filter for stash file only (ignore other refs like heads, tags)
-      if (filename === 'stash') {
-        void loadStashes();
-      }
+    // Chokidar watches specific file, handles atomic operations automatically
+    const watcher = chokidar.watch(stashPath, {
+      ignoreInitial: true,  // Don't trigger on initial scan
+      persistent: false,
+    });
+
+    // Listen for all change events (chokidar normalizes across platforms)
+    watcher.on('change', () => {
+      void loadStashes();
     });
 
     // Add error handler to prevent silent failures (BOARD-018)
@@ -125,23 +130,36 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
     });
 
     return () => {
-      watcher.close();
+      void watcher.close();
     };
   }, [showStashPanel, loadStashes]);
 
-  // Watch .git/ directory for index changes (BOARD-018: Fixed directory-based watching)
-  // NOTE: Watch the directory instead of the file to handle atomic rename operations
+  // Watch .git/index and .git/HEAD using chokidar (BOARD-018: Cross-platform file watching)
+  // NOTE: Use chokidar instead of fs.watch for reliable cross-platform atomic operation handling
   useEffect(() => {
     if (!showFilesPanel) return;
 
     const cwd = process.cwd();
-    const gitDir = path.join(cwd, '.git');
+    const indexPath = path.join(cwd, '.git', 'index');
+    const headPath = path.join(cwd, '.git', 'HEAD');
 
-    // Check if directory exists before watching
-    if (!fs.existsSync(gitDir)) return;
+    // Check if files exist before watching
+    const filesToWatch = [];
+    if (fs.existsSync(indexPath)) filesToWatch.push(indexPath);
+    if (fs.existsSync(headPath)) filesToWatch.push(headPath);
 
-    const watcher = fs.watch(gitDir, { persistent: false }, (eventType, filename) => {
-      // Filter for index or HEAD files only
+    if (filesToWatch.length === 0) return;
+
+    // Chokidar watches specific files, handles atomic operations automatically
+    const watcher = chokidar.watch(filesToWatch, {
+      ignoreInitial: true,  // Don't trigger on initial scan
+      persistent: false,
+    });
+
+    // Listen for all change events (chokidar normalizes across platforms)
+    watcher.on('change', (changedPath) => {
+      const filename = path.basename(changedPath);
+
       if (filename === 'index' || filename === 'HEAD') {
         void loadFileStatus();
         // Also reload stashes when HEAD changes (new commits)
@@ -157,7 +175,7 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
     });
 
     return () => {
-      watcher.close();
+      void watcher.close();
     };
   }, [showFilesPanel, loadFileStatus, loadStashes]);
 
