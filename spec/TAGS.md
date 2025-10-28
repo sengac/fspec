@@ -26,6 +26,7 @@ Tags that identify which architectural component a feature belongs to.
 | `@parser` | Gherkin Parser Integration |
 | `@templates` | Template generation and transformation system |
 | `@tui` | Terminal User Interface components and infrastructure |
+| `@ui` | User interface and visual components |
 | `@validator` | Validation Logic |
 
 **Rule**: Every feature file MUST have at least ONE component tag (may have multiple if cross-component).
@@ -140,6 +141,7 @@ Tags that categorize features by functional area.
 | `@validation` | Syntax & Structure Validation |
 | `@velocity` | Velocity calculation |
 | `@version-management` | Features related to version checking, upgrading, and file synchronization |
+| `@visual-design` | Visual design and branding features |
 | `@visualization` | Data visualization |
 | `@work-management` | Work unit management and Kanban workflow operations |
 | `@work-unit-linking` | Scenarios related to work unit and feature file linking functionality |
@@ -557,7 +559,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-10-28T11:33:59.244Z_
+_Last updated: 2025-10-28T20:52:31.157Z_
 
 **Update Command**: `fspec tag-stats`
 

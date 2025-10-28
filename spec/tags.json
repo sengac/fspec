@@ -62,6 +62,10 @@
           "description": "Terminal User Interface components and infrastructure"
         },
         {
+          "name": "@ui",
+          "description": "User interface and visual components"
+        },
+        {
           "name": "@validator",
           "description": "Validation Logic"
         }
@@ -488,6 +492,10 @@
         {
           "name": "@version-management",
           "description": "Features related to version checking, upgrading, and file synchronization"
+        },
+        {
+          "name": "@visual-design",
+          "description": "Visual design and branding features"
         },
         {
           "name": "@visualization",
@@ -1262,7 +1270,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-10-28T11:33:59.244Z",
+    "lastUpdated": "2025-10-28T20:52:31.157Z",
     "phaseStats": [
       {
         "phase": "Phase 1",
