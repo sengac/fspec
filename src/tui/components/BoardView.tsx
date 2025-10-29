@@ -287,7 +287,7 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
     const renderLine = (line: string, _index: number, isSelected: boolean): React.ReactNode => {
       const indicator = isSelected ? '>' : ' ';
       return (
-        <Box width="100%">
+        <Box flexGrow={1}>
           <Text color={isSelected ? 'cyan' : 'white'}>
             {indicator} {line || ' '}
           </Text>
@@ -297,7 +297,7 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
 
     return (
       <FullScreenWrapper>
-        <Box flexDirection="column" padding={1} height="100%">
+        <Box flexDirection="column" padding={1} flexGrow={1} flexShrink={1}>
           <Text bold>{selectedWorkUnit.id} - {selectedWorkUnit.title}</Text>
           <Text>Type: {selectedWorkUnit.type}</Text>
           <Text>Status: {selectedWorkUnit.status}</Text>

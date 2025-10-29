@@ -10,7 +10,6 @@ import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { Box, Text, useInput } from 'ink';
 import { VirtualList } from './VirtualList';
 import type { FileItem } from './FileDiffViewer';
-import { logger } from '../../utils/logger';
 import { Worker } from 'worker_threads';
 import { join } from 'path';
 import { parseDiff, DiffLine } from '../../git/diff-parser';
@@ -54,20 +53,16 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
   // Worker thread reference
   const workerRef = useRef<Worker | null>(null);
   const pendingRequestId = useRef<string | null>(null);
-  const componentId = useRef(`CheckpointViewer-${Date.now()}`);
 
   // Load all checkpoints from all work units
   useEffect(() => {
     const loadAllCheckpoints = async () => {
-      logger.info(`[${componentId.current}] Starting checkpoint loading from cwd: ${cwd}`);
       setIsLoadingCheckpoints(true);
       try {
         const indexDir = join(cwd, '.git', 'fspec-checkpoints-index');
-        logger.info(`[${componentId.current}] Checking index directory: ${indexDir}`);
 
         // Check if index directory exists
         if (!fs.existsSync(indexDir)) {
-          logger.warn(`[${componentId.current}] Index directory does not exist, no checkpoints to load`);
           setCheckpoints([]);
           setIsLoadingCheckpoints(false);
           return;
@@ -75,36 +70,28 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
 
         // Read all work unit index files
         const indexFiles = fs.readdirSync(indexDir).filter(f => f.endsWith('.json'));
-        logger.info(`[${componentId.current}] Found ${indexFiles.length} index files: ${indexFiles.join(', ')}`);
         const allCheckpoints: Checkpoint[] = [];
 
         for (const indexFile of indexFiles) {
           const workUnitId = indexFile.replace('.json', '');
           const indexPath = join(indexDir, indexFile);
-          logger.info(`[${componentId.current}] Processing index file: ${indexFile} for work unit: ${workUnitId}`);
 
           const content = fs.readFileSync(indexPath, 'utf-8');
           const index = JSON.parse(content) as { checkpoints: { name: string; message: string }[] };
-          logger.info(`[${componentId.current}] Found ${index.checkpoints.length} checkpoints in ${indexFile}`);
 
           for (const cp of index.checkpoints) {
             const ref = `refs/fspec-checkpoints/${workUnitId}/${cp.name}`;
-            logger.info(`[${componentId.current}] Loading checkpoint: ${cp.name} with ref: ${ref}`);
 
             try {
               // Resolve checkpoint ref to get OID
               const checkpointOid = await git.resolveRef({ fs, dir: cwd, ref });
-              logger.info(`[${componentId.current}] Resolved checkpoint ${cp.name} to OID: ${checkpointOid}`);
 
               // Load changed files from checkpoint (not all files)
-              logger.info(`[${componentId.current}] Getting changed files for checkpoint ${cp.name}`);
               const files = await getCheckpointChangedFiles(cwd, checkpointOid);
-              logger.info(`[${componentId.current}] Checkpoint ${cp.name} has ${files.length} changed files: ${files.slice(0, 5).join(', ')}${files.length > 5 ? '...' : ''}`);
 
               // Parse checkpoint message to extract timestamp
               const match = cp.message.match(/^fspec-checkpoint:[^:]+:[^:]+:([^:]+)$/);
               const timestamp = match ? new Date(parseInt(match[1])).toISOString() : new Date().toISOString();
-              logger.info(`[${componentId.current}] Checkpoint ${cp.name} timestamp: ${timestamp}`);
 
               allCheckpoints.push({
                 name: cp.name,
@@ -115,22 +102,17 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
                 files,
                 fileCount: files.length,
               });
-              logger.info(`[${componentId.current}] Successfully loaded checkpoint ${cp.name}`);
             } catch (error) {
               // Skip checkpoints that can't be loaded
-              logger.error(`[${componentId.current}] Failed to load checkpoint ${cp.name}: ${error}`);
             }
           }
         }
 
-        logger.info(`[${componentId.current}] Loaded ${allCheckpoints.length} total checkpoints`);
         setCheckpoints(allCheckpoints);
       } catch (error) {
-        logger.error(`[${componentId.current}] Failed to load checkpoints: ${error}`);
         setCheckpoints([]);
       } finally {
         setIsLoadingCheckpoints(false);
-        logger.info(`[${componentId.current}] Checkpoint loading complete`);
       }
     };
 
@@ -139,43 +121,34 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
 
   // Sort checkpoints by timestamp (most recent first) and limit to 200
   const sortedCheckpoints = useMemo(() => {
-    logger.info(`[${componentId.current}] Sorting ${checkpoints.length} checkpoints by timestamp`);
     const sorted = [...checkpoints].sort((a, b) => {
       return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
     });
     // Limit to 200 most recent checkpoints for performance
-    const limited = sorted.slice(0, 200);
-    logger.info(`[${componentId.current}] Limited to ${limited.length} most recent checkpoints: ${limited.slice(0, 10).map(c => c.name).join(', ')}${limited.length > 10 ? '...' : ''}`);
-    return limited;
+    return sorted.slice(0, 200);
   }, [checkpoints]);
 
   // Get current checkpoint and files
   const currentCheckpoint = sortedCheckpoints[selectedCheckpointIndex];
   const files: FileItem[] = useMemo(() => {
     if (!currentCheckpoint) {
-      logger.info(`[${componentId.current}] No current checkpoint selected (index: ${selectedCheckpointIndex})`);
       return [];
     }
-    logger.info(`[${componentId.current}] Current checkpoint: ${currentCheckpoint.name} with ${currentCheckpoint.files.length} files`);
-    logger.info(`[${componentId.current}] Files: ${currentCheckpoint.files.slice(0, 10).join(', ')}${currentCheckpoint.files.length > 10 ? '...' : ''}`);
     return currentCheckpoint.files.map(f => ({ path: f, status: 'checkpoint' as const }));
   }, [currentCheckpoint, selectedCheckpointIndex]);
 
   // Initialize worker thread on mount
   useEffect(() => {
     const workerPath = join(process.cwd(), 'dist', 'git', 'diff-worker.js');
-    logger.info(`[${componentId.current}] Initializing worker thread at: ${workerPath}`);
 
     try {
       workerRef.current = new Worker(workerPath);
-      logger.info(`[${componentId.current}] Worker thread initialized successfully`);
     } catch (error) {
-      logger.error(`[${componentId.current}] Failed to initialize worker: ${error}`);
+      // Worker initialization failed
     }
 
     return () => {
       if (workerRef.current) {
-        logger.info(`[${componentId.current}] Terminating worker thread`);
         workerRef.current.terminate();
         workerRef.current = null;
       }
@@ -187,23 +160,19 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
     const selectedFile = files[selectedFileIndex];
 
     if (!selectedFile) {
-      logger.info(`[${componentId.current}] No selected file, clearing diff`);
       setDiffContent('');
       setIsLoadingDiff(false);
       return;
     }
 
     if (!workerRef.current) {
-      logger.error(`[${componentId.current}] Worker not initialized, cannot load diff`);
       setDiffContent('Worker thread not available');
       setIsLoadingDiff(false);
       return;
     }
 
-    logger.info(`[${componentId.current}] Loading diff for file: ${selectedFile.path}`);
     setIsLoadingDiff(true);
 
-    const startTime = Date.now();
     const requestId = `${Date.now()}`;
     pendingRequestId.current = requestId;
 
@@ -211,20 +180,15 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
 
     // Set up message handler for this request
     const messageHandler = (response: { id: string; diff?: string; error?: string }) => {
-      const duration = Date.now() - startTime;
-
       // Ignore responses from cancelled requests
       if (response.id !== pendingRequestId.current) {
-        logger.info(`[${componentId.current}] Received stale response (id=${response.id}), ignoring`);
         return;
       }
 
       if (response.error) {
-        logger.error(`[${componentId.current}] Worker error after ${duration}ms: ${response.error}`);
         setDiffContent('Error loading diff');
       } else {
         const diffLength = response.diff?.length || 0;
-        logger.info(`[${componentId.current}] Diff loaded successfully in ${duration}ms (${diffLength} chars)`);
 
         // Truncate large diffs to prevent UX hangs
         const MAX_DIFF_SIZE = 100000; // 100KB max
@@ -234,7 +198,6 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
           const linesShown = truncatedDiff.split('\n').length;
           const totalLines = response.diff!.split('\n').length;
           finalDiff = truncatedDiff + `\n\n... (diff truncated: showing ${linesShown}/${totalLines} lines, ${MAX_DIFF_SIZE}/${diffLength} chars)`;
-          logger.info(`[${componentId.current}] Diff truncated from ${diffLength} to ${MAX_DIFF_SIZE} chars`);
         }
 
         setDiffContent(finalDiff);
@@ -247,7 +210,6 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
     worker.on('message', messageHandler);
 
     // Send request to worker with checkpointRef to compare checkpoint vs HEAD
-    logger.info(`[${componentId.current}] Sending request to worker (id=${requestId})`);
     worker.postMessage({
       id: requestId,
       cwd,
@@ -257,7 +219,6 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
 
     // Cleanup function to cancel pending requests
     return () => {
-      logger.info(`[${componentId.current}] CLEANUP called (cancelling request ${requestId})`);
       pendingRequestId.current = null;
       worker.off('message', messageHandler);
     };
@@ -299,7 +260,7 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
     return (
       <Box flexDirection="column" flexGrow={1}>
         <Box flexDirection="row" flexGrow={1}>
-          <Box flexDirection="column" minWidth={leftColumnMinWidth} flexBasis="25%" flexShrink={1}>
+          <Box flexDirection="column" flexGrow={1} flexBasis={0}>
             <Box flexDirection="column" flexGrow={1} flexBasis={0} borderStyle="single" borderColor="cyan">
               <Text wrap="truncate">Loading checkpoints...</Text>
             </Box>
@@ -307,7 +268,7 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
               <Text wrap="truncate">-</Text>
             </Box>
           </Box>
-          <Box flexDirection="column" flexGrow={1} borderStyle="single">
+          <Box flexDirection="column" flexGrow={3} flexBasis={0} borderStyle="single">
             <Text wrap="truncate">-</Text>
           </Box>
         </Box>
@@ -320,8 +281,8 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
     return (
       <Box flexDirection="column" flexGrow={1}>
         <Box flexDirection="row" flexGrow={1}>
-          {/* Left column: Checkpoint list (top) + File list (bottom) */}
-          <Box flexDirection="column" minWidth={leftColumnMinWidth} flexBasis="25%" flexShrink={1}>
+          {/* Left column: Checkpoint list (top) + File list (bottom) - 25% width */}
+          <Box flexDirection="column" flexGrow={1} flexBasis={0}>
             {/* Checkpoint list pane (top-left) */}
             <Box flexDirection="column" flexGrow={1} flexBasis={0} borderStyle="single" borderColor="cyan">
               <Text wrap="truncate">No checkpoints available</Text>
@@ -332,8 +293,8 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
             </Box>
           </Box>
 
-          {/* Right side: Diff pane */}
-          <Box flexDirection="column" flexGrow={1} borderStyle="single">
+          {/* Right side: Diff pane - 75% width */}
+          <Box flexDirection="column" flexGrow={3} flexBasis={0} borderStyle="single">
             <Text wrap="truncate">Select a checkpoint to view files</Text>
           </Box>
         </Box>
@@ -353,8 +314,8 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
     const displayName = `${compactName} (${checkpoint.fileCount} ${checkpoint.fileCount === 1 ? 'file' : 'files'})`;
 
     return (
-      <Box width="100%">
-        <Text color={isSelected ? 'cyan' : 'white'} wrap="truncate">
+      <Box flexGrow={1}>
+        <Text color={isSelected ? 'cyan' : 'white'} wrap="wrap">
           {indicator} {displayName}
         </Text>
       </Box>
@@ -382,7 +343,7 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
     const selectionInverse = isSelected && focusedPane === 'diff';
 
     return (
-      <Box width="100%">
+      <Box flexGrow={1}>
         <Text
           color={selectionInverse ? selectionColor : textColor}
           backgroundColor={backgroundColor}
@@ -406,14 +367,13 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
 
       {/* Three-pane layout: Left column (checkpoint list + file list) + Diff pane (right) */}
       <Box flexDirection="row" flexGrow={1}>
-        {/* Left column: Checkpoint list (top) + File list (bottom) stacked vertically */}
+        {/* Left column: Checkpoint list (top) + File list (bottom) stacked vertically - 25% width via flexGrow ratio */}
         <Box
           flexDirection="column"
-          minWidth={leftColumnMinWidth}
-          flexBasis="25%"
-          flexShrink={1}
+          flexGrow={1}
+          flexBasis={0}
         >
-          {/* Checkpoint list pane (top-left) - flexGrow 1 for 50/50 split */}
+          {/* Checkpoint list pane (top-left) - flexGrow 1 with flexBasis 0 for 50/50 vertical split */}
           <Box
             flexDirection="column"
             flexGrow={1}
@@ -428,16 +388,14 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
                 showScrollbar={focusedPane === 'checkpoints'}
                 isFocused={focusedPane === 'checkpoints'}
                 onFocus={(checkpoint, index) => {
-                  logger.info(`[${componentId.current}] Checkpoint selection changed: index=${index}, name=${checkpoint.name}`);
                   setSelectedCheckpointIndex(index);
                   setSelectedFileIndex(0); // Reset file selection when checkpoint changes
-                  logger.info(`[${componentId.current}] Reset file selection to 0`);
                 }}
               />
             </Box>
           </Box>
 
-          {/* File list pane (bottom-left) - flexGrow 1 for 50/50 split */}
+          {/* File list pane (bottom-left) - flexGrow 1 with flexBasis 0 for 50/50 vertical split */}
           <Box
             flexDirection="column"
             flexGrow={1}
@@ -451,8 +409,8 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
                 renderItem={(file, index, isSelected) => {
                   const indicator = isSelected ? '>' : ' ';
                   return (
-                    <Box width="100%">
-                      <Text color={isSelected ? 'cyan' : 'white'} wrap="truncate">
+                    <Box flexGrow={1}>
+                      <Text color={isSelected ? 'cyan' : 'white'} wrap="wrap">
                         {indicator} {file.path}
                       </Text>
                     </Box>
@@ -461,7 +419,6 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
                 showScrollbar={focusedPane === 'files'}
                 isFocused={focusedPane === 'files'}
                 onFocus={(file, index) => {
-                  logger.info(`[${componentId.current}] File selection changed: index=${index}, path=${file.path}`);
                   setSelectedFileIndex(index);
                 }}
               />
@@ -469,10 +426,11 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
           </Box>
         </Box>
 
-        {/* Right side: Diff pane only (grows to fill remaining space) */}
+        {/* Right side: Diff pane only - 75% width via flexGrow ratio */}
         <Box
           flexDirection="column"
-          flexGrow={1}
+          flexGrow={3}
+          flexBasis={0}
           borderStyle="single"
           borderColor={focusedPane === 'diff' ? 'cyan' : 'gray'}
         >

@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-29T21:52:31.539Z"
+    "lastUpdated": "2025-10-29T22:53:18.404Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -17447,6 +17447,64 @@
       ],
       "estimate": 5,
       "updated": "2025-10-29T21:55:51.386Z"
+    },
+    "TUI-006": {
+      "id": "TUI-006",
+      "title": "VirtualList text wrapping inconsistency",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-10-29T22:51:32.401Z",
+      "updatedAt": "2025-10-29T23:05:56.425Z",
+      "description": "VirtualList component has inconsistent text wrapping behavior. In CheckpointViewer, the file list wraps text correctly but the checkpoint list does not wrap, even though both use identical Box/Text structures. Likely caused by VirtualList using percentage-based flexBasis internally instead of flexGrow properties for proper flexbox layout.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-29T22:53:10.978Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-29T22:56:13.759Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-29T22:58:23.630Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-29T23:02:04.711Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-29T23:05:56.425Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using VirtualList component",
+        "action": "display text content in list items",
+        "benefit": "text wraps properly regardless of which VirtualList instance is used"
+      },
+      "rules": [
+        "VirtualList must use flexGrow/flexShrink properties instead of percentage-based flexBasis",
+        "All components using VirtualList must use flexGrow/flexShrink for container widths",
+        "Text components within VirtualList items must have wrap='wrap' attribute for proper wrapping",
+        "Item render functions must return Box with flexGrow=1 wrapping Text components",
+        "Yes, ALL components using VirtualList must be converted to use flexGrow/flexShrink to ensure consistent behavior"
+      ],
+      "examples": [
+        "CheckpointViewer checkpoint list: long checkpoint names wrap to multiple lines within pane width",
+        "CheckpointViewer file list: long file paths wrap to multiple lines within pane width",
+        "BoardView work units: long work unit titles wrap to multiple lines within column width",
+        "FileDiffViewer file list: long file names wrap to multiple lines within pane width"
+      ],
+      "questions": [
+        {
+          "text": "@human: Should we also fix FileDiffViewer.tsx which currently uses flexBasis='25%', even though it seems to work?",
+          "selected": true,
+          "answer": "Yes, ALL components using VirtualList must be converted to use flexGrow/flexShrink to ensure consistent behavior"
+        }
+      ],
+      "updated": "2025-10-29T23:05:56.425Z"
     }
   },
   "states": {
@@ -17487,6 +17545,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "TUI-006",
       "TUI-005",
       "TUI-004",
       "TUI-002",
