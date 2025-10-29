@@ -16,6 +16,11 @@ export function getActivationMessage(agent: AgentConfig): string {
     return 'Run /fspec in Claude Code to activate';
   }
 
+  if (agent.id === 'codex' || agent.id === 'codex-cli') {
+    const agentName = agent.id === 'codex-cli' ? 'Codex CLI' : 'Codex';
+    return `Run /prompts:fspec in ${agentName} to activate`;
+  }
+
   if (agent.id === 'cursor') {
     return 'Open .cursor/commands/ in Cursor to activate';
   }

@@ -1,0 +1,138 @@
+{
+  "scenarios": [
+    {
+      "name": "Generate Codex prompt in user home directory on Unix-like systems",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/init-codex-home-directory.test.ts",
+          "lines": "50-69",
+          "implMappings": [
+            {
+              "file": "src/commands/init.ts",
+              "lines": [
+                223,
+                224,
+                225,
+                226,
+                234,
+                235,
+                236,
+                262,
+                263,
+                264,
+                265,
+                266,
+                269,
+                270,
+                271,
+                272,
+                274,
+                276,
+                277,
+                278,
+                279,
+                280
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Resolve Codex prompt location using os.homedir on Windows",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/init-codex-home-directory.test.ts",
+          "lines": "71-83",
+          "implMappings": [
+            {
+              "file": "src/commands/init.ts",
+              "lines": [
+                223,
+                224,
+                225,
+                226,
+                234,
+                235,
+                236,
+                262,
+                263,
+                264,
+                265,
+                266,
+                269,
+                270,
+                271,
+                272,
+                274,
+                276,
+                277,
+                278,
+                279,
+                280
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Re-running fspec init keeps project-level prompt intact",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/init-codex-home-directory.test.ts",
+          "lines": "85-104",
+          "implMappings": [
+            {
+              "file": "src/commands/init.ts",
+              "lines": [
+                223,
+                224,
+                225,
+                226,
+                234,
+                235,
+                236,
+                262,
+                263,
+                264,
+                265,
+                266,
+                269,
+                270,
+                271,
+                272,
+                274,
+                276,
+                277,
+                278,
+                279,
+                280
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Generated Codex instructions reference /prompts:fspec command",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/activationMessage.test.ts",
+          "lines": "55-65",
+          "implMappings": [
+            {
+              "file": "src/utils/activationMessage.ts",
+              "lines": [
+                19,
+                20,
+                21,
+                22
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

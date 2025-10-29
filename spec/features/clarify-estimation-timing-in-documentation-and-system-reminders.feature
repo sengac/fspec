@@ -5,7 +5,7 @@
 @DOCS-001
 Feature: Clarify estimation timing in documentation and system-reminders
   """
-  Files to check: src/commands/show-work-unit.ts (system-reminder logic), src/commands/update-work-unit-status.ts (state transition reminders), CLAUDE.md (workflow documentation), .claude/commands/fspec.md (slash command docs)
+  Files to check: src/commands/show-work-unit.ts (system-reminder logic), src/commands/update-work-unit-status.ts (state transition reminders), slash command docs surfaced via fspec bootstrap
   """
 
   # ========================================
@@ -57,12 +57,6 @@ Feature: Clarify estimation timing in documentation and system-reminders
     And the error should say "Feature file required before estimation"
     And the error should guide me to generate scenarios first
     And the system-reminder text should match the enforcement message
-
-  Scenario: Documentation should clarify estimation timing
-    Given I read the CLAUDE.md workflow documentation
-    When I look for guidance on when to estimate story points
-    Then the documentation should explicitly state "After generating scenarios from Example Mapping"
-    And the documentation should NOT say "After Example Mapping" without mentioning scenario generation
 
   Scenario: Slash command documentation should clarify estimation timing
     Given I read the .claude/commands/fspec.md slash command documentation

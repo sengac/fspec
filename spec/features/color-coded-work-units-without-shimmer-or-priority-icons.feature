@@ -2,7 +2,6 @@
 @tui
 @BOARD-008
 Feature: Color-coded work units without shimmer or priority icons
-
   """
   Architecture notes:
   - Modify UnifiedBoardLayout.tsx work unit display logic (around line 333-340)
@@ -35,7 +34,6 @@ Feature: Color-coded work units without shimmer or priority icons
   #   5. Selected story displays with green background, no shimmer, no priority icons
   #
   # ========================================
-
   Background: User Story
     As a developer viewing TUI board
     I want to identify work unit types by color instead of emoji

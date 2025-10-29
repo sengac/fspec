@@ -2,6 +2,7 @@ import { mkdir, writeFile, rm, readFile } from 'fs/promises';
 import type { Command } from 'commander';
 import { join } from 'path';
 import { existsSync } from 'fs';
+import os from 'os';
 import chalk from 'chalk';
 import React from 'react';
 import { render } from 'ink';
@@ -230,10 +231,8 @@ export async function installAgentFiles(
   filesInstalled.push(`spec/${agent.docTemplate}`);
 
   // 2. Install slash command file
-  await installSlashCommand(cwd, agent);
-  const filename =
-    agent.slashCommandFormat === 'toml' ? 'fspec.toml' : 'fspec.md';
-  filesInstalled.push(`${agent.slashCommandPath}${filename}`);
+  const slashCommandDisplayPath = await installSlashCommand(cwd, agent);
+  filesInstalled.push(slashCommandDisplayPath);
 
   return filesInstalled;
 }
@@ -259,8 +258,11 @@ async function installFullDoc(cwd: string, agent: AgentConfig): Promise<void> {
 async function installSlashCommand(
   cwd: string,
   agent: AgentConfig
-): Promise<void> {
-  const commandsDir = join(cwd, agent.slashCommandPath);
+): Promise<string> {
+  const isCodexAgent = agent.id === 'codex' || agent.id === 'codex-cli';
+  const commandsDir = isCodexAgent
+    ? join(os.homedir(), '.codex', 'prompts')
+    : join(cwd, agent.slashCommandPath);
   await mkdir(commandsDir, { recursive: true });
 
   // Use correct file extension based on format
@@ -272,6 +274,10 @@ async function installSlashCommand(
   const content = generateSlashCommandContent(agent);
 
   await writeFile(commandPath, content, 'utf-8');
+  if (isCodexAgent) {
+    return '~/.codex/prompts/fspec.md';
+  }
+  return `${agent.slashCommandPath}${filename}`;
 }
 
 /**

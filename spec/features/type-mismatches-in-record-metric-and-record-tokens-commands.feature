@@ -5,7 +5,6 @@
 @refactoring
 @BUG-047
 Feature: Type mismatches in record-metric and record-tokens commands
-
   """
   Architecture notes:
   - Delete record-metric.ts entirely (duplicate of record-tokens)
@@ -48,7 +47,6 @@ Feature: Type mismatches in record-metric and record-tokens commands
   #   1. The function implementation in record-metric.ts actually records token usage on work units (identical to record-tokens). The command arguments suggesting generic metrics (metric name, value, unit) are incorrect. We should align the command to match the function: it should accept workUnitId and tokens, just like record-tokens does. The 'record-metric' command appears to be a duplicate/misnamed version of 'record-tokens' and should either be removed or fixed to match its actual implementation.
   #
   # ========================================
-
   Background: User Story
     As a fspec developer
     I want to fix type mismatches in record-metric and record-tokens commands

@@ -62,10 +62,12 @@ describe('Feature: Implement draft-driven discovery workflow with AI chaining', 
     });
 
     it('should emit system-reminder with ULTRATHINK guidance and field 1/N progress', async () => {
+      process.env.FSPEC_AGENT = 'claude';
       // When command creates draft
       const result = await discoverFoundation({
         draftPath: join(tmpDir, 'spec', 'foundation.json.draft'),
       });
+      delete process.env.FSPEC_AGENT;
 
       // Then command should emit system-reminder with ULTRATHINK guidance
       expect(result.systemReminder).toContain('<system-reminder>');
@@ -170,6 +172,7 @@ describe('Feature: Implement draft-driven discovery workflow with AI chaining', 
 
   describe('Scenario: Fill project.vision with ULTRATHINK guidance', () => {
     it('should emit system-reminder emphasizing ULTRATHINK and WHY not HOW', async () => {
+      process.env.FSPEC_AGENT = 'claude';
       // Given draft has project.name filled
       // And draft has [QUESTION: What is the one-sentence vision?] for project.vision
       const draftPath = join(tmpDir, 'spec', 'foundation.json.draft');
@@ -201,6 +204,7 @@ describe('Feature: Implement draft-driven discovery workflow with AI chaining', 
         draftPath,
         scanOnly: true,
       });
+      delete process.env.FSPEC_AGENT;
 
       // Then command should emit system-reminder for project.vision
       expect(result.systemReminder).toContain('project.vision');

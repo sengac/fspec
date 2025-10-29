@@ -3,7 +3,6 @@
 @high
 @ITF-007
 Feature: Fix stale tests and changed files watcher after ITF-006
-
   """
   ITF-006 replaced GitStashesPanel with CheckpointPanel, changing display format from 'Git Stashes (X)' to 'Checkpoints: X Manual, Y Auto'. This broke 11 existing tests that expect old text. Tests must be updated to expect new checkpoint format. Changed files watcher uses getStagedFiles/getUnstagedFiles utilities which need to be called after git operations to refresh counts.
   """
@@ -23,7 +22,6 @@ Feature: Fix stale tests and changed files watcher after ITF-006
   #   3. Test expects keybinding 'S View Stashes' but panel now shows 'C View Checkpoints'
   #
   # ========================================
-
   Background: User Story
     As a developer running tests
     I want to have all tests pass after ITF-006 checkpoint integration

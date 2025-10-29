@@ -51,6 +51,20 @@ describe('Feature: Agent-specific activation message', () => {
     });
   });
 
+  describe('Scenario: Codex CLI user sees /prompts:fspec activation guidance', () => {
+    it('should instruct Codex users to run /prompts:fspec', () => {
+      // Given Codex CLI is the detected agent
+      const agent = getAgentById('codex-cli')!;
+
+      // When generating activation message
+      const message = getActivationMessage(agent);
+
+      // Then the message should reference /prompts:fspec and avoid /fspec
+      expect(message).toContain('/prompts:fspec');
+      expect(message).not.toContain('Run /fspec');
+    });
+  });
+
   describe('Scenario: Unknown agent receives generic fallback message', () => {
     it('should return generic fallback message for unknown agents', () => {
       // Given an unknown agent (safe default)

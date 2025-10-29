@@ -5,7 +5,6 @@
 @ui
 @BOARD-019
 Feature: Add fspec logo to TUI header
-
   """
   HYBRID APPROACH: Combines table-style borders (Text with box-drawing chars) with component-based content (Ink Box components). Uses buildBorderRow() for table borders (┌┬┐ ├┼┤ └┴┘), keeps border Text rows, replaces content rows with Box components using flexbox layout. Logo component uses Box width=11 with 3 Text lines for ASCII art. Content components (GitStashesPanel, ChangedFilesPanel, StatusColumn, WorkUnitCard) return Box with NO borders - borders added by UnifiedBoardLayout. Preserves existing state management, scroll handling, shimmer animation, and keyboard input. Removes logo injection hack and centerText utility.
   """
@@ -62,7 +61,6 @@ Feature: Add fspec logo to TUI header
   #   A: true
   #
   # ========================================
-
   Background: User Story
     As a developer using fspec TUI
     I want to see the fspec logo in the TUI header
@@ -75,11 +73,9 @@ Feature: Add fspec logo to TUI header
     And the logo line 2 should display "┣ ┗┓┃┃┣ ┃"
     And the logo line 3 should display "┻ ┗┛┣┛┗┛┗┛"
 
-
   Scenario: TUI uses hybrid rendering with table borders and Box content
     Given I have a fspec project with work units
     When I launch the fspec TUI
     Then table borders should be rendered as Text rows with box-drawing characters
     And content between borders should use Ink Box components
     And the Logo component should be a Box with width 11
-

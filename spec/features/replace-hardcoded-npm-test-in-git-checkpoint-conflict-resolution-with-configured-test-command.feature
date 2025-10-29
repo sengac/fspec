@@ -9,7 +9,6 @@
 @platform-agnostic
 @INIT-014
 Feature: Replace hardcoded npm test in git-checkpoint conflict resolution with configured test command
-
   """
   The detectConflicts function in git-checkpoint.ts must load fspec config using loadConfig(cwd) from src/utils/config.ts. This allows access to config.tools.test.command which contains the configured test command. The function must be modified to accept cwd parameter (already present) and replace the hardcoded 'npm test' string with the configured value. If config loading fails or test command is not set, fallback to generic language 'your configured test command'.
   """
@@ -31,7 +30,6 @@ Feature: Replace hardcoded npm test in git-checkpoint conflict resolution with c
   #   5. JavaScript project with 'npm test' configured - system-reminder correctly shows 'Run: npm test' (proving config loading works)
   #
   # ========================================
-
   Background: User Story
     As a AI agent
     I want to see platform-agnostic test commands in git conflict resolution guidance

@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-29T00:30:26.789Z"
+    "lastUpdated": "2025-10-29T04:26:08.181Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -16632,6 +16632,132 @@
       ],
       "estimate": 3,
       "updated": "2025-10-29T00:45:01.629Z"
+    },
+    "AGENT-018": {
+      "id": "AGENT-018",
+      "title": "Codex loads fspec prompt from user home directory",
+      "type": "story",
+      "status": "implementing",
+      "createdAt": "2025-10-29T04:25:59.776Z",
+      "updatedAt": "2025-10-29T05:07:44.213Z",
+      "description": "Codex should copy fspec.md into the user's ~/.codex/prompts directory using a cross-platform home directory lookup",
+      "children": [],
+      "userStory": {
+        "role": "Codex CLI maintainer",
+        "action": "ensure fspec prompt files install into the global Codex prompts directory",
+        "benefit": "Codex can load fspec guidance without relying on project-level prompt folders"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-29T04:26:31.759Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-29T04:41:53.257Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-29T04:51:42.455Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-29T05:03:17.092Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-29T05:04:47.532Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-29T05:07:44.213Z"
+        }
+      ],
+      "rules": [
+        "fspec.md must be copied into the user's global ~/.codex/prompts directory rather than the project-level .codex/prompts",
+        "Home directory resolution must use a cross-platform API (e.g., Node os.homedir()) instead of hard-coded paths or environment assumptions",
+        "If ~/.codex/prompts does not exist it must be created before copying fspec.md",
+        "The fspec prompt auto-generation routine must write fspec.md directly into the resolved ~/.codex/prompts directory",
+        "No changes to existing project-level prompt; fspec init only needs to generate the home-directory copy.",
+        "Codex prompt documentation must instruct agents to run /prompts:fspec instead of /fspec"
+      ],
+      "examples": [
+        "Given a Linux user with HOME=/home/sam, running the Codex fspec prompt setup copies ./.codex/prompts/fspec.md to /home/sam/.codex/prompts/fspec.md",
+        "Given a Windows user with USERPROFILE=C:\\Users\\Riley, the setup writes fspec.md to C:\\Users\\Riley\\.codex\\prompts\\fspec.md by resolving the home directory rather than hard-coding ~",
+        "When fspec init --agent=codex completes, the generated instructions tell the user to run /prompts:fspec rather than /fspec"
+      ],
+      "questions": [
+        {
+          "text": "@human: Should we delete the project-level .codex/prompts/fspec.md after copying to the user directory, or keep it for backward compatibility?",
+          "selected": true,
+          "answer": "No changes to existing project-level prompt; fspec init only needs to generate the home-directory copy."
+        }
+      ],
+      "assumptions": [
+        "Codex has write permissions to create ~/.codex/prompts in the user's home directory"
+      ],
+      "estimate": 3
+    },
+    "BUG-048": {
+      "id": "BUG-048",
+      "title": "ULTRATHINK discovery reminders failing tests",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-10-29T05:21:57.290Z",
+      "updatedAt": "2025-10-29T06:37:31.102Z",
+      "description": "draft-driven-discovery-feedback-loop.test.ts scenarios expecting ULTRATHINK messaging need review and code update; full vitest run also hits loadStashes spy restore error",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-29T05:36:46.675Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-29T06:03:06.554Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-29T06:04:54.372Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-29T06:11:53.084Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-29T06:37:31.102Z"
+        }
+      ],
+      "rules": [
+        "Only agents with supportsMetaCognition true (currently Claude) should display ULTRATHINK terminology in discovery system-reminders",
+        "Legacy ULTRATHINK scenarios should execute under FSPEC_AGENT=claude so conditional messaging remains valid",
+        "Cursor reminders should use its strongest supported phrasing 'think a lot' when prompting deep analysis",
+        "Run those scenarios with FSPEC_AGENT=claude so ULTRATHINK expectations stay valid.",
+        "All non-Claude agents (including Cursor) must use the phrase 'think a lot' instead of ULTRATHINK in discovery reminders"
+      ],
+      "examples": [
+        "When no agent is detected (default), discover-foundation should emit generic analysis guidance without the word 'ULTRATHINK'",
+        "Each supported agent (claude, cursor, aider, default) has a dedicated test verifying the expected reminder phrasing"
+      ],
+      "questions": [
+        {
+          "text": "@human: Should legacy scenarios that expect ULTRATHINK be updated to run under a Claude context, or should they change expectations to generic guidance?",
+          "selected": true,
+          "answer": "Run those scenarios with FSPEC_AGENT=claude so ULTRATHINK expectations stay valid."
+        }
+      ],
+      "updated": "2025-10-29T06:37:31.102Z"
+    },
+    "CLEAN-002": {
+      "id": "CLEAN-002",
+      "title": "Resolve outstanding ESLint violations",
+      "type": "task",
+      "status": "backlog",
+      "createdAt": "2025-10-29T06:36:51.817Z",
+      "updatedAt": "2025-10-29T06:36:51.817Z",
+      "description": "Track cleanup of existing warnings/errors reported by npm run lint (unused variables, unexpected any, global references, etc.).",
+      "children": []
     }
   },
   "states": {
@@ -16658,7 +16784,8 @@
       "AGENT-015",
       "AGENT-016",
       "AGENT-017",
-      "FEAT-018"
+      "FEAT-018",
+      "CLEAN-002"
     ],
     "specifying": [
       "GIT-004",
@@ -16667,9 +16794,12 @@
       "LANG-001"
     ],
     "testing": [],
-    "implementing": [],
+    "implementing": [
+      "AGENT-018"
+    ],
     "validating": [],
     "done": [
+      "BUG-048",
       "ITF-008",
       "ITF-007",
       "ITF-006",
