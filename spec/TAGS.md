@@ -185,6 +185,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@file-structure` | File and directory structure validation |
 | `@file-system` | File System Operations |
 | `@file-watching` | Features using file system watchers (fs.watch) for change detection |
+| `@flexbox` | Flexbox layout implementation and responsive design |
 | `@gherkin` | Gherkin Specification Compliance |
 | `@graceful-degradation` | Features that gracefully handle missing or invalid data |
 | `@guidance` | Features that provide AI guidance/prompts rather than code implementation |
@@ -561,7 +562,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-10-29T07:37:39.299Z_
+_Last updated: 2025-10-29T09:43:08.188Z_
 
 **Update Command**: `fspec tag-stats`
 

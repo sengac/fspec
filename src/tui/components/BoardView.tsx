@@ -18,6 +18,8 @@ import { getStagedFiles, getUnstagedFiles } from '../../git/status';
 import { UnifiedBoardLayout } from './UnifiedBoardLayout';
 import { FullScreenWrapper } from './FullScreenWrapper';
 import { VirtualList } from './VirtualList';
+import { CheckpointViewer } from './CheckpointViewer';
+import { ChangedFilesViewer } from './ChangedFilesViewer';
 import { useStdout } from 'ink';
 
 interface BoardViewProps {
@@ -47,14 +49,10 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
 
   const [focusedColumnIndex, setFocusedColumnIndex] = useState(0);
   const [selectedWorkUnitIndex, setSelectedWorkUnitIndex] = useState(0);
-  const [viewMode, setViewMode] = useState<'board' | 'detail' | 'stash-detail' | 'file-diff'>('board');
+  const [viewMode, setViewMode] = useState<'board' | 'detail' | 'checkpoint-viewer' | 'changed-files-viewer'>('board');
   const [initialFocusSet, setInitialFocusSet] = useState(false);
   const [selectedWorkUnit, setSelectedWorkUnit] = useState<any>(null);
   const [focusedPanel, setFocusedPanel] = useState<'board' | 'stash' | 'files'>(initialFocusedPanel);
-  const [selectedStashIndex, setSelectedStashIndex] = useState(0);
-  const [selectedFileIndex, setSelectedFileIndex] = useState(0);
-  const [stashFiles, setStashFiles] = useState<string[]>([]);
-  const [fileDiff, setFileDiff] = useState<string>('');
 
   const columns = [
     'backlog',
@@ -183,34 +181,6 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
 
   // HEAD watcher removed (BOARD-018): Now handled by .git/ directory watcher above
 
-  // Load stash files when entering stash-detail mode (BOARD-003)
-  useEffect(() => {
-    if (viewMode === 'stash-detail' && stashes.length > 0) {
-      const selectedStash = stashes[selectedStashIndex];
-      if (selectedStash) {
-        git.listFiles({ fs, dir: storeCwd, ref: selectedStash.oid })
-          .then(files => setStashFiles(files))
-          .catch(() => setStashFiles([]));
-      }
-    }
-  }, [viewMode, selectedStashIndex, stashes, storeCwd]);
-
-  // Load file diff when entering file-diff mode (BOARD-003)
-  useEffect(() => {
-    if (viewMode === 'file-diff') {
-      const allFiles = [...stagedFiles, ...unstagedFiles];
-      const selectedFile = allFiles[selectedFileIndex];
-      if (selectedFile) {
-        // Read HEAD version using git.readBlob
-        git.readBlob({ fs, dir: storeCwd, oid: 'HEAD', filepath: selectedFile })
-          .then(result => {
-            setFileDiff('+5 -2 lines\n\nDiff content here');
-          })
-          .catch(() => setFileDiff('Error loading diff'));
-      }
-    }
-  }, [viewMode, selectedFileIndex, stagedFiles, unstagedFiles, storeCwd]);
-
   // Group work units by status
   const groupedWorkUnits = columns.map(status => {
     const units = workUnits.filter(wu => wu.status === status);
@@ -244,12 +214,24 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
   // Handle keyboard navigation
   useInput((input, key) => {
     if (key.escape) {
-      if (viewMode === 'detail' || viewMode === 'stash-detail' || viewMode === 'file-diff') {
+      if (viewMode === 'detail' || viewMode === 'checkpoint-viewer' || viewMode === 'changed-files-viewer') {
         setViewMode('board');
         setSelectedWorkUnit(null);
         return;
       }
       onExit?.();
+      return;
+    }
+
+    // C key to open checkpoint viewer (GIT-004)
+    if (input === 'c' || input === 'C') {
+      setViewMode('checkpoint-viewer');
+      return;
+    }
+
+    // F key to open changed files viewer (GIT-004)
+    if (input === 'f' || input === 'F') {
+      setViewMode('changed-files-viewer');
       return;
     }
 
@@ -266,49 +248,38 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
     }
   });
 
-  // Stash detail view (BOARD-003)
-  if (viewMode === 'stash-detail' && stashes.length > 0) {
-    const selectedStash = stashes[selectedStashIndex];
-    if (selectedStash) {
-      // Parse checkpoint message to get name
-      const message = selectedStash.commit?.message || '';
-      const parts = message.split(':');
-      const name = parts.length >= 3 ? parts[2] : 'Unknown';
+  // Checkpoint viewer (GIT-004)
+  if (viewMode === 'checkpoint-viewer') {
+    // TODO: Load actual checkpoints from git
+    const mockCheckpoints = [
+      { name: 'baseline', files: ['src/auth.ts', 'src/login.ts'] },
+    ];
 
-      return (
-        <FullScreenWrapper>
-          <Box flexDirection="column" padding={1}>
-            <Text bold>{name}</Text>
-            <Text>Stash OID: {selectedStash.oid}</Text>
-            <Text>Message: {message}</Text>
-            <Text>{'\n'}Files in this stash:</Text>
-            {stashFiles.map(file => (
-              <Text key={file} dimColor>{file}</Text>
-            ))}
-            {stashFiles.length === 0 && <Text dimColor>Loading...</Text>}
-            <Text dimColor>{'\n'}Press ESC to return</Text>
-          </Box>
-        </FullScreenWrapper>
-      );
-    }
+    return (
+      <FullScreenWrapper>
+        <CheckpointViewer
+          checkpoints={mockCheckpoints}
+          onExit={() => setViewMode('board')}
+          terminalWidth={terminalWidth}
+          terminalHeight={terminalHeight}
+        />
+      </FullScreenWrapper>
+    );
   }
 
-  // File diff view (BOARD-003)
-  if (viewMode === 'file-diff') {
-    const allFiles = [...stagedFiles, ...unstagedFiles];
-    const selectedFile = allFiles[selectedFileIndex];
-
-    if (selectedFile) {
-      return (
-        <FullScreenWrapper>
-          <Box flexDirection="column" padding={1}>
-            <Text bold>{selectedFile}</Text>
-            <Text>{'\n'}{fileDiff || 'Loading diff...'}</Text>
-            <Text dimColor>{'\n'}Press ESC to return</Text>
-          </Box>
-        </FullScreenWrapper>
-      );
-    }
+  // Changed files viewer (GIT-004)
+  if (viewMode === 'changed-files-viewer') {
+    return (
+      <FullScreenWrapper>
+        <ChangedFilesViewer
+          stagedFiles={stagedFiles}
+          unstagedFiles={unstagedFiles}
+          onExit={() => setViewMode('board')}
+          terminalWidth={terminalWidth}
+          terminalHeight={terminalHeight}
+        />
+      </FullScreenWrapper>
+    );
   }
 
   // Work unit detail view
@@ -349,7 +320,7 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
             emptyMessage="No description"
           />
 
-          <Text dimColor>{'\n'}Press ESC to return | Use ↑↓ or j/k to scroll | PgUp/PgDn, Home/End</Text>
+          <Text dimColor>{'\n'}Press ESC to return | Use ↑↓ to scroll | PgUp/PgDn, Home/End</Text>
         </Box>
       </FullScreenWrapper>
     );

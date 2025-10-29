@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Box, Text, useInput } from 'ink';
+import { useTerminalSize } from '../hooks/useTerminalSize';
 
 // Unicode characters for scrollbar
 const SCROLLBAR_CHARS = {
@@ -9,7 +10,6 @@ const SCROLLBAR_CHARS = {
 
 interface VirtualListProps<T> {
   items: T[];
-  height: number;
   renderItem: (item: T, index: number, isSelected: boolean) => React.ReactNode;
   onSelect?: (item: T, index: number) => void;
   onFocus?: (item: T, index: number) => void;
@@ -17,11 +17,11 @@ interface VirtualListProps<T> {
   emptyMessage?: string;
   showScrollbar?: boolean;
   enableWrapAround?: boolean;
+  reservedLines?: number; // Lines reserved for headers/footers (default: 4)
 }
 
 export function VirtualList<T>({
   items,
-  height,
   renderItem,
   onSelect,
   onFocus,
@@ -29,12 +29,14 @@ export function VirtualList<T>({
   emptyMessage = 'No items',
   showScrollbar = true,
   enableWrapAround = false,
+  reservedLines = 4,
 }: VirtualListProps<T>): React.ReactElement {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [scrollOffset, setScrollOffset] = useState(0);
+  const { height: terminalHeight } = useTerminalSize();
 
-  // Calculate visible window
-  const visibleHeight = Math.max(1, height);
+  // Calculate visible window from terminal size
+  const visibleHeight = Math.max(1, terminalHeight - reservedLines);
   const visibleItems = useMemo(() => {
     const start = scrollOffset;
     const end = Math.min(items.length, scrollOffset + visibleHeight);
@@ -139,14 +141,14 @@ export function VirtualList<T>({
 
   if (items.length === 0) {
     return (
-      <Box height={height} flexDirection="column">
+      <Box flexGrow={1} flexDirection="column">
         <Text dimColor>{emptyMessage}</Text>
       </Box>
     );
   }
 
   return (
-    <Box flexDirection="row" height={height}>
+    <Box flexDirection="row" flexGrow={1}>
       <Box flexDirection="column" flexGrow={1}>
         {visibleItems.map((item, visibleIndex) => {
           const actualIndex = scrollOffset + visibleIndex;
