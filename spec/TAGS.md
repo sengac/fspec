@@ -72,6 +72,7 @@ Tags that categorize features by functional area.
 | `@delete` | Delete operations |
 | `@dependencies` | Dependency management between work units |
 | `@dependency-management` | Work unit dependency tracking |
+| `@diff-viewer` | Diff visualization and comparison features |
 | `@discovery-command` | Example Mapping discovery commands |
 | `@documentation` | Documentation Display |
 | `@epics` | Epic management and high-level work grouping |
@@ -277,6 +278,7 @@ Tags tracking development status of features.
 | `@bug-fix` | Marks bug fixes and corrections to existing functionality |
 | `@deprecated` | Deprecated |
 | `@done` | Complete |
+| `@enhancement` | Feature enhancement or improvement |
 | `@exmap-001` | Work unit: Redesign Example Mapping to match BDD technique |
 | `@init-001` | Work unit: Add ensureWorkUnitsFile to ALL 48+ commands |
 | `@partial` | Partially implemented feature - work in progress |
@@ -563,7 +565,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-10-29T09:59:06.317Z_
+_Last updated: 2025-10-29T10:58:10.124Z_
 
 **Update Command**: `fspec tag-stats`
 

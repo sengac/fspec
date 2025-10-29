@@ -5,6 +5,7 @@
 import git from 'isomorphic-git';
 import fsNode from 'fs';
 import path from 'path';
+import { diffLines, Change } from 'diff';
 
 /**
  * Get unified diff for a specific file
@@ -65,7 +66,7 @@ export async function getFileDiff(
 }
 
 /**
- * Generate unified diff format from two strings
+ * Generate unified diff format from two strings using Myers algorithm
  * @param filepath - File path for diff header
  * @param oldContent - Original content
  * @param newContent - New content
@@ -84,32 +85,32 @@ function generateUnifiedDiff(
   diff.push(`--- a/${filepath}`);
   diff.push(`+++ b/${filepath}`);
 
-  // Simple line-by-line diff (not a true unified diff algorithm)
-  let oldIndex = 0;
-  let newIndex = 0;
-  const chunks: string[] = [];
+  // Use Myers algorithm (via diff library) for proper line alignment
+  const changes: Change[] = diffLines(oldContent, newContent, {
+    newlineIsToken: false,
+  });
 
-  while (oldIndex < oldLines.length || newIndex < newLines.length) {
-    if (
-      oldIndex < oldLines.length &&
-      newIndex < newLines.length &&
-      oldLines[oldIndex] === newLines[newIndex]
-    ) {
-      // Lines match
-      chunks.push(` ${oldLines[oldIndex]}`);
-      oldIndex++;
-      newIndex++;
-    } else if (
-      oldIndex < oldLines.length &&
-      (newIndex >= newLines.length || oldLines[oldIndex] !== newLines[newIndex])
-    ) {
-      // Line removed
-      chunks.push(`-${oldLines[oldIndex]}`);
-      oldIndex++;
-    } else if (newIndex < newLines.length) {
-      // Line added
-      chunks.push(`+${newLines[newIndex]}`);
-      newIndex++;
+  const chunks: string[] = [];
+  for (const change of changes) {
+    const lines = change.value
+      .split('\n')
+      .filter(line => line.length > 0 || change.value.endsWith('\n'));
+
+    if (!change.added && !change.removed) {
+      // Context lines (unchanged)
+      for (const line of lines) {
+        chunks.push(` ${line}`);
+      }
+    } else if (change.removed) {
+      // Removed lines
+      for (const line of lines) {
+        chunks.push(`-${line}`);
+      }
+    } else if (change.added) {
+      // Added lines
+      for (const line of lines) {
+        chunks.push(`+${line}`);
+      }
     }
   }
 
