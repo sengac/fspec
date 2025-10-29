@@ -33,6 +33,7 @@ export default defineConfig({
         'isomorphic-git',
         'winston',
         'chokidar',
+        'worker_threads',
       ],
       output: {
         preserveModules: false,
@@ -57,6 +58,13 @@ export default defineConfig({
         cpSync(
           resolve(__dirname, 'src', 'schemas'),
           resolve(__dirname, 'dist', 'schemas'),
+          { recursive: true }
+        );
+
+        // Bundle git directory (includes diff-worker.js)
+        cpSync(
+          resolve(__dirname, 'src', 'git'),
+          resolve(__dirname, 'dist', 'git'),
           { recursive: true }
         );
       },
