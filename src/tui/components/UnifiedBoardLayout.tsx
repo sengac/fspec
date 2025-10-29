@@ -15,7 +15,7 @@ import React, { useMemo, useEffect, useState } from 'react';
 import { Box, Text, useInput, useStdout } from 'ink';
 import chalk from 'chalk';
 import { Logo } from './Logo';
-import { GitStashesPanel } from './GitStashesPanel';
+import { CheckpointPanel } from './CheckpointPanel';
 import { ChangedFilesPanel } from './ChangedFilesPanel';
 
 interface StateHistoryEntry {
@@ -54,6 +54,8 @@ interface UnifiedBoardLayoutProps {
   // BOARD-014: Optional terminal dimensions (for testing)
   terminalWidth?: number;
   terminalHeight?: number;
+  // ITF-006: Optional cwd for checkpoint tracking
+  cwd?: string;
 }
 
 const STATES = ['backlog', 'specifying', 'testing', 'implementing', 'validating', 'done', 'blocked'] as const;
@@ -202,6 +204,7 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
   onMoveDown,
   terminalWidth: propTerminalWidth,
   terminalHeight: propTerminalHeight,
+  cwd,
 }) => {
   // Get terminal dimensions from props (for testing) or Ink hook (for production)
   const { stdout } = useStdout();
@@ -604,7 +607,7 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
         <Box flexDirection="row">
           <Logo />
           <Box flexGrow={1} flexDirection="column" height={4}>
-            <GitStashesPanel stashes={stashes} />
+            <CheckpointPanel cwd={cwd} />
             <ChangedFilesPanel stagedFiles={stagedFiles} unstagedFiles={unstagedFiles} />
           </Box>
         </Box>
