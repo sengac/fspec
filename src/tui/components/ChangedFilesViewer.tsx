@@ -307,6 +307,7 @@ const ChangedFilesViewerComponent: React.FC<ChangedFilesViewerProps> = ({
           color={selectionInverse ? selectionColor : textColor}
           backgroundColor={backgroundColor}
           inverse={selectionInverse}
+          wrap="truncate"
         >
           {line.content}
         </Text>
