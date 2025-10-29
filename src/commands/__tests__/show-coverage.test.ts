@@ -6,7 +6,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, readFile, mkdir, writeFile } from 'fs/promises';
+import { mkdtemp, rm, mkdir, writeFile } from 'fs/promises';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import type { CoverageFile } from '../../utils/coverage-file';
@@ -297,8 +297,9 @@ describe('Feature: Show Coverage Statistics', () => {
           format: 'markdown',
           cwd: testDir,
         });
-      } catch (error: any) {
-        expect(error.message).toContain('fspec create-feature');
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error);
+        expect(message).toContain('fspec create-feature');
       }
     });
   });
@@ -326,8 +327,9 @@ describe('Feature: Show Coverage Statistics', () => {
           format: 'markdown',
           cwd: testDir,
         });
-      } catch (error: any) {
-        expect(error.message).toMatch(/recreat/i);
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error);
+        expect(message).toMatch(/recreat/i);
       }
     });
   });
@@ -384,6 +386,195 @@ describe('Feature: Show Coverage Statistics', () => {
       // And should still display the coverage data
       expect(output).toContain('Test scenario');
       expect(output).toContain('100%');
+    });
+  });
+
+  // BUG-049: show-coverage crashes with undefined coveragePercent
+  describe('BUG-049: Handle coverage files missing stats object', () => {
+    describe('Scenario: Calculate 100% coverage when all scenarios have test mappings', () => {
+      it('should calculate stats and show 100% coverage without crashing', async () => {
+        // @step Given a coverage file exists with 4 scenarios
+        // @step And all 4 scenarios have testMappings
+        // @step And the coverage file is missing the stats object
+        const featuresDir = join(testDir, 'spec', 'features');
+        await mkdir(featuresDir, { recursive: true });
+
+        const coverageData = {
+          scenarios: [
+            {
+              name: 'Scenario 1',
+              testMappings: [
+                {
+                  file: 'test1.ts',
+                  lines: '1-10',
+                  implMappings: [{ file: 'impl1.ts', lines: [1, 2] }],
+                },
+              ],
+            },
+            {
+              name: 'Scenario 2',
+              testMappings: [
+                {
+                  file: 'test2.ts',
+                  lines: '1-10',
+                  implMappings: [{ file: 'impl2.ts', lines: [1, 2] }],
+                },
+              ],
+            },
+            {
+              name: 'Scenario 3',
+              testMappings: [
+                {
+                  file: 'test3.ts',
+                  lines: '1-10',
+                  implMappings: [{ file: 'impl3.ts', lines: [1, 2] }],
+                },
+              ],
+            },
+            {
+              name: 'Scenario 4',
+              testMappings: [
+                {
+                  file: 'test4.ts',
+                  lines: '1-10',
+                  implMappings: [{ file: 'impl4.ts', lines: [1, 2] }],
+                },
+              ],
+            },
+          ],
+          // stats object is missing
+        };
+
+        const coverageFile = join(featuresDir, 'test-feature.feature.coverage');
+        await writeFile(coverageFile, JSON.stringify(coverageData, null, 2));
+
+        // When I run 'fspec show-coverage test-feature'
+        const { showCoverage } = await import('../show-coverage');
+        const output = await showCoverage('test-feature', {
+          format: 'markdown',
+          cwd: testDir,
+        });
+
+        // Then the command should not crash
+        expect(output).toBeDefined();
+
+        // And the output should show coveragePercent as 100%
+        expect(output).toContain('100%');
+
+        // And the output should show "4/4 scenarios"
+        expect(output).toContain('4/4');
+      });
+    });
+
+    describe('Scenario: Calculate 50% coverage when half the scenarios lack test mappings', () => {
+      it('should calculate stats and show 50% coverage without crashing', async () => {
+        // @step Given a coverage file exists with 2 scenarios
+        // @step And 1 scenario has testMappings
+        // @step And 1 scenario has no testMappings
+        // @step And the coverage file is missing the stats object
+        const featuresDir = join(testDir, 'spec', 'features');
+        await mkdir(featuresDir, { recursive: true });
+
+        const coverageData = {
+          scenarios: [
+            {
+              name: 'Covered scenario',
+              testMappings: [
+                {
+                  file: 'test1.ts',
+                  lines: '1-10',
+                  implMappings: [{ file: 'impl1.ts', lines: [1, 2] }],
+                },
+              ],
+            },
+            {
+              name: 'Uncovered scenario',
+              testMappings: [], // No test mappings
+            },
+          ],
+          // stats object is missing
+        };
+
+        const coverageFile = join(featuresDir, 'half-covered.feature.coverage');
+        await writeFile(coverageFile, JSON.stringify(coverageData, null, 2));
+
+        // When I run 'fspec show-coverage half-covered'
+        const { showCoverage } = await import('../show-coverage');
+        const output = await showCoverage('half-covered', {
+          format: 'markdown',
+          cwd: testDir,
+        });
+
+        // Then the command should not crash
+        expect(output).toBeDefined();
+
+        // And the output should show coveragePercent as 50%
+        expect(output).toContain('50%');
+
+        // And the output should show "1/2 scenarios"
+        expect(output).toContain('1/2');
+      });
+    });
+
+    describe('Scenario: Extract unique test files and impl files when stats missing', () => {
+      it('should calculate stats with correct testFiles and implFiles arrays', async () => {
+        // @step Given a coverage file exists with multiple scenarios
+        // @step And the scenarios reference test files "test1.ts" and "test2.ts"
+        // @step And the scenarios reference impl files "impl1.ts" and "impl2.ts"
+        // @step And the coverage file is missing the stats object
+        const featuresDir = join(testDir, 'spec', 'features');
+        await mkdir(featuresDir, { recursive: true });
+
+        const coverageData = {
+          scenarios: [
+            {
+              name: 'Scenario 1',
+              testMappings: [
+                {
+                  file: 'test1.ts',
+                  lines: '1-10',
+                  implMappings: [{ file: 'impl1.ts', lines: [1, 2] }],
+                },
+              ],
+            },
+            {
+              name: 'Scenario 2',
+              testMappings: [
+                {
+                  file: 'test2.ts',
+                  lines: '1-10',
+                  implMappings: [{ file: 'impl2.ts', lines: [1, 2] }],
+                },
+              ],
+            },
+          ],
+          // stats object is missing
+        };
+
+        const coverageFile = join(featuresDir, 'multi-file.feature.coverage');
+        await writeFile(coverageFile, JSON.stringify(coverageData, null, 2));
+
+        // When I run 'fspec show-coverage multi-file' with JSON format to inspect stats
+        const { showCoverage } = await import('../show-coverage');
+        const output = await showCoverage('multi-file', {
+          format: 'json',
+          cwd: testDir,
+        });
+
+        // Parse JSON output to verify stats
+        const result = JSON.parse(output);
+
+        // Then the command should not crash
+        expect(result).toBeDefined();
+
+        // And the calculated stats should include testFiles array
+        expect(result.stats.testFiles).toContain('test1.ts');
+        expect(result.stats.testFiles).toContain('test2.ts');
+
+        // And the calculated stats should include implFiles array
+        expect(result.stats.implFiles).toContain('impl1.ts');
+        expect(result.stats.implFiles).toContain('impl2.ts');
+      });
     });
   });
 });

@@ -1,0 +1,220 @@
+{
+  "scenarios": [
+    {
+      "name": "Calculate 100% coverage when all scenarios have test mappings",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/show-coverage.test.ts",
+          "lines": "393-463",
+          "implMappings": [
+            {
+              "file": "src/commands/show-coverage.ts",
+              "lines": [
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                206,
+                207,
+                208
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Calculate 50% coverage when half the scenarios lack test mappings",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/show-coverage.test.ts",
+          "lines": "468-514",
+          "implMappings": [
+            {
+              "file": "src/commands/show-coverage.ts",
+              "lines": [
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                206,
+                207,
+                208
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Extract unique test files and impl files when stats missing",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/show-coverage.test.ts",
+          "lines": "518-576",
+          "implMappings": [
+            {
+              "file": "src/commands/show-coverage.ts",
+              "lines": [
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                206,
+                207,
+                208
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/commands/__tests__/show-coverage.test.ts"
+    ],
+    "implFiles": [
+      "src/commands/show-coverage.ts"
+    ],
+    "totalLinesCovered": 333
+  }
+}

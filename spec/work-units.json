@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-29T04:26:08.181Z"
+    "lastUpdated": "2025-10-29T07:36:39.259Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -16767,6 +16767,54 @@
       "updatedAt": "2025-10-29T06:36:51.817Z",
       "description": "Track cleanup of existing warnings/errors reported by npm run lint (unused variables, unexpected any, global references, etc.).",
       "children": []
+    },
+    "BUG-049": {
+      "id": "BUG-049",
+      "title": "show-coverage crashes with undefined coveragePercent",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-10-29T07:34:51.779Z",
+      "updatedAt": "2025-10-29T07:40:42.522Z",
+      "description": "Running 'fspec show-coverage codex-init-writes-prompt-to-home-directory' throws TypeError: Cannot read properties of undefined (reading 'coveragePercent'). The coverage file exists and has valid structure with scenarios and mappings, but the stats object appears to be missing or undefined.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-29T07:35:28.898Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-29T07:37:31.652Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-29T07:38:33.873Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-29T07:39:17.289Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-29T07:40:42.523Z"
+        }
+      ],
+      "rules": [
+        "show-coverage must handle coverage files missing stats object gracefully without crashing",
+        "When stats object is missing, show-coverage should calculate stats from scenarios array before displaying coverage",
+        "Calculated stats must match CoverageStats interface: totalScenarios, coveredScenarios, coveragePercent, testFiles, implFiles, totalLinesCovered"
+      ],
+      "examples": [
+        "Given coverage file with 4 scenarios (all with testMappings), when stats missing, show-coverage calculates coveragePercent as 100%",
+        "Given coverage file with 2 scenarios (1 with testMappings, 1 without), when stats missing, show-coverage calculates coveragePercent as 50%",
+        "Given coverage file with scenarios array but no stats, show-coverage extracts unique test files and impl files for stats.testFiles and stats.implFiles arrays"
+      ],
+      "userStory": {
+        "role": "developer using fspec show-coverage",
+        "action": "view coverage statistics for features with legacy coverage files missing stats object",
+        "benefit": "the command works reliably without crashing on older coverage file formats"
+      },
+      "updated": "2025-10-29T07:40:42.522Z"
     }
   },
   "states": {
@@ -16806,6 +16854,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "BUG-049",
       "AGENT-018",
       "BUG-048",
       "ITF-008",

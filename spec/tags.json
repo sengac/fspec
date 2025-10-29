@@ -566,6 +566,10 @@
           "description": "Automated workflow operations and state transitions"
         },
         {
+          "name": "@backward-compatibility",
+          "description": "Features ensuring compatibility with older file formats or legacy systems"
+        },
+        {
           "name": "@bdd",
           "description": "Behavior-Driven Development methodology"
         },
@@ -1274,7 +1278,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-10-29T00:34:19.411Z",
+    "lastUpdated": "2025-10-29T07:37:39.299Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

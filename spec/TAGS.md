@@ -166,6 +166,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@auth-001` | Work unit identifier for authentication features (example in example-mapping feature) |
 | `@auto-create` | Scenarios testing automatic file creation when files are missing |
 | `@automation` | Automated workflow operations and state transitions |
+| `@backward-compatibility` | Features ensuring compatibility with older file formats or legacy systems |
 | `@bdd` | Behavior-Driven Development methodology |
 | `@build` | Build system configuration and bundling |
 | `@checkpoints` | Git checkpoint and state restoration features |
@@ -560,7 +561,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-10-29T00:34:19.411Z_
+_Last updated: 2025-10-29T07:37:39.299Z_
 
 **Update Command**: `fspec tag-stats`
 
