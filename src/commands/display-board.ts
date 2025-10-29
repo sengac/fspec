@@ -113,7 +113,12 @@ export function registerBoardCommand(program: Command): void {
               board: result.board,
               summary: result.summary,
               limit,
-            })
+            }),
+            {
+              // Enable mouse events (trackpad, scroll wheel, clicks)
+              stdin: process.stdin,
+              stdout: process.stdout,
+            }
           );
         }
       } catch (error: any) {

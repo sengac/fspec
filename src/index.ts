@@ -351,7 +351,16 @@ async function main(): Promise<void> {
         onExit: () => {
           process.exit(0);
         },
-      })
+      }),
+      {
+        // Enable mouse events (trackpad, scroll wheel, clicks)
+        stdin: process.stdin,
+        stdout: process.stdout,
+        // Debug mode can be enabled via DEBUG env var
+        debug: false,
+        // PatchConsole is useful for development
+        patchConsole: false,
+      }
     );
     await waitUntilExit();
     return;

@@ -68,6 +68,10 @@
         {
           "name": "@validator",
           "description": "Validation Logic"
+        },
+        {
+          "name": "@virtuallist",
+          "description": "Features related to VirtualList component"
         }
       ],
       "rule": "Every feature file MUST have at least ONE component tag (may have multiple if cross-component)."
@@ -288,6 +292,10 @@
         {
           "name": "@infrastructure",
           "description": "Core infrastructure and shared utilities"
+        },
+        {
+          "name": "@interaction",
+          "description": "User interaction and input handling features"
         },
         {
           "name": "@interactive-cli",
@@ -712,6 +720,10 @@
         {
           "name": "@mermaid",
           "description": "Mermaid Diagram Support"
+        },
+        {
+          "name": "@mouse-events",
+          "description": "Features that handle mouse and trackpad events"
         },
         {
           "name": "@multi-agent",
@@ -1294,7 +1306,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-10-29T10:58:10.124Z",
+    "lastUpdated": "2025-10-29T11:29:08.309Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

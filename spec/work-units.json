@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-29T11:03:54.172Z"
+    "lastUpdated": "2025-10-29T11:25:11.982Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -17044,9 +17044,9 @@
       "id": "BUG-050",
       "title": "Diff display not showing line-by-line changes properly",
       "type": "bug",
-      "status": "validating",
+      "status": "done",
       "createdAt": "2025-10-29T11:01:14.558Z",
-      "updatedAt": "2025-10-29T11:06:28.461Z",
+      "updatedAt": "2025-10-29T11:20:26.544Z",
       "description": "The ChangedFilesViewer is using the 'diff' library but it doesn't properly show line-by-line changes. When there's only 1 line difference in a file, it shows many unrelated lines as changed instead of just the actual changed line.",
       "children": [],
       "stateHistory": [
@@ -17065,6 +17065,10 @@
         {
           "state": "validating",
           "timestamp": "2025-10-29T11:06:28.461Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-29T11:20:26.544Z"
         }
       ],
       "rules": [
@@ -17089,17 +17093,96 @@
         "action": "see only the lines that actually changed in diffs",
         "benefit": "I can quickly understand what was modified without being confused by unrelated lines"
       },
-      "estimate": 3
+      "estimate": 3,
+      "updated": "2025-10-29T11:20:26.544Z"
     },
     "BUG-051": {
       "id": "BUG-051",
       "title": "CheckpointViewer test failures",
       "type": "bug",
-      "status": "backlog",
+      "status": "specifying",
       "createdAt": "2025-10-29T11:01:15.861Z",
-      "updatedAt": "2025-10-29T11:01:15.861Z",
+      "updatedAt": "2025-10-29T11:22:14.911Z",
       "description": "7 tests failing: 5 tests expecting selection/navigation behavior not implemented, 1 test using jest.fn() instead of vi.fn() (Vitest project), 1 test expecting frame change on Tab key",
-      "children": []
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-29T11:22:14.911Z"
+        }
+      ]
+    },
+    "TUI-001": {
+      "id": "TUI-001",
+      "title": "Mouse scroll wheel and trackpad support for VirtualList",
+      "type": "story",
+      "status": "validating",
+      "createdAt": "2025-10-29T11:24:57.029Z",
+      "updatedAt": "2025-10-29T11:38:10.889Z",
+      "description": "Add mouse scroll wheel and trackpad scrolling support to ALL VirtualList instances in the TUI application using Ink's useInput hook and mouse event handling. Support both scroll up/down and ensure proper throttling for performance.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-29T11:25:03.887Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-29T11:30:34.722Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-29T11:33:34.647Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-29T11:38:10.889Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using fspec TUI",
+        "action": "scroll through lists using mouse wheel or trackpad",
+        "benefit": "I can navigate more efficiently without relying on keyboard arrow keys"
+      },
+      "rules": [
+        "Mouse scroll events detected via useInput hook checking key.mouse.button === 'none' for scroll actions",
+        "Scroll events MUST be throttled to prevent performance degradation from high-frequency events",
+        "All VirtualList instances in the application MUST support mouse scrolling consistently",
+        "Terminal must have mouse tracking enabled for scroll events to work",
+        "Traditional scrolling behavior: scroll wheel down moves viewport down (shows items below), scroll wheel up moves viewport up (shows items above)",
+        "Use 100ms throttle interval for scroll events",
+        "Scroll events only handled when pane containing VirtualList has focus",
+        "Vertical scrolling only - no horizontal scrolling support needed"
+      ],
+      "examples": [
+        "User scrolls down with mouse wheel in Kanban board file list → selected item moves down one item",
+        "User scrolls up with mouse wheel in CheckpointViewer file list → selected item moves up one item",
+        "User scrolls with trackpad (two-finger gesture) on Mac → behaves identically to mouse wheel scroll",
+        "User rapidly scrolls mouse wheel → throttled events prevent UI lag and maintain smooth navigation"
+      ],
+      "questions": [
+        {
+          "text": "@human: Should scroll wheel down move selection down (natural scrolling) or scroll the viewport down showing items above (traditional scrolling)?",
+          "selected": true,
+          "answer": "Traditional scrolling: scroll wheel down shows items below, scroll wheel up shows items above"
+        },
+        {
+          "text": "@human: What throttle interval should be used for scroll events? (e.g., 50ms, 100ms, 150ms)",
+          "selected": true,
+          "answer": "100ms throttle interval (appropriate balance between responsiveness and performance)"
+        },
+        {
+          "text": "@human: Should scrolling work when ANY pane is active, or only when specific panes (like file list) have focus?",
+          "selected": true,
+          "answer": "Scrolling works when ANY pane that has VirtualList is focused"
+        },
+        {
+          "text": "@human: Should holding Shift+ScrollWheel enable horizontal scrolling, or is vertical-only sufficient?",
+          "selected": true,
+          "answer": "Vertical scrolling only - no horizontal scrolling needed"
+        }
+      ],
+      "estimate": 5
     }
   },
   "states": {
@@ -17127,20 +17210,21 @@
       "AGENT-016",
       "AGENT-017",
       "FEAT-018",
-      "CLEAN-002",
-      "BUG-051"
+      "CLEAN-002"
     ],
     "specifying": [
       "RES-006",
       "EST-002",
-      "LANG-001"
+      "LANG-001",
+      "BUG-051"
     ],
     "testing": [],
     "implementing": [],
     "validating": [
-      "BUG-050"
+      "TUI-001"
     ],
     "done": [
+      "BUG-050",
       "GIT-008",
       "GIT-007",
       "GIT-006",

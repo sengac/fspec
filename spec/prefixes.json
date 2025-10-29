@@ -179,6 +179,11 @@
       "prefix": "LOCK",
       "description": "File locking and concurrency safety features",
       "createdAt": "2025-10-28T03:12:11.051Z"
+    },
+    "TUI": {
+      "prefix": "TUI",
+      "description": "Terminal User Interface components and interactions",
+      "createdAt": "2025-10-29T11:24:52.532Z"
     }
   }
 }
