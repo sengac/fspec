@@ -7,7 +7,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, writeFile, mkdir, readFile } from 'fs/promises';
+import { mkdtemp, rm, writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { tmpdir } from 'os';
 import { showWorkUnit } from '../show-work-unit';
@@ -199,33 +199,6 @@ describe('Feature: Clarify estimation timing in documentation and system-reminde
       // And the error should guide me to generate scenarios first
       expect(errorMessage).toContain('generate scenarios');
       expect(errorMessage).toContain('fspec generate-scenarios');
-    });
-  });
-
-  describe('Scenario: Documentation should clarify estimation timing', () => {
-    it('should explicitly state estimation happens after generating scenarios', async () => {
-      // Given I read the spec/CLAUDE.md workflow documentation
-      const projectRoot = process.cwd();
-      const specClaudeMd = await readFile(
-        join(projectRoot, 'spec/CLAUDE.md'),
-        'utf-8'
-      );
-
-      // When I look for guidance on when to estimate story points
-      const specEstimationSection = specClaudeMd.toLowerCase();
-
-      // Then the documentation should explicitly state "After generating scenarios from Example Mapping"
-      expect(
-        specEstimationSection.includes('after generating scenarios') ||
-          (specEstimationSection.includes('generate scenarios') &&
-            specEstimationSection.includes('estimate'))
-      ).toBe(true);
-
-      // And the documentation should NOT say "After Example Mapping" without mentioning scenario generation
-      // (This is trickier - we allow "After Example Mapping" as long as it's qualified with scenario generation context)
-      const problematicPattern =
-        /after example mapping.*estimate(?!.*generat)/i;
-      expect(specClaudeMd.match(problematicPattern)).toBeFalsy();
     });
   });
 

@@ -22,10 +22,10 @@ Feature: Keyboard priority reordering with bracket keys
 
   CORRECT Implementation (required):
   - loadData() MUST iterate states arrays to build workUnits in order:
-    1. For each column (backlog, specifying, testing, etc.)
-    2. For each ID in states.columnName array
-    3. Look up workUnit details from workUnitsData.workUnits by ID
-    4. Push to result array IN ORDER
+  1. For each column (backlog, specifying, testing, etc.)
+  2. For each ID in states.columnName array
+  3. Look up workUnit details from workUnitsData.workUnits by ID
+  4. Push to result array IN ORDER
   - This ensures workUnits array reflects states array order
   - Display order will match states array order
 

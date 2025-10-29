@@ -2,7 +2,6 @@
 @cli
 @EST-002
 Feature: AI token usage tracking
-
   """
   Architecture notes:
   - TODO: Add key architectural decisions
@@ -49,7 +48,6 @@ Feature: AI token usage tracking
   #   2. Not for MVP. Track total tokens only. Prompt cache hit/miss tracking is future enhancement.
   #
   # ========================================
-
   Background: User Story
     As a AI agent working on fspec stories
     I want to record token usage cumulatively across the development lifecycle

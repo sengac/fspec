@@ -107,7 +107,7 @@ Run: fspec update-foundation projectName "<name>"`,
 
     'project.vision': `Field ${fieldNum}/${totalFields}: project.vision (elevator pitch)
 
-${agent.supportsMetaCognition ? 'ULTRATHINK: Read ALL code, understand the system deeply.' : 'Carefully analyze the codebase to understand its purpose.'} What is the core PURPOSE?
+${agent.supportsMetaCognition ? 'ULTRATHINK: Read ALL code, understand the system deeply.' : 'Think a lot about the entire codebase.'} What is the core PURPOSE?
 Focus on WHY this exists, not HOW it works.
 
 Ask human to confirm vision.
@@ -435,7 +435,7 @@ Foundation is ready.`;
   const agent = getAgentConfig(cwd);
   const thinkingInstruction = agent.supportsMetaCognition
     ? 'you must ULTRATHINK the entire codebase'
-    : 'you must thoroughly analyze the entire codebase';
+    : 'you must think a lot about the entire codebase';
 
   const systemReminder = `Draft created. To complete foundation, ${thinkingInstruction}.
 

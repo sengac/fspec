@@ -5,6 +5,7 @@
 @multi-agent
 @discovery
 @BUG-031
+@BUG-048
 Feature: No support for ULTRATHINK in discovery-driven feedback loop
   """
   Uses existing INIT-008 agent detection infrastructure (getAgentConfig from agentRuntimeConfig.ts). Implements conditional messaging based on agent.supportsMetaCognition flag. Only modifies 2 locations in discover-foundation.ts: initial draft system-reminder (line ~422) and project.vision field guidance (line ~95). Uses formatAgentOutput() for proper output formatting per agent type (system-reminder for Claude, bold+emoji for IDE, plain for CLI).
@@ -24,9 +25,9 @@ Feature: No support for ULTRATHINK in discovery-driven feedback loop
   #
   # EXAMPLES:
   #   1. Claude Code agent runs discover-foundation, sees 'ULTRATHINK: Read ALL code, understand deeply' in system-reminder
-  #   2. Cursor agent runs discover-foundation, sees 'Carefully analyze the entire codebase' with **⚠️ IMPORTANT:** format
-  #   3. Aider CLI agent runs discover-foundation, sees 'Thoroughly examine the codebase' with **IMPORTANT:** plain text format
-  #   4. Unknown/default agent runs discover-foundation, sees safe generic language without system-reminder tags
+  #   2. Cursor agent runs discover-foundation, sees 'Think a lot about the entire codebase' with **⚠️ IMPORTANT:** format
+  #   3. Aider CLI agent runs discover-foundation, sees 'Think a lot about the entire codebase' with **IMPORTANT:** plain text format
+  #   4. Unknown/default agent runs discover-foundation, sees 'Think a lot about the entire codebase' without system-reminder tags
   #   5. discover-foundation initial draft creation uses agent.supportsMetaCognition to conditionally include ULTRATHINK
   #   6. project.vision field guidance checks agent capabilities before using ULTRATHINK terminology
   #
@@ -54,28 +55,28 @@ Feature: No support for ULTRATHINK in discovery-driven feedback loop
     And the output should contain system-reminder tags
     And the guidance should emphasize deep codebase analysis
 
-  Scenario: Cursor IDE agent receives generic analysis guidance with emoji warning
+  Scenario: Cursor IDE agent receives 'think a lot' guidance with emoji warning
     Given I am using Cursor (FSPEC_AGENT=cursor)
     And Cursor has supportsMetaCognition flag set to false
     When I run fspec discover-foundation
-    Then I should see "Carefully analyze the entire codebase" in the output
+    Then I should see "Think a lot" in the output
     And I should NOT see "ULTRATHINK" in the output
     And the output should contain "**⚠️ IMPORTANT:**" format
     And the output should NOT contain system-reminder tags
 
-  Scenario: Aider CLI agent receives plain text analysis guidance
+  Scenario: Aider CLI agent receives plain text 'think a lot' guidance
     Given I am using Aider (FSPEC_AGENT=aider)
     And Aider has supportsMetaCognition flag set to false
     When I run fspec discover-foundation
-    Then I should see "Thoroughly examine the codebase" in the output
+    Then I should see "Think a lot" in the output
     And I should NOT see "ULTRATHINK" in the output
     And the output should contain "**IMPORTANT:**" format without emoji
     And the output should NOT contain system-reminder tags
 
-  Scenario: Unknown agent receives safe default guidance without system-reminders
+  Scenario: Unknown agent receives 'think a lot' guidance without system-reminders
     Given no agent is configured (no FSPEC_AGENT env var or config file)
     When I run fspec discover-foundation
-    Then I should see generic analysis language in the output
+    Then I should see "Think a lot" in the output
     And I should NOT see "ULTRATHINK" in the output
     And I should NOT see system-reminder tags
     And the guidance should use safe default plain text format

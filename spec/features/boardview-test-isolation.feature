@@ -3,7 +3,6 @@
 @test-coverage
 @BUG-046
 Feature: Fix failing BoardView TUI tests
-
   """
   BoardView component uses useFspecStore hook which loads data from process.cwd(). Tests create temporary directories but store ignores them. Solution: Add optional cwd prop to BoardView and useFspecStore to support test directory isolation.
   """
@@ -23,12 +22,10 @@ Feature: Fix failing BoardView TUI tests
   #   3. BoardView accepts optional cwd prop, passes to store for test directory isolation
   #
   # ========================================
-
   Background: User Story
     As a developer running TUI tests
     I want to test BoardView component in isolation
     So that tests use test data not project data
-
 
   Scenario: Test shows work unit from test directory not project directory
     Given I have a test that creates BOARD-001 in a temporary directory
@@ -36,10 +33,8 @@ Feature: Fix failing BoardView TUI tests
     Then the component should show BOARD-001 from the test directory
     And the component should not show work units from the project directory
 
-
   Scenario: Test shows empty state when test data has no work units
     Given I have a test with an empty work-units.json in a temporary directory
     When I render BoardView component
     Then the component should show 'No work unit selected' message
     And the component should not show work units from the project directory
-

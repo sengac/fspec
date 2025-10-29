@@ -3,9 +3,7 @@
 @setup
 @wip
 @init
-@INIT-015
 Feature: Fix Codex CLI file paths in fspec init
-
   """
   Updates work-units.json descriptions and attachment documentation for Codex CLI references
   """
@@ -44,7 +42,6 @@ Feature: Fix Codex CLI file paths in fspec init
   #   5. No, template files and generated content do not need to be checked
   #
   # ========================================
-
   Background: User Story
     As a developer using fspec with Codex CLI
     I want to initialize fspec with correct Codex CLI file paths
@@ -56,17 +53,14 @@ Feature: Fix Codex CLI file paths in fspec init
     Then the docTemplate should be "AGENTS.md"
     And the docTemplate should not be "CODEX-CLI.md"
 
-
   Scenario: Codex CLI agent registry uses correct prompt file path
     Given the agentRegistry.ts file exists
     When I check the codex-cli agent configuration
     Then the promptPath should be ".codex/prompts/fspec.md"
     And the promptPath should not be ".codex/commands/fspec.md"
 
-
   Scenario: Gitignore excludes correct Codex CLI prompt path
     Given the .gitignore file exists
     When I check the gitignore entries
     Then it should contain ".codex/prompts/fspec.md"
     And it should not contain ".codex/commands/fspec.md"
-

@@ -33,13 +33,32 @@ vi.mock('chokidar', async () => {
   };
 });
 
+type StoreActionKey = 'loadStashes' | 'loadFileStatus';
+
+const spyOnStoreAction = (key: StoreActionKey, restoreQueue: Array<() => void>) => {
+  const store = useFspecStore.getState();
+  const original = store[key];
+  const spy = vi.fn(original);
+  useFspecStore.setState(state => {
+    (state as any)[key] = spy;
+  });
+  restoreQueue.push(() => {
+    useFspecStore.setState(state => {
+      (state as any)[key] = original;
+    });
+  });
+  return spy;
+};
+
 describe('Feature: Git file watchers broken due to direct file watching and atomic operations', () => {
   let tmpDir: string;
   let gitDir: string;
   let gitRefsDir: string;
+  let restoreStoreActions: Array<() => void>;
 
   beforeEach(async () => {
     // Create temp directory structure
+    restoreStoreActions = [];
     tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fspec-test-'));
     gitDir = path.join(tmpDir, '.git');
     gitRefsDir = path.join(gitDir, 'refs');
@@ -72,6 +91,9 @@ describe('Feature: Git file watchers broken due to direct file watching and atom
   });
 
   afterEach(() => {
+    restoreStoreActions.forEach(restore => restore());
+    restoreStoreActions = [];
+    vi.restoreAllMocks();
     // Cleanup temp directory
     if (fs.existsSync(tmpDir)) {
       fs.rmSync(tmpDir, { recursive: true, force: true });
@@ -85,7 +107,7 @@ describe('Feature: Git file watchers broken due to direct file watching and atom
       // @step And I am on macOS where fs.watch filename parameter is unreliable
 
       // Spy on loadStashes BEFORE rendering
-      const loadStashesSpy = vi.spyOn(useFspecStore.getState(), 'loadStashes');
+      const loadStashesSpy = spyOnStoreAction('loadStashes', restoreStoreActions);
 
       const { unmount } = render(<BoardView cwd={tmpDir} />);
 
@@ -149,8 +171,8 @@ describe('Feature: Git file watchers broken due to direct file watching and atom
       // @step And chokidar is watching .git/index, .git/HEAD, and .git/refs/stash
 
       // Spy on methods BEFORE rendering
-      const loadFileStatusSpy = vi.spyOn(useFspecStore.getState(), 'loadFileStatus');
-      const loadStashesSpy = vi.spyOn(useFspecStore.getState(), 'loadStashes');
+      const loadFileStatusSpy = spyOnStoreAction('loadFileStatus', restoreStoreActions);
+      const loadStashesSpy = spyOnStoreAction('loadStashes', restoreStoreActions);
 
       const { unmount } = render(<BoardView cwd={tmpDir} />);
 
@@ -198,8 +220,8 @@ describe('Feature: Git file watchers broken due to direct file watching and atom
       // @step And chokidar is watching .git/index and .git/HEAD
 
       // Spy on methods BEFORE rendering
-      const loadFileStatusSpy = vi.spyOn(useFspecStore.getState(), 'loadFileStatus');
-      const loadStashesSpy = vi.spyOn(useFspecStore.getState(), 'loadStashes');
+      const loadFileStatusSpy = spyOnStoreAction('loadFileStatus', restoreStoreActions);
+      const loadStashesSpy = spyOnStoreAction('loadStashes', restoreStoreActions);
 
       const { unmount } = render(<BoardView cwd={tmpDir} />);
 

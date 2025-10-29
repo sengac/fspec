@@ -1,12 +1,7 @@
 /**
  * Feature: spec/features/no-support-for-ultrathink-in-discovery-driven-feedback-loop.feature
  *
- * This test file validates the acceptance criteria defined in the feature file.
- * Scenarios in this test map directly to scenarios in the Gherkin feature.
- *
- * Tests validate that discover-foundation command adapts its guidance based on
- * the detected AI agent, using ULTRATHINK for Claude Code and generic language
- * for other agents (Cursor, Aider, etc.).
+ * Validates agent-specific guidance wording for the discovery workflow.
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
@@ -65,17 +60,16 @@ describe('Feature: No support for ULTRATHINK in discovery-driven feedback loop',
     });
   });
 
-  describe('Scenario: Cursor IDE agent receives generic analysis guidance with emoji warning', () => {
-    it('should use generic language without ULTRATHINK for Cursor', async () => {
+  describe('Scenario: Cursor IDE agent receives "think a lot" guidance with emoji warning', () => {
+    it('should use "think a lot" guidance for Cursor', async () => {
       // Given I am using Cursor (FSPEC_AGENT=cursor)
       process.env.FSPEC_AGENT = 'cursor';
 
       // When I run fspec discover-foundation
       const result = await discoverFoundation({ cwd: tmpDir });
 
-      // Then I should see "Carefully analyze the entire codebase" in the output
-      expect(result.systemReminder).toContain('analyze');
-      expect(result.systemReminder).toContain('codebase');
+      // Then I should see "think a lot" in the output
+      expect(result.systemReminder.toLowerCase()).toContain('think a lot');
 
       // And I should NOT see "ULTRATHINK" in the output
       expect(result.systemReminder).not.toContain('ULTRATHINK');
@@ -86,17 +80,16 @@ describe('Feature: No support for ULTRATHINK in discovery-driven feedback loop',
     });
   });
 
-  describe('Scenario: Aider CLI agent receives plain text analysis guidance', () => {
-    it('should use generic language without ULTRATHINK for Aider', async () => {
+  describe('Scenario: Aider CLI agent receives plain text "think a lot" guidance', () => {
+    it('should use "think a lot" guidance for Aider', async () => {
       // Given I am using Aider (FSPEC_AGENT=aider)
       process.env.FSPEC_AGENT = 'aider';
 
       // When I run fspec discover-foundation
       const result = await discoverFoundation({ cwd: tmpDir });
 
-      // Then I should see "Thoroughly examine the codebase" or similar in the output
-      expect(result.systemReminder).toMatch(/analyze|examine/i);
-      expect(result.systemReminder).toContain('codebase');
+      // Then I should see "think a lot" in the output
+      expect(result.systemReminder.toLowerCase()).toContain('think a lot');
 
       // And I should NOT see "ULTRATHINK" in the output
       expect(result.systemReminder).not.toContain('ULTRATHINK');
@@ -107,16 +100,16 @@ describe('Feature: No support for ULTRATHINK in discovery-driven feedback loop',
     });
   });
 
-  describe('Scenario: Unknown agent receives safe default guidance without system-reminders', () => {
-    it('should use generic language for unknown/default agent', async () => {
+  describe('Scenario: Unknown agent receives "think a lot" guidance without system-reminders', () => {
+    it('should use "think a lot" guidance for default agent', async () => {
       // Given no agent is configured (no FSPEC_AGENT env var or config file)
       // (We don't set FSPEC_AGENT, so it defaults to safe default)
 
       // When I run fspec discover-foundation
       const result = await discoverFoundation({ cwd: tmpDir });
 
-      // Then I should see generic analysis language in the output
-      expect(result.systemReminder).toMatch(/analyze|examine/i);
+      // Then I should see "think a lot" in the output
+      expect(result.systemReminder.toLowerCase()).toContain('think a lot');
 
       // And I should NOT see "ULTRATHINK" in the output
       expect(result.systemReminder).not.toContain('ULTRATHINK');
@@ -126,8 +119,8 @@ describe('Feature: No support for ULTRATHINK in discovery-driven feedback loop',
     });
   });
 
-  describe('Scenario: Initial draft creation uses agent capability detection for ULTRATHINK', () => {
-    it('should conditionally include ULTRATHINK based on agent.supportsMetaCognition', async () => {
+  describe('Scenario: Initial draft creation applies agent-aware guidance', () => {
+    it('should include ULTRATHINK for Claude and "think a lot" for others', async () => {
       // Given I am implementing the discover-foundation command
       // When the initial draft system-reminder is generated
 
@@ -143,15 +136,16 @@ describe('Feature: No support for ULTRATHINK in discovery-driven feedback loop',
       process.env.FSPEC_AGENT = 'cursor';
       const cursorResult = await discoverFoundation({ cwd: tmpDir });
 
-      // Then the reminder should include "you must thoroughly analyze the entire codebase"
+      // Then the reminder should include "think a lot"
+      expect(cursorResult.systemReminder.toLowerCase()).toContain(
+        'think a lot'
+      );
       expect(cursorResult.systemReminder).not.toContain('ULTRATHINK');
-      expect(cursorResult.systemReminder).toMatch(/analyze|examine/i);
-      expect(cursorResult.systemReminder).toContain('codebase');
     });
   });
 
   describe('Scenario: Project vision field guidance checks agent capabilities for ULTRATHINK', () => {
-    it('should conditionally include ULTRATHINK in project.vision field guidance', async () => {
+    it('should include ULTRATHINK for Claude and "think a lot" for other agents', async () => {
       // Given I am implementing the project.vision field guidance
       // When the field-specific system-reminder is generated
 
@@ -169,9 +163,9 @@ describe('Feature: No support for ULTRATHINK in discovery-driven feedback loop',
       process.env.FSPEC_AGENT = 'aider';
       const aiderResult = await discoverFoundation({ cwd: tmpDir });
 
-      // Then the guidance should include "Carefully analyze the codebase to understand its purpose"
+      // Then the guidance should include "think a lot"
+      expect(aiderResult.systemReminder.toLowerCase()).toContain('think a lot');
       expect(aiderResult.systemReminder).not.toContain('ULTRATHINK');
-      expect(aiderResult.systemReminder).toMatch(/analyze|examine/i);
       expect(aiderResult.systemReminder).toMatch(/purpose|understand/i);
     });
   });

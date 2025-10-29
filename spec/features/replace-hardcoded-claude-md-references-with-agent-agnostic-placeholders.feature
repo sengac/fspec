@@ -6,7 +6,6 @@
 @critical
 @INIT-013
 Feature: Replace hardcoded CLAUDE.md references with agent-agnostic placeholders
-
   """
   Template system uses placeholders ({{DOC_TEMPLATE}}, {{AGENT_NAME}}, {{AGENT_ID}}) that are replaced during generation by templateGenerator.ts replacePlaceholders() function. Three template files currently contain hardcoded 'CLAUDE.md' strings that break agent-agnostic design.
   """
@@ -28,7 +27,6 @@ Feature: Replace hardcoded CLAUDE.md references with agent-agnostic placeholders
   #   5. When Aider user runs 'fspec init --agent=aider', generated spec/AIDER.md should reference 'spec/AIDER.md' not 'spec/CLAUDE.md'
   #
   # ========================================
-
   Background: User Story
     As a developer using any of the 18 supported AI agents
     I want to see correct references to my agent's documentation file in generated templates
