@@ -1,4 +1,4 @@
-@wip
+@done
 @init
 @file-ops
 @agent-compatibility
