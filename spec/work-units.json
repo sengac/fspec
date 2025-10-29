@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-29T21:22:40.905Z"
+    "lastUpdated": "2025-10-29T21:52:31.539Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -17397,6 +17397,56 @@
       ],
       "estimate": 3,
       "updated": "2025-10-29T21:42:38.201Z"
+    },
+    "TUI-005": {
+      "id": "TUI-005",
+      "title": "Checkpoint Viewer loads actual checkpoint data",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-29T21:52:06.500Z",
+      "updatedAt": "2025-10-29T21:55:51.386Z",
+      "description": "The CheckpointViewer component should load actual checkpoints from the git checkpoint system instead of using stub data. The top-left pane lists all checkpoints, the bottom-left pane lists files in the selected checkpoint, and the right pane shows diffs between checkpoint files and HEAD.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-29T21:52:25.343Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-29T21:55:22.686Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-29T21:55:30.785Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-29T21:55:37.436Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-29T21:55:51.387Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer viewing checkpoint data",
+        "action": "see actual checkpoints with their files and diffs",
+        "benefit": "I can inspect real checkpoint state instead of stub data"
+      },
+      "rules": [
+        "Checkpoint list must load from .git/fspec-checkpoints-index/ directory",
+        "File list must be loaded using git.listFiles() with checkpoint OID",
+        "Diff pane must compare checkpoint file version with HEAD version",
+        "Top-left pane shows only checkpoints, bottom-left pane shows only files, right pane shows only diff"
+      ],
+      "examples": [
+        "User opens checkpoint viewer (C key), sees list of 3 checkpoints sorted by timestamp",
+        "User selects checkpoint 'baseline', file list shows ['src/auth.ts', 'src/login.ts'] from that checkpoint",
+        "User selects 'src/auth.ts' from checkpoint, diff pane shows changes between checkpoint version and HEAD"
+      ],
+      "estimate": 5,
+      "updated": "2025-10-29T21:55:51.386Z"
     }
   },
   "states": {
@@ -17437,6 +17487,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "TUI-005",
       "TUI-004",
       "TUI-002",
       "TUI-001",

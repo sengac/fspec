@@ -15,22 +15,26 @@ import { Worker } from 'worker_threads';
 import { join } from 'path';
 import { parseDiff, DiffLine } from '../../git/diff-parser';
 import { useFspecStore } from '../store/fspecStore';
+import * as git from 'isomorphic-git';
+import fs from 'fs';
+import type { Checkpoint as GitCheckpoint } from '../../utils/git-checkpoint';
+import { getCheckpointChangedFiles } from '../../utils/git-checkpoint';
 
 export interface Checkpoint {
   name: string;
   workUnitId: string;
   timestamp: string;
+  stashRef: string;
+  isAutomatic: boolean;
   files: string[];
   fileCount: number;
 }
 
 interface CheckpointViewerProps {
-  checkpoints: Checkpoint[];
   onExit: () => void;
 }
 
 export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
-  checkpoints,
   onExit,
 }) => {
   const [focusedPane, setFocusedPane] = useState<'checkpoints' | 'files' | 'diff'>('checkpoints');
@@ -38,6 +42,8 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
   const [selectedFileIndex, setSelectedFileIndex] = useState(0);
   const [diffContent, setDiffContent] = useState<string>('');
   const [isLoadingDiff, setIsLoadingDiff] = useState(false);
+  const [checkpoints, setCheckpoints] = useState<Checkpoint[]>([]);
+  const [isLoadingCheckpoints, setIsLoadingCheckpoints] = useState(true);
 
   const cwd = useFspecStore(state => state.cwd);
 
@@ -50,19 +56,110 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
   const pendingRequestId = useRef<string | null>(null);
   const componentId = useRef(`CheckpointViewer-${Date.now()}`);
 
-  // Sort checkpoints by timestamp (most recent first)
+  // Load all checkpoints from all work units
+  useEffect(() => {
+    const loadAllCheckpoints = async () => {
+      logger.info(`[${componentId.current}] Starting checkpoint loading from cwd: ${cwd}`);
+      setIsLoadingCheckpoints(true);
+      try {
+        const indexDir = join(cwd, '.git', 'fspec-checkpoints-index');
+        logger.info(`[${componentId.current}] Checking index directory: ${indexDir}`);
+
+        // Check if index directory exists
+        if (!fs.existsSync(indexDir)) {
+          logger.warn(`[${componentId.current}] Index directory does not exist, no checkpoints to load`);
+          setCheckpoints([]);
+          setIsLoadingCheckpoints(false);
+          return;
+        }
+
+        // Read all work unit index files
+        const indexFiles = fs.readdirSync(indexDir).filter(f => f.endsWith('.json'));
+        logger.info(`[${componentId.current}] Found ${indexFiles.length} index files: ${indexFiles.join(', ')}`);
+        const allCheckpoints: Checkpoint[] = [];
+
+        for (const indexFile of indexFiles) {
+          const workUnitId = indexFile.replace('.json', '');
+          const indexPath = join(indexDir, indexFile);
+          logger.info(`[${componentId.current}] Processing index file: ${indexFile} for work unit: ${workUnitId}`);
+
+          const content = fs.readFileSync(indexPath, 'utf-8');
+          const index = JSON.parse(content) as { checkpoints: { name: string; message: string }[] };
+          logger.info(`[${componentId.current}] Found ${index.checkpoints.length} checkpoints in ${indexFile}`);
+
+          for (const cp of index.checkpoints) {
+            const ref = `refs/fspec-checkpoints/${workUnitId}/${cp.name}`;
+            logger.info(`[${componentId.current}] Loading checkpoint: ${cp.name} with ref: ${ref}`);
+
+            try {
+              // Resolve checkpoint ref to get OID
+              const checkpointOid = await git.resolveRef({ fs, dir: cwd, ref });
+              logger.info(`[${componentId.current}] Resolved checkpoint ${cp.name} to OID: ${checkpointOid}`);
+
+              // Load changed files from checkpoint (not all files)
+              logger.info(`[${componentId.current}] Getting changed files for checkpoint ${cp.name}`);
+              const files = await getCheckpointChangedFiles(cwd, checkpointOid);
+              logger.info(`[${componentId.current}] Checkpoint ${cp.name} has ${files.length} changed files: ${files.slice(0, 5).join(', ')}${files.length > 5 ? '...' : ''}`);
+
+              // Parse checkpoint message to extract timestamp
+              const match = cp.message.match(/^fspec-checkpoint:[^:]+:[^:]+:([^:]+)$/);
+              const timestamp = match ? new Date(parseInt(match[1])).toISOString() : new Date().toISOString();
+              logger.info(`[${componentId.current}] Checkpoint ${cp.name} timestamp: ${timestamp}`);
+
+              allCheckpoints.push({
+                name: cp.name,
+                workUnitId,
+                timestamp,
+                stashRef: ref,
+                isAutomatic: cp.name.includes('-auto-'),
+                files,
+                fileCount: files.length,
+              });
+              logger.info(`[${componentId.current}] Successfully loaded checkpoint ${cp.name}`);
+            } catch (error) {
+              // Skip checkpoints that can't be loaded
+              logger.error(`[${componentId.current}] Failed to load checkpoint ${cp.name}: ${error}`);
+            }
+          }
+        }
+
+        logger.info(`[${componentId.current}] Loaded ${allCheckpoints.length} total checkpoints`);
+        setCheckpoints(allCheckpoints);
+      } catch (error) {
+        logger.error(`[${componentId.current}] Failed to load checkpoints: ${error}`);
+        setCheckpoints([]);
+      } finally {
+        setIsLoadingCheckpoints(false);
+        logger.info(`[${componentId.current}] Checkpoint loading complete`);
+      }
+    };
+
+    void loadAllCheckpoints();
+  }, [cwd]);
+
+  // Sort checkpoints by timestamp (most recent first) and limit to 200
   const sortedCheckpoints = useMemo(() => {
-    return [...checkpoints].sort((a, b) => {
+    logger.info(`[${componentId.current}] Sorting ${checkpoints.length} checkpoints by timestamp`);
+    const sorted = [...checkpoints].sort((a, b) => {
       return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
     });
+    // Limit to 200 most recent checkpoints for performance
+    const limited = sorted.slice(0, 200);
+    logger.info(`[${componentId.current}] Limited to ${limited.length} most recent checkpoints: ${limited.slice(0, 10).map(c => c.name).join(', ')}${limited.length > 10 ? '...' : ''}`);
+    return limited;
   }, [checkpoints]);
 
   // Get current checkpoint and files
   const currentCheckpoint = sortedCheckpoints[selectedCheckpointIndex];
   const files: FileItem[] = useMemo(() => {
-    if (!currentCheckpoint) return [];
+    if (!currentCheckpoint) {
+      logger.info(`[${componentId.current}] No current checkpoint selected (index: ${selectedCheckpointIndex})`);
+      return [];
+    }
+    logger.info(`[${componentId.current}] Current checkpoint: ${currentCheckpoint.name} with ${currentCheckpoint.files.length} files`);
+    logger.info(`[${componentId.current}] Files: ${currentCheckpoint.files.slice(0, 10).join(', ')}${currentCheckpoint.files.length > 10 ? '...' : ''}`);
     return currentCheckpoint.files.map(f => ({ path: f, status: 'checkpoint' as const }));
-  }, [currentCheckpoint]);
+  }, [currentCheckpoint, selectedCheckpointIndex]);
 
   // Initialize worker thread on mount
   useEffect(() => {
@@ -149,12 +246,13 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
 
     worker.on('message', messageHandler);
 
-    // Send request to worker
+    // Send request to worker with checkpointRef to compare checkpoint vs HEAD
     logger.info(`[${componentId.current}] Sending request to worker (id=${requestId})`);
     worker.postMessage({
       id: requestId,
       cwd,
       filepath: selectedFile.path,
+      checkpointRef: currentCheckpoint.stashRef, // Compare checkpoint file vs HEAD
     });
 
     // Cleanup function to cancel pending requests
@@ -163,7 +261,7 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
       pendingRequestId.current = null;
       worker.off('message', messageHandler);
     };
-  }, [selectedFileIndex, files, cwd]);
+  }, [selectedFileIndex, files, cwd, currentCheckpoint]);
 
   // Parse diff content into structured DiffLine objects
   const diffLines: DiffLine[] = useMemo(() => {
@@ -196,6 +294,27 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
     // Arrow key navigation handled by VirtualList when focused
   });
 
+  // Loading state
+  if (isLoadingCheckpoints) {
+    return (
+      <Box flexDirection="column" flexGrow={1}>
+        <Box flexDirection="row" flexGrow={1}>
+          <Box flexDirection="column" minWidth={leftColumnMinWidth} flexBasis="25%" flexShrink={1}>
+            <Box flexDirection="column" flexGrow={1} flexBasis={0} borderStyle="single" borderColor="cyan">
+              <Text wrap="truncate">Loading checkpoints...</Text>
+            </Box>
+            <Box flexDirection="column" flexGrow={1} flexBasis={0} borderStyle="single">
+              <Text wrap="truncate">-</Text>
+            </Box>
+          </Box>
+          <Box flexDirection="column" flexGrow={1} borderStyle="single">
+            <Text wrap="truncate">-</Text>
+          </Box>
+        </Box>
+      </Box>
+    );
+  }
+
   // Empty state
   if (sortedCheckpoints.length === 0) {
     return (
@@ -204,39 +323,39 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
           {/* Left column: Checkpoint list (top) + File list (bottom) */}
           <Box flexDirection="column" minWidth={leftColumnMinWidth} flexBasis="25%" flexShrink={1}>
             {/* Checkpoint list pane (top-left) */}
-            <Box flexDirection="column" flexGrow={1} borderStyle="single" borderColor="cyan">
-              <Text>No checkpoints available</Text>
+            <Box flexDirection="column" flexGrow={1} flexBasis={0} borderStyle="single" borderColor="cyan">
+              <Text wrap="truncate">No checkpoints available</Text>
             </Box>
             {/* File list pane (bottom-left) */}
-            <Box flexDirection="column" flexGrow={1} borderStyle="single">
-              <Text>No files</Text>
+            <Box flexDirection="column" flexGrow={1} flexBasis={0} borderStyle="single">
+              <Text wrap="truncate">No files</Text>
             </Box>
           </Box>
 
           {/* Right side: Diff pane */}
           <Box flexDirection="column" flexGrow={1} borderStyle="single">
-            <Text>Select a checkpoint to view files</Text>
+            <Text wrap="truncate">Select a checkpoint to view files</Text>
           </Box>
         </Box>
       </Box>
     );
   }
 
-  // Render checkpoint item with metadata
+  // Render checkpoint item with compact name
   const renderCheckpointItem = (checkpoint: Checkpoint, index: number, isSelected: boolean): React.ReactNode => {
     const indicator = isSelected ? '>' : ' ';
-    const date = new Date(checkpoint.timestamp).toLocaleString();
+
+    // Extract compact name from checkpoint name (e.g., "TUI-001-auto-testing" -> "TUI-001 - TESTING")
+    const parts = checkpoint.name.split('-auto-');
+    const workUnit = parts[0]; // e.g., "TUI-001"
+    const phase = parts[1] ? parts[1].toUpperCase() : 'UNKNOWN'; // e.g., "TESTING"
+    const compactName = `${workUnit} - ${phase}`;
+    const displayName = `${compactName} (${checkpoint.fileCount} ${checkpoint.fileCount === 1 ? 'file' : 'files'})`;
 
     return (
-      <Box width="100%" flexDirection="column">
-        <Text color={isSelected ? 'cyan' : 'white'}>
-          {indicator} {checkpoint.name}
-        </Text>
-        <Text dimColor>
-          {'  '}{checkpoint.workUnitId} | {date}
-        </Text>
-        <Text dimColor>
-          {'  '}{checkpoint.fileCount} files
+      <Box width="100%">
+        <Text color={isSelected ? 'cyan' : 'white'} wrap="truncate">
+          {indicator} {displayName}
         </Text>
       </Box>
     );
@@ -294,10 +413,11 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
           flexBasis="25%"
           flexShrink={1}
         >
-          {/* Checkpoint list pane (top-left) */}
+          {/* Checkpoint list pane (top-left) - flexGrow 1 for 50/50 split */}
           <Box
             flexDirection="column"
             flexGrow={1}
+            flexBasis={0}
             borderStyle="single"
             borderColor={focusedPane === 'checkpoints' ? 'cyan' : 'gray'}
           >
@@ -308,17 +428,20 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
                 showScrollbar={focusedPane === 'checkpoints'}
                 isFocused={focusedPane === 'checkpoints'}
                 onFocus={(checkpoint, index) => {
+                  logger.info(`[${componentId.current}] Checkpoint selection changed: index=${index}, name=${checkpoint.name}`);
                   setSelectedCheckpointIndex(index);
                   setSelectedFileIndex(0); // Reset file selection when checkpoint changes
+                  logger.info(`[${componentId.current}] Reset file selection to 0`);
                 }}
               />
             </Box>
           </Box>
 
-          {/* File list pane (bottom-left) */}
+          {/* File list pane (bottom-left) - flexGrow 1 for 50/50 split */}
           <Box
             flexDirection="column"
             flexGrow={1}
+            flexBasis={0}
             borderStyle="single"
             borderColor={focusedPane === 'files' ? 'cyan' : 'gray'}
           >
@@ -329,7 +452,7 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
                   const indicator = isSelected ? '>' : ' ';
                   return (
                     <Box width="100%">
-                      <Text color={isSelected ? 'cyan' : 'white'}>
+                      <Text color={isSelected ? 'cyan' : 'white'} wrap="truncate">
                         {indicator} {file.path}
                       </Text>
                     </Box>
@@ -337,7 +460,10 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
                 }}
                 showScrollbar={focusedPane === 'files'}
                 isFocused={focusedPane === 'files'}
-                onFocus={(file, index) => setSelectedFileIndex(index)}
+                onFocus={(file, index) => {
+                  logger.info(`[${componentId.current}] File selection changed: index=${index}, path=${file.path}`);
+                  setSelectedFileIndex(index);
+                }}
               />
             </Box>
           </Box>
