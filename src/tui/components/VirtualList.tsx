@@ -1,7 +1,6 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Box, Text, useInput } from 'ink';
 import { useTerminalSize } from '../hooks/useTerminalSize';
-import { logger } from '../../utils/logger';
 
 // Unicode characters for scrollbar
 const SCROLLBAR_CHARS = {
@@ -34,33 +33,26 @@ export function VirtualList<T>({
   reservedLines = 4,
   isFocused = true,
 }: VirtualListProps<T>): React.ReactElement {
-  // Log component mount and props
+  // Enable mouse tracking mode for button events only (not mouse movement)
   useEffect(() => {
-    logger.info(`[VirtualList] Component mounted - items: ${items.length}, isFocused: ${isFocused}, showScrollbar: ${showScrollbar}`);
-
-    // Enable mouse tracking mode for button events only (not mouse movement)
     // \x1b[?1000h enables "button event" tracking (clicks and scroll only)
     // \x1b[?1002h would include drag events
     // \x1b[?1003h includes all movements (too noisy)
     process.stdout.write('\x1b[?1000h');
-    logger.info(`[VirtualList] Enabled mouse button tracking mode`);
 
     return () => {
       // Disable mouse tracking mode on unmount
       process.stdout.write('\x1b[?1000l');
-      logger.info(`[VirtualList] Disabled mouse button tracking mode`);
-      logger.info(`[VirtualList] Component unmounting`);
     };
   }, []);
-
-  // Log when focus changes
-  useEffect(() => {
-    logger.info(`[VirtualList] Focus changed - isFocused: ${isFocused}`);
-  }, [isFocused]);
 
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [scrollOffset, setScrollOffset] = useState(0);
   const { height: terminalHeight } = useTerminalSize();
+
+  // Track last scroll time for acceleration
+  const lastScrollTime = useRef<number>(0);
+  const scrollVelocity = useRef<number>(0);
 
   // Calculate visible window from terminal size
   const visibleHeight = Math.max(1, terminalHeight - reservedLines);
@@ -94,10 +86,7 @@ export function VirtualList<T>({
   }, [selectedIndex, items, onFocus]);
 
   const navigateTo = (newIndex: number): void => {
-    logger.debug(`[VirtualList] navigateTo called - newIndex: ${newIndex}, current: ${selectedIndex}, items.length: ${items.length}`);
-
     if (items.length === 0) {
-      logger.info(`[VirtualList] navigateTo aborted - no items`);
       return;
     }
 
@@ -113,74 +102,66 @@ export function VirtualList<T>({
       targetIndex = Math.max(0, Math.min(items.length - 1, targetIndex));
     }
 
-    logger.info(`[VirtualList] Setting selectedIndex to ${targetIndex} (from ${selectedIndex})`);
     setSelectedIndex(targetIndex);
   };
 
-  // Mouse scroll handler (no throttling - React's render batching handles this)
+  // Mouse scroll handler with acceleration
+  // Scroll faster when scrolling rapidly, slower for precise positioning
   const handleScroll = (direction: 'up' | 'down'): void => {
-    logger.info(`[VirtualList] Scroll handler fired - direction: ${direction}, selectedIndex: ${selectedIndex}`);
+    const now = Date.now();
+    const timeDelta = now - lastScrollTime.current;
+
+    // If scrolling within 150ms, increase velocity (acceleration)
+    // If paused longer, reset to base speed for precise control
+    if (timeDelta < 150) {
+      scrollVelocity.current = Math.min(scrollVelocity.current + 1, 5); // Max 5 items
+    } else {
+      scrollVelocity.current = 1; // Reset to 1 item for precise control
+    }
+
+    lastScrollTime.current = now;
+    const scrollAmount = scrollVelocity.current;
+
     if (direction === 'down') {
-      logger.info(`[VirtualList] Scrolling DOWN - navigating from ${selectedIndex} to ${selectedIndex + 1}`);
-      navigateTo(selectedIndex + 1);
+      navigateTo(selectedIndex + scrollAmount);
     } else if (direction === 'up') {
-      logger.info(`[VirtualList] Scrolling UP - navigating from ${selectedIndex} to ${selectedIndex - 1}`);
-      navigateTo(selectedIndex - 1);
+      navigateTo(selectedIndex - scrollAmount);
     }
   };
 
   useInput(
     (input, key) => {
-      // DEBUG: Log ALL input events
-      logger.info(`[VirtualList] Input event - input: "${input}", key: ${JSON.stringify(key)}`);
-
       if (items.length === 0) {
-        logger.info(`[VirtualList] Ignoring input - items array is empty`);
         return;
       }
 
       // Parse raw mouse escape sequences manually (for terminals where Ink doesn't parse them)
       // Format: ESC[M<btn><x><y> where btn encodes button and action
       if (input.startsWith('[M')) {
-        // Extract button byte (3rd character after ESC[M)
         const buttonByte = input.charCodeAt(2);
-        logger.info(`[VirtualList] Raw mouse escape sequence detected - buttonByte: ${buttonByte} (char: '${String.fromCharCode(buttonByte)}')`);
 
         // Button encoding for scroll wheel (standard xterm):
         // Button codes: 64 = scroll up, 65 = scroll down
         // With 32-byte offset in escape sequence: 96 = scroll up, 97 = scroll down
         if (buttonByte === 96) { // ASCII 96 = '`' = button 64 = scroll up
-          logger.info(`[VirtualList] Scroll UP detected from escape sequence`);
           handleScroll('up');
           return;
         } else if (buttonByte === 97) { // ASCII 97 = 'a' = button 65 = scroll down
-          logger.info(`[VirtualList] Scroll DOWN detected from escape sequence`);
           handleScroll('down');
           return;
-        } else {
-          logger.debug(`[VirtualList] Mouse event with unhandled buttonByte: ${buttonByte}`);
         }
       }
 
       // Mouse scroll handling (key.mouse exists for mouse events - when Ink parses them)
       if (key.mouse) {
-        logger.info(`[VirtualList] Mouse event detected - button: ${key.mouse.button}, action: ${key.mouse.action}, x: ${key.mouse.x}, y: ${key.mouse.y}`);
-
-        // Scroll events detected when button === 'none' (per Ink mouse event docs)
         // Traditional scrolling: scroll down shows items below, scroll up shows items above
         if (key.mouse.button === 'wheelDown') {
-          logger.info(`[VirtualList] Mouse wheel DOWN detected - calling scroll handler`);
           handleScroll('down');
           return;
         } else if (key.mouse.button === 'wheelUp') {
-          logger.info(`[VirtualList] Mouse wheel UP detected - calling scroll handler`);
           handleScroll('up');
           return;
-        } else {
-          logger.info(`[VirtualList] Mouse event with unhandled button: ${key.mouse.button}`);
         }
-      } else {
-        logger.debug(`[VirtualList] Non-mouse event - input: "${input}"`);
       }
 
       // Keyboard Navigation

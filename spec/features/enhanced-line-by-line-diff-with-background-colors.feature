@@ -1,12 +1,14 @@
 @tui
-@GIT-008 @diff-viewer @visualization @enhancement
+@GIT-008
+@diff-viewer
+@visualization
+@enhancement
 Feature: Enhanced line-by-line diff with background colors
-
   As a developer reviewing changes
   I want to see line-by-line diffs with clear background colors
   So that I can easily identify what was replaced, added, or removed
 
-  Background:
+  Background: 
     Given the diff viewer is displaying file changes
     And the diff pane is focused
 
@@ -51,7 +53,6 @@ Feature: Enhanced line-by-line diff with background colors
   # A: Already handled by VirtualList + 100KB truncation
   #
   # ============================================================================
-
   Scenario: Simple line replacement shows old line in red, new line in green
     Given a file with the following unified diff:
       """
@@ -126,14 +127,14 @@ Feature: Enhanced line-by-line diff with background colors
       """
     When I view the diff
     Then I should see:
-      | Line                | Background | Text  | Type         |
-      | const a = 1;        | default    | white | context      |
-      | -const b = 2;       | RED        | WHITE | replacement  |
-      | +const b = 3;       | GREEN      | WHITE | replacement  |
-      | const c = 4;        | default    | white | context      |
-      | +const d = 5;       | GREEN      | WHITE | addition     |
-      | -const e = 6;       | RED        | WHITE | deletion     |
-      | const f = 7;        | default    | white | context      |
+      | Line          | Background | Text  | Type        |
+      | const a = 1;  | default    | white | context     |
+      | -const b = 2; | RED        | WHITE | replacement |
+      | +const b = 3; | GREEN      | WHITE | replacement |
+      | const c = 4;  | default    | white | context     |
+      | +const d = 5; | GREEN      | WHITE | addition    |
+      | -const e = 6; | RED        | WHITE | deletion    |
+      | const f = 7;  | default    | white | context     |
 
   Scenario: Unbalanced replacements handle many-to-one changes
     Given a file with the following unified diff:
@@ -188,48 +189,3 @@ Feature: Enhanced line-by-line diff with background colors
     Then the removed empty line should show RED background
     And the added line should show GREEN background
     And empty lines should be visually distinguishable
-
-  # ============================================================================
-  # Implementation Notes
-  # ============================================================================
-  #
-  # Technical Approach:
-  #
-  # 1. Parse Unified Diff:
-  #    - Split diff into lines
-  #    - Identify line types: hunk header (@@), removed (-), added (+), context
-  #    - Track line numbers for both old and new versions
-  #
-  # 2. Pair Removed/Added Lines:
-  #    - Scan through diff lines
-  #    - When encountering `-` line(s), collect consecutive removals
-  #    - When encountering `+` line(s) after removals, collect consecutive additions
-  #    - Pair the groups as a replacement
-  #    - If `+` without preceding `-`, mark as pure addition
-  #    - If `-` without following `+`, mark as pure deletion
-  #
-  # 3. Render with Background Colors:
-  #    - Use Ink's `Text` component with `backgroundColor` prop
-  #    - For removed lines: backgroundColor="red" color="white"
-  #    - For added lines: backgroundColor="green" color="white"
-  #    - For context lines: default styling
-  #    - For hunk headers: color="cyan"
-  #
-  # 4. Update renderDiffLine function:
-  #    interface DiffLine {
-  #      content: string;
-  #      type: 'hunk' | 'removed' | 'added' | 'context';
-  #      changeGroup: 'replacement' | 'addition' | 'deletion' | null;
-  #    }
-  #
-  #    - Parse diff into DiffLine[] array
-  #    - Analyze consecutive removed/added lines to determine changeGroup
-  #    - Render with appropriate styling based on type and changeGroup
-  #
-  # 5. Color Contrast for Accessibility:
-  #    - Red background: #AA0000 or similar
-  #    - Green background: #00AA00 or similar
-  #    - White text: #FFFFFF
-  #    - Ensures WCAG AA compliance for contrast
-  #
-  # ============================================================================
