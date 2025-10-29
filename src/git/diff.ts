@@ -66,6 +66,75 @@ export async function getFileDiff(
 }
 
 /**
+ * Get diff between a checkpoint file and HEAD
+ * @param cwd - Working directory path
+ * @param filepath - Relative path to file from cwd
+ * @param checkpointRef - Git ref for the checkpoint
+ * @returns Unified diff string or null if no changes
+ */
+export async function getCheckpointFileDiff(
+  cwd: string,
+  filepath: string,
+  checkpointRef: string
+): Promise<string | null> {
+  try {
+    const fs = fsNode.promises;
+
+    // Get checkpoint version of file
+    let checkpointContent = '';
+    try {
+      const checkpointOid = await git.resolveRef({
+        fs: fsNode,
+        dir: cwd,
+        ref: checkpointRef,
+      });
+      const { blob } = await git.readBlob({
+        fs: fsNode,
+        dir: cwd,
+        oid: checkpointOid,
+        filepath,
+      });
+      checkpointContent = Buffer.from(blob).toString('utf8');
+    } catch (error) {
+      // File doesn't exist in checkpoint
+      return `File not found in checkpoint: ${filepath}`;
+    }
+
+    // Get HEAD version of file (if it exists)
+    let headContent = '';
+    try {
+      const headCommitOid = await git.resolveRef({
+        fs: fsNode,
+        dir: cwd,
+        ref: 'HEAD',
+      });
+      const { blob } = await git.readBlob({
+        fs: fsNode,
+        dir: cwd,
+        oid: headCommitOid,
+        filepath,
+      });
+      headContent = Buffer.from(blob).toString('utf8');
+    } catch (error) {
+      // File doesn't exist in HEAD (was deleted)
+      headContent = '';
+    }
+
+    // If contents are identical, no diff
+    if (checkpointContent === headContent) {
+      return 'No changes between checkpoint and HEAD';
+    }
+
+    // Generate unified diff (checkpoint as "old", HEAD as "new")
+    return generateUnifiedDiff(filepath, checkpointContent, headContent);
+  } catch (error) {
+    throw new Error(
+      `Failed to get checkpoint diff for ${filepath}: ${error instanceof Error ? error.message : String(error)}`
+    );
+  }
+}
+
+/**
  * Generate unified diff format from two strings using Myers algorithm
  * @param filepath - File path for diff header
  * @param oldContent - Original content

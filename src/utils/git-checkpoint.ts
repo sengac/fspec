@@ -531,3 +531,94 @@ export function createAutomaticCheckpointName(
 ): string {
   return `${workUnitId}-auto-${fromState}`;
 }
+
+/**
+ * Get list of changed files in a checkpoint by comparing with its parent
+ * @param cwd - Working directory
+ * @param checkpointOid - OID of the checkpoint/stash commit
+ * @returns Array of file paths that were changed in the checkpoint
+ */
+export async function getCheckpointChangedFiles(
+  cwd: string,
+  checkpointOid: string
+): Promise<string[]> {
+  // Dynamic import to avoid circular dependencies
+  const { logger } = await import('./logger.js');
+
+  try {
+    logger.info(
+      `[getCheckpointChangedFiles] Starting for checkpoint OID: ${checkpointOid}`
+    );
+
+    // Read the checkpoint commit to get its parents
+    const commit = await git.readCommit({
+      fs,
+      dir: cwd,
+      oid: checkpointOid,
+    });
+    logger.info(
+      `[getCheckpointChangedFiles] Checkpoint has ${commit.commit.parent.length} parents: ${commit.commit.parent.join(', ')}`
+    );
+
+    // Stash commits have 2 parents: [HEAD, index]
+    // We want to compare the stash against HEAD (first parent)
+    const parentOid = commit.commit.parent[0];
+
+    if (!parentOid) {
+      logger.warn(
+        `[getCheckpointChangedFiles] No parent found - returning all files in checkpoint`
+      );
+      // No parent - return all files in checkpoint (shouldn't happen for stash commits)
+      return await git.listFiles({ fs, dir: cwd, ref: checkpointOid });
+    }
+
+    logger.info(
+      `[getCheckpointChangedFiles] Comparing checkpoint ${checkpointOid} against parent ${parentOid}`
+    );
+
+    // Use walk() to efficiently compare the two trees
+    const changedFiles: string[] = [];
+
+    await git.walk({
+      fs,
+      dir: cwd,
+      trees: [git.TREE({ ref: checkpointOid }), git.TREE({ ref: parentOid })],
+      map: async function (filepath, [checkpointEntry, parentEntry]) {
+        // Skip root directory
+        if (filepath === '.') {
+          return;
+        }
+
+        // Only care about files (blobs), not directories
+        if (checkpointEntry && (await checkpointEntry.type()) === 'tree') {
+          return;
+        }
+
+        // Get OIDs
+        const cpOid = checkpointEntry ? await checkpointEntry.oid() : null;
+        const pOid = parentEntry ? await parentEntry.oid() : null;
+
+        // File is different if:
+        // 1. It exists in checkpoint but not parent (new file)
+        // 2. It exists in both but OIDs differ (modified file)
+        // 3. It exists in parent but not checkpoint (deleted file) - we skip these
+        if (cpOid && cpOid !== pOid) {
+          changedFiles.push(filepath);
+        }
+      },
+    });
+
+    logger.info(
+      `[getCheckpointChangedFiles] Found ${changedFiles.length} changed files`
+    );
+    logger.info(
+      `[getCheckpointChangedFiles] Changed files: ${changedFiles.slice(0, 10).join(', ')}${changedFiles.length > 10 ? '...' : ''}`
+    );
+    return changedFiles;
+  } catch (error) {
+    logger.error(`[getCheckpointChangedFiles] Failed: ${error}`);
+    throw new Error(
+      `Failed to get changed files for checkpoint ${checkpointOid}: ${error instanceof Error ? error.message : String(error)}`
+    );
+  }
+}

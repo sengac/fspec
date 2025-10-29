@@ -250,18 +250,10 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
 
   // Checkpoint viewer (GIT-004)
   if (viewMode === 'checkpoint-viewer') {
-    // TODO: Load actual checkpoints from git
-    const mockCheckpoints = [
-      { name: 'baseline', files: ['src/auth.ts', 'src/login.ts'] },
-    ];
-
     return (
       <FullScreenWrapper>
         <CheckpointViewer
-          checkpoints={mockCheckpoints}
           onExit={() => setViewMode('board')}
-          terminalWidth={terminalWidth}
-          terminalHeight={terminalHeight}
         />
       </FullScreenWrapper>
     );

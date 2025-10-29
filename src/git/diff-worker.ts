@@ -9,12 +9,13 @@
  */
 
 import { parentPort } from 'worker_threads';
-import { getFileDiff } from './diff.js';
+import { getFileDiff, getCheckpointFileDiff } from './diff.js';
 
 interface DiffRequest {
   id: string;
   cwd: string;
   filepath: string;
+  checkpointRef?: string; // Optional: if provided, compare checkpoint vs HEAD
 }
 
 interface DiffResponse {
@@ -29,7 +30,20 @@ if (!parentPort) {
 
 parentPort.on('message', async (request: DiffRequest) => {
   try {
-    const diff = await getFileDiff(request.cwd, request.filepath);
+    let diff: string | null;
+
+    // If checkpointRef is provided, compare checkpoint vs HEAD
+    if (request.checkpointRef) {
+      diff = await getCheckpointFileDiff(
+        request.cwd,
+        request.filepath,
+        request.checkpointRef
+      );
+    } else {
+      // Otherwise, compare working directory vs HEAD
+      diff = await getFileDiff(request.cwd, request.filepath);
+    }
+
     const response: DiffResponse = {
       id: request.id,
       diff: diff || 'No changes to display',
