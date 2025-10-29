@@ -29,7 +29,7 @@ coverage/
 .amazonq/prompts/fspec.md
 .auggie/fspec.md
 .opencode/command/fspec.md
-.codex/commands/fspec.md
+.codex/prompts/fspec.md
 .factory/commands/fspec.md
 .crush/commands/fspec.md
 
@@ -54,7 +54,6 @@ spec/OPENCODE.md
 spec/CODEX.md
 spec/FACTORY.md
 spec/CRUSH.md
-spec/CODEX-CLI.md
 
 # Cursor - https://www.cursor.com/
 .cursor/
