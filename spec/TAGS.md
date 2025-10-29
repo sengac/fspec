@@ -28,6 +28,7 @@ Tags that identify which architectural component a feature belongs to.
 | `@tui` | Terminal User Interface components and infrastructure |
 | `@ui` | User interface and visual components |
 | `@validator` | Validation Logic |
+| `@virtuallist` | Features related to VirtualList component |
 
 **Rule**: Every feature file MUST have at least ONE component tag (may have multiple if cross-component).
 
@@ -90,6 +91,7 @@ Tags that categorize features by functional area.
 | `@help-text` | Help and documentation features |
 | `@impact-analysis` | Impact analysis and dependency chains |
 | `@infrastructure` | Core infrastructure and shared utilities |
+| `@interaction` | User interaction and input handling features |
 | `@interactive-cli` | Interactive CLI features and TUI workflows |
 | `@kanban` | Kanban board and workflow management |
 | `@list` | List operations |
@@ -203,6 +205,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@learning` | Machine learning and adaptive features based on usage patterns |
 | `@logging` | Logging and diagnostics features |
 | `@mermaid` | Mermaid Diagram Support |
+| `@mouse-events` | Features that handle mouse and trackpad events |
 | `@multi-agent` | Multi-agent compatibility features and agent-specific customizations |
 | `@outside-in-bdd` | Outside-in BDD approach using personas and behavior-first thinking |
 | `@pattern-detection` | Features involving pattern detection and analysis from historical data |
@@ -565,7 +568,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-10-29T10:58:10.124Z_
+_Last updated: 2025-10-29T11:29:08.309Z_
 
 **Update Command**: `fspec tag-stats`
 

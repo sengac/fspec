@@ -97,7 +97,12 @@ async function showKeepConfigPrompt(): Promise<boolean> {
         onSubmit: (confirmed: boolean) => {
           resolve(confirmed);
         },
-      })
+      }),
+      {
+        // Enable mouse events (trackpad, scroll wheel, clicks)
+        stdin: process.stdin,
+        stdout: process.stdout,
+      }
     );
     void waitUntilExit();
   });
