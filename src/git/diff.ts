@@ -92,9 +92,7 @@ function generateUnifiedDiff(
 
   const chunks: string[] = [];
   for (const change of changes) {
-    const lines = change.value
-      .split('\n')
-      .filter(line => line.length > 0 || change.value.endsWith('\n'));
+    const lines = change.value.split('\n').filter(line => line.length > 0);
 
     if (!change.added && !change.removed) {
       // Context lines (unchanged)
