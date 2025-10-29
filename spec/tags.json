@@ -642,6 +642,10 @@
           "description": "Features using file system watchers (fs.watch) for change detection"
         },
         {
+          "name": "@flexbox",
+          "description": "Flexbox layout implementation and responsive design"
+        },
+        {
           "name": "@gherkin",
           "description": "Gherkin Specification Compliance"
         },
@@ -1278,7 +1282,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-10-29T07:37:39.299Z",
+    "lastUpdated": "2025-10-29T09:43:08.188Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

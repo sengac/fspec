@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-29T07:36:39.259Z"
+    "lastUpdated": "2025-10-29T09:01:14.993Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -10829,9 +10829,9 @@
       "id": "GIT-004",
       "title": "Interactive checkpoint viewer with diff and commit capabilities",
       "type": "story",
-      "status": "specifying",
+      "status": "done",
       "createdAt": "2025-10-22T13:35:44.893Z",
-      "updatedAt": "2025-10-22T13:36:18.008Z",
+      "updatedAt": "2025-10-29T08:18:27.983Z",
       "description": "Add an interactive TUI for viewing checkpoints, examining file changes, seeing diffs, viewing staged/unstaged files, generating conventional commits, and performing git operations directly from the checkpoint view",
       "children": [],
       "dependsOn": [
@@ -10841,14 +10841,54 @@
         {
           "state": "specifying",
           "timestamp": "2025-10-22T13:36:02.558Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-29T08:06:51.781Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-29T08:08:12.909Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-29T08:17:44.335Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-29T08:18:27.984Z"
         }
       ],
       "questions": [
         {
           "text": "@human: How should users access the interactive checkpoint viewer? New command, integrated into kanban board, or integrated into show-work-unit?",
-          "selected": false
+          "selected": true,
+          "answer": "Integrated into kanban board TUI using C key (checkpoints) and F key (changed files)"
         }
-      ]
+      ],
+      "rules": [
+        "Integrated into kanban board TUI using C key (checkpoints) and F key (changed files)",
+        "View must use unified keybindings consistent with other TUI views (e.g., j/k for scrolling, q to quit)",
+        "View must display two panes: file list (left) and diff view (right), both independently scrollable",
+        "Layout must use flexbox with both file list and diff area using flex to grow proportionally",
+        "Scrolling implementation must follow the same pattern as work unit details view in TUI",
+        "C key opens checkpoint files view, F key opens changed files view",
+        "No vim-style keybindings (j/k/g/G) - use only arrow keys, PgUp/PgDn, Home/End for navigation"
+      ],
+      "examples": [
+        "User presses C in kanban board → checkpoint files view opens with file list on left and diff on right",
+        "User presses F in kanban board → changed files view opens with file list on left and diff on right",
+        "User uses j/k to scroll through file list, selects file, then uses j/k to scroll through diff content",
+        "User presses q in checkpoint/changed files view → returns to kanban board",
+        "File list and diff view both resize proportionally when terminal window resizes (flexbox behavior)"
+      ],
+      "userStory": {
+        "role": "developer using fspec TUI",
+        "action": "view and navigate checkpoint/changed files with diffs",
+        "benefit": "I can quickly understand what changed and restore work if needed"
+      },
+      "estimate": 8,
+      "updated": "2025-10-29T08:18:27.983Z"
     },
     "BOARD-003": {
       "id": "BOARD-003",
@@ -16815,6 +16855,78 @@
         "benefit": "the command works reliably without crashing on older coverage file formats"
       },
       "updated": "2025-10-29T07:40:42.522Z"
+    },
+    "GIT-006": {
+      "id": "GIT-006",
+      "title": "Pure flexbox layout for checkpoint and changed files viewers",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-29T08:58:53.999Z",
+      "updatedAt": "2025-10-29T09:44:08.082Z",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-29T09:01:05.781Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-29T09:25:13.789Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-29T09:28:17.081Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-29T09:42:29.894Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-29T09:44:08.083Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using checkpoint/changed files viewers",
+        "action": "have all layout use pure flexbox without any hardcoded dimensions",
+        "benefit": "views resize properly and work correctly on any terminal size"
+      },
+      "rules": [
+        "No percentage-based widths or heights (e.g., no width='30%', no height='100%')",
+        "Use flexGrow exclusively for dynamic sizing",
+        "Fixed widths must be character-based minimums only (e.g., 30 characters for file list)",
+        "VirtualList height prop must be optional, calculate from useTerminalSize if not provided",
+        "ChangedFilesViewer must load actual git diffs using getFileDiff function (not mock data)",
+        "Show loading state while diff is being fetched to prevent flickering",
+        "No, VirtualList should NOT accept height prop at all. It must be pure flexbox - use flexGrow to fill container completely and calculate visible items from useTerminalSize internally.",
+        "File list should use flexbox proportional sizing (e.g., flexBasis with flexGrow/flexShrink) to take approximately 1/4 of container width, with 30 characters as minimum. Use minWidth for character minimum.",
+        "CheckpointViewer diff view must also load REAL git diffs from checkpoint stash data, not placeholder text."
+      ],
+      "questions": [
+        {
+          "text": "@human: Should VirtualList still accept an explicit height prop for cases where the parent wants to control it?",
+          "selected": true,
+          "answer": "No, VirtualList should NOT accept height prop at all. It must be pure flexbox - use flexGrow to fill container completely and calculate visible items from useTerminalSize internally."
+        },
+        {
+          "text": "@human: Should the file list width be exactly 30 characters, or is that just a minimum with flexShrink?",
+          "selected": true,
+          "answer": "File list should use flexbox proportional sizing (e.g., flexBasis with flexGrow/flexShrink) to take approximately 1/4 of container width, with 30 characters as minimum. Use minWidth for character minimum."
+        },
+        {
+          "text": "@human: Does the diff view in CheckpointViewer also need real git diff loading, or can it stay as placeholder for now?",
+          "selected": true,
+          "answer": "CheckpointViewer diff view must also load REAL git diffs from checkpoint stash data, not placeholder text."
+        }
+      ],
+      "examples": [
+        "VirtualList with 100 items in 80x24 terminal: renders with flexGrow=1, calculates visibleHeight from terminalHeight, shows only items that fit",
+        "CheckpointViewer in 120 column terminal: file list takes ~30 columns (1/4 with minWidth=30), diff pane takes remaining ~90 columns with flexGrow=1",
+        "ChangedFilesViewer selects 'src/auth.ts': shows 'Loading diff...' immediately, then displays real git diff with +/- lines from getFileDiff()",
+        "Terminal resizes from 80x24 to 120x40: all components adjust automatically using flexbox, no re-render glitches"
+      ],
+      "estimate": 5,
+      "updated": "2025-10-29T09:44:08.082Z"
     }
   },
   "states": {
@@ -16845,7 +16957,6 @@
       "CLEAN-002"
     ],
     "specifying": [
-      "GIT-004",
       "RES-006",
       "EST-002",
       "LANG-001"
@@ -16854,6 +16965,8 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "GIT-006",
+      "GIT-004",
       "BUG-049",
       "AGENT-018",
       "BUG-048",
