@@ -168,10 +168,26 @@
           ]
         }
       ]
+    },
+    {
+      "name": "Cursor IDE agent receives 'think a lot' guidance with emoji warning",
+      "testMappings": []
+    },
+    {
+      "name": "Aider CLI agent receives plain text 'think a lot' guidance",
+      "testMappings": []
+    },
+    {
+      "name": "Unknown agent receives 'think a lot' guidance without system-reminders",
+      "testMappings": []
+    },
+    {
+      "name": "Initial draft creation uses agent capability detection for ULTRATHINK",
+      "testMappings": []
     }
   ],
   "stats": {
-    "totalScenarios": 6,
+    "totalScenarios": 10,
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [

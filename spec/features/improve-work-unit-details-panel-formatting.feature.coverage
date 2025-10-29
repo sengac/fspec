@@ -19,10 +19,18 @@
     {
       "name": "Display empty state when no work unit selected",
       "testMappings": []
+    },
+    {
+      "name": "Display work unit with long description (exceeds 3 lines)",
+      "testMappings": []
+    },
+    {
+      "name": "Display work unit with exactly 3 lines of description",
+      "testMappings": []
     }
   ],
   "stats": {
-    "totalScenarios": 5,
+    "totalScenarios": 7,
     "coveredScenarios": 0,
     "coveragePercent": 0,
     "testFiles": [],

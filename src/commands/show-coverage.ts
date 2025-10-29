@@ -2,7 +2,7 @@ import { readFile, readdir, access } from 'fs/promises';
 import type { Command } from 'commander';
 import { join } from 'path';
 import chalk from 'chalk';
-import type { CoverageFile } from '../utils/coverage-file';
+import type { CoverageFile, CoverageStats } from '../utils/coverage-file';
 
 interface ShowCoverageOptions {
   format?: 'markdown' | 'json';
@@ -55,9 +55,10 @@ async function showSingleFileCoverage(
   try {
     const content = await readFile(coverageFile, 'utf-8');
     coverage = JSON.parse(content);
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
     throw new Error(
-      `Invalid JSON in coverage file: ${fileName}.coverage\n  Parse error: ${error.message}\nSuggestion: Validate the JSON or recreate the file`
+      `Invalid JSON in coverage file: ${fileName}.coverage\n  Parse error: ${message}\nSuggestion: Validate the JSON or recreate the file`
     );
   }
 
@@ -146,11 +147,66 @@ async function showAllFilesCoverage(
   }
 }
 
+/**
+ * Calculate stats from scenarios array when stats object is missing
+ * Ensures backward compatibility with legacy coverage files
+ */
+function calculateStats(coverage: {
+  scenarios: Array<{
+    testMappings: Array<{
+      file: string;
+      implMappings?: Array<{ file: string; lines: number[] }>;
+    }>;
+  }>;
+}): CoverageStats {
+  const totalScenarios = coverage.scenarios.length;
+  const coveredScenarios = coverage.scenarios.filter(
+    s => s.testMappings.length > 0
+  ).length;
+
+  // Extract unique test files
+  const testFilesSet = new Set<string>();
+  for (const scenario of coverage.scenarios) {
+    for (const testMapping of scenario.testMappings) {
+      testFilesSet.add(testMapping.file);
+    }
+  }
+
+  // Extract unique impl files
+  const implFilesSet = new Set<string>();
+  for (const scenario of coverage.scenarios) {
+    for (const testMapping of scenario.testMappings) {
+      for (const implMapping of testMapping.implMappings || []) {
+        implFilesSet.add(implMapping.file);
+      }
+    }
+  }
+
+  // Calculate coverage percentage
+  const coveragePercent = totalScenarios
+    ? Math.round((coveredScenarios / totalScenarios) * 100)
+    : 0;
+
+  return {
+    totalScenarios,
+    coveredScenarios,
+    coveragePercent,
+    testFiles: Array.from(testFilesSet),
+    implFiles: Array.from(implFilesSet),
+    totalLinesCovered: 0, // Not calculated for legacy files
+  };
+}
+
 async function validateAndEnrichCoverage(
   coverage: CoverageFile,
   cwd: string
 ): Promise<CoverageFile & { warnings?: string[] }> {
   const warnings: string[] = [];
+
+  // If stats is missing, calculate it from scenarios
+  if (!coverage.stats) {
+    coverage.stats = calculateStats(coverage);
+  }
 
   // Validate test and implementation file paths
   for (const scenario of coverage.scenarios) {
@@ -423,8 +479,9 @@ export async function showCoverageCommand(
     const output = await showCoverage(featureFile);
     console.log(output);
     process.exit(0);
-  } catch (error: any) {
-    console.error(chalk.red('Error:'), error.message);
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(chalk.red('Error:'), message);
     process.exit(1);
   }
 }
