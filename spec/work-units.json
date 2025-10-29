@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-29T11:25:11.982Z"
+    "lastUpdated": "2025-10-29T21:22:40.905Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -17188,6 +17188,215 @@
       ],
       "estimate": 5,
       "updated": "2025-10-29T12:22:43.047Z"
+    },
+    "TUI-002": {
+      "id": "TUI-002",
+      "title": "Checkpoint Viewer Three-Pane Layout",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-29T12:33:28.912Z",
+      "updatedAt": "2025-10-29T21:16:52.799Z",
+      "description": "Implement three-pane checkpoint viewer with checkpoint list (top-left), files list (bottom-left), and diff view (right), organized by time with most recent checkpoints first",
+      "children": [],
+      "userStory": {
+        "role": "developer using fspec",
+        "action": "view and navigate checkpoints with their files and diffs",
+        "benefit": "I can review checkpoint history and restore previous states efficiently"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-29T12:33:50.314Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-29T20:53:01.128Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-29T20:56:56.356Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-29T21:06:28.489Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-29T21:10:12.478Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-29T21:14:01.904Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-29T21:16:01.967Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-29T21:16:26.680Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-29T21:16:28.090Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-29T21:16:52.799Z"
+        }
+      ],
+      "rules": [
+        "Checkpoint viewer must have three panes: checkpoint list (top-left), file list (bottom-left), and diff view (right)",
+        "Checkpoints must be organized by time with most recent first",
+        "Left side has two vertically stacked panes (checkpoints above, files below)",
+        "Selecting a checkpoint updates the file list to show that checkpoint's files",
+        "Selecting a file shows its diff in the right pane",
+        "Yes - show timestamp, work unit ID, and number of files in checkpoint list",
+        "Tab key cycles through all three panes (checkpoints -> files -> diff -> checkpoints)",
+        "Load actual git diffs using worker threads (same as ChangedFilesViewer) - no mocks!",
+        "Display appropriate message when checkpoint has no files",
+        "Yes - reuse VirtualList with scroll acceleration and mouse wheel support (DRY principle)",
+        "Use flexbox layout matching ChangedFilesViewer - NO PERCENTAGES! Use flexBasis, flexGrow, flexShrink, minWidth",
+        "Must reuse shared diff-loading utilities from ChangedFilesViewer (DRY principle)",
+        "Must reuse VirtualList component for all three panes (checkpoints, files, diff)",
+        "Checkpoint list must display: name, timestamp, work unit ID, and file count",
+        "ESC key exits checkpoint viewer and returns to previous view",
+        "CRITICAL: Extract file list and diff viewer into a shared reusable component (FileDiffViewer) to avoid duplication between ChangedFilesViewer and CheckpointViewer",
+        "ChangedFilesViewer must be refactored to use the new shared FileDiffViewer component",
+        "CheckpointViewer should render checkpoint list on left (top-left pane only) and FileDiffViewer component fills the right side (which internally handles file list + diff as dual-pane)",
+        "CheckpointViewer must NOT render its own file list pane - FileDiffViewer already has a file list pane built-in"
+      ],
+      "questions": [
+        {
+          "text": "@human: Should the checkpoint list show any metadata besides the checkpoint name (e.g., timestamp, work unit ID, number of files)?",
+          "selected": true,
+          "answer": "Yes - show timestamp, work unit ID, and number of files in checkpoint list"
+        },
+        {
+          "text": "@human: How should keyboard navigation work between the three panes (Tab to cycle through all three, or something else)?",
+          "selected": true,
+          "answer": "Tab key cycles through all three panes (checkpoints -> files -> diff -> checkpoints)"
+        },
+        {
+          "text": "@human: Should we load actual git diffs like ChangedFilesViewer does (using worker threads), or is mock data acceptable initially?",
+          "selected": true,
+          "answer": "Load actual git diffs using worker threads (same as ChangedFilesViewer) - no mocks!"
+        },
+        {
+          "text": "@human: What should happen when a checkpoint has no files (empty state)?",
+          "selected": true,
+          "answer": "Display appropriate message when checkpoint has no files"
+        },
+        {
+          "text": "@human: Should we support the same scroll acceleration and mouse wheel support that VirtualList has?",
+          "selected": true,
+          "answer": "Yes - reuse VirtualList with scroll acceleration and mouse wheel support (DRY principle)"
+        },
+        {
+          "text": "@human: Should the pane sizes be fixed or adjustable (like 30% top-left, 30% bottom-left, 40% right)?",
+          "selected": true,
+          "answer": "Use flexbox layout matching ChangedFilesViewer - NO PERCENTAGES! Use flexBasis, flexGrow, flexShrink, minWidth"
+        }
+      ],
+      "examples": [
+        "User opens checkpoint viewer with 5 checkpoints, sees most recent checkpoint selected by default with timestamp and file count",
+        "User navigates down in checkpoint list using arrow keys, file list updates to show files for newly selected checkpoint",
+        "User presses Tab to switch focus from checkpoint list to file list, border color changes to indicate active pane",
+        "User selects a file in file list, diff pane loads and displays git diff using worker thread (same as ChangedFilesViewer)",
+        "User presses Tab again to focus diff pane, can scroll through diff with arrow keys and PgUp/PgDn",
+        "User encounters checkpoint with no files, sees 'No files in this checkpoint' message in file list pane",
+        "User scrolls rapidly in checkpoint list using mouse wheel, scroll acceleration kicks in for smooth navigation",
+        "Refactor ChangedFilesViewer to use new shared FileDiffViewer component (file list + diff pane logic extracted)",
+        "CheckpointViewer uses shared FileDiffViewer component, adds checkpoint list pane on top-left",
+        "When baseline checkpoint is selected, FileDiffViewer shows the files from that checkpoint (src/auth.ts, src/login.ts) in its left pane and diff in its right pane"
+      ],
+      "architectureNotes": [
+        "Reuse existing diff utilities: src/git/diff-worker.ts (worker thread), src/git/diff-parser.ts (parsing), src/git/diff.ts (git commands)",
+        "Create shared FileDiffViewer component (file list pane + diff pane) to be used by both ChangedFilesViewer and CheckpointViewer - eliminates code duplication"
+      ],
+      "estimate": 8,
+      "updated": "2025-10-29T21:16:52.799Z"
+    },
+    "TUI-003": {
+      "id": "TUI-003",
+      "title": "CheckpointViewer has wrong layout - should be 3 panes not 4",
+      "type": "bug",
+      "status": "backlog",
+      "createdAt": "2025-10-29T21:20:02.664Z",
+      "updatedAt": "2025-10-29T21:20:02.664Z",
+      "children": []
+    },
+    "TUI-004": {
+      "id": "TUI-004",
+      "title": "Fix three-pane layout with proper flex properties",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-29T21:21:50.157Z",
+      "updatedAt": "2025-10-29T21:42:38.201Z",
+      "description": "The CheckpointViewer should have 3 panes total: (1) Checkpoints list at top-left, (2) Changed files list at bottom-left (both with same width restrictions as FilesView using minWidth and flex properties), (3) Diff viewer on the right. Use minWidth, flexBasis, flexGrow, flexShrink - NO PERCENTAGES!",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-29T21:22:27.952Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-29T21:29:07.069Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-29T21:31:21.019Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-29T21:34:37.942Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-29T21:42:38.201Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using the CheckpointViewer",
+        "action": "view checkpoints, changed files, and diffs in a three-pane layout",
+        "benefit": "I can efficiently navigate through checkpoint data with proper flex-based responsive layout"
+      },
+      "rules": [
+        "The CheckpointViewer must have exactly 3 panes: checkpoint list (top-left), file list (bottom-left), diff viewer (right)",
+        "The two left panes (checkpoint list and file list) must use the same width properties as FileDiffViewer: minWidth, flexBasis, flexGrow, flexShrink - NO percentages",
+        "The checkpoint list and file list must be stacked vertically on the left side, with both panes using flexGrow to split the vertical space",
+        "The diff viewer pane on the right must use flexGrow to fill remaining horizontal space",
+        "Both panes use flexGrow={1} to split the vertical space equally (50/50), matching the horizontal behavior of FileDiffViewer",
+        "Use EXACTLY the same values as FileDiffViewer: minWidth={30}, flexBasis='25%', flexShrink={1} for the left column container"
+      ],
+      "examples": [
+        "When user opens CheckpointViewer, they see checkpoint list at top-left (30 char minWidth), file list at bottom-left (30 char minWidth), and diff viewer on right (grows to fill space)",
+        "When terminal is narrow (80 chars), left panes respect 30 char minimum width, diff pane shrinks but remains visible",
+        "When terminal is wide (200 chars), left panes maintain proportional width using flexBasis and flexGrow (no percentage values), diff pane expands to use remaining space"
+      ],
+      "questions": [
+        {
+          "text": "@human: Should the checkpoint list and file list panes split the left side 50/50 vertically, or should one be weighted larger?",
+          "selected": true,
+          "answer": "Both panes use flexGrow={1} to split the vertical space equally (50/50), matching the horizontal behavior of FileDiffViewer"
+        },
+        {
+          "text": "@human: What specific flexBasis and flexGrow values should the left panes use? Should they match FileDiffViewer's values exactly (minWidth=30, flexBasis='25%', flexShrink=1) or use different values without percentages?",
+          "selected": true,
+          "answer": "Use EXACTLY the same values as FileDiffViewer: minWidth={30}, flexBasis='25%', flexShrink={1} for the left column container"
+        },
+        {
+          "text": "@human: The current FileDiffViewer uses flexBasis='25%' which IS a percentage. Should I remove percentages from FileDiffViewer too, or just ensure CheckpointViewer matches whatever FileDiffViewer uses?",
+          "selected": true,
+          "answer": "Keep FileDiffViewer as-is with flexBasis='25%'. The work unit description saying 'NO PERCENTAGES' was incorrect - we should match FileDiffViewer exactly, which does use a percentage"
+        }
+      ],
+      "assumptions": [
+        "Keep FileDiffViewer as-is with flexBasis='25%'. The work unit description saying 'NO PERCENTAGES' was incorrect - we should match FileDiffViewer exactly, which does use a percentage"
+      ],
+      "estimate": 3,
+      "updated": "2025-10-29T21:42:38.201Z"
     }
   },
   "states": {
@@ -17215,7 +17424,8 @@
       "AGENT-016",
       "AGENT-017",
       "FEAT-018",
-      "CLEAN-002"
+      "CLEAN-002",
+      "TUI-003"
     ],
     "specifying": [
       "RES-006",
@@ -17227,6 +17437,8 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "TUI-004",
+      "TUI-002",
       "TUI-001",
       "BUG-050",
       "GIT-008",
