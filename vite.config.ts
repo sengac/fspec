@@ -34,6 +34,7 @@ export default defineConfig({
         'winston',
         'chokidar',
         'worker_threads',
+        'diff',
       ],
       output: {
         preserveModules: false,

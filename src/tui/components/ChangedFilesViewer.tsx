@@ -12,6 +12,7 @@ import { useFspecStore } from '../store/fspecStore';
 import { logger } from '../../utils/logger';
 import { Worker } from 'worker_threads';
 import { join } from 'path';
+import { parseDiff, DiffLine } from '../../git/diff-parser';
 
 interface ChangedFilesViewerProps {
   stagedFiles: string[];
@@ -211,10 +212,16 @@ const ChangedFilesViewerComponent: React.FC<ChangedFilesViewerProps> = ({
     };
   }, [selectedFileIndex, stagedFiles, unstagedFiles, cwd, allFiles]);
 
-  // Parse diff content into lines, show loading state
-  const diffLines = isLoadingDiff
-    ? ['Loading diff...']
-    : (diffContent ? diffContent.split('\n') : []);
+  // Parse diff content into structured DiffLine objects with change groups
+  const diffLines: DiffLine[] = useMemo(() => {
+    if (isLoadingDiff) {
+      return [{ content: 'Loading diff...', type: 'context', changeGroup: null }];
+    }
+    if (!diffContent) {
+      return [];
+    }
+    return parseDiff(diffContent);
+  }, [diffContent, isLoadingDiff]);
 
   // Handle keyboard input
   useInput((input, key) => {
@@ -270,21 +277,38 @@ const ChangedFilesViewerComponent: React.FC<ChangedFilesViewerProps> = ({
     );
   };
 
-  // Render diff line
-  const renderDiffLine = (line: string, index: number, isSelected: boolean): React.ReactNode => {
-    let color: 'white' | 'green' | 'red' | 'cyan' = 'white';
-    if (line.startsWith('+')) {
-      color = 'green';
-    } else if (line.startsWith('-')) {
-      color = 'red';
-    } else if (line.startsWith('@@')) {
-      color = 'cyan';
+  // Render diff line with enhanced background colors
+  const renderDiffLine = (line: DiffLine, index: number, isSelected: boolean): React.ReactNode => {
+    let textColor: 'white' | 'cyan' = 'white';
+    let backgroundColor: 'red' | 'green' | undefined;
+
+    // Determine colors based on line type and change group
+    if (line.type === 'hunk') {
+      // Hunk headers: cyan text, no background
+      textColor = 'cyan';
+    } else if (line.type === 'removed') {
+      // Removed lines: white text on red background
+      textColor = 'white';
+      backgroundColor = 'red';
+    } else if (line.type === 'added') {
+      // Added lines: white text on green background
+      textColor = 'white';
+      backgroundColor = 'green';
     }
+    // Context lines: default white text, no background
+
+    // Apply selection styling if focused
+    const selectionColor = isSelected && focusedPane === 'diff' ? 'cyan' : textColor;
+    const selectionInverse = isSelected && focusedPane === 'diff';
 
     return (
       <Box width="100%">
-        <Text color={isSelected && focusedPane === 'diff' ? 'cyan' : color} inverse={isSelected && focusedPane === 'diff'}>
-          {line}
+        <Text
+          color={selectionInverse ? selectionColor : textColor}
+          backgroundColor={backgroundColor}
+          inverse={selectionInverse}
+        >
+          {line.content}
         </Text>
       </Box>
     );
@@ -310,7 +334,6 @@ const ChangedFilesViewerComponent: React.FC<ChangedFilesViewerProps> = ({
             borderStyle="single"
             borderColor={focusedPane === 'files' ? 'cyan' : 'gray'}
           >
-            <Text bold>Files</Text>
             <Box flexGrow={1}>
               <VirtualList
                 items={allFiles}
@@ -329,7 +352,6 @@ const ChangedFilesViewerComponent: React.FC<ChangedFilesViewerProps> = ({
             borderStyle="single"
             borderColor={focusedPane === 'diff' ? 'cyan' : 'gray'}
           >
-            <Text bold>Diff</Text>
             <Box flexGrow={1}>
               <VirtualList
                 items={diffLines}

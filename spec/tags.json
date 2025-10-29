@@ -218,6 +218,10 @@
           "description": "Work unit dependency tracking"
         },
         {
+          "name": "@diff-viewer",
+          "description": "Diff visualization and comparison features"
+        },
+        {
           "name": "@discovery-command",
           "description": "Example Mapping discovery commands"
         },
@@ -926,6 +930,10 @@
           "description": "Complete"
         },
         {
+          "name": "@enhancement",
+          "description": "Feature enhancement or improvement"
+        },
+        {
           "name": "@exmap-001",
           "description": "Work unit: Redesign Example Mapping to match BDD technique"
         },
@@ -1286,7 +1294,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-10-29T09:59:06.317Z",
+    "lastUpdated": "2025-10-29T10:58:10.124Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-29T09:58:07.561Z"
+    "lastUpdated": "2025-10-29T11:03:54.172Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -16980,6 +16980,126 @@
       },
       "estimate": 5,
       "updated": "2025-10-29T10:03:03.309Z"
+    },
+    "GIT-008": {
+      "id": "GIT-008",
+      "title": "Enhanced line-by-line diff with background colors",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-29T10:48:19.229Z",
+      "updatedAt": "2025-10-29T10:58:32.876Z",
+      "description": "Implement visual diff with red background for removed lines and green background for added lines, pairing consecutive changes as replacements",
+      "children": [],
+      "userStory": {
+        "role": "developer reviewing changes",
+        "action": "see line-by-line diffs with clear background colors showing replacements, additions, and deletions",
+        "benefit": "I can quickly understand what changed without parsing diff symbols"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-29T10:49:09.122Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-29T10:50:52.895Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-29T10:51:51.616Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-29T10:53:52.411Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-29T10:58:32.877Z"
+        }
+      ],
+      "rules": [
+        "Replaced lines (old version) display with RED background and WHITE text",
+        "Replaced lines (new version) display with GREEN background and WHITE text",
+        "Pure deletions (no matching addition) display with RED background and WHITE text",
+        "Pure additions (no matching deletion) display with GREEN background and WHITE text",
+        "Context lines (unchanged) display with default styling (no background color)",
+        "Hunk headers (@@ lines) display with CYAN text",
+        "Consecutive - lines followed by consecutive + lines are paired as replacements",
+        "Unpaired - lines (not followed by + lines) are pure deletions",
+        "Unpaired + lines (not preceded by - lines) are pure additions"
+      ],
+      "examples": [
+        "Simple replacement: '-const y = 2;' followed by '+const y = 3;' displays with red bg (old) and green bg (new)",
+        "Multi-line replacement: 3 consecutive - lines followed by 3 consecutive + lines all paired with matching colors",
+        "Pure addition: '+const y = 2;' with no preceding - line shows only green background",
+        "Pure deletion: '-const y = 2;' with no following + line shows only red background",
+        "Mixed changes: replacement pair (red+green), then pure addition (green only), then pure deletion (red only)",
+        "Unbalanced many-to-one: 3 - lines followed by 1 + line, all displayed as a grouped replacement",
+        "Unbalanced one-to-many: 1 - line followed by 3 + lines, all displayed as a grouped replacement"
+      ],
+      "estimate": 5,
+      "updated": "2025-10-29T10:58:32.876Z"
+    },
+    "BUG-050": {
+      "id": "BUG-050",
+      "title": "Diff display not showing line-by-line changes properly",
+      "type": "bug",
+      "status": "validating",
+      "createdAt": "2025-10-29T11:01:14.558Z",
+      "updatedAt": "2025-10-29T11:06:28.461Z",
+      "description": "The ChangedFilesViewer is using the 'diff' library but it doesn't properly show line-by-line changes. When there's only 1 line difference in a file, it shows many unrelated lines as changed instead of just the actual changed line.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-29T11:02:19.472Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-29T11:05:12.776Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-29T11:05:28.763Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-29T11:06:28.461Z"
+        }
+      ],
+      "rules": [
+        "Diff viewer must show only the lines that actually changed, not entire blocks",
+        "When comparing package.json with structural changes, show line-by-line differences not block-level differences",
+        "Context lines (unchanged) should be clearly separated from changed lines"
+      ],
+      "examples": [
+        "User changes 'typescript': '^5.9.2' to 'vite': '^7.1.5' in package.json devDependencies. Diff should show ONLY the 2 changed lines (old removed, new added), not the entire devDependencies block",
+        "Currently showing: many lines with '-' prefix (prettier, typescript, vite, vitest, lint-staged) followed by many lines with '+' prefix (execa, immer, ink, etc.). This makes it look like all lines changed when only 1 line did",
+        "Expected: Show only the actual line that changed with proper context (e.g., 3 lines before and after)"
+      ],
+      "questions": [
+        {
+          "text": "@human: Should we use a proper diff algorithm (like Myers algorithm from 'diff' library) to replace the naive line-by-line comparison in generateUnifiedDiff()?",
+          "selected": true,
+          "answer": "Yes, we should use the Myers algorithm from the 'diff' library (already imported in diff-parser.ts) to replace the naive comparison in generateUnifiedDiff(). The diff library's diffLines() function properly aligns lines and detects insertions, deletions, and unchanged blocks."
+        }
+      ],
+      "userStory": {
+        "role": "developer reviewing code changes",
+        "action": "see only the lines that actually changed in diffs",
+        "benefit": "I can quickly understand what was modified without being confused by unrelated lines"
+      },
+      "estimate": 3
+    },
+    "BUG-051": {
+      "id": "BUG-051",
+      "title": "CheckpointViewer test failures",
+      "type": "bug",
+      "status": "backlog",
+      "createdAt": "2025-10-29T11:01:15.861Z",
+      "updatedAt": "2025-10-29T11:01:15.861Z",
+      "description": "7 tests failing: 5 tests expecting selection/navigation behavior not implemented, 1 test using jest.fn() instead of vi.fn() (Vitest project), 1 test expecting frame change on Tab key",
+      "children": []
     }
   },
   "states": {
@@ -17007,7 +17127,8 @@
       "AGENT-016",
       "AGENT-017",
       "FEAT-018",
-      "CLEAN-002"
+      "CLEAN-002",
+      "BUG-051"
     ],
     "specifying": [
       "RES-006",
@@ -17016,8 +17137,11 @@
     ],
     "testing": [],
     "implementing": [],
-    "validating": [],
+    "validating": [
+      "BUG-050"
+    ],
     "done": [
+      "GIT-008",
       "GIT-007",
       "GIT-006",
       "GIT-004",
