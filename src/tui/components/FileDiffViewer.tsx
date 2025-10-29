@@ -175,13 +175,13 @@ export const FileDiffViewer: React.FC<FileDiffViewerProps> = ({
     return (
       <Box flexDirection="column" flexGrow={1}>
         <Box flexDirection="row" flexGrow={1}>
-          {/* File list pane (25% width via flexGrow ratio) */}
+          {/* File list pane (33% width via flexGrow ratio) */}
           <Box flexDirection="column" flexGrow={1} borderStyle="single" borderColor="cyan">
             <Text>No files</Text>
           </Box>
 
-          {/* Diff pane (75% width via flexGrow ratio) */}
-          <Box flexDirection="column" flexGrow={3} borderStyle="single">
+          {/* Diff pane (67% width via flexGrow ratio) */}
+          <Box flexDirection="column" flexGrow={2} borderStyle="single">
             <Text>No changes to display</Text>
           </Box>
         </Box>
@@ -246,7 +246,7 @@ export const FileDiffViewer: React.FC<FileDiffViewerProps> = ({
 
   return (
     <Box flexDirection="row" flexGrow={1}>
-      {/* File list pane (left, 25% width via flexGrow ratio) */}
+      {/* File list pane (left, 33% width via flexGrow ratio) */}
       <Box
         flexDirection="column"
         flexGrow={1}
@@ -265,10 +265,10 @@ export const FileDiffViewer: React.FC<FileDiffViewerProps> = ({
         </Box>
       </Box>
 
-      {/* Diff pane (right, 75% width via flexGrow ratio) */}
+      {/* Diff pane (right, 67% width via flexGrow ratio) */}
       <Box
         flexDirection="column"
-        flexGrow={3}
+        flexGrow={2}
         flexBasis={0}
         borderStyle="single"
         borderColor={focusedPane === 'diff' ? 'cyan' : 'gray'}
