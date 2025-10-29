@@ -205,6 +205,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@multi-agent` | Multi-agent compatibility features and agent-specific customizations |
 | `@outside-in-bdd` | Outside-in BDD approach using personas and behavior-first thinking |
 | `@pattern-detection` | Features involving pattern detection and analysis from historical data |
+| `@performance` | Performance optimization and efficiency features |
 | `@platform-agnostic` | Features supporting multiple platforms (Python, Rust, Go, JavaScript, etc.) |
 | `@prettier` | Prettier configuration and code formatting |
 | `@push` | Push notification functionality |
@@ -562,7 +563,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-10-29T09:43:08.188Z_
+_Last updated: 2025-10-29T09:59:06.317Z_
 
 **Update Command**: `fspec tag-stats`
 

@@ -18,6 +18,7 @@ interface VirtualListProps<T> {
   showScrollbar?: boolean;
   enableWrapAround?: boolean;
   reservedLines?: number; // Lines reserved for headers/footers (default: 4)
+  isFocused?: boolean; // Whether this VirtualList should respond to keyboard input (default: true)
 }
 
 export function VirtualList<T>({
@@ -30,6 +31,7 @@ export function VirtualList<T>({
   showScrollbar = true,
   enableWrapAround = false,
   reservedLines = 4,
+  isFocused = true,
 }: VirtualListProps<T>): React.ReactElement {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [scrollOffset, setScrollOffset] = useState(0);
@@ -86,28 +88,31 @@ export function VirtualList<T>({
     setSelectedIndex(targetIndex);
   };
 
-  useInput((input, key) => {
-    if (items.length === 0) {
-      return;
-    }
+  useInput(
+    (input, key) => {
+      if (items.length === 0) {
+        return;
+      }
 
-    // Navigation
-    if (key.upArrow || input === 'k') {
-      navigateTo(selectedIndex - 1);
-    } else if (key.downArrow || input === 'j') {
-      navigateTo(selectedIndex + 1);
-    } else if (key.pageUp) {
-      navigateTo(Math.max(0, selectedIndex - visibleHeight));
-    } else if (key.pageDown) {
-      navigateTo(Math.min(items.length - 1, selectedIndex + visibleHeight));
-    } else if (key.home || input === 'g') {
-      navigateTo(0);
-    } else if (key.end || input === 'G') {
-      navigateTo(items.length - 1);
-    } else if (key.return && onSelect) {
-      onSelect(items[selectedIndex], selectedIndex);
-    }
-  });
+      // Navigation
+      if (key.upArrow || input === 'k') {
+        navigateTo(selectedIndex - 1);
+      } else if (key.downArrow || input === 'j') {
+        navigateTo(selectedIndex + 1);
+      } else if (key.pageUp) {
+        navigateTo(Math.max(0, selectedIndex - visibleHeight));
+      } else if (key.pageDown) {
+        navigateTo(Math.min(items.length - 1, selectedIndex + visibleHeight));
+      } else if (key.home || input === 'g') {
+        navigateTo(0);
+      } else if (key.end || input === 'G') {
+        navigateTo(items.length - 1);
+      } else if (key.return && onSelect) {
+        onSelect(items[selectedIndex], selectedIndex);
+      }
+    },
+    { isActive: isFocused }
+  );
 
   // Render scrollbar
   const renderScrollbar = (): React.ReactNode => {

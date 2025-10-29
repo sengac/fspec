@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-29T09:01:14.993Z"
+    "lastUpdated": "2025-10-29T09:58:07.561Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -16927,6 +16927,59 @@
       ],
       "estimate": 5,
       "updated": "2025-10-29T09:44:08.082Z"
+    },
+    "GIT-007": {
+      "id": "GIT-007",
+      "title": "Diff loading system has rendering bugs and performance issues",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-10-29T09:56:03.859Z",
+      "updatedAt": "2025-10-29T10:03:03.309Z",
+      "description": "ChangedFilesViewer diff loading causes flickering, shows wrong files, and hangs UX. Need to refactor with proper dependency management, loading states, and potentially worker threads for git operations.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-29T09:56:13.407Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-29T10:00:06.607Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-29T10:01:08.707Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-29T10:02:56.740Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-29T10:03:03.309Z"
+        }
+      ],
+      "rules": [
+        "useEffect dependency on selectedFile object causes infinite re-renders because allFiles array is recreated on every render with new object instances",
+        "Race conditions: multiple getFileDiff calls can run simultaneously when user navigates quickly, last one to complete wins but might show wrong file's diff",
+        "Git operations (isomorphic-git file I/O) run on main thread blocking React rendering and causing UX hangs",
+        "No debouncing: every arrow key press triggers immediate diff load, should debounce rapid file navigation",
+        "FIX: useEffect should depend on selectedFileIndex and derive file path, not selectedFile object",
+        "FIX: Implement AbortController or cancellation token to cancel previous diff loads when selection changes",
+        "FIX: Consider worker threads (worker_threads module) to offload git diff operations from main thread"
+      ],
+      "examples": [
+        "User navigates to file1.ts, sees diff loading, presses down arrow to file2.ts immediately - both diffs load simultaneously, file1.ts diff might display even though file2.ts is selected",
+        "User opens ChangedFilesViewer with 10 files - diff pane flickers constantly showing 'Loading diff...' over and over because useEffect runs on every render",
+        "SOLUTION: useEffect depends on [selectedFileIndex, stagedFiles, unstagedFiles, cwd], AbortController cancels previous loads, diff loads once per file selection without flicker"
+      ],
+      "userStory": {
+        "role": "developer using diff viewer",
+        "action": "see accurate, non-flickering diffs without UX lag",
+        "benefit": "I can efficiently review code changes"
+      },
+      "estimate": 5,
+      "updated": "2025-10-29T10:03:03.309Z"
     }
   },
   "states": {
@@ -16965,6 +17018,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "GIT-007",
       "GIT-006",
       "GIT-004",
       "BUG-049",
