@@ -79,8 +79,7 @@ const calculateViewportHeight = (terminalHeight: number): number => {
   // - Git Stashes header + content: 2
   // - Changed Files header + content: 2
   // - Separator after git: 1
-  // - Work Unit Details header: 1
-  // - Work Unit Details content: 4
+  // - Work Unit Details content: 5 (ITF-008: no header, 3-line description)
   // - Separator before columns: 1
   // - Column headers: 1
   // - Header separator: 1
@@ -101,6 +100,32 @@ const fitToWidth = (text: string, width: number): string => {
     return text.substring(0, width);
   }
   return text.padEnd(width, ' ');
+};
+
+// Helper: Wrap text into multiple lines
+const wrapText = (text: string, width: number, maxLines: number): string[] => {
+  const words = text.split(' ');
+  const lines: string[] = [];
+  let currentLine = '';
+
+  for (const word of words) {
+    const testLine = currentLine ? `${currentLine} ${word}` : word;
+    if (testLine.length <= width) {
+      currentLine = testLine;
+    } else {
+      if (currentLine) {
+        lines.push(currentLine);
+        if (lines.length >= maxLines) break;
+      }
+      currentLine = word;
+    }
+  }
+
+  if (currentLine && lines.length < maxLines) {
+    lines.push(currentLine);
+  }
+
+  return lines;
 };
 
 // Helper: Center text within given width
@@ -457,27 +482,65 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
   // Separator after Git Context panel
   rows.push(buildBorderRow(colWidth, '├', '─', '┤', 'plain'));
 
-  // Work Unit Details panel (BOARD-014: static 4 lines high)
-  rows.push('│' + fitToWidth('Work Unit Details', totalWidth) + '│');
-
-  // Always output exactly 4 detail lines (static height)
+  // Work Unit Details panel (ITF-008: static 5 lines high, NO header, 3-line description, NO padding)
+  // Always output exactly 5 detail lines (static height)
   const detailLines: string[] = [];
 
   if (selectedWorkUnit) {
-    // Line 1: Title with ID
+    // Line 1: Title with ID (NO padding)
     const titleLine = `${selectedWorkUnit.id}: ${selectedWorkUnit.title}`;
-    detailLines.push(fitToWidth(`  ${titleLine}`, totalWidth));
+    detailLines.push(fitToWidth(titleLine, totalWidth));
 
-    // Line 2: First line of description (if exists)
+    // Lines 2-4: Description up to 3 lines with wrapping and truncation (NO padding)
     if (selectedWorkUnit.description && selectedWorkUnit.description.trim().length > 0) {
-      const descLines = selectedWorkUnit.description.split('\n');
-      const firstDescLine = descLines[0].trim();
-      detailLines.push(fitToWidth(`  ${firstDescLine}`, totalWidth));
+      // Join all description lines into single text for wrapping
+      const fullDescription = selectedWorkUnit.description.replace(/\n/g, ' ').trim();
+
+      // Wrap description to fit width, maximum 3 lines
+      const wrappedLines = wrapText(fullDescription, totalWidth, 3);
+
+      // Line 2: First wrapped line (bold cyan)
+      if (wrappedLines.length >= 1) {
+        detailLines.push(chalk.cyan.bold(fitToWidth(wrappedLines[0], totalWidth)));
+      } else {
+        detailLines.push(fitToWidth('', totalWidth));
+      }
+
+      // Line 3: Second wrapped line (bold cyan)
+      if (wrappedLines.length >= 2) {
+        detailLines.push(chalk.cyan.bold(fitToWidth(wrappedLines[1], totalWidth)));
+      } else {
+        detailLines.push(fitToWidth('', totalWidth));
+      }
+
+      // Line 4: Third wrapped line with truncation if description continues beyond 3 lines (bold cyan)
+      if (wrappedLines.length >= 3) {
+        let thirdLine = wrappedLines[2];
+        // Check if original text was longer than what we wrapped
+        const wrappedText = wrappedLines.join(' ');
+        const hasMore = fullDescription.length > wrappedText.length;
+
+        // If third line exceeds width, truncate it first
+        if (thirdLine.length > totalWidth) {
+          thirdLine = thirdLine.substring(0, totalWidth - 3) + '...';
+        } else if (hasMore) {
+          // If there's more text beyond wrapped content, add truncation indicator
+          const truncated = thirdLine.length > 3 ? thirdLine.slice(0, -3) + '...' : thirdLine + '...';
+          thirdLine = truncated;
+        }
+
+        detailLines.push(chalk.cyan.bold(fitToWidth(thirdLine, totalWidth)));
+      } else {
+        detailLines.push(fitToWidth('', totalWidth));
+      }
     } else {
+      // No description: lines 2-4 are empty
+      detailLines.push(fitToWidth('', totalWidth));
+      detailLines.push(fitToWidth('', totalWidth));
       detailLines.push(fitToWidth('', totalWidth));
     }
 
-    // Line 3: Metadata (Epic, Estimate, Status)
+    // Line 5: Metadata (Epic, Estimate, Status) (NO padding)
     const metadata: string[] = [];
     if (selectedWorkUnit.epic) {
       metadata.push(`Epic: ${selectedWorkUnit.epic}`);
@@ -488,24 +551,21 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
     if (selectedWorkUnit.status) {
       metadata.push(`Status: ${selectedWorkUnit.status}`);
     }
-    detailLines.push(fitToWidth(`  ${metadata.join(' | ')}`, totalWidth));
-
-    // Line 4: Empty line for spacing
-    detailLines.push(fitToWidth('', totalWidth));
+    detailLines.push(fitToWidth(metadata.join(' | '), totalWidth));
   } else {
-    // No work unit selected - fill with 4 empty lines
-    for (let i = 0; i < 4; i++) {
+    // No work unit selected - fill with 5 empty lines
+    for (let i = 0; i < 5; i++) {
       detailLines.push(i === 0 ? centerText('No work unit selected', totalWidth) : fitToWidth('', totalWidth));
     }
   }
 
-  // Safety check: ensure we have exactly 4 lines
-  while (detailLines.length < 4) {
+  // Safety check: ensure we have exactly 5 lines
+  while (detailLines.length < 5) {
     detailLines.push(fitToWidth('', totalWidth));
   }
 
-  // Output the 4 detail lines
-  for (let i = 0; i < 4; i++) {
+  // Output the 5 detail lines
+  for (let i = 0; i < 5; i++) {
     rows.push('│' + detailLines[i] + '│');
   }
 

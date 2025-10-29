@@ -226,6 +226,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@traceability` | Scenario-to-test-to-implementation traceability and coverage tracking |
 | `@type-system` | Work unit type system features for categorizing work (story, task, bug) |
 | `@typescript` | TypeScript-specific features and configuration |
+| `@ui-formatting` | UI formatting and layout features |
 | `@vitest` | Vitest testing framework related features |
 | `@zustand` | Zustand state management library |
 
@@ -559,7 +560,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-10-28T20:52:31.157Z_
+_Last updated: 2025-10-29T00:34:19.411Z_
 
 **Update Command**: `fspec tag-stats`
 

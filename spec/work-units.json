@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-28T23:31:48.479Z"
+    "lastUpdated": "2025-10-29T00:30:26.789Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -16562,6 +16562,76 @@
         "benefit": "I can verify the TUI works correctly with the new checkpoint system"
       },
       "updated": "2025-10-28T23:45:29.163Z"
+    },
+    "ITF-008": {
+      "id": "ITF-008",
+      "title": "Improve work unit details panel formatting",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-29T00:29:02.308Z",
+      "updatedAt": "2025-10-29T00:45:01.629Z",
+      "description": "Remove 'Work Unit Details' header line, expand description to 3 lines max with truncation indicator, and remove left padding from content lines",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-29T00:30:21.124Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-29T00:34:51.089Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-29T00:37:18.487Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-29T00:40:44.849Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-29T00:45:01.629Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using fspec TUI",
+        "action": "view work unit details with better formatting",
+        "benefit": "I can read descriptions more easily without visual clutter"
+      },
+      "rules": [
+        "The 'Work Unit Details' header line MUST be removed from the panel",
+        "Description MUST display up to 3 lines maximum (not 1 line)",
+        "If description exceeds 3 lines, the third line MUST end with '...' to indicate truncation",
+        "Left padding (currently 2 spaces) MUST be removed from all content lines",
+        "Panel MUST remain static at 4 lines total height (existing BOARD-015 constraint)",
+        "Option A: Line 1 = ID+Title, Lines 2-3 = Description (max 2 lines), Line 4 = Metadata",
+        "With Option A layout, description uses lines 2-3 (max 2 lines), metadata always on line 4. If description has 3+ lines, truncate on line 3.",
+        "Truncation '...' should replace the last 3 characters of line 3 to fit within available width (standard truncation pattern)",
+        "Truncation '...' should replace the last 3 characters of line 3 to fit within available width (standard truncation pattern)"
+      ],
+      "examples": [
+        "Work unit with short description (1 line): Shows ID, title on line 1, description on line 2, metadata on line 3, empty line 4. NO header line. NO left padding.",
+        "No work unit selected: Shows 'No work unit selected' centered on line 1, empty lines 2-4. NO header line.",
+        "Work unit with no description: Shows ID, title on line 1, empty line 2, metadata on line 3, empty line 4",
+        "Work unit with long description (5 lines): Line 1 = ID+Title, Line 2 = first desc line, Line 3 = second desc line ending with '...', Line 4 = Metadata",
+        "Work unit with exactly 2 lines of description: Line 1 = ID+Title, Line 2 = first desc line, Line 3 = second desc line (NO '...'), Line 4 = Metadata",
+        "Work unit with no description: Line 1 = ID+Title, Line 2 = empty, Line 3 = empty, Line 4 = Metadata"
+      ],
+      "questions": [
+        {
+          "text": "@human: For long descriptions, should the truncation '...' replace the last 3 characters of line 3, or be appended after available width?",
+          "selected": true,
+          "answer": "Truncation '...' should replace the last 3 characters of line 3 to fit within available width (standard truncation pattern)"
+        },
+        {
+          "text": "@human: What should the line layout be? Option A: [1: ID+Title, 2-3: Description, 4: Metadata] or Option B: [1: ID+Title, 2: Desc line 1, 3: Desc line 2, 4: Desc line 3 OR Metadata]?",
+          "selected": true,
+          "answer": "Option A: Line 1 = ID+Title, Lines 2-3 = Description (max 2 lines), Line 4 = Metadata"
+        }
+      ],
+      "estimate": 3,
+      "updated": "2025-10-29T00:45:01.629Z"
     }
   },
   "states": {
@@ -16600,6 +16670,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "ITF-008",
       "ITF-007",
       "ITF-006",
       "BOARD-019",
