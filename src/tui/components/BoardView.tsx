@@ -37,6 +37,7 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
   const stashes = useFspecStore(state => state.stashes);
   const stagedFiles = useFspecStore(state => state.stagedFiles);
   const unstagedFiles = useFspecStore(state => state.unstagedFiles);
+  const storeCwd = useFspecStore(state => state.cwd);
   const setCwd = useFspecStore(state => state.setCwd);
   const loadData = useFspecStore(state => state.loadData);
   const loadStashes = useFspecStore(state => state.loadStashes);
@@ -77,15 +78,15 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
     void loadData();
     void loadStashes();
     void loadFileStatus();
-  }, [loadData, loadStashes, loadFileStatus]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Watch spec/work-units.json for changes and auto-refresh (BOARD-003)
   // NOTE: Watch the directory instead of the file to handle atomic rename operations
   // from the LockedFileManager (LOCK-002). Atomic renames create new inodes,
   // which breaks watchers on the original file.
   useEffect(() => {
-    const cwd = process.cwd();
-    const specDir = path.join(cwd, 'spec');
+    const specDir = path.join(storeCwd, 'spec');
     const workUnitsFileName = 'work-units.json';
 
     // Setup directory watcher (watches for rename events from atomic writes)
@@ -100,15 +101,14 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
     return () => {
       watcher.close();
     };
-  }, [loadData]);
+  }, [storeCwd]);
 
   // Watch .git/refs/stash for stash changes using chokidar (BOARD-018: Cross-platform file watching)
   // NOTE: Use chokidar instead of fs.watch for reliable cross-platform atomic operation handling
   useEffect(() => {
     if (!showStashPanel) return;
 
-    const cwd = process.cwd();
-    const stashPath = path.join(cwd, '.git', 'refs', 'stash');
+    const stashPath = path.join(storeCwd, '.git', 'refs', 'stash');
 
     // Check if file exists before watching
     if (!fs.existsSync(stashPath)) return;
@@ -132,16 +132,15 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
     return () => {
       void watcher.close();
     };
-  }, [showStashPanel, loadStashes]);
+  }, [showStashPanel, storeCwd]);
 
   // Watch .git/index and .git/HEAD using chokidar (BOARD-018: Cross-platform file watching)
   // NOTE: Use chokidar instead of fs.watch for reliable cross-platform atomic operation handling
   useEffect(() => {
     if (!showFilesPanel) return;
 
-    const cwd = process.cwd();
-    const indexPath = path.join(cwd, '.git', 'index');
-    const headPath = path.join(cwd, '.git', 'HEAD');
+    const indexPath = path.join(storeCwd, '.git', 'index');
+    const headPath = path.join(storeCwd, '.git', 'HEAD');
 
     // Check if files exist before watching
     const filesToWatch = [];
@@ -157,7 +156,7 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
     });
 
     // Listen for all change events (chokidar normalizes across platforms)
-    watcher.on('change', (changedPath) => {
+    const handleFileChange = (changedPath: string) => {
       const filename = path.basename(changedPath);
 
       if (filename === 'index' || filename === 'HEAD') {
@@ -167,7 +166,10 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
           void loadStashes();
         }
       }
-    });
+    };
+
+    watcher.on('change', handleFileChange);
+    watcher.on('add', handleFileChange);
 
     // Add error handler to prevent silent failures (BOARD-018)
     watcher.on('error', (error) => {
@@ -177,7 +179,7 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
     return () => {
       void watcher.close();
     };
-  }, [showFilesPanel, loadFileStatus, loadStashes]);
+  }, [showFilesPanel, storeCwd]);
 
   // HEAD watcher removed (BOARD-018): Now handled by .git/ directory watcher above
 
@@ -186,13 +188,12 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
     if (viewMode === 'stash-detail' && stashes.length > 0) {
       const selectedStash = stashes[selectedStashIndex];
       if (selectedStash) {
-        const cwd = process.cwd();
-        git.listFiles({ fs, dir: cwd, ref: selectedStash.oid })
+        git.listFiles({ fs, dir: storeCwd, ref: selectedStash.oid })
           .then(files => setStashFiles(files))
           .catch(() => setStashFiles([]));
       }
     }
-  }, [viewMode, selectedStashIndex, stashes]);
+  }, [viewMode, selectedStashIndex, stashes, storeCwd]);
 
   // Load file diff when entering file-diff mode (BOARD-003)
   useEffect(() => {
@@ -200,16 +201,15 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
       const allFiles = [...stagedFiles, ...unstagedFiles];
       const selectedFile = allFiles[selectedFileIndex];
       if (selectedFile) {
-        const cwd = process.cwd();
         // Read HEAD version using git.readBlob
-        git.readBlob({ fs, dir: cwd, oid: 'HEAD', filepath: selectedFile })
+        git.readBlob({ fs, dir: storeCwd, oid: 'HEAD', filepath: selectedFile })
           .then(result => {
             setFileDiff('+5 -2 lines\n\nDiff content here');
           })
           .catch(() => setFileDiff('Error loading diff'));
       }
     }
-  }, [viewMode, selectedFileIndex, stagedFiles, unstagedFiles]);
+  }, [viewMode, selectedFileIndex, stagedFiles, unstagedFiles, storeCwd]);
 
   // Group work units by status
   const groupedWorkUnits = columns.map(status => {

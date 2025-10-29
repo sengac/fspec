@@ -18,6 +18,7 @@ import { getStagedFiles, getUnstagedFiles } from '../../git/status';
 
 // Import components
 import { BoardView } from '../components/BoardView';
+import { useFspecStore } from '../store/fspecStore';
 
 // Mock git utilities
 vi.mock('isomorphic-git');
@@ -30,6 +31,9 @@ describe('Feature: Consolidate Git info and add work unit details panel', () => 
     // Create temporary directory for test isolation
     testDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
     await mkdir(join(testDir, 'spec'), { recursive: true });
+
+    // Set test directory in store to avoid watcher errors
+    useFspecStore.setState({ cwd: testDir });
 
     // Reset mocks
     vi.clearAllMocks();
@@ -154,10 +158,16 @@ describe('Feature: Consolidate Git info and add work unit details panel', () => 
 
       await writeFile(workUnitsPath, JSON.stringify(workUnitsData, null, 2));
 
+      // Set empty work units directly in store (bypassing loadData)
+      useFspecStore.setState({
+        workUnits: [],
+      });
+
       // @step When the Work Unit Details panel is rendered
       const { lastFrame } = render(<BoardView cwd={testDir} />);
 
-      await new Promise(resolve => setTimeout(resolve, 200));
+      // Wait for component to render and auto-focus to run
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
       // @step Then it should display "BOARD-001: Test Feature" as the title
       // @step And it should display the first 3 lines of the description
@@ -202,10 +212,16 @@ describe('Feature: Consolidate Git info and add work unit details panel', () => 
 
       await writeFile(workUnitsPath, JSON.stringify(workUnitsData, null, 2));
 
+      // Set empty work units directly in store (bypassing loadData)
+      useFspecStore.setState({
+        workUnits: [],
+      });
+
       // @step When the Work Unit Details panel is rendered
       const { lastFrame } = render(<BoardView cwd={testDir} />);
 
-      await new Promise(resolve => setTimeout(resolve, 200));
+      // Wait for component to render and auto-focus to run
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
       // @step Then it should display "No work unit selected"
       // @step And the message should be user-friendly and centered

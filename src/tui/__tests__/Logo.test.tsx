@@ -94,8 +94,8 @@ describe('Feature: Add fspec logo to TUI header', () => {
       // And logo should appear in header
       expect(frame).toContain('┏┓┏┓┏┓┏┓┏┓');
 
-      // And Git panels should appear in header
-      expect(frame).toContain('Git Stashes');
+      // And Git panels should appear in header (Checkpoints replaced Git Stashes in ITF-006)
+      expect(frame).toContain('Checkpoints');
       expect(frame).toContain('Changed Files');
 
       // And table borders should be rendered for columns section
