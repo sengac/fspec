@@ -16637,9 +16637,9 @@
       "id": "AGENT-018",
       "title": "Codex loads fspec prompt from user home directory",
       "type": "story",
-      "status": "implementing",
+      "status": "done",
       "createdAt": "2025-10-29T04:25:59.776Z",
-      "updatedAt": "2025-10-29T05:07:44.213Z",
+      "updatedAt": "2025-10-29T07:33:12.903Z",
       "description": "Codex should copy fspec.md into the user's ~/.codex/prompts directory using a cross-platform home directory lookup",
       "children": [],
       "userStory": {
@@ -16671,6 +16671,14 @@
         {
           "state": "implementing",
           "timestamp": "2025-10-29T05:07:44.213Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-29T07:32:00.289Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-29T07:33:12.904Z"
         }
       ],
       "rules": [
@@ -16696,7 +16704,8 @@
       "assumptions": [
         "Codex has write permissions to create ~/.codex/prompts in the user's home directory"
       ],
-      "estimate": 3
+      "estimate": 3,
+      "updated": "2025-10-29T07:33:12.903Z"
     },
     "BUG-048": {
       "id": "BUG-048",
@@ -16794,11 +16803,10 @@
       "LANG-001"
     ],
     "testing": [],
-    "implementing": [
-      "AGENT-018"
-    ],
+    "implementing": [],
     "validating": [],
     "done": [
+      "AGENT-018",
       "BUG-048",
       "ITF-008",
       "ITF-007",
