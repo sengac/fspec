@@ -4,7 +4,6 @@
 @board-view
 @GIT-004
 Feature: Interactive checkpoint viewer with diff and commit capabilities
-
   """
   Two new React components: CheckpointViewer and ChangedFilesViewer, both using VirtualList for scrolling. Dual-pane flexbox layout (30% file list, 70% diff). Tab key switches focus between panes. Uses isomorphic-git for checkpoint file listing and diff generation. Integrates into BoardView as new view modes accessed via C and F keys.
   """
@@ -34,7 +33,6 @@ Feature: Interactive checkpoint viewer with diff and commit capabilities
   #   A: true
   #
   # ========================================
-
   Background: User Story
     As a developer using fspec TUI
     I want to view and navigate checkpoint/changed files with diffs

@@ -17116,9 +17116,9 @@
       "id": "TUI-001",
       "title": "Mouse scroll wheel and trackpad support for VirtualList",
       "type": "story",
-      "status": "validating",
+      "status": "done",
       "createdAt": "2025-10-29T11:24:57.029Z",
-      "updatedAt": "2025-10-29T11:38:10.889Z",
+      "updatedAt": "2025-10-29T12:22:43.047Z",
       "description": "Add mouse scroll wheel and trackpad scrolling support to ALL VirtualList instances in the TUI application using Ink's useInput hook and mouse event handling. Support both scroll up/down and ensure proper throttling for performance.",
       "children": [],
       "stateHistory": [
@@ -17137,6 +17137,10 @@
         {
           "state": "validating",
           "timestamp": "2025-10-29T11:38:10.889Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-29T12:22:43.047Z"
         }
       ],
       "userStory": {
@@ -17182,7 +17186,8 @@
           "answer": "Vertical scrolling only - no horizontal scrolling needed"
         }
       ],
-      "estimate": 5
+      "estimate": 5,
+      "updated": "2025-10-29T12:22:43.047Z"
     }
   },
   "states": {
@@ -17220,10 +17225,9 @@
     ],
     "testing": [],
     "implementing": [],
-    "validating": [
-      "TUI-001"
-    ],
+    "validating": [],
     "done": [
+      "TUI-001",
       "BUG-050",
       "GIT-008",
       "GIT-007",

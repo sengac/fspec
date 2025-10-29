@@ -6,7 +6,6 @@
 @backward-compatibility
 @BUG-049
 Feature: show-coverage crashes with undefined coveragePercent
-
   """
   show-coverage.ts reads coverage files expecting stats object but legacy files lack it. Fix: add calculateStats() helper function that computes stats from scenarios array when stats is undefined. Ensures backward compatibility with older coverage file formats.
   """
@@ -26,7 +25,6 @@ Feature: show-coverage crashes with undefined coveragePercent
   #   3. Given coverage file with scenarios array but no stats, show-coverage extracts unique test files and impl files for stats.testFiles and stats.implFiles arrays
   #
   # ========================================
-
   Background: User Story
     As a developer using fspec show-coverage
     I want to view coverage statistics for features with legacy coverage files missing stats object

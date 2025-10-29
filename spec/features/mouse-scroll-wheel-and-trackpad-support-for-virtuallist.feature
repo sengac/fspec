@@ -1,3 +1,4 @@
+@done
 @virtuallist
 @mouse-events
 @interaction
@@ -5,7 +6,6 @@
 @high
 @TUI-001
 Feature: Mouse scroll wheel and trackpad support for VirtualList
-
   """
   Uses Ink's useInput hook to detect mouse scroll events via key.mouse.button === 'none'. Implements throttling using lodash.throttle with 100ms interval. Integrates with existing VirtualList component without modifying core scrolling logic. Scroll events handled at parent component level and passed to VirtualList via props.
   """
@@ -44,7 +44,6 @@ Feature: Mouse scroll wheel and trackpad support for VirtualList
   #   A: true
   #
   # ========================================
-
   Background: User Story
     As a developer using fspec TUI
     I want to scroll through lists using mouse wheel or trackpad

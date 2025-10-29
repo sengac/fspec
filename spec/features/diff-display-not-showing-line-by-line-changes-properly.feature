@@ -7,7 +7,6 @@
 @bug-fix
 @BUG-050
 Feature: Diff display not showing line-by-line changes properly
-
   """
   Architecture notes:
   - Root cause: generateUnifiedDiff() in src/git/diff.ts uses naive line-by-line comparison (lines 87-120)
@@ -35,7 +34,6 @@ Feature: Diff display not showing line-by-line changes properly
   #   A: true
   #
   # ========================================
-
   Background: User Story
     As a developer reviewing code changes
     I want to see only the lines that actually changed in diffs

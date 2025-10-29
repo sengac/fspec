@@ -5,7 +5,6 @@
 @ui-refinement
 @GIT-007
 Feature: Diff loading system has rendering bugs and performance issues
-
   """
   Root cause: Object reference instability in React dependencies. allFiles array recreated every render causing selectedFile to have new reference every time, triggering useEffect infinitely. Fix: 1) Use useMemo for allFiles 2) Depend on selectedFileIndex primitive 3) Use AbortController for cancellation 4) Consider worker threads for git operations to prevent main thread blocking.
   """
@@ -29,7 +28,6 @@ Feature: Diff loading system has rendering bugs and performance issues
   #   3. SOLUTION: useEffect depends on [selectedFileIndex, stagedFiles, unstagedFiles, cwd], AbortController cancels previous loads, diff loads once per file selection without flicker
   #
   # ========================================
-
   Background: User Story
     As a developer using diff viewer
     I want to see accurate, non-flickering diffs without UX lag
