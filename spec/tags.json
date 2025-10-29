@@ -806,6 +806,10 @@
           "description": "TypeScript-specific features and configuration"
         },
         {
+          "name": "@ui-formatting",
+          "description": "UI formatting and layout features"
+        },
+        {
           "name": "@vitest",
           "description": "Vitest testing framework related features"
         },
@@ -1270,7 +1274,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-10-28T20:52:31.157Z",
+    "lastUpdated": "2025-10-29T00:34:19.411Z",
     "phaseStats": [
       {
         "phase": "Phase 1",
