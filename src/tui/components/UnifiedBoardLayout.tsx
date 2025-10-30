@@ -60,15 +60,21 @@ interface UnifiedBoardLayoutProps {
 
 const STATES = ['backlog', 'specifying', 'testing', 'implementing', 'validating', 'done', 'blocked'] as const;
 
-// Helper: Calculate optimal column width (same pattern as BoardDisplay)
-const calculateColumnWidth = (terminalWidth: number): number => {
+// Helper: Calculate column widths with remainder distribution
+// Returns { baseWidth, remainder } to distribute extra characters across first N columns
+const calculateColumnWidths = (terminalWidth: number): { baseWidth: number; remainder: number } => {
   const borders = 2; // Left and right outer borders
   const separators = STATES.length - 1; // Column separators (6 for 7 columns)
   const availableWidth = terminalWidth - borders - separators;
-  const calculatedWidth = Math.floor(availableWidth / STATES.length);
+  const baseWidth = Math.floor(availableWidth / STATES.length);
+  const remainder = availableWidth % STATES.length; // Distribute to first N columns
 
-  // Return calculated width (will adapt to terminal size)
-  return Math.max(8, calculatedWidth); // Absolute minimum of 8 chars (same as BoardDisplay)
+  return { baseWidth: Math.max(8, baseWidth), remainder: baseWidth >= 8 ? remainder : 0 };
+};
+
+// Helper: Get width for a specific column (distributes remainder to first N columns)
+const getColumnWidth = (columnIndex: number, baseWidth: number, remainder: number): number => {
+  return columnIndex < remainder ? baseWidth + 1 : baseWidth;
 };
 
 // Helper: Calculate viewport height based on terminal height (BOARD-014)
@@ -194,9 +200,10 @@ const applyBackgroundCharacterShimmer = (
     .join('');
 };
 
-// Helper: Build border row with separator type
+// Helper: Build border row with separator type (supports variable column widths)
 const buildBorderRow = (
-  colWidth: number,
+  baseWidth: number,
+  remainder: number,
   left: string,
   mid: string,
   right: string,
@@ -209,7 +216,7 @@ const buildBorderRow = (
     bottom: '┴',
   }[separatorType];
 
-  return left + STATES.map(() => '─'.repeat(colWidth)).join(separatorChar) + right;
+  return left + STATES.map((_, idx) => '─'.repeat(getColumnWidth(idx, baseWidth, remainder))).join(separatorChar) + right;
 };
 
 export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
@@ -236,8 +243,11 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
   const terminalWidth = propTerminalWidth ?? (stdout?.columns || 80);
   const terminalHeight = propTerminalHeight ?? ((stdout?.rows || 24) - 1);
 
-  // Calculate column width reactively based on terminal width
-  const colWidth = useMemo(() => calculateColumnWidth(terminalWidth), [terminalWidth]);
+  // Calculate column widths with remainder distribution
+  const { baseWidth: colWidth, remainder: colRemainder } = useMemo(
+    () => calculateColumnWidths(terminalWidth),
+    [terminalWidth]
+  );
 
   // Calculate viewport height (BOARD-014: dynamic column height based on terminal height)
   const VIEWPORT_HEIGHT = useMemo(() => calculateViewportHeight(terminalHeight), [terminalHeight]);
@@ -436,10 +446,11 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
   const rows: string[] = [];
 
   // Top border (no columns above - use plain separator)
-  rows.push(buildBorderRow(colWidth, '┌', '─', '┐', 'plain'));
+  rows.push(buildBorderRow(colWidth, colRemainder, '┌', '─', '┐', 'plain'));
 
   // Git Context panel (combined Git Stashes and Changed Files)
-  const totalWidth = colWidth * STATES.length + (STATES.length - 1);
+  // Calculate total content width (sum of all column widths + separators)
+  const totalWidth = STATES.reduce((sum, _, idx) => sum + getColumnWidth(idx, colWidth, colRemainder), 0) + (STATES.length - 1);
   rows.push('│' + fitToWidth(`Git Stashes (${stashes.length})`, totalWidth) + '│');
   if (stashes.length > 0) {
     // Display first few stashes (truncated to fit)
@@ -480,7 +491,7 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
   }
 
   // Separator after Git Context panel
-  rows.push(buildBorderRow(colWidth, '├', '─', '┤', 'plain'));
+  rows.push(buildBorderRow(colWidth, colRemainder, '├', '─', '┤', 'plain'));
 
   // Work Unit Details panel (ITF-008: static 5 lines high, NO header, 3-line description, NO padding)
   // Always output exactly 5 detail lines (static height)
@@ -570,18 +581,19 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
   }
 
   // Separator after Changed Files (top - no columns above, columns start below)
-  rows.push(buildBorderRow(colWidth, '├', '┬', '┤', 'top'));
+  rows.push(buildBorderRow(colWidth, colRemainder, '├', '┬', '┤', 'top'));
 
   // Column headers (with focus highlighting using chalk)
   rows.push('│' + STATES.map((state, idx) => {
     const header = state.toUpperCase();
-    const paddedHeader = fitToWidth(header, colWidth);
+    const currentColWidth = getColumnWidth(idx, colWidth, colRemainder);
+    const paddedHeader = fitToWidth(header, currentColWidth);
     // Highlight focused column in cyan
     return idx === focusedColumnIndex ? chalk.cyan(paddedHeader) : chalk.gray(paddedHeader);
   }).join('│') + '│');
 
   // Header separator
-  rows.push(buildBorderRow(colWidth, '├', '┼', '┤'));
+  rows.push(buildBorderRow(colWidth, colRemainder, '├', '┼', '┤'));
 
   // Data rows (with scrolling support)
   const maxRows = VIEWPORT_HEIGHT;
@@ -590,17 +602,18 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
       const column = groupedWorkUnits[colIndex];
       const scrollOffset = scrollOffsets[state];
       const itemIndex = scrollOffset + rowIndex;
+      const currentColWidth = getColumnWidth(colIndex, colWidth, colRemainder);
 
       // Show scroll indicators ONLY if there are items to scroll to
       if (rowIndex === 0 && scrollOffset > 0 && column.units.length > 0) {
-        return fitToWidth('↑', colWidth); // Up arrow at top when scrolled down
+        return fitToWidth('↑', currentColWidth); // Up arrow at top when scrolled down
       }
       if (rowIndex === maxRows - 1 && scrollOffset + maxRows < column.units.length) {
-        return fitToWidth('↓', colWidth); // Down arrow at bottom when more items below
+        return fitToWidth('↓', currentColWidth); // Down arrow at bottom when more items below
       }
 
       if (itemIndex >= column.units.length) {
-        return fitToWidth('', colWidth);
+        return fitToWidth('', currentColWidth);
       }
 
       const wu = column.units[itemIndex];
@@ -610,7 +623,7 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
       // Only show story points if > 0, format as [N]
       const storyPointsText = estimate > 0 ? ` [${estimate}]` : '';
       const text = `${wu.id}${storyPointsText}`;
-      const paddedText = fitToWidth(text, colWidth);
+      const paddedText = fitToWidth(text, currentColWidth);
 
       // Check if this work unit is selected
       const isSelected = colIndex === focusedColumnIndex && itemIndex === selectedWorkUnitIndex;
@@ -648,13 +661,13 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
   }
 
   // Footer separator (bottom - columns end above, no columns below)
-  rows.push(buildBorderRow(colWidth, '├', '┴', '┤', 'bottom'));
+  rows.push(buildBorderRow(colWidth, colRemainder, '├', '┴', '┤', 'bottom'));
 
   // Footer row (centered with diamond separators)
   rows.push('│' + centerText('← → Columns ◆ ↑↓ Work Units ◆ [ Priority Up ◆ ] Priority Down ◆ ↵ Details ◆ ESC Back', totalWidth) + '│');
 
   // Bottom border (no columns below - use plain separator)
-  rows.push(buildBorderRow(colWidth, '└', '─', '┘', 'plain'));
+  rows.push(buildBorderRow(colWidth, colRemainder, '└', '─', '┘', 'plain'));
 
   // Split rows into sections for hybrid rendering
   const separatorAfterGit = rows[5]; // Separator after header
