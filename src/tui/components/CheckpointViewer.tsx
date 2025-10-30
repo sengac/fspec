@@ -258,17 +258,17 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
   // Loading state
   if (isLoadingCheckpoints) {
     return (
-      <Box flexDirection="column" flexGrow={1}>
+      <Box flexDirection="column" flexGrow={1} borderStyle="single" borderColor="cyan">
         <Box flexDirection="row" flexGrow={1}>
-          <Box flexDirection="column" flexGrow={1} flexBasis={0}>
-            <Box flexDirection="column" flexGrow={1} flexBasis={0} borderStyle="single" borderColor="cyan">
+          <Box flexDirection="column" flexGrow={1} flexBasis={0} borderStyle="single" borderTop={false} borderBottom={false} borderLeft={false}>
+            <Box flexDirection="column" flexGrow={1} flexBasis={0} borderStyle="single" borderTop={false} borderLeft={false} borderRight={false}>
               <Text wrap="truncate">Loading checkpoints...</Text>
             </Box>
-            <Box flexDirection="column" flexGrow={1} flexBasis={0} borderStyle="single">
+            <Box flexDirection="column" flexGrow={1} flexBasis={0}>
               <Text wrap="truncate">-</Text>
             </Box>
           </Box>
-          <Box flexDirection="column" flexGrow={2} flexBasis={0} borderStyle="single">
+          <Box flexDirection="column" flexGrow={2} flexBasis={0}>
             <Text wrap="truncate">-</Text>
           </Box>
         </Box>
@@ -279,22 +279,22 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
   // Empty state
   if (sortedCheckpoints.length === 0) {
     return (
-      <Box flexDirection="column" flexGrow={1}>
+      <Box flexDirection="column" flexGrow={1} borderStyle="single" borderColor="cyan">
         <Box flexDirection="row" flexGrow={1}>
           {/* Left column: Checkpoint list (top) + File list (bottom) - 33% width */}
-          <Box flexDirection="column" flexGrow={1} flexBasis={0}>
+          <Box flexDirection="column" flexGrow={1} flexBasis={0} borderStyle="single" borderTop={false} borderBottom={false} borderLeft={false}>
             {/* Checkpoint list pane (top-left) */}
-            <Box flexDirection="column" flexGrow={1} flexBasis={0} borderStyle="single" borderColor="cyan">
+            <Box flexDirection="column" flexGrow={1} flexBasis={0} borderStyle="single" borderTop={false} borderLeft={false} borderRight={false}>
               <Text wrap="truncate">No checkpoints available</Text>
             </Box>
             {/* File list pane (bottom-left) */}
-            <Box flexDirection="column" flexGrow={1} flexBasis={0} borderStyle="single">
+            <Box flexDirection="column" flexGrow={1} flexBasis={0}>
               <Text wrap="truncate">No files</Text>
             </Box>
           </Box>
 
           {/* Right side: Diff pane - 67% width */}
-          <Box flexDirection="column" flexGrow={2} flexBasis={0} borderStyle="single">
+          <Box flexDirection="column" flexGrow={2} flexBasis={0}>
             <Text wrap="truncate">Select a checkpoint to view files</Text>
           </Box>
         </Box>
@@ -366,22 +366,28 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
       </Box>
 
       {/* Three-pane layout: Left column (checkpoint list + file list) + Diff pane (right) */}
-      <Box flexDirection="row" flexGrow={1}>
-        {/* Left column: Checkpoint list (top) + File list (bottom) stacked vertically - 33% width via flexGrow ratio */}
-        <Box
-          flexDirection="column"
-          flexGrow={1}
-          flexBasis={0}
-        >
-          {/* Checkpoint list pane (top-left) - flexGrow 1 with flexBasis 0 for 50/50 vertical split */}
+      <Box flexDirection="column" flexGrow={1} borderStyle="single" borderColor="cyan">
+        <Box flexDirection="row" flexGrow={1}>
+          {/* Left column: Checkpoint list (top) + File list (bottom) stacked vertically - 33% width via flexGrow ratio */}
           <Box
             flexDirection="column"
             flexGrow={1}
             flexBasis={0}
             borderStyle="single"
-            borderColor={focusedPane === 'checkpoints' ? 'cyan' : 'gray'}
+            borderTop={false}
+            borderBottom={false}
+            borderLeft={false}
           >
-            <Box flexGrow={1}>
+            {/* Checkpoint list pane (top-left) - flexGrow 1 with flexBasis 0 for 50/50 vertical split */}
+            <Box
+              flexDirection="column"
+              flexGrow={1}
+              flexBasis={0}
+              borderStyle="single"
+              borderTop={false}
+              borderLeft={false}
+              borderRight={false}
+            >
               <VirtualList
                 items={sortedCheckpoints}
                 renderItem={renderCheckpointItem}
@@ -393,17 +399,13 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
                 }}
               />
             </Box>
-          </Box>
 
-          {/* File list pane (bottom-left) - flexGrow 1 with flexBasis 0 for 50/50 vertical split */}
-          <Box
-            flexDirection="column"
-            flexGrow={1}
-            flexBasis={0}
-            borderStyle="single"
-            borderColor={focusedPane === 'files' ? 'cyan' : 'gray'}
-          >
-            <Box flexGrow={1}>
+            {/* File list pane (bottom-left) - flexGrow 1 with flexBasis 0 for 50/50 vertical split */}
+            <Box
+              flexDirection="column"
+              flexGrow={1}
+              flexBasis={0}
+            >
               <VirtualList
                 items={files}
                 renderItem={(file, index, isSelected) => {
@@ -424,23 +426,21 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
               />
             </Box>
           </Box>
-        </Box>
 
-        {/* Right side: Diff pane only - 67% width via flexGrow ratio */}
-        <Box
-          flexDirection="column"
-          flexGrow={2}
-          flexBasis={0}
-          borderStyle="single"
-          borderColor={focusedPane === 'diff' ? 'cyan' : 'gray'}
-        >
-          <Box flexGrow={1}>
-            <VirtualList
-              items={diffLines}
-              renderItem={renderDiffLine}
-              showScrollbar={focusedPane === 'diff'}
-              isFocused={focusedPane === 'diff'}
-            />
+          {/* Right side: Diff pane only - 67% width via flexGrow ratio */}
+          <Box
+            flexDirection="column"
+            flexGrow={2}
+            flexBasis={0}
+          >
+            <Box flexGrow={1}>
+              <VirtualList
+                items={diffLines}
+                renderItem={renderDiffLine}
+                showScrollbar={focusedPane === 'diff'}
+                isFocused={focusedPane === 'diff'}
+              />
+            </Box>
           </Box>
         </Box>
       </Box>
