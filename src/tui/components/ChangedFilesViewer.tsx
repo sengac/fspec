@@ -71,13 +71,6 @@ const ChangedFilesViewerComponent: React.FC<ChangedFilesViewerProps> = ({
 
   return (
     <Box flexDirection="column" flexGrow={1}>
-      {/* Header */}
-      <Box>
-        <Text bold>
-          Changed Files: {stagedFiles.length} staged, {unstagedFiles.length} unstaged
-        </Text>
-      </Box>
-
       {/* Use shared FileDiffViewer for dual-pane layout */}
       <FileDiffViewer
         files={allFiles}

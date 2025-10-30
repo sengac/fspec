@@ -262,13 +262,22 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
         <Box flexDirection="row" flexGrow={1}>
           <Box flexDirection="column" flexGrow={1} flexBasis={0} borderStyle="single" borderTop={false} borderBottom={false} borderLeft={false}>
             <Box flexDirection="column" flexGrow={1} flexBasis={0} borderStyle="single" borderTop={false} borderLeft={false} borderRight={false}>
+              <Box backgroundColor={focusedPane === 'checkpoints' ? 'green' : undefined}>
+                <Text bold={focusedPane !== 'checkpoints'} color={focusedPane === 'checkpoints' ? 'black' : 'white'}>Checkpoints</Text>
+              </Box>
               <Text wrap="truncate">Loading checkpoints...</Text>
             </Box>
             <Box flexDirection="column" flexGrow={2} flexBasis={0}>
+              <Box backgroundColor={focusedPane === 'files' ? 'green' : undefined}>
+                <Text bold={focusedPane !== 'files'} color={focusedPane === 'files' ? 'black' : 'white'}>Files</Text>
+              </Box>
               <Text wrap="truncate">-</Text>
             </Box>
           </Box>
           <Box flexDirection="column" flexGrow={2} flexBasis={0}>
+            <Box backgroundColor={focusedPane === 'diff' ? 'green' : undefined}>
+              <Text bold={focusedPane !== 'diff'} color={focusedPane === 'diff' ? 'black' : 'white'}>Diff</Text>
+            </Box>
             <Text wrap="truncate">-</Text>
           </Box>
         </Box>
@@ -285,16 +294,25 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
           <Box flexDirection="column" flexGrow={1} flexBasis={0} borderStyle="single" borderTop={false} borderBottom={false} borderLeft={false}>
             {/* Checkpoint list pane (top-left) - 33% of vertical space via flexGrow ratio */}
             <Box flexDirection="column" flexGrow={1} flexBasis={0} borderStyle="single" borderTop={false} borderLeft={false} borderRight={false}>
+              <Box backgroundColor={focusedPane === 'checkpoints' ? 'green' : undefined}>
+                <Text bold={focusedPane !== 'checkpoints'} color={focusedPane === 'checkpoints' ? 'black' : 'white'}>Checkpoints</Text>
+              </Box>
               <Text wrap="truncate">No checkpoints available</Text>
             </Box>
             {/* File list pane (bottom-left) - 67% of vertical space via flexGrow ratio */}
             <Box flexDirection="column" flexGrow={2} flexBasis={0}>
+              <Box backgroundColor={focusedPane === 'files' ? 'green' : undefined}>
+                <Text bold={focusedPane !== 'files'} color={focusedPane === 'files' ? 'black' : 'white'}>Files</Text>
+              </Box>
               <Text wrap="truncate">No files</Text>
             </Box>
           </Box>
 
           {/* Right side: Diff pane - 67% width */}
           <Box flexDirection="column" flexGrow={2} flexBasis={0}>
+            <Box backgroundColor={focusedPane === 'diff' ? 'green' : undefined}>
+              <Text bold={focusedPane !== 'diff'} color={focusedPane === 'diff' ? 'black' : 'white'}>Diff</Text>
+            </Box>
             <Text wrap="truncate">Select a checkpoint to view files</Text>
           </Box>
         </Box>
@@ -358,13 +376,6 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
 
   return (
     <Box flexDirection="column" flexGrow={1}>
-      {/* Header */}
-      <Box>
-        <Text bold>
-          Checkpoints: {sortedCheckpoints.length} available
-        </Text>
-      </Box>
-
       {/* Three-pane layout: Left column (checkpoint list + file list) + Diff pane (right) */}
       <Box flexDirection="column" flexGrow={1} borderStyle="single" borderColor="cyan">
         <Box flexDirection="row" flexGrow={1}>
@@ -388,6 +399,15 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
               borderLeft={false}
               borderRight={false}
             >
+              {/* Checkpoint list heading */}
+              <Box backgroundColor={focusedPane === 'checkpoints' ? 'green' : undefined}>
+                <Text
+                  bold={focusedPane !== 'checkpoints'}
+                  color={focusedPane === 'checkpoints' ? 'black' : 'white'}
+                >
+                  Checkpoints
+                </Text>
+              </Box>
               <VirtualList
                 items={sortedCheckpoints}
                 renderItem={renderCheckpointItem}
@@ -406,6 +426,15 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
               flexGrow={2}
               flexBasis={0}
             >
+              {/* File list heading */}
+              <Box backgroundColor={focusedPane === 'files' ? 'green' : undefined}>
+                <Text
+                  bold={focusedPane !== 'files'}
+                  color={focusedPane === 'files' ? 'black' : 'white'}
+                >
+                  Files
+                </Text>
+              </Box>
               <VirtualList
                 items={files}
                 renderItem={(file, index, isSelected) => {
@@ -433,6 +462,15 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
             flexGrow={2}
             flexBasis={0}
           >
+            {/* Diff pane heading */}
+            <Box backgroundColor={focusedPane === 'diff' ? 'green' : undefined}>
+              <Text
+                bold={focusedPane !== 'diff'}
+                color={focusedPane === 'diff' ? 'black' : 'white'}
+              >
+                Diff
+              </Text>
+            </Box>
             <Box flexGrow={1}>
               <VirtualList
                 items={diffLines}

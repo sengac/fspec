@@ -1,0 +1,126 @@
+{
+  "scenarios": [
+    {
+      "name": "CheckpointViewer initial focus on checkpoint list",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/container-focus-headings.test.tsx",
+          "lines": "14-34",
+          "implMappings": [
+            {
+              "file": "src/tui/components/CheckpointViewer.tsx",
+              "lines": [
+                265,
+                266,
+                267
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Tab navigation to file list in CheckpointViewer",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/container-focus-headings.test.tsx",
+          "lines": "38-57",
+          "implMappings": [
+            {
+              "file": "src/tui/components/CheckpointViewer.tsx",
+              "lines": [
+                265,
+                266,
+                267
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Tab navigation to diff pane in CheckpointViewer",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/container-focus-headings.test.tsx",
+          "lines": "61-81",
+          "implMappings": [
+            {
+              "file": "src/tui/components/CheckpointViewer.tsx",
+              "lines": [
+                265,
+                266,
+                267
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ChangedFilesViewer initial focus on file list",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/container-focus-headings.test.tsx",
+          "lines": "85-106",
+          "implMappings": [
+            {
+              "file": "src/tui/components/FileDiffViewer.tsx",
+              "lines": [
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Tab navigation between file list and diff in ChangedFilesViewer",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/container-focus-headings.test.tsx",
+          "lines": "110-130",
+          "implMappings": [
+            {
+              "file": "src/tui/components/FileDiffViewer.tsx",
+              "lines": [
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/components/__tests__/container-focus-headings.test.tsx"
+    ],
+    "implFiles": [
+      "src/tui/components/CheckpointViewer.tsx",
+      "src/tui/components/FileDiffViewer.tsx"
+    ],
+    "totalLinesCovered": 134
+  }
+}
