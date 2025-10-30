@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-30T00:13:49.067Z"
+    "lastUpdated": "2025-10-30T03:18:10.168Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -17566,6 +17566,86 @@
       ],
       "estimate": 3,
       "updated": "2025-10-30T00:40:05.318Z"
+    },
+    "TUI-008": {
+      "id": "TUI-008",
+      "title": "Vertical layout for changed files viewer",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-30T03:17:59.181Z",
+      "updatedAt": "2025-10-30T03:34:02.058Z",
+      "description": "Reposition the files list to be above the diff view instead of to the left, maintaining 33%/67% proportions",
+      "children": [],
+      "userStory": {
+        "role": "developer using the changed files viewer",
+        "action": "view files list above the diff instead of to the left",
+        "benefit": "the layout better fits narrower terminal windows while maintaining the same proportional space allocation"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-30T03:18:31.717Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-30T03:25:57.985Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-30T03:27:23.037Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-30T03:33:13.631Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-30T03:34:02.058Z"
+        }
+      ],
+      "rules": [
+        "Files list must be positioned above the diff view in vertical layout",
+        "Height proportions must remain 33% for files list and 67% for diff view",
+        "Layout changes from horizontal (row) to vertical (column) flexbox direction",
+        "Yes, vertical border between panes becomes horizontal border",
+        "Both viewers get vertical layout. CheckpointViewer's left-side components also change to opposite direction (vertical)"
+      ],
+      "questions": [
+        {
+          "text": "@human: Should the section headings ('Files' and 'Diff') remain in the same style with the same focus indication (green background)?",
+          "selected": true,
+          "answer": "Yes, section headings maintain same style with green background focus indication"
+        },
+        {
+          "text": "@human: Should the keyboard navigation (Tab to switch panes, arrow keys to navigate) remain exactly the same?",
+          "selected": true,
+          "answer": "Yes, keyboard navigation (Tab, arrow keys) remains exactly the same"
+        },
+        {
+          "text": "@human: Should the border styling change? Currently there's a vertical border between panes - should this become a horizontal border?",
+          "selected": true,
+          "answer": "Yes, vertical border between panes becomes horizontal border"
+        },
+        {
+          "text": "@human: This change affects FileDiffViewer which is used by both ChangedFilesViewer and CheckpointViewer. Should BOTH viewers get the vertical layout, or just the ChangedFilesViewer?",
+          "selected": true,
+          "answer": "Both viewers get vertical layout. CheckpointViewer's left-side components also change to opposite direction (vertical)"
+        }
+      ],
+      "assumptions": [
+        "Yes, section headings maintain same style with green background focus indication",
+        "Yes, keyboard navigation (Tab, arrow keys) remains exactly the same"
+      ],
+      "examples": [
+        "FileDiffViewer changes from horizontal (files left, diff right) to vertical (files top, diff bottom)",
+        "CheckpointViewer left column changes from vertical stack (checkpoints top, files bottom) to horizontal row (checkpoints left, files right)",
+        "FileDiffViewer: Files pane maintains 33% height, diff pane maintains 67% height",
+        "CheckpointViewer: Checkpoints pane gets 33% width, files pane gets 67% width in top row",
+        "Vertical border in FileDiffViewer becomes horizontal border separating top and bottom",
+        "CheckpointViewer maintains top row at 33% height and bottom diff pane at 67% height"
+      ],
+      "estimate": 5,
+      "updated": "2025-10-30T03:34:02.058Z"
     }
   },
   "states": {
@@ -17604,6 +17684,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "TUI-008",
       "TUI-007",
       "TUI-006",
       "TUI-005",
