@@ -261,10 +261,10 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
       <Box flexDirection="column" flexGrow={1} borderStyle="single" borderColor="cyan">
         <Box flexDirection="row" flexGrow={1}>
           <Box flexDirection="column" flexGrow={1} flexBasis={0} borderStyle="single" borderTop={false} borderBottom={false} borderLeft={false}>
-            <Box flexDirection="column" height={8} borderStyle="single" borderTop={false} borderLeft={false} borderRight={false}>
+            <Box flexDirection="column" flexGrow={1} flexBasis={0} borderStyle="single" borderTop={false} borderLeft={false} borderRight={false}>
               <Text wrap="truncate">Loading checkpoints...</Text>
             </Box>
-            <Box flexDirection="column" flexGrow={1}>
+            <Box flexDirection="column" flexGrow={2} flexBasis={0}>
               <Text wrap="truncate">-</Text>
             </Box>
           </Box>
@@ -283,12 +283,12 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
         <Box flexDirection="row" flexGrow={1}>
           {/* Left column: Checkpoint list (top) + File list (bottom) - 33% width */}
           <Box flexDirection="column" flexGrow={1} flexBasis={0} borderStyle="single" borderTop={false} borderBottom={false} borderLeft={false}>
-            {/* Checkpoint list pane (top-left) - fixed height of 8 characters */}
-            <Box flexDirection="column" height={8} borderStyle="single" borderTop={false} borderLeft={false} borderRight={false}>
+            {/* Checkpoint list pane (top-left) - 33% of vertical space via flexGrow ratio */}
+            <Box flexDirection="column" flexGrow={1} flexBasis={0} borderStyle="single" borderTop={false} borderLeft={false} borderRight={false}>
               <Text wrap="truncate">No checkpoints available</Text>
             </Box>
-            {/* File list pane (bottom-left) - fills remaining vertical space */}
-            <Box flexDirection="column" flexGrow={1}>
+            {/* File list pane (bottom-left) - 67% of vertical space via flexGrow ratio */}
+            <Box flexDirection="column" flexGrow={2} flexBasis={0}>
               <Text wrap="truncate">No files</Text>
             </Box>
           </Box>
@@ -325,17 +325,17 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
   // Render diff line with syntax highlighting
   const renderDiffLine = (line: DiffLine, index: number, isSelected: boolean): React.ReactNode => {
     let textColor: 'white' | 'cyan' = 'white';
-    let backgroundColor: 'red' | 'green' | undefined;
+    let backgroundColor: string | undefined;
 
     // Determine colors based on line type
     if (line.type === 'hunk') {
       textColor = 'cyan';
     } else if (line.type === 'removed') {
       textColor = 'white';
-      backgroundColor = 'red';
+      backgroundColor = '#8B0000'; // Dark red
     } else if (line.type === 'added') {
       textColor = 'white';
-      backgroundColor = 'green';
+      backgroundColor = '#006400'; // Dark green
     }
 
     // Apply selection styling if focused
@@ -378,10 +378,11 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
             borderBottom={false}
             borderLeft={false}
           >
-            {/* Checkpoint list pane (top-left) - fixed height of 8 characters */}
+            {/* Checkpoint list pane (top-left) - 33% of vertical space via flexGrow ratio */}
             <Box
               flexDirection="column"
-              height={8}
+              flexGrow={1}
+              flexBasis={0}
               borderStyle="single"
               borderTop={false}
               borderLeft={false}
@@ -399,10 +400,11 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
               />
             </Box>
 
-            {/* File list pane (bottom-left) - fills remaining vertical space */}
+            {/* File list pane (bottom-left) - 67% of vertical space via flexGrow ratio */}
             <Box
               flexDirection="column"
-              flexGrow={1}
+              flexGrow={2}
+              flexBasis={0}
             >
               <VirtualList
                 items={files}
