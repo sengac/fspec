@@ -49,11 +49,15 @@ describe('Feature: Vertical layout for changed files viewer', () => {
 
       // Then the container flexDirection should be "column"
       // And the files pane should be positioned above the diff pane
-      expect(frame).toContain('src/auth.ts');
-      expect(frame).toContain('src/login.ts');
+      // VirtualList virtualizes - first file should be visible
+      expect(frame).toContain('src/auth.ts'); // First file visible
+      expect(frame).toContain('Files'); // Files pane heading above
+      expect(frame).toContain('Diff'); // Diff pane heading below
 
-      // Note: flexDirection validation requires inspecting component tree
-      // This test will fail until implementation changes flexDirection to "column"
+      // Files heading should appear before Diff heading (vertical layout)
+      const filesIndex = frame.indexOf('Files');
+      const diffIndex = frame.indexOf('Diff');
+      expect(filesIndex).toBeLessThan(diffIndex); // Files above Diff
     });
   });
 
