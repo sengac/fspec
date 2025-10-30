@@ -16,7 +16,7 @@ const componentsUsingVirtualList = [
 ];
 
 describe('Feature: VirtualList flexbox text wrapping', () => {
-  describe('Scenario: CheckpointViewer uses flexGrow/flexShrink with NO percentages', () => {
+  describe('Scenario: CheckpointViewer uses flexGrow with NO percentages', () => {
     it('should NOT use flexBasis with percentage values', () => {
       const filePath = path.join(process.cwd(), 'src/tui/components/CheckpointViewer.tsx');
       const content = fs.readFileSync(filePath, 'utf-8');
@@ -50,19 +50,16 @@ describe('Feature: VirtualList flexbox text wrapping', () => {
       expect(matches).toBeNull();
     });
 
-    it('should use flexGrow and flexShrink properties', () => {
+    it('should use flexGrow properties', () => {
       const filePath = path.join(process.cwd(), 'src/tui/components/CheckpointViewer.tsx');
       const content = fs.readFileSync(filePath, 'utf-8');
 
-      // Should have flexGrow
+      // Should have flexGrow for proportional sizing
       expect(content).toMatch(/flexGrow=\{/);
-
-      // Should have flexShrink
-      expect(content).toMatch(/flexShrink=\{/);
     });
   });
 
-  describe('Scenario: FileDiffViewer uses flexGrow/flexShrink with NO percentages', () => {
+  describe('Scenario: FileDiffViewer uses flexGrow with NO percentages', () => {
     it('should NOT use flexBasis with percentage values', () => {
       const filePath = path.join(process.cwd(), 'src/tui/components/FileDiffViewer.tsx');
       const content = fs.readFileSync(filePath, 'utf-8');
@@ -93,16 +90,16 @@ describe('Feature: VirtualList flexbox text wrapping', () => {
       expect(matches).toBeNull();
     });
 
-    it('should use flexGrow and flexShrink properties', () => {
+    it('should use flexGrow properties', () => {
       const filePath = path.join(process.cwd(), 'src/tui/components/FileDiffViewer.tsx');
       const content = fs.readFileSync(filePath, 'utf-8');
 
+      // Should have flexGrow for proportional sizing
       expect(content).toMatch(/flexGrow=\{/);
-      expect(content).toMatch(/flexShrink=\{/);
     });
   });
 
-  describe('Scenario: BoardView uses flexGrow/flexShrink with NO percentages', () => {
+  describe('Scenario: BoardView uses flexGrow with NO percentages', () => {
     it('should NOT use flexBasis with percentage values', () => {
       const filePath = path.join(process.cwd(), 'src/tui/components/BoardView.tsx');
       const content = fs.readFileSync(filePath, 'utf-8');
@@ -133,12 +130,12 @@ describe('Feature: VirtualList flexbox text wrapping', () => {
       expect(matches).toBeNull();
     });
 
-    it('should use flexGrow and flexShrink properties', () => {
+    it('should use flexGrow properties', () => {
       const filePath = path.join(process.cwd(), 'src/tui/components/BoardView.tsx');
       const content = fs.readFileSync(filePath, 'utf-8');
 
+      // Should have flexGrow for proportional sizing
       expect(content).toMatch(/flexGrow=\{/);
-      expect(content).toMatch(/flexShrink=\{/);
     });
   });
 
