@@ -268,7 +268,7 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
               <Text wrap="truncate">-</Text>
             </Box>
           </Box>
-          <Box flexDirection="column" flexGrow={3} flexBasis={0} borderStyle="single">
+          <Box flexDirection="column" flexGrow={2} flexBasis={0} borderStyle="single">
             <Text wrap="truncate">-</Text>
           </Box>
         </Box>
@@ -281,7 +281,7 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
     return (
       <Box flexDirection="column" flexGrow={1}>
         <Box flexDirection="row" flexGrow={1}>
-          {/* Left column: Checkpoint list (top) + File list (bottom) - 25% width */}
+          {/* Left column: Checkpoint list (top) + File list (bottom) - 33% width */}
           <Box flexDirection="column" flexGrow={1} flexBasis={0}>
             {/* Checkpoint list pane (top-left) */}
             <Box flexDirection="column" flexGrow={1} flexBasis={0} borderStyle="single" borderColor="cyan">
@@ -293,8 +293,8 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
             </Box>
           </Box>
 
-          {/* Right side: Diff pane - 75% width */}
-          <Box flexDirection="column" flexGrow={3} flexBasis={0} borderStyle="single">
+          {/* Right side: Diff pane - 67% width */}
+          <Box flexDirection="column" flexGrow={2} flexBasis={0} borderStyle="single">
             <Text wrap="truncate">Select a checkpoint to view files</Text>
           </Box>
         </Box>
@@ -367,7 +367,7 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
 
       {/* Three-pane layout: Left column (checkpoint list + file list) + Diff pane (right) */}
       <Box flexDirection="row" flexGrow={1}>
-        {/* Left column: Checkpoint list (top) + File list (bottom) stacked vertically - 25% width via flexGrow ratio */}
+        {/* Left column: Checkpoint list (top) + File list (bottom) stacked vertically - 33% width via flexGrow ratio */}
         <Box
           flexDirection="column"
           flexGrow={1}
@@ -426,10 +426,10 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
           </Box>
         </Box>
 
-        {/* Right side: Diff pane only - 75% width via flexGrow ratio */}
+        {/* Right side: Diff pane only - 67% width via flexGrow ratio */}
         <Box
           flexDirection="column"
-          flexGrow={3}
+          flexGrow={2}
           flexBasis={0}
           borderStyle="single"
           borderColor={focusedPane === 'diff' ? 'cyan' : 'gray'}
