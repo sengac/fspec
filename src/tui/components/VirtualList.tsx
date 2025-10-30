@@ -64,8 +64,11 @@ export function VirtualList<T>({
       const dimensions = measureElement(containerRef.current);
       // Use measured height (lines = height, since each item is 1 line in terminal)
       // This respects flexbox layout and gives us the ACTUAL allocated space
+      // Floor first to handle fractional heights, then subtract 2 for safety margin
+      // This prevents overflow from accumulated rounding errors in nested flexbox containers
+      // with borders that may consume partial lines
       if (dimensions.height > 0) {
-        setMeasuredHeight(dimensions.height);
+        setMeasuredHeight(Math.max(1, Math.floor(dimensions.height) - 2));
       }
     }
   }, [items.length, terminalHeight]); // Re-measure when items or terminal changes

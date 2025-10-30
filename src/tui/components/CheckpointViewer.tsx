@@ -259,9 +259,9 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
   if (isLoadingCheckpoints) {
     return (
       <Box flexDirection="column" flexGrow={1} borderStyle="single" borderTop={false} borderLeft={false} borderRight={false} borderBottom={true}>
-        <Box flexDirection="row" flexGrow={1}>
-          <Box flexDirection="column" flexGrow={1} flexBasis={0} borderStyle="single" borderTop={false} borderBottom={false} borderLeft={false}>
-            <Box flexDirection="column" flexGrow={1} flexBasis={0} borderStyle="single" borderTop={false} borderLeft={false} borderRight={false}>
+        <Box flexDirection="column" flexGrow={1}>
+          <Box flexDirection="row" flexGrow={1} flexBasis={0} borderStyle="single" borderTop={false} borderBottom={true} borderLeft={false} borderRight={false}>
+            <Box flexDirection="column" flexGrow={1} flexBasis={0} borderStyle="single" borderTop={false} borderLeft={false} borderRight={true} borderBottom={false}>
               <Box
                 backgroundColor={focusedPane === 'checkpoints' ? 'green' : undefined}
                 borderStyle="single"
@@ -310,11 +310,11 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
   if (sortedCheckpoints.length === 0) {
     return (
       <Box flexDirection="column" flexGrow={1} borderStyle="single" borderTop={false} borderLeft={false} borderRight={false} borderBottom={true}>
-        <Box flexDirection="row" flexGrow={1}>
-          {/* Left column: Checkpoint list (top) + File list (bottom) - 33% width */}
-          <Box flexDirection="column" flexGrow={1} flexBasis={0} borderStyle="single" borderTop={false} borderBottom={false} borderLeft={false}>
-            {/* Checkpoint list pane (top-left) - 33% of vertical space via flexGrow ratio */}
-            <Box flexDirection="column" flexGrow={1} flexBasis={0} borderStyle="single" borderTop={false} borderLeft={false} borderRight={false}>
+        <Box flexDirection="column" flexGrow={1}>
+          {/* Top row: Checkpoint list (left) + File list (right) - 33% height */}
+          <Box flexDirection="row" flexGrow={1} flexBasis={0} borderStyle="single" borderTop={false} borderBottom={true} borderLeft={false} borderRight={false}>
+            {/* Checkpoint list pane (left) - 33% of horizontal space via flexGrow ratio */}
+            <Box flexDirection="column" flexGrow={1} flexBasis={0} borderStyle="single" borderTop={false} borderLeft={false} borderRight={true} borderBottom={false}>
               <Box
                 backgroundColor={focusedPane === 'checkpoints' ? 'green' : undefined}
                 borderStyle="single"
@@ -327,7 +327,7 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
               </Box>
               <Text wrap="truncate">No checkpoints available</Text>
             </Box>
-            {/* File list pane (bottom-left) - 67% of vertical space via flexGrow ratio */}
+            {/* File list pane (right) - 67% of horizontal space via flexGrow ratio */}
             <Box flexDirection="column" flexGrow={2} flexBasis={0}>
               <Box
                 backgroundColor={focusedPane === 'files' ? 'green' : undefined}
@@ -343,7 +343,7 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
             </Box>
           </Box>
 
-          {/* Right side: Diff pane - 67% width */}
+          {/* Bottom: Diff pane - 67% height */}
           <Box flexDirection="column" flexGrow={2} flexBasis={0}>
             <Box
               backgroundColor={focusedPane === 'diff' ? 'green' : undefined}
@@ -415,20 +415,21 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
 
   return (
     <Box flexDirection="column" flexGrow={1}>
-      {/* Three-pane layout: Left column (checkpoint list + file list) + Diff pane (right) */}
+      {/* Three-pane layout: Top row (checkpoint list + file list) + Bottom diff pane */}
       <Box flexDirection="column" flexGrow={1} borderStyle="single" borderTop={false} borderLeft={false} borderRight={false} borderBottom={true}>
-        <Box flexDirection="row" flexGrow={1}>
-          {/* Left column: Checkpoint list (top) + File list (bottom) stacked vertically - 33% width via flexGrow ratio */}
+        <Box flexDirection="column" flexGrow={1}>
+          {/* Top row: Checkpoint list (left) + File list (right) side-by-side - 33% height via flexGrow ratio */}
           <Box
-            flexDirection="column"
+            flexDirection="row"
             flexGrow={1}
             flexBasis={0}
             borderStyle="single"
             borderTop={false}
-            borderBottom={false}
+            borderBottom={true}
             borderLeft={false}
+            borderRight={false}
           >
-            {/* Checkpoint list pane (top-left) - 33% of vertical space via flexGrow ratio */}
+            {/* Checkpoint list pane (left) - 33% of horizontal space via flexGrow ratio */}
             <Box
               flexDirection="column"
               flexGrow={1}
@@ -436,7 +437,8 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
               borderStyle="single"
               borderTop={false}
               borderLeft={false}
-              borderRight={false}
+              borderRight={true}
+              borderBottom={false}
             >
               {/* Checkpoint list heading */}
               <Box
@@ -466,7 +468,7 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
               />
             </Box>
 
-            {/* File list pane (bottom-left) - 67% of vertical space via flexGrow ratio */}
+            {/* File list pane (right) - 67% of horizontal space via flexGrow ratio */}
             <Box
               flexDirection="column"
               flexGrow={2}
@@ -494,7 +496,7 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
                   const indicator = isSelected ? '>' : ' ';
                   return (
                     <Box flexGrow={1}>
-                      <Text color={isSelected ? 'cyan' : 'white'} wrap="wrap">
+                      <Text color={isSelected ? 'cyan' : 'white'} wrap="truncate">
                         {indicator} {file.path}
                       </Text>
                     </Box>
@@ -509,7 +511,7 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
             </Box>
           </Box>
 
-          {/* Right side: Diff pane only - 67% width via flexGrow ratio */}
+          {/* Bottom: Diff pane only - 67% height via flexGrow ratio */}
           <Box
             flexDirection="column"
             flexGrow={2}

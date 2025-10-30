@@ -62,7 +62,7 @@ const ChangedFilesViewerComponent: React.FC<ChangedFilesViewerProps> = ({
 
     return (
       <Box width="100%">
-        <Text color={isSelected ? 'cyan' : 'white'}>
+        <Text color={isSelected ? 'cyan' : 'white'} wrap="truncate">
           {indicator} <Text color={statusColor}>{statusIcon}</Text> {file.path}
         </Text>
       </Box>
