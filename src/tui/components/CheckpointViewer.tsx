@@ -322,19 +322,16 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
 
   // Render checkpoint item with compact name
   const renderCheckpointItem = (checkpoint: Checkpoint, index: number, isSelected: boolean): React.ReactNode => {
-    const indicator = isSelected ? '>' : ' ';
-
-    // Extract compact name from checkpoint name (e.g., "TUI-001-auto-testing" -> "TUI-001 - TESTING")
+    // Extract compact name from checkpoint name (e.g., "TUI-001-auto-testing" -> "TUI-001: Testing")
     const parts = checkpoint.name.split('-auto-');
     const workUnit = parts[0]; // e.g., "TUI-001"
-    const phase = parts[1] ? parts[1].toUpperCase() : 'UNKNOWN'; // e.g., "TESTING"
-    const compactName = `${workUnit} - ${phase}`;
-    const displayName = `${compactName} (${checkpoint.fileCount} ${checkpoint.fileCount === 1 ? 'file' : 'files'})`;
+    const phase = parts[1] ? parts[1].charAt(0).toUpperCase() + parts[1].slice(1).toLowerCase() : 'Unknown'; // e.g., "Testing"
+    const displayName = `${workUnit}: ${phase}`;
 
     return (
       <Box flexGrow={1}>
-        <Text color={isSelected ? 'cyan' : 'white'} wrap="wrap">
-          {indicator} {displayName}
+        <Text color={isSelected ? 'cyan' : 'white'} wrap="truncate">
+          {displayName}
         </Text>
       </Box>
     );
