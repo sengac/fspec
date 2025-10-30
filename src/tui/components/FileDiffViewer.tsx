@@ -211,17 +211,17 @@ export const FileDiffViewer: React.FC<FileDiffViewerProps> = ({
   // Render diff line with syntax highlighting
   const renderDiffLine = (line: DiffLine, index: number, isSelected: boolean): React.ReactNode => {
     let textColor: 'white' | 'cyan' = 'white';
-    let backgroundColor: 'red' | 'green' | undefined;
+    let backgroundColor: string | undefined;
 
     // Determine colors based on line type
     if (line.type === 'hunk') {
       textColor = 'cyan';
     } else if (line.type === 'removed') {
       textColor = 'white';
-      backgroundColor = 'red';
+      backgroundColor = '#8B0000'; // Dark red
     } else if (line.type === 'added') {
       textColor = 'white';
-      backgroundColor = 'green';
+      backgroundColor = '#006400'; // Dark green
     }
 
     // Apply selection styling if focused
