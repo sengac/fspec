@@ -258,24 +258,45 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
   // Loading state
   if (isLoadingCheckpoints) {
     return (
-      <Box flexDirection="column" flexGrow={1} borderStyle="single" borderColor="cyan">
+      <Box flexDirection="column" flexGrow={1} borderStyle="single" borderTop={false} borderLeft={false} borderRight={false} borderBottom={true}>
         <Box flexDirection="row" flexGrow={1}>
           <Box flexDirection="column" flexGrow={1} flexBasis={0} borderStyle="single" borderTop={false} borderBottom={false} borderLeft={false}>
             <Box flexDirection="column" flexGrow={1} flexBasis={0} borderStyle="single" borderTop={false} borderLeft={false} borderRight={false}>
-              <Box backgroundColor={focusedPane === 'checkpoints' ? 'green' : undefined}>
+              <Box
+                backgroundColor={focusedPane === 'checkpoints' ? 'green' : undefined}
+                borderStyle="single"
+                borderTop={false}
+                borderLeft={false}
+                borderRight={false}
+                borderBottom={true}
+              >
                 <Text bold={focusedPane !== 'checkpoints'} color={focusedPane === 'checkpoints' ? 'black' : 'white'}>Checkpoints</Text>
               </Box>
               <Text wrap="truncate">Loading checkpoints...</Text>
             </Box>
             <Box flexDirection="column" flexGrow={2} flexBasis={0}>
-              <Box backgroundColor={focusedPane === 'files' ? 'green' : undefined}>
+              <Box
+                backgroundColor={focusedPane === 'files' ? 'green' : undefined}
+                borderStyle="single"
+                borderTop={false}
+                borderLeft={false}
+                borderRight={false}
+                borderBottom={true}
+              >
                 <Text bold={focusedPane !== 'files'} color={focusedPane === 'files' ? 'black' : 'white'}>Files</Text>
               </Box>
               <Text wrap="truncate">-</Text>
             </Box>
           </Box>
           <Box flexDirection="column" flexGrow={2} flexBasis={0}>
-            <Box backgroundColor={focusedPane === 'diff' ? 'green' : undefined}>
+            <Box
+              backgroundColor={focusedPane === 'diff' ? 'green' : undefined}
+              borderStyle="single"
+              borderTop={false}
+              borderLeft={false}
+              borderRight={false}
+              borderBottom={true}
+            >
               <Text bold={focusedPane !== 'diff'} color={focusedPane === 'diff' ? 'black' : 'white'}>Diff</Text>
             </Box>
             <Text wrap="truncate">-</Text>
@@ -288,20 +309,34 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
   // Empty state
   if (sortedCheckpoints.length === 0) {
     return (
-      <Box flexDirection="column" flexGrow={1} borderStyle="single" borderColor="cyan">
+      <Box flexDirection="column" flexGrow={1} borderStyle="single" borderTop={false} borderLeft={false} borderRight={false} borderBottom={true}>
         <Box flexDirection="row" flexGrow={1}>
           {/* Left column: Checkpoint list (top) + File list (bottom) - 33% width */}
           <Box flexDirection="column" flexGrow={1} flexBasis={0} borderStyle="single" borderTop={false} borderBottom={false} borderLeft={false}>
             {/* Checkpoint list pane (top-left) - 33% of vertical space via flexGrow ratio */}
             <Box flexDirection="column" flexGrow={1} flexBasis={0} borderStyle="single" borderTop={false} borderLeft={false} borderRight={false}>
-              <Box backgroundColor={focusedPane === 'checkpoints' ? 'green' : undefined}>
+              <Box
+                backgroundColor={focusedPane === 'checkpoints' ? 'green' : undefined}
+                borderStyle="single"
+                borderTop={false}
+                borderLeft={false}
+                borderRight={false}
+                borderBottom={true}
+              >
                 <Text bold={focusedPane !== 'checkpoints'} color={focusedPane === 'checkpoints' ? 'black' : 'white'}>Checkpoints</Text>
               </Box>
               <Text wrap="truncate">No checkpoints available</Text>
             </Box>
             {/* File list pane (bottom-left) - 67% of vertical space via flexGrow ratio */}
             <Box flexDirection="column" flexGrow={2} flexBasis={0}>
-              <Box backgroundColor={focusedPane === 'files' ? 'green' : undefined}>
+              <Box
+                backgroundColor={focusedPane === 'files' ? 'green' : undefined}
+                borderStyle="single"
+                borderTop={false}
+                borderLeft={false}
+                borderRight={false}
+                borderBottom={true}
+              >
                 <Text bold={focusedPane !== 'files'} color={focusedPane === 'files' ? 'black' : 'white'}>Files</Text>
               </Box>
               <Text wrap="truncate">No files</Text>
@@ -310,7 +345,14 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
 
           {/* Right side: Diff pane - 67% width */}
           <Box flexDirection="column" flexGrow={2} flexBasis={0}>
-            <Box backgroundColor={focusedPane === 'diff' ? 'green' : undefined}>
+            <Box
+              backgroundColor={focusedPane === 'diff' ? 'green' : undefined}
+              borderStyle="single"
+              borderTop={false}
+              borderLeft={false}
+              borderRight={false}
+              borderBottom={true}
+            >
               <Text bold={focusedPane !== 'diff'} color={focusedPane === 'diff' ? 'black' : 'white'}>Diff</Text>
             </Box>
             <Text wrap="truncate">Select a checkpoint to view files</Text>
@@ -374,7 +416,7 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
   return (
     <Box flexDirection="column" flexGrow={1}>
       {/* Three-pane layout: Left column (checkpoint list + file list) + Diff pane (right) */}
-      <Box flexDirection="column" flexGrow={1} borderStyle="single" borderColor="cyan">
+      <Box flexDirection="column" flexGrow={1} borderStyle="single" borderTop={false} borderLeft={false} borderRight={false} borderBottom={true}>
         <Box flexDirection="row" flexGrow={1}>
           {/* Left column: Checkpoint list (top) + File list (bottom) stacked vertically - 33% width via flexGrow ratio */}
           <Box
@@ -397,7 +439,14 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
               borderRight={false}
             >
               {/* Checkpoint list heading */}
-              <Box backgroundColor={focusedPane === 'checkpoints' ? 'green' : undefined}>
+              <Box
+                backgroundColor={focusedPane === 'checkpoints' ? 'green' : undefined}
+                borderStyle="single"
+                borderTop={false}
+                borderLeft={false}
+                borderRight={false}
+                borderBottom={true}
+              >
                 <Text
                   bold={focusedPane !== 'checkpoints'}
                   color={focusedPane === 'checkpoints' ? 'black' : 'white'}
@@ -424,7 +473,14 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
               flexBasis={0}
             >
               {/* File list heading */}
-              <Box backgroundColor={focusedPane === 'files' ? 'green' : undefined}>
+              <Box
+                backgroundColor={focusedPane === 'files' ? 'green' : undefined}
+                borderStyle="single"
+                borderTop={false}
+                borderLeft={false}
+                borderRight={false}
+                borderBottom={true}
+              >
                 <Text
                   bold={focusedPane !== 'files'}
                   color={focusedPane === 'files' ? 'black' : 'white'}
@@ -460,7 +516,14 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
             flexBasis={0}
           >
             {/* Diff pane heading */}
-            <Box backgroundColor={focusedPane === 'diff' ? 'green' : undefined}>
+            <Box
+              backgroundColor={focusedPane === 'diff' ? 'green' : undefined}
+              borderStyle="single"
+              borderTop={false}
+              borderLeft={false}
+              borderRight={false}
+              borderBottom={true}
+            >
               <Text
                 bold={focusedPane !== 'diff'}
                 color={focusedPane === 'diff' ? 'black' : 'white'}
