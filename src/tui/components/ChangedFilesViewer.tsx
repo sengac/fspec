@@ -41,13 +41,19 @@ const ChangedFilesViewerComponent: React.FC<ChangedFilesViewerProps> = ({
       return;
     }
 
-    // Tab key to switch focus between panes
-    if (key.tab) {
+    // Tab key or right arrow to switch focus forward between panes
+    if (key.tab || key.rightArrow) {
       setFocusedPane(prev => (prev === 'files' ? 'diff' : 'files'));
       return;
     }
 
-    // Arrow key navigation handled by VirtualList when focused
+    // Left arrow to switch focus backward between panes
+    if (key.leftArrow) {
+      setFocusedPane(prev => (prev === 'files' ? 'diff' : 'files'));
+      return;
+    }
+
+    // Up/down arrow key navigation handled by VirtualList when focused
   });
 
   // Custom render file item with status indicator for staged/unstaged

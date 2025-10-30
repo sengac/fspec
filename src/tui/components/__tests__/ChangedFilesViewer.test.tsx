@@ -164,4 +164,62 @@ describe('Feature: Interactive checkpoint viewer with diff and commit capabiliti
       expect(lastFrame()).toBeDefined();
     });
   });
+
+  describe('Scenario: Navigate forward in ChangedFilesViewer with right arrow', () => {
+    it('should move focus from files pane to diff pane when right arrow pressed', () => {
+      // Given I am viewing the ChangedFilesViewer
+      // And the 'files' pane is focused
+      const stagedFiles = ['src/auth.ts', 'src/login.ts'];
+      const unstagedFiles = [];
+
+      const { lastFrame, stdin } = render(
+        <ChangedFilesViewer
+          stagedFiles={stagedFiles}
+          unstagedFiles={unstagedFiles}
+          onExit={() => {}}
+        />
+      );
+
+      // Initially, files pane should be focused
+      expect(lastFrame()).toContain('Files');
+
+      // When I press the right arrow key
+      stdin.write('\x1B[C'); // Right arrow
+
+      // Then the 'diff' pane should be focused
+      // And the 'diff' pane heading should have a green background
+      const frame = lastFrame();
+      expect(frame).toContain('Diff');
+    });
+  });
+
+  describe('Scenario: Right arrow wraps in ChangedFilesViewer', () => {
+    it('should wrap focus from diff pane to files pane when right arrow pressed', () => {
+      // Given I am viewing the ChangedFilesViewer
+      const stagedFiles = ['src/auth.ts'];
+      const unstagedFiles = [];
+
+      const { lastFrame, stdin } = render(
+        <ChangedFilesViewer
+          stagedFiles={stagedFiles}
+          unstagedFiles={unstagedFiles}
+          onExit={() => {}}
+        />
+      );
+
+      // Navigate to diff pane first
+      stdin.write('\x1B[C'); // Right arrow to diff
+
+      // And the 'diff' pane is focused
+      expect(lastFrame()).toContain('Diff');
+
+      // When I press the right arrow key
+      stdin.write('\x1B[C'); // Right arrow (should wrap)
+
+      // Then the 'files' pane should be focused
+      // And the 'files' pane heading should have a green background
+      const frame = lastFrame();
+      expect(frame).toContain('Files');
+    });
+  });
 });

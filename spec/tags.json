@@ -330,6 +330,10 @@
           "description": "Features related to supporting multiple AI coding agents beyond Claude"
         },
         {
+          "name": "@navigation",
+          "description": "Navigation and keyboard interaction features in the TUI"
+        },
+        {
           "name": "@operations",
           "description": "General operations"
         },
@@ -1310,7 +1314,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-10-30T00:21:48.523Z",
+    "lastUpdated": "2025-10-30T05:10:34.416Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

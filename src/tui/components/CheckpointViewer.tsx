@@ -242,8 +242,8 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
       return;
     }
 
-    // Tab key to cycle through three panes
-    if (key.tab) {
+    // Tab key or right arrow to cycle forward through three panes
+    if (key.tab || key.rightArrow) {
       setFocusedPane(prev => {
         if (prev === 'checkpoints') return 'files';
         if (prev === 'files') return 'diff';
@@ -252,7 +252,17 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
       return;
     }
 
-    // Arrow key navigation handled by VirtualList when focused
+    // Left arrow to cycle backward through three panes
+    if (key.leftArrow) {
+      setFocusedPane(prev => {
+        if (prev === 'checkpoints') return 'diff';
+        if (prev === 'files') return 'checkpoints';
+        return 'files';
+      });
+      return;
+    }
+
+    // Up/down arrow key navigation handled by VirtualList when focused
   });
 
   // Loading state

@@ -71,6 +71,14 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
     }
   }, [cwd, setCwd]);
 
+  // Enable mouse tracking for board view (TUI-010)
+  useEffect(() => {
+    process.stdout.write('\x1b[?1000h'); // Enable button event tracking
+    return () => {
+      process.stdout.write('\x1b[?1000l'); // Disable on unmount
+    };
+  }, []);
+
   // Load data on mount
   useEffect(() => {
     void loadData();

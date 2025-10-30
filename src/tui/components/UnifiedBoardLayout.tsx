@@ -390,8 +390,43 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
     });
   }, [selectedWorkUnitIndex, focusedColumnIndex, groupedWorkUnits]);
 
+  // Handle mouse scroll for focused column (TUI-010)
+  const handleColumnScroll = (direction: 'up' | 'down'): void => {
+    if (direction === 'down') {
+      // Scroll down: move selector down
+      onWorkUnitChange?.(1);
+    } else if (direction === 'up') {
+      // Scroll up: move selector up
+      onWorkUnitChange?.(-1);
+    }
+  };
+
   // Handle keyboard input
   useInput((input, key) => {
+    // Mouse scroll handling (TUI-010)
+    // Parse raw escape sequences for terminals that don't parse mouse events
+    if (input && input.startsWith('[M')) {
+      const buttonByte = input.charCodeAt(2);
+      if (buttonByte === 96) {  // Scroll up (ASCII '`')
+        handleColumnScroll('up');
+        return;
+      } else if (buttonByte === 97) {  // Scroll down (ASCII 'a')
+        handleColumnScroll('down');
+        return;
+      }
+    }
+
+    // Handle Ink-parsed mouse events (primary method)
+    if (key.mouse) {
+      if (key.mouse.button === 'wheelDown') {
+        handleColumnScroll('down');
+        return;
+      } else if (key.mouse.button === 'wheelUp') {
+        handleColumnScroll('up');
+        return;
+      }
+    }
+
     // Page Up/Down for scrolling
     if (key.pageDown) {
       const currentColumn = STATES[focusedColumnIndex];
