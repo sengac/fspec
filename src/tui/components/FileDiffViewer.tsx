@@ -173,7 +173,7 @@ export const FileDiffViewer: React.FC<FileDiffViewerProps> = ({
   // Empty state
   if (files.length === 0) {
     return (
-      <Box flexDirection="column" flexGrow={1} borderStyle="single" borderColor="cyan">
+      <Box flexDirection="column" flexGrow={1} borderStyle="single" borderTop={false} borderLeft={false} borderRight={false} borderBottom={true}>
         <Box flexDirection="row" flexGrow={1}>
           {/* File list pane (33% width via flexGrow ratio) */}
           <Box flexDirection="column" flexGrow={1} borderStyle="single" borderTop={false} borderBottom={false} borderLeft={false}>
@@ -245,7 +245,7 @@ export const FileDiffViewer: React.FC<FileDiffViewerProps> = ({
   const renderItem = customRenderFileItem || defaultRenderFileItem;
 
   return (
-    <Box flexDirection="column" flexGrow={1} borderStyle="single" borderColor={focusedPane === 'files' || focusedPane === 'diff' ? 'cyan' : 'gray'}>
+    <Box flexDirection="column" flexGrow={1} borderStyle="single" borderTop={false} borderLeft={false} borderRight={false} borderBottom={true}>
       <Box flexDirection="row" flexGrow={1}>
         {/* File list pane (left, 33% width via flexGrow ratio) */}
         <Box
@@ -258,7 +258,14 @@ export const FileDiffViewer: React.FC<FileDiffViewerProps> = ({
           borderLeft={false}
         >
           {/* File list heading */}
-          <Box backgroundColor={focusedPane === 'files' ? 'green' : undefined}>
+          <Box
+            backgroundColor={focusedPane === 'files' ? 'green' : undefined}
+            borderStyle="single"
+            borderTop={false}
+            borderLeft={false}
+            borderRight={false}
+            borderBottom={true}
+          >
             <Text
               bold={focusedPane !== 'files'}
               color={focusedPane === 'files' ? 'black' : 'white'}
@@ -282,7 +289,14 @@ export const FileDiffViewer: React.FC<FileDiffViewerProps> = ({
           flexBasis={0}
         >
           {/* Diff pane heading */}
-          <Box backgroundColor={focusedPane === 'diff' ? 'green' : undefined}>
+          <Box
+            backgroundColor={focusedPane === 'diff' ? 'green' : undefined}
+            borderStyle="single"
+            borderTop={false}
+            borderLeft={false}
+            borderRight={false}
+            borderBottom={true}
+          >
             <Text
               bold={focusedPane !== 'diff'}
               color={focusedPane === 'diff' ? 'black' : 'white'}
