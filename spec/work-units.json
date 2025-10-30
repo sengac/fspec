@@ -17096,22 +17096,6 @@
       "estimate": 3,
       "updated": "2025-10-29T11:20:26.544Z"
     },
-    "BUG-051": {
-      "id": "BUG-051",
-      "title": "CheckpointViewer test failures",
-      "type": "bug",
-      "status": "specifying",
-      "createdAt": "2025-10-29T11:01:15.861Z",
-      "updatedAt": "2025-10-29T11:22:14.911Z",
-      "description": "7 tests failing: 5 tests expecting selection/navigation behavior not implemented, 1 test using jest.fn() instead of vi.fn() (Vitest project), 1 test expecting frame change on Tab key",
-      "children": [],
-      "stateHistory": [
-        {
-          "state": "specifying",
-          "timestamp": "2025-10-29T11:22:14.911Z"
-        }
-      ]
-    },
     "TUI-001": {
       "id": "TUI-001",
       "title": "Mouse scroll wheel and trackpad support for VirtualList",
@@ -17316,15 +17300,6 @@
       ],
       "estimate": 8,
       "updated": "2025-10-29T21:16:52.799Z"
-    },
-    "TUI-003": {
-      "id": "TUI-003",
-      "title": "CheckpointViewer has wrong layout - should be 3 panes not 4",
-      "type": "bug",
-      "status": "backlog",
-      "createdAt": "2025-10-29T21:20:02.664Z",
-      "updatedAt": "2025-10-29T21:20:02.664Z",
-      "children": []
     },
     "TUI-004": {
       "id": "TUI-004",
@@ -17618,14 +17593,12 @@
       "AGENT-016",
       "AGENT-017",
       "FEAT-018",
-      "CLEAN-002",
-      "TUI-003"
+      "CLEAN-002"
     ],
     "specifying": [
       "RES-006",
       "EST-002",
-      "LANG-001",
-      "BUG-051"
+      "LANG-001"
     ],
     "testing": [],
     "implementing": [],
