@@ -17706,9 +17706,9 @@
       "id": "TUI-010",
       "title": "Mouse Scrolling for Kanban Columns",
       "type": "story",
-      "status": "implementing",
+      "status": "done",
       "createdAt": "2025-10-30T04:35:05.167Z",
-      "updatedAt": "2025-10-30T05:47:34.565Z",
+      "updatedAt": "2025-10-30T07:21:42.708Z",
       "description": "Add mouse scrolling support to kanban columns using the same mouse scrolling code as VirtualList",
       "children": [],
       "stateHistory": [
@@ -17735,6 +17735,14 @@
         {
           "state": "implementing",
           "timestamp": "2025-10-30T05:47:34.565Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-30T07:21:21.145Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-30T07:21:42.708Z"
         }
       ],
       "userStory": {
@@ -17759,7 +17767,7 @@
         "User uses Page Down key to scroll backlog to offset 10 → user uses mouse wheel to scroll down by 1 → offset becomes 11 (mouse and keyboard scrolling work together)"
       ],
       "estimate": 3,
-      "updated": "2025-10-30T05:39:17.074Z"
+      "updated": "2025-10-30T07:21:42.708Z"
     }
   },
   "states": {
@@ -17795,11 +17803,10 @@
       "LANG-001"
     ],
     "testing": [],
-    "implementing": [
-      "TUI-010"
-    ],
+    "implementing": [],
     "validating": [],
     "done": [
+      "TUI-010",
       "TUI-009",
       "TUI-008",
       "TUI-007",
