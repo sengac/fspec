@@ -1,0 +1,44 @@
+{
+  "scenarios": [
+    {
+      "name": "CheckpointViewer with many items shows correct count in flexbox container",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/VirtualList-height-measurement.test.tsx",
+          "lines": "13-50",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "FileDiffViewer with dual panes shows correct counts without overflow",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/VirtualList-height-measurement.test.tsx",
+          "lines": "54-101",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Terminal resize triggers VirtualList re-measurement",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/VirtualList-height-measurement.test.tsx",
+          "lines": "105-134",
+          "implMappings": []
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/components/__tests__/VirtualList-height-measurement.test.tsx"
+    ],
+    "implFiles": [],
+    "totalLinesCovered": 116
+  }
+}

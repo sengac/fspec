@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Box, Text, useInput } from 'ink';
+import React, { useState, useEffect, useMemo, useRef, useLayoutEffect } from 'react';
+import { Box, Text, useInput, measureElement, type DOMElement } from 'ink';
 import { useTerminalSize } from '../hooks/useTerminalSize';
 
 // Unicode characters for scrollbar
@@ -50,12 +50,31 @@ export function VirtualList<T>({
   const [scrollOffset, setScrollOffset] = useState(0);
   const { height: terminalHeight } = useTerminalSize();
 
+  // Measure actual container height after flexbox layout
+  const containerRef = useRef<DOMElement>(null);
+  const [measuredHeight, setMeasuredHeight] = useState<number | null>(null);
+
   // Track last scroll time for acceleration
   const lastScrollTime = useRef<number>(0);
   const scrollVelocity = useRef<number>(0);
 
-  // Calculate visible window from terminal size
-  const visibleHeight = Math.max(1, terminalHeight - reservedLines);
+  // Measure container height after layout using Yoga layout engine
+  useLayoutEffect(() => {
+    if (containerRef.current) {
+      const dimensions = measureElement(containerRef.current);
+      // Use measured height (lines = height, since each item is 1 line in terminal)
+      // This respects flexbox layout and gives us the ACTUAL allocated space
+      if (dimensions.height > 0) {
+        setMeasuredHeight(dimensions.height);
+      }
+    }
+  }, [items.length, terminalHeight]); // Re-measure when items or terminal changes
+
+  // Calculate visible window from measured container height (if available) or terminal size
+  // Priority: measured container height > terminal height calculation
+  const visibleHeight = measuredHeight !== null
+    ? Math.max(1, measuredHeight)
+    : Math.max(1, terminalHeight - reservedLines);
   const visibleItems = useMemo(() => {
     const start = scrollOffset;
     const end = Math.min(items.length, scrollOffset + visibleHeight);
@@ -216,14 +235,14 @@ export function VirtualList<T>({
 
   if (items.length === 0) {
     return (
-      <Box flexGrow={1} flexDirection="column">
+      <Box ref={containerRef} flexGrow={1} flexDirection="column">
         <Text dimColor>{emptyMessage}</Text>
       </Box>
     );
   }
 
   return (
-    <Box flexDirection="row" flexGrow={1}>
+    <Box ref={containerRef} flexDirection="row" flexGrow={1}>
       <Box flexDirection="column" flexGrow={1}>
         {visibleItems.map((item, visibleIndex) => {
           const actualIndex = scrollOffset + visibleIndex;
