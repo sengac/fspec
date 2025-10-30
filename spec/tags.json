@@ -482,6 +482,10 @@
           "description": "Metric tracking operations"
         },
         {
+          "name": "@ui-enhancement",
+          "description": "TUI user interface enhancements and visual improvements"
+        },
+        {
           "name": "@ui-refinement",
           "description": "UI refinement and enhancement operations"
         },
@@ -1306,7 +1310,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-10-29T11:29:08.309Z",
+    "lastUpdated": "2025-10-30T00:21:48.523Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-29T22:53:18.404Z"
+    "lastUpdated": "2025-10-30T00:13:49.067Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -17505,6 +17505,92 @@
         }
       ],
       "updated": "2025-10-29T23:05:56.425Z"
+    },
+    "TUI-007": {
+      "id": "TUI-007",
+      "title": "Container Focus Indication with Headings",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-30T00:13:29.067Z",
+      "updatedAt": "2025-10-30T00:40:05.318Z",
+      "description": "Refactor checkpoint and change files views to show focused container using colored heading backgrounds instead of top-level page headings",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-30T00:13:36.821Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-30T00:22:46.724Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-30T00:25:55.876Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-30T00:29:06.699Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-30T00:40:05.318Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using fspec TUI",
+        "action": "see which container is currently focused when navigating with Tab",
+        "benefit": "I can navigate between containers more effectively"
+      },
+      "questions": [
+        {
+          "text": "@human: Which specific containers exist in the checkpoint view and change files view? (You mentioned file list and diff - are there others?)",
+          "selected": true,
+          "answer": "Three containers: checkpoint list, file list, and diff pane"
+        },
+        {
+          "text": "@human: What color should the heading background be when a container is focused? What about when it's not focused?",
+          "selected": true,
+          "answer": "Focused: green background with black text. Unfocused: bold white text with no background"
+        },
+        {
+          "text": "@human: What text should each container heading display? (e.g., 'File List', 'Diff View', etc.)",
+          "selected": true,
+          "answer": "Container headings: 'Checkpoints' for checkpoint list, 'Files' for file list, 'Diff' for diff pane"
+        },
+        {
+          "text": "@human: You mentioned removing the top-level page heading completely - what heading is this currently and where does it appear? Should it be completely removed or replaced with something else?",
+          "selected": true,
+          "answer": "CheckpointViewer (line 363): 'Checkpoints: {count} available'. ChangedFilesViewer (line 76): 'Changed Files: {staged} staged, {unstaged} unstaged'. Both should be completely removed."
+        },
+        {
+          "text": "@human: Should the focused heading show any additional information besides the colored background? (e.g., keyboard shortcuts, help text, focus indicator icon?)",
+          "selected": true,
+          "answer": "No additional information needed - just the heading text with colored background when focused"
+        },
+        {
+          "text": "@human: Should the checkpoint view and change files view have identical behavior and styling for the container headings, or are there any differences between them?",
+          "selected": true,
+          "answer": "Yes - identical behavior and styling across both checkpoint view and change files view"
+        }
+      ],
+      "rules": [
+        "Container headings must show green background with black text when focused",
+        "Container headings must show bold white text with no background when not focused",
+        "Top-level page headings must be completely removed from both CheckpointViewer and ChangedFilesViewer",
+        "Container headings must appear inside each container (checkpoint list, file list, diff pane)",
+        "Tab key navigation must update heading background to show which container is currently focused",
+        "Both CheckpointViewer and ChangedFilesViewer must have identical heading behavior and styling"
+      ],
+      "examples": [
+        "User opens CheckpointViewer - checkpoint list heading shows green background with black text 'Checkpoints', file list and diff headings show bold white text",
+        "User presses Tab once in CheckpointViewer - checkpoint list heading changes to bold white text, file list heading shows green background with black text 'Files'",
+        "User presses Tab twice in CheckpointViewer - diff pane heading shows green background with black text 'Diff', other headings show bold white text",
+        "User opens ChangedFilesViewer - no top-level 'Changed Files: X staged, Y unstaged' heading, file list heading shows green background with black text 'Files'",
+        "User opens CheckpointViewer - no top-level 'Checkpoints: X available' heading visible, checkpoint list has heading 'Checkpoints' with green background"
+      ],
+      "estimate": 3,
+      "updated": "2025-10-30T00:40:05.318Z"
     }
   },
   "states": {
@@ -17545,6 +17631,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "TUI-007",
       "TUI-006",
       "TUI-005",
       "TUI-004",

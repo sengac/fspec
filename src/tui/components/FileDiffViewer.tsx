@@ -257,6 +257,15 @@ export const FileDiffViewer: React.FC<FileDiffViewerProps> = ({
           borderBottom={false}
           borderLeft={false}
         >
+          {/* File list heading */}
+          <Box backgroundColor={focusedPane === 'files' ? 'green' : undefined}>
+            <Text
+              bold={focusedPane !== 'files'}
+              color={focusedPane === 'files' ? 'black' : 'white'}
+            >
+              Files
+            </Text>
+          </Box>
           <VirtualList
             items={files}
             renderItem={renderItem}
@@ -272,6 +281,15 @@ export const FileDiffViewer: React.FC<FileDiffViewerProps> = ({
           flexGrow={2}
           flexBasis={0}
         >
+          {/* Diff pane heading */}
+          <Box backgroundColor={focusedPane === 'diff' ? 'green' : undefined}>
+            <Text
+              bold={focusedPane !== 'diff'}
+              color={focusedPane === 'diff' ? 'black' : 'white'}
+            >
+              Diff
+            </Text>
+          </Box>
           <Box flexGrow={1}>
             <VirtualList
               items={diffLines}

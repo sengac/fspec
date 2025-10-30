@@ -138,6 +138,7 @@ Tags that categorize features by functional area.
 | `@test-coverage` | Test coverage tracking and validation features |
 | `@testing` | Testing and quality assurance features |
 | `@tracking` | Metric tracking operations |
+| `@ui-enhancement` | TUI user interface enhancements and visual improvements |
 | `@ui-refinement` | UI refinement and enhancement operations |
 | `@update` | Update operations |
 | `@utility` | Utility & Helper Commands |
@@ -568,7 +569,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-10-29T11:29:08.309Z_
+_Last updated: 2025-10-30T00:21:48.523Z_
 
 **Update Command**: `fspec tag-stats`
 
