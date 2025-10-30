@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-30T03:18:10.168Z"
+    "lastUpdated": "2025-10-30T05:24:23.064Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -17646,6 +17646,120 @@
       ],
       "estimate": 5,
       "updated": "2025-10-30T03:34:02.058Z"
+    },
+    "TUI-009": {
+      "id": "TUI-009",
+      "title": "Arrow Key Navigation for Component Selection",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-10-30T04:35:03.764Z",
+      "updatedAt": "2025-10-30T05:21:15.299Z",
+      "description": "Add left/right arrow key navigation (in addition to tab/shift-tab) for component selections in both checkpoints view and changed files view. Currently only tab moves forward between selections.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-30T04:49:02.643Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-30T05:11:09.368Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-30T05:15:48.707Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-30T05:16:46.100Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-30T05:21:15.299Z"
+        }
+      ],
+      "userStory": {
+        "role": "user navigating the TUI",
+        "action": "use arrow keys (left/right) to move between component selections",
+        "benefit": "navigation feels more intuitive and matches common UI patterns"
+      },
+      "rules": [
+        "Left/right arrow navigation applies ONLY to CheckpointViewer and ChangedFilesViewer",
+        "Arrow navigation wraps around: right arrow on rightmost pane goes to leftmost pane, left arrow on leftmost pane goes to rightmost pane",
+        "Left/right arrow keys always navigate between panes at parent level (horizontal layout matches horizontal keys). No child components capture these keys in current implementation.",
+        "Arrow keys work alongside Tab navigation: right arrow and Tab both move forward, left arrow and Shift-Tab both move backward. Both methods remain available for user preference."
+      ],
+      "examples": [
+        "In CheckpointViewer, user on 'checkpoints' pane presses right arrow → focus moves to 'files' pane",
+        "In CheckpointViewer, user on 'files' pane presses left arrow → focus moves to 'checkpoints' pane",
+        "In CheckpointViewer, user on 'diff' pane (rightmost) presses right arrow → focus wraps around to 'checkpoints' pane (leftmost)",
+        "In CheckpointViewer, user on 'checkpoints' pane (leftmost) presses left arrow → focus wraps around to 'diff' pane (rightmost)",
+        "In ChangedFilesViewer, user on 'files' pane presses right arrow → focus moves to 'diff' pane",
+        "In ChangedFilesViewer, user on 'diff' pane presses right arrow → focus wraps around to 'files' pane",
+        "In CheckpointViewer, user on 'checkpoints' pane presses Tab → focus moves to 'files' pane (same as right arrow)",
+        "In CheckpointViewer, user on 'checkpoints' pane presses up/down arrows → navigates between checkpoint items within the pane (existing behavior preserved)"
+      ],
+      "estimate": 3,
+      "updated": "2025-10-30T05:21:15.299Z"
+    },
+    "TUI-010": {
+      "id": "TUI-010",
+      "title": "Mouse Scrolling for Kanban Columns",
+      "type": "story",
+      "status": "implementing",
+      "createdAt": "2025-10-30T04:35:05.167Z",
+      "updatedAt": "2025-10-30T05:47:34.565Z",
+      "description": "Add mouse scrolling support to kanban columns using the same mouse scrolling code as VirtualList",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-10-30T05:24:15.062Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-10-30T05:29:27.602Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-30T05:34:36.671Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-10-30T05:36:21.286Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-10-30T05:39:17.074Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-10-30T05:47:34.565Z"
+        }
+      ],
+      "userStory": {
+        "role": "user navigating the kanban board",
+        "action": "scroll through work units in columns using mouse wheel or trackpad",
+        "benefit": "I can quickly navigate long lists without using keyboard"
+      },
+      "rules": [
+        "Mouse scrolling applies ONLY to the focused column in the kanban board",
+        "Mouse scroll down increases the column's scroll offset by 1, showing work units below",
+        "Mouse scroll up decreases the column's scroll offset by 1, showing work units above",
+        "Mouse scrolling must parse both raw escape sequences (button codes 96/97) and Ink-parsed mouse events (wheelUp/wheelDown) for terminal compatibility",
+        "Scroll offset cannot go below 0 or exceed (column length - viewport height)"
+      ],
+      "examples": [
+        "User has backlog column focused with 20 work units, viewport shows items 0-9 → user scrolls mouse down → viewport shows items 1-10 (scroll offset becomes 1)",
+        "User has backlog column focused at scroll offset 5 → user scrolls mouse up → viewport shows items from offset 4 (scrolls up by 1)",
+        "User at scroll offset 0 (top of column) → user scrolls mouse up → scroll offset remains 0 (cannot scroll above top)",
+        "User has 15 work units, viewport height is 10, at scroll offset 5 (showing last 10 items) → user scrolls mouse down → scroll offset remains 5 (cannot scroll below bottom)",
+        "User has backlog column focused and scrolls down to offset 3 → user switches focus to testing column → backlog remains at offset 3, testing starts at offset 0 (per-column scroll offsets)",
+        "User scrolls backlog column to offset 2 → top row shows ↑ indicator, bottom row shows ↓ indicator (visual feedback that more items exist above and below)",
+        "User uses Page Down key to scroll backlog to offset 10 → user uses mouse wheel to scroll down by 1 → offset becomes 11 (mouse and keyboard scrolling work together)"
+      ],
+      "estimate": 3,
+      "updated": "2025-10-30T05:39:17.074Z"
     }
   },
   "states": {
@@ -17681,9 +17795,12 @@
       "LANG-001"
     ],
     "testing": [],
-    "implementing": [],
+    "implementing": [
+      "TUI-010"
+    ],
     "validating": [],
     "done": [
+      "TUI-009",
       "TUI-008",
       "TUI-007",
       "TUI-006",

@@ -100,6 +100,7 @@ Tags that categorize features by functional area.
 | `@migration` | Migration & Data Transformation |
 | `@modification` | Feature Modification Operations |
 | `@multi-agent-support` | Features related to supporting multiple AI coding agents beyond Claude |
+| `@navigation` | Navigation and keyboard interaction features in the TUI |
 | `@operations` | General operations |
 | `@orchestration` | Command orchestration features that coordinate multiple operations |
 | `@parent-child` | Parent-child work unit relationships |
@@ -569,7 +570,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-10-30T00:21:48.523Z_
+_Last updated: 2025-10-30T05:10:34.416Z_
 
 **Update Command**: `fspec tag-stats`
 
