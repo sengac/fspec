@@ -261,10 +261,10 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
       <Box flexDirection="column" flexGrow={1} borderStyle="single" borderColor="cyan">
         <Box flexDirection="row" flexGrow={1}>
           <Box flexDirection="column" flexGrow={1} flexBasis={0} borderStyle="single" borderTop={false} borderBottom={false} borderLeft={false}>
-            <Box flexDirection="column" flexGrow={1} flexBasis={0} borderStyle="single" borderTop={false} borderLeft={false} borderRight={false}>
+            <Box flexDirection="column" height={8} borderStyle="single" borderTop={false} borderLeft={false} borderRight={false}>
               <Text wrap="truncate">Loading checkpoints...</Text>
             </Box>
-            <Box flexDirection="column" flexGrow={1} flexBasis={0}>
+            <Box flexDirection="column" flexGrow={1}>
               <Text wrap="truncate">-</Text>
             </Box>
           </Box>
@@ -283,12 +283,12 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
         <Box flexDirection="row" flexGrow={1}>
           {/* Left column: Checkpoint list (top) + File list (bottom) - 33% width */}
           <Box flexDirection="column" flexGrow={1} flexBasis={0} borderStyle="single" borderTop={false} borderBottom={false} borderLeft={false}>
-            {/* Checkpoint list pane (top-left) */}
-            <Box flexDirection="column" flexGrow={1} flexBasis={0} borderStyle="single" borderTop={false} borderLeft={false} borderRight={false}>
+            {/* Checkpoint list pane (top-left) - fixed height of 8 characters */}
+            <Box flexDirection="column" height={8} borderStyle="single" borderTop={false} borderLeft={false} borderRight={false}>
               <Text wrap="truncate">No checkpoints available</Text>
             </Box>
-            {/* File list pane (bottom-left) */}
-            <Box flexDirection="column" flexGrow={1} flexBasis={0}>
+            {/* File list pane (bottom-left) - fills remaining vertical space */}
+            <Box flexDirection="column" flexGrow={1}>
               <Text wrap="truncate">No files</Text>
             </Box>
           </Box>
@@ -378,11 +378,10 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
             borderBottom={false}
             borderLeft={false}
           >
-            {/* Checkpoint list pane (top-left) - flexGrow 1 with flexBasis 0 for 50/50 vertical split */}
+            {/* Checkpoint list pane (top-left) - fixed height of 8 characters */}
             <Box
               flexDirection="column"
-              flexGrow={1}
-              flexBasis={0}
+              height={8}
               borderStyle="single"
               borderTop={false}
               borderLeft={false}
@@ -400,11 +399,10 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
               />
             </Box>
 
-            {/* File list pane (bottom-left) - flexGrow 1 with flexBasis 0 for 50/50 vertical split */}
+            {/* File list pane (bottom-left) - fills remaining vertical space */}
             <Box
               flexDirection="column"
               flexGrow={1}
-              flexBasis={0}
             >
               <VirtualList
                 items={files}
