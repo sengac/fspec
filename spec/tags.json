@@ -850,6 +850,10 @@
           "description": "UI formatting and layout features"
         },
         {
+          "name": "@ui-rendering",
+          "description": "UI rendering and layout issues"
+        },
+        {
           "name": "@vitest",
           "description": "Vitest testing framework related features"
         },
@@ -1318,7 +1322,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-10-31T07:23:04.510Z",
+    "lastUpdated": "2025-11-01T05:41:24.711Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

@@ -44,7 +44,7 @@ export async function ensureWorkUnitsFile(cwd: string): Promise<WorkUnitsData> {
     let data = await fileManager.readJSON(filePath, initialData);
 
     // Run auto-migration to ensure file is at current version
-    data = await ensureLatestVersion(cwd, CURRENT_VERSION);
+    data = await ensureLatestVersion(cwd, data, CURRENT_VERSION);
 
     return data;
   } catch (error: unknown) {

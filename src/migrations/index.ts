@@ -13,23 +13,21 @@ import { getMigrationsToApply, DEFAULT_VERSION } from './registry';
  * Automatically runs migrations if needed
  *
  * @param cwd - Project root directory
+ * @param data - Current work-units data (already read with lock)
  * @param targetVersion - Target version to migrate to
  * @returns Updated work-units data
  */
 export async function ensureLatestVersion(
   cwd: string,
+  data: WorkUnitsData,
   targetVersion: string
 ): Promise<WorkUnitsData> {
   const workUnitsPath = join(cwd, 'spec', 'work-units.json');
 
-  // Read current data
-  const fileContent = await readFile(workUnitsPath, 'utf-8');
-  let data: WorkUnitsData = JSON.parse(fileContent);
-
-  const currentVersion = data.version || DEFAULT_VERSION;
+  let currentVer = data.version || DEFAULT_VERSION;
 
   // Get migrations to apply
-  const migrationsToApply = getMigrationsToApply(currentVersion, targetVersion);
+  const migrationsToApply = getMigrationsToApply(currentVer, targetVersion);
 
   if (migrationsToApply.length === 0) {
     // No migrations needed - already at target version
@@ -40,7 +38,7 @@ export async function ensureLatestVersion(
   for (const migration of migrationsToApply) {
     console.log(
       chalk.yellow(
-        `⚠ Migrating work-units.json from v${currentVersion} to ${migration.version}...`
+        `⚠ Migrating work-units.json from v${currentVer} to ${migration.version}...`
       )
     );
 
@@ -80,9 +78,12 @@ export async function ensureLatestVersion(
 
       console.log(
         chalk.green(
-          `✓ Migration complete: v${currentVersion} → ${migration.version}`
+          `✓ Migration complete: v${currentVer} → ${migration.version}`
         )
       );
+
+      // Update current version for next iteration
+      currentVer = migration.version;
     } catch (error) {
       // Migration failed - throw error with backup path
       const errorMessage = `Migration to ${migration.version} failed: ${
@@ -145,6 +146,12 @@ export async function rollbackMigration(cwd: string): Promise<WorkUnitsData> {
   );
   data = await Promise.resolve(migration.down(data));
 
+  // Calculate previous version before removing from history
+  const previousVersion =
+    data.migrationHistory.length > 1
+      ? data.migrationHistory[data.migrationHistory.length - 2].version
+      : DEFAULT_VERSION;
+
   // Remove last migration from history
   data.migrationHistory.pop();
 
@@ -160,8 +167,6 @@ export async function rollbackMigration(cwd: string): Promise<WorkUnitsData> {
   // Save rolled-back data
   await writeFile(workUnitsPath, JSON.stringify(data, null, 2), 'utf-8');
 
-  const previousVersion =
-    data.version || DEFAULT_VERSION.replace(/\.\d+$/, '.0'); // Approximate previous version
   console.log(
     chalk.green(
       `✓ Rolled back migration: v${migrationVersion} → v${previousVersion}`

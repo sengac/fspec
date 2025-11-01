@@ -93,7 +93,8 @@ describe('Feature: Build Migration System', () => {
       // @step When I upgrade fspec to v0.7.0
       // @step And I run "fspec show-work-unit AUTH-001"
       // (This simulates calling ensureLatestVersion during any command)
-      const result = await ensureLatestVersion(testDir, '0.7.0');
+      const data = JSON.parse(await readFile(workUnitsPath, 'utf-8'));
+      const result = await ensureLatestVersion(testDir, data, '0.7.0');
 
       // @step Then the migration system should detect current version as v0.6.0
       // (No version field = v0.6.0)
@@ -158,7 +159,8 @@ describe('Feature: Build Migration System', () => {
       await writeFile(workUnitsPath, JSON.stringify(v070Data, null, 2));
 
       // @step When I run "fspec show-work-unit AUTH-001"
-      const result = await ensureLatestVersion(testDir, '0.7.0');
+      const data = JSON.parse(await readFile(workUnitsPath, 'utf-8'));
+      const result = await ensureLatestVersion(testDir, data, '0.7.0');
 
       // @step Then no migrations should run
       // (Migration history length should remain 1)
@@ -212,7 +214,8 @@ describe('Feature: Build Migration System', () => {
       // @step And I run "fspec show-work-unit AUTH-001"
       let error: Error | null = null;
       try {
-        await ensureLatestVersion(testDir, '0.7.0');
+        const data = JSON.parse(await readFile(workUnitsPath, 'utf-8'));
+        await ensureLatestVersion(testDir, data, '0.7.0');
       } catch (e) {
         error = e as Error;
       }
@@ -271,7 +274,8 @@ describe('Feature: Build Migration System', () => {
       await writeFile(workUnitsPath, JSON.stringify(legacyData, null, 2));
 
       // @step When migration system runs for v0.7.0
-      await ensureLatestVersion(testDir, '0.7.0');
+      const data = JSON.parse(await readFile(workUnitsPath, 'utf-8'));
+      await ensureLatestVersion(testDir, data, '0.7.0');
 
       // @step Then work-units.json should have version field "0.7.0" at root level
       const updatedData = JSON.parse(await readFile(workUnitsPath, 'utf-8'));
@@ -327,7 +331,8 @@ describe('Feature: Build Migration System', () => {
       // (This will be tested via CLI integration)
       // For unit test, we test the migration runner directly
       const consoleSpy = vi.spyOn(console, 'log');
-      await ensureLatestVersion(testDir, '0.7.0');
+      const data = JSON.parse(await readFile(workUnitsPath, 'utf-8'));
+      await ensureLatestVersion(testDir, data, '0.7.0');
 
       // @step Then migration progress output should be displayed
       expect(consoleSpy).toHaveBeenCalled();
@@ -411,7 +416,8 @@ describe('Feature: Build Migration System', () => {
 
       // @step And fspec v0.8.0 is installed (requires migrations for 0.7.0 and 0.8.0)
       // @step When migration system runs
-      await ensureLatestVersion(testDir, '0.8.0');
+      const data = JSON.parse(await readFile(workUnitsPath, 'utf-8'));
+      await ensureLatestVersion(testDir, data, '0.8.0');
 
       // @step Then v0.7.0 migration should run first
       // @step And backup "spec/work-units.json.backup-0.7.0-{timestamp}" should be created
@@ -467,7 +473,8 @@ describe('Feature: Build Migration System', () => {
       await writeFile(workUnitsPath, JSON.stringify(v060Data, null, 2));
 
       // @step When migration to v0.7.0 completes successfully
-      await ensureLatestVersion(testDir, '0.7.0');
+      const data = JSON.parse(await readFile(workUnitsPath, 'utf-8'));
+      await ensureLatestVersion(testDir, data, '0.7.0');
 
       // @step Then work-units.json should contain migrationHistory array
       const updatedData = JSON.parse(await readFile(workUnitsPath, 'utf-8'));
