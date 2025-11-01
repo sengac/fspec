@@ -626,6 +626,10 @@
           "description": "Cucumber-style step definition and matching patterns"
         },
         {
+          "name": "@data-integrity",
+          "description": "Data integrity validation and consistency checks"
+        },
+        {
           "name": "@data-model",
           "description": "Features related to data models, schemas, and data structure transformations"
         },
@@ -812,6 +816,10 @@
         {
           "name": "@sms",
           "description": "SMS-related functionality"
+        },
+        {
+          "name": "@stable-indices",
+          "description": "Stable indices system for maintaining unique IDs across soft-delete operations"
         },
         {
           "name": "@step-validation",
@@ -1322,7 +1330,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-11-01T05:41:24.711Z",
+    "lastUpdated": "2025-11-01T08:00:50.906Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

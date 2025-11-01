@@ -446,10 +446,16 @@ export async function updateWorkUnitStatus(
           // No comparator - appends to end
         );
 
-  // Update workUnitsData reference to use sorted result
-  workUnitsData.states = updatedWorkUnitsData.states;
-
-  // Auto-compact when moving to done status
+  // BUG FIX (IDX-002): Auto-compact when moving to done status
+  // CRITICAL TEMPORAL COUPLING: This must happen BEFORE applying state sorting
+  // because compactWorkUnit() saves to disk and we re-read from disk, which would
+  // lose the sorted state if we sorted first.
+  //
+  // Sequence:
+  // 1. Calculate sorted states (insertWorkUnitSorted above)
+  // 2. Auto-compact (saves to disk)
+  // 3. Re-read from disk (loses sorted states)
+  // 4. Apply sorted states (line 468) ← MUST be after re-read!
   if (newStatus === 'done') {
     await compactWorkUnit({
       workUnitId: options.workUnitId,
@@ -465,6 +471,13 @@ export async function updateWorkUnitStatus(
       throw new Error(`Work unit '${options.workUnitId}' does not exist`);
     }
   }
+
+  // BUG FIX (IDX-002): Update workUnitsData reference to use sorted result
+  // CRITICAL: This MUST happen AFTER auto-compact (not before)
+  // Reason: compactWorkUnit() re-reads from disk, which would overwrite sorted states
+  // if we applied them before compaction. By applying AFTER, we preserve user-defined
+  // sort orders through the auto-compact operation.
+  workUnitsData.states = updatedWorkUnitsData.states;
 
   // Update work unit status
   workUnit.status = newStatus;

@@ -28,6 +28,34 @@ interface CompactWorkUnitResult {
   warning?: string;
 }
 
+/**
+ * Compact an array by removing deleted items and renumbering IDs sequentially.
+ *
+ * @param items - Array of items with id and deleted properties
+ * @returns Object with filtered array, removed count, and remaining count
+ */
+function compactArray<T extends { id: number; deleted?: boolean }>(
+  items: T[] | undefined
+): { filtered: T[]; removed: number; remaining: number } {
+  if (!items || items.length === 0) {
+    return { filtered: [], removed: 0, remaining: 0 };
+  }
+
+  const originalLength = items.length;
+  const filtered = items.filter(item => !item.deleted);
+
+  // Renumber IDs sequentially starting from 0
+  filtered.forEach((item, index) => {
+    item.id = index;
+  });
+
+  return {
+    filtered,
+    removed: originalLength - filtered.length,
+    remaining: filtered.length,
+  };
+}
+
 export async function compactWorkUnit(
   options: CompactWorkUnitOptions
 ): Promise<CompactWorkUnitResult> {
@@ -72,69 +100,35 @@ export async function compactWorkUnit(
   };
 
   // Compact rules (remove deleted and renumber IDs)
-  if (workUnit.rules && workUnit.rules.length > 0) {
-    const originalLength = workUnit.rules.length;
-    workUnit.rules = workUnit.rules.filter(r => !r.deleted);
-    // Renumber IDs sequentially starting from 0
-    workUnit.rules.forEach((rule, index) => {
-      rule.id = index;
-    });
-    removedCounts.rules = originalLength - workUnit.rules.length;
-    remainingCounts.rules = workUnit.rules.length;
-  }
+  const rulesResult = compactArray(workUnit.rules);
+  workUnit.rules = rulesResult.filtered;
+  removedCounts.rules = rulesResult.removed;
+  remainingCounts.rules = rulesResult.remaining;
 
   // Compact examples (remove deleted and renumber IDs)
-  if (workUnit.examples && workUnit.examples.length > 0) {
-    const originalLength = workUnit.examples.length;
-    workUnit.examples = workUnit.examples.filter(e => !e.deleted);
-    // Renumber IDs sequentially starting from 0
-    workUnit.examples.forEach((example, index) => {
-      example.id = index;
-    });
-    removedCounts.examples = originalLength - workUnit.examples.length;
-    remainingCounts.examples = workUnit.examples.length;
-  }
+  const examplesResult = compactArray(workUnit.examples);
+  workUnit.examples = examplesResult.filtered;
+  removedCounts.examples = examplesResult.removed;
+  remainingCounts.examples = examplesResult.remaining;
 
   // Compact questions (remove deleted and renumber IDs)
-  if (workUnit.questions && workUnit.questions.length > 0) {
-    const originalLength = workUnit.questions.length;
-    workUnit.questions = workUnit.questions.filter(q => !q.deleted);
-    // Renumber IDs sequentially starting from 0
-    workUnit.questions.forEach((question, index) => {
-      question.id = index;
-    });
-    removedCounts.questions = originalLength - workUnit.questions.length;
-    remainingCounts.questions = workUnit.questions.length;
-  }
+  const questionsResult = compactArray(workUnit.questions);
+  workUnit.questions = questionsResult.filtered;
+  removedCounts.questions = questionsResult.removed;
+  remainingCounts.questions = questionsResult.remaining;
 
   // Compact architecture notes (remove deleted and renumber IDs)
-  if (workUnit.architectureNotes && workUnit.architectureNotes.length > 0) {
-    const originalLength = workUnit.architectureNotes.length;
-    workUnit.architectureNotes = workUnit.architectureNotes.filter(
-      n => !n.deleted
-    );
-    // Renumber IDs sequentially starting from 0
-    workUnit.architectureNotes.forEach((note, index) => {
-      note.id = index;
-    });
-    removedCounts.architectureNotes =
-      originalLength - workUnit.architectureNotes.length;
-    remainingCounts.architectureNotes = workUnit.architectureNotes.length;
-  }
+  const notesResult = compactArray(workUnit.architectureNotes);
+  workUnit.architectureNotes = notesResult.filtered;
+  removedCounts.architectureNotes = notesResult.removed;
+  remainingCounts.architectureNotes = notesResult.remaining;
 
   // Reset nextId counters to match the new array lengths
-  if (workUnit.rules) {
-    workUnit.nextRuleId = workUnit.rules.length;
-  }
-  if (workUnit.examples) {
-    workUnit.nextExampleId = workUnit.examples.length;
-  }
-  if (workUnit.questions) {
-    workUnit.nextQuestionId = workUnit.questions.length;
-  }
-  if (workUnit.architectureNotes) {
-    workUnit.nextArchitectureNoteId = workUnit.architectureNotes.length;
-  }
+  // Edge case protection: Initialize to 0 if array is undefined/empty
+  workUnit.nextRuleId = workUnit.rules?.length ?? 0;
+  workUnit.nextExampleId = workUnit.examples?.length ?? 0;
+  workUnit.nextQuestionId = workUnit.questions?.length ?? 0;
+  workUnit.nextNoteId = workUnit.architectureNotes?.length ?? 0;
 
   // Update timestamp
   workUnit.updatedAt = new Date().toISOString();

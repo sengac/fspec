@@ -113,7 +113,7 @@ fspec add-tag-to-feature spec/features/example-login.feature @done
 **Items within work units use stable IDs that never change:**
 
 Work units contain items (business rules, examples, questions, architecture notes) that are assigned **stable indices** when created. These IDs:
-- Auto-increment from 0 (nextRuleId, nextExampleId, nextQuestionId, nextArchitectureNoteId)
+- Auto-increment from 0 (nextRuleId, nextExampleId, nextQuestionId, nextNoteId)
 - Never shift when other items are removed
 - Persist even after soft-delete
 
