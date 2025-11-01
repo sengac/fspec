@@ -455,7 +455,7 @@ export async function updateWorkUnitStatus(
   // 1. Calculate sorted states (insertWorkUnitSorted above)
   // 2. Auto-compact (saves to disk)
   // 3. Re-read from disk (loses sorted states)
-  // 4. Apply sorted states (line 468) ← MUST be after re-read!
+  // 4. Apply sorted states (line 480) ← MUST be after re-read!
   if (newStatus === 'done') {
     await compactWorkUnit({
       workUnitId: options.workUnitId,
