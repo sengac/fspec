@@ -128,7 +128,8 @@
         "MCP-005",
         "SPEC-003",
         "GIT-003",
-        "RES-001"
+        "RES-001",
+        "RES-007"
       ]
     },
     "reverse-acdd-refactor": {

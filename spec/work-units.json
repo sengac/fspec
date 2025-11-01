@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-01T19:24:26.776Z"
+    "lastUpdated": "2025-11-01T19:31:54.468Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -36335,6 +36335,164 @@
         "TUI-012"
       ],
       "estimate": 5
+    },
+    "RES-007": {
+      "id": "RES-007",
+      "title": "AST code researcher for pattern detection and deep analysis",
+      "type": "story",
+      "status": "specifying",
+      "createdAt": "2025-11-01T19:31:38.476Z",
+      "updatedAt": "2025-11-01T19:34:50.752Z",
+      "description": "Create an AST-based code research backend that analyzes code structure, detects patterns, finds similar code, and provides deep insights using TypeScript/JavaScript AST parsing. Integrates with fspec research command as a registered backend.",
+      "epic": "example-driven-discovery",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-01T19:31:51.335Z"
+        }
+      ],
+      "dependsOn": [
+        "RES-001"
+      ],
+      "userStory": {
+        "role": "AI agent performing code discovery during Example Mapping",
+        "action": "analyze code structure and patterns using AST parsing",
+        "benefit": "I can detect similar patterns, understand code complexity, and find relevant examples without manual code reading"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Use TypeScript Compiler API (ts.createSourceFile, ts.forEachChild) for AST parsing",
+          "deleted": true,
+          "createdAt": "2025-11-01T19:32:08.803Z",
+          "deletedAt": "2025-11-01T19:34:04.808Z"
+        },
+        {
+          "id": 1,
+          "text": "Support pattern detection queries: class definitions, function signatures, imports, exports, interface declarations",
+          "deleted": true,
+          "createdAt": "2025-11-01T19:32:10.309Z",
+          "deletedAt": "2025-11-01T19:34:05.294Z"
+        },
+        {
+          "id": 2,
+          "text": "Integrate as a research backend in 'fspec research' command (registers as 'ast' tool)",
+          "deleted": true,
+          "createdAt": "2025-11-01T19:32:12.116Z",
+          "deletedAt": "2025-11-01T19:34:05.784Z"
+        },
+        {
+          "id": 3,
+          "text": "Analyze code complexity: cyclomatic complexity, nesting depth, function length, parameter count",
+          "deleted": true,
+          "createdAt": "2025-11-01T19:32:13.401Z",
+          "deletedAt": "2025-11-01T19:34:06.269Z"
+        },
+        {
+          "id": 4,
+          "text": "Find similar code patterns using AST structure matching (not text-based)",
+          "deleted": true,
+          "createdAt": "2025-11-01T19:32:14.796Z",
+          "deletedAt": "2025-11-01T19:34:06.758Z"
+        },
+        {
+          "id": 5,
+          "text": "Support both TypeScript (.ts, .tsx) and JavaScript (.js, .jsx) files",
+          "deleted": true,
+          "createdAt": "2025-11-01T19:32:16.361Z",
+          "deletedAt": "2025-11-01T19:34:07.248Z"
+        },
+        {
+          "id": 6,
+          "text": "Return structured results in JSON format with file paths, line numbers, and code snippets",
+          "deleted": true,
+          "createdAt": "2025-11-01T19:32:17.713Z",
+          "deletedAt": "2025-11-01T19:34:07.732Z"
+        },
+        {
+          "id": 7,
+          "text": "Use tree-sitter as the AST parsing foundation (supports 40+ languages including TypeScript, JavaScript, Python, Go, Rust, Java, C++)",
+          "deleted": false,
+          "createdAt": "2025-11-01T19:34:20.601Z"
+        },
+        {
+          "id": 8,
+          "text": "Use tree-sitter query language for pattern matching (find specific code constructs across syntax trees)",
+          "deleted": false,
+          "createdAt": "2025-11-01T19:34:22.081Z"
+        },
+        {
+          "id": 9,
+          "text": "Support error-tolerant parsing (analyze incomplete or broken code without failing)",
+          "deleted": false,
+          "createdAt": "2025-11-01T19:34:23.458Z"
+        },
+        {
+          "id": 10,
+          "text": "Integrate as 'ast' research backend in 'fspec research' command (auto-discovered from spec/research-scripts/)",
+          "deleted": false,
+          "createdAt": "2025-11-01T19:34:25.165Z"
+        },
+        {
+          "id": 11,
+          "text": "Support common pattern queries: function definitions, class declarations, imports, exports, variable assignments, conditionals, loops",
+          "deleted": false,
+          "createdAt": "2025-11-01T19:34:26.843Z"
+        },
+        {
+          "id": 12,
+          "text": "Analyze code complexity metrics: cyclomatic complexity, nesting depth, function length, parameter count",
+          "deleted": false,
+          "createdAt": "2025-11-01T19:34:28.478Z"
+        },
+        {
+          "id": 13,
+          "text": "Find structurally similar code using AST pattern matching (not text-based regex)",
+          "deleted": false,
+          "createdAt": "2025-11-01T19:34:29.985Z"
+        },
+        {
+          "id": 14,
+          "text": "Return structured JSON results with file paths, line numbers, matched code snippets, and AST node types",
+          "deleted": false,
+          "createdAt": "2025-11-01T19:34:31.366Z"
+        }
+      ],
+      "nextRuleId": 15,
+      "examples": [
+        {
+          "id": 0,
+          "text": "AI agent runs 'fspec research --tool=ast --query=\"find all async functions\"', gets JSON results with file paths and line numbers for every async function in the codebase",
+          "deleted": false,
+          "createdAt": "2025-11-01T19:34:44.532Z"
+        },
+        {
+          "id": 1,
+          "text": "Developer researches 'functions with more than 5 parameters', AST tool analyzes complexity and returns list of functions exceeding parameter count threshold",
+          "deleted": false,
+          "createdAt": "2025-11-01T19:34:46.139Z"
+        },
+        {
+          "id": 2,
+          "text": "During Example Mapping, AI needs to find similar authentication code, queries 'find code patterns similar to src/auth/login.ts', gets structurally similar functions across Python, TypeScript, and Go files",
+          "deleted": false,
+          "createdAt": "2025-11-01T19:34:47.807Z"
+        },
+        {
+          "id": 3,
+          "text": "AI agent analyzes incomplete code file with syntax errors, tree-sitter parses what it can and returns partial AST for the valid portions",
+          "deleted": false,
+          "createdAt": "2025-11-01T19:34:49.183Z"
+        },
+        {
+          "id": 4,
+          "text": "Developer queries 'classes implementing interface UserRepository', AST tool uses tree-sitter queries to find all implementing classes with file locations and code snippets",
+          "deleted": false,
+          "createdAt": "2025-11-01T19:34:50.752Z"
+        }
+      ],
+      "nextExampleId": 5
     }
   },
   "states": {
@@ -36375,7 +36533,8 @@
       "EXMAP-004",
       "BOARD-020",
       "TUI-012",
-      "TUI-013"
+      "TUI-013",
+      "RES-007"
     ],
     "testing": [],
     "implementing": [],
