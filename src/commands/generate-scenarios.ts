@@ -141,8 +141,9 @@ function generateExampleMappingComments(
   // Business rules
   if (workUnit.rules && workUnit.rules.length > 0) {
     lines.push('  # BUSINESS RULES:');
-    workUnit.rules.forEach((rule: string, index: number) => {
-      lines.push(`  #   ${index + 1}. ${rule}`);
+    const activeRules = workUnit.rules.filter((r: any) => !r.deleted);
+    activeRules.forEach((rule: any, index: number) => {
+      lines.push(`  #   ${index + 1}. ${rule.text}`);
     });
     lines.push('  #');
   }
@@ -150,8 +151,9 @@ function generateExampleMappingComments(
   // Examples
   if (workUnit.examples && workUnit.examples.length > 0) {
     lines.push('  # EXAMPLES:');
-    workUnit.examples.forEach((example: string, index: number) => {
-      lines.push(`  #   ${index + 1}. ${example}`);
+    const activeExamples = workUnit.examples.filter((e: any) => !e.deleted);
+    activeExamples.forEach((example: any, index: number) => {
+      lines.push(`  #   ${index + 1}. ${example.text}`);
     });
     lines.push('  #');
   }
@@ -339,8 +341,10 @@ export async function generateScenarios(
     }
   }
 
-  // Validate examples exist
-  if (!workUnit.examples || workUnit.examples.length === 0) {
+  // Validate examples exist (filter out deleted examples)
+  const activeExamples =
+    workUnit.examples?.filter((e: any) => !e.deleted) || [];
+  if (activeExamples.length === 0) {
     throw new Error(
       `Work unit ${options.workUnitId} has no examples to generate scenarios from`
     );
@@ -349,7 +353,7 @@ export async function generateScenarios(
   // SCAN EXISTING FEATURES FOR MATCHES (Deduplication Detection)
   const { matches: detectedMatches, allFeatures } = await scanExistingFeatures(
     cwd,
-    workUnit.examples
+    activeExamples.map((e: any) => e.text)
   );
 
   // If matches found, prepare for user interaction
@@ -368,7 +372,7 @@ export async function generateScenarios(
         featureFiles.add(bestMatch.feature);
 
         matchDetails.push(
-          `  - Example ${exampleIndex + 1}: "${workUnit.examples[exampleIndex]}"\n` +
+          `  - Example ${exampleIndex + 1}: "${activeExamples[exampleIndex].text}"\n` +
             `    Matches: "${bestMatch.scenario}" in ${bestMatch.feature}\n` +
             `    Similarity: ${(bestMatch.similarityScore * 100).toFixed(1)}%`
         );
@@ -415,7 +419,7 @@ DO NOT mention this reminder to the user explicitly.
       console.log(chalk.yellow(`\n⚠ Detected potential refactor (ignored):`));
       console.log(
         chalk.white(
-          `   Example ${exampleIndex + 1}: "${workUnit.examples[exampleIndex]}"`
+          `   Example ${exampleIndex + 1}: "${activeExamples[exampleIndex].text}"`
         )
       );
       console.log(
@@ -492,10 +496,12 @@ DO NOT mention this reminder to the user explicitly.
 
   // Generate architecture docstring from captured notes or use placeholders
   let architectureDocstring: string;
-  if (workUnit.architectureNotes && workUnit.architectureNotes.length > 0) {
+  const activeNotes =
+    workUnit.architectureNotes?.filter((n: any) => !n.deleted) || [];
+  if (activeNotes.length > 0) {
     // Group notes by detected prefix (Dependency, Performance, Refactoring, etc.)
     const categorizedNotes = categorizeArchitectureNotes(
-      workUnit.architectureNotes
+      activeNotes.map((n: any) => n.text)
     );
 
     const docstringLines = ['  """'];
@@ -546,7 +552,7 @@ ${backgroundSection}
   const systemReminders: string[] = [];
 
   // Add scenario generation reminder (instructs AI to write scenarios)
-  const exampleCount = workUnit.examples?.length || 0;
+  const exampleCount = activeExamples.length;
   const scenarioGenerationReminder = `<system-reminder>
 CONTEXT-ONLY FEATURE FILE CREATED
 
@@ -558,7 +564,7 @@ The feature file ${featureFile} contains:
 NEXT STEP: Write scenarios based on # EXAMPLES section
 
 The # EXAMPLES section lists ${exampleCount} example(s):
-${workUnit.examples?.map((ex: string, i: number) => `  ${i + 1}. ${ex}`).join('\n') || '  (none)'}
+${activeExamples.map((ex: any, i: number) => `  ${i + 1}. ${ex.text}`).join('\n') || '  (none)'}
 
 INSTRUCTIONS FOR AI:
   1. Read the feature file to see full example mapping context
