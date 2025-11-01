@@ -1,0 +1,86 @@
+{
+  "scenarios": [
+    {
+      "name": "[Scenario name]",
+      "testMappings": []
+    },
+    {
+      "name": "Fix field name mismatch in compact-work-unit",
+      "testMappings": []
+    },
+    {
+      "name": "Prevent ID collision after compaction",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/stable-indices-bug-fixes.test.ts",
+          "lines": "133-210",
+          "implMappings": [
+            {
+              "file": "src/commands/compact-work-unit.ts",
+              "lines": [
+                136
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Fix state sorting loss during auto-compact",
+      "testMappings": []
+    },
+    {
+      "name": "Preserve state sorting through auto-compact",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/stable-indices-bug-fixes.test.ts",
+          "lines": "213-295",
+          "implMappings": [
+            {
+              "file": "src/commands/update-work-unit-status.ts",
+              "lines": [
+                449,
+                450,
+                451,
+                452,
+                453,
+                454,
+                455,
+                456,
+                457,
+                458,
+                459,
+                460,
+                461,
+                462,
+                463,
+                464,
+                465,
+                466,
+                467,
+                468
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Update help documentation for field name consistency",
+      "testMappings": []
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 2,
+    "coveragePercent": 33,
+    "testFiles": [
+      "src/commands/__tests__/stable-indices-bug-fixes.test.ts"
+    ],
+    "implFiles": [
+      "src/commands/compact-work-unit.ts",
+      "src/commands/update-work-unit-status.ts"
+    ],
+    "totalLinesCovered": 182
+  }
+}

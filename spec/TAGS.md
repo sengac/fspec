@@ -181,6 +181,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@config` | Configuration loading and management features |
 | `@cucumber-parser` | Cucumber Parser Integration |
 | `@cucumber-style` | Cucumber-style step definition and matching patterns |
+| `@data-integrity` | Data integrity validation and consistency checks |
 | `@data-model` | Features related to data models, schemas, and data structure transformations |
 | `@discovery` | BDD discovery technique used before writing Gherkin scenarios |
 | `@email` | Email-related functionality |
@@ -228,6 +229,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@slash-command` | Slash command features for Claude Code |
 | `@slash-commands` | Claude Code slash command implementations |
 | `@sms` | SMS-related functionality |
+| `@stable-indices` | Stable indices system for maintaining unique IDs across soft-delete operations |
 | `@step-validation` | Step-level validation and Gherkin step matching |
 | `@strategy-planning` | Strategy planning and decision-making features that guide user choices |
 | `@system-reminder` | Anti-drift pattern for AI agents using contextual reminders |
@@ -572,7 +574,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-11-01T05:41:24.711Z_
+_Last updated: 2025-11-01T08:00:50.906Z_
 
 **Update Command**: `fspec tag-stats`
 
