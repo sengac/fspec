@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-01T19:06:04.999Z"
+    "lastUpdated": "2025-11-01T19:24:26.776Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -36174,6 +36174,167 @@
       "nextQuestionId": 0,
       "nextNoteId": 0,
       "updated": "2025-11-01T18:37:38.978Z"
+    },
+    "TUI-012": {
+      "id": "TUI-012",
+      "title": "Display attachments in work unit details panel",
+      "type": "story",
+      "status": "specifying",
+      "createdAt": "2025-11-01T19:20:32.473Z",
+      "updatedAt": "2025-11-01T19:23:16.755Z",
+      "description": "Show list of attachments in the TUI details view when user presses Enter on a work unit in the interactive Kanban board",
+      "children": [],
+      "userStory": {
+        "role": "developer using fspec TUI",
+        "action": "view attachments associated with a work unit in the details panel",
+        "benefit": "I can quickly see what supporting materials are available for the work"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-01T19:20:53.951Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "Attachments section should be displayed in the work unit details panel below the description",
+          "deleted": false,
+          "createdAt": "2025-11-01T19:21:00.238Z"
+        },
+        {
+          "id": 1,
+          "text": "Each attachment should show the filename and optional description",
+          "deleted": false,
+          "createdAt": "2025-11-01T19:21:00.730Z"
+        },
+        {
+          "id": 2,
+          "text": "If no attachments exist, show 'No attachments' message",
+          "deleted": false,
+          "createdAt": "2025-11-01T19:21:01.227Z"
+        },
+        {
+          "id": 3,
+          "text": "Attachment paths are stored as relative paths from project root",
+          "deleted": false,
+          "createdAt": "2025-11-01T19:21:01.709Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Work unit has 2 attachments (diagram.png, requirements.pdf), details panel shows both with filenames",
+          "deleted": false,
+          "createdAt": "2025-11-01T19:21:10.357Z"
+        },
+        {
+          "id": 1,
+          "text": "Work unit has attachment with description 'Architecture diagram v2', details panel shows filename and description",
+          "deleted": false,
+          "createdAt": "2025-11-01T19:21:10.862Z"
+        },
+        {
+          "id": 2,
+          "text": "Work unit has no attachments, details panel shows 'No attachments' message",
+          "deleted": false,
+          "createdAt": "2025-11-01T19:21:11.360Z"
+        },
+        {
+          "id": 3,
+          "text": "Work unit has 1 attachment in spec/attachments/TUI-012/mockup.png, displayed as 'mockup.png'",
+          "deleted": false,
+          "createdAt": "2025-11-01T19:21:11.863Z"
+        }
+      ],
+      "nextExampleId": 4,
+      "estimate": 5
+    },
+    "TUI-013": {
+      "id": "TUI-013",
+      "title": "Open attachments in browser from details panel",
+      "type": "story",
+      "status": "specifying",
+      "createdAt": "2025-11-01T19:24:10.959Z",
+      "updatedAt": "2025-11-01T19:26:29.202Z",
+      "description": "Allow users to open attachment files in the default browser when viewing work unit details in the TUI, using the same 'open' package that cage uses for launching API docs",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-01T19:24:18.440Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer viewing work unit attachments in fspec TUI",
+        "action": "open an attachment file in my default browser",
+        "benefit": "I can quickly view diagrams, mockups, and documents without leaving the TUI workflow"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "User should be able to select an attachment and press 'o' to open it",
+          "deleted": false,
+          "createdAt": "2025-11-01T19:24:35.544Z"
+        },
+        {
+          "id": 1,
+          "text": "Opening attachment should use 'open' npm package for cross-platform browser launching",
+          "deleted": false,
+          "createdAt": "2025-11-01T19:24:36.046Z"
+        },
+        {
+          "id": 2,
+          "text": "Attachment file path should be converted from relative to absolute path before opening",
+          "deleted": false,
+          "createdAt": "2025-11-01T19:24:36.536Z"
+        },
+        {
+          "id": 3,
+          "text": "Opening should use file:// protocol for local files",
+          "deleted": false,
+          "createdAt": "2025-11-01T19:24:37.024Z"
+        },
+        {
+          "id": 4,
+          "text": "TUI should remain open after launching browser (non-blocking)",
+          "deleted": false,
+          "createdAt": "2025-11-01T19:24:37.550Z"
+        }
+      ],
+      "nextRuleId": 5,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User selects 'diagram.png' attachment and presses 'o', browser opens file:///path/to/spec/attachments/TUI-012/diagram.png",
+          "deleted": false,
+          "createdAt": "2025-11-01T19:24:45.395Z"
+        },
+        {
+          "id": 1,
+          "text": "User opens PDF attachment, browser opens it in default PDF viewer",
+          "deleted": false,
+          "createdAt": "2025-11-01T19:24:45.892Z"
+        },
+        {
+          "id": 2,
+          "text": "After opening attachment, TUI remains active and user can continue working",
+          "deleted": false,
+          "createdAt": "2025-11-01T19:24:46.387Z"
+        },
+        {
+          "id": 3,
+          "text": "Opening works on macOS (open command), Windows (start), and Linux (xdg-open)",
+          "deleted": false,
+          "createdAt": "2025-11-01T19:24:46.885Z"
+        }
+      ],
+      "nextExampleId": 4,
+      "dependsOn": [
+        "TUI-012"
+      ],
+      "estimate": 5
     }
   },
   "states": {
@@ -36212,7 +36373,9 @@
       "BUG-053",
       "TUI-011",
       "EXMAP-004",
-      "BOARD-020"
+      "BOARD-020",
+      "TUI-012",
+      "TUI-013"
     ],
     "testing": [],
     "implementing": [],
