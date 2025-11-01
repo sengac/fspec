@@ -1,0 +1,114 @@
+{
+  "scenarios": [
+    {
+      "name": "Automatic migration on first command after upgrade",
+      "testMappings": [
+        {
+          "file": "src/migrations/__tests__/migration-system.test.ts",
+          "lines": "37-105",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "No migration when already at target version (idempotent)",
+      "testMappings": [
+        {
+          "file": "src/migrations/__tests__/migration-system.test.ts",
+          "lines": "106-160",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Migration failure does not corrupt work-units.json",
+      "testMappings": [
+        {
+          "file": "src/migrations/__tests__/migration-system.test.ts",
+          "lines": "161-222",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Add version field to legacy work-units.json",
+      "testMappings": [
+        {
+          "file": "src/migrations/__tests__/migration-system.test.ts",
+          "lines": "223-275",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Manual migration with explicit version",
+      "testMappings": [
+        {
+          "file": "src/migrations/__tests__/migration-system.test.ts",
+          "lines": "276-342",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Sequential migrations for multiple version jumps",
+      "testMappings": [
+        {
+          "file": "src/migrations/__tests__/migration-system.test.ts",
+          "lines": "344-402",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Migration history tracking",
+      "testMappings": [
+        {
+          "file": "src/migrations/__tests__/migration-system.test.ts",
+          "lines": "403-454",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Check migration status",
+      "testMappings": [
+        {
+          "file": "src/migrations/__tests__/migration-system.test.ts",
+          "lines": "455-504",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Rollback migration with down() function",
+      "testMappings": [
+        {
+          "file": "src/migrations/__tests__/migration-system.test.ts",
+          "lines": "505-573",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Rollback fails when down() function not implemented",
+      "testMappings": [
+        {
+          "file": "src/migrations/__tests__/migration-system.test.ts",
+          "lines": "574-634",
+          "implMappings": []
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 10,
+    "coveredScenarios": 10,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/migrations/__tests__/migration-system.test.ts"
+    ],
+    "implFiles": [],
+    "totalLinesCovered": 597
+  }
+}

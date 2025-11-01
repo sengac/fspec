@@ -4,10 +4,17 @@ import type { Foundation } from '../types/foundation';
 import type { Tags } from '../types/tags';
 import { findOrCreateSpecDirectory } from './project-root-detection';
 import { fileManager } from './file-manager';
+import { ensureLatestVersion } from '../migrations';
+
+/**
+ * Current version of fspec (used for auto-migration)
+ */
+const CURRENT_VERSION = '0.7.0';
 
 /**
  * Ensures spec/work-units.json exists with proper initial structure.
  * If the file doesn't exist, creates it with empty work units and all Kanban states.
+ * Automatically runs migrations if needed to bring file to current version.
  *
  * Uses fileManager.readJSON() with read-lock-first pattern (LOCK-002).
  */
@@ -34,7 +41,12 @@ export async function ensureWorkUnitsFile(cwd: string): Promise<WorkUnitsData> {
 
   // Use fileManager.readJSON() which handles ENOENT and creates file with default data
   try {
-    return await fileManager.readJSON(filePath, initialData);
+    let data = await fileManager.readJSON(filePath, initialData);
+
+    // Run auto-migration to ensure file is at current version
+    data = await ensureLatestVersion(cwd, CURRENT_VERSION);
+
+    return data;
   } catch (error: unknown) {
     // Provide helpful error message for JSON parse errors
     if (error instanceof SyntaxError) {
