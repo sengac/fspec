@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-01T08:09:38.706Z"
+    "lastUpdated": "2025-11-01T18:38:23.348Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -35037,15 +35037,1126 @@
       "architectureNotes": [],
       "nextQuestionId": 0,
       "nextNoteId": 0
+    },
+    "BUG-051": {
+      "id": "BUG-051",
+      "title": "Checkpoint cleanup when work unit is done",
+      "type": "bug",
+      "status": "specifying",
+      "createdAt": "2025-11-01T17:30:25.036Z",
+      "updatedAt": "2025-11-01T17:32:05.517Z",
+      "description": "Checkpoints should be automatically cleaned up when a work unit transitions to done status to prevent accumulation of stale checkpoint data",
+      "children": [],
+      "userStory": {
+        "role": "developer using fspec",
+        "action": "have checkpoints automatically cleaned up when work is done",
+        "benefit": "I don't accumulate stale checkpoint data that wastes disk space"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-01T17:31:43.354Z"
+        }
+      ],
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: When should checkpoints be cleaned up? Delete ALL immediately when done, keep last N (e.g., 1-3) after done, or cleanup based on age?",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:31:52.515Z",
+          "selected": false
+        }
+      ],
+      "nextQuestionId": 1,
+      "rules": [
+        {
+          "id": 0,
+          "text": "Checkpoints are stored in git refs (refs/fspec-checkpoints/{workUnitId}/{checkpointName}) and index files (.git/fspec-checkpoints-index/{workUnitId}.json)",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:32:02.555Z"
+        },
+        {
+          "id": 1,
+          "text": "Auto-compact already runs when work unit moves to done status, but does NOT clean up checkpoints",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:32:03.975Z"
+        },
+        {
+          "id": 2,
+          "text": "Manual cleanup command exists: fspec cleanup-checkpoints <work-unit-id> --keep-last <N>",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:32:05.517Z"
+        }
+      ],
+      "nextRuleId": 3
+    },
+    "BUG-052": {
+      "id": "BUG-052",
+      "title": "Chokidar file watcher not updating Changed Files count correctly in TUI",
+      "type": "bug",
+      "status": "specifying",
+      "createdAt": "2025-11-01T17:33:34.811Z",
+      "updatedAt": "2025-11-01T17:35:01.358Z",
+      "description": "The file watcher using chokidar that tracks changed files and updates the 'Changed Files:' count in the TUI is not updating the count correctly",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-01T17:34:31.813Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using fspec TUI",
+        "action": "see accurate changed file counts in real-time",
+        "benefit": "I can trust the git status information displayed"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Chokidar watches .git/index and .git/HEAD for changes (lines 143-188 in BoardView.tsx)",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:34:44.449Z"
+        },
+        {
+          "id": 1,
+          "text": "When .git/index or .git/HEAD changes, loadFileStatus() is called which fetches staged and unstaged files",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:34:45.976Z"
+        },
+        {
+          "id": 2,
+          "text": "The watcher listens for 'change' and 'add' events from chokidar",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:34:47.846Z"
+        }
+      ],
+      "nextRuleId": 3,
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: What exactly is wrong with the Changed Files count? Is it: (A) not updating at all, (B) showing incorrect count, (C) only updating sometimes, or (D) something else?",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:34:57.966Z",
+          "selected": false
+        },
+        {
+          "id": 1,
+          "text": "@human: When does the bug occur? When you: (A) modify files, (B) stage files with git add, (C) unstage files, (D) all of the above?",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:34:59.666Z",
+          "selected": false
+        },
+        {
+          "id": 2,
+          "text": "@human: Can you give me a concrete example? For instance: 'I modified 3 files, but the count shows 0' or 'I staged 2 files but the count didn't change'?",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:35:01.358Z",
+          "selected": false
+        }
+      ],
+      "nextQuestionId": 3
+    },
+    "GIT-009": {
+      "id": "GIT-009",
+      "title": "Restore individual files or all files from checkpoint in checkpoint viewer",
+      "type": "story",
+      "status": "blocked",
+      "createdAt": "2025-11-01T17:36:19.264Z",
+      "updatedAt": "2025-11-01T17:43:01.088Z",
+      "description": "Add ability to selectively restore individual files or restore all files from a checkpoint through the TUI checkpoint viewer interface",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-01T17:36:26.698Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using fspec TUI",
+        "action": "restore individual files or all files from a checkpoint",
+        "benefit": "I can recover previous versions of my work without using complex git commands"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Checkpoint viewer currently has three panes: checkpoints list (left), files in checkpoint (middle), and diff viewer (right)",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:36:52.048Z"
+        },
+        {
+          "id": 1,
+          "text": "Checkpoint viewer currently only allows viewing/browsing checkpoints - no restore functionality exists",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:36:53.614Z"
+        },
+        {
+          "id": 2,
+          "text": "restoreCheckpoint() function already exists in git-checkpoint.ts and handles conflict detection",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:36:55.138Z"
+        }
+      ],
+      "nextRuleId": 3,
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: How should the user trigger restore? (A) Press 'R' key while file is selected to restore single file, (B) Press 'A' key to restore all files from checkpoint, (C) Show a restore menu with options, (D) other approach?",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:37:07.411Z",
+          "selected": false
+        },
+        {
+          "id": 1,
+          "text": "@human: What should happen if restoring would overwrite uncommitted changes? (A) Show warning and require confirmation, (B) Block restore and show error, (C) Auto-create checkpoint before restore, (D) other approach?",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:37:09.144Z",
+          "selected": false
+        },
+        {
+          "id": 2,
+          "text": "@human: After a successful restore, what should happen? (A) Show success message and stay in viewer, (B) Exit viewer and return to board, (C) Show updated diff comparing restored version vs previous, (D) other?",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:37:11.034Z",
+          "selected": false
+        },
+        {
+          "id": 3,
+          "text": "@human: Should there be visual indicators showing which files have conflicts/would be overwritten before restore? (yes/no)",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:37:12.323Z",
+          "selected": false
+        }
+      ],
+      "nextQuestionId": 4,
+      "blockedBy": [
+        "TUI-011"
+      ],
+      "blockedReason": "Blocked by TUI-011"
+    },
+    "BUG-053": {
+      "id": "BUG-053",
+      "title": "Checkpoint restore shows confusing 'merge' terminology when it actually overwrites files",
+      "type": "bug",
+      "status": "specifying",
+      "createdAt": "2025-11-01T17:38:41.001Z",
+      "updatedAt": "2025-11-01T17:39:18.682Z",
+      "description": "The restore-checkpoint command offers 'Force restore with merge' option but doesn't actually merge - it just overwrites files when force=true. User wants simple overwrite without merge terminology.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-01T17:38:47.615Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using fspec",
+        "action": "restore a checkpoint and overwrite my files",
+        "benefit": "I don't get confused by merge terminology when I just want to replace files"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Current behavior: restore-checkpoint shows 3 options when working directory is dirty: (1) Commit changes first, (2) Stash changes and restore, (3) Force restore with merge",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:38:59.844Z"
+        },
+        {
+          "id": 1,
+          "text": "Option 3 'Force restore with merge' is misleading - it doesn't actually merge, it just overwrites files when force=true is passed",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:39:01.297Z"
+        },
+        {
+          "id": 2,
+          "text": "The restoreCheckpointUtil in git-checkpoint.ts with force=true overwrites files directly without any merge logic (lines 329-366)",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:39:02.614Z"
+        }
+      ],
+      "nextRuleId": 3,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User has uncommitted changes, runs 'fspec restore-checkpoint AUTH-001 checkpoint-name', sees confusing 'Force restore with merge' option, expects simpler 'Overwrite files' language",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:39:13.515Z"
+        }
+      ],
+      "nextExampleId": 1,
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: What should option 3 be renamed to? Suggestions: 'Force overwrite files', 'Discard changes and restore', 'Overwrite with checkpoint', or something else?",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:39:15.150Z",
+          "selected": false
+        },
+        {
+          "id": 1,
+          "text": "@human: Should the risk level stay 'High' for the overwrite option? Or change to something else?",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:39:16.772Z",
+          "selected": false
+        },
+        {
+          "id": 2,
+          "text": "@human: Should the description explain data loss risk? E.g., 'Overwrites working directory with checkpoint. Current changes will be lost forever unless committed or stashed.'",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:39:18.682Z",
+          "selected": false
+        }
+      ],
+      "nextQuestionId": 3
+    },
+    "GIT-010": {
+      "id": "GIT-010",
+      "title": "Delete checkpoint or all checkpoints from checkpoint viewer with confirmation",
+      "type": "story",
+      "status": "blocked",
+      "createdAt": "2025-11-01T17:40:52.075Z",
+      "updatedAt": "2025-11-01T17:43:02.602Z",
+      "description": "Add ability to delete a single checkpoint or all checkpoints from the TUI checkpoint viewer interface with confirmation dialogs to prevent accidental deletion",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-01T17:41:03.713Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using fspec TUI",
+        "action": "delete checkpoints I no longer need",
+        "benefit": "I can manage my checkpoint storage without using CLI commands"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Checkpoint viewer currently has read-only functionality - no delete operations exist in the TUI",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:41:26.410Z"
+        },
+        {
+          "id": 1,
+          "text": "cleanup-checkpoints CLI command exists but only keeps last N checkpoints, doesn't allow selective deletion",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:41:27.921Z"
+        },
+        {
+          "id": 2,
+          "text": "Checkpoint deletion must remove both the git ref (refs/fspec-checkpoints/{workUnitId}/{checkpointName}) and the index file entry",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:41:29.463Z"
+        },
+        {
+          "id": 3,
+          "text": "User wants confirmation dialogs to prevent accidental deletion",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:41:31.201Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User navigates to checkpoint viewer, selects an old checkpoint they don't need, presses Delete key, sees confirmation dialog, confirms, checkpoint is deleted",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:41:47.483Z"
+        },
+        {
+          "id": 1,
+          "text": "User has 50 old checkpoints, wants to delete them all at once, presses key combination, sees 'Delete ALL checkpoints?' warning, confirms with typed confirmation, all deleted",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:41:49.326Z"
+        }
+      ],
+      "nextExampleId": 2,
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: What key should trigger single checkpoint deletion? (D)elete, (X) remove, (Backspace), or other?",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:42:04.782Z",
+          "selected": false
+        },
+        {
+          "id": 1,
+          "text": "@human: What key/combination should trigger delete ALL? Shift+D, Ctrl+D, separate menu option, or other?",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:42:06.628Z",
+          "selected": false
+        },
+        {
+          "id": 2,
+          "text": "@human: For single checkpoint deletion, what should the confirmation look like? Simple Y/N prompt, or require typing checkpoint name, or other?",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:42:08.075Z",
+          "selected": false
+        },
+        {
+          "id": 3,
+          "text": "@human: For delete ALL confirmation, should it require typing a specific phrase like DELETE ALL to prevent accidents?",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:42:09.817Z",
+          "selected": false
+        },
+        {
+          "id": 4,
+          "text": "@human: After deleting a checkpoint, what should happen? Stay in viewer with next checkpoint selected, exit viewer, show success message, or other?",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:42:11.337Z",
+          "selected": false
+        }
+      ],
+      "nextQuestionId": 5,
+      "blockedBy": [
+        "TUI-011"
+      ],
+      "blockedReason": "Blocked by TUI-011"
+    },
+    "TUI-011": {
+      "id": "TUI-011",
+      "title": "Reusable confirmation dialog component for destructive TUI actions",
+      "type": "story",
+      "status": "specifying",
+      "createdAt": "2025-11-01T17:42:40.323Z",
+      "updatedAt": "2025-11-01T17:44:09.767Z",
+      "description": "Create a reusable confirmation dialog component in the TUI that can be used for any destructive action requiring user confirmation (delete, overwrite, etc.)",
+      "children": [],
+      "blocks": [
+        "GIT-009",
+        "GIT-010"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-01T17:43:09.062Z"
+        }
+      ],
+      "userStory": {
+        "role": "TUI developer",
+        "action": "use a reusable confirmation dialog component",
+        "benefit": "I don't have to reimplement confirmation logic for every destructive action"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "No existing confirmation dialog component exists in the TUI - each feature would need to implement their own",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:43:31.318Z"
+        },
+        {
+          "id": 1,
+          "text": "Confirmation dialog must be non-blocking and integrate with Ink component lifecycle",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:43:32.843Z"
+        },
+        {
+          "id": 2,
+          "text": "Dialog must support different confirmation modes: simple Y/N, typed confirmation phrase, single key press",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:43:34.558Z"
+        },
+        {
+          "id": 3,
+          "text": "Dialog must clearly display the action being confirmed and its consequences",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:43:36.071Z"
+        },
+        {
+          "id": 4,
+          "text": "Dialog must support cancellation with ESC key",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:43:37.608Z"
+        }
+      ],
+      "nextRuleId": 5,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User presses Delete on checkpoint, dialog shows 'Delete checkpoint AUTH-001-auto-testing? [y/N]', user presses Y, checkpoint deleted",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:43:51.613Z"
+        },
+        {
+          "id": 1,
+          "text": "User presses Shift+D to delete all checkpoints, dialog shows 'Type DELETE ALL to confirm:', user types DELETE ALL, all checkpoints deleted",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:43:53.170Z"
+        },
+        {
+          "id": 2,
+          "text": "User presses R to restore file, dialog shows 'Restore file will overwrite uncommitted changes. Continue? [y/N]', user presses ESC, action cancelled",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:43:54.487Z"
+        }
+      ],
+      "nextExampleId": 3,
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: Should the dialog be a modal overlay (center of screen) or inline at the bottom like a prompt bar?",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:44:06.744Z",
+          "selected": false
+        },
+        {
+          "id": 1,
+          "text": "@human: Should the dialog support custom styling/colors for different risk levels (low=green, medium=yellow, high=red)?",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:44:08.166Z",
+          "selected": false
+        },
+        {
+          "id": 2,
+          "text": "@human: What should the component API look like? Props: message, confirmMode, onConfirm callback, onCancel callback, riskLevel?",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:44:09.767Z",
+          "selected": false
+        }
+      ],
+      "nextQuestionId": 3
+    },
+    "EXMAP-004": {
+      "id": "EXMAP-004",
+      "title": "Event Storming discovery phase for domain understanding and tag naming",
+      "type": "story",
+      "status": "specifying",
+      "createdAt": "2025-11-01T17:50:17.784Z",
+      "updatedAt": "2025-11-01T17:51:27.304Z",
+      "description": "Add Event Storming as a discovery technique done before Example Mapping to identify domain events, commands, aggregates, and bounded contexts that inform tag naming and domain structure",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-01T17:50:25.622Z"
+        }
+      ],
+      "userStory": {
+        "role": "project team member",
+        "action": "use Event Storming to discover domain events and bounded contexts",
+        "benefit": "we have better tag names and domain understanding before writing specifications"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Event Storming uses colored sticky notes to represent different concepts: Orange=Domain Events, Blue=Commands, Yellow=Aggregates, Pink=External Systems, Purple=Policies, Green=Read Models, Red=Hotspots/Questions",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:50:42.948Z"
+        },
+        {
+          "id": 1,
+          "text": "Event Storming happens BEFORE Example Mapping in the discovery workflow",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:50:44.464Z"
+        },
+        {
+          "id": 2,
+          "text": "Event Storming identifies domain events (things that happened in past tense) which can inform tag naming and bounded contexts",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:50:45.802Z"
+        },
+        {
+          "id": 3,
+          "text": "Current fspec workflow has no Event Storming support - discovery goes straight to Example Mapping",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:50:47.248Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Team runs Event Storming session, identifies domain events like 'UserRegistered', 'CheckpointCreated', 'WorkUnitStatusChanged', then creates tags based on these events and bounded contexts",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:51:03.855Z"
+        },
+        {
+          "id": 1,
+          "text": "AI runs Event Storming discovery command, asks questions about domain events, captures events in structured format, suggests tag names based on event clusters and bounded contexts",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:51:05.271Z"
+        }
+      ],
+      "nextExampleId": 2,
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: How should Event Storming data be stored? New section in foundation.json, separate event-storm.json file, or in work units themselves?",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:51:20.313Z",
+          "selected": false
+        },
+        {
+          "id": 1,
+          "text": "@human: Should there be fspec commands for Event Storming? E.g., fspec add-domain-event, fspec add-command, fspec add-aggregate, fspec suggest-tags-from-events?",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:51:21.657Z",
+          "selected": false
+        },
+        {
+          "id": 2,
+          "text": "@human: How should Event Storming integrate with Example Mapping? Should domain events from Event Storming be visible when doing Example Mapping for a story?",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:51:23.300Z",
+          "selected": false
+        },
+        {
+          "id": 3,
+          "text": "@human: Should Event Storming be part of foundation discovery (done once at project start) or per-epic/feature discovery (done multiple times)?",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:51:25.922Z",
+          "selected": false
+        },
+        {
+          "id": 4,
+          "text": "@human: What Event Storming elements should be tracked? Just domain events and commands, or also aggregates, policies, external systems, hotspots?",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:51:27.304Z",
+          "selected": false
+        }
+      ],
+      "nextQuestionId": 5,
+      "blocks": [
+        "QUERY-001"
+      ]
+    },
+    "QUERY-001": {
+      "id": "QUERY-001",
+      "title": "Tag graph visualization for DDD domain relationships",
+      "type": "story",
+      "status": "blocked",
+      "createdAt": "2025-11-01T17:53:09.076Z",
+      "updatedAt": "2025-11-01T17:55:17.191Z",
+      "description": "Create a tag graph that visualizes relationships between tags representing DDD domains, bounded contexts, and domain events discovered through Event Storming",
+      "children": [],
+      "userStory": {
+        "role": "developer or architect",
+        "action": "visualize domain relationships using a tag graph",
+        "benefit": "I can understand bounded contexts and domain boundaries discovered through Event Storming"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-01T17:54:17.397Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "Tag graph should visualize relationships between tags that represent DDD concepts (domains, bounded contexts, aggregates, events)",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:54:27.605Z"
+        },
+        {
+          "id": 1,
+          "text": "Graph depends on Event Storming data (EXMAP-004) to discover domain boundaries and relationships",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:54:28.213Z"
+        },
+        {
+          "id": 2,
+          "text": "Current fspec has export-dependencies command for work unit dependency graphs, but no tag relationship graph",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:54:28.812Z"
+        },
+        {
+          "id": 3,
+          "text": "Tag relationships could be inferred from: tags used together on features, domain events from Event Storming, bounded context boundaries, or explicit relationships",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:54:29.413Z"
+        },
+        {
+          "id": 4,
+          "text": "Graph output should support multiple formats: Mermaid (for markdown), DOT (for Graphviz), JSON (for tools)",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:54:31.102Z"
+        }
+      ],
+      "nextRuleId": 5,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Run 'fspec export-tag-graph mermaid', outputs graph showing Auth domain linked to User domain, Checkpoint domain linked to Git domain, etc.",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:54:47.314Z"
+        },
+        {
+          "id": 1,
+          "text": "Event Storming identifies domain events UserRegistered, CheckpointCreated, tag graph shows these events clustered by bounded context (User Management, Git Operations)",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:54:49.026Z"
+        },
+        {
+          "id": 2,
+          "text": "Tags AUTH, USER, LOGIN appear together on 5 feature files, graph shows strong relationship between these tags suggesting a bounded context",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:54:50.582Z"
+        }
+      ],
+      "nextExampleId": 3,
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: How should tag relationships be defined? Automatically inferred from co-occurrence, explicitly defined with commands, or derived from Event Storming data?",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:55:04.586Z",
+          "selected": false
+        },
+        {
+          "id": 1,
+          "text": "@human: What should nodes represent? Individual tags, or grouped bounded contexts/domains containing multiple tags?",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:55:06.230Z",
+          "selected": false
+        },
+        {
+          "id": 2,
+          "text": "@human: What should edges represent? Generic relationships, or typed relationships (contains, depends-on, communicates-with, etc.)?",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:55:07.638Z",
+          "selected": false
+        },
+        {
+          "id": 3,
+          "text": "@human: Should the command be fspec export-tag-graph or fspec query-tag-graph to match existing query commands?",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:55:09.200Z",
+          "selected": false
+        },
+        {
+          "id": 4,
+          "text": "@human: Should the graph be filterable by tag category, epic, or bounded context?",
+          "deleted": false,
+          "createdAt": "2025-11-01T17:55:10.791Z",
+          "selected": false
+        }
+      ],
+      "nextQuestionId": 5,
+      "blockedBy": [
+        "EXMAP-004"
+      ],
+      "blockedReason": "Blocked by EXMAP-004"
+    },
+    "INIT-015": {
+      "id": "INIT-015",
+      "title": "fspec init deletes config and templates instead of preserving them",
+      "type": "bug",
+      "status": "specifying",
+      "createdAt": "2025-11-01T17:59:31.251Z",
+      "updatedAt": "2025-11-01T18:01:11.805Z",
+      "description": "fspec init should: (1) retain existing config in spec/fspec-config.json and only change the agent, (2) NOT delete existing templates for agents already installed (previous requirement that needs removal)",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-01T18:00:19.510Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer switching between AI agents",
+        "action": "keep my existing config when switching agents",
+        "benefit": "I don't lose my tool configuration and templates each time I switch"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "writeAgentConfig in agentRuntimeConfig.ts (lines 65-77) creates new config object with only agent field, overwriting existing config",
+          "deleted": false,
+          "createdAt": "2025-11-01T18:00:33.813Z"
+        },
+        {
+          "id": 1,
+          "text": "removeOtherAgentFiles in init.ts (lines 193-223) deletes doc templates and slash commands for agents not being installed",
+          "deleted": false,
+          "createdAt": "2025-11-01T18:00:35.462Z"
+        },
+        {
+          "id": 2,
+          "text": "Config file may contain: agent, tools.test.command, tools.qualityCheck.commands, and other user settings",
+          "deleted": false,
+          "createdAt": "2025-11-01T18:00:37.035Z"
+        },
+        {
+          "id": 3,
+          "text": "Template deletion was a previous requirement that needs to be removed - users want to keep templates for all installed agents",
+          "deleted": false,
+          "createdAt": "2025-11-01T18:00:38.661Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User has config with tools configured, runs fspec init to switch from claude to cursor, config is overwritten with only {agent: cursor}, tool config lost",
+          "deleted": false,
+          "createdAt": "2025-11-01T18:00:52.738Z"
+        },
+        {
+          "id": 1,
+          "text": "User has both Claude and Cursor templates installed, switches to Aider, Claude and Cursor templates are deleted",
+          "deleted": false,
+          "createdAt": "2025-11-01T18:00:54.125Z"
+        },
+        {
+          "id": 2,
+          "text": "CORRECT: User has config {agent: claude, tools: {...}}, runs fspec init cursor, config becomes {agent: cursor, tools: {...}}, templates preserved",
+          "deleted": false,
+          "createdAt": "2025-11-01T18:00:55.784Z"
+        }
+      ],
+      "nextExampleId": 3,
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: Should writeAgentConfig merge with existing config or read-modify-write? Current behavior is complete overwrite.",
+          "deleted": false,
+          "createdAt": "2025-11-01T18:01:08.478Z",
+          "selected": false
+        },
+        {
+          "id": 1,
+          "text": "@human: Should removeOtherAgentFiles be removed entirely, or modified to only remove when explicitly requested?",
+          "deleted": false,
+          "createdAt": "2025-11-01T18:01:10.288Z",
+          "selected": false
+        },
+        {
+          "id": 2,
+          "text": "@human: Are there tests that expect template deletion behavior that will need to be updated or removed?",
+          "deleted": false,
+          "createdAt": "2025-11-01T18:01:11.805Z",
+          "selected": false
+        }
+      ],
+      "nextQuestionId": 3
+    },
+    "BOARD-020": {
+      "id": "BOARD-020",
+      "title": "System reminder for backward transitions to specifying with cleanup guidance",
+      "type": "story",
+      "status": "specifying",
+      "createdAt": "2025-11-01T18:04:36.021Z",
+      "updatedAt": "2025-11-01T18:05:52.910Z",
+      "description": "When a work unit moves backward from done/validating/implementing/testing to specifying, emit system-reminder to guide removal of outdated examples, scenarios, and tests to maintain consistency",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-01T18:04:43.437Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer changing specifications",
+        "action": "receive guidance for cleaning up outdated scenarios and tests",
+        "benefit": "I maintain consistency when requirements change and work moves backward"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Backward transitions from done/validating/implementing/testing to specifying indicate requirement changes that may invalidate existing work",
+          "deleted": false,
+          "createdAt": "2025-11-01T18:04:56.585Z"
+        },
+        {
+          "id": 1,
+          "text": "System-reminder should guide removal of: examples from work unit, scenarios from feature files, and associated test files",
+          "deleted": false,
+          "createdAt": "2025-11-01T18:04:58.126Z"
+        },
+        {
+          "id": 2,
+          "text": "Related work units that depend on deprecated scenarios may also need to move back to specifying for consistency",
+          "deleted": false,
+          "createdAt": "2025-11-01T18:04:59.678Z"
+        },
+        {
+          "id": 3,
+          "text": "Current update-work-unit-status allows backward transitions but provides no cleanup guidance",
+          "deleted": false,
+          "createdAt": "2025-11-01T18:05:01.204Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Work unit AUTH-001 in done state, requirements change, move back to specifying, system-reminder says: Remove examples from AUTH-001, delete scenarios from user-authentication.feature, remove test file user-authentication.test.ts",
+          "deleted": false,
+          "createdAt": "2025-11-01T18:05:18.611Z"
+        },
+        {
+          "id": 1,
+          "text": "Work unit API-005 in implementing state, design flaw discovered, move back to specifying, system-reminder says: Remove outdated examples, update feature file to remove deprecated scenarios, check for tests that need removal",
+          "deleted": false,
+          "createdAt": "2025-11-01T18:05:20.158Z"
+        },
+        {
+          "id": 2,
+          "text": "Work unit UI-010 depends on API-005 scenarios, API-005 moves back to specifying, system-reminder includes: Consider moving UI-010 back to specifying if it depends on deprecated API-005 scenarios",
+          "deleted": false,
+          "createdAt": "2025-11-01T18:05:21.893Z"
+        }
+      ],
+      "nextExampleId": 3,
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: Should the system-reminder list specific files to remove (scenarios, tests), or just provide general guidance?",
+          "deleted": false,
+          "createdAt": "2025-11-01T18:05:46.763Z",
+          "selected": false
+        },
+        {
+          "id": 1,
+          "text": "@human: Should fspec commands help with cleanup? E.g., fspec cleanup-work-unit AUTH-001 to remove linked scenarios/tests?",
+          "deleted": false,
+          "createdAt": "2025-11-01T18:05:48.102Z",
+          "selected": false
+        },
+        {
+          "id": 2,
+          "text": "@human: Should the reminder only appear when moving TO specifying, or also when moving to backlog?",
+          "deleted": false,
+          "createdAt": "2025-11-01T18:05:49.673Z",
+          "selected": false
+        },
+        {
+          "id": 3,
+          "text": "@human: Should the reminder automatically detect dependent work units and list them, or just provide general warning about checking dependencies?",
+          "deleted": false,
+          "createdAt": "2025-11-01T18:05:51.063Z",
+          "selected": false
+        },
+        {
+          "id": 4,
+          "text": "@human: What if no scenarios/tests exist yet (e.g., moving from testing back to specifying before tests written)? Skip reminder or show modified message?",
+          "deleted": false,
+          "createdAt": "2025-11-01T18:05:52.910Z",
+          "selected": false
+        }
+      ],
+      "nextQuestionId": 5
+    },
+    "CLI-013": {
+      "id": "CLI-013",
+      "title": "Validation script to check all commands are linked and help files exist",
+      "type": "task",
+      "status": "done",
+      "createdAt": "2025-11-01T18:08:13.702Z",
+      "updatedAt": "2025-11-01T18:38:23.364Z",
+      "description": "Create a script that validates all fspec commands have corresponding help files and are properly linked in the command registry, returning list of issues if any exist",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-01T18:08:21.169Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-01T18:16:07.948Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-01T18:26:56.434Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-01T18:38:23.364Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "Script should check that every registered command has a corresponding help file (e.g., command 'foo' has 'foo-help.ts')",
+          "deleted": false,
+          "createdAt": "2025-11-01T18:08:31.732Z"
+        },
+        {
+          "id": 1,
+          "text": "Script should check that every help file has a corresponding command registered in commander",
+          "deleted": false,
+          "createdAt": "2025-11-01T18:08:33.284Z"
+        },
+        {
+          "id": 2,
+          "text": "Script should verify help files export the correct function signature expected by the help system",
+          "deleted": false,
+          "createdAt": "2025-11-01T18:08:35.130Z"
+        },
+        {
+          "id": 3,
+          "text": "Script should return exit code 0 if all checks pass, non-zero if issues found",
+          "deleted": false,
+          "createdAt": "2025-11-01T18:08:36.817Z"
+        },
+        {
+          "id": 4,
+          "text": "Script should output clear list of issues with file paths and what needs fixing",
+          "deleted": false,
+          "createdAt": "2025-11-01T18:08:38.366Z"
+        },
+        {
+          "id": 5,
+          "text": "Script should be a standalone JavaScript file, not integrated into fspec CLI",
+          "deleted": false,
+          "createdAt": "2025-11-01T18:11:37.608Z"
+        },
+        {
+          "id": 6,
+          "text": "Script should check src/commands/*-help.ts files specifically",
+          "deleted": false,
+          "createdAt": "2025-11-01T18:11:39.126Z"
+        },
+        {
+          "id": 7,
+          "text": "Script should validate consistency in help content formatting across all help files",
+          "deleted": false,
+          "createdAt": "2025-11-01T18:11:40.709Z"
+        }
+      ],
+      "nextRuleId": 8,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Command 'add-diagram' exists but 'add-diagram-help.ts' is missing, script reports: Missing help file for command: add-diagram",
+          "deleted": false,
+          "createdAt": "2025-11-01T18:08:52.353Z"
+        },
+        {
+          "id": 1,
+          "text": "File 'delete-foo-help.ts' exists but 'delete-foo' command not registered, script reports: Orphaned help file: delete-foo-help.ts",
+          "deleted": false,
+          "createdAt": "2025-11-01T18:08:53.883Z"
+        },
+        {
+          "id": 2,
+          "text": "All commands properly linked with help files, script outputs: All commands validated successfully (checked 150 commands) and exits with code 0",
+          "deleted": false,
+          "createdAt": "2025-11-01T18:08:56.655Z"
+        },
+        {
+          "id": 3,
+          "text": "Help file has empty USAGE section, script reports: Inconsistent help format in add-rule-help.ts: USAGE section is empty",
+          "deleted": false,
+          "createdAt": "2025-11-01T18:11:42.102Z"
+        }
+      ],
+      "nextExampleId": 4,
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: Should this be a standalone script in scripts/ directory, or a new fspec command like fspec validate-commands?",
+          "deleted": false,
+          "createdAt": "2025-11-01T18:08:58.574Z",
+          "selected": true,
+          "answer": "Standalone JavaScript file in scripts/ directory, NOT a fspec command"
+        },
+        {
+          "id": 1,
+          "text": "@human: Should the script run automatically in CI/CD pipeline, or only manually when developing?",
+          "deleted": false,
+          "createdAt": "2025-11-01T18:09:00.664Z",
+          "selected": true,
+          "answer": "Can run both automatically in CI/CD and manually during development"
+        },
+        {
+          "id": 2,
+          "text": "@human: Should it also check that help content is non-empty and properly formatted?",
+          "deleted": false,
+          "createdAt": "2025-11-01T18:09:02.360Z",
+          "selected": true,
+          "answer": "Yes, validate that help content is non-empty and properly formatted with consistent structure"
+        }
+      ],
+      "nextQuestionId": 3,
+      "architectureNotes": [],
+      "nextNoteId": 0,
+      "updated": "2025-11-01T18:38:23.364Z"
+    },
+    "BUG-054": {
+      "id": "BUG-054",
+      "title": "answer-question command pushes strings instead of RuleItem objects causing data corruption",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-11-01T18:14:24.736Z",
+      "updatedAt": "2025-11-01T18:37:38.978Z",
+      "description": "answer-question with --add-to rule pushes raw string to rules array instead of RuleItem object with {id, text, deleted, createdAt}, causing display to show [undefined] undefined",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-01T18:31:20.620Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-01T18:34:04.678Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-01T18:36:22.085Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-01T18:37:31.738Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-01T18:37:38.978Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "answer-question command must create RuleItem objects with {id, text, deleted, createdAt} structure, NOT raw strings",
+          "deleted": false,
+          "createdAt": "2025-11-01T18:31:56.696Z"
+        },
+        {
+          "id": 1,
+          "text": "RuleItem id must use workUnit.nextRuleId++ for unique sequential IDs",
+          "deleted": false,
+          "createdAt": "2025-11-01T18:32:03.159Z"
+        },
+        {
+          "id": 2,
+          "text": "Same fix must apply to assumptions array when using --add-to assumption",
+          "deleted": false,
+          "createdAt": "2025-11-01T18:33:14.472Z"
+        }
+      ],
+      "nextRuleId": 3,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Running 'fspec answer-question CLI-013 0 --answer \"Yes\" --add-to rule' pushes string \"Yes\" instead of {id: N, text: \"Yes\", deleted: false, createdAt: ...}",
+          "deleted": false,
+          "createdAt": "2025-11-01T18:33:20.899Z"
+        },
+        {
+          "id": 1,
+          "text": "After fix, answer-question creates proper RuleItem: {id: 5, text: \"Script should be standalone\", deleted: false, createdAt: \"2025-11-01T18:11:37.608Z\"}",
+          "deleted": false,
+          "createdAt": "2025-11-01T18:33:27.435Z"
+        },
+        {
+          "id": 2,
+          "text": "show-work-unit displays corrupt data as '[undefined] undefined' when rules array contains raw strings",
+          "deleted": false,
+          "createdAt": "2025-11-01T18:33:33.173Z"
+        }
+      ],
+      "nextExampleId": 3,
+      "questions": [],
+      "architectureNotes": [],
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-01T18:37:38.978Z"
     }
   },
   "states": {
     "backlog": [
-      "RES-003",
-      "RES-004",
-      "RES-001",
-      "RES-005",
       "TECH-001",
+      "RES-001",
       "AGENT-001",
       "AGENT-002",
       "AGENT-003",
@@ -35063,21 +36174,32 @@
       "AGENT-015",
       "AGENT-016",
       "AGENT-017",
+      "RES-003",
+      "RES-004",
+      "RES-005",
       "FEAT-018",
       "CLEAN-002"
     ],
     "specifying": [
-      "RES-006",
       "EST-002",
-      "LANG-001"
+      "RES-006",
+      "LANG-001",
+      "BUG-051",
+      "BUG-052",
+      "BUG-053",
+      "TUI-011",
+      "EXMAP-004",
+      "INIT-015",
+      "BOARD-020"
     ],
     "testing": [],
     "implementing": [],
-    "validating": [
-      "IDX-001"
-    ],
+    "validating": [],
     "done": [
+      "CLI-013",
+      "BUG-054",
       "IDX-002",
+      "IDX-001",
       "MIG-001",
       "TUI-010",
       "TUI-009",
@@ -35340,7 +36462,11 @@
       "INIT-001",
       "EXMAP-001"
     ],
-    "blocked": []
+    "blocked": [
+      "GIT-009",
+      "GIT-010",
+      "QUERY-001"
+    ]
   },
   "migrationHistory": [
     {

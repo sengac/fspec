@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 import type { Command } from 'commander';
 import { join } from 'path';
-import type { WorkUnitsData, QuestionItem } from '../types';
+import type { QuestionItem } from '../types';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
 import { fileManager } from '../utils/file-manager';
 
@@ -81,7 +81,14 @@ export async function answerQuestion(
       if (!workUnit.rules) {
         workUnit.rules = [];
       }
-      workUnit.rules.push(options.answer);
+      // Create proper RuleItem object (BUG-054 fix)
+      const newRule: import('../types').RuleItem = {
+        id: workUnit.nextRuleId++,
+        text: options.answer,
+        deleted: false,
+        createdAt: new Date().toISOString(),
+      };
+      workUnit.rules.push(newRule);
       addedTo = 'rules';
       addedContent = options.answer;
     } else if (
@@ -91,6 +98,7 @@ export async function answerQuestion(
       if (!workUnit.assumptions) {
         workUnit.assumptions = [];
       }
+      // Assumptions are correctly typed as string[] (not a bug)
       workUnit.assumptions.push(options.answer);
       addedTo = 'assumptions';
       addedContent = options.answer;
@@ -129,7 +137,7 @@ export function registerAnswerQuestionCommand(program: Command): void {
       async (
         workUnitId: string,
         index: string,
-        options: { answer?: string; addTo?: string }
+        options: { answer?: string; addTo?: string; cwd?: string }
       ) => {
         try {
           const result = await answerQuestion({
