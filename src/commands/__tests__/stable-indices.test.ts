@@ -12,67 +12,91 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { vol } from 'memfs';
 import { join } from 'path';
-import type { WorkUnitsData } from '../../types';
+import type { WorkUnitsData, RuleItem } from '../../types';
+
+// Type definitions for memfs and proper-lockfile
+interface MemfsModule {
+  fs: {
+    promises: typeof import('fs/promises');
+    [key: string]: unknown;
+  };
+}
+
+interface LockfileModule {
+  lock: (file: string, options?: LockOptions) => Promise<() => Promise<void>>;
+  lockSync: (file: string, options?: LockOptions) => () => void;
+  unlock: (file: string, options?: LockOptions) => Promise<void>;
+  unlockSync: (file: string, options?: LockOptions) => void;
+  check: (file: string, options?: LockOptions) => Promise<boolean>;
+  checkSync: (file: string, options?: LockOptions) => boolean;
+}
+
+interface LockOptions {
+  fs?: unknown;
+  realpath?: boolean;
+  [key: string]: unknown;
+}
 
 // Mock fs modules with memfs
 vi.mock('fs/promises', async () => {
-  const memfs: any = await vi.importActual('memfs');
+  const memfs = await vi.importActual<MemfsModule>('memfs');
   return memfs.fs.promises;
 });
 
 vi.mock('fs', async () => {
-  const memfs: any = await vi.importActual('memfs');
+  const memfs = await vi.importActual<MemfsModule>('memfs');
   return memfs.fs;
 });
 
 // Mock proper-lockfile to use memfs
 vi.mock('proper-lockfile', async () => {
-  const actualLockfile = await vi.importActual('proper-lockfile');
-  const memfs: any = await vi.importActual('memfs');
+  const actualLockfile =
+    await vi.importActual<LockfileModule>('proper-lockfile');
+  const memfs = await vi.importActual<MemfsModule>('memfs');
 
   // Create wrapper that injects memfs.fs as the custom filesystem
-  const lock = (file: string, options: any = {}) => {
-    return (actualLockfile as any).lock(file, {
+  const lock = (file: string, options: LockOptions = {}) => {
+    return actualLockfile.lock(file, {
       ...options,
       fs: memfs.fs,
       realpath: false, // Don't use realpath since test files don't exist on real FS
     });
   };
 
-  const lockSync = (file: string, options: any = {}) => {
-    return (actualLockfile as any).lockSync(file, {
+  const lockSync = (file: string, options: LockOptions = {}) => {
+    return actualLockfile.lockSync(file, {
       ...options,
       fs: memfs.fs,
       realpath: false,
     });
   };
 
-  const unlock = (file: string, options: any = {}) => {
-    return (actualLockfile as any).unlock(file, {
+  const unlock = (file: string, options: LockOptions = {}) => {
+    return actualLockfile.unlock(file, {
       ...options,
       fs: memfs.fs,
       realpath: false,
     });
   };
 
-  const unlockSync = (file: string, options: any = {}) => {
-    return (actualLockfile as any).unlockSync(file, {
+  const unlockSync = (file: string, options: LockOptions = {}) => {
+    return actualLockfile.unlockSync(file, {
       ...options,
       fs: memfs.fs,
       realpath: false,
     });
   };
 
-  const check = (file: string, options: any = {}) => {
-    return (actualLockfile as any).check(file, {
+  const check = (file: string, options: LockOptions = {}) => {
+    return actualLockfile.check(file, {
       ...options,
       fs: memfs.fs,
       realpath: false,
     });
   };
 
-  const checkSync = (file: string, options: any = {}) => {
-    return (actualLockfile as any).checkSync(file, {
+  const checkSync = (file: string, options: LockOptions = {}) => {
+    return actualLockfile.checkSync(file, {
       ...options,
       fs: memfs.fs,
       realpath: false,
@@ -175,7 +199,7 @@ describe('Feature: Implement Stable Indices with Soft Delete', () => {
 
       // And all rules have deleted: false
       expect(workUnit.rules).toHaveLength(5);
-      workUnit.rules.forEach((rule: any) => {
+      workUnit.rules.forEach((rule: RuleItem) => {
         expect(rule.deleted).toBe(false);
       });
 
@@ -197,7 +221,7 @@ describe('Feature: Implement Stable Indices with Soft Delete', () => {
 
       // And rule indices should remain [0, 1, 2, 3, 4]
       expect(workUnitAfterFirst.rules).toHaveLength(5);
-      expect(workUnitAfterFirst.rules.map((r: any) => r.id)).toEqual([
+      expect(workUnitAfterFirst.rules.map((r: RuleItem) => r.id)).toEqual([
         0, 1, 2, 3, 4,
       ]);
 
@@ -216,7 +240,7 @@ describe('Feature: Implement Stable Indices with Soft Delete', () => {
 
       // And rule indices should remain [0, 1, 2, 3, 4]
       expect(workUnitAfterSecond.rules).toHaveLength(5);
-      expect(workUnitAfterSecond.rules.map((r: any) => r.id)).toEqual([
+      expect(workUnitAfterSecond.rules.map((r: RuleItem) => r.id)).toEqual([
         0, 1, 2, 3, 4,
       ]);
 
@@ -262,7 +286,7 @@ describe('Feature: Implement Stable Indices with Soft Delete', () => {
 
       // @step Then display should show rules:
       expect(workUnitDetails.rules).toBeDefined();
-      const activeRules = workUnitDetails.rules as any[];
+      const activeRules = workUnitDetails.rules as string[];
       expect(activeRules).toHaveLength(3);
       expect(activeRules[0]).toContain('[0]');
       expect(activeRules[0]).toContain('Rule A');
@@ -333,7 +357,7 @@ describe('Feature: Implement Stable Indices with Soft Delete', () => {
         workUnitId: 'AUTH-001',
         cwd,
       });
-      const activeRules = workUnitDetails.rules as any[];
+      const activeRules = workUnitDetails.rules as string[];
       expect(activeRules.some((r: string) => r.includes('[2]'))).toBe(true);
     });
   });
@@ -390,7 +414,7 @@ describe('Feature: Implement Stable Indices with Soft Delete', () => {
       expect(workUnitAfter.rules).toHaveLength(6);
 
       // And remaining 6 rules should be renumbered to IDs [0-5]
-      expect(workUnitAfter.rules.map((r: any) => r.id)).toEqual([
+      expect(workUnitAfter.rules.map((r: RuleItem) => r.id)).toEqual([
         0, 1, 2, 3, 4, 5,
       ]);
 
@@ -398,7 +422,7 @@ describe('Feature: Implement Stable Indices with Soft Delete', () => {
       expect(workUnitAfter.nextRuleId).toBe(6);
 
       // And rules should be sorted by createdAt timestamp
-      const createdAtTimes = workUnitAfter.rules.map((r: any) =>
+      const createdAtTimes = workUnitAfter.rules.map((r: RuleItem) =>
         new Date(r.createdAt).getTime()
       );
       const sortedTimes = [...createdAtTimes].sort((a, b) => a - b);
@@ -457,9 +481,9 @@ describe('Feature: Implement Stable Indices with Soft Delete', () => {
       const workUnitBefore = dataBefore.workUnits['AUTH-001'];
 
       expect(workUnitBefore.rules).toHaveLength(10);
-      expect(workUnitBefore.rules.filter((r: any) => r.deleted)).toHaveLength(
-        3
-      );
+      expect(
+        workUnitBefore.rules.filter((r: RuleItem) => r.deleted)
+      ).toHaveLength(3);
 
       // When I run "fspec update-work-unit-status AUTH-001 done"
       await updateWorkUnitStatus({
@@ -481,10 +505,10 @@ describe('Feature: Implement Stable Indices with Soft Delete', () => {
 
       // @step And deleted rules should be permanently removed
       expect(workUnitAfter.rules).toHaveLength(7);
-      expect(workUnitAfter.rules.every((r: any) => !r.deleted)).toBe(true);
+      expect(workUnitAfter.rules.every((r: RuleItem) => !r.deleted)).toBe(true);
 
       // @step And remaining rules should be renumbered sequentially
-      expect(workUnitAfter.rules.map((r: any) => r.id)).toEqual([
+      expect(workUnitAfter.rules.map((r: RuleItem) => r.id)).toEqual([
         0, 1, 2, 3, 4, 5, 6,
       ]);
 
@@ -508,7 +532,7 @@ describe('Feature: Implement Stable Indices with Soft Delete', () => {
             id: 'AUTH-001',
             title: 'Test',
             status: 'specifying',
-            rules: ['Rule A', 'Rule B'] as any,
+            rules: ['Rule A', 'Rule B'] as unknown as RuleItem[],
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           },
@@ -976,7 +1000,7 @@ describe('Feature: Implement Stable Indices with Soft Delete', () => {
       expect(workUnit.rules).toHaveLength(3);
 
       // And remaining rules should be renumbered sequentially
-      expect(workUnit.rules.map((r: any) => r.id)).toEqual([0, 1, 2]);
+      expect(workUnit.rules.map((r: RuleItem) => r.id)).toEqual([0, 1, 2]);
 
       // @step And output should show warning "⚠ Warning: Compacting during 'specifying' status permanently removes deleted items"
       // And output should show warning
@@ -1006,7 +1030,7 @@ describe('Feature: Implement Stable Indices with Soft Delete', () => {
                 deleted: false,
                 createdAt: '2025-01-31T10:00:00.000Z',
               },
-            ] as any,
+            ] as unknown as RuleItem[],
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           },
