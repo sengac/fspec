@@ -237,6 +237,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@type-system` | Work unit type system features for categorizing work (story, task, bug) |
 | `@typescript` | TypeScript-specific features and configuration |
 | `@ui-formatting` | UI formatting and layout features |
+| `@ui-rendering` | UI rendering and layout issues |
 | `@vitest` | Vitest testing framework related features |
 | `@zustand` | Zustand state management library |
 
@@ -571,7 +572,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-10-31T07:23:04.510Z_
+_Last updated: 2025-11-01T05:41:24.711Z_
 
 **Update Command**: `fspec tag-stats`
 
