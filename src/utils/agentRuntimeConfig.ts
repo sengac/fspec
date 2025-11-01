@@ -71,8 +71,21 @@ export function writeAgentConfig(cwd: string, agentId: string): void {
     mkdirSync(specDir, { recursive: true });
   }
 
+  // Read existing config if it exists (read-modify-write pattern)
+  let config: AgentRuntimeConfig & Record<string, any> = { agent: agentId };
+  if (existsSync(configPath)) {
+    try {
+      const existingConfigContent = readFileSync(configPath, 'utf-8');
+      const existingConfig = JSON.parse(existingConfigContent);
+      // Merge existing config with new agent field
+      config = { ...existingConfig, agent: agentId };
+    } catch (err) {
+      // If parsing fails, use new config
+      config = { agent: agentId };
+    }
+  }
+
   // Write config file
-  const config: AgentRuntimeConfig = { agent: agentId };
   writeFileSync(configPath, JSON.stringify(config, null, 2), 'utf-8');
 }
 

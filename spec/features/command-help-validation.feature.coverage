@@ -1,0 +1,36 @@
+{
+  "scenarios": [
+    {
+      "name": "Detect missing help file for registered command",
+      "testMappings": []
+    },
+    {
+      "name": "Detect orphaned help file with no command",
+      "testMappings": []
+    },
+    {
+      "name": "Validate all commands and help files are properly linked",
+      "testMappings": []
+    },
+    {
+      "name": "Detect help file with empty content",
+      "testMappings": []
+    },
+    {
+      "name": "Detect help file with inconsistent formatting",
+      "testMappings": []
+    },
+    {
+      "name": "Detect help file with incorrect export signature",
+      "testMappings": []
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 0,
+    "coveragePercent": 0,
+    "testFiles": [],
+    "implFiles": [],
+    "totalLinesCovered": 0
+  }
+}

@@ -113,9 +113,6 @@ export async function installAgents(
     throw new Error('Agent switch cancelled by user');
   }
 
-  // Remove old agent files if switching agents (idempotent behavior)
-  await removeOtherAgentFiles(cwd, agentIds);
-
   const filesInstalled: string[] = [];
 
   // Install each agent
@@ -185,41 +182,6 @@ async function showAgentSwitchPrompt(
     );
     void waitUntilExit();
   });
-}
-
-/**
- * Remove files for agents NOT in the installation list
- */
-async function removeOtherAgentFiles(
-  cwd: string,
-  keepAgentIds: string[]
-): Promise<void> {
-  const { AGENT_REGISTRY } = await import('../utils/agentRegistry');
-
-  for (const agent of AGENT_REGISTRY) {
-    // Skip agents we're installing
-    if (keepAgentIds.includes(agent.id)) {
-      continue;
-    }
-
-    // Remove full doc file
-    const docPath = join(cwd, 'spec', agent.docTemplate);
-    try {
-      await rm(docPath, { force: true });
-    } catch {
-      // File may not exist
-    }
-
-    // Remove slash command file (NOT the entire directory)
-    const filename =
-      agent.slashCommandFormat === 'toml' ? 'fspec.toml' : 'fspec.md';
-    const slashCmdFile = join(cwd, agent.slashCommandPath, filename);
-    try {
-      await rm(slashCmdFile, { force: true });
-    } catch {
-      // File may not exist
-    }
-  }
 }
 
 /**

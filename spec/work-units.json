@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-01T18:48:16.192Z"
+    "lastUpdated": "2025-11-01T19:06:04.999Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -35741,21 +35741,37 @@
       "id": "INIT-015",
       "title": "fspec init deletes config and templates instead of preserving them",
       "type": "bug",
-      "status": "specifying",
+      "status": "done",
       "createdAt": "2025-11-01T17:59:31.251Z",
-      "updatedAt": "2025-11-01T18:48:16.192Z",
+      "updatedAt": "2025-11-01T19:06:05.014Z",
       "description": "fspec init should: (1) retain existing config in spec/fspec-config.json and only change the agent, (2) NOT delete existing templates for agents already installed (previous requirement that needs removal)",
       "children": [],
       "stateHistory": [
         {
           "state": "specifying",
           "timestamp": "2025-11-01T18:00:19.510Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-01T18:58:16.049Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-01T19:00:05.841Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-01T19:01:47.478Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-01T19:06:05.014Z"
         }
       ],
       "userStory": {
-        "role": "developer using fspec init",
-        "action": "switch between agents without losing tool configuration",
-        "benefit": "my configured test and quality check commands persist across agent switches"
+        "role": "developer using fspec",
+        "action": "switch between AI agents using fspec init",
+        "benefit": "my existing configuration and templates are preserved"
       },
       "rules": [
         {
@@ -35831,7 +35847,11 @@
           "answer": "Yes, tests exist and need removal. Remove all tests, scenarios, and feature file content related to removeOtherAgentFiles and template deletion behavior. No backward compatibility preservation needed."
         }
       ],
-      "nextQuestionId": 3
+      "nextQuestionId": 3,
+      "estimate": 3,
+      "architectureNotes": [],
+      "nextNoteId": 0,
+      "updated": "2025-11-01T19:06:05.014Z"
     },
     "BOARD-020": {
       "id": "BOARD-020",
@@ -36192,13 +36212,13 @@
       "BUG-053",
       "TUI-011",
       "EXMAP-004",
-      "INIT-015",
       "BOARD-020"
     ],
     "testing": [],
     "implementing": [],
     "validating": [],
     "done": [
+      "INIT-015",
       "CLI-013",
       "BUG-054",
       "IDX-002",
