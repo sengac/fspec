@@ -1,0 +1,95 @@
+{
+  "scenarios": [
+    {
+      "name": "Preserve existing tool configuration when switching agents",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/init-config-preservation.test.ts",
+          "lines": "33-60",
+          "implMappings": [
+            {
+              "file": "src/utils/agentRuntimeConfig.ts",
+              "lines": [
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Preserve templates for all installed agents when switching agents",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/init-config-preservation.test.ts",
+          "lines": "62-105",
+          "implMappings": [
+            {
+              "file": "src/commands/init.ts",
+              "lines": [
+                111,
+                112,
+                113,
+                114
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Switch agents while preserving all existing configuration",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/init-config-preservation.test.ts",
+          "lines": "107-133",
+          "implMappings": [
+            {
+              "file": "src/utils/agentRuntimeConfig.ts",
+              "lines": [
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/commands/__tests__/init-config-preservation.test.ts"
+    ],
+    "implFiles": [
+      "src/utils/agentRuntimeConfig.ts",
+      "src/commands/init.ts"
+    ],
+    "totalLinesCovered": 129
+  }
+}
