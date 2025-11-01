@@ -108,6 +108,53 @@ fspec remove-tag-from-feature spec/features/example-login.feature @wip
 fspec add-tag-to-feature spec/features/example-login.feature @done
 \`\`\`
 
+### Stable Indices and Soft-Delete Pattern
+
+**Items within work units use stable IDs that never change:**
+
+Work units contain items (business rules, examples, questions, architecture notes) that are assigned **stable indices** when created. These IDs:
+- Auto-increment from 0 (nextRuleId, nextExampleId, nextQuestionId, nextArchitectureNoteId)
+- Never shift when other items are removed
+- Persist even after soft-delete
+
+**Soft-Delete Pattern:**
+- Items are marked \`deleted: true\` instead of being removed from arrays
+- \`deletedAt\` timestamp records when item was deleted
+- IDs remain stable across all operations
+- Use \`show-deleted\` to view soft-deleted items
+
+**Restore Commands:**
+\`\`\`bash
+# View deleted items with their stable IDs
+fspec show-deleted AUTH-001
+
+# Restore individual items by stable ID
+fspec restore-rule AUTH-001 2
+fspec restore-example AUTH-001 5
+fspec restore-question AUTH-001 3
+fspec restore-architecture-note AUTH-001 1
+
+# Bulk restore with --ids flag
+fspec restore-rule AUTH-001 --ids 2,5,7
+fspec restore-example AUTH-001 --ids 1,3
+\`\`\`
+
+**Compaction:**
+\`\`\`bash
+# Permanently remove soft-deleted items (destructive!)
+fspec compact-work-unit AUTH-001
+
+# Force compact during non-done status (use with caution)
+fspec compact-work-unit AUTH-001 --force
+\`\`\`
+
+**Auto-Compact Behavior:**
+- When moving work unit to \`done\` status, auto-compact triggers automatically
+- Permanently removes all soft-deleted items
+- Renumbers remaining items sequentially (0, 1, 2, ...)
+- Resets nextId counters to match remaining count
+- Cannot be undone - use \`show-deleted\` before moving to done!
+
 ### If Blocked
 
 \`\`\`bash

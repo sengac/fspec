@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-01T05:55:40.158Z"
+    "lastUpdated": "2025-11-01T07:27:00.872Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -34448,9 +34448,9 @@
       "id": "IDX-001",
       "title": "Implement Stable Indices with Soft Delete",
       "type": "story",
-      "status": "implementing",
+      "status": "done",
       "createdAt": "2025-10-31T07:02:20.816Z",
-      "updatedAt": "2025-11-01T06:03:35.299Z",
+      "updatedAt": "2025-11-01T07:27:00.887Z",
       "description": "Convert string-based collections (rules, examples, questions, architectureNotes) to object-based collections with immutable IDs and soft-delete flags. Prevents data loss during sequential AI removal operations. Uses migration system from MIG-001.",
       "children": [],
       "dependsOn": [
@@ -34476,6 +34476,50 @@
         {
           "state": "implementing",
           "timestamp": "2025-11-01T06:03:35.299Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-01T07:04:43.000Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-01T07:05:15.979Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-01T07:07:58.727Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-01T07:08:33.202Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-01T07:09:16.866Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-01T07:14:22.873Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-01T07:15:25.578Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-01T07:16:33.083Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-01T07:20:30.604Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-01T07:23:29.437Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-01T07:27:00.887Z"
         }
       ],
       "rules": [
@@ -34874,7 +34918,9 @@
       "nextNoteId": 12,
       "attachments": [
         "spec/attachments/IDX-001/IDX-001-migration-plan.md"
-      ]
+      ],
+      "nextArchitectureNoteId": 12,
+      "updated": "2025-11-01T07:27:00.887Z"
     }
   },
   "states": {
@@ -34910,10 +34956,10 @@
       "LANG-001"
     ],
     "testing": [],
-    "implementing": [
+    "implementing": [],
+    "validating": [
       "IDX-001"
     ],
-    "validating": [],
     "done": [
       "MIG-001",
       "TUI-010",
