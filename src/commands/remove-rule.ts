@@ -15,6 +15,7 @@ interface RemoveRuleResult {
   success: boolean;
   removedRule: string;
   remainingCount: number;
+  message?: string; // For idempotent operations
 }
 
 export async function removeRule(
@@ -45,15 +46,28 @@ export async function removeRule(
     throw new Error(`Work unit ${options.workUnitId} has no rules`);
   }
 
-  // Validate index
-  if (options.index < 0 || options.index >= workUnit.rules.length) {
-    throw new Error(
-      `Index ${options.index} out of range. Valid indices: 0-${workUnit.rules.length - 1}`
-    );
+  // Find rule by ID (index is now treated as ID for stable indices)
+  const rule = workUnit.rules.find(r => r.id === options.index);
+
+  if (!rule) {
+    throw new Error(`Rule with ID ${options.index} not found`);
   }
 
-  // Remove rule
-  const [removedRule] = workUnit.rules.splice(options.index, 1);
+  // If already deleted, return idempotent success
+  if (rule.deleted) {
+    return {
+      success: true,
+      removedRule: rule.text,
+      remainingCount: workUnit.rules.filter(r => !r.deleted).length,
+      message: `Item ID ${options.index} already deleted`,
+    };
+  }
+
+  // Soft-delete: set deleted flag and timestamp
+  rule.deleted = true;
+  rule.deletedAt = new Date().toISOString();
+
+  const removedRule = rule.text;
 
   // Update timestamp
   workUnit.updatedAt = new Date().toISOString();
@@ -66,7 +80,7 @@ export async function removeRule(
   return {
     success: true,
     removedRule,
-    remainingCount: workUnit.rules.length,
+    remainingCount: workUnit.rules.filter(r => !r.deleted).length,
   };
 }
 

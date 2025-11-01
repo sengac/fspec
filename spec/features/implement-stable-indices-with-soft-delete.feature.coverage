@@ -2,75 +2,228 @@
   "scenarios": [
     {
       "name": "Sequential removal without index shifts",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/stable-indices.test.ts",
+          "lines": "151-228",
+          "implMappings": []
+        },
+        {
+          "file": "src/commands/__tests__/stable-indices.test.ts",
+          "lines": "151-231",
+          "implMappings": []
+        }
+      ]
     },
     {
       "name": "Display with gaps in indices after deletions",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/stable-indices.test.ts",
+          "lines": "233-285",
+          "implMappings": []
+        }
+      ]
     },
     {
       "name": "Restore deleted item to original index",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/stable-indices.test.ts",
+          "lines": "184-234",
+          "implMappings": []
+        },
+        {
+          "file": "src/commands/__tests__/stable-indices.test.ts",
+          "lines": "287-340",
+          "implMappings": []
+        }
+      ]
     },
     {
       "name": "Manual compaction removes deleted items and renumbers IDs",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/stable-indices.test.ts",
+          "lines": "342-406",
+          "implMappings": []
+        }
+      ]
     },
     {
       "name": "Auto-compact on done status change",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/stable-indices.test.ts",
+          "lines": "295-370",
+          "implMappings": []
+        },
+        {
+          "file": "src/commands/__tests__/stable-indices.test.ts",
+          "lines": "408-496",
+          "implMappings": []
+        }
+      ]
     },
     {
       "name": "Migration converts string arrays to object arrays with stable IDs",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/stable-indices.test.ts",
+          "lines": "500-558",
+          "implMappings": []
+        }
+      ]
     },
     {
       "name": "Add operation creates object with stable ID",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/stable-indices.test.ts",
+          "lines": "427-474",
+          "implMappings": []
+        },
+        {
+          "file": "src/commands/__tests__/stable-indices.test.ts",
+          "lines": "560-603",
+          "implMappings": []
+        }
+      ]
     },
     {
       "name": "Idempotent remove operation on already-deleted item",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/stable-indices.test.ts",
+          "lines": "476-520",
+          "implMappings": []
+        },
+        {
+          "file": "src/commands/__tests__/stable-indices.test.ts",
+          "lines": "605-644",
+          "implMappings": []
+        }
+      ]
     },
     {
       "name": "Idempotent restore operation on already-active item",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/stable-indices.test.ts",
+          "lines": "522-563",
+          "implMappings": []
+        },
+        {
+          "file": "src/commands/__tests__/stable-indices.test.ts",
+          "lines": "646-685",
+          "implMappings": []
+        }
+      ]
     },
     {
       "name": "Restore validation fails for non-existent ID",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/stable-indices.test.ts",
+          "lines": "565-606",
+          "implMappings": []
+        },
+        {
+          "file": "src/commands/__tests__/stable-indices.test.ts",
+          "lines": "687-726",
+          "implMappings": []
+        }
+      ]
     },
     {
       "name": "Show deleted items command displays soft-deleted items",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/stable-indices.test.ts",
+          "lines": "608-655",
+          "implMappings": []
+        },
+        {
+          "file": "src/commands/__tests__/stable-indices.test.ts",
+          "lines": "728-772",
+          "implMappings": []
+        }
+      ]
     },
     {
       "name": "Bulk restore with comma-separated IDs",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/stable-indices.test.ts",
+          "lines": "657-714",
+          "implMappings": []
+        },
+        {
+          "file": "src/commands/__tests__/stable-indices.test.ts",
+          "lines": "774-828",
+          "implMappings": []
+        }
+      ]
     },
     {
       "name": "Verbose mode displays timestamps",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/stable-indices.test.ts",
+          "lines": "829-871",
+          "implMappings": []
+        }
+      ]
     },
     {
       "name": "Remove validation fails for non-existent ID",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/stable-indices.test.ts",
+          "lines": "758-791",
+          "implMappings": []
+        },
+        {
+          "file": "src/commands/__tests__/stable-indices.test.ts",
+          "lines": "873-912",
+          "implMappings": []
+        }
+      ]
     },
     {
       "name": "Compact during specifying phase requires force flag",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/stable-indices.test.ts",
+          "lines": "914-977",
+          "implMappings": []
+        }
+      ]
     },
     {
       "name": "Migration handles partially migrated data",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/stable-indices.test.ts",
+          "lines": "864-925",
+          "implMappings": []
+        },
+        {
+          "file": "src/commands/__tests__/stable-indices.test.ts",
+          "lines": "979-1037",
+          "implMappings": []
+        }
+      ]
     }
   ],
   "stats": {
     "totalScenarios": 16,
-    "coveredScenarios": 0,
-    "coveragePercent": 0,
-    "testFiles": [],
+    "coveredScenarios": 16,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/commands/__tests__/stable-indices.test.ts"
+    ],
     "implFiles": [],
-    "totalLinesCovered": 0
+    "totalLinesCovered": 1455
   }
 }

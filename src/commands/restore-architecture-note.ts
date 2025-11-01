@@ -1,26 +1,26 @@
-import { join } from 'path';
 import chalk from 'chalk';
 import type { Command } from 'commander';
+import { join } from 'path';
 import type { WorkUnitsData } from '../types';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
 import { fileManager } from '../utils/file-manager';
 
-export interface RemoveArchitectureNoteOptions {
+export interface RestoreArchitectureNoteOptions {
   workUnitId: string;
   index: number;
   cwd?: string;
 }
 
-export interface RemoveArchitectureNoteResult {
+export interface RestoreArchitectureNoteResult {
   success: boolean;
-  removedNote: string;
-  remainingCount: number;
-  message?: string;
+  restoredNote: string;
+  activeCount: number;
+  message?: string; // For idempotent operations
 }
 
-export async function removeArchitectureNote(
-  options: RemoveArchitectureNoteOptions
-): Promise<RemoveArchitectureNoteResult> {
+export async function restoreArchitectureNote(
+  options: RestoreArchitectureNoteOptions
+): Promise<RestoreArchitectureNoteResult> {
   const cwd = options.cwd || process.cwd();
   const workUnitsPath = join(cwd, 'spec', 'work-units.json');
 
@@ -48,21 +48,21 @@ export async function removeArchitectureNote(
     throw new Error(`Architecture note with ID ${options.index} not found`);
   }
 
-  // If already deleted, return idempotent success
-  if (note.deleted) {
+  // If already active, return idempotent success
+  if (!note.deleted) {
     return {
       success: true,
-      removedNote: note.text,
-      remainingCount: workUnit.architectureNotes.filter(n => !n.deleted).length,
-      message: `Item ID ${options.index} already deleted`,
+      restoredNote: note.text,
+      activeCount: workUnit.architectureNotes.filter(n => !n.deleted).length,
+      message: `Item ID ${options.index} already active`,
     };
   }
 
-  // Soft-delete: set deleted flag and timestamp
-  note.deleted = true;
-  note.deletedAt = new Date().toISOString();
+  // Restore: clear deleted flag and timestamp
+  note.deleted = false;
+  delete note.deletedAt;
 
-  const removedNote = note.text;
+  const restoredNote = note.text;
 
   // Update timestamp
   workUnit.updatedAt = new Date().toISOString();
@@ -79,21 +79,21 @@ export async function removeArchitectureNote(
 
   return {
     success: true,
-    removedNote,
-    remainingCount: workUnit.architectureNotes.filter(n => !n.deleted).length,
+    restoredNote,
+    activeCount: workUnit.architectureNotes.filter(n => !n.deleted).length,
   };
 }
 
-export function registerRemoveArchitectureNoteCommand(program: Command): void {
+export function registerRestoreArchitectureNoteCommand(program: Command): void {
   program
-    .command('remove-architecture-note')
-    .description('Remove architecture note from work unit by index')
+    .command('restore-architecture-note')
+    .description('Restore soft-deleted architecture note by ID')
     .argument('<workUnitId>', 'Work unit ID')
-    .argument('<index>', 'Index of note to remove (0-based)', parseInt)
+    .argument('<index>', 'ID of note to restore (0-based)', parseInt)
     .action(async (workUnitId: string, index: number) => {
       try {
-        const result = await removeArchitectureNote({ workUnitId, index });
-        console.log(chalk.green('✓ Architecture note removed successfully'));
+        const result = await restoreArchitectureNote({ workUnitId, index });
+        console.log(chalk.green('✓ Architecture note restored successfully'));
         if (result.message) {
           console.log(chalk.dim(`  ${result.message}`));
         }

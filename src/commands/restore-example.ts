@@ -5,22 +5,22 @@ import type { WorkUnitsData } from '../types';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
 import { fileManager } from '../utils/file-manager';
 
-interface RemoveExampleOptions {
+interface RestoreExampleOptions {
   workUnitId: string;
   index: number;
   cwd?: string;
 }
 
-interface RemoveExampleResult {
+interface RestoreExampleResult {
   success: boolean;
-  removedExample: string;
-  remainingCount: number;
+  restoredExample: string;
+  activeCount: number;
   message?: string; // For idempotent operations
 }
 
-export async function removeExample(
-  options: RemoveExampleOptions
-): Promise<RemoveExampleResult> {
+export async function restoreExample(
+  options: RestoreExampleOptions
+): Promise<RestoreExampleResult> {
   const cwd = options.cwd || process.cwd();
   const workUnitsFile = join(cwd, 'spec/work-units.json');
 
@@ -37,7 +37,7 @@ export async function removeExample(
   // Validate work unit is in specifying state
   if (workUnit.status !== 'specifying') {
     throw new Error(
-      `Can only remove examples during discovery/specification phase. ${options.workUnitId} is in '${workUnit.status}' state.`
+      `Can only restore examples during discovery/specification phase. ${options.workUnitId} is in '${workUnit.status}' state.`
     );
   }
 
@@ -53,21 +53,21 @@ export async function removeExample(
     throw new Error(`Example with ID ${options.index} not found`);
   }
 
-  // If already deleted, return idempotent success
-  if (example.deleted) {
+  // If already active, return idempotent success
+  if (!example.deleted) {
     return {
       success: true,
-      removedExample: example.text,
-      remainingCount: workUnit.examples.filter(e => !e.deleted).length,
-      message: `Item ID ${options.index} already deleted`,
+      restoredExample: example.text,
+      activeCount: workUnit.examples.filter(e => !e.deleted).length,
+      message: `Item ID ${options.index} already active`,
     };
   }
 
-  // Soft-delete: set deleted flag and timestamp
-  example.deleted = true;
-  example.deletedAt = new Date().toISOString();
+  // Restore: clear deleted flag and timestamp
+  example.deleted = false;
+  delete example.deletedAt;
 
-  const removedExample = example.text;
+  const restoredExample = example.text;
 
   // Update timestamp
   workUnit.updatedAt = new Date().toISOString();
@@ -79,28 +79,31 @@ export async function removeExample(
 
   return {
     success: true,
-    removedExample,
-    remainingCount: workUnit.examples.filter(e => !e.deleted).length,
+    restoredExample,
+    activeCount: workUnit.examples.filter(e => !e.deleted).length,
   };
 }
 
-export function registerRemoveExampleCommand(program: Command): void {
+export function registerRestoreExampleCommand(program: Command): void {
   program
-    .command('remove-example')
-    .description('Remove an example from a work unit by index')
+    .command('restore-example')
+    .description('Restore a soft-deleted example by ID')
     .argument('<workUnitId>', 'Work unit ID')
-    .argument('<index>', 'Example index (0-based)')
+    .argument('<index>', 'Example ID (0-based)')
     .action(async (workUnitId: string, index: string) => {
       try {
-        const result = await removeExample({
+        const result = await restoreExample({
           workUnitId,
           index: parseInt(index, 10),
         });
         console.log(
-          chalk.green(`✓ Removed example: "${result.removedExample}"`)
+          chalk.green(`✓ Restored example: "${result.restoredExample}"`)
         );
+        if (result.message) {
+          console.log(chalk.dim(`  ${result.message}`));
+        }
       } catch (error: any) {
-        console.error(chalk.red('✗ Failed to remove example:'), error.message);
+        console.error(chalk.red('✗ Failed to restore example:'), error.message);
         process.exit(1);
       }
     });

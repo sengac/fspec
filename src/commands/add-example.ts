@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 import type { Command } from 'commander';
 import { join } from 'path';
-import type { WorkUnitsData } from '../types';
+import type { WorkUnitsData, ExampleItem } from '../types';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
 import { fileManager } from '../utils/file-manager';
 
@@ -44,8 +44,21 @@ export async function addExample(
     workUnit.examples = [];
   }
 
+  // Initialize nextExampleId if undefined (backward compatibility)
+  if (workUnit.nextExampleId === undefined) {
+    workUnit.nextExampleId = 0;
+  }
+
+  // Create ExampleItem object with stable ID
+  const newExample: ExampleItem = {
+    id: workUnit.nextExampleId++,
+    text: options.example,
+    deleted: false,
+    createdAt: new Date().toISOString(),
+  };
+
   // Add example
-  workUnit.examples.push(options.example);
+  workUnit.examples.push(newExample);
 
   // Update timestamp
   workUnit.updatedAt = new Date().toISOString();

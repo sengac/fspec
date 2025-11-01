@@ -4,6 +4,7 @@
 
 import { Migration } from './types';
 import { compareVersions } from './utils';
+import migration001 from './migrations/001-stable-indices';
 
 /**
  * Default version for work-units.json files without a version field
@@ -15,15 +16,7 @@ export const DEFAULT_VERSION = '0.6.0';
  * Add new migrations to this array in ascending version order
  */
 const migrations: Migration[] = [
-  // Future migrations will be registered here
-  // Example:
-  // {
-  //   version: '0.7.0',
-  //   name: 'stable-indices',
-  //   description: 'Convert string arrays to objects with stable IDs',
-  //   up: async (data) => { ... },
-  //   down: async (data) => { ... },
-  // },
+  migration001, // v0.7.0: Stable indices with soft delete
 ];
 
 /**

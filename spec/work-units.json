@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-10-31T07:21:37.065Z"
+    "lastUpdated": "2025-11-01T05:55:40.158Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -616,52 +616,6 @@
       ],
       "nextRuleId": 5,
       "nextExampleId": 6,
-      "nextQuestionId": 0,
-      "nextNoteId": 0
-    },
-    "TEST-001": {
-      "id": "TEST-001",
-      "title": "Test Stable Indices",
-      "type": "task",
-      "status": "specifying",
-      "rules": [
-        {
-          "id": 0,
-          "text": "First rule",
-          "deleted": false,
-          "createdAt": "2025-10-31T20:00:00.000Z"
-        },
-        {
-          "id": 1,
-          "text": "Second rule",
-          "deleted": true,
-          "createdAt": "2025-10-31T20:00:00.000Z",
-          "deletedAt": "2025-10-31T10:55:37.036Z"
-        },
-        {
-          "id": 2,
-          "text": "Third rule",
-          "deleted": false,
-          "createdAt": "2025-10-31T20:00:00.000Z"
-        },
-        {
-          "id": 3,
-          "text": "Fourth rule",
-          "deleted": true,
-          "createdAt": "2025-10-31T20:00:00.000Z",
-          "deletedAt": "2025-10-31T10:55:54.798Z"
-        },
-        {
-          "id": 4,
-          "text": "Fifth rule added with stable ID",
-          "deleted": false,
-          "createdAt": "2025-10-31T10:56:44.448Z"
-        }
-      ],
-      "nextRuleId": 5,
-      "createdAt": "2025-10-31T20:00:00.000Z",
-      "updatedAt": "2025-10-31T10:56:44.448Z",
-      "nextExampleId": 0,
       "nextQuestionId": 0,
       "nextNoteId": 0
     },
@@ -34494,9 +34448,9 @@
       "id": "IDX-001",
       "title": "Implement Stable Indices with Soft Delete",
       "type": "story",
-      "status": "testing",
+      "status": "implementing",
       "createdAt": "2025-10-31T07:02:20.816Z",
-      "updatedAt": "2025-10-31T22:31:59.206Z",
+      "updatedAt": "2025-11-01T06:03:35.299Z",
       "description": "Convert string-based collections (rules, examples, questions, architectureNotes) to object-based collections with immutable IDs and soft-delete flags. Prevents data loss during sequential AI removal operations. Uses migration system from MIG-001.",
       "children": [],
       "dependsOn": [
@@ -34518,6 +34472,10 @@
         {
           "state": "testing",
           "timestamp": "2025-10-31T22:31:59.206Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-01T06:03:35.299Z"
         }
       ],
       "rules": [
@@ -34913,7 +34871,10 @@
       "nextRuleId": 32,
       "nextExampleId": 10,
       "nextQuestionId": 6,
-      "nextNoteId": 12
+      "nextNoteId": 12,
+      "attachments": [
+        "spec/attachments/IDX-001/IDX-001-migration-plan.md"
+      ]
     }
   },
   "states": {
@@ -34946,17 +34907,15 @@
     "specifying": [
       "RES-006",
       "EST-002",
-      "LANG-001",
-      "TEST-001"
+      "LANG-001"
     ],
-    "testing": [
+    "testing": [],
+    "implementing": [
       "IDX-001"
     ],
-    "implementing": [],
     "validating": [],
     "done": [
       "MIG-001",
-      "TEST-001",
       "TUI-010",
       "TUI-009",
       "TUI-008",
