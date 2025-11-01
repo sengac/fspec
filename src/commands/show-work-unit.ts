@@ -17,6 +17,7 @@ import {
 interface ShowWorkUnitOptions {
   workUnitId: string;
   output?: 'json' | 'text';
+  verbose?: boolean;
   cwd?: string;
 }
 
@@ -49,6 +50,7 @@ interface WorkUnitDetails {
   assumptions?: string[];
   architectureNotes?: string[];
   attachments?: string[];
+  deletedRules?: string[]; // For verbose mode
   createdAt: string;
   updatedAt: string;
   linkedFeatures?: LinkedFeature[];
@@ -124,23 +126,86 @@ export async function showWorkUnit(
     // If features directory doesn't exist, just return empty linked features
   }
 
-  // Filter questions to show only unselected ones, and extract text
+  // Filter out deleted items and map to display strings with IDs
+
+  // Rules: filter out deleted, show IDs (and timestamps if verbose)
+  let activeRules: string[] | undefined;
+  let deletedRules: string[] | undefined;
+
+  if (workUnit.rules && workUnit.rules.length > 0) {
+    activeRules = workUnit.rules
+      .filter(r => !r.deleted)
+      .map(r => {
+        let display = `[${r.id}] ${r.text}`;
+        if (options.verbose && r.createdAt) {
+          display += ` (createdAt: ${r.createdAt})`;
+        }
+        return display;
+      });
+
+    if (activeRules.length === 0) {
+      activeRules = undefined;
+    }
+
+    // For verbose mode, also include deleted rules with deletedAt timestamps
+    if (options.verbose) {
+      deletedRules = workUnit.rules
+        .filter(r => r.deleted)
+        .map(r => {
+          let display = `[${r.id}] ${r.text}`;
+          if (r.deletedAt) {
+            display += ` (deletedAt: ${r.deletedAt})`;
+          }
+          return display;
+        });
+
+      if (deletedRules.length === 0) {
+        deletedRules = undefined;
+      }
+    }
+  }
+
+  // Examples: filter out deleted, show IDs
+  let activeExamples: string[] | undefined;
+  if (workUnit.examples && workUnit.examples.length > 0) {
+    activeExamples = workUnit.examples
+      .filter(e => !e.deleted)
+      .map(e => `[${e.id}] ${e.text}`);
+
+    if (activeExamples.length === 0) {
+      activeExamples = undefined;
+    }
+  }
+
+  // Questions: filter out deleted AND unselected, show IDs
   let unselectedQuestions: string[] | undefined;
   if (workUnit.questions && workUnit.questions.length > 0) {
     unselectedQuestions = workUnit.questions
-      .map((q, index) => {
+      .map(q => {
         if (typeof q === 'string') {
           throw new Error(
             'Invalid question format. Questions must be QuestionItem objects.'
           );
         }
-        return { index, ...q };
+        return q;
       })
-      .filter(q => !q.selected)
-      .map(q => `[${q.index}] ${q.text}`);
+      .filter(q => !q.deleted && !q.selected)
+      .map(q => `[${q.id}] ${q.text}`);
 
     if (unselectedQuestions.length === 0) {
       unselectedQuestions = undefined;
+    }
+  }
+
+  // Architecture Notes: filter out deleted, show IDs
+  let activeArchitectureNotes: string[] | undefined;
+  if (workUnit.architectureNotes && workUnit.architectureNotes.length > 0) {
+    activeArchitectureNotes = workUnit.architectureNotes
+      .filter(n => !n.deleted)
+      .map(n => `[${n.id}] ${n.text}`);
+
+    if (activeArchitectureNotes.length === 0) {
+      activeArchitectureNotes = undefined;
     }
   }
 
@@ -160,8 +225,9 @@ export async function showWorkUnit(
 
   // Check for empty Example Mapping in specifying phase
   if (workUnit.status === 'specifying') {
-    const hasRules = workUnit.rules && workUnit.rules.length > 0;
-    const hasExamples = workUnit.examples && workUnit.examples.length > 0;
+    const hasRules = workUnit.rules && workUnit.rules.some(r => !r.deleted);
+    const hasExamples =
+      workUnit.examples && workUnit.examples.some(e => !e.deleted);
     const exampleMappingReminder = getEmptyExampleMappingReminder(
       options.workUnitId,
       hasRules,
@@ -203,6 +269,17 @@ export async function showWorkUnit(
     systemReminders.push(largeEstimateReminder);
   }
 
+  // Count active and deleted items (rules)
+  if (workUnit.rules && workUnit.rules.length > 0) {
+    const activeCount = workUnit.rules.filter(r => !r.deleted).length;
+    const deletedCount = workUnit.rules.filter(r => r.deleted).length;
+    if (deletedCount > 0) {
+      systemReminders.push(
+        `${activeCount} active items (${deletedCount} deleted)`
+      );
+    }
+  }
+
   return {
     id: workUnit.id,
     title: workUnit.title,
@@ -217,12 +294,13 @@ export async function showWorkUnit(
     ...(workUnit.blockedBy && { blockedBy: workUnit.blockedBy }),
     ...(workUnit.dependsOn && { dependsOn: workUnit.dependsOn }),
     ...(workUnit.relatesTo && { relatesTo: workUnit.relatesTo }),
-    ...(workUnit.rules && { rules: workUnit.rules }),
-    ...(workUnit.examples && { examples: workUnit.examples }),
+    ...(activeRules && { rules: activeRules }),
+    ...(deletedRules && { deletedRules }),
+    ...(activeExamples && { examples: activeExamples }),
     ...(unselectedQuestions && { questions: unselectedQuestions }),
     ...(workUnit.assumptions && { assumptions: workUnit.assumptions }),
-    ...(workUnit.architectureNotes && {
-      architectureNotes: workUnit.architectureNotes,
+    ...(activeArchitectureNotes && {
+      architectureNotes: activeArchitectureNotes,
     }),
     ...(workUnit.attachments && { attachments: workUnit.attachments }),
     ...(workUnit.virtualHooks && { virtualHooks: workUnit.virtualHooks }),
@@ -281,15 +359,15 @@ export async function showWorkUnitCommand(
 
       if (result.rules && result.rules.length > 0) {
         console.log(chalk.cyan('\nRules:'));
-        result.rules.forEach((rule, idx) => {
-          console.log(`  ${idx + 1}. ${rule}`);
+        result.rules.forEach(rule => {
+          console.log(`  ${rule}`);
         });
       }
 
       if (result.examples && result.examples.length > 0) {
         console.log(chalk.cyan('\nExamples:'));
-        result.examples.forEach((example, idx) => {
-          console.log(`  ${idx + 1}. ${example}`);
+        result.examples.forEach(example => {
+          console.log(`  ${example}`);
         });
       }
 
@@ -309,8 +387,8 @@ export async function showWorkUnitCommand(
 
       if (result.architectureNotes && result.architectureNotes.length > 0) {
         console.log(chalk.cyan('\nArchitecture Notes:'));
-        result.architectureNotes.forEach((note, idx) => {
-          console.log(`  ${idx}. ${note}`);
+        result.architectureNotes.forEach(note => {
+          console.log(`  ${note}`);
         });
       }
 

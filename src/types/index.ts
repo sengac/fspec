@@ -1,6 +1,23 @@
+// Base interface for items with stable IDs and soft-delete support
+export interface ItemWithId {
+  id: number; // Auto-incrementing, never reused
+  text: string; // The actual content
+  deleted: boolean; // Soft-delete flag
+  createdAt: string; // ISO 8601 timestamp
+  deletedAt?: string; // ISO 8601 timestamp (only when deleted=true)
+}
+
+// Rule Item Interface
+export type RuleItem = ItemWithId;
+
+// Example Item Interface
+export type ExampleItem = ItemWithId;
+
+// Architecture Note Item Interface
+export type ArchitectureNoteItem = ItemWithId;
+
 // Question Item Interface
-export interface QuestionItem {
-  text: string;
+export interface QuestionItem extends ItemWithId {
   selected: boolean;
   answer?: string;
 }
@@ -47,12 +64,17 @@ export interface WorkUnit {
   dependsOn?: string[];
   relatesTo?: string[];
   blockedReason?: string;
-  rules?: string[];
-  examples?: string[];
+  rules?: RuleItem[];
+  examples?: ExampleItem[];
   questions?: QuestionItem[];
   assumptions?: string[];
-  architectureNotes?: string[];
+  architectureNotes?: ArchitectureNoteItem[];
   attachments?: string[]; // Relative paths to files in spec/attachments/<work-unit-id>/
+  // ID counters for auto-increment (backward compatible with v0.6.0)
+  nextRuleId?: number;
+  nextExampleId?: number;
+  nextQuestionId?: number;
+  nextNoteId?: number;
   userStory?: UserStory;
   virtualHooks?: VirtualHook[]; // Work unit-scoped hooks for dynamic validation
   stateHistory?: Array<{

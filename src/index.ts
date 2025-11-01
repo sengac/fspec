@@ -115,6 +115,12 @@ import { registerRemoveDependencyCommand } from './commands/remove-dependency';
 import { registerRemoveExampleCommand } from './commands/remove-example';
 import { registerRemoveQuestionCommand } from './commands/remove-question';
 import { registerRemoveRuleCommand } from './commands/remove-rule';
+import { registerRestoreRuleCommand } from './commands/restore-rule';
+import { registerRestoreExampleCommand } from './commands/restore-example';
+import { registerRestoreQuestionCommand } from './commands/restore-question';
+import { registerRestoreArchitectureNoteCommand } from './commands/restore-architecture-note';
+import { registerCompactWorkUnitCommand } from './commands/compact-work-unit';
+import { registerShowDeletedCommand } from './commands/show-deleted';
 import { registerRemoveTagFromFeatureCommand } from './commands/remove-tag-from-feature';
 import { registerRemoveTagFromScenarioCommand } from './commands/remove-tag-from-scenario';
 import { registerRepairWorkUnitsCommand } from './commands/repair-work-units';
@@ -151,7 +157,7 @@ import { registerValidateWorkUnitsCommand } from './commands/validate-work-units
 import { registerWorkflowAutomationCommand } from './commands/workflow-automation';
 
 // Help functions
-import { displayCustomHelpWithNote, handleHelpCommand } from './help';
+import { handleHelpCommand } from './help';
 import { handleCustomHelp } from './utils/help-interceptor';
 
 // TUI components
@@ -279,6 +285,12 @@ registerRemoveDependencyCommand(program);
 registerRemoveExampleCommand(program);
 registerRemoveQuestionCommand(program);
 registerRemoveRuleCommand(program);
+registerRestoreRuleCommand(program);
+registerRestoreExampleCommand(program);
+registerRestoreQuestionCommand(program);
+registerRestoreArchitectureNoteCommand(program);
+registerCompactWorkUnitCommand(program);
+registerShowDeletedCommand(program);
 registerRemoveTagFromFeatureCommand(program);
 registerRemoveTagFromScenarioCommand(program);
 registerRepairWorkUnitsCommand(program);

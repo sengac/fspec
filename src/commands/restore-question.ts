@@ -5,22 +5,22 @@ import type { WorkUnitsData } from '../types';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
 import { fileManager } from '../utils/file-manager';
 
-interface RemoveQuestionOptions {
+interface RestoreQuestionOptions {
   workUnitId: string;
   index: number;
   cwd?: string;
 }
 
-interface RemoveQuestionResult {
+interface RestoreQuestionResult {
   success: boolean;
-  removedQuestion: string;
-  remainingCount: number;
+  restoredQuestion: string;
+  activeCount: number;
   message?: string; // For idempotent operations
 }
 
-export async function removeQuestion(
-  options: RemoveQuestionOptions
-): Promise<RemoveQuestionResult> {
+export async function restoreQuestion(
+  options: RestoreQuestionOptions
+): Promise<RestoreQuestionResult> {
   const cwd = options.cwd || process.cwd();
   const workUnitsFile = join(cwd, 'spec/work-units.json');
 
@@ -37,7 +37,7 @@ export async function removeQuestion(
   // Validate work unit is in specifying state
   if (workUnit.status !== 'specifying') {
     throw new Error(
-      `Can only remove questions during discovery/specification phase. ${options.workUnitId} is in '${workUnit.status}' state.`
+      `Can only restore questions during discovery/specification phase. ${options.workUnitId} is in '${workUnit.status}' state.`
     );
   }
 
@@ -53,21 +53,21 @@ export async function removeQuestion(
     throw new Error(`Question with ID ${options.index} not found`);
   }
 
-  // If already deleted, return idempotent success
-  if (question.deleted) {
+  // If already active, return idempotent success
+  if (!question.deleted) {
     return {
       success: true,
-      removedQuestion: question.text,
-      remainingCount: workUnit.questions.filter(q => !q.deleted).length,
-      message: `Item ID ${options.index} already deleted`,
+      restoredQuestion: question.text,
+      activeCount: workUnit.questions.filter(q => !q.deleted).length,
+      message: `Item ID ${options.index} already active`,
     };
   }
 
-  // Soft-delete: set deleted flag and timestamp
-  question.deleted = true;
-  question.deletedAt = new Date().toISOString();
+  // Restore: clear deleted flag and timestamp
+  question.deleted = false;
+  delete question.deletedAt;
 
-  const removedQuestion = question.text;
+  const restoredQuestion = question.text;
 
   // Update timestamp
   workUnit.updatedAt = new Date().toISOString();
@@ -79,28 +79,34 @@ export async function removeQuestion(
 
   return {
     success: true,
-    removedQuestion,
-    remainingCount: workUnit.questions.filter(q => !q.deleted).length,
+    restoredQuestion,
+    activeCount: workUnit.questions.filter(q => !q.deleted).length,
   };
 }
 
-export function registerRemoveQuestionCommand(program: Command): void {
+export function registerRestoreQuestionCommand(program: Command): void {
   program
-    .command('remove-question')
-    .description('Remove a question from a work unit by index')
+    .command('restore-question')
+    .description('Restore a soft-deleted question by ID')
     .argument('<workUnitId>', 'Work unit ID')
-    .argument('<index>', 'Question index (0-based)')
+    .argument('<index>', 'Question ID (0-based)')
     .action(async (workUnitId: string, index: string) => {
       try {
-        const result = await removeQuestion({
+        const result = await restoreQuestion({
           workUnitId,
           index: parseInt(index, 10),
         });
         console.log(
-          chalk.green(`✓ Removed question: "${result.removedQuestion}"`)
+          chalk.green(`✓ Restored question: "${result.restoredQuestion}"`)
         );
+        if (result.message) {
+          console.log(chalk.dim(`  ${result.message}`));
+        }
       } catch (error: any) {
-        console.error(chalk.red('✗ Failed to remove question:'), error.message);
+        console.error(
+          chalk.red('✗ Failed to restore question:'),
+          error.message
+        );
         process.exit(1);
       }
     });

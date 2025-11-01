@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 import type { Command } from 'commander';
 import { join } from 'path';
-import type { WorkUnitsData } from '../types';
+import type { WorkUnitsData, RuleItem } from '../types';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
 import { fileManager } from '../utils/file-manager';
 
@@ -42,8 +42,21 @@ export async function addRule(options: AddRuleOptions): Promise<AddRuleResult> {
     workUnit.rules = [];
   }
 
+  // Initialize nextRuleId if undefined (backward compatibility)
+  if (workUnit.nextRuleId === undefined) {
+    workUnit.nextRuleId = 0;
+  }
+
+  // Create RuleItem object with stable ID
+  const newRule: RuleItem = {
+    id: workUnit.nextRuleId++,
+    text: options.rule,
+    deleted: false,
+    createdAt: new Date().toISOString(),
+  };
+
   // Add rule
-  workUnit.rules.push(options.rule);
+  workUnit.rules.push(newRule);
 
   // Update timestamp
   workUnit.updatedAt = new Date().toISOString();

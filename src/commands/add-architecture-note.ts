@@ -1,7 +1,7 @@
 import { join } from 'path';
 import chalk from 'chalk';
 import type { Command } from 'commander';
-import type { WorkUnitsData } from '../types';
+import type { WorkUnitsData, ArchitectureNoteItem } from '../types';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
 import { fileManager } from '../utils/file-manager';
 
@@ -32,8 +32,21 @@ export async function addArchitectureNote(
     workUnit.architectureNotes = [];
   }
 
+  // Initialize nextNoteId if undefined (backward compatibility)
+  if (workUnit.nextNoteId === undefined) {
+    workUnit.nextNoteId = 0;
+  }
+
+  // Create ArchitectureNoteItem object with stable ID
+  const newNote: ArchitectureNoteItem = {
+    id: workUnit.nextNoteId++,
+    text: options.note,
+    deleted: false,
+    createdAt: new Date().toISOString(),
+  };
+
   // Add the architecture note
-  workUnit.architectureNotes.push(options.note);
+  workUnit.architectureNotes.push(newNote);
 
   // Update timestamp
   workUnit.updatedAt = new Date().toISOString();

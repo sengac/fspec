@@ -24,6 +24,7 @@ import {
   insertWorkUnitSorted,
   compareByUpdatedDescending,
 } from '../utils/states-array';
+import { compactWorkUnit } from './compact-work-unit';
 
 type WorkUnitStatus =
   | 'backlog'
@@ -83,7 +84,7 @@ export async function updateWorkUnitStatus(
   const warnings: string[] = [];
 
   // Read work units
-  const workUnitsData: WorkUnitsData = await ensureWorkUnitsFile(cwd);
+  let workUnitsData: WorkUnitsData = await ensureWorkUnitsFile(cwd);
   const workUnitsFile = join(cwd, 'spec/work-units.json');
 
   // Check if work unit exists
@@ -91,7 +92,7 @@ export async function updateWorkUnitStatus(
     throw new Error(`Work unit '${options.workUnitId}' does not exist`);
   }
 
-  const workUnit = workUnitsData.workUnits[options.workUnitId];
+  let workUnit = workUnitsData.workUnits[options.workUnitId];
   const currentStatus = workUnit.status;
   const newStatus = options.status;
   const workUnitType: WorkUnitType = workUnit.type || 'story'; // Default to 'story' for backward compatibility
@@ -447,6 +448,23 @@ export async function updateWorkUnitStatus(
 
   // Update workUnitsData reference to use sorted result
   workUnitsData.states = updatedWorkUnitsData.states;
+
+  // Auto-compact when moving to done status
+  if (newStatus === 'done') {
+    await compactWorkUnit({
+      workUnitId: options.workUnitId,
+      force: true,
+      cwd,
+    });
+
+    // Re-read work units data after compaction (compactWorkUnit saves to disk)
+    workUnitsData = await ensureWorkUnitsFile(cwd);
+    workUnit = workUnitsData.workUnits[options.workUnitId];
+
+    if (!workUnit) {
+      throw new Error(`Work unit '${options.workUnitId}' does not exist`);
+    }
+  }
 
   // Update work unit status
   workUnit.status = newStatus;

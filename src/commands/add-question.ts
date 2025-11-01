@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 import type { Command } from 'commander';
 import { join } from 'path';
-import type { WorkUnitsData } from '../types';
+import type { WorkUnitsData, QuestionItem } from '../types';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
 import { fileManager } from '../utils/file-manager';
 
@@ -45,8 +45,22 @@ export async function addQuestion(
     workUnit.questions = [];
   }
 
-  // Add question as QuestionItem object with stable indices
-  workUnit.questions.push({ text: options.question, selected: false });
+  // Initialize nextQuestionId if undefined (backward compatibility)
+  if (workUnit.nextQuestionId === undefined) {
+    workUnit.nextQuestionId = 0;
+  }
+
+  // Create QuestionItem object with stable ID
+  const newQuestion: QuestionItem = {
+    id: workUnit.nextQuestionId++,
+    text: options.question,
+    deleted: false,
+    createdAt: new Date().toISOString(),
+    selected: false,
+  };
+
+  // Add question
+  workUnit.questions.push(newQuestion);
 
   // Extract mentioned people (@mentions)
   const mentionedPeople = (options.question.match(/@\w+/g) || []).map(mention =>
