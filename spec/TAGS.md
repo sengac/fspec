@@ -181,6 +181,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@config` | Configuration loading and management features |
 | `@cucumber-parser` | Cucumber Parser Integration |
 | `@cucumber-style` | Cucumber-style step definition and matching patterns |
+| `@data-model` | Features related to data models, schemas, and data structure transformations |
 | `@discovery` | BDD discovery technique used before writing Gherkin scenarios |
 | `@email` | Email-related functionality |
 | `@error-handling` | Error Handling |
@@ -570,7 +571,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-10-30T05:10:34.416Z_
+_Last updated: 2025-10-31T07:23:04.510Z_
 
 **Update Command**: `fspec tag-stats`
 

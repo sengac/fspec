@@ -184,6 +184,16 @@
       "prefix": "TUI",
       "description": "Terminal User Interface components and interactions",
       "createdAt": "2025-10-29T11:24:52.532Z"
+    },
+    "MIG": {
+      "prefix": "MIG",
+      "description": "Data migration and schema versioning",
+      "createdAt": "2025-10-31T07:01:33.715Z"
+    },
+    "IDX": {
+      "prefix": "IDX",
+      "description": "Stable indices and soft-delete implementation",
+      "createdAt": "2025-10-31T07:01:34.195Z"
     }
   }
 }

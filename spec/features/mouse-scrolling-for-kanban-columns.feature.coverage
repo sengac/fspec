@@ -1,0 +1,40 @@
+{
+  "scenarios": [
+    {
+      "name": "Scroll down in focused column with mouse wheel",
+      "testMappings": []
+    },
+    {
+      "name": "Scroll up in focused column with mouse wheel",
+      "testMappings": []
+    },
+    {
+      "name": "Cannot scroll above top of column",
+      "testMappings": []
+    },
+    {
+      "name": "Cannot scroll below bottom of column",
+      "testMappings": []
+    },
+    {
+      "name": "Per-column scroll offsets are independent",
+      "testMappings": []
+    },
+    {
+      "name": "Scroll indicators show when scrolled",
+      "testMappings": []
+    },
+    {
+      "name": "Mouse and keyboard scrolling work together",
+      "testMappings": []
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 0,
+    "coveragePercent": 0,
+    "testFiles": [],
+    "implFiles": [],
+    "totalLinesCovered": 0
+  }
+}

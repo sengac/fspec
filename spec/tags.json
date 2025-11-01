@@ -626,6 +626,10 @@
           "description": "Cucumber-style step definition and matching patterns"
         },
         {
+          "name": "@data-model",
+          "description": "Features related to data models, schemas, and data structure transformations"
+        },
+        {
           "name": "@discovery",
           "description": "BDD discovery technique used before writing Gherkin scenarios"
         },
@@ -1314,7 +1318,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-10-30T05:10:34.416Z",
+    "lastUpdated": "2025-10-31T07:23:04.510Z",
     "phaseStats": [
       {
         "phase": "Phase 1",
