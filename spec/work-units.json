@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-01T18:38:23.348Z"
+    "lastUpdated": "2025-11-01T18:48:16.192Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -35743,7 +35743,7 @@
       "type": "bug",
       "status": "specifying",
       "createdAt": "2025-11-01T17:59:31.251Z",
-      "updatedAt": "2025-11-01T18:01:11.805Z",
+      "updatedAt": "2025-11-01T18:48:16.192Z",
       "description": "fspec init should: (1) retain existing config in spec/fspec-config.json and only change the agent, (2) NOT delete existing templates for agents already installed (previous requirement that needs removal)",
       "children": [],
       "stateHistory": [
@@ -35753,9 +35753,9 @@
         }
       ],
       "userStory": {
-        "role": "developer switching between AI agents",
-        "action": "keep my existing config when switching agents",
-        "benefit": "I don't lose my tool configuration and templates each time I switch"
+        "role": "developer using fspec init",
+        "action": "switch between agents without losing tool configuration",
+        "benefit": "my configured test and quality check commands persist across agent switches"
       },
       "rules": [
         {
@@ -35811,21 +35811,24 @@
           "text": "@human: Should writeAgentConfig merge with existing config or read-modify-write? Current behavior is complete overwrite.",
           "deleted": false,
           "createdAt": "2025-11-01T18:01:08.478Z",
-          "selected": false
+          "selected": true,
+          "answer": "Read-modify-write: Read existing config, update only the 'agent' field, write back all other fields unchanged. This matches the existing pattern in configure-tools.ts and preserves user tool configurations."
         },
         {
           "id": 1,
           "text": "@human: Should removeOtherAgentFiles be removed entirely, or modified to only remove when explicitly requested?",
           "deleted": false,
           "createdAt": "2025-11-01T18:01:10.288Z",
-          "selected": false
+          "selected": true,
+          "answer": "Remove the function entirely (never delete templates). Users should be able to have multiple agent templates installed simultaneously (e.g., both Claude and Cursor). No backward compatibility needed - breaking change is acceptable."
         },
         {
           "id": 2,
           "text": "@human: Are there tests that expect template deletion behavior that will need to be updated or removed?",
           "deleted": false,
           "createdAt": "2025-11-01T18:01:11.805Z",
-          "selected": false
+          "selected": true,
+          "answer": "Yes, tests exist and need removal. Remove all tests, scenarios, and feature file content related to removeOtherAgentFiles and template deletion behavior. No backward compatibility preservation needed."
         }
       ],
       "nextQuestionId": 3
