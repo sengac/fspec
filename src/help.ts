@@ -802,6 +802,86 @@ function displayWorkHelp(): void {
   console.log('    Examples:');
   console.log('      fspec cleanup-checkpoints AUTH-001 --keep-last 5');
   console.log('');
+
+  console.log(chalk.bold('STABLE INDICES & SOFT-DELETE'));
+  console.log(
+    '  Items (rules, examples, questions, architecture notes) use stable IDs that never shift.'
+  );
+  console.log(
+    '  When removed, items are marked deleted (soft-delete) instead of being erased.'
+  );
+  console.log(
+    '  Stable indices are shown in display output (e.g., [0], [1], [2]).'
+  );
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec show-deleted <work-unit-id>'));
+  console.log(
+    '    Description: Display all soft-deleted items with IDs and timestamps'
+  );
+  console.log('    Examples:');
+  console.log('      fspec show-deleted AUTH-001');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec restore-rule <work-unit-id> <index>'));
+  console.log('    Description: Restore soft-deleted rule by stable ID');
+  console.log('    Options:');
+  console.log(
+    '      --ids <ids>                      Restore multiple rules (comma-separated)'
+  );
+  console.log('    Examples:');
+  console.log('      fspec restore-rule AUTH-001 2');
+  console.log('      fspec restore-rule AUTH-001 --ids 2,5,7');
+  console.log('');
+  console.log(
+    '  ' + chalk.cyan('fspec restore-example <work-unit-id> <index>')
+  );
+  console.log('    Description: Restore soft-deleted example by stable ID');
+  console.log('    Options:');
+  console.log(
+    '      --ids <ids>                      Restore multiple examples (comma-separated)'
+  );
+  console.log('    Examples:');
+  console.log('      fspec restore-example AUTH-001 2');
+  console.log('      fspec restore-example AUTH-001 --ids 2,5,7');
+  console.log('');
+  console.log(
+    '  ' + chalk.cyan('fspec restore-question <work-unit-id> <index>')
+  );
+  console.log('    Description: Restore soft-deleted question by stable ID');
+  console.log('    Options:');
+  console.log(
+    '      --ids <ids>                      Restore multiple questions (comma-separated)'
+  );
+  console.log('    Examples:');
+  console.log('      fspec restore-question AUTH-001 2');
+  console.log('      fspec restore-question AUTH-001 --ids 2,5,7');
+  console.log('');
+  console.log(
+    '  ' + chalk.cyan('fspec restore-architecture-note <work-unit-id> <index>')
+  );
+  console.log(
+    '    Description: Restore soft-deleted architecture note by stable ID'
+  );
+  console.log('    Options:');
+  console.log(
+    '      --ids <ids>                      Restore multiple notes (comma-separated)'
+  );
+  console.log('    Examples:');
+  console.log('      fspec restore-architecture-note AUTH-001 2');
+  console.log('      fspec restore-architecture-note AUTH-001 --ids 2,5,7');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec compact-work-unit <work-unit-id>'));
+  console.log(
+    '    Description: Permanently remove soft-deleted items (destructive!)'
+  );
+  console.log('    Options:');
+  console.log(
+    '      --force                          Skip confirmation, compact during non-done status'
+  );
+  console.log('    Examples:');
+  console.log('      fspec compact-work-unit AUTH-001');
+  console.log('      fspec compact-work-unit AUTH-001 --force');
+  console.log('    Note: Auto-compact triggers when moving to "done" status');
+  console.log('');
 }
 
 // ===== DISCOVERY HELP =====
