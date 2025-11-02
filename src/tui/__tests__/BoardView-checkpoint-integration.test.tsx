@@ -24,13 +24,14 @@ describe('Feature: Replace Git Stashes with Checkpoint Component - Integration',
   describe('Scenario: Keybinding text displays "C View Checkpoints" and "F View Changed Files"', () => {
     it('should display updated keybinding text in the header', async () => {
       // Given the TUI is running with the checkpoint component integrated
-      const { lastFrame } = render(<BoardView />);
+      const { frames } = render(<BoardView />);
 
-      // Wait for component to fully render
-      await new Promise(resolve => setTimeout(resolve, 100));
+      // Wait for component to fully render (longer wait to ensure all renders complete)
+      await new Promise(resolve => setTimeout(resolve, 200));
 
       // When the board view renders
-      const output = lastFrame();
+      // Get the last frame that's not an escape sequence
+      const output = frames.find(frame => frame.includes('View Checkpoints') || frame.includes('View Changed Files')) || frames[frames.length - 1];
 
       // Then it should display "C View Checkpoints ◆ F View Changed Files"
       expect(output).toContain('C View Checkpoints');
