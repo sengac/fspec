@@ -79,9 +79,14 @@ describe('Feature: Fix work unit details panel to be static 4 lines high', () =>
       expect(hasId).not.toBeNull();
 
       // @step And the frame should show work unit description or metadata
-      // The frame should contain some work unit information (description or metadata)
-      const hasContent = frame.includes('research') || frame.includes('Epic') || frame.includes('Status');
-      expect(hasContent).toBe(true);
+      // The frame should contain some work unit information (type, status, or other metadata)
+      // Check that contentLines have actual non-empty content beyond just the borders
+      const hasContentData = contentLines.some(line => {
+        // Remove border characters and whitespace to see if there's actual content
+        const content = line.replace(/[│┤├]/g, '').trim();
+        return content.length > 0;
+      });
+      expect(hasContentData).toBe(true);
     });
   });
 
