@@ -92,6 +92,7 @@ export interface WorkUnitsData {
     version: string;
     lastUpdated: string;
   };
+  prefixCounters?: Record<string, number>;
   workUnits: Record<string, WorkUnit>;
   states: Record<string, string[]>;
 }

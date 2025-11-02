@@ -1,0 +1,158 @@
+{
+  "scenarios": [
+    {
+      "name": "Work unit ID preserved after deletion",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/work-unit-id-generation-prefix-counters.test.ts",
+          "lines": "71-135",
+          "implMappings": [
+            {
+              "file": "src/commands/create-bug.ts",
+              "lines": [
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203
+              ]
+            },
+            {
+              "file": "src/commands/create-story.ts",
+              "lines": [
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202
+              ]
+            },
+            {
+              "file": "src/commands/create-task.ts",
+              "lines": [
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Multiple prefixes maintain separate high water marks",
+      "testMappings": []
+    },
+    {
+      "name": "Migration calculates high water marks from existing IDs",
+      "testMappings": []
+    },
+    {
+      "name": "Backward compatibility with existing projects",
+      "testMappings": []
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 1,
+    "coveragePercent": 25,
+    "testFiles": [
+      "src/commands/__tests__/work-unit-id-generation-prefix-counters.test.ts"
+    ],
+    "implFiles": [
+      "src/commands/create-bug.ts",
+      "src/commands/create-story.ts",
+      "src/commands/create-task.ts"
+    ],
+    "totalLinesCovered": 167
+  }
+}

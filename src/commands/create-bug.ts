@@ -116,6 +116,13 @@ export async function createBug(
       }
       data.workUnits[options.parent].children.push(nextId);
     }
+
+    // Update prefixCounters (persist the high water mark)
+    if (!data.prefixCounters) {
+      data.prefixCounters = {};
+    }
+    const nextNumber = parseInt(nextId.split('-')[1]);
+    data.prefixCounters[options.prefix] = nextNumber;
   });
 
   // Update epic if provided
@@ -167,13 +174,32 @@ DO NOT mention this reminder to the user explicitly.
 }
 
 function generateNextId(workUnitsData: WorkUnitsData, prefix: string): string {
+  // Initialize prefixCounters if missing (backward compatibility)
+  if (!workUnitsData.prefixCounters) {
+    workUnitsData.prefixCounters = {};
+  }
+
+  // Get high water mark from prefixCounters (if exists)
+  const storedHighWaterMark = workUnitsData.prefixCounters[prefix] || 0;
+
+  // Calculate high water mark from existing IDs (for backward compat)
   const existingIds = Object.keys(workUnitsData.workUnits)
     .filter(id => id.startsWith(`${prefix}-`))
     .map(id => parseInt(id.split('-')[1]))
     .filter(num => !isNaN(num));
 
-  const nextNumber =
-    existingIds.length === 0 ? 1 : Math.max(...existingIds) + 1;
+  const calculatedHighWaterMark =
+    existingIds.length === 0 ? 0 : Math.max(...existingIds);
+
+  // Use the maximum of both (handles migration case)
+  const highWaterMark = Math.max(storedHighWaterMark, calculatedHighWaterMark);
+
+  // Next number is always high water mark + 1
+  const nextNumber = highWaterMark + 1;
+
+  // Update the high water mark in prefixCounters
+  workUnitsData.prefixCounters[prefix] = nextNumber;
+
   return `${prefix}-${String(nextNumber).padStart(3, '0')}`;
 }
 
