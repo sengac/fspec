@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-02T05:48:59.222Z"
+    "lastUpdated": "2025-11-02T09:54:32.685Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -36486,6 +36486,114 @@
       "updatedAt": "2025-11-02T06:29:11.069Z",
       "description": "When adding an attachment to a work unit, files appear in both spec/attachments/ (root) and spec/attachments/[WORK-UNIT-ID]/ directories. Expected behavior: attachments should only be stored in the work unit specific directory (spec/attachments/[WORK-UNIT-ID]/).",
       "children": []
+    },
+    "BUG-056": {
+      "id": "BUG-056",
+      "title": "Work unit IDs reused after deletion violating immutability principle",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-11-02T08:41:34.297Z",
+      "updatedAt": "2025-11-02T09:54:32.702Z",
+      "children": [],
+      "attachments": [
+        "spec/attachments/BUG-056/bug-056-ultrathink-analysis.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-02T09:29:35.027Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-02T09:33:21.875Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-02T09:39:40.042Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-02T09:53:47.815Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-02T09:54:32.702Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using fspec",
+        "action": "create work units with guaranteed unique IDs",
+        "benefit": "IDs are never reused and git history remains unambiguous"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Work unit IDs must never be reused after deletion",
+          "deleted": false,
+          "createdAt": "2025-11-02T09:29:51.863Z"
+        },
+        {
+          "id": 1,
+          "text": "Each prefix maintains a high water mark counter that never decreases",
+          "deleted": false,
+          "createdAt": "2025-11-02T09:29:53.391Z"
+        },
+        {
+          "id": 2,
+          "text": "High water mark persists in work-units.json as prefixCounters field",
+          "deleted": false,
+          "createdAt": "2025-11-02T09:29:54.893Z"
+        },
+        {
+          "id": 3,
+          "text": "Migration calculates initial high water marks from existing IDs for backward compatibility",
+          "deleted": false,
+          "createdAt": "2025-11-02T09:29:56.216Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Create BUG-001, BUG-002, BUG-003. Delete BUG-003. Next bug gets ID BUG-004 (not BUG-003)",
+          "deleted": false,
+          "createdAt": "2025-11-02T09:30:08.108Z"
+        },
+        {
+          "id": 1,
+          "text": "Create AUTH-001, DASH-005, TASK-010. High water marks: BUG=0, AUTH=1, DASH=5, TASK=10",
+          "deleted": false,
+          "createdAt": "2025-11-02T09:30:09.738Z"
+        },
+        {
+          "id": 2,
+          "text": "Load work-units.json without prefixCounters field. Migration scans existing IDs and sets counters automatically",
+          "deleted": false,
+          "createdAt": "2025-11-02T09:30:11.368Z"
+        },
+        {
+          "id": 3,
+          "text": "Existing project with BUG-054 as highest bug. Migration sets prefixCounters.BUG=54. Next bug gets BUG-055",
+          "deleted": false,
+          "createdAt": "2025-11-02T09:30:12.837Z"
+        }
+      ],
+      "nextExampleId": 4,
+      "questions": [],
+      "architectureNotes": [],
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-02T09:54:32.702Z"
+    },
+    "BUG-057": {
+      "id": "BUG-057",
+      "title": "New bug",
+      "type": "bug",
+      "status": "backlog",
+      "createdAt": "2025-11-02T09:37:06.809Z",
+      "updatedAt": "2025-11-02T09:37:06.809Z",
+      "description": "Test bug",
+      "children": []
     }
   },
   "states": {
@@ -36514,8 +36622,8 @@
       "RES-005",
       "FEAT-018",
       "CLEAN-002",
-      "BUG-056",
-      "BUG-055"
+      "BUG-055",
+      "BUG-057"
     ],
     "specifying": [
       "RES-006",
@@ -36536,6 +36644,7 @@
       "BUG-055"
     ],
     "done": [
+      "BUG-056",
       "CLEAN-003",
       "INIT-015",
       "CLI-013",
