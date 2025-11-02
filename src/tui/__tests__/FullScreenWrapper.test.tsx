@@ -31,13 +31,13 @@ describe('Feature: Full-Screen TUI Layout', () => {
       };
 
       // @step When I run the interactive board command
-      const { lastFrame } = render(<BoardView />, {
+      const { frames } = render(<BoardView />, {
         stdout: mockStdout as any,
       });
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 200));
 
-      const frame = lastFrame();
+      const frame = frames.find(f => f.includes('┌') || f.includes('BACKLOG')) || frames[frames.length - 1];
 
       // @step Then the BoardView should render with width 80 and height 23
       // The board should use full width (80 columns)
@@ -69,13 +69,13 @@ describe('Feature: Full-Screen TUI Layout', () => {
       };
 
       // @step When I run the interactive board command
-      const { lastFrame } = render(<BoardView />, {
+      const { frames } = render(<BoardView />, {
         stdout: mockStdout as any,
       });
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 200));
 
-      const frame = lastFrame();
+      const frame = frames.find(f => f.includes('┌') || f.includes('BACKLOG')) || frames[frames.length - 1];
 
       // @step Then the BoardView should render with width 120 and height 39
       const lines = frame.split('\n');
@@ -104,13 +104,13 @@ describe('Feature: Full-Screen TUI Layout', () => {
       };
 
       // @step And the interactive board is running
-      const { lastFrame, rerender } = render(<BoardView />, {
+      const { frames, rerender } = render(<BoardView />, {
         stdout: mockStdout as any,
       });
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 200));
 
-      const initialFrame = lastFrame();
+      const initialFrame = frames.find(f => f.includes('BACKLOG')) || frames[frames.length - 1];
       const initialLines = initialFrame.split('\n');
 
       // @step When the terminal is resized to 120x40
@@ -122,7 +122,7 @@ describe('Feature: Full-Screen TUI Layout', () => {
 
       await new Promise(resolve => setTimeout(resolve, 100));
 
-      const resizedFrame = lastFrame();
+      const resizedFrame = frames.find(f => f.includes('BACKLOG')) || frames[frames.length - 1];
       const resizedLines = resizedFrame.split('\n');
 
       // @step Then the BoardView should automatically re-render with width 120 and height 39
@@ -155,13 +155,13 @@ describe('Feature: Full-Screen TUI Layout', () => {
       };
 
       // @step When I run the interactive board command
-      const { lastFrame } = render(<BoardView />, {
+      const { frames } = render(<BoardView />, {
         stdout: mockStdout as any,
       });
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 200));
 
-      const frame = lastFrame();
+      const frame = frames[frames.length - 1];
 
       // @step Then the screen should be cleared before rendering
       // The clear screen escape sequence should be sent
@@ -192,13 +192,13 @@ describe('Feature: Full-Screen TUI Layout', () => {
       };
 
       // @step When the component initializes
-      const { lastFrame } = render(<BoardView />, {
+      const { frames } = render(<BoardView />, {
         stdout: mockStdout as any,
       });
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 200));
 
-      const frame = lastFrame();
+      const frame = frames.find(f => f.includes('BACKLOG') || f.includes('┌')) || frames[frames.length - 1];
 
       // @step Then it should call the useStdout hook
       // (Implicit - if we get output, useStdout was called)

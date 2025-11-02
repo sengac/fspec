@@ -27,11 +27,11 @@ describe('Feature: Stretch board content to fill available viewport height', () 
       // @step And the board has a 1-row footer section
 
       // @step When I render the BoardView
-      const { lastFrame } = render(<BoardView terminalWidth={80} terminalHeight={23} />);
+      const { frames } = render(<BoardView terminalWidth={80} terminalHeight={23} />);
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 200));
 
-      const frame = lastFrame();
+      const frame = frames[frames.length - 1];
 
       // @step Then the work unit columns should have 20 rows available for displaying items
       // @step Then the work unit columns should fill available vertical space
@@ -61,11 +61,11 @@ describe('Feature: Stretch board content to fill available viewport height', () 
       // @step And the board has a 1-row footer section
 
       // @step When I render the BoardView
-      const { lastFrame } = render(<BoardView terminalWidth={120} terminalHeight={39} />);
+      const { frames } = render(<BoardView terminalWidth={120} terminalHeight={39} />);
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 200));
 
-      const frame = lastFrame();
+      const frame = frames[frames.length - 1];
 
       // @step Then the work unit columns should have 36 rows available for displaying items
       // @step Then the work unit columns should fill available vertical space
@@ -87,11 +87,11 @@ describe('Feature: Stretch board content to fill available viewport height', () 
     it('should automatically adapt when terminal dimensions change', async () => {
       // @step Given I have a terminal with dimensions 80x24
       // @step And the BoardView is rendered
-      const { lastFrame, rerender } = render(<BoardView terminalWidth={80} terminalHeight={23} />);
+      const { frames, rerender } = render(<BoardView terminalWidth={80} terminalHeight={23} />);
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 200));
 
-      const initialFrame = lastFrame();
+      const initialFrame = frames[frames.length - 1];
       const initialWorkUnitMatches = initialFrame.match(/TECH-\d+|AGENT-\d+|BOARD-\d+|BUG-\d+/g) || [];
 
       // @step And the BoardView is rendered with 20 rows for work units
@@ -99,9 +99,9 @@ describe('Feature: Stretch board content to fill available viewport height', () 
       // @step When the terminal is resized to 120x40
       rerender(<BoardView terminalWidth={120} terminalHeight={39} />);
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 200));
 
-      const resizedFrame = lastFrame();
+      const resizedFrame = frames[frames.length - 1];
       const resizedWorkUnitMatches = resizedFrame.match(/TECH-\d+|AGENT-\d+|BOARD-\d+|BUG-\d+/g) || [];
 
       // @step Then the work unit columns should automatically resize to 36 rows

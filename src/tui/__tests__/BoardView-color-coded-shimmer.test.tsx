@@ -59,7 +59,7 @@ describe('Feature: Color-coded work units with animated shimmer for active item'
       ];
 
       // @step When the board is rendered
-      const { lastFrame } = render(
+      const { frames } = render(
         <UnifiedBoardLayout
           workUnits={workUnits}
           focusedColumnIndex={0}
@@ -67,7 +67,7 @@ describe('Feature: Color-coded work units with animated shimmer for active item'
         />
       );
 
-      const frame = lastFrame();
+      const frame = frames[frames.length - 1];
 
       // @step Then TECH-001 should display in white color
       // @step And TECH-001 should NOT contain emoji icons (📖)
@@ -103,7 +103,7 @@ describe('Feature: Color-coded work units with animated shimmer for active item'
       ];
 
       // @step When the board is rendered
-      const { lastFrame } = render(
+      const { frames } = render(
         <UnifiedBoardLayout
           workUnits={workUnits}
           focusedColumnIndex={3} // implementing column
@@ -111,7 +111,7 @@ describe('Feature: Color-coded work units with animated shimmer for active item'
         />
       );
 
-      const frame = lastFrame();
+      const frame = frames[frames.length - 1];
 
       // @step Then BUG-001 should display in red color
       // @step And BUG-001 should NOT contain emoji icons (🐛)
@@ -146,7 +146,7 @@ describe('Feature: Color-coded work units with animated shimmer for active item'
       ];
 
       // @step When the board is rendered
-      const { lastFrame } = render(
+      const { frames } = render(
         <UnifiedBoardLayout
           workUnits={workUnits}
           focusedColumnIndex={2} // testing column
@@ -154,7 +154,7 @@ describe('Feature: Color-coded work units with animated shimmer for active item'
         />
       );
 
-      const frame = lastFrame();
+      const frame = frames[frames.length - 1];
 
       // @step Then TASK-001 should display in blue color
       // @step And TASK-001 should NOT contain emoji icons (⚙️)
@@ -190,7 +190,7 @@ describe('Feature: Color-coded work units with animated shimmer for active item'
       ];
 
       // @step When the board is rendered
-      const { lastFrame } = render(
+      const { frames } = render(
         <UnifiedBoardLayout
           workUnits={workUnits}
           focusedColumnIndex={3} // implementing column
@@ -199,7 +199,7 @@ describe('Feature: Color-coded work units with animated shimmer for active item'
         />
       );
 
-      const frame = lastFrame();
+      const frame = frames[frames.length - 1];
 
       // @step Then BOARD-008 should display in green color (not white)
       // @step And BOARD-008 should have an animated shimmer background

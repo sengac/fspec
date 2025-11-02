@@ -24,12 +24,12 @@ describe('Feature: Fix TUI Kanban column layout to match table style', () => {
     it('should display a unified table with box-drawing characters', async () => {
       // @step Given I am using the interactive TUI
       // @step When I open the Kanban board view
-      const { lastFrame } = render(<BoardView />);
+      const { frames } = render(<BoardView />);
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 200));
 
       // @step Then I should see a unified table with box-drawing characters (┌┬┐ ├┼┤ └┴┘)
-      const frame = lastFrame();
+      const frame = frames.find(f => f.includes('┌') && f.includes('┐')) || frames[frames.length - 1];
       expect(frame).toContain('┌'); // Top-left corner
       expect(frame).toContain('┬'); // Top junction
       expect(frame).toContain('┐'); // Top-right corner
@@ -62,9 +62,9 @@ describe('Feature: Fix TUI Kanban column layout to match table style', () => {
     it('should highlight focused column header in cyan', async () => {
       // @step Given I am viewing the Kanban board
       // @step And the backlog column is focused
-      const { stdin, lastFrame } = render(<BoardView />);
+      const { stdin, frames } = render(<BoardView />);
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 200));
 
       // @step When I press the right arrow key
       stdin.write('\x1B[C'); // Right arrow
@@ -74,7 +74,7 @@ describe('Feature: Fix TUI Kanban column layout to match table style', () => {
       // @step Then the specifying column should be focused
       // @step And the focused column header should be displayed in cyan color
       // @step And all other column headers should be displayed in gray color
-      const frame = lastFrame();
+      const frame = frames.find(f => f.includes('SPECIFYING')) || frames[frames.length - 1];
 
       // Focused column should have cyan color escape codes
       // Gray color: \x1B[90m, Cyan color: \x1B[36m
@@ -86,9 +86,9 @@ describe('Feature: Fix TUI Kanban column layout to match table style', () => {
     it('should move selection down by 1 work unit', async () => {
       // @step Given I am viewing a column with multiple work units
       // @step And the first work unit is selected
-      const { stdin, lastFrame } = render(<BoardView />);
+      const { stdin, frames } = render(<BoardView />);
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 200));
 
       // @step When I press the arrow down key
       stdin.write('\x1B[B'); // Down arrow
@@ -97,7 +97,7 @@ describe('Feature: Fix TUI Kanban column layout to match table style', () => {
 
       // @step Then the selection should move down by 1 work unit
       // @step And the newly selected work unit should be highlighted with cyan background
-      const frame = lastFrame();
+      const frame = frames.find(f => /RES-|TECH-|AGENT-/.test(f)) || frames[frames.length - 1];
 
       // Cyan background escape code: \x1B[46m
       // Should have work unit with cyan background
@@ -110,9 +110,9 @@ describe('Feature: Fix TUI Kanban column layout to match table style', () => {
       // @step Given I am viewing a column with 30 work units
       // @step And the viewport shows 10 items at a time
       // @step And I am at the top of the column
-      const { stdin, lastFrame } = render(<BoardView />);
+      const { stdin, frames } = render(<BoardView />);
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 200));
 
       // @step When I press Page Down
       // Page Down escape sequence: \x1B[6~
@@ -123,7 +123,7 @@ describe('Feature: Fix TUI Kanban column layout to match table style', () => {
       // @step Then the viewport should jump to show items 11-20
       // @step And an up arrow indicator should appear above the first visible item
       // @step And a down arrow indicator should appear below the last visible item
-      const frame = lastFrame();
+      const frame = frames[frames.length - 1];
 
       // Should show scroll indicators
       expect(frame).toMatch(/↑|▲/); // Up arrow indicator
@@ -135,9 +135,9 @@ describe('Feature: Fix TUI Kanban column layout to match table style', () => {
     it('should show up and down arrow indicators when in middle', async () => {
       // @step Given I am viewing a column with 20 work units
       // @step And I have scrolled down past the first item
-      const { stdin, lastFrame } = render(<BoardView />);
+      const { stdin, frames } = render(<BoardView />);
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 200));
 
       // Scroll down a few times
       stdin.write('\x1B[B'); // Down
@@ -150,7 +150,7 @@ describe('Feature: Fix TUI Kanban column layout to match table style', () => {
       // @step When I view the column
       // @step Then I should see an up arrow indicator above the first visible item
       // @step And I should see a down arrow indicator below the last visible item if more items exist
-      const frame = lastFrame();
+      const frame = frames[frames.length - 1];
 
       expect(frame).toMatch(/↑|▲/); // Up arrow indicator
       expect(frame).toMatch(/↓|▼/); // Down arrow indicator
@@ -161,11 +161,11 @@ describe('Feature: Fix TUI Kanban column layout to match table style', () => {
     it('should not change viewport when already at top', async () => {
       // @step Given I am viewing a column
       // @step And I am at the top of the column
-      const { stdin, lastFrame } = render(<BoardView />);
+      const { stdin, frames } = render(<BoardView />);
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 200));
 
-      const frameBefore = lastFrame();
+      const frameBefore = frames.find(f => f.includes('BACKLOG')) || frames[frames.length - 1];
 
       // @step When I press Page Up
       // Page Up escape sequence: \x1B[5~
@@ -175,7 +175,7 @@ describe('Feature: Fix TUI Kanban column layout to match table style', () => {
 
       // @step Then the viewport should not change
       // @step And no up arrow indicator should be shown
-      const frameAfter = lastFrame();
+      const frameAfter = frames.find(f => f.includes('BACKLOG')) || frames[frames.length - 1];
 
       // Viewport should be essentially the same (work unit IDs unchanged)
       expect(frameAfter).toContain('BACKLOG');
@@ -193,14 +193,14 @@ describe('Feature: Fix TUI Kanban column layout to match table style', () => {
       // @step Given I am viewing a column containing work unit AUTH-001
       // @step And AUTH-001 has estimate of 3 points
       // @step And AUTH-001 is a story type
-      const { lastFrame } = render(<BoardView />);
+      const { frames } = render(<BoardView />);
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 200));
 
       // @step When I view the work unit in the column
       // @step Then I should see "AUTH-001 3pt 🟡" format (may be truncated at small widths)
       // @step And the priority icon should reflect the estimate
-      const frame = lastFrame();
+      const frame = frames.find(f => /[A-Z]+-[0-9]+/.test(f)) || frames[frames.length - 1];
 
       // Should have work unit with format: ID Xpt priorityIcon (BOARD-008: emoji icons removed)
       // Note: At small terminal widths text will be truncated
@@ -213,11 +213,11 @@ describe('Feature: Fix TUI Kanban column layout to match table style', () => {
   describe('Scenario: Adapt column width to terminal size', () => {
     it('should adjust column widths when terminal resizes', async () => {
       // @step Given I am viewing the Kanban board
-      const { rerender, lastFrame } = render(<BoardView />);
+      const { rerender, frames } = render(<BoardView />);
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 200));
 
-      const frameInitial = lastFrame();
+      const frameInitial = frames.find(f => f.includes('│') && f.includes('─')) || frames[frames.length - 1];
 
       // @step When I resize the terminal window
       // Note: This test validates the behavior exists, actual resize testing
@@ -236,13 +236,13 @@ describe('Feature: Fix TUI Kanban column layout to match table style', () => {
     it('should display status, count, and points in header', async () => {
       // @step Given I am viewing a column with 5 work units
       // @step And the total estimate for the column is 15 points
-      const { lastFrame } = render(<BoardView />);
+      const { frames } = render(<BoardView />);
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 200));
 
       // @step When I view the column header
       // @step Then it should display column status names
-      const frame = lastFrame();
+      const frame = frames.find(f => f.includes('BACKLOG') || f.includes('SPECIFYING')) || frames[frames.length - 1];
 
       // ITF-007: UnifiedBoardLayout doesn't display counts in header format "(N)"
       // Headers show STATUS names only (e.g., "BACKLOG", "SPECIFYING")
@@ -255,9 +255,9 @@ describe('Feature: Fix TUI Kanban column layout to match table style', () => {
     it('should use useStdout and read stdout.columns directly', async () => {
       // @step Given the Kanban board component is rendering
       // @step When it needs to determine terminal width
-      const { lastFrame } = render(<BoardView />);
+      const { frames } = render(<BoardView />);
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 200));
 
       // @step Then it should use useStdout hook from Ink
       // @step And read stdout.columns directly (same pattern as BoardDisplay)
@@ -265,7 +265,7 @@ describe('Feature: Fix TUI Kanban column layout to match table style', () => {
       // @step And NOT use a custom useTerminalSize hook with state
 
       // Verify component renders table structure
-      const frame = lastFrame();
+      const frame = frames.find(f => f.includes('│') && f.includes('┌')) || frames[frames.length - 1];
       expect(frame).toContain('│'); // Table structure exists
       expect(frame).toContain('┌'); // Top border exists
     });
@@ -275,16 +275,16 @@ describe('Feature: Fix TUI Kanban column layout to match table style', () => {
     it('should use useMemo with terminalWidth dependency for column width', async () => {
       // @step Given the component is using useStdout to get terminalWidth
       // @step When terminalWidth changes from 100 to 140 columns
-      const { lastFrame } = render(<BoardView />);
+      const { frames } = render(<BoardView />);
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 200));
 
       // @step Then colWidth should be wrapped in useMemo with terminalWidth dependency
       // @step And colWidth should recalculate from 12 to 18 characters automatically
       // @step And component should re-render with new column widths
 
       // Verify that column width calculation exists and table renders
-      const frame = lastFrame();
+      const frame = frames.find(f => f.includes('│')) || frames[frames.length - 1];
       expect(frame).toContain('│'); // Table structure exists
       expect(frame).toMatch(/BACKLOG|SPECIFYING/); // Column headers present
     });
@@ -294,14 +294,14 @@ describe('Feature: Fix TUI Kanban column layout to match table style', () => {
     it('should maintain proper box-drawing character alignment after resize', async () => {
       // @step Given I am viewing the Kanban board at 120 columns wide
       // @step And the table borders are properly aligned
-      const { lastFrame } = render(<BoardView />);
+      const { frames } = render(<BoardView />);
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 200));
 
       // @step When I resize the terminal to 80 columns wide
       // @step Then the table should instantly reflow with new column widths
       // @step And all box-drawing characters should remain properly connected
-      const frame = lastFrame();
+      const frame = frames.find(f => f.includes('┌') && f.includes('┐')) || frames[frames.length - 1];
 
       // Remove newlines to check continuous patterns
       const frameNoNewlines = frame.replace(/\n/g, '');

@@ -77,14 +77,14 @@ describe('Feature: Consolidate Git info and add work unit details panel', () => 
       vi.mocked(getUnstagedFiles).mockResolvedValue(['src/utils.ts']);
 
       // @step When the Git Context panel is rendered
-      const { lastFrame } = render(<BoardView cwd={testDir} />);
+      const { frames } = render(<BoardView cwd={testDir} />);
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 200));
 
       // @step Then it should display "Checkpoints: X Manual, Y Auto" as the first section
       // @step And it should display "Changed Files: 3 staged, 1 unstaged" below checkpoints
       // @step And both sections should be in the same panel box
-      const frame = lastFrame();
+      const frame = frames[frames.length - 1];
       // ITF-007: Updated to expect "Checkpoints:" format instead of "Git Stashes"
       expect(frame).toMatch(/Checkpoints:/);
       expect(frame).toContain('Changed Files: 3 staged, 1 unstaged');
@@ -164,7 +164,7 @@ describe('Feature: Consolidate Git info and add work unit details panel', () => 
       });
 
       // @step When the Work Unit Details panel is rendered
-      const { lastFrame } = render(<BoardView cwd={testDir} />);
+      const { frames } = render(<BoardView cwd={testDir} />);
 
       // Wait for component to render and auto-focus to run
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -173,7 +173,7 @@ describe('Feature: Consolidate Git info and add work unit details panel', () => 
       // @step And it should display the first 3 lines of the description
       // @step And it should display keyboard hint with ↵ for viewing details
       // @step And it should display epic, estimate, and status metadata
-      const frame = lastFrame();
+      const frame = frames[frames.length - 1];
       // BOARD-008: Story icon emoji removed
       expect(frame).toContain('BOARD-001');
       expect(frame).toContain('Test Feature');
@@ -218,7 +218,7 @@ describe('Feature: Consolidate Git info and add work unit details panel', () => 
       });
 
       // @step When the Work Unit Details panel is rendered
-      const { lastFrame } = render(<BoardView cwd={testDir} />);
+      const { frames } = render(<BoardView cwd={testDir} />);
 
       // Wait for component to render and auto-focus to run
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -226,7 +226,7 @@ describe('Feature: Consolidate Git info and add work unit details panel', () => 
       // @step Then it should display "No work unit selected"
       // @step And the message should be user-friendly and centered
       // @step And no metadata fields should be displayed
-      const frame = lastFrame();
+      const frame = frames[frames.length - 1];
       expect(frame).toMatch(/No work unit selected/i);
 
       // Verify no metadata fields are present

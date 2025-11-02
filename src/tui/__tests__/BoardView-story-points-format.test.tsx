@@ -37,7 +37,7 @@ describe('Feature: Color-coded work units without shimmer or priority icons', ()
       ];
 
       // @step When the board is rendered
-      const { lastFrame } = render(
+      const { frames } = render(
         <UnifiedBoardLayout
           workUnits={workUnits}
           focusedColumnIndex={0}
@@ -46,7 +46,7 @@ describe('Feature: Color-coded work units without shimmer or priority icons', ()
         />
       );
 
-      const output = lastFrame() || '';
+      const output = frames[frames.length - 1] || '';
 
       // @step Then TECH-001 should display as 'TECH-001' with no story points
       expect(output).toContain('TECH-001');
@@ -75,7 +75,7 @@ describe('Feature: Color-coded work units without shimmer or priority icons', ()
       ];
 
       // When the board is rendered
-      const { lastFrame } = render(
+      const { frames } = render(
         <UnifiedBoardLayout
           workUnits={workUnits}
           focusedColumnIndex={0}
@@ -84,7 +84,7 @@ describe('Feature: Color-coded work units without shimmer or priority icons', ()
         />
       );
 
-      const output = lastFrame() || '';
+      const output = frames[frames.length - 1] || '';
 
       // Then FEAT-002 should display as 'FEAT-002 [5]'
       expect(output).toMatch(/FEAT-002.*\[5\]/); // Should show [5]
@@ -112,7 +112,7 @@ describe('Feature: Color-coded work units without shimmer or priority icons', ()
       ];
 
       // When the board is rendered
-      const { lastFrame } = render(
+      const { frames } = render(
         <UnifiedBoardLayout
           workUnits={workUnits}
           focusedColumnIndex={3}
@@ -121,7 +121,7 @@ describe('Feature: Color-coded work units without shimmer or priority icons', ()
         />
       );
 
-      const output = lastFrame() || '';
+      const output = frames[frames.length - 1] || '';
 
       // Then BUG-001 should display as 'BUG-001 [3]'
       expect(output).toMatch(/BUG-001.*\[3\]/); // Should show [3]
@@ -150,7 +150,7 @@ describe('Feature: Color-coded work units without shimmer or priority icons', ()
       ];
 
       // When the board is rendered
-      const { lastFrame } = render(
+      const { frames } = render(
         <UnifiedBoardLayout
           workUnits={workUnits}
           focusedColumnIndex={2}
@@ -159,7 +159,7 @@ describe('Feature: Color-coded work units without shimmer or priority icons', ()
         />
       );
 
-      const output = lastFrame() || '';
+      const output = frames[frames.length - 1] || '';
 
       // Then TASK-001 should display as 'TASK-001' with no story points
       expect(output).toContain('TASK-001');
@@ -192,7 +192,7 @@ describe('Feature: Color-coded work units without shimmer or priority icons', ()
       const selectedWorkUnit = workUnits[0];
 
       // When the board is rendered
-      const { lastFrame } = render(
+      const { frames } = render(
         <UnifiedBoardLayout
           workUnits={workUnits}
           focusedColumnIndex={3}
@@ -201,7 +201,7 @@ describe('Feature: Color-coded work units without shimmer or priority icons', ()
         />
       );
 
-      const output = lastFrame() || '';
+      const output = frames[frames.length - 1] || '';
 
       // Then AUTH-001 should display as 'AUTH-001 [5]'
       expect(output).toMatch(/AUTH-001.*\[5\]/); // Should show [5]

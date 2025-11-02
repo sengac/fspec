@@ -37,7 +37,7 @@ describe('Feature: TUI Board Column Scrolling', () => {
       // (VIEWPORT_HEIGHT = 10 in UnifiedBoardLayout)
 
       // @step And I am at item 11 (0-indexed as 10)
-      const { lastFrame, rerender } = render(
+      const { frames, rerender } = render(
         <UnifiedBoardLayout
           workUnits={workUnits}
           focusedColumnIndex={0}
@@ -62,7 +62,7 @@ describe('Feature: TUI Board Column Scrolling', () => {
         />
       );
 
-      const output = lastFrame();
+      const output = frames[frames.length - 1];
 
       // @step Then the selection should move to item 11
       // @step And the viewport should scroll to show items 2-11
@@ -81,7 +81,7 @@ describe('Feature: TUI Board Column Scrolling', () => {
       const workUnits = createMockWorkUnits(20, 'backlog');
 
       // And I am at item 5 (0-indexed as 4)
-      const { lastFrame } = render(
+      const { frames } = render(
         <UnifiedBoardLayout
           workUnits={workUnits}
           focusedColumnIndex={0}
@@ -94,7 +94,7 @@ describe('Feature: TUI Board Column Scrolling', () => {
 
       // When component renders with selectedWorkUnitIndex=4
       // The viewport should show items 1-10 with item 5 visible
-      const output = lastFrame();
+      const output = frames[frames.length - 1];
 
       // Item 5 should be visible
       expect(output).toContain('TEST-005');
@@ -109,7 +109,7 @@ describe('Feature: TUI Board Column Scrolling', () => {
       const workUnits = createMockWorkUnits(5, 'backlog');
 
       // And the viewport height is 10 items
-      const { lastFrame } = render(
+      const { frames } = render(
         <UnifiedBoardLayout
           workUnits={workUnits}
           focusedColumnIndex={0}
@@ -121,7 +121,7 @@ describe('Feature: TUI Board Column Scrolling', () => {
       );
 
       // When I render the board
-      const output = lastFrame();
+      const output = frames[frames.length - 1];
 
       // Then no scroll indicators should be displayed in the column content
       // Extract just the backlog column content rows
@@ -149,7 +149,7 @@ describe('Feature: TUI Board Column Scrolling', () => {
 
       // When the scroll offset is greater than 0
       // (Simulated by selecting item beyond viewport)
-      const { lastFrame } = render(
+      const { frames } = render(
         <UnifiedBoardLayout
           workUnits={workUnits}
           focusedColumnIndex={0}
@@ -160,7 +160,7 @@ describe('Feature: TUI Board Column Scrolling', () => {
         />
       );
 
-      const output = lastFrame();
+      const output = frames[frames.length - 1];
 
       // Then an up arrow indicator (↑) should appear at the top
       // THIS TEST WILL FAIL - scroll indicators aren't dynamic yet
@@ -172,7 +172,7 @@ describe('Feature: TUI Board Column Scrolling', () => {
       const workUnits = createMockWorkUnits(20, 'backlog');
 
       // At the top of the list
-      const { lastFrame } = render(
+      const { frames } = render(
         <UnifiedBoardLayout
           workUnits={workUnits}
           focusedColumnIndex={0}
@@ -183,7 +183,7 @@ describe('Feature: TUI Board Column Scrolling', () => {
         />
       );
 
-      const output = lastFrame();
+      const output = frames[frames.length - 1];
 
       // Then a down arrow indicator (↓) should appear at the bottom
       expect(output).toContain('↓');
@@ -202,7 +202,7 @@ describe('Feature: TUI Board Column Scrolling', () => {
       // (VIEWPORT_HEIGHT = 10 in UnifiedBoardLayout)
 
       // @step And I am at item 8 (middle of the list)
-      const { lastFrame, rerender } = render(
+      const { frames, rerender } = render(
         <UnifiedBoardLayout
           workUnits={workUnits}
           focusedColumnIndex={0}
@@ -226,7 +226,7 @@ describe('Feature: TUI Board Column Scrolling', () => {
       );
 
       // @step When the board renders with both up and down arrows visible
-      const output = lastFrame();
+      const output = frames[frames.length - 1];
 
       // @step Then the up arrow should appear at row 0
       expect(output).toContain('↑');
@@ -265,7 +265,7 @@ describe('Feature: TUI Board Column Scrolling', () => {
       let focusedColumn = 0;
       let selectedIndex = 14; // Item 15
 
-      const { rerender, lastFrame } = render(
+      const { rerender, frames } = render(
         <UnifiedBoardLayout
           workUnits={allUnits}
           focusedColumnIndex={focusedColumn}
@@ -288,7 +288,7 @@ describe('Feature: TUI Board Column Scrolling', () => {
         />
       );
 
-      const outputBeforeSwitch = lastFrame();
+      const outputBeforeSwitch = frames[frames.length - 1];
 
       // When I press right arrow to switch to column B
       focusedColumn = 1;
@@ -332,7 +332,7 @@ describe('Feature: TUI Board Column Scrolling', () => {
         />
       );
 
-      const outputAfterReturn = lastFrame();
+      const outputAfterReturn = frames[frames.length - 1];
 
       // Then the scroll offset should still be 10
       // And item 15 should still be selected
