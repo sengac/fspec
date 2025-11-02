@@ -78,7 +78,7 @@ describe('Feature: Example Mapping Integration', () => {
       expect(updated.workUnits['AUTH-001'].rules).toHaveLength(1);
 
       // And the rule should be "Users must authenticate before accessing protected resources"
-      expect(updated.workUnits['AUTH-001'].rules[0]).toBe(
+      expect(updated.workUnits['AUTH-001'].rules[0].text).toBe(
         'Users must authenticate before accessing protected resources'
       );
     });
@@ -135,13 +135,13 @@ describe('Feature: Example Mapping Integration', () => {
       expect(updated.workUnits['AUTH-001'].rules).toHaveLength(3);
 
       // And the rules should be in order
-      expect(updated.workUnits['AUTH-001'].rules[0]).toBe(
+      expect(updated.workUnits['AUTH-001'].rules[0].text).toBe(
         'OAuth tokens expire after 1 hour'
       );
-      expect(updated.workUnits['AUTH-001'].rules[1]).toBe(
+      expect(updated.workUnits['AUTH-001'].rules[1].text).toBe(
         'Refresh tokens valid for 30 days'
       );
-      expect(updated.workUnits['AUTH-001'].rules[2]).toBe(
+      expect(updated.workUnits['AUTH-001'].rules[2].text).toBe(
         'Only one active session per user'
       );
     });
@@ -187,7 +187,7 @@ describe('Feature: Example Mapping Integration', () => {
       );
 
       expect(updated.workUnits['AUTH-001'].examples).toHaveLength(1);
-      expect(updated.workUnits['AUTH-001'].examples[0]).toBe(
+      expect(updated.workUnits['AUTH-001'].examples[0].text).toBe(
         'User logs in with Google account'
       );
     });
@@ -289,10 +289,10 @@ describe('Feature: Example Mapping Integration', () => {
       );
 
       expect(updated.workUnits['AUTH-001'].questions).toHaveLength(1);
-      expect(updated.workUnits['AUTH-001'].questions[0]).toEqual({
-        text: 'Should we support GitHub Enterprise?',
-        selected: false,
-      });
+      expect(updated.workUnits['AUTH-001'].questions[0].text).toBe(
+        'Should we support GitHub Enterprise?'
+      );
+      expect(updated.workUnits['AUTH-001'].questions[0].selected).toBe(false);
     });
   });
 
@@ -468,17 +468,20 @@ describe('Feature: Example Mapping Integration', () => {
             title: 'OAuth login',
             status: 'specifying',
             rules: [
-              'OAuth tokens expire after 1 hour',
-              'Users must authenticate first',
+              { id: 0, text: 'OAuth tokens expire after 1 hour', deleted: false, createdAt: new Date().toISOString() },
+              { id: 1, text: 'Users must authenticate first', deleted: false, createdAt: new Date().toISOString() },
             ],
             examples: [
-              'User logs in with Google',
-              'User logs in with expired token',
+              { id: 0, text: 'User logs in with Google', deleted: false, createdAt: new Date().toISOString() },
+              { id: 1, text: 'User logs in with expired token', deleted: false, createdAt: new Date().toISOString() },
             ],
             questions: [
-              { text: '@bob: Support GitHub Enterprise?', selected: false },
+              { id: 0, text: '@bob: Support GitHub Enterprise?', selected: false, deleted: false, createdAt: new Date().toISOString() },
             ],
             assumptions: ['Users have valid OAuth accounts'],
+            nextRuleId: 2,
+            nextExampleId: 2,
+            nextQuestionId: 1,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           },
@@ -522,10 +525,11 @@ describe('Feature: Example Mapping Integration', () => {
             title: 'OAuth login',
             status: 'specifying',
             rules: [
-              'OAuth tokens expire after 1 hour',
-              'Users must authenticate first',
-              'Refresh tokens valid for 30 days',
+              { id: 0, text: 'OAuth tokens expire after 1 hour', deleted: false, createdAt: new Date().toISOString() },
+              { id: 1, text: 'Users must authenticate first', deleted: false, createdAt: new Date().toISOString() },
+              { id: 2, text: 'Refresh tokens valid for 30 days', deleted: false, createdAt: new Date().toISOString() },
             ],
+            nextRuleId: 3,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           },
@@ -557,10 +561,12 @@ describe('Feature: Example Mapping Integration', () => {
         await readFile(join(testDir, 'spec/work-units.json'), 'utf-8')
       );
 
-      expect(updated.workUnits['AUTH-001'].rules).toHaveLength(2);
-      expect(updated.workUnits['AUTH-001'].rules[1]).toBe(
-        'Refresh tokens valid for 30 days'
+      // Check remaining count (non-deleted items)
+      const activeRules = updated.workUnits['AUTH-001'].rules.filter(
+        (r: any) => !r.deleted
       );
+      expect(activeRules).toHaveLength(2);
+      expect(result.remainingCount).toBe(2);
     });
   });
 
@@ -573,10 +579,11 @@ describe('Feature: Example Mapping Integration', () => {
             title: 'OAuth login',
             status: 'specifying',
             examples: [
-              'User logs in with Google',
-              'User logs in with expired token',
-              'User logs out',
+              { id: 0, text: 'User logs in with Google', deleted: false, createdAt: new Date().toISOString() },
+              { id: 1, text: 'User logs in with expired token', deleted: false, createdAt: new Date().toISOString() },
+              { id: 2, text: 'User logs out', deleted: false, createdAt: new Date().toISOString() },
             ],
+            nextExampleId: 3,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           },
@@ -608,10 +615,12 @@ describe('Feature: Example Mapping Integration', () => {
         await readFile(join(testDir, 'spec/work-units.json'), 'utf-8')
       );
 
-      expect(updated.workUnits['AUTH-001'].examples).toHaveLength(2);
-      expect(updated.workUnits['AUTH-001'].examples[0]).toBe(
-        'User logs in with expired token'
+      // Check remaining count (non-deleted items)
+      const activeExamples = updated.workUnits['AUTH-001'].examples.filter(
+        (e: any) => !e.deleted
       );
+      expect(activeExamples).toHaveLength(2);
+      expect(result.remainingCount).toBe(2);
     });
   });
 
@@ -624,9 +633,10 @@ describe('Feature: Example Mapping Integration', () => {
             title: 'OAuth login',
             status: 'specifying',
             questions: [
-              { text: '@bob: Support GitHub Enterprise?', selected: false },
-              { text: 'What is the token expiry policy?', selected: false },
+              { id: 0, text: '@bob: Support GitHub Enterprise?', selected: false, deleted: false, createdAt: new Date().toISOString() },
+              { id: 1, text: 'What is the token expiry policy?', selected: false, deleted: false, createdAt: new Date().toISOString() },
             ],
+            nextQuestionId: 2,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           },
@@ -658,7 +668,12 @@ describe('Feature: Example Mapping Integration', () => {
         await readFile(join(testDir, 'spec/work-units.json'), 'utf-8')
       );
 
-      expect(updated.workUnits['AUTH-001'].questions).toHaveLength(1);
+      // Check remaining count (non-deleted items)
+      const activeQuestions = updated.workUnits['AUTH-001'].questions.filter(
+        (q: any) => !q.deleted
+      );
+      expect(activeQuestions).toHaveLength(1);
+      expect(result.remainingCount).toBe(1);
     });
   });
 
@@ -670,7 +685,11 @@ describe('Feature: Example Mapping Integration', () => {
             id: 'AUTH-001',
             title: 'OAuth login',
             status: 'specifying',
-            rules: ['Rule 1', 'Rule 2'],
+            rules: [
+              { id: 0, text: 'Rule 1', deleted: false, createdAt: new Date().toISOString() },
+              { id: 1, text: 'Rule 2', deleted: false, createdAt: new Date().toISOString() },
+            ],
+            nextRuleId: 2,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           },
@@ -698,8 +717,7 @@ describe('Feature: Example Mapping Integration', () => {
 
       expect(error).toBeInstanceOf(Error);
       if (error instanceof Error) {
-        expect(error.message).toContain('Index 5 out of range');
-        expect(error.message).toContain('Valid indices: 0-1');
+        expect(error.message).toContain('Rule with ID 5 not found');
       }
     });
   });
@@ -768,8 +786,9 @@ describe('Feature: Example Mapping Integration', () => {
             title: 'OAuth login',
             status: 'specifying',
             questions: [
-              { text: 'What is the maximum session length?', selected: false },
+              { id: 0, text: 'What is the maximum session length?', selected: false, deleted: false, createdAt: new Date().toISOString() },
             ],
+            nextQuestionId: 1,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           },
@@ -804,8 +823,12 @@ describe('Feature: Example Mapping Integration', () => {
       );
 
       expect(updated.workUnits['AUTH-001'].questions[0].selected).toBe(true);
-      expect(updated.workUnits['AUTH-001'].rules).toHaveLength(1);
-      expect(updated.workUnits['AUTH-001'].rules[0]).toContain('24 hours');
+      // Check non-deleted rules
+      const activeRules = updated.workUnits['AUTH-001'].rules?.filter(
+        (r: any) => !r.deleted
+      ) || [];
+      expect(activeRules).toHaveLength(1);
+      expect(activeRules[0].text).toContain('24 hours');
     });
   });
 
@@ -817,7 +840,10 @@ describe('Feature: Example Mapping Integration', () => {
             id: 'AUTH-001',
             title: 'OAuth login',
             status: 'specifying',
-            questions: [{ text: 'Is this feature needed?', selected: false }],
+            questions: [
+              { id: 0, text: 'Is this feature needed?', selected: false, deleted: false, createdAt: new Date().toISOString() },
+            ],
+            nextQuestionId: 1,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           },
@@ -870,9 +896,15 @@ describe('Feature: Example Mapping Integration', () => {
               action: 'log in with OAuth',
               benefit: 'access my account',
             },
-            rules: ['Valid OAuth token required'],
-            examples: ['User logs in with OAuth'],
+            rules: [
+              { id: 0, text: 'Valid OAuth token required', deleted: false, createdAt: new Date().toISOString() },
+            ],
+            examples: [
+              { id: 0, text: 'User logs in with OAuth', deleted: false, createdAt: new Date().toISOString() },
+            ],
             assumptions: ['OAuth provider is available'],
+            nextRuleId: 1,
+            nextExampleId: 1,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           },
@@ -941,8 +973,9 @@ describe('Feature: Example Mapping Integration', () => {
             title: 'OAuth login',
             status: 'specifying',
             questions: [
-              { text: '@bob: Should we support OAuth 2.0?', selected: false },
+              { id: 0, text: '@bob: Should we support OAuth 2.0?', selected: false, deleted: false, createdAt: new Date().toISOString() },
             ],
+            nextQuestionId: 1,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           },
@@ -1074,15 +1107,20 @@ describe('Feature: Example Mapping Integration', () => {
 
       const exampleMapping = {
         rules: [
-          'OAuth tokens expire after 1 hour',
-          'Users must authenticate first',
+          { id: 0, text: 'OAuth tokens expire after 1 hour', deleted: false, createdAt: new Date().toISOString() },
+          { id: 1, text: 'Users must authenticate first', deleted: false, createdAt: new Date().toISOString() },
         ],
         examples: [
-          'User logs in with Google',
-          'User logs in with expired token',
+          { id: 0, text: 'User logs in with Google', deleted: false, createdAt: new Date().toISOString() },
+          { id: 1, text: 'User logs in with expired token', deleted: false, createdAt: new Date().toISOString() },
         ],
-        questions: ['@bob: Support GitHub Enterprise?'],
+        questions: [
+          { id: 0, text: '@bob: Support GitHub Enterprise?', selected: false, deleted: false, createdAt: new Date().toISOString() },
+        ],
         assumptions: ['Users have valid OAuth accounts'],
+        nextRuleId: 2,
+        nextExampleId: 2,
+        nextQuestionId: 1,
       };
       await writeFile(
         join(testDir, 'example-mapping.json'),
@@ -1116,10 +1154,19 @@ describe('Feature: Example Mapping Integration', () => {
             id: 'AUTH-001',
             title: 'OAuth login',
             status: 'specifying',
-            rules: ['OAuth tokens expire after 1 hour'],
-            examples: ['User logs in with Google'],
-            questions: ['@bob: Support GitHub Enterprise?'],
+            rules: [
+              { id: 0, text: 'OAuth tokens expire after 1 hour', deleted: false, createdAt: new Date().toISOString() },
+            ],
+            examples: [
+              { id: 0, text: 'User logs in with Google', deleted: false, createdAt: new Date().toISOString() },
+            ],
+            questions: [
+              { id: 0, text: '@bob: Support GitHub Enterprise?', selected: false, deleted: false, createdAt: new Date().toISOString() },
+            ],
             assumptions: ['Users have valid OAuth accounts'],
+            nextRuleId: 1,
+            nextExampleId: 1,
+            nextQuestionId: 1,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           },
@@ -1166,7 +1213,10 @@ describe('Feature: Example Mapping Integration', () => {
             id: 'AUTH-001',
             title: 'Work 1',
             status: 'specifying',
-            questions: [{ text: '@bob: Support OAuth?', selected: false }],
+            questions: [
+              { id: 0, text: '@bob: Support OAuth?', selected: false, deleted: false, createdAt: new Date().toISOString() },
+            ],
+            nextQuestionId: 1,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           },
@@ -1181,7 +1231,10 @@ describe('Feature: Example Mapping Integration', () => {
             id: 'DASH-001',
             title: 'Work 3',
             status: 'specifying',
-            questions: [{ text: 'What should timeout be?', selected: false }],
+            questions: [
+              { id: 0, text: 'What should timeout be?', selected: false, deleted: false, createdAt: new Date().toISOString() },
+            ],
+            nextQuestionId: 1,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           },
@@ -1229,7 +1282,10 @@ describe('Feature: Example Mapping Integration', () => {
             id: 'AUTH-001',
             title: 'Work 1',
             status: 'specifying',
-            questions: [{ text: '@bob: Support GitHub?', selected: false }],
+            questions: [
+              { id: 0, text: '@bob: Support GitHub?', selected: false, deleted: false, createdAt: new Date().toISOString() },
+            ],
+            nextQuestionId: 1,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           },
@@ -1238,8 +1294,9 @@ describe('Feature: Example Mapping Integration', () => {
             title: 'Work 2',
             status: 'specifying',
             questions: [
-              { text: '@alice: What is the timeout?', selected: false },
+              { id: 0, text: '@alice: What is the timeout?', selected: false, deleted: false, createdAt: new Date().toISOString() },
             ],
+            nextQuestionId: 1,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           },
@@ -1247,7 +1304,10 @@ describe('Feature: Example Mapping Integration', () => {
             id: 'DASH-001',
             title: 'Work 3',
             status: 'specifying',
-            questions: [{ text: '@bob: Show user metrics?', selected: false }],
+            questions: [
+              { id: 0, text: '@bob: Show user metrics?', selected: false, deleted: false, createdAt: new Date().toISOString() },
+            ],
+            nextQuestionId: 1,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           },
@@ -1370,9 +1430,21 @@ describe('Feature: Example Mapping Integration', () => {
             id: 'AUTH-001',
             title: 'Work 1',
             status: 'specifying',
-            rules: ['R1', 'R2', 'R3'],
-            examples: ['E1', 'E2', 'E3', 'E4', 'E5'],
+            rules: [
+              { id: 0, text: 'R1', deleted: false, createdAt: new Date().toISOString() },
+              { id: 1, text: 'R2', deleted: false, createdAt: new Date().toISOString() },
+              { id: 2, text: 'R3', deleted: false, createdAt: new Date().toISOString() },
+            ],
+            examples: [
+              { id: 0, text: 'E1', deleted: false, createdAt: new Date().toISOString() },
+              { id: 1, text: 'E2', deleted: false, createdAt: new Date().toISOString() },
+              { id: 2, text: 'E3', deleted: false, createdAt: new Date().toISOString() },
+              { id: 3, text: 'E4', deleted: false, createdAt: new Date().toISOString() },
+              { id: 4, text: 'E5', deleted: false, createdAt: new Date().toISOString() },
+            ],
             assumptions: ['A1', 'A2'],
+            nextRuleId: 3,
+            nextExampleId: 5,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           },
@@ -1381,10 +1453,11 @@ describe('Feature: Example Mapping Integration', () => {
             title: 'Work 2',
             status: 'specifying',
             questions: [
-              { text: 'Q1', selected: false },
-              { text: 'Q2', selected: false },
-              { text: 'Q3', selected: false },
+              { id: 0, text: 'Q1', selected: false, deleted: false, createdAt: new Date().toISOString() },
+              { id: 1, text: 'Q2', selected: false, deleted: false, createdAt: new Date().toISOString() },
+              { id: 2, text: 'Q3', selected: false, deleted: false, createdAt: new Date().toISOString() },
             ],
+            nextQuestionId: 3,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           },
@@ -1392,10 +1465,23 @@ describe('Feature: Example Mapping Integration', () => {
             id: 'DASH-001',
             title: 'Work 3',
             status: 'specifying',
-            rules: ['R1', 'R2'],
-            examples: ['E1', 'E2', 'E3', 'E4'],
-            questions: [{ text: 'Q1', selected: false }],
+            rules: [
+              { id: 0, text: 'R1', deleted: false, createdAt: new Date().toISOString() },
+              { id: 1, text: 'R2', deleted: false, createdAt: new Date().toISOString() },
+            ],
+            examples: [
+              { id: 0, text: 'E1', deleted: false, createdAt: new Date().toISOString() },
+              { id: 1, text: 'E2', deleted: false, createdAt: new Date().toISOString() },
+              { id: 2, text: 'E3', deleted: false, createdAt: new Date().toISOString() },
+              { id: 3, text: 'E4', deleted: false, createdAt: new Date().toISOString() },
+            ],
+            questions: [
+              { id: 0, text: 'Q1', selected: false, deleted: false, createdAt: new Date().toISOString() },
+            ],
             assumptions: ['A1'],
+            nextRuleId: 2,
+            nextExampleId: 4,
+            nextQuestionId: 1,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           },
