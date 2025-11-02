@@ -97,7 +97,7 @@ describe('Feature: Animated shimmer on last changed work unit', () => {
       ];
 
       // @step When the board is rendered
-      const { lastFrame, rerender } = render(
+      const { frames, rerender } = render(
         <UnifiedBoardLayout
           workUnits={workUnits}
           focusedColumnIndex={0}
@@ -107,7 +107,7 @@ describe('Feature: Animated shimmer on last changed work unit', () => {
       );
 
       // @step Then TECH-001 should display with a left-to-right shimmer wave
-      const initialOutput = lastFrame() || '';
+      const initialOutput = frames[frames.length - 1] || '';
       expect(initialOutput).toContain('TECH-001');
 
       // @step And at any frame one character should be at peak brightness (whiteBright)
@@ -131,7 +131,7 @@ describe('Feature: Animated shimmer on last changed work unit', () => {
         />
       );
 
-      const afterOneFrame = lastFrame() || '';
+      const afterOneFrame = frames[frames.length - 1] || '';
       const expectedPosition1 = applyShimmerGradient(text, 1, 'white', 'whiteBright');
       expect(afterOneFrame).toContain(expectedPosition1);
 
@@ -159,7 +159,7 @@ describe('Feature: Animated shimmer on last changed work unit', () => {
         />
       );
 
-      const afterLoop = lastFrame() || '';
+      const afterLoop = frames[frames.length - 1] || '';
       const expectedLoopedToStart = applyShimmerGradient(text, 0, 'white', 'whiteBright');
       expect(afterLoop).toContain(expectedLoopedToStart);
     });
@@ -192,7 +192,7 @@ describe('Feature: Animated shimmer on last changed work unit', () => {
       ];
 
       // When the board is rendered
-      const { lastFrame, rerender } = render(
+      const { frames, rerender } = render(
         <UnifiedBoardLayout
           workUnits={workUnits}
           focusedColumnIndex={3}
@@ -201,7 +201,7 @@ describe('Feature: Animated shimmer on last changed work unit', () => {
         />
       );
 
-      const initialOutput = lastFrame() || '';
+      const initialOutput = frames[frames.length - 1] || '';
 
       // Then BUG-007 should display with a left-to-right shimmer wave
       expect(initialOutput).toContain('BUG-007');
@@ -223,7 +223,7 @@ describe('Feature: Animated shimmer on last changed work unit', () => {
         />
       );
 
-      const afterOneFrame = lastFrame() || '';
+      const afterOneFrame = frames[frames.length - 1] || '';
       const expectedPosition1 = applyShimmerGradient(text, 1, 'red', 'redBright');
       expect(afterOneFrame).toContain(expectedPosition1);
 
@@ -239,7 +239,7 @@ describe('Feature: Animated shimmer on last changed work unit', () => {
         />
       );
 
-      const afterLoop = lastFrame() || '';
+      const afterLoop = frames[frames.length - 1] || '';
       const expectedLoopedToStart = applyShimmerGradient(text, 0, 'red', 'redBright');
       expect(afterLoop).toContain(expectedLoopedToStart);
     });
@@ -272,7 +272,7 @@ describe('Feature: Animated shimmer on last changed work unit', () => {
       ];
 
       // When the board is rendered
-      const { lastFrame, rerender } = render(
+      const { frames, rerender } = render(
         <UnifiedBoardLayout
           workUnits={workUnits}
           focusedColumnIndex={2}
@@ -281,7 +281,7 @@ describe('Feature: Animated shimmer on last changed work unit', () => {
         />
       );
 
-      const initialOutput = lastFrame() || '';
+      const initialOutput = frames[frames.length - 1] || '';
 
       // Then TASK-003 should display with a left-to-right shimmer wave
       expect(initialOutput).toContain('TASK-003');
@@ -303,7 +303,7 @@ describe('Feature: Animated shimmer on last changed work unit', () => {
         />
       );
 
-      const afterOneFrame = lastFrame() || '';
+      const afterOneFrame = frames[frames.length - 1] || '';
       const expectedPosition1 = applyShimmerGradient(text, 1, 'blue', 'blueBright');
       expect(afterOneFrame).toContain(expectedPosition1);
 
@@ -319,7 +319,7 @@ describe('Feature: Animated shimmer on last changed work unit', () => {
         />
       );
 
-      const afterLoop = lastFrame() || '';
+      const afterLoop = frames[frames.length - 1] || '';
       const expectedLoopedToStart = applyShimmerGradient(text, 0, 'blue', 'blueBright');
       expect(afterLoop).toContain(expectedLoopedToStart);
     });
@@ -355,7 +355,7 @@ describe('Feature: Animated shimmer on last changed work unit', () => {
       const selectedWorkUnit = workUnits[0];
 
       // When the board is rendered
-      const { lastFrame, rerender } = render(
+      const { frames, rerender } = render(
         <UnifiedBoardLayout
           workUnits={workUnits}
           focusedColumnIndex={3}
@@ -364,7 +364,7 @@ describe('Feature: Animated shimmer on last changed work unit', () => {
         />
       );
 
-      const initialOutput = lastFrame() || '';
+      const initialOutput = frames[frames.length - 1] || '';
 
       // Then AUTH-001 should display with a left-to-right shimmer wave on the background
       expect(initialOutput).toContain('AUTH-001');
@@ -387,7 +387,7 @@ describe('Feature: Animated shimmer on last changed work unit', () => {
         />
       );
 
-      const afterOneFrame = lastFrame() || '';
+      const afterOneFrame = frames[frames.length - 1] || '';
       const expectedPosition1 = applyBackgroundShimmerGradient(text, 1);
       expect(afterOneFrame).toContain(expectedPosition1);
 
@@ -403,7 +403,7 @@ describe('Feature: Animated shimmer on last changed work unit', () => {
         />
       );
 
-      const afterLoop = lastFrame() || '';
+      const afterLoop = frames[frames.length - 1] || '';
       const expectedLoopedToStart = applyBackgroundShimmerGradient(text, 0);
       expect(afterLoop).toContain(expectedLoopedToStart);
     });
@@ -436,7 +436,7 @@ describe('Feature: Animated shimmer on last changed work unit', () => {
       ];
 
       // When the TUI starts up and loads the board
-      const { lastFrame } = render(
+      const { frames } = render(
         <UnifiedBoardLayout
           workUnits={workUnits}
           focusedColumnIndex={0}
@@ -445,7 +445,7 @@ describe('Feature: Animated shimmer on last changed work unit', () => {
         />
       );
 
-      const output = lastFrame() || '';
+      const output = frames[frames.length - 1] || '';
 
       // Then BOARD-008 should be identified as the last changed work unit
       expect(output).toContain('BOARD-008');
@@ -483,7 +483,7 @@ describe('Feature: Animated shimmer on last changed work unit', () => {
       ];
 
       // Render initial state
-      const { lastFrame, rerender } = render(
+      const { frames, rerender } = render(
         <UnifiedBoardLayout
           workUnits={initialWorkUnits}
           focusedColumnIndex={0}
@@ -493,7 +493,7 @@ describe('Feature: Animated shimmer on last changed work unit', () => {
       );
 
       // BOARD-008 should be shimmering initially
-      expect(lastFrame()).toContain('BOARD-008');
+      expect(frames[frames.length - 1]).toContain('BOARD-008');
 
       // When user moves FEAT-002 from testing to implementing status
       const updatedWorkUnits: WorkUnit[] = [
@@ -529,7 +529,7 @@ describe('Feature: Animated shimmer on last changed work unit', () => {
         />
       );
 
-      const updatedOutput = lastFrame() || '';
+      const updatedOutput = frames[frames.length - 1] || '';
 
       // Then shimmer should stop on BOARD-008
       // And shimmer should start on FEAT-002

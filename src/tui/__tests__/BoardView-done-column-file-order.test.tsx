@@ -53,7 +53,7 @@ describe('Feature: Work unit details panel shows incorrect work unit after reord
       ];
 
       // When I view the done column
-      const { lastFrame } = render(
+      const { frames } = render(
         <UnifiedBoardLayout
           workUnits={workUnits}
           focusedColumnIndex={5} // done column
@@ -62,7 +62,7 @@ describe('Feature: Work unit details panel shows incorrect work unit after reord
         />
       );
 
-      const output = lastFrame() || '';
+      const output = frames[frames.length - 1] || '';
 
       // Then the work units should be displayed in EXACT ARRAY ORDER: BOARD-003, BOARD-005, BOARD-001
       // NOT sorted by timestamp (which would be BOARD-005, BOARD-003, BOARD-001)
@@ -129,7 +129,7 @@ describe('Feature: Work unit details panel shows incorrect work unit after reord
       ];
 
       // When I view the done column
-      const { lastFrame } = render(
+      const { frames } = render(
         <UnifiedBoardLayout
           workUnits={workUnits}
           focusedColumnIndex={5}
@@ -138,7 +138,7 @@ describe('Feature: Work unit details panel shows incorrect work unit after reord
         />
       );
 
-      const output = lastFrame() || '';
+      const output = frames[frames.length - 1] || '';
 
       // Then the work units should display in EXACT array order: BOARD-001, BOARD-003, BOARD-002
       const lines = output.split('\n');
