@@ -30,8 +30,8 @@ describe('Feature: Replace Git Stashes with Checkpoint Component - Integration',
       await new Promise(resolve => setTimeout(resolve, 200));
 
       // When the board view renders
-      // Get the last frame that's not an escape sequence
-      const output = frames.find(frame => frame.includes('View Checkpoints') || frame.includes('View Changed Files')) || frames[frames.length - 1];
+      // Get the last frame that's not an escape sequence - search for any checkpoint-related content
+      const output = frames.find(frame => frame.length > 100 && (frame.includes('Checkpoints') || frame.includes('Changed Files') || frame.includes('Backlog'))) || frames[frames.length - 1];
 
       // Then it should display "C View Checkpoints ◆ F View Changed Files"
       expect(output).toContain('C View Checkpoints');

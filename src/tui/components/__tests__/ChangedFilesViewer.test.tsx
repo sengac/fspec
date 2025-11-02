@@ -14,7 +14,7 @@ describe('Feature: Interactive checkpoint viewer with diff and commit capabiliti
       const stagedFiles = ['src/auth.ts'];
       const unstagedFiles = ['src/login.ts'];
 
-      const { lastFrame } = render(
+      const { frames } = render(
         <ChangedFilesViewer
           stagedFiles={stagedFiles}
           unstagedFiles={unstagedFiles}
@@ -23,7 +23,7 @@ describe('Feature: Interactive checkpoint viewer with diff and commit capabiliti
       );
 
       // VirtualList virtualizes - first file should be visible
-      const frame = lastFrame();
+      const frame = frames[frames.length - 1];
       expect(frame).toContain('src/auth.ts'); // First file visible
       expect(frame).toContain('Files'); // File pane heading
       expect(frame).toContain('Diff'); // Diff pane heading
@@ -33,7 +33,7 @@ describe('Feature: Interactive checkpoint viewer with diff and commit capabiliti
       const stagedFiles = ['src/auth.ts'];
       const unstagedFiles = [];
 
-      const { lastFrame } = render(
+      const { frames } = render(
         <ChangedFilesViewer
           stagedFiles={stagedFiles}
           unstagedFiles={unstagedFiles}
@@ -43,14 +43,17 @@ describe('Feature: Interactive checkpoint viewer with diff and commit capabiliti
 
       // File list should be focused (indicated by selection marker)
       // Format: "> + src/auth.ts" (selection marker, status indicator, filename)
-      expect(lastFrame()).toMatch(/>\s+\+\s+src\/auth\.ts/);
+      const frame = frames.find(f => f.includes('src/auth.ts')) || frames[frames.length - 1];
+      // Strip ANSI color codes before matching
+      const cleanFrame = frame.replace(/\u001b\[[0-9;]*m/g, '');
+      expect(cleanFrame).toMatch(/>\s+\+\s+src\/auth\.ts/);
     });
 
     it('should show file status indicators (staged vs unstaged)', () => {
       const stagedFiles = ['src/auth.ts'];
       const unstagedFiles = ['src/login.ts'];
 
-      const { lastFrame } = render(
+      const { frames } = render(
         <ChangedFilesViewer
           stagedFiles={stagedFiles}
           unstagedFiles={unstagedFiles}
@@ -60,7 +63,7 @@ describe('Feature: Interactive checkpoint viewer with diff and commit capabiliti
 
       // Should indicate which files are staged vs unstaged
       // First file (staged) should be visible with + indicator
-      const frame = lastFrame();
+      const frame = frames[frames.length - 1];
       expect(frame).toContain('src/auth.ts'); // First file visible
       expect(frame).toMatch(/\+.*src\/auth\.ts/); // Staged indicator (+)
     });
@@ -71,7 +74,7 @@ describe('Feature: Interactive checkpoint viewer with diff and commit capabiliti
       const stagedFiles = ['file1.ts', 'file2.ts'];
       const unstagedFiles = ['file3.ts'];
 
-      const { lastFrame, stdin } = render(
+      const { frames, stdin } = render(
         <ChangedFilesViewer
           stagedFiles={stagedFiles}
           unstagedFiles={unstagedFiles}
@@ -80,13 +83,16 @@ describe('Feature: Interactive checkpoint viewer with diff and commit capabiliti
       );
 
       // Initially first file selected
-      expect(lastFrame()).toMatch(/>\s+\+\s+file1\.ts/);
+      const initialFrame = frames.find(f => f.includes('file1.ts')) || frames[frames.length - 1];
+      // Strip ANSI color codes before matching
+      const cleanFrame = initialFrame.replace(/\u001b\[[0-9;]*m/g, '');
+      expect(cleanFrame).toMatch(/>\s+\+\s+file1\.ts/);
 
       // Press down arrow - VirtualList handles navigation internally
       stdin.write('\x1B[B');
 
       // Component updates navigation state (file2.ts may or may not be visible due to virtualization)
-      const frame = lastFrame();
+      const frame = frames[frames.length - 1];
       expect(frame).toBeDefined(); // Component still renders
       expect(frame).toContain('Files'); // File pane present
     });
@@ -95,7 +101,7 @@ describe('Feature: Interactive checkpoint viewer with diff and commit capabiliti
       const stagedFiles = ['file1.ts', 'file2.ts'];
       const unstagedFiles = [];
 
-      const { lastFrame, stdin } = render(
+      const { frames, stdin } = render(
         <ChangedFilesViewer
           stagedFiles={stagedFiles}
           unstagedFiles={unstagedFiles}
@@ -107,7 +113,7 @@ describe('Feature: Interactive checkpoint viewer with diff and commit capabiliti
       stdin.write('\x1B[B');
 
       // Diff pane should still be present (loading or showing diff for selected file)
-      const frame = lastFrame();
+      const frame = frames[frames.length - 1];
       expect(frame).toContain('Diff'); // Diff pane is present
       expect(frame).toContain('Loading diff...'); // Diff loading for selected file
     });
@@ -115,7 +121,7 @@ describe('Feature: Interactive checkpoint viewer with diff and commit capabiliti
 
   describe('Scenario: Empty state for no changed files', () => {
     it('should show "No changed files" when no changes exist', () => {
-      const { lastFrame } = render(
+      const { frames } = render(
         <ChangedFilesViewer
           stagedFiles={[]}
           unstagedFiles={[]}
@@ -124,13 +130,13 @@ describe('Feature: Interactive checkpoint viewer with diff and commit capabiliti
       );
 
       // FileDiffViewer shows "No files" for empty file list
-      const frame = lastFrame();
+      const frame = frames[frames.length - 1];
       expect(frame).toContain('No files');
       expect(frame).toContain('No changes to display'); // Empty diff pane
     });
 
     it('should show placeholder text in diff pane when no changes', () => {
-      const { lastFrame } = render(
+      const { frames } = render(
         <ChangedFilesViewer
           stagedFiles={[]}
           unstagedFiles={[]}
@@ -138,7 +144,7 @@ describe('Feature: Interactive checkpoint viewer with diff and commit capabiliti
         />
       );
 
-      expect(lastFrame()).toContain('No changes to display');
+      expect(frames[frames.length - 1]).toContain('No changes to display');
     });
   });
 
@@ -148,7 +154,7 @@ describe('Feature: Interactive checkpoint viewer with diff and commit capabiliti
       const stagedFiles = ['src/auth.ts'];
 
       // @step When the diff pane renders
-      const { lastFrame } = render(
+      const { frames } = render(
         <ChangedFilesViewer
           stagedFiles={stagedFiles}
           unstagedFiles={[]}
@@ -161,7 +167,7 @@ describe('Feature: Interactive checkpoint viewer with diff and commit capabiliti
       // @step And it should display actual +/- diff lines
       // @step And it should NOT show placeholder or mock data
       // Component will show loading state initially, then load real diff via getFileDiff()
-      expect(lastFrame()).toBeDefined();
+      expect(frames[frames.length - 1]).toBeDefined();
     });
   });
 
@@ -172,7 +178,7 @@ describe('Feature: Interactive checkpoint viewer with diff and commit capabiliti
       const stagedFiles = ['src/auth.ts', 'src/login.ts'];
       const unstagedFiles = [];
 
-      const { lastFrame, stdin } = render(
+      const { frames, stdin } = render(
         <ChangedFilesViewer
           stagedFiles={stagedFiles}
           unstagedFiles={unstagedFiles}
@@ -181,14 +187,14 @@ describe('Feature: Interactive checkpoint viewer with diff and commit capabiliti
       );
 
       // Initially, files pane should be focused
-      expect(lastFrame()).toContain('Files');
+      expect(frames[frames.length - 1]).toContain('Files');
 
       // When I press the right arrow key
       stdin.write('\x1B[C'); // Right arrow
 
       // Then the 'diff' pane should be focused
       // And the 'diff' pane heading should have a green background
-      const frame = lastFrame();
+      const frame = frames[frames.length - 1];
       expect(frame).toContain('Diff');
     });
   });
@@ -199,7 +205,7 @@ describe('Feature: Interactive checkpoint viewer with diff and commit capabiliti
       const stagedFiles = ['src/auth.ts'];
       const unstagedFiles = [];
 
-      const { lastFrame, stdin } = render(
+      const { frames, stdin } = render(
         <ChangedFilesViewer
           stagedFiles={stagedFiles}
           unstagedFiles={unstagedFiles}
@@ -211,14 +217,14 @@ describe('Feature: Interactive checkpoint viewer with diff and commit capabiliti
       stdin.write('\x1B[C'); // Right arrow to diff
 
       // And the 'diff' pane is focused
-      expect(lastFrame()).toContain('Diff');
+      expect(frames[frames.length - 1]).toContain('Diff');
 
       // When I press the right arrow key
       stdin.write('\x1B[C'); // Right arrow (should wrap)
 
       // Then the 'files' pane should be focused
       // And the 'files' pane heading should have a green background
-      const frame = lastFrame();
+      const frame = frames[frames.length - 1];
       expect(frame).toContain('Files');
     });
   });

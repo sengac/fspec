@@ -35,7 +35,7 @@ describe('Feature: Vertical layout for changed files viewer', () => {
         { path: 'src/login.ts', status: 'unstaged' as const }
       ];
 
-      const { lastFrame } = render(
+      const { frames } = render(
         <FileDiffViewer
           files={files}
           focusedPane="files"
@@ -45,7 +45,7 @@ describe('Feature: Vertical layout for changed files viewer', () => {
       );
 
       // When the component layout is measured
-      const frame = lastFrame();
+      const frame = frames[frames.length - 1];
 
       // Then the container flexDirection should be "column"
       // And the files pane should be positioned above the diff pane
@@ -66,7 +66,7 @@ describe('Feature: Vertical layout for changed files viewer', () => {
       // Given FileDiffViewer is rendered with 100px total height
       const files = [{ path: 'test.ts', status: 'staged' as const }];
 
-      const { lastFrame } = render(
+      const { frames } = render(
         <FileDiffViewer
           files={files}
           focusedPane="files"
@@ -76,7 +76,7 @@ describe('Feature: Vertical layout for changed files viewer', () => {
       );
 
       // When the component calculates flexGrow ratios
-      const frame = lastFrame();
+      const frame = frames[frames.length - 1];
 
       // Then the files pane should have flexGrow of 1 (33% height)
       // And the diff pane should have flexGrow of 2 (67% height)
@@ -92,7 +92,7 @@ describe('Feature: Vertical layout for changed files viewer', () => {
       // Given FileDiffViewer is rendered with vertical layout
       const files = [{ path: 'test.ts', status: 'staged' as const }];
 
-      const { lastFrame } = render(
+      const { frames } = render(
         <FileDiffViewer
           files={files}
           focusedPane="files"
@@ -102,7 +102,7 @@ describe('Feature: Vertical layout for changed files viewer', () => {
       );
 
       // When borders are rendered between panes
-      const frame = lastFrame();
+      const frame = frames[frames.length - 1];
 
       // Then the files pane should have borderBottom set to true
       // And the files pane should have borderRight set to false
@@ -116,12 +116,12 @@ describe('Feature: Vertical layout for changed files viewer', () => {
   describe('Scenario: CheckpointViewer renders with horizontal top row and vertical overall layout', () => {
     it('should render with column overall and row top layout', () => {
       // Given CheckpointViewer is rendered with checkpoints, files, and diff
-      const { lastFrame } = render(
+      const { frames } = render(
         <CheckpointViewer onExit={() => {}} />
       );
 
       // When the component layout is measured
-      const frame = lastFrame();
+      const frame = frames[frames.length - 1];
 
       // Then the overall container flexDirection should be "column"
       // And the top row flexDirection should be "row" with checkpoints and files side-by-side
@@ -134,12 +134,12 @@ describe('Feature: Vertical layout for changed files viewer', () => {
   describe('Scenario: CheckpointViewer maintains correct width proportions in top row', () => {
     it('should maintain 33% checkpoints / 67% files width ratio in top row', () => {
       // Given CheckpointViewer is rendered with 100px top row width
-      const { lastFrame } = render(
+      const { frames } = render(
         <CheckpointViewer onExit={() => {}} />
       );
 
       // When the top row calculates flexGrow ratios
-      const frame = lastFrame();
+      const frame = frames[frames.length - 1];
 
       // Then the checkpoints pane should have flexGrow of 1 (33% width)
       // And the files pane should have flexGrow of 2 (67% width)
@@ -152,12 +152,12 @@ describe('Feature: Vertical layout for changed files viewer', () => {
   describe('Scenario: CheckpointViewer maintains correct height proportions overall', () => {
     it('should maintain 33% top row / 67% diff height ratio', () => {
       // Given CheckpointViewer is rendered with 100px total height
-      const { lastFrame } = render(
+      const { frames } = render(
         <CheckpointViewer onExit={() => {}} />
       );
 
       // When the component calculates overall flexGrow ratios
-      const frame = lastFrame();
+      const frame = frames[frames.length - 1];
 
       // Then the top row should have flexGrow of 1 (33% height)
       // And the bottom diff pane should have flexGrow of 2 (67% height)

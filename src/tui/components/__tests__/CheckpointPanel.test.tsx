@@ -38,10 +38,10 @@ describe('Feature: Replace Git Stashes with Checkpoint Component', () => {
       // And there are no checkpoints for the current work unit
 
       // When the checkpoint panel renders
-      const { lastFrame } = render(<CheckpointPanel cwd={tmpDir} />);
+      const { frames } = render(<CheckpointPanel cwd={tmpDir} />);
 
       // Then it should display "Checkpoints: None"
-      expect(lastFrame()).toContain('Checkpoints: None');
+      expect(frames[frames.length - 1]).toContain('Checkpoints: None');
     });
   });
 
@@ -61,10 +61,10 @@ describe('Feature: Replace Git Stashes with Checkpoint Component', () => {
       }));
 
       // When the checkpoint panel renders
-      const { lastFrame } = render(<CheckpointPanel cwd={tmpDir} />);
+      const { frames } = render(<CheckpointPanel cwd={tmpDir} />);
 
       // Then the TUI should automatically update to display "Checkpoints: 1 Manual, 0 Auto"
-      expect(lastFrame()).toContain('Checkpoints: 1 Manual, 0 Auto');
+      expect(frames[frames.length - 1]).toContain('Checkpoints: 1 Manual, 0 Auto');
     });
   });
 
@@ -83,10 +83,10 @@ describe('Feature: Replace Git Stashes with Checkpoint Component', () => {
         ]
       }));
 
-      const { lastFrame } = render(<CheckpointPanel cwd={tmpDir} />);
+      const { frames } = render(<CheckpointPanel cwd={tmpDir} />);
 
       // Then the TUI should automatically update to display "Checkpoints: 2 Manual, 0 Auto"
-      expect(lastFrame()).toContain('Checkpoints: 2 Manual, 0 Auto');
+      expect(frames[frames.length - 1]).toContain('Checkpoints: 2 Manual, 0 Auto');
     });
   });
 
@@ -106,10 +106,10 @@ describe('Feature: Replace Git Stashes with Checkpoint Component', () => {
 
       // And chokidar detects the change in the index directory
       // When the checkpoint panel renders
-      const { lastFrame } = render(<CheckpointPanel cwd={tmpDir} />);
+      const { frames } = render(<CheckpointPanel cwd={tmpDir} />);
 
       // Then the checkpoint count should update immediately without debouncing
-      expect(lastFrame()).toContain('Checkpoints: 0 Manual, 1 Auto');
+      expect(frames[frames.length - 1]).toContain('Checkpoints: 0 Manual, 1 Auto');
     });
   });
 

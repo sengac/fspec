@@ -20,7 +20,7 @@ describe('Feature: Pure flexbox layout for checkpoint and changed files viewers'
 
       // @step When VirtualList renders
       // This should fail because VirtualList currently requires height prop
-      const { lastFrame } = render(
+      const { frames } = render(
         <VirtualList
           items={items}
           renderItem={(item) => <Box>{item}</Box>}
@@ -31,7 +31,7 @@ describe('Feature: Pure flexbox layout for checkpoint and changed files viewers'
       // @step And it should calculate visibleHeight from useTerminalSize internally
       // @step And it should display only items that fit in available height
       // @step And it should NOT accept a height prop
-      expect(lastFrame()).toBeDefined();
+      expect(frames[frames.length - 1]).toBeDefined();
     });
 
     it('should use flexGrow to fill container', () => {
@@ -39,7 +39,7 @@ describe('Feature: Pure flexbox layout for checkpoint and changed files viewers'
       // Currently will fail because VirtualList uses hardcoded height
       const items = ['Item 1', 'Item 2', 'Item 3'];
 
-      const { lastFrame } = render(
+      const { frames } = render(
         <Box flexDirection="column" height={20}>
           <VirtualList
             items={items}
@@ -49,7 +49,7 @@ describe('Feature: Pure flexbox layout for checkpoint and changed files viewers'
       );
 
       // VirtualList should fill the parent container
-      expect(lastFrame()).toContain('Item 1');
+      expect(frames[frames.length - 1]).toContain('Item 1');
     });
 
     it('should calculate visible items from terminal size', () => {
@@ -57,7 +57,7 @@ describe('Feature: Pure flexbox layout for checkpoint and changed files viewers'
       // @step When VirtualList renders with many items
       const items = Array.from({ length: 100 }, (_, i) => `Item ${i + 1}`);
 
-      const { lastFrame } = render(
+      const { frames } = render(
         <VirtualList
           items={items}
           renderItem={(item) => <Box>{item}</Box>}
@@ -66,7 +66,7 @@ describe('Feature: Pure flexbox layout for checkpoint and changed files viewers'
 
       // @step Then it should display only items that fit
       // Currently fails because height is required
-      expect(lastFrame()).toBeDefined();
+      expect(frames[frames.length - 1]).toBeDefined();
     });
   });
 
@@ -76,7 +76,7 @@ describe('Feature: Pure flexbox layout for checkpoint and changed files viewers'
       const items = Array.from({ length: 50 }, (_, i) => `Item ${i + 1}`);
 
       // @step When terminal resizes to 120x40
-      const { lastFrame } = render(
+      const { frames } = render(
         <VirtualList
           items={items}
           renderItem={(item) => <Box>{item}</Box>}
@@ -87,7 +87,7 @@ describe('Feature: Pure flexbox layout for checkpoint and changed files viewers'
       // @step And there should be NO re-render glitches or flickering
       // @step And proportional sizing should recalculate correctly
       // useTerminalSize hook ensures automatic adjustment to terminal size changes
-      expect(lastFrame()).toBeDefined();
+      expect(frames[frames.length - 1]).toBeDefined();
     });
   });
 });

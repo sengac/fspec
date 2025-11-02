@@ -22,27 +22,27 @@ describe('Feature: Scaffold TUI infrastructure with Ink and cage components', ()
       // Given I have created FullScreenLayout component in src/tui/layouts/
       // When I import FullScreenLayout and wrap a Text component with title='Test View'
 
-      const { lastFrame } = render(
+      const { frames } = render(
         <FullScreenLayout title="Test View">
           <Text>Content</Text>
         </FullScreenLayout>
       );
 
       // Then the component should render with a title bar displaying 'Test View'
-      expect(lastFrame()).toContain('Test View');
+      expect(frames[frames.length - 1]).toContain('Test View');
     });
 
     it('should render with a footer displaying keyboard shortcuts', () => {
       // Given I have created FullScreenLayout component in src/tui/layouts/
 
-      const { lastFrame } = render(
+      const { frames } = render(
         <FullScreenLayout title="Test View" footer="Press 'q' to quit">
           <Text>Content</Text>
         </FullScreenLayout>
       );
 
       // And the component should render with a footer displaying keyboard shortcuts
-      expect(lastFrame()).toContain("Press 'q' to quit");
+      expect(frames[frames.length - 1]).toContain("Press 'q' to quit");
     });
   });
 
@@ -57,7 +57,7 @@ describe('Feature: Scaffold TUI infrastructure with Ink and cage components', ()
         viewB: { id: 'viewB', component: ViewB, metadata: { title: 'View B' } },
       };
 
-      const { lastFrame } = render(
+      const { frames } = render(
         <ViewManager initialView="viewA" views={views} />
       );
 
@@ -66,7 +66,7 @@ describe('Feature: Scaffold TUI infrastructure with Ink and cage components', ()
 
       // Then ViewB should be rendered
       // This test will fail until ViewManager is implemented
-      expect(lastFrame()).toContain('View A'); // Initially shows ViewA
+      expect(frames[frames.length - 1]).toContain('View A'); // Initially shows ViewA
     });
 
     it('should return to previous view when goBack() is called', () => {
@@ -90,13 +90,13 @@ describe('Feature: Scaffold TUI infrastructure with Ink and cage components', ()
         return <Text>{workUnits.length} work units</Text>;
       };
 
-      const { lastFrame } = render(<TestComponent />);
+      const { frames } = render(<TestComponent />);
 
       // When I update a work unit status in the store
       // Then the Ink component should re-render with the updated work unit status
 
       // This test will fail until store is implemented
-      expect(lastFrame()).toContain('work units');
+      expect(frames[frames.length - 1]).toContain('work units');
     });
 
     it('should ensure state updates are immutable', () => {
@@ -118,21 +118,21 @@ describe('Feature: Scaffold TUI infrastructure with Ink and cage components', ()
       const HelloWorld = () => <Text>Hello World</Text>;
 
       // When I render the component using ink-testing-library's render() function
-      const { lastFrame } = render(<HelloWorld />);
+      const { frames } = render(<HelloWorld />);
 
       // Then I should be able to query the rendered output for 'Hello World'
-      expect(lastFrame()).toContain('Hello World');
+      expect(frames[frames.length - 1]).toContain('Hello World');
     });
 
     it('should allow assertions on text content', () => {
       // Given a component with specific text
       const TestComponent = () => <Text color="green">Success</Text>;
 
-      const { lastFrame } = render(<TestComponent />);
+      const { frames } = render(<TestComponent />);
 
       // And I should be able to assert that the text content matches expectations
-      expect(lastFrame()).toContain('Success');
-      expect(lastFrame()).toBeTruthy();
+      expect(frames[frames.length - 1]).toContain('Success');
+      expect(frames[frames.length - 1]).toBeTruthy();
     });
   });
 
@@ -146,7 +146,7 @@ describe('Feature: Scaffold TUI infrastructure with Ink and cage components', ()
         return <Text>Mode: {mode}</Text>;
       };
 
-      const { lastFrame } = render(
+      const { frames } = render(
         <InputModeProvider>
           <TestComponent />
         </InputModeProvider>
@@ -157,7 +157,7 @@ describe('Feature: Scaffold TUI infrastructure with Ink and cage components', ()
       // And keyboard input should be captured for text entry
 
       // This test will fail until InputModeContext is implemented
-      expect(lastFrame()).toContain('Mode:');
+      expect(frames[frames.length - 1]).toContain('Mode:');
     });
 
     it('should return to normal mode when Escape key is pressed', () => {
