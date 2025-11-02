@@ -225,15 +225,21 @@ describe('Feature: Stable Question Indices for Concurrent Answers', () => {
 
       // And all 3 rules should be added to the work unit rules array
       expect(updatedWorkUnits.workUnits['WORK-001'].rules).toHaveLength(3);
-      expect(updatedWorkUnits.workUnits['WORK-001'].rules).toContain(
-        'Answer 0'
-      );
-      expect(updatedWorkUnits.workUnits['WORK-001'].rules).toContain(
-        'Answer 1'
-      );
-      expect(updatedWorkUnits.workUnits['WORK-001'].rules).toContain(
-        'Answer 2'
-      );
+      expect(
+        updatedWorkUnits.workUnits['WORK-001'].rules.some(
+          (r) => r.text === 'Answer 0'
+        )
+      ).toBe(true);
+      expect(
+        updatedWorkUnits.workUnits['WORK-001'].rules.some(
+          (r) => r.text === 'Answer 1'
+        )
+      ).toBe(true);
+      expect(
+        updatedWorkUnits.workUnits['WORK-001'].rules.some(
+          (r) => r.text === 'Answer 2'
+        )
+      ).toBe(true);
 
       // And no data loss should occur (all questions still present)
       expect(updatedWorkUnits.workUnits['WORK-001'].questions).toHaveLength(3);
@@ -377,12 +383,16 @@ describe('Feature: Stable Question Indices for Concurrent Answers', () => {
 
       // And both rules "Answer A" and "Answer B" should be added
       expect(updatedWorkUnits.workUnits['WORK-001'].rules).toHaveLength(2);
-      expect(updatedWorkUnits.workUnits['WORK-001'].rules).toContain(
-        'Answer A'
-      );
-      expect(updatedWorkUnits.workUnits['WORK-001'].rules).toContain(
-        'Answer B'
-      );
+      expect(
+        updatedWorkUnits.workUnits['WORK-001'].rules.some(
+          (r) => r.text === 'Answer A'
+        )
+      ).toBe(true);
+      expect(
+        updatedWorkUnits.workUnits['WORK-001'].rules.some(
+          (r) => r.text === 'Answer B'
+        )
+      ).toBe(true);
     });
   });
 });

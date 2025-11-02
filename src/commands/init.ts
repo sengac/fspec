@@ -113,6 +113,8 @@ export async function installAgents(
     throw new Error('Agent switch cancelled by user');
   }
 
+  // INIT-015: Templates are now PRESERVED, not deleted when switching agents
+
   const filesInstalled: string[] = [];
 
   // Install each agent
@@ -122,6 +124,11 @@ export async function installAgents(
       const files = await installAgentFiles(cwd, agent);
       filesInstalled.push(...files);
     }
+  }
+
+  // Write agent config so next call can detect the installed agent
+  if (agentIds.length > 0) {
+    writeAgentConfig(cwd, agentIds[0]);
   }
 
   return filesInstalled;

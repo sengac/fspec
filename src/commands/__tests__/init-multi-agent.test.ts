@@ -148,9 +148,9 @@ describe('Feature: Support multiple AI agents beyond Claude', () => {
       // When I run "fspec init --agent=cursor"
       await installAgents(testDir, ['cursor']);
 
-      // Then Claude-specific files should be removed
-      expect(existsSync(specClaudeMd)).toBe(false);
-      expect(existsSync(claudeSlashCmd)).toBe(false);
+      // Then Claude-specific files should be PRESERVED (INIT-015)
+      expect(existsSync(specClaudeMd)).toBe(true);
+      expect(existsSync(claudeSlashCmd)).toBe(true);
 
       // And Cursor-specific files should be created
       expect(existsSync(join(testDir, 'spec', 'CURSOR.md'))).toBe(true);

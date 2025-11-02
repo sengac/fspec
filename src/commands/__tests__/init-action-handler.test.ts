@@ -68,11 +68,11 @@ describe('Feature: Agent switching prompt in fspec init - Action Handler', () =>
       // Then the prompt should ask 'Switch from Claude to Cursor?'
       expect(mockPromptSwitch).toHaveBeenCalledWith('claude', 'cursor');
 
-      // Then spec/CLAUDE.md should be removed
-      expect(existsSync(claudeMdPath)).toBe(false);
+      // Then spec/CLAUDE.md should be PRESERVED (INIT-015)
+      expect(existsSync(claudeMdPath)).toBe(true);
 
-      // Then .claude/commands/fspec.md should be removed
-      expect(existsSync(claudeSlashCmd)).toBe(false);
+      // Then .claude/commands/fspec.md should be PRESERVED (INIT-015)
+      expect(existsSync(claudeSlashCmd)).toBe(true);
 
       // Then spec/CURSOR.md should be created
       const cursorMdPath = join(specDir, 'CURSOR.md');

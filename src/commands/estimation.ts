@@ -129,8 +129,8 @@ export async function queryEstimateAccuracy(
 ): Promise<
   | string
   | {
-      estimated: number;
-      iterations: number;
+      estimated: string;
+      actual: string;
       comparison: string;
     }
 > {
@@ -153,8 +153,8 @@ export async function queryEstimateAccuracy(
     const comparison = 'N/A (token tracking removed)';
 
     return {
-      estimated: workUnit.estimate,
-      iterations: workUnit.iterations || 0,
+      estimated: `${workUnit.estimate} points`,
+      actual: `${workUnit.iterations || 0} iterations`,
       comparison,
     };
   }
@@ -168,7 +168,7 @@ export async function queryEstimateAccuracy(
     {};
 
   for (const wu of completedWorkUnits) {
-    const key = `${wu.estimate}-point`;
+    const key = `${wu.estimate}`;
     if (!byPoints[key]) {
       byPoints[key] = { totalIterations: 0, count: 0 };
     }
@@ -187,7 +187,7 @@ export async function queryEstimateAccuracy(
   }
 
   if (output === 'json') {
-    return JSON.stringify(result, null, 2);
+    return JSON.stringify({ byStoryPoints: result }, null, 2);
   }
 
   // Text output
@@ -195,7 +195,7 @@ export async function queryEstimateAccuracy(
   text += '==========================\n\n';
 
   for (const [key, stats] of Object.entries(result)) {
-    text += `${key}:\n`;
+    text += `${key} point${key !== '1' ? 's' : ''}:\n`;
     text += `  Average iterations: ${stats.avgIterations}\n`;
     text += `  Samples: ${stats.samples}\n\n`;
   }
@@ -227,11 +227,11 @@ export async function queryEstimateAccuracyByPrefix(options: {
     byPrefix[prefix].count += 1;
   }
 
-  const result: Record<string, { avgIterations: number; samples: number }> = {};
+  const result: Record<string, { avgAccuracy: number; samples: number }> = {};
 
   for (const [prefix, stats] of Object.entries(byPrefix)) {
     result[prefix] = {
-      avgIterations:
+      avgAccuracy:
         Math.round((stats.totalIterations / stats.count) * 10) / 10,
       samples: stats.count,
     };
@@ -247,7 +247,7 @@ export async function queryEstimateAccuracyByPrefix(options: {
 
   for (const [prefix, stats] of Object.entries(result)) {
     text += `${prefix}:\n`;
-    text += `  Average iterations: ${stats.avgIterations}\n`;
+    text += `  Average iterations: ${stats.avgAccuracy}\n`;
     text += `  Samples: ${stats.samples}\n\n`;
   }
 

@@ -36476,6 +36476,34 @@
       "questions": [],
       "nextQuestionId": 0,
       "updated": "2025-11-02T03:08:34.173Z"
+    },
+    "BUG-055": {
+      "id": "BUG-055",
+      "title": "Fix 35 broken tests from EXMAP-001 refactor",
+      "type": "bug",
+      "status": "validating",
+      "createdAt": "2025-11-02T03:40:06.201Z",
+      "updatedAt": "2025-11-02T05:18:53.242Z",
+      "description": "EXMAP-001 redesigned Example Mapping from string-based to ID-based data structures (rules/examples/questions/notes as objects with IDs instead of plain strings). This broke 14 test assertions that expected strings instead of objects. Additionally, 7 init/agent-switching tests are failing with boolean assertion errors, and 1 estimation test has incorrect return type expectations after token tracking removal.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-02T04:10:33.147Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-02T04:11:09.603Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-02T04:11:11.007Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-02T05:18:53.242Z"
+        }
+      ]
     }
   },
   "states": {
@@ -36520,7 +36548,9 @@
     ],
     "testing": [],
     "implementing": [],
-    "validating": [],
+    "validating": [
+      "BUG-055"
+    ],
     "done": [
       "CLEAN-003",
       "INIT-015",

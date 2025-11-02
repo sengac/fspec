@@ -53,9 +53,9 @@ describe('Feature: Agent switching prompt in fspec init', () => {
       // Write config (now done separately from installAgents)
       writeAgentConfig(testDir, 'cursor');
 
-      // Then Claude files should be removed
-      expect(existsSync(claudeMdPath)).toBe(false);
-      expect(existsSync(claudeSlashCmd)).toBe(false);
+      // Then Claude files should be PRESERVED (INIT-015: templates no longer deleted)
+      expect(existsSync(claudeMdPath)).toBe(true);
+      expect(existsSync(claudeSlashCmd)).toBe(true);
 
       // Then Cursor files should be installed
       const cursorMdPath = join(specDir, 'CURSOR.md');
@@ -130,8 +130,8 @@ describe('Feature: Agent switching prompt in fspec init', () => {
         shouldSwitch: true,
       });
 
-      // Then Claude files should be removed and Cursor files installed
-      expect(existsSync(claudeMdPath)).toBe(false);
+      // Then Claude files should be PRESERVED (INIT-015) and Cursor files installed
+      expect(existsSync(claudeMdPath)).toBe(true);
       const cursorMdPath = join(specDir, 'CURSOR.md');
       expect(existsSync(cursorMdPath)).toBe(true);
     });

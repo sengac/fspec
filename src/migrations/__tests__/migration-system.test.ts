@@ -52,6 +52,9 @@ describe('Feature: Build Migration System', () => {
 
   describe('Scenario: Automatic migration on first command after upgrade', () => {
     it('should run migration automatically on first command after upgrade', async () => {
+      // Clear any existing migrations (including migration001 from module load)
+      clearMigrations();
+
       // Register a test migration for v0.7.0
       registerMigration({
         version: '0.7.0',

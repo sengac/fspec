@@ -79,8 +79,8 @@ describe('Feature: Double prompt and missing success message in interactive init
       const cursorMdPath = join(specDir, 'CURSOR.md');
       expect(existsSync(cursorMdPath)).toBe(true);
 
-      // Verify Claude files removed
-      expect(existsSync(claudeMdPath)).toBe(false);
+      // Verify Claude files PRESERVED (INIT-015)
+      expect(existsSync(claudeMdPath)).toBe(true);
     });
   });
 
