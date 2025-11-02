@@ -106,7 +106,6 @@ import { registerQueryExampleMappingStatsCommand } from './commands/query-exampl
 import { registerQueryMetricsCommand } from './commands/query-metrics';
 import { registerQueryWorkUnitsCommand } from './commands/query-work-units';
 import { registerRecordIterationCommand } from './commands/record-iteration';
-import { registerRecordTokensCommand } from './commands/record-tokens';
 import { registerRegisterTagCommand } from './commands/register-tag';
 import { registerRemoveArchitectureNoteCommand } from './commands/remove-architecture-note';
 import { registerRemoveAttachmentCommand } from './commands/remove-attachment';
@@ -276,7 +275,6 @@ registerQueryExampleMappingStatsCommand(program);
 registerQueryMetricsCommand(program);
 registerQueryWorkUnitsCommand(program);
 registerRecordIterationCommand(program);
-registerRecordTokensCommand(program);
 registerRegisterTagCommand(program);
 registerRemoveArchitectureNoteCommand(program);
 registerRemoveAttachmentCommand(program);

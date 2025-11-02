@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-01T19:31:54.468Z"
+    "lastUpdated": "2025-11-02T03:08:34.158Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -16828,175 +16828,6 @@
       "nextRuleId": 5,
       "nextExampleId": 3,
       "nextQuestionId": 0,
-      "nextNoteId": 0
-    },
-    "EST-002": {
-      "id": "EST-002",
-      "title": "AI token usage tracking",
-      "type": "story",
-      "status": "specifying",
-      "createdAt": "2025-10-21T05:25:26.138Z",
-      "updatedAt": "2025-10-28T20:44:49.755Z",
-      "description": "Enable AI agents to record token usage cumulatively against work units throughout the development lifecycle, providing visibility into AI resource consumption per story from start to completion. Track input tokens, output tokens, and total cost across all iterations and state transitions.",
-      "children": [],
-      "stateHistory": [
-        {
-          "state": "specifying",
-          "timestamp": "2025-10-24T06:46:25.398Z"
-        }
-      ],
-      "userStory": {
-        "role": "AI agent working on fspec stories",
-        "action": "record token usage cumulatively across the development lifecycle",
-        "benefit": "organizations can track AI resource consumption and cost per work unit"
-      },
-      "rules": [
-        {
-          "id": 0,
-          "text": "Token recordings MUST be cumulative (adding to existing totals, never replacing)",
-          "deleted": false,
-          "createdAt": "2025-10-21T05:25:26.138Z"
-        },
-        {
-          "id": 1,
-          "text": "Token recordings MUST track input tokens, output tokens, model used, and timestamp",
-          "deleted": false,
-          "createdAt": "2025-10-21T05:25:26.138Z"
-        },
-        {
-          "id": 2,
-          "text": "Cost calculation MUST use model-specific pricing (Sonnet $3/MTok input, $15/MTok output)",
-          "deleted": false,
-          "createdAt": "2025-10-21T05:25:26.138Z"
-        },
-        {
-          "id": 3,
-          "text": "Token history MUST be preserved (append-only array) for audit trail",
-          "deleted": false,
-          "createdAt": "2025-10-21T05:25:26.138Z"
-        },
-        {
-          "id": 4,
-          "text": "Token recording is OPTIONAL but RECOMMENDED (not enforced by workflow)",
-          "deleted": false,
-          "createdAt": "2025-10-21T05:25:26.138Z"
-        },
-        {
-          "id": 5,
-          "text": "Failed attempts and rework MUST be tracked (all token usage counts, not just successful work)",
-          "deleted": false,
-          "createdAt": "2025-10-21T05:25:26.138Z"
-        },
-        {
-          "id": 6,
-          "text": "Purely manual recording. Agent decides when to record at meaningful checkpoints (no automatic prompts).",
-          "deleted": false,
-          "createdAt": "2025-10-21T05:25:26.138Z"
-        },
-        {
-          "id": 7,
-          "text": "Automatic prompts during state transitions. When agent moves between workflow states, system prompts to record tokens for the phase being completed.",
-          "deleted": false,
-          "createdAt": "2025-10-21T05:25:26.138Z"
-        },
-        {
-          "id": 8,
-          "text": "Per command execution with accumulation. Each state transition prompts for tokens used during that phase, which accumulate into work unit totals. Maintains detailed history of recordings.",
-          "deleted": false,
-          "createdAt": "2025-10-21T05:25:26.138Z"
-        },
-        {
-          "id": 9,
-          "text": "System tracks tokens internally as commands run. At state transitions, system presents accumulated tokens for that phase and prompts agent to confirm/record. Granularity: per workflow phase (specifying, testing, implementing, validating).",
-          "deleted": false,
-          "createdAt": "2025-10-21T05:25:26.138Z"
-        },
-        {
-          "id": 10,
-          "text": "Track tokens only, no cost calculation. System records input tokens, output tokens, and totals. Users calculate costs externally based on their pricing.",
-          "deleted": false,
-          "createdAt": "2025-10-21T05:25:26.138Z"
-        },
-        {
-          "id": 11,
-          "text": "Model-agnostic tracking. System records tokens only, does not track which AI model was used. Keeps implementation simple and flexible for any AI provider.",
-          "deleted": false,
-          "createdAt": "2025-10-21T05:25:26.138Z"
-        }
-      ],
-      "examples": [
-        {
-          "id": 0,
-          "text": "Agent completes BOARD-018 using 50K input, 40K output tokens with Sonnet → records: input=50000, output=40000, model=claude-sonnet-4, cost=$0.75",
-          "deleted": false,
-          "createdAt": "2025-10-21T05:25:26.138Z"
-        },
-        {
-          "id": 1,
-          "text": "Agent records tokens twice for same story (specifying: 30K/20K, implementing: 20K/20K) → totals: 50K input, 40K output, $0.75 total",
-          "deleted": false,
-          "createdAt": "2025-10-21T05:25:26.138Z"
-        },
-        {
-          "id": 2,
-          "text": "Show work unit EST-002 displays token summary: Total: 90K tokens, Cost: $0.75, Model: Sonnet, Recordings: 2",
-          "deleted": false,
-          "createdAt": "2025-10-21T05:25:26.138Z"
-        },
-        {
-          "id": 3,
-          "text": "Token summary command shows all work units: AUTH-001: 120K tokens ($1.20), DASH-002: 80K tokens ($0.60), Total: 200K tokens ($1.80)",
-          "deleted": false,
-          "createdAt": "2025-10-21T05:25:26.138Z"
-        },
-        {
-          "id": 4,
-          "text": "Agent switches from Sonnet to Opus mid-story → two recordings with different models → cost calculated per-model then summed",
-          "deleted": false,
-          "createdAt": "2025-10-21T05:25:26.138Z"
-        }
-      ],
-      "questions": [
-        {
-          "id": 0,
-          "text": "@human: Should token recording be prompted automatically during state transitions, or purely manual?",
-          "selected": true,
-          "answer": "Automatic prompts during state transitions. When agent moves between workflow states, system prompts to record tokens for the phase being completed.",
-          "deleted": false,
-          "createdAt": "2025-10-21T05:25:26.138Z"
-        },
-        {
-          "id": 1,
-          "text": "@human: Should we support bulk import (e.g., from Claude Code session logs) or only manual recording?",
-          "selected": true,
-          "answer": "System tracks tokens internally as commands run. At state transitions, system presents accumulated tokens for that phase and prompts agent to confirm/record. Granularity: per workflow phase (specifying, testing, implementing, validating).",
-          "deleted": false,
-          "createdAt": "2025-10-21T05:25:26.138Z"
-        },
-        {
-          "id": 2,
-          "text": "@human: Do we need to track cache hits/misses (prompt caching can reduce input token costs significantly)?",
-          "selected": true,
-          "answer": "Track tokens only, no cost calculation. System records input tokens, output tokens, and totals. Users calculate costs externally based on their pricing.",
-          "deleted": false,
-          "createdAt": "2025-10-21T05:25:26.138Z"
-        },
-        {
-          "id": 3,
-          "text": "@human: Should we support other models beyond Claude (GPT-4, Gemini) with their pricing?",
-          "selected": true,
-          "answer": "Model-agnostic tracking. System records tokens only, does not track which AI model was used. Keeps implementation simple and flexible for any AI provider.",
-          "deleted": false,
-          "createdAt": "2025-10-21T05:25:26.138Z"
-        }
-      ],
-      "assumptions": [
-        "Only manual recording for MVP. Bulk import from session logs is future enhancement.",
-        "Not for MVP. Track total tokens only. Prompt cache hit/miss tracking is future enhancement."
-      ],
-      "nextRuleId": 12,
-      "nextExampleId": 5,
-      "nextQuestionId": 4,
       "nextNoteId": 0
     },
     "TECH-001": {
@@ -36493,6 +36324,158 @@
         }
       ],
       "nextExampleId": 5
+    },
+    "CLEAN-003": {
+      "id": "CLEAN-003",
+      "title": "Remove token recording functionality",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-11-02T01:08:11.490Z",
+      "updatedAt": "2025-11-02T03:08:34.173Z",
+      "description": "Remove unreliable token tracking code including record-tokens command, actualTokens field, feature files, and all related infrastructure. Token tracking proved impractical due to self-reporting inaccuracy (estimated 30-40% reliability).",
+      "children": [],
+      "userStory": {
+        "role": "developer maintaining fspec",
+        "action": "remove all token recording functionality",
+        "benefit": "the codebase is cleaner and doesn't contain unreliable features"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-02T01:08:29.643Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-02T02:59:55.823Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-02T03:01:09.198Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-02T03:03:19.401Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-02T03:08:34.173Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "MUST remove src/commands/record-tokens.ts and src/commands/record-tokens-help.ts",
+          "deleted": false,
+          "createdAt": "2025-11-02T01:08:39.923Z"
+        },
+        {
+          "id": 1,
+          "text": "MUST remove actualTokens field from WorkUnit interface in src/types/index.ts",
+          "deleted": false,
+          "createdAt": "2025-11-02T01:08:40.405Z"
+        },
+        {
+          "id": 2,
+          "text": "MUST remove record-tokens import and registration from src/index.ts",
+          "deleted": false,
+          "createdAt": "2025-11-02T01:08:40.886Z"
+        },
+        {
+          "id": 3,
+          "text": "MUST remove record-tokens examples from src/help.ts",
+          "deleted": false,
+          "createdAt": "2025-11-02T01:08:41.364Z"
+        },
+        {
+          "id": 4,
+          "text": "MUST remove or update tests that reference actualTokens or recordTokens",
+          "deleted": false,
+          "createdAt": "2025-11-02T01:08:41.848Z"
+        },
+        {
+          "id": 5,
+          "text": "MUST remove spec/features/ai-token-usage-tracking.feature and its .coverage file",
+          "deleted": false,
+          "createdAt": "2025-11-02T01:08:42.327Z"
+        },
+        {
+          "id": 6,
+          "text": "MUST preserve record-iteration and query-metrics commands (they're separate from token tracking)",
+          "deleted": false,
+          "createdAt": "2025-11-02T01:08:42.819Z"
+        },
+        {
+          "id": 7,
+          "text": "MUST update any documentation that mentions token recording",
+          "deleted": false,
+          "createdAt": "2025-11-02T01:08:43.304Z"
+        }
+      ],
+      "nextRuleId": 8,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Delete src/commands/record-tokens.ts file (102 lines)",
+          "deleted": false,
+          "createdAt": "2025-11-02T01:08:52.393Z"
+        },
+        {
+          "id": 1,
+          "text": "Delete src/commands/record-tokens-help.ts file (36 lines)",
+          "deleted": false,
+          "createdAt": "2025-11-02T01:08:52.875Z"
+        },
+        {
+          "id": 2,
+          "text": "Remove 'actualTokens?: number' from WorkUnit interface",
+          "deleted": false,
+          "createdAt": "2025-11-02T01:08:53.357Z"
+        },
+        {
+          "id": 3,
+          "text": "Remove line 109 from src/index.ts: import { registerRecordTokensCommand } from './commands/record-tokens'",
+          "deleted": false,
+          "createdAt": "2025-11-02T01:08:53.854Z"
+        },
+        {
+          "id": 4,
+          "text": "Remove lines 1079-1081 from src/help.ts showing record-tokens examples",
+          "deleted": false,
+          "createdAt": "2025-11-02T01:08:54.367Z"
+        },
+        {
+          "id": 5,
+          "text": "Update work-unit-estimation-and-metrics.test.ts to remove token recording scenario (lines 138-173)",
+          "deleted": false,
+          "createdAt": "2025-11-02T01:08:54.862Z"
+        },
+        {
+          "id": 6,
+          "text": "Delete spec/features/ai-token-usage-tracking.feature (55 lines)",
+          "deleted": false,
+          "createdAt": "2025-11-02T01:08:55.349Z"
+        },
+        {
+          "id": 7,
+          "text": "Delete spec/features/ai-token-usage-tracking.feature.coverage",
+          "deleted": false,
+          "createdAt": "2025-11-02T01:08:55.830Z"
+        }
+      ],
+      "nextExampleId": 8,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Removal rationale: Token tracking via AI self-reporting is unreliable (30-40% accuracy). AI agents don't have access to actual token counts and would be guessing. Automatic extraction from Claude Code logs is not feasible without reverse engineering. API-level tracking only works if we control the API calls, which we don't in Claude Code. The feature adds maintenance burden without providing reliable data.",
+          "deleted": false,
+          "createdAt": "2025-11-02T01:09:03.934Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "estimate": 2,
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2025-11-02T03:08:34.173Z"
     }
   },
   "states": {
@@ -36523,7 +36506,6 @@
       "CLEAN-002"
     ],
     "specifying": [
-      "EST-002",
       "RES-006",
       "LANG-001",
       "BUG-051",
@@ -36540,6 +36522,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "CLEAN-003",
       "INIT-015",
       "CLI-013",
       "BUG-054",

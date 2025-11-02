@@ -1076,10 +1076,6 @@ function displayMetricsHelp(): void {
   console.log('  • Query dependency statistics and bottlenecks\n');
 
   console.log(chalk.bold('RECORDING METRICS'));
-  console.log('  ' + chalk.cyan('fspec record-tokens <id> <tokens>'));
-  console.log('    Examples:');
-  console.log('      fspec record-tokens AUTH-001 15000');
-  console.log('');
   console.log('  ' + chalk.cyan('fspec record-iteration <id>'));
   console.log('    Description: Increment iteration count');
   console.log('    Examples:');
