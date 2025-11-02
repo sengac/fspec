@@ -36476,6 +36476,16 @@
       "questions": [],
       "nextQuestionId": 0,
       "updated": "2025-11-02T03:08:34.173Z"
+    },
+    "BUG-055": {
+      "id": "BUG-055",
+      "title": "Attachment files duplicated in spec/attachments/ and spec/attachments/[ID]/",
+      "type": "bug",
+      "status": "backlog",
+      "createdAt": "2025-11-02T06:29:11.069Z",
+      "updatedAt": "2025-11-02T06:29:11.069Z",
+      "description": "When adding an attachment to a work unit, files appear in both spec/attachments/ (root) and spec/attachments/[WORK-UNIT-ID]/ directories. Expected behavior: attachments should only be stored in the work unit specific directory (spec/attachments/[WORK-UNIT-ID]/).",
+      "children": []
     }
   },
   "states": {
@@ -36504,7 +36514,8 @@
       "RES-005",
       "FEAT-018",
       "CLEAN-002",
-      "BUG-056"
+      "BUG-056",
+      "BUG-055"
     ],
     "specifying": [
       "RES-006",
