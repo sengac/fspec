@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-02T09:54:32.685Z"
+    "lastUpdated": "2025-11-02T11:00:17.696Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -36584,6 +36584,19 @@
       "nextQuestionId": 0,
       "nextNoteId": 0,
       "updated": "2025-11-02T09:54:32.702Z"
+    },
+    "CLI-014": {
+      "id": "CLI-014",
+      "title": "Report bug to GitHub with AI assistance",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-11-02T11:00:09.621Z",
+      "updatedAt": "2025-11-02T11:00:17.696Z",
+      "description": "Interactive command to report bugs using browser launcher and AI-driven analysis similar to fspec review",
+      "children": [],
+      "attachments": [
+        "spec/attachments/CLI-014/REPORT-BUG-FEATURE-SPEC.md"
+      ]
     }
   },
   "states": {
@@ -36612,7 +36625,8 @@
       "RES-005",
       "FEAT-018",
       "CLEAN-002",
-      "BUG-055"
+      "BUG-055",
+      "CLI-014"
     ],
     "specifying": [
       "RES-006",
@@ -36918,5 +36932,8 @@
       "backupPath": "spec/work-units.json.backup-0.7.0-1761908137018"
     }
   ],
-  "version": "0.7.0"
+  "version": "0.7.0",
+  "prefixCounters": {
+    "CLI": 14
+  }
 }

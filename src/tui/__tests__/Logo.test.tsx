@@ -46,10 +46,10 @@ describe('Feature: Add fspec logo to TUI header', () => {
       });
 
       // When I launch the fspec TUI
-      const { lastFrame } = render(<BoardView />);
+      const { frames } = render(<BoardView />);
       await new Promise(resolve => setTimeout(resolve, 100));
 
-      const frame = lastFrame();
+      const frame = frames[frames.length - 1];
 
       // Then the logo line 1 should display "┏┓┏┓┏┓┏┓┏┓"
       expect(frame).toContain('┏┓┏┓┏┓┏┓┏┓');
@@ -81,10 +81,10 @@ describe('Feature: Add fspec logo to TUI header', () => {
       });
 
       // When I launch the fspec TUI
-      const { lastFrame } = render(<BoardView />);
+      const { frames } = render(<BoardView />);
       await new Promise(resolve => setTimeout(resolve, 100));
 
-      const frame = lastFrame();
+      const frame = frames[frames.length - 1];
 
       // Then header should use Box borderStyle (single border around header)
       expect(frame).toContain('┌'); // Top-left corner of header box

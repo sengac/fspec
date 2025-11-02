@@ -23,13 +23,13 @@ describe('Feature: Fix stale tests and changed files watcher after ITF-006', () 
       // When I render the BoardView
       const store = useFspecStore.getState();
       await store.loadData();
-      const { lastFrame } = render(<BoardView />);
+      const { frames } = render(<BoardView />);
 
       // Wait for component to render
       await new Promise(resolve => setTimeout(resolve, 100));
 
       // Then the output should display "Checkpoints:" format
-      const output = lastFrame();
+      const output = frames[frames.length - 1];
       expect(output).toMatch(/Checkpoints:/);
 
       // And it should NOT display old "Git Stashes" text
@@ -44,13 +44,13 @@ describe('Feature: Fix stale tests and changed files watcher after ITF-006', () 
       // When I render the BoardView
       const store = useFspecStore.getState();
       await store.loadData();
-      const { lastFrame } = render(<BoardView />);
+      const { frames } = render(<BoardView />);
 
       // Wait for component to render
       await new Promise(resolve => setTimeout(resolve, 100));
 
       // Then the output should display "C View Checkpoints"
-      const output = lastFrame();
+      const output = frames[frames.length - 1];
       expect(output).toContain('C View Checkpoints');
 
       // And it should NOT display old "S View Stashes" text

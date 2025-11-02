@@ -26,12 +26,12 @@ describe('Feature: Fix work unit details panel to be static 4 lines high', () =>
       // @step And a work unit with a description is selected
 
       // @step When I look at the Work Unit Details panel
-      const { lastFrame } = render(<BoardView terminalWidth={100} terminalHeight={30} />);
+      const { frames } = render(<BoardView terminalWidth={100} terminalHeight={30} />);
 
       // Wait longer for auto-focus to complete
       await new Promise(resolve => setTimeout(resolve, 500));
 
-      const frame = lastFrame();
+      const frame = frames[frames.length - 1];
 
       // @step Then I should see exactly 4 content lines
       // Find the separators to locate work unit detail section
@@ -96,12 +96,12 @@ describe('Feature: Fix work unit details panel to be static 4 lines high', () =>
       // @step And a work unit with no description is selected
 
       // @step When I look at the Work Unit Details panel
-      const { lastFrame } = render(<BoardView terminalWidth={100} terminalHeight={30} />);
+      const { frames } = render(<BoardView terminalWidth={100} terminalHeight={30} />);
 
       // Wait longer for auto-focus to complete
       await new Promise(resolve => setTimeout(resolve, 500));
 
-      const frame = lastFrame();
+      const frame = frames[frames.length - 1];
 
       // @step Then I should see exactly 4 content lines
       const lines = frame.split('\n');
@@ -157,12 +157,12 @@ describe('Feature: Fix work unit details panel to be static 4 lines high', () =>
       // @step And lines 2-4 should be empty
 
       // For now, we'll test that the panel structure is correct (4 lines)
-      const { lastFrame } = render(<BoardView terminalWidth={100} terminalHeight={30} />);
+      const { frames } = render(<BoardView terminalWidth={100} terminalHeight={30} />);
 
       // Wait longer for auto-focus to complete
       await new Promise(resolve => setTimeout(resolve, 500));
 
-      const frame = lastFrame();
+      const frame = frames[frames.length - 1];
       const lines = frame.split('\n');
 
       const changedFilesLineIndex = lines.findIndex(line => line.includes('Changed Files'));

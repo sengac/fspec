@@ -20,7 +20,7 @@ describe('Feature: VirtualList height calculation ignores flexbox container dime
       // Simulated by parent Box with specific height allocation
 
       // @step When VirtualList measures its container height after flexbox layout
-      const { lastFrame } = render(
+      const { frames } = render(
         <Box flexDirection="column" height={100}>
           <Box flexGrow={1} height={30}>
             <VirtualList
@@ -31,7 +31,7 @@ describe('Feature: VirtualList height calculation ignores flexbox container dime
         </Box>
       );
 
-      const output = lastFrame();
+      const output = frames[frames.length - 1];
 
       // @step Then the checkpoint list should display items that fit in the allocated space
       // VirtualList uses measureElement to calculate height from flexbox container
@@ -62,7 +62,7 @@ describe('Feature: VirtualList height calculation ignores flexbox container dime
       // @step And the diff pane has flexGrow=2 (67% width)
       // @step And there are 50 files and 20 diff lines
       // @step When both VirtualLists measure their container dimensions
-      const { lastFrame } = render(
+      const { frames } = render(
         <Box flexDirection="row" height={60}>
           <Box flexGrow={1} height={50}>
             <VirtualList
@@ -79,7 +79,7 @@ describe('Feature: VirtualList height calculation ignores flexbox container dime
         </Box>
       );
 
-      const output = lastFrame();
+      const output = frames[frames.length - 1];
 
       // @step Then VirtualLists should render and virtualize content correctly
       // VirtualList uses measureElement to get actual flexbox container dimensions
@@ -114,7 +114,7 @@ describe('Feature: VirtualList height calculation ignores flexbox container dime
       // NOTE: Terminal resize testing requires mocking useTerminalSize hook
       // This test verifies that useLayoutEffect dependencies include terminalHeight
 
-      const { lastFrame } = render(
+      const { frames } = render(
         <Box flexDirection="column">
           <VirtualList
             items={items}
@@ -123,7 +123,7 @@ describe('Feature: VirtualList height calculation ignores flexbox container dime
         </Box>
       );
 
-      const output = lastFrame();
+      const output = frames[frames.length - 1];
 
       // @step Then all VirtualLists should re-measure their container heights
       // @step And item counts should adjust automatically to new dimensions

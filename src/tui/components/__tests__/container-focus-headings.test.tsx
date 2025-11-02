@@ -13,12 +13,12 @@ describe('Feature: Container Focus Indication with Headings', () => {
   describe('Scenario: CheckpointViewer initial focus on checkpoint list', () => {
     it('should show container headings with correct focus styling', () => {
       // @step Given I have opened the CheckpointViewer
-      const { lastFrame } = render(
+      const { frames } = render(
         <CheckpointViewer onExit={() => {}} />
       );
 
       // @step When the view is rendered
-      const output = lastFrame();
+      const output = frames[frames.length - 1];
 
       // @step Then the checkpoint list heading should display "Checkpoints" with green background and black text
       expect(output).toContain('Checkpoints');
@@ -37,14 +37,14 @@ describe('Feature: Container Focus Indication with Headings', () => {
   describe('Scenario: Tab navigation to file list in CheckpointViewer', () => {
     it('should change focus styling when Tab is pressed once', () => {
       // @step Given I have opened the CheckpointViewer with focus on checkpoint list
-      const { lastFrame, stdin } = render(
+      const { frames, stdin } = render(
         <CheckpointViewer onExit={() => {}} />
       );
 
       // @step When I press the Tab key once
       stdin.write('\t');
 
-      const output = lastFrame();
+      const output = frames[frames.length - 1];
 
       // @step Then the checkpoint list heading should display "Checkpoints" with bold white text and no background
       expect(output).toContain('Checkpoints');
@@ -60,7 +60,7 @@ describe('Feature: Container Focus Indication with Headings', () => {
   describe('Scenario: Tab navigation to diff pane in CheckpointViewer', () => {
     it('should change focus styling when Tab is pressed twice', () => {
       // @step Given I have opened the CheckpointViewer with focus on checkpoint list
-      const { lastFrame, stdin } = render(
+      const { frames, stdin } = render(
         <CheckpointViewer onExit={() => {}} />
       );
 
@@ -68,7 +68,7 @@ describe('Feature: Container Focus Indication with Headings', () => {
       stdin.write('\t');
       stdin.write('\t');
 
-      const output = lastFrame();
+      const output = frames[frames.length - 1];
 
       // @step Then the checkpoint list heading should display "Checkpoints" with bold white text and no background
       expect(output).toContain('Checkpoints');
@@ -84,7 +84,7 @@ describe('Feature: Container Focus Indication with Headings', () => {
   describe('Scenario: ChangedFilesViewer initial focus on file list', () => {
     it('should show container headings with correct focus styling', () => {
       // @step Given I have opened the ChangedFilesViewer
-      const { lastFrame } = render(
+      const { frames } = render(
         <ChangedFilesViewer
           stagedFiles={['file1.ts']}
           unstagedFiles={['file2.ts']}
@@ -93,7 +93,7 @@ describe('Feature: Container Focus Indication with Headings', () => {
       );
 
       // @step When the view is rendered
-      const output = lastFrame();
+      const output = frames[frames.length - 1];
 
       // @step Then the file list heading should display "Files" with green background and black text
       expect(output).toContain('Files');
@@ -109,7 +109,7 @@ describe('Feature: Container Focus Indication with Headings', () => {
   describe('Scenario: Tab navigation between file list and diff in ChangedFilesViewer', () => {
     it('should change focus styling when Tab is pressed once', () => {
       // @step Given I have opened the ChangedFilesViewer with focus on file list
-      const { lastFrame, stdin } = render(
+      const { frames, stdin } = render(
         <ChangedFilesViewer
           stagedFiles={['file1.ts']}
           unstagedFiles={[]}
@@ -120,7 +120,7 @@ describe('Feature: Container Focus Indication with Headings', () => {
       // @step When I press the Tab key once
       stdin.write('\t');
 
-      const output = lastFrame();
+      const output = frames[frames.length - 1];
 
       // @step Then the file list heading should display "Files" with bold white text and no background
       expect(output).toContain('Files');

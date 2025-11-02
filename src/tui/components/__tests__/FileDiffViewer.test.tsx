@@ -19,7 +19,7 @@ describe('Feature: Checkpoint Viewer Three-Pane Layout', () => {
       ];
 
       // @step When I extract the file list and diff pane logic into FileDiffViewer component
-      const { lastFrame } = render(
+      const { frames } = render(
         <FileDiffViewer
           files={files}
           focusedPane="files"
@@ -29,7 +29,7 @@ describe('Feature: Checkpoint Viewer Three-Pane Layout', () => {
       );
 
       // @step Then FileDiffViewer should accept files list and render dual-pane layout
-      const frame = lastFrame();
+      const frame = frames[frames.length - 1];
       // VirtualList virtualizes content - at least the first file should be visible
       expect(frame).toContain('src/auth.ts');
       expect(frame).toContain('Files'); // File list pane heading
@@ -44,7 +44,7 @@ describe('Feature: Checkpoint Viewer Three-Pane Layout', () => {
         { path: 'file3.ts', status: 'unstaged' as const }
       ];
 
-      const { lastFrame } = render(
+      const { frames } = render(
         <FileDiffViewer
           files={files}
           focusedPane="files"
@@ -54,7 +54,7 @@ describe('Feature: Checkpoint Viewer Three-Pane Layout', () => {
       );
 
       // VirtualList virtualizes content - check that first file is rendered and scrollbar exists
-      const frame = lastFrame();
+      const frame = frames[frames.length - 1];
       expect(frame).toContain('file1.ts'); // First item should be visible
       expect(frame).toContain('Files'); // Heading
       // Scrollbar (■) appears when items > visible height
@@ -69,7 +69,7 @@ describe('Feature: Checkpoint Viewer Three-Pane Layout', () => {
         { content: ' const x = 1;', type: 'context' as const, changeGroup: null }
       ];
 
-      const { lastFrame } = render(
+      const { frames } = render(
         <FileDiffViewer
           files={files}
           focusedPane="diff"
@@ -80,7 +80,7 @@ describe('Feature: Checkpoint Viewer Three-Pane Layout', () => {
       );
 
       // VirtualList virtualizes diff content - check that first line is visible
-      const frame = lastFrame();
+      const frame = frames[frames.length - 1];
       expect(frame).toContain('@@'); // Hunk header should be visible
       expect(frame).toContain('Diff'); // Diff pane heading
     });
@@ -89,7 +89,7 @@ describe('Feature: Checkpoint Viewer Three-Pane Layout', () => {
       // @step And FileDiffViewer should use flexbox layout with flexBasis, flexGrow, flexShrink, minWidth
       const files = [{ path: 'src/auth.ts', status: 'staged' as const }];
 
-      const { lastFrame } = render(
+      const { frames } = render(
         <FileDiffViewer
           files={files}
           focusedPane="files"
@@ -99,7 +99,7 @@ describe('Feature: Checkpoint Viewer Three-Pane Layout', () => {
       );
 
       // Layout should render (actual flexbox properties tested via visual inspection)
-      expect(lastFrame()).toBeDefined();
+      expect(frames[frames.length - 1]).toBeDefined();
     });
 
     it('should load git diffs using worker threads', async () => {
@@ -107,7 +107,7 @@ describe('Feature: Checkpoint Viewer Three-Pane Layout', () => {
       const files = [{ path: 'src/auth.ts', status: 'staged' as const }];
       let diffLoadCallback: ((diff: string) => void) | undefined;
 
-      const { lastFrame } = render(
+      const { frames } = render(
         <FileDiffViewer
           files={files}
           focusedPane="files"
@@ -120,7 +120,7 @@ describe('Feature: Checkpoint Viewer Three-Pane Layout', () => {
       );
 
       // Should show loading state initially
-      expect(lastFrame()).toBeDefined();
+      expect(frames[frames.length - 1]).toBeDefined();
 
       // Simulate worker thread callback
       if (diffLoadCallback) {
@@ -128,7 +128,7 @@ describe('Feature: Checkpoint Viewer Three-Pane Layout', () => {
       }
 
       // Diff should be loaded (actual worker thread integration tested separately)
-      expect(lastFrame()).toBeDefined();
+      expect(frames[frames.length - 1]).toBeDefined();
     });
   });
 
@@ -142,7 +142,7 @@ describe('Feature: Checkpoint Viewer Three-Pane Layout', () => {
         { path: 'src/unstaged.ts', status: 'unstaged' as const }
       ];
 
-      const { lastFrame } = render(
+      const { frames } = render(
         <FileDiffViewer
           files={files}
           focusedPane="files"
@@ -152,7 +152,7 @@ describe('Feature: Checkpoint Viewer Three-Pane Layout', () => {
       );
 
       // VirtualList virtualizes - first file should be visible
-      const frame = lastFrame();
+      const frame = frames[frames.length - 1];
       expect(frame).toContain('src/staged.ts'); // First file visible
       expect(frame).toContain('Files'); // File pane heading
     });
@@ -164,7 +164,7 @@ describe('Feature: Checkpoint Viewer Three-Pane Layout', () => {
         { path: 'file2.ts', status: 'staged' as const }
       ];
 
-      const { lastFrame } = render(
+      const { frames } = render(
         <FileDiffViewer
           files={files}
           focusedPane="files"
@@ -174,7 +174,7 @@ describe('Feature: Checkpoint Viewer Three-Pane Layout', () => {
       );
 
       // VirtualList virtualizes content and handles keyboard navigation internally
-      const frame = lastFrame();
+      const frame = frames[frames.length - 1];
       expect(frame).toContain('file1.ts'); // First file visible
       // First file should be initially selected (indicated by >)
       expect(frame).toMatch(/>\s+.*file1\.ts/);
@@ -184,7 +184,7 @@ describe('Feature: Checkpoint Viewer Three-Pane Layout', () => {
       // @step And ChangedFilesViewer should maintain existing diff loading with worker threads
       const files = [{ path: 'auth.ts', status: 'staged' as const }];
 
-      const { lastFrame } = render(
+      const { frames } = render(
         <FileDiffViewer
           files={files}
           focusedPane="files"
@@ -195,7 +195,7 @@ describe('Feature: Checkpoint Viewer Three-Pane Layout', () => {
       );
 
       // Worker thread diff loading tested via integration
-      expect(lastFrame()).toBeDefined();
+      expect(frames[frames.length - 1]).toBeDefined();
     });
 
     it('should have no code duplication with CheckpointViewer', () => {

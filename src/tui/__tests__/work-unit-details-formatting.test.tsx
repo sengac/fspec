@@ -68,12 +68,12 @@ describe('Feature: Improve work unit details panel formatting', () => {
       });
 
       // @step When the Work Unit Details panel is rendered
-      const { lastFrame } = render(<BoardView cwd={testDir} />);
+      const { frames } = render(<BoardView cwd={testDir} />);
 
       // Wait for data to load, auto-focus to run, and component to re-render
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      const frame = lastFrame();
+      const frame = frames[frames.length - 1];
 
       // @step Then line 1 should display the work unit ID and title without left padding
       expect(frame).toContain('TEST-001: Test Feature');
@@ -127,12 +127,12 @@ describe('Feature: Improve work unit details panel formatting', () => {
       });
 
       // @step When the Work Unit Details panel is rendered
-      const { lastFrame } = render(<BoardView cwd={testDir} />);
+      const { frames } = render(<BoardView cwd={testDir} />);
 
       // Wait for data to load, auto-focus to run, and component to re-render
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      const frame = lastFrame();
+      const frame = frames[frames.length - 1];
 
       // @step Then line 1 should display the work unit ID and title without left padding
       expect(frame).toContain('TEST-002: No Description Feature');
@@ -177,12 +177,12 @@ describe('Feature: Improve work unit details panel formatting', () => {
       });
 
       // @step When the Work Unit Details panel is rendered
-      const { lastFrame } = render(<BoardView cwd={testDir} />);
+      const { frames } = render(<BoardView cwd={testDir} />);
 
       // Wait for data to load, auto-focus to run, and component to re-render
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      const frame = lastFrame();
+      const frame = frames[frames.length - 1];
 
       // @step Then line 1 should display the work unit ID and title without left padding
       expect(frame).toContain('TEST-003: Long Description Feature');
@@ -231,12 +231,12 @@ describe('Feature: Improve work unit details panel formatting', () => {
       });
 
       // @step When the Work Unit Details panel is rendered
-      const { lastFrame } = render(<BoardView cwd={testDir} />);
+      const { frames } = render(<BoardView cwd={testDir} />);
 
       // Wait for data to load, auto-focus to run, and component to re-render
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      const frame = lastFrame();
+      const frame = frames[frames.length - 1];
 
       // @step Then line 1 should display the work unit ID and title without left padding
       expect(frame).toContain('TEST-004: Two Line Description Feature');
@@ -272,12 +272,12 @@ describe('Feature: Improve work unit details panel formatting', () => {
       });
 
       // @step When the Work Unit Details panel is rendered
-      const { lastFrame } = render(<BoardView cwd={testDir} />);
+      const { frames } = render(<BoardView cwd={testDir} />);
 
       // Wait for data to load, auto-focus to run, and component to re-render
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      const frame = lastFrame();
+      const frame = frames[frames.length - 1];
 
       // Then line 1 should display "No work unit selected" centered
       expect(frame).toContain('No work unit selected');
