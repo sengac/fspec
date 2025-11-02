@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-02T03:08:34.158Z"
+    "lastUpdated": "2025-11-02T05:48:59.222Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -36504,6 +36504,19 @@
           "timestamp": "2025-11-02T05:18:53.242Z"
         }
       ]
+    },
+    "BUG-056": {
+      "id": "BUG-056",
+      "title": "Fix remaining 7 TUI test failures for 100% test coverage",
+      "type": "bug",
+      "status": "backlog",
+      "createdAt": "2025-11-02T05:46:35.267Z",
+      "updatedAt": "2025-11-02T05:48:59.222Z",
+      "description": "7 TUI component tests remain failing after BUG-055. All are red-phase ACDD tests for unimplemented BOARD-003 features: BoardView Enter key handlers (2), UnifiedBoardLayout static panel (1), ChangedFilesViewer optimizations (3), CheckpointViewer navigation (1). See fixes.md for detailed analysis.",
+      "children": [],
+      "attachments": [
+        "spec/attachments/BUG-056/fixes.md"
+      ]
     }
   },
   "states": {
@@ -36531,7 +36544,8 @@
       "RES-004",
       "RES-005",
       "FEAT-018",
-      "CLEAN-002"
+      "CLEAN-002",
+      "BUG-056"
     ],
     "specifying": [
       "RES-006",
