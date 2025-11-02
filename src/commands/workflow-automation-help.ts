@@ -3,11 +3,11 @@ import type { CommandHelpConfig } from '../utils/help-formatter';
 const config: CommandHelpConfig = {
   name: 'workflow-automation',
   description:
-    'Workflow automation utilities for work units (record iterations, track tokens, auto-advance state, validate spec alignment)',
+    'Workflow automation utilities for work units (record iterations, auto-advance state, validate spec alignment)',
   usage:
-    'fspec workflow-automation <action> [work-unit-id] [options]\n\nActions:\n  record-iteration     - Increment iteration counter for work unit\n  record-tokens        - Record token usage for work unit\n  auto-advance         - Auto-advance state after event (tests-pass, validation-pass, specs-complete)\n  validate-alignment   - Check if work unit has corresponding Gherkin scenarios',
+    'fspec workflow-automation <action> [work-unit-id] [options]\n\nActions:\n  record-iteration     - Increment iteration counter for work unit\n  auto-advance         - Auto-advance state after event (tests-pass, validation-pass, specs-complete)\n  validate-alignment   - Check if work unit has corresponding Gherkin scenarios',
   whenToUse:
-    'Use this command for workflow automation and metrics tracking. Essential for AI agents to track progress, measure efficiency (iterations, tokens), auto-advance work unit states after successful events, and validate alignment between work units and Gherkin specs.',
+    'Use this command for workflow automation and metrics tracking. Essential for AI agents to track progress, measure efficiency (iterations), auto-advance work unit states after successful events, and validate alignment between work units and Gherkin specs.',
   prerequisites: [
     'spec/work-units.json exists with work units',
     'Work unit is in appropriate state for action',
@@ -16,7 +16,7 @@ const config: CommandHelpConfig = {
     {
       name: 'action',
       description:
-        'Action to perform: record-iteration, record-tokens, auto-advance, validate-alignment',
+        'Action to perform: record-iteration, auto-advance, validate-alignment',
       required: true,
     },
     {
@@ -26,10 +26,6 @@ const config: CommandHelpConfig = {
     },
   ],
   options: [
-    {
-      flag: '--tokens <count>',
-      description: 'Number of tokens to record (used with record-tokens)',
-    },
     {
       flag: '--event <event>',
       description:
@@ -46,12 +42,6 @@ const config: CommandHelpConfig = {
       command: 'fspec workflow-automation record-iteration AUTH-001',
       description: 'Increment iteration counter (tracks red→green cycles)',
       output: '✓ Recorded iteration for AUTH-001\n  Total iterations: 3',
-    },
-    {
-      command:
-        'fspec workflow-automation record-tokens AUTH-001 --tokens 15000',
-      description: 'Record token usage for work unit',
-      output: '✓ Recorded 15000 tokens for AUTH-001\n  Total tokens: 42000',
     },
     {
       command:
@@ -102,11 +92,6 @@ const config: CommandHelpConfig = {
         '# Start testing phase\nfspec update-work-unit-status AUTH-001 testing\n\n# Red: write failing test\n<test-command>  # Tests fail\nfspec workflow-automation record-iteration AUTH-001\n\n# Green: implement code\n<test-command>  # Tests pass\nfspec workflow-automation auto-advance AUTH-001 --event tests-pass --from-state testing\n\n# Now in implementing state, ready for next feature',
     },
     {
-      pattern: 'Token Usage Tracking',
-      example:
-        '# AI agent tracks token usage per work unit\nfspec workflow-automation record-tokens AUTH-001 --tokens 12500\n\n# After multiple iterations\nfspec workflow-automation record-tokens AUTH-001 --tokens 8300\nfspec workflow-automation record-tokens AUTH-001 --tokens 15700\n\n# Total tokens: 36500 (tracked in metrics)',
-    },
-    {
       pattern: 'ACDD State Automation',
       example:
         '# Specifying → Testing (after specs complete)\nfspec workflow-automation auto-advance AUTH-001 --event specs-complete --from-state specifying\n\n# Testing → Implementing (after tests pass)\nfspec workflow-automation auto-advance AUTH-001 --event tests-pass --from-state testing\n\n# Validating → Done (after validation passes)\nfspec workflow-automation auto-advance AUTH-001 --event validation-pass --from-state validating',
@@ -129,7 +114,6 @@ const config: CommandHelpConfig = {
   notes: [
     'Metrics tracked:',
     '  - iterations: Number of red→green cycles (TDD iterations)',
-    '  - actualTokens: Cumulative token usage across all iterations',
     'State transitions (auto-advance):',
     '  - specs-complete: specifying → testing',
     '  - tests-pass: testing → implementing',

@@ -6,7 +6,6 @@ import { join } from 'path';
 interface WorkUnit {
   id: string;
   estimate?: number;
-  actualTokens?: number;
   iterations?: number;
   status?: string;
   [key: string]: unknown;
@@ -19,7 +18,6 @@ interface WorkUnitsData {
 
 interface EstimationPattern {
   points: number;
-  expectedTokens: string;
   expectedIterations: string;
   confidence: string;
 }
@@ -45,19 +43,13 @@ export async function queryEstimationGuide(options: {
     );
 
     // Group by story points
-    const byPoints: Record<number, { tokens: number[]; iterations: number[] }> =
-      {};
+    const byPoints: Record<number, { iterations: number[] }> = {};
 
     for (const wu of completedWorkUnits) {
-      if (
-        wu.estimate &&
-        wu.actualTokens !== undefined &&
-        wu.iterations !== undefined
-      ) {
+      if (wu.estimate && wu.iterations !== undefined) {
         if (!byPoints[wu.estimate]) {
-          byPoints[wu.estimate] = { tokens: [], iterations: [] };
+          byPoints[wu.estimate] = { iterations: [] };
         }
-        byPoints[wu.estimate].tokens.push(wu.actualTokens);
         byPoints[wu.estimate].iterations.push(wu.iterations);
       }
     }
@@ -67,27 +59,19 @@ export async function queryEstimationGuide(options: {
 
     for (const [points, data] of Object.entries(byPoints)) {
       const pointsNum = parseInt(points);
-      const minTokens = Math.min(...data.tokens);
-      const maxTokens = Math.max(...data.tokens);
       const minIterations = Math.min(...data.iterations);
       const maxIterations = Math.max(...data.iterations);
 
-      // Format tokens in k notation
-      const formatTokens = (tokens: number): string => {
-        return `${Math.round(tokens / 1000)}k`;
-      };
-
       // Determine confidence based on sample size
       let confidence = 'low';
-      if (data.tokens.length >= 4) {
+      if (data.iterations.length >= 4) {
         confidence = 'high';
-      } else if (data.tokens.length >= 2) {
+      } else if (data.iterations.length >= 2) {
         confidence = 'medium';
       }
 
       patterns.push({
         points: pointsNum,
-        expectedTokens: `${formatTokens(minTokens)}-${formatTokens(maxTokens)}`,
         expectedIterations: `${minIterations}-${maxIterations}`,
         confidence,
       });

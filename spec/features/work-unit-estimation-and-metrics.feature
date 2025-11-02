@@ -69,15 +69,6 @@ Feature: Work Unit Estimation and Metrics
     And the error should suggest valid values: 1,2,3,5,8,13,21
 
   @metrics
-  @tracking
-  Scenario: Record tokens consumed during implementation
-    Given I have a project with spec directory
-    And a work unit "AUTH-001" exists with status "implementing"
-    When I run "fspec record-tokens AUTH-001 45000"
-    Then the command should succeed
-    And the work unit should have actualTokens of 45000
-
-  @metrics
   @query
   Scenario: Calculate cycle time from state history
     Given I have a project with spec directory

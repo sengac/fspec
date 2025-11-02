@@ -9,7 +9,6 @@ interface WorkUnit {
   status?: string;
   metrics?: {
     iterations?: number;
-    actualTokens?: number;
   };
   stateHistory?: Array<{ state: string; timestamp: string }>;
   updatedAt: string;
@@ -56,34 +55,6 @@ export async function recordWorkUnitIteration(
   }
 
   workUnit.metrics.iterations += 1;
-  workUnit.updatedAt = new Date().toISOString();
-
-  await saveWorkUnits(workUnitsData, cwd);
-}
-
-export async function recordWorkUnitTokens(
-  workUnitId: string,
-  tokens: number,
-  options: { cwd: string }
-): Promise<void> {
-  const { cwd } = options;
-  const workUnitsData = await loadWorkUnits(cwd);
-
-  if (!workUnitsData.workUnits[workUnitId]) {
-    throw new Error(`Work unit '${workUnitId}' does not exist`);
-  }
-
-  const workUnit = workUnitsData.workUnits[workUnitId];
-
-  if (!workUnit.metrics) {
-    workUnit.metrics = {};
-  }
-
-  if (!workUnit.metrics.actualTokens) {
-    workUnit.metrics.actualTokens = 0;
-  }
-
-  workUnit.metrics.actualTokens += tokens;
   workUnit.updatedAt = new Date().toISOString();
 
   await saveWorkUnits(workUnitsData, cwd);
@@ -203,7 +174,6 @@ export async function workflowAutomation(
   action: string,
   workUnitId: string,
   options: {
-    tokens?: number;
     event?: 'tests-pass' | 'validation-pass' | 'specs-complete';
     fromState?: string;
     cwd?: string;
@@ -213,8 +183,6 @@ export async function workflowAutomation(
 
   if (action === 'record-iteration') {
     await recordWorkUnitIteration(workUnitId, { cwd });
-  } else if (action === 'record-tokens' && options.tokens) {
-    await recordWorkUnitTokens(workUnitId, options.tokens, { cwd });
   } else if (action === 'auto-advance' && options.event && options.fromState) {
     await autoAdvanceWorkUnitState(
       workUnitId,
@@ -232,18 +200,13 @@ export function registerWorkflowAutomationCommand(program: Command): void {
   program
     .command('workflow-automation')
     .description(
-      'Workflow automation utilities for work units (record iterations, track tokens, auto-advance state, validate spec alignment)'
+      'Workflow automation utilities for work units (record iterations, auto-advance state, validate spec alignment)'
     )
     .argument(
       '<action>',
-      'Action to perform: record-iteration, record-tokens, auto-advance, validate-alignment'
+      'Action to perform: record-iteration, auto-advance, validate-alignment'
     )
     .argument('<work-unit-id>', 'Work unit ID (required for all actions)')
-    .option(
-      '--tokens <count>',
-      'Number of tokens to record (used with record-tokens)',
-      (value: string) => parseInt(value, 10)
-    )
     .option(
       '--event <event>',
       'Event triggering state change: tests-pass, validation-pass, specs-complete (used with auto-advance)'

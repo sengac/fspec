@@ -2,7 +2,6 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdir, writeFile, rm, readFile } from 'fs/promises';
 import { join } from 'path';
 import { recordIteration } from '../record-iteration';
-import { recordTokens } from '../record-tokens';
 import { validateSpecAlignment } from '../validate-spec-alignment';
 import { autoAdvance } from '../auto-advance';
 
@@ -56,39 +55,6 @@ describe('Feature: Workflow Automation', () => {
       expect(
         new Date(updatedData.workUnits['AUTH-001'].updatedAt).getTime()
       ).toBeGreaterThan(new Date('2025-01-01').getTime());
-    });
-  });
-
-  describe('Scenario: Record tokens consumed', () => {
-    it('should add tokens to work unit actualTokens', async () => {
-      // Given I have a project with spec directory
-      // And a work unit "AUTH-001" exists
-      const workUnitsFile = join(testDir, 'spec', 'work-units.json');
-      const initialData = {
-        workUnits: {
-          'AUTH-001': {
-            id: 'AUTH-001',
-            title: 'User Authentication',
-            actualTokens: 0,
-            updatedAt: new Date().toISOString(),
-          },
-        },
-        states: {},
-      };
-      await writeFile(workUnitsFile, JSON.stringify(initialData, null, 2));
-
-      // When I run "fspec record-tokens AUTH-001 5000"
-      const result = await recordTokens({
-        workUnitId: 'AUTH-001',
-        tokens: 5000,
-        cwd: testDir,
-      });
-
-      // Then tokens should be added to "AUTH-001" actualTokens
-      expect(result.success).toBe(true);
-
-      const updatedData = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
-      expect(updatedData.workUnits['AUTH-001'].actualTokens).toBe(5000);
     });
   });
 

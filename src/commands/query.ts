@@ -7,7 +7,6 @@ interface WorkUnit {
   status?: string;
   estimate?: number;
   epic?: string;
-  actualTokens?: number;
   iterations?: number;
 }
 

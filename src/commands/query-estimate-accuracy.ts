@@ -6,7 +6,6 @@ import { join } from 'path';
 interface WorkUnit {
   id: string;
   estimate?: number;
-  actualTokens?: number;
   iterations?: number;
   status?: string;
   [key: string]: unknown;
@@ -24,7 +23,6 @@ interface SingleWorkUnitAccuracy {
 }
 
 interface AccuracyByPoints {
-  avgTokens: number;
   avgIterations: number;
   samples: number;
 }
@@ -60,12 +58,7 @@ export async function queryEstimateAccuracy(options: {
         throw new Error(`Work unit ${options.workUnitId} not found`);
       }
 
-      // Check both root level and metrics.* for actualTokens/iterations
-      const actualTokens =
-        workUnit.actualTokens ||
-        (workUnit as WorkUnit & { metrics?: { actualTokens?: number } }).metrics
-          ?.actualTokens ||
-        0;
+      // Check both root level and metrics.* for iterations
       const iterations =
         workUnit.iterations ||
         (workUnit as WorkUnit & { metrics?: { iterations?: number } }).metrics
@@ -74,7 +67,7 @@ export async function queryEstimateAccuracy(options: {
 
       return {
         estimated: `${workUnit.estimate || 0} points`,
-        actual: `${actualTokens} tokens, ${iterations} iterations`,
+        actual: `0 tokens, ${iterations} iterations`,
         comparison: 'Within expected range',
       };
     }
@@ -87,30 +80,21 @@ export async function queryEstimateAccuracy(options: {
     // Calculate by story points
     const byStoryPoints: Record<
       string,
-      { totalTokens: number; totalIterations: number; count: number }
+      { totalIterations: number; count: number }
     > = {};
 
     for (const wu of completedWorkUnits) {
-      // Check both root level and metrics.* for actualTokens/iterations
-      const actualTokens =
-        wu.actualTokens ||
-        (wu as WorkUnit & { metrics?: { actualTokens?: number } }).metrics
-          ?.actualTokens;
+      // Check both root level and metrics.* for iterations
       const iterations =
         wu.iterations ||
         (wu as WorkUnit & { metrics?: { iterations?: number } }).metrics
           ?.iterations;
 
-      if (
-        wu.estimate &&
-        actualTokens !== undefined &&
-        iterations !== undefined
-      ) {
+      if (wu.estimate && iterations !== undefined) {
         const key = wu.estimate.toString();
         if (!byStoryPoints[key]) {
-          byStoryPoints[key] = { totalTokens: 0, totalIterations: 0, count: 0 };
+          byStoryPoints[key] = { totalIterations: 0, count: 0 };
         }
-        byStoryPoints[key].totalTokens += actualTokens;
         byStoryPoints[key].totalIterations += iterations;
         byStoryPoints[key].count++;
       }
@@ -119,7 +103,6 @@ export async function queryEstimateAccuracy(options: {
     const byStoryPointsResult: Record<string, AccuracyByPoints> = {};
     for (const [points, data] of Object.entries(byStoryPoints)) {
       byStoryPointsResult[points] = {
-        avgTokens: Math.round(data.totalTokens / data.count),
         avgIterations:
           Math.round((data.totalIterations / data.count) * 10) / 10,
         samples: data.count,
@@ -130,47 +113,33 @@ export async function queryEstimateAccuracy(options: {
     if (options.byPrefix) {
       const byPrefix: Record<
         string,
-        { totalEstimate: number; totalActual: number; count: number }
+        { totalIterations: number; count: number }
       > = {};
 
       for (const wu of completedWorkUnits) {
         const prefix = wu.id.split('-')[0];
-        // Check both root level and metrics.* for actualTokens
-        const actualTokens =
-          wu.actualTokens ||
-          (wu as WorkUnit & { metrics?: { actualTokens?: number } }).metrics
-            ?.actualTokens;
+        // Check both root level and metrics.* for iterations
+        const iterations =
+          wu.iterations ||
+          (wu as WorkUnit & { metrics?: { iterations?: number } }).metrics
+            ?.iterations;
 
-        if (wu.estimate && actualTokens !== undefined) {
+        if (wu.estimate && iterations !== undefined) {
           if (!byPrefix[prefix]) {
-            byPrefix[prefix] = { totalEstimate: 0, totalActual: 0, count: 0 };
+            byPrefix[prefix] = { totalIterations: 0, count: 0 };
           }
-          // Normalize to tokens per point for comparison
-          const tokensPerPoint = actualTokens / wu.estimate;
-          byPrefix[prefix].totalActual += tokensPerPoint;
+          byPrefix[prefix].totalIterations += iterations;
           byPrefix[prefix].count++;
         }
       }
 
       const byPrefixResult: Record<string, PrefixAccuracy> = {};
       for (const [prefix, data] of Object.entries(byPrefix)) {
-        const avgActual = data.totalActual / data.count;
-        // Expected range: 15k-25k tokens per point
-        const expectedAvg = 20000;
-        const variance = ((avgActual - expectedAvg) / expectedAvg) * 100;
-
-        let recommendation = '';
-        if (Math.abs(variance) < 10) {
-          recommendation = 'estimates are well-calibrated';
-        } else if (variance > 0) {
-          recommendation = 'increase estimates by 2-3 points';
-        } else {
-          recommendation = 'estimates may be too high';
-        }
+        const avgIterations = data.totalIterations / data.count;
 
         byPrefixResult[prefix] = {
-          avgAccuracy: `estimates ${Math.abs(Math.round(variance))}% ${variance > 0 ? 'low' : 'high'}`,
-          recommendation,
+          avgAccuracy: `${avgIterations.toFixed(1)} avg iterations`,
+          recommendation: `${data.count} sample${data.count > 1 ? 's' : ''}`,
         };
       }
 
@@ -220,7 +189,6 @@ export function registerQueryEstimateAccuracyCommand(program: Command): void {
             console.log(chalk.gray('\nTo track accuracy, work units need:'));
             console.log(chalk.gray('  • Status: done'));
             console.log(chalk.gray('  • estimate field (story points)'));
-            console.log(chalk.gray('  • actualTokens field'));
             console.log(chalk.gray('  • iterations field\n'));
             return;
           }
@@ -228,11 +196,6 @@ export function registerQueryEstimateAccuracyCommand(program: Command): void {
           console.log(chalk.bold('By Story Points:'));
           for (const [points, metrics] of Object.entries(data.byStoryPoints)) {
             console.log(chalk.cyan(`\n  ${points} points:`));
-            console.log(
-              chalk.gray(
-                `    Average tokens: ${metrics.avgTokens.toLocaleString()}`
-              )
-            );
             console.log(
               chalk.gray(`    Average iterations: ${metrics.avgIterations}`)
             );
