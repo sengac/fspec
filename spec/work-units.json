@@ -36584,16 +36584,6 @@
       "nextQuestionId": 0,
       "nextNoteId": 0,
       "updated": "2025-11-02T09:54:32.702Z"
-    },
-    "BUG-057": {
-      "id": "BUG-057",
-      "title": "New bug",
-      "type": "bug",
-      "status": "backlog",
-      "createdAt": "2025-11-02T09:37:06.809Z",
-      "updatedAt": "2025-11-02T09:37:06.809Z",
-      "description": "Test bug",
-      "children": []
     }
   },
   "states": {
@@ -36622,8 +36612,7 @@
       "RES-005",
       "FEAT-018",
       "CLEAN-002",
-      "BUG-055",
-      "BUG-057"
+      "BUG-055"
     ],
     "specifying": [
       "RES-006",
@@ -36640,9 +36629,7 @@
     ],
     "testing": [],
     "implementing": [],
-    "validating": [
-      "BUG-055"
-    ],
+    "validating": [],
     "done": [
       "BUG-056",
       "CLEAN-003",
