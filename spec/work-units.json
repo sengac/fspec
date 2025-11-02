@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-02T11:00:17.696Z"
+    "lastUpdated": "2025-11-02T11:54:19.483Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -36597,6 +36597,43 @@
       "attachments": [
         "spec/attachments/CLI-014/REPORT-BUG-FEATURE-SPEC.md"
       ]
+    },
+    "HELP-005": {
+      "id": "HELP-005",
+      "title": "Complete Command Help Documentation",
+      "type": "task",
+      "status": "done",
+      "createdAt": "2025-11-02T11:41:51.933Z",
+      "updatedAt": "2025-11-02T11:54:19.498Z",
+      "description": "Ensure all fspec commands have properly formatted help documentation. Fix 8 format inconsistencies (missing USAGE sections, empty EXAMPLES), create 6 missing help files (add-capability, add-persona, remove-capability, remove-persona, display-board, tag), and resolve 3 orphaned help files (board-help.ts, help-help.ts, register-tag-help.ts).",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-02T11:42:36.502Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-02T11:42:51.322Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-02T11:50:09.015Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-02T11:54:19.499Z"
+        }
+      ],
+      "rules": [],
+      "examples": [],
+      "questions": [],
+      "architectureNotes": [],
+      "nextRuleId": 0,
+      "nextExampleId": 0,
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-02T11:54:19.498Z"
     }
   },
   "states": {
@@ -36645,6 +36682,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "HELP-005",
       "BUG-056",
       "CLEAN-003",
       "INIT-015",
@@ -36934,6 +36972,7 @@
   ],
   "version": "0.7.0",
   "prefixCounters": {
-    "CLI": 14
+    "CLI": 14,
+    "HELP": 5
   }
 }

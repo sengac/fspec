@@ -35,6 +35,7 @@ https://github.com/{owner}/{repo}/issues/new?title={title}&body={body}&labels={l
 ```
 
 **Available Query Parameters:**
+
 - `title` - Issue title (URL encoded)
 - `body` - Issue body with markdown (URL encoded)
 - `labels` - Comma-separated label list (e.g., "bug,needs-triage")
@@ -98,6 +99,7 @@ The command follows the `fspec review` pattern:
 **And** I have encountered a bug
 **When** I run `fspec report-bug-to-github`
 **Then** the command should:
+
 - Gather system context automatically
 - Prompt me interactively for bug details
 - Generate a complete bug report with markdown formatting
@@ -111,6 +113,7 @@ The command follows the `fspec review` pattern:
 **And** the bug occurs while implementing AUTH-001
 **When** I run `fspec report-bug-to-github`
 **Then** the bug report should include:
+
 - Work unit ID (AUTH-001)
 - Work unit title
 - Current work unit status
@@ -122,6 +125,7 @@ The command follows the `fspec review` pattern:
 **And** the bug reproduces with these changes
 **When** I run `fspec report-bug-to-github`
 **Then** the bug report should include:
+
 - Current git branch
 - Whether there are uncommitted changes
 - Note about providing git diff if needed
@@ -131,6 +135,7 @@ The command follows the `fspec review` pattern:
 **Given** fspec recently crashed with an error
 **When** I run `fspec report-bug-to-github`
 **Then** the command should:
+
 - Detect recent error logs
 - Include stack trace (if available)
 - Include error message in bug report
@@ -141,6 +146,7 @@ The command follows the `fspec review` pattern:
 **When** I review the preview
 **And** I want to add additional context
 **Then** I should be able to:
+
 - Edit the title before submission
 - Edit the body before submission
 - Cancel the submission
@@ -177,7 +183,7 @@ src/
 ```json
 {
   "dependencies": {
-    "open": "^10.0.0"  // Browser launcher
+    "open": "^10.0.0" // Browser launcher
   }
 }
 ```
@@ -222,7 +228,9 @@ function buildAIAnalysisReminder(context: BugReportContext): string {
   // Guide AI to ask questions and generate bug report
 }
 
-async function generateBugReport(context: BugReportContext): Promise<BugReport> {
+async function generateBugReport(
+  context: BugReportContext
+): Promise<BugReport> {
   // AI-driven interactive analysis
 }
 
@@ -235,7 +243,7 @@ async function openGitHubIssue(report: BugReport): Promise<void> {
   const body = encodeURIComponent(formatBugReportMarkdown(report));
   const labels = 'bug,needs-triage';
 
-  const url = `https://github.com/anthropics/fspec/issues/new?title=${title}&body=${body}&labels=${labels}`;
+  const url = `https://github.com/sengac/fspec/issues/new?title=${title}&body=${body}&labels=${labels}`;
 
   await openInBrowser({ url });
 }
@@ -296,7 +304,8 @@ The command requires comprehensive `--help` documentation following fspec patter
 ```typescript
 export const reportBugToGitHubHelp = {
   name: 'report-bug-to-github',
-  description: 'Report a bug to the fspec GitHub repository with AI-assisted analysis',
+  description:
+    'Report a bug to the fspec GitHub repository with AI-assisted analysis',
 
   usage: `
     fspec report-bug-to-github
@@ -333,8 +342,8 @@ export const reportBugToGitHubHelp = {
         '# Answer: Running "fspec validate" caused crash',
         '# Answer: Expected validation to complete',
         '# Answer: Process exited with ENOENT error',
-        '# Confirm preview, browser opens'
-      ]
+        '# Confirm preview, browser opens',
+      ],
     },
     {
       title: 'Report Incorrect Behavior',
@@ -343,22 +352,22 @@ export const reportBugToGitHubHelp = {
         '# Answer: "fspec list-work-units --status=testing" shows backlog items',
         '# Answer: Should only show items in testing status',
         '# Answer: Shows all work units instead',
-        '# Confirm preview, browser opens'
-      ]
-    }
+        '# Confirm preview, browser opens',
+      ],
+    },
   ],
 
   examples: [
     {
       title: 'Basic Bug Report',
       code: `fspec report-bug-to-github`,
-      explanation: 'Starts interactive bug reporting process'
-    }
+      explanation: 'Starts interactive bug reporting process',
+    },
   ],
 
   relatedCommands: [
     'fspec review - Review work unit with AI analysis',
-    'fspec check - Run validation checks'
+    'fspec check - Run validation checks',
   ],
 
   notes: [
@@ -367,8 +376,8 @@ export const reportBugToGitHubHelp = {
     'Bug report is AI-assisted but requires human confirmation',
     'Browser must be installed and accessible',
     'Internet connection required to open GitHub',
-    'GitHub account required to submit issue'
-  ]
+    'GitHub account required to submit issue',
+  ],
 };
 ```
 
@@ -379,6 +388,7 @@ The command needs to be registered in the CLI:
 ### Updates Required
 
 1. **src/index.ts** - Register command:
+
 ```typescript
 import { registerReportBugToGitHubCommand } from './commands/report-bug-to-github';
 
@@ -387,6 +397,7 @@ registerReportBugToGitHubCommand(program);
 ```
 
 2. **src/commands/report-bug-to-github.ts** - Export register function:
+
 ```typescript
 export function registerReportBugToGitHubCommand(program: Command): void {
   program
@@ -404,6 +415,7 @@ export function registerReportBugToGitHubCommand(program: Command): void {
 ```
 
 3. **package.json** - Add dependency:
+
 ```json
 {
   "dependencies": {
@@ -415,6 +427,7 @@ export function registerReportBugToGitHubCommand(program: Command): void {
 ## Documentation Updates
 
 1. **README.md** - Add command to CLI reference:
+
 ```markdown
 ### Bug Reporting
 
@@ -422,16 +435,20 @@ export function registerReportBugToGitHubCommand(program: Command): void {
 ```
 
 2. **spec/CLAUDE.md** - Add to command list:
-```markdown
+
+````markdown
 ## Reporting Issues
 
 When you encounter a bug:
+
 ```bash
 fspec report-bug-to-github
 ```
+````
 
 This command provides an interactive AI-assisted process to create comprehensive bug reports.
-```
+
+````
 
 ## Testing Strategy
 
@@ -479,7 +496,7 @@ describe('Feature: Report Bug to GitHub', () => {
     });
   });
 });
-```
+````
 
 ### Integration Tests
 
