@@ -44,14 +44,6 @@ Feature: Workflow Automation
     And the updatedAt timestamp should be updated
 
   @automation
-  @metrics
-  Scenario: Record tokens consumed
-    Given I have a project with spec directory
-    And a work unit "AUTH-001" exists
-    When I run "fspec record-tokens AUTH-001 5000"
-    Then tokens should be added to "AUTH-001" actualTokens
-
-  @automation
   @validation
   Scenario: Validate spec alignment before commit
     Given I have a project with spec directory

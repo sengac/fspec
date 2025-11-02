@@ -29,7 +29,7 @@ Feature: Complete CLI Command Registration
   - Work Unit Management (prioritize, update, delete, repair, validate, export, import)
   - Example Mapping (add-example, add-question, add-rule, remove, answer, import, export, generate)
   - Dependencies (add-dependency, add-dependencies, remove, clear, export, query)
-  - Metrics & Estimation (record-tokens, record-iteration, query commands)
+  - Metrics & Estimation (record-iteration, query commands)
   - Workflow & Automation (auto-advance, board, workflow-automation)
   - Prefix & Epic Management (create-prefix, update-prefix, delete-epic)
   - Validation (validate-spec-alignment, validate-work-units)
@@ -109,8 +109,7 @@ Feature: Complete CLI Command Registration
   Scenario: Register metrics and estimation commands
     Given metrics functions exist in src/commands/
     When I check if metrics commands are registered
-    Then "fspec record-tokens" should be registered
-    And "fspec record-iteration" should be registered
+    Then "fspec record-iteration" should be registered
     And "fspec update-work-unit-estimate" should be registered
     And "fspec query-metrics" should be registered
     And "fspec query-estimate-accuracy" should be registered

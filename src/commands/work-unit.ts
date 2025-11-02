@@ -37,7 +37,6 @@ interface WorkUnit {
   stateHistory?: Array<{ state: string; timestamp: string; reason?: string }>;
   blockedReason?: string;
   metrics?: {
-    actualTokens?: number;
     iterations?: number;
   };
   createdAt: string;
