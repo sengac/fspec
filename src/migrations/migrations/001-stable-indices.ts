@@ -32,9 +32,15 @@ const migration001: Migration = {
             return item; // Already migrated
           }
           // Convert string to RuleItem
+          const text =
+            typeof item === 'string'
+              ? item
+              : typeof item.text === 'string'
+                ? item.text
+                : String(item.text || item);
           return {
             id: index,
-            text: typeof item === 'string' ? item : item.text || String(item),
+            text,
             deleted: false,
             createdAt: now,
           };
@@ -51,9 +57,15 @@ const migration001: Migration = {
             if (typeof item === 'object' && 'id' in item && 'deleted' in item) {
               return item;
             }
+            const text =
+              typeof item === 'string'
+                ? item
+                : typeof item.text === 'string'
+                  ? item.text
+                  : String(item.text || item);
             return {
               id: index,
-              text: typeof item === 'string' ? item : item.text || String(item),
+              text,
               deleted: false,
               createdAt: now,
             };
@@ -74,9 +86,15 @@ const migration001: Migration = {
             if (typeof item === 'object' && 'id' in item && 'deleted' in item) {
               return item;
             }
+            const text =
+              typeof item === 'string'
+                ? item
+                : typeof item.text === 'string'
+                  ? item.text
+                  : String(item.text || item);
             return {
               id: index,
-              text: typeof item === 'string' ? item : item.text || String(item),
+              text,
               deleted: false,
               createdAt: now,
             };

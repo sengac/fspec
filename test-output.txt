@@ -1,0 +1,25 @@
+
+> @sengac/fspec@0.6.0 test
+> npm run build && vitest run
+
+
+> @sengac/fspec@0.6.0 build
+> vite build && npx esbuild src/git/diff-worker.ts --bundle --platform=node --target=node18 --format=esm --outfile=dist/git/diff-worker.js --external:worker_threads --external:isomorphic-git && chmod +x dist/index.js
+
+vite v7.1.9 building for production...
+transforming...
+✓ 522 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.js  1,273.72 kB │ gzip: 304.58 kB
+✓ built in 975ms
+
+  dist/git/diff-worker.js  12.7kb
+
+⚡ Done in 5ms
+
+[1m[46m RUN [49m[22m [36mv4.0.1 [39m[90m/Users/rquast/projects/fspec[39m
+
+[?1000h [32m✓[39m src/tui/__tests__/BoardView-checkpoint-integration.test.tsx [2m([22m[2m1 test[22m[2m)[22m[32m 162[2mms[22m[39m
+[?1000l [32m✓[39m src/utils/__tests__/file-manager.test.ts [2m([22m[2m15 tests[22m[2m)[22m[33m 1053[2mms[22m[39m
+       [33m[2m✓[22m[39m should prevent file corruption when read and write happen simultaneously [33m 358[2mms[22m[39m
