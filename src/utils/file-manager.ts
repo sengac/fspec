@@ -90,18 +90,24 @@ class LockedFileManager {
    * Acquire in-process write lock (exclusive - blocks all readers and writers)
    */
   private async acquireWriteLock(filePath: string): Promise<void> {
-    // Wait if any readers or writers are active
-    if (this.readCounts.get(filePath) || this.writeLocks.has(filePath)) {
+    // Use a loop to handle spurious wakeups
+    while (true) {
+      // Check if lock is available
+      if (!this.readCounts.get(filePath) && !this.writeLocks.has(filePath)) {
+        // Lock is available, acquire it
+        this.writeLocks.add(filePath);
+        return;
+      }
+
+      // Lock is not available, wait
       await new Promise<void>(resolve => {
         if (!this.waitingWriters.has(filePath)) {
           this.waitingWriters.set(filePath, []);
         }
         this.waitingWriters.get(filePath)!.push(resolve);
       });
+      // After being woken up, loop back to re-check the condition
     }
-
-    // Acquire write lock
-    this.writeLocks.add(filePath);
   }
 
   /**
