@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-03T02:52:22.184Z"
+    "lastUpdated": "2025-11-03T04:05:20.594Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -37214,11 +37214,402 @@
       "id": "BUG-059",
       "title": "search-scenarios returns no results when it should find matching scenarios",
       "type": "bug",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2025-11-03T02:46:20.741Z",
-      "updatedAt": "2025-11-03T02:46:20.741Z",
+      "updatedAt": "2025-11-03T04:05:20.615Z",
       "description": "Running 'fspec search-scenarios --query=\"report-bug\"' returns 0 scenarios, but there is a feature file 'spec/features/report-bug-to-github-with-ai-assistance.feature' that should match this query. The search function appears to not be working correctly.",
-      "children": []
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-03T02:59:40.086Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-03T03:51:30.327Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-03T03:53:52.435Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-03T03:58:13.807Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-03T04:05:20.616Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using fspec",
+        "action": "search for scenarios across feature files",
+        "benefit": "I can quickly find relevant scenarios without reading all feature files"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Search must check scenario names for matches",
+          "deleted": false,
+          "createdAt": "2025-11-03T03:00:37.979Z"
+        },
+        {
+          "id": 1,
+          "text": "Business Rule 6 from QRY-002 states: 'Search must support text search across scenario names, feature descriptions, and work unit titles'",
+          "deleted": false,
+          "createdAt": "2025-11-03T03:03:07.399Z"
+        },
+        {
+          "id": 2,
+          "text": "Yes - feature descriptions should be searched. Already specified in QRY-002 BR6. Useful for finding features by technical details (technology names, architecture patterns, implementation approaches). Even if match is in description, returning scenarios from that feature is valuable.",
+          "deleted": false,
+          "createdAt": "2025-11-03T03:05:45.810Z"
+        },
+        {
+          "id": 3,
+          "text": "Yes - feature names should be searched. Feature name is the primary identifier for a feature, parallel to scenario names for scenarios. User's bug report expected this behavior. Low noise, high relevance results. Searching 'authentication' should find all scenarios from 'Feature: User Authentication'.",
+          "deleted": false,
+          "createdAt": "2025-11-03T03:06:46.703Z"
+        },
+        {
+          "id": 4,
+          "text": "Yes - feature file names should be searched. File names use kebab-case while feature names use spaces - substring matching won't catch both. Users see filenames in filesystem (ls spec/features/), natural to search by what they see. Low cost, already have filePath. User's bug report explicitly mentioned filename matching.",
+          "deleted": false,
+          "createdAt": "2025-11-03T03:07:43.577Z"
+        },
+        {
+          "id": 5,
+          "text": "Yes - work unit titles should be searched. Already in QRY-002 BR6 spec. Work unit titles often differ from feature names (bug descriptions vs feature titles). Users think in work units (BUG-059, AUTH-001). Infrastructure already exists (extract IDs from tags). One JSON read, cacheable. Strengthens traceability.",
+          "deleted": false,
+          "createdAt": "2025-11-03T03:09:28.859Z"
+        }
+      ],
+      "nextRuleId": 6,
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: The existing spec (QRY-002 Business Rule 6) says search should cover 'feature descriptions' (the triple-quoted doc strings at the top of features). Should we implement this?",
+          "deleted": false,
+          "createdAt": "2025-11-03T03:03:28.925Z",
+          "selected": true,
+          "answer": "Yes - feature descriptions should be searched. Already specified in QRY-002 BR6. Useful for finding features by technical details (technology names, architecture patterns, implementation approaches). Even if match is in description, returning scenarios from that feature is valuable."
+        },
+        {
+          "id": 1,
+          "text": "@human: The spec doesn't mention searching feature names (e.g., 'Report bug to GitHub with AI assistance'), but your bug example expects this. Should we search feature names in addition to scenario names?",
+          "deleted": false,
+          "createdAt": "2025-11-03T03:03:36.424Z",
+          "selected": true,
+          "answer": "Yes - feature names should be searched. Feature name is the primary identifier for a feature, parallel to scenario names for scenarios. User's bug report expected this behavior. Low noise, high relevance results. Searching 'authentication' should find all scenarios from 'Feature: User Authentication'."
+        },
+        {
+          "id": 2,
+          "text": "@human: Should we also search feature file names (e.g., 'report-bug-to-github-with-ai-assistance.feature')? This is NOT in the spec, but could be useful for finding features by filename patterns.",
+          "deleted": false,
+          "createdAt": "2025-11-03T03:03:42.655Z",
+          "selected": true,
+          "answer": "Yes - feature file names should be searched. File names use kebab-case while feature names use spaces - substring matching won't catch both. Users see filenames in filesystem (ls spec/features/), natural to search by what they see. Low cost, already have filePath. User's bug report explicitly mentioned filename matching."
+        },
+        {
+          "id": 3,
+          "text": "@human: Should we search within scenario step text (Given/When/Then)? This is NOT in the spec but could help find scenarios by their implementation details (e.g., search 'browser' to find scenarios that open browsers).",
+          "deleted": false,
+          "createdAt": "2025-11-03T03:03:49.646Z",
+          "selected": true,
+          "answer": "No - step text should NOT be searched. Steps describe HOW (implementation), not WHAT (capability). High noise from verbose text with common words. search-implementation exists for finding by HOW it works. Not in QRY-002 spec (likely intentional). Keep search-scenarios focused on capabilities."
+        },
+        {
+          "id": 4,
+          "text": "@human: The existing spec says search should cover 'work unit titles' (from spec/work-units.json). Should we search the work unit title field when a feature has a work unit tag like @BUG-059?",
+          "deleted": false,
+          "createdAt": "2025-11-03T03:03:56.591Z",
+          "selected": true,
+          "answer": "Yes - work unit titles should be searched. Already in QRY-002 BR6 spec. Work unit titles often differ from feature names (bug descriptions vs feature titles). Users think in work units (BUG-059, AUTH-001). Infrastructure already exists (extract IDs from tags). One JSON read, cacheable. Strengthens traceability."
+        }
+      ],
+      "nextQuestionId": 5,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User searches for 'report-bug', expects to find scenarios from 'report-bug-to-github-with-ai-assistance.feature', but gets 0 results because search only checks scenario names",
+          "deleted": false,
+          "createdAt": "2025-11-03T03:01:03.575Z"
+        },
+        {
+          "id": 1,
+          "text": "User searches for 'authentication', should find scenarios from features with 'authentication' in feature name, file name, or scenario names",
+          "deleted": false,
+          "createdAt": "2025-11-03T03:01:09.744Z"
+        },
+        {
+          "id": 2,
+          "text": "Current implementation only searches scenario names (line 104-107 in feature-parser.ts), but Business Rule 6 says it should also search feature descriptions and work unit titles",
+          "deleted": false,
+          "createdAt": "2025-11-03T03:03:13.886Z"
+        }
+      ],
+      "nextExampleId": 3,
+      "assumptions": [
+        "No - step text should NOT be searched. Steps describe HOW (implementation), not WHAT (capability). High noise from verbose text with common words. search-implementation exists for finding by HOW it works. Not in QRY-002 spec (likely intentional). Keep search-scenarios focused on capabilities."
+      ],
+      "estimate": 5,
+      "architectureNotes": [],
+      "nextNoteId": 0,
+      "updated": "2025-11-03T04:05:20.615Z"
+    },
+    "BUG-060": {
+      "id": "BUG-060",
+      "title": "generate-scenarios counts deleted questions as unanswered",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-11-03T03:11:53.173Z",
+      "updatedAt": "2025-11-03T03:51:18.447Z",
+      "description": "The validation in generate-scenarios.ts:308-311 filters questions by \\!questionItem.selected but doesn't check \\!questionItem.deleted. This causes it to count deleted questions as unanswered, blocking scenario generation even when all active questions are answered. The filter should be: \\!questionItem.deleted && \\!questionItem.selected",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-03T03:12:01.925Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-03T03:13:43.841Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-03T03:14:46.807Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-03T03:15:12.485Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-03T03:18:21.679Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-03T03:47:16.228Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-03T03:48:07.504Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-03T03:49:48.203Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-03T03:51:16.281Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-03T03:51:18.447Z"
+        }
+      ],
+      "userStory": {
+        "role": "AI agent using fspec",
+        "action": "generate scenarios from Example Mapping",
+        "benefit": "I can proceed after answering all questions, without being blocked by deleted questions"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Validation must only count questions that are NOT deleted AND NOT answered (selected=false)",
+          "deleted": false,
+          "createdAt": "2025-11-03T03:12:15.308Z"
+        },
+        {
+          "id": 1,
+          "text": "Deleted questions (deleted=true) must be ignored in all validation checks",
+          "deleted": false,
+          "createdAt": "2025-11-03T03:12:21.494Z"
+        },
+        {
+          "id": 2,
+          "text": "Answered questions have selected=true (answer field populated)",
+          "deleted": false,
+          "createdAt": "2025-11-03T03:12:27.386Z"
+        },
+        {
+          "id": 3,
+          "text": "Validation must filter out deleted questions (questions with deleted=true property) before counting unanswered questions",
+          "deleted": false,
+          "createdAt": "2025-11-03T03:47:29.041Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Work unit has 3 deleted questions (deleted=true, selected=false) and 5 answered questions (deleted=false, selected=true). Current code counts 3 unanswered, blocks generation. Correct behavior: 0 unanswered, allows generation.",
+          "deleted": false,
+          "createdAt": "2025-11-03T03:12:34.936Z"
+        },
+        {
+          "id": 1,
+          "text": "Work unit has 2 unanswered questions (deleted=false, selected=false). Current code correctly counts 2 unanswered, blocks generation. Behavior is correct.",
+          "deleted": false,
+          "createdAt": "2025-11-03T03:12:40.957Z"
+        },
+        {
+          "id": 2,
+          "text": "Work unit has no questions. Current code correctly counts 0 unanswered, allows generation. Behavior is correct.",
+          "deleted": false,
+          "createdAt": "2025-11-03T03:12:47.267Z"
+        },
+        {
+          "id": 3,
+          "text": "User deletes 3 questions, validation counts them as unanswered, blocks state transition",
+          "deleted": false,
+          "createdAt": "2025-11-03T03:47:22.955Z"
+        }
+      ],
+      "nextExampleId": 4,
+      "questions": [],
+      "architectureNotes": [],
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-03T03:51:18.447Z"
+    },
+    "BUG-061": {
+      "id": "BUG-061",
+      "title": "Missing validation for test file @step docstring completeness",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-11-03T03:19:44.791Z",
+      "updatedAt": "2025-11-03T03:43:53.600Z",
+      "description": "Test files must have Given, When, AND Then @step docstring comments mapping to Gherkin scenarios. Validation should occur: a) when moving work unit to implementing status (tests must be complete), b) when moving work unit to validating status. Currently work can progress without proper test-to-scenario traceability through step docstrings. Example: // Given ..., // When ..., // Then ... comments in test files.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-03T03:21:50.534Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-03T03:24:21.564Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-03T03:25:34.149Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-03T03:29:19.104Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-03T03:30:28.694Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-03T03:35:32.207Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-03T03:41:17.659Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-03T03:41:51.875Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-03T03:43:03.224Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-03T03:43:40.652Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-03T03:43:53.600Z"
+        }
+      ],
+      "userStory": {
+        "role": "AI agent following ACDD",
+        "action": "ensure test files have complete Given/When/Then step docstrings before implementation",
+        "benefit": "test-to-scenario traceability is maintained and scenarios are properly tested"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Step validation logic exists in src/utils/step-validation.ts with validateSteps() and formatValidationError() functions",
+          "deleted": false,
+          "createdAt": "2025-11-03T03:22:09.393Z"
+        },
+        {
+          "id": 1,
+          "text": "Step validation is currently ONLY used in link-coverage command (src/commands/link-coverage.ts), NOT in update-work-unit-status",
+          "deleted": false,
+          "createdAt": "2025-11-03T03:22:16.067Z"
+        },
+        {
+          "id": 2,
+          "text": "Test files MUST have Given, When, AND Then @step docstrings when moving work unit from testing to implementing",
+          "deleted": false,
+          "createdAt": "2025-11-03T03:22:22.291Z"
+        },
+        {
+          "id": 3,
+          "text": "Test files MUST have Given, When, AND Then @step docstrings when moving work unit to validating state",
+          "deleted": false,
+          "createdAt": "2025-11-03T03:22:28.274Z"
+        },
+        {
+          "id": 4,
+          "text": "Tasks (type=task) are exempt from step validation since they don't have tests",
+          "deleted": false,
+          "createdAt": "2025-11-03T03:22:35.255Z"
+        },
+        {
+          "id": 5,
+          "text": "CRITICAL: Test files MUST be discovered from .feature.coverage files, NOT hard-coded file patterns. Coverage files are language-agnostic and track actual test-to-scenario mappings.",
+          "deleted": false,
+          "createdAt": "2025-11-03T03:29:27.963Z"
+        },
+        {
+          "id": 6,
+          "text": "If no .feature.coverage file exists for a feature, validation should fail with clear message to use 'fspec link-coverage' command",
+          "deleted": false,
+          "createdAt": "2025-11-03T03:29:35.208Z"
+        }
+      ],
+      "nextRuleId": 7,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Work unit BUG-060 moves from testing to implementing. Test file has complete Given/When/Then @step comments. Currently allowed (correct behavior, should continue working after fix).",
+          "deleted": false,
+          "createdAt": "2025-11-03T03:22:42.265Z"
+        },
+        {
+          "id": 1,
+          "text": "Work unit STORY-001 moves from testing to implementing. Test file exists but has NO @step docstrings. Currently ALLOWED (bug), should be BLOCKED with system-reminder showing missing steps.",
+          "deleted": false,
+          "createdAt": "2025-11-03T03:22:49.858Z"
+        },
+        {
+          "id": 2,
+          "text": "Work unit moves to validating. Test file has Given and When steps but missing Then step. Currently ALLOWED (bug), should be BLOCKED showing which steps are missing.",
+          "deleted": false,
+          "createdAt": "2025-11-03T03:22:56.088Z"
+        },
+        {
+          "id": 3,
+          "text": "Feature file test-feature.feature has coverage file test-feature.feature.coverage with testMappings array listing test files. Validation reads coverage file, extracts test file paths, validates those specific files regardless of language/framework.",
+          "deleted": false,
+          "createdAt": "2025-11-03T03:29:43.094Z"
+        }
+      ],
+      "nextExampleId": 4,
+      "questions": [],
+      "architectureNotes": [],
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-03T03:43:53.600Z"
     }
   },
   "states": {
@@ -37246,8 +37637,7 @@
       "RES-004",
       "RES-005",
       "FEAT-018",
-      "CLEAN-002",
-      "BUG-059"
+      "CLEAN-002"
     ],
     "specifying": [
       "RES-006",
@@ -37266,6 +37656,9 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "BUG-059",
+      "BUG-060",
+      "BUG-061",
       "BUG-058",
       "CLI-014",
       "BUG-055",
@@ -37564,7 +37957,7 @@
   "prefixCounters": {
     "CLI": 14,
     "HELP": 5,
-    "BUG": 59,
+    "BUG": 61,
     "DISC": 2,
     "COV": 53
   }

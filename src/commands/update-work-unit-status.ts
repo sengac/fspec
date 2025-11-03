@@ -25,6 +25,8 @@ import {
   compareByUpdatedDescending,
 } from '../utils/states-array';
 import { compactWorkUnit } from './compact-work-unit';
+import { validateSteps, formatValidationError } from '../utils/step-validation';
+import { parseAllFeatures } from '../utils/feature-parser';
 
 type WorkUnitStatus =
   | 'backlog'
@@ -240,14 +242,15 @@ export async function updateWorkUnitStatus(
 
     // Check for unanswered questions (Example Mapping integration)
     if (workUnit.questions && workUnit.questions.length > 0) {
-      // Filter for unselected questions
+      // Filter for unselected questions (BUG-060: exclude deleted questions)
       const unansweredQuestions = workUnit.questions.filter(q => {
         if (typeof q === 'string') {
           throw new Error(
             'Invalid question format. Questions must be QuestionItem objects.'
           );
         }
-        return !q.selected;
+        const questionItem = q as QuestionItem;
+        return !questionItem.deleted && !questionItem.selected;
       });
 
       if (unansweredQuestions.length > 0) {
@@ -342,6 +345,15 @@ export async function updateWorkUnitStatus(
         cwd
       );
     }
+  }
+
+  // BUG-061: Step validation for implementing and validating states
+  // Ensure test files have complete Given/When/Then @step docstrings
+  if (
+    (newStatus === 'implementing' || newStatus === 'validating') &&
+    workUnitType !== 'task' // Tasks are exempt from step validation
+  ) {
+    await validateTestStepDocstrings(options.workUnitId, workUnitType, cwd);
   }
 
   // Validate parent/child constraints for done state
@@ -622,6 +634,145 @@ function isValidTransition(from: WorkUnitStatus, to: WorkUnitStatus): boolean {
     return true; // Same state is valid
   }
   return STATE_TRANSITIONS[from].includes(to);
+}
+
+/**
+ * Validate that test files have complete Given/When/Then @step docstrings
+ *
+ * BUG-061: Ensures test-to-scenario traceability through step comments
+ *
+ * @param workUnitId - Work unit ID
+ * @param workUnitType - Work unit type (story, bug, task)
+ * @param cwd - Working directory
+ * @throws Error if step validation fails
+ */
+async function validateTestStepDocstrings(
+  workUnitId: string,
+  workUnitType: WorkUnitType,
+  cwd: string
+): Promise<void> {
+  // Find feature files tagged with this work unit ID
+  const parsedFeatures = await parseAllFeatures(cwd);
+  const matchingFeatures = parsedFeatures.filter(
+    f => f.workUnitId === workUnitId
+  );
+
+  if (matchingFeatures.length === 0) {
+    // No feature files found - this is OK, might be using linkedFeatures array
+    return;
+  }
+
+  // BUG-061: Read coverage files to find test files (language-agnostic)
+  const workUnitTestFiles = new Set<string>();
+
+  for (const feature of matchingFeatures) {
+    // Coverage file path: <feature-file-path>.coverage
+    const coverageFilePath = join(cwd, feature.filePath + '.coverage');
+
+    if (!existsSync(coverageFilePath)) {
+      throw new Error(
+        `No coverage file found for feature ${feature.filePath}.\n\n` +
+          `Coverage file expected at: ${feature.filePath}.coverage\n\n` +
+          `Test files must be linked using coverage files.\n` +
+          `Use: fspec link-coverage <feature> --scenario "<name>" --test-file <path> --test-lines <range>\n\n` +
+          `Before moving to implementing or validating, tests must be written and linked.`
+      );
+    }
+
+    // Read coverage file and extract test files
+    const coverageContent = await readFile(coverageFilePath, 'utf-8');
+    let coverage;
+    try {
+      coverage = JSON.parse(coverageContent);
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      throw new Error(
+        `Malformed coverage file: ${coverageFilePath}\n` +
+          `JSON parse error: ${errorMessage}\n\n` +
+          `Please check the coverage file for syntax errors.`
+      );
+    }
+
+    if (coverage.scenarios && Array.isArray(coverage.scenarios)) {
+      for (const scenario of coverage.scenarios) {
+        if (scenario.testMappings && Array.isArray(scenario.testMappings)) {
+          for (const mapping of scenario.testMappings) {
+            if (mapping.file) {
+              workUnitTestFiles.add(mapping.file);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  if (workUnitTestFiles.size === 0) {
+    throw new Error(
+      `No test files found in coverage files for work unit ${workUnitId}.\n\n` +
+        `Coverage files exist but contain no test mappings.\n` +
+        `Use: fspec link-coverage <feature> --scenario "<name>" --test-file <path> --test-lines <range>\n\n` +
+        `Before moving to implementing or validating, tests must be written and linked.`
+    );
+  }
+
+  // Validate each test file
+  const validationErrors: string[] = [];
+
+  for (const testFilePath of workUnitTestFiles) {
+    const absoluteTestPath = join(cwd, testFilePath);
+
+    try {
+      const testContent = await readFile(absoluteTestPath, 'utf-8');
+
+      // Validate test file is not empty
+      if (!testContent || testContent.trim().length === 0) {
+        throw new Error(
+          `Test file is empty: ${testFilePath}\n\n` +
+            `Test files must contain step docstrings matching feature scenarios.`
+        );
+      }
+
+      // For each feature, validate all scenario steps
+      for (const feature of matchingFeatures) {
+        for (const scenario of feature.scenarios) {
+          const featureSteps = scenario.steps.map(
+            s => `${s.keyword} ${s.text}`
+          );
+
+          const validationResult = validateSteps(featureSteps, testContent);
+
+          if (!validationResult.valid) {
+            const errorMessage = formatValidationError(
+              validationResult,
+              workUnitType
+            );
+            validationErrors.push(
+              `Test file: ${testFilePath}\n` +
+                `Scenario: ${scenario.name}\n` +
+                errorMessage
+            );
+          }
+        }
+      }
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      throw new Error(
+        `Failed to read test file ${testFilePath}: ${errorMessage}`
+      );
+    }
+  }
+
+  if (validationErrors.length > 0) {
+    // Show all validation errors, not just the first one
+    const errorSummary =
+      validationErrors.length === 1
+        ? validationErrors[0]
+        : `Multiple validation errors found (${validationErrors.length} scenarios):\n\n` +
+          validationErrors.join('\n\n---\n\n');
+    throw new Error(errorSummary);
+  }
 }
 
 async function checkScenariosExist(

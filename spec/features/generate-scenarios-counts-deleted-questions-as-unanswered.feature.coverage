@@ -1,0 +1,98 @@
+{
+  "scenarios": [
+    {
+      "name": "Deleted questions should not be counted as unanswered",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/generate-scenarios-deleted-questions.test.ts",
+          "lines": "59-159",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Unanswered non-deleted questions should block generation",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/generate-scenarios-deleted-questions.test.ts",
+          "lines": "163-213",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Work unit with no questions should allow generation",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/generate-scenarios-deleted-questions.test.ts",
+          "lines": "216-250",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Deleted questions should not block status transition in update-work-unit-status",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/generate-scenarios-deleted-questions.test.ts",
+          "lines": "253-356",
+          "implMappings": [
+            {
+              "file": "src/commands/update-work-unit-status.ts",
+              "lines": [
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Unanswered non-deleted questions should block status transition",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/generate-scenarios-deleted-questions.test.ts",
+          "lines": "359-412",
+          "implMappings": [
+            {
+              "file": "src/commands/update-work-unit-status.ts",
+              "lines": [
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/commands/__tests__/generate-scenarios-deleted-questions.test.ts"
+    ],
+    "implFiles": [
+      "src/commands/update-work-unit-status.ts"
+    ],
+    "totalLinesCovered": 365
+  }
+}

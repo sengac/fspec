@@ -307,7 +307,7 @@ export async function generateScenarios(
   if (workUnit.questions && workUnit.questions.length > 0) {
     unansweredCount = workUnit.questions.filter(q => {
       const questionItem = q as QuestionItem;
-      return !questionItem.selected;
+      return !questionItem.deleted && !questionItem.selected;
     }).length;
 
     if (unansweredCount > 0) {

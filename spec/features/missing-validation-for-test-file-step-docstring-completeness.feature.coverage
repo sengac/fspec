@@ -1,0 +1,112 @@
+{
+  "scenarios": [
+    {
+      "name": "Allow transition to implementing when test file has complete step docstrings",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/update-work-unit-status-step-validation.test.ts",
+          "lines": "68-162",
+          "implMappings": [
+            {
+              "file": "src/commands/update-work-unit-status.ts",
+              "lines": [
+                352,
+                353,
+                354,
+                355,
+                356,
+                357,
+                358,
+                359
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Block transition to implementing when test file has no step docstrings",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/update-work-unit-status-step-validation.test.ts",
+          "lines": "174-276",
+          "implMappings": [
+            {
+              "file": "src/commands/update-work-unit-status.ts",
+              "lines": [
+                352,
+                353,
+                354,
+                355,
+                356,
+                357,
+                358,
+                359
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Block transition to validating when test file has incomplete step docstrings",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/update-work-unit-status-step-validation.test.ts",
+          "lines": "280-387",
+          "implMappings": [
+            {
+              "file": "src/commands/update-work-unit-status.ts",
+              "lines": [
+                352,
+                353,
+                354,
+                355,
+                356,
+                357,
+                358,
+                359
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Exempt task work units from step validation",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/update-work-unit-status-step-validation.test.ts",
+          "lines": "391-456",
+          "implMappings": [
+            {
+              "file": "src/commands/update-work-unit-status.ts",
+              "lines": [
+                352,
+                353,
+                354,
+                355,
+                356,
+                357,
+                358,
+                359
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/commands/__tests__/update-work-unit-status-step-validation.test.ts"
+    ],
+    "implFiles": [
+      "src/commands/update-work-unit-status.ts"
+    ],
+    "totalLinesCovered": 404
+  }
+}
