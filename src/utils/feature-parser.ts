@@ -80,17 +80,20 @@ export async function parseAllFeatures(cwd?: string): Promise<ParsedFeature[]> {
 }
 
 /**
- * Search scenarios by text or regex pattern
+ * Search scenarios by text or regex pattern (includes work unit titles)
  */
-export function searchScenarios(
+export async function searchScenarios(
   parsedFeatures: ParsedFeature[],
   query: string,
-  useRegex: boolean = false
-): Array<{
-  scenarioName: string;
-  featureFilePath: string;
-  workUnitId: string;
-}> {
+  useRegex: boolean = false,
+  cwd?: string
+): Promise<
+  Array<{
+    scenarioName: string;
+    featureFilePath: string;
+    workUnitId: string;
+  }>
+> {
   const results: Array<{
     scenarioName: string;
     featureFilePath: string;
@@ -99,19 +102,66 @@ export function searchScenarios(
 
   const pattern = useRegex ? new RegExp(query, 'i') : null;
 
-  for (const parsed of parsedFeatures) {
-    for (const scenario of parsed.scenarios) {
-      const scenarioName = scenario.name;
-      const matches = pattern
-        ? pattern.test(scenarioName)
-        : scenarioName.toLowerCase().includes(query.toLowerCase());
+  // BUG-059: Load work units to search work unit titles
+  const basePath = cwd || process.cwd();
+  const workUnitsPath = join(basePath, 'spec', 'work-units.json');
+  let workUnits: Record<string, { id: string; title: string }> = {};
 
-      if (matches) {
+  try {
+    const workUnitsContent = await readFile(workUnitsPath, 'utf-8');
+    const workUnitsData = JSON.parse(workUnitsContent);
+    workUnits = workUnitsData.workUnits || {};
+  } catch (error) {
+    // If work-units.json doesn't exist or is invalid, continue without work unit title search
+  }
+
+  // BUG-059: Search across feature file names, feature names, descriptions, work unit titles, and scenario names
+  for (const parsed of parsedFeatures) {
+    // Check if feature file path, feature name, or description matches
+    const featureName = parsed.feature.name || '';
+    const featureDescription = parsed.feature.description || '';
+    const featureFilePath = parsed.filePath || '';
+
+    // BUG-059: Check work unit title if workUnitId exists
+    const workUnitTitle =
+      parsed.workUnitId && workUnits[parsed.workUnitId]
+        ? workUnits[parsed.workUnitId].title
+        : '';
+
+    const featureMatches = pattern
+      ? pattern.test(featureName) ||
+        pattern.test(featureDescription) ||
+        pattern.test(featureFilePath) ||
+        pattern.test(workUnitTitle)
+      : featureName.toLowerCase().includes(query.toLowerCase()) ||
+        featureDescription.toLowerCase().includes(query.toLowerCase()) ||
+        featureFilePath.toLowerCase().includes(query.toLowerCase()) ||
+        workUnitTitle.toLowerCase().includes(query.toLowerCase());
+
+    // If feature matches, return all scenarios from this feature
+    if (featureMatches) {
+      for (const scenario of parsed.scenarios) {
         results.push({
-          scenarioName,
+          scenarioName: scenario.name,
           featureFilePath: parsed.filePath,
           workUnitId: parsed.workUnitId || 'unknown',
         });
+      }
+    } else {
+      // Check individual scenarios
+      for (const scenario of parsed.scenarios) {
+        const scenarioName = scenario.name;
+        const matches = pattern
+          ? pattern.test(scenarioName)
+          : scenarioName.toLowerCase().includes(query.toLowerCase());
+
+        if (matches) {
+          results.push({
+            scenarioName,
+            featureFilePath: parsed.filePath,
+            workUnitId: parsed.workUnitId || 'unknown',
+          });
+        }
       }
     }
   }

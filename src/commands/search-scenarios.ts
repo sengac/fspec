@@ -35,11 +35,12 @@ export async function searchScenarios(
   // Parse all feature files
   const parsedFeatures = await parseAllFeatures(options.cwd);
 
-  // Search scenarios using utility function
-  const results = searchScenariosUtil(
+  // Search scenarios using utility function (BUG-059: now async to search work unit titles)
+  const results = await searchScenariosUtil(
     parsedFeatures,
     options.query,
-    options.regex || false
+    options.regex || false,
+    options.cwd
   );
 
   // Transform results to match expected format
