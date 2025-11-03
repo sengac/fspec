@@ -15,6 +15,8 @@
 
 import { readFile, readdir } from 'fs/promises';
 import { join } from 'path';
+import { Command } from 'commander';
+import chalk from 'chalk';
 import { findProjectRoot } from '../utils/project-root-detection.js';
 import { openInBrowser } from '../utils/openBrowser.js';
 import { getCurrentBranch, getGitStatus } from '../git/status.js';
@@ -352,4 +354,60 @@ export async function reportBugToGitHub(
     cancelled,
     browserOpened,
   };
+}
+
+/**
+ * Register the report-bug-to-github command with Commander
+ */
+export function registerReportBugToGitHubCommand(program: Command): void {
+  program
+    .command('report-bug-to-github')
+    .description(
+      'Report bugs to GitHub with AI-assisted context gathering (system info, git status, work unit, error logs)'
+    )
+    .option('--project-root <path>', 'Project root directory (auto-detected)')
+    .option('--bug-description <text>', 'Brief description of the bug')
+    .option('--expected-behavior <text>', 'What you expected to happen')
+    .option('--actual-behavior <text>', 'What actually happened')
+    .option('--interactive', 'Enable interactive mode with prompts')
+    .action(
+      async (cmdOptions: {
+        projectRoot?: string;
+        bugDescription?: string;
+        expectedBehavior?: string;
+        actualBehavior?: string;
+        interactive?: boolean;
+      }) => {
+        try {
+          console.log(chalk.cyan('\nGathering system context...\n'));
+
+          const result = await reportBugToGitHub({
+            projectRoot: cmdOptions.projectRoot,
+            bugDescription: cmdOptions.bugDescription,
+            expectedBehavior: cmdOptions.expectedBehavior,
+            actualBehavior: cmdOptions.actualBehavior,
+            interactive: cmdOptions.interactive,
+          });
+
+          if (result.cancelled) {
+            console.log(chalk.yellow('\n✗ Bug report cancelled\n'));
+            return;
+          }
+
+          if (result.browserOpened) {
+            console.log(
+              chalk.green('\n✓ Browser opened with pre-filled issue\n')
+            );
+            console.log(
+              chalk.dim('Review and submit the issue in your browser.\n')
+            );
+          }
+        } catch (error: unknown) {
+          const errorMessage =
+            error instanceof Error ? error.message : String(error);
+          console.error(chalk.red('Error:'), errorMessage);
+          process.exit(1);
+        }
+      }
+    );
 }
