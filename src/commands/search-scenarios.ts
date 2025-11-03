@@ -44,9 +44,12 @@ export async function searchScenarios(
   );
 
   // Transform results to match expected format
+  // Note: Duplicate fields for backward compatibility:
+  //   - 'name' field exists for legacy callers
+  //   - 'scenarioName' field is the canonical field name
   const scenarios = results.map(result => ({
-    name: result.scenarioName,
-    scenarioName: result.scenarioName,
+    name: result.scenarioName, // Legacy field
+    scenarioName: result.scenarioName, // Canonical field
     featureFilePath: result.featureFilePath,
     workUnitId: result.workUnitId,
   }));

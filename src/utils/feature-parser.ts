@@ -8,6 +8,7 @@ import { glob } from 'tinyglobby';
 import { join } from 'path';
 import * as Gherkin from '@cucumber/gherkin';
 import * as Messages from '@cucumber/messages';
+import type { WorkUnit } from '../types';
 
 interface ParsedFeature {
   filePath: string;
@@ -80,6 +81,19 @@ export async function parseAllFeatures(cwd?: string): Promise<ParsedFeature[]> {
 }
 
 /**
+ * Helper function to check if text matches query (literal or regex)
+ */
+function matchesQuery(
+  text: string,
+  query: string,
+  pattern: RegExp | null
+): boolean {
+  return pattern
+    ? pattern.test(text)
+    : text.toLowerCase().includes(query.toLowerCase());
+}
+
+/**
  * Search scenarios by text or regex pattern (includes work unit titles)
  */
 export async function searchScenarios(
@@ -100,12 +114,22 @@ export async function searchScenarios(
     workUnitId: string;
   }> = [];
 
-  const pattern = useRegex ? new RegExp(query, 'i') : null;
+  // Validate regex pattern if useRegex is true
+  let pattern: RegExp | null = null;
+  if (useRegex) {
+    try {
+      pattern = new RegExp(query, 'i');
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      throw new Error(`Invalid regex pattern: "${query}". ${errorMessage}`);
+    }
+  }
 
   // BUG-059: Load work units to search work unit titles
   const basePath = cwd || process.cwd();
   const workUnitsPath = join(basePath, 'spec', 'work-units.json');
-  let workUnits: Record<string, { id: string; title: string }> = {};
+  let workUnits: Record<string, WorkUnit> = {};
 
   try {
     const workUnitsContent = await readFile(workUnitsPath, 'utf-8');
@@ -128,15 +152,11 @@ export async function searchScenarios(
         ? workUnits[parsed.workUnitId].title
         : '';
 
-    const featureMatches = pattern
-      ? pattern.test(featureName) ||
-        pattern.test(featureDescription) ||
-        pattern.test(featureFilePath) ||
-        pattern.test(workUnitTitle)
-      : featureName.toLowerCase().includes(query.toLowerCase()) ||
-        featureDescription.toLowerCase().includes(query.toLowerCase()) ||
-        featureFilePath.toLowerCase().includes(query.toLowerCase()) ||
-        workUnitTitle.toLowerCase().includes(query.toLowerCase());
+    const featureMatches =
+      matchesQuery(featureName, query, pattern) ||
+      matchesQuery(featureDescription, query, pattern) ||
+      matchesQuery(featureFilePath, query, pattern) ||
+      matchesQuery(workUnitTitle, query, pattern);
 
     // If feature matches, return all scenarios from this feature
     if (featureMatches) {
@@ -151,11 +171,8 @@ export async function searchScenarios(
       // Check individual scenarios
       for (const scenario of parsed.scenarios) {
         const scenarioName = scenario.name;
-        const matches = pattern
-          ? pattern.test(scenarioName)
-          : scenarioName.toLowerCase().includes(query.toLowerCase());
 
-        if (matches) {
+        if (matchesQuery(scenarioName, query, pattern)) {
           results.push({
             scenarioName,
             featureFilePath: parsed.filePath,
