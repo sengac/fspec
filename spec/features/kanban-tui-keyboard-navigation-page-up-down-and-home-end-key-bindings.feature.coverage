@@ -1,0 +1,154 @@
+{
+  "scenarios": [
+    {
+      "name": "Page Down moves selector down one page",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/UnifiedBoardLayout-keyboard-navigation.test.tsx",
+          "lines": "30-66",
+          "implMappings": [
+            {
+              "file": "src/tui/components/UnifiedBoardLayout.tsx",
+              "lines": [
+                450,
+                451,
+                452,
+                453
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Page Up moves selector up one page",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/UnifiedBoardLayout-keyboard-navigation.test.tsx",
+          "lines": "69-108",
+          "implMappings": [
+            {
+              "file": "src/tui/components/UnifiedBoardLayout.tsx",
+              "lines": [
+                455,
+                456,
+                457,
+                458
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Home key moves selector to first item",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/UnifiedBoardLayout-keyboard-navigation.test.tsx",
+          "lines": "111-149",
+          "implMappings": [
+            {
+              "file": "src/tui/components/UnifiedBoardLayout.tsx",
+              "lines": [
+                404,
+                405,
+                406,
+                407,
+                408,
+                409,
+                410,
+                411,
+                412,
+                413,
+                414,
+                415,
+                416,
+                417,
+                418,
+                419,
+                420,
+                421,
+                422,
+                423,
+                424,
+                425,
+                426,
+                427,
+                428,
+                429,
+                430,
+                431,
+                432,
+                433,
+                434,
+                435,
+                436
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "End key moves selector to last item",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/UnifiedBoardLayout-keyboard-navigation.test.tsx",
+          "lines": "152-190",
+          "implMappings": [
+            {
+              "file": "src/tui/components/UnifiedBoardLayout.tsx",
+              "lines": [
+                404,
+                405,
+                406,
+                407,
+                408,
+                409,
+                410,
+                411,
+                412,
+                413,
+                414,
+                415,
+                416,
+                417,
+                418,
+                419,
+                420,
+                421,
+                422,
+                423,
+                424,
+                425,
+                426,
+                427,
+                428,
+                429,
+                430,
+                431,
+                432,
+                433,
+                434,
+                435,
+                436
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/components/__tests__/UnifiedBoardLayout-keyboard-navigation.test.tsx"
+    ],
+    "implFiles": [
+      "src/tui/components/UnifiedBoardLayout.tsx"
+    ],
+    "totalLinesCovered": 229
+  }
+}
