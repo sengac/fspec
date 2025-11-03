@@ -122,6 +122,7 @@ Tags that categorize features by functional area.
 | `@release-management` | Release and version management features |
 | `@remove` | Remove operations |
 | `@repair` | Data repair operations |
+| `@report-bug` | Features related to reporting bugs to GitHub |
 | `@reporting` | Reporting and statistics |
 | `@research` | Research and discovery tools |
 | `@reverse-acdd` | Features related to reverse ACDD for documenting existing codebases |
@@ -582,7 +583,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-11-03T01:57:44.847Z_
+_Last updated: 2025-11-03T02:51:45.286Z_
 
 **Update Command**: `fspec tag-stats`
 

@@ -262,7 +262,8 @@ function constructGitHubURL(title: string, body: string): string {
 export async function reportBugToGitHub(
   options: ReportBugOptions = {}
 ): Promise<BugReport> {
-  const projectRoot = options.projectRoot || (await findProjectRoot());
+  const projectRoot =
+    options.projectRoot || (await findProjectRoot(process.cwd()));
 
   // Gather system context
   const context = await gatherContext(projectRoot);

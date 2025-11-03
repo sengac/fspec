@@ -418,6 +418,10 @@
           "description": "Data repair operations"
         },
         {
+          "name": "@report-bug",
+          "description": "Features related to reporting bugs to GitHub"
+        },
+        {
           "name": "@reporting",
           "description": "Reporting and statistics"
         },
@@ -1362,7 +1366,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-11-03T01:57:44.847Z",
+    "lastUpdated": "2025-11-03T02:51:45.286Z",
     "phaseStats": [
       {
         "phase": "Phase 1",
