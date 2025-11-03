@@ -35,31 +35,32 @@ describe('Feature: Fix work unit details panel to be static 4 lines high', () =>
 
       // @step Then I should see exactly 4 content lines
       // Find the separators to locate work unit detail section
+      // TUI-014: Changed Files section removed, look for Checkpoints instead
       const lines = frame.split('\n');
 
-      // Find the Changed Files line
-      const changedFilesLineIndex = lines.findIndex(line => line.includes('Changed Files'));
-      expect(changedFilesLineIndex).toBeGreaterThan(-1);
+      // Find the Checkpoints line
+      const checkpointsLineIndex = lines.findIndex(line => line.includes('Checkpoints'));
+      expect(checkpointsLineIndex).toBeGreaterThan(-1);
 
-      // Find first separator AFTER Changed Files (separator with no ┬ character)
-      const separatorAfterChangedFiles = lines.findIndex((line, idx) =>
-        idx > changedFilesLineIndex &&
+      // Find first separator AFTER Checkpoints (separator with no ┬ character)
+      const separatorAfterCheckpoints = lines.findIndex((line, idx) =>
+        idx > checkpointsLineIndex &&
         line.includes('├─') && line.includes('┤') && !line.includes('┬')
       );
 
       // Find separator BEFORE column headers (has ┬ characters for column divisions)
       const separatorBeforeColumns = lines.findIndex((line, idx) =>
-        idx > separatorAfterChangedFiles &&
+        idx > separatorAfterCheckpoints &&
         line.includes('├─') && line.includes('┬')
       );
 
-      expect(separatorAfterChangedFiles).toBeGreaterThan(-1);
+      expect(separatorAfterCheckpoints).toBeGreaterThan(-1);
       expect(separatorBeforeColumns).toBeGreaterThan(-1);
 
       // Count work unit detail lines between the two separators
       // These should be the 4 static content lines for work unit details
       const contentLines: string[] = [];
-      for (let i = separatorAfterChangedFiles + 1; i < separatorBeforeColumns; i++) {
+      for (let i = separatorAfterCheckpoints + 1; i < separatorBeforeColumns; i++) {
         const line = lines[i];
         // Only count actual content lines (those with │)
         if (line.includes('│')) {
@@ -104,26 +105,27 @@ describe('Feature: Fix work unit details panel to be static 4 lines high', () =>
       const frame = frames[frames.length - 1];
 
       // @step Then I should see exactly 4 content lines
+      // TUI-014: Changed Files section removed, look for Checkpoints instead
       const lines = frame.split('\n');
 
-      const changedFilesLineIndex = lines.findIndex(line => line.includes('Changed Files'));
-      expect(changedFilesLineIndex).toBeGreaterThan(-1);
+      const checkpointsLineIndex = lines.findIndex(line => line.includes('Checkpoints'));
+      expect(checkpointsLineIndex).toBeGreaterThan(-1);
 
-      const separatorAfterChangedFiles = lines.findIndex((line, idx) =>
-        idx > changedFilesLineIndex &&
+      const separatorAfterCheckpoints = lines.findIndex((line, idx) =>
+        idx > checkpointsLineIndex &&
         line.includes('├─') && line.includes('┤') && !line.includes('┬')
       );
 
       const separatorBeforeColumns = lines.findIndex((line, idx) =>
-        idx > separatorAfterChangedFiles &&
+        idx > separatorAfterCheckpoints &&
         line.includes('├─') && line.includes('┬')
       );
 
-      expect(separatorAfterChangedFiles).toBeGreaterThan(-1);
+      expect(separatorAfterCheckpoints).toBeGreaterThan(-1);
       expect(separatorBeforeColumns).toBeGreaterThan(-1);
 
       const contentLines: string[] = [];
-      for (let i = separatorAfterChangedFiles + 1; i < separatorBeforeColumns; i++) {
+      for (let i = separatorAfterCheckpoints + 1; i < separatorBeforeColumns; i++) {
         const line = lines[i];
         if (line.includes('│')) {
           contentLines.push(line);
@@ -163,26 +165,27 @@ describe('Feature: Fix work unit details panel to be static 4 lines high', () =>
       await new Promise(resolve => setTimeout(resolve, 500));
 
       const frame = frames[frames.length - 1];
+      // TUI-014: Changed Files section removed, look for Checkpoints instead
       const lines = frame.split('\n');
 
-      const changedFilesLineIndex = lines.findIndex(line => line.includes('Changed Files'));
-      expect(changedFilesLineIndex).toBeGreaterThan(-1);
+      const checkpointsLineIndex = lines.findIndex(line => line.includes('Checkpoints'));
+      expect(checkpointsLineIndex).toBeGreaterThan(-1);
 
-      const separatorAfterChangedFiles = lines.findIndex((line, idx) =>
-        idx > changedFilesLineIndex &&
+      const separatorAfterCheckpoints = lines.findIndex((line, idx) =>
+        idx > checkpointsLineIndex &&
         line.includes('├─') && line.includes('┤') && !line.includes('┬')
       );
 
       const separatorBeforeColumns = lines.findIndex((line, idx) =>
-        idx > separatorAfterChangedFiles &&
+        idx > separatorAfterCheckpoints &&
         line.includes('├─') && line.includes('┬')
       );
 
-      expect(separatorAfterChangedFiles).toBeGreaterThan(-1);
+      expect(separatorAfterCheckpoints).toBeGreaterThan(-1);
       expect(separatorBeforeColumns).toBeGreaterThan(-1);
 
       const contentLines: string[] = [];
-      for (let i = separatorAfterChangedFiles + 1; i < separatorBeforeColumns; i++) {
+      for (let i = separatorAfterCheckpoints + 1; i < separatorBeforeColumns; i++) {
         const line = lines[i];
         if (line.includes('│')) {
           contentLines.push(line);

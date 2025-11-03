@@ -1,0 +1,200 @@
+{
+  "scenarios": [
+    {
+      "name": "Main board header shows checkpoints but not changed files counter",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/BoardView-lazy-file-loading.test.tsx",
+          "lines": "45-76",
+          "implMappings": []
+        },
+        {
+          "file": "src/tui/__tests__/BoardView-lazy-file-loading.test.tsx",
+          "lines": "93-123",
+          "implMappings": [
+            {
+              "file": "src/tui/components/UnifiedBoardLayout.tsx",
+              "lines": [
+                532,
+                533,
+                534,
+                535,
+                536,
+                537,
+                538,
+                539,
+                540,
+                541,
+                542,
+                543,
+                544,
+                545
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "F key opens changed files viewer with lazy-loaded git status",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/BoardView-lazy-file-loading.test.tsx",
+          "lines": "78-117",
+          "implMappings": []
+        },
+        {
+          "file": "src/tui/__tests__/BoardView-lazy-file-loading.test.tsx",
+          "lines": "125-164",
+          "implMappings": [
+            {
+              "file": "src/tui/components/ChangedFilesViewer.tsx",
+              "lines": [
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Main board does not auto-update when files are staged externally",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/BoardView-lazy-file-loading.test.tsx",
+          "lines": "117-162",
+          "implMappings": []
+        },
+        {
+          "file": "src/tui/__tests__/BoardView-lazy-file-loading.test.tsx",
+          "lines": "173-219",
+          "implMappings": [
+            {
+              "file": "src/tui/components/BoardView.tsx",
+              "lines": [
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Checkpoint stash watcher remains active and updates header",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/BoardView-lazy-file-loading.test.tsx",
+          "lines": "165-198",
+          "implMappings": []
+        },
+        {
+          "file": "src/tui/__tests__/BoardView-lazy-file-loading.test.tsx",
+          "lines": "221-254",
+          "implMappings": [
+            {
+              "file": "src/tui/components/BoardView.tsx",
+              "lines": [
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Remove changed files watching tests but keep checkpoint tests",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/BoardView-lazy-file-loading.test.tsx",
+          "lines": "200-224",
+          "implMappings": []
+        },
+        {
+          "file": "src/tui/__tests__/BoardView-lazy-file-loading.test.tsx",
+          "lines": "256-275",
+          "implMappings": []
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/__tests__/BoardView-lazy-file-loading.test.tsx"
+    ],
+    "implFiles": [
+      "src/tui/components/UnifiedBoardLayout.tsx",
+      "src/tui/components/ChangedFilesViewer.tsx",
+      "src/tui/components/BoardView.tsx"
+    ],
+    "totalLinesCovered": 432
+  }
+}

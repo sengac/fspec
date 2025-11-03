@@ -1,31 +1,17 @@
 /**
- * ChangedFilesPanel Component - displays changed files in header
+ * ChangedFilesPanel Component - displays keyboard shortcuts for file viewing
  *
  * Coverage:
  * - BOARD-019: Add fspec logo to TUI header
+ * - TUI-014: Remove file watching from main board, show only keyboard shortcuts
  */
 
 import React from 'react';
 import { Box, Text } from 'ink';
 
-interface ChangedFilesPanelProps {
-  stagedFiles: string[];
-  unstagedFiles: string[];
-}
-
-export const ChangedFilesPanel: React.FC<ChangedFilesPanelProps> = ({
-  stagedFiles,
-  unstagedFiles,
-}) => {
-  const stagedCount = stagedFiles.length;
-  const unstagedCount = unstagedFiles.length;
-
+export const ChangedFilesPanel: React.FC = () => {
   return (
     <Box flexDirection="column">
-      <Text>
-        Changed Files: {stagedCount} staged, {unstagedCount} unstaged
-      </Text>
-      <Text>{'─'.repeat(41)}</Text>
       <Text>C View Checkpoints ◆ F View Changed Files</Text>
     </Box>
   );

@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-03T05:06:25.005Z"
+    "lastUpdated": "2025-11-03T12:36:53.967Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -37751,6 +37751,922 @@
       },
       "estimate": 2,
       "updated": "2025-11-03T05:06:25.025Z"
+    },
+    "TUI-014": {
+      "id": "TUI-014",
+      "title": "Remove file watching from TUI main screen and lazy-load changed files view",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-11-03T10:12:35.436Z",
+      "updatedAt": "2025-11-03T11:24:33.612Z",
+      "description": "Remove file watching for changed files from the main TUI board display. Keep the 'F View Changed Files' keyboard shortcut and view, but calculate changed files only when the view is opened (lazy loading). Remove all associated code, tests, and features for file watching and changed file count display on main board.",
+      "children": [],
+      "userStory": {
+        "role": "developer viewing the TUI board",
+        "action": "remove file watching overhead and see changed files only when needed",
+        "benefit": "the main board loads faster and file system watchers don't consume resources unnecessarily"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-03T10:12:49.726Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-03T10:34:50.547Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-03T10:40:17.894Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-03T11:09:22.595Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-03T11:24:33.612Z"
+        }
+      ],
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: What specific UI elements on the main TUI board display changed files information currently (counter, list, etc.)?",
+          "deleted": false,
+          "createdAt": "2025-11-03T10:13:09.434Z",
+          "selected": true,
+          "answer": "The main TUI board displays: (1) Counter: 'Changed Files (X staged, Y unstaged)' (2) File preview showing up to 3 files with status indicators (+ for staged, M for unstaged) (3) Empty state: 'No changes' when no files changed. This appears in the header panel at lines 532-545 of UnifiedBoardLayout.tsx."
+        },
+        {
+          "id": 1,
+          "text": "@human: When user presses 'F View Changed Files', should it calculate changed files using git status at that moment (lazy loading)?",
+          "deleted": false,
+          "createdAt": "2025-11-03T10:13:11.517Z",
+          "selected": true,
+          "answer": "Yes, when user presses 'F View Changed Files', it should calculate changed files at that moment using the exact same mechanism: Call Promise.all([getStagedFiles(cwd), getUnstagedFiles(cwd)]) from src/git/status.ts. This uses isomorphic-git to read .git/index directly (no git CLI subprocess). The same functions, same parameters, just triggered on-demand instead of by file watchers."
+        },
+        {
+          "id": 2,
+          "text": "@human: Are there file watchers currently running in the background, and should ALL file watching be removed from the TUI?",
+          "deleted": false,
+          "createdAt": "2025-11-03T10:13:13.309Z",
+          "selected": true,
+          "answer": "There are file watchers currently running. Remove ONLY the .git/index and .git/HEAD watcher (BoardView.tsx lines 143-188) that watches for changed files. KEEP the git stash watcher (BoardView.tsx lines 112-141) which displays checkpoints in the header, and KEEP the checkpoint panel watcher (CheckpointPanel.tsx lines 64-92) which shows checkpoint counts."
+        },
+        {
+          "id": 3,
+          "text": "@human: What code files, test files, and feature files need to be removed or refactored as part of this cleanup?",
+          "deleted": false,
+          "createdAt": "2025-11-03T10:13:14.641Z",
+          "selected": true,
+          "answer": "MODIFY 5 source files: (1) BoardView.tsx - remove .git/index/.git/HEAD watcher lines 143-188, remove loadFileStatus calls (2) UnifiedBoardLayout.tsx - remove changed files section lines 532-545 (3) ChangedFilesPanel.tsx - remove file counts, keep only keyboard shortcuts (4) ChangedFilesViewer.tsx - add lazy loading on mount via loadFileStatus (5) fspecStore.ts - KEEP unchanged. MODIFY 3 test files: BoardView-file-watchers.test.tsx and BoardView-git-watcher-fix.test.tsx (remove .git/index/.git/HEAD scenarios, keep checkpoint tests), ChangedFilesViewer.test.tsx (switch to store-based testing). MODIFY 1 feature file: ITF-005 (remove 3 scenarios about file watching). KEEP unchanged: GIT-004 feature file (F key behavior unchanged). Total: 12 files modified, 0 deleted, ~270 net lines removed."
+        }
+      ],
+      "nextQuestionId": 4,
+      "rules": [
+        {
+          "id": 0,
+          "text": "The main TUI board displays: (1) Counter: 'Changed Files (X staged, Y unstaged)' (2) File preview showing up to 3 files with status indicators (+ for staged, M for unstaged) (3) Empty state: 'No changes' when no files changed. This appears in the header panel at lines 532-545 of UnifiedBoardLayout.tsx.",
+          "deleted": false,
+          "createdAt": "2025-11-03T10:19:04.447Z"
+        },
+        {
+          "id": 1,
+          "text": "Yes, when user presses 'F View Changed Files', it should calculate changed files at that moment using the exact same mechanism: Call Promise.all([getStagedFiles(cwd), getUnstagedFiles(cwd)]) from src/git/status.ts. This uses isomorphic-git to read .git/index directly (no git CLI subprocess). The same functions, same parameters, just triggered on-demand instead of by file watchers.",
+          "deleted": false,
+          "createdAt": "2025-11-03T10:22:39.205Z"
+        },
+        {
+          "id": 2,
+          "text": "There are file watchers currently running. Remove ONLY the .git/index and .git/HEAD watcher (BoardView.tsx lines 143-188) that watches for changed files. KEEP the git stash watcher (BoardView.tsx lines 112-141) which displays checkpoints in the header, and KEEP the checkpoint panel watcher (CheckpointPanel.tsx lines 64-92) which shows checkpoint counts.",
+          "deleted": false,
+          "createdAt": "2025-11-03T10:26:47.889Z"
+        },
+        {
+          "id": 3,
+          "text": "MODIFY 5 source files: (1) BoardView.tsx - remove .git/index/.git/HEAD watcher lines 143-188, remove loadFileStatus calls (2) UnifiedBoardLayout.tsx - remove changed files section lines 532-545 (3) ChangedFilesPanel.tsx - remove file counts, keep only keyboard shortcuts (4) ChangedFilesViewer.tsx - add lazy loading on mount via loadFileStatus (5) fspecStore.ts - KEEP unchanged. MODIFY 3 test files: BoardView-file-watchers.test.tsx and BoardView-git-watcher-fix.test.tsx (remove .git/index/.git/HEAD scenarios, keep checkpoint tests), ChangedFilesViewer.test.tsx (switch to store-based testing). MODIFY 1 feature file: ITF-005 (remove 3 scenarios about file watching). KEEP unchanged: GIT-004 feature file (F key behavior unchanged). Total: 12 files modified, 0 deleted, ~270 net lines removed.",
+          "deleted": false,
+          "createdAt": "2025-11-03T10:31:17.640Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User opens TUI board → Header shows 'Git Stashes (2)' with checkpoint names → NO 'Changed Files' counter visible",
+          "deleted": false,
+          "createdAt": "2025-11-03T10:31:32.924Z"
+        },
+        {
+          "id": 1,
+          "text": "User presses F key → ChangedFilesViewer opens → Component calls loadFileStatus() on mount → Displays '2 staged, 1 unstaged' with file list and diffs",
+          "deleted": false,
+          "createdAt": "2025-11-03T10:31:34.543Z"
+        },
+        {
+          "id": 2,
+          "text": "User stages file externally (git add) → Main board header does NOT update automatically → User presses F key → Viewer loads fresh git status showing newly staged file",
+          "deleted": false,
+          "createdAt": "2025-11-03T10:31:36.187Z"
+        },
+        {
+          "id": 3,
+          "text": "User creates checkpoint via 'fspec checkpoint' → Git stashes section updates automatically (watcher still active) → Changed files section removed entirely from header",
+          "deleted": false,
+          "createdAt": "2025-11-03T10:31:37.738Z"
+        },
+        {
+          "id": 4,
+          "text": "BoardView-file-watchers.test.tsx: Remove test 'TUI auto-updates when file is staged via git add' → Keep test 'TUI auto-updates stash panel when git stash is created externally'",
+          "deleted": false,
+          "createdAt": "2025-11-03T10:31:39.231Z"
+        }
+      ],
+      "nextExampleId": 5,
+      "estimate": 5,
+      "architectureNotes": [],
+      "nextNoteId": 0,
+      "updated": "2025-11-03T11:24:33.612Z"
+    },
+    "TUI-015": {
+      "id": "TUI-015",
+      "title": "Refactor header and details to component-based flexbox",
+      "type": "story",
+      "status": "validating",
+      "createdAt": "2025-11-03T12:11:24.928Z",
+      "updatedAt": "2025-11-03T13:28:52.457Z",
+      "children": [],
+      "attachments": [
+        "spec/attachments/TUI-015/REWORK.md",
+        "spec/attachments/TUI-015/VISUAL-RULES-GUIDE.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-03T12:13:01.627Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-03T12:40:18.238Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-03T13:00:39.318Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-03T13:08:36.436Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-03T13:28:52.457Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using fspec TUI",
+        "action": "view header and work unit details as pure Ink components",
+        "benefit": "the layout is maintainable, testable, and uses proper flexbox instead of string injection"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "NO string injection - all content must be rendered as Ink components",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:13:24.977Z"
+        },
+        {
+          "id": 1,
+          "text": "Use ONLY flexbox (flexGrow/flexShrink) and static heights - NEVER percentages",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:13:26.421Z"
+        },
+        {
+          "id": 2,
+          "text": "Header container must have internal height of 4 lines (Logo + CheckpointStatus + KeybindingShortcuts)",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:13:28.951Z"
+        },
+        {
+          "id": 3,
+          "text": "Work unit details container must have internal height of 5 lines (Title[1] + Description[3] + Metadata[1])",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:13:30.580Z"
+        },
+        {
+          "id": 4,
+          "text": "Borders must use hybrid border system where corners connect properly (Box borderStyle for header, separators for details)",
+          "deleted": true,
+          "createdAt": "2025-11-03T12:13:32.370Z",
+          "deletedAt": "2025-11-03T12:34:37.411Z"
+        },
+        {
+          "id": 5,
+          "text": "Logo component width is 12 characters with flexShrink, InfoContainer uses flexGrow",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:13:33.981Z"
+        },
+        {
+          "id": 6,
+          "text": "KeybindingShortcuts component has borderTop only (all other borders false)",
+          "deleted": true,
+          "createdAt": "2025-11-03T12:13:35.652Z",
+          "deletedAt": "2025-11-03T12:34:40.716Z"
+        },
+        {
+          "id": 7,
+          "text": "WorkUnitDescription component height is 3 lines using flexGrow with bold cyan text",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:13:36.942Z"
+        },
+        {
+          "id": 8,
+          "text": "InfoContainer must use flexGrow to fill remaining horizontal space after Logo (12ch fixed width)",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:16:03.359Z"
+        },
+        {
+          "id": 9,
+          "text": "CheckpointStatus and KeybindingShortcuts must use flexGrow to distribute vertical space within InfoContainer (no static heights)",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:16:28.629Z"
+        },
+        {
+          "id": 10,
+          "text": "WorkUnitDetailsContainer must NOT use Box borderStyle - only borderLeft and borderRight (separators render top/bottom)",
+          "deleted": true,
+          "createdAt": "2025-11-03T12:16:29.961Z",
+          "deletedAt": "2025-11-03T12:34:44.242Z"
+        },
+        {
+          "id": 11,
+          "text": "All text rendering in header and details must be Text components - NEVER string concatenation in rows array",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:16:31.463Z"
+        },
+        {
+          "id": 12,
+          "text": "HeaderContainer uses Box with borderStyle='single' for all four borders (top, right, bottom, left)",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:16:33.228Z"
+        },
+        {
+          "id": 13,
+          "text": "Logo component width MUST be exactly 12 characters (4 rows of 12ch each, currently implemented correctly)",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:16:34.738Z"
+        },
+        {
+          "id": 14,
+          "text": "WorkUnitTitle must truncate text WITHOUT ellipsis (...) if exceeds container width",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:16:36.310Z"
+        },
+        {
+          "id": 15,
+          "text": "WorkUnitDescription must truncate line 3 WITH ellipsis (...) if description exceeds 3 lines",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:16:37.566Z"
+        },
+        {
+          "id": 16,
+          "text": "WorkUnitMetadata displays available fields only, joined with ' | ' separator (Epic | Estimate | Status)",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:16:39.510Z"
+        },
+        {
+          "id": 17,
+          "text": "When no work unit selected: WorkUnitTitle shows 'No work unit selected' centered, lines 2-5 empty (not 'No description')",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:16:41.047Z"
+        },
+        {
+          "id": 18,
+          "text": "calculateViewportHeight must use 19 fixed rows (6 header Box + 1 separator + 5 details + 7 footer/columns)",
+          "deleted": true,
+          "createdAt": "2025-11-03T12:16:42.494Z",
+          "deletedAt": "2025-11-03T12:19:05.461Z"
+        },
+        {
+          "id": 19,
+          "text": "KeybindingShortcuts component MUST render its own borderTop separator as part of its Box (borderTop: true, all others: false)",
+          "deleted": true,
+          "createdAt": "2025-11-03T12:16:44.076Z",
+          "deletedAt": "2025-11-03T12:34:47.651Z"
+        },
+        {
+          "id": 20,
+          "text": "Separator after header must use buildBorderRow with 'plain' separator type (├─...─┤)",
+          "deleted": true,
+          "createdAt": "2025-11-03T12:16:45.979Z",
+          "deletedAt": "2025-11-03T12:34:51.453Z"
+        },
+        {
+          "id": 21,
+          "text": "WorkUnitDescription MUST be bold cyan text (chalk.cyan.bold) wrapping across 3 lines maximum",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:16:47.722Z"
+        },
+        {
+          "id": 22,
+          "text": "Header total height is 6 lines (1 top border from Box + 4 content lines + 1 bottom border from Box)",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:18:20.270Z"
+        },
+        {
+          "id": 23,
+          "text": "Details total height is 5 content lines (borders rendered by separators, NOT counted in content height)",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:18:21.857Z"
+        },
+        {
+          "id": 24,
+          "text": "WorkUnitTitle and WorkUnitMetadata must have height={1} (static, single line each)",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:18:23.314Z"
+        },
+        {
+          "id": 25,
+          "text": "WorkUnitDescription must use flexGrow={1} to fill 3 lines (NOT static height={3})",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:18:24.800Z"
+        },
+        {
+          "id": 26,
+          "text": "Text wrapping in WorkUnitDescription must split on spaces, NOT character-by-character (word-wrap, not char-wrap)",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:18:26.266Z"
+        },
+        {
+          "id": 27,
+          "text": "When description text contains newlines, they must be normalized to spaces before wrapping (join all lines into single text)",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:18:27.990Z"
+        },
+        {
+          "id": 28,
+          "text": "Component hierarchy: HeaderContainer(Box) → Row(Box) → [Logo, InfoContainer(Box)] → Column → [CheckpointStatus, KeybindingShortcuts]",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:18:30.057Z"
+        },
+        {
+          "id": 29,
+          "text": "Component hierarchy: WorkUnitDetailsContainer(Box) → Column → [WorkUnitTitle(Box), WorkUnitDescription(Box), WorkUnitMetadata(Box)]",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:18:31.641Z"
+        },
+        {
+          "id": 30,
+          "text": "All component text content must be wrapped in Text components - Box components handle layout only",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:18:33.194Z"
+        },
+        {
+          "id": 31,
+          "text": "String injection lines (rows.push) removed from lines 496-617, replaced with component rendering at lines 707-740",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:18:34.859Z"
+        },
+        {
+          "id": 32,
+          "text": "Column viewport height is DYNAMIC: calculated as terminalHeight minus actual heights of all static components (header Box 6, separator 1, details 5, separator 1, column headers 2, footer separator 1, footer text 1, bottom border 1)",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:19:27.749Z"
+        },
+        {
+          "id": 33,
+          "text": "Static component heights are derived from their actual structure (NOT magic numbers): HeaderContainer.height, separators.count, WorkUnitDetailsContainer.height, footerRows.count",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:19:29.558Z"
+        },
+        {
+          "id": 34,
+          "text": "Terminal resize MUST recalculate column viewport height - columns fill remaining space after static components are rendered",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:19:30.930Z"
+        },
+        {
+          "id": 35,
+          "text": "NEVER hardcode total fixed rows as magic number (e.g., fixedRows = 19) - calculate from sum of static component heights",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:19:32.228Z"
+        },
+        {
+          "id": 36,
+          "text": "Each separator line counts as 1 row (buildBorderRow output), column header row is 1, header separator is 1",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:20:00.598Z"
+        },
+        {
+          "id": 37,
+          "text": "InfoContainer height={4} is STATIC (matches 4 internal lines in Logo), NOT flexible - ensures header vertical alignment",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:20:02.218Z"
+        },
+        {
+          "id": 38,
+          "text": "WorkUnitDetailsContainer must have explicit height={5} to ensure 5 content rows regardless of description length",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:20:03.984Z"
+        },
+        {
+          "id": 39,
+          "text": "Current calculateViewportHeight at line 79-99 uses hardcoded fixedRows=17 (WRONG) - must calculate from component structure",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:20:05.416Z"
+        },
+        {
+          "id": 40,
+          "text": "wrapText helper (lines 110-133) must be used internally by WorkUnitDescription component for 3-line wrapping logic",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:20:39.584Z"
+        },
+        {
+          "id": 41,
+          "text": "fitToWidth helper (lines 102-107) used for padding/truncation must be replaced by Ink Text wrap='truncate' prop in components",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:20:42.210Z"
+        },
+        {
+          "id": 42,
+          "text": "centerText helper (lines 136-144) must be used by WorkUnitTitle when selectedWorkUnit is null ('No work unit selected' centered)",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:20:44.232Z"
+        },
+        {
+          "id": 43,
+          "text": "String injection pattern rows.push('│' + content + '│') at lines 504-616 MUST BE DELETED and replaced with component hierarchy",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:20:46.230Z"
+        },
+        {
+          "id": 44,
+          "text": "Hybrid rendering at lines 707-740 splits rows into sections (header components + separator string + rest strings) - must be fully component-based",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:20:47.901Z"
+        },
+        {
+          "id": 45,
+          "text": "Current implementation: rows[0-4] = header strings (DELETE), rows[5] = separator (KEEP), rows[6-11] = details strings (DELETE), rows[12+] = columns (KEEP)",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:20:49.834Z"
+        },
+        {
+          "id": 46,
+          "text": "Separators use buildBorderRow which calculates width based on colWidth and colRemainder - must match column widths exactly for border alignment",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:21:23.406Z"
+        },
+        {
+          "id": 47,
+          "text": "WorkUnitDetailsContainer width must match totalWidth calculation (sum of column widths + separators) to align with table borders",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:21:25.084Z"
+        },
+        {
+          "id": 48,
+          "text": "WorkUnitDescription empty/whitespace-only strings must display 3 blank lines (lines 2-4 empty) - NO 'No description' text",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:21:26.824Z"
+        },
+        {
+          "id": 49,
+          "text": "WorkUnitMetadata fields must be joined with ' | ' ONLY between present fields (no leading/trailing separators)",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:21:28.787Z"
+        },
+        {
+          "id": 50,
+          "text": "Current CheckpointPanel (lines 1-105 of CheckpointPanel.tsx) must be replaced with simpler CheckpointStatus component receiving counts as props",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:21:30.956Z"
+        },
+        {
+          "id": 51,
+          "text": "Current ChangedFilesPanel (lines 1-19 of ChangedFilesPanel.tsx) displays keyboard shortcuts - rename to KeybindingShortcuts, add borderTop",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:21:32.348Z"
+        },
+        {
+          "id": 52,
+          "text": "Borders use hybrid border system: HeaderContainer Box borderStyle='single' creates top/sides/bottom, then junction separators (├┤┬┼┴) extend vertical borders to connect Details and Columns - ONE continuous structure",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:34:39.159Z"
+        },
+        {
+          "id": 53,
+          "text": "KeybindingShortcuts component has borderTop only (INSIDE InfoContainer, not separate line) - extends as internal horizontal line within HeaderContainer",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:34:42.392Z"
+        },
+        {
+          "id": 54,
+          "text": "WorkUnitDetailsContainer must NOT use Box borderStyle - only borderLeft and borderRight (junction separators ├┤ render top/bottom as part of continuous border structure)",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:34:45.838Z"
+        },
+        {
+          "id": 55,
+          "text": "KeybindingShortcuts component MUST render its own borderTop separator as part of its Box (borderTop: true, all others: false) - this is INSIDE HeaderContainer, part of internal layout",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:34:49.088Z"
+        },
+        {
+          "id": 56,
+          "text": "Separator after header must use buildBorderRow with 'plain' separator type (├─...─┤) - creates junction that extends HeaderContainer borders to connect with Details",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:34:53.158Z"
+        },
+        {
+          "id": 57,
+          "text": "Junction characters form continuous border: ├ (left extend), ┤ (right extend), ┬ (top T-junction), ┼ (cross junction), ┴ (bottom T-junction) - NEVER two separate lines",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:35:41.096Z"
+        }
+      ],
+      "nextRuleId": 58,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Header Box renders with Logo (12ch width) on left and InfoContainer (flexGrow) on right, total internal height 4 lines",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:13:53.047Z"
+        },
+        {
+          "id": 1,
+          "text": "CheckpointStatus shows 'Checkpoints: 3 Manual, 5 Auto' when checkpoints exist",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:13:54.641Z"
+        },
+        {
+          "id": 2,
+          "text": "CheckpointStatus shows 'Checkpoints: None' when no checkpoints exist",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:13:56.302Z"
+        },
+        {
+          "id": 3,
+          "text": "KeybindingShortcuts displays 'C View Checkpoints ◆ F View Changed Files' with borderTop only",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:13:57.956Z"
+        },
+        {
+          "id": 4,
+          "text": "WorkUnitTitle displays 'BOARD-001: Feature Title' on single line, truncates if too long",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:13:59.951Z"
+        },
+        {
+          "id": 5,
+          "text": "WorkUnitDescription wraps text across 3 lines, truncates line 3 with '...' if description exceeds 3 lines",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:14:01.958Z"
+        },
+        {
+          "id": 6,
+          "text": "WorkUnitMetadata displays 'Epic: auth | Estimate: 5pts | Status: implementing' on single line",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:14:03.379Z"
+        },
+        {
+          "id": 7,
+          "text": "Fixed rows calculation is 19 total (6 header Box + 1 separator + 5 details + 7 footer/columns)",
+          "deleted": true,
+          "createdAt": "2025-11-03T12:14:04.837Z",
+          "deletedAt": "2025-11-03T12:19:06.925Z"
+        },
+        {
+          "id": 8,
+          "text": "HeaderContainer renders as Box with borderStyle='single', containing flexDirection='row' with Logo (12ch, flexShrink) and InfoContainer (flexGrow)",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:17:20.061Z"
+        },
+        {
+          "id": 9,
+          "text": "InfoContainer has flexDirection='column', height={4}, contains CheckpointStatus (flexGrow) and KeybindingShortcuts (flexGrow with borderTop)",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:17:21.672Z"
+        },
+        {
+          "id": 10,
+          "text": "CheckpointStatus displays checkpoint counts with NO border (all border props false or undefined)",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:17:23.264Z"
+        },
+        {
+          "id": 11,
+          "text": "KeybindingShortcuts renders Box with borderTop={true}, borderBottom={false}, borderLeft={false}, borderRight={false}",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:17:24.883Z"
+        },
+        {
+          "id": 12,
+          "text": "WorkUnitDetailsContainer renders between two separators (├─...─┤), has borderLeft={true}, borderRight={true}, borderTop={false}, borderBottom={false}",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:17:26.356Z"
+        },
+        {
+          "id": 13,
+          "text": "WorkUnitTitle 'BOARD-001: Very Long Feature Title That Exceeds Width' truncates to 'BOARD-001: Very Long Feature Title' (no ellipsis)",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:17:28.252Z"
+        },
+        {
+          "id": 14,
+          "text": "WorkUnitDescription with 5 lines of text wraps to lines 1-2 fully, line 3 truncates with '...' at end (lines 4-5 discarded)",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:17:29.804Z"
+        },
+        {
+          "id": 15,
+          "text": "WorkUnitDescription wraps 'This is a long description that needs to wrap' into line 1: 'This is a long', line 2: 'description that', line 3: 'needs to wrap'",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:17:31.477Z"
+        },
+        {
+          "id": 16,
+          "text": "WorkUnitMetadata with epic='auth', estimate=5, status='implementing' displays: 'Epic: auth | Estimate: 5pts | Status: implementing'",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:17:33.257Z"
+        },
+        {
+          "id": 17,
+          "text": "WorkUnitMetadata with only estimate=3 (no epic, no status) displays: 'Estimate: 3pts' (no extra separators)",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:17:35.212Z"
+        },
+        {
+          "id": 18,
+          "text": "When selectedWorkUnit is null: WorkUnitTitle shows 'No work unit selected' centered on line 1, lines 2-5 are empty spaces (NOT 'No description')",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:17:37.084Z"
+        },
+        {
+          "id": 19,
+          "text": "Header Box corners (┌┐└┘) connect to separator (├┤) which connects to details borders (│) which connect to column separator (├┬┤)",
+          "deleted": true,
+          "createdAt": "2025-11-03T12:17:38.702Z",
+          "deletedAt": "2025-11-03T12:35:10.549Z"
+        },
+        {
+          "id": 20,
+          "text": "calculateViewportHeight(24) returns 5 rows (24 - 19 fixed rows = 5 available for columns)",
+          "deleted": true,
+          "createdAt": "2025-11-03T12:17:40.199Z",
+          "deletedAt": "2025-11-03T12:19:08.421Z"
+        },
+        {
+          "id": 21,
+          "text": "calculateViewportHeight(30) returns 11 rows (30 - 19 fixed rows = 11 available for columns)",
+          "deleted": true,
+          "createdAt": "2025-11-03T12:17:42.503Z",
+          "deletedAt": "2025-11-03T12:19:09.720Z"
+        },
+        {
+          "id": 22,
+          "text": "WorkUnitDescription empty string displays 3 blank lines (lines 2-4 are empty, no 'No description' text)",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:17:44.112Z"
+        },
+        {
+          "id": 23,
+          "text": "Logo component renders 4 rows of exactly 12 characters each (includes padding), occupies 12ch width with flexShrink={0}",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:17:46.130Z"
+        },
+        {
+          "id": 24,
+          "text": "Separator after header uses buildBorderRow(..., 'plain') producing ├─────┤ (no column dividers)",
+          "deleted": true,
+          "createdAt": "2025-11-03T12:17:47.688Z",
+          "deletedAt": "2025-11-03T12:35:13.582Z"
+        },
+        {
+          "id": 25,
+          "text": "Separator before columns uses buildBorderRow(..., 'top') producing ├─┬─┤ (with column dividers at top)",
+          "deleted": true,
+          "createdAt": "2025-11-03T12:17:49.301Z",
+          "deletedAt": "2025-11-03T12:35:16.833Z"
+        },
+        {
+          "id": 26,
+          "text": "Very narrow terminal (60 cols) causes Logo flexShrink to compress, InfoContainer maintains flexGrow to fill remaining space",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:17:50.975Z"
+        },
+        {
+          "id": 27,
+          "text": "WorkUnitDescription with exactly 3 lines of text displays all 3 lines without truncation (no ellipsis needed)",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:17:52.732Z"
+        },
+        {
+          "id": 28,
+          "text": "Current implementation uses rows.push('│' + content + '│') for header/details (lines 496-617) - MUST BE REMOVED",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:18:37.263Z"
+        },
+        {
+          "id": 29,
+          "text": "Refactored implementation renders HeaderContainer as <Box borderStyle='single'>...</Box> BEFORE separator (no string injection)",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:18:39.361Z"
+        },
+        {
+          "id": 30,
+          "text": "Refactored implementation renders WorkUnitDetailsContainer as <Box borderLeft borderRight>...</Box> BETWEEN separators",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:18:41.729Z"
+        },
+        {
+          "id": 31,
+          "text": "WorkUnitDescription component receives description prop, wraps internally using wrapText helper, renders 3 Text components",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:18:43.713Z"
+        },
+        {
+          "id": 32,
+          "text": "Terminal height 24 → fixedRows 19 → viewport 5 → columns display 5 work units max per column",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:18:45.171Z"
+        },
+        {
+          "id": 33,
+          "text": "WorkUnitMetadata with epic='authentication' (no estimate, no status) displays: 'Epic: authentication' (single field, no separators)",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:18:46.864Z"
+        },
+        {
+          "id": 34,
+          "text": "Terminal 24 rows: Header(6) + Sep(1) + Details(5) + Sep(1) + ColHeaders(2) + FooterSep(1) + Footer(1) + Bottom(1) = 18 static → 6 rows for columns",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:19:33.552Z"
+        },
+        {
+          "id": 35,
+          "text": "Terminal 40 rows: Same 18 static rows → 22 rows for columns (grows with terminal height)",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:19:35.145Z"
+        },
+        {
+          "id": 36,
+          "text": "HeaderContainer Box renders with height implicit from content (4 internal lines + 2 border lines = 6 total rows)",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:19:36.586Z"
+        },
+        {
+          "id": 37,
+          "text": "WorkUnitDetailsContainer renders 5 content rows (Title 1 + Description 3 + Metadata 1), borders from separators (NOT counted in container height)",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:19:38.389Z"
+        },
+        {
+          "id": 38,
+          "text": "InfoContainer with height={4} contains CheckpointStatus (flexGrow, takes ~2 lines) and KeybindingShortcuts (flexGrow with borderTop, takes ~2 lines)",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:20:06.868Z"
+        },
+        {
+          "id": 39,
+          "text": "WorkUnitDetailsContainer with height={5} renders Title(1) + Description(3 via flexGrow) + Metadata(1) = 5 lines total",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:20:08.676Z"
+        },
+        {
+          "id": 40,
+          "text": "CheckpointStatus 'Checkpoints: 10 Manual, 20 Auto' wraps if width insufficient, uses flexGrow to take available vertical space",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:20:10.341Z"
+        },
+        {
+          "id": 41,
+          "text": "KeybindingShortcuts renders Text with borderTop separator above it, content 'C View Checkpoints ◆ F View Changed Files' on single line",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:20:12.218Z"
+        },
+        {
+          "id": 42,
+          "text": "Separator after header buildBorderRow(colWidth, colRemainder, '├', '─', '┤', 'plain') connects header Box bottom to details container top",
+          "deleted": true,
+          "createdAt": "2025-11-03T12:20:13.748Z",
+          "deletedAt": "2025-11-03T12:35:20.319Z"
+        },
+        {
+          "id": 43,
+          "text": "Current line 714-722: Header Box contains Logo + CheckpointPanel + ChangedFilesPanel (already component-based, borderStyle='single' works)",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:20:52.070Z"
+        },
+        {
+          "id": 44,
+          "text": "Refactor needed: Replace CheckpointPanel with CheckpointStatus component (uses checkpoint counts text, NO file watching in component)",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:20:53.540Z"
+        },
+        {
+          "id": 45,
+          "text": "Refactor needed: Replace ChangedFilesPanel with KeybindingShortcuts component (shows keyboard shortcuts, has borderTop)",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:20:54.956Z"
+        },
+        {
+          "id": 46,
+          "text": "Refactor needed: Insert WorkUnitDetailsContainer between separators (after line 725 separator, before column rendering)",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:20:56.344Z"
+        },
+        {
+          "id": 47,
+          "text": "WorkUnitDescription receives fullDescription string, calls wrapText(fullDescription, totalWidth, 3), renders up to 3 Text components with bold cyan",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:20:57.940Z"
+        },
+        {
+          "id": 48,
+          "text": "WorkUnitTitle with id='BOARD-001', title='Feature' renders Text: 'BOARD-001: Feature' with wrap='truncate' (no manual truncation)",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:20:59.603Z"
+        },
+        {
+          "id": 49,
+          "text": "totalWidth calculated as: STATES.reduce((sum, _, idx) => sum + getColumnWidth(idx, colWidth, colRemainder), 0) + (STATES.length - 1)",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:21:34.010Z"
+        },
+        {
+          "id": 50,
+          "text": "WorkUnitMetadata with epic='auth', estimate=undefined, status='done' displays: 'Epic: auth | Status: done' (skips missing estimate)",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:21:35.727Z"
+        },
+        {
+          "id": 51,
+          "text": "WorkUnitDescription with description='\\n\\n\\n' (only newlines) normalizes to empty string, displays 3 blank lines (no text)",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:21:37.669Z"
+        },
+        {
+          "id": 52,
+          "text": "WorkUnitTitle with very short title 'TUI-001: Fix' fits entirely, displays as-is with no truncation (wrap='truncate' allows full text)",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:21:39.340Z"
+        },
+        {
+          "id": 53,
+          "text": "HeaderContainer paddingX={1} adds internal padding, Logo width={12} reserves space, InfoContainer flexGrow={1} fills remaining width",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:21:40.873Z"
+        },
+        {
+          "id": 54,
+          "text": "Separator buildBorderRow(..., 'cross') at line 631 creates ├─┼─┤ for header separator (columns below)",
+          "deleted": true,
+          "createdAt": "2025-11-03T12:21:42.546Z",
+          "deletedAt": "2025-11-03T12:35:23.542Z"
+        },
+        {
+          "id": 55,
+          "text": "Header Box corners (┌┐└┘) connect via junctions to separators (├┤) which extend vertical borders to connect Details (│) and Columns - ONE continuous structure using junction characters (├┤┬┼┴)",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:35:12.188Z"
+        },
+        {
+          "id": 56,
+          "text": "Separator after header uses buildBorderRow(..., 'plain') producing ├─────┤ junction (no column dividers) that extends HeaderContainer vertical borders",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:35:15.277Z"
+        },
+        {
+          "id": 57,
+          "text": "Separator before columns uses buildBorderRow(..., 'top') producing ├─┬─┤ junction (with column dividers ┬) connecting Details to Columns",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:35:18.245Z"
+        },
+        {
+          "id": 58,
+          "text": "Separator after header buildBorderRow(colWidth, colRemainder, '├', '─', '┤', 'plain') creates junction line connecting HeaderContainer bottom border to Details top via left/right junctions",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:35:21.850Z"
+        },
+        {
+          "id": 59,
+          "text": "Separator buildBorderRow(..., 'cross') at line 631 creates ├─┼─┤ junction with cross junctions (┼) at column header separator (columns above AND below)",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:35:25.633Z"
+        },
+        {
+          "id": 60,
+          "text": "Complete 23-row structure: Row 1-6 Header Box (┌│└), Row 6-7 Junction (├┤), Row 7-11 Details (│), Row 12 Junction with dividers (├┬┤), Row 13-14 Column headers, Row 14 Cross junction (├┼┤), Row 15-20 Dynamic columns, Row 21 Bottom junction (├┴┤), Row 22-23 Footer - ALL connected as ONE border structure",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:35:39.420Z"
+        },
+        {
+          "id": 61,
+          "text": "WRONG: Two lines '└─┘' then '├─┤' creates gap. CORRECT: Single junction line '├─┤' extends vertical borders from section above to section below",
+          "deleted": false,
+          "createdAt": "2025-11-03T12:35:42.620Z"
+        }
+      ],
+      "nextExampleId": 62
     }
   },
   "states": {
@@ -37795,8 +38711,11 @@
     ],
     "testing": [],
     "implementing": [],
-    "validating": [],
+    "validating": [
+      "TUI-015"
+    ],
     "done": [
+      "TUI-014",
       "BUG-062",
       "BUG-059",
       "BUG-060",
@@ -38101,6 +39020,7 @@
     "HELP": 5,
     "BUG": 62,
     "DISC": 2,
-    "COV": 53
+    "COV": 53,
+    "TUI": 15
   }
 }

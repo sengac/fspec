@@ -8,6 +8,7 @@ import React from 'react';
 import { render } from 'ink-testing-library';
 import { CheckpointViewer } from '../CheckpointViewer';
 import { ChangedFilesViewer } from '../ChangedFilesViewer';
+import { useFspecStore } from '../../store/fspecStore';
 
 describe('Feature: Container Focus Indication with Headings', () => {
   describe('Scenario: CheckpointViewer initial focus on checkpoint list', () => {
@@ -84,10 +85,14 @@ describe('Feature: Container Focus Indication with Headings', () => {
   describe('Scenario: ChangedFilesViewer initial focus on file list', () => {
     it('should show container headings with correct focus styling', () => {
       // @step Given I have opened the ChangedFilesViewer
+      // TUI-014: Set up store with files instead of passing props
+      useFspecStore.setState({
+        stagedFiles: ['file1.ts'],
+        unstagedFiles: ['file2.ts'],
+      });
+
       const { frames } = render(
         <ChangedFilesViewer
-          stagedFiles={['file1.ts']}
-          unstagedFiles={['file2.ts']}
           onExit={() => {}}
         />
       );
@@ -109,10 +114,14 @@ describe('Feature: Container Focus Indication with Headings', () => {
   describe('Scenario: Tab navigation between file list and diff in ChangedFilesViewer', () => {
     it('should change focus styling when Tab is pressed once', () => {
       // @step Given I have opened the ChangedFilesViewer with focus on file list
+      // TUI-014: Set up store with files instead of passing props
+      useFspecStore.setState({
+        stagedFiles: ['file1.ts'],
+        unstagedFiles: [],
+      });
+
       const { frames, stdin } = render(
         <ChangedFilesViewer
-          stagedFiles={['file1.ts']}
-          unstagedFiles={[]}
           onExit={() => {}}
         />
       );
