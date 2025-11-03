@@ -44,6 +44,7 @@ Tags that categorize features by functional area.
 | `@agent-integration` | Features related to AI agent initialization, detection, and integration |
 | `@answer-question` | Question answering operations |
 | `@assumption-management` | Assumption tracking in Example Mapping |
+| `@attachment-management` | Attachment management features for work units |
 | `@attachments` | Feature related to work unit attachments (diagrams, documents, mockups) |
 | `@authentication` | Authentication and authorization functionality |
 | `@auto-blocking` | Automatic blocking state transitions |
@@ -577,7 +578,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-11-03T00:58:54.183Z_
+_Last updated: 2025-11-03T01:31:58.008Z_
 
 **Update Command**: `fspec tag-stats`
 
