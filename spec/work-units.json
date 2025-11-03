@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-03T04:05:20.594Z"
+    "lastUpdated": "2025-11-03T05:06:25.005Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -37610,6 +37610,147 @@
       "nextQuestionId": 0,
       "nextNoteId": 0,
       "updated": "2025-11-03T03:43:53.600Z"
+    },
+    "BUG-062": {
+      "id": "BUG-062",
+      "title": "Kanban TUI keyboard navigation - Page Up/Down and Home/End key bindings",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-11-03T04:37:35.085Z",
+      "updatedAt": "2025-11-03T05:06:25.025Z",
+      "description": "Page Up/Down should move the selector a page up/down (moving the list via the selector), not scroll the list while keeping selector stationary. Home and End keys should move selector to top/bottom of current list. These keys don't need to appear in the key map guide.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-03T04:38:30.402Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-03T04:44:04.796Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-03T04:46:34.213Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-03T05:03:06.451Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-03T05:06:25.026Z"
+        }
+      ],
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: When you press Page Down, what currently happens? Does the selector stay in the same visual position on screen while the list scrolls, or does the selector jump down but the list doesn't scroll to follow it?",
+          "deleted": false,
+          "createdAt": "2025-11-03T04:38:43.800Z",
+          "selected": true,
+          "answer": "Page Up/Down currently just scrolls the list up/down without moving the selector (green bar)"
+        },
+        {
+          "id": 1,
+          "text": "@human: What is the desired Page Down behavior? Should the selector move down one full page of items (e.g., if 10 items visible, move selector down 10 items), and the list scrolls to keep selector visible?",
+          "deleted": false,
+          "createdAt": "2025-11-03T04:38:45.168Z",
+          "selected": true,
+          "answer": "The selector (green bar) should move down/up one full page of items (like arrow keys but a page at a time), and the list should scroll to keep the selector visible"
+        },
+        {
+          "id": 2,
+          "text": "@human: For Home/End keys - the code shows they ARE bound (key.home/key.end) but also 'g' and 'G' are vim-style alternatives. Are Home/End keys not working for you, or is it a different issue?",
+          "deleted": false,
+          "createdAt": "2025-11-03T04:38:46.767Z",
+          "selected": true,
+          "answer": "Home/End keys aren't actually bound/working despite appearing in VirtualList code. Need to review all keyboard handling code in this area to understand why."
+        }
+      ],
+      "nextQuestionId": 3,
+      "rules": [
+        {
+          "id": 0,
+          "text": "Page Up/Down should move the selector (selectedWorkUnitIndex) by VIEWPORT_HEIGHT, not manipulate scrollOffsets directly",
+          "deleted": false,
+          "createdAt": "2025-11-03T04:40:57.053Z"
+        },
+        {
+          "id": 1,
+          "text": "Home/End keys must be bound in UnifiedBoardLayout to move selector to first/last item in current column",
+          "deleted": false,
+          "createdAt": "2025-11-03T04:40:58.588Z"
+        },
+        {
+          "id": 2,
+          "text": "Auto-scroll logic (lines 320-391 in UnifiedBoardLayout) automatically adjusts scrollOffsets to keep selector visible",
+          "deleted": false,
+          "createdAt": "2025-11-03T04:40:59.955Z"
+        }
+      ],
+      "nextRuleId": 3,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User on item 5 of 20, presses Page Down, selector moves to item 15 (assuming VIEWPORT_HEIGHT=10), list scrolls to show items around 15",
+          "deleted": false,
+          "createdAt": "2025-11-03T04:41:09.625Z"
+        },
+        {
+          "id": 1,
+          "text": "User on item 15, presses Page Up, selector moves to item 5, list scrolls to show items around 5",
+          "deleted": false,
+          "createdAt": "2025-11-03T04:41:11.135Z"
+        },
+        {
+          "id": 2,
+          "text": "User on item 15, presses Home, selector moves to item 0 (first item), list scrolls to top",
+          "deleted": false,
+          "createdAt": "2025-11-03T04:41:12.513Z"
+        },
+        {
+          "id": 3,
+          "text": "User on item 5, presses End, selector moves to item 19 (last item of 20), list scrolls to bottom",
+          "deleted": false,
+          "createdAt": "2025-11-03T04:41:13.817Z"
+        }
+      ],
+      "nextExampleId": 4,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Root cause in UnifiedBoardLayout.tsx:430-458 - Page Up/Down directly manipulate scrollOffsets instead of calling onWorkUnitChange",
+          "deleted": false,
+          "createdAt": "2025-11-03T04:41:24.010Z"
+        },
+        {
+          "id": 1,
+          "text": "Missing Home/End key bindings in UnifiedBoardLayout.tsx useInput handler (lines 404-478)",
+          "deleted": false,
+          "createdAt": "2025-11-03T04:41:25.309Z"
+        },
+        {
+          "id": 2,
+          "text": "Fix: Change Page Down to call onWorkUnitChange(VIEWPORT_HEIGHT), Page Up to call onWorkUnitChange(-VIEWPORT_HEIGHT)",
+          "deleted": false,
+          "createdAt": "2025-11-03T04:41:26.526Z"
+        },
+        {
+          "id": 3,
+          "text": "Fix: Add Home key handler to call onWorkUnitChange with movement to index 0, End key to call onWorkUnitChange with movement to last index",
+          "deleted": false,
+          "createdAt": "2025-11-03T04:41:27.882Z"
+        }
+      ],
+      "nextNoteId": 4,
+      "userStory": {
+        "role": "user navigating the Kanban TUI",
+        "action": "use Page Up/Down and Home/End keys",
+        "benefit": "I can quickly navigate through long lists without my muscle memory being broken"
+      },
+      "estimate": 2,
+      "updated": "2025-11-03T05:06:25.025Z"
     }
   },
   "states": {
@@ -37656,6 +37797,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "BUG-062",
       "BUG-059",
       "BUG-060",
       "BUG-061",
@@ -37957,7 +38099,7 @@
   "prefixCounters": {
     "CLI": 14,
     "HELP": 5,
-    "BUG": 61,
+    "BUG": 62,
     "DISC": 2,
     "COV": 53
   }

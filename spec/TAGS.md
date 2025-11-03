@@ -26,6 +26,7 @@ Tags that identify which architectural component a feature belongs to.
 | `@parser` | Gherkin Parser Integration |
 | `@templates` | Template generation and transformation system |
 | `@tui` | Terminal User Interface components and infrastructure |
+| `@tui-component` | Terminal User Interface components |
 | `@ui` | User interface and visual components |
 | `@validator` | Validation Logic |
 | `@virtuallist` | Features related to VirtualList component |
@@ -214,6 +215,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@json-backed` | JSON-Backed Documentation |
 | `@json-output` | JSON format output support |
 | `@json-schema` | JSON Schema Validation |
+| `@keyboard-navigation` | Keyboard input and navigation features |
 | `@layout` | Layout and visual presentation features |
 | `@learning` | Machine learning and adaptive features based on usage patterns |
 | `@logging` | Logging and diagnostics features |
@@ -583,7 +585,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-11-03T02:51:45.286Z_
+_Last updated: 2025-11-03T04:42:51.326Z_
 
 **Update Command**: `fspec tag-stats`
 

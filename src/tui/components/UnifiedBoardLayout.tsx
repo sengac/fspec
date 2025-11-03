@@ -12,7 +12,7 @@
  */
 
 import React, { useMemo, useEffect, useState } from 'react';
-import { Box, Text, useInput, useStdout } from 'ink';
+import { Box, Text, useInput, useStdout, useStdin } from 'ink';
 import chalk from 'chalk';
 import { Logo } from './Logo';
 import { CheckpointPanel } from './CheckpointPanel';
@@ -401,8 +401,43 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
     }
   };
 
+  // Access raw stdin to handle Home/End keys (which useInput filters out)
+  // @ts-expect-error internal_eventEmitter is not in public types
+  const { internal_eventEmitter } = useStdin();
+
+  useEffect(() => {
+    if (!internal_eventEmitter || !onWorkUnitChange) return;
+
+    const handleRawInput = (data: string) => {
+      // Parse Home/End keys that useInput filters out
+      // Home: ESC[H, ESC[1~, ESC[7~, ESCOH
+      // End: ESC[F, ESC[4~, ESC[8~, ESCOF
+      // ESC is \u001B (charCode 27)
+      const isHome = data === '\u001B[H' || data === '\u001B[1~' || data === '\u001B[7~' || data === '\u001BOH';
+      const isEnd = data === '\u001B[F' || data === '\u001B[4~' || data === '\u001B[8~' || data === '\u001BOF';
+
+      if (isHome) {
+        const columnUnits = groupedWorkUnits[focusedColumnIndex].units;
+        if (columnUnits.length > 0) {
+          onWorkUnitChange(-selectedWorkUnitIndex);
+        }
+      } else if (isEnd) {
+        const columnUnits = groupedWorkUnits[focusedColumnIndex].units;
+        if (columnUnits.length > 0) {
+          onWorkUnitChange(columnUnits.length - 1 - selectedWorkUnitIndex);
+        }
+      }
+    };
+
+    internal_eventEmitter.on('input', handleRawInput);
+    return () => {
+      internal_eventEmitter.removeListener('input', handleRawInput);
+    };
+  }, [internal_eventEmitter, onWorkUnitChange, selectedWorkUnitIndex, focusedColumnIndex, groupedWorkUnits]);
+
   // Handle keyboard input
   useInput((input, key) => {
+
     // Mouse scroll handling (TUI-010)
     // Parse raw escape sequences for terminals that don't parse mouse events
     if (input && input.startsWith('[M')) {
@@ -427,35 +462,19 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
       }
     }
 
-    // Page Up/Down for scrolling
+    // Page Up/Down: Move selector by viewport height
     if (key.pageDown) {
-      const currentColumn = STATES[focusedColumnIndex];
-      const currentOffset = scrollOffsets[currentColumn];
-      const columnUnits = groupedWorkUnits[focusedColumnIndex].units;
-
-      if (currentOffset + VIEWPORT_HEIGHT < columnUnits.length) {
-        setScrollOffsets(prev => ({
-          ...prev,
-          [currentColumn]: Math.min(currentOffset + VIEWPORT_HEIGHT, columnUnits.length - VIEWPORT_HEIGHT),
-        }));
-      }
-      onPageDown?.();
+      onWorkUnitChange?.(VIEWPORT_HEIGHT);
       return;
     }
 
     if (key.pageUp) {
-      const currentColumn = STATES[focusedColumnIndex];
-      const currentOffset = scrollOffsets[currentColumn];
-
-      if (currentOffset > 0) {
-        setScrollOffsets(prev => ({
-          ...prev,
-          [currentColumn]: Math.max(0, currentOffset - VIEWPORT_HEIGHT),
-        }));
-      }
-      onPageUp?.();
+      onWorkUnitChange?.(-VIEWPORT_HEIGHT);
       return;
     }
+
+    // Home/End are handled via raw stdin event emitter above (lines 408-436)
+    // because useInput filters them out before we can see them
 
     // Arrow keys handled by parent
     if (key.leftArrow || key.rightArrow) {

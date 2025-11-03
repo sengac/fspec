@@ -62,6 +62,10 @@
           "description": "Terminal User Interface components and infrastructure"
         },
         {
+          "name": "@tui-component",
+          "description": "Terminal User Interface components"
+        },
+        {
           "name": "@ui",
           "description": "User interface and visual components"
         },
@@ -758,6 +762,10 @@
           "description": "JSON Schema Validation"
         },
         {
+          "name": "@keyboard-navigation",
+          "description": "Keyboard input and navigation features"
+        },
+        {
           "name": "@layout",
           "description": "Layout and visual presentation features"
         },
@@ -1366,7 +1374,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-11-03T02:51:45.286Z",
+    "lastUpdated": "2025-11-03T04:42:51.326Z",
     "phaseStats": [
       {
         "phase": "Phase 1",
