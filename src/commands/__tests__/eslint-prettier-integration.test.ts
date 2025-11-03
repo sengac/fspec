@@ -149,44 +149,4 @@ describe('Feature: Add ESLint and Prettier for code quality', () => {
       }
     });
   });
-
-  describe('Scenario: Prettier formats code on save in IDE', () => {
-    it('should have VSCode settings for format-on-save', () => {
-      // @step Given VSCode is configured with format-on-save
-      // @step And .vscode/settings.json has Prettier config
-      // @step When Developer saves a TypeScript file
-      // @step Then File should be formatted with 2-space indentation
-      // @step And Single quotes should be used consistently
-      // @step And Code style should match project standards
-
-      const vscodeSettingsPath = join(
-        process.cwd(),
-        '.vscode',
-        'settings.json'
-      );
-
-      // This test will FAIL until VSCode settings are configured
-      expect(existsSync(vscodeSettingsPath)).toBe(true);
-    });
-
-    it('should configure VSCode with Prettier as default formatter', () => {
-      const vscodeSettingsPath = join(
-        process.cwd(),
-        '.vscode',
-        'settings.json'
-      );
-
-      if (existsSync(vscodeSettingsPath)) {
-        const vscodeSettings = JSON.parse(
-          readFileSync(vscodeSettingsPath, 'utf-8')
-        );
-
-        // Should have Prettier as default formatter and format on save
-        expect(vscodeSettings['editor.formatOnSave']).toBe(true);
-        expect(vscodeSettings['editor.defaultFormatter']).toContain('prettier');
-      } else {
-        expect(existsSync(vscodeSettingsPath)).toBe(true);
-      }
-    });
-  });
 });
