@@ -129,7 +129,7 @@ WHAT problem do THEY face? WHY do they need this solution?
 
 Analyze codebase to understand user pain, ask human. Requires title, description, impact.
 
-Run: fspec update-foundation problemDefinition "Problem Title and Description"`,
+Run: fspec update-foundation problemTitle "Problem Title"`,
 
     'problemSpace.primaryProblem.description': `Field ${fieldNum}/${totalFields}: problemSpace.primaryProblem.description
 
