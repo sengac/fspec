@@ -53,6 +53,7 @@ Tags that categorize features by functional area.
 | `@board` | Kanban board operations |
 | `@board-view` | Kanban board visualization |
 | `@board-visualization` | Kanban board visualization and layout features |
+| `@bug-reporting` | Bug reporting and issue submission features |
 | `@bulk` | Bulk operations |
 | `@bulk-add` | Bulk add operations |
 | `@bulk-export` | Bulk export operations |
@@ -165,6 +166,7 @@ Tags for specific technical concerns or architectural patterns.
 
 | Tag | Description |
 |-----|-------------|
+| `@ai-assisted` | Features using AI-driven analysis and interaction |
 | `@ai-driven` | AI-driven interactive and conversational commands |
 | `@ai-guidance` | Features that provide contextual guidance to AI agents |
 | `@anti-drift` | Features that prevent AI drift and maintain workflow discipline |
@@ -174,6 +176,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@automation` | Automated workflow operations and state transitions |
 | `@backward-compatibility` | Features ensuring compatibility with older file formats or legacy systems |
 | `@bdd` | Behavior-Driven Development methodology |
+| `@browser-integration` | Features requiring browser launcher integration |
 | `@build` | Build system configuration and bundling |
 | `@checkpoints` | Git checkpoint and state restoration features |
 | `@code-review` | Code review and quality analysis features |
@@ -198,6 +201,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@format-check` | Format and style checking |
 | `@function-signature` | Function signature validation and checking |
 | `@gherkin` | Gherkin Specification Compliance |
+| `@github-integration` | Features integrating with GitHub API or URLs |
 | `@graceful-degradation` | Features that gracefully handle missing or invalid data |
 | `@guidance` | Features that provide AI guidance/prompts rather than code implementation |
 | `@idempotent` | Operations that can be safely repeated without changing results |
@@ -578,7 +582,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-11-03T01:31:58.008Z_
+_Last updated: 2025-11-03T01:57:44.847Z_
 
 **Update Command**: `fspec tag-stats`
 

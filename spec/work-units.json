@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-03T01:40:52.199Z"
+    "lastUpdated": "2025-11-03T02:22:09.132Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -36663,14 +36663,137 @@
       "id": "CLI-014",
       "title": "Report bug to GitHub with AI assistance",
       "type": "story",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2025-11-02T11:00:09.621Z",
-      "updatedAt": "2025-11-02T11:00:17.696Z",
+      "updatedAt": "2025-11-03T02:22:09.154Z",
       "description": "Interactive command to report bugs using browser launcher and AI-driven analysis similar to fspec review",
       "children": [],
       "attachments": [
         "spec/attachments/CLI-014/REPORT-BUG-FEATURE-SPEC.md"
-      ]
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-03T01:54:34.346Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-03T01:58:41.491Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-03T02:04:30.838Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-03T02:18:05.010Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-03T02:22:09.154Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using fspec who encounters a bug",
+        "action": "report it to GitHub through an interactive guided process",
+        "benefit": "I can provide comprehensive bug information without manually writing issue reports"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Bug reports must include system context (fspec version, node version, OS, platform)",
+          "deleted": false,
+          "createdAt": "2025-11-03T01:55:03.793Z"
+        },
+        {
+          "id": 1,
+          "text": "All content must be properly URL-encoded for GitHub query parameters",
+          "deleted": false,
+          "createdAt": "2025-11-03T01:55:05.133Z"
+        },
+        {
+          "id": 2,
+          "text": "Browser must be accessible to open GitHub issue creation page",
+          "deleted": false,
+          "createdAt": "2025-11-03T01:55:06.641Z"
+        },
+        {
+          "id": 3,
+          "text": "Markdown formatting must be preserved when rendered in GitHub",
+          "deleted": false,
+          "createdAt": "2025-11-03T01:55:08.060Z"
+        },
+        {
+          "id": 4,
+          "text": "Default labels should be 'bug,needs-triage' for new bug reports",
+          "deleted": false,
+          "createdAt": "2025-11-03T01:55:09.600Z"
+        },
+        {
+          "id": 5,
+          "text": "Users must confirm before opening browser",
+          "deleted": false,
+          "createdAt": "2025-11-03T01:55:10.853Z"
+        },
+        {
+          "id": 6,
+          "text": "Work unit context should be included if user is working on a work unit",
+          "deleted": false,
+          "createdAt": "2025-11-03T01:55:12.239Z"
+        },
+        {
+          "id": 7,
+          "text": "Git context (branch, uncommitted changes) should be included if available",
+          "deleted": false,
+          "createdAt": "2025-11-03T01:55:13.932Z"
+        }
+      ],
+      "nextRuleId": 8,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User runs 'fspec report-bug-to-github', answers AI questions about the bug, sees formatted preview, confirms, and browser opens to GitHub with pre-filled issue form",
+          "deleted": false,
+          "createdAt": "2025-11-03T01:55:31.176Z"
+        },
+        {
+          "id": 1,
+          "text": "User working on AUTH-001 encounters bug, runs report command, generated issue includes work unit ID, title, status, and link to feature file",
+          "deleted": false,
+          "createdAt": "2025-11-03T01:55:32.890Z"
+        },
+        {
+          "id": 2,
+          "text": "User with uncommitted git changes reports bug, issue includes current branch name and note about uncommitted changes",
+          "deleted": false,
+          "createdAt": "2025-11-03T01:55:34.340Z"
+        },
+        {
+          "id": 3,
+          "text": "fspec command crashes with ENOENT error, user runs report-bug-to-github, command detects recent error log and includes stack trace in bug report",
+          "deleted": false,
+          "createdAt": "2025-11-03T01:55:35.965Z"
+        },
+        {
+          "id": 4,
+          "text": "AI generates bug report preview, user decides to edit title, command allows editing, user confirms, browser opens with edited content",
+          "deleted": false,
+          "createdAt": "2025-11-03T01:55:37.786Z"
+        },
+        {
+          "id": 5,
+          "text": "Bug report contains code with special characters (\", &, <, >) and markdown code blocks, GitHub URL properly encodes everything, markdown renders correctly in GitHub issue",
+          "deleted": false,
+          "createdAt": "2025-11-03T01:55:39.523Z"
+        }
+      ],
+      "nextExampleId": 6,
+      "estimate": 8,
+      "questions": [],
+      "architectureNotes": [],
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-03T02:22:09.154Z"
     },
     "HELP-005": {
       "id": "HELP-005",
@@ -37022,8 +37145,7 @@
       "RES-004",
       "RES-005",
       "FEAT-018",
-      "CLEAN-002",
-      "CLI-014"
+      "CLEAN-002"
     ],
     "specifying": [
       "RES-006",
@@ -37042,6 +37164,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "CLI-014",
       "BUG-055",
       "COV-053",
       "DISC-002",
