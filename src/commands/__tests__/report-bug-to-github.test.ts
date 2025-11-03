@@ -1,5 +1,6 @@
 /**
  * Test suite for: spec/features/report-bug-to-github-with-ai-assistance.feature
+ *                  spec/features/report-bug-to-github-project-root-handling.feature
  *
  * Tests for the report-bug-to-github command that provides AI-assisted
  * bug reporting to GitHub with automatic context gathering.
@@ -304,6 +305,34 @@ describe('Feature: Report bug to GitHub with AI assistance', () => {
       expect(decodedBody).toContain('console.log("test")');
       // Verify code block has proper closing
       expect(decodedBody).toMatch(/```\s*\n\n## Expected Behavior/);
+    });
+  });
+
+  describe('Feature: BUG-058 - Project root handling', () => {
+    describe('Scenario: After fix - command works without --project-root using process.cwd()', () => {
+      it('should use process.cwd() when projectRoot is not provided', async () => {
+        // @step Given I am in a project directory
+        await mkdir(join(testDir, 'spec', 'features'), { recursive: true });
+        process.chdir(testDir);
+
+        // @step And findProjectRoot() is called with process.cwd() parameter
+        // @step When I run "fspec report-bug-to-github"
+        const mockOpenBrowser = vi.fn().mockResolvedValue(undefined);
+        const result = await reportBugToGitHub({
+          // No projectRoot option - should use process.cwd()
+          bugDescription: 'test bug',
+          openBrowser: mockOpenBrowser,
+        });
+
+        // @step Then the command should gather system context successfully
+        expect(result.context).toBeDefined();
+        expect(result.context.fspecVersion).toBeDefined();
+        expect(result.context.nodeVersion).toBeDefined();
+
+        // @step And the command should use process.cwd() to find project root
+        // @step And the browser should open with pre-filled bug report
+        expect(mockOpenBrowser).toHaveBeenCalled();
+      });
     });
   });
 });

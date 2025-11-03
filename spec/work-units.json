@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-03T02:22:09.132Z"
+    "lastUpdated": "2025-11-03T02:52:22.184Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -37118,6 +37118,107 @@
       "questions": [],
       "nextQuestionId": 0,
       "updated": "2025-11-03T01:10:50.578Z"
+    },
+    "BUG-058": {
+      "id": "BUG-058",
+      "title": "report-bug-to-github crashes with 'path must be string' error",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-11-03T02:45:01.366Z",
+      "updatedAt": "2025-11-03T02:52:22.204Z",
+      "description": "The report-bug-to-github command fails when findProjectRoot() returns undefined, causing Node.js to throw 'The path argument must be of type string. Received undefined' error when trying to join paths in gatherContext function",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-03T02:47:11.593Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-03T02:49:20.245Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-03T02:50:19.180Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-03T02:51:21.167Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-03T02:52:22.204Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using fspec",
+        "action": "run report-bug-to-github command without errors",
+        "benefit": "I can successfully report bugs to GitHub"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "findProjectRoot() requires a cwd parameter of type string",
+          "deleted": false,
+          "createdAt": "2025-11-03T02:47:36.186Z"
+        },
+        {
+          "id": 1,
+          "text": "When no projectRoot option is provided, the command must use process.cwd() as the current working directory",
+          "deleted": false,
+          "createdAt": "2025-11-03T02:47:37.572Z"
+        },
+        {
+          "id": 2,
+          "text": "The gatherContext function must receive a valid string path for projectRoot",
+          "deleted": false,
+          "createdAt": "2025-11-03T02:47:39.054Z"
+        }
+      ],
+      "nextRuleId": 3,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User runs 'fspec report-bug-to-github' without --project-root flag, command crashes with 'path must be string. Received undefined'",
+          "deleted": false,
+          "createdAt": "2025-11-03T02:47:47.967Z"
+        },
+        {
+          "id": 1,
+          "text": "User runs 'fspec report-bug-to-github --bug-description \"test\"', command crashes before gathering context",
+          "deleted": false,
+          "createdAt": "2025-11-03T02:47:49.463Z"
+        },
+        {
+          "id": 2,
+          "text": "User runs 'fspec report-bug-to-github --project-root /path/to/project', command works correctly because projectRoot is provided",
+          "deleted": false,
+          "createdAt": "2025-11-03T02:47:51.232Z"
+        },
+        {
+          "id": 3,
+          "text": "After fix, user runs 'fspec report-bug-to-github' from any directory, command gathers context successfully using process.cwd()",
+          "deleted": false,
+          "createdAt": "2025-11-03T02:47:52.876Z"
+        }
+      ],
+      "nextExampleId": 4,
+      "estimate": 2,
+      "questions": [],
+      "architectureNotes": [],
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-03T02:52:22.204Z"
+    },
+    "BUG-059": {
+      "id": "BUG-059",
+      "title": "search-scenarios returns no results when it should find matching scenarios",
+      "type": "bug",
+      "status": "backlog",
+      "createdAt": "2025-11-03T02:46:20.741Z",
+      "updatedAt": "2025-11-03T02:46:20.741Z",
+      "description": "Running 'fspec search-scenarios --query=\"report-bug\"' returns 0 scenarios, but there is a feature file 'spec/features/report-bug-to-github-with-ai-assistance.feature' that should match this query. The search function appears to not be working correctly.",
+      "children": []
     }
   },
   "states": {
@@ -37145,7 +37246,8 @@
       "RES-004",
       "RES-005",
       "FEAT-018",
-      "CLEAN-002"
+      "CLEAN-002",
+      "BUG-059"
     ],
     "specifying": [
       "RES-006",
@@ -37164,6 +37266,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "BUG-058",
       "CLI-014",
       "BUG-055",
       "COV-053",
@@ -37461,7 +37564,7 @@
   "prefixCounters": {
     "CLI": 14,
     "HELP": 5,
-    "BUG": 57,
+    "BUG": 59,
     "DISC": 2,
     "COV": 53
   }
