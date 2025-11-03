@@ -1,0 +1,94 @@
+{
+  "scenarios": [
+    {
+      "name": "Reject finalization when template persona with placeholders remains in draft",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/discover-foundation-placeholder-detection.test.ts",
+          "lines": "31-99",
+          "implMappings": [
+            {
+              "file": "src/commands/discover-foundation.ts",
+              "lines": [
+                299,
+                300,
+                301,
+                302,
+                303,
+                304,
+                305,
+                306,
+                307,
+                308,
+                309,
+                310,
+                311,
+                312,
+                313,
+                314,
+                315,
+                316,
+                317,
+                318,
+                319
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Detect placeholders in personas array during finalization",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/discover-foundation-placeholder-detection.test.ts",
+          "lines": "104-170",
+          "implMappings": [
+            {
+              "file": "src/commands/discover-foundation.ts",
+              "lines": [
+                295,
+                296,
+                297,
+                298,
+                299,
+                300,
+                301,
+                302,
+                303,
+                304,
+                305,
+                306,
+                307,
+                308,
+                309,
+                310,
+                311,
+                312,
+                313,
+                314,
+                315,
+                316,
+                317,
+                318,
+                319
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/commands/__tests__/discover-foundation-placeholder-detection.test.ts"
+    ],
+    "implFiles": [
+      "src/commands/discover-foundation.ts"
+    ],
+    "totalLinesCovered": 182
+  }
+}

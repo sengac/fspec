@@ -29,7 +29,7 @@ describe('Feature: discover-foundation --finalize validation error feedback', ()
   describe('Scenario: Show detailed error when personas array has placeholder data', () => {
     it('should show validation errors with missing personas fields and fix commands', async () => {
       // Given I have a foundation.json.draft with all basic fields filled
-      // And the personas array contains placeholder "[QUESTION: Who uses this?]" text
+      // And the personas array is empty (no personas at all)
       const draft = {
         version: '2.0.0',
         project: {
@@ -48,13 +48,7 @@ describe('Feature: discover-foundation --finalize validation error feedback', ()
           overview: 'Test solution',
           capabilities: [],
         },
-        personas: [
-          {
-            name: '[QUESTION: Who uses this?]',
-            description: '[QUESTION: Who uses this?]',
-            goals: ['[QUESTION: What are their goals?]'],
-          },
-        ],
+        personas: [],
       };
 
       await writeFile(draftPath, JSON.stringify(draft, null, 2), 'utf-8');
@@ -100,13 +94,7 @@ describe('Feature: discover-foundation --finalize validation error feedback', ()
           overview: 'Test solution',
           capabilities: [], // Empty capabilities
         },
-        personas: [
-          {
-            name: '[QUESTION: Who uses this?]',
-            description: '[QUESTION: Who uses this?]',
-            goals: ['[QUESTION: What are their goals?]'],
-          },
-        ],
+        personas: [],
       };
 
       await writeFile(draftPath, JSON.stringify(draft, null, 2), 'utf-8');
@@ -132,8 +120,8 @@ describe('Feature: discover-foundation --finalize validation error feedback', ()
 
   describe('Scenario: Show all missing fields in one error message', () => {
     it('should list all validation errors and all fix commands', async () => {
-      // Given I have a foundation.json.draft with multiple placeholder fields
-      // And the personas array contains placeholder text
+      // Given I have a foundation.json.draft with multiple missing fields
+      // And the personas array is empty
       // And the capabilities array is empty
       const draft = {
         version: '2.0.0',
@@ -153,13 +141,7 @@ describe('Feature: discover-foundation --finalize validation error feedback', ()
           overview: 'Test solution',
           capabilities: [], // Empty
         },
-        personas: [
-          {
-            name: '[QUESTION: Who uses this?]', // Placeholder
-            description: '[QUESTION: Who uses this?]', // Placeholder
-            goals: ['[QUESTION: What are their goals?]'], // Placeholder
-          },
-        ],
+        personas: [],
       };
 
       await writeFile(draftPath, JSON.stringify(draft, null, 2), 'utf-8');
