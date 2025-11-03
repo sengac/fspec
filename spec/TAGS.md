@@ -28,6 +28,7 @@ Tags that identify which architectural component a feature belongs to.
 | `@tui` | Terminal User Interface components and infrastructure |
 | `@tui-component` | Terminal User Interface components |
 | `@ui` | User interface and visual components |
+| `@utils` | Utility functions and helpers |
 | `@validator` | Validation Logic |
 | `@virtuallist` | Features related to VirtualList component |
 
@@ -586,7 +587,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-11-03T22:23:50.416Z_
+_Last updated: 2025-11-03T23:27:32.333Z_
 
 **Update Command**: `fspec tag-stats`
 

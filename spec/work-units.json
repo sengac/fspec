@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-03T22:21:27.821Z"
+    "lastUpdated": "2025-11-03T23:27:50.679Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -38766,6 +38766,134 @@
         "benefit": "I have real-time visibility into checkpoints without file-watching overhead"
       },
       "estimate": 8
+    },
+    "BUG-063": {
+      "id": "BUG-063",
+      "title": "@step validation hardcoded to JavaScript comment syntax, should be language-agnostic",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-11-03T23:16:54.325Z",
+      "updatedAt": "2025-11-03T23:27:50.704Z",
+      "children": [],
+      "description": "The @step validation in src/utils/step-validation.ts is hardcoded to match only JavaScript-style // comments. It should be language-agnostic and match @step annotations regardless of the comment syntax used (e.g., //, #, --, %, ', /* */, etc.). Currently it uses regex patterns like /^\\/\\/\\s*@step\\s+(Given|When|Then|And|But)\\s+(.+)$/ which only match // comments.",
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-03T23:17:14.357Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-03T23:20:18.421Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-03T23:22:19.206Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-03T23:24:18.727Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-03T23:27:50.705Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "@step validation must be language-agnostic and support all comment syntaxes",
+          "deleted": false,
+          "createdAt": "2025-11-03T23:17:22.383Z"
+        },
+        {
+          "id": 1,
+          "text": "Must match @step anywhere in a comment line, not just at the start after //",
+          "deleted": false,
+          "createdAt": "2025-11-03T23:17:23.689Z"
+        },
+        {
+          "id": 2,
+          "text": "Must extract only the step text between keyword and end of step, ignoring comment delimiters",
+          "deleted": false,
+          "createdAt": "2025-11-03T23:17:25.107Z"
+        },
+        {
+          "id": 3,
+          "text": "Must support block comments like /* @step Given text */ and line comments like // @step, # @step, -- @step, % @step, ' @step",
+          "deleted": false,
+          "createdAt": "2025-11-03T23:17:26.803Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "examples": [
+        {
+          "id": 0,
+          "text": "JavaScript: // @step Given a dog shits in the woods → should extract 'Given a dog shits in the woods'",
+          "deleted": false,
+          "createdAt": "2025-11-03T23:17:36.638Z"
+        },
+        {
+          "id": 1,
+          "text": "Python: # @step When I click the button → should extract 'When I click the button'",
+          "deleted": false,
+          "createdAt": "2025-11-03T23:17:38.213Z"
+        },
+        {
+          "id": 2,
+          "text": "SQL: -- @step Then I see the result → should extract 'Then I see the result'",
+          "deleted": false,
+          "createdAt": "2025-11-03T23:17:39.717Z"
+        },
+        {
+          "id": 3,
+          "text": "Block comment: /* @step Given a dog shits in the woods */ → should extract 'Given a dog shits in the woods'",
+          "deleted": false,
+          "createdAt": "2025-11-03T23:17:41.133Z"
+        },
+        {
+          "id": 4,
+          "text": "MATLAB: % @step And the database is updated → should extract 'And the database is updated'",
+          "deleted": false,
+          "createdAt": "2025-11-03T23:17:42.461Z"
+        },
+        {
+          "id": 5,
+          "text": "Visual Basic: ' @step But the error is logged → should extract 'But the error is logged'",
+          "deleted": false,
+          "createdAt": "2025-11-03T23:17:44.225Z"
+        }
+      ],
+      "nextExampleId": 6,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Current implementation in src/utils/step-validation.ts uses hardcoded regex: /^\\/\\/\\s*@step\\s+(Given|When|Then|And|But)\\s+(.+)$/ on line 53-54",
+          "deleted": false,
+          "createdAt": "2025-11-03T23:17:54.307Z"
+        },
+        {
+          "id": 1,
+          "text": "Function extractStepComments() needs to be refactored to use language-agnostic regex that matches @step pattern anywhere in the line",
+          "deleted": false,
+          "createdAt": "2025-11-03T23:17:55.928Z"
+        },
+        {
+          "id": 2,
+          "text": "New regex should match: .*@step\\s+(Given|When|Then|And|But)\\s+(.+?)(?:\\s*\\*\\/)?$ to capture step text and ignore trailing comment delimiters",
+          "deleted": false,
+          "createdAt": "2025-11-03T23:17:57.411Z"
+        }
+      ],
+      "nextNoteId": 3,
+      "userStory": {
+        "role": "developer using fspec with any programming language",
+        "action": "use @step comments in my test files",
+        "benefit": "the validation works regardless of my language's comment syntax"
+      },
+      "estimate": 3,
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2025-11-03T23:27:50.704Z"
     }
   },
   "states": {
@@ -38813,6 +38941,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "BUG-063",
       "TUI-015",
       "TUI-014",
       "BUG-062",
@@ -39117,7 +39246,7 @@
   "prefixCounters": {
     "CLI": 14,
     "HELP": 5,
-    "BUG": 62,
+    "BUG": 63,
     "DISC": 2,
     "COV": 53,
     "TUI": 16

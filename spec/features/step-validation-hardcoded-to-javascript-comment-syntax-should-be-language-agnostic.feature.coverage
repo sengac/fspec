@@ -1,0 +1,448 @@
+{
+  "scenarios": [
+    {
+      "name": "Extract @step comment from JavaScript-style line comment",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/step-validation-language-agnostic.test.ts",
+          "lines": "13-26",
+          "implMappings": [
+            {
+              "file": "src/utils/step-validation.ts",
+              "lines": [
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Extract @step comment from Python-style line comment",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/step-validation-language-agnostic.test.ts",
+          "lines": "28-44",
+          "implMappings": [
+            {
+              "file": "src/utils/step-validation.ts",
+              "lines": [
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Extract @step comment from SQL-style line comment",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/step-validation-language-agnostic.test.ts",
+          "lines": "46-61",
+          "implMappings": [
+            {
+              "file": "src/utils/step-validation.ts",
+              "lines": [
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Extract @step comment from block comment",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/step-validation-language-agnostic.test.ts",
+          "lines": "63-78",
+          "implMappings": [
+            {
+              "file": "src/utils/step-validation.ts",
+              "lines": [
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Extract @step comment from MATLAB-style line comment",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/step-validation-language-agnostic.test.ts",
+          "lines": "80-95",
+          "implMappings": [
+            {
+              "file": "src/utils/step-validation.ts",
+              "lines": [
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Extract @step comment from Visual Basic-style line comment",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/step-validation-language-agnostic.test.ts",
+          "lines": "97-112",
+          "implMappings": [
+            {
+              "file": "src/utils/step-validation.ts",
+              "lines": [
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Match @step anywhere in the line, not just at the start",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/step-validation-language-agnostic.test.ts",
+          "lines": "114-129",
+          "implMappings": [
+            {
+              "file": "src/utils/step-validation.ts",
+              "lines": [
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Ignore trailing comment delimiters from block comments",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/step-validation-language-agnostic.test.ts",
+          "lines": "131-149",
+          "implMappings": [
+            {
+              "file": "src/utils/step-validation.ts",
+              "lines": [
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 8,
+    "coveredScenarios": 8,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/utils/__tests__/step-validation-language-agnostic.test.ts"
+    ],
+    "implFiles": [
+      "src/utils/step-validation.ts"
+    ],
+    "totalLinesCovered": 434
+  }
+}
