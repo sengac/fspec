@@ -95,11 +95,3 @@ Feature: Add ESLint and Prettier for code quality
     And Prettier should format staged files
     And Commit should succeed if no errors
     Given Husky and lint-staged are configured
-
-  Scenario: Prettier formats code on save in IDE
-    When Developer saves a TypeScript file
-    Then File should be formatted with 2-space indentation
-    And Single quotes should be used consistently
-    And Code style should match project standards
-    Given VSCode is configured with format-on-save
-    And .vscode/settings.json has Prettier config

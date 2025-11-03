@@ -37,7 +37,24 @@ describe('Feature: Improve work unit details panel formatting', () => {
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    // Reset store state to release any file watchers or async operations
+    useFspecStore.setState({
+      cwd: process.cwd(),
+      workUnits: [],
+      epics: [],
+      prefixes: []
+    });
+
+    // Give async operations time to complete and release file handles
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    // Remove test directory with retry logic for locked files
+    try {
+      await rm(testDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 });
+    } catch (error) {
+      // Ignore cleanup errors - temp directory will be cleaned up by OS
+      console.warn(`Failed to clean up test directory ${testDir}:`, error);
+    }
   });
 
   describe('Scenario: Display work unit with short description (1 line)', () => {
