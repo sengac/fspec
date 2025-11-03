@@ -69,16 +69,29 @@ fspec update-work-unit-status EXAMPLE-006 testing    # Move to testing
 #  * Scenarios in this test map directly to scenarios in the Gherkin feature.
 #  */
 #
-# Then write tests that map to Gherkin scenarios:
+# MANDATORY: Write tests with @step comments for EVERY Gherkin step:
+# NOTE: This example uses JavaScript (// comment syntax). Adapt the comment prefix
+#       to match your language: // (JS/C/Java), # (Python/Ruby), -- (SQL), etc.
+#
 # describe('Feature: Feature File Validation', () => {
 #   describe('Scenario: Validate feature file with valid syntax', () => {
 #     it('should exit with code 0 when feature file is valid', async () => {
-#       // Given: A feature file with valid Gherkin syntax
-#       // When: User runs 'example-project validate'
-#       // Then: Validation passes and reports success
+#       // @step Given a feature file with valid Gherkin syntax
+#       const validFeature = 'spec/features/test.feature';
+#
+#       // @step When I run the validate command
+#       const result = await runValidate(validFeature);
+#
+#       // @step Then the command exits with code 0
+#       expect(result.exitCode).toBe(0);
+#
+#       // @step And I see a success message
+#       expect(result.output).toContain('All feature files are valid');
 #     });
 #   });
 # });
+#
+# WITHOUT these @step comments matching EXACT Gherkin text, fspec link-coverage will BLOCK!
 
 <test-command>                                   # Tests MUST FAIL (red phase)
                                                  # If tests pass, you wrote code already!
@@ -121,7 +134,11 @@ fspec board                                      # Verify work unit in DONE colu
 
 1. **Discovery FIRST** - Example Mapping conversation to clarify requirements (rules, examples, questions)
 2. **Generate/Write Feature SECOND** - Use \`fspec generate-scenarios\` or manually create feature file
-3. **Test THIRD** - \`validate.test.ts\` created with feature file link in header comment
+3. **Test THIRD** - \`validate.test.ts\` created with:
+   - Feature file link in header comment
+   - MANDATORY @step comments for EVERY Gherkin step (exact text match)
+   - Use language-appropriate comment syntax: // @step (JS/C/Java), # @step (Python/Ruby), -- @step (SQL), etc.
+   - Without @step comments, link-coverage will BLOCK and prevent workflow progression
 4. **Tests FAIL** - Run \`<test-command>\` and verify tests fail (proves they test real behavior)
 5. **Implement FOURTH** - \`validate.ts\` written with minimal code to pass tests
 6. **Tests PASS** - Run \`<test-command>\` and verify tests now pass (green)

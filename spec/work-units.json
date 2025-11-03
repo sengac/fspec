@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-03T15:07:56.000Z"
+    "lastUpdated": "2025-11-03T22:21:27.821Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -38583,11 +38583,189 @@
       "id": "TUI-016",
       "title": "Refactor checkpoint counts to be command-triggered instead of file-watching",
       "type": "story",
-      "status": "backlog",
+      "status": "specifying",
       "createdAt": "2025-11-03T15:08:07.097Z",
-      "updatedAt": "2025-11-03T15:08:07.097Z",
+      "updatedAt": "2025-11-03T22:44:18.072Z",
       "description": "Currently, the TUI watches the .git/fspec-checkpoints-index directory using chokidar to detect when checkpoint counts change. This should be refactored to update checkpoint counts when checkpoint commands are executed instead. This applies to both manual checkpoints (fspec checkpoint) and automatic checkpoints. The TUI should receive events or updates when checkpoints are created or restored, eliminating the need for file system watching.",
-      "children": []
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-03T21:50:52.207Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-03T22:24:55.201Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-03T22:31:54.206Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-03T22:32:06.180Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-03T22:44:18.072Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "CheckpointPanel must update counts when manual checkpoints are created via 'fspec checkpoint' command",
+          "deleted": false,
+          "createdAt": "2025-11-03T21:51:42.991Z"
+        },
+        {
+          "id": 1,
+          "text": "CheckpointPanel must update counts when automatic checkpoints are created during status transitions",
+          "deleted": false,
+          "createdAt": "2025-11-03T21:51:48.003Z"
+        },
+        {
+          "id": 2,
+          "text": "CheckpointPanel must update counts when checkpoints are restored via 'fspec restore-checkpoint' command",
+          "deleted": false,
+          "createdAt": "2025-11-03T21:51:53.261Z"
+        },
+        {
+          "id": 3,
+          "text": "CheckpointPanel must update counts when checkpoints are cleaned up via 'fspec cleanup-checkpoints' command",
+          "deleted": false,
+          "createdAt": "2025-11-03T21:51:58.651Z"
+        },
+        {
+          "id": 4,
+          "text": "Chokidar file-watching dependency must be removed from CheckpointPanel",
+          "deleted": false,
+          "createdAt": "2025-11-03T21:52:05.093Z"
+        },
+        {
+          "id": 5,
+          "text": "Yes, TUI performs initial checkpoint counting on mount by calling useFspecStore.getState().loadCheckpointCounts(). This loads current state from disk. Subsequent updates come from IPC notifications.",
+          "deleted": false,
+          "createdAt": "2025-11-03T22:18:50.740Z"
+        },
+        {
+          "id": 6,
+          "text": "IPC solves this. When checkpoint commands execute in another terminal, they send IPC message to TUI's server (net.connect to socket/pipe). If TUI not running, send fails silently. No file-watching needed.",
+          "deleted": false,
+          "createdAt": "2025-11-03T22:18:58.306Z"
+        },
+        {
+          "id": 7,
+          "text": "Shared IPC utility (src/utils/ipc.ts) provides getIPCPath(), createIPCServer(), sendIPCMessage(), and cleanupIPCServer() functions",
+          "deleted": false,
+          "createdAt": "2025-11-03T22:19:05.550Z"
+        },
+        {
+          "id": 8,
+          "text": "Zustand store must have checkpointCounts state and loadCheckpointCounts() action that reads from .git/fspec-checkpoints-index",
+          "deleted": false,
+          "createdAt": "2025-11-03T22:19:11.768Z"
+        },
+        {
+          "id": 9,
+          "text": "IPC server must start when BoardView mounts and cleanup when unmounts (socket unlink on Unix, auto-cleanup on Windows)",
+          "deleted": false,
+          "createdAt": "2025-11-03T22:19:18.377Z"
+        },
+        {
+          "id": 10,
+          "text": "CheckpointPanel must ALWAYS render from zustand store state (useFspecStore) to ensure reactivity - never read directly from filesystem",
+          "deleted": false,
+          "createdAt": "2025-11-03T22:21:03.950Z"
+        }
+      ],
+      "nextRuleId": 11,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User creates manual checkpoint 'baseline' for TUI-016, CheckpointPanel shows updated manual count immediately",
+          "deleted": false,
+          "createdAt": "2025-11-03T21:52:12.078Z"
+        },
+        {
+          "id": 1,
+          "text": "User moves work unit from testing to implementing, auto checkpoint created, CheckpointPanel shows updated auto count immediately",
+          "deleted": false,
+          "createdAt": "2025-11-03T21:52:17.540Z"
+        },
+        {
+          "id": 2,
+          "text": "User runs 'fspec cleanup-checkpoints TUI-016', checkpoints deleted, CheckpointPanel shows updated counts immediately",
+          "deleted": false,
+          "createdAt": "2025-11-03T21:52:22.977Z"
+        },
+        {
+          "id": 3,
+          "text": "TUI starts on Linux, IPC server listens at /tmp/fspec-tui.sock, user creates checkpoint in another terminal, command sends message to socket, TUI updates counts",
+          "deleted": false,
+          "createdAt": "2025-11-03T22:19:25.531Z"
+        },
+        {
+          "id": 4,
+          "text": "TUI starts on Windows, IPC server listens at \\\\.\\pipe\\fspec-tui, user creates checkpoint, command connects to named pipe, sends message, TUI updates counts",
+          "deleted": false,
+          "createdAt": "2025-11-03T22:19:32.064Z"
+        },
+        {
+          "id": 5,
+          "text": "TUI not running, user creates checkpoint in terminal, IPC send fails silently (connection refused), checkpoint command completes successfully without error",
+          "deleted": false,
+          "createdAt": "2025-11-03T22:20:57.039Z"
+        }
+      ],
+      "nextExampleId": 6,
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: Should we use an event emitter pattern to notify the TUI of checkpoint changes, or should CheckpointPanel poll for updates at regular intervals?",
+          "deleted": false,
+          "createdAt": "2025-11-03T21:52:29.294Z",
+          "selected": true,
+          "answer": "Use cross-platform IPC (Unix domain sockets on Linux/Mac, named pipes on Windows) via Node.js net module. TUI runs IPC server, checkpoint commands send messages. No event emitter pattern, no polling - direct IPC communication."
+        },
+        {
+          "id": 1,
+          "text": "@human: When checkpoint commands are executed from within the TUI (if that's possible), should updates be synchronous or asynchronous?",
+          "deleted": false,
+          "createdAt": "2025-11-03T21:52:35.798Z",
+          "selected": true,
+          "answer": "Updates are asynchronous. IPC messages trigger zustand store loadCheckpointCounts() which updates state asynchronously, causing CheckpointPanel to re-render via React hooks."
+        },
+        {
+          "id": 2,
+          "text": "@human: Should the TUI continue to perform initial checkpoint counting on mount (like current implementation), or should all counts come from command-triggered updates?",
+          "deleted": false,
+          "createdAt": "2025-11-03T21:52:42.698Z",
+          "selected": true,
+          "answer": "Yes, TUI performs initial checkpoint counting on mount by calling useFspecStore.getState().loadCheckpointCounts(). This loads current state from disk. Subsequent updates come from IPC notifications."
+        },
+        {
+          "id": 3,
+          "text": "@human: If checkpoint commands are executed outside the TUI (in another terminal), how should the TUI detect those changes without file-watching?",
+          "deleted": false,
+          "createdAt": "2025-11-03T21:52:47.990Z",
+          "selected": true,
+          "answer": "IPC solves this. When checkpoint commands execute in another terminal, they send IPC message to TUI's server (net.connect to socket/pipe). If TUI not running, send fails silently. No file-watching needed."
+        }
+      ],
+      "nextQuestionId": 4,
+      "attachments": [
+        "spec/attachments/TUI-016/tui-016-ipc-architecture.md"
+      ],
+      "assumptions": [
+        "Use cross-platform IPC (Unix domain sockets on Linux/Mac, named pipes on Windows) via Node.js net module. TUI runs IPC server, checkpoint commands send messages. No event emitter pattern, no polling - direct IPC communication.",
+        "Updates are asynchronous. IPC messages trigger zustand store loadCheckpointCounts() which updates state asynchronously, causing CheckpointPanel to re-render via React hooks."
+      ],
+      "userStory": {
+        "role": "developer viewing the TUI board",
+        "action": "see checkpoint counts update immediately when checkpoint commands execute",
+        "benefit": "I have real-time visibility into checkpoints without file-watching overhead"
+      },
+      "estimate": 8
     }
   },
   "states": {
@@ -38615,8 +38793,7 @@
       "RES-004",
       "RES-005",
       "FEAT-018",
-      "CLEAN-002",
-      "TUI-016"
+      "CLEAN-002"
     ],
     "specifying": [
       "RES-006",
@@ -38629,7 +38806,8 @@
       "BOARD-020",
       "TUI-012",
       "TUI-013",
-      "RES-007"
+      "RES-007",
+      "TUI-016"
     ],
     "testing": [],
     "implementing": [],

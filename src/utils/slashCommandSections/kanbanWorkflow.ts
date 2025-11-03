@@ -25,6 +25,12 @@ fspec update-work-unit-status EXAMPLE-006 testing
 
 # 3. TEST FIRST (write failing tests)
 # Write tests in src/__tests__/*.test.ts
+# MANDATORY: Add @step comments for EVERY Gherkin step
+# Use language-appropriate comment syntax:
+#   JavaScript/Java/C/C++/C#: // @step Given I am on the login page
+#   Python/Ruby/Bash:         # @step When I enter valid credentials
+#   SQL/Haskell:              -- @step Then I should see the dashboard
+# WITHOUT these comments, link-coverage will BLOCK workflow!
 fspec update-work-unit-status EXAMPLE-006 implementing
 
 # 4. IMPLEMENT (make tests pass)

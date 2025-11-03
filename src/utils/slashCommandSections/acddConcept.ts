@@ -23,8 +23,11 @@ BACKLOG → SPECIFYING → TESTING → IMPLEMENTING → VALIDATING → DONE
 
 2. **TESTING** - Write failing tests BEFORE any code
    - Create test file with header comment linking to feature file
-   - Map test scenarios to Gherkin scenarios
+   - Map test scenarios to Gherkin scenarios using MANDATORY @step comments
+   - EVERY Gherkin step MUST have an @step comment in test (exact text match)
+   - Use language-appropriate comment syntax: // @step (JS/C/Java), # @step (Python/Ruby), -- @step (SQL), etc.
    - Tests MUST fail (red phase) - proving they test real behavior
+   - WITHOUT @step comments, link-coverage will BLOCK workflow progression
 
 3. **IMPLEMENTING** - Write minimal code to make tests pass
    - Implement ONLY what's needed to pass tests

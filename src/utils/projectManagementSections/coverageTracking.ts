@@ -72,9 +72,15 @@ fspec audit-coverage <feature-name>
 
 \`\`\`bash
 # AFTER writing tests (testing phase)
+# CRITICAL: Tests MUST include @step comments for EVERY Gherkin step
+# Use language-appropriate comment syntax:
+#   JavaScript: // @step Given I am on the login page
+#   Python:     # @step When I enter valid credentials
+#   SQL:        -- @step Then I should see the dashboard
 <test-command>  # Tests MUST FAIL (red phase)
 
 # IMMEDIATELY link test to scenario
+# NOTE: link-coverage enforces @step validation - will BLOCK without them
 fspec link-coverage user-authentication --scenario "Login with valid credentials" \\
   --test-file src/__tests__/auth.test.ts --test-lines 45-62
 

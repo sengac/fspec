@@ -91,7 +91,26 @@ For more: fspec link-coverage --help
 Suggested next steps:
   1. Create test file: src/**/__tests__/*.test.ts
   2. Add feature file reference: // Feature: spec/features/[name].feature
-  3. Write tests that map to Gherkin scenarios
+  3. Write tests that map to Gherkin scenarios - MANDATORY STEP COMMENTS REQUIRED:
+     - EVERY Gherkin step MUST have a corresponding @step comment in the test
+     - Use EXACT step text from feature file with language-appropriate comment syntax:
+       * JavaScript/Java/C/C++/C#/Swift/Go/Rust: // @step Given I am logged in
+       * Python/Ruby/Perl/Bash/R/PowerShell:     # @step When I enter valid credentials
+       * SQL/Ada/Haskell/Lua/VHDL:               -- @step Then I should see the dashboard
+       * PHP: // @step or # @step
+       * MATLAB/ASP: % @step
+       * Visual Basic: ' @step
+     - Include ALL step types: @step Given ... @step When ... @step Then ... @step And ...
+     - Example (JavaScript):
+       // @step Given I am on the login page
+       // @step When I enter valid credentials
+       // @step Then I should see the dashboard
+     - Example (Python):
+       # @step Given I am on the login page
+       # @step When I enter valid credentials
+       # @step Then I should see the dashboard
+     - WITHOUT these comments, fspec link-coverage will BLOCK and prevent you from continuing
+     - Step validation is ENFORCED - you cannot proceed to implementing without them
   4. Run tests and verify they fail (tests should FAIL)
   5. Link test coverage: fspec link-coverage <feature> --scenario "..." --test-file <path> --test-lines <range>
   6. Move to implementing: fspec update-work-unit-status ${workUnitId} implementing
