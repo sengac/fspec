@@ -106,6 +106,10 @@
           "description": "Assumption tracking in Example Mapping"
         },
         {
+          "name": "@attachment-management",
+          "description": "Attachment management features for work units"
+        },
+        {
           "name": "@attachments",
           "description": "Feature related to work unit attachments (diagrams, documents, mockups)"
         },
@@ -1342,7 +1346,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-11-03T00:58:54.183Z",
+    "lastUpdated": "2025-11-03T01:31:58.008Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

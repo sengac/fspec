@@ -1,5 +1,5 @@
-import { mkdir, copyFile, access } from 'fs/promises';
-import { join, basename, relative } from 'path';
+import { mkdir, copyFile, access, unlink } from 'fs/promises';
+import { join, basename, relative, dirname, resolve } from 'path';
 import chalk from 'chalk';
 import type { Command } from 'commander';
 import type { WorkUnitsData } from '../types';
@@ -67,6 +67,17 @@ export async function addAttachment(
   const fileName = basename(options.filePath);
   const destPath = join(attachmentsDir, fileName);
   await copyFile(options.filePath, destPath);
+
+  // BUG-055: Check if source file is in spec/attachments/ root directory
+  // If so, delete it after successful copy to prevent duplication
+  const sourceAbsPath = resolve(options.filePath);
+  const attachmentsRootDir = resolve(cwd, 'spec', 'attachments');
+  const sourceDir = dirname(sourceAbsPath);
+
+  if (sourceDir === attachmentsRootDir) {
+    // Source is in spec/attachments/ root - delete it to prevent duplication
+    await unlink(options.filePath);
+  }
 
   // Get relative path from project root
   const relativePath = relative(cwd, destPath);

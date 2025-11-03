@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-03T01:10:50.559Z"
+    "lastUpdated": "2025-11-03T01:40:52.199Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -36481,11 +36481,85 @@
       "id": "BUG-055",
       "title": "Attachment files duplicated in spec/attachments/ and spec/attachments/[ID]/",
       "type": "bug",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2025-11-02T06:29:11.069Z",
-      "updatedAt": "2025-11-02T06:29:11.069Z",
+      "updatedAt": "2025-11-03T01:40:52.218Z",
       "description": "When adding an attachment to a work unit, files appear in both spec/attachments/ (root) and spec/attachments/[WORK-UNIT-ID]/ directories. Expected behavior: attachments should only be stored in the work unit specific directory (spec/attachments/[WORK-UNIT-ID]/).",
-      "children": []
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-03T01:30:24.872Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-03T01:32:15.277Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-03T01:33:13.951Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-03T01:33:53.178Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-03T01:40:52.219Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "Attachments MUST be stored ONLY in spec/attachments/{work-unit-id}/ directory",
+          "deleted": false,
+          "createdAt": "2025-11-03T01:30:40.730Z"
+        },
+        {
+          "id": 1,
+          "text": "Attachments MUST NOT appear in spec/attachments/ root directory",
+          "deleted": false,
+          "createdAt": "2025-11-03T01:30:42.143Z"
+        },
+        {
+          "id": 2,
+          "text": "When copying attachments from spec/attachments/ root, the source file MUST be deleted after successful copy",
+          "deleted": false,
+          "createdAt": "2025-11-03T01:30:43.394Z"
+        }
+      ],
+      "nextRuleId": 3,
+      "examples": [
+        {
+          "id": 0,
+          "text": "File created in spec/attachments/CONFIG-003-integration-gap-analysis.md, then fspec add-attachment called, results in duplication in both root and CONFIG-003/ subdirectory",
+          "deleted": false,
+          "createdAt": "2025-11-03T01:30:52.445Z"
+        },
+        {
+          "id": 1,
+          "text": "User adds attachment from external path (e.g., /tmp/diagram.png), file copied to spec/attachments/{work-unit-id}/diagram.png, original stays in /tmp (correct behavior)",
+          "deleted": false,
+          "createdAt": "2025-11-03T01:30:54.103Z"
+        },
+        {
+          "id": 2,
+          "text": "After fix, files in spec/attachments/ root that get attached should be moved (not copied) to work unit subdirectory",
+          "deleted": false,
+          "createdAt": "2025-11-03T01:30:55.388Z"
+        }
+      ],
+      "nextExampleId": 3,
+      "userStory": {
+        "role": "developer using fspec",
+        "action": "add attachments to work units",
+        "benefit": "files are stored in the correct location without duplication"
+      },
+      "questions": [],
+      "architectureNotes": [],
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-03T01:40:52.218Z"
     },
     "BUG-056": {
       "id": "BUG-056",
@@ -36949,7 +37023,6 @@
       "RES-005",
       "FEAT-018",
       "CLEAN-002",
-      "BUG-055",
       "CLI-014"
     ],
     "specifying": [
@@ -36969,6 +37042,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "BUG-055",
       "COV-053",
       "DISC-002",
       "BUG-057",
