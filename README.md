@@ -213,6 +213,35 @@ fspec show-test-patterns --tag=@authentication --include-coverage
 
 ---
 
+## Bug Reporting & Support
+
+Found a bug? fspec makes it easy to report issues with automatic context gathering:
+
+```bash
+# Report a bug with AI-assisted context gathering
+fspec report-bug-to-github
+
+# Interactive mode with prompts
+fspec report-bug-to-github --interactive
+
+# Non-interactive with description
+fspec report-bug-to-github --bug-description "Validation command crashes"
+```
+
+**What gets automatically collected:**
+- ✓ fspec version and Node version
+- ✓ Operating system and platform
+- ✓ Current git branch and uncommitted changes
+- ✓ Active work unit context (ID, title, status)
+- ✓ Recent error logs from `.fspec/error-logs/`
+- ✓ Related feature files
+
+The command opens your browser with a pre-filled GitHub issue containing all relevant context, making it easy for maintainers to reproduce and fix bugs.
+
+**Manual reporting:** [Create an issue](https://github.com/sengac/fspec/issues/new)
+
+---
+
 ## Documentation
 
 - 📘 **[Getting Started](./docs/getting-started.md)** - 5-minute quickstart

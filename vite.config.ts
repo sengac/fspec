@@ -35,6 +35,7 @@ export default defineConfig({
         'chokidar',
         'worker_threads',
         'diff',
+        'open',
       ],
       output: {
         preserveModules: false,
