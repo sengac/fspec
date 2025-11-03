@@ -1,3 +1,7 @@
+@cli
+@configuration
+@init
+@critical
 @INIT-015
 Feature: fspec init deletes config and templates instead of preserving them
 

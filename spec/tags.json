@@ -634,6 +634,10 @@
           "description": "Features related to data models, schemas, and data structure transformations"
         },
         {
+          "name": "@development-tools",
+          "description": "Development tooling and utilities"
+        },
+        {
           "name": "@discovery",
           "description": "BDD discovery technique used before writing Gherkin scenarios"
         },
@@ -672,6 +676,14 @@
         {
           "name": "@flexbox",
           "description": "Flexbox layout implementation and responsive design"
+        },
+        {
+          "name": "@format-check",
+          "description": "Format and style checking"
+        },
+        {
+          "name": "@function-signature",
+          "description": "Function signature validation and checking"
         },
         {
           "name": "@gherkin",
@@ -1330,7 +1342,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-11-01T08:00:50.906Z",
+    "lastUpdated": "2025-11-03T00:58:54.183Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

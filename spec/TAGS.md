@@ -183,6 +183,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@cucumber-style` | Cucumber-style step definition and matching patterns |
 | `@data-integrity` | Data integrity validation and consistency checks |
 | `@data-model` | Features related to data models, schemas, and data structure transformations |
+| `@development-tools` | Development tooling and utilities |
 | `@discovery` | BDD discovery technique used before writing Gherkin scenarios |
 | `@email` | Email-related functionality |
 | `@error-handling` | Error Handling |
@@ -193,6 +194,8 @@ Tags for specific technical concerns or architectural patterns.
 | `@file-system` | File System Operations |
 | `@file-watching` | Features using file system watchers (fs.watch) for change detection |
 | `@flexbox` | Flexbox layout implementation and responsive design |
+| `@format-check` | Format and style checking |
+| `@function-signature` | Function signature validation and checking |
 | `@gherkin` | Gherkin Specification Compliance |
 | `@graceful-degradation` | Features that gracefully handle missing or invalid data |
 | `@guidance` | Features that provide AI guidance/prompts rather than code implementation |
@@ -574,7 +577,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-11-01T08:00:50.906Z_
+_Last updated: 2025-11-03T00:58:54.183Z_
 
 **Update Command**: `fspec tag-stats`
 

@@ -1,3 +1,4 @@
+@example-mapping
 @BUG-054
 @critical @cli @data-integrity
 Feature: Answer Question Data Integrity
