@@ -142,6 +142,10 @@
           "description": "Kanban board visualization and layout features"
         },
         {
+          "name": "@bug-reporting",
+          "description": "Bug reporting and issue submission features"
+        },
+        {
           "name": "@bulk",
           "description": "Bulk operations"
         },
@@ -562,6 +566,10 @@
       "required": false,
       "tags": [
         {
+          "name": "@ai-assisted",
+          "description": "Features using AI-driven analysis and interaction"
+        },
+        {
           "name": "@ai-driven",
           "description": "AI-driven interactive and conversational commands"
         },
@@ -596,6 +604,10 @@
         {
           "name": "@bdd",
           "description": "Behavior-Driven Development methodology"
+        },
+        {
+          "name": "@browser-integration",
+          "description": "Features requiring browser launcher integration"
         },
         {
           "name": "@build",
@@ -692,6 +704,10 @@
         {
           "name": "@gherkin",
           "description": "Gherkin Specification Compliance"
+        },
+        {
+          "name": "@github-integration",
+          "description": "Features integrating with GitHub API or URLs"
         },
         {
           "name": "@graceful-degradation",
@@ -1346,7 +1362,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-11-03T01:31:58.008Z",
+    "lastUpdated": "2025-11-03T01:57:44.847Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

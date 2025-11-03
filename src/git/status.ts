@@ -227,6 +227,52 @@ export async function getUntrackedFiles(
  * // { filepath: 'src/index.ts', staged: false, hasUnstagedChanges: true, untracked: false }
  * ```
  */
+/**
+ * Get current branch name
+ *
+ * @param dir - Repository directory
+ * @param options - Configuration options
+ * @returns Current branch name or undefined if not in a git repository
+ */
+export async function getCurrentBranch(
+  dir: string,
+  options?: GitStatusOptions
+): Promise<string | undefined> {
+  const fs = options?.fs || fsNode;
+
+  if (!isGitRepository(dir, fs)) {
+    return undefined;
+  }
+
+  try {
+    const branch = await git.currentBranch({ fs, dir });
+    return branch || undefined;
+  } catch (error: unknown) {
+    if (options?.strict) {
+      throw error;
+    }
+    return undefined;
+  }
+}
+
+/**
+ * Get git status summary
+ *
+ * @param dir - Repository directory
+ * @param options - Configuration options
+ * @returns Array of file statuses
+ */
+export async function getGitStatus(
+  dir: string,
+  options?: GitStatusOptions
+): Promise<FileStatus[]> {
+  const staged = await getStagedFiles(dir, options);
+  const unstaged = await getUnstagedFiles(dir, options);
+  const untracked = await getUntrackedFiles(dir, options);
+
+  return [...staged, ...unstaged, ...untracked];
+}
+
 export async function getFileStatus(
   dir: string,
   filepath: string,

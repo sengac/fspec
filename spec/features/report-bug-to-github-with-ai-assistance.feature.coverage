@@ -1,0 +1,74 @@
+{
+  "scenarios": [
+    {
+      "name": "Basic bug report flow",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/report-bug-to-github.test.ts",
+          "lines": "27-82",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Include work unit context",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/report-bug-to-github.test.ts",
+          "lines": "84-128",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Include git context",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/report-bug-to-github.test.ts",
+          "lines": "130-153",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Error log capture",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/report-bug-to-github.test.ts",
+          "lines": "155-183",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Preview and edit",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/report-bug-to-github.test.ts",
+          "lines": "185-244",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "URL encoding handling",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/report-bug-to-github.test.ts",
+          "lines": "246-284",
+          "implMappings": []
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/commands/__tests__/report-bug-to-github.test.ts"
+    ],
+    "implFiles": [],
+    "totalLinesCovered": 253
+  }
+}
