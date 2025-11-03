@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-03T23:27:50.679Z"
+    "lastUpdated": "2025-11-03T23:56:24.377Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -38583,9 +38583,9 @@
       "id": "TUI-016",
       "title": "Refactor checkpoint counts to be command-triggered instead of file-watching",
       "type": "story",
-      "status": "specifying",
+      "status": "done",
       "createdAt": "2025-11-03T15:08:07.097Z",
-      "updatedAt": "2025-11-03T22:44:18.072Z",
+      "updatedAt": "2025-11-03T23:56:24.398Z",
       "description": "Currently, the TUI watches the .git/fspec-checkpoints-index directory using chokidar to detect when checkpoint counts change. This should be refactored to update checkpoint counts when checkpoint commands are executed instead. This applies to both manual checkpoints (fspec checkpoint) and automatic checkpoints. The TUI should receive events or updates when checkpoints are created or restored, eliminating the need for file system watching.",
       "children": [],
       "stateHistory": [
@@ -38608,6 +38608,26 @@
         {
           "state": "specifying",
           "timestamp": "2025-11-03T22:44:18.072Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-03T23:32:14.278Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-03T23:34:49.241Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-03T23:43:52.007Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-03T23:52:39.492Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-03T23:56:24.398Z"
         }
       ],
       "rules": [
@@ -38765,7 +38785,10 @@
         "action": "see checkpoint counts update immediately when checkpoint commands execute",
         "benefit": "I have real-time visibility into checkpoints without file-watching overhead"
       },
-      "estimate": 8
+      "estimate": 8,
+      "architectureNotes": [],
+      "nextNoteId": 0,
+      "updated": "2025-11-03T23:56:24.398Z"
     },
     "BUG-063": {
       "id": "BUG-063",
@@ -38894,6 +38917,19 @@
       "questions": [],
       "nextQuestionId": 0,
       "updated": "2025-11-03T23:27:50.704Z"
+    },
+    "BUG-064": {
+      "id": "BUG-064",
+      "title": "Duplicate work unit IDs in state arrays when moving backward or to same state",
+      "type": "bug",
+      "status": "backlog",
+      "createdAt": "2025-11-03T23:36:55.910Z",
+      "updatedAt": "2025-11-03T23:38:08.231Z",
+      "description": "The update-work-unit-status command creates duplicate entries in the states arrays when moving a work unit backward (e.g., testing → specifying) or when moving to the same state it's already in. The removal logic fails to properly remove the work unit ID from the previous state array before adding it to the new state array.",
+      "children": [],
+      "attachments": [
+        "spec/attachments/BUG-064/bug-064-details.md"
+      ]
     }
   },
   "states": {
@@ -38921,7 +38957,8 @@
       "RES-004",
       "RES-005",
       "FEAT-018",
-      "CLEAN-002"
+      "CLEAN-002",
+      "BUG-064"
     ],
     "specifying": [
       "RES-006",
@@ -38934,13 +38971,13 @@
       "BOARD-020",
       "TUI-012",
       "TUI-013",
-      "RES-007",
-      "TUI-016"
+      "RES-007"
     ],
     "testing": [],
     "implementing": [],
     "validating": [],
     "done": [
+      "TUI-016",
       "BUG-063",
       "TUI-015",
       "TUI-014",
@@ -39246,7 +39283,7 @@
   "prefixCounters": {
     "CLI": 14,
     "HELP": 5,
-    "BUG": 63,
+    "BUG": 64,
     "DISC": 2,
     "COV": 53,
     "TUI": 16

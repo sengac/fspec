@@ -356,6 +356,7 @@ Tags for automation integration and agentic coding workflows.
 | Tag | Description |
 |-----|-------------|
 | `@acdd` | Acceptance Criteria Driven Development |
+| `@cli-integration` | CLI integration and workflow automation features |
 | `@discovery-workflow` | Discovery workflow and bootstrapping processes |
 | `@draft-driven` | Draft-driven development and feedback loops |
 | `@execa` | Child process execution integration point |
@@ -587,7 +588,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-11-03T23:27:32.333Z_
+_Last updated: 2025-11-03T23:55:46.628Z_
 
 **Update Command**: `fspec tag-stats`
 
