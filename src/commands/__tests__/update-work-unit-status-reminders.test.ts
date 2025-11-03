@@ -66,6 +66,42 @@ Feature: Test Feature
       join(SPEC_DIR, 'features', 'test-feature.feature'),
       featureContent
     );
+
+    // Create coverage file for test-feature.feature
+    const coverageContent = {
+      scenarios: [
+        {
+          name: 'Test scenario',
+          testMappings: [
+            {
+              file: 'src/__tests__/test-feature.test.ts',
+              lines: '1-10',
+              implMappings: [],
+            },
+          ],
+        },
+      ],
+    };
+    await writeFile(
+      join(SPEC_DIR, 'features', 'test-feature.feature.coverage'),
+      JSON.stringify(coverageContent, null, 2)
+    );
+
+    // Create the test file referenced in coverage
+    await mkdir(join(TEST_DIR, 'src', '__tests__'), { recursive: true });
+    const testFileContent = `// @step Given  I have a test
+// @step When  I run a test
+// @step Then  I see results
+describe('Test scenario', () => {
+  it('should work', () => {
+    expect(true).toBe(true);
+  });
+});
+`;
+    await writeFile(
+      join(TEST_DIR, 'src', '__tests__', 'test-feature.test.ts'),
+      testFileContent
+    );
   });
 
   afterEach(async () => {
