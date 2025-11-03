@@ -90,6 +90,42 @@ describe('Virtual hooks system reminders', () => {
       join(testDir, 'spec', 'features', 'user-login.feature'),
       '@AUTH-001\nFeature: User Login\n\nScenario: Login success\n  Given valid credentials\n  When user logs in\n  Then redirect to dashboard'
     );
+
+    // Create coverage file for user-login.feature
+    const coverageContent = {
+      scenarios: [
+        {
+          name: 'Login success',
+          testMappings: [
+            {
+              file: 'src/__tests__/user-login.test.ts',
+              lines: '1-10',
+              implMappings: [],
+            },
+          ],
+        },
+      ],
+    };
+    await writeFile(
+      join(testDir, 'spec', 'features', 'user-login.feature.coverage'),
+      JSON.stringify(coverageContent, null, 2)
+    );
+
+    // Create the test file referenced in coverage
+    await mkdir(join(testDir, 'src', '__tests__'), { recursive: true });
+    const testFileContent = `// @step Given  valid credentials
+// @step When  user logs in
+// @step Then  redirect to dashboard
+describe('Login success', () => {
+  it('should redirect', () => {
+    expect(true).toBe(true);
+  });
+});
+`;
+    await writeFile(
+      join(testDir, 'src', '__tests__', 'user-login.test.ts'),
+      testFileContent
+    );
   });
 
   afterEach(async () => {

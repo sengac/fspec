@@ -222,6 +222,33 @@ Feature: UI Components
         })
       );
 
+      // Create the test files referenced in coverage
+      await mkdir(join(testDir, 'src/__tests__'), { recursive: true });
+      await writeFile(
+        join(testDir, 'src/__tests__/auth.test.ts'),
+        `// @step Given  a user exists
+// @step When  they log in
+// @step Then  they are authenticated
+describe('User Login', () => {
+  it('should authenticate', () => {
+    expect(true).toBe(true);
+  });
+});
+`
+      );
+      await writeFile(
+        join(testDir, 'src/__tests__/ui.test.ts'),
+        `// @step Given  a user visits the login page
+// @step When  the page loads
+// @step Then  the login form is displayed
+describe('Display Login Form', () => {
+  it('should display form', () => {
+    expect(true).toBe(true);
+  });
+});
+`
+      );
+
       // When I run "fspec update-work-unit-status UI-001 implementing"
       const result = await updateWorkUnitStatus({
         workUnitId: 'UI-001',

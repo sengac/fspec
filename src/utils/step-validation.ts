@@ -120,7 +120,9 @@ export function matchStep(
   }
 
   const [, featureKeyword, featureText] = stepMatch;
-  const threshold = getAdaptiveThreshold(featureText);
+  // Normalize whitespace: replace multiple spaces with single space
+  const normalizedFeatureText = featureText.replace(/\s+/g, ' ').trim();
+  const threshold = getAdaptiveThreshold(normalizedFeatureText);
 
   let bestMatch: { comment: StepComment | null; score: number } = {
     comment: null,
@@ -133,14 +135,17 @@ export function matchStep(
       continue;
     }
 
+    // Normalize whitespace in comment text for comparison
+    const normalizedCommentText = comment.text.replace(/\s+/g, ' ').trim();
+
     // Calculate similarity using hybrid algorithm
     const scenario1: Scenario = {
-      name: featureText,
-      steps: [featureText],
+      name: normalizedFeatureText,
+      steps: [normalizedFeatureText],
     };
     const scenario2: Scenario = {
-      name: comment.text,
-      steps: [comment.text],
+      name: normalizedCommentText,
+      steps: [normalizedCommentText],
     };
 
     const score = hybridSimilarity(scenario1, scenario2);
@@ -227,8 +232,10 @@ export function formatValidationError(
   lines.push('Missing step comments:');
 
   for (const step of validationResult.missingSteps) {
-    lines.push(`  ✗ ${step}`);
-    lines.push(`    Add to test file: // @step ${step}`);
+    // Normalize whitespace: replace multiple spaces with single space
+    const normalizedStep = step.replace(/\s+/g, ' ');
+    lines.push(`  ✗ ${normalizedStep}`);
+    lines.push(`    Add to test file: // @step ${normalizedStep}`);
   }
 
   lines.push('');
