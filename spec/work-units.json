@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-03T00:35:51.652Z"
+    "lastUpdated": "2025-11-03T00:56:48.962Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -36725,6 +36725,104 @@
       "nextQuestionId": 0,
       "nextNoteId": 0,
       "updated": "2025-11-03T00:35:51.673Z"
+    },
+    "DISC-002": {
+      "id": "DISC-002",
+      "title": "Template persona with placeholders remains in finalized foundation.json",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-11-03T00:43:30.456Z",
+      "updatedAt": "2025-11-03T00:56:48.982Z",
+      "description": "When using discover-foundation workflow, template personas with [QUESTION:] placeholders persist in the finalized foundation.json file even after adding real personas with add-persona command. Root cause: discover-foundation --finalize doesn't check allFieldsComplete before writing foundation.json.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-03T00:43:59.392Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-03T00:46:26.016Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-03T00:48:38.260Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-03T00:49:38.880Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-03T00:56:48.982Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "The discover-foundation --finalize command MUST check if allFieldsComplete is false before writing foundation.json",
+          "deleted": false,
+          "createdAt": "2025-11-03T00:44:10.576Z"
+        },
+        {
+          "id": 1,
+          "text": "If allFieldsComplete is false (placeholder fields remain), finalization MUST fail with a clear error message listing which fields still have placeholders",
+          "deleted": false,
+          "createdAt": "2025-11-03T00:44:11.087Z"
+        },
+        {
+          "id": 2,
+          "text": "Template personas contain [QUESTION:] markers in name, description, or goals fields",
+          "deleted": false,
+          "createdAt": "2025-11-03T00:44:13.063Z"
+        }
+      ],
+      "nextRuleId": 3,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User runs discover-foundation (creates draft with template persona containing [QUESTION:]), then runs add-persona 'AI Agent' 'description' --goal 'goal', then runs add-capability 'Capability' 'desc', then runs discover-foundation --finalize. Currently: finalization succeeds with template persona still in file. Expected: finalization should fail with error about unfilled personas field.",
+          "deleted": false,
+          "createdAt": "2025-11-03T00:44:14.667Z"
+        },
+        {
+          "id": 1,
+          "text": "Draft contains personas: [{name: '[QUESTION: Who?]', description: '[QUESTION: Who?]', goals: ['[QUESTION: What?]']}, {name: 'Real Person', description: 'A real user', goals: ['Achieve things']}]. scanDraftForNextField detects placeholder in personas array, sets allFieldsComplete=false. Finalize should check this flag and reject with error.",
+          "deleted": false,
+          "createdAt": "2025-11-03T00:44:16.068Z"
+        }
+      ],
+      "nextExampleId": 2,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Root cause in discover-foundation.ts:287-383. The finalize process computes allFieldsComplete (line 297) but never checks it before writing foundation.json (line 352). Fix: Add check after line 297 to reject finalization if allFieldsComplete is false.",
+          "deleted": false,
+          "createdAt": "2025-11-03T00:44:28.860Z"
+        },
+        {
+          "id": 1,
+          "text": "scanDraftForNextField() at lines 31-87 correctly detects placeholders by checking if stringified field values contain '[QUESTION:' or '[DETECTED:'. For personas array, it stringifies the entire array, so template personas with placeholders are correctly flagged.",
+          "deleted": false,
+          "createdAt": "2025-11-03T00:44:30.242Z"
+        },
+        {
+          "id": 2,
+          "text": "Schema validation (validateGenericFoundationObject) only checks structure, not content. A persona with name='[QUESTION: Who?]' passes validation because it's a valid string with minLength>1. This is why we need the allFieldsComplete check.",
+          "deleted": false,
+          "createdAt": "2025-11-03T00:44:31.579Z"
+        }
+      ],
+      "nextNoteId": 3,
+      "userStory": {
+        "role": "developer using fspec for project foundation setup",
+        "action": "finalize the foundation draft with discover-foundation --finalize",
+        "benefit": "I receive clear error messages when placeholder fields remain unfilled"
+      },
+      "estimate": 3,
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2025-11-03T00:56:48.982Z"
     }
   },
   "states": {
@@ -36773,6 +36871,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "DISC-002",
       "BUG-057",
       "HELP-005",
       "BUG-056",
@@ -37066,6 +37165,7 @@
   "prefixCounters": {
     "CLI": 14,
     "HELP": 5,
-    "BUG": 57
+    "BUG": 57,
+    "DISC": 2
   }
 }

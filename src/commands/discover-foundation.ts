@@ -296,6 +296,28 @@ Reverting your changes. Draft restored to last valid state. Try again with prope
     const scan = scanDraftForNextField(foundation);
     const allFieldsComplete = !scan.nextField;
 
+    // Check if all placeholder fields are filled
+    if (!allFieldsComplete) {
+      const validationErrors = `Cannot finalize: draft still has unfilled placeholder fields.
+
+Field '${scan.nextField}' still contains [QUESTION:] or [DETECTED:] placeholders.
+
+Please fill all placeholder fields before finalizing:
+  - For simple fields: fspec update-foundation <section> "<value>"
+  - For capabilities: fspec add-capability "<name>" "<description>"
+  - For personas: fspec add-persona "<name>" "<description>" --goal "<goal>"
+
+Then re-run: fspec discover-foundation --finalize`;
+
+      return {
+        systemReminder: '',
+        foundation,
+        valid: false,
+        validated: true,
+        validationErrors,
+      };
+    }
+
     // Validate foundation
     const validation = validateGenericFoundationObject(foundation);
 
