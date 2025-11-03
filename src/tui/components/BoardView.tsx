@@ -37,13 +37,10 @@ interface BoardViewProps {
 export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = true, showFilesPanel = true, focusedPanel: initialFocusedPanel = 'board', cwd, terminalWidth, terminalHeight }) => {
   const workUnits = useFspecStore(state => state.workUnits);
   const stashes = useFspecStore(state => state.stashes);
-  const stagedFiles = useFspecStore(state => state.stagedFiles);
-  const unstagedFiles = useFspecStore(state => state.unstagedFiles);
   const storeCwd = useFspecStore(state => state.cwd);
   const setCwd = useFspecStore(state => state.setCwd);
   const loadData = useFspecStore(state => state.loadData);
   const loadStashes = useFspecStore(state => state.loadStashes);
-  const loadFileStatus = useFspecStore(state => state.loadFileStatus);
   const moveWorkUnitUp = useFspecStore(state => state.moveWorkUnitUp);
   const moveWorkUnitDown = useFspecStore(state => state.moveWorkUnitDown);
 
@@ -83,7 +80,6 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
   useEffect(() => {
     void loadData();
     void loadStashes();
-    void loadFileStatus();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -139,53 +135,6 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
       void watcher.close();
     };
   }, [showStashPanel, storeCwd]);
-
-  // Watch .git/index and .git/HEAD using chokidar (BOARD-018: Cross-platform file watching)
-  // NOTE: Use chokidar instead of fs.watch for reliable cross-platform atomic operation handling
-  useEffect(() => {
-    if (!showFilesPanel) return;
-
-    const indexPath = path.join(storeCwd, '.git', 'index');
-    const headPath = path.join(storeCwd, '.git', 'HEAD');
-
-    // Check if files exist before watching
-    const filesToWatch = [];
-    if (fs.existsSync(indexPath)) filesToWatch.push(indexPath);
-    if (fs.existsSync(headPath)) filesToWatch.push(headPath);
-
-    if (filesToWatch.length === 0) return;
-
-    // Chokidar watches specific files, handles atomic operations automatically
-    const watcher = chokidar.watch(filesToWatch, {
-      ignoreInitial: true,  // Don't trigger on initial scan
-      persistent: false,
-    });
-
-    // Listen for all change events (chokidar normalizes across platforms)
-    const handleFileChange = (changedPath: string) => {
-      const filename = path.basename(changedPath);
-
-      if (filename === 'index' || filename === 'HEAD') {
-        void loadFileStatus();
-        // Also reload stashes when HEAD changes (new commits)
-        if (filename === 'HEAD') {
-          void loadStashes();
-        }
-      }
-    };
-
-    watcher.on('change', handleFileChange);
-    watcher.on('add', handleFileChange);
-
-    // Add error handler to prevent silent failures (BOARD-018)
-    watcher.on('error', (error) => {
-      console.warn('Git directory watcher error:', error.message);
-    });
-
-    return () => {
-      void watcher.close();
-    };
-  }, [showFilesPanel, storeCwd]);
 
   // HEAD watcher removed (BOARD-018): Now handled by .git/ directory watcher above
 
@@ -272,8 +221,6 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
     return (
       <FullScreenWrapper>
         <ChangedFilesViewer
-          stagedFiles={stagedFiles}
-          unstagedFiles={unstagedFiles}
           onExit={() => setViewMode('board')}
           terminalWidth={terminalWidth}
           terminalHeight={terminalHeight}
@@ -331,8 +278,6 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
       <UnifiedBoardLayout
         workUnits={workUnits}
         stashes={stashes}
-        stagedFiles={stagedFiles}
-        unstagedFiles={unstagedFiles}
         focusedColumnIndex={focusedColumnIndex}
         selectedWorkUnitIndex={selectedWorkUnitIndex}
         selectedWorkUnit={currentlySelectedWorkUnit}

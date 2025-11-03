@@ -2,22 +2,44 @@
  * Feature: spec/features/interactive-checkpoint-viewer-with-diff-and-commit-capabilities.feature
  *
  * Tests for ChangedFilesViewer component - dual-pane viewer for changed files and diffs
+ *
+ * TUI-014: Updated to use store-based testing (no props)
  */
 
 import React from 'react';
 import { render } from 'ink-testing-library';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ChangedFilesViewer } from '../ChangedFilesViewer';
+import { useFspecStore } from '../../store/fspecStore';
 
 describe('Feature: Interactive checkpoint viewer with diff and commit capabilities', () => {
+  beforeEach(() => {
+    // Reset store to clean state before each test
+    useFspecStore.setState({
+      stagedFiles: [],
+      unstagedFiles: [],
+      workUnits: [],
+      epics: [],
+      stashes: [],
+      isLoaded: false,
+      error: null,
+      cwd: '/test/dir',
+    });
+
+    // Mock loadFileStatus to prevent actual git calls
+    vi.spyOn(useFspecStore.getState(), 'loadFileStatus').mockResolvedValue(undefined);
+  });
+
   describe('Scenario: Open changed files view with F key', () => {
     it('should render dual-pane layout with staged and unstaged files', () => {
-      const stagedFiles = ['src/auth.ts'];
-      const unstagedFiles = ['src/login.ts'];
+      // TUI-014: Set up store with files instead of passing props
+      useFspecStore.setState({
+        stagedFiles: ['src/auth.ts'],
+        unstagedFiles: ['src/login.ts'],
+      });
 
       const { frames } = render(
         <ChangedFilesViewer
-          stagedFiles={stagedFiles}
-          unstagedFiles={unstagedFiles}
           onExit={() => {}}
         />
       );
@@ -30,13 +52,13 @@ describe('Feature: Interactive checkpoint viewer with diff and commit capabiliti
     });
 
     it('should focus file list pane initially', () => {
-      const stagedFiles = ['src/auth.ts'];
-      const unstagedFiles = [];
+      useFspecStore.setState({
+        stagedFiles: ['src/auth.ts'],
+        unstagedFiles: [],
+      });
 
       const { frames } = render(
         <ChangedFilesViewer
-          stagedFiles={stagedFiles}
-          unstagedFiles={unstagedFiles}
           onExit={() => {}}
         />
       );
@@ -50,13 +72,13 @@ describe('Feature: Interactive checkpoint viewer with diff and commit capabiliti
     });
 
     it('should show file status indicators (staged vs unstaged)', () => {
-      const stagedFiles = ['src/auth.ts'];
-      const unstagedFiles = ['src/login.ts'];
+      useFspecStore.setState({
+        stagedFiles: ['src/auth.ts'],
+        unstagedFiles: ['src/login.ts'],
+      });
 
       const { frames } = render(
         <ChangedFilesViewer
-          stagedFiles={stagedFiles}
-          unstagedFiles={unstagedFiles}
           onExit={() => {}}
         />
       );
@@ -71,13 +93,13 @@ describe('Feature: Interactive checkpoint viewer with diff and commit capabiliti
 
   describe('Scenario: Navigate file list with arrow keys', () => {
     it('should move selection down when down arrow pressed', () => {
-      const stagedFiles = ['file1.ts', 'file2.ts'];
-      const unstagedFiles = ['file3.ts'];
+      useFspecStore.setState({
+        stagedFiles: ['file1.ts', 'file2.ts'],
+        unstagedFiles: ['file3.ts'],
+      });
 
       const { frames, stdin } = render(
         <ChangedFilesViewer
-          stagedFiles={stagedFiles}
-          unstagedFiles={unstagedFiles}
           onExit={() => {}}
         />
       );
@@ -98,13 +120,13 @@ describe('Feature: Interactive checkpoint viewer with diff and commit capabiliti
     });
 
     it('should update diff pane when file selection changes', () => {
-      const stagedFiles = ['file1.ts', 'file2.ts'];
-      const unstagedFiles = [];
+      useFspecStore.setState({
+        stagedFiles: ['file1.ts', 'file2.ts'],
+        unstagedFiles: [],
+      });
 
       const { frames, stdin } = render(
         <ChangedFilesViewer
-          stagedFiles={stagedFiles}
-          unstagedFiles={unstagedFiles}
           onExit={() => {}}
         />
       );
@@ -121,10 +143,9 @@ describe('Feature: Interactive checkpoint viewer with diff and commit capabiliti
 
   describe('Scenario: Empty state for no changed files', () => {
     it('should show "No changed files" when no changes exist', () => {
+      // Store already has empty arrays from beforeEach
       const { frames } = render(
         <ChangedFilesViewer
-          stagedFiles={[]}
-          unstagedFiles={[]}
           onExit={() => {}}
         />
       );
@@ -138,8 +159,6 @@ describe('Feature: Interactive checkpoint viewer with diff and commit capabiliti
     it('should show placeholder text in diff pane when no changes', () => {
       const { frames } = render(
         <ChangedFilesViewer
-          stagedFiles={[]}
-          unstagedFiles={[]}
           onExit={() => {}}
         />
       );
@@ -151,13 +170,14 @@ describe('Feature: Interactive checkpoint viewer with diff and commit capabiliti
   describe('Scenario: ChangedFilesViewer loads real git diffs', () => {
     it('should show loading state and fetch real diff', async () => {
       // @step Given ChangedFilesViewer has selected file 'src/auth.ts'
-      const stagedFiles = ['src/auth.ts'];
+      useFspecStore.setState({
+        stagedFiles: ['src/auth.ts'],
+        unstagedFiles: [],
+      });
 
       // @step When the diff pane renders
       const { frames } = render(
         <ChangedFilesViewer
-          stagedFiles={stagedFiles}
-          unstagedFiles={[]}
           onExit={() => {}}
         />
       );
@@ -175,13 +195,13 @@ describe('Feature: Interactive checkpoint viewer with diff and commit capabiliti
     it('should move focus from files pane to diff pane when right arrow pressed', () => {
       // Given I am viewing the ChangedFilesViewer
       // And the 'files' pane is focused
-      const stagedFiles = ['src/auth.ts', 'src/login.ts'];
-      const unstagedFiles = [];
+      useFspecStore.setState({
+        stagedFiles: ['src/auth.ts', 'src/login.ts'],
+        unstagedFiles: [],
+      });
 
       const { frames, stdin } = render(
         <ChangedFilesViewer
-          stagedFiles={stagedFiles}
-          unstagedFiles={unstagedFiles}
           onExit={() => {}}
         />
       );
@@ -202,13 +222,13 @@ describe('Feature: Interactive checkpoint viewer with diff and commit capabiliti
   describe('Scenario: Right arrow wraps in ChangedFilesViewer', () => {
     it('should wrap focus from diff pane to files pane when right arrow pressed', () => {
       // Given I am viewing the ChangedFilesViewer
-      const stagedFiles = ['src/auth.ts'];
-      const unstagedFiles = [];
+      useFspecStore.setState({
+        stagedFiles: ['src/auth.ts'],
+        unstagedFiles: [],
+      });
 
       const { frames, stdin } = render(
         <ChangedFilesViewer
-          stagedFiles={stagedFiles}
-          unstagedFiles={unstagedFiles}
           onExit={() => {}}
         />
       );

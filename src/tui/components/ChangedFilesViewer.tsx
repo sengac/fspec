@@ -4,24 +4,33 @@
  * Coverage:
  * - GIT-004: Interactive checkpoint viewer with diff and commit capabilities
  * - TUI-002: Checkpoint Viewer Three-Pane Layout (refactored to use FileDiffViewer)
+ * - TUI-014: Remove file watching from TUI main screen and lazy-load changed files view
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Box, Text, useInput } from 'ink';
 import { FileDiffViewer, FileItem } from './FileDiffViewer';
 import { logger } from '../../utils/logger';
+import { useFspecStore } from '../store/fspecStore';
 
 interface ChangedFilesViewerProps {
-  stagedFiles: string[];
-  unstagedFiles: string[];
   onExit: () => void;
+  terminalWidth?: number;
+  terminalHeight?: number;
 }
 
 const ChangedFilesViewerComponent: React.FC<ChangedFilesViewerProps> = ({
-  stagedFiles,
-  unstagedFiles,
   onExit,
 }) => {
+  // Lazy-load file status from store on mount (TUI-014)
+  const stagedFiles = useFspecStore(state => state.stagedFiles);
+  const unstagedFiles = useFspecStore(state => state.unstagedFiles);
+  const loadFileStatus = useFspecStore(state => state.loadFileStatus);
+
+  // Load file status on mount (lazy loading)
+  useEffect(() => {
+    void loadFileStatus();
+  }, [loadFileStatus]);
   const [focusedPane, setFocusedPane] = useState<'files' | 'diff'>('files');
   const [selectedFileIndex, setSelectedFileIndex] = useState(0);
 
@@ -97,43 +106,5 @@ const ChangedFilesViewerComponent: React.FC<ChangedFilesViewerProps> = ({
   );
 };
 
-// Export the memoized component
-export const ChangedFilesViewer = React.memo(ChangedFilesViewerComponent, (prevProps, nextProps) => {
-  // Custom comparison function for React.memo
-  // Return true if props are equal (skip re-render), false if different (re-render)
-
-  logger.info(`[ChangedFilesViewer] React.memo comparison function CALLED`)
-
-  // Compare array lengths first (fast check)
-  if (prevProps.stagedFiles.length !== nextProps.stagedFiles.length) {
-    logger.info(`[ChangedFilesViewer] React.memo: stagedFiles length changed (${prevProps.stagedFiles.length} → ${nextProps.stagedFiles.length})`);
-    return false;
-  }
-  if (prevProps.unstagedFiles.length !== nextProps.unstagedFiles.length) {
-    logger.info(`[ChangedFilesViewer] React.memo: unstagedFiles length changed (${prevProps.unstagedFiles.length} → ${nextProps.unstagedFiles.length})`);
-    return false;
-  }
-
-  // Deep compare array contents
-  const stagedEqual = prevProps.stagedFiles.every((file, index) => file === nextProps.stagedFiles[index]);
-  const unstagedEqual = prevProps.unstagedFiles.every((file, index) => file === nextProps.unstagedFiles[index]);
-
-  if (!stagedEqual) {
-    logger.info(`[ChangedFilesViewer] React.memo: stagedFiles content changed`);
-    return false;
-  }
-  if (!unstagedEqual) {
-    logger.info(`[ChangedFilesViewer] React.memo: unstagedFiles content changed`);
-    return false;
-  }
-
-  // onExit is a function, compare by reference (parent should memoize it)
-  if (prevProps.onExit !== nextProps.onExit) {
-    logger.info(`[ChangedFilesViewer] React.memo: onExit function changed (parent re-created it)`);
-    return false;
-  }
-
-  // All props are equal, skip re-render
-  logger.info(`[ChangedFilesViewer] React.memo: Props unchanged, SKIPPING RE-RENDER`);
-  return true;
-});
+// Export the component (Zustand handles re-render optimization, no custom comparison needed)
+export const ChangedFilesViewer = React.memo(ChangedFilesViewerComponent);

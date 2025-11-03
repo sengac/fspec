@@ -82,35 +82,15 @@ describe('Feature: Consolidate Git info and add work unit details panel', () => 
       await new Promise(resolve => setTimeout(resolve, 200));
 
       // @step Then it should display "Checkpoints: X Manual, Y Auto" as the first section
-      // @step And it should display "Changed Files: 3 staged, 1 unstaged" below checkpoints
-      // @step And both sections should be in the same panel box
+      // TUI-014: Changed files display removed from main board header
       const frame = frames[frames.length - 1];
       // ITF-007: Updated to expect "Checkpoints:" format instead of "Git Stashes"
       expect(frame).toMatch(/Checkpoints:/);
-      expect(frame).toContain('Changed Files: 3 staged, 1 unstaged');
 
-      // Verify both sections are in same panel (no separator between them)
-      const lines = frame.split('\n');
-      let foundCheckpoints = false;
-      let foundChangedFiles = false;
-      let foundSeparatorBetween = false;
-
-      for (let i = 0; i < lines.length; i++) {
-        // ITF-007: Updated to check for "Checkpoints:" instead of "Git Stashes"
-        if (lines[i].includes('Checkpoints:')) {
-          foundCheckpoints = true;
-        }
-        if (foundCheckpoints && !foundChangedFiles && lines[i].includes('├')) {
-          foundSeparatorBetween = true;
-        }
-        if (lines[i].includes('Changed Files')) {
-          foundChangedFiles = true;
-        }
-      }
-
-      expect(foundCheckpoints).toBe(true);
-      expect(foundChangedFiles).toBe(true);
-      expect(foundSeparatorBetween).toBe(false); // No separator = same panel
+      // TUI-014: Verify changed files section is NOT displayed
+      expect(frame).not.toContain('Changed Files:');
+      expect(frame).not.toContain('staged');
+      expect(frame).not.toContain('unstaged');
     });
   });
 
