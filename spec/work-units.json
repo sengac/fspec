@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-02T11:54:19.483Z"
+    "lastUpdated": "2025-11-03T00:35:51.652Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -36634,6 +36634,97 @@
       "nextQuestionId": 0,
       "nextNoteId": 0,
       "updated": "2025-11-02T11:54:19.498Z"
+    },
+    "BUG-057": {
+      "id": "BUG-057",
+      "title": "Fix incorrect command name in discover-foundation system reminder for problemSpace.primaryProblem.title",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-11-03T00:26:16.571Z",
+      "updatedAt": "2025-11-03T00:35:51.673Z",
+      "description": "The discover-foundation command emits incorrect system reminder on line 132. For field 'problemSpace.primaryProblem.title', it says 'Run: fspec update-foundation problemDefinition' but should say 'Run: fspec update-foundation problemTitle'. The problemDefinition command updates the description field, not the title field. See: src/commands/discover-foundation.ts:132 and src/commands/update-foundation.ts:151-164",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-03T00:27:17.432Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-03T00:29:44.698Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-03T00:31:48.686Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-03T00:32:20.289Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-03T00:35:51.674Z"
+        }
+      ],
+      "userStory": {
+        "role": "AI agent using fspec discover-foundation",
+        "action": "receive correct command name in system reminder for problemSpace.primaryProblem.title field",
+        "benefit": "I can successfully update the correct field without confusion"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "System reminder for problemSpace.primaryProblem.title must instruct to use 'problemTitle' command, not 'problemDefinition'",
+          "deleted": false,
+          "createdAt": "2025-11-03T00:27:42.202Z"
+        },
+        {
+          "id": 1,
+          "text": "Command name 'problemTitle' updates problemSpace.primaryProblem.title field",
+          "deleted": false,
+          "createdAt": "2025-11-03T00:27:43.968Z"
+        },
+        {
+          "id": 2,
+          "text": "Command name 'problemDefinition' updates problemSpace.primaryProblem.description field",
+          "deleted": false,
+          "createdAt": "2025-11-03T00:27:45.473Z"
+        }
+      ],
+      "nextRuleId": 3,
+      "examples": [
+        {
+          "id": 0,
+          "text": "AI agent receives system reminder for 'problemSpace.primaryProblem.title' field with instruction: 'Run: fspec update-foundation problemTitle \"Problem Title\"'",
+          "deleted": false,
+          "createdAt": "2025-11-03T00:27:46.990Z"
+        },
+        {
+          "id": 1,
+          "text": "AI agent runs 'fspec update-foundation problemTitle \"User Authentication Issues\"' and foundation.json.draft shows problemSpace.primaryProblem.title updated correctly",
+          "deleted": false,
+          "createdAt": "2025-11-03T00:27:48.441Z"
+        },
+        {
+          "id": 2,
+          "text": "Before fix: System reminder says 'fspec update-foundation problemDefinition' for title field (incorrect)",
+          "deleted": false,
+          "createdAt": "2025-11-03T00:27:49.845Z"
+        },
+        {
+          "id": 3,
+          "text": "After fix: System reminder says 'fspec update-foundation problemTitle' for title field (correct)",
+          "deleted": false,
+          "createdAt": "2025-11-03T00:27:51.332Z"
+        }
+      ],
+      "nextExampleId": 4,
+      "estimate": 2,
+      "questions": [],
+      "architectureNotes": [],
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-03T00:35:51.673Z"
     }
   },
   "states": {
@@ -36682,6 +36773,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "BUG-057",
       "HELP-005",
       "BUG-056",
       "CLEAN-003",
@@ -36973,6 +37065,7 @@
   "version": "0.7.0",
   "prefixCounters": {
     "CLI": 14,
-    "HELP": 5
+    "HELP": 5,
+    "BUG": 57
   }
 }
