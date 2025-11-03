@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-03T00:56:48.962Z"
+    "lastUpdated": "2025-11-03T01:10:50.559Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -36823,6 +36823,104 @@
       "questions": [],
       "nextQuestionId": 0,
       "updated": "2025-11-03T00:56:48.982Z"
+    },
+    "COV-053": {
+      "id": "COV-053",
+      "title": "Step validation system-reminder doesn't explain proper comment placement and deduplication",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-11-03T01:00:51.400Z",
+      "updatedAt": "2025-11-03T01:10:50.578Z",
+      "description": "The system-reminder for step validation failures only says 'Add to test file: // @step ...' without explaining that AI should remove duplicate Given/When/Then comments and place step comments near the code that executes each step.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-03T01:00:59.024Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-03T01:03:51.191Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-03T01:05:39.525Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-03T01:07:18.584Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-03T01:10:50.579Z"
+        }
+      ],
+      "userStory": {
+        "role": "AI agent using fspec for test coverage linking",
+        "action": "receive clear guidance about step comment placement",
+        "benefit": "I correctly place step comments near relevant code and avoid duplicating existing comments"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Step validation system-reminder MUST explain that step comments should be placed near the code that executes each step, not just anywhere in the test",
+          "deleted": false,
+          "createdAt": "2025-11-03T01:01:13.815Z"
+        },
+        {
+          "id": 1,
+          "text": "Step validation system-reminder MUST explain that AI should remove duplicate Given/When/Then comments before adding @step comments to avoid redundancy",
+          "deleted": false,
+          "createdAt": "2025-11-03T01:01:15.254Z"
+        },
+        {
+          "id": 2,
+          "text": "Step validation system-reminder should provide an example showing proper step comment placement with context about which line of code executes that step",
+          "deleted": false,
+          "createdAt": "2025-11-03T01:01:16.595Z"
+        }
+      ],
+      "nextRuleId": 3,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Current behavior: System-reminder says 'Add to test file: // @step When the scanDraftForNextField function processes the draft'. AI adds comment without understanding where to place it or that existing Given/When/Then comments might be duplicates.",
+          "deleted": false,
+          "createdAt": "2025-11-03T01:01:28.714Z"
+        },
+        {
+          "id": 1,
+          "text": "Expected behavior: System-reminder explains 'Place step comments NEAR the code that executes each step. If you have duplicate Given/When/Then comments, remove them first. Example: Place \"// @step When the scanDraftForNextField function processes the draft\" right before the line that calls scanDraftForNextField() or discoverFoundation() which internally calls it.'",
+          "deleted": false,
+          "createdAt": "2025-11-03T01:01:30.162Z"
+        },
+        {
+          "id": 2,
+          "text": "AI receives step validation error, reads test file, sees existing '// Given I have a foundation.json.draft' comments, doesn't realize these might conflict with '@step Given' comments, adds @step comments without removing duplicates, creates confusing redundant comments",
+          "deleted": false,
+          "createdAt": "2025-11-03T01:01:31.709Z"
+        }
+      ],
+      "nextExampleId": 3,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "The step validation system-reminder is generated in the link-coverage command when validating step comments in test files. The error message format is currently just 'Add to test file: // @step [step text]' without additional context.",
+          "deleted": false,
+          "createdAt": "2025-11-03T01:01:41.981Z"
+        },
+        {
+          "id": 1,
+          "text": "The fix should enhance the system-reminder message to include: 1) Instruction to place comments near executing code, 2) Instruction to check for and remove duplicate comments, 3) Example showing proper placement with context about which line executes the step.",
+          "deleted": false,
+          "createdAt": "2025-11-03T01:01:43.594Z"
+        }
+      ],
+      "nextNoteId": 2,
+      "estimate": 2,
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2025-11-03T01:10:50.578Z"
     }
   },
   "states": {
@@ -36871,6 +36969,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "COV-053",
       "DISC-002",
       "BUG-057",
       "HELP-005",
@@ -37166,6 +37265,7 @@
     "CLI": 14,
     "HELP": 5,
     "BUG": 57,
-    "DISC": 2
+    "DISC": 2,
+    "COV": 53
   }
 }

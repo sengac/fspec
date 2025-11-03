@@ -233,9 +233,24 @@ export function formatValidationError(
 
   lines.push('');
   lines.push('To fix:');
-  lines.push('  1. Add the missing step comments to your test file');
-  lines.push('  2. Use the exact text shown above with // @step prefix');
-  lines.push('  3. Place comments inside the test function body');
+  lines.push('  1. Place step comments NEAR the code that executes each step');
+  lines.push('     - Find the line that executes the step');
+  lines.push('     - Put the @step comment right before that line');
+  lines.push(
+    '  2. If you have duplicate Given/When/Then comments, remove them first'
+  );
+  lines.push('     - @step comments replace existing step comments');
+  lines.push('     - Avoid creating redundant comments');
+  lines.push('  3. Use the exact text shown above with // @step prefix');
+  lines.push('');
+  lines.push('Example:');
+  lines.push('  If your step is "When I run the finalize command"');
+  lines.push(
+    '  And your test has: const result = await discoverFoundation({...})'
+  );
+  lines.push('  Then place the comment right before:');
+  lines.push('    // @step When I run the finalize command');
+  lines.push('    const result = await discoverFoundation({...})');
   lines.push('');
 
   // Only show skip option for task work units
