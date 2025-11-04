@@ -22,6 +22,7 @@ export default defineConfig({
         'fs/promises',
         'url',
         'module',
+        'net',
         '@cucumber/gherkin',
         '@cucumber/messages',
         'tinyglobby',
