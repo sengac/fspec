@@ -378,7 +378,7 @@ describe('Feature: Intelligent checkpoint system for workflow transitions', () =
         description: expect.any(String),
       });
       expect(result.options?.[2]).toMatchObject({
-        name: 'Force restore with merge',
+        name: 'Overwrite files (discard changes)',
         riskLevel: 'High',
         description: expect.any(String),
       });
