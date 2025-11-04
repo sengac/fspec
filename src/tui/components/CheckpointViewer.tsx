@@ -300,19 +300,19 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
       return;
     }
 
-    // D key for single deletion
-    if (input === 'd' || input === 'D') {
+    // Shift+D for delete ALL (check this BEFORE plain D)
+    if (input === 'D') {
       if (sortedCheckpoints.length > 0) {
-        setDeleteMode('single');
+        setDeleteMode('all');
         setShowDeleteDialog(true);
       }
       return;
     }
 
-    // Shift+D for delete ALL
-    if (key.shift && (input === 'D' || input === 'd')) {
+    // d key for single deletion (lowercase only)
+    if (input === 'd') {
       if (sortedCheckpoints.length > 0) {
-        setDeleteMode('all');
+        setDeleteMode('single');
         setShowDeleteDialog(true);
       }
       return;

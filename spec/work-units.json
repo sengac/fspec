@@ -35051,9 +35051,9 @@
       "id": "GIT-010",
       "title": "Delete checkpoint or all checkpoints from checkpoint viewer with confirmation",
       "type": "story",
-      "status": "implementing",
+      "status": "validating",
       "createdAt": "2025-11-01T17:40:52.075Z",
-      "updatedAt": "2025-11-04T07:43:36.890Z",
+      "updatedAt": "2025-11-04T07:53:25.940Z",
       "description": "Add ability to delete a single checkpoint or all checkpoints from the TUI checkpoint viewer interface with confirmation dialogs to prevent accidental deletion",
       "children": [],
       "stateHistory": [
@@ -35072,6 +35072,10 @@
         {
           "state": "implementing",
           "timestamp": "2025-11-04T07:43:36.890Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-04T07:53:25.940Z"
         }
       ],
       "userStory": {
@@ -39879,10 +39883,10 @@
       "GIT-009"
     ],
     "testing": [],
-    "implementing": [
+    "implementing": [],
+    "validating": [
       "GIT-010"
     ],
-    "validating": [],
     "done": [
       "TUI-011",
       "TUI-018",
