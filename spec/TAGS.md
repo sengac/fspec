@@ -137,6 +137,7 @@ Tags that categorize features by functional area.
 | `@soft-dependency` | Soft dependency relationships |
 | `@state-enforcement` | State transition enforcement |
 | `@state-history` | State history tracking |
+| `@state-management` | Work unit state management and transitions |
 | `@state-transition` | State transition operations |
 | `@statistics` | Statistical analysis |
 | `@strategy-detection` | Strategy detection and selection for reverse ACDD workflows |
@@ -588,7 +589,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-11-03T23:55:46.628Z_
+_Last updated: 2025-11-04T00:20:27.230Z_
 
 **Update Command**: `fspec tag-stats`
 

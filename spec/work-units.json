@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-03T23:56:24.377Z"
+    "lastUpdated": "2025-11-04T00:28:24.047Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -38922,14 +38922,88 @@
       "id": "BUG-064",
       "title": "Duplicate work unit IDs in state arrays when moving backward or to same state",
       "type": "bug",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2025-11-03T23:36:55.910Z",
-      "updatedAt": "2025-11-03T23:38:08.231Z",
+      "updatedAt": "2025-11-04T00:28:24.069Z",
       "description": "The update-work-unit-status command creates duplicate entries in the states arrays when moving a work unit backward (e.g., testing → specifying) or when moving to the same state it's already in. The removal logic fails to properly remove the work unit ID from the previous state array before adding it to the new state array.",
       "children": [],
       "attachments": [
         "spec/attachments/BUG-064/bug-064-details.md"
-      ]
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-04T00:17:48.711Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-04T00:21:43.317Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-04T00:23:23.564Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-04T00:25:05.324Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-04T00:28:24.069Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using fspec",
+        "action": "move work units backward or to the same state",
+        "benefit": "state arrays remain consistent without duplicates"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Each work unit ID must appear in exactly one state array at a time",
+          "deleted": false,
+          "createdAt": "2025-11-04T00:18:06.219Z"
+        },
+        {
+          "id": 1,
+          "text": "Work unit ID must be removed from previous state array before adding to new state array",
+          "deleted": false,
+          "createdAt": "2025-11-04T00:18:11.176Z"
+        },
+        {
+          "id": 2,
+          "text": "Moving to the same state should be idempotent (no duplicate entries)",
+          "deleted": false,
+          "createdAt": "2025-11-04T00:18:15.632Z"
+        }
+      ],
+      "nextRuleId": 3,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Moving work unit from testing to specifying to testing should result in only one entry in testing array",
+          "deleted": false,
+          "createdAt": "2025-11-04T00:18:20.890Z"
+        },
+        {
+          "id": 1,
+          "text": "Moving work unit to the same state it's already in should not create a duplicate entry",
+          "deleted": false,
+          "createdAt": "2025-11-04T00:18:28.903Z"
+        },
+        {
+          "id": 2,
+          "text": "After any state transition, querying the states should return the work unit in only one state",
+          "deleted": false,
+          "createdAt": "2025-11-04T00:18:33.669Z"
+        }
+      ],
+      "nextExampleId": 3,
+      "questions": [],
+      "architectureNotes": [],
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-04T00:28:24.069Z"
     }
   },
   "states": {
@@ -38957,8 +39031,7 @@
       "RES-004",
       "RES-005",
       "FEAT-018",
-      "CLEAN-002",
-      "BUG-064"
+      "CLEAN-002"
     ],
     "specifying": [
       "RES-006",
@@ -38977,6 +39050,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "BUG-064",
       "TUI-016",
       "BUG-063",
       "TUI-015",

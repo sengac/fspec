@@ -88,12 +88,15 @@ export function insertWorkUnitSorted(
     workUnits: Record<string, any>
   ) => number
 ): WorkUnitsData {
-  // Remove from old states array
-  const oldStatesArray = workUnitsData.states[oldStatusKey] || [];
-  const newOldStatesArray = oldStatesArray.filter(id => id !== workUnitId);
+  // BUG-064 FIX: Remove work unit ID from ALL state arrays first
+  // This prevents duplicates when moving backward or to the same state
+  const cleanedStates: Record<string, string[]> = {};
+  for (const [stateKey, stateArray] of Object.entries(workUnitsData.states)) {
+    cleanedStates[stateKey] = stateArray.filter(id => id !== workUnitId);
+  }
 
-  // Get target states array
-  const targetStatesArray = workUnitsData.states[newStatusKey] || [];
+  // Get target states array (after cleaning)
+  const targetStatesArray = cleanedStates[newStatusKey] || [];
 
   let newTargetStatesArray: string[];
 
@@ -127,12 +130,11 @@ export function insertWorkUnitSorted(
     ];
   }
 
-  // Return updated data
+  // Return updated data with cleaned states
   return {
     ...workUnitsData,
     states: {
-      ...workUnitsData.states,
-      [oldStatusKey]: newOldStatesArray,
+      ...cleanedStates,
       [newStatusKey]: newTargetStatesArray,
     },
   };
