@@ -32,12 +32,10 @@ export const Dialog: React.FC<DialogProps> = ({
 }) => {
   // Handle ESC key to close dialog (only when active)
   useInput((input, key) => {
-    if (!isActive) return;
-
     if (key.escape) {
       onClose();
     }
-  });
+  }, { isActive });
 
   return (
     <Box

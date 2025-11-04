@@ -290,10 +290,6 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
 
   // Handle keyboard input
   useInput((input, key) => {
-    // Don't handle keys if dialog is showing
-    if (showDeleteDialog) {
-      return;
-    }
 
     if (key.escape) {
       onExit();
@@ -339,7 +335,7 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
     }
 
     // Up/down arrow key navigation handled by VirtualList when focused
-  });
+  }, { isActive: !showDeleteDialog });
 
   // Loading state
   if (isLoadingCheckpoints) {
@@ -546,7 +542,7 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
                 items={sortedCheckpoints}
                 renderItem={renderCheckpointItem}
                 showScrollbar={focusedPane === 'checkpoints'}
-                isFocused={focusedPane === 'checkpoints'}
+                isFocused={focusedPane === 'checkpoints' && !showDeleteDialog}
                 onFocus={(checkpoint, index) => {
                   setSelectedCheckpointIndex(index);
                   setSelectedFileIndex(0); // Reset file selection when checkpoint changes
@@ -589,7 +585,7 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
                   );
                 }}
                 showScrollbar={focusedPane === 'files'}
-                isFocused={focusedPane === 'files'}
+                isFocused={focusedPane === 'files' && !showDeleteDialog}
                 onFocus={(file, index) => {
                   setSelectedFileIndex(index);
                 }}
@@ -624,7 +620,7 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
                 items={diffLines}
                 renderItem={renderDiffLine}
                 showScrollbar={focusedPane === 'diff'}
-                isFocused={focusedPane === 'diff'}
+                isFocused={focusedPane === 'diff' && !showDeleteDialog}
               />
             </Box>
           </Box>
