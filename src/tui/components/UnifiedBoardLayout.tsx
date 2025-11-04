@@ -15,6 +15,7 @@ import { KeybindingShortcuts } from './KeybindingShortcuts';
 import { WorkUnitTitle } from './WorkUnitTitle';
 import { WorkUnitDescription } from './WorkUnitDescription';
 import { WorkUnitMetadata } from './WorkUnitMetadata';
+import { useFspecStore } from '../store/fspecStore';
 import fs from 'fs';
 import path from 'path';
 
@@ -139,42 +140,6 @@ const buildBorderRow = (
   return left + STATES.map((_, idx) => '─'.repeat(getColumnWidth(idx, baseWidth, remainder))).join(separatorChar) + right;
 };
 
-// Helper: Count checkpoints
-const countCheckpoints = (cwd?: string): { manual: number; auto: number } => {
-  const workingDir = cwd || process.cwd();
-  const indexDir = path.join(workingDir, '.git', 'fspec-checkpoints-index');
-
-  let manual = 0;
-  let auto = 0;
-
-  try {
-    if (!fs.existsSync(indexDir)) {
-      return { manual: 0, auto: 0 };
-    }
-
-    const files = fs.readdirSync(indexDir).filter(f => f.endsWith('.json'));
-
-    for (const file of files) {
-      const filePath = path.join(indexDir, file);
-      const content = fs.readFileSync(filePath, 'utf-8');
-      const data = JSON.parse(content) as { checkpoints: Array<{ name: string; message: string }> };
-
-      for (const checkpoint of data.checkpoints || []) {
-        // Auto checkpoints are named {workUnitId}-auto-{state}
-        if (checkpoint.name.includes('-auto-')) {
-          auto++;
-        } else {
-          manual++;
-        }
-      }
-    }
-  } catch (error) {
-    // Silently fail - return zeros if cannot read checkpoints
-  }
-
-  return { manual, auto };
-};
-
 const calculateViewportHeight = (terminalHeight: number): number => {
   // Fixed rows breakdown:
   // 1 (top border) + 4 (header) + 1 (header separator) +
@@ -206,8 +171,14 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
   const terminalWidth = propTerminalWidth ?? (stdout?.columns || 80);
   const terminalHeight = propTerminalHeight ?? ((stdout?.rows || 24) - 1);
 
-  // Count checkpoints for display
-  const checkpointCounts = useMemo(() => countCheckpoints(cwd), [cwd]);
+  // Read checkpoint counts from Zustand store (updated via IPC)
+  const checkpointCounts = useFspecStore(state => state.checkpointCounts);
+  const loadCheckpointCounts = useFspecStore(state => state.loadCheckpointCounts);
+
+  // Load checkpoint counts on mount
+  useEffect(() => {
+    void loadCheckpointCounts();
+  }, [loadCheckpointCounts]);
 
   const { baseWidth: colWidth, remainder: colRemainder } = useMemo(
     () => calculateColumnWidths(terminalWidth),

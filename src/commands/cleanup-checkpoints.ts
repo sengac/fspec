@@ -59,7 +59,7 @@ export async function cleanupCheckpoints(
     );
 
     // Notify TUI of checkpoint change via IPC
-    sendIPCMessage({ type: 'checkpoint-changed' });
+    await sendIPCMessage({ type: 'checkpoint-changed' });
 
     return {
       deletedCount: result.deletedCount,

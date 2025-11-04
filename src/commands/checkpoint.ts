@@ -38,7 +38,7 @@ export async function checkpoint(options: CheckpointOptions): Promise<{
     );
 
     // Notify TUI of checkpoint change via IPC
-    sendIPCMessage({ type: 'checkpoint-changed' });
+    await sendIPCMessage({ type: 'checkpoint-changed' });
 
     return {
       success: result.success,
