@@ -192,6 +192,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@cucumber-style` | Cucumber-style step definition and matching patterns |
 | `@data-integrity` | Data integrity validation and consistency checks |
 | `@data-model` | Features related to data models, schemas, and data structure transformations |
+| `@destructive-action` | Features requiring confirmation dialogs for destructive operations (delete, overwrite, etc.) |
 | `@development-tools` | Development tooling and utilities |
 | `@discovery` | BDD discovery technique used before writing Gherkin scenarios |
 | `@email` | Email-related functionality |
@@ -592,7 +593,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-11-04T06:17:45.468Z_
+_Last updated: 2025-11-04T07:39:45.704Z_
 
 **Update Command**: `fspec tag-stats`
 

@@ -17,7 +17,9 @@ import { useFspecStore } from '../store/fspecStore';
 import * as git from 'isomorphic-git';
 import fs from 'fs';
 import type { Checkpoint as GitCheckpoint } from '../../utils/git-checkpoint';
-import { getCheckpointChangedFiles } from '../../utils/git-checkpoint';
+import { getCheckpointChangedFiles, deleteCheckpoint, deleteAllCheckpoints } from '../../utils/git-checkpoint';
+import { ConfirmationDialog } from '../../components/ConfirmationDialog';
+import { sendIPCMessage } from '../../utils/ipc';
 
 export interface Checkpoint {
   name: string;
@@ -43,6 +45,8 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
   const [isLoadingDiff, setIsLoadingDiff] = useState(false);
   const [checkpoints, setCheckpoints] = useState<Checkpoint[]>([]);
   const [isLoadingCheckpoints, setIsLoadingCheckpoints] = useState(true);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleteMode, setDeleteMode] = useState<'single' | 'all'>('single');
 
   const cwd = useFspecStore(state => state.cwd);
 
@@ -235,10 +239,82 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
     return parseDiff(diffContent);
   }, [diffContent, isLoadingDiff]);
 
+  // Handle delete confirmation
+  const handleDeleteConfirm = async () => {
+    if (deleteMode === 'single') {
+      const checkpoint = sortedCheckpoints[selectedCheckpointIndex];
+      if (checkpoint) {
+        await deleteCheckpoint({
+          workUnitId: checkpoint.workUnitId,
+          checkpointName: checkpoint.name,
+          cwd,
+        });
+
+        // Send IPC notification
+        await sendIPCMessage({ type: 'checkpoint-changed' });
+
+        // Reload checkpoints
+        const updatedCheckpoints = checkpoints.filter(cp => cp.name !== checkpoint.name);
+        setCheckpoints(updatedCheckpoints);
+
+        // Select next checkpoint or exit if none remain
+        if (updatedCheckpoints.length === 0) {
+          onExit();
+        } else {
+          setSelectedCheckpointIndex(Math.min(selectedCheckpointIndex, updatedCheckpoints.length - 1));
+        }
+      }
+    } else {
+      // Delete all checkpoints for the selected work unit
+      const checkpoint = sortedCheckpoints[selectedCheckpointIndex];
+      if (checkpoint) {
+        await deleteAllCheckpoints({
+          workUnitId: checkpoint.workUnitId,
+          cwd,
+        });
+
+        // Send IPC notification
+        await sendIPCMessage({ type: 'checkpoint-changed' });
+
+        // Exit to board after deleting all
+        onExit();
+      }
+    }
+
+    setShowDeleteDialog(false);
+  };
+
+  const handleDeleteCancel = () => {
+    setShowDeleteDialog(false);
+  };
+
   // Handle keyboard input
   useInput((input, key) => {
+    // Don't handle keys if dialog is showing
+    if (showDeleteDialog) {
+      return;
+    }
+
     if (key.escape) {
       onExit();
+      return;
+    }
+
+    // D key for single deletion
+    if (input === 'd' || input === 'D') {
+      if (sortedCheckpoints.length > 0) {
+        setDeleteMode('single');
+        setShowDeleteDialog(true);
+      }
+      return;
+    }
+
+    // Shift+D for delete ALL
+    if (key.shift && (input === 'D' || input === 'd')) {
+      if (sortedCheckpoints.length > 0) {
+        setDeleteMode('all');
+        setShowDeleteDialog(true);
+      }
       return;
     }
 
@@ -558,9 +634,31 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
       {/* Footer */}
       <Box>
         <Text dimColor>
-          ESC: Back | Tab: Switch Panes | ↑↓: Navigate | PgUp/PgDn: Scroll
+          ESC: Back | Tab: Switch Panes | ↑↓: Navigate | PgUp/PgDn: Scroll | D: Delete | Shift+D: Delete ALL
         </Text>
       </Box>
+
+      {/* Confirmation Dialog */}
+      {showDeleteDialog && sortedCheckpoints.length > 0 && (
+        <ConfirmationDialog
+          message={
+            deleteMode === 'single'
+              ? `Delete checkpoint '${sortedCheckpoints[selectedCheckpointIndex]?.name}'?`
+              : `Delete ALL ${sortedCheckpoints.filter(cp => cp.workUnitId === sortedCheckpoints[selectedCheckpointIndex]?.workUnitId).length} checkpoints for ${sortedCheckpoints[selectedCheckpointIndex]?.workUnitId}?`
+          }
+          description={
+            deleteMode === 'all'
+              ? 'This will permanently delete all checkpoints. This cannot be undone.'
+              : undefined
+          }
+          confirmMode={deleteMode === 'single' ? 'yesno' : 'typed'}
+          typedPhrase={deleteMode === 'all' ? 'DELETE ALL' : undefined}
+          riskLevel={deleteMode === 'single' ? 'medium' : 'high'}
+          onConfirm={handleDeleteConfirm}
+          onCancel={handleDeleteCancel}
+          isActive={true}
+        />
+      )}
     </Box>
   );
 };

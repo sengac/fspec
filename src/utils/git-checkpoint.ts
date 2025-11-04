@@ -624,6 +624,107 @@ export function createAutomaticCheckpointName(
 }
 
 /**
+ * Delete a single checkpoint
+ */
+export async function deleteCheckpoint(options: {
+  workUnitId: string;
+  checkpointName: string;
+  cwd: string;
+}): Promise<{
+  success: boolean;
+  deletedCheckpoint: string;
+}> {
+  const { workUnitId, checkpointName, cwd } = options;
+
+  // Delete git ref file
+  const refPath = join(
+    cwd,
+    '.git',
+    'refs',
+    'fspec-checkpoints',
+    workUnitId,
+    checkpointName
+  );
+
+  try {
+    await fs.promises.unlink(refPath);
+  } catch (error) {
+    return {
+      success: false,
+      deletedCheckpoint: checkpointName,
+    };
+  }
+
+  // Update index file to remove deleted checkpoint
+  const indexPath = getCheckpointIndexPath(cwd, workUnitId);
+
+  try {
+    const indexContent = await fs.promises.readFile(indexPath, 'utf-8');
+    const index = JSON.parse(indexContent);
+
+    // Filter out deleted checkpoint from index
+    index.checkpoints = index.checkpoints.filter(
+      (cp: { name: string }) => cp.name !== checkpointName
+    );
+
+    // Write updated index
+    await fs.promises.writeFile(indexPath, JSON.stringify(index, null, 2));
+  } catch (error) {
+    // Index file doesn't exist or is corrupted - skip
+  }
+
+  return {
+    success: true,
+    deletedCheckpoint: checkpointName,
+  };
+}
+
+/**
+ * Delete all checkpoints for a work unit
+ */
+export async function deleteAllCheckpoints(options: {
+  workUnitId: string;
+  cwd: string;
+}): Promise<{
+  success: boolean;
+  deletedCount: number;
+  deletedCheckpoints: string[];
+}> {
+  const { workUnitId, cwd } = options;
+
+  // Get all checkpoints for this work unit
+  const checkpoints = await listCheckpoints(workUnitId, cwd);
+  const deletedCheckpoints: string[] = [];
+
+  // Delete each checkpoint
+  for (const checkpoint of checkpoints) {
+    const result = await deleteCheckpoint({
+      workUnitId,
+      checkpointName: checkpoint.name,
+      cwd,
+    });
+
+    if (result.success) {
+      deletedCheckpoints.push(checkpoint.name);
+    }
+  }
+
+  // Delete the entire index file
+  const indexPath = getCheckpointIndexPath(cwd, workUnitId);
+  try {
+    await fs.promises.unlink(indexPath);
+  } catch (error) {
+    // Index file doesn't exist - skip
+  }
+
+  return {
+    success: true,
+    deletedCount: deletedCheckpoints.length,
+    deletedCheckpoints,
+  };
+}
+
+/**
  * Get list of changed files in a checkpoint by comparing with its parent
  * @param cwd - Working directory
  * @param checkpointOid - OID of the checkpoint/stash commit

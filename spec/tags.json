@@ -670,6 +670,10 @@
           "description": "Features related to data models, schemas, and data structure transformations"
         },
         {
+          "name": "@destructive-action",
+          "description": "Features requiring confirmation dialogs for destructive operations (delete, overwrite, etc.)"
+        },
+        {
           "name": "@development-tools",
           "description": "Development tooling and utilities"
         },
@@ -1402,7 +1406,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-11-04T06:17:45.468Z",
+    "lastUpdated": "2025-11-04T07:39:45.704Z",
     "phaseStats": [
       {
         "phase": "Phase 1",
