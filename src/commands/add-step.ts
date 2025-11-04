@@ -140,57 +140,88 @@ export async function addStep(
     }
   }
 
-  // Find insertion point (after last step, but before data tables/doc strings)
-  let insertIndex = scenarioLineIndex + 1;
+  // Check for placeholder steps that match the step type
+  const placeholderMap: Record<string, string> = {
+    given: '[precondition]',
+    when: '[action]',
+    then: '[expected outcome]',
+  };
 
-  // Find the last step of this scenario
-  if (
-    targetScenario.scenario.steps &&
-    targetScenario.scenario.steps.length > 0
-  ) {
-    const lastStep =
-      targetScenario.scenario.steps[targetScenario.scenario.steps.length - 1];
-    const lastStepLineIndex = lastStep.location.line - 1; // 0-indexed
+  const placeholderText = placeholderMap[normalizedStepType];
+  let placeholderStepIndex = -1;
 
-    // Start searching from the line after the last step keyword
-    insertIndex = lastStep.location.line;
-
-    // If the last step has a data table or doc string, we need to insert BEFORE it
-    // So we insert right after the step keyword line itself
-    // Check if next line is a data table (starts with |) or doc string (""")
-    if (lastStepLineIndex + 1 < lines.length) {
-      const nextLine = lines[lastStepLineIndex + 1].trim();
-      if (nextLine.startsWith('|') || nextLine.startsWith('"""')) {
-        // Insert before the data table/doc string
-        insertIndex = lastStepLineIndex + 1;
-      }
-    }
-  } else {
-    // No existing steps, insert after scenario line
-    // Look for the line after scenario declaration
-    for (let i = scenarioLineIndex + 1; i < lines.length; i++) {
-      const trimmed = lines[i].trim();
-      if (
-        trimmed.startsWith('Scenario:') ||
-        trimmed.startsWith('Scenario Outline:') ||
-        trimmed === ''
-      ) {
-        insertIndex = i;
+  // Search for placeholder step in this scenario's steps
+  if (placeholderText && targetScenario.scenario.steps) {
+    for (let i = 0; i < targetScenario.scenario.steps.length; i++) {
+      const step = targetScenario.scenario.steps[i];
+      if (step.text === placeholderText) {
+        placeholderStepIndex = step.location.line - 1; // 0-indexed
         break;
       }
-      insertIndex = i + 1;
     }
   }
 
-  // Create new step
-  const newStep = `${stepIndentation}${stepKeyword} ${stepText}`;
+  let newContent: string;
 
-  // Insert step
-  const newContent = [
-    ...lines.slice(0, insertIndex),
-    newStep,
-    ...lines.slice(insertIndex),
-  ].join('\n');
+  // If placeholder found, replace it
+  if (placeholderStepIndex >= 0) {
+    const newStep = `${stepIndentation}${stepKeyword} ${stepText}`;
+    lines[placeholderStepIndex] = newStep;
+    newContent = lines.join('\n');
+  } else {
+    // No placeholder found, append as usual
+    // Find insertion point (after last step, but before data tables/doc strings)
+    let insertIndex = scenarioLineIndex + 1;
+
+    // Find the last step of this scenario
+    if (
+      targetScenario.scenario.steps &&
+      targetScenario.scenario.steps.length > 0
+    ) {
+      const lastStep =
+        targetScenario.scenario.steps[targetScenario.scenario.steps.length - 1];
+      const lastStepLineIndex = lastStep.location.line - 1; // 0-indexed
+
+      // Start searching from the line after the last step keyword
+      insertIndex = lastStep.location.line;
+
+      // If the last step has a data table or doc string, we need to insert BEFORE it
+      // So we insert right after the step keyword line itself
+      // Check if next line is a data table (starts with |) or doc string (""")
+      if (lastStepLineIndex + 1 < lines.length) {
+        const nextLine = lines[lastStepLineIndex + 1].trim();
+        if (nextLine.startsWith('|') || nextLine.startsWith('"""')) {
+          // Insert before the data table/doc string
+          insertIndex = lastStepLineIndex + 1;
+        }
+      }
+    } else {
+      // No existing steps, insert after scenario line
+      // Look for the line after scenario declaration
+      for (let i = scenarioLineIndex + 1; i < lines.length; i++) {
+        const trimmed = lines[i].trim();
+        if (
+          trimmed.startsWith('Scenario:') ||
+          trimmed.startsWith('Scenario Outline:') ||
+          trimmed === ''
+        ) {
+          insertIndex = i;
+          break;
+        }
+        insertIndex = i + 1;
+      }
+    }
+
+    // Create new step
+    const newStep = `${stepIndentation}${stepKeyword} ${stepText}`;
+
+    // Insert step
+    newContent = [
+      ...lines.slice(0, insertIndex),
+      newStep,
+      ...lines.slice(insertIndex),
+    ].join('\n');
+  }
 
   // Validate result is valid Gherkin
   let valid = true;

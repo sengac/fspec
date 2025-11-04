@@ -267,6 +267,13 @@ export function formatValidationError(
   lines.push('     - Put the @step comment right before that line');
   lines.push('  4. Use the exact text shown above with // @step prefix');
   lines.push('');
+  lines.push(
+    '⚠️  If you have duplicate Given/When/Then comments, remove them first:'
+  );
+  lines.push('     - @step comments replace existing step comments');
+  lines.push('     - Do NOT create redundant comments for the same step');
+  lines.push('     - Each step should have exactly ONE @step comment');
+  lines.push('');
   lines.push('Example:');
   lines.push('  If your step is "When I run the finalize command"');
   lines.push(

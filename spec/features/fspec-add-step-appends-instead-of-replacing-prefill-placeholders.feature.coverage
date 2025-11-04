@@ -1,0 +1,261 @@
+{
+  "scenarios": [
+    {
+      "name": "Replace Given placeholder with actual step",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/add-step.test.ts",
+          "lines": "635-671",
+          "implMappings": [
+            {
+              "file": "src/commands/add-step.ts",
+              "lines": [
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Replace When placeholder with actual step",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/add-step.test.ts",
+          "lines": "673-710",
+          "implMappings": [
+            {
+              "file": "src/commands/add-step.ts",
+              "lines": [
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Replace Then placeholder with actual step",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/add-step.test.ts",
+          "lines": "712-750",
+          "implMappings": [
+            {
+              "file": "src/commands/add-step.ts",
+              "lines": [
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Append step when no placeholder exists",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/add-step.test.ts",
+          "lines": "752-789",
+          "implMappings": [
+            {
+              "file": "src/commands/add-step.ts",
+              "lines": [
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Replace multiple placeholders in sequence",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/add-step.test.ts",
+          "lines": "791-853",
+          "implMappings": [
+            {
+              "file": "src/commands/add-step.ts",
+              "lines": [
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/commands/__tests__/add-step.test.ts"
+    ],
+    "implFiles": [
+      "src/commands/add-step.ts"
+    ],
+    "totalLinesCovered": 380
+  }
+}

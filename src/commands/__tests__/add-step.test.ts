@@ -356,8 +356,10 @@ describe('Feature: Add Step to Existing Scenario', () => {
       expect(result.success).toBe(false);
 
       // And the output should show error that scenario was not found
-      expect(result.error).toContain('not found') ||
-        expect(result.error).toContain('Missing scenario');
+      expect(
+        result.error?.includes('not found') ||
+          result.error?.includes('Missing scenario')
+      ).toBe(true);
 
       // And the output should list available scenarios
       expect(result.suggestion).toContain('Existing scenario');
@@ -432,8 +434,9 @@ describe('Feature: Add Step to Existing Scenario', () => {
       expect(result.success).toBe(false);
 
       // And the output should show error about invalid step type
-      expect(result.error).toContain('invalid') ||
-        expect(result.error).toContain('step type');
+      expect(
+        result.error?.includes('invalid') || result.error?.includes('step type')
+      ).toBe(true);
 
       // And the output should list valid step types: given, when, then, and, but
       expect(result.suggestion).toContain('given');
@@ -627,6 +630,200 @@ describe('Feature: Add Step to Existing Scenario', () => {
         dryRun: true,
       });
       expect(result.valid).toBe(true);
+    });
+  });
+
+  // Feature: spec/features/fspec-add-step-appends-instead-of-replacing-prefill-placeholders.feature
+
+  describe('Scenario: Replace Given placeholder with actual step', () => {
+    it('should replace Given placeholder instead of appending', async () => {
+      // @step Given a feature file with scenario containing a Given step with placeholder text
+      const featureContent = `Feature: Test Feature
+
+  Scenario: Test Scenario
+    Given [precondition]
+`;
+      await writeFile(
+        join(testDir, 'spec/features/test.feature'),
+        featureContent
+      );
+
+      // @step When I run fspec add-step with given keyword and text "work unit moves to testing state"
+      await addStep(
+        'test',
+        'Test Scenario',
+        'given',
+        'work unit moves to testing state',
+        {
+          cwd: testDir,
+        }
+      );
+
+      // @step Then the placeholder step should be replaced with "Given work unit moves to testing state"
+      const updatedContent = await readFile(
+        join(testDir, 'spec/features/test.feature'),
+        'utf-8'
+      );
+      expect(updatedContent).toContain(
+        'Given work unit moves to testing state'
+      );
+
+      // @step And there should be no duplicate Given steps
+      const givenStepMatches = updatedContent.match(/^\s+Given /gm);
+      expect(givenStepMatches?.length).toBe(1);
+      expect(updatedContent).not.toContain('[precondition]');
+    });
+  });
+
+  describe('Scenario: Replace When placeholder with actual step', () => {
+    it('should replace When placeholder instead of appending', async () => {
+      // @step Given a feature file with scenario containing a When step with placeholder text
+      const featureContent = `Feature: Test Feature
+
+  Scenario: Test Scenario
+    Given initial state
+    When [action]
+`;
+      await writeFile(
+        join(testDir, 'spec/features/test.feature'),
+        featureContent
+      );
+
+      // @step When I run fspec add-step with when keyword and text "user clicks submit"
+      await addStep('test', 'Test Scenario', 'when', 'user clicks submit', {
+        cwd: testDir,
+      });
+
+      // @step Then the placeholder step should be replaced with "When user clicks submit"
+      const updatedContent = await readFile(
+        join(testDir, 'spec/features/test.feature'),
+        'utf-8'
+      );
+      expect(updatedContent).toContain('When user clicks submit');
+
+      // @step And there should be no duplicate When steps
+      const whenStepMatches = updatedContent.match(/^\s+When /gm);
+      expect(whenStepMatches?.length).toBe(1);
+      expect(updatedContent).not.toContain('[action]');
+    });
+  });
+
+  describe('Scenario: Replace Then placeholder with actual step', () => {
+    it('should replace Then placeholder instead of appending', async () => {
+      // @step Given a feature file with scenario containing a Then step with placeholder text
+      const featureContent = `Feature: Test Feature
+
+  Scenario: Test Scenario
+    Given initial state
+    When action occurs
+    Then [expected outcome]
+`;
+      await writeFile(
+        join(testDir, 'spec/features/test.feature'),
+        featureContent
+      );
+
+      // @step When I run fspec add-step with then keyword and text "form should be submitted"
+      await addStep(
+        'test',
+        'Test Scenario',
+        'then',
+        'form should be submitted',
+        {
+          cwd: testDir,
+        }
+      );
+
+      // @step Then the placeholder step should be replaced with "Then form should be submitted"
+      const updatedContent = await readFile(
+        join(testDir, 'spec/features/test.feature'),
+        'utf-8'
+      );
+      expect(updatedContent).toContain('Then form should be submitted');
+
+      // @step And there should be no duplicate Then steps
+      const thenStepMatches = updatedContent.match(/^\s+Then /gm);
+      expect(thenStepMatches?.length).toBe(1);
+      expect(updatedContent).not.toContain('[expected outcome]');
+    });
+  });
+
+  describe('Scenario: Append step when no placeholder exists', () => {
+    it('should append new step when no placeholder exists', async () => {
+      // @step Given a feature file with scenario containing "Given actual existing step"
+      const featureContent = `Feature: Test Feature
+
+  Scenario: Test Scenario
+    Given actual existing step
+`;
+      await writeFile(
+        join(testDir, 'spec/features/test.feature'),
+        featureContent
+      );
+
+      // @step When I run fspec add-step with given keyword and text "another step"
+      await addStep('test', 'Test Scenario', 'given', 'another step', {
+        cwd: testDir,
+      });
+
+      // @step Then the new step "Given another step" should be appended after existing step
+      const updatedContent = await readFile(
+        join(testDir, 'spec/features/test.feature'),
+        'utf-8'
+      );
+      expect(updatedContent).toContain('Given another step');
+
+      // @step And both Given steps should exist in the scenario
+      const givenStepMatches = updatedContent.match(/^\s+Given /gm);
+      expect(givenStepMatches?.length).toBe(2);
+      expect(updatedContent).toContain('Given actual existing step');
+      expect(updatedContent).toContain('Given another step');
+    });
+  });
+
+  describe('Scenario: Replace multiple placeholders in sequence', () => {
+    it('should replace all placeholders when added in sequence', async () => {
+      // @step Given a feature file with scenario containing placeholders for Given, When, and Then
+      const featureContent = `Feature: Test Feature
+
+  Scenario: Test Scenario
+    Given [precondition]
+    When [action]
+    Then [expected outcome]
+`;
+      await writeFile(
+        join(testDir, 'spec/features/test.feature'),
+        featureContent
+      );
+
+      // @step When I run fspec add-step for given with text "initial state"
+      await addStep('test', 'Test Scenario', 'given', 'initial state', {
+        cwd: testDir,
+      });
+
+      // @step And I run fspec add-step for when with text "action occurs"
+      await addStep('test', 'Test Scenario', 'when', 'action occurs', {
+        cwd: testDir,
+      });
+
+      // @step And I run fspec add-step for then with text "expected result"
+      await addStep('test', 'Test Scenario', 'then', 'expected result', {
+        cwd: testDir,
+      });
+
+      // @step Then all placeholders should be replaced with actual steps
+      const updatedContent = await readFile(
+        join(testDir, 'spec/features/test.feature'),
+        'utf-8'
+      );
+      expect(updatedContent).toContain('Given initial state');
+      expect(updatedContent).toContain('When action occurs');
+      expect(updatedContent).toContain('Then expected result');
+
+      // @step And the scenario should have no remaining placeholders
+      expect(updatedContent).not.toContain('[precondition]');
+      expect(updatedContent).not.toContain('[action]');
+      expect(updatedContent).not.toContain('[expected outcome]');
     });
   });
 });
