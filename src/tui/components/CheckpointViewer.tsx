@@ -17,7 +17,13 @@ import { useFspecStore } from '../store/fspecStore';
 import * as git from 'isomorphic-git';
 import fs from 'fs';
 import type { Checkpoint as GitCheckpoint } from '../../utils/git-checkpoint';
-import { getCheckpointChangedFiles, deleteCheckpoint, deleteAllCheckpoints, restoreCheckpointFile, restoreCheckpoint } from '../../utils/git-checkpoint';
+import {
+  getCheckpointChangedFiles,
+  deleteCheckpoint,
+  deleteAllCheckpoints,
+  restoreCheckpointFile,
+  restoreCheckpoint,
+} from '../../utils/git-checkpoint';
 import { ConfirmationDialog } from '../../components/ConfirmationDialog';
 import { sendIPCMessage } from '../../utils/ipc';
 
@@ -38,7 +44,9 @@ interface CheckpointViewerProps {
 export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
   onExit,
 }) => {
-  const [focusedPane, setFocusedPane] = useState<'checkpoints' | 'files' | 'diff'>('checkpoints');
+  const [focusedPane, setFocusedPane] = useState<
+    'checkpoints' | 'files' | 'diff'
+  >('checkpoints');
   const [selectedCheckpointIndex, setSelectedCheckpointIndex] = useState(0);
   const [selectedFileIndex, setSelectedFileIndex] = useState(0);
   const [diffContent, setDiffContent] = useState<string>('');
@@ -75,7 +83,9 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
         }
 
         // Read all work unit index files
-        const indexFiles = fs.readdirSync(indexDir).filter(f => f.endsWith('.json'));
+        const indexFiles = fs
+          .readdirSync(indexDir)
+          .filter(f => f.endsWith('.json'));
         const allCheckpoints: Checkpoint[] = [];
 
         for (const indexFile of indexFiles) {
@@ -83,7 +93,9 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
           const indexPath = join(indexDir, indexFile);
 
           const content = fs.readFileSync(indexPath, 'utf-8');
-          const index = JSON.parse(content) as { checkpoints: { name: string; message: string }[] };
+          const index = JSON.parse(content) as {
+            checkpoints: { name: string; message: string }[];
+          };
 
           for (const cp of index.checkpoints) {
             const ref = `refs/fspec-checkpoints/${workUnitId}/${cp.name}`;
@@ -96,8 +108,12 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
               const files = await getCheckpointChangedFiles(cwd, checkpointOid);
 
               // Parse checkpoint message to extract timestamp
-              const match = cp.message.match(/^fspec-checkpoint:[^:]+:[^:]+:([^:]+)$/);
-              const timestamp = match ? new Date(parseInt(match[1])).toISOString() : new Date().toISOString();
+              const match = cp.message.match(
+                /^fspec-checkpoint:[^:]+:[^:]+:([^:]+)$/
+              );
+              const timestamp = match
+                ? new Date(parseInt(match[1])).toISOString()
+                : new Date().toISOString();
 
               allCheckpoints.push({
                 name: cp.name,
@@ -140,7 +156,10 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
     if (!currentCheckpoint) {
       return [];
     }
-    return currentCheckpoint.files.map(f => ({ path: f, status: 'checkpoint' as const }));
+    return currentCheckpoint.files.map(f => ({
+      path: f,
+      status: 'checkpoint' as const,
+    }));
   }, [currentCheckpoint, selectedCheckpointIndex]);
 
   // Initialize worker thread on mount
@@ -185,7 +204,11 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
     const worker = workerRef.current;
 
     // Set up message handler for this request
-    const messageHandler = (response: { id: string; diff?: string; error?: string }) => {
+    const messageHandler = (response: {
+      id: string;
+      diff?: string;
+      error?: string;
+    }) => {
       // Ignore responses from cancelled requests
       if (response.id !== pendingRequestId.current) {
         return;
@@ -203,7 +226,9 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
           const truncatedDiff = response.diff!.substring(0, MAX_DIFF_SIZE);
           const linesShown = truncatedDiff.split('\n').length;
           const totalLines = response.diff!.split('\n').length;
-          finalDiff = truncatedDiff + `\n\n... (diff truncated: showing ${linesShown}/${totalLines} lines, ${MAX_DIFF_SIZE}/${diffLength} chars)`;
+          finalDiff =
+            truncatedDiff +
+            `\n\n... (diff truncated: showing ${linesShown}/${totalLines} lines, ${MAX_DIFF_SIZE}/${diffLength} chars)`;
         }
 
         setDiffContent(finalDiff);
@@ -233,7 +258,9 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
   // Parse diff content into structured DiffLine objects
   const diffLines: DiffLine[] = useMemo(() => {
     if (isLoadingDiff) {
-      return [{ content: 'Loading diff...', type: 'context', changeGroup: null }];
+      return [
+        { content: 'Loading diff...', type: 'context', changeGroup: null },
+      ];
     }
     if (!diffContent) {
       return [];
@@ -256,20 +283,26 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
         await sendIPCMessage({ type: 'checkpoint-changed' });
 
         // Reload checkpoints
-        const updatedCheckpoints = checkpoints.filter(cp => cp.name !== checkpoint.name);
+        const updatedCheckpoints = checkpoints.filter(
+          cp => cp.name !== checkpoint.name
+        );
         setCheckpoints(updatedCheckpoints);
 
         // Select next checkpoint or exit if none remain
         if (updatedCheckpoints.length === 0) {
           onExit();
         } else {
-          setSelectedCheckpointIndex(Math.min(selectedCheckpointIndex, updatedCheckpoints.length - 1));
+          setSelectedCheckpointIndex(
+            Math.min(selectedCheckpointIndex, updatedCheckpoints.length - 1)
+          );
         }
       }
     } else {
       // Delete ALL checkpoints across all work units
       // Get unique work unit IDs from all checkpoints
-      const uniqueWorkUnitIds = [...new Set(checkpoints.map(cp => cp.workUnitId))];
+      const uniqueWorkUnitIds = [
+        ...new Set(checkpoints.map(cp => cp.workUnitId)),
+      ];
 
       // Delete checkpoints for each work unit
       for (const workUnitId of uniqueWorkUnitIds) {
@@ -291,6 +324,40 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
 
   const handleDeleteCancel = () => {
     setShowDeleteDialog(false);
+  };
+
+  // Helper function to reload diff after restore
+  const reloadDiffAfterRestore = (checkpoint: GitCheckpoint) => {
+    const selectedFile = files[selectedFileIndex];
+    if (!selectedFile || !workerRef.current) return;
+
+    setIsLoadingDiff(true);
+    const requestId = `${Date.now()}`;
+    pendingRequestId.current = requestId;
+
+    const worker = workerRef.current;
+    const messageHandler = (response: {
+      id: string;
+      diff?: string;
+      error?: string;
+    }) => {
+      if (response.id !== pendingRequestId.current) return;
+      if (response.error) {
+        setDiffContent('Error loading diff');
+      } else {
+        setDiffContent(response.diff || 'No changes to display');
+      }
+      setIsLoadingDiff(false);
+      worker.off('message', messageHandler);
+    };
+
+    worker.on('message', messageHandler);
+    worker.postMessage({
+      id: requestId,
+      cwd,
+      filepath: selectedFile.path,
+      checkpointRef: checkpoint.stashRef,
+    });
   };
 
   // Handle restore confirmation
@@ -318,32 +385,7 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
           await sendIPCMessage({ type: 'checkpoint-changed' });
 
           // Reload diff to show updated comparison
-          const selectedFile = files[selectedFileIndex];
-          if (selectedFile && workerRef.current) {
-            setIsLoadingDiff(true);
-            const requestId = `${Date.now()}`;
-            pendingRequestId.current = requestId;
-
-            const worker = workerRef.current;
-            const messageHandler = (response: { id: string; diff?: string; error?: string }) => {
-              if (response.id !== pendingRequestId.current) return;
-              if (response.error) {
-                setDiffContent('Error loading diff');
-              } else {
-                setDiffContent(response.diff || 'No changes to display');
-              }
-              setIsLoadingDiff(false);
-              worker.off('message', messageHandler);
-            };
-
-            worker.on('message', messageHandler);
-            worker.postMessage({
-              id: requestId,
-              cwd,
-              filepath: selectedFile.path,
-              checkpointRef: checkpoint.stashRef,
-            });
-          }
+          reloadDiffAfterRestore(checkpoint);
         }
       }
     } else {
@@ -361,32 +403,7 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
         await sendIPCMessage({ type: 'checkpoint-changed' });
 
         // Reload diff
-        const selectedFile = files[selectedFileIndex];
-        if (selectedFile && workerRef.current) {
-          setIsLoadingDiff(true);
-          const requestId = `${Date.now()}`;
-          pendingRequestId.current = requestId;
-
-          const worker = workerRef.current;
-          const messageHandler = (response: { id: string; diff?: string; error?: string }) => {
-            if (response.id !== pendingRequestId.current) return;
-            if (response.error) {
-              setDiffContent('Error loading diff');
-            } else {
-              setDiffContent(response.diff || 'No changes to display');
-            }
-            setIsLoadingDiff(false);
-            worker.off('message', messageHandler);
-          };
-
-          worker.on('message', messageHandler);
-          worker.postMessage({
-            id: requestId,
-            cwd,
-            filepath: selectedFile.path,
-            checkpointRef: checkpoint.stashRef,
-          });
-        }
+        reloadDiffAfterRestore(checkpoint);
       }
     }
 
@@ -398,88 +415,126 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
   };
 
   // Handle keyboard input
-  useInput((input, key) => {
-
-    if (key.escape) {
-      onExit();
-      return;
-    }
-
-    // R key for single file restore (files pane only)
-    if (input === 'r' || input === 'R') {
-      if (focusedPane === 'files' && files.length > 0) {
-        setRestoreMode('single');
-        setShowRestoreDialog(true);
+  useInput(
+    (input, key) => {
+      if (key.escape) {
+        onExit();
+        return;
       }
-      return;
-    }
 
-    // T key for restore all files
-    if (input === 't' || input === 'T') {
-      if ((focusedPane === 'checkpoints' || focusedPane === 'files') && sortedCheckpoints.length > 0) {
-        setRestoreMode('all');
-        setShowRestoreDialog(true);
+      // R key for single file restore (files pane only)
+      if (input === 'r' || input === 'R') {
+        if (focusedPane === 'files' && files.length > 0) {
+          setRestoreMode('single');
+          setShowRestoreDialog(true);
+        }
+        return;
       }
-      return;
-    }
 
-    // D key for single deletion
-    if (input === 'd' || input === 'D') {
-      if (sortedCheckpoints.length > 0) {
-        setDeleteMode('single');
-        setShowDeleteDialog(true);
+      // T key for restore all files
+      if (input === 't' || input === 'T') {
+        if (
+          (focusedPane === 'checkpoints' || focusedPane === 'files') &&
+          sortedCheckpoints.length > 0
+        ) {
+          setRestoreMode('all');
+          setShowRestoreDialog(true);
+        }
+        return;
       }
-      return;
-    }
 
-    // A key for delete ALL
-    if (input === 'a' || input === 'A') {
-      if (sortedCheckpoints.length > 0) {
-        setDeleteMode('all');
-        setShowDeleteDialog(true);
+      // D key for single deletion
+      if (input === 'd' || input === 'D') {
+        if (sortedCheckpoints.length > 0) {
+          setDeleteMode('single');
+          setShowDeleteDialog(true);
+        }
+        return;
       }
-      return;
-    }
 
-    // Tab key or right arrow to cycle forward through three panes
-    if (key.tab || key.rightArrow) {
-      setFocusedPane(prev => {
-        if (prev === 'checkpoints') return 'files';
-        if (prev === 'files') return 'diff';
-        return 'checkpoints';
-      });
-      return;
-    }
+      // A key for delete ALL
+      if (input === 'a' || input === 'A') {
+        if (sortedCheckpoints.length > 0) {
+          setDeleteMode('all');
+          setShowDeleteDialog(true);
+        }
+        return;
+      }
 
-    // Left arrow to cycle backward through three panes
-    if (key.leftArrow) {
-      setFocusedPane(prev => {
-        if (prev === 'checkpoints') return 'diff';
-        if (prev === 'files') return 'checkpoints';
-        return 'files';
-      });
-      return;
-    }
+      // Tab key or right arrow to cycle forward through three panes
+      if (key.tab || key.rightArrow) {
+        setFocusedPane(prev => {
+          if (prev === 'checkpoints') return 'files';
+          if (prev === 'files') return 'diff';
+          return 'checkpoints';
+        });
+        return;
+      }
 
-    // Up/down arrow key navigation handled by VirtualList when focused
-  }, { isActive: !showDeleteDialog && !showRestoreDialog });
+      // Left arrow to cycle backward through three panes
+      if (key.leftArrow) {
+        setFocusedPane(prev => {
+          if (prev === 'checkpoints') return 'diff';
+          if (prev === 'files') return 'checkpoints';
+          return 'files';
+        });
+        return;
+      }
+
+      // Up/down arrow key navigation handled by VirtualList when focused
+    },
+    { isActive: !showDeleteDialog && !showRestoreDialog }
+  );
 
   // Loading state
   if (isLoadingCheckpoints) {
     return (
-      <Box flexDirection="column" flexGrow={1} borderStyle="single" borderTop={false} borderLeft={false} borderRight={false} borderBottom={true}>
+      <Box
+        flexDirection="column"
+        flexGrow={1}
+        borderStyle="single"
+        borderTop={false}
+        borderLeft={false}
+        borderRight={false}
+        borderBottom={true}
+      >
         <Box flexDirection="column" flexGrow={1}>
-          <Box flexDirection="row" flexGrow={1} flexBasis={0} borderStyle="single" borderTop={false} borderBottom={true} borderLeft={false} borderRight={false}>
-            <Box flexDirection="column" flexGrow={1} flexBasis={0} borderStyle="single" borderTop={false} borderLeft={false} borderRight={true} borderBottom={false}>
+          <Box
+            flexDirection="row"
+            flexGrow={1}
+            flexBasis={0}
+            borderStyle="single"
+            borderTop={false}
+            borderBottom={true}
+            borderLeft={false}
+            borderRight={false}
+          >
+            <Box
+              flexDirection="column"
+              flexGrow={1}
+              flexBasis={0}
+              borderStyle="single"
+              borderTop={false}
+              borderLeft={false}
+              borderRight={true}
+              borderBottom={false}
+            >
               <Box
-                backgroundColor={focusedPane === 'checkpoints' ? 'green' : undefined}
+                backgroundColor={
+                  focusedPane === 'checkpoints' ? 'green' : undefined
+                }
                 borderStyle="single"
                 borderTop={false}
                 borderLeft={false}
                 borderRight={false}
                 borderBottom={true}
               >
-                <Text bold={focusedPane !== 'checkpoints'} color={focusedPane === 'checkpoints' ? 'black' : 'white'}>Checkpoints</Text>
+                <Text
+                  bold={focusedPane !== 'checkpoints'}
+                  color={focusedPane === 'checkpoints' ? 'black' : 'white'}
+                >
+                  Checkpoints
+                </Text>
               </Box>
               <Text wrap="truncate">Loading checkpoints...</Text>
             </Box>
@@ -492,7 +547,12 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
                 borderRight={false}
                 borderBottom={true}
               >
-                <Text bold={focusedPane !== 'files'} color={focusedPane === 'files' ? 'black' : 'white'}>Files</Text>
+                <Text
+                  bold={focusedPane !== 'files'}
+                  color={focusedPane === 'files' ? 'black' : 'white'}
+                >
+                  Files
+                </Text>
               </Box>
               <Text wrap="truncate">-</Text>
             </Box>
@@ -506,7 +566,12 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
               borderRight={false}
               borderBottom={true}
             >
-              <Text bold={focusedPane !== 'diff'} color={focusedPane === 'diff' ? 'black' : 'white'}>Diff</Text>
+              <Text
+                bold={focusedPane !== 'diff'}
+                color={focusedPane === 'diff' ? 'black' : 'white'}
+              >
+                Diff
+              </Text>
             </Box>
             <Text wrap="truncate">-</Text>
           </Box>
@@ -518,21 +583,54 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
   // Empty state
   if (sortedCheckpoints.length === 0) {
     return (
-      <Box flexDirection="column" flexGrow={1} borderStyle="single" borderTop={false} borderLeft={false} borderRight={false} borderBottom={true}>
+      <Box
+        flexDirection="column"
+        flexGrow={1}
+        borderStyle="single"
+        borderTop={false}
+        borderLeft={false}
+        borderRight={false}
+        borderBottom={true}
+      >
         <Box flexDirection="column" flexGrow={1}>
           {/* Top row: Checkpoint list (left) + File list (right) - 33% height */}
-          <Box flexDirection="row" flexGrow={1} flexBasis={0} borderStyle="single" borderTop={false} borderBottom={true} borderLeft={false} borderRight={false}>
+          <Box
+            flexDirection="row"
+            flexGrow={1}
+            flexBasis={0}
+            borderStyle="single"
+            borderTop={false}
+            borderBottom={true}
+            borderLeft={false}
+            borderRight={false}
+          >
             {/* Checkpoint list pane (left) - 33% of horizontal space via flexGrow ratio */}
-            <Box flexDirection="column" flexGrow={1} flexBasis={0} borderStyle="single" borderTop={false} borderLeft={false} borderRight={true} borderBottom={false}>
+            <Box
+              flexDirection="column"
+              flexGrow={1}
+              flexBasis={0}
+              borderStyle="single"
+              borderTop={false}
+              borderLeft={false}
+              borderRight={true}
+              borderBottom={false}
+            >
               <Box
-                backgroundColor={focusedPane === 'checkpoints' ? 'green' : undefined}
+                backgroundColor={
+                  focusedPane === 'checkpoints' ? 'green' : undefined
+                }
                 borderStyle="single"
                 borderTop={false}
                 borderLeft={false}
                 borderRight={false}
                 borderBottom={true}
               >
-                <Text bold={focusedPane !== 'checkpoints'} color={focusedPane === 'checkpoints' ? 'black' : 'white'}>Checkpoints</Text>
+                <Text
+                  bold={focusedPane !== 'checkpoints'}
+                  color={focusedPane === 'checkpoints' ? 'black' : 'white'}
+                >
+                  Checkpoints
+                </Text>
               </Box>
               <Text wrap="truncate">No checkpoints available</Text>
             </Box>
@@ -546,7 +644,12 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
                 borderRight={false}
                 borderBottom={true}
               >
-                <Text bold={focusedPane !== 'files'} color={focusedPane === 'files' ? 'black' : 'white'}>Files</Text>
+                <Text
+                  bold={focusedPane !== 'files'}
+                  color={focusedPane === 'files' ? 'black' : 'white'}
+                >
+                  Files
+                </Text>
               </Box>
               <Text wrap="truncate">No files</Text>
             </Box>
@@ -562,7 +665,12 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
               borderRight={false}
               borderBottom={true}
             >
-              <Text bold={focusedPane !== 'diff'} color={focusedPane === 'diff' ? 'black' : 'white'}>Diff</Text>
+              <Text
+                bold={focusedPane !== 'diff'}
+                color={focusedPane === 'diff' ? 'black' : 'white'}
+              >
+                Diff
+              </Text>
             </Box>
             <Text wrap="truncate">Select a checkpoint to view files</Text>
           </Box>
@@ -572,11 +680,17 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
   }
 
   // Render checkpoint item with compact name
-  const renderCheckpointItem = (checkpoint: Checkpoint, index: number, isSelected: boolean): React.ReactNode => {
+  const renderCheckpointItem = (
+    checkpoint: Checkpoint,
+    index: number,
+    isSelected: boolean
+  ): React.ReactNode => {
     // Extract compact name from checkpoint name (e.g., "TUI-001-auto-testing" -> "TUI-001: Testing")
     const parts = checkpoint.name.split('-auto-');
     const workUnit = parts[0]; // e.g., "TUI-001"
-    const phase = parts[1] ? parts[1].charAt(0).toUpperCase() + parts[1].slice(1).toLowerCase() : 'Unknown'; // e.g., "Testing"
+    const phase = parts[1]
+      ? parts[1].charAt(0).toUpperCase() + parts[1].slice(1).toLowerCase()
+      : 'Unknown'; // e.g., "Testing"
     const displayName = `${workUnit}: ${phase}`;
 
     return (
@@ -589,7 +703,11 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
   };
 
   // Render diff line with syntax highlighting
-  const renderDiffLine = (line: DiffLine, index: number, isSelected: boolean): React.ReactNode => {
+  const renderDiffLine = (
+    line: DiffLine,
+    index: number,
+    isSelected: boolean
+  ): React.ReactNode => {
     let textColor: 'white' | 'cyan' = 'white';
     let backgroundColor: string | undefined;
 
@@ -605,7 +723,8 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
     }
 
     // Apply selection styling if focused
-    const selectionColor = isSelected && focusedPane === 'diff' ? 'cyan' : textColor;
+    const selectionColor =
+      isSelected && focusedPane === 'diff' ? 'cyan' : textColor;
     const selectionInverse = isSelected && focusedPane === 'diff';
 
     return (
@@ -625,7 +744,15 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
   return (
     <Box flexDirection="column" flexGrow={1}>
       {/* Three-pane layout: Top row (checkpoint list + file list) + Bottom diff pane */}
-      <Box flexDirection="column" flexGrow={1} borderStyle="single" borderTop={false} borderLeft={false} borderRight={false} borderBottom={true}>
+      <Box
+        flexDirection="column"
+        flexGrow={1}
+        borderStyle="single"
+        borderTop={false}
+        borderLeft={false}
+        borderRight={false}
+        borderBottom={true}
+      >
         <Box flexDirection="column" flexGrow={1}>
           {/* Top row: Checkpoint list (left) + File list (right) side-by-side - 33% height via flexGrow ratio */}
           <Box
@@ -651,7 +778,9 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
             >
               {/* Checkpoint list heading */}
               <Box
-                backgroundColor={focusedPane === 'checkpoints' ? 'green' : undefined}
+                backgroundColor={
+                  focusedPane === 'checkpoints' ? 'green' : undefined
+                }
                 borderStyle="single"
                 borderTop={false}
                 borderLeft={false}
@@ -678,11 +807,7 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
             </Box>
 
             {/* File list pane (right) - 67% of horizontal space via flexGrow ratio */}
-            <Box
-              flexDirection="column"
-              flexGrow={2}
-              flexBasis={0}
-            >
+            <Box flexDirection="column" flexGrow={2} flexBasis={0}>
               {/* File list heading */}
               <Box
                 backgroundColor={focusedPane === 'files' ? 'green' : undefined}
@@ -705,7 +830,10 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
                   const indicator = isSelected ? '>' : ' ';
                   return (
                     <Box flexGrow={1}>
-                      <Text color={isSelected ? 'cyan' : 'white'} wrap="truncate">
+                      <Text
+                        color={isSelected ? 'cyan' : 'white'}
+                        wrap="truncate"
+                      >
                         {indicator} {file.path}
                       </Text>
                     </Box>
@@ -721,11 +849,7 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
           </Box>
 
           {/* Bottom: Diff pane only - 67% height via flexGrow ratio */}
-          <Box
-            flexDirection="column"
-            flexGrow={2}
-            flexBasis={0}
-          >
+          <Box flexDirection="column" flexGrow={2} flexBasis={0}>
             {/* Diff pane heading */}
             <Box
               backgroundColor={focusedPane === 'diff' ? 'green' : undefined}
@@ -757,7 +881,8 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
       {/* Footer */}
       <Box>
         <Text dimColor>
-          ESC: Back | ←→↑↓: Navigate | PgUp/PgDn: Scroll | D: Delete | A: Delete ALL
+          ESC: Back | ←→↑↓: Navigate | PgUp/PgDn: Scroll | D: Delete | A: Delete
+          ALL
         </Text>
       </Box>
 
