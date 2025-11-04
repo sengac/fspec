@@ -39009,9 +39009,9 @@
       "id": "BUG-065",
       "title": "TUI-016 incomplete: CheckpointPanel using chokidar instead of IPC+Zustand",
       "type": "bug",
-      "status": "done",
+      "status": "implementing",
       "createdAt": "2025-11-04T00:40:56.152Z",
-      "updatedAt": "2025-11-04T01:03:08.239Z",
+      "updatedAt": "2025-11-04T01:12:43.887Z",
       "description": "TUI-016 IPC infrastructure is complete but not connected. CheckpointPanel still uses chokidar file-watching which must be REMOVED. Three components need connection: Zustand store checkpoint state, BoardView IPC server, and CheckpointPanel refactor.",
       "children": [],
       "attachments": [
@@ -39041,6 +39041,10 @@
         {
           "state": "done",
           "timestamp": "2025-11-04T01:03:08.239Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-04T01:12:43.887Z"
         }
       ],
       "userStory": {
@@ -39181,10 +39185,11 @@
       "RES-007"
     ],
     "testing": [],
-    "implementing": [],
+    "implementing": [
+      "BUG-065"
+    ],
     "validating": [],
     "done": [
-      "BUG-065",
       "BUG-064",
       "TUI-016",
       "BUG-063",
