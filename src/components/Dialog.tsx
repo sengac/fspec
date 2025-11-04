@@ -41,13 +41,22 @@ export const Dialog: React.FC<DialogProps> = ({
 
   return (
     <Box
+      position="absolute"
+      width="100%"
+      height="100%"
+      justifyContent="center"
+      alignItems="center"
       flexDirection="column"
-      borderStyle="round"
-      borderColor={borderColor}
-      padding={1}
-      alignSelf="center"
     >
-      {children}
+      <Box
+        flexDirection="column"
+        borderStyle="round"
+        borderColor={borderColor}
+        padding={1}
+        backgroundColor="black"
+      >
+        {children}
+      </Box>
     </Box>
   );
 };
