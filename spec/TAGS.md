@@ -15,6 +15,7 @@ Tags that identify which architectural component a feature belongs to.
 | `@agent-registry` | Agent registry and configuration management |
 | `@algorithm` | Algorithmic components - similarity matching, scoring, deduplication algorithms |
 | `@cli` | Command-Line Interface |
+| `@dialog` | Dialog and modal UI components in TUI |
 | `@file-ops` | File Operations |
 | `@formatter` | Formatting & Prettification |
 | `@generator` | Template Generation |
@@ -594,7 +595,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-11-04T10:07:17.371Z_
+_Last updated: 2025-11-04T21:20:05.608Z_
 
 **Update Command**: `fspec tag-stats`
 

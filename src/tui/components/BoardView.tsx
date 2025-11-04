@@ -18,9 +18,11 @@ import { FullScreenWrapper } from './FullScreenWrapper';
 import { VirtualList } from './VirtualList';
 import { CheckpointViewer } from './CheckpointViewer';
 import { ChangedFilesViewer } from './ChangedFilesViewer';
+import { AttachmentDialog } from './AttachmentDialog';
 import { createIPCServer, cleanupIPCServer, getIPCPath } from '../../utils/ipc';
 import type { Server } from 'net';
 import { logger } from '../../utils/logger';
+import { openInBrowser } from '../../utils/openBrowser';
 
 interface BoardViewProps {
   onExit?: () => void;
@@ -50,6 +52,7 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
   const [initialFocusSet, setInitialFocusSet] = useState(false);
   const [selectedWorkUnit, setSelectedWorkUnit] = useState<any>(null);
   const [focusedPanel, setFocusedPanel] = useState<'board' | 'stash' | 'files'>(initialFocusedPanel);
+  const [showAttachmentDialog, setShowAttachmentDialog] = useState(false);
 
   // Fix: Call useStdout unconditionally at top level (Rules of Hooks)
   const { stdout } = useStdout();
@@ -202,6 +205,13 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
     return null;
   })();
 
+  // Helper: Check if selected work unit has attachments
+  const hasAttachments = () => {
+    return !!(currentlySelectedWorkUnit &&
+              currentlySelectedWorkUnit.attachments &&
+              currentlySelectedWorkUnit.attachments.length > 0);
+  };
+
   // Handle keyboard navigation
   useInput((input, key) => {
     if (key.escape) {
@@ -223,6 +233,14 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
     // F key to open changed files viewer (GIT-004)
     if (input === 'f' || input === 'F') {
       setViewMode('changed-files-viewer');
+      return;
+    }
+
+    // O key to open attachment dialog (TUI-019)
+    if (input === 'o' || input === 'O') {
+      if (hasAttachments()) {
+        setShowAttachmentDialog(true);
+      }
       return;
     }
 
@@ -371,6 +389,25 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
           }
         }}
       />
+
+      {/* TUI-019: Attachment selection dialog */}
+      {showAttachmentDialog && hasAttachments() && (
+        <AttachmentDialog
+          attachments={currentlySelectedWorkUnit!.attachments!}
+          onSelect={(attachment) => {
+            // Convert relative path to absolute, then to file:// URL
+            const absolutePath = path.isAbsolute(attachment)
+              ? attachment
+              : path.resolve(cwd || process.cwd(), attachment);
+            const fileUrl = `file://${absolutePath}`;
+            openInBrowser({ url: fileUrl, wait: false }).catch((error: Error) => {
+              logger.error(`[BoardView] Failed to open attachment: ${error.message}`);
+            });
+            setShowAttachmentDialog(false);
+          }}
+          onClose={() => setShowAttachmentDialog(false)}
+        />
+      )}
     </FullScreenWrapper>
   );
 };
