@@ -35,11 +35,11 @@ export function createIPCServer(
   const pipePath = getIPCPath();
 
   // Cleanup existing socket on Unix (Windows auto-cleans)
-  if (process.platform !== 'win32' && fs.existsSync(pipePath)) {
+  if (process.platform !== 'win32') {
     try {
       fs.unlinkSync(pipePath);
     } catch (error) {
-      // Ignore cleanup errors
+      // Ignore cleanup errors (file may not exist)
     }
   }
 
@@ -94,11 +94,11 @@ export function cleanupIPCServer(server: net.Server): void {
   const pipePath = getIPCPath();
 
   // Manual cleanup for Unix sockets (Windows auto-cleans)
-  if (process.platform !== 'win32' && fs.existsSync(pipePath)) {
+  if (process.platform !== 'win32') {
     try {
       fs.unlinkSync(pipePath);
     } catch (error) {
-      // Ignore cleanup errors
+      // Ignore cleanup errors (file may not exist)
     }
   }
 }
