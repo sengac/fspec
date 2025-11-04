@@ -211,6 +211,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@ink` | Ink (React for CLIs) rendering engine |
 | `@interactive` | Interactive terminal UI features using Ink |
 | `@internal` | Internal Utility |
+| `@ipc` | Inter-process communication features using Unix sockets or named pipes |
 | `@isomorphic-git` | Uses isomorphic-git library for pure JavaScript git operations |
 | `@json-backed` | JSON-Backed Documentation |
 | `@json-output` | JSON format output support |
@@ -585,7 +586,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-11-03T04:42:51.326Z_
+_Last updated: 2025-11-03T22:23:50.416Z_
 
 **Update Command**: `fspec tag-stats`
 

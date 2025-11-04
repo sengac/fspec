@@ -746,6 +746,10 @@
           "description": "Internal Utility"
         },
         {
+          "name": "@ipc",
+          "description": "Inter-process communication features using Unix sockets or named pipes"
+        },
+        {
           "name": "@isomorphic-git",
           "description": "Uses isomorphic-git library for pure JavaScript git operations"
         },
@@ -1374,7 +1378,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-11-03T04:42:51.326Z",
+    "lastUpdated": "2025-11-03T22:23:50.416Z",
     "phaseStats": [
       {
         "phase": "Phase 1",
