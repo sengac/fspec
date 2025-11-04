@@ -69,9 +69,9 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
         onCancel();
       }
     } else if (confirmMode === 'typed') {
-      // Typed phrase mode
+      // Typed phrase mode (case-insensitive)
       if (key.return) {
-        if (inputValue === typedPhrase) {
+        if (inputValue.toLowerCase() === typedPhrase?.toLowerCase()) {
           onConfirm();
         }
       } else if (key.backspace || key.delete) {
