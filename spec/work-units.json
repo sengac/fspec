@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-04T05:32:43.971Z"
+    "lastUpdated": "2025-11-04T05:59:08.107Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -39450,15 +39450,31 @@
       "id": "BUG-068",
       "title": "fspec add-step appends instead of replacing prefill placeholders",
       "type": "bug",
-      "status": "specifying",
+      "status": "done",
       "createdAt": "2025-11-04T05:17:12.022Z",
-      "updatedAt": "2025-11-04T05:18:46.221Z",
+      "updatedAt": "2025-11-04T05:59:08.187Z",
       "description": "When using fspec add-step to add Given/When/Then steps, it appends new steps instead of replacing existing [precondition]/[action]/[expected outcome] placeholders. Since we already parse the AST with @cucumber/gherkin for formatting, we should detect and replace placeholders instead of appending.",
       "children": [],
       "stateHistory": [
         {
           "state": "specifying",
           "timestamp": "2025-11-04T05:18:05.161Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-04T05:46:33.475Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-04T05:48:29.066Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-04T05:49:33.668Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-04T05:59:08.187Z"
         }
       ],
       "rules": [
@@ -39526,7 +39542,18 @@
           "createdAt": "2025-11-04T05:18:46.221Z"
         }
       ],
-      "nextExampleId": 4
+      "nextExampleId": 4,
+      "userStory": {
+        "role": "developer using fspec CLI",
+        "action": "add steps to scenarios with placeholders",
+        "benefit": "new steps replace placeholders instead of creating duplicates"
+      },
+      "estimate": 3,
+      "questions": [],
+      "architectureNotes": [],
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-04T05:59:08.187Z"
     }
   },
   "states": {
@@ -39564,13 +39591,13 @@
       "BOARD-020",
       "TUI-012",
       "TUI-013",
-      "RES-007",
-      "BUG-068"
+      "RES-007"
     ],
     "testing": [],
     "implementing": [],
     "validating": [],
     "done": [
+      "BUG-068",
       "REFAC-003",
       "BUG-066",
       "BUG-053",
