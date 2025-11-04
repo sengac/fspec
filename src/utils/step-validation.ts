@@ -34,9 +34,16 @@ export interface ValidationResult {
 /**
  * Extract step comments from test file content
  *
- * Recognizes both formats:
- * - // @step Given I am on the login page
- * - // Given I am on the login page (backward compatible)
+ * Recognizes @step format in any comment style:
+ * - // @step Given I am on the login page (JavaScript, C, Java, etc.)
+ * - # @step When I click the button (Python, Ruby, Bash, etc.)
+ * - -- @step Then I see the result (SQL, Haskell, etc.)
+ * - % @step And the database is updated (MATLAB, etc.)
+ * - ' @step But the error is logged (Visual Basic)
+ * - Block comments with @step prefix
+ *
+ * Also supports backward compatible format (plain step without @step prefix):
+ * - // Given I am on the login page
  *
  * @param testContent - Test file content
  * @returns Array of step comments found
@@ -49,9 +56,11 @@ export function extractStepComments(testContent: string): StepComment[] {
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim();
 
-    // Match: // @step Given text
+    // Match: @step {keyword} {text} (language-agnostic)
+    // Matches @step anywhere in the line, ignores comment delimiters
+    // Captures keyword and text, stops before trailing */ if present
     const prefixMatch = line.match(
-      /^\/\/\s*@step\s+(Given|When|Then|And|But)\s+(.+)$/
+      /@step\s+(Given|When|Then|And|But)\s+(.+?)(?:\s*\*\/.*)?$/
     );
     if (prefixMatch) {
       stepComments.push({
@@ -63,7 +72,7 @@ export function extractStepComments(testContent: string): StepComment[] {
       continue;
     }
 
-    // Match: // Given text (backward compatible)
+    // Match: // Given text (backward compatible - JavaScript only)
     const plainMatch = line.match(/^\/\/\s+(Given|When|Then|And|But)\s+(.+)$/);
     if (plainMatch && stepKeywords.includes(plainMatch[1])) {
       stepComments.push({

@@ -70,6 +70,10 @@
           "description": "User interface and visual components"
         },
         {
+          "name": "@utils",
+          "description": "Utility functions and helpers"
+        },
+        {
           "name": "@validator",
           "description": "Validation Logic"
         },
@@ -1378,7 +1382,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-11-03T22:23:50.416Z",
+    "lastUpdated": "2025-11-03T23:27:32.333Z",
     "phaseStats": [
       {
         "phase": "Phase 1",
