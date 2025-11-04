@@ -1,0 +1,64 @@
+{
+  "scenarios": [
+    {
+      "name": "Delete single checkpoint with D key and Y/N confirmation",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/CheckpointViewer-delete.test.tsx",
+          "lines": "34-112",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Cancel single checkpoint deletion with N key",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/CheckpointViewer-delete.test.tsx",
+          "lines": "114-171",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Delete ALL checkpoints with Shift+D and typed confirmation",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/CheckpointViewer-delete.test.tsx",
+          "lines": "173-240",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Delete last remaining checkpoint exits to board",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/CheckpointViewer-delete.test.tsx",
+          "lines": "242-286",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Cancel delete ALL with ESC key",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/CheckpointViewer-delete.test.tsx",
+          "lines": "288-340",
+          "implMappings": []
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/components/__tests__/CheckpointViewer-delete.test.tsx"
+    ],
+    "implFiles": [],
+    "totalLinesCovered": 303
+  }
+}

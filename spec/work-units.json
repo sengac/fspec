@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-04T06:46:16.027Z"
+    "lastUpdated": "2025-11-04T07:38:38.008Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -34873,15 +34873,19 @@
       "id": "GIT-009",
       "title": "Restore individual files or all files from checkpoint in checkpoint viewer",
       "type": "story",
-      "status": "blocked",
+      "status": "specifying",
       "createdAt": "2025-11-01T17:36:19.264Z",
-      "updatedAt": "2025-11-01T17:43:01.088Z",
+      "updatedAt": "2025-11-04T07:33:50.667Z",
       "description": "Add ability to selectively restore individual files or restore all files from a checkpoint through the TUI checkpoint viewer interface",
       "children": [],
       "stateHistory": [
         {
           "state": "specifying",
           "timestamp": "2025-11-01T17:36:26.698Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-04T07:33:50.667Z"
         }
       ],
       "userStory": {
@@ -34943,8 +34947,7 @@
       "nextQuestionId": 4,
       "blockedBy": [
         "TUI-011"
-      ],
-      "blockedReason": "Blocked by TUI-011"
+      ]
     },
     "BUG-053": {
       "id": "BUG-053",
@@ -35048,21 +35051,33 @@
       "id": "GIT-010",
       "title": "Delete checkpoint or all checkpoints from checkpoint viewer with confirmation",
       "type": "story",
-      "status": "blocked",
+      "status": "implementing",
       "createdAt": "2025-11-01T17:40:52.075Z",
-      "updatedAt": "2025-11-01T17:43:02.602Z",
+      "updatedAt": "2025-11-04T07:43:36.890Z",
       "description": "Add ability to delete a single checkpoint or all checkpoints from the TUI checkpoint viewer interface with confirmation dialogs to prevent accidental deletion",
       "children": [],
       "stateHistory": [
         {
           "state": "specifying",
           "timestamp": "2025-11-01T17:41:03.713Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-04T07:33:53.568Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-04T07:40:27.852Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-04T07:43:36.890Z"
         }
       ],
       "userStory": {
-        "role": "developer using fspec TUI",
-        "action": "delete checkpoints I no longer need",
-        "benefit": "I can manage my checkpoint storage without using CLI commands"
+        "role": "TUI developer managing checkpoints",
+        "action": "delete unwanted checkpoints from the checkpoint viewer",
+        "benefit": "I can clean up old experiments and maintain a tidy checkpoint history"
       },
       "rules": [
         {
@@ -35088,9 +35103,39 @@
           "text": "User wants confirmation dialogs to prevent accidental deletion",
           "deleted": false,
           "createdAt": "2025-11-01T17:41:31.201Z"
+        },
+        {
+          "id": 4,
+          "text": "Delete operation must remove both the git ref (refs/fspec-checkpoints/{workUnitId}/{checkpointName}) AND the checkpoint entry from the index file (.git/fspec-checkpoints-index/{workUnitId}.json)",
+          "deleted": false,
+          "createdAt": "2025-11-04T07:38:08.685Z"
+        },
+        {
+          "id": 5,
+          "text": "Single checkpoint deletion uses D key and ConfirmationDialog with confirmMode='yesno' and riskLevel='medium' (yellow border)",
+          "deleted": false,
+          "createdAt": "2025-11-04T07:38:10.266Z"
+        },
+        {
+          "id": 6,
+          "text": "Delete ALL uses Shift+D key and ConfirmationDialog with confirmMode='typed', typedPhrase='DELETE ALL', riskLevel='high' (red border)",
+          "deleted": false,
+          "createdAt": "2025-11-04T07:38:12.338Z"
+        },
+        {
+          "id": 7,
+          "text": "After successful deletion, viewer stays open with next checkpoint selected (or exits to board if no checkpoints remain)",
+          "deleted": false,
+          "createdAt": "2025-11-04T07:38:13.726Z"
+        },
+        {
+          "id": 8,
+          "text": "Deletion triggers IPC message (sendIPCMessage({ type: 'checkpoint-changed' })) to update CheckpointPanel counts in real-time",
+          "deleted": false,
+          "createdAt": "2025-11-04T07:38:15.510Z"
         }
       ],
-      "nextRuleId": 4,
+      "nextRuleId": 9,
       "examples": [
         {
           "id": 0,
@@ -35103,51 +35148,80 @@
           "text": "User has 50 old checkpoints, wants to delete them all at once, presses key combination, sees 'Delete ALL checkpoints?' warning, confirms with typed confirmation, all deleted",
           "deleted": false,
           "createdAt": "2025-11-01T17:41:49.326Z"
+        },
+        {
+          "id": 2,
+          "text": "User presses D key while viewing checkpoint, yellow dialog appears asking 'Delete checkpoint AUTH-001-baseline?', user presses Y, checkpoint deleted, viewer selects next checkpoint",
+          "deleted": false,
+          "createdAt": "2025-11-04T07:38:25.135Z"
+        },
+        {
+          "id": 3,
+          "text": "User presses D key, sees yellow dialog, presses N, deletion cancelled, viewer returns to normal state",
+          "deleted": false,
+          "createdAt": "2025-11-04T07:38:26.523Z"
+        },
+        {
+          "id": 4,
+          "text": "User presses Shift+D, red dialog appears 'Delete ALL 47 checkpoints for AUTH-001?', user types 'DELETE ALL' and presses Enter, all checkpoints deleted, viewer exits to board",
+          "deleted": false,
+          "createdAt": "2025-11-04T07:38:28.433Z"
+        },
+        {
+          "id": 5,
+          "text": "User deletes last remaining checkpoint in viewer, viewer automatically exits to board (empty state)",
+          "deleted": false,
+          "createdAt": "2025-11-04T07:38:29.746Z"
         }
       ],
-      "nextExampleId": 2,
+      "nextExampleId": 6,
       "questions": [
         {
           "id": 0,
           "text": "@human: What key should trigger single checkpoint deletion? (D)elete, (X) remove, (Backspace), or other?",
           "deleted": false,
           "createdAt": "2025-11-01T17:42:04.782Z",
-          "selected": false
+          "selected": true,
+          "answer": "D key (Delete)"
         },
         {
           "id": 1,
           "text": "@human: What key/combination should trigger delete ALL? Shift+D, Ctrl+D, separate menu option, or other?",
           "deleted": false,
           "createdAt": "2025-11-01T17:42:06.628Z",
-          "selected": false
+          "selected": true,
+          "answer": "Shift+D (natural extension of D key with modifier for more destructive action)"
         },
         {
           "id": 2,
           "text": "@human: For single checkpoint deletion, what should the confirmation look like? Simple Y/N prompt, or require typing checkpoint name, or other?",
           "deleted": false,
           "createdAt": "2025-11-01T17:42:08.075Z",
-          "selected": false
+          "selected": true,
+          "answer": "Simple Y/N prompt using ConfirmationDialog in yesno mode with medium risk level (yellow border)"
         },
         {
           "id": 3,
           "text": "@human: For delete ALL confirmation, should it require typing a specific phrase like DELETE ALL to prevent accidents?",
           "deleted": false,
           "createdAt": "2025-11-01T17:42:09.817Z",
-          "selected": false
+          "selected": true,
+          "answer": "Yes, require typing DELETE ALL phrase to prevent accidents (using ConfirmationDialog typed mode with high risk level red border)"
         },
         {
           "id": 4,
           "text": "@human: After deleting a checkpoint, what should happen? Stay in viewer with next checkpoint selected, exit viewer, show success message, or other?",
           "deleted": false,
           "createdAt": "2025-11-01T17:42:11.337Z",
-          "selected": false
+          "selected": true,
+          "answer": "Stay in viewer with next checkpoint selected (or exit to board if no checkpoints remain)"
         }
       ],
       "nextQuestionId": 5,
       "blockedBy": [
         "TUI-011"
       ],
-      "blockedReason": "Blocked by TUI-011"
+      "estimate": 5
     },
     "TUI-011": {
       "id": "TUI-011",
@@ -39801,10 +39875,13 @@
       "BOARD-020",
       "TUI-012",
       "TUI-013",
-      "RES-007"
+      "RES-007",
+      "GIT-009"
     ],
     "testing": [],
-    "implementing": [],
+    "implementing": [
+      "GIT-010"
+    ],
     "validating": [],
     "done": [
       "TUI-011",
@@ -40101,8 +40178,6 @@
       "EXMAP-001"
     ],
     "blocked": [
-      "GIT-009",
-      "GIT-010",
       "QUERY-001"
     ]
   },
