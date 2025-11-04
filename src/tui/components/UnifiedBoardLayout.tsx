@@ -69,58 +69,43 @@ const getColumnWidth = (columnIndex: number, baseWidth: number, remainder: numbe
   return columnIndex < remainder ? baseWidth + 1 : baseWidth;
 };
 
-const fitToWidth = (text: string, width: number): string => {
-  if (text.length > width) {
-    return text.substring(0, width);
+// Helper: Calculate visual width accounting for emoji width
+const getVisualWidth = (text: string): number => {
+  let width = 0;
+  for (const char of text) {
+    const code = char.codePointAt(0) || 0;
+    // Emoji ranges that render as 2 columns:
+    // U+2300-U+27BF (Miscellaneous Technical, Dingbats) - includes ⏩ (U+23E9)
+    // U+1F000+ (Emoticons, symbols, etc.)
+    // Arrows like ↓ (U+2193) render as 1 column
+    const isWide = (code >= 0x2300 && code <= 0x27BF) || code >= 0x1F000;
+    width += isWide ? 2 : 1;
   }
-  return text.padEnd(width, ' ');
+  return width;
 };
 
-// Helper: Apply character-by-character shimmer gradient (BOARD-009)
-const applyCharacterShimmer = (
-  text: string,
-  shimmerPosition: number,
-  type: 'story' | 'bug' | 'task'
-): string => {
-  const colors: Record<string, { base: string; bright: string }> = {
-    story: { base: 'white', bright: 'whiteBright' },
-    bug: { base: 'red', bright: 'redBright' },
-    task: { base: 'blue', bright: 'blueBright' },
-  };
+const fitToWidth = (text: string, width: number): string => {
+  const visualWidth = getVisualWidth(text);
 
-  const { base, bright } = colors[type] || colors.story;
-
-  return text
-    .split('')
-    .map((char, idx) => {
-      const distance = Math.abs(idx - shimmerPosition);
-      if (distance === 0) {
-        return (chalk as any)[bright](char);
-      } else if (distance === 1) {
-        return (chalk as any)[base](char);
-      } else {
-        return chalk.gray(char);
-      }
-    })
-    .join('');
-};
-
-// Helper: Apply character-by-character background shimmer gradient (BOARD-009)
-const applyBackgroundCharacterShimmer = (
-  text: string,
-  shimmerPosition: number
-): string => {
-  return text
-    .split('')
-    .map((char, idx) => {
-      const distance = Math.abs(idx - shimmerPosition);
-      if (distance === 0) {
-        return chalk.bgGreenBright.black(char);
-      } else {
-        return chalk.bgGreen.black(char);
-      }
-    })
-    .join('');
+  if (visualWidth > width) {
+    // Truncate while being careful about emoji boundaries
+    let result = '';
+    let currentVisualWidth = 0;
+    for (const char of text) {
+      const code = char.codePointAt(0) || 0;
+      const isWide = (code >= 0x2300 && code <= 0x27BF) || code >= 0x1F000;
+      const charWidth = isWide ? 2 : 1;
+      if (currentVisualWidth + charWidth > width) break;
+      result += char;
+      currentVisualWidth += charWidth;
+    }
+    // Pad to exact width
+    return result + ' '.repeat(width - currentVisualWidth);
+  } else if (visualWidth < width) {
+    // Pad with spaces to reach visual width
+    return text + ' '.repeat(width - visualWidth);
+  }
+  return text;
 };
 
 const buildBorderRow = (
@@ -190,9 +175,6 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
 
   const totalWidth = STATES.reduce((sum, _, idx) => sum + getColumnWidth(idx, colWidth, colRemainder), 0) + (STATES.length - 1);
 
-  // Shimmer animation state (BOARD-009)
-  const [shimmerPosition, setShimmerPosition] = useState<number>(0);
-
   // Column scroll offsets (BOARD-007)
   const [scrollOffsets, setScrollOffsets] = useState<Record<string, number>>({
     backlog: 0,
@@ -213,7 +195,7 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
     });
   }, [workUnits]);
 
-  // Compute last changed work unit (BOARD-009)
+  // Compute last changed work unit (TUI-017 - for emoji indicators)
   const lastChangedWorkUnit = useMemo(() => {
     if (workUnits.length === 0) return null;
 
@@ -228,23 +210,6 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
       return currentStateTimestamp > latestStateTimestamp ? current : latest;
     });
   }, [workUnits]);
-
-  // Shimmer animation effect (BOARD-009)
-  useEffect(() => {
-    if (!lastChangedWorkUnit) return;
-
-    const interval = setInterval(() => {
-      setShimmerPosition(prev => {
-        const estimate = lastChangedWorkUnit.estimate || 0;
-        const storyPointsText = estimate > 0 ? ` [${estimate}]` : '';
-        const text = `${lastChangedWorkUnit.id}${storyPointsText}`;
-        const maxPosition = text.length;
-        return (prev + 1) % maxPosition;
-      });
-    }, 100);
-
-    return () => clearInterval(interval);
-  }, [lastChangedWorkUnit]);
 
   // Auto-scroll to keep selected work unit visible (BOARD-007)
   useEffect(() => {
@@ -511,22 +476,21 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
           const wu = column.units[itemIndex];
           const estimate = wu.estimate || 0;
           const storyPointsText = estimate > 0 ? ` [${estimate}]` : '';
-          const text = `${wu.id}${storyPointsText}`;
+
+          // Check if this work unit is the last changed (TUI-017)
+          const isLastChanged = lastChangedWorkUnit?.id === wu.id;
+          const text = isLastChanged
+            ? `⏩ ${wu.id}${storyPointsText} ⏩`
+            : `${wu.id}${storyPointsText}`;
+
           const paddedText = fitToWidth(text, currentColWidth);
 
           // Check if this work unit is selected
           const isSelected = colIndex === focusedColumnIndex && itemIndex === selectedWorkUnitIndex;
 
-          // Check if this work unit is the last changed
-          const isLastChanged = lastChangedWorkUnit?.id === wu.id;
-
-          // Apply color-coding with animations
-          if (isSelected && isLastChanged) {
-            return applyBackgroundCharacterShimmer(paddedText, shimmerPosition);
-          } else if (isSelected) {
+          // Apply color-coding without shimmer animation (TUI-017)
+          if (isSelected) {
             return chalk.bgGreen.black(paddedText);
-          } else if (isLastChanged) {
-            return applyCharacterShimmer(paddedText, shimmerPosition, wu.type);
           } else {
             if (wu.type === 'bug') {
               return chalk.red(paddedText);
