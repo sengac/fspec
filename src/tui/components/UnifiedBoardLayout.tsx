@@ -17,10 +17,6 @@ import { WorkUnitDescription } from './WorkUnitDescription';
 import { WorkUnitMetadata } from './WorkUnitMetadata';
 import { WorkUnitAttachments } from './WorkUnitAttachments';
 import { useFspecStore } from '../store/fspecStore';
-import { openInBrowser } from '../../utils/openBrowser';
-import { logger } from '../../utils/logger';
-import fs from 'fs';
-import path from 'path';
 
 interface StateHistoryEntry {
   state: string;
@@ -370,20 +366,8 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
       onMoveDown?.();
     }
 
-    // TUI-013: Open attachment in browser
-    if (input === 'o' && selectedWorkUnit && selectedWorkUnit.attachments && selectedWorkUnit.attachments.length > 0) {
-      const firstAttachment = selectedWorkUnit.attachments[0];
-
-      // Convert relative path to absolute path, then to file:// URL
-      const absolutePath = path.isAbsolute(firstAttachment)
-        ? firstAttachment
-        : path.resolve(cwd || process.cwd(), firstAttachment);
-      const fileUrl = `file://${absolutePath}`;
-
-      openInBrowser({ url: fileUrl, wait: false }).catch((error: Error) => {
-        logger.error(`[UnifiedBoardLayout] Failed to open attachment: ${error.message}`);
-      });
-    }
+    // TUI-019: Open attachment dialog (handled at BoardView level)
+    // The 'o' key handler is now in BoardView to show AttachmentDialog
   });
 
   return (

@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-04T12:01:58.259Z"
+    "lastUpdated": "2025-11-04T21:41:38.286Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -40057,6 +40057,136 @@
       "nextQuestionId": 0,
       "nextNoteId": 0,
       "updated": "2025-11-04T06:46:13.826Z"
+    },
+    "TUI-019": {
+      "id": "TUI-019",
+      "title": "Attachment selection dialog with keyboard navigation",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-11-04T21:16:55.022Z",
+      "updatedAt": "2025-11-04T21:41:38.370Z",
+      "description": "Replace single-attachment opening with a dialog that lists all attachments in a virtual list, allowing users to select which attachment to open",
+      "children": [],
+      "dependsOn": [
+        "TUI-013"
+      ],
+      "userStory": {
+        "role": "developer viewing work unit attachments in fspec TUI",
+        "action": "select which attachment to open from a list",
+        "benefit": "I can choose the specific file I want to view when there are multiple attachments"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-04T21:17:29.483Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-04T21:22:08.784Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-04T21:25:00.414Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-04T21:41:05.042Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-04T21:41:38.370Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "Pressing 'o' key opens attachment selection dialog (only if attachments exist)",
+          "deleted": false,
+          "createdAt": "2025-11-04T21:17:35.424Z"
+        },
+        {
+          "id": 1,
+          "text": "If no attachments exist, pressing 'o' does nothing (no dialog opens)",
+          "deleted": false,
+          "createdAt": "2025-11-04T21:17:41.040Z"
+        },
+        {
+          "id": 2,
+          "text": "Dialog displays all attachments in a virtual list (scrollable if more than viewport)",
+          "deleted": false,
+          "createdAt": "2025-11-04T21:17:47.007Z"
+        },
+        {
+          "id": 3,
+          "text": "Arrow up/down keys navigate through attachment list",
+          "deleted": false,
+          "createdAt": "2025-11-04T21:17:52.866Z"
+        },
+        {
+          "id": 4,
+          "text": "Pressing Enter opens the currently selected attachment in default browser",
+          "deleted": false,
+          "createdAt": "2025-11-04T21:17:59.238Z"
+        },
+        {
+          "id": 5,
+          "text": "Pressing Esc closes the dialog without opening any attachment",
+          "deleted": false,
+          "createdAt": "2025-11-04T21:18:05.152Z"
+        },
+        {
+          "id": 6,
+          "text": "Must reuse existing openInBrowser utility function",
+          "deleted": false,
+          "createdAt": "2025-11-04T21:18:11.402Z"
+        },
+        {
+          "id": 7,
+          "text": "Remove old TUI-013 single-attachment opening code from UnifiedBoardLayout",
+          "deleted": false,
+          "createdAt": "2025-11-04T21:18:17.167Z"
+        }
+      ],
+      "nextRuleId": 8,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User presses 'o' on work unit with 3 attachments, dialog opens showing list of all 3 files",
+          "deleted": false,
+          "createdAt": "2025-11-04T21:18:33.291Z"
+        },
+        {
+          "id": 1,
+          "text": "User navigates with arrow keys, presses Enter on 'diagram.png', file opens in browser, dialog closes",
+          "deleted": false,
+          "createdAt": "2025-11-04T21:18:40.268Z"
+        },
+        {
+          "id": 2,
+          "text": "User presses 'o', dialog opens, user presses Esc, dialog closes without opening anything",
+          "deleted": false,
+          "createdAt": "2025-11-04T21:18:47.347Z"
+        },
+        {
+          "id": 3,
+          "text": "User presses 'o' on work unit with no attachments, nothing happens (no dialog)",
+          "deleted": false,
+          "createdAt": "2025-11-04T21:18:54.720Z"
+        },
+        {
+          "id": 4,
+          "text": "Work unit has 10 attachments, dialog shows scrollable list with scroll indicators",
+          "deleted": false,
+          "createdAt": "2025-11-04T21:19:01.318Z"
+        }
+      ],
+      "nextExampleId": 5,
+      "estimate": 5,
+      "questions": [],
+      "architectureNotes": [],
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-04T21:41:38.370Z"
     }
   },
   "states": {
@@ -40097,6 +40227,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "TUI-019",
       "TUI-013",
       "TUI-012",
       "GIT-009",
@@ -40417,7 +40548,7 @@
     "BUG": 68,
     "DISC": 2,
     "COV": 53,
-    "TUI": 18,
+    "TUI": 19,
     "REFAC": 3
   }
 }

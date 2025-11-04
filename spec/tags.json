@@ -18,6 +18,10 @@
           "description": "Command-Line Interface"
         },
         {
+          "name": "@dialog",
+          "description": "Dialog and modal UI components in TUI"
+        },
+        {
           "name": "@file-ops",
           "description": "File Operations"
         },
@@ -1410,7 +1414,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-11-04T10:07:17.371Z",
+    "lastUpdated": "2025-11-04T21:20:05.608Z",
     "phaseStats": [
       {
         "phase": "Phase 1",
