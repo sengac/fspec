@@ -6,7 +6,118 @@
         {
           "file": "src/tui/components/__tests__/CheckpointViewer-delete.test.tsx",
           "lines": "34-112",
-          "implMappings": []
+          "implMappings": [
+            {
+              "file": "src/utils/git-checkpoint.ts",
+              "lines": [
+                629,
+                630,
+                631,
+                632,
+                633,
+                634,
+                635,
+                636,
+                637,
+                638,
+                639,
+                640,
+                641,
+                642,
+                643,
+                644,
+                645,
+                646,
+                647,
+                648,
+                649,
+                650,
+                651,
+                652,
+                653,
+                654,
+                655,
+                656,
+                657,
+                658,
+                659,
+                660,
+                661,
+                662,
+                663,
+                664,
+                665,
+                666,
+                667,
+                668,
+                669,
+                670,
+                671,
+                672,
+                673,
+                674,
+                675,
+                676,
+                677,
+                678,
+                679,
+                680
+              ]
+            },
+            {
+              "file": "src/tui/components/CheckpointViewer.tsx",
+              "lines": [
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289
+              ]
+            }
+          ]
         }
       ]
     },
@@ -16,7 +127,16 @@
         {
           "file": "src/tui/components/__tests__/CheckpointViewer-delete.test.tsx",
           "lines": "114-171",
-          "implMappings": []
+          "implMappings": [
+            {
+              "file": "src/tui/components/CheckpointViewer.tsx",
+              "lines": [
+                287,
+                288,
+                289
+              ]
+            }
+          ]
         }
       ]
     },
@@ -26,7 +146,107 @@
         {
           "file": "src/tui/components/__tests__/CheckpointViewer-delete.test.tsx",
           "lines": "173-240",
-          "implMappings": []
+          "implMappings": [
+            {
+              "file": "src/utils/git-checkpoint.ts",
+              "lines": [
+                685,
+                686,
+                687,
+                688,
+                689,
+                690,
+                691,
+                692,
+                693,
+                694,
+                695,
+                696,
+                697,
+                698,
+                699,
+                700,
+                701,
+                702,
+                703,
+                704,
+                705,
+                706,
+                707,
+                708,
+                709,
+                710,
+                711,
+                712,
+                713,
+                714,
+                715,
+                716,
+                717,
+                718,
+                719,
+                720,
+                721,
+                722,
+                723,
+                724,
+                725
+              ]
+            },
+            {
+              "file": "src/tui/components/CheckpointViewer.tsx",
+              "lines": [
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289
+              ]
+            }
+          ]
         }
       ]
     },
@@ -36,7 +256,118 @@
         {
           "file": "src/tui/components/__tests__/CheckpointViewer-delete.test.tsx",
           "lines": "242-286",
-          "implMappings": []
+          "implMappings": [
+            {
+              "file": "src/utils/git-checkpoint.ts",
+              "lines": [
+                629,
+                630,
+                631,
+                632,
+                633,
+                634,
+                635,
+                636,
+                637,
+                638,
+                639,
+                640,
+                641,
+                642,
+                643,
+                644,
+                645,
+                646,
+                647,
+                648,
+                649,
+                650,
+                651,
+                652,
+                653,
+                654,
+                655,
+                656,
+                657,
+                658,
+                659,
+                660,
+                661,
+                662,
+                663,
+                664,
+                665,
+                666,
+                667,
+                668,
+                669,
+                670,
+                671,
+                672,
+                673,
+                674,
+                675,
+                676,
+                677,
+                678,
+                679,
+                680
+              ]
+            },
+            {
+              "file": "src/tui/components/CheckpointViewer.tsx",
+              "lines": [
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289
+              ]
+            }
+          ]
         }
       ]
     },
@@ -46,7 +377,16 @@
         {
           "file": "src/tui/components/__tests__/CheckpointViewer-delete.test.tsx",
           "lines": "288-340",
-          "implMappings": []
+          "implMappings": [
+            {
+              "file": "src/tui/components/CheckpointViewer.tsx",
+              "lines": [
+                287,
+                288,
+                289
+              ]
+            }
+          ]
         }
       ]
     }
@@ -58,7 +398,10 @@
     "testFiles": [
       "src/tui/components/__tests__/CheckpointViewer-delete.test.tsx"
     ],
-    "implFiles": [],
-    "totalLinesCovered": 303
+    "implFiles": [
+      "src/utils/git-checkpoint.ts",
+      "src/tui/components/CheckpointViewer.tsx"
+    ],
+    "totalLinesCovered": 598
   }
 }
