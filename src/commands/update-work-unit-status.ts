@@ -6,6 +6,7 @@ import { join } from 'path';
 import { glob } from 'tinyglobby';
 import type { WorkUnitsData, QuestionItem, WorkUnitType } from '../types';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
+import { logger } from '../utils/logger.js';
 import {
   getStatusChangeReminder,
   getVirtualHooksReminder,
@@ -490,9 +491,15 @@ export async function updateWorkUnitStatus(
     // BUG-066: Cleanup auto-checkpoints for completed work unit
     // Manual checkpoints are preserved, only auto-checkpoints deleted
     try {
+      logger.info(
+        `[UPDATE-STATUS] Starting auto-checkpoint cleanup for ${options.workUnitId} (moving to done)`
+      );
       const cleanupResult = await gitCheckpoint.cleanupAutoCheckpoints(
         options.workUnitId,
         cwd
+      );
+      logger.info(
+        `[UPDATE-STATUS] Auto-checkpoint cleanup completed: ${cleanupResult.deletedCount} deleted`
       );
 
       if (cleanupResult.deletedCount > 0) {
@@ -504,7 +511,11 @@ export async function updateWorkUnitStatus(
       }
 
       // Notify TUI of checkpoint change via IPC
+      logger.info(
+        `[UPDATE-STATUS] Sending IPC message 'checkpoint-changed' after auto-cleanup`
+      );
       await sendIPCMessage({ type: 'checkpoint-changed' });
+      logger.info(`[UPDATE-STATUS] IPC message sent successfully`);
     } catch (error: unknown) {
       // Silently skip cleanup if git operations fail
       // This allows commands to work even without git repository

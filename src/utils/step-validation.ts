@@ -249,15 +249,23 @@ export function formatValidationError(
 
   lines.push('');
   lines.push('To fix:');
-  lines.push('  1. Place step comments NEAR the code that executes each step');
+  lines.push('  1. DELETE and RECREATE test if created in current work unit');
+  lines.push(
+    '     - Test file recreation is better than editing for structural issues'
+  );
+  lines.push('     - Start fresh with @step comments from the beginning');
+  lines.push('     - Ensures proper test structure and step mapping');
+  lines.push(
+    '  2. If test exists from other work unit, use checkpoint restore'
+  );
+  lines.push(
+    '     - Run: fspec restore-checkpoint <work-unit-id> <checkpoint-name>'
+  );
+  lines.push('     - Do NOT modify tests from other work units retroactively');
+  lines.push('  3. Place step comments NEAR the code that executes each step');
   lines.push('     - Find the line that executes the step');
   lines.push('     - Put the @step comment right before that line');
-  lines.push(
-    '  2. If you have duplicate Given/When/Then comments, remove them first'
-  );
-  lines.push('     - @step comments replace existing step comments');
-  lines.push('     - Avoid creating redundant comments');
-  lines.push('  3. Use the exact text shown above with // @step prefix');
+  lines.push('  4. Use the exact text shown above with // @step prefix');
   lines.push('');
   lines.push('Example:');
   lines.push('  If your step is "When I run the finalize command"');

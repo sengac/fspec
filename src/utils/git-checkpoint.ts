@@ -6,6 +6,7 @@
 import * as git from 'isomorphic-git';
 import fs from 'fs';
 import { join } from 'path';
+import { logger } from './logger.js';
 
 /**
  * Get git author information from config with fallback defaults
@@ -533,12 +534,22 @@ export async function cleanupAutoCheckpoints(
   deletedCount: number;
   deletedCheckpoints: string[];
 }> {
+  logger.info(`[CHECKPOINT-CLEANUP] Starting auto-cleanup for ${workUnitId}`);
   const checkpoints = await listCheckpoints(workUnitId, cwd);
+  logger.info(
+    `[CHECKPOINT-CLEANUP] Found ${checkpoints.length} total checkpoints for ${workUnitId}`
+  );
 
   // Filter for automatic checkpoints only
   const autoCheckpoints = checkpoints.filter(cp => cp.isAutomatic);
+  logger.info(
+    `[CHECKPOINT-CLEANUP] Found ${autoCheckpoints.length} auto-checkpoints to delete`
+  );
 
   if (autoCheckpoints.length === 0) {
+    logger.info(
+      `[CHECKPOINT-CLEANUP] No auto-checkpoints to delete for ${workUnitId}`
+    );
     return {
       deletedCount: 0,
       deletedCheckpoints: [],
@@ -585,10 +596,17 @@ export async function cleanupAutoCheckpoints(
 
     // Write updated index
     await fs.promises.writeFile(indexPath, JSON.stringify(index, null, 2));
+    logger.info(`[CHECKPOINT-CLEANUP] Index file updated for ${workUnitId}`);
   } catch (error) {
     // Index file doesn't exist or is corrupted - skip
+    logger.warn(
+      `[CHECKPOINT-CLEANUP] Failed to update index file for ${workUnitId}: ${error}`
+    );
   }
 
+  logger.info(
+    `[CHECKPOINT-CLEANUP] Completed: deleted ${deletedCheckpoints.length} auto-checkpoints for ${workUnitId}`
+  );
   return {
     deletedCount: deletedCheckpoints.length,
     deletedCheckpoints,
