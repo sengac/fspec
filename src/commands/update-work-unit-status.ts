@@ -486,6 +486,36 @@ export async function updateWorkUnitStatus(
     if (!workUnit) {
       throw new Error(`Work unit '${options.workUnitId}' does not exist`);
     }
+
+    // BUG-066: Cleanup auto-checkpoints for completed work unit
+    // Manual checkpoints are preserved, only auto-checkpoints deleted
+    try {
+      const cleanupResult = await gitCheckpoint.cleanupAutoCheckpoints(
+        options.workUnitId,
+        cwd
+      );
+
+      if (cleanupResult.deletedCount > 0) {
+        console.log(
+          chalk.gray(
+            `🧹 Auto-cleanup: ${cleanupResult.deletedCount} auto-checkpoint(s) deleted`
+          )
+        );
+      }
+
+      // Notify TUI of checkpoint change via IPC
+      await sendIPCMessage({ type: 'checkpoint-changed' });
+    } catch (error: unknown) {
+      // Silently skip cleanup if git operations fail
+      // This allows commands to work even without git repository
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      if (process.env.DEBUG) {
+        console.warn(
+          chalk.yellow(`⚠️ Checkpoint cleanup skipped: ${errorMessage}`)
+        );
+      }
+    }
   }
 
   // BUG FIX (IDX-002): Update workUnitsData reference to use sorted result

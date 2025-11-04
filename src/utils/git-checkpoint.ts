@@ -523,6 +523,79 @@ export async function cleanupCheckpoints(
 }
 
 /**
+ * Cleanup automatic checkpoints only (preserve manual checkpoints)
+ * Called automatically when work unit moves to done status
+ */
+export async function cleanupAutoCheckpoints(
+  workUnitId: string,
+  cwd: string
+): Promise<{
+  deletedCount: number;
+  deletedCheckpoints: string[];
+}> {
+  const checkpoints = await listCheckpoints(workUnitId, cwd);
+
+  // Filter for automatic checkpoints only
+  const autoCheckpoints = checkpoints.filter(cp => cp.isAutomatic);
+
+  if (autoCheckpoints.length === 0) {
+    return {
+      deletedCount: 0,
+      deletedCheckpoints: [],
+    };
+  }
+
+  const deletedCheckpoints: string[] = [];
+
+  // Delete each automatic checkpoint
+  for (const checkpoint of autoCheckpoints) {
+    const checkpointName = checkpoint.name;
+
+    // Delete git ref file
+    const refPath = join(
+      cwd,
+      '.git',
+      'refs',
+      'fspec-checkpoints',
+      workUnitId,
+      checkpointName
+    );
+
+    try {
+      await fs.promises.unlink(refPath);
+    } catch (error) {
+      // Skip if ref file doesn't exist
+      continue;
+    }
+
+    deletedCheckpoints.push(checkpointName);
+  }
+
+  // Update index file to remove deleted checkpoints
+  const indexPath = getCheckpointIndexPath(cwd, workUnitId);
+
+  try {
+    const indexContent = await fs.promises.readFile(indexPath, 'utf-8');
+    const index = JSON.parse(indexContent);
+
+    // Filter out deleted checkpoints from index
+    index.checkpoints = index.checkpoints.filter(
+      (cp: { name: string }) => !deletedCheckpoints.includes(cp.name)
+    );
+
+    // Write updated index
+    await fs.promises.writeFile(indexPath, JSON.stringify(index, null, 2));
+  } catch (error) {
+    // Index file doesn't exist or is corrupted - skip
+  }
+
+  return {
+    deletedCount: deletedCheckpoints.length,
+    deletedCheckpoints,
+  };
+}
+
+/**
  * Create automatic checkpoint name from work unit ID and state
  */
 export function createAutomaticCheckpointName(

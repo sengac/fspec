@@ -183,6 +183,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@browser-integration` | Features requiring browser launcher integration |
 | `@build` | Build system configuration and bundling |
 | `@checkpoints` | Git checkpoint and state restoration features |
+| `@cleanup` | Cleanup and resource management features |
 | `@code-review` | Code review and quality analysis features |
 | `@command-registration` | CLI command registration features |
 | `@concurrency` | Concurrent access coordination and file locking mechanisms |
@@ -589,7 +590,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-11-04T00:20:27.230Z_
+_Last updated: 2025-11-04T04:28:45.078Z_
 
 **Update Command**: `fspec tag-stats`
 
