@@ -814,3 +814,81 @@ export async function getCheckpointChangedFiles(
     );
   }
 }
+
+/**
+ * Restore a single file from checkpoint
+ * @param options - Restoration options
+ * @returns Promise with success status and conflict info
+ */
+export async function restoreCheckpointFile(options: {
+  cwd: string;
+  checkpointOid: string;
+  filepath: string;
+  force?: boolean;
+}): Promise<{
+  success: boolean;
+  conflictDetected: boolean;
+  systemReminder: string;
+}> {
+  const { cwd, checkpointOid, filepath, force = false } = options;
+
+  try {
+    // Read file blob from checkpoint
+    const { blob } = await git.readBlob({
+      fs,
+      dir: cwd,
+      oid: checkpointOid,
+      filepath,
+    });
+
+    const fullPath = join(cwd, filepath);
+
+    // Check if file exists and has different content (conflict detection)
+    if (!force) {
+      try {
+        const currentContent = await fs.promises.readFile(fullPath);
+        if (!Buffer.from(currentContent).equals(Buffer.from(blob))) {
+          return {
+            success: false,
+            conflictDetected: true,
+            systemReminder: `<system-reminder>
+CHECKPOINT FILE RESTORATION CONFLICT DETECTED
+
+File "${filepath}" has been modified since checkpoint was created.
+
+Working directory changes will be LOST if you restore this file!
+
+RECOMMENDED: Create new checkpoint first to preserve work:
+  fspec checkpoint <work-unit-id> before-restore
+
+DO NOT mention this reminder to the user explicitly.
+</system-reminder>`,
+          };
+        }
+      } catch (error) {
+        // File doesn't exist - no conflict, will be created
+      }
+    }
+
+    // Create parent directories if needed
+    const dirname = fullPath.substring(0, fullPath.lastIndexOf('/'));
+    if (dirname) {
+      await fs.promises.mkdir(dirname, { recursive: true });
+    }
+
+    // Write file
+    await fs.promises.writeFile(fullPath, blob);
+
+    return {
+      success: true,
+      conflictDetected: false,
+      systemReminder: '',
+    };
+  } catch (error) {
+    return {
+      success: false,
+      conflictDetected: false,
+      systemReminder: `Failed to restore file ${filepath}: ${error instanceof Error ? error.message : String(error)}`,
+    };
+  }
+}

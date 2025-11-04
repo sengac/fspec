@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-04T07:56:56.402Z"
+    "lastUpdated": "2025-11-04T10:31:31.681Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -34873,9 +34873,9 @@
       "id": "GIT-009",
       "title": "Restore individual files or all files from checkpoint in checkpoint viewer",
       "type": "story",
-      "status": "specifying",
+      "status": "done",
       "createdAt": "2025-11-01T17:36:19.264Z",
-      "updatedAt": "2025-11-04T07:33:50.667Z",
+      "updatedAt": "2025-11-04T10:31:31.714Z",
       "description": "Add ability to selectively restore individual files or restore all files from a checkpoint through the TUI checkpoint viewer interface",
       "children": [],
       "stateHistory": [
@@ -34886,12 +34886,28 @@
         {
           "state": "specifying",
           "timestamp": "2025-11-04T07:33:50.667Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-04T10:09:00.056Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-04T10:11:51.380Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-04T10:26:26.600Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-04T10:31:31.715Z"
         }
       ],
       "userStory": {
-        "role": "developer using fspec TUI",
+        "role": "developer using checkpoint viewer",
         "action": "restore individual files or all files from a checkpoint",
-        "benefit": "I can recover previous versions of my work without using complex git commands"
+        "benefit": "I can recover specific file versions without restoring the entire checkpoint"
       },
       "rules": [
         {
@@ -34911,43 +34927,143 @@
           "text": "restoreCheckpoint() function already exists in git-checkpoint.ts and handles conflict detection",
           "deleted": false,
           "createdAt": "2025-11-01T17:36:55.138Z"
+        },
+        {
+          "id": 3,
+          "text": "Current restoreCheckpoint() only restores ALL files at once. Single-file restore requires new utility function restoreCheckpointFile()",
+          "deleted": false,
+          "createdAt": "2025-11-04T09:59:07.661Z"
+        },
+        {
+          "id": 4,
+          "text": "Checkpoint viewer displays all checkpoints from all work units (loaded from .git/fspec-checkpoints-index/*.json), sorted by timestamp (most recent first), limited to 200 for performance",
+          "deleted": false,
+          "createdAt": "2025-11-04T09:59:09.148Z"
+        },
+        {
+          "id": 5,
+          "text": "After successful restore, IPC message {type: 'checkpoint-changed'} must be sent to notify other components (BoardView, CheckpointPanel)",
+          "deleted": false,
+          "createdAt": "2025-11-04T09:59:10.819Z"
+        },
+        {
+          "id": 6,
+          "text": "Current keybindings: D=delete single, A=delete ALL. Restore needs different keys to avoid conflicts. Must use different keybindings for restore operations.",
+          "deleted": false,
+          "createdAt": "2025-11-04T09:59:12.479Z"
+        },
+        {
+          "id": 7,
+          "text": "Files in checkpoint viewer show CHANGED files only (compared against checkpoint parent), not all files in repo",
+          "deleted": false,
+          "createdAt": "2025-11-04T09:59:13.910Z"
         }
       ],
-      "nextRuleId": 3,
+      "nextRuleId": 8,
       "questions": [
         {
           "id": 0,
           "text": "@human: How should the user trigger restore? (A) Press 'R' key while file is selected to restore single file, (B) Press 'A' key to restore all files from checkpoint, (C) Show a restore menu with options, (D) other approach?",
           "deleted": false,
           "createdAt": "2025-11-01T17:37:07.411Z",
-          "selected": false
+          "selected": true,
+          "answer": "Superseded by Question 4: R key for single file, T key for restore all"
         },
         {
           "id": 1,
           "text": "@human: What should happen if restoring would overwrite uncommitted changes? (A) Show warning and require confirmation, (B) Block restore and show error, (C) Auto-create checkpoint before restore, (D) other approach?",
           "deleted": false,
           "createdAt": "2025-11-01T17:37:09.144Z",
-          "selected": false
+          "selected": true,
+          "answer": "Show warning and require confirmation"
         },
         {
           "id": 2,
           "text": "@human: After a successful restore, what should happen? (A) Show success message and stay in viewer, (B) Exit viewer and return to board, (C) Show updated diff comparing restored version vs previous, (D) other?",
           "deleted": false,
           "createdAt": "2025-11-01T17:37:11.034Z",
-          "selected": false
+          "selected": true,
+          "answer": "Show success message and stay in viewer"
         },
         {
           "id": 3,
           "text": "@human: Should there be visual indicators showing which files have conflicts/would be overwritten before restore? (yes/no)",
           "deleted": false,
           "createdAt": "2025-11-01T17:37:12.323Z",
-          "selected": false
+          "selected": true,
+          "answer": "No - visual indicators not needed because we are overwriting files, not merging. Question 1 already handles warning about uncommitted changes."
+        },
+        {
+          "id": 4,
+          "text": "@human: What keybindings should trigger restore? (A) R key for single file + T key for restore all files, (B) R key for single file + Shift+R for restore all, (C) Enter key for single file + T key for restore all, (D) other approach?",
+          "deleted": false,
+          "createdAt": "2025-11-04T09:59:23.437Z",
+          "selected": true,
+          "answer": "R key for single file + T key for restore all files"
+        },
+        {
+          "id": 5,
+          "text": "@human: Should single-file restore show a confirmation dialog? (A) Yes, always confirm (safety first), (B) Only if conflicts detected, (C) No confirmation for single files (faster UX), (D) other approach?",
+          "deleted": false,
+          "createdAt": "2025-11-04T09:59:24.802Z",
+          "selected": true,
+          "answer": "Yes, always confirm (safety first)"
+        },
+        {
+          "id": 6,
+          "text": "@human: When restoring a file that doesn't exist in current working directory (was deleted), should we: (A) Create the file and all parent directories automatically, (B) Show warning and require confirmation, (C) Skip the file and show error, (D) other approach?",
+          "deleted": false,
+          "createdAt": "2025-11-04T09:59:26.309Z",
+          "selected": true,
+          "answer": "Create the file and all parent directories automatically"
+        },
+        {
+          "id": 7,
+          "text": "@human: Should the diff pane update after restore to show the NEW diff (checkpoint vs new HEAD)? (A) Yes, refresh diff automatically, (B) No, keep showing old diff, (C) Exit viewer after restore, (D) other approach?",
+          "deleted": false,
+          "createdAt": "2025-11-04T09:59:27.845Z",
+          "selected": true,
+          "answer": "Yes, refresh diff automatically"
         }
       ],
-      "nextQuestionId": 4,
-      "blockedBy": [
-        "TUI-011"
-      ]
+      "nextQuestionId": 8,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User selects checkpoint 'AUTH-001-baseline' with 3 files (src/auth.ts, src/login.ts, src/utils.ts), presses R key on src/auth.ts, confirmation dialog appears (if enabled), after confirmation file is restored from checkpoint, diff pane refreshes showing new comparison",
+          "deleted": false,
+          "createdAt": "2025-11-04T09:59:44.701Z"
+        },
+        {
+          "id": 1,
+          "text": "User selects checkpoint 'TUI-001-auto-testing', presses T key (or other chosen keybinding), confirmation dialog appears 'Restore ALL 15 files from checkpoint?', user confirms, all 15 files are restored, IPC message sent, CheckpointPanel updates",
+          "deleted": false,
+          "createdAt": "2025-11-04T09:59:46.288Z"
+        },
+        {
+          "id": 2,
+          "text": "User attempts to restore src/deleted-file.ts that no longer exists in working directory, system either: (A) creates file + parent dirs, (B) shows warning + confirmation, or (C) shows error (depending on answer to Question 6)",
+          "deleted": false,
+          "createdAt": "2025-11-04T09:59:47.898Z"
+        },
+        {
+          "id": 3,
+          "text": "User restores src/config.ts which has uncommitted changes in working directory, conflict detected, confirmation dialog shows: 'Overwrite src/config.ts? Current changes will be LOST.' with high-risk warning, user must explicitly confirm",
+          "deleted": false,
+          "createdAt": "2025-11-04T09:59:50.519Z"
+        },
+        {
+          "id": 4,
+          "text": "User in files pane (middle), presses R key on selected file, restore dialog appears. User in checkpoints pane (left), presses T key, restore all dialog appears. User in diff pane (right), R/T keys do nothing (no file selected)",
+          "deleted": false,
+          "createdAt": "2025-11-04T09:59:52.128Z"
+        }
+      ],
+      "nextExampleId": 5,
+      "estimate": 5,
+      "architectureNotes": [],
+      "nextNoteId": 0,
+      "updated": "2025-11-04T10:31:31.714Z"
     },
     "BUG-053": {
       "id": "BUG-053",
@@ -35244,7 +35360,6 @@
       "description": "Create a reusable confirmation dialog component in the TUI that can be used for any destructive action requiring user confirmation (delete, overwrite, etc.)",
       "children": [],
       "blocks": [
-        "GIT-009",
         "GIT-010"
       ],
       "stateHistory": [
@@ -39886,13 +40001,13 @@
       "BOARD-020",
       "TUI-012",
       "TUI-013",
-      "RES-007",
-      "GIT-009"
+      "RES-007"
     ],
     "testing": [],
     "implementing": [],
     "validating": [],
     "done": [
+      "GIT-009",
       "GIT-010",
       "TUI-011",
       "TUI-018",

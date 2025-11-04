@@ -65,6 +65,7 @@ Tags that categorize features by functional area.
 | `@calculation` | Calculation operations |
 | `@cascade` | Cascade operations |
 | `@checkpoint` | Checkpoint and snapshot management for experimentation and recovery |
+| `@checkpoint-management` | Checkpoint creation, restoration, and management functionality |
 | `@code-quality` | Code quality validation and review features |
 | `@comparison` | Comparison operations |
 | `@completion` | Completion operations |
@@ -593,7 +594,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-11-04T07:39:45.704Z_
+_Last updated: 2025-11-04T10:07:17.371Z_
 
 **Update Command**: `fspec tag-stats`
 
