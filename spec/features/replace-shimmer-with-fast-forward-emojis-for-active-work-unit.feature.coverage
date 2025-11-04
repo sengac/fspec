@@ -1,0 +1,87 @@
+{
+  "scenarios": [
+    {
+      "name": "Display fast-forward emojis around active work unit",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/TUI-017-emoji-indicators.test.tsx",
+          "lines": "27-61",
+          "implMappings": [
+            {
+              "file": "src/tui/components/UnifiedBoardLayout.tsx",
+              "lines": [
+                79,
+                80,
+                81,
+                82
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Display non-active work unit without emojis",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/TUI-017-emoji-indicators.test.tsx",
+          "lines": "63-107",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Emojis move when active work unit changes",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/TUI-017-emoji-indicators.test.tsx",
+          "lines": "109-124",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Shimmer animation is removed from active work unit",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/TUI-017-emoji-indicators.test.tsx",
+          "lines": "126-137",
+          "implMappings": [
+            {
+              "file": "src/tui/components/UnifiedBoardLayout.tsx",
+              "lines": [
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/__tests__/TUI-017-emoji-indicators.test.tsx"
+    ],
+    "implFiles": [
+      "src/tui/components/UnifiedBoardLayout.tsx"
+    ],
+    "totalLinesCovered": 127
+  }
+}
