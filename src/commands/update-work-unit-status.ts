@@ -423,7 +423,7 @@ export async function updateWorkUnitStatus(
       );
 
       // Notify TUI of checkpoint change via IPC
-      sendIPCMessage({ type: 'checkpoint-changed' });
+      await sendIPCMessage({ type: 'checkpoint-changed' });
     }
   } catch (error: unknown) {
     // Silently skip checkpoint creation if git operations fail
