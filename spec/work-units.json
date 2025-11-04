@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-04T10:31:31.681Z"
+    "lastUpdated": "2025-11-04T12:01:58.259Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -36236,91 +36236,178 @@
       "id": "TUI-012",
       "title": "Display attachments in work unit details panel",
       "type": "story",
-      "status": "specifying",
+      "status": "done",
       "createdAt": "2025-11-01T19:20:32.473Z",
-      "updatedAt": "2025-11-01T19:23:16.755Z",
+      "updatedAt": "2025-11-04T11:57:00.385Z",
       "description": "Show list of attachments in the TUI details view when user presses Enter on a work unit in the interactive Kanban board",
       "children": [],
       "userStory": {
         "role": "developer using fspec TUI",
-        "action": "view attachments associated with a work unit in the details panel",
-        "benefit": "I can quickly see what supporting materials are available for the work"
+        "action": "view attachments associated with a work unit",
+        "benefit": "I can see what supporting materials are available without leaving the board view"
       },
       "stateHistory": [
         {
           "state": "specifying",
           "timestamp": "2025-11-01T19:20:53.951Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-04T11:08:42.086Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-04T11:11:31.650Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-04T11:14:44.252Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-04T11:37:04.283Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-04T11:41:05.306Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-04T11:43:08.545Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-04T11:46:37.731Z"
         }
       ],
       "rules": [
         {
           "id": 0,
-          "text": "Attachments section should be displayed in the work unit details panel below the description",
+          "text": "When a work unit has no attachments, show 'No attachments'",
           "deleted": false,
-          "createdAt": "2025-11-01T19:21:00.238Z"
+          "createdAt": "2025-11-04T11:25:26.396Z"
         },
         {
           "id": 1,
-          "text": "Each attachment should show the filename and optional description",
+          "text": "When a work unit has attachments, show each filename extracted from the path",
           "deleted": false,
-          "createdAt": "2025-11-01T19:21:00.730Z"
+          "createdAt": "2025-11-04T11:25:28.298Z"
         },
         {
           "id": 2,
-          "text": "If no attachments exist, show 'No attachments' message",
+          "text": "Attachments section should fit within the existing 5-line details panel layout",
           "deleted": false,
-          "createdAt": "2025-11-01T19:21:01.227Z"
+          "createdAt": "2025-11-04T11:25:30.480Z"
         },
         {
           "id": 3,
-          "text": "Attachment paths are stored as relative paths from project root",
+          "text": "Attachments appear on line 4 of the details panel, reducing description from 3 lines to 2 lines",
           "deleted": false,
-          "createdAt": "2025-11-01T19:21:01.709Z"
+          "createdAt": "2025-11-04T11:31:25.886Z"
+        },
+        {
+          "id": 4,
+          "text": "When attachments don't fit on line 4, truncate with ellipsis showing count (e.g., 'mockup.png, diagram.png, ...3 more')",
+          "deleted": false,
+          "createdAt": "2025-11-04T11:32:47.312Z"
+        },
+        {
+          "id": 5,
+          "text": "Display keybinding hint showing which key opens the full attachments dialog (TUI-013)",
+          "deleted": false,
+          "createdAt": "2025-11-04T11:32:49.063Z"
+        },
+        {
+          "id": 6,
+          "text": "Attachments appear on line 3 of description area (replacing the 3rd description line), reducing description from 3 lines to 2 lines",
+          "deleted": false,
+          "createdAt": "2025-11-04T11:33:34.570Z"
         }
       ],
-      "nextRuleId": 4,
+      "nextRuleId": 7,
       "examples": [
         {
           "id": 0,
-          "text": "Work unit has 2 attachments (diagram.png, requirements.pdf), details panel shows both with filenames",
+          "text": "Work unit TUI-012 has no attachments → Details panel shows 'No attachments'",
           "deleted": false,
-          "createdAt": "2025-11-01T19:21:10.357Z"
+          "createdAt": "2025-11-04T11:29:03.449Z"
         },
         {
           "id": 1,
-          "text": "Work unit has attachment with description 'Architecture diagram v2', details panel shows filename and description",
+          "text": "Work unit TUI-012 has one attachment at spec/attachments/TUI-012/mockup.png → Details panel shows 'mockup.png'",
           "deleted": false,
-          "createdAt": "2025-11-01T19:21:10.862Z"
+          "createdAt": "2025-11-04T11:29:05.386Z"
         },
         {
           "id": 2,
-          "text": "Work unit has no attachments, details panel shows 'No attachments' message",
+          "text": "Work unit AUTH-001 has two attachments (spec/attachments/AUTH-001/login-flow.png and spec/attachments/AUTH-001/requirements.pdf) → Details panel shows both 'login-flow.png' and 'requirements.pdf'",
           "deleted": false,
-          "createdAt": "2025-11-01T19:21:11.360Z"
+          "createdAt": "2025-11-04T11:29:08.075Z"
         },
         {
           "id": 3,
-          "text": "Work unit has 1 attachment in spec/attachments/TUI-012/mockup.png, displayed as 'mockup.png'",
+          "text": "Work unit has 5 attachments but line 4 only fits 2 filenames → Shows 'file1.png, file2.pdf, ...3 more' with keybinding hint",
           "deleted": false,
-          "createdAt": "2025-11-01T19:21:11.863Z"
+          "createdAt": "2025-11-04T11:32:58.300Z"
         }
       ],
       "nextExampleId": 4,
-      "estimate": 5
+      "estimate": 5,
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: If there are many attachments that don't fit in the available space, should we truncate the list (e.g., show first 3 and '...2 more') or make the section scrollable?",
+          "deleted": false,
+          "createdAt": "2025-11-04T11:31:17.136Z",
+          "selected": true,
+          "answer": "Show attachments inline on line 4, truncate if too many (e.g., 'mockup.png, diagram.png, ...3 more'), and display keybinding hint to open full list dialog"
+        },
+        {
+          "id": 1,
+          "text": "@human: TUI-013 mentions 'selecting an attachment and pressing o to open' - should TUI-012 include selection UI (highlighting attachments with arrow keys), or is selection UI part of TUI-013?",
+          "deleted": false,
+          "createdAt": "2025-11-04T11:31:19.111Z",
+          "selected": true,
+          "answer": "TUI-012 is display-only (no selection). Show attachments list on line 4 with keybinding hint. TUI-013 will add the dialog/VirtualList/selection/opening functionality"
+        }
+      ],
+      "nextQuestionId": 2,
+      "architectureNotes": [],
+      "nextNoteId": 0,
+      "updated": "2025-11-04T11:46:37.730Z",
+      "attachments": [
+        "spec/attachments/TUI-012/test-diagram.png"
+      ]
     },
     "TUI-013": {
       "id": "TUI-013",
       "title": "Open attachments in browser from details panel",
       "type": "story",
-      "status": "specifying",
+      "status": "done",
       "createdAt": "2025-11-01T19:24:10.959Z",
-      "updatedAt": "2025-11-01T19:26:29.202Z",
+      "updatedAt": "2025-11-04T12:01:58.369Z",
       "description": "Allow users to open attachment files in the default browser when viewing work unit details in the TUI, using the same 'open' package that cage uses for launching API docs",
       "children": [],
       "stateHistory": [
         {
           "state": "specifying",
           "timestamp": "2025-11-01T19:24:18.440Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-04T11:52:22.255Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-04T11:53:38.277Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-04T12:00:40.646Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-04T12:01:58.370Z"
         }
       ],
       "userStory": {
@@ -36391,7 +36478,12 @@
       "dependsOn": [
         "TUI-012"
       ],
-      "estimate": 5
+      "estimate": 5,
+      "questions": [],
+      "architectureNotes": [],
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-04T12:01:58.369Z"
     },
     "RES-007": {
       "id": "RES-007",
@@ -39999,14 +40091,14 @@
       "LANG-001",
       "EXMAP-004",
       "BOARD-020",
-      "TUI-012",
-      "TUI-013",
       "RES-007"
     ],
     "testing": [],
     "implementing": [],
     "validating": [],
     "done": [
+      "TUI-013",
+      "TUI-012",
       "GIT-009",
       "GIT-010",
       "TUI-011",

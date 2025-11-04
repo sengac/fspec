@@ -15,7 +15,10 @@ import { KeybindingShortcuts } from './KeybindingShortcuts';
 import { WorkUnitTitle } from './WorkUnitTitle';
 import { WorkUnitDescription } from './WorkUnitDescription';
 import { WorkUnitMetadata } from './WorkUnitMetadata';
+import { WorkUnitAttachments } from './WorkUnitAttachments';
 import { useFspecStore } from '../store/fspecStore';
+import { openInBrowser } from '../../utils/openBrowser';
+import { logger } from '../../utils/logger';
 import fs from 'fs';
 import path from 'path';
 
@@ -33,6 +36,7 @@ interface WorkUnit {
   description?: string;
   epic?: string;
   stateHistory?: StateHistoryEntry[];
+  attachments?: string[];
 }
 
 interface UnifiedBoardLayoutProps {
@@ -365,6 +369,21 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
     if (input === ']') {
       onMoveDown?.();
     }
+
+    // TUI-013: Open attachment in browser
+    if (input === 'o' && selectedWorkUnit && selectedWorkUnit.attachments && selectedWorkUnit.attachments.length > 0) {
+      const firstAttachment = selectedWorkUnit.attachments[0];
+
+      // Convert relative path to absolute path, then to file:// URL
+      const absolutePath = path.isAbsolute(firstAttachment)
+        ? firstAttachment
+        : path.resolve(cwd || process.cwd(), firstAttachment);
+      const fileUrl = `file://${absolutePath}`;
+
+      openInBrowser({ url: fileUrl, wait: false }).catch((error: Error) => {
+        logger.error(`[UnifiedBoardLayout] Failed to open attachment: ${error.message}`);
+      });
+    }
   });
 
   return (
@@ -413,6 +432,10 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
               <WorkUnitTitle id={selectedWorkUnit.id} title={selectedWorkUnit.title} />
               <WorkUnitDescription
                 description={selectedWorkUnit.description || ''}
+                width={terminalWidth}
+              />
+              <WorkUnitAttachments
+                attachments={selectedWorkUnit.attachments}
                 width={terminalWidth}
               />
               <WorkUnitMetadata

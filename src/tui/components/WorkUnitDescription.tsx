@@ -21,13 +21,14 @@ export const WorkUnitDescription: React.FC<WorkUnitDescriptionProps> = ({
   // Subtract: 2 for side borders, 2 for padding
   const availableWidth = Math.max(10, terminalWidth - 4);
 
-  // Truncate to fit in 3 lines using cli-truncate (same as Ink internally)
-  // Subtract 4 from maxChars to ensure ellipsis appears on line 3
-  const maxChars = availableWidth * 3 - 4;
+  // Truncate to fit in 2 lines using cli-truncate (same as Ink internally)
+  // TUI-012: Reduced from 3 lines to 2 lines to make space for attachments on line 3
+  // Subtract 4 from maxChars to ensure ellipsis appears on line 2
+  const maxChars = availableWidth * 2 - 4;
   const truncated = cliTruncate(normalized, maxChars, { position: 'end' });
 
   return (
-    <Box height={3} flexShrink={0} width={availableWidth}>
+    <Box height={2} flexShrink={0} width={availableWidth}>
       <Text color="cyan" wrap="wrap">
         {truncated}
       </Text>
