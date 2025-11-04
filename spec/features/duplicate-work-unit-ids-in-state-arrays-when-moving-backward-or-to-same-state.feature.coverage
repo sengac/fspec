@@ -1,0 +1,82 @@
+{
+  "scenarios": [
+    {
+      "name": "Moving work unit backward through states should not create duplicates",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/states-array-duplicate-bug.test.ts",
+          "lines": "61-91",
+          "implMappings": [
+            {
+              "file": "src/utils/states-array.ts",
+              "lines": [
+                91,
+                92,
+                93,
+                94,
+                95,
+                96
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Moving work unit to same state should be idempotent",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/states-array-duplicate-bug.test.ts",
+          "lines": "93-112",
+          "implMappings": [
+            {
+              "file": "src/utils/states-array.ts",
+              "lines": [
+                91,
+                92,
+                93,
+                94,
+                95,
+                96
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Work unit should appear in exactly one state array after any transition",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/states-array-duplicate-bug.test.ts",
+          "lines": "114-139",
+          "implMappings": [
+            {
+              "file": "src/utils/states-array.ts",
+              "lines": [
+                91,
+                92,
+                93,
+                94,
+                95,
+                96
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/utils/__tests__/states-array-duplicate-bug.test.ts"
+    ],
+    "implFiles": [
+      "src/utils/states-array.ts"
+    ],
+    "totalLinesCovered": 95
+  }
+}
