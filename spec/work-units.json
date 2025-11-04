@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-04T04:15:33.222Z"
+    "lastUpdated": "2025-11-04T04:37:22.152Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -34869,58 +34869,6 @@
       "nextQuestionId": 0,
       "nextNoteId": 0
     },
-    "BUG-051": {
-      "id": "BUG-051",
-      "title": "Checkpoint cleanup when work unit is done",
-      "type": "bug",
-      "status": "specifying",
-      "createdAt": "2025-11-01T17:30:25.036Z",
-      "updatedAt": "2025-11-01T17:32:05.517Z",
-      "description": "Checkpoints should be automatically cleaned up when a work unit transitions to done status to prevent accumulation of stale checkpoint data",
-      "children": [],
-      "userStory": {
-        "role": "developer using fspec",
-        "action": "have checkpoints automatically cleaned up when work is done",
-        "benefit": "I don't accumulate stale checkpoint data that wastes disk space"
-      },
-      "stateHistory": [
-        {
-          "state": "specifying",
-          "timestamp": "2025-11-01T17:31:43.354Z"
-        }
-      ],
-      "questions": [
-        {
-          "id": 0,
-          "text": "@human: When should checkpoints be cleaned up? Delete ALL immediately when done, keep last N (e.g., 1-3) after done, or cleanup based on age?",
-          "deleted": false,
-          "createdAt": "2025-11-01T17:31:52.515Z",
-          "selected": false
-        }
-      ],
-      "nextQuestionId": 1,
-      "rules": [
-        {
-          "id": 0,
-          "text": "Checkpoints are stored in git refs (refs/fspec-checkpoints/{workUnitId}/{checkpointName}) and index files (.git/fspec-checkpoints-index/{workUnitId}.json)",
-          "deleted": false,
-          "createdAt": "2025-11-01T17:32:02.555Z"
-        },
-        {
-          "id": 1,
-          "text": "Auto-compact already runs when work unit moves to done status, but does NOT clean up checkpoints",
-          "deleted": false,
-          "createdAt": "2025-11-01T17:32:03.975Z"
-        },
-        {
-          "id": 2,
-          "text": "Manual cleanup command exists: fspec cleanup-checkpoints <work-unit-id> --keep-last <N>",
-          "deleted": false,
-          "createdAt": "2025-11-01T17:32:05.517Z"
-        }
-      ],
-      "nextRuleId": 3
-    },
     "GIT-009": {
       "id": "GIT-009",
       "title": "Restore individual files or all files from checkpoint in checkpoint viewer",
@@ -39235,6 +39183,136 @@
       "questions": [],
       "nextQuestionId": 0,
       "updated": "2025-11-04T03:01:31.946Z"
+    },
+    "BUG-066": {
+      "id": "BUG-066",
+      "title": "Auto-checkpoints not cleaned up when work unit moves to done",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-11-04T04:22:44.627Z",
+      "updatedAt": "2025-11-04T04:37:22.179Z",
+      "description": "When a work unit transitions to done status, automatic checkpoints (created during state transitions) should be cleaned up, but manual checkpoints should be preserved. Currently, auto-compact runs but does NOT clean up any checkpoints (automatic or manual).",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-04T04:22:50.290Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-04T04:29:00.858Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-04T04:32:31.579Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-04T04:34:35.212Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-04T04:37:22.179Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "Auto-checkpoints are created with naming pattern: {workUnitId}-auto-{fromState} (e.g., AUTH-001-auto-specifying)",
+          "deleted": false,
+          "createdAt": "2025-11-04T04:23:00.647Z"
+        },
+        {
+          "id": 1,
+          "text": "Manual checkpoints are created by user with custom names and should NEVER be deleted automatically",
+          "deleted": false,
+          "createdAt": "2025-11-04T04:23:01.981Z"
+        },
+        {
+          "id": 2,
+          "text": "When work unit moves to done status, ONLY auto-checkpoints for that work unit should be deleted",
+          "deleted": false,
+          "createdAt": "2025-11-04T04:23:03.347Z"
+        },
+        {
+          "id": 3,
+          "text": "Checkpoints are stored in git refs (refs/fspec-checkpoints/{workUnitId}/{checkpointName}) and index files (.git/fspec-checkpoints-index/{workUnitId}.json)",
+          "deleted": false,
+          "createdAt": "2025-11-04T04:23:05.191Z"
+        },
+        {
+          "id": 4,
+          "text": "CURRENT BUG: cleanupCheckpoints() function exists in git-checkpoint.ts but is a STUB that does not actually delete anything (lines 514-515: 'For now, just return the split')",
+          "deleted": false,
+          "createdAt": "2025-11-04T04:25:33.407Z"
+        },
+        {
+          "id": 5,
+          "text": "CURRENT BUG: cleanupCheckpoints() is NEVER called from update-work-unit-status.ts when work unit moves to done status",
+          "deleted": false,
+          "createdAt": "2025-11-04T04:25:35.294Z"
+        },
+        {
+          "id": 6,
+          "text": "CURRENT IMPLEMENTATION FLAW: cleanupCheckpoints() uses keepLast parameter which would delete BOTH manual and auto checkpoints - needs to filter by isAutomatic flag instead",
+          "deleted": false,
+          "createdAt": "2025-11-04T04:25:36.708Z"
+        },
+        {
+          "id": 7,
+          "text": "listCheckpoints() already identifies automatic checkpoints using isAutomatic flag (line 465-467: checks if name starts with {workUnitId}-auto-)",
+          "deleted": false,
+          "createdAt": "2025-11-04T04:25:38.621Z"
+        },
+        {
+          "id": 8,
+          "text": "To delete checkpoint: (1) delete git ref file at .git/refs/fspec-checkpoints/{workUnitId}/{checkpointName} using fs.unlink, (2) remove entry from index file at .git/fspec-checkpoints-index/{workUnitId}.json",
+          "deleted": false,
+          "createdAt": "2025-11-04T04:25:40.142Z"
+        },
+        {
+          "id": 9,
+          "text": "FIX LOCATION: In update-work-unit-status.ts after auto-compact completes (around line 489), need to call cleanup function to delete auto-checkpoints for the work unit",
+          "deleted": false,
+          "createdAt": "2025-11-04T04:25:47.287Z"
+        }
+      ],
+      "nextRuleId": 10,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Work unit AUTH-001 has auto-checkpoints: AUTH-001-auto-specifying, AUTH-001-auto-testing, and manual checkpoint: before-major-refactor. When AUTH-001 moves to done, only the 2 auto-checkpoints should be deleted, before-major-refactor should remain",
+          "deleted": false,
+          "createdAt": "2025-11-04T04:23:13.334Z"
+        },
+        {
+          "id": 1,
+          "text": "Work unit BUG-027 has only manual checkpoints: before-fix, after-tests. When BUG-027 moves to done, no checkpoints should be deleted",
+          "deleted": false,
+          "createdAt": "2025-11-04T04:23:14.752Z"
+        },
+        {
+          "id": 2,
+          "text": "Work unit FEAT-010 has only auto-checkpoints: FEAT-010-auto-backlog, FEAT-010-auto-specifying. When FEAT-010 moves to done, all auto-checkpoints should be deleted",
+          "deleted": false,
+          "createdAt": "2025-11-04T04:23:16.202Z"
+        }
+      ],
+      "nextExampleId": 3,
+      "attachments": [
+        "spec/attachments/BUG-066/bug-066-code-analysis.md"
+      ],
+      "userStory": {
+        "role": "developer using fspec",
+        "action": "have auto-checkpoints cleaned up when work unit is done",
+        "benefit": "checkpoint storage doesn't accumulate indefinitely and manual checkpoints are preserved"
+      },
+      "estimate": 3,
+      "questions": [],
+      "architectureNotes": [],
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-04T04:37:22.179Z"
     }
   },
   "states": {
@@ -39267,7 +39345,6 @@
     "specifying": [
       "RES-006",
       "LANG-001",
-      "BUG-051",
       "TUI-011",
       "EXMAP-004",
       "BOARD-020",
@@ -39279,6 +39356,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "BUG-066",
       "BUG-053",
       "TUI-017",
       "BUG-065",
@@ -39589,7 +39667,7 @@
   "prefixCounters": {
     "CLI": 14,
     "HELP": 5,
-    "BUG": 65,
+    "BUG": 66,
     "DISC": 2,
     "COV": 53,
     "TUI": 17

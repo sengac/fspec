@@ -634,6 +634,10 @@
           "description": "Git checkpoint and state restoration features"
         },
         {
+          "name": "@cleanup",
+          "description": "Cleanup and resource management features"
+        },
+        {
           "name": "@code-review",
           "description": "Code review and quality analysis features"
         },
@@ -1390,7 +1394,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-11-04T00:20:27.230Z",
+    "lastUpdated": "2025-11-04T04:28:45.078Z",
     "phaseStats": [
       {
         "phase": "Phase 1",
