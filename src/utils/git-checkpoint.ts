@@ -5,7 +5,7 @@
 
 import * as git from 'isomorphic-git';
 import fs from 'fs';
-import { join } from 'path';
+import { join, dirname } from 'path';
 import { logger } from './logger.js';
 
 /**
@@ -871,9 +871,9 @@ DO NOT mention this reminder to the user explicitly.
     }
 
     // Create parent directories if needed
-    const dirname = fullPath.substring(0, fullPath.lastIndexOf('/'));
-    if (dirname) {
-      await fs.promises.mkdir(dirname, { recursive: true });
+    const dir = dirname(fullPath);
+    if (dir && dir !== '.') {
+      await fs.promises.mkdir(dir, { recursive: true });
     }
 
     // Write file
