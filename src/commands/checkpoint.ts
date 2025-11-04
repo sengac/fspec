@@ -5,6 +5,7 @@
 import chalk from 'chalk';
 import type { Command } from 'commander';
 import { createCheckpoint as createCheckpointUtil } from '../utils/git-checkpoint.js';
+import { sendIPCMessage } from '../utils/ipc.js';
 
 export interface CheckpointOptions {
   workUnitId: string;
@@ -35,6 +36,9 @@ export async function checkpoint(options: CheckpointOptions): Promise<{
     console.log(
       chalk.gray(`  Captured ${result.capturedFiles.length} file(s)`)
     );
+
+    // Notify TUI of checkpoint change via IPC
+    sendIPCMessage({ type: 'checkpoint-changed' });
 
     return {
       success: result.success,

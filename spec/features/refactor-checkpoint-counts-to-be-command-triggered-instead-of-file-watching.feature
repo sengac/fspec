@@ -1,4 +1,6 @@
-@wip
+@done
+@cli
+@checkpoint
 @high
 @cross-platform
 @refactoring

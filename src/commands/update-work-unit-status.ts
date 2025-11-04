@@ -27,6 +27,7 @@ import {
 import { compactWorkUnit } from './compact-work-unit';
 import { validateSteps, formatValidationError } from '../utils/step-validation';
 import { parseAllFeatures } from '../utils/feature-parser';
+import { sendIPCMessage } from '../utils/ipc.js';
 
 type WorkUnitStatus =
   | 'backlog'
@@ -419,6 +420,9 @@ export async function updateWorkUnitStatus(
           `🤖 Auto-checkpoint: "${checkpointName}" created before transition`
         )
       );
+
+      // Notify TUI of checkpoint change via IPC
+      sendIPCMessage({ type: 'checkpoint-changed' });
     }
   } catch (error: unknown) {
     // Silently skip checkpoint creation if git operations fail

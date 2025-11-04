@@ -1186,6 +1186,10 @@
           "description": "Acceptance Criteria Driven Development"
         },
         {
+          "name": "@cli-integration",
+          "description": "CLI integration and workflow automation features"
+        },
+        {
           "name": "@discovery-workflow",
           "description": "Discovery workflow and bootstrapping processes"
         },
@@ -1382,7 +1386,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-11-03T23:27:32.333Z",
+    "lastUpdated": "2025-11-03T23:55:46.628Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

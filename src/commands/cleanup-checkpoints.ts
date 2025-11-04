@@ -5,6 +5,7 @@
 import chalk from 'chalk';
 import type { Command } from 'commander';
 import { cleanupCheckpoints as cleanupCheckpointsUtil } from '../utils/git-checkpoint.js';
+import { sendIPCMessage } from '../utils/ipc.js';
 
 export interface CleanupCheckpointsOptions {
   workUnitId: string;
@@ -56,6 +57,9 @@ export async function cleanupCheckpoints(
         `✓ Cleanup complete: ${result.deletedCount} deleted, ${result.preservedCount} preserved`
       )
     );
+
+    // Notify TUI of checkpoint change via IPC
+    sendIPCMessage({ type: 'checkpoint-changed' });
 
     return {
       deletedCount: result.deletedCount,
