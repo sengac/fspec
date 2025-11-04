@@ -237,7 +237,7 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
       }
       return;
     }
-  });
+  }, { isActive: viewMode === 'board' });
 
   // Checkpoint viewer (GIT-004)
   if (viewMode === 'checkpoint-viewer') {
