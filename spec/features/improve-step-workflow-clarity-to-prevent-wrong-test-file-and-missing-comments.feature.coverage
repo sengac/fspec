@@ -1,0 +1,208 @@
+{
+  "scenarios": [
+    {
+      "name": "Testing state reminder makes @step requirement prominent",
+      "testMappings": [
+        {
+          "file": "src/__tests__/step-workflow-clarity.test.ts",
+          "lines": "10-61",
+          "implMappings": [
+            {
+              "file": "src/utils/system-reminder.ts",
+              "lines": [
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Validation error shows which test file is being checked",
+      "testMappings": [
+        {
+          "file": "src/__tests__/step-workflow-clarity.test.ts",
+          "lines": "63-96",
+          "implMappings": [
+            {
+              "file": "src/utils/step-validation.ts",
+              "lines": [
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289,
+                290,
+                291,
+                292,
+                293,
+                294
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Reminder guides recreation when tests created without @step comments",
+      "testMappings": [
+        {
+          "file": "src/__tests__/step-workflow-clarity.test.ts",
+          "lines": "98-157",
+          "implMappings": [
+            {
+              "file": "src/utils/step-validation.ts",
+              "lines": [
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/__tests__/step-workflow-clarity.test.ts"
+    ],
+    "implFiles": [
+      "src/utils/system-reminder.ts",
+      "src/utils/step-validation.ts"
+    ],
+    "totalLinesCovered": 289
+  }
+}

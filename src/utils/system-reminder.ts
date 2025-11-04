@@ -75,11 +75,43 @@ DO NOT write tests or code yet. DO NOT mention this reminder to the user.`,
 
     testing: `Work unit ${workUnitId} is now in TESTING status.
 
-CRITICAL: Write FAILING tests BEFORE any implementation code.
+⚠️⚠️⚠️ CRITICAL: MANDATORY @step COMMENTS REQUIRED ⚠️⚠️⚠️
+
+EVERY Gherkin step MUST have an @step comment in your test file.
+ONE scenario = ONE test with ALL @step comments in THAT test.
+
+Structure:
+  - Place @step comment RIGHT BEFORE the code that executes each step
+  - Use EXACT text from feature file
+  - Include ALL steps: @step Given ... @step When ... @step Then ... @step And ...
+
+Example (JavaScript):
+  // @step Given I am on the login page
+  page = render_login_page()
+
+  // @step When I enter valid credentials
+  submit_credentials()
+
+  // @step Then I should see the dashboard
+  assert dashboard_visible()
+
+WITHOUT @step comments, you CANNOT progress to implementing!
+Validation will BLOCK you with error showing missing steps.
+
+---
+
+Write FAILING tests BEFORE any implementation code:
   - Tests must fail (red phase) to prove they actually test something
   - Map tests to Gherkin scenarios in feature file
-  - Add header comment linking test file to feature file
-  - Run tests and verify they fail for the right reasons
+  - Add header comment: // Feature: spec/features/[name].feature
+
+Language-specific comment syntax:
+  * JavaScript/Java/C/C++/C#/Swift/Go/Rust: // @step Given I am logged in
+  * Python/Ruby/Perl/Bash/R/PowerShell:     # @step When I enter valid credentials
+  * SQL/Ada/Haskell/Lua/VHDL:               -- @step Then I should see the dashboard
+  * PHP: // @step or # @step
+  * MATLAB/ASP: % @step
+  * Visual Basic: ' @step
 
 Common commands for TESTING state:
   fspec link-coverage <feature> --scenario "..." --test-file <path> --test-lines <range>
@@ -91,26 +123,7 @@ For more: fspec link-coverage --help
 Suggested next steps:
   1. Create test file: src/**/__tests__/*.test.ts
   2. Add feature file reference: // Feature: spec/features/[name].feature
-  3. Write tests that map to Gherkin scenarios - MANDATORY STEP COMMENTS REQUIRED:
-     - EVERY Gherkin step MUST have a corresponding @step comment in the test
-     - Use EXACT step text from feature file with language-appropriate comment syntax:
-       * JavaScript/Java/C/C++/C#/Swift/Go/Rust: // @step Given I am logged in
-       * Python/Ruby/Perl/Bash/R/PowerShell:     # @step When I enter valid credentials
-       * SQL/Ada/Haskell/Lua/VHDL:               -- @step Then I should see the dashboard
-       * PHP: // @step or # @step
-       * MATLAB/ASP: % @step
-       * Visual Basic: ' @step
-     - Include ALL step types: @step Given ... @step When ... @step Then ... @step And ...
-     - Example (JavaScript):
-       // @step Given I am on the login page
-       // @step When I enter valid credentials
-       // @step Then I should see the dashboard
-     - Example (Python):
-       # @step Given I am on the login page
-       # @step When I enter valid credentials
-       # @step Then I should see the dashboard
-     - WITHOUT these comments, fspec link-coverage will BLOCK and prevent you from continuing
-     - Step validation is ENFORCED - you cannot proceed to implementing without them
+  3. Write tests with @step comments for EACH Gherkin step
   4. Run tests and verify they fail (tests should FAIL)
   5. Link test coverage: fspec link-coverage <feature> --scenario "..." --test-file <path> --test-lines <range>
   6. Move to implementing: fspec update-work-unit-status ${workUnitId} implementing

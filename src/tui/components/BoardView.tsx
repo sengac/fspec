@@ -20,6 +20,7 @@ import { CheckpointViewer } from './CheckpointViewer';
 import { ChangedFilesViewer } from './ChangedFilesViewer';
 import { createIPCServer, cleanupIPCServer, getIPCPath } from '../../utils/ipc';
 import type { Server } from 'net';
+import { logger } from '../../utils/logger';
 
 interface BoardViewProps {
   onExit?: () => void;
@@ -166,20 +167,27 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
     let server: Server | null = null;
 
     try {
+      logger.info('[BOARDVIEW] Setting up IPC server for checkpoint updates');
       server = createIPCServer((message) => {
+        logger.info(`[BOARDVIEW] IPC message received: ${JSON.stringify(message)}`);
         if (message.type === 'checkpoint-changed') {
+          logger.info('[BOARDVIEW] Triggering loadCheckpointCounts() from IPC event');
           void useFspecStore.getState().loadCheckpointCounts();
+          logger.info('[BOARDVIEW] loadCheckpointCounts() call completed (async)');
         }
       });
 
       const ipcPath = getIPCPath();
       server.listen(ipcPath);
+      logger.info(`[BOARDVIEW] IPC server listening on ${ipcPath}`);
     } catch (error) {
       // IPC server failed to start (non-fatal - TUI still works)
+      logger.error(`[BOARDVIEW] Failed to start IPC server: ${error}`);
     }
 
     return () => {
       if (server) {
+        logger.info('[BOARDVIEW] Cleaning up IPC server');
         cleanupIPCServer(server);
       }
     };

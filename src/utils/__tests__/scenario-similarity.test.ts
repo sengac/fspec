@@ -466,7 +466,7 @@ describe('Feature: Improve scenario similarity matching accuracy', () => {
   });
 
   // ========================================
-  // REFAC-003: Adaptive Weighting for Short Strings
+  // Adaptive Weighting for Short Strings
   // ========================================
   describe('Scenario: Adaptive weighting for short strings', () => {
     it('should use SHORT_STRING_CONFIG for strings < 20 chars', () => {
@@ -525,7 +525,7 @@ describe('Feature: Improve scenario similarity matching accuracy', () => {
   });
 
   // ========================================
-  // REFAC-003: Adaptive Thresholds
+  // Adaptive Thresholds
   // ========================================
   describe('Scenario: Adaptive thresholds for findMatchingScenarios', () => {
     it('should apply strict threshold (0.85) for very short strings (< 10 chars)', () => {
@@ -598,7 +598,7 @@ describe('Feature: Improve scenario similarity matching accuracy', () => {
   });
 
   // ========================================
-  // REFAC-003: Config Constants
+  // Config Constants
   // ========================================
   describe('Scenario: Exported similarity config constants', () => {
     it('should export DEFAULT_SIMILARITY_CONFIG with correct weights', async () => {
@@ -669,7 +669,7 @@ describe('Feature: Improve scenario similarity matching accuracy', () => {
   });
 
   // ========================================
-  // REFAC-003: extractTokens (NO Stopword Filtering)
+  // extractTokens (NO Stopword Filtering)
   // ========================================
   describe('Scenario: Extract tokens without semantic filtering', () => {
     it('should extract ALL alphanumeric tokens (no stopword filtering)', async () => {
@@ -747,7 +747,7 @@ describe('Feature: Improve scenario similarity matching accuracy', () => {
   });
 
   // ========================================
-  // REFAC-003: jaccardSimilarity WITHOUT Stopword Filtering
+  // jaccardSimilarity WITHOUT Stopword Filtering
   // ========================================
   describe('Scenario: Jaccard similarity on raw tokens', () => {
     it('should calculate Jaccard on raw tokens (no stopword filtering)', () => {
