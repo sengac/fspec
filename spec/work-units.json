@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-04T07:38:38.008Z"
+    "lastUpdated": "2025-11-04T07:56:56.402Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -35051,9 +35051,9 @@
       "id": "GIT-010",
       "title": "Delete checkpoint or all checkpoints from checkpoint viewer with confirmation",
       "type": "story",
-      "status": "validating",
+      "status": "done",
       "createdAt": "2025-11-01T17:40:52.075Z",
-      "updatedAt": "2025-11-04T07:53:25.940Z",
+      "updatedAt": "2025-11-04T07:56:56.436Z",
       "description": "Add ability to delete a single checkpoint or all checkpoints from the TUI checkpoint viewer interface with confirmation dialogs to prevent accidental deletion",
       "children": [],
       "stateHistory": [
@@ -35076,6 +35076,10 @@
         {
           "state": "validating",
           "timestamp": "2025-11-04T07:53:25.940Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-04T07:56:56.436Z"
         }
       ],
       "userStory": {
@@ -35225,7 +35229,10 @@
       "blockedBy": [
         "TUI-011"
       ],
-      "estimate": 5
+      "estimate": 5,
+      "architectureNotes": [],
+      "nextNoteId": 0,
+      "updated": "2025-11-04T07:56:56.436Z"
     },
     "TUI-011": {
       "id": "TUI-011",
@@ -39884,10 +39891,9 @@
     ],
     "testing": [],
     "implementing": [],
-    "validating": [
-      "GIT-010"
-    ],
+    "validating": [],
     "done": [
+      "GIT-010",
       "TUI-011",
       "TUI-018",
       "BUG-068",
