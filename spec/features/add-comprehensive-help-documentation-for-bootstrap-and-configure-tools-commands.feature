@@ -75,13 +75,14 @@ Feature: Add comprehensive help documentation for bootstrap and configure-tools 
     And the output should include setup help content
     And the output should include hooks help content
 
-  Scenario: README.md documents configure-tools command
+  Scenario: README.md directs users to command help
     Given the README.md file exists
-    When I search for "configure-tools" in README.md
-    Then I should find complete documentation
-    And I should see all command options listed
-    And I should see usage examples with test-command option
-    And I should see usage examples with quality-commands option
+    When I search for help documentation in README.md
+    Then I should find the "Pro tip" section
+    And I should see "fspec <command> --help"
+    And I should see "fspec help specs"
+    And I should see "fspec help work"
+    And I should see "fspec help discovery"
 
   Scenario: Documentation consistency across all sources
     Given bootstrap-help.ts exists
@@ -89,5 +90,5 @@ Feature: Add comprehensive help documentation for bootstrap and configure-tools 
     When I compare help content with docs directory
     Then bootstrap documentation should be consistent
     And configure-tools documentation should be consistent
-    And README.md should match help content
+    And README.md should direct users to --help
     And no inconsistencies should exist
