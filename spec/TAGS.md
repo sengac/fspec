@@ -224,6 +224,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@learning` | Machine learning and adaptive features based on usage patterns |
 | `@logging` | Logging and diagnostics features |
 | `@mermaid` | Mermaid Diagram Support |
+| `@modal` | Modal overlay and dialog components |
 | `@mouse-events` | Features that handle mouse and trackpad events |
 | `@multi-agent` | Multi-agent compatibility features and agent-specific customizations |
 | `@outside-in-bdd` | Outside-in BDD approach using personas and behavior-first thinking |
@@ -232,6 +233,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@platform-agnostic` | Features supporting multiple platforms (Python, Rust, Go, JavaScript, etc.) |
 | `@prettier` | Prettier configuration and code formatting |
 | `@push` | Push notification functionality |
+| `@react` | React framework and component lifecycle features |
 | `@real-time` | Features with real-time data synchronization and live updates |
 | `@responsive` | Components that respond to viewport or terminal dimension changes |
 | `@reverse-engineering` | Reverse engineering existing code to create specifications |
@@ -590,7 +592,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-11-04T04:28:45.078Z_
+_Last updated: 2025-11-04T06:17:45.468Z_
 
 **Update Command**: `fspec tag-stats`
 

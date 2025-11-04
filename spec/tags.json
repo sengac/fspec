@@ -798,6 +798,10 @@
           "description": "Mermaid Diagram Support"
         },
         {
+          "name": "@modal",
+          "description": "Modal overlay and dialog components"
+        },
+        {
           "name": "@mouse-events",
           "description": "Features that handle mouse and trackpad events"
         },
@@ -828,6 +832,10 @@
         {
           "name": "@push",
           "description": "Push notification functionality"
+        },
+        {
+          "name": "@react",
+          "description": "React framework and component lifecycle features"
         },
         {
           "name": "@real-time",
@@ -1394,7 +1402,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-11-04T04:28:45.078Z",
+    "lastUpdated": "2025-11-04T06:17:45.468Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

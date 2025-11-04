@@ -1,0 +1,220 @@
+{
+  "scenarios": [
+    {
+      "name": "Render centered modal with custom border color",
+      "testMappings": [
+        {
+          "file": "src/components/__tests__/Dialog.test.tsx",
+          "lines": "15-43",
+          "implMappings": [
+            {
+              "file": "src/components/Dialog.tsx",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dialog captures all input when active",
+      "testMappings": [
+        {
+          "file": "src/components/__tests__/Dialog.test.tsx",
+          "lines": "45-72",
+          "implMappings": [
+            {
+              "file": "src/components/Dialog.tsx",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Handle ESC key to call onClose",
+      "testMappings": [
+        {
+          "file": "src/components/__tests__/Dialog.test.tsx",
+          "lines": "74-96",
+          "implMappings": [
+            {
+              "file": "src/components/Dialog.tsx",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/components/__tests__/Dialog.test.tsx"
+    ],
+    "implFiles": [
+      "src/components/Dialog.tsx"
+    ],
+    "totalLinesCovered": 236
+  }
+}
