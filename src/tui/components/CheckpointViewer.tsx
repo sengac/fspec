@@ -265,20 +265,23 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
         }
       }
     } else {
-      // Delete all checkpoints for the selected work unit
-      const checkpoint = sortedCheckpoints[selectedCheckpointIndex];
-      if (checkpoint) {
+      // Delete ALL checkpoints across all work units
+      // Get unique work unit IDs from all checkpoints
+      const uniqueWorkUnitIds = [...new Set(checkpoints.map(cp => cp.workUnitId))];
+
+      // Delete checkpoints for each work unit
+      for (const workUnitId of uniqueWorkUnitIds) {
         await deleteAllCheckpoints({
-          workUnitId: checkpoint.workUnitId,
+          workUnitId,
           cwd,
         });
-
-        // Send IPC notification
-        await sendIPCMessage({ type: 'checkpoint-changed' });
-
-        // Exit to board after deleting all
-        onExit();
       }
+
+      // Send IPC notification
+      await sendIPCMessage({ type: 'checkpoint-changed' });
+
+      // Exit to board after deleting all
+      onExit();
     }
 
     setShowDeleteDialog(false);
@@ -640,7 +643,7 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
           message={
             deleteMode === 'single'
               ? `Delete checkpoint '${sortedCheckpoints[selectedCheckpointIndex]?.name}'?`
-              : `Delete ALL ${sortedCheckpoints.filter(cp => cp.workUnitId === sortedCheckpoints[selectedCheckpointIndex]?.workUnitId).length} checkpoints for ${sortedCheckpoints[selectedCheckpointIndex]?.workUnitId}?`
+              : `Delete ALL ${sortedCheckpoints.length} checkpoints across all work units?`
           }
           description={
             deleteMode === 'all'
