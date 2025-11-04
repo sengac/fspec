@@ -7,20 +7,17 @@
  * - ITF-004: Fix TUI Kanban column layout to match table style
  */
 
-import React, { useEffect, useState, useRef } from 'react';
-import { Box, Text, useInput } from 'ink';
+import React, { useEffect, useState } from 'react';
+import { Box, Text, useInput, useStdout } from 'ink';
 import { useFspecStore } from '../store/fspecStore';
-import git from 'isomorphic-git';
 import fs from 'fs';
 import path from 'path';
 import chokidar from 'chokidar';
-import { getStagedFiles, getUnstagedFiles } from '../../git/status';
 import { UnifiedBoardLayout } from './UnifiedBoardLayout';
 import { FullScreenWrapper } from './FullScreenWrapper';
 import { VirtualList } from './VirtualList';
 import { CheckpointViewer } from './CheckpointViewer';
 import { ChangedFilesViewer } from './ChangedFilesViewer';
-import { useStdout } from 'ink';
 import { createIPCServer, cleanupIPCServer, getIPCPath } from '../../utils/ipc';
 import type { Server } from 'net';
 
@@ -52,6 +49,9 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
   const [initialFocusSet, setInitialFocusSet] = useState(false);
   const [selectedWorkUnit, setSelectedWorkUnit] = useState<any>(null);
   const [focusedPanel, setFocusedPanel] = useState<'board' | 'stash' | 'files'>(initialFocusedPanel);
+
+  // Fix: Call useStdout unconditionally at top level (Rules of Hooks)
+  const { stdout } = useStdout();
 
   const columns = [
     'backlog',
@@ -257,7 +257,6 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
 
   // Work unit detail view
   if (viewMode === 'detail' && selectedWorkUnit) {
-    const { stdout } = useStdout();
     const availableHeight = (terminalHeight || stdout?.rows || 24) - 10; // Reserve space for header and footer
 
     // Split description into lines for scrollable display
@@ -339,10 +338,6 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
               setSelectedWorkUnit(workUnit);
               setViewMode('detail');
             }
-          } else if (focusedPanel === 'stash' && stashes.length > 0) {
-            setViewMode('stash-detail');
-          } else if (focusedPanel === 'files' && (stagedFiles.length > 0 || unstagedFiles.length > 0)) {
-            setViewMode('file-diff');
           }
         }}
         onMoveUp={async () => {
