@@ -128,31 +128,29 @@ describe('Feature: Add comprehensive help documentation for bootstrap and config
     });
   });
 
-  describe('Scenario: README.md documents configure-tools command', () => {
-    it('should have complete configure-tools documentation in README', async () => {
+  describe('Scenario: README.md directs users to command help', () => {
+    it('should direct users to use --help for command documentation', async () => {
       // Given the README.md file exists
       const fs = await import('fs/promises');
       const readmePath = path.resolve(__dirname, '../../../README.md');
 
-      // When I search for "configure-tools" in README.md
+      // When I search for help documentation in README.md
       const readmeContent = await fs.readFile(readmePath, 'utf-8');
 
-      // Then I should find complete documentation
-      expect(readmeContent).toContain('configure-tools');
+      // Then I should find the "Pro tip" section
+      expect(readmeContent).toContain('Pro tip');
 
-      // And I should see all command options listed
-      expect(readmeContent).toContain('--test-command');
-      expect(readmeContent).toContain('--quality-commands');
+      // And I should see "fspec <command> --help"
+      expect(readmeContent).toContain('fspec <command> --help');
 
-      // And I should see usage examples with test-command option
-      expect(readmeContent).toContain('configure-tools --test-command');
+      // And I should see "fspec help specs"
+      expect(readmeContent).toContain('fspec help specs');
 
-      // And I should see usage examples with quality-commands option
-      // Check for the pattern in the README
-      const hasQualityCommandsExample =
-        readmeContent.includes('configure-tools') &&
-        readmeContent.includes('--quality-commands');
-      expect(hasQualityCommandsExample).toBe(true);
+      // And I should see "fspec help work"
+      expect(readmeContent).toContain('fspec help work');
+
+      // And I should see "fspec help discovery"
+      expect(readmeContent).toContain('fspec help discovery');
     });
   });
 
@@ -183,10 +181,13 @@ describe('Feature: Add comprehensive help documentation for bootstrap and config
       // And configure-tools documentation should be consistent
       expect(configureToolsHelpExists).toBe(true);
 
-      // And README.md should document configure-tools (bootstrap is internal/slash command only)
+      // And README.md should direct users to --help
       const readmePath = path.resolve(__dirname, '../../../README.md');
       const readmeContent = await fs.readFile(readmePath, 'utf-8');
-      expect(readmeContent).toContain('configure-tools');
+      expect(readmeContent).toContain('fspec <command> --help');
+      expect(readmeContent).toContain('fspec help specs');
+      expect(readmeContent).toContain('fspec help work');
+      expect(readmeContent).toContain('fspec help discovery');
 
       // And no inconsistencies should exist
       expect(bootstrapHelpExists && configureToolsHelpExists).toBe(true);

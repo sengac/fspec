@@ -63,10 +63,11 @@ describe('Feature: Reusable confirmation dialog component for destructive TUI ac
       // Type character by character to simulate real user input
       for (const char of 'DELETE ALL') {
         stdin.write(char);
+        await new Promise((resolve) => setTimeout(resolve, 10));
       }
       stdin.write('\r'); // Enter
 
-      await new Promise((resolve) => setTimeout(resolve, 200));
+      await new Promise((resolve) => setTimeout(resolve, 300));
 
       // @step Then the onConfirm callback should be called
       expect(onConfirm).toHaveBeenCalledOnce();
