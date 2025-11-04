@@ -630,7 +630,7 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
       {/* Footer */}
       <Box>
         <Text dimColor>
-          ESC: Back | Tab: Switch Panes | ↑↓: Navigate | PgUp/PgDn: Scroll | D: Delete | A: Delete ALL
+          ESC: Back | ←→↑↓: Navigate | PgUp/PgDn: Scroll | D: Delete | A: Delete ALL
         </Text>
       </Box>
 
