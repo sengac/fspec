@@ -71,13 +71,13 @@ export async function restoreCheckpoint(
           name: 'Stash changes and restore',
           riskLevel: 'Medium',
           description:
-            'Temporarily saves changes. Can restore later, but may cause conflicts.',
+            'Temporarily saves changes. Can restore later if needed.',
         },
         {
-          name: 'Force restore with merge',
+          name: 'Overwrite files (discard changes)',
           riskLevel: 'High',
           description:
-            'Attempts to merge changes. May result in conflicts requiring manual resolution.',
+            'Overwrites working directory with checkpoint. Current changes will be LOST FOREVER unless committed or stashed.',
         },
       ];
 
@@ -115,7 +115,9 @@ export async function restoreCheckpoint(
       workUnitId,
       checkpointName,
       cwd,
-      force: force || (isDirty && userChoice === 'Force restore with merge'),
+      force:
+        force ||
+        (isDirty && userChoice === 'Overwrite files (discard changes)'),
     });
 
     if (result.conflictsDetected) {

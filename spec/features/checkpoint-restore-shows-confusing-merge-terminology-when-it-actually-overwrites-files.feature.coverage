@@ -1,0 +1,71 @@
+{
+  "scenarios": [
+    {
+      "name": "Restore with dirty working directory shows accurate overwrite option",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/restore-checkpoint-terminology.test.ts",
+          "lines": "98-156",
+          "implMappings": [
+            {
+              "file": "src/commands/restore-checkpoint.ts",
+              "lines": [
+                77,
+                78,
+                79,
+                80,
+                118
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Option text removes all misleading merge terminology",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/restore-checkpoint-terminology.test.ts",
+          "lines": "158-221",
+          "implMappings": [
+            {
+              "file": "src/commands/restore-checkpoint.ts",
+              "lines": [
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/commands/__tests__/restore-checkpoint-terminology.test.ts"
+    ],
+    "implFiles": [
+      "src/commands/restore-checkpoint.ts"
+    ],
+    "totalLinesCovered": 146
+  }
+}
