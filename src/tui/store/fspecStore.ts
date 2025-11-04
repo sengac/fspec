@@ -50,6 +50,7 @@ interface FspecState {
   stashes: any[];
   stagedFiles: string[];
   unstagedFiles: string[];
+  checkpointCounts: { manual: number; auto: number };
   isLoaded: boolean;
   error: string | null;
   cwd: string;
@@ -59,6 +60,7 @@ interface FspecState {
   loadData: () => Promise<void>;
   loadStashes: () => Promise<void>;
   loadFileStatus: () => Promise<void>;
+  loadCheckpointCounts: () => Promise<void>;
   updateWorkUnitStatus: (id: string, status: string) => void;
   addWorkUnit: (workUnit: WorkUnit) => void;
   moveWorkUnitUp: (workUnitId: string) => Promise<void>;
@@ -76,6 +78,7 @@ export const useFspecStore = create<FspecState>()(
     stashes: [],
     stagedFiles: [],
     unstagedFiles: [],
+    checkpointCounts: { manual: 0, auto: 0 },
     isLoaded: false,
     error: null,
     cwd: process.cwd(),
@@ -165,6 +168,31 @@ export const useFspecStore = create<FspecState>()(
         set(state => {
           state.stagedFiles = [];
           state.unstagedFiles = [];
+        });
+      }
+    },
+
+    loadCheckpointCounts: async () => {
+      try {
+        const cwd = get().cwd;
+        const path = await import('path');
+        const fs = await import('fs/promises');
+        const checkpointIndexDir = path.join(
+          cwd,
+          '.git',
+          'fspec-checkpoints-index'
+        );
+
+        const files = await fs.readdir(checkpointIndexDir);
+        const manual = files.filter(f => !f.includes('-auto-')).length;
+        const auto = files.filter(f => f.includes('-auto-')).length;
+
+        set(state => {
+          state.checkpointCounts = { manual, auto };
+        });
+      } catch (error) {
+        set(state => {
+          state.checkpointCounts = { manual: 0, auto: 0 };
         });
       }
     },
