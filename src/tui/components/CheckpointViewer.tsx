@@ -17,7 +17,7 @@ import { useFspecStore } from '../store/fspecStore';
 import * as git from 'isomorphic-git';
 import fs from 'fs';
 import type { Checkpoint as GitCheckpoint } from '../../utils/git-checkpoint';
-import { getCheckpointChangedFiles, deleteCheckpoint, deleteAllCheckpoints } from '../../utils/git-checkpoint';
+import { getCheckpointChangedFiles, deleteCheckpoint, deleteAllCheckpoints, restoreCheckpointFile, restoreCheckpoint } from '../../utils/git-checkpoint';
 import { ConfirmationDialog } from '../../components/ConfirmationDialog';
 import { sendIPCMessage } from '../../utils/ipc';
 
@@ -47,6 +47,8 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
   const [isLoadingCheckpoints, setIsLoadingCheckpoints] = useState(true);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deleteMode, setDeleteMode] = useState<'single' | 'all'>('single');
+  const [showRestoreDialog, setShowRestoreDialog] = useState(false);
+  const [restoreMode, setRestoreMode] = useState<'single' | 'all'>('single');
 
   const cwd = useFspecStore(state => state.cwd);
 
@@ -291,11 +293,133 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
     setShowDeleteDialog(false);
   };
 
+  // Handle restore confirmation
+  const handleRestoreConfirm = async () => {
+    if (restoreMode === 'single') {
+      const checkpoint = sortedCheckpoints[selectedCheckpointIndex];
+      const file = files[selectedFileIndex];
+      if (checkpoint && file) {
+        // Resolve ref to OID
+        const checkpointOid = await git.resolveRef({
+          fs,
+          dir: cwd,
+          ref: checkpoint.stashRef,
+        });
+
+        const result = await restoreCheckpointFile({
+          cwd,
+          checkpointOid,
+          filepath: file.path,
+          force: true,
+        });
+
+        if (result.success) {
+          // Send IPC notification
+          await sendIPCMessage({ type: 'checkpoint-changed' });
+
+          // Reload diff to show updated comparison
+          const selectedFile = files[selectedFileIndex];
+          if (selectedFile && workerRef.current) {
+            setIsLoadingDiff(true);
+            const requestId = `${Date.now()}`;
+            pendingRequestId.current = requestId;
+
+            const worker = workerRef.current;
+            const messageHandler = (response: { id: string; diff?: string; error?: string }) => {
+              if (response.id !== pendingRequestId.current) return;
+              if (response.error) {
+                setDiffContent('Error loading diff');
+              } else {
+                setDiffContent(response.diff || 'No changes to display');
+              }
+              setIsLoadingDiff(false);
+              worker.off('message', messageHandler);
+            };
+
+            worker.on('message', messageHandler);
+            worker.postMessage({
+              id: requestId,
+              cwd,
+              filepath: selectedFile.path,
+              checkpointRef: checkpoint.stashRef,
+            });
+          }
+        }
+      }
+    } else {
+      // Restore all files
+      const checkpoint = sortedCheckpoints[selectedCheckpointIndex];
+      if (checkpoint) {
+        await restoreCheckpoint({
+          workUnitId: checkpoint.workUnitId,
+          checkpointName: checkpoint.name,
+          cwd,
+          force: true,
+        });
+
+        // Send IPC notification
+        await sendIPCMessage({ type: 'checkpoint-changed' });
+
+        // Reload diff
+        const selectedFile = files[selectedFileIndex];
+        if (selectedFile && workerRef.current) {
+          setIsLoadingDiff(true);
+          const requestId = `${Date.now()}`;
+          pendingRequestId.current = requestId;
+
+          const worker = workerRef.current;
+          const messageHandler = (response: { id: string; diff?: string; error?: string }) => {
+            if (response.id !== pendingRequestId.current) return;
+            if (response.error) {
+              setDiffContent('Error loading diff');
+            } else {
+              setDiffContent(response.diff || 'No changes to display');
+            }
+            setIsLoadingDiff(false);
+            worker.off('message', messageHandler);
+          };
+
+          worker.on('message', messageHandler);
+          worker.postMessage({
+            id: requestId,
+            cwd,
+            filepath: selectedFile.path,
+            checkpointRef: checkpoint.stashRef,
+          });
+        }
+      }
+    }
+
+    setShowRestoreDialog(false);
+  };
+
+  const handleRestoreCancel = () => {
+    setShowRestoreDialog(false);
+  };
+
   // Handle keyboard input
   useInput((input, key) => {
 
     if (key.escape) {
       onExit();
+      return;
+    }
+
+    // R key for single file restore (files pane only)
+    if (input === 'r' || input === 'R') {
+      if (focusedPane === 'files' && files.length > 0) {
+        setRestoreMode('single');
+        setShowRestoreDialog(true);
+      }
+      return;
+    }
+
+    // T key for restore all files
+    if (input === 't' || input === 'T') {
+      if ((focusedPane === 'checkpoints' || focusedPane === 'files') && sortedCheckpoints.length > 0) {
+        setRestoreMode('all');
+        setShowRestoreDialog(true);
+      }
       return;
     }
 
@@ -338,7 +462,7 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
     }
 
     // Up/down arrow key navigation handled by VirtualList when focused
-  }, { isActive: !showDeleteDialog });
+  }, { isActive: !showDeleteDialog && !showRestoreDialog });
 
   // Loading state
   if (isLoadingCheckpoints) {
@@ -655,6 +779,22 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
           riskLevel={deleteMode === 'single' ? 'medium' : 'high'}
           onConfirm={handleDeleteConfirm}
           onCancel={handleDeleteCancel}
+          isActive={true}
+        />
+      )}
+
+      {showRestoreDialog && sortedCheckpoints.length > 0 && (
+        <ConfirmationDialog
+          message={
+            restoreMode === 'single'
+              ? `Restore ${files[selectedFileIndex]?.path} from checkpoint '${sortedCheckpoints[selectedCheckpointIndex]?.name}'?`
+              : `Restore ALL ${files.length} files from checkpoint '${sortedCheckpoints[selectedCheckpointIndex]?.name}'?`
+          }
+          description="Overwrite warning: Current file content will be replaced. Uncommitted changes will be LOST."
+          confirmMode="yesno"
+          riskLevel={restoreMode === 'single' ? 'medium' : 'high'}
+          onConfirm={handleRestoreConfirm}
+          onCancel={handleRestoreCancel}
           isActive={true}
         />
       )}
