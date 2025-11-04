@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-04T00:28:24.047Z"
+    "lastUpdated": "2025-11-04T01:03:08.216Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -39004,6 +39004,140 @@
       "nextQuestionId": 0,
       "nextNoteId": 0,
       "updated": "2025-11-04T00:28:24.069Z"
+    },
+    "BUG-065": {
+      "id": "BUG-065",
+      "title": "TUI-016 incomplete: CheckpointPanel using chokidar instead of IPC+Zustand",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-11-04T00:40:56.152Z",
+      "updatedAt": "2025-11-04T01:03:08.239Z",
+      "description": "TUI-016 IPC infrastructure is complete but not connected. CheckpointPanel still uses chokidar file-watching which must be REMOVED. Three components need connection: Zustand store checkpoint state, BoardView IPC server, and CheckpointPanel refactor.",
+      "children": [],
+      "attachments": [
+        "spec/attachments/BUG-065/tui-016-incomplete-implementation.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-04T00:42:05.236Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-04T00:47:49.495Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-04T00:49:50.302Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-04T00:53:10.346Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-04T00:55:43.493Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-04T01:03:08.239Z"
+        }
+      ],
+      "userStory": {
+        "role": "TUI user monitoring checkpoint counts",
+        "action": "see real-time checkpoint updates via IPC",
+        "benefit": "checkpoint display stays accurate without file-watching overhead"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "CheckpointPanel MUST NOT use chokidar file-watching",
+          "deleted": false,
+          "createdAt": "2025-11-04T00:42:19.753Z"
+        },
+        {
+          "id": 1,
+          "text": "CheckpointPanel MUST read checkpoint counts from Zustand store",
+          "deleted": false,
+          "createdAt": "2025-11-04T00:42:25.009Z"
+        },
+        {
+          "id": 2,
+          "text": "Zustand store MUST have checkpointCounts state with manual and auto counts",
+          "deleted": false,
+          "createdAt": "2025-11-04T00:42:30.283Z"
+        },
+        {
+          "id": 3,
+          "text": "Zustand store MUST have loadCheckpointCounts() action to read from .git/fspec-checkpoints-index/",
+          "deleted": false,
+          "createdAt": "2025-11-04T00:42:36.264Z"
+        },
+        {
+          "id": 4,
+          "text": "BoardView MUST create IPC server on mount to listen for checkpoint-changed messages",
+          "deleted": false,
+          "createdAt": "2025-11-04T00:42:42.260Z"
+        },
+        {
+          "id": 5,
+          "text": "BoardView MUST call loadCheckpointCounts() when receiving checkpoint-changed IPC message",
+          "deleted": false,
+          "createdAt": "2025-11-04T00:42:47.437Z"
+        },
+        {
+          "id": 6,
+          "text": "BoardView MUST cleanup IPC server on unmount",
+          "deleted": false,
+          "createdAt": "2025-11-04T00:42:52.710Z"
+        }
+      ],
+      "nextRuleId": 7,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User runs 'fspec checkpoint TUI-016 baseline' in terminal A, TUI in terminal B sees count update from 20 to 21 manual checkpoints immediately",
+          "deleted": false,
+          "createdAt": "2025-11-04T00:42:59.430Z"
+        },
+        {
+          "id": 1,
+          "text": "User runs 'fspec update-work-unit-status TUI-016 implementing' triggering auto checkpoint, TUI shows count update from 58 to 59 auto checkpoints immediately",
+          "deleted": false,
+          "createdAt": "2025-11-04T00:43:05.363Z"
+        },
+        {
+          "id": 2,
+          "text": "User starts TUI, CheckpointPanel loads initial counts from filesystem showing 21 manual and 59 auto checkpoints",
+          "deleted": false,
+          "createdAt": "2025-11-04T00:43:10.967Z"
+        },
+        {
+          "id": 3,
+          "text": "User runs 'fspec cleanup-checkpoints TUI-016 --keep-last 5' deleting 15 checkpoints, TUI shows counts drop from 21 to 6 manual and 59 to 49 auto immediately",
+          "deleted": false,
+          "createdAt": "2025-11-04T00:43:17.703Z"
+        },
+        {
+          "id": 4,
+          "text": "CheckpointPanel imports from Zustand store, NOT chokidar - no chokidar import exists in file",
+          "deleted": false,
+          "createdAt": "2025-11-04T00:43:24.783Z"
+        },
+        {
+          "id": 5,
+          "text": "Zustand store has checkpointCounts state accessible via useFspecStore(state => state.checkpointCounts)",
+          "deleted": false,
+          "createdAt": "2025-11-04T00:43:30.133Z"
+        }
+      ],
+      "nextExampleId": 6,
+      "estimate": 3,
+      "questions": [],
+      "architectureNotes": [],
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-04T01:03:08.239Z"
     }
   },
   "states": {
@@ -39050,6 +39184,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "BUG-065",
       "BUG-064",
       "TUI-016",
       "BUG-063",
@@ -39357,7 +39492,7 @@
   "prefixCounters": {
     "CLI": 14,
     "HELP": 5,
-    "BUG": 64,
+    "BUG": 65,
     "DISC": 2,
     "COV": 53,
     "TUI": 16

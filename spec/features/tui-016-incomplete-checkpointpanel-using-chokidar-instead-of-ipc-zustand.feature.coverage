@@ -1,0 +1,311 @@
+{
+  "scenarios": [
+    {
+      "name": "Manual checkpoint triggers IPC update to TUI",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/bug-065-checkpoint-integration.test.ts",
+          "lines": "33-62",
+          "implMappings": [
+            {
+              "file": "src/tui/components/BoardView.tsx",
+              "lines": [
+                24,
+                25
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Auto checkpoint triggers IPC update to TUI",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/bug-065-checkpoint-integration.test.ts",
+          "lines": "64-88",
+          "implMappings": [
+            {
+              "file": "src/tui/components/BoardView.tsx",
+              "lines": [
+                24,
+                25
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "TUI loads initial checkpoint counts on startup",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/bug-065-checkpoint-integration.test.ts",
+          "lines": "90-109",
+          "implMappings": [
+            {
+              "file": "src/tui/store/fspecStore.ts",
+              "lines": [
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Cleanup checkpoints triggers IPC update to TUI",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/bug-065-checkpoint-integration.test.ts",
+          "lines": "111-133",
+          "implMappings": [
+            {
+              "file": "src/tui/components/BoardView.tsx",
+              "lines": [
+                24,
+                25
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CheckpointPanel does not import chokidar",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/bug-065-checkpoint-integration.test.ts",
+          "lines": "135-156",
+          "implMappings": [
+            {
+              "file": "src/tui/components/CheckpointPanel.tsx",
+              "lines": [
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Zustand store exposes checkpoint counts state",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/bug-065-checkpoint-integration.test.ts",
+          "lines": "158-183",
+          "implMappings": [
+            {
+              "file": "src/tui/store/fspecStore.ts",
+              "lines": [
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/__tests__/bug-065-checkpoint-integration.test.ts"
+    ],
+    "implFiles": [
+      "src/tui/components/BoardView.tsx",
+      "src/tui/store/fspecStore.ts",
+      "src/tui/components/CheckpointPanel.tsx"
+    ],
+    "totalLinesCovered": 343
+  }
+}

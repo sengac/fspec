@@ -21,6 +21,8 @@ import { VirtualList } from './VirtualList';
 import { CheckpointViewer } from './CheckpointViewer';
 import { ChangedFilesViewer } from './ChangedFilesViewer';
 import { useStdout } from 'ink';
+import { createIPCServer, cleanupIPCServer, getIPCPath } from '../../utils/ipc';
+import type { Server } from 'net';
 
 interface BoardViewProps {
   onExit?: () => void;
@@ -158,6 +160,30 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
       }
     }
   }, [workUnits, groupedWorkUnits, initialFocusSet]);
+
+  // IPC server for checkpoint updates
+  useEffect(() => {
+    let server: Server | null = null;
+
+    try {
+      server = createIPCServer((message) => {
+        if (message.type === 'checkpoint-changed') {
+          void useFspecStore.getState().loadCheckpointCounts();
+        }
+      });
+
+      const ipcPath = getIPCPath();
+      server.listen(ipcPath);
+    } catch (error) {
+      // IPC server failed to start (non-fatal - TUI still works)
+    }
+
+    return () => {
+      if (server) {
+        cleanupIPCServer(server);
+      }
+    };
+  }, []);
 
   // Compute currently selected work unit
   const currentlySelectedWorkUnit = (() => {
