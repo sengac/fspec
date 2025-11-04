@@ -18,11 +18,19 @@ export const WorkUnitAttachments: React.FC<WorkUnitAttachmentsProps> = ({
   // Calculate available width (terminal width - borders and padding)
   const availableWidth = Math.max(10, terminalWidth - 4);
 
+  // Reserve space for "Attachments: " prefix
+  const prefix = 'Attachments: ';
+  const prefixLength = prefix.length;
+  const contentWidth = Math.max(4, availableWidth - prefixLength);
+
   // Handle no attachments
   if (!attachments || attachments.length === 0) {
     return (
       <Box height={1} flexShrink={0}>
-        <Text dimColor>No attachments</Text>
+        <Text>
+          <Text dimColor>{prefix}</Text>
+          <Text dimColor>none</Text>
+        </Text>
       </Box>
     );
   }
@@ -33,8 +41,8 @@ export const WorkUnitAttachments: React.FC<WorkUnitAttachmentsProps> = ({
   // Build comma-separated list
   let displayText = filenames.join(', ');
 
-  // Check if we need to truncate
-  if (displayText.length > availableWidth) {
+  // Check if we need to truncate (use contentWidth instead of availableWidth)
+  if (displayText.length > contentWidth) {
     // Try to fit as many filenames as possible
     let fittedText = '';
     let count = 0;
@@ -48,7 +56,7 @@ export const WorkUnitAttachments: React.FC<WorkUnitAttachmentsProps> = ({
       const moreText = remaining > 0 ? `, ...${remaining} more` : '';
       const fullText = testText + moreText;
 
-      if (fullText.length <= availableWidth) {
+      if (fullText.length <= contentWidth) {
         fittedText = testText;
         count = i + 1;
       } else {
@@ -65,12 +73,15 @@ export const WorkUnitAttachments: React.FC<WorkUnitAttachmentsProps> = ({
     }
   }
 
-  // Final truncation to ensure we don't overflow
-  displayText = cliTruncate(displayText, availableWidth, { position: 'end' });
+  // Final truncation to ensure we don't overflow (use contentWidth and truncate-end)
+  displayText = cliTruncate(displayText, contentWidth, { position: 'end' });
 
   return (
     <Box height={1} flexShrink={0}>
-      <Text>{displayText}</Text>
+      <Text>
+        <Text dimColor>{prefix}</Text>
+        <Text>{displayText}</Text>
+      </Text>
     </Box>
   );
 };
