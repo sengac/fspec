@@ -51,6 +51,7 @@ interface UnifiedBoardLayoutProps {
   cwd?: string;
   terminalWidth?: number;
   terminalHeight?: number;
+  isDialogOpen?: boolean; // Disable input when dialog is open
 }
 
 const STATES = ['backlog', 'specifying', 'testing', 'implementing', 'validating', 'done', 'blocked'] as const;
@@ -151,6 +152,7 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
   cwd,
   terminalWidth: propTerminalWidth,
   terminalHeight: propTerminalHeight,
+  isDialogOpen = false,
 }) => {
   const { stdout } = useStdout();
   const terminalWidth = propTerminalWidth ?? (stdout?.columns || 80);
@@ -368,7 +370,7 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
 
     // TUI-019: Open attachment dialog (handled at BoardView level)
     // The 'o' key handler is now in BoardView to show AttachmentDialog
-  });
+  }, { isActive: !isDialogOpen });
 
   return (
     <Box flexDirection="column">

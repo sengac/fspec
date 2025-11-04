@@ -335,6 +335,7 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
         terminalWidth={terminalWidth}
         terminalHeight={terminalHeight}
         cwd={cwd}
+        isDialogOpen={showAttachmentDialog}
         onColumnChange={(delta) => {
           setFocusedColumnIndex(prev => {
             const newIndex = prev + delta;
