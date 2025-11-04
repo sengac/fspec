@@ -296,19 +296,19 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
       return;
     }
 
-    // Shift+D for delete ALL (check this BEFORE plain D)
-    if (input === 'D') {
+    // D key for single deletion
+    if (input === 'd' || input === 'D') {
       if (sortedCheckpoints.length > 0) {
-        setDeleteMode('all');
+        setDeleteMode('single');
         setShowDeleteDialog(true);
       }
       return;
     }
 
-    // d key for single deletion (lowercase only)
-    if (input === 'd') {
+    // A key for delete ALL
+    if (input === 'a' || input === 'A') {
       if (sortedCheckpoints.length > 0) {
-        setDeleteMode('single');
+        setDeleteMode('all');
         setShowDeleteDialog(true);
       }
       return;
@@ -630,7 +630,7 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
       {/* Footer */}
       <Box>
         <Text dimColor>
-          ESC: Back | Tab: Switch Panes | ↑↓: Navigate | PgUp/PgDn: Scroll | D: Delete | Shift+D: Delete ALL
+          ESC: Back | Tab: Switch Panes | ↑↓: Navigate | PgUp/PgDn: Scroll | D: Delete | A: Delete ALL
         </Text>
       </Box>
 
