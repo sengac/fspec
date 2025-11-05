@@ -814,6 +814,14 @@
           "description": "Logging and diagnostics features"
         },
         {
+          "name": "@markdown",
+          "description": "Markdown rendering and processing"
+        },
+        {
+          "name": "@marked",
+          "description": "Marked library for markdown parsing"
+        },
+        {
           "name": "@mermaid",
           "description": "Mermaid Diagram Support"
         },
@@ -1430,7 +1438,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-11-05T00:20:16.984Z",
+    "lastUpdated": "2025-11-05T04:40:29.271Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

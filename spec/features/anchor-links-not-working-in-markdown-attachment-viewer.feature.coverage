@@ -1,0 +1,166 @@
+{
+  "scenarios": [
+    {
+      "name": "Render basic heading with GitHub-compatible slug ID",
+      "testMappings": [
+        {
+          "file": "src/server/utils/__tests__/markdown-renderer.test.ts",
+          "lines": "21-33",
+          "implMappings": [
+            {
+              "file": "src/server/utils/markdown-renderer.ts",
+              "lines": [
+                30
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Render heading with multi-word title",
+      "testMappings": [
+        {
+          "file": "src/server/utils/__tests__/markdown-renderer.test.ts",
+          "lines": "37-51",
+          "implMappings": [
+            {
+              "file": "src/server/utils/markdown-renderer.ts",
+              "lines": [
+                30
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Handle duplicate headings with numbered suffixes",
+      "testMappings": [
+        {
+          "file": "src/server/utils/__tests__/markdown-renderer.test.ts",
+          "lines": "55-80",
+          "implMappings": [
+            {
+              "file": "src/server/utils/markdown-renderer.ts",
+              "lines": [
+                30
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Slugify heading with special characters",
+      "testMappings": [
+        {
+          "file": "src/server/utils/__tests__/markdown-renderer.test.ts",
+          "lines": "83-100",
+          "implMappings": [
+            {
+              "file": "src/server/utils/markdown-renderer.ts",
+              "lines": [
+                30
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Anchor links navigate to headings with matching IDs",
+      "testMappings": [
+        {
+          "file": "src/server/utils/__tests__/markdown-renderer.test.ts",
+          "lines": "103-125",
+          "implMappings": [
+            {
+              "file": "src/server/utils/markdown-renderer.ts",
+              "lines": [
+                30
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Mermaid code blocks continue to render correctly (regression test)",
+      "testMappings": [
+        {
+          "file": "src/server/utils/__tests__/markdown-renderer.test.ts",
+          "lines": "128-153",
+          "implMappings": [
+            {
+              "file": "src/server/utils/markdown-renderer.ts",
+              "lines": [
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Code blocks continue to render with syntax highlighting (regression test)",
+      "testMappings": [
+        {
+          "file": "src/server/utils/__tests__/markdown-renderer.test.ts",
+          "lines": "156-182",
+          "implMappings": [
+            {
+              "file": "src/server/utils/markdown-renderer.ts",
+              "lines": [
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/server/utils/__tests__/markdown-renderer.test.ts"
+    ],
+    "implFiles": [
+      "src/server/utils/markdown-renderer.ts"
+    ],
+    "totalLinesCovered": 186
+  }
+}
