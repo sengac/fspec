@@ -4,7 +4,7 @@
   <img alt="fspec" src="fspec-logo-light.svg" width="248">
 </picture>
 
-**Stop fixing AI chaos. Start shipping quality.**
+**Stop micromanaging AI. Start shipping tested code.**
 
 [![Website](https://img.shields.io/badge/Website-fspec.dev-blue)](https://fspec.dev)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -14,9 +14,9 @@
 
 ## What is fspec?
 
-**fspec makes AI agents follow discipline.** It's the missing workflow layer that turns AI coding chaos into structured, testable, traceable software.
+**AI coding is broken. Admit it.** Your agent writes code without tests, forgets what it did yesterday, and ships features based on vibes. You're babysitting more than building. fspec fixes this by making discipline non-negotiable. It's a workflow enforcer that forces AI to follow test-driven development: write acceptance criteria, generate tests, then code—in that exact order. No shortcuts. No exceptions. The payoff? Autonomous AI that ships production-ready code while you focus on actual problems. Stop micromanaging. Start shipping.
 
-Think **Git for specifications** + **Kanban for AI agents** + **TDD enforcement** all in one.
+Why pay someone to write tests when AI does it better—and fspec ensures it's always done first?
 
 ---
 
@@ -72,20 +72,6 @@ Think **Git for specifications** + **Kanban for AI agents** + **TDD enforcement*
 
 ---
 
-## Bug Reporting & Support
-
-Found a bug? Just tell your AI agent:
-
-```
-"Report a bug to GitHub"
-```
-
-Your agent knows how to use `fspec report-bug-to-github` to automatically gather context and create the issue.
-
-**Manual reporting:** [Create an issue](https://github.com/sengac/fspec/issues/new)
-
----
-
 ## Checkpoints
 
 Experiment fearlessly with built-in Git checkpoints. Tell your agent to **"create a checkpoint"** to save your current state, then view and restore checkpoints from the interactive kanban by pressing the **C** key.
@@ -136,6 +122,20 @@ fspec help specs      # Gherkin commands
 fspec help work       # Kanban commands
 fspec help discovery  # Example mapping commands
 ```
+
+---
+
+## Bug Reporting & Support
+
+Found a bug? Just tell your AI agent:
+
+```
+"Report a bug to GitHub"
+```
+
+Your agent knows how to use `fspec report-bug-to-github` to automatically gather context and create the issue.
+
+**Manual reporting:** [Create an issue](https://github.com/sengac/fspec/issues/new)
 
 ---
 
