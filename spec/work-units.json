@@ -41780,6 +41780,16 @@
         }
       ],
       "nextExampleId": 3
+    },
+    "FEAT-020": {
+      "id": "FEAT-020",
+      "title": "Auto-update check on startup",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-11-05T21:12:48.746Z",
+      "updatedAt": "2025-11-05T21:12:48.746Z",
+      "description": "Check npm registry on fspec startup to notify users when a newer version is available, with option to auto-install or prompt for manual update",
+      "children": []
     }
   },
   "states": {
@@ -41807,7 +41817,8 @@
       "RES-004",
       "RES-005",
       "FEAT-018",
-      "CLEAN-002"
+      "CLEAN-002",
+      "FEAT-020"
     ],
     "specifying": [
       "RES-006",
@@ -42158,6 +42169,7 @@
     "REFAC": 4,
     "VIEW": 1,
     "DOC": 6,
-    "GIT": 12
+    "GIT": 12,
+    "FEAT": 20
   }
 }

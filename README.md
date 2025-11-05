@@ -119,7 +119,7 @@ View attachments in the interactive kanban by pressing the **A** key, with full 
 
 ---
 
-## DOGFOODING
+## 🦴 DOGFOODING 🍖
 
 **We practice what we preach.** fspec was built entirely using fspec. The result? **257 feature files** with complete Gherkin specifications, full test coverage, and end-to-end traceability.
 
