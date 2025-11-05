@@ -149,17 +149,16 @@ function generateUnifiedDiff(
   const oldLines = oldContent.split('\n');
   const newLines = newContent.split('\n');
 
-  const diff: string[] = [];
-  diff.push(`diff --git a/${filepath} b/${filepath}`);
-  diff.push(`--- a/${filepath}`);
-  diff.push(`+++ b/${filepath}`);
-
   // Use Myers algorithm (via diff library) for proper line alignment
   const changes: Change[] = diffLines(oldContent, newContent, {
     newlineIsToken: false,
   });
 
+  // Count added and removed lines for the header
+  let addedCount = 0;
+  let removedCount = 0;
   const chunks: string[] = [];
+
   for (const change of changes) {
     const lines = change.value.split('\n').filter(line => line.length > 0);
 
@@ -169,20 +168,28 @@ function generateUnifiedDiff(
         chunks.push(` ${line}`);
       }
     } else if (change.removed) {
-      // Removed lines
+      // Removed lines (present in checkpoint but not HEAD)
+      removedCount += lines.length;
       for (const line of lines) {
         chunks.push(`-${line}`);
       }
     } else if (change.added) {
-      // Added lines
+      // Added lines (present in HEAD but not checkpoint)
+      addedCount += lines.length;
       for (const line of lines) {
         chunks.push(`+${line}`);
       }
     }
   }
 
-  // Add hunk header
-  diff.push(`@@ -1,${oldLines.length} +1,${newLines.length} @@`);
+  // Build diff with user-friendly headers
+  const diff: string[] = [];
+  diff.push(
+    `--- Lines ADDED after checkpoint (will be REMOVED on restore): ${addedCount} lines`
+  );
+  diff.push(
+    `+++ Lines REMOVED since checkpoint (will be ADDED on restore): ${removedCount} lines`
+  );
   diff.push(...chunks);
 
   return diff.join('\n');
