@@ -284,8 +284,8 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
       return;
     }
 
-    // O key to open attachment dialog (TUI-019)
-    if (input === 'o' || input === 'O') {
+    // A key to open attachment dialog (TUI-019)
+    if (input === 'a' || input === 'A') {
       if (hasAttachments()) {
         setShowAttachmentDialog(true);
       }

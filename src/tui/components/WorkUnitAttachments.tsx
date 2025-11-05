@@ -21,7 +21,7 @@ export const WorkUnitAttachments: React.FC<WorkUnitAttachmentsProps> = ({
   // Reserve space for prefix (different based on whether attachments exist)
   const hasAttachments = attachments && attachments.length > 0;
   const prefix = hasAttachments
-    ? 'Attachments (use the "O" key to view): '
+    ? 'Attachments (use the "A" key to view): '
     : 'Attachments: ';
   const prefixLength = prefix.length;
   const contentWidth = Math.max(4, availableWidth - prefixLength);

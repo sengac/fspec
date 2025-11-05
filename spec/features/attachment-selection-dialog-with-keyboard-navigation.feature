@@ -6,7 +6,7 @@
 @TUI-019
 Feature: Attachment selection dialog with keyboard navigation
   """
-  Create new AttachmentDialog component using Ink's Box and Text components. Use virtual list pattern for scrollable attachment display. Reuse openInBrowser utility from src/utils/openBrowser.ts. Remove old 'o' key handler from UnifiedBoardLayout that opened first attachment directly. Dialog should be modal overlay rendered on top of board view.
+  Create new AttachmentDialog component using Ink's Box and Text components. Use virtual list pattern for scrollable attachment display. Reuse openInBrowser utility from src/utils/openBrowser.ts. Remove old 'a' key handler from UnifiedBoardLayout that opened first attachment directly. Dialog should be modal overlay rendered on top of board view.
   """
 
   # ========================================
@@ -14,8 +14,8 @@ Feature: Attachment selection dialog with keyboard navigation
   # ========================================
   #
   # BUSINESS RULES:
-  #   1. Pressing 'o' key opens attachment selection dialog (only if attachments exist)
-  #   2. If no attachments exist, pressing 'o' does nothing (no dialog opens)
+  #   1. Pressing 'a' key opens attachment selection dialog (only if attachments exist)
+  #   2. If no attachments exist, pressing 'a' does nothing (no dialog opens)
   #   3. Dialog displays all attachments in a virtual list (scrollable if more than viewport)
   #   4. Arrow up/down keys navigate through attachment list
   #   5. Pressing Enter opens the currently selected attachment in default browser
@@ -24,10 +24,10 @@ Feature: Attachment selection dialog with keyboard navigation
   #   8. Remove old TUI-013 single-attachment opening code from UnifiedBoardLayout
   #
   # EXAMPLES:
-  #   1. User presses 'o' on work unit with 3 attachments, dialog opens showing list of all 3 files
+  #   1. User presses 'a' on work unit with 3 attachments, dialog opens showing list of all 3 files
   #   2. User navigates with arrow keys, presses Enter on 'diagram.png', file opens in browser, dialog closes
-  #   3. User presses 'o', dialog opens, user presses Esc, dialog closes without opening anything
-  #   4. User presses 'o' on work unit with no attachments, nothing happens (no dialog)
+  #   3. User presses 'a', dialog opens, user presses Esc, dialog closes without opening anything
+  #   4. User presses 'a' on work unit with no attachments, nothing happens (no dialog)
   #   5. Work unit has 10 attachments, dialog shows scrollable list with scroll indicators
   #
   # ========================================
@@ -38,7 +38,7 @@ Feature: Attachment selection dialog with keyboard navigation
 
   Scenario: Open dialog showing all attachments
     Given I am viewing a work unit with 3 attachments in the TUI
-    When I press the 'o' key
+    When I press the 'a' key
     Then an attachment selection dialog should open
     And the dialog should display all 3 attachment filenames
     And the first attachment should be selected by default
@@ -59,13 +59,13 @@ Feature: Attachment selection dialog with keyboard navigation
 
   Scenario: No dialog when work unit has no attachments
     Given I am viewing a work unit with no attachments
-    When I press the 'o' key
+    When I press the 'a' key
     Then no dialog should open
     And nothing should happen
 
   Scenario: Scrollable list for many attachments
     Given I am viewing a work unit with 10 attachments
-    When I press the 'o' key
+    When I press the 'a' key
     Then an attachment selection dialog should open
     And the dialog should display a scrollable list
     And scroll indicators should be visible when scrolled

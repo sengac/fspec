@@ -34,7 +34,7 @@ Feature: Open attachments in browser from details panel
   # ========================================
   #
   # BUSINESS RULES:
-  #   1. User should be able to select an attachment and press 'o' to open it
+  #   1. User should be able to select an attachment and press 'a' to open it
   #   2. Opening attachment should use 'open' npm package for cross-platform browser launching
   #   3. Attachment file path should be converted from relative to absolute path before opening
   #   4. Opening should use file:// protocol for local files
@@ -54,17 +54,17 @@ Feature: Open attachments in browser from details panel
 
   Scenario: Open image attachment in browser
     Given I am viewing work unit details with an attachment 'diagram.png'
-    When I select the attachment and press 'o'
+    When I select the attachment and press 'a'
     Then the default browser should open the file with file:// protocol
     And the TUI should remain active
 
   Scenario: Open PDF attachment in default viewer
     Given I am viewing work unit details with a PDF attachment 'requirements.pdf'
-    When I select the attachment and press 'o'
+    When I select the attachment and press 'a'
     Then the PDF should open in the default PDF viewer/browser
 
   Scenario: Handle missing attachment file gracefully
     Given I am viewing work unit details with an attachment that doesn't exist on disk
-    When I select the attachment and press 'o'
+    When I select the attachment and press 'a'
     Then the TUI should show an error message
     And the browser should not open
