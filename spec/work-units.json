@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-05T06:03:26.876Z"
+    "lastUpdated": "2025-11-05T07:10:37.916Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -41109,6 +41109,112 @@
       "architectureNotes": [],
       "nextNoteId": 0,
       "updated": "2025-11-05T06:03:26.956Z"
+    },
+    "DOC-006": {
+      "id": "DOC-006",
+      "title": "Update README links to fspec.dev and remove local docs",
+      "type": "task",
+      "status": "backlog",
+      "createdAt": "2025-11-05T06:46:28.479Z",
+      "updatedAt": "2025-11-05T06:46:28.479Z",
+      "description": "Replace all README.md documentation links from ./docs/ to https://fspec.dev URLs. Remove entire docs directory as documentation is now hosted on website.",
+      "children": []
+    },
+    "GIT-011": {
+      "id": "GIT-011",
+      "title": "Checkpoint creation fails when deleted files exist",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-11-05T06:51:18.899Z",
+      "updatedAt": "2025-11-05T07:10:37.942Z",
+      "description": "Checkpoint creation attempts to stage deleted files using git.add() which fails because the files no longer exist. Should use git.remove() for deleted files and git.add() for modified/added files. Root cause: src/utils/git-checkpoint.ts lines 216-219 call git.add() for all changed files without checking if files are deleted.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-05T06:51:39.121Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-05T06:53:46.992Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-05T06:55:26.955Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-05T07:03:43.095Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-05T07:10:37.942Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using fspec checkpoints",
+        "action": "create checkpoints when deleted files exist",
+        "benefit": "I can safely experiment and rollback changes including file deletions"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Checkpoint creation must detect file status using git.statusMatrix to determine if files are modified, added, or deleted",
+          "deleted": false,
+          "createdAt": "2025-11-05T06:51:52.959Z"
+        },
+        {
+          "id": 1,
+          "text": "Deleted files must be staged using git.remove() instead of git.add()",
+          "deleted": false,
+          "createdAt": "2025-11-05T06:51:58.536Z"
+        },
+        {
+          "id": 2,
+          "text": "Modified and added files must continue using git.add() for staging",
+          "deleted": false,
+          "createdAt": "2025-11-05T06:52:04.358Z"
+        },
+        {
+          "id": 3,
+          "text": "Checkpoint must capture all changed files (modified, added, and deleted) in a single stash commit",
+          "deleted": false,
+          "createdAt": "2025-11-05T06:52:10.374Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Developer deletes README.md and runs 'fspec checkpoint DOC-001 baseline' - checkpoint is created successfully with deleted file tracked",
+          "deleted": false,
+          "createdAt": "2025-11-05T06:52:16.930Z"
+        },
+        {
+          "id": 1,
+          "text": "Developer has mixed changes (modified src/app.ts, deleted docs/old.md, added tests/new.test.ts) - checkpoint captures all three types of changes",
+          "deleted": false,
+          "createdAt": "2025-11-05T06:52:23.721Z"
+        },
+        {
+          "id": 2,
+          "text": "Developer deletes multiple files in docs/ directory - all deletions are staged using git.remove() and captured in checkpoint",
+          "deleted": false,
+          "createdAt": "2025-11-05T06:52:29.909Z"
+        },
+        {
+          "id": 3,
+          "text": "Restoring checkpoint that includes deleted files recreates those files in working directory",
+          "deleted": false,
+          "createdAt": "2025-11-05T06:52:36.514Z"
+        }
+      ],
+      "nextExampleId": 4,
+      "questions": [],
+      "architectureNotes": [],
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-05T07:10:37.942Z"
     }
   },
   "states": {
@@ -41136,7 +41242,8 @@
       "RES-004",
       "RES-005",
       "FEAT-018",
-      "CLEAN-002"
+      "CLEAN-002",
+      "DOC-006"
     ],
     "specifying": [
       "RES-006",
@@ -41149,6 +41256,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "GIT-011",
       "VIEW-001",
       "TUI-022",
       "TUI-021",
@@ -41477,6 +41585,8 @@
     "COV": 53,
     "TUI": 22,
     "REFAC": 4,
-    "VIEW": 1
+    "VIEW": 1,
+    "DOC": 6,
+    "GIT": 11
   }
 }
