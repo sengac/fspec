@@ -349,8 +349,17 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
       );
     };
 
-    return (
-      <FullScreenWrapper>
+    // Detail view component with ESC key handler
+    const DetailViewContent = () => {
+      // Handle ESC key to exit detail view
+      useInput((input, key) => {
+        if (key.escape) {
+          setViewMode('board');
+          setSelectedWorkUnit(null);
+        }
+      }, { isActive: true });
+
+      return (
         <Box flexDirection="column" padding={1} flexGrow={1} flexShrink={1}>
           <Text bold>{selectedWorkUnit.id} - {selectedWorkUnit.title}</Text>
           <Text>Type: {selectedWorkUnit.type}</Text>
@@ -368,6 +377,12 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
 
           <Text dimColor>{'\n'}Press ESC to return | Use ↑↓ to scroll | PgUp/PgDn, Home/End</Text>
         </Box>
+      );
+    };
+
+    return (
+      <FullScreenWrapper>
+        <DetailViewContent />
       </FullScreenWrapper>
     );
   }

@@ -108,6 +108,42 @@ describe('Feature: Interactive Kanban board CLI', () => {
     });
   });
 
+  describe('Scenario: Close detail view with ESC key', () => {
+    it('should return to board view when ESC is pressed in detail view', async () => {
+      // @step Given the board is displaying with a work unit selected
+      const { stdin, frames } = render(<BoardView />);
+
+      await new Promise(resolve => setTimeout(resolve, 200));
+
+      // Navigate to specifying column (has work units)
+      stdin.write('\x1B[C');
+      await new Promise(resolve => setTimeout(resolve, 50));
+
+      // @step And the user has opened the detail view
+      stdin.write('\r'); // Enter key to open detail view
+      await new Promise(resolve => setTimeout(resolve, 50));
+
+      // Verify we're in detail view
+      const detailFrame = frames.find(f => f.includes('Description:') && f.includes('Press ESC to return')) || frames[frames.length - 1];
+      expect(detailFrame).toContain('Description:');
+
+      // @step When the user presses the ESC key
+      stdin.write('\x1B'); // ESC key
+      await new Promise(resolve => setTimeout(resolve, 50));
+
+      // @step Then the detail view should close
+      // @step And the board view should be displayed
+      const boardFrame = frames[frames.length - 1];
+
+      // Verify we're back on the board by checking for column headers
+      expect(boardFrame).toMatch(/BACKLOG|SPECIFYIN|TESTING/);
+
+      // @step And the detail view should not be visible
+      // The "Press ESC to return" message should not be present in the final frame
+      expect(boardFrame).not.toContain('Press ESC to return');
+    });
+  });
+
   describe('Scenario: Display column header with count and points', () => {
     it('should display column headers with count and points', async () => {
       // @step Given the board is displaying
