@@ -18,13 +18,16 @@ export const WorkUnitAttachments: React.FC<WorkUnitAttachmentsProps> = ({
   // Calculate available width (terminal width - borders and padding)
   const availableWidth = Math.max(10, terminalWidth - 4);
 
-  // Reserve space for "Attachments: " prefix
-  const prefix = 'Attachments: ';
+  // Reserve space for prefix (different based on whether attachments exist)
+  const hasAttachments = attachments && attachments.length > 0;
+  const prefix = hasAttachments
+    ? 'Attachments (use the "O" key to view): '
+    : 'Attachments: ';
   const prefixLength = prefix.length;
   const contentWidth = Math.max(4, availableWidth - prefixLength);
 
   // Handle no attachments
-  if (!attachments || attachments.length === 0) {
+  if (!hasAttachments) {
     return (
       <Box height={1} flexShrink={0}>
         <Text>
