@@ -4,7 +4,6 @@
 @medium
 @TUI-007
 Feature: Container Focus Indication with Headings
-
   """
   Modifies CheckpointViewer.tsx and ChangedFilesViewer.tsx to add container headings with focus-based styling. Uses Ink's Text component with backgroundColor and bold props to show focus state.
   """
@@ -48,7 +47,6 @@ Feature: Container Focus Indication with Headings
   #   A: true
   #
   # ========================================
-
   Background: User Story
     As a developer using fspec TUI
     I want to see which container is currently focused when navigating with Tab

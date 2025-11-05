@@ -2,7 +2,6 @@
 @tui-component
 @TUI-015
 Feature: Refactor header and details to component-based flexbox
-
   """
   Architecture notes:
   - Uses Ink (React for CLI) component-based architecture for all UI rendering
@@ -47,7 +46,6 @@ Feature: Refactor header and details to component-based flexbox
   #   8. Fixed rows calculation is 19 total (6 header Box + 1 separator + 5 details + 7 footer/columns)
   #
   # ========================================
-
   Background: User Story
     As a developer using fspec TUI
     I want to view header and work unit details as pure Ink components

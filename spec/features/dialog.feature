@@ -7,7 +7,6 @@
 @critical
 @TUI-018
 Feature: Base Dialog modal infrastructure component
-
   """
   Accepts children prop for dialog content - implements composition pattern
   """
@@ -28,7 +27,6 @@ Feature: Base Dialog modal infrastructure component
   #   3. Developer creates InfoDialog wrapping Dialog with custom OK button - Dialog provides modal, InfoDialog provides button logic
   #
   # ========================================
-
   Background: User Story
     As a TUI developer
     I want to use a reusable base Dialog component for modal overlays
@@ -41,7 +39,6 @@ Feature: Base Dialog modal infrastructure component
     And the border should be red
     And the children 'Test Content' should be visible
 
-
   Scenario: Dialog captures all input when active
     Given a Dialog component with isActive=true and onClose callback
     When the user presses a key
@@ -49,9 +46,7 @@ Feature: Base Dialog modal infrastructure component
     And a parent component with its own useInput handler
     And the parent useInput handler should not receive the input
 
-
   Scenario: Handle ESC key to call onClose
     Given a Dialog component with onClose callback
     When the user presses the ESC key
     Then the onClose callback should be called
-

@@ -4,7 +4,6 @@
 @keyboard-navigation
 @BUG-062
 Feature: Kanban TUI keyboard navigation - Page Up/Down and Home/End key bindings
-
   """
   Root cause in UnifiedBoardLayout.tsx:430-458 - Page Up/Down directly manipulate scrollOffsets instead of calling onWorkUnitChange
   Missing Home/End key bindings in UnifiedBoardLayout.tsx useInput handler (lines 404-478)
@@ -38,7 +37,6 @@ Feature: Kanban TUI keyboard navigation - Page Up/Down and Home/End key bindings
   #   A: true
   #
   # ========================================
-
   Background: User Story
     As a user navigating the Kanban TUI
     I want to use Page Up/Down and Home/End keys

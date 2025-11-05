@@ -4,7 +4,6 @@
 @medium
 @TUI-012
 Feature: Display attachments in work unit details panel
-
   """
   Truncate list with ellipsis if too long for available terminal width, show keybinding hint for full dialog (TUI-013)
   """
@@ -36,7 +35,6 @@ Feature: Display attachments in work unit details panel
   #   A: true
   #
   # ========================================
-
   Background: User Story
     As a developer using fspec TUI
     I want to view attachments associated with a work unit
@@ -48,13 +46,11 @@ Feature: Display attachments in work unit details panel
     Then line 3 should show 'No attachments'
     And a work unit with no attachments is selected
 
-
   Scenario: Display single attachment filename
     Given I am viewing the TUI Kanban board
     When I view the work unit details panel
     Then line 3 should show 'mockup.png'
     And a work unit with one attachment 'mockup.png' is selected
-
 
   Scenario: Display multiple attachment filenames
     Given I am viewing the TUI Kanban board
@@ -63,7 +59,6 @@ Feature: Display attachments in work unit details panel
     And a work unit with two attachments 'login-flow.png' and 'requirements.pdf' is selected
     And filenames should be comma-separated
 
-
   Scenario: Truncate attachment list when too many to fit
     Given I am viewing the TUI Kanban board
     When I view the work unit details panel
@@ -71,4 +66,3 @@ Feature: Display attachments in work unit details panel
     And a work unit has 5 attachments
     And line 3 can only fit 2 filenames
     And show '...3 more' to indicate truncation
-

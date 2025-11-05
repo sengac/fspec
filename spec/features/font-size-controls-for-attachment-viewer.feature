@@ -7,7 +7,6 @@
 @attachment-viewer
 @TUI-021
 Feature: Font size controls for attachment viewer
-
   """
   Font size state stored in localStorage via vanilla JS (no framework needed for server-rendered HTML). Plus/minus buttons trigger JavaScript that updates CSS custom property --code-font-size applied to code blocks. Default size 16px (increased from current small size). Min 10px, max 24px, increment 2px. Controls positioned in top right next to existing dark mode toggle.
   """
@@ -30,7 +29,6 @@ Feature: Font size controls for attachment viewer
   #   4. User closes browser and reopens attachment, font size remains at previously set 20px
   #
   # ========================================
-
   Background: User Story
     As a TUI user viewing markdown attachments
     I want to adjust code block font sizes and persist preferences

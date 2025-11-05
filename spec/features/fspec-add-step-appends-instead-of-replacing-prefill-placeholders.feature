@@ -4,7 +4,6 @@
 @feature-management
 @BUG-068
 Feature: fspec add-step appends instead of replacing prefill placeholders
-
   """
   Architecture notes:
   - Uses @cucumber/gherkin parser to parse and modify feature files via AST

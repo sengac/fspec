@@ -6,7 +6,6 @@
 @version-management
 @MIG-001
 Feature: Build Migration System
-
   """
   File structure: src/migrations/ with index.ts (runner), registry.ts (version tracking), types.ts (interfaces), migrations/ subfolder for individual migration files, __tests__/ for tests
   Migration interface: {version: string, name: string, description: string, up: (data) => data, down?: (data) => data}. Each migration has unique version number.
@@ -81,7 +80,6 @@ Feature: Build Migration System
   #   2. Keep all backup files indefinitely. No auto-deletion. Users can manually delete old backups from spec/ directory if disk space is concern.
   #
   # ========================================
-
   Background: User Story
     As a fspec developer
     I want to safely evolve the work-units.json schema across versions

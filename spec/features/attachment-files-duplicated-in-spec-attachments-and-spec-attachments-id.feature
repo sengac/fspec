@@ -4,7 +4,6 @@
 @bug-fix
 @BUG-055
 Feature: Attachment files duplicated in spec/attachments/ and spec/attachments/[ID]/
-
   """
   Uses copyFile() from fs/promises to copy attachments. Bug occurs when source file is in spec/attachments/ root - file gets copied but original not deleted. Fix requires checking if source is in root and deleting after successful copy.
   """
@@ -24,7 +23,6 @@ Feature: Attachment files duplicated in spec/attachments/ and spec/attachments/[
   #   3. After fix, files in spec/attachments/ root that get attached should be moved (not copied) to work unit subdirectory
   #
   # ========================================
-
   Background: User Story
     As a developer using fspec
     I want to add attachments to work units

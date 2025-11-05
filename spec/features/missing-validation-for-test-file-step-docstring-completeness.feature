@@ -4,7 +4,6 @@
 @acdd
 @BUG-061
 Feature: Missing validation for test file @step docstring completeness
-
   """
   CRITICAL FIX: Must use .feature.coverage files to find test files (readAllCoverageFiles, extractTestFiles from coverage-reader). NEVER hard-code test file patterns - system is language-agnostic. Coverage files contain testMappings array with actual test file paths used during linking.
   """
@@ -26,7 +25,6 @@ Feature: Missing validation for test file @step docstring completeness
   #   3. Work unit moves to validating. Test file has Given and When steps but missing Then step. Currently ALLOWED (bug), should be BLOCKED showing which steps are missing.
   #
   # ========================================
-
   Background: User Story
     As a AI agent following ACDD
     I want to ensure test files have complete Given/When/Then step docstrings before implementation

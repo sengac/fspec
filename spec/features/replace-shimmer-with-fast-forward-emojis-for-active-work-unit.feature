@@ -3,7 +3,6 @@
 @ui-enhancement
 @TUI-017
 Feature: Replace shimmer with fast-forward emojis for active work unit
-
   """
   Architecture notes:
   - Replace shimmer animation with static emoji indicators (⏩) in checkpoint panel
@@ -28,7 +27,6 @@ Feature: Replace shimmer with fast-forward emojis for active work unit
   #   4. Shimmer animation that previously highlighted active work unit is no longer visible
   #
   # ========================================
-
   Background: User Story
     As a developer using the TUI
     I want to see which work unit is currently active with fast-forward emojis

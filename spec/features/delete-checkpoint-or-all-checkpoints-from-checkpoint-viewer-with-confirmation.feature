@@ -10,7 +10,6 @@
 @destructive-action
 @GIT-010
 Feature: Delete checkpoint or all checkpoints from checkpoint viewer with confirmation
-
   """
   Backend: Add deleteCheckpoint() and deleteAllCheckpoints() functions to git-checkpoint.ts using isomorphic-git to delete refs and update index files. Frontend: Integrate ConfirmationDialog component into CheckpointViewer.tsx with D/Shift+D key handlers. Uses composition pattern: ConfirmationDialog wraps Dialog for modal rendering. Deletion updates CheckpointPanel via IPC (sendIPCMessage). Risk-aware UX: medium risk (yellow) for single deletion, high risk (red) for delete all.
   """
@@ -55,7 +54,6 @@ Feature: Delete checkpoint or all checkpoints from checkpoint viewer with confir
   #   A: true
   #
   # ========================================
-
   Background: User Story
     As a TUI developer managing checkpoints
     I want to delete unwanted checkpoints from the checkpoint viewer

@@ -96,8 +96,8 @@ export async function getCheckpointFileDiff(
       });
       checkpointContent = Buffer.from(blob).toString('utf8');
     } catch (error) {
-      // File doesn't exist in checkpoint
-      return `File not found in checkpoint: ${filepath}`;
+      // File doesn't exist in checkpoint - will be deleted on restore
+      return `Will be deleted on restore: ${filepath}\n\nThis file exists in HEAD but not in the checkpoint.\nRestoring the checkpoint will remove this file from the working directory.`;
     }
 
     // Get HEAD version of file (if it exists)
@@ -125,8 +125,8 @@ export async function getCheckpointFileDiff(
       return 'No changes between checkpoint and HEAD';
     }
 
-    // Generate unified diff (checkpoint as "old", HEAD as "new")
-    return generateUnifiedDiff(filepath, checkpointContent, headContent);
+    // Generate unified diff (HEAD as "old", checkpoint as "new") to show restore preview
+    return generateUnifiedDiff(filepath, headContent, checkpointContent);
   } catch (error) {
     throw new Error(
       `Failed to get checkpoint diff for ${filepath}: ${error instanceof Error ? error.message : String(error)}`
@@ -184,12 +184,8 @@ function generateUnifiedDiff(
 
   // Build diff with user-friendly headers
   const diff: string[] = [];
-  diff.push(
-    `--- Lines ADDED after checkpoint (will be REMOVED on restore): ${addedCount} lines`
-  );
-  diff.push(
-    `+++ Lines REMOVED since checkpoint (will be ADDED on restore): ${removedCount} lines`
-  );
+  diff.push(`--- Lines that will be REMOVED on restore: ${removedCount} lines`);
+  diff.push(`+++ Lines that will be ADDED on restore: ${addedCount} lines`);
   diff.push(...chunks);
 
   return diff.join('\n');

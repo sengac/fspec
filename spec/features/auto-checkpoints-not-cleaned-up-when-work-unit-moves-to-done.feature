@@ -7,7 +7,6 @@
 @cleanup
 @BUG-066
 Feature: Auto-checkpoints not cleaned up when work unit moves to done
-
   """
   Uses cleanupAutoCheckpoints() function in git-checkpoint.ts to filter and delete only automatic checkpoints. Automatic checkpoints identified by naming pattern {workUnitId}-auto-{state}. Manual checkpoints preserved (any name not matching auto pattern). Cleanup triggered after auto-compact when work unit moves to done status in update-work-unit-status.ts. Deletion process: (1) delete git ref at .git/refs/fspec-checkpoints/{workUnitId}/{checkpointName}, (2) remove entry from index file at .git/fspec-checkpoints-index/{workUnitId}.json. Error handling: silently skip cleanup if git operations fail (allows commands to work without git repository).
   """
@@ -34,7 +33,6 @@ Feature: Auto-checkpoints not cleaned up when work unit moves to done
   #   3. Work unit FEAT-010 has only auto-checkpoints: FEAT-010-auto-backlog, FEAT-010-auto-specifying. When FEAT-010 moves to done, all auto-checkpoints should be deleted
   #
   # ========================================
-
   Background: User Story
     As a developer using fspec
     I want to have auto-checkpoints cleaned up when work unit is done

@@ -4,7 +4,6 @@
 @critical
 @INIT-015
 Feature: fspec init deletes config and templates instead of preserving them
-
   """
   Architecture notes:
   - TODO: Add key architectural decisions
@@ -38,7 +37,6 @@ Feature: fspec init deletes config and templates instead of preserving them
   #   A: true
   #
   # ========================================
-
   Background: User Story
     As a developer using fspec init
     I want to switch between agents without losing tool configuration

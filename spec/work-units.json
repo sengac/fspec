@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-05T09:23:15.434Z"
+    "lastUpdated": "2025-11-05T10:16:40.784Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -41331,9 +41331,9 @@
       "id": "TUI-026",
       "title": "Update Files pane header to show checkpoint name with truncate-end",
       "type": "task",
-      "status": "implementing",
+      "status": "done",
       "createdAt": "2025-11-05T09:26:58.616Z",
-      "updatedAt": "2025-11-05T09:27:19.377Z",
+      "updatedAt": "2025-11-05T09:31:30.668Z",
       "children": [],
       "stateHistory": [
         {
@@ -41343,8 +41343,162 @@
         {
           "state": "implementing",
           "timestamp": "2025-11-05T09:27:19.377Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-05T09:31:29.284Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-05T09:31:30.668Z"
         }
-      ]
+      ],
+      "rules": [],
+      "examples": [],
+      "questions": [],
+      "architectureNotes": [],
+      "nextRuleId": 0,
+      "nextExampleId": 0,
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-05T09:31:30.668Z"
+    },
+    "GIT-012": {
+      "id": "GIT-012",
+      "title": "Checkpoint restore shows 'File not found' but doesn't delete files added after checkpoint",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-11-05T09:55:05.055Z",
+      "updatedAt": "2025-11-05T10:16:40.803Z",
+      "description": "When restoring a checkpoint, files that exist in HEAD but not in the checkpoint are shown with 'File not found in checkpoint' message, but they are not actually deleted during restore. This means the restore doesn't truly restore to the checkpoint state.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-05T09:55:12.539Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-05T10:00:23.249Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-05T10:04:34.987Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-05T10:08:45.276Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-05T10:09:30.004Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-05T10:12:28.092Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-05T10:16:16.309Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-05T10:16:40.804Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "Checkpoint restore must fully restore working directory to exact state at checkpoint creation time",
+          "deleted": false,
+          "createdAt": "2025-11-05T09:55:33.128Z"
+        },
+        {
+          "id": 1,
+          "text": "Files that exist in HEAD but not in checkpoint must be deleted during restore",
+          "deleted": false,
+          "createdAt": "2025-11-05T09:55:38.566Z"
+        },
+        {
+          "id": 2,
+          "text": "Diff viewer must clearly indicate when files will be deleted on restore (not just 'File not found in checkpoint')",
+          "deleted": false,
+          "createdAt": "2025-11-05T09:55:46.134Z"
+        },
+        {
+          "id": 3,
+          "text": "File deletion happens automatically as part of normal restore operation. No force flag required since restoring to checkpoint state inherently means removing files added after checkpoint.",
+          "deleted": false,
+          "createdAt": "2025-11-05T09:57:57.013Z"
+        },
+        {
+          "id": 4,
+          "text": "Only tracked files should be considered for deletion. Gitignored files and node_modules are not affected by checkpoint restore.",
+          "deleted": false,
+          "createdAt": "2025-11-05T09:58:03.265Z"
+        }
+      ],
+      "nextRuleId": 5,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Checkpoint created at T1 contains [A.txt, B.txt], then C.txt is added at T2. Restoring checkpoint should delete C.txt and restore A.txt, B.txt to T1 state.",
+          "deleted": false,
+          "createdAt": "2025-11-05T09:55:52.303Z"
+        },
+        {
+          "id": 1,
+          "text": "Diff viewer shows file D.txt with message 'Will be deleted on restore' instead of 'File not found in checkpoint' when D.txt exists in HEAD but not in checkpoint",
+          "deleted": false,
+          "createdAt": "2025-11-05T09:55:58.393Z"
+        },
+        {
+          "id": 2,
+          "text": "Restoring checkpoint deletes 3 files [new-feature.ts, test.spec.ts, README-draft.md] that were added after checkpoint, and restores 2 modified files [main.ts, config.json] to checkpoint state",
+          "deleted": false,
+          "createdAt": "2025-11-05T09:56:05.815Z"
+        }
+      ],
+      "nextExampleId": 3,
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: Should deleted files be backed up somewhere (e.g., temporary checkpoint) before deletion, or rely on user to create manual checkpoint first?",
+          "deleted": false,
+          "createdAt": "2025-11-05T09:56:13.509Z",
+          "selected": true,
+          "answer": "No backup needed - files are in HEAD so user can restore with git if needed. Existing warning to create manual checkpoint first is sufficient."
+        },
+        {
+          "id": 1,
+          "text": "@human: Should file deletion count as a 'conflict' that requires --force flag, or should it happen automatically since it's part of restoring to checkpoint state?",
+          "deleted": false,
+          "createdAt": "2025-11-05T09:56:20.063Z",
+          "selected": true,
+          "answer": "File deletion happens automatically as part of normal restore operation. No force flag required since restoring to checkpoint state inherently means removing files added after checkpoint."
+        },
+        {
+          "id": 2,
+          "text": "@human: What about files that are gitignored or in node_modules? Should those be considered for deletion, or only tracked files?",
+          "deleted": false,
+          "createdAt": "2025-11-05T09:56:25.888Z",
+          "selected": true,
+          "answer": "Only tracked files should be considered for deletion. Gitignored files and node_modules are not affected by checkpoint restore."
+        }
+      ],
+      "nextQuestionId": 3,
+      "assumptions": [
+        "No backup needed - files are in HEAD so user can restore with git if needed. Existing warning to create manual checkpoint first is sufficient."
+      ],
+      "userStory": {
+        "role": "developer using fspec checkpoints",
+        "action": "restore a checkpoint to recover previous work state",
+        "benefit": "I get an exact restoration of the working directory as it was when the checkpoint was created"
+      },
+      "estimate": 5,
+      "architectureNotes": [],
+      "nextNoteId": 0,
+      "updated": "2025-11-05T10:16:40.803Z"
     }
   },
   "states": {
@@ -41383,11 +41537,11 @@
       "RES-007"
     ],
     "testing": [],
-    "implementing": [
-      "TUI-026"
-    ],
+    "implementing": [],
     "validating": [],
     "done": [
+      "GIT-012",
+      "TUI-026",
       "TUI-025",
       "TUI-024",
       "TUI-023",
@@ -41722,6 +41876,6 @@
     "REFAC": 4,
     "VIEW": 1,
     "DOC": 6,
-    "GIT": 11
+    "GIT": 12
   }
 }

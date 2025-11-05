@@ -5,7 +5,6 @@
 @critical
 @DISC-002
 Feature: Template persona with placeholders remains in finalized foundation.json
-
   """
   Root cause in discover-foundation.ts:287-383. The finalize process computes allFieldsComplete (line 297) but never checks it before writing foundation.json (line 352). Fix: Add check after line 297 to reject finalization if allFieldsComplete is false.
   scanDraftForNextField() at lines 31-87 correctly detects placeholders by checking if stringified field values contain '[QUESTION:' or '[DETECTED:'. For personas array, it stringifies the entire array, so template personas with placeholders are correctly flagged.
@@ -26,7 +25,6 @@ Feature: Template persona with placeholders remains in finalized foundation.json
   #   2. Draft contains personas: [{name: '[QUESTION: Who?]', description: '[QUESTION: Who?]', goals: ['[QUESTION: What?]']}, {name: 'Real Person', description: 'A real user', goals: ['Achieve things']}]. scanDraftForNextField detects placeholder in personas array, sets allFieldsComplete=false. Finalize should check this flag and reject with error.
   #
   # ========================================
-
   Background: User Story
     As a developer using fspec for project foundation setup
     I want to finalize the foundation draft with discover-foundation --finalize

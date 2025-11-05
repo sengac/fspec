@@ -7,7 +7,6 @@
 @critical
 @TUI-011
 Feature: Reusable confirmation dialog component for destructive TUI actions
-
   """
   Maps riskLevel prop (low/medium/high) to borderColor prop (green/yellow/red) before passing to Dialog
   """
@@ -52,7 +51,6 @@ Feature: Reusable confirmation dialog component for destructive TUI actions
   #   A: true
   #
   # ========================================
-
   Background: User Story
     As a TUI developer
     I want to use a reusable confirmation dialog for destructive actions
@@ -63,21 +61,17 @@ Feature: Reusable confirmation dialog component for destructive TUI actions
     When the user presses the Y key
     Then the onConfirm callback should be called
 
-
   Scenario: Typed mode requires exact phrase match
     Given a ConfirmationDialog with confirmMode='typed' and typedPhrase='DELETE ALL'
     When the user types 'DELETE ALL' and presses Enter
     Then the onConfirm callback should be called
-
 
   Scenario: Risk level maps to Dialog border color
     Given a ConfirmationDialog with riskLevel='high'
     When the dialog renders
     Then the Dialog component should receive borderColor='red'
 
-
   Scenario: No risk level defaults to neutral styling
     Given a ConfirmationDialog with no riskLevel prop
     When the dialog renders
     Then the Dialog component should receive borderColor=undefined
-

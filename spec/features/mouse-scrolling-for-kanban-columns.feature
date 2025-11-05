@@ -5,7 +5,6 @@
 @navigation
 @TUI-010
 Feature: Mouse Scrolling for Kanban Columns
-
   """
   Critical: Scroll by 1 item per mouse event (not velocity-based like VirtualList). Respect viewport boundaries: scroll offset min=0, max=(column.length - VIEWPORT_HEIGHT). Existing scroll indicators (↑ ↓) already implemented, no changes needed.
   """
@@ -31,7 +30,6 @@ Feature: Mouse Scrolling for Kanban Columns
   #   7. User uses Page Down key to scroll backlog to offset 10 → user uses mouse wheel to scroll down by 1 → offset becomes 11 (mouse and keyboard scrolling work together)
   #
   # ========================================
-
   Background: User Story
     As a user navigating the kanban board
     I want to scroll through work units in columns using mouse wheel or trackpad

@@ -5,7 +5,6 @@
 @high
 @TUI-008
 Feature: VirtualList height calculation ignores flexbox container dimensions
-
   """
   Architecture notes:
   - VirtualList currently uses terminal height for viewport calculation, ignoring flexbox-allocated container space
@@ -41,7 +40,6 @@ Feature: VirtualList height calculation ignores flexbox container dimensions
   #   3. Terminal resizes from 80x24 to 120x40, VirtualLists re-measure and adjust item counts automatically
   #
   # ========================================
-
   Background: User Story
     As a developer using TUI with flexbox layouts
     I want to see correct item counts in VirtualList containers without overflow

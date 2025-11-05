@@ -1,7 +1,9 @@
 @CLI-013
-@critical @cli @validation @development-tools
+@critical
+@cli
+@validation
+@development-tools
 Feature: Command Help File Validation Script
-
   """
   Architecture notes:
   - Standalone JavaScript validation script (NOT integrated into fspec CLI)
@@ -28,7 +30,8 @@ Feature: Command Help File Validation Script
     I want automated validation of command-help file linkage
     So that I catch missing or inconsistent help documentation before users encounter errors
 
-  @smoke @critical
+  @smoke
+  @critical
   Scenario: Detect missing help file for registered command
     Given a command "add-diagram" is registered in the CLI
     And no file "src/commands/add-diagram-help.ts" exists
@@ -46,7 +49,8 @@ Feature: Command Help File Validation Script
     And the output should contain "Orphaned help file: delete-foo-help.ts"
     And the output should suggest removing the file or registering the command
 
-  @smoke @critical
+  @smoke
+  @critical
   Scenario: Validate all commands and help files are properly linked
     Given all registered commands have corresponding help files
     And all help files have corresponding registered commands
@@ -56,7 +60,8 @@ Feature: Command Help File Validation Script
     And the output should contain "All commands validated successfully"
     And the output should display the total number of commands checked
 
-  @validation @format-check
+  @validation
+  @format-check
   Scenario: Detect help file with empty content
     Given a command "validate" is registered
     And the file "src/commands/validate-help.ts" exists but is empty
@@ -64,7 +69,8 @@ Feature: Command Help File Validation Script
     Then the script should exit with non-zero code
     And the output should contain "Help content is empty: validate-help.ts"
 
-  @validation @format-check
+  @validation
+  @format-check
   Scenario: Detect help file with inconsistent formatting
     Given multiple help files exist with different formatting structures
     And the file "src/commands/add-rule-help.ts" has an empty USAGE section
@@ -72,7 +78,8 @@ Feature: Command Help File Validation Script
     Then the script should exit with non-zero code
     And the output should contain "Inconsistent help format in add-rule-help.ts: USAGE section is empty"
 
-  @validation @function-signature
+  @validation
+  @function-signature
   Scenario: Detect help file with incorrect export signature
     Given a file "src/commands/foo-help.ts" exists
     And the file does not export a function with correct signature

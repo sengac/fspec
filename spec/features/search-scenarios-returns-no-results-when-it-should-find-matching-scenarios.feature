@@ -3,7 +3,6 @@
 @done
 @BUG-059
 Feature: search-scenarios returns no results when it should find matching scenarios
-
   """
   Architecture notes:
   - Search implementation is in src/utils/feature-parser.ts (searchScenarios function)
@@ -52,7 +51,6 @@ Feature: search-scenarios returns no results when it should find matching scenar
   #   1. No - step text should NOT be searched. Steps describe HOW (implementation), not WHAT (capability). High noise from verbose text with common words. search-implementation exists for finding by HOW it works. Not in QRY-002 spec (likely intentional). Keep search-scenarios focused on capabilities.
   #
   # ========================================
-
   Background: User Story
     As a developer using fspec
     I want to search for scenarios across feature files
