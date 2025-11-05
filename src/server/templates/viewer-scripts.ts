@@ -280,6 +280,7 @@ export function getInteractionScript(): string {
             startScale: 1,
             cursor: 'default',
             canvas: true,
+            // Don't set origin - let panzoom handle it with zoomToPoint
           });
 
           // Attach custom wheel handler
@@ -321,6 +322,12 @@ export function getInteractionScript(): string {
         }, 250);
       }
 
+      // Zoom session state - locks the zoom point for entire gesture
+      let lockedZoomPointX = null;
+      let lockedZoomPointY = null;
+      let zoomSessionTimeout = null;
+      const ZOOM_SESSION_TIMEOUT_MS = 150;
+
       // Custom wheel handler for zoom/pan
       function handleModalWheel(event) {
         if (!panzoomInstance) return;
@@ -334,32 +341,62 @@ export function getInteractionScript(): string {
         // Check if pan modifier is held (Space only)
         const isPanModifierHeld = isPanMode;
 
-        // VERTICAL SCROLL
-        if (Math.abs(deltaY) > 0) {
-          if (isPanModifierHeld) {
-            // Pan mode: vertical scroll = vertical pan
-            const scale = panzoomInstance.getScale();
-            panzoomInstance.pan(0, -deltaY / scale, { animate: false });
-          } else {
-            // Zoom mode: vertical scroll = zoom (centered on cursor)
-            const zoomDelta = -deltaY * (deltaMode === 1 ? 0.05 : deltaMode ? 1 : 0.002);
-            const scale = panzoomInstance.getScale();
-            const newScale = scale * Math.pow(2, zoomDelta);
+        // Get current panzoom state
+        const currentPan = panzoomInstance.getPan();
+        const currentScale = panzoomInstance.getScale();
 
-            // Get mouse position relative to modal body
-            const modalBody = document.querySelector('.modal-body');
-            const rect = modalBody.getBoundingClientRect();
-            const clientX = event.clientX - rect.left;
-            const clientY = event.clientY - rect.top;
+        if (isPanModifierHeld) {
+          // Pan mode: Apply BOTH vertical and horizontal pan together (enables diagonal panning)
+          let newX = currentPan.x;
+          let newY = currentPan.y;
 
-            panzoomInstance.zoomToPoint(newScale, { clientX, clientY });
+          if (Math.abs(deltaX) > 0) {
+            newX = currentPan.x - deltaX / currentScale;
           }
-        }
+          if (Math.abs(deltaY) > 0) {
+            newY = currentPan.y - deltaY / currentScale;
+          }
 
-        // HORIZONTAL SCROLL (always pan)
-        if (Math.abs(deltaX) > 0) {
-          const scale = panzoomInstance.getScale();
-          panzoomInstance.pan(-deltaX / scale, 0, { animate: false });
+          // Single pan call for both axes (allows north-west, south-east, etc.)
+          if (Math.abs(deltaX) > 0 || Math.abs(deltaY) > 0) {
+            panzoomInstance.pan(newX, newY, { animate: false });
+          }
+        } else {
+          // Zoom mode: vertical scroll zooms, horizontal scroll pans
+
+          // VERTICAL SCROLL = ZOOM
+          if (Math.abs(deltaY) > 0) {
+            // Lock zoom point on FIRST event in gesture
+            if (lockedZoomPointX === null || lockedZoomPointY === null) {
+              lockedZoomPointX = event.clientX;
+              lockedZoomPointY = event.clientY;
+            }
+
+            const zoomDelta = -deltaY * (deltaMode === 1 ? 0.05 : deltaMode ? 1 : 0.002);
+            let newScale = currentScale * Math.pow(2, zoomDelta);
+
+            // Clamp zoom to panzoom's min/max (matching initialization values)
+            newScale = Math.max(0.5, Math.min(5, newScale));
+
+            // Use LOCKED zoom point for entire gesture (handles trackpad momentum)
+            panzoomInstance.zoomToPoint(newScale, { clientX: lockedZoomPointX, clientY: lockedZoomPointY }, { animate: false });
+
+            // Reset timeout - unlock zoom point after gesture ends
+            if (zoomSessionTimeout) {
+              clearTimeout(zoomSessionTimeout);
+            }
+            zoomSessionTimeout = setTimeout(() => {
+              lockedZoomPointX = null;
+              lockedZoomPointY = null;
+              zoomSessionTimeout = null;
+            }, ZOOM_SESSION_TIMEOUT_MS);
+          }
+
+          // HORIZONTAL SCROLL = PAN (get fresh pan values in case zoom changed them)
+          if (Math.abs(deltaX) > 0) {
+            const updatedPan = panzoomInstance.getPan();
+            panzoomInstance.pan(updatedPan.x - deltaX / currentScale, updatedPan.y, { animate: false });
+          }
         }
 
         // Update indicator opacity on scroll

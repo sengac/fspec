@@ -1,0 +1,249 @@
+{
+  "scenarios": [
+    {
+      "name": "Zoom in centered on cursor position with mouse wheel",
+      "testMappings": [
+        {
+          "file": "src/server/__tests__/VIEW-002-zoom-centered-on-cursor.test.ts",
+          "lines": "46-79",
+          "implMappings": [
+            {
+              "file": "src/server/templates/viewer-scripts.ts",
+              "lines": [
+                324,
+                325,
+                326,
+                327,
+                328,
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345,
+                346,
+                347,
+                348,
+                349,
+                350,
+                351,
+                352,
+                353,
+                354,
+                355,
+                356,
+                357,
+                358,
+                359,
+                360,
+                361,
+                362,
+                363,
+                364,
+                365,
+                366,
+                367,
+                368,
+                369,
+                370,
+                371,
+                372,
+                373,
+                374,
+                375,
+                376,
+                377,
+                378
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Zoom out centered on cursor position with mouse wheel",
+      "testMappings": [
+        {
+          "file": "src/server/__tests__/VIEW-002-zoom-centered-on-cursor.test.ts",
+          "lines": "81-107",
+          "implMappings": [
+            {
+              "file": "src/server/templates/viewer-scripts.ts",
+              "lines": [
+                324,
+                325,
+                326,
+                327,
+                328,
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345,
+                346,
+                347,
+                348,
+                349,
+                350,
+                351,
+                352,
+                353,
+                354,
+                355,
+                356,
+                357,
+                358,
+                359,
+                360,
+                361,
+                362,
+                363,
+                364,
+                365,
+                366,
+                367,
+                368,
+                369,
+                370,
+                371,
+                372,
+                373,
+                374,
+                375,
+                376,
+                377,
+                378
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Smooth zoom with trackpad vertical scroll",
+      "testMappings": [
+        {
+          "file": "src/server/__tests__/VIEW-002-zoom-centered-on-cursor.test.ts",
+          "lines": "109-135",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Horizontal pan with trackpad",
+      "testMappings": [
+        {
+          "file": "src/server/__tests__/VIEW-002-zoom-centered-on-cursor.test.ts",
+          "lines": "137-165",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Handle different mouse wheel deltaMode values",
+      "testMappings": [
+        {
+          "file": "src/server/__tests__/VIEW-002-zoom-centered-on-cursor.test.ts",
+          "lines": "167-198",
+          "implMappings": [
+            {
+              "file": "src/server/templates/viewer-scripts.ts",
+              "lines": [
+                324,
+                325,
+                326,
+                327,
+                328,
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345,
+                346,
+                347,
+                348,
+                349,
+                350,
+                351,
+                352,
+                353,
+                354,
+                355,
+                356,
+                357,
+                358,
+                359,
+                360,
+                361,
+                362,
+                363,
+                364,
+                365,
+                366,
+                367,
+                368,
+                369,
+                370,
+                371,
+                372,
+                373,
+                374,
+                375,
+                376,
+                377,
+                378
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/server/__tests__/VIEW-002-zoom-centered-on-cursor.test.ts"
+    ],
+    "implFiles": [
+      "src/server/templates/viewer-scripts.ts"
+    ],
+    "totalLinesCovered": 314
+  }
+}

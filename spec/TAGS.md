@@ -82,6 +82,7 @@ Tags that categorize features by functional area.
 | `@delete` | Delete operations |
 | `@dependencies` | Dependency management between work units |
 | `@dependency-management` | Work unit dependency tracking |
+| `@diagram-viewer` | Diagram viewing and fullscreen modal features |
 | `@diff-viewer` | Diff visualization and comparison features |
 | `@discovery-command` | Example Mapping discovery commands |
 | `@documentation` | Documentation Display |
@@ -264,12 +265,14 @@ Tags for specific technical concerns or architectural patterns.
 | `@template` | Template System |
 | `@template-generation` | Template and documentation generation |
 | `@traceability` | Scenario-to-test-to-implementation traceability and coverage tracking |
+| `@trackpad` | Trackpad and touchpad input handling with smoothing and gesture support |
 | `@type-system` | Work unit type system features for categorizing work (story, task, bug) |
 | `@typescript` | TypeScript-specific features and configuration |
 | `@ui-formatting` | UI formatting and layout features |
 | `@ui-rendering` | UI rendering and layout issues |
 | `@vitest` | Vitest testing framework related features |
 | `@web` | Web-based features and browser functionality |
+| `@zoom` | Zoom and scaling functionality for diagrams and visualizations |
 | `@zoom-pan` | Zoom and pan interaction features |
 | `@zustand` | Zustand state management library |
 
@@ -605,7 +608,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-11-05T10:17:35.072Z_
+_Last updated: 2025-11-05T22:29:35.974Z_
 
 **Update Command**: `fspec tag-stats`
 
