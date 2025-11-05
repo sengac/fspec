@@ -194,6 +194,11 @@
       "prefix": "IDX",
       "description": "Stable indices and soft-delete implementation",
       "createdAt": "2025-10-31T07:01:34.195Z"
+    },
+    "VIEW": {
+      "prefix": "VIEW",
+      "description": "Attachment viewer features and enhancements",
+      "createdAt": "2025-11-05T05:34:26.371Z"
     }
   }
 }

@@ -82,6 +82,10 @@
           "description": "Validation Logic"
         },
         {
+          "name": "@viewer",
+          "description": "Attachment viewer component (web-based mermaid/markdown renderer)"
+        },
+        {
           "name": "@virtuallist",
           "description": "Features related to VirtualList component"
         }
@@ -734,6 +738,10 @@
           "description": "Format and style checking"
         },
         {
+          "name": "@fullscreen",
+          "description": "Fullscreen modal and overlay features"
+        },
+        {
           "name": "@function-signature",
           "description": "Function signature validation and checking"
         },
@@ -968,6 +976,10 @@
         {
           "name": "@web",
           "description": "Web-based features and browser functionality"
+        },
+        {
+          "name": "@zoom-pan",
+          "description": "Zoom and pan interaction features"
         },
         {
           "name": "@zustand",
@@ -1438,7 +1450,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-11-05T04:40:29.271Z",
+    "lastUpdated": "2025-11-05T05:45:12.833Z",
     "phaseStats": [
       {
         "phase": "Phase 1",
