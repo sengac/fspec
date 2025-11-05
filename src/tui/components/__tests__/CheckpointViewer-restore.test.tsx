@@ -184,13 +184,11 @@ describe('Feature: Restore individual files or all files from checkpoint in chec
       vi.mocked(git.resolveRef).mockResolvedValue('mock-checkpoint-oid-456');
       vi.mocked(gitCheckpoint.getCheckpointFilesChangedFromHead).mockResolvedValue(mockFiles);
 
-      // Mock restoreCheckpoint (existing function for all files)
-      vi.mocked(gitCheckpoint.restoreCheckpoint).mockResolvedValue({
+      // Mock restoreCheckpointFile (now called for each file to show progress)
+      vi.mocked(gitCheckpoint.restoreCheckpointFile).mockResolvedValue({
         success: true,
-        conflictsDetected: false,
-        conflictedFiles: [],
+        conflictDetected: false,
         systemReminder: '',
-        requiresTestValidation: false,
       });
 
       const { stdin, lastFrame } = render(
@@ -215,14 +213,18 @@ describe('Feature: Restore individual files or all files from checkpoint in chec
       stdin.write('y');
       await new Promise(resolve => setTimeout(resolve, 100));
 
-      // @step Then all 15 files should be restored from the checkpoint
-      expect(gitCheckpoint.restoreCheckpoint).toHaveBeenCalledWith(
-        expect.objectContaining({
-          workUnitId: 'TUI-001',
-          checkpointName: 'TUI-001-auto-testing',
-          force: true,
-        })
-      );
+      // @step Then all 15 files should be restored from the checkpoint (one by one for progress)
+      expect(gitCheckpoint.restoreCheckpointFile).toHaveBeenCalledTimes(15);
+      // Verify each file was restored
+      mockFiles.forEach(filepath => {
+        expect(gitCheckpoint.restoreCheckpointFile).toHaveBeenCalledWith(
+          expect.objectContaining({
+            checkpointOid: 'mock-checkpoint-oid-456',
+            filepath,
+            force: true,
+          })
+        );
+      });
 
       // @step And the diff pane should refresh showing new comparison
       // @step And a success message should be displayed

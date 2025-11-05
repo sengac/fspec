@@ -714,18 +714,29 @@
           ]
         }
       ]
+    },
+    {
+      "name": "CheckpointViewer integration with restore confirmation",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/CheckpointViewer-status-dialog.test.tsx",
+          "lines": "11-58",
+          "implMappings": []
+        }
+      ]
     }
   ],
   "stats": {
-    "totalScenarios": 5,
-    "coveredScenarios": 5,
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "src/components/__tests__/StatusDialog.test.tsx"
+      "src/components/__tests__/StatusDialog.test.tsx",
+      "src/tui/components/__tests__/CheckpointViewer-status-dialog.test.tsx"
     ],
     "implFiles": [
       "src/components/StatusDialog.tsx"
     ],
-    "totalLinesCovered": 851
+    "totalLinesCovered": 899
   }
 }

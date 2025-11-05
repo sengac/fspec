@@ -41504,9 +41504,9 @@
       "id": "TUI-027",
       "title": "Checkpoint Restore Progress Dialog",
       "type": "story",
-      "status": "validating",
+      "status": "testing",
       "createdAt": "2025-11-05T10:35:38.781Z",
-      "updatedAt": "2025-11-05T10:51:57.297Z",
+      "updatedAt": "2025-11-05T10:58:36.676Z",
       "children": [],
       "stateHistory": [
         {
@@ -41524,6 +41524,14 @@
         {
           "state": "validating",
           "timestamp": "2025-11-05T10:51:57.297Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-05T10:57:39.236Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-05T10:58:36.676Z"
         }
       ],
       "userStory": {
@@ -41597,9 +41605,21 @@
           "text": "Dialog appears for both single and multi-file restores",
           "deleted": false,
           "createdAt": "2025-11-05T10:39:38.382Z"
+        },
+        {
+          "id": 11,
+          "text": "StatusDialog must appear immediately after user confirms restore (presses Y)",
+          "deleted": false,
+          "createdAt": "2025-11-05T10:57:52.074Z"
+        },
+        {
+          "id": 12,
+          "text": "CheckpointViewer handleRestoreConfirm must render StatusDialog during restore loop",
+          "deleted": false,
+          "createdAt": "2025-11-05T10:57:53.807Z"
         }
       ],
-      "nextRuleId": 11,
+      "nextRuleId": 13,
       "questions": [
         {
           "id": 0,
@@ -41681,9 +41701,21 @@
           "text": "StatusDialog component can be reused: accepts props like currentItem, totalItems, status, errorMessage",
           "deleted": false,
           "createdAt": "2025-11-05T10:39:57.955Z"
+        },
+        {
+          "id": 5,
+          "text": "User in CheckpointViewer presses T to restore all files, presses Y to confirm, StatusDialog appears showing 'Restoring file1.ts (1/3)'",
+          "deleted": false,
+          "createdAt": "2025-11-05T10:57:55.315Z"
+        },
+        {
+          "id": 6,
+          "text": "During restore, StatusDialog updates for each file, then shows completion notice, then auto-closes, CheckpointViewer returns to normal view",
+          "deleted": false,
+          "createdAt": "2025-11-05T10:57:57.002Z"
         }
       ],
-      "nextExampleId": 5,
+      "nextExampleId": 7,
       "estimate": 5
     }
   },
@@ -41722,11 +41754,11 @@
       "BOARD-020",
       "RES-007"
     ],
-    "testing": [],
-    "implementing": [],
-    "validating": [
+    "testing": [
       "TUI-027"
     ],
+    "implementing": [],
+    "validating": [],
     "done": [
       "GIT-012",
       "TUI-026",
