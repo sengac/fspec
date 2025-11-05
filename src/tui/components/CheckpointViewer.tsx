@@ -945,7 +945,7 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
       {/* Footer */}
       <Box>
         <Text dimColor>
-          D: Delete Checkpoint | A: Delete All Checkpoints | T: Restore Checkpoint Files
+          D: Delete Checkpoint | A: Delete All Checkpoints | T: Restore All Files | R: Restore Single File
         </Text>
       </Box>
 
