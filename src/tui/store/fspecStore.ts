@@ -19,7 +19,11 @@ import git from 'isomorphic-git';
 import fs from 'fs';
 import { promises as fsPromises } from 'fs';
 import path from 'path';
-import { getStagedFiles, getUnstagedFiles } from '../../git/status';
+import {
+  getStagedFilesWithChangeType,
+  getUnstagedFilesWithChangeType,
+  type FileStatusWithChangeType,
+} from '../../git/status';
 import { logger } from '../../utils/logger';
 import { moveWorkUnitInArray } from '../../utils/states-array';
 
@@ -52,8 +56,8 @@ interface FspecState {
   workUnits: WorkUnit[];
   epics: Epic[];
   stashes: unknown[];
-  stagedFiles: string[];
-  unstagedFiles: string[];
+  stagedFiles: FileStatusWithChangeType[];
+  unstagedFiles: FileStatusWithChangeType[];
   checkpointCounts: { manual: number; auto: number };
   isLoaded: boolean;
   error: string | null;
@@ -161,8 +165,8 @@ export const useFspecStore = create<FspecState>()(
       try {
         const cwd = get().cwd;
         const [staged, unstaged] = await Promise.all([
-          getStagedFiles(cwd),
-          getUnstagedFiles(cwd),
+          getStagedFilesWithChangeType(cwd),
+          getUnstagedFilesWithChangeType(cwd),
         ]);
         set(state => {
           state.stagedFiles = staged;

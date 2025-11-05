@@ -38,8 +38,8 @@ const ChangedFilesViewerComponent: React.FC<ChangedFilesViewerProps> = ({
   const allFiles: FileItem[] = useMemo(() => {
     logger.info(`[ChangedFilesViewer] Recomputing allFiles (staged=${stagedFiles.length}, unstaged=${unstagedFiles.length})`);
     return [
-      ...stagedFiles.map(f => ({ path: f, status: 'staged' as const })),
-      ...unstagedFiles.map(f => ({ path: f, status: 'unstaged' as const })),
+      ...stagedFiles.map(f => ({ path: f.filepath, status: 'staged' as const, changeType: f.changeType })),
+      ...unstagedFiles.map(f => ({ path: f.filepath, status: 'unstaged' as const, changeType: f.changeType })),
     ];
   }, [stagedFiles, unstagedFiles]);
 
@@ -72,8 +72,33 @@ const ChangedFilesViewerComponent: React.FC<ChangedFilesViewerProps> = ({
     isSelected: boolean
   ): React.ReactNode => {
     const indicator = isSelected ? '>' : ' ';
-    const statusIcon = file.status === 'staged' ? '+' : 'M';
-    const statusColor = file.status === 'staged' ? 'green' : 'yellow';
+
+    // Determine status icon and color based on change type
+    const changeType = file.changeType || 'M';
+    let statusIcon: string;
+    let statusColor: string;
+
+    switch (changeType) {
+      case 'A': // Added
+        statusIcon = 'A';
+        statusColor = 'green';
+        break;
+      case 'M': // Modified
+        statusIcon = 'M';
+        statusColor = 'yellow';
+        break;
+      case 'D': // Deleted
+        statusIcon = 'D';
+        statusColor = 'red';
+        break;
+      case 'R': // Renamed
+        statusIcon = 'R';
+        statusColor = 'cyan';
+        break;
+      default:
+        statusIcon = 'M';
+        statusColor = 'yellow';
+    }
 
     return (
       <Box width="100%">

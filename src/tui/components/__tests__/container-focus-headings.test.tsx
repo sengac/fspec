@@ -87,8 +87,8 @@ describe('Feature: Container Focus Indication with Headings', () => {
       // @step Given I have opened the ChangedFilesViewer
       // TUI-014: Set up store with files instead of passing props
       useFspecStore.setState({
-        stagedFiles: ['file1.ts'],
-        unstagedFiles: ['file2.ts'],
+        stagedFiles: [{ filepath: 'file1.ts', changeType: 'M', staged: true }],
+        unstagedFiles: [{ filepath: 'file2.ts', changeType: 'M', staged: false }],
       });
 
       const { frames } = render(
@@ -116,7 +116,7 @@ describe('Feature: Container Focus Indication with Headings', () => {
       // @step Given I have opened the ChangedFilesViewer with focus on file list
       // TUI-014: Set up store with files instead of passing props
       useFspecStore.setState({
-        stagedFiles: ['file1.ts'],
+        stagedFiles: [{ filepath: 'file1.ts', changeType: 'M', staged: true }],
         unstagedFiles: [],
       });
 
