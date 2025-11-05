@@ -74,17 +74,17 @@ Your agent knows how to use `fspec report-bug-to-github` to automatically gather
 
 ## Documentation
 
-- 📘 **[Getting Started](./docs/getting-started.md)** - 5-minute quickstart
-- 📖 **[User Guide](./docs/user-guide.md)** - Comprehensive usage
-- 🎯 **[ACDD Workflow](./docs/acdd-workflow.md)** - Understanding the process
-- 🤝 **[Example Mapping](./docs/example-mapping.md)** - Discovery techniques
-- 📊 **[Work Units](./docs/work-units.md)** - Project management
-- 🔗 **[Coverage Tracking](./docs/coverage-tracking.md)** - Traceability
-- 🔄 **[Reverse ACDD](./docs/reverse-acdd.md)** - Existing codebases
-- 💾 **[Git Checkpoints](./docs/checkpoints.md)** - Safe experimentation
-- ⚡ **[Virtual Hooks](./docs/virtual-hooks.md)** - Quality gates
-- 🏷️ **[Tags](./docs/tags.md)** - Organization system
-- 🔧 **[CLI Reference](./docs/cli-reference.md)** - Command cheatsheet
+- 📘 **[Getting Started](https://fspec.dev/getting-started/quickstart/)** - 5-minute quickstart
+- 📖 **[User Guide](https://fspec.dev/getting-started/introduction/)** - Comprehensive usage
+- 🎯 **[ACDD Workflow](https://fspec.dev/concepts/acdd/)** - Understanding the process
+- 🤝 **[Example Mapping](https://fspec.dev/concepts/example-mapping/)** - Discovery techniques
+- 📊 **[Work Units](https://fspec.dev/concepts/kanban/)** - Project management
+- 🔗 **[Coverage Tracking](https://fspec.dev/docs/coverage-tracking/)** - Traceability
+- 🔄 **[Reverse ACDD](https://fspec.dev/docs/reverse-acdd/)** - Existing codebases
+- 💾 **[Git Checkpoints](https://fspec.dev/docs/checkpoints/)** - Safe experimentation
+- ⚡ **[Virtual Hooks](https://fspec.dev/docs/virtual-hooks/)** - Quality gates
+- 🏷️ **[Tags](https://fspec.dev/commands/specs/)** - Organization system
+- 🔧 **[CLI Reference](https://fspec.dev/reference/cli/)** - Command cheatsheet
 
 **Pro tip:** All commands have comprehensive `--help` output:
 ```bash
