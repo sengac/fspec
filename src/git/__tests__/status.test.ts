@@ -15,6 +15,8 @@ import {
   getUnstagedFiles,
   getUntrackedFiles,
   getFileStatus,
+  getStagedFilesWithChangeType,
+  getUnstagedFilesWithChangeType,
 } from '../status';
 
 describe('Feature: Replace git CLI usage with isomorphic-git library', () => {
@@ -399,6 +401,135 @@ describe('Feature: Replace git CLI usage with isomorphic-git library', () => {
 
       // Then should return empty array (silent failure)
       expect(staged).toEqual([]);
+    });
+  });
+});
+
+/**
+ * Feature: spec/features/changed-files-view-missing-unstaged-files.feature
+ *
+ * TUI-028: Changed files view missing unstaged files
+ * This test suite validates that untracked files appear in the changed files view.
+ */
+describe('Feature: Changed files view missing unstaged files', () => {
+  const fs = vol as any;
+
+  beforeEach(() => {
+    // Reset in-memory filesystem before each test
+    vol.reset();
+  });
+
+  describe('Scenario: View untracked file in changed files view', () => {
+    it('should show untracked files with A indicator in green', async () => {
+      // @step Given I have created a new file "newfile.txt" that is untracked
+      vol.fromJSON({
+        '/repo/newfile.txt': 'new content',
+      });
+      await git.init({ fs, dir: '/repo', defaultBranch: 'main' });
+
+      // @step When I open the changed files view with the F key
+      const unstagedFiles = await getUnstagedFilesWithChangeType('/repo', {
+        fs,
+      });
+
+      // @step Then I should see "newfile.txt" listed in the unstaged section
+      const newfile = unstagedFiles.find(f => f.filepath === 'newfile.txt');
+      expect(newfile).toBeDefined();
+
+      // @step And the status indicator should be "A" in green color
+      expect(newfile?.changeType).toBe('A');
+      expect(newfile?.staged).toBe(false);
+    });
+  });
+
+  describe('Scenario: View unstaged modification in changed files view', () => {
+    it('should show unstaged modifications with M indicator in yellow', async () => {
+      // @step Given I have modified an existing tracked file "src/index.ts"
+      vol.fromJSON({
+        '/repo/src/index.ts': 'initial content',
+      });
+      await git.init({ fs, dir: '/repo', defaultBranch: 'main' });
+      await git.add({ fs, dir: '/repo', filepath: 'src/index.ts' });
+      await git.commit({
+        fs,
+        dir: '/repo',
+        message: 'Initial commit',
+        author: { name: 'Test', email: 'test@test.com' },
+      });
+
+      // @step And the file has not been staged
+      fs.writeFileSync(
+        '/repo/src/index.ts',
+        'modified content with different size'
+      );
+
+      // @step When I open the changed files view with the F key
+      const unstagedFiles = await getUnstagedFilesWithChangeType('/repo', {
+        fs,
+      });
+
+      // @step Then I should see "src/index.ts" listed in the unstaged section
+      const indexFile = unstagedFiles.find(f => f.filepath === 'src/index.ts');
+      expect(indexFile).toBeDefined();
+
+      // @step And the status indicator should be "M" in yellow color
+      expect(indexFile?.changeType).toBe('M');
+      expect(indexFile?.staged).toBe(false);
+    });
+  });
+
+  describe('Scenario: View staged file in changed files view', () => {
+    it('should show staged files with appropriate status indicator', async () => {
+      // @step Given I have staged a file "README.md" using "git add README.md"
+      vol.fromJSON({
+        '/repo/README.md': '# Project',
+      });
+      await git.init({ fs, dir: '/repo', defaultBranch: 'main' });
+      await git.add({ fs, dir: '/repo', filepath: 'README.md' });
+
+      // @step When I open the changed files view with the F key
+      const stagedFiles = await getStagedFilesWithChangeType('/repo', { fs });
+
+      // @step Then I should see "README.md" listed in the staged section
+      const readme = stagedFiles.find(f => f.filepath === 'README.md');
+      expect(readme).toBeDefined();
+
+      // @step And the file should have an appropriate status indicator based on its change type
+      expect(readme?.changeType).toBe('A'); // Added since it's a new file
+      expect(readme?.staged).toBe(true);
+    });
+  });
+
+  describe('Scenario: View deleted file in changed files view', () => {
+    it('should show deleted files with D indicator in red', async () => {
+      // @step Given I have deleted an existing tracked file "oldfile.ts"
+      vol.fromJSON({
+        '/repo/oldfile.ts': 'old content',
+      });
+      await git.init({ fs, dir: '/repo', defaultBranch: 'main' });
+      await git.add({ fs, dir: '/repo', filepath: 'oldfile.ts' });
+      await git.commit({
+        fs,
+        dir: '/repo',
+        message: 'Initial commit',
+        author: { name: 'Test', email: 'test@test.com' },
+      });
+
+      // @step And the deletion has not been staged
+      fs.unlinkSync('/repo/oldfile.ts');
+
+      // @step When I open the changed files view with the F key
+      const unstagedFiles = await getUnstagedFilesWithChangeType('/repo', {
+        fs,
+      });
+
+      // @step Then I should see "oldfile.ts" listed in the unstaged section
+      const oldfile = unstagedFiles.find(f => f.filepath === 'oldfile.ts');
+      expect(oldfile).toBeDefined();
+
+      // @step And the status indicator should be "D" in red color
+      expect(oldfile?.changeType).toBe('D');
+      expect(oldfile?.staged).toBe(false);
     });
   });
 });

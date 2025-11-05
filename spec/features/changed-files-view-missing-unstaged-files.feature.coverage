@@ -1,0 +1,84 @@
+{
+  "scenarios": [
+    {
+      "name": "View untracked file in changed files view",
+      "testMappings": [
+        {
+          "file": "src/git/__tests__/status.test.ts",
+          "lines": "423-440",
+          "implMappings": [
+            {
+              "file": "src/git/status.ts",
+              "lines": [
+                403
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "View unstaged modification in changed files view",
+      "testMappings": [
+        {
+          "file": "src/git/__tests__/status.test.ts",
+          "lines": "443-471",
+          "implMappings": [
+            {
+              "file": "src/git/status.ts",
+              "lines": [
+                403
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "View staged file in changed files view",
+      "testMappings": [
+        {
+          "file": "src/git/__tests__/status.test.ts",
+          "lines": "474-493",
+          "implMappings": [
+            {
+              "file": "src/git/status.ts",
+              "lines": [
+                403
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "View deleted file in changed files view",
+      "testMappings": [
+        {
+          "file": "src/git/__tests__/status.test.ts",
+          "lines": "496-524",
+          "implMappings": [
+            {
+              "file": "src/git/status.ts",
+              "lines": [
+                403
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/git/__tests__/status.test.ts"
+    ],
+    "implFiles": [
+      "src/git/status.ts"
+    ],
+    "totalLinesCovered": 100
+  }
+}
