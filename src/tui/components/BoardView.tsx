@@ -5,6 +5,7 @@
  * - BOARD-002: Interactive Kanban board CLI
  * - BOARD-003: Real-time board updates with git stash and file inspection
  * - ITF-004: Fix TUI Kanban column layout to match table style
+ * - REFAC-004: Integrate attachment server with TUI (BoardView lifecycle)
  */
 
 import React, { useEffect, useState } from 'react';
@@ -21,8 +22,10 @@ import { ChangedFilesViewer } from './ChangedFilesViewer';
 import { AttachmentDialog } from './AttachmentDialog';
 import { createIPCServer, cleanupIPCServer, getIPCPath } from '../../utils/ipc';
 import type { Server } from 'net';
+import type { Server as HttpServer } from 'http';
 import { logger } from '../../utils/logger';
 import { openInBrowser } from '../../utils/openBrowser';
+import { startAttachmentServer, stopAttachmentServer, getServerPort } from '../../server/attachment-server';
 
 interface BoardViewProps {
   onExit?: () => void;
@@ -53,6 +56,7 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
   const [selectedWorkUnit, setSelectedWorkUnit] = useState<any>(null);
   const [focusedPanel, setFocusedPanel] = useState<'board' | 'stash' | 'files'>(initialFocusedPanel);
   const [showAttachmentDialog, setShowAttachmentDialog] = useState(false);
+  const [attachmentServerPort, setAttachmentServerPort] = useState<number | null>(null);
 
   // Fix: Call useStdout unconditionally at top level (Rules of Hooks)
   const { stdout } = useStdout();
@@ -89,25 +93,34 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Watch spec/work-units.json for changes and auto-refresh (BOARD-003)
-  // NOTE: Watch the directory instead of the file to handle atomic rename operations
-  // from the LockedFileManager (LOCK-002). Atomic renames create new inodes,
-  // which breaks watchers on the original file.
+  // Watch spec/work-units.json for changes and auto-refresh (BOARD-003, REFAC-004)
+  // NOTE: Use chokidar instead of fs.watch for reliable cross-platform atomic operation handling
+  // Atomic renames from LockedFileManager (LOCK-002) are handled automatically by chokidar
   useEffect(() => {
-    const specDir = path.join(storeCwd, 'spec');
-    const workUnitsFileName = 'work-units.json';
+    const workUnitsPath = path.join(storeCwd, 'spec', 'work-units.json');
 
-    // Setup directory watcher (watches for rename events from atomic writes)
-    const watcher = fs.watch(specDir, (eventType, filename) => {
-      // Reload when work-units.json changes or is renamed (atomic write pattern)
-      if (filename === workUnitsFileName) {
-        void loadData();
-      }
+    // Check if file exists before watching
+    if (!fs.existsSync(workUnitsPath)) return;
+
+    // Chokidar watches specific file, handles atomic operations automatically
+    const watcher = chokidar.watch(workUnitsPath, {
+      ignoreInitial: true,  // Don't trigger on initial scan
+      persistent: false,
+    });
+
+    // Listen for all change events (chokidar normalizes across platforms)
+    watcher.on('change', () => {
+      void loadData();
+    });
+
+    // Add error handler to prevent silent failures
+    watcher.on('error', (error) => {
+      console.warn('Work units watcher error:', error.message);
     });
 
     // Cleanup watcher on unmount
     return () => {
-      watcher.close();
+      void watcher.close();
     };
   }, [storeCwd]);
 
@@ -195,6 +208,41 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
       }
     };
   }, []);
+
+  // Attachment server for rendering markdown/mermaid attachments (REFAC-004)
+  useEffect(() => {
+    let httpServer: HttpServer | null = null;
+
+    const initServer = async () => {
+      try {
+        logger.info('[BoardView] Starting attachment server');
+        httpServer = await startAttachmentServer({
+          cwd: storeCwd,
+          port: 0, // Random available port
+        });
+
+        const port = getServerPort(httpServer);
+        if (port) {
+          setAttachmentServerPort(port);
+          logger.info(`[BoardView] Attachment server started on port ${port}`);
+        }
+      } catch (error) {
+        // Server startup failure is non-fatal - TUI continues working (REFAC-004 business rule 6)
+        logger.warn(`[BoardView] Failed to start attachment server: ${error}`);
+      }
+    };
+
+    void initServer();
+
+    return () => {
+      if (httpServer) {
+        logger.info('[BoardView] Stopping attachment server');
+        void stopAttachmentServer(httpServer).catch((error) => {
+          logger.error(`[BoardView] Error stopping attachment server: ${error}`);
+        });
+      }
+    };
+  }, [storeCwd]);
 
   // Compute currently selected work unit
   const currentlySelectedWorkUnit = (() => {
@@ -396,12 +444,22 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
         <AttachmentDialog
           attachments={currentlySelectedWorkUnit!.attachments!}
           onSelect={(attachment) => {
-            // Convert relative path to absolute, then to file:// URL
-            const absolutePath = path.isAbsolute(attachment)
-              ? attachment
-              : path.resolve(cwd || process.cwd(), attachment);
-            const fileUrl = `file://${absolutePath}`;
-            openInBrowser({ url: fileUrl, wait: false }).catch((error: Error) => {
+            // REFAC-004: Use HTTP URL if attachment server is running, otherwise fall back to file://
+            let url: string;
+            if (attachmentServerPort) {
+              // Construct HTTP URL: http://localhost:PORT/view/{relativePath}
+              url = `http://localhost:${attachmentServerPort}/view/${attachment}`;
+              logger.info(`[BoardView] Opening attachment URL: ${url}`);
+            } else {
+              // Fallback to file:// URL if server not available
+              const absolutePath = path.isAbsolute(attachment)
+                ? attachment
+                : path.resolve(cwd || process.cwd(), attachment);
+              url = `file://${absolutePath}`;
+              logger.warn(`[BoardView] Attachment server not available, using file:// URL: ${url}`);
+            }
+
+            openInBrowser({ url, wait: false }).catch((error: Error) => {
               logger.error(`[BoardView] Failed to open attachment: ${error.message}`);
             });
             setShowAttachmentDialog(false);

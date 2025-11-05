@@ -23,6 +23,7 @@ export default defineConfig({
         'url',
         'module',
         'net',
+        'http',
         '@cucumber/gherkin',
         '@cucumber/messages',
         'tinyglobby',
@@ -37,6 +38,9 @@ export default defineConfig({
         'worker_threads',
         'diff',
         'open',
+        'express',
+        'marked',
+        'dompurify',
       ],
       output: {
         preserveModules: false,

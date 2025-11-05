@@ -1,0 +1,198 @@
+{
+  "scenarios": [
+    {
+      "name": "Default code block font size is larger than current implementation",
+      "testMappings": [
+        {
+          "file": "src/server/__tests__/TUI-021-font-size-controls.test.ts",
+          "lines": "40-67",
+          "implMappings": [
+            {
+              "file": "src/server/templates/viewer-styles.ts",
+              "lines": [
+                144
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Increase font size with plus button",
+      "testMappings": [
+        {
+          "file": "src/server/__tests__/TUI-021-font-size-controls.test.ts",
+          "lines": "69-99",
+          "implMappings": [
+            {
+              "file": "src/server/templates/viewer-scripts.ts",
+              "lines": [
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Font size respects minimum bound",
+      "testMappings": [
+        {
+          "file": "src/server/__tests__/TUI-021-font-size-controls.test.ts",
+          "lines": "101-129",
+          "implMappings": [
+            {
+              "file": "src/server/templates/viewer-scripts.ts",
+              "lines": [
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Font size respects maximum bound",
+      "testMappings": [
+        {
+          "file": "src/server/__tests__/TUI-021-font-size-controls.test.ts",
+          "lines": "131-159",
+          "implMappings": [
+            {
+              "file": "src/server/templates/viewer-scripts.ts",
+              "lines": [
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Font size persists across browser sessions",
+      "testMappings": [
+        {
+          "file": "src/server/__tests__/TUI-021-font-size-controls.test.ts",
+          "lines": "161-186",
+          "implMappings": [
+            {
+              "file": "src/server/templates/viewer-scripts.ts",
+              "lines": [
+                153,
+                154,
+                155,
+                156,
+                157,
+                158
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Font size controls display in top right corner",
+      "testMappings": [
+        {
+          "file": "src/server/__tests__/TUI-021-font-size-controls.test.ts",
+          "lines": "188-206",
+          "implMappings": [
+            {
+              "file": "src/server/templates/viewer-template.ts",
+              "lines": [
+                54,
+                55,
+                56,
+                57,
+                58,
+                59
+              ]
+            },
+            {
+              "file": "src/server/templates/viewer-styles.ts",
+              "lines": [
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/server/__tests__/TUI-021-font-size-controls.test.ts"
+    ],
+    "implFiles": [
+      "src/server/templates/viewer-styles.ts",
+      "src/server/templates/viewer-scripts.ts",
+      "src/server/templates/viewer-template.ts"
+    ],
+    "totalLinesCovered": 241
+  }
+}

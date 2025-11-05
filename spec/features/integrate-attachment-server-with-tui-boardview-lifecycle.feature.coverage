@@ -1,0 +1,64 @@
+{
+  "scenarios": [
+    {
+      "name": "Open attachment from TUI and browser shows HTTP URL",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/REFAC-004-server-integration.test.tsx",
+          "lines": "84-108",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Server stops when TUI exits",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/REFAC-004-server-integration.test.tsx",
+          "lines": "110-147",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "TUI continues working when server fails to start",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/REFAC-004-server-integration.test.tsx",
+          "lines": "149-177",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Markdown attachment renders with mermaid diagrams",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/REFAC-004-server-integration.test.tsx",
+          "lines": "179-212",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Image attachment displays directly in browser",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/REFAC-004-server-integration.test.tsx",
+          "lines": "214-244",
+          "implMappings": []
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/__tests__/REFAC-004-server-integration.test.tsx"
+    ],
+    "implFiles": [],
+    "totalLinesCovered": 157
+  }
+}
