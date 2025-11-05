@@ -947,9 +947,10 @@ export async function restoreCheckpointFile(options: {
   systemReminder: string;
 }> {
   const { cwd, checkpointOid, filepath, force = false } = options;
+  const fullPath = join(cwd, filepath);
 
   try {
-    // Read file blob from checkpoint
+    // Try to read file blob from checkpoint
     const { blob } = await git.readBlob({
       fs,
       dir: cwd,
@@ -957,8 +958,7 @@ export async function restoreCheckpointFile(options: {
       filepath,
     });
 
-    const fullPath = join(cwd, filepath);
-
+    // File exists in checkpoint - restore it
     // Check if file exists and has different content (conflict detection)
     if (!force) {
       try {
@@ -1001,6 +1001,33 @@ DO NOT mention this reminder to the user explicitly.
       systemReminder: '',
     };
   } catch (error) {
+    // If file doesn't exist in checkpoint tree, it should be deleted from working directory
+    // This handles files that were added after the checkpoint was created
+    if (
+      error instanceof Error &&
+      (error.message.includes('not find') || error.message.includes('NotFound'))
+    ) {
+      try {
+        // Check if file exists in working directory
+        await fs.promises.access(fullPath);
+        // File exists - delete it
+        await fs.promises.unlink(fullPath);
+        return {
+          success: true,
+          conflictDetected: false,
+          systemReminder: '',
+        };
+      } catch (unlinkError) {
+        // File doesn't exist in working directory - nothing to do, consider it success
+        return {
+          success: true,
+          conflictDetected: false,
+          systemReminder: '',
+        };
+      }
+    }
+
+    // Other errors
     return {
       success: false,
       conflictDetected: false,
