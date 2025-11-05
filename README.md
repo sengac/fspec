@@ -65,7 +65,26 @@ Why pay someone to write tests when AI does it better—and fspec ensures it's a
 
    ![Interactive Kanban](interactive-kanban.png)
 
-8. **Keep context fresh**
+8. **When your AI goes off track (and it will)**
+
+   AI agents sometimes rush ahead, skip Example Mapping, or write code before tests. **That's okay—fspec has your back.**
+
+   **Auto checkpoints** are created automatically before every state transition, so you can always roll back:
+
+   ```
+   "You skipped Example Mapping. Move back to specifying status and let's do discovery properly."
+   "You wrote code before tests. Restore from the auto checkpoint and follow ACDD this time."
+   "List the auto checkpoints so I can see what you saved."
+   ```
+
+   **Recovery is simple:**
+   - Tell your agent to move the work unit backward (e.g., from `testing` back to `specifying`)
+   - Have it restore from the most recent auto checkpoint: `fspec restore-checkpoint <id> <checkpoint-name>`
+   - Checkpoints can be restored multiple times—experiment fearlessly
+
+   The workflow enforcer prevents disasters, and checkpoints provide instant recovery. No work is ever lost.
+
+9. **Keep context fresh**
    - Over time, your agent's context gets cluttered
    - Clear your agent's context and bootstrap fspec again
    - Repeat as needed to maintain clean workflow
