@@ -23,16 +23,19 @@ Think **Git for specifications** + **Kanban for AI agents** + **TDD enforcement*
 ## Quick Start
 
 1. **Install fspec globally**
+
    ```bash
    npm install -g @sengac/fspec
    ```
 
 2. **Go to your project directory**
+
    ```bash
    cd /path/to/your/project
    ```
 
 3. **Initialize fspec**
+
    ```bash
    fspec init
    ```
@@ -44,6 +47,7 @@ Think **Git for specifications** + **Kanban for AI agents** + **TDD enforcement*
    - Or tell your agent: "Run fspec bootstrap"
 
 6. **Talk naturally with fspec**
+
    ```
    "I want to create a bug to fix this issue"
    "Create a checkpoint for this work"
@@ -52,9 +56,11 @@ Think **Git for specifications** + **Kanban for AI agents** + **TDD enforcement*
    ```
 
 7. **Launch the interactive kanban**
+
    ```bash
    fspec
    ```
+
    Watch live changes, view work unit details, manage checkpoints, and navigate your kanban board with an intuitive TUI.
 
    ![Interactive Kanban](interactive-kanban.png)
@@ -93,6 +99,7 @@ Experiment fearlessly with built-in Git checkpoints. Tell your agent to **"creat
 Attach markdown documents with mermaid diagrams to work units for rich documentation **before** starting Example Mapping. Perfect for researching complex topics and creating visual designs.
 
 **Example workflow:**
+
 ```
 "Create a story about adding Event Storming. I want you to research this
 topic on the web and create a markdown document with mermaid diagrams
@@ -101,9 +108,9 @@ and attach it to this story using fspec."
 
 View attachments in the interactive kanban by pressing the **A** key, with full markdown and mermaid diagram rendering.
 
-![Attachment Viewer - Document](attachment-viewer-1.png)
+![Attachment Viewer - Dialog](attachment1.png)
 
-![Attachment Viewer - Diagram](attachment-viewer-2.png)
+![Attachment Viewer - Diagram](attachment2.png)
 
 ---
 
@@ -122,6 +129,7 @@ View attachments in the interactive kanban by pressing the **A** key, with full 
 - 🔧 **[CLI Reference](https://fspec.dev/reference/cli/)** - Command cheatsheet
 
 **Pro tip:** All commands have comprehensive `--help` output:
+
 ```bash
 fspec <command> --help
 fspec help specs      # Gherkin commands
