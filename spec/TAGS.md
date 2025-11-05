@@ -48,6 +48,7 @@ Tags that categorize features by functional area.
 | `@answer-question` | Question answering operations |
 | `@assumption-management` | Assumption tracking in Example Mapping |
 | `@attachment-management` | Attachment management features for work units |
+| `@attachment-viewer` | Features related to viewing and rendering work unit attachments |
 | `@attachments` | Feature related to work unit attachments (diagrams, documents, mockups) |
 | `@authentication` | Authentication and authorization functionality |
 | `@auto-blocking` | Automatic blocking state transitions |
@@ -212,6 +213,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@github-integration` | Features integrating with GitHub API or URLs |
 | `@graceful-degradation` | Features that gracefully handle missing or invalid data |
 | `@guidance` | Features that provide AI guidance/prompts rather than code implementation |
+| `@http-server` | HTTP server implementation and lifecycle management |
 | `@idempotent` | Operations that can be safely repeated without changing results |
 | `@initialization` | File and system initialization features |
 | `@ink` | Ink (React for CLIs) rendering engine |
@@ -243,6 +245,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@review` | Code review and quality analysis |
 | `@runtime` | Runtime behavior and dynamic configuration |
 | `@search` | Search and query functionality for finding scenarios, work units, and code patterns |
+| `@server` | Server-side components and HTTP endpoints |
 | `@session-based` | Session-based interactive command pattern (similar to discover-foundation) |
 | `@setup` | Setup and initialization commands |
 | `@similarity-matching` | Text similarity and matching algorithms |
@@ -261,6 +264,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@ui-formatting` | UI formatting and layout features |
 | `@ui-rendering` | UI rendering and layout issues |
 | `@vitest` | Vitest testing framework related features |
+| `@web` | Web-based features and browser functionality |
 | `@zustand` | Zustand state management library |
 
 **Rule**: Use technical tags to highlight specific architectural concerns.
@@ -595,7 +599,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-11-04T21:20:05.608Z_
+_Last updated: 2025-11-05T00:20:16.984Z_
 
 **Update Command**: `fspec tag-stats`
 

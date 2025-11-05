@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-04T21:41:38.286Z"
+    "lastUpdated": "2025-11-05T00:39:32.597Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -40187,6 +40187,548 @@
       "nextQuestionId": 0,
       "nextNoteId": 0,
       "updated": "2025-11-04T21:41:38.370Z"
+    },
+    "TUI-020": {
+      "id": "TUI-020",
+      "title": "Local web server for attachment viewing with markdown and mermaid rendering",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-11-04T22:52:22.879Z",
+      "updatedAt": "2025-11-04T23:26:45.628Z",
+      "description": "Server runs when TUI runs to render markdown attachments with mermaid diagram support in browser",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-04T22:52:29.720Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-04T23:10:16.746Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-04T23:12:22.439Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-04T23:23:12.198Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-04T23:26:45.628Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer viewing work unit attachments in TUI",
+        "action": "open markdown files with mermaid diagrams in my browser",
+        "benefit": "I can view formatted documentation and diagrams without leaving my workflow"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Server must only run when TUI is active (BoardView mounted)",
+          "deleted": false,
+          "createdAt": "2025-11-04T22:52:43.759Z"
+        },
+        {
+          "id": 1,
+          "text": "Server must serve markdown files as HTML with rendered content",
+          "deleted": false,
+          "createdAt": "2025-11-04T22:52:49.141Z"
+        },
+        {
+          "id": 2,
+          "text": "Mermaid code blocks must be rendered as diagrams in the browser",
+          "deleted": false,
+          "createdAt": "2025-11-04T22:52:53.783Z"
+        },
+        {
+          "id": 3,
+          "text": "Server must prevent directory traversal attacks with path validation",
+          "deleted": false,
+          "createdAt": "2025-11-04T22:52:58.939Z"
+        },
+        {
+          "id": 4,
+          "text": "Server must integrate with TUI-019 attachment dialog to open files via http:// URLs",
+          "deleted": false,
+          "createdAt": "2025-11-04T22:53:03.759Z"
+        },
+        {
+          "id": 5,
+          "text": "Server must serve non-markdown files (images, PDFs, etc) with appropriate content types",
+          "deleted": false,
+          "createdAt": "2025-11-04T22:57:15.720Z"
+        },
+        {
+          "id": 6,
+          "text": "Server uses random port allocation (port=0) to avoid conflicts",
+          "deleted": false,
+          "createdAt": "2025-11-04T22:57:45.514Z"
+        },
+        {
+          "id": 7,
+          "text": "Server failure must be non-fatal - TUI continues working without attachment viewing",
+          "deleted": false,
+          "createdAt": "2025-11-04T22:57:50.432Z"
+        },
+        {
+          "id": 8,
+          "text": "Viewer must detect OS theme preference using window.matchMedia('prefers-color-scheme: dark')",
+          "deleted": false,
+          "createdAt": "2025-11-04T22:59:25.342Z"
+        },
+        {
+          "id": 9,
+          "text": "Viewer must provide theme toggle button to override OS preference",
+          "deleted": false,
+          "createdAt": "2025-11-04T22:59:30.279Z"
+        },
+        {
+          "id": 10,
+          "text": "Viewer must store theme preference in localStorage and restore on page load",
+          "deleted": false,
+          "createdAt": "2025-11-04T22:59:40.461Z"
+        },
+        {
+          "id": 11,
+          "text": "Markdown renderer must support syntax-highlighted code blocks (reuse MindStrike pattern)",
+          "deleted": false,
+          "createdAt": "2025-11-04T23:00:38.664Z"
+        },
+        {
+          "id": 12,
+          "text": "Server architecture must be extensible to support future content types (example maps, event storming boards)",
+          "deleted": false,
+          "createdAt": "2025-11-04T23:00:43.658Z"
+        }
+      ],
+      "nextRuleId": 13,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User opens TUI, server starts automatically on random port",
+          "deleted": false,
+          "createdAt": "2025-11-04T22:53:09.453Z"
+        },
+        {
+          "id": 1,
+          "text": "User presses 'o' on work unit with markdown attachment, browser opens showing formatted HTML with mermaid diagram",
+          "deleted": false,
+          "createdAt": "2025-11-04T22:53:16.395Z"
+        },
+        {
+          "id": 2,
+          "text": "User exits TUI, server stops automatically",
+          "deleted": false,
+          "createdAt": "2025-11-04T22:53:21.170Z"
+        },
+        {
+          "id": 3,
+          "text": "Malicious user tries ../../../etc/passwd path, server blocks with 403 Forbidden",
+          "deleted": false,
+          "createdAt": "2025-11-04T22:53:26.353Z"
+        },
+        {
+          "id": 4,
+          "text": "User opens PNG attachment, browser displays image directly",
+          "deleted": false,
+          "createdAt": "2025-11-04T22:57:21.042Z"
+        },
+        {
+          "id": 5,
+          "text": "User with dark OS theme opens attachment, sees dark mermaid diagrams. Toggles to light theme, preference saved. Reopens attachment later, light theme restored from localStorage",
+          "deleted": false,
+          "createdAt": "2025-11-04T22:59:46.651Z"
+        },
+        {
+          "id": 6,
+          "text": "User opens markdown with Python code block, browser shows syntax-highlighted code with copy button and language badge",
+          "deleted": false,
+          "createdAt": "2025-11-04T23:04:36.393Z"
+        }
+      ],
+      "nextExampleId": 7,
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: Should the server also handle non-markdown files (like images, PDFs) or only markdown?",
+          "deleted": false,
+          "createdAt": "2025-11-04T22:55:27.800Z",
+          "selected": true,
+          "answer": "Yes - server should handle images, PDFs, and other file types, not just markdown"
+        },
+        {
+          "id": 1,
+          "text": "@human: What should happen if the server fails to start (port conflict, permission error)? Should TUI still work without it?",
+          "deleted": false,
+          "createdAt": "2025-11-04T22:55:33.597Z",
+          "selected": true,
+          "answer": "Use random port allocation (port=0) to let OS choose available port, avoiding conflicts. If server completely fails to start, TUI should continue working but log error (non-fatal)"
+        },
+        {
+          "id": 2,
+          "text": "@human: Should mermaid diagrams use light theme or dark theme to match TUI aesthetics?",
+          "deleted": false,
+          "createdAt": "2025-11-04T22:55:39.360Z",
+          "selected": true,
+          "answer": "Match OS theme using window.matchMedia('prefers-color-scheme: dark'). Provide toggle button to override preference. Store user preference in localStorage and restore on page load"
+        },
+        {
+          "id": 3,
+          "text": "@human: You mentioned future support for example maps and event storming boards - should the server architecture support rendering different content types beyond markdown?",
+          "deleted": false,
+          "createdAt": "2025-11-04T22:55:45.569Z",
+          "selected": true,
+          "answer": "Yes - architecture should support multiple content types: markdown with mermaid, code blocks with syntax highlighting (use MindStrike pattern), and future support for example maps/event storming boards. Use extensible renderer pattern"
+        },
+        {
+          "id": 4,
+          "text": "@human: Should we reuse the existing mermaid validation utilities from the codebase, or is the client-side rendering enough?",
+          "deleted": false,
+          "createdAt": "2025-11-04T22:55:52.154Z",
+          "selected": true,
+          "answer": "Reuse existing mermaid validation utilities from src/utils/mermaid-validation.ts for server-side validation before sending to client. This catches syntax errors early and provides better error messages"
+        }
+      ],
+      "nextQuestionId": 5,
+      "attachments": [
+        "spec/attachments/TUI-020/code-block-implementation-guide.md"
+      ],
+      "architectureNotes": [],
+      "nextNoteId": 0,
+      "updated": "2025-11-04T23:26:45.628Z"
+    },
+    "REFAC-004": {
+      "id": "REFAC-004",
+      "title": "Integrate attachment server with TUI (BoardView lifecycle)",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-11-04T23:36:35.063Z",
+      "updatedAt": "2025-11-05T00:09:37.963Z",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-04T23:36:42.765Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-04T23:41:11.930Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-04T23:43:58.684Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-04T23:59:19.916Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-05T00:09:31.575Z"
+        }
+      ],
+      "userStory": {
+        "role": "TUI user",
+        "action": "view attachments in a browser with rendered markdown and mermaid",
+        "benefit": "I can see formatted documentation instead of raw markdown files"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "The attachment server must start when BoardView mounts",
+          "deleted": false,
+          "createdAt": "2025-11-04T23:37:01.478Z"
+        },
+        {
+          "id": 1,
+          "text": "The attachment server must stop when BoardView unmounts",
+          "deleted": false,
+          "createdAt": "2025-11-04T23:37:01.913Z"
+        },
+        {
+          "id": 2,
+          "text": "The server port must be stored in BoardView state and accessible to child components",
+          "deleted": false,
+          "createdAt": "2025-11-04T23:37:02.351Z"
+        },
+        {
+          "id": 3,
+          "text": "AttachmentDialog must construct http://localhost:PORT/view/PATH URLs instead of file:// URLs",
+          "deleted": false,
+          "createdAt": "2025-11-04T23:37:02.787Z"
+        },
+        {
+          "id": 4,
+          "text": "The server must use the project root (process.cwd()) as the base directory",
+          "deleted": false,
+          "createdAt": "2025-11-04T23:37:03.223Z"
+        },
+        {
+          "id": 5,
+          "text": "Server startup failures must be logged but not crash the TUI",
+          "deleted": false,
+          "createdAt": "2025-11-04T23:37:03.661Z"
+        },
+        {
+          "id": 6,
+          "text": "The server must only run when the TUI is active (not during CLI commands)",
+          "deleted": false,
+          "createdAt": "2025-11-04T23:37:04.102Z"
+        }
+      ],
+      "nextRuleId": 7,
+      "examples": [
+        {
+          "id": 0,
+          "text": "When I open the TUI and press 'o' on a work unit with an attachment, the browser opens with http://localhost:XXXX/view/spec/attachments/...",
+          "deleted": false,
+          "createdAt": "2025-11-04T23:37:14.269Z"
+        },
+        {
+          "id": 1,
+          "text": "When I exit the TUI, the attachment server stops and releases the port",
+          "deleted": false,
+          "createdAt": "2025-11-04T23:37:14.705Z"
+        },
+        {
+          "id": 2,
+          "text": "When the server fails to start (port conflict), I see a warning in the logs but the TUI continues working",
+          "deleted": false,
+          "createdAt": "2025-11-04T23:37:15.141Z"
+        },
+        {
+          "id": 3,
+          "text": "When I open a markdown attachment, the browser shows rendered HTML with working mermaid diagrams",
+          "deleted": false,
+          "createdAt": "2025-11-04T23:37:15.576Z"
+        },
+        {
+          "id": 4,
+          "text": "When I open an image attachment, the browser displays the image directly",
+          "deleted": false,
+          "createdAt": "2025-11-04T23:37:16.012Z"
+        }
+      ],
+      "nextExampleId": 5,
+      "virtualHooks": [],
+      "questions": [],
+      "architectureNotes": [],
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-05T00:09:31.575Z"
+    },
+    "TUI-021": {
+      "id": "TUI-021",
+      "title": "Font size controls for attachment viewer",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-11-05T00:00:57.744Z",
+      "updatedAt": "2025-11-05T00:39:32.623Z",
+      "children": [],
+      "userStory": {
+        "role": "TUI user viewing markdown attachments",
+        "action": "adjust code block font sizes and persist preferences",
+        "benefit": "I can read documentation comfortably and have my settings remembered"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-05T00:01:27.573Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-05T00:12:00.490Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-05T00:13:45.466Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-05T00:16:29.588Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-05T00:20:50.975Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-05T00:22:46.862Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-05T00:24:00.706Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-05T00:24:09.595Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-05T00:25:13.169Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-05T00:25:51.428Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-05T00:25:55.083Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-05T00:27:43.581Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-05T00:28:11.732Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-05T00:28:15.441Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-05T00:29:11.610Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-05T00:29:41.575Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-05T00:29:45.226Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-05T00:30:19.463Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-05T00:30:40.240Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-05T00:30:43.859Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-05T00:32:06.539Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-05T00:32:26.063Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-05T00:32:29.660Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-05T00:34:10.721Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-05T00:34:33.252Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-05T00:34:35.728Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-05T00:35:11.669Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-05T00:38:03.431Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-05T00:38:06.063Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-05T00:38:58.298Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-05T00:39:30.089Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-05T00:39:32.623Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "Code blocks must have significantly larger base font size than current implementation",
+          "deleted": false,
+          "createdAt": "2025-11-05T00:01:36.283Z"
+        },
+        {
+          "id": 1,
+          "text": "Font size controls must be in top right corner next to dark mode toggle",
+          "deleted": false,
+          "createdAt": "2025-11-05T00:01:36.862Z"
+        },
+        {
+          "id": 2,
+          "text": "Font size must be persisted in localStorage",
+          "deleted": false,
+          "createdAt": "2025-11-05T00:01:37.442Z"
+        },
+        {
+          "id": 3,
+          "text": "Font size controls must use plus/minus buttons with displayed pixel size",
+          "deleted": false,
+          "createdAt": "2025-11-05T00:01:38.942Z"
+        },
+        {
+          "id": 4,
+          "text": "Font size must have min/max bounds (10px - 24px) with 2px increment/decrement",
+          "deleted": false,
+          "createdAt": "2025-11-05T00:01:40.330Z"
+        }
+      ],
+      "nextRuleId": 5,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User opens markdown attachment and code blocks display at 16px (larger than current)",
+          "deleted": false,
+          "createdAt": "2025-11-05T00:01:49.414Z"
+        },
+        {
+          "id": 1,
+          "text": "User clicks plus button and font increases from 16px to 18px",
+          "deleted": false,
+          "createdAt": "2025-11-05T00:01:51.427Z"
+        },
+        {
+          "id": 2,
+          "text": "User clicks minus button at 10px and size stays at 10px (minimum bound)",
+          "deleted": false,
+          "createdAt": "2025-11-05T00:01:53.530Z"
+        },
+        {
+          "id": 3,
+          "text": "User closes browser and reopens attachment, font size remains at previously set 20px",
+          "deleted": false,
+          "createdAt": "2025-11-05T00:01:54.980Z"
+        }
+      ],
+      "nextExampleId": 4,
+      "estimate": 5,
+      "questions": [],
+      "architectureNotes": [],
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-05T00:39:32.623Z"
     }
   },
   "states": {
@@ -40227,6 +40769,9 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "TUI-021",
+      "REFAC-004",
+      "TUI-020",
       "TUI-019",
       "TUI-013",
       "TUI-012",
@@ -40548,7 +41093,7 @@
     "BUG": 68,
     "DISC": 2,
     "COV": 53,
-    "TUI": 19,
-    "REFAC": 3
+    "TUI": 21,
+    "REFAC": 4
   }
 }

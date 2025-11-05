@@ -122,6 +122,10 @@
           "description": "Attachment management features for work units"
         },
         {
+          "name": "@attachment-viewer",
+          "description": "Features related to viewing and rendering work unit attachments"
+        },
+        {
           "name": "@attachments",
           "description": "Feature related to work unit attachments (diagrams, documents, mockups)"
         },
@@ -750,6 +754,10 @@
           "description": "Features that provide AI guidance/prompts rather than code implementation"
         },
         {
+          "name": "@http-server",
+          "description": "HTTP server implementation and lifecycle management"
+        },
+        {
           "name": "@idempotent",
           "description": "Operations that can be safely repeated without changing results"
         },
@@ -874,6 +882,10 @@
           "description": "Search and query functionality for finding scenarios, work units, and code patterns"
         },
         {
+          "name": "@server",
+          "description": "Server-side components and HTTP endpoints"
+        },
+        {
           "name": "@session-based",
           "description": "Session-based interactive command pattern (similar to discover-foundation)"
         },
@@ -944,6 +956,10 @@
         {
           "name": "@vitest",
           "description": "Vitest testing framework related features"
+        },
+        {
+          "name": "@web",
+          "description": "Web-based features and browser functionality"
         },
         {
           "name": "@zustand",
@@ -1414,7 +1430,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-11-04T21:20:05.608Z",
+    "lastUpdated": "2025-11-05T00:20:16.984Z",
     "phaseStats": [
       {
         "phase": "Phase 1",
