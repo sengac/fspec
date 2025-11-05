@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-05T21:54:46.300Z"
+    "lastUpdated": "2025-11-05T22:14:37.780Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -41817,6 +41817,128 @@
       "updatedAt": "2025-11-05T21:12:48.746Z",
       "description": "Check npm registry on fspec startup to notify users when a newer version is available, with option to auto-install or prompt for manual update",
       "children": []
+    },
+    "TUI-028": {
+      "id": "TUI-028",
+      "title": "Changed files view missing unstaged files",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-11-05T21:59:19.471Z",
+      "updatedAt": "2025-11-05T22:14:37.801Z",
+      "children": [],
+      "description": "The changed files view in the TUI is not displaying unstaged files. Currently, when viewing the changed files screen, only a subset of modified files appear. The view should show all files that have been modified (both staged and unstaged), including deleted files, to give users a complete picture of their working directory state.",
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-05T22:01:57.569Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-05T22:06:47.053Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-05T22:09:17.978Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-05T22:10:10.240Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-05T22:14:37.802Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using fspec TUI",
+        "action": "see all changed files including unstaged and untracked files",
+        "benefit": "I have a complete view of my working directory changes"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Changed files view must show staged files (files added with git add)",
+          "deleted": false,
+          "createdAt": "2025-11-05T22:02:16.387Z"
+        },
+        {
+          "id": 1,
+          "text": "Changed files view must show unstaged modifications to tracked files",
+          "deleted": false,
+          "createdAt": "2025-11-05T22:02:17.880Z"
+        },
+        {
+          "id": 2,
+          "text": "Changed files view must show untracked files (new files not yet added to git)",
+          "deleted": false,
+          "createdAt": "2025-11-05T22:02:19.408Z"
+        },
+        {
+          "id": 3,
+          "text": "Changed files view must show deleted files with proper status indicators",
+          "deleted": false,
+          "createdAt": "2025-11-05T22:02:20.678Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User creates new file newfile.txt (untracked), opens changed files view with F key, sees newfile.txt listed with 'A' indicator in green",
+          "deleted": false,
+          "createdAt": "2025-11-05T22:02:31.271Z"
+        },
+        {
+          "id": 1,
+          "text": "User modifies existing file src/index.ts (unstaged), opens changed files view, sees src/index.ts with 'M' indicator in yellow",
+          "deleted": false,
+          "createdAt": "2025-11-05T22:02:33.189Z"
+        },
+        {
+          "id": 2,
+          "text": "User stages file with git add README.md, opens changed files view, sees README.md under staged section with appropriate indicator",
+          "deleted": false,
+          "createdAt": "2025-11-05T22:02:34.560Z"
+        },
+        {
+          "id": 3,
+          "text": "User deletes file oldfile.ts (unstaged deletion), opens changed files view, sees oldfile.ts with 'D' indicator in red",
+          "deleted": false,
+          "createdAt": "2025-11-05T22:02:36.164Z"
+        }
+      ],
+      "nextExampleId": 4,
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: Should untracked files appear in a separate 'Untracked' section, or should they be mixed with unstaged files?",
+          "deleted": false,
+          "createdAt": "2025-11-05T22:02:47.056Z",
+          "selected": true,
+          "answer": "Untracked files should be mixed with unstaged files, not separated into a different section"
+        },
+        {
+          "id": 1,
+          "text": "@human: The current code excludes untracked files from the unstaged list. Should we combine them or keep them separate in the data model?",
+          "deleted": false,
+          "createdAt": "2025-11-05T22:02:48.389Z",
+          "selected": true,
+          "answer": "Combine untracked files with unstaged files in the data model"
+        },
+        {
+          "id": 2,
+          "text": "@human: Should the files be sorted in any particular order (alphabetical, by status, by type)?",
+          "deleted": false,
+          "createdAt": "2025-11-05T22:02:49.736Z",
+          "selected": true,
+          "answer": "No particular sorting order needed"
+        }
+      ],
+      "nextQuestionId": 3,
+      "estimate": 2,
+      "architectureNotes": [],
+      "nextNoteId": 0,
+      "updated": "2025-11-05T22:14:37.801Z"
     }
   },
   "states": {
@@ -41858,6 +41980,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "TUI-028",
       "BUG-069",
       "TUI-027",
       "GIT-012",
@@ -42192,7 +42315,7 @@
     "BUG": 69,
     "DISC": 2,
     "COV": 53,
-    "TUI": 27,
+    "TUI": 28,
     "REFAC": 4,
     "VIEW": 1,
     "DOC": 6,

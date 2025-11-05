@@ -399,8 +399,8 @@ export async function getUnstagedFilesWithChangeType(
       // Unstaged changes: working directory differs from staging area
       const hasUnstagedChanges = workdir !== stage;
 
-      // Include files that have unstaged changes but are not untracked
-      return hasUnstagedChanges && !isUntracked;
+      // Include files that have unstaged changes OR are untracked
+      return hasUnstagedChanges || isUntracked;
     })
     .map(([filepath, head, workdir, stage]) => ({
       filepath,
