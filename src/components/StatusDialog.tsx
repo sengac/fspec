@@ -42,6 +42,9 @@ export const StatusDialog: React.FC<StatusDialogProps> = ({
   // Auto-close after 3 seconds when status is "complete"
   useEffect(() => {
     if (status === 'complete') {
+      // Reset countdown when entering complete state
+      setCountdown(3);
+
       const timer = setTimeout(() => {
         onClose();
       }, 3000);
@@ -68,6 +71,13 @@ export const StatusDialog: React.FC<StatusDialogProps> = ({
     { isActive: status === 'complete' || status === 'error' }
   );
 
+  // Validate and normalize props
+  const displayIndex = Math.max(1, Math.min(currentIndex, totalItems));
+  const displayTotal = Math.max(1, totalItems);
+
+  // Convert operation type verb to completion form (remove trailing 'ing' only)
+  const completionVerb = operationType.replace(/ing$/, 'e');
+
   return (
     <Dialog onClose={onClose} borderColor="cyan" isActive={false}>
       <Box flexDirection="column" minWidth={60} padding={1}>
@@ -85,7 +95,7 @@ export const StatusDialog: React.FC<StatusDialogProps> = ({
             </Box>
             <Box marginTop={1}>
               <Text dimColor>
-                ({currentIndex}/{totalItems})
+                ({displayIndex}/{displayTotal})
               </Text>
             </Box>
           </>
@@ -95,7 +105,7 @@ export const StatusDialog: React.FC<StatusDialogProps> = ({
           <>
             <Box marginBottom={1}>
               <Text bold color="green">
-                {operationType.replace('ing', '')} Complete!
+                {completionVerb} Complete!
               </Text>
             </Box>
             <Box>
@@ -115,7 +125,7 @@ export const StatusDialog: React.FC<StatusDialogProps> = ({
               </Text>
             </Box>
             <Box>
-              <Text color="red">{errorMessage}</Text>
+              <Text color="red">{errorMessage || 'An unknown error occurred'}</Text>
             </Box>
             <Box marginTop={1}>
               <Text dimColor>Press ESC to dismiss</Text>
