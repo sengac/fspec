@@ -187,6 +187,325 @@ export function getInteractionScript(): string {
         localStorage.setItem('fspec-base-font-size', newSize.toString());
         updateButtonStates();
       };
+
+      // ========================================
+      // FULLSCREEN MERMAID DIAGRAM VIEWER
+      // ========================================
+
+      let panzoomInstance = null;
+      let currentModalDiagram = null;
+      let isPanMode = false;
+      let isMouseOverModal = false;
+      let modeIndicatorTimeout = null;
+
+      // Add fullscreen buttons to mermaid diagrams
+      function addFullscreenButtons() {
+        const diagrams = document.querySelectorAll('pre.mermaid');
+
+        diagrams.forEach((diagram, index) => {
+          // Skip if already has wrapper
+          if (diagram.parentElement?.classList.contains('mermaid-wrapper')) return;
+
+          // Wrap diagram in container
+          const wrapper = document.createElement('div');
+          wrapper.className = 'mermaid-wrapper';
+          diagram.parentNode.insertBefore(wrapper, diagram);
+          wrapper.appendChild(diagram);
+
+          // Add button overlay
+          const overlay = document.createElement('div');
+          overlay.className = 'mermaid-overlay';
+          overlay.innerHTML = \`
+            <button class="mermaid-fullscreen-btn" data-index="\${index}" title="Fullscreen">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+              </svg>
+            </button>
+            <button class="mermaid-download-btn" data-index="\${index}" title="Download SVG">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+            </button>
+          \`;
+          wrapper.appendChild(overlay);
+        });
+
+        // Attach event listeners for fullscreen buttons
+        document.querySelectorAll('.mermaid-fullscreen-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const index = parseInt(e.currentTarget.getAttribute('data-index'));
+            openMermaidModal(index);
+          });
+        });
+
+        // Attach event listeners for download buttons
+        document.querySelectorAll('.mermaid-download-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const index = parseInt(e.currentTarget.getAttribute('data-index'));
+            downloadDiagram(index);
+          });
+        });
+      }
+
+      // Open fullscreen modal
+      function openMermaidModal(index) {
+        const diagrams = document.querySelectorAll('pre.mermaid');
+        const diagram = diagrams[index];
+        if (!diagram) return;
+
+        // Clone diagram content to modal
+        const modal = document.getElementById('mermaid-modal');
+        const container = document.getElementById('modal-diagram-container');
+        container.innerHTML = diagram.innerHTML;
+
+        // Store reference for download and panzoom
+        currentModalDiagram = container.firstElementChild;
+
+        // Show modal with animation
+        modal.style.display = 'flex';
+        requestAnimationFrame(() => {
+          modal.classList.add('modal-visible');
+        });
+
+        // Lock body scroll
+        document.body.style.overflow = 'hidden';
+
+        // Initialize panzoom on diagram
+        if (currentModalDiagram && typeof Panzoom !== 'undefined') {
+          panzoomInstance = Panzoom(currentModalDiagram, {
+            maxScale: 5,
+            minScale: 0.5,
+            startScale: 1,
+            cursor: 'default',
+            canvas: true,
+          });
+
+          // Attach custom wheel handler
+          const modalBody = document.querySelector('.modal-body');
+          modalBody.addEventListener('wheel', handleModalWheel, { passive: false });
+
+          // Mouse tracking for scope
+          modalBody.addEventListener('mouseenter', () => {
+            isMouseOverModal = true;
+          });
+
+          modalBody.addEventListener('mouseleave', () => {
+            isMouseOverModal = false;
+            isPanMode = false;
+            updateModeIndicator();
+          });
+
+          // Update zoom level display
+          updateZoomLevel();
+        }
+      }
+
+      // Close modal
+      function closeMermaidModal() {
+        const modal = document.getElementById('mermaid-modal');
+        modal.classList.remove('modal-visible');
+
+        // Wait for fade animation, then hide
+        setTimeout(() => {
+          modal.style.display = 'none';
+          document.body.style.overflow = '';
+          currentModalDiagram = null;
+
+          // Cleanup panzoom
+          if (panzoomInstance) {
+            panzoomInstance.destroy();
+            panzoomInstance = null;
+          }
+        }, 250);
+      }
+
+      // Custom wheel handler for zoom/pan
+      function handleModalWheel(event) {
+        if (!panzoomInstance) return;
+
+        event.preventDefault();
+
+        const deltaX = event.deltaX;
+        const deltaY = event.deltaY;
+        const deltaMode = event.deltaMode;
+
+        // Check if pan modifier is held (Space only)
+        const isPanModifierHeld = isPanMode;
+
+        // VERTICAL SCROLL
+        if (Math.abs(deltaY) > 0) {
+          if (isPanModifierHeld) {
+            // Pan mode: vertical scroll = vertical pan
+            const scale = panzoomInstance.getScale();
+            panzoomInstance.pan(0, -deltaY / scale, { animate: false });
+          } else {
+            // Zoom mode: vertical scroll = zoom (centered on cursor)
+            const zoomDelta = -deltaY * (deltaMode === 1 ? 0.05 : deltaMode ? 1 : 0.002);
+            const scale = panzoomInstance.getScale();
+            const newScale = scale * Math.pow(2, zoomDelta);
+
+            // Get mouse position relative to modal body
+            const modalBody = document.querySelector('.modal-body');
+            const rect = modalBody.getBoundingClientRect();
+            const clientX = event.clientX - rect.left;
+            const clientY = event.clientY - rect.top;
+
+            panzoomInstance.zoomToPoint(newScale, { clientX, clientY });
+          }
+        }
+
+        // HORIZONTAL SCROLL (always pan)
+        if (Math.abs(deltaX) > 0) {
+          const scale = panzoomInstance.getScale();
+          panzoomInstance.pan(-deltaX / scale, 0, { animate: false });
+        }
+
+        // Update indicator opacity on scroll
+        showModeIndicator();
+        updateZoomLevel();
+      }
+
+      // Pan modifier key tracking (Space only)
+      document.addEventListener('keydown', (e) => {
+        if (!isMouseOverModal || !panzoomInstance) return;
+
+        if (e.key === ' ') {
+          e.preventDefault();
+          isPanMode = true;
+          updateModeIndicator();
+        }
+      });
+
+      document.addEventListener('keyup', (e) => {
+        if (e.key === ' ') {
+          isPanMode = false;
+          updateModeIndicator();
+        }
+      });
+
+      // Update zoom level display
+      function updateZoomLevel() {
+        if (!panzoomInstance) return;
+        const scale = panzoomInstance.getScale();
+        const percentage = Math.round(scale * 100);
+        document.getElementById('zoom-level').textContent = percentage + '%';
+      }
+
+      // Update mode indicator
+      function updateModeIndicator() {
+        const indicator = document.querySelector('.mode-indicator');
+        if (!indicator) return;
+
+        if (isPanMode) {
+          indicator.textContent = 'Pan Mode';
+          indicator.classList.add('active');
+          indicator.style.opacity = '1';
+        } else {
+          indicator.textContent = 'Zoom Mode (hold Space for Pan)';
+          indicator.classList.remove('active');
+          indicator.style.opacity = '0.5';
+        }
+
+        showModeIndicator();
+      }
+
+      // Show mode indicator with fade
+      function showModeIndicator() {
+        const indicator = document.querySelector('.mode-indicator');
+        if (!indicator) return;
+
+        indicator.style.opacity = isPanMode ? '1' : '1';
+
+        // Fade after 2 seconds of inactivity
+        clearTimeout(modeIndicatorTimeout);
+        modeIndicatorTimeout = setTimeout(() => {
+          if (!isPanMode) {
+            indicator.style.opacity = '0.5';
+          }
+        }, 2000);
+      }
+
+      // Download diagram as SVG
+      function downloadDiagram(index) {
+        const diagrams = document.querySelectorAll('pre.mermaid');
+        const diagram = diagrams[index];
+        if (!diagram) return;
+
+        const svg = diagram.querySelector('svg');
+        if (!svg) return;
+
+        const svgData = svg.outerHTML;
+        const blob = new Blob([svgData], { type: 'image/svg+xml' });
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = \`mermaid-diagram-\${Date.now()}.svg\`;
+        a.click();
+
+        URL.revokeObjectURL(url);
+      }
+
+      // Event listeners for modal controls
+      document.getElementById('modal-close').addEventListener('click', closeMermaidModal);
+      document.getElementById('mermaid-modal').addEventListener('click', (e) => {
+        // Close on backdrop click
+        if (e.target.id === 'mermaid-modal') {
+          closeMermaidModal();
+        }
+      });
+
+      // Download button in modal
+      document.getElementById('modal-download').addEventListener('click', () => {
+        if (!currentModalDiagram) return;
+
+        const svg = currentModalDiagram.querySelector('svg') || currentModalDiagram;
+        const svgData = svg.outerHTML;
+        const blob = new Blob([svgData], { type: 'image/svg+xml' });
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = \`mermaid-diagram-\${Date.now()}.svg\`;
+        a.click();
+
+        URL.revokeObjectURL(url);
+      });
+
+      // ESC key handler
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && currentModalDiagram) {
+          closeMermaidModal();
+        }
+      });
+
+      // Zoom control buttons
+      document.getElementById('zoom-in').addEventListener('click', () => {
+        if (panzoomInstance) {
+          panzoomInstance.zoomIn();
+          updateZoomLevel();
+        }
+      });
+
+      document.getElementById('zoom-out').addEventListener('click', () => {
+        if (panzoomInstance) {
+          panzoomInstance.zoomOut();
+          updateZoomLevel();
+        }
+      });
+
+      document.getElementById('zoom-reset').addEventListener('click', () => {
+        if (panzoomInstance) {
+          panzoomInstance.reset();
+          updateZoomLevel();
+        }
+      });
+
+      // Add fullscreen buttons after mermaid diagrams are rendered
+      // Wait a bit to ensure mermaid has finished rendering
+      setTimeout(addFullscreenButtons, 500);
     });
   </script>
   `;

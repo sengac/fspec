@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-05T04:48:32.610Z"
+    "lastUpdated": "2025-11-05T06:03:26.876Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -40872,6 +40872,243 @@
       "questions": [],
       "nextQuestionId": 0,
       "updated": "2025-11-05T04:48:32.638Z"
+    },
+    "VIEW-001": {
+      "id": "VIEW-001",
+      "title": "Fullscreen Mermaid Diagram Viewer with Zoom and Pan Controls",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-11-05T05:34:31.745Z",
+      "updatedAt": "2025-11-05T06:03:26.956Z",
+      "description": "Add a fullscreen modal viewer for mermaid diagrams in the attachment viewer with zoom and pan controls matching mindstrike's implementation. Users can click a button on any mermaid diagram to open it fullscreen, then use mouse wheel to zoom (centered on cursor) and modifier key + scroll to pan. Visual indicator shows current mode (Zoom Mode / Pan Mode).",
+      "children": [],
+      "attachments": [
+        "spec/attachments/VIEW-001/fullscreen-mermaid-viewer-research.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-05T05:36:01.207Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-05T05:47:48.977Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-05T05:52:27.498Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-05T06:00:26.232Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-05T06:03:26.957Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer or user viewing mermaid diagrams in fspec attachment viewer",
+        "action": "view mermaid diagrams in fullscreen with zoom and pan controls",
+        "benefit": "I can examine complex diagrams in detail without leaving the viewer"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Fullscreen button must appear on hover over mermaid diagram",
+          "deleted": false,
+          "createdAt": "2025-11-05T05:36:25.350Z"
+        },
+        {
+          "id": 1,
+          "text": "Fullscreen modal must cover entire viewport with semi-transparent backdrop",
+          "deleted": false,
+          "createdAt": "2025-11-05T05:36:27.159Z"
+        },
+        {
+          "id": 2,
+          "text": "Modal must close on ESC key press or backdrop click",
+          "deleted": false,
+          "createdAt": "2025-11-05T05:36:28.647Z"
+        },
+        {
+          "id": 3,
+          "text": "Vertical scroll wheel must zoom in/out centered on cursor position",
+          "deleted": false,
+          "createdAt": "2025-11-05T05:36:30.129Z"
+        },
+        {
+          "id": 4,
+          "text": "Horizontal scroll wheel must pan diagram left/right",
+          "deleted": false,
+          "createdAt": "2025-11-05T05:36:32.365Z"
+        },
+        {
+          "id": 5,
+          "text": "Holding modifier key (Space/Shift/Alt) must switch vertical scroll from zoom to pan",
+          "deleted": false,
+          "createdAt": "2025-11-05T05:36:33.888Z"
+        },
+        {
+          "id": 6,
+          "text": "Visual indicator must show current mode (Zoom Mode or Pan Mode)",
+          "deleted": false,
+          "createdAt": "2025-11-05T05:36:35.462Z"
+        },
+        {
+          "id": 7,
+          "text": "Zoom range must be limited between 0.5x and 5.0x",
+          "deleted": false,
+          "createdAt": "2025-11-05T05:36:37.000Z"
+        },
+        {
+          "id": 8,
+          "text": "Download button must export diagram as SVG file",
+          "deleted": false,
+          "createdAt": "2025-11-05T05:36:38.632Z"
+        }
+      ],
+      "nextRuleId": 9,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User hovers over mermaid diagram, fullscreen button fades in at top-right corner",
+          "deleted": false,
+          "createdAt": "2025-11-05T05:37:01.028Z"
+        },
+        {
+          "id": 1,
+          "text": "User clicks fullscreen button, modal opens with smooth scale/fade animation covering entire viewport",
+          "deleted": false,
+          "createdAt": "2025-11-05T05:37:02.517Z"
+        },
+        {
+          "id": 2,
+          "text": "User presses ESC key while modal is open, modal closes with fade-out animation",
+          "deleted": false,
+          "createdAt": "2025-11-05T05:37:05.133Z"
+        },
+        {
+          "id": 3,
+          "text": "User clicks dark backdrop outside diagram, modal closes",
+          "deleted": false,
+          "createdAt": "2025-11-05T05:37:06.596Z"
+        },
+        {
+          "id": 4,
+          "text": "User scrolls mouse wheel up over diagram, diagram zooms in centered on cursor position",
+          "deleted": false,
+          "createdAt": "2025-11-05T05:37:08.189Z"
+        },
+        {
+          "id": 5,
+          "text": "User scrolls mouse wheel down, diagram zooms out centered on cursor position",
+          "deleted": false,
+          "createdAt": "2025-11-05T05:37:09.773Z"
+        },
+        {
+          "id": 6,
+          "text": "User scrolls horizontally (trackpad two-finger swipe), diagram pans left or right",
+          "deleted": false,
+          "createdAt": "2025-11-05T05:37:11.571Z"
+        },
+        {
+          "id": 7,
+          "text": "User holds Space key and scrolls vertically, diagram pans up/down instead of zooming",
+          "deleted": false,
+          "createdAt": "2025-11-05T05:37:13.181Z"
+        },
+        {
+          "id": 8,
+          "text": "Mode indicator shows 'Zoom Mode (hold Space for Pan)' at bottom-left, fades to 50% opacity after 2 seconds of inactivity",
+          "deleted": false,
+          "createdAt": "2025-11-05T05:37:14.767Z"
+        },
+        {
+          "id": 9,
+          "text": "User holds Space key, mode indicator changes to 'Pan Mode' with 100% opacity and accent color background",
+          "deleted": false,
+          "createdAt": "2025-11-05T05:37:16.306Z"
+        },
+        {
+          "id": 10,
+          "text": "User clicks zoom in button (+), diagram zooms in by fixed increment",
+          "deleted": false,
+          "createdAt": "2025-11-05T05:37:17.821Z"
+        },
+        {
+          "id": 11,
+          "text": "User clicks reset button, diagram returns to 100% zoom (1.0x) centered in modal",
+          "deleted": false,
+          "createdAt": "2025-11-05T05:37:19.263Z"
+        },
+        {
+          "id": 12,
+          "text": "User clicks download button, SVG file downloads with filename 'mermaid-diagram-{timestamp}.svg'",
+          "deleted": false,
+          "createdAt": "2025-11-05T05:37:21.178Z"
+        },
+        {
+          "id": 13,
+          "text": "User tries to zoom beyond 5.0x, zoom stops at maximum (5.0x)",
+          "deleted": false,
+          "createdAt": "2025-11-05T05:37:22.836Z"
+        },
+        {
+          "id": 14,
+          "text": "User tries to zoom below 0.5x, zoom stops at minimum (0.5x)",
+          "deleted": false,
+          "createdAt": "2025-11-05T05:37:24.305Z"
+        }
+      ],
+      "nextExampleId": 15,
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: Should the pan modifier key be configurable in the UI (like mindstrike) or hardcoded to Space?",
+          "deleted": false,
+          "createdAt": "2025-11-05T05:37:38.182Z",
+          "selected": true,
+          "answer": "Hardcode to Space key only - no configuration UI needed. Keep implementation simple."
+        },
+        {
+          "id": 1,
+          "text": "@human: Should zoom level be persisted across sessions (localStorage) or reset to 1.0x each time?",
+          "deleted": false,
+          "createdAt": "2025-11-05T05:37:39.941Z",
+          "selected": true,
+          "answer": "Always reset to 1.0x (100%) each time modal opens - no persistence needed."
+        },
+        {
+          "id": 2,
+          "text": "@human: Should there be keyboard shortcuts for zoom (+ - 0 keys) in addition to mouse wheel?",
+          "deleted": false,
+          "createdAt": "2025-11-05T05:37:41.228Z",
+          "selected": true,
+          "answer": "No keyboard shortcuts for zoom - mouse wheel and zoom buttons only."
+        },
+        {
+          "id": 3,
+          "text": "@human: Should body scroll be locked when modal is open to prevent background scrolling?",
+          "deleted": false,
+          "createdAt": "2025-11-05T05:37:43.064Z",
+          "selected": true,
+          "answer": "Yes - lock body scroll when modal is open (document.body.style.overflow = 'hidden') to prevent background scrolling."
+        },
+        {
+          "id": 4,
+          "text": "@human: Should the fullscreen button also include a download button (two buttons on hover) or keep download only in modal header?",
+          "deleted": false,
+          "createdAt": "2025-11-05T05:37:45.284Z",
+          "selected": true,
+          "answer": "Show both fullscreen AND download buttons in hover overlay (like mindstrike) for quick access to both features."
+        }
+      ],
+      "nextQuestionId": 5,
+      "estimate": 8,
+      "architectureNotes": [],
+      "nextNoteId": 0,
+      "updated": "2025-11-05T06:03:26.956Z"
     }
   },
   "states": {
@@ -40912,6 +41149,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "VIEW-001",
       "TUI-022",
       "TUI-021",
       "REFAC-004",
@@ -41238,6 +41476,7 @@
     "DISC": 2,
     "COV": 53,
     "TUI": 22,
-    "REFAC": 4
+    "REFAC": 4,
+    "VIEW": 1
   }
 }

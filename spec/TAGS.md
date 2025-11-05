@@ -31,6 +31,7 @@ Tags that identify which architectural component a feature belongs to.
 | `@ui` | User interface and visual components |
 | `@utils` | Utility functions and helpers |
 | `@validator` | Validation Logic |
+| `@viewer` | Attachment viewer component (web-based mermaid/markdown renderer) |
 | `@virtuallist` | Features related to VirtualList component |
 
 **Rule**: Every feature file MUST have at least ONE component tag (may have multiple if cross-component).
@@ -208,6 +209,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@file-watching` | Features using file system watchers (fs.watch) for change detection |
 | `@flexbox` | Flexbox layout implementation and responsive design |
 | `@format-check` | Format and style checking |
+| `@fullscreen` | Fullscreen modal and overlay features |
 | `@function-signature` | Function signature validation and checking |
 | `@gherkin` | Gherkin Specification Compliance |
 | `@github-integration` | Features integrating with GitHub API or URLs |
@@ -267,6 +269,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@ui-rendering` | UI rendering and layout issues |
 | `@vitest` | Vitest testing framework related features |
 | `@web` | Web-based features and browser functionality |
+| `@zoom-pan` | Zoom and pan interaction features |
 | `@zustand` | Zustand state management library |
 
 **Rule**: Use technical tags to highlight specific architectural concerns.
@@ -601,7 +604,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-11-05T04:40:29.271Z_
+_Last updated: 2025-11-05T05:45:12.833Z_
 
 **Update Command**: `fspec tag-stats`
 
