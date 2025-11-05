@@ -121,7 +121,9 @@ describe('Feature: Checkpoint Restore Progress Dialog', () => {
       // @step When I press ESC before 3 seconds elapse
       stdin.write('\x1B'); // ESC key
 
-      // Wait for input to be processed
+      // Wait for input to be processed - need multiple microtask flushes
+      await vi.advanceTimersByTimeAsync(0);
+      await Promise.resolve(); // Flush microtasks
       await vi.advanceTimersByTimeAsync(0);
 
       // @step Then the dialog should close immediately
@@ -159,7 +161,9 @@ describe('Feature: Checkpoint Restore Progress Dialog', () => {
       // @step Then I must press ESC to dismiss the dialog
       stdin.write('\x1B'); // ESC key
 
-      // Wait for input to be processed
+      // Wait for input to be processed - need multiple microtask flushes
+      await vi.advanceTimersByTimeAsync(0);
+      await Promise.resolve(); // Flush microtasks
       await vi.advanceTimersByTimeAsync(0);
 
       expect(onClose).toHaveBeenCalled();
