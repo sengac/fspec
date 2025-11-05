@@ -90,7 +90,7 @@ describe('Feature: Restore individual files or all files from checkpoint in chec
       );
 
       vi.mocked(git.resolveRef).mockResolvedValue('mock-checkpoint-oid-123');
-      vi.mocked(gitCheckpoint.getCheckpointChangedFiles).mockResolvedValue([
+      vi.mocked(gitCheckpoint.getCheckpointFilesChangedFromHead).mockResolvedValue([
         'src/auth.ts',
         'src/login.ts',
         'src/utils.ts',
@@ -182,7 +182,7 @@ describe('Feature: Restore individual files or all files from checkpoint in chec
       );
 
       vi.mocked(git.resolveRef).mockResolvedValue('mock-checkpoint-oid-456');
-      vi.mocked(gitCheckpoint.getCheckpointChangedFiles).mockResolvedValue(mockFiles);
+      vi.mocked(gitCheckpoint.getCheckpointFilesChangedFromHead).mockResolvedValue(mockFiles);
 
       // Mock restoreCheckpoint (existing function for all files)
       vi.mocked(gitCheckpoint.restoreCheckpoint).mockResolvedValue({
@@ -266,7 +266,7 @@ describe('Feature: Restore individual files or all files from checkpoint in chec
       );
 
       vi.mocked(git.resolveRef).mockResolvedValue('mock-checkpoint-oid-789');
-      vi.mocked(gitCheckpoint.getCheckpointChangedFiles).mockResolvedValue(['src/deleted-file.ts']);
+      vi.mocked(gitCheckpoint.getCheckpointFilesChangedFromHead).mockResolvedValue(['src/deleted-file.ts']);
 
       // @step And the file "src/deleted-file.ts" exists in checkpoint but not in working directory
       vi.mocked(gitCheckpoint.restoreCheckpointFile).mockResolvedValue({
@@ -339,7 +339,7 @@ describe('Feature: Restore individual files or all files from checkpoint in chec
       );
 
       vi.mocked(git.resolveRef).mockResolvedValue('mock-checkpoint-oid-999');
-      vi.mocked(gitCheckpoint.getCheckpointChangedFiles).mockResolvedValue(['src/config.ts']);
+      vi.mocked(gitCheckpoint.getCheckpointFilesChangedFromHead).mockResolvedValue(['src/config.ts']);
 
       // @step And the file "src/config.ts" has uncommitted changes in working directory
       // Mock conflict detection
@@ -427,7 +427,7 @@ describe('Feature: Restore individual files or all files from checkpoint in chec
       );
 
       vi.mocked(git.resolveRef).mockResolvedValue('mock-checkpoint-oid-123');
-      vi.mocked(gitCheckpoint.getCheckpointChangedFiles).mockResolvedValue(['src/auth.ts']);
+      vi.mocked(gitCheckpoint.getCheckpointFilesChangedFromHead).mockResolvedValue(['src/auth.ts']);
 
       const { stdin, lastFrame } = render(
         React.createElement(CheckpointViewer, { onExit })
@@ -492,7 +492,7 @@ describe('Feature: Restore individual files or all files from checkpoint in chec
       );
 
       vi.mocked(git.resolveRef).mockResolvedValue('mock-checkpoint-oid-456');
-      vi.mocked(gitCheckpoint.getCheckpointChangedFiles).mockResolvedValue(mockFiles);
+      vi.mocked(gitCheckpoint.getCheckpointFilesChangedFromHead).mockResolvedValue(mockFiles);
 
       const { stdin, lastFrame } = render(
         React.createElement(CheckpointViewer, { onExit })
@@ -552,7 +552,7 @@ describe('Feature: Restore individual files or all files from checkpoint in chec
       );
 
       vi.mocked(git.resolveRef).mockResolvedValue('mock-checkpoint-oid-123');
-      vi.mocked(gitCheckpoint.getCheckpointChangedFiles).mockResolvedValue(['src/auth.ts']);
+      vi.mocked(gitCheckpoint.getCheckpointFilesChangedFromHead).mockResolvedValue(['src/auth.ts']);
 
       const { stdin, lastFrame } = render(
         React.createElement(CheckpointViewer, { onExit })
@@ -569,7 +569,7 @@ describe('Feature: Restore individual files or all files from checkpoint in chec
 
       // @step Then no restore dialog should appear
       const output = lastFrame();
-      expect(output).not.toContain('Restore');
+      expect(output).not.toContain('Restore src/auth.ts');
 
       // @step And the viewer should remain unchanged
       expect(vi.mocked(gitCheckpoint.restoreCheckpointFile)).not.toHaveBeenCalled();
@@ -606,7 +606,7 @@ describe('Feature: Restore individual files or all files from checkpoint in chec
       );
 
       vi.mocked(git.resolveRef).mockResolvedValue('mock-checkpoint-oid-456');
-      vi.mocked(gitCheckpoint.getCheckpointChangedFiles).mockResolvedValue(['src/file.ts']);
+      vi.mocked(gitCheckpoint.getCheckpointFilesChangedFromHead).mockResolvedValue(['src/file.ts']);
 
       const { stdin, lastFrame } = render(
         React.createElement(CheckpointViewer, { onExit })

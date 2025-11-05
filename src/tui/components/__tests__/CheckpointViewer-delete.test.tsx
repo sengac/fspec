@@ -74,7 +74,7 @@ describe('Feature: Delete checkpoint or all checkpoints from checkpoint viewer w
       // Mock git.resolveRef to return OIDs for checkpoints
       vi.mocked(git.resolveRef).mockResolvedValue('mock-checkpoint-oid-123');
 
-      vi.mocked(gitCheckpoint.getCheckpointChangedFiles).mockResolvedValue(['src/auth.ts']);
+      vi.mocked(gitCheckpoint.getCheckpointFilesChangedFromHead).mockResolvedValue(['src/auth.ts']);
 
       // Mock deleteCheckpoint
       vi.mocked(gitCheckpoint.deleteCheckpoint).mockResolvedValue({
@@ -152,7 +152,7 @@ describe('Feature: Delete checkpoint or all checkpoints from checkpoint viewer w
         })
       );
       vi.mocked(git.resolveRef).mockResolvedValue('mock-checkpoint-oid-123');
-      vi.mocked(gitCheckpoint.getCheckpointChangedFiles).mockResolvedValue(['src/auth.ts']);
+      vi.mocked(gitCheckpoint.getCheckpointFilesChangedFromHead).mockResolvedValue(['src/auth.ts']);
 
       const { stdin, lastFrame } = render(
         React.createElement(CheckpointViewer, { onExit })
@@ -206,7 +206,7 @@ describe('Feature: Delete checkpoint or all checkpoints from checkpoint viewer w
         })
       );
       vi.mocked(git.resolveRef).mockResolvedValue('mock-checkpoint-oid-123');
-      vi.mocked(gitCheckpoint.getCheckpointChangedFiles).mockResolvedValue(['src/auth.ts']);
+      vi.mocked(gitCheckpoint.getCheckpointFilesChangedFromHead).mockResolvedValue(['src/auth.ts']);
       vi.mocked(gitCheckpoint.deleteAllCheckpoints).mockResolvedValue({
         success: true,
         deletedCount: 47,
@@ -285,7 +285,7 @@ describe('Feature: Delete checkpoint or all checkpoints from checkpoint viewer w
         })
       );
       vi.mocked(git.resolveRef).mockResolvedValue('mock-checkpoint-oid-123');
-      vi.mocked(gitCheckpoint.getCheckpointChangedFiles).mockResolvedValue(['src/auth.ts']);
+      vi.mocked(gitCheckpoint.getCheckpointFilesChangedFromHead).mockResolvedValue(['src/auth.ts']);
       vi.mocked(gitCheckpoint.deleteCheckpoint).mockResolvedValue({
         success: true,
         deletedCheckpoint: 'AUTH-001-last',
@@ -337,7 +337,7 @@ describe('Feature: Delete checkpoint or all checkpoints from checkpoint viewer w
         })
       );
       vi.mocked(git.resolveRef).mockResolvedValue('mock-checkpoint-oid-123');
-      vi.mocked(gitCheckpoint.getCheckpointChangedFiles).mockResolvedValue(['src/tui.ts']);
+      vi.mocked(gitCheckpoint.getCheckpointFilesChangedFromHead).mockResolvedValue(['src/tui.ts']);
 
       const { stdin, lastFrame } = render(
         React.createElement(CheckpointViewer, { onExit })

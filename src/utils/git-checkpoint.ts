@@ -832,6 +832,74 @@ export async function getCheckpointChangedFiles(
 }
 
 /**
+ * Get list of files in checkpoint that differ from current HEAD
+ * This compares the checkpoint files against the current HEAD, not the checkpoint's parent.
+ * Use this to show only files that would change if the checkpoint were restored.
+ * @param cwd - Working directory
+ * @param checkpointOid - OID of the checkpoint/stash commit
+ * @returns Array of file paths that differ between checkpoint and current HEAD
+ */
+export async function getCheckpointFilesChangedFromHead(
+  cwd: string,
+  checkpointOid: string
+): Promise<string[]> {
+  // Dynamic import to avoid circular dependencies
+  const { logger } = await import('./logger.js');
+
+  try {
+    logger.info(
+      `[getCheckpointFilesChangedFromHead] Comparing checkpoint ${checkpointOid} against current HEAD`
+    );
+
+    // Get current HEAD OID
+    const headOid = await git.resolveRef({ fs, dir: cwd, ref: 'HEAD' });
+    logger.info(`[getCheckpointFilesChangedFromHead] Current HEAD: ${headOid}`);
+
+    // Use walk() to efficiently compare checkpoint against current HEAD
+    const changedFiles: string[] = [];
+
+    await git.walk({
+      fs,
+      dir: cwd,
+      trees: [git.TREE({ ref: checkpointOid }), git.TREE({ ref: headOid })],
+      map: async function (filepath, [checkpointEntry, headEntry]) {
+        // Skip root directory
+        if (filepath === '.') {
+          return;
+        }
+
+        // Only care about files (blobs), not directories
+        if (checkpointEntry && (await checkpointEntry.type()) === 'tree') {
+          return;
+        }
+
+        // Get OIDs
+        const cpOid = checkpointEntry ? await checkpointEntry.oid() : null;
+        const headOid = headEntry ? await headEntry.oid() : null;
+
+        // File is different if:
+        // 1. It exists in checkpoint but not HEAD (would be added)
+        // 2. It exists in both but OIDs differ (would be modified)
+        // 3. It exists in HEAD but not checkpoint (would be deleted) - we include these too
+        if (cpOid !== headOid) {
+          changedFiles.push(filepath);
+        }
+      },
+    });
+
+    logger.info(
+      `[getCheckpointFilesChangedFromHead] Found ${changedFiles.length} files that differ from HEAD`
+    );
+    return changedFiles;
+  } catch (error) {
+    logger.error(`[getCheckpointFilesChangedFromHead] Failed: ${error}`);
+    throw new Error(
+      `Failed to get files changed from HEAD for checkpoint ${checkpointOid}: ${error instanceof Error ? error.message : String(error)}`
+    );
+  }
+}
+
+/**
  * Restore a single file from checkpoint
  * @param options - Restoration options
  * @returns Promise with success status and conflict info

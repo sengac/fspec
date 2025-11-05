@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-05T07:10:37.916Z"
+    "lastUpdated": "2025-11-05T09:23:15.434Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -41215,6 +41215,136 @@
       "nextQuestionId": 0,
       "nextNoteId": 0,
       "updated": "2025-11-05T07:10:37.942Z"
+    },
+    "TUI-023": {
+      "id": "TUI-023",
+      "title": "Update checkpoint view keybinding information",
+      "type": "task",
+      "status": "done",
+      "createdAt": "2025-11-05T08:23:41.632Z",
+      "updatedAt": "2025-11-05T08:32:18.719Z",
+      "description": "Display keybinding help text in checkpoint view: 'D: Delete Checkpoint | A: Delete All Checkpoints | T: Restore Checkpoint Files'",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-05T08:24:34.408Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-05T08:24:47.349Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-05T08:31:50.808Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-05T08:32:18.719Z"
+        }
+      ],
+      "rules": [],
+      "examples": [],
+      "questions": [],
+      "architectureNotes": [],
+      "nextRuleId": 0,
+      "nextExampleId": 0,
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-05T08:32:18.719Z"
+    },
+    "TUI-024": {
+      "id": "TUI-024",
+      "title": "Filter checkpoint view to show only files different from HEAD",
+      "type": "task",
+      "status": "done",
+      "createdAt": "2025-11-05T08:42:42.549Z",
+      "updatedAt": "2025-11-05T08:48:42.959Z",
+      "description": "In checkpoint viewer, filter the file list to only display files that have differences compared to HEAD. Files that are identical to HEAD should be hidden from the list to reduce noise and focus on actual changes.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-05T08:43:18.786Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-05T08:43:25.425Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-05T08:48:34.896Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-05T08:48:42.959Z"
+        }
+      ],
+      "rules": [],
+      "examples": [],
+      "questions": [],
+      "architectureNotes": [],
+      "nextRuleId": 0,
+      "nextExampleId": 0,
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-05T08:48:42.959Z"
+    },
+    "TUI-025": {
+      "id": "TUI-025",
+      "title": "Replace diff headers with user-friendly restore explanations",
+      "type": "task",
+      "status": "done",
+      "createdAt": "2025-11-05T09:16:27.331Z",
+      "updatedAt": "2025-11-05T09:23:15.455Z",
+      "description": "Replace the standard git diff header (lines 1-4) with 2 clear lines: (1) Red line explaining lines added after checkpoint will be REMOVED on restore (with count), (2) Green line explaining lines removed since checkpoint will be ADDED on restore (with count). Remove the 'diff --git' and '@@ @@' hunk headers - users don't need git internals, they need restore clarity. Also update the Diff pane heading from 'Diff' to 'Diff: filename' with truncate-end if the line is too long.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-05T09:18:32.739Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-05T09:18:40.024Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-05T09:23:05.756Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-05T09:23:15.455Z"
+        }
+      ],
+      "rules": [],
+      "examples": [],
+      "questions": [],
+      "architectureNotes": [],
+      "nextRuleId": 0,
+      "nextExampleId": 0,
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-05T09:23:15.455Z"
+    },
+    "TUI-026": {
+      "id": "TUI-026",
+      "title": "Update Files pane header to show checkpoint name with truncate-end",
+      "type": "task",
+      "status": "implementing",
+      "createdAt": "2025-11-05T09:26:58.616Z",
+      "updatedAt": "2025-11-05T09:27:19.377Z",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-05T09:27:17.952Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-05T09:27:19.377Z"
+        }
+      ]
     }
   },
   "states": {
@@ -41253,9 +41383,14 @@
       "RES-007"
     ],
     "testing": [],
-    "implementing": [],
+    "implementing": [
+      "TUI-026"
+    ],
     "validating": [],
     "done": [
+      "TUI-025",
+      "TUI-024",
+      "TUI-023",
       "GIT-011",
       "VIEW-001",
       "TUI-022",
@@ -41583,7 +41718,7 @@
     "BUG": 68,
     "DISC": 2,
     "COV": 53,
-    "TUI": 22,
+    "TUI": 26,
     "REFAC": 4,
     "VIEW": 1,
     "DOC": 6,

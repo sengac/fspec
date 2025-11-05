@@ -18,7 +18,7 @@ import * as git from 'isomorphic-git';
 import fs from 'fs';
 import type { Checkpoint as GitCheckpoint } from '../../utils/git-checkpoint';
 import {
-  getCheckpointChangedFiles,
+  getCheckpointFilesChangedFromHead,
   deleteCheckpoint,
   deleteAllCheckpoints,
   restoreCheckpointFile,
@@ -104,8 +104,8 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
               // Resolve checkpoint ref to get OID
               const checkpointOid = await git.resolveRef({ fs, dir: cwd, ref });
 
-              // Load changed files from checkpoint (not all files)
-              const files = await getCheckpointChangedFiles(cwd, checkpointOid);
+              // Load files that differ from current HEAD
+              const files = await getCheckpointFilesChangedFromHead(cwd, checkpointOid);
 
               // Parse checkpoint message to extract timestamp
               const match = cp.message.match(
@@ -820,8 +820,9 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
                 <Text
                   bold={focusedPane !== 'files'}
                   color={focusedPane === 'files' ? 'black' : 'white'}
+                  wrap="truncate"
                 >
-                  Files
+                  Files{sortedCheckpoints[selectedCheckpointIndex]?.name ? `: ${sortedCheckpoints[selectedCheckpointIndex].name}` : ''}
                 </Text>
               </Box>
               <VirtualList
@@ -862,8 +863,9 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
               <Text
                 bold={focusedPane !== 'diff'}
                 color={focusedPane === 'diff' ? 'black' : 'white'}
+                wrap="truncate"
               >
-                Diff
+                Diff{files[selectedFileIndex]?.path ? `: ${files[selectedFileIndex].path}` : ''}
               </Text>
             </Box>
             <Box flexGrow={1}>
@@ -881,8 +883,7 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
       {/* Footer */}
       <Box>
         <Text dimColor>
-          ESC: Back | ←→↑↓: Navigate | PgUp/PgDn: Scroll | D: Delete | A: Delete
-          ALL
+          D: Delete Checkpoint | A: Delete All Checkpoints | T: Restore Checkpoint Files
         </Text>
       </Box>
 
