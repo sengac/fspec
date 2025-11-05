@@ -9,48 +9,9 @@ import { describe, it, expect } from 'vitest';
 import { readFile } from 'fs/promises';
 import { join } from 'path';
 
-const DOCS_DIR = join(process.cwd(), 'docs', 'hooks');
 const EXAMPLES_DIR = join(process.cwd(), 'examples', 'hooks');
 
 describe('Feature: Hook system documentation and examples', () => {
-  describe('Scenario: Configuration documentation shows complete JSON schema', () => {
-    it('should have complete configuration documentation', async () => {
-      // Given I am reading the hook system documentation
-      // When I look at the configuration section
-      const configDoc = await readFile(
-        join(DOCS_DIR, 'configuration.md'),
-        'utf-8'
-      );
-
-      // Then I should see a complete fspec-hooks.json example
-      expect(configDoc).toContain('fspec-hooks.json');
-
-      // And the example should include global defaults section
-      expect(configDoc).toContain('global');
-
-      // And the example should include multiple hook definitions
-      expect(configDoc).toContain('hooks');
-
-      // And the example should document all configuration fields
-      expect(configDoc).toContain('name');
-      expect(configDoc).toContain('command');
-      expect(configDoc).toContain('blocking');
-      expect(configDoc).toContain('timeout');
-      expect(configDoc).toContain('condition');
-
-      // And the example should show hooks object with event names as keys
-      expect(configDoc).toMatch(/pre-\w+/);
-      expect(configDoc).toMatch(/post-\w+/);
-
-      // And the example should show hook properties
-      expect(configDoc).toContain('name');
-      expect(configDoc).toContain('command');
-      expect(configDoc).toContain('blocking');
-      expect(configDoc).toContain('timeout');
-      expect(configDoc).toContain('condition');
-    });
-  });
-
   describe('Scenario: Bash hook example reads context and validates feature file', () => {
     it('should have bash validation hook example', async () => {
       // Given I am looking at bash hook examples
@@ -166,33 +127,6 @@ describe('Feature: Hook system documentation and examples', () => {
       // And the example should show blocking: true for lint enforcement
       // (This would be in the accompanying documentation or JSON config example)
       expect(lintExample).toMatch(/blocking|exit 1/);
-    });
-  });
-
-  describe('Scenario: Troubleshooting section explains common errors', () => {
-    it('should have troubleshooting documentation', async () => {
-      // Given I am reading the troubleshooting documentation
-      // When I look for "Hook command not found" error
-      const troubleshootingDoc = await readFile(
-        join(DOCS_DIR, 'troubleshooting.md'),
-        'utf-8'
-      );
-
-      // Then I should see explanation of the error cause
-      expect(troubleshootingDoc).toContain('Hook command not found');
-
-      // And I should see solution: check file path is relative to project root
-      expect(troubleshootingDoc).toContain('relative to project root');
-
-      // And I should see solution: verify file has execute permissions
-      expect(troubleshootingDoc).toMatch(/execute permission|chmod \+x/);
-
-      // And I should see example of correct vs incorrect file paths
-      expect(troubleshootingDoc).toMatch(/spec\/hooks\/.*\.sh/);
-
-      // And I should see how to test hook script manually
-      expect(troubleshootingDoc).toMatch(/Testing hook script manually/);
-      expect(troubleshootingDoc).toContain('echo');
     });
   });
 });

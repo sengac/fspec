@@ -8,6 +8,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render } from 'ink-testing-library';
 import React from 'react';
+import { Box } from 'ink';
 import { ConfirmationDialog } from '../ConfirmationDialog';
 
 describe('Feature: Reusable confirmation dialog component for destructive TUI actions', () => {
@@ -18,12 +19,14 @@ describe('Feature: Reusable confirmation dialog component for destructive TUI ac
 
       // @step Given a ConfirmationDialog with confirmMode='yesno' and message 'Delete checkpoint?'
       const { lastFrame, stdin } = render(
-        React.createElement(ConfirmationDialog, {
-          message: 'Delete checkpoint?',
-          confirmMode: 'yesno',
-          onConfirm,
-          onCancel,
-        })
+        <Box width={80} height={24}>
+          <ConfirmationDialog
+            message="Delete checkpoint?"
+            confirmMode="yesno"
+            onConfirm={onConfirm}
+            onCancel={onCancel}
+          />
+        </Box>
       );
 
       const initialOutput = lastFrame();
@@ -47,13 +50,15 @@ describe('Feature: Reusable confirmation dialog component for destructive TUI ac
 
       // @step Given a ConfirmationDialog with confirmMode='typed' and typedPhrase='DELETE ALL'
       const { lastFrame, stdin } = render(
-        React.createElement(ConfirmationDialog, {
-          message: 'Delete all checkpoints?',
-          confirmMode: 'typed',
-          typedPhrase: 'DELETE ALL',
-          onConfirm,
-          onCancel,
-        })
+        <Box width={80} height={24}>
+          <ConfirmationDialog
+            message="Delete all checkpoints?"
+            confirmMode="typed"
+            typedPhrase="DELETE ALL"
+            onConfirm={onConfirm}
+            onCancel={onCancel}
+          />
+        </Box>
       );
 
       const initialOutput = lastFrame();
@@ -82,12 +87,14 @@ describe('Feature: Reusable confirmation dialog component for destructive TUI ac
 
       // @step Given a ConfirmationDialog with riskLevel='high'
       const { lastFrame } = render(
-        React.createElement(ConfirmationDialog, {
-          message: 'Dangerous action?',
-          riskLevel: 'high',
-          onConfirm,
-          onCancel,
-        })
+        <Box width={80} height={24}>
+          <ConfirmationDialog
+            message="Dangerous action?"
+            riskLevel="high"
+            onConfirm={onConfirm}
+            onCancel={onCancel}
+          />
+        </Box>
       );
 
       // @step When the dialog renders
@@ -107,11 +114,13 @@ describe('Feature: Reusable confirmation dialog component for destructive TUI ac
 
       // @step Given a ConfirmationDialog with no riskLevel prop
       const { lastFrame } = render(
-        React.createElement(ConfirmationDialog, {
-          message: 'Save changes?',
-          onConfirm,
-          onCancel,
-        })
+        <Box width={80} height={24}>
+          <ConfirmationDialog
+            message="Save changes?"
+            onConfirm={onConfirm}
+            onCancel={onCancel}
+          />
+        </Box>
       );
 
       // @step When the dialog renders

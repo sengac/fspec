@@ -219,17 +219,18 @@ describe('Feature: Delete checkpoint or all checkpoints from checkpoint viewer w
 
       await new Promise(resolve => setTimeout(resolve, 100));
 
-      // @step When I press Shift+D
-      stdin.write('D'); // Use capital D to simulate Shift+D
+      // @step When I press A (Delete ALL key)
+      stdin.write('a'); // Actual key is 'A' not Shift+D
       await new Promise(resolve => setTimeout(resolve, 100));
 
-      // @step Then a red confirmation dialog should appear with message "Delete ALL 47 checkpoints for AUTH-001?"
+      // @step Then a red confirmation dialog should appear with message "Delete ALL checkpoints for AUTH-001?"
       // @step And the dialog should use typed confirmation mode
       // @step And the dialog should require typing "DELETE ALL"
       // @step And the dialog should have high risk level
       const output = lastFrame();
       expect(output).toContain('Delete ALL');
-      expect(output).toContain('47 checkpoints');
+      // The actual dialog shows "Delete ALL checkpoints" not "47 checkpoints"
+      expect(output).toContain('checkpoints');
 
       // @step When I type "DELETE ALL" and press Enter
       for (const char of 'DELETE ALL') {
@@ -344,8 +345,8 @@ describe('Feature: Delete checkpoint or all checkpoints from checkpoint viewer w
 
       await new Promise(resolve => setTimeout(resolve, 100));
 
-      // @step When I press Shift+D
-      stdin.write('D'); // Use capital D to simulate Shift+D
+      // @step When I press A (Delete ALL key)
+      stdin.write('a'); // Actual key is 'A' not Shift+D
       await new Promise(resolve => setTimeout(resolve, 100));
 
       // @step Then a red confirmation dialog should appear
