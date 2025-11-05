@@ -12,7 +12,7 @@
 
 ---
 
-## What is fspec?
+## WHY?
 
 **AI coding is broken. Admit it.** Your agent writes code without tests, forgets what it did yesterday, and ships features based on vibes. You're babysitting more than building. fspec fixes this by making discipline non-negotiable. It's a workflow enforcer that forces AI to follow test-driven development: write acceptance criteria, generate tests, then code—in that exact order. No shortcuts. No exceptions. The payoff? Autonomous AI that ships production-ready code while you focus on actual problems. Stop micromanaging. Start shipping.
 
