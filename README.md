@@ -119,6 +119,16 @@ View attachments in the interactive kanban by pressing the **A** key, with full 
 
 ---
 
+## DOGFOODING
+
+**We practice what we preach.** fspec was built entirely using fspec. The result? **257 feature files** with complete Gherkin specifications, full test coverage, and end-to-end traceability.
+
+How long would that normally take? A traditional QA and business analyst team would need **9-12 months** to produce that level of documentation. We did it in weeks with AI agents following ACDD discipline.
+
+**See for yourself:** Browse the [complete feature file collection](https://github.com/sengac/fspec/tree/main/spec/features) and witness what AI-driven, test-first development actually looks like at scale.
+
+---
+
 ## Documentation
 
 - 📘 **[Getting Started](https://fspec.dev/getting-started/quickstart/)** - 5-minute quickstart
