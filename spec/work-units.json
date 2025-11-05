@@ -41110,16 +41110,6 @@
       "nextNoteId": 0,
       "updated": "2025-11-05T06:03:26.956Z"
     },
-    "DOC-006": {
-      "id": "DOC-006",
-      "title": "Update README links to fspec.dev and remove local docs",
-      "type": "task",
-      "status": "backlog",
-      "createdAt": "2025-11-05T06:46:28.479Z",
-      "updatedAt": "2025-11-05T06:46:28.479Z",
-      "description": "Replace all README.md documentation links from ./docs/ to https://fspec.dev URLs. Remove entire docs directory as documentation is now hosted on website.",
-      "children": []
-    },
     "GIT-011": {
       "id": "GIT-011",
       "title": "Checkpoint creation fails when deleted files exist",
@@ -41732,6 +41722,64 @@
       "architectureNotes": [],
       "nextNoteId": 0,
       "updated": "2025-11-05T12:08:20.756Z"
+    },
+    "BUG-069": {
+      "id": "BUG-069",
+      "title": "Changed files view doesn't show deleted files correctly",
+      "type": "bug",
+      "status": "specifying",
+      "createdAt": "2025-11-05T19:50:50.840Z",
+      "updatedAt": "2025-11-05T19:52:35.473Z",
+      "description": "In the changed files view (F key), deleted files don't show as 'D' with red writing, and the Diff panel says 'No changes to display' instead of 'File was deleted'",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-05T19:51:51.715Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "Deleted files should show 'D' status indicator in red color",
+          "deleted": false,
+          "createdAt": "2025-11-05T19:51:58.632Z"
+        },
+        {
+          "id": 1,
+          "text": "Diff panel should show 'File was deleted' message for deleted files instead of 'No changes to display'",
+          "deleted": false,
+          "createdAt": "2025-11-05T19:52:05.073Z"
+        },
+        {
+          "id": 2,
+          "text": "Status indicators should follow git conventions: A (added/green), M (modified/yellow), D (deleted/red), R (renamed/cyan)",
+          "deleted": false,
+          "createdAt": "2025-11-05T19:52:35.473Z"
+        }
+      ],
+      "nextRuleId": 3,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User deletes a file (rm somefile.txt), opens changed files view (F key), sees 'D somefile.txt' in red",
+          "deleted": false,
+          "createdAt": "2025-11-05T19:52:13.028Z"
+        },
+        {
+          "id": 1,
+          "text": "User deletes and stages file (git rm somefile.txt), changed files view shows staged 'D somefile.txt' in red",
+          "deleted": false,
+          "createdAt": "2025-11-05T19:52:21.232Z"
+        },
+        {
+          "id": 2,
+          "text": "User selects deleted file in changed files view, diff panel shows 'File was deleted' instead of 'No changes to display'",
+          "deleted": false,
+          "createdAt": "2025-11-05T19:52:28.199Z"
+        }
+      ],
+      "nextExampleId": 3
     }
   },
   "states": {
@@ -41759,15 +41807,15 @@
       "RES-004",
       "RES-005",
       "FEAT-018",
-      "CLEAN-002",
-      "DOC-006"
+      "CLEAN-002"
     ],
     "specifying": [
       "RES-006",
       "LANG-001",
       "EXMAP-004",
       "BOARD-020",
-      "RES-007"
+      "RES-007",
+      "BUG-069"
     ],
     "testing": [],
     "implementing": [],
@@ -42103,7 +42151,7 @@
   "prefixCounters": {
     "CLI": 14,
     "HELP": 5,
-    "BUG": 68,
+    "BUG": 69,
     "DISC": 2,
     "COV": 53,
     "TUI": 27,

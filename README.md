@@ -51,7 +51,15 @@ Think **Git for specifications** + **Kanban for AI agents** + **TDD enforcement*
    "Generate scenarios from the example map"
    ```
 
-7. **Keep context fresh**
+7. **Launch the interactive kanban**
+   ```bash
+   fspec
+   ```
+   Watch live changes, view work unit details, manage checkpoints, and navigate your kanban board with an intuitive TUI.
+
+   ![Interactive Kanban](interactive-kanban.png)
+
+8. **Keep context fresh**
    - Over time, your agent's context gets cluttered
    - Clear your agent's context and bootstrap fspec again
    - Repeat as needed to maintain clean workflow
@@ -69,6 +77,33 @@ Found a bug? Just tell your AI agent:
 Your agent knows how to use `fspec report-bug-to-github` to automatically gather context and create the issue.
 
 **Manual reporting:** [Create an issue](https://github.com/sengac/fspec/issues/new)
+
+---
+
+## Checkpoints
+
+Experiment fearlessly with built-in Git checkpoints. Tell your agent to **"create a checkpoint"** to save your current state, then view and restore checkpoints from the interactive kanban by pressing the **C** key.
+
+![Checkpoint View](checkpoints.png)
+
+---
+
+## Attachment Viewer
+
+Attach markdown documents with mermaid diagrams to work units for rich documentation **before** starting Example Mapping. Perfect for researching complex topics and creating visual designs.
+
+**Example workflow:**
+```
+"Create a story about adding Event Storming. I want you to research this
+topic on the web and create a markdown document with mermaid diagrams
+and attach it to this story using fspec."
+```
+
+View attachments in the interactive kanban by pressing the **A** key, with full markdown and mermaid diagram rendering.
+
+![Attachment Viewer - Document](attachment-viewer-1.png)
+
+![Attachment Viewer - Diagram](attachment-viewer-2.png)
 
 ---
 
