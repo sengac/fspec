@@ -213,8 +213,24 @@ export async function createCheckpoint(options: CheckpointOptions): Promise<{
     };
   }
 
-  // Stage ALL changed files (including untracked) so git.stash can capture them
-  for (const filepath of capturedFiles) {
+  // Stage changed files (excluding deleted files)
+  // git.stash will capture deleted files as unstaged deletions
+  // We only need to stage modified and new files to ensure they're captured
+  for (const row of status) {
+    const [filepath, headStatus, workdirStatus, stageStatus] = row;
+
+    // Skip files that haven't changed
+    if (headStatus === workdirStatus && workdirStatus === stageStatus) {
+      continue;
+    }
+
+    // WORKDIR=0 means file is deleted from working directory
+    // Don't stage deletions - git.stash will handle them as unstaged deletions
+    if (workdirStatus === 0) {
+      continue;
+    }
+
+    // File was modified or added - stage it so git.stash captures it
     await git.add({ fs, dir: cwd, filepath });
   }
 

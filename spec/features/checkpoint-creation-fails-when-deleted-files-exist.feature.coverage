@@ -1,0 +1,160 @@
+{
+  "scenarios": [
+    {
+      "name": "Create checkpoint with deleted file",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/git-checkpoint-deleted-files.test.ts",
+          "lines": "51-86",
+          "implMappings": [
+            {
+              "file": "src/utils/git-checkpoint.ts",
+              "lines": [
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Create checkpoint with mixed changes",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/git-checkpoint-deleted-files.test.ts",
+          "lines": "88-141",
+          "implMappings": [
+            {
+              "file": "src/utils/git-checkpoint.ts",
+              "lines": [
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Create checkpoint with multiple deleted files",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/git-checkpoint-deleted-files.test.ts",
+          "lines": "143-192",
+          "implMappings": [
+            {
+              "file": "src/utils/git-checkpoint.ts",
+              "lines": [
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Restore checkpoint that includes deleted files",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/git-checkpoint-deleted-files.test.ts",
+          "lines": "194-244",
+          "implMappings": [
+            {
+              "file": "src/utils/git-checkpoint.ts",
+              "lines": [
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/utils/__tests__/git-checkpoint-deleted-files.test.ts"
+    ],
+    "implFiles": [
+      "src/utils/git-checkpoint.ts"
+    ],
+    "totalLinesCovered": 271
+  }
+}
