@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-05T02:43:10.131Z"
+    "lastUpdated": "2025-11-05T03:21:42.678Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -35579,7 +35579,7 @@
       "type": "story",
       "status": "specifying",
       "createdAt": "2025-11-01T17:50:17.784Z",
-      "updatedAt": "2025-11-01T17:51:27.304Z",
+      "updatedAt": "2025-11-05T03:21:42.678Z",
       "description": "Add Event Storming as a discovery technique done before Example Mapping to identify domain events, commands, aggregates, and bounded contexts that inform tag naming and domain structure",
       "children": [],
       "stateHistory": [
@@ -35675,6 +35675,9 @@
       "nextQuestionId": 5,
       "blocks": [
         "QUERY-001"
+      ],
+      "attachments": [
+        "spec/attachments/EXMAP-004/event-storming-integration.md"
       ]
     },
     "QUERY-001": {
