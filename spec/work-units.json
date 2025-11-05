@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-05T10:35:57.214Z"
+    "lastUpdated": "2025-11-05T12:08:20.733Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -41504,9 +41504,9 @@
       "id": "TUI-027",
       "title": "Checkpoint Restore Progress Dialog",
       "type": "story",
-      "status": "testing",
+      "status": "done",
       "createdAt": "2025-11-05T10:35:38.781Z",
-      "updatedAt": "2025-11-05T10:58:36.676Z",
+      "updatedAt": "2025-11-05T12:08:20.756Z",
       "children": [],
       "stateHistory": [
         {
@@ -41532,6 +41532,18 @@
         {
           "state": "testing",
           "timestamp": "2025-11-05T10:58:36.676Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-05T12:06:55.604Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-05T12:08:19.301Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-05T12:08:20.757Z"
         }
       ],
       "userStory": {
@@ -41716,7 +41728,10 @@
         }
       ],
       "nextExampleId": 7,
-      "estimate": 5
+      "estimate": 5,
+      "architectureNotes": [],
+      "nextNoteId": 0,
+      "updated": "2025-11-05T12:08:20.756Z"
     }
   },
   "states": {
@@ -41754,12 +41769,11 @@
       "BOARD-020",
       "RES-007"
     ],
-    "testing": [
-      "TUI-027"
-    ],
+    "testing": [],
     "implementing": [],
     "validating": [],
     "done": [
+      "TUI-027",
       "GIT-012",
       "TUI-026",
       "TUI-025",
