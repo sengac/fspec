@@ -1,8 +1,9 @@
 @example-mapping
 @BUG-054
-@critical @cli @data-integrity
+@critical
+@cli
+@data-integrity
 Feature: Answer Question Data Integrity
-
   """
   Architecture notes:
   - answer-question command answers questions from Example Mapping
@@ -18,13 +19,13 @@ Feature: Answer Question Data Integrity
   - Breaks any code that expects RuleItem object structure
 
   Fix pattern (from add-rule.ts):
-    const newRule: RuleItem = {
-      id: workUnit.nextRuleId++,
-      text: options.answer,
-      deleted: false,
-      createdAt: new Date().toISOString(),
-    };
-    workUnit.rules.push(newRule);
+  const newRule: RuleItem = {
+  id: workUnit.nextRuleId++,
+  text: options.answer,
+  deleted: false,
+  createdAt: new Date().toISOString(),
+  };
+  workUnit.rules.push(newRule);
   """
 
   Background: User Story

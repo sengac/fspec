@@ -38,6 +38,10 @@
           "description": "Git operations and version control integration"
         },
         {
+          "name": "@git-integration",
+          "description": "Git integration and version control features"
+        },
+        {
           "name": "@git-ops",
           "description": "Git operations and version control features"
         },
@@ -1450,7 +1454,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-11-05T05:45:12.833Z",
+    "lastUpdated": "2025-11-05T10:17:35.072Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

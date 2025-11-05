@@ -4,7 +4,6 @@
 @critical
 @COV-053
 Feature: Step validation system-reminder doesn't explain proper comment placement and deduplication
-
   """
   The step validation system-reminder is generated in the link-coverage command when validating step comments in test files. The error message format is currently just 'Add to test file: // @step [step text]' without additional context.
   The fix should enhance the system-reminder message to include: 1) Instruction to place comments near executing code, 2) Instruction to check for and remove duplicate comments, 3) Example showing proper placement with context about which line executes the step.
@@ -25,7 +24,6 @@ Feature: Step validation system-reminder doesn't explain proper comment placemen
   #   3. AI receives step validation error, reads test file, sees existing '// Given I have a foundation.json.draft' comments, doesn't realize these might conflict with '@step Given' comments, adds @step comments without removing duplicates, creates confusing redundant comments
   #
   # ========================================
-
   Background: User Story
     As a AI agent using fspec for test coverage linking
     I want to receive clear guidance about step comment placement

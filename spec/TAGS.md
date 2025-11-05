@@ -20,6 +20,7 @@ Tags that identify which architectural component a feature belongs to.
 | `@formatter` | Formatting & Prettification |
 | `@generator` | Template Generation |
 | `@git` | Git operations and version control integration |
+| `@git-integration` | Git integration and version control features |
 | `@git-ops` | Git operations and version control features |
 | `@hooks` | Hooks system and execution engine |
 | `@init` | Initialization and setup features |
@@ -604,7 +605,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-11-05T05:45:12.833Z_
+_Last updated: 2025-11-05T10:17:35.072Z_
 
 **Update Command**: `fspec tag-stats`
 

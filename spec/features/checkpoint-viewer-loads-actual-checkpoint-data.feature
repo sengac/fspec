@@ -4,7 +4,6 @@
 @checkpoint
 @TUI-005
 Feature: Checkpoint Viewer loads actual checkpoint data
-
   """
   Uses isomorphic-git to load checkpoints from .git/fspec-checkpoints-index/, git.listFiles() to enumerate checkpoint files, and getCheckpointFileDiff() to compare versions. Worker threads prevent UI blocking during diff operations.
   """
@@ -25,7 +24,6 @@ Feature: Checkpoint Viewer loads actual checkpoint data
   #   3. User selects 'src/auth.ts' from checkpoint, diff pane shows changes between checkpoint version and HEAD
   #
   # ========================================
-
   Background: User Story
     As a developer viewing checkpoint data
     I want to see actual checkpoints with their files and diffs
@@ -36,15 +34,12 @@ Feature: Checkpoint Viewer loads actual checkpoint data
     When I open the checkpoint viewer with C key
     Then I should see all 3 checkpoints sorted by timestamp
 
-
   Scenario: Display files from selected checkpoint
     Given I have selected checkpoint 'baseline'
     When The checkpoint viewer loads files using git.listFiles()
     Then I should see all files from that checkpoint in the bottom-left pane
 
-
   Scenario: Display diff between checkpoint and HEAD
     Given I have selected file 'src/auth.ts' from checkpoint 'baseline'
     When The diff pane loads using getCheckpointFileDiff()
     Then I should see the diff comparing checkpoint version to HEAD version
-

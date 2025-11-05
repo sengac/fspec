@@ -4,7 +4,6 @@
 @cli
 @CLEAN-003
 Feature: Remove token recording functionality
-
   """
   Removal rationale: Token tracking via AI self-reporting is unreliable (30-40% accuracy). AI agents don't have access to actual token counts and would be guessing. Automatic extraction from Claude Code logs is not feasible without reverse engineering. API-level tracking only works if we control the API calls, which we don't in Claude Code. The feature adds maintenance burden without providing reliable data.
   """
@@ -34,7 +33,6 @@ Feature: Remove token recording functionality
   #   8. Delete spec/features/ai-token-usage-tracking.feature.coverage
   #
   # ========================================
-
   Background: User Story
     As a developer maintaining fspec
     I want to remove all token recording functionality

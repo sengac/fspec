@@ -1,0 +1,131 @@
+{
+  "scenarios": [
+    {
+      "name": "Restore checkpoint deletes files added after checkpoint creation",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/git-checkpoint-restore-deletes-new-files.test.ts",
+          "lines": "64-124",
+          "implMappings": [
+            {
+              "file": "src/utils/git-checkpoint.ts",
+              "lines": [
+                385,
+                386,
+                387,
+                388,
+                389,
+                390,
+                391,
+                392,
+                393,
+                394,
+                395,
+                396,
+                397,
+                398,
+                399,
+                400,
+                401,
+                402,
+                403,
+                404,
+                405,
+                406,
+                407,
+                408,
+                409,
+                410,
+                411,
+                412,
+                413,
+                414,
+                415
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Diff viewer shows clear deletion message for files not in checkpoint",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/git-checkpoint-restore-deletes-new-files.test.ts",
+          "lines": "126-178",
+          "implMappings": [
+            {
+              "file": "src/git/diff.ts",
+              "lines": [
+                98,
+                99,
+                100,
+                101
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Restore checkpoint deletes multiple new files and restores modified files",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/git-checkpoint-restore-deletes-new-files.test.ts",
+          "lines": "180-251",
+          "implMappings": [
+            {
+              "file": "src/utils/git-checkpoint.ts",
+              "lines": [
+                385,
+                386,
+                387,
+                388,
+                389,
+                390,
+                391,
+                392,
+                393,
+                394,
+                395,
+                396,
+                397,
+                398,
+                399,
+                400,
+                401,
+                402,
+                403,
+                404,
+                405,
+                406,
+                407,
+                408,
+                409,
+                410,
+                411,
+                412,
+                413,
+                414,
+                415
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/utils/__tests__/git-checkpoint-restore-deletes-new-files.test.ts"
+    ],
+    "implFiles": [
+      "src/utils/git-checkpoint.ts",
+      "src/git/diff.ts"
+    ],
+    "totalLinesCovered": 252
+  }
+}

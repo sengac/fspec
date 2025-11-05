@@ -6,7 +6,6 @@
 @cross-platform
 @BUG-063
 Feature: @step validation hardcoded to JavaScript comment syntax, should be language-agnostic
-
   """
   Current implementation in src/utils/step-validation.ts uses hardcoded regex: /^\/\/\s*@step\s+(Given|When|Then|And|But)\s+(.+)$/ on line 53-54
   Function extractStepComments() needs to be refactored to use language-agnostic regex that matches @step pattern anywhere in the line
@@ -32,7 +31,6 @@ Feature: @step validation hardcoded to JavaScript comment syntax, should be lang
   #   6. Visual Basic: ' @step But the error is logged → should extract 'But the error is logged'
   #
   # ========================================
-
   Background: User Story
     As a developer using fspec with any programming language
     I want to use @step comments in my test files

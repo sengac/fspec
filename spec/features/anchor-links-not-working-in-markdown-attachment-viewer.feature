@@ -8,7 +8,6 @@
 @unit-test
 @TUI-022
 Feature: Anchor links not working in markdown attachment viewer
-
   """
   Use marked-gfm-heading-id extension (official GitHub-compatible heading ID generator for marked library) - handles slug generation, duplicates, and special characters automatically
   Create new test file markdown-renderer.test.ts that tests renderMarkdown() directly (unit tests, no server startup) - faster, simpler, more focused than integration tests
@@ -36,7 +35,6 @@ Feature: Anchor links not working in markdown attachment viewer
   #   6. Mermaid code block still renders as <pre class="mermaid"> with diagram content
   #
   # ========================================
-
   Background: User Story
     As a developer viewing markdown attachments in TUI
     I want to navigate using table of contents anchor links

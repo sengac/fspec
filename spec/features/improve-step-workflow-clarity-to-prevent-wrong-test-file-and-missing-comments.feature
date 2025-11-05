@@ -6,7 +6,6 @@
 @acdd
 @REFAC-003
 Feature: Improve @step workflow clarity to prevent wrong test file and missing comments
-
   """
   Add guidance about DELETE and RECREATE when tests written without @step comments (JOURNAL.md BUG-065 pattern)
   """
@@ -30,7 +29,6 @@ Feature: Improve @step workflow clarity to prevent wrong test file and missing c
   #   4. Correct workflow: AI creates test WITH @step comments from the start, validation passes immediately
   #
   # ========================================
-
   Background: User Story
     As a AI agent using fspec ACDD workflow
     I want to understand @step requirements clearly before writing tests
@@ -43,13 +41,11 @@ Feature: Improve @step workflow clarity to prevent wrong test file and missing c
     And requirement should emphasize ONE scenario = ONE test mapping
     And reminder should state @step comments added DURING test writing
 
-
   Scenario: Validation error shows which test file is being checked
     Given test file missing @step comments
     When link-coverage validation fails
     Then error message should show test file path being validated
     And error should warn about adding @step to CORRECT test file
-
 
   Scenario: Reminder guides recreation when tests created without @step comments
     Given tests were created without @step comments
@@ -57,4 +53,3 @@ Feature: Improve @step workflow clarity to prevent wrong test file and missing c
     Then error should suggest DELETE and RECREATE tests ONLY if created in current work unit
     And error should explain recreation is better than editing for structural issues
     And error should state existing tests from other cards should use checkpoint restore instead
-

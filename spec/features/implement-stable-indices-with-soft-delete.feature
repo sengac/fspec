@@ -5,7 +5,6 @@
 @refactoring
 @IDX-001
 Feature: Implement Stable Indices with Soft Delete
-
   """
   Type definitions in src/types.ts: RuleItem, ExampleItem, QuestionItem, ArchitectureNoteItem interfaces extend base ItemWithId { id: number; text: string; deleted: boolean; createdAt: string; deletedAt?: string }
   Update WorkUnit interface in src/types.ts: Add nextRuleId: number, nextExampleId: number, nextQuestionId: number, nextNoteId: number fields (default 0 for backward compatibility)
@@ -95,7 +94,6 @@ Feature: Implement Stable Indices with Soft Delete
   #   2. No separate purge command. Use compact-work-unit for permanent deletion. Simpler API with fewer commands to maintain
   #
   # ========================================
-
   Background: User Story
     As a AI agent or developer using fspec for Example Mapping
     I want to remove multiple items from collections (rules, examples, questions, notes) without index shifts

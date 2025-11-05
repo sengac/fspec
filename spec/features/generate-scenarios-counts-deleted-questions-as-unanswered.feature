@@ -5,7 +5,6 @@
 @example-mapping
 @BUG-060
 Feature: generate-scenarios counts deleted questions as unanswered
-
   """
   Bug in generate-scenarios.ts:308-311 where validation filters questions by \!questionItem.selected but doesn't check \!questionItem.deleted. Uses QuestionItem type with deleted and selected boolean fields.
   """
@@ -28,7 +27,6 @@ Feature: generate-scenarios counts deleted questions as unanswered
   #   4. User deletes 3 questions, validation counts them as unanswered, blocks state transition
   #
   # ========================================
-
   Background: User Story
     As a AI agent using fspec
     I want to generate scenarios from Example Mapping

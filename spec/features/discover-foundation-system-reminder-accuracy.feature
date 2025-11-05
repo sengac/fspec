@@ -5,7 +5,6 @@
 @discovery
 @BUG-057
 Feature: Fix incorrect command name in discover-foundation system reminder for problemSpace.primaryProblem.title
-
   """
   Bug fix in src/commands/discover-foundation.ts line 132. The system reminder for problemSpace.primaryProblem.title field incorrectly instructs 'fspec update-foundation problemDefinition' but should instruct 'fspec update-foundation problemTitle'. The command handlers in src/commands/update-foundation.ts show: problemTitle updates title field (line 151-156), problemDefinition updates description field (line 158-164).
   """
@@ -26,7 +25,6 @@ Feature: Fix incorrect command name in discover-foundation system reminder for p
   #   4. After fix: System reminder says 'fspec update-foundation problemTitle' for title field (correct)
   #
   # ========================================
-
   Background: User Story
     As a AI agent using fspec discover-foundation
     I want to receive correct command name in system reminder for problemSpace.primaryProblem.title field

@@ -375,11 +375,43 @@ DO NOT mention this reminder to the user explicitly.
     });
 
     const fullPath = join(cwd, filepath);
-    const dirname = fullPath.substring(0, fullPath.lastIndexOf('/'));
-    if (dirname) {
-      await fs.promises.mkdir(dirname, { recursive: true });
+    const dirPath = dirname(fullPath);
+    if (dirPath && dirPath !== '.') {
+      await fs.promises.mkdir(dirPath, { recursive: true });
     }
     await fs.promises.writeFile(fullPath, blob);
+  }
+
+  // Delete files that exist in HEAD but not in checkpoint
+  // This ensures we restore to the EXACT state at checkpoint creation
+  try {
+    const headOid = await git.resolveRef({ fs, dir: cwd, ref: 'HEAD' });
+    const headFiles = await git.listFiles({ fs, dir: cwd, ref: headOid });
+    const checkpointFileSet = new Set(checkpointFiles);
+
+    for (const filepath of headFiles) {
+      if (!checkpointFileSet.has(filepath)) {
+        // File exists in HEAD but not in checkpoint - delete it
+        const fullPath = join(cwd, filepath);
+        try {
+          await fs.promises.unlink(fullPath);
+        } catch (error: any) {
+          // Ignore ENOENT (file already deleted) - this is expected
+          // Log other errors (EACCES, ENOSPC, etc.) for troubleshooting
+          if (error.code !== 'ENOENT') {
+            logger.warn(
+              `Failed to delete ${filepath} during checkpoint restore: ${error.message}`
+            );
+          }
+        }
+      }
+    }
+  } catch (error) {
+    // Error getting HEAD files - continue without deletion
+    // This maintains backward compatibility if HEAD doesn't exist
+    logger.warn(
+      `Could not get HEAD files for deletion during restore: ${error instanceof Error ? error.message : String(error)}`
+    );
   }
 
   return {

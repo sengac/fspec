@@ -6,7 +6,6 @@
 @tui
 @TUI-006
 Feature: VirtualList text wrapping inconsistency
-
   """
   Uses Ink's flexbox layout system (yoga-layout). VirtualList component wraps items in Box containers. Text wrapping controlled by wrap='wrap' attribute and flexGrow/flexShrink properties. All components (CheckpointViewer, FileDiffViewer, BoardView, UnifiedBoardLayout) must use flexGrow/flexShrink instead of percentage-based flexBasis for consistent behavior.
   """
@@ -33,7 +32,6 @@ Feature: VirtualList text wrapping inconsistency
   #   A: true
   #
   # ========================================
-
   Background: User Story
     As a developer using VirtualList component
     I want to display text content in list items
