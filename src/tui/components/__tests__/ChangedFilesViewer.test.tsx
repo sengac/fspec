@@ -34,8 +34,8 @@ describe('Feature: Interactive checkpoint viewer with diff and commit capabiliti
     it('should render dual-pane layout with staged and unstaged files', () => {
       // TUI-014: Set up store with files instead of passing props
       useFspecStore.setState({
-        stagedFiles: ['src/auth.ts'],
-        unstagedFiles: ['src/login.ts'],
+        stagedFiles: [{ filepath: 'src/auth.ts', changeType: 'A', staged: true }],
+        unstagedFiles: [{ filepath: 'src/login.ts', changeType: 'M', staged: false }],
       });
 
       const { frames } = render(
@@ -53,7 +53,7 @@ describe('Feature: Interactive checkpoint viewer with diff and commit capabiliti
 
     it('should focus file list pane initially', () => {
       useFspecStore.setState({
-        stagedFiles: ['src/auth.ts'],
+        stagedFiles: [{ filepath: 'src/auth.ts', changeType: 'A', staged: true }],
         unstagedFiles: [],
       });
 
@@ -64,17 +64,17 @@ describe('Feature: Interactive checkpoint viewer with diff and commit capabiliti
       );
 
       // File list should be focused (indicated by selection marker)
-      // Format: "> + src/auth.ts" (selection marker, status indicator, filename)
+      // Format: "> A src/auth.ts" (selection marker, status indicator, filename)
       const frame = frames.find(f => f.includes('src/auth.ts')) || frames[frames.length - 1];
       // Strip ANSI color codes before matching
       const cleanFrame = frame.replace(/\u001b\[[0-9;]*m/g, '');
-      expect(cleanFrame).toMatch(/>\s+\+\s+src\/auth\.ts/);
+      expect(cleanFrame).toMatch(/>\s+A\s+src\/auth\.ts/); // A for added file
     });
 
     it('should show file status indicators (staged vs unstaged)', () => {
       useFspecStore.setState({
-        stagedFiles: ['src/auth.ts'],
-        unstagedFiles: ['src/login.ts'],
+        stagedFiles: [{ filepath: 'src/auth.ts', changeType: 'A', staged: true }],
+        unstagedFiles: [{ filepath: 'src/login.ts', changeType: 'M', staged: false }],
       });
 
       const { frames } = render(
@@ -84,18 +84,21 @@ describe('Feature: Interactive checkpoint viewer with diff and commit capabiliti
       );
 
       // Should indicate which files are staged vs unstaged
-      // First file (staged) should be visible with + indicator
+      // First file (staged) should be visible with A indicator (added)
       const frame = frames[frames.length - 1];
       expect(frame).toContain('src/auth.ts'); // First file visible
-      expect(frame).toMatch(/\+.*src\/auth\.ts/); // Staged indicator (+)
+      expect(frame).toMatch(/A.*src\/auth\.ts/); // Added file indicator (A)
     });
   });
 
   describe('Scenario: Navigate file list with arrow keys', () => {
     it('should move selection down when down arrow pressed', () => {
       useFspecStore.setState({
-        stagedFiles: ['file1.ts', 'file2.ts'],
-        unstagedFiles: ['file3.ts'],
+        stagedFiles: [
+          { filepath: 'file1.ts', changeType: 'A', staged: true },
+          { filepath: 'file2.ts', changeType: 'A', staged: true }
+        ],
+        unstagedFiles: [{ filepath: 'file3.ts', changeType: 'M', staged: false }],
       });
 
       const { frames, stdin } = render(
@@ -108,7 +111,7 @@ describe('Feature: Interactive checkpoint viewer with diff and commit capabiliti
       const initialFrame = frames.find(f => f.includes('file1.ts')) || frames[frames.length - 1];
       // Strip ANSI color codes before matching
       const cleanFrame = initialFrame.replace(/\u001b\[[0-9;]*m/g, '');
-      expect(cleanFrame).toMatch(/>\s+\+\s+file1\.ts/);
+      expect(cleanFrame).toMatch(/>\s+A\s+file1\.ts/); // A for added file
 
       // Press down arrow - VirtualList handles navigation internally
       stdin.write('\x1B[B');
@@ -121,7 +124,10 @@ describe('Feature: Interactive checkpoint viewer with diff and commit capabiliti
 
     it('should update diff pane when file selection changes', () => {
       useFspecStore.setState({
-        stagedFiles: ['file1.ts', 'file2.ts'],
+        stagedFiles: [
+          { filepath: 'file1.ts', changeType: 'A', staged: true },
+          { filepath: 'file2.ts', changeType: 'A', staged: true }
+        ],
         unstagedFiles: [],
       });
 
@@ -171,7 +177,7 @@ describe('Feature: Interactive checkpoint viewer with diff and commit capabiliti
     it('should show loading state and fetch real diff', async () => {
       // @step Given ChangedFilesViewer has selected file 'src/auth.ts'
       useFspecStore.setState({
-        stagedFiles: ['src/auth.ts'],
+        stagedFiles: [{ filepath: 'src/auth.ts', changeType: 'M', staged: true }],
         unstagedFiles: [],
       });
 
@@ -196,7 +202,10 @@ describe('Feature: Interactive checkpoint viewer with diff and commit capabiliti
       // Given I am viewing the ChangedFilesViewer
       // And the 'files' pane is focused
       useFspecStore.setState({
-        stagedFiles: ['src/auth.ts', 'src/login.ts'],
+        stagedFiles: [
+          { filepath: 'src/auth.ts', changeType: 'M', staged: true },
+          { filepath: 'src/login.ts', changeType: 'M', staged: true }
+        ],
         unstagedFiles: [],
       });
 
@@ -223,7 +232,7 @@ describe('Feature: Interactive checkpoint viewer with diff and commit capabiliti
     it('should wrap focus from diff pane to files pane when right arrow pressed', () => {
       // Given I am viewing the ChangedFilesViewer
       useFspecStore.setState({
-        stagedFiles: ['src/auth.ts'],
+        stagedFiles: [{ filepath: 'src/auth.ts', changeType: 'M', staged: true }],
         unstagedFiles: [],
       });
 

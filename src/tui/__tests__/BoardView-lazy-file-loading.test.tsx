@@ -138,8 +138,11 @@ describe('Feature: Remove file watching from TUI main screen and lazy-load chang
       // NOTE: We verify lazy loading by checking the component reads from store (not props)
       // and displays the files correctly
       useFspecStore.setState({
-        stagedFiles: ['src/auth.ts', 'src/login.ts'],
-        unstagedFiles: ['src/utils.ts'],
+        stagedFiles: [
+          { filepath: 'src/auth.ts', changeType: 'M', staged: true },
+          { filepath: 'src/login.ts', changeType: 'M', staged: true }
+        ],
+        unstagedFiles: [{ filepath: 'src/utils.ts', changeType: 'M', staged: false }],
       });
 
       // @step When I press the "F" key
@@ -160,9 +163,9 @@ describe('Feature: Remove file watching from TUI main screen and lazy-load chang
       // Note: FileDiffViewer uses VirtualList which only renders visible items
       // We can only check for the first visible file
 
-      // @step And the viewer should show file names with status indicators (+ for staged, M for unstaged)
+      // @step And the viewer should show file names with status indicators (M for modified)
       // Check for first visible file (VirtualList renders only what fits on screen)
-      expect(lastFrame()).toContain('+ src/auth.ts');
+      expect(lastFrame()).toContain('M src/auth.ts');
 
       // @step And the diff pane should render git diffs for selected files
       expect(lastFrame()).toContain('Diff'); // Diff pane should be rendered

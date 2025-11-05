@@ -10,7 +10,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { useFspecStore } from '../store/fspecStore';
 import * as git from 'isomorphic-git';
-import { getStagedFiles, getUnstagedFiles } from '../../git/status';
+import { getStagedFilesWithChangeType, getUnstagedFilesWithChangeType } from '../../git/status';
 
 // Mock isomorphic-git and file system
 vi.mock('isomorphic-git');
@@ -82,20 +82,25 @@ describe('Feature: Real-time file and git status watching in TUI', () => {
     it('should call loadFileStatus and update store when file is staged', async () => {
       // @step Given the TUI is running and showing the files panel
       // @step And I have an unstaged file "src/auth.ts"
-      vi.mocked(getStagedFiles).mockResolvedValue([]);
-      vi.mocked(getUnstagedFiles).mockResolvedValue(['src/auth.ts']);
+      vi.mocked(getStagedFilesWithChangeType).mockResolvedValue([]);
+      vi.mocked(getUnstagedFilesWithChangeType).mockResolvedValue([
+        { filepath: 'src/auth.ts', changeType: 'M', staged: false }
+      ]);
 
       const store = useFspecStore.getState();
       await store.loadFileStatus();
 
       let currentState = useFspecStore.getState();
       expect(currentState.stagedFiles).toEqual([]);
-      expect(currentState.unstagedFiles).toContain('src/auth.ts');
+      expect(currentState.unstagedFiles).toHaveLength(1);
+      expect(currentState.unstagedFiles[0].filepath).toBe('src/auth.ts');
 
       // @step When I stage the file with "git add src/auth.ts"
       // Simulate file being staged
-      vi.mocked(getStagedFiles).mockResolvedValue(['src/auth.ts']);
-      vi.mocked(getUnstagedFiles).mockResolvedValue([]);
+      vi.mocked(getStagedFilesWithChangeType).mockResolvedValue([
+        { filepath: 'src/auth.ts', changeType: 'M', staged: true }
+      ]);
+      vi.mocked(getUnstagedFilesWithChangeType).mockResolvedValue([]);
 
       // Call loadFileStatus (this is what fs.watch would trigger)
       await store.loadFileStatus();
@@ -104,12 +109,13 @@ describe('Feature: Real-time file and git status watching in TUI', () => {
       // @step And "src/auth.ts" should appear in the staged section with green indicator
       // @step And "src/auth.ts" should be removed from the unstaged section
       const updatedStore = useFspecStore.getState();
-      expect(updatedStore.stagedFiles).toContain('src/auth.ts');
-      expect(updatedStore.unstagedFiles).not.toContain('src/auth.ts');
+      expect(updatedStore.stagedFiles).toHaveLength(1);
+      expect(updatedStore.stagedFiles[0].filepath).toBe('src/auth.ts');
+      expect(updatedStore.unstagedFiles).toHaveLength(0);
 
       // Verify utilities were called
-      expect(getStagedFiles).toHaveBeenCalled();
-      expect(getUnstagedFiles).toHaveBeenCalled();
+      expect(getStagedFilesWithChangeType).toHaveBeenCalled();
+      expect(getUnstagedFilesWithChangeType).toHaveBeenCalled();
     });
   });
 
@@ -117,20 +123,25 @@ describe('Feature: Real-time file and git status watching in TUI', () => {
     it('should call loadFileStatus and update store when file is unstaged', async () => {
       // @step Given the TUI is running and showing the files panel
       // @step And I have a staged file "src/utils.ts"
-      vi.mocked(getStagedFiles).mockResolvedValue(['src/utils.ts']);
-      vi.mocked(getUnstagedFiles).mockResolvedValue([]);
+      vi.mocked(getStagedFilesWithChangeType).mockResolvedValue([
+        { filepath: 'src/utils.ts', changeType: 'M', staged: true }
+      ]);
+      vi.mocked(getUnstagedFilesWithChangeType).mockResolvedValue([]);
 
       const store = useFspecStore.getState();
       await store.loadFileStatus();
 
       let currentState = useFspecStore.getState();
-      expect(currentState.stagedFiles).toContain('src/utils.ts');
+      expect(currentState.stagedFiles).toHaveLength(1);
+      expect(currentState.stagedFiles[0].filepath).toBe('src/utils.ts');
       expect(currentState.unstagedFiles).toEqual([]);
 
       // @step When I unstage the file with "git reset src/utils.ts"
       // Simulate file being unstaged
-      vi.mocked(getStagedFiles).mockResolvedValue([]);
-      vi.mocked(getUnstagedFiles).mockResolvedValue(['src/utils.ts']);
+      vi.mocked(getStagedFilesWithChangeType).mockResolvedValue([]);
+      vi.mocked(getUnstagedFilesWithChangeType).mockResolvedValue([
+        { filepath: 'src/utils.ts', changeType: 'M', staged: false }
+      ]);
 
       // Call loadFileStatus (this is what fs.watch would trigger)
       await store.loadFileStatus();
@@ -139,8 +150,8 @@ describe('Feature: Real-time file and git status watching in TUI', () => {
       // @step And "src/utils.ts" should appear in the unstaged section with yellow indicator
       // @step And "src/utils.ts" should be removed from the staged section
       const updatedStore = useFspecStore.getState();
-      expect(updatedStore.stagedFiles).not.toContain('src/utils.ts');
-      expect(updatedStore.unstagedFiles).toContain('src/utils.ts');
+      expect(updatedStore.stagedFiles.find(f => f.filepath === 'src/utils.ts')).toBeUndefined();
+      expect(updatedStore.unstagedFiles.find(f => f.filepath === 'src/utils.ts')).toBeDefined();
     });
   });
 
@@ -181,8 +192,8 @@ describe('Feature: Real-time file and git status watching in TUI', () => {
     it('should call both loadData and loadFileStatus when both change', async () => {
       // @step Given the TUI is running showing both work units and files panels
       // @step And I have an unstaged file "spec/work-units.json"
-      vi.mocked(getStagedFiles).mockResolvedValue([]);
-      vi.mocked(getUnstagedFiles).mockResolvedValue(['spec/work-units.json']);
+      vi.mocked(getStagedFilesWithChangeType).mockResolvedValue([]);
+      vi.mocked(getUnstagedFilesWithChangeType).mockResolvedValue(['spec/work-units.json']);
 
       const store = useFspecStore.getState();
       await store.loadFileStatus();
@@ -197,8 +208,8 @@ describe('Feature: Real-time file and git status watching in TUI', () => {
       await store.loadData();
 
       // Simulate file being staged
-      vi.mocked(getStagedFiles).mockResolvedValue(['spec/work-units.json']);
-      vi.mocked(getUnstagedFiles).mockResolvedValue([]);
+      vi.mocked(getStagedFilesWithChangeType).mockResolvedValue(['spec/work-units.json']);
+      vi.mocked(getUnstagedFilesWithChangeType).mockResolvedValue([]);
 
       // Call loadFileStatus (.git/index watcher would trigger)
       await store.loadFileStatus();
@@ -232,12 +243,12 @@ describe('Feature: Real-time file and git status watching in TUI', () => {
         })
       );
 
-      vi.mocked(getStagedFiles).mockResolvedValue([]);
-      vi.mocked(getUnstagedFiles).mockResolvedValue([]);
+      vi.mocked(getStagedFilesWithChangeType).mockResolvedValue([]);
+      vi.mocked(getUnstagedFilesWithChangeType).mockResolvedValue([]);
       await store.loadFileStatus();
 
-      expect(getStagedFiles).toHaveBeenCalled();
-      expect(getUnstagedFiles).toHaveBeenCalled();
+      expect(getStagedFilesWithChangeType).toHaveBeenCalled();
+      expect(getUnstagedFilesWithChangeType).toHaveBeenCalled();
     });
   });
 });

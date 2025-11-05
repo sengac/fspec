@@ -32,6 +32,24 @@ export interface FileStatus {
 }
 
 /**
+ * File change type following git conventions
+ * A = Added (new file), M = Modified, D = Deleted, R = Renamed
+ */
+export type ChangeType = 'A' | 'M' | 'D' | 'R';
+
+/**
+ * File status with change type information
+ * Used for displaying git status indicators in TUI
+ */
+export interface FileStatusWithChangeType {
+  filepath: string;
+  /** Change type: A (added), M (modified), D (deleted), R (renamed) */
+  changeType: ChangeType;
+  /** Whether the change is staged */
+  staged: boolean;
+}
+
+/**
  * Configuration options for git operations
  */
 export interface GitStatusOptions {
@@ -92,6 +110,43 @@ async function getStatusMatrix(
     // Non-strict mode: return empty array (silent failure)
     return [];
   }
+}
+
+/**
+ * Determine change type from status matrix values
+ *
+ * Status matrix format: [filepath, HEAD, WORKDIR, STAGE]
+ * - HEAD: 0 = absent, 1 = present
+ * - WORKDIR: 0 = absent, 1 = present, 2 = modified
+ * - STAGE: 0 = absent, 1 = unmodified, 2 = modified, 3 = added
+ *
+ * @param head - HEAD status (0 or 1)
+ * @param workdir - WORKDIR status (0, 1, or 2)
+ * @param stage - STAGE status (0, 1, 2, or 3)
+ * @returns Change type: A (added), M (modified), D (deleted), R (renamed)
+ */
+function getChangeType(
+  head: number,
+  workdir: number,
+  stage: number
+): ChangeType {
+  // Deleted: file was in HEAD but no longer in WORKDIR
+  if (head === 1 && workdir === 0) {
+    return 'D';
+  }
+
+  // Added: file not in HEAD but present in WORKDIR/STAGE
+  if (head === 0 && (workdir > 0 || stage > 0)) {
+    return 'A';
+  }
+
+  // Modified: file exists in both HEAD and WORKDIR, with changes
+  if (head === 1 && workdir === 2) {
+    return 'M';
+  }
+
+  // Default to modified for other cases (e.g., staged modifications)
+  return 'M';
 }
 
 /**
@@ -296,4 +351,60 @@ export async function getFileStatus(
     hasUnstagedChanges: workdir === 2 && stage === 1, // Modified but not staged
     untracked: head === 0 && stage === 0, // Not in HEAD and not staged
   };
+}
+
+/**
+ * Get list of staged files with change type information
+ *
+ * @param dir - Repository directory
+ * @param options - Configuration options
+ * @returns Array of FileStatusWithChangeType for staged files
+ */
+export async function getStagedFilesWithChangeType(
+  dir: string,
+  options?: GitStatusOptions
+): Promise<FileStatusWithChangeType[]> {
+  const matrix = await getStatusMatrix(dir, options);
+
+  return matrix
+    .filter(([, head, , stage]) => {
+      // Staged: STAGE !== HEAD
+      return stage !== head;
+    })
+    .map(([filepath, head, workdir, stage]) => ({
+      filepath,
+      changeType: getChangeType(head, workdir, stage),
+      staged: true,
+    }));
+}
+
+/**
+ * Get list of unstaged files with change type information
+ *
+ * @param dir - Repository directory
+ * @param options - Configuration options
+ * @returns Array of FileStatusWithChangeType for unstaged files
+ */
+export async function getUnstagedFilesWithChangeType(
+  dir: string,
+  options?: GitStatusOptions
+): Promise<FileStatusWithChangeType[]> {
+  const matrix = await getStatusMatrix(dir, options);
+
+  return matrix
+    .filter(([, head, workdir, stage]) => {
+      // Untracked files: not in HEAD and not staged
+      const isUntracked = head === 0 && stage === 0;
+
+      // Unstaged changes: working directory differs from staging area
+      const hasUnstagedChanges = workdir !== stage;
+
+      // Include files that have unstaged changes but are not untracked
+      return hasUnstagedChanges && !isUntracked;
+    })
+    .map(([filepath, head, workdir, stage]) => ({
+      filepath,
+      changeType: getChangeType(head, workdir, stage),
+      staged: false,
+    }));
 }

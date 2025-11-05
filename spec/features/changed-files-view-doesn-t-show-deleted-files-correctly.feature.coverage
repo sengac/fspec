@@ -1,0 +1,131 @@
+{
+  "scenarios": [
+    {
+      "name": "View unstaged deleted file in changed files view",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/changed-files-deleted-status.test.tsx",
+          "lines": "22-46",
+          "implMappings": [
+            {
+              "file": "src/git/status.ts",
+              "lines": [
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50
+              ]
+            },
+            {
+              "file": "src/tui/components/ChangedFilesViewer.tsx",
+              "lines": [
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "View staged deleted file in changed files view",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/changed-files-deleted-status.test.tsx",
+          "lines": "49-74",
+          "implMappings": [
+            {
+              "file": "src/git/status.ts",
+              "lines": [
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50
+              ]
+            },
+            {
+              "file": "src/tui/components/ChangedFilesViewer.tsx",
+              "lines": [
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "View diff panel for deleted file",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/changed-files-deleted-status.test.tsx",
+          "lines": "76-102",
+          "implMappings": [
+            {
+              "file": "src/tui/components/FileDiffViewer.tsx",
+              "lines": [
+                20,
+                21,
+                22,
+                23,
+                24
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/components/__tests__/changed-files-deleted-status.test.tsx"
+    ],
+    "implFiles": [
+      "src/git/status.ts",
+      "src/tui/components/ChangedFilesViewer.tsx",
+      "src/tui/components/FileDiffViewer.tsx"
+    ],
+    "totalLinesCovered": 133
+  }
+}

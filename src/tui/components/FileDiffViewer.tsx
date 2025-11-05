@@ -20,6 +20,7 @@ import { parseDiff, DiffLine } from '../../git/diff-parser';
 export interface FileItem {
   path: string;
   status: 'staged' | 'unstaged' | 'checkpoint';
+  changeType?: 'A' | 'M' | 'D' | 'R';
 }
 
 export interface FileDiffViewerProps {
@@ -82,6 +83,14 @@ export const FileDiffViewer: React.FC<FileDiffViewerProps> = ({
     if (!selectedFile) {
       logger.info(`[${componentId.current}] No selected file, clearing diff`);
       setDiffContent('');
+      setIsLoadingDiff(false);
+      return;
+    }
+
+    // Handle deleted files - show message instead of loading diff
+    if (selectedFile.changeType === 'D') {
+      logger.info(`[${componentId.current}] File is deleted: ${selectedFile.path}`);
+      setDiffContent('File was deleted');
       setIsLoadingDiff(false);
       return;
     }
