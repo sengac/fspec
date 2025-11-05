@@ -88,18 +88,14 @@ export async function startAttachmentServer(
         return;
       }
 
-      // Read file content
-      const fileContent = await readFile(absolutePath, 'utf-8');
+      // Determine file extension first to decide how to read
       const fileExtension = path.extname(absolutePath).toLowerCase();
 
       // Render markdown files with mermaid support
       if (fileExtension === '.md' || fileExtension === '.markdown') {
-        // Ensure fileContent is a string
-        const markdownString =
-          typeof fileContent === 'string'
-            ? fileContent
-            : fileContent.toString('utf-8');
-        const renderedHtml = renderMarkdown(markdownString);
+        // Read as UTF-8 for text files
+        const fileContent = await readFile(absolutePath, 'utf-8');
+        const renderedHtml = renderMarkdown(fileContent);
         const htmlPage = getViewerTemplate({
           title: path.basename(absolutePath),
           content: renderedHtml,
@@ -108,7 +104,10 @@ export async function startAttachmentServer(
         res.setHeader('Content-Type', 'text/html; charset=utf-8');
         res.send(htmlPage);
       } else {
-        // For non-markdown files, detect content type and serve
+        // For non-markdown files (images, PDFs, etc.), read as binary
+        const fileContent = await readFile(absolutePath);
+
+        // Detect content type and serve
         const contentTypeMap: Record<string, string> = {
           '.png': 'image/png',
           '.jpg': 'image/jpeg',
