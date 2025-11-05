@@ -369,7 +369,7 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
     }
 
     // TUI-019: Open attachment dialog (handled at BoardView level)
-    // The 'o' key handler is now in BoardView to show AttachmentDialog
+    // The 'a' key handler is now in BoardView to show AttachmentDialog
   }, { isActive: !isDialogOpen });
 
   return (

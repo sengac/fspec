@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-05T02:34:48.065Z"
+    "lastUpdated": "2025-11-05T02:43:10.131Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -40406,7 +40406,7 @@
       "type": "story",
       "status": "done",
       "createdAt": "2025-11-04T23:36:35.063Z",
-      "updatedAt": "2025-11-05T02:34:48.065Z",
+      "updatedAt": "2025-11-05T02:43:10.131Z",
       "children": [],
       "stateHistory": [
         {
@@ -40519,9 +40519,7 @@
       "nextQuestionId": 0,
       "nextNoteId": 0,
       "updated": "2025-11-05T00:09:31.575Z",
-      "attachments": [
-        "spec/attachments/REFAC-004/current.png"
-      ]
+      "attachments": []
     },
     "TUI-021": {
       "id": "TUI-021",

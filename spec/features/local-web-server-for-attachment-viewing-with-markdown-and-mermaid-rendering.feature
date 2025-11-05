@@ -67,7 +67,7 @@ Feature: Local web server for attachment viewing with markdown and mermaid rende
 
   Scenario: Open markdown attachment with mermaid diagram in browser
     Given the TUI is running with attachment server active
-    When I press 'o' on the work unit
+    When I press 'a' on the work unit
     Then the browser should open showing the formatted HTML
     And I have a work unit with a markdown attachment containing a mermaid diagram
     And the mermaid diagram should be rendered as an SVG
@@ -86,7 +86,7 @@ Feature: Local web server for attachment viewing with markdown and mermaid rende
 
   Scenario: Serve non-markdown files directly
     Given the TUI is running with attachment server active
-    When I press 'o' on the work unit
+    When I press 'a' on the work unit
     Then the browser should open displaying the image directly
     And I have a work unit with a PNG image attachment
     And the content-type should be 'image/png'
@@ -104,7 +104,7 @@ Feature: Local web server for attachment viewing with markdown and mermaid rende
 
   Scenario: Syntax-highlighted code blocks with UI features
     Given the TUI is running with attachment server active
-    When I press 'o' on the work unit
+    When I press 'a' on the work unit
     Then the browser should show syntax-highlighted Python code
     And I have a markdown attachment with a Python code block
     And a copy button should be visible on hover

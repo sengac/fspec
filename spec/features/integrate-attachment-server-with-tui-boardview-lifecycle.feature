@@ -22,7 +22,7 @@ Feature: Integrate attachment server with TUI (BoardView lifecycle)
   #   7. The server must only run when the TUI is active (not during CLI commands)
   #
   # EXAMPLES:
-  #   1. When I open the TUI and press 'o' on a work unit with an attachment, the browser opens with http://localhost:XXXX/view/spec/attachments/...
+  #   1. When I open the TUI and press 'a' on a work unit with an attachment, the browser opens with http://localhost:XXXX/view/spec/attachments/...
   #   2. When I exit the TUI, the attachment server stops and releases the port
   #   3. When the server fails to start (port conflict), I see a warning in the logs but the TUI continues working
   #   4. When I open a markdown attachment, the browser shows rendered HTML with working mermaid diagrams
@@ -37,7 +37,7 @@ Feature: Integrate attachment server with TUI (BoardView lifecycle)
 
   Scenario: Open attachment from TUI and browser shows HTTP URL
     Given the TUI is running and the attachment server has started
-    When I press 'o' on the work unit with the attachment
+    When I press 'a' on the work unit with the attachment
     Then the browser opens with a URL matching "http://localhost:[0-9]+/view/spec/attachments/TUI-012/architecture.md"
     And a work unit exists with an attachment at "spec/attachments/TUI-012/architecture.md"
     And the logs show "Opening attachment URL: http://localhost:"
@@ -61,7 +61,7 @@ Feature: Integrate attachment server with TUI (BoardView lifecycle)
 
   Scenario: Markdown attachment renders with mermaid diagrams
     Given the TUI is running with attachment server on port 3456
-    When I press 'o' to open the attachment
+    When I press 'a' to open the attachment
     Then the browser opens with URL "http://localhost:3456/view/spec/attachments/TUI-012/architecture.md"
     And a work unit has a markdown attachment "spec/attachments/TUI-012/architecture.md" containing mermaid code blocks
     And the browser displays rendered HTML with formatted text
@@ -70,7 +70,7 @@ Feature: Integrate attachment server with TUI (BoardView lifecycle)
 
   Scenario: Image attachment displays directly in browser
     Given the TUI is running with attachment server on port 3456
-    When I press 'o' to open the image attachment
+    When I press 'a' to open the image attachment
     Then the browser opens with URL "http://localhost:3456/view/spec/attachments/TUI-012/diagram.png"
     And a work unit has an image attachment "spec/attachments/TUI-012/diagram.png"
     And the browser displays the image directly without rendering errors

@@ -26,7 +26,7 @@ describe('Feature: Attachment selection dialog with keyboard navigation', () => 
         'spec/attachments/TEST-001/mockup.jpg',
       ];
 
-      // @step When I press the 'o' key
+      // @step When I press the 'a' key
       // This is simulated by rendering the dialog
       const { lastFrame } = render(
         React.createElement(AttachmentDialog, {
@@ -123,7 +123,7 @@ describe('Feature: Attachment selection dialog with keyboard navigation', () => 
         `spec/attachments/TEST-001/file${i + 1}.png`
       );
 
-      // @step When I press the 'o' key
+      // @step When I press the 'a' key
       const { lastFrame } = render(
         React.createElement(AttachmentDialog, {
           attachments,
@@ -149,9 +149,9 @@ describe('Feature: Attachment selection dialog with keyboard navigation', () => 
     it('should not render dialog when attachments array is empty', () => {
       // @step Given I am viewing a work unit with no attachments
       // This scenario is tested at the BoardView/UnifiedBoardLayout level
-      // where the 'o' key handler checks for attachments before rendering dialog
+      // where the 'a' key handler checks for attachments before rendering dialog
 
-      // @step When I press the 'o' key
+      // @step When I press the 'a' key
       // Not applicable at component level - handled by parent
 
       // @step Then no dialog should open
