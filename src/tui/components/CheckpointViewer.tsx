@@ -25,6 +25,7 @@ import {
   restoreCheckpoint,
 } from '../../utils/git-checkpoint';
 import { ConfirmationDialog } from '../../components/ConfirmationDialog';
+import { StatusDialog } from '../../components/StatusDialog';
 import { sendIPCMessage } from '../../utils/ipc';
 
 export interface Checkpoint {
@@ -57,6 +58,13 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
   const [deleteMode, setDeleteMode] = useState<'single' | 'all'>('single');
   const [showRestoreDialog, setShowRestoreDialog] = useState(false);
   const [restoreMode, setRestoreMode] = useState<'single' | 'all'>('single');
+
+  // StatusDialog state for restore progress
+  const [showStatusDialog, setShowStatusDialog] = useState(false);
+  const [statusDialogState, setStatusDialogState] = useState<'restoring' | 'complete' | 'error'>('restoring');
+  const [currentFile, setCurrentFile] = useState<string>('');
+  const [currentFileIndex, setCurrentFileIndex] = useState<number>(0);
+  const [statusDialogError, setStatusDialogError] = useState<string | undefined>(undefined);
 
   const cwd = useFspecStore(state => state.cwd);
 
@@ -366,6 +374,14 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
       const checkpoint = sortedCheckpoints[selectedCheckpointIndex];
       const file = files[selectedFileIndex];
       if (checkpoint && file) {
+        // Show StatusDialog for single file restore
+        setShowStatusDialog(true);
+        setStatusDialogState('restoring');
+        setCurrentFile(file.path);
+        setCurrentFileIndex(1);
+        setStatusDialogError(undefined);
+        setShowRestoreDialog(false);
+
         // Resolve ref to OID
         const checkpointOid = await git.resolveRef({
           fs,
@@ -386,32 +402,78 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
 
           // Reload diff to show updated comparison
           reloadDiffAfterRestore(checkpoint);
+
+          // Show completion state
+          setStatusDialogState('complete');
+        } else {
+          // Show error state
+          setStatusDialogState('error');
+          setStatusDialogError(result.systemReminder || 'Failed to restore file');
         }
       }
     } else {
-      // Restore all files
+      // Restore all files with progress tracking
       const checkpoint = sortedCheckpoints[selectedCheckpointIndex];
       if (checkpoint) {
-        await restoreCheckpoint({
-          workUnitId: checkpoint.workUnitId,
-          checkpointName: checkpoint.name,
-          cwd,
-          force: true,
+        // Show StatusDialog
+        setShowStatusDialog(true);
+        setStatusDialogState('restoring');
+        setCurrentFileIndex(0);
+        setStatusDialogError(undefined);
+        setShowRestoreDialog(false);
+
+        // Resolve checkpoint OID
+        const checkpointOid = await git.resolveRef({
+          fs,
+          dir: cwd,
+          ref: checkpoint.stashRef,
         });
 
-        // Send IPC notification
-        await sendIPCMessage({ type: 'checkpoint-changed' });
+        // Restore files one by one
+        const filesToRestore = checkpoint.files;
+        let hasError = false;
 
-        // Reload diff
-        reloadDiffAfterRestore(checkpoint);
+        for (let i = 0; i < filesToRestore.length; i++) {
+          const filepath = filesToRestore[i];
+          setCurrentFile(filepath);
+          setCurrentFileIndex(i + 1);
+
+          const result = await restoreCheckpointFile({
+            cwd,
+            checkpointOid,
+            filepath,
+            force: true,
+          });
+
+          if (!result.success) {
+            // Show error state
+            setStatusDialogState('error');
+            setStatusDialogError(`Failed to restore ${filepath}: ${result.systemReminder || 'Unknown error'}`);
+            hasError = true;
+            break;
+          }
+        }
+
+        if (!hasError) {
+          // Send IPC notification
+          await sendIPCMessage({ type: 'checkpoint-changed' });
+
+          // Reload diff
+          reloadDiffAfterRestore(checkpoint);
+
+          // Show completion state
+          setStatusDialogState('complete');
+        }
       }
     }
-
-    setShowRestoreDialog(false);
   };
 
   const handleRestoreCancel = () => {
     setShowRestoreDialog(false);
+  };
+
+  const handleStatusDialogClose = () => {
+    setShowStatusDialog(false);
   };
 
   // Handle keyboard input
@@ -922,6 +984,17 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
           onConfirm={handleRestoreConfirm}
           onCancel={handleRestoreCancel}
           isActive={true}
+        />
+      )}
+
+      {showStatusDialog && (
+        <StatusDialog
+          currentItem={currentFile}
+          currentIndex={currentFileIndex}
+          totalItems={restoreMode === 'single' ? 1 : (sortedCheckpoints[selectedCheckpointIndex]?.files.length || 0)}
+          status={statusDialogState}
+          errorMessage={statusDialogError}
+          onClose={handleStatusDialogClose}
         />
       )}
     </Box>

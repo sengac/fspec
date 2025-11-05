@@ -120,6 +120,9 @@ describe('Feature: Checkpoint Restore Progress Dialog', () => {
       // @step When I press ESC before 3 seconds elapse
       stdin.write('\x1B'); // ESC key
 
+      // Wait for input to be processed
+      await vi.advanceTimersByTimeAsync(0);
+
       // @step Then the dialog should close immediately
       expect(onClose).toHaveBeenCalled();
       expect(onClose).toHaveBeenCalledTimes(1);
@@ -130,6 +133,7 @@ describe('Feature: Checkpoint Restore Progress Dialog', () => {
 
   describe('Scenario: Error during restore with manual dismissal', () => {
     it('should show error state and require manual dismissal', async () => {
+      vi.useFakeTimers();
       const onClose = vi.fn();
 
       // @step Given I am restoring files from a checkpoint
@@ -153,7 +157,13 @@ describe('Feature: Checkpoint Restore Progress Dialog', () => {
 
       // @step Then I must press ESC to dismiss the dialog
       stdin.write('\x1B'); // ESC key
+
+      // Wait for input to be processed
+      await vi.advanceTimersByTimeAsync(0);
+
       expect(onClose).toHaveBeenCalled();
+
+      vi.useRealTimers();
     });
   });
 

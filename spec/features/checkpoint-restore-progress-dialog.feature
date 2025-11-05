@@ -94,3 +94,12 @@ Feature: Checkpoint Restore Progress Dialog
     Then it should accept props: currentItem, totalItems, status, errorMessage
     Then it should display progress for any batch operation
     Then it should handle completion notice with auto-close behavior
+
+  Scenario: CheckpointViewer integration with restore confirmation
+    Given I am in CheckpointViewer with a checkpoint containing 3 files
+    When I press T to restore all files
+    Then StatusDialog should appear immediately
+    When I press Y to confirm restore
+    Then the dialog should show progress for each of the 3 files
+    Then the dialog should show completion notice after all files restored
+    Then the dialog should auto-close and return to CheckpointViewer
