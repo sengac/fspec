@@ -228,6 +228,8 @@ Tags for specific technical concerns or architectural patterns.
 | `@layout` | Layout and visual presentation features |
 | `@learning` | Machine learning and adaptive features based on usage patterns |
 | `@logging` | Logging and diagnostics features |
+| `@markdown` | Markdown rendering and processing |
+| `@marked` | Marked library for markdown parsing |
 | `@mermaid` | Mermaid Diagram Support |
 | `@modal` | Modal overlay and dialog components |
 | `@mouse-events` | Features that handle mouse and trackpad events |
@@ -599,7 +601,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-11-05T00:20:16.984Z_
+_Last updated: 2025-11-05T04:40:29.271Z_
 
 **Update Command**: `fspec tag-stats`
 

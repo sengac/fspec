@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-05T03:38:52.988Z"
+    "lastUpdated": "2025-11-05T04:48:32.610Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -40733,6 +40733,145 @@
       "nextQuestionId": 0,
       "nextNoteId": 0,
       "updated": "2025-11-05T00:39:32.623Z"
+    },
+    "TUI-022": {
+      "id": "TUI-022",
+      "title": "Anchor links not working in markdown attachment viewer",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-11-05T04:36:45.635Z",
+      "updatedAt": "2025-11-05T04:48:32.638Z",
+      "description": "Table of contents anchor links in rendered markdown don't navigate to headings because heading elements lack id attributes",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-05T04:37:35.851Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-05T04:40:36.423Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-05T04:45:17.735Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-05T04:45:25.361Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-05T04:48:32.639Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "All markdown headings (h1-h6) must have unique id attributes for anchor link navigation",
+          "deleted": false,
+          "createdAt": "2025-11-05T04:37:47.142Z"
+        },
+        {
+          "id": 1,
+          "text": "Heading IDs must be GitHub-compatible slugs: lowercase, hyphenated, special chars removed",
+          "deleted": false,
+          "createdAt": "2025-11-05T04:37:48.603Z"
+        },
+        {
+          "id": 2,
+          "text": "Duplicate headings must get numbered suffixes (-1, -2, etc.) to ensure uniqueness",
+          "deleted": false,
+          "createdAt": "2025-11-05T04:37:50.181Z"
+        },
+        {
+          "id": 3,
+          "text": "Mermaid diagram rendering must continue to work (no regression)",
+          "deleted": false,
+          "createdAt": "2025-11-05T04:37:51.602Z"
+        },
+        {
+          "id": 4,
+          "text": "Code block rendering must continue to work with syntax highlighting (no regression)",
+          "deleted": false,
+          "createdAt": "2025-11-05T04:37:52.963Z"
+        },
+        {
+          "id": 5,
+          "text": "Tests must test renderMarkdown() directly without starting the HTTP server",
+          "deleted": false,
+          "createdAt": "2025-11-05T04:37:54.520Z"
+        }
+      ],
+      "nextRuleId": 6,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Heading '## Tag System' becomes <h2 id=\"tag-system\">Tag System</h2>",
+          "deleted": false,
+          "createdAt": "2025-11-05T04:38:07.237Z"
+        },
+        {
+          "id": 1,
+          "text": "Heading '## Domain-to-Tag Mapping Rules' becomes <h2 id=\"domain-to-tag-mapping-rules\">Domain-to-Tag Mapping Rules</h2>",
+          "deleted": false,
+          "createdAt": "2025-11-05T04:38:08.918Z"
+        },
+        {
+          "id": 2,
+          "text": "Two headings '## Summary' become <h2 id=\"summary\">Summary</h2> and <h2 id=\"summary-1\">Summary</h2>",
+          "deleted": false,
+          "createdAt": "2025-11-05T04:38:10.672Z"
+        },
+        {
+          "id": 3,
+          "text": "Heading with special chars '## What's New?' becomes <h2 id=\"whats-new\">What's New?</h2>",
+          "deleted": false,
+          "createdAt": "2025-11-05T04:38:13.392Z"
+        },
+        {
+          "id": 4,
+          "text": "Anchor link [Jump to summary](#summary) navigates to heading with id=\"summary\"",
+          "deleted": false,
+          "createdAt": "2025-11-05T04:38:15.120Z"
+        },
+        {
+          "id": 5,
+          "text": "Mermaid code block still renders as <pre class=\"mermaid\"> with diagram content",
+          "deleted": false,
+          "createdAt": "2025-11-05T04:38:17.012Z"
+        }
+      ],
+      "nextExampleId": 6,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Use marked-gfm-heading-id extension (official GitHub-compatible heading ID generator for marked library) - handles slug generation, duplicates, and special characters automatically",
+          "deleted": false,
+          "createdAt": "2025-11-05T04:38:28.578Z"
+        },
+        {
+          "id": 1,
+          "text": "Create new test file markdown-renderer.test.ts that tests renderMarkdown() directly (unit tests, no server startup) - faster, simpler, more focused than integration tests",
+          "deleted": false,
+          "createdAt": "2025-11-05T04:38:29.940Z"
+        },
+        {
+          "id": 2,
+          "text": "Existing TUI-020 integration tests should continue to pass - this is additive enhancement, not breaking change",
+          "deleted": false,
+          "createdAt": "2025-11-05T04:38:31.774Z"
+        }
+      ],
+      "nextNoteId": 3,
+      "userStory": {
+        "role": "developer viewing markdown attachments in TUI",
+        "action": "navigate using table of contents anchor links",
+        "benefit": "I can quickly jump to specific sections in long documents"
+      },
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2025-11-05T04:48:32.638Z"
     }
   },
   "states": {
@@ -40773,6 +40912,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "TUI-022",
       "TUI-021",
       "REFAC-004",
       "TUI-020",
@@ -41097,7 +41237,7 @@
     "BUG": 68,
     "DISC": 2,
     "COV": 53,
-    "TUI": 21,
+    "TUI": 22,
     "REFAC": 4
   }
 }

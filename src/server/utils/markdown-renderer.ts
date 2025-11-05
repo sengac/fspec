@@ -9,6 +9,7 @@
  */
 
 import { marked } from 'marked';
+import { gfmHeadingId } from 'marked-gfm-heading-id';
 import { escapeHtml } from './html-escape.js';
 
 /**
@@ -22,6 +23,12 @@ interface MarkedCodeToken {
 
 // Configure marked once at module level to avoid race conditions
 // This ensures multiple concurrent requests don't conflict
+
+// Add GitHub-compatible heading IDs for anchor navigation (TUI-022)
+// This extension automatically generates id attributes for headings (h1-h6)
+// and handles duplicate headings with numbered suffixes (-1, -2, etc.)
+marked.use(gfmHeadingId());
+
 marked.use({
   gfm: true, // GitHub Flavored Markdown
   breaks: true, // Convert \n to <br>
