@@ -168,4 +168,12 @@ Your agent knows how to use `fspec report-bug-to-github` to automatically gather
 
 ---
 
+## Need Your Legacy Code Rewritten?
+
+**Your codebase is costing you millions.** Untested. Undocumented. Impossible to maintain. SENGAC specializes in transforming legacy nightmares into modern, AI-tested, fully-specified systems using tools like fspec. We don't just migrate—we rebuild with complete test coverage, living documentation, and end-to-end traceability.
+
+**Stop throwing money at technical debt.** [Reach out to SENGAC](https://sengac.com) and let's modernize your infrastructure.
+
+---
+
 **[Visit fspec.dev](https://fspec.dev)** | **[GitHub](https://github.com/sengac/fspec)** | **[npm](https://www.npmjs.com/package/@sengac/fspec)**
