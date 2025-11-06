@@ -258,6 +258,10 @@
           "description": "Work unit dependency tracking"
         },
         {
+          "name": "@diagram-viewer",
+          "description": "Diagram viewing and fullscreen modal features"
+        },
+        {
           "name": "@diff-viewer",
           "description": "Diff visualization and comparison features"
         },
@@ -958,6 +962,10 @@
           "description": "Scenario-to-test-to-implementation traceability and coverage tracking"
         },
         {
+          "name": "@trackpad",
+          "description": "Trackpad and touchpad input handling with smoothing and gesture support"
+        },
+        {
           "name": "@type-system",
           "description": "Work unit type system features for categorizing work (story, task, bug)"
         },
@@ -980,6 +988,10 @@
         {
           "name": "@web",
           "description": "Web-based features and browser functionality"
+        },
+        {
+          "name": "@zoom",
+          "description": "Zoom and scaling functionality for diagrams and visualizations"
         },
         {
           "name": "@zoom-pan",
@@ -1454,7 +1466,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-11-05T10:17:35.072Z",
+    "lastUpdated": "2025-11-05T22:29:35.974Z",
     "phaseStats": [
       {
         "phase": "Phase 1",
