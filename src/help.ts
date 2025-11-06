@@ -1299,14 +1299,6 @@ function displaySetupHelp(): void {
   console.log('');
 
   console.log(chalk.bold('TAG REGISTRY'));
-  console.log(
-    '  ' + chalk.cyan('fspec register-tag <tag> <category> <description>')
-  );
-  console.log('    Examples:');
-  console.log(
-    '      fspec register-tag @performance "Technical Tags" "Performance-critical"'
-  );
-  console.log('');
   console.log('  ' + chalk.cyan('fspec update-tag <tag>'));
   console.log('    Options:');
   console.log('      --description <desc>             New description');
@@ -1433,25 +1425,9 @@ function displaySetupHelp(): void {
     '      fspec add-diagram "Architecture" "System" "graph TD\\n  A-->B"'
   );
   console.log('');
-  console.log(
-    '  ' + chalk.cyan('fspec update-diagram <section> <title> <content>')
-  );
-  console.log('    Examples:');
-  console.log(
-    '      fspec update-diagram "Architecture" "System" "graph TB\\n  A-->B"'
-  );
-  console.log('');
   console.log('  ' + chalk.cyan('fspec delete-diagram <section> <title>'));
   console.log('    Examples:');
   console.log('      fspec delete-diagram "Architecture" "System"');
-  console.log('');
-  console.log('  ' + chalk.cyan('fspec list-diagrams'));
-  console.log('    Examples:');
-  console.log('      fspec list-diagrams');
-  console.log('');
-  console.log('  ' + chalk.cyan('fspec show-diagram <section> <title>'));
-  console.log('    Examples:');
-  console.log('      fspec show-diagram "Architecture" "System"');
   console.log('');
   console.log('  ' + chalk.cyan('fspec update-foundation <section> <content>'));
   console.log('    Examples:');
@@ -1481,10 +1457,12 @@ function displaySetupHelp(): void {
   console.log('    Examples:');
   console.log('      fspec generate-tags-md');
   console.log('');
-  console.log('  ' + chalk.cyan('fspec validate-json-schema'));
-  console.log('    Description: Validate JSON schema compliance');
+  console.log('  ' + chalk.cyan('fspec validate-foundation-schema'));
+  console.log(
+    '    Description: Validate foundation.json against its JSON schema'
+  );
   console.log('    Examples:');
-  console.log('      fspec validate-json-schema');
+  console.log('      fspec validate-foundation-schema');
   console.log('');
 }
 
