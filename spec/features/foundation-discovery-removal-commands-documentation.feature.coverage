@@ -1,0 +1,65 @@
+{
+  "scenarios": [
+    {
+      "name": "Help setup section includes remove-persona command",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/foundation-discovery-removal-commands-documentation.test.ts",
+          "lines": "48-74",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Help setup section includes remove-capability command",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/foundation-discovery-removal-commands-documentation.test.ts",
+          "lines": "76-102",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Removal commands show placeholder removal examples",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/foundation-discovery-removal-commands-documentation.test.ts",
+          "lines": "104-124",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "discover-foundation error includes removal guidance for placeholders",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/foundation-discovery-removal-commands-documentation.test.ts",
+          "lines": "126-199",
+          "implMappings": [
+            {
+              "file": "src/commands/discover-foundation.ts",
+              "lines": [
+                310,
+                311,
+                312
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/commands/__tests__/foundation-discovery-removal-commands-documentation.test.ts"
+    ],
+    "implFiles": [
+      "src/commands/discover-foundation.ts"
+    ],
+    "totalLinesCovered": 152
+  }
+}

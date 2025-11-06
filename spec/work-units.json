@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-05T22:36:06.001Z"
+    "lastUpdated": "2025-11-06T05:47:35.061Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -42070,6 +42070,252 @@
       "questions": [],
       "nextQuestionId": 0,
       "updated": "2025-11-05T22:36:06.022Z"
+    },
+    "REMIND-010": {
+      "id": "REMIND-010",
+      "title": "Foundation discovery removal commands documentation",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-11-06T05:16:35.454Z",
+      "updatedAt": "2025-11-06T05:29:31.830Z",
+      "description": "Document remove-persona and remove-capability in help setup section and improve discover-foundation placeholder guidance",
+      "children": [],
+      "userStory": {
+        "role": "developer using fspec",
+        "action": "understand how to remove placeholder items during foundation discovery",
+        "benefit": "I can easily clean up unwanted personas/capabilities without manual JSON editing"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-06T05:16:51.596Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-06T05:23:07.455Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-06T05:25:11.317Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-06T05:25:53.827Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-06T05:29:31.830Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "The 'fspec help setup' section must include remove-persona command documentation",
+          "deleted": false,
+          "createdAt": "2025-11-06T05:16:58.581Z"
+        },
+        {
+          "id": 1,
+          "text": "discover-foundation placeholder warnings must explain how to remove unwanted items",
+          "deleted": false,
+          "createdAt": "2025-11-06T05:17:04.591Z"
+        },
+        {
+          "id": 2,
+          "text": "Both remove-persona and remove-capability must be documented in help setup section",
+          "deleted": false,
+          "createdAt": "2025-11-06T05:20:09.760Z"
+        },
+        {
+          "id": 3,
+          "text": "discover-foundation error message must include instructions for both filling AND removing placeholder fields",
+          "deleted": false,
+          "createdAt": "2025-11-06T05:21:17.089Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Developer runs 'fspec help setup' and sees remove-persona command listed alongside add-persona",
+          "deleted": false,
+          "createdAt": "2025-11-06T05:17:10.139Z"
+        },
+        {
+          "id": 1,
+          "text": "discover-foundation detects placeholder personas and outputs system-reminder explaining to use 'fspec remove-persona <name>' to remove them",
+          "deleted": false,
+          "createdAt": "2025-11-06T05:17:16.611Z"
+        },
+        {
+          "id": 2,
+          "text": "Developer runs 'fspec help setup' and sees remove-capability command with usage, options, and examples",
+          "deleted": false,
+          "createdAt": "2025-11-06T05:20:15.217Z"
+        },
+        {
+          "id": 3,
+          "text": "Help text for remove-persona and remove-capability follows same format as add-persona/add-capability with usage, description, and examples",
+          "deleted": false,
+          "createdAt": "2025-11-06T05:20:37.309Z"
+        },
+        {
+          "id": 4,
+          "text": "When discover-foundation detects placeholder personas like '[QUESTION: Who uses this?]', the error message should explain: 'To remove unwanted placeholders: fspec remove-persona \"[QUESTION: Who uses this?]\"'",
+          "deleted": false,
+          "createdAt": "2025-11-06T05:21:03.264Z"
+        }
+      ],
+      "nextExampleId": 5,
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: Should remove-capability also be included in the help setup section, or just remove-persona?",
+          "deleted": false,
+          "createdAt": "2025-11-06T05:17:22.687Z",
+          "selected": true,
+          "answer": "Yes, both remove-capability and remove-persona should be included in the help setup section"
+        },
+        {
+          "id": 1,
+          "text": "@human: Where exactly in the discover-foundation flow should the removal guidance appear - when placeholders are detected, when showing field-by-field prompts, or both?",
+          "deleted": false,
+          "createdAt": "2025-11-06T05:17:28.465Z",
+          "selected": true,
+          "answer": "When discover-foundation detects placeholder personas/capabilities, show removal guidance in the error/warning message"
+        },
+        {
+          "id": 2,
+          "text": "@human: Should the help text follow the same format as other commands in the setup section (showing usage, options, examples)?",
+          "deleted": false,
+          "createdAt": "2025-11-06T05:17:35.106Z",
+          "selected": true,
+          "answer": "Yes, follow the same format as other commands in the setup section (usage, options, examples)"
+        }
+      ],
+      "nextQuestionId": 3,
+      "estimate": 2,
+      "architectureNotes": [],
+      "nextNoteId": 0,
+      "updated": "2025-11-06T05:29:31.830Z"
+    },
+    "REMIND-011": {
+      "id": "REMIND-011",
+      "title": "Auto-replace placeholder personas and capabilities when adding first item",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-11-06T05:30:23.517Z",
+      "updatedAt": "2025-11-06T05:47:35.081Z",
+      "description": "When running add-persona or add-capability, automatically remove placeholder entries if this is the first real persona/capability being added",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-06T05:37:07.361Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-06T05:40:10.470Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-06T05:42:28.240Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-06T05:47:04.408Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-06T05:47:35.081Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using discover-foundation workflow",
+        "action": "add my first real persona or capability",
+        "benefit": "placeholder items are automatically cleaned up without manual editing"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "add-persona must detect and remove placeholder personas when adding the first real persona",
+          "deleted": false,
+          "createdAt": "2025-11-06T05:37:28.995Z"
+        },
+        {
+          "id": 1,
+          "text": "add-capability must detect and remove placeholder capabilities when adding the first real capability",
+          "deleted": false,
+          "createdAt": "2025-11-06T05:37:34.007Z"
+        },
+        {
+          "id": 2,
+          "text": "Placeholder detection: name or description contains [QUESTION:] or [DETECTED:] patterns",
+          "deleted": false,
+          "createdAt": "2025-11-06T05:37:41.075Z"
+        },
+        {
+          "id": 3,
+          "text": "Only remove placeholders when adding the FIRST real item (not subsequent items)",
+          "deleted": false,
+          "createdAt": "2025-11-06T05:37:45.993Z"
+        },
+        {
+          "id": 4,
+          "text": "Must work with both foundation.json and foundation.json.draft files",
+          "deleted": false,
+          "createdAt": "2025-11-06T05:37:50.968Z"
+        }
+      ],
+      "nextRuleId": 5,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Foundation has placeholder persona '[QUESTION: Who uses this?]', user runs 'fspec add-persona \"Developer\" \"Writes code\"', placeholder persona is removed, Developer persona is added",
+          "deleted": false,
+          "createdAt": "2025-11-06T05:37:57.611Z"
+        },
+        {
+          "id": 1,
+          "text": "Foundation has placeholder capability '[QUESTION: What can users DO?]', user runs 'fspec add-capability \"Spec Validation\" \"Validates Gherkin\"', placeholder capability is removed, Spec Validation capability is added",
+          "deleted": false,
+          "createdAt": "2025-11-06T05:38:03.006Z"
+        },
+        {
+          "id": 2,
+          "text": "Foundation already has real persona 'Developer', user adds 'QA Engineer', NO placeholders are removed (not the first item)",
+          "deleted": false,
+          "createdAt": "2025-11-06T05:38:09.379Z"
+        },
+        {
+          "id": 3,
+          "text": "Foundation has 3 placeholder personas, user adds first real persona, ALL 3 placeholder personas are removed",
+          "deleted": false,
+          "createdAt": "2025-11-06T05:38:14.371Z"
+        },
+        {
+          "id": 4,
+          "text": "Foundation has 1 real persona 'Developer' and 1 placeholder persona '[QUESTION: ...]', user adds 'QA Engineer', NO placeholders removed (already has real persona)",
+          "deleted": false,
+          "createdAt": "2025-11-06T05:38:20.857Z"
+        }
+      ],
+      "nextExampleId": 5,
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: Should the command output show a message when placeholders are removed?",
+          "deleted": false,
+          "createdAt": "2025-11-06T05:38:28.270Z",
+          "selected": true,
+          "answer": "Yes - show informative message like 'Removed N placeholder persona(s)' so user understands what happened"
+        }
+      ],
+      "nextQuestionId": 1,
+      "estimate": 5,
+      "architectureNotes": [],
+      "nextNoteId": 0,
+      "updated": "2025-11-06T05:47:35.081Z"
     }
   },
   "states": {
@@ -42111,6 +42357,8 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "REMIND-011",
+      "REMIND-010",
       "VIEW-002",
       "TUI-028",
       "BUG-069",
@@ -42452,6 +42700,7 @@
     "VIEW": 2,
     "DOC": 6,
     "GIT": 12,
-    "FEAT": 20
+    "FEAT": 20,
+    "REMIND": 11
   }
 }
