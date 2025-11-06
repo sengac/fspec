@@ -240,7 +240,7 @@ graph LR
       // @step When I scroll horizontally with a trackpad two-finger swipe
       // @step Then the diagram should pan left or right
       expect(html).toContain('deltaX');
-      expect(html).toContain('panzoomInstance.pan');
+      expect(html).toContain('element.style.transform');
     });
   });
 
@@ -342,7 +342,7 @@ graph TD
       expect(zoomInButton).toBeTruthy();
 
       // @step Then the diagram should zoom in by a fixed increment
-      expect(html).toContain('panzoomInstance.zoomIn');
+      expect(html).toContain('ownScale * 1.2');
     });
   });
 
@@ -369,7 +369,7 @@ graph TD
 
       // @step Then the diagram should return to 100% zoom (1.0x)
       // @step And the diagram should be centered in the modal
-      expect(html).toContain('panzoomInstance.reset');
+      expect(html).toContain('translate(0px, 0px) scale(1)');
     });
   });
 

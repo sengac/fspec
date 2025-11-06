@@ -152,7 +152,7 @@ graph LR
 
       // @step Then the diagram should pan right smoothly
       expect(html).toContain('deltaX');
-      expect(html).toContain('panzoomInstance.pan');
+      expect(html).toContain('element.style.transform');
 
       // @step And deltaX events should be processed immediately
       // @step And pan mode modifier should not affect horizontal scrolling
