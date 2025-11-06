@@ -356,78 +356,6 @@ export function getInteractionScript(): string {
         const currentPan = { x: ownPanX, y: ownPanY };
         const currentScale = ownScale;
 
-        // DEBUG: Log wheel event (JSON for easy copy/paste)
-        // Heuristic to guess input device
-        let likelyDevice = 'unknown';
-        if (deltaMode === 1) {
-          likelyDevice = 'mouse-wheel';
-        } else if (deltaMode === 0) {
-          // Small fractional values suggest trackpad
-          const hasFractional = (Math.abs(deltaY) > 0 && Math.abs(deltaY) < 10) ||
-                                (Math.abs(deltaX) > 0 && Math.abs(deltaX) < 10);
-          const hasBothAxes = Math.abs(deltaX) > 0 && Math.abs(deltaY) > 0;
-          if (hasFractional || hasBothAxes) {
-            likelyDevice = 'trackpad';
-          } else {
-            likelyDevice = 'mouse-wheel-pixel-mode';
-          }
-        }
-
-        console.log('WHEEL_EVENT: ' + JSON.stringify({
-          likelyDevice: likelyDevice,
-          clientX: event.clientX,
-          clientY: event.clientY,
-          deltaX: deltaX,
-          deltaY: deltaY,
-          deltaMode: deltaMode,
-          isPanMode: isPanModifierHeld,
-          currentPan: currentPan,
-          currentScale: currentScale,
-          lockedX: lockedZoomPointX,
-          lockedY: lockedZoomPointY
-        }));
-
-        // DEBUG: Log container bounds
-        const container = document.getElementById('modal-diagram-container');
-        if (container) {
-          const cRect = container.getBoundingClientRect();
-          console.log('CONTAINER: ' + JSON.stringify({
-            left: cRect.left,
-            top: cRect.top,
-            right: cRect.right,
-            bottom: cRect.bottom,
-            width: cRect.width,
-            height: cRect.height
-          }));
-        }
-
-        // DEBUG: Log SVG bounds
-        if (currentModalDiagram) {
-          const sRect = currentModalDiagram.getBoundingClientRect();
-          console.log('SVG: ' + JSON.stringify({
-            left: sRect.left,
-            top: sRect.top,
-            right: sRect.right,
-            bottom: sRect.bottom,
-            width: sRect.width,
-            height: sRect.height
-          }));
-        }
-
-        // DEBUG: Log parent bounds
-        const parent = currentModalDiagram?.parentElement;
-        if (parent) {
-          const pRect = parent.getBoundingClientRect();
-          console.log('PARENT: ' + JSON.stringify({
-            left: pRect.left,
-            top: pRect.top,
-            right: pRect.right,
-            bottom: pRect.bottom,
-            width: pRect.width,
-            height: pRect.height
-          }));
-        }
-
         if (isPanModifierHeld) {
           // Pan mode: Apply BOTH vertical and horizontal pan together (enables diagonal panning)
           let newX = currentPan.x;
@@ -450,13 +378,6 @@ export function getInteractionScript(): string {
               // Update our state
               ownPanX = newX;
               ownPanY = newY;
-
-              // DEBUG: Log after pan
-              console.log('AFTER_PAN: ' + JSON.stringify({
-                newX: newX,
-                newY: newY,
-                ownPan: { x: ownPanX, y: ownPanY }
-              }));
             }
           }
         } else {
@@ -469,14 +390,6 @@ export function getInteractionScript(): string {
               // Store SCREEN coordinates (not container-relative)
               lockedZoomPointX = event.clientX;
               lockedZoomPointY = event.clientY;
-
-              // DEBUG: Log when we lock coordinates
-              console.log('LOCK_ZOOM_POINT: ' + JSON.stringify({
-                screenX: event.clientX,
-                screenY: event.clientY,
-                lockedX: lockedZoomPointX,
-                lockedY: lockedZoomPointY
-              }));
             }
 
             const zoomDelta = -deltaY * (deltaMode === 1 ? 0.05 : deltaMode ? 1 : 0.002);
@@ -491,54 +404,23 @@ export function getInteractionScript(): string {
             // Get SVG's current bounding box (where it is rendered on screen RIGHT NOW)
             const svgRect = currentModalDiagram.getBoundingClientRect();
 
-            // DEBUG: Log raw values
-            console.log('ZOOM_DEBUG_1_RAW: ' + JSON.stringify({
-              currentScale: currentScale,
-              newScale: newScale,
-              currentPan: { x: currentPan.x, y: currentPan.y },
-              mouseScreen: { x: lockedZoomPointX, y: lockedZoomPointY },
-              parentRect: { left: parentRect.left, top: parentRect.top, width: parentRect.width, height: parentRect.height },
-              svgRect: { left: svgRect.left, top: svgRect.top, width: svgRect.width, height: svgRect.height }
-            }));
-
             // Calculate mouse position relative to SVG's current top-left corner
             const mouseRelativeToSvgX = lockedZoomPointX - svgRect.left;
             const mouseRelativeToSvgY = lockedZoomPointY - svgRect.top;
 
-            // DEBUG: Log mouse relative to SVG
-            console.log('ZOOM_DEBUG_2_MOUSE_REL_SVG: ' + JSON.stringify({
-              mouseRelativeToSvg: { x: mouseRelativeToSvgX, y: mouseRelativeToSvgY }
-            }));
-
             // Calculate as PERCENTAGE of current SVG rendered size (0.0 to 1.0)
             const percentageX = mouseRelativeToSvgX / svgRect.width;
             const percentageY = mouseRelativeToSvgY / svgRect.height;
-
-            // DEBUG: Log percentage
-            console.log('ZOOM_DEBUG_3_PERCENTAGE: ' + JSON.stringify({
-              percentage: { x: percentageX, y: percentageY }
-            }));
 
             // Calculate new SVG rendered size based on scale change
             const scaleRatio = newScale / currentScale;
             const newRenderedWidth = svgRect.width * scaleRatio;
             const newRenderedHeight = svgRect.height * scaleRatio;
 
-            // DEBUG: Log new size
-            console.log('ZOOM_DEBUG_4_NEW_SIZE: ' + JSON.stringify({
-              scaleRatio: scaleRatio,
-              newRenderedSize: { width: newRenderedWidth, height: newRenderedHeight }
-            }));
-
             // Calculate where the percentage point will be in the new zoomed SVG
             // (offset from SVG's top-left corner)
             const percentagePointX = percentageX * newRenderedWidth;
             const percentagePointY = percentageY * newRenderedHeight;
-
-            // DEBUG: Log percentage point
-            console.log('ZOOM_DEBUG_5_PERCENTAGE_POINT: ' + JSON.stringify({
-              percentagePoint: { x: percentagePointX, y: percentagePointY }
-            }));
 
             // Calculate SVG's intrinsic offset (where it sits when pan=0,0)
             // This accounts for CSS positioning, margins, or SVG viewBox offset
@@ -549,33 +431,6 @@ export function getInteractionScript(): string {
             // We need to subtract the intrinsic offset because transform: translate() is RELATIVE to natural position
             const newPanX = (lockedZoomPointX - parentRect.left) - percentagePointX - intrinsicOffsetX;
             const newPanY = (lockedZoomPointY - parentRect.top) - percentagePointY - intrinsicOffsetY;
-
-            // DEBUG: Log intrinsic offset and new pan
-            console.log('ZOOM_DEBUG_6_INTRINSIC_OFFSET: ' + JSON.stringify({
-              intrinsicOffset: { x: intrinsicOffsetX, y: intrinsicOffsetY }
-            }));
-
-            console.log('ZOOM_DEBUG_7_NEW_PAN: ' + JSON.stringify({
-              newPan: { x: newPanX, y: newPanY }
-            }));
-
-            // DEBUG: Log before zoom
-            console.log('BEFORE_ZOOM: ' + JSON.stringify({
-              oldScale: currentScale,
-              newScale: newScale,
-              scaleRatio: scaleRatio,
-              mouseScreenX: lockedZoomPointX,
-              mouseScreenY: lockedZoomPointY,
-              svgRect: { left: svgRect.left, top: svgRect.top, width: svgRect.width, height: svgRect.height },
-              mouseRelativeToSvg: { x: mouseRelativeToSvgX, y: mouseRelativeToSvgY },
-              percentage: { x: percentageX, y: percentageY },
-              newRenderedSize: { width: newRenderedWidth, height: newRenderedHeight },
-              percentagePoint: { x: percentagePointX, y: percentagePointY },
-              oldPanX: currentPan.x,
-              oldPanY: currentPan.y,
-              newPanX: newPanX,
-              newPanY: newPanY
-            }));
 
             // Apply transform directly to SVG element
             const element = currentModalDiagram;
@@ -588,30 +443,6 @@ export function getInteractionScript(): string {
               ownPanX = newPanX;
               ownPanY = newPanY;
               ownScale = newScale;
-
-              // DEBUG: Log after zoom - verify what actually happened
-              const actualTransform = element.style.transform;
-              console.log('AFTER_ZOOM: ' + JSON.stringify({
-                expectedPan: { x: newPanX, y: newPanY },
-                expectedScale: newScale,
-                ownState: { x: ownPanX, y: ownPanY, scale: ownScale },
-                actualTransform: actualTransform
-              }));
-
-              // VERIFICATION: Check where the percentage point actually ended up
-              const newSvgRect = element.getBoundingClientRect();
-              const percentagePointScreenX = newSvgRect.left + percentagePointX;
-              const percentagePointScreenY = newSvgRect.top + percentagePointY;
-              const driftX = percentagePointScreenX - lockedZoomPointX;
-              const driftY = percentagePointScreenY - lockedZoomPointY;
-
-              console.log('ZOOM_DEBUG_8_VERIFICATION: ' + JSON.stringify({
-                newSvgRect: { left: newSvgRect.left, top: newSvgRect.top, width: newSvgRect.width, height: newSvgRect.height },
-                percentagePointScreen: { x: percentagePointScreenX, y: percentagePointScreenY },
-                mouseScreen: { x: lockedZoomPointX, y: lockedZoomPointY },
-                drift: { x: driftX, y: driftY },
-                driftMagnitude: Math.sqrt(driftX * driftX + driftY * driftY)
-              }));
             }
 
             // Reset timeout - unlock zoom point after gesture ends
@@ -622,7 +453,6 @@ export function getInteractionScript(): string {
               lockedZoomPointX = null;
               lockedZoomPointY = null;
               zoomSessionTimeout = null;
-              console.log('UNLOCK_ZOOM_POINT');
             }, ZOOM_SESSION_TIMEOUT_MS);
           }
           // HORIZONTAL SCROLL = PAN (only when NOT zooming)
@@ -639,13 +469,6 @@ export function getInteractionScript(): string {
 
               // Update our state
               ownPanX = newPanX;
-
-              // DEBUG: Log after horizontal pan
-              console.log('AFTER_HPAN: ' + JSON.stringify({
-                deltaX: deltaX,
-                newPanX: newPanX,
-                ownState: { x: ownPanX, y: ownPanY, scale: ownScale }
-              }));
             }
           }
         }
