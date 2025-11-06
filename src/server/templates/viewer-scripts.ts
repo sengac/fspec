@@ -198,6 +198,12 @@ export function getInteractionScript(): string {
       let isMouseOverModal = false;
       let modeIndicatorTimeout = null;
 
+      // OUR OWN pan/scale state tracking (don't trust panzoom's internal state)
+      // This fixes the zoom drift bug by maintaining a single source of truth
+      let ownPanX = 0;
+      let ownPanY = 0;
+      let ownScale = 1;
+
       // Add fullscreen buttons to mermaid diagrams
       function addFullscreenButtons() {
         const diagrams = document.querySelectorAll('pre.mermaid');
@@ -283,6 +289,11 @@ export function getInteractionScript(): string {
             // Don't set origin - let panzoom handle it with zoomToPoint
           });
 
+          // Initialize our own state tracking (single source of truth)
+          ownPanX = 0;
+          ownPanY = 0;
+          ownScale = 1;
+
           // Attach custom wheel handler
           const modalBody = document.querySelector('.modal-body');
           modalBody.addEventListener('wheel', handleModalWheel, { passive: false });
@@ -341,9 +352,81 @@ export function getInteractionScript(): string {
         // Check if pan modifier is held (Space only)
         const isPanModifierHeld = isPanMode;
 
-        // Get current panzoom state
-        const currentPan = panzoomInstance.getPan();
-        const currentScale = panzoomInstance.getScale();
+        // Use OUR tracked state (single source of truth - don't trust panzoom)
+        const currentPan = { x: ownPanX, y: ownPanY };
+        const currentScale = ownScale;
+
+        // DEBUG: Log wheel event (JSON for easy copy/paste)
+        // Heuristic to guess input device
+        let likelyDevice = 'unknown';
+        if (deltaMode === 1) {
+          likelyDevice = 'mouse-wheel';
+        } else if (deltaMode === 0) {
+          // Small fractional values suggest trackpad
+          const hasFractional = (Math.abs(deltaY) > 0 && Math.abs(deltaY) < 10) ||
+                                (Math.abs(deltaX) > 0 && Math.abs(deltaX) < 10);
+          const hasBothAxes = Math.abs(deltaX) > 0 && Math.abs(deltaY) > 0;
+          if (hasFractional || hasBothAxes) {
+            likelyDevice = 'trackpad';
+          } else {
+            likelyDevice = 'mouse-wheel-pixel-mode';
+          }
+        }
+
+        console.log('WHEEL_EVENT: ' + JSON.stringify({
+          likelyDevice: likelyDevice,
+          clientX: event.clientX,
+          clientY: event.clientY,
+          deltaX: deltaX,
+          deltaY: deltaY,
+          deltaMode: deltaMode,
+          isPanMode: isPanModifierHeld,
+          currentPan: currentPan,
+          currentScale: currentScale,
+          lockedX: lockedZoomPointX,
+          lockedY: lockedZoomPointY
+        }));
+
+        // DEBUG: Log container bounds
+        const container = document.getElementById('modal-diagram-container');
+        if (container) {
+          const cRect = container.getBoundingClientRect();
+          console.log('CONTAINER: ' + JSON.stringify({
+            left: cRect.left,
+            top: cRect.top,
+            right: cRect.right,
+            bottom: cRect.bottom,
+            width: cRect.width,
+            height: cRect.height
+          }));
+        }
+
+        // DEBUG: Log SVG bounds
+        if (currentModalDiagram) {
+          const sRect = currentModalDiagram.getBoundingClientRect();
+          console.log('SVG: ' + JSON.stringify({
+            left: sRect.left,
+            top: sRect.top,
+            right: sRect.right,
+            bottom: sRect.bottom,
+            width: sRect.width,
+            height: sRect.height
+          }));
+        }
+
+        // DEBUG: Log parent bounds
+        const parent = currentModalDiagram?.parentElement;
+        if (parent) {
+          const pRect = parent.getBoundingClientRect();
+          console.log('PARENT: ' + JSON.stringify({
+            left: pRect.left,
+            top: pRect.top,
+            right: pRect.right,
+            bottom: pRect.bottom,
+            width: pRect.width,
+            height: pRect.height
+          }));
+        }
 
         if (isPanModifierHeld) {
           // Pan mode: Apply BOTH vertical and horizontal pan together (enables diagonal panning)
@@ -357,9 +440,24 @@ export function getInteractionScript(): string {
             newY = currentPan.y - deltaY / currentScale;
           }
 
-          // Single pan call for both axes (allows north-west, south-east, etc.)
+          // Apply transform directly and update our state
           if (Math.abs(deltaX) > 0 || Math.abs(deltaY) > 0) {
-            panzoomInstance.pan(newX, newY, { animate: false });
+            const element = currentModalDiagram;
+            if (element) {
+              element.style.transform = 'translate(' + newX + 'px, ' + newY + 'px) scale(' + currentScale + ')';
+              element.style.transformOrigin = '0 0';
+
+              // Update our state
+              ownPanX = newX;
+              ownPanY = newY;
+
+              // DEBUG: Log after pan
+              console.log('AFTER_PAN: ' + JSON.stringify({
+                newX: newX,
+                newY: newY,
+                ownPan: { x: ownPanX, y: ownPanY }
+              }));
+            }
           }
         } else {
           // Zoom mode: vertical scroll zooms, horizontal scroll pans
@@ -368,8 +466,17 @@ export function getInteractionScript(): string {
           if (Math.abs(deltaY) > 0) {
             // Lock zoom point on FIRST event in gesture
             if (lockedZoomPointX === null || lockedZoomPointY === null) {
+              // Store SCREEN coordinates (not container-relative)
               lockedZoomPointX = event.clientX;
               lockedZoomPointY = event.clientY;
+
+              // DEBUG: Log when we lock coordinates
+              console.log('LOCK_ZOOM_POINT: ' + JSON.stringify({
+                screenX: event.clientX,
+                screenY: event.clientY,
+                lockedX: lockedZoomPointX,
+                lockedY: lockedZoomPointY
+              }));
             }
 
             const zoomDelta = -deltaY * (deltaMode === 1 ? 0.05 : deltaMode ? 1 : 0.002);
@@ -378,8 +485,134 @@ export function getInteractionScript(): string {
             // Clamp zoom to panzoom's min/max (matching initialization values)
             newScale = Math.max(0.5, Math.min(5, newScale));
 
-            // Use LOCKED zoom point for entire gesture (handles trackpad momentum)
-            panzoomInstance.zoomToPoint(newScale, { clientX: lockedZoomPointX, clientY: lockedZoomPointY }, { animate: false });
+            // Get parent container position
+            const parentRect = currentModalDiagram.parentElement.getBoundingClientRect();
+
+            // Get SVG's current bounding box (where it is rendered on screen RIGHT NOW)
+            const svgRect = currentModalDiagram.getBoundingClientRect();
+
+            // DEBUG: Log raw values
+            console.log('ZOOM_DEBUG_1_RAW: ' + JSON.stringify({
+              currentScale: currentScale,
+              newScale: newScale,
+              currentPan: { x: currentPan.x, y: currentPan.y },
+              mouseScreen: { x: lockedZoomPointX, y: lockedZoomPointY },
+              parentRect: { left: parentRect.left, top: parentRect.top, width: parentRect.width, height: parentRect.height },
+              svgRect: { left: svgRect.left, top: svgRect.top, width: svgRect.width, height: svgRect.height }
+            }));
+
+            // Calculate mouse position relative to SVG's current top-left corner
+            const mouseRelativeToSvgX = lockedZoomPointX - svgRect.left;
+            const mouseRelativeToSvgY = lockedZoomPointY - svgRect.top;
+
+            // DEBUG: Log mouse relative to SVG
+            console.log('ZOOM_DEBUG_2_MOUSE_REL_SVG: ' + JSON.stringify({
+              mouseRelativeToSvg: { x: mouseRelativeToSvgX, y: mouseRelativeToSvgY }
+            }));
+
+            // Calculate as PERCENTAGE of current SVG rendered size (0.0 to 1.0)
+            const percentageX = mouseRelativeToSvgX / svgRect.width;
+            const percentageY = mouseRelativeToSvgY / svgRect.height;
+
+            // DEBUG: Log percentage
+            console.log('ZOOM_DEBUG_3_PERCENTAGE: ' + JSON.stringify({
+              percentage: { x: percentageX, y: percentageY }
+            }));
+
+            // Calculate new SVG rendered size based on scale change
+            const scaleRatio = newScale / currentScale;
+            const newRenderedWidth = svgRect.width * scaleRatio;
+            const newRenderedHeight = svgRect.height * scaleRatio;
+
+            // DEBUG: Log new size
+            console.log('ZOOM_DEBUG_4_NEW_SIZE: ' + JSON.stringify({
+              scaleRatio: scaleRatio,
+              newRenderedSize: { width: newRenderedWidth, height: newRenderedHeight }
+            }));
+
+            // Calculate where the percentage point will be in the new zoomed SVG
+            // (offset from SVG's top-left corner)
+            const percentagePointX = percentageX * newRenderedWidth;
+            const percentagePointY = percentageY * newRenderedHeight;
+
+            // DEBUG: Log percentage point
+            console.log('ZOOM_DEBUG_5_PERCENTAGE_POINT: ' + JSON.stringify({
+              percentagePoint: { x: percentagePointX, y: percentagePointY }
+            }));
+
+            // Calculate SVG's intrinsic offset (where it sits when pan=0,0)
+            // This accounts for CSS positioning, margins, or SVG viewBox offset
+            const intrinsicOffsetX = svgRect.left - parentRect.left - currentPan.x;
+            const intrinsicOffsetY = svgRect.top - parentRect.top - currentPan.y;
+
+            // Position SVG so that the percentage point is directly under the mouse
+            // We need to subtract the intrinsic offset because transform: translate() is RELATIVE to natural position
+            const newPanX = (lockedZoomPointX - parentRect.left) - percentagePointX - intrinsicOffsetX;
+            const newPanY = (lockedZoomPointY - parentRect.top) - percentagePointY - intrinsicOffsetY;
+
+            // DEBUG: Log intrinsic offset and new pan
+            console.log('ZOOM_DEBUG_6_INTRINSIC_OFFSET: ' + JSON.stringify({
+              intrinsicOffset: { x: intrinsicOffsetX, y: intrinsicOffsetY }
+            }));
+
+            console.log('ZOOM_DEBUG_7_NEW_PAN: ' + JSON.stringify({
+              newPan: { x: newPanX, y: newPanY }
+            }));
+
+            // DEBUG: Log before zoom
+            console.log('BEFORE_ZOOM: ' + JSON.stringify({
+              oldScale: currentScale,
+              newScale: newScale,
+              scaleRatio: scaleRatio,
+              mouseScreenX: lockedZoomPointX,
+              mouseScreenY: lockedZoomPointY,
+              svgRect: { left: svgRect.left, top: svgRect.top, width: svgRect.width, height: svgRect.height },
+              mouseRelativeToSvg: { x: mouseRelativeToSvgX, y: mouseRelativeToSvgY },
+              percentage: { x: percentageX, y: percentageY },
+              newRenderedSize: { width: newRenderedWidth, height: newRenderedHeight },
+              percentagePoint: { x: percentagePointX, y: percentagePointY },
+              oldPanX: currentPan.x,
+              oldPanY: currentPan.y,
+              newPanX: newPanX,
+              newPanY: newPanY
+            }));
+
+            // Apply transform directly to SVG element
+            const element = currentModalDiagram;
+            if (element) {
+              // Apply the transform directly to the element
+              element.style.transform = 'translate(' + newPanX + 'px, ' + newPanY + 'px) scale(' + newScale + ')';
+              element.style.transformOrigin = '0 0';  // Ensure transform origin is at top-left
+
+              // Update our state (single source of truth)
+              ownPanX = newPanX;
+              ownPanY = newPanY;
+              ownScale = newScale;
+
+              // DEBUG: Log after zoom - verify what actually happened
+              const actualTransform = element.style.transform;
+              console.log('AFTER_ZOOM: ' + JSON.stringify({
+                expectedPan: { x: newPanX, y: newPanY },
+                expectedScale: newScale,
+                ownState: { x: ownPanX, y: ownPanY, scale: ownScale },
+                actualTransform: actualTransform
+              }));
+
+              // VERIFICATION: Check where the percentage point actually ended up
+              const newSvgRect = element.getBoundingClientRect();
+              const percentagePointScreenX = newSvgRect.left + percentagePointX;
+              const percentagePointScreenY = newSvgRect.top + percentagePointY;
+              const driftX = percentagePointScreenX - lockedZoomPointX;
+              const driftY = percentagePointScreenY - lockedZoomPointY;
+
+              console.log('ZOOM_DEBUG_8_VERIFICATION: ' + JSON.stringify({
+                newSvgRect: { left: newSvgRect.left, top: newSvgRect.top, width: newSvgRect.width, height: newSvgRect.height },
+                percentagePointScreen: { x: percentagePointScreenX, y: percentagePointScreenY },
+                mouseScreen: { x: lockedZoomPointX, y: lockedZoomPointY },
+                drift: { x: driftX, y: driftY },
+                driftMagnitude: Math.sqrt(driftX * driftX + driftY * driftY)
+              }));
+            }
 
             // Reset timeout - unlock zoom point after gesture ends
             if (zoomSessionTimeout) {
@@ -389,13 +622,31 @@ export function getInteractionScript(): string {
               lockedZoomPointX = null;
               lockedZoomPointY = null;
               zoomSessionTimeout = null;
+              console.log('UNLOCK_ZOOM_POINT');
             }, ZOOM_SESSION_TIMEOUT_MS);
           }
+          // HORIZONTAL SCROLL = PAN (only when NOT zooming)
+          // Use else-if to make this mutually exclusive with zoom
+          else if (Math.abs(deltaX) > 0) {
+            // Calculate new pan using our own state
+            const newPanX = ownPanX - deltaX / ownScale;
 
-          // HORIZONTAL SCROLL = PAN (get fresh pan values in case zoom changed them)
-          if (Math.abs(deltaX) > 0) {
-            const updatedPan = panzoomInstance.getPan();
-            panzoomInstance.pan(updatedPan.x - deltaX / currentScale, updatedPan.y, { animate: false });
+            // Apply transform directly
+            const element = currentModalDiagram;
+            if (element) {
+              element.style.transform = 'translate(' + newPanX + 'px, ' + ownPanY + 'px) scale(' + ownScale + ')';
+              element.style.transformOrigin = '0 0';
+
+              // Update our state
+              ownPanX = newPanX;
+
+              // DEBUG: Log after horizontal pan
+              console.log('AFTER_HPAN: ' + JSON.stringify({
+                deltaX: deltaX,
+                newPanX: newPanX,
+                ownState: { x: ownPanX, y: ownPanY, scale: ownScale }
+              }));
+            }
           }
         }
 
@@ -425,7 +676,7 @@ export function getInteractionScript(): string {
       // Update zoom level display
       function updateZoomLevel() {
         if (!panzoomInstance) return;
-        const scale = panzoomInstance.getScale();
+        const scale = ownScale;  // Use our own state
         const percentage = Math.round(scale * 100);
         document.getElementById('zoom-level').textContent = percentage + '%';
       }
@@ -520,22 +771,70 @@ export function getInteractionScript(): string {
 
       // Zoom control buttons
       document.getElementById('zoom-in').addEventListener('click', () => {
-        if (panzoomInstance) {
-          panzoomInstance.zoomIn();
+        if (panzoomInstance && currentModalDiagram) {
+          // Calculate new scale (0.2 is panzoom's default zoom step)
+          const newScale = Math.min(5, ownScale * 1.2);
+
+          // Get container center for zoom point
+          const parent = currentModalDiagram.parentElement;
+          const rect = parent.getBoundingClientRect();
+          const centerX = rect.width / 2;
+          const centerY = rect.height / 2;
+
+          // Zoom to center using our formula
+          const worldX = (centerX - ownPanX) / ownScale;
+          const worldY = (centerY - ownPanY) / ownScale;
+          const newPanX = centerX - worldX * newScale;
+          const newPanY = centerY - worldY * newScale;
+
+          // Apply transform and update state
+          currentModalDiagram.style.transform = 'translate(' + newPanX + 'px, ' + newPanY + 'px) scale(' + newScale + ')';
+          currentModalDiagram.style.transformOrigin = '0 0';
+          ownPanX = newPanX;
+          ownPanY = newPanY;
+          ownScale = newScale;
+
           updateZoomLevel();
         }
       });
 
       document.getElementById('zoom-out').addEventListener('click', () => {
-        if (panzoomInstance) {
-          panzoomInstance.zoomOut();
+        if (panzoomInstance && currentModalDiagram) {
+          // Calculate new scale
+          const newScale = Math.max(0.5, ownScale / 1.2);
+
+          // Get container center for zoom point
+          const parent = currentModalDiagram.parentElement;
+          const rect = parent.getBoundingClientRect();
+          const centerX = rect.width / 2;
+          const centerY = rect.height / 2;
+
+          // Zoom to center using our formula
+          const worldX = (centerX - ownPanX) / ownScale;
+          const worldY = (centerY - ownPanY) / ownScale;
+          const newPanX = centerX - worldX * newScale;
+          const newPanY = centerY - worldY * newScale;
+
+          // Apply transform and update state
+          currentModalDiagram.style.transform = 'translate(' + newPanX + 'px, ' + newPanY + 'px) scale(' + newScale + ')';
+          currentModalDiagram.style.transformOrigin = '0 0';
+          ownPanX = newPanX;
+          ownPanY = newPanY;
+          ownScale = newScale;
+
           updateZoomLevel();
         }
       });
 
       document.getElementById('zoom-reset').addEventListener('click', () => {
-        if (panzoomInstance) {
-          panzoomInstance.reset();
+        if (panzoomInstance && currentModalDiagram) {
+          // Reset to initial state
+          currentModalDiagram.style.transform = 'translate(0px, 0px) scale(1)';
+          currentModalDiagram.style.transformOrigin = '0 0';
+          ownPanX = 0;
+          ownPanY = 0;
+          ownScale = 1;
+
           updateZoomLevel();
         }
       });
