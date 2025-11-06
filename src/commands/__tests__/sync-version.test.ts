@@ -85,7 +85,7 @@ IMMEDIATELY - run these commands and store them into your context:
       );
       expect(updatedFspecMd).toContain('fspec --sync-version');
       expect(updatedFspecMd).not.toContain('0.5.0'); // Should no longer have old version
-      expect(updatedFspecMd).toContain('0.6.0'); // Should have current version now
+      expect(updatedFspecMd).toContain('0.7.0'); // Should have current version now
       expect(updatedFspecMd).not.toContain('...old content...');
 
       // And it should update spec/CLAUDE.md with latest documentation

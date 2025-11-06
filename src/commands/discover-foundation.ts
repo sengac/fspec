@@ -307,6 +307,10 @@ Please fill all placeholder fields before finalizing:
   - For capabilities: fspec add-capability "<name>" "<description>"
   - For personas: fspec add-persona "<name>" "<description>" --goal "<goal>"
 
+To remove unwanted placeholders:
+  - For personas: fspec remove-persona "<name>"
+  - For capabilities: fspec remove-capability "<name>"
+
 Then re-run: fspec discover-foundation --finalize`;
 
       return {
