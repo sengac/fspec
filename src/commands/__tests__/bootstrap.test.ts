@@ -274,7 +274,7 @@ describe('Feature: Dynamic bootstrap command for slash command template', () => 
       expect(setupHelp).toContain('CONFIGURATION & SETUP');
       expect(setupHelp).toContain('discover-foundation');
       expect(setupHelp).toContain('configure-tools');
-      expect(setupHelp).toContain('register-tag');
+      expect(setupHelp).toContain('list-tags');
       expect(setupHelp).toContain('create-epic');
       expect(setupHelp).not.toContain('and more');
 
