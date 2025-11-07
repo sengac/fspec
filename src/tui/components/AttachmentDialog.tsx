@@ -31,8 +31,13 @@ export const AttachmentDialog: React.FC<AttachmentDialogProps> = ({
 
   const VIEWPORT_HEIGHT = viewportHeight;
 
-  // Handle keyboard input (ESC handled by base Dialog)
+  // Handle keyboard input
   useInput((input, key) => {
+    if (key.escape) {
+      onClose();
+      return;
+    }
+
     if (key.return) {
       onSelect(attachments[selectedIndex]);
       onClose();
@@ -72,7 +77,7 @@ export const AttachmentDialog: React.FC<AttachmentDialogProps> = ({
   const showDownIndicator = scrollOffset + VIEWPORT_HEIGHT < attachments.length;
 
   return (
-    <Dialog onClose={onClose} borderColor="cyan">
+    <Dialog onClose={onClose} borderColor="cyan" isActive={false}>
       <Box flexDirection="column" minWidth={50}>
         <Box marginBottom={1}>
           <Text bold color="cyan">
