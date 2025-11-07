@@ -272,6 +272,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@typescript` | TypeScript-specific features and configuration |
 | `@ui-formatting` | UI formatting and layout features |
 | `@ui-rendering` | UI rendering and layout issues |
+| `@versioning` | Version management and migration features |
 | `@vitest` | Vitest testing framework related features |
 | `@web` | Web-based features and browser functionality |
 | `@zoom` | Zoom and scaling functionality for diagrams and visualizations |
@@ -610,7 +611,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-11-07T00:06:05.706Z_
+_Last updated: 2025-11-07T02:04:23.450Z_
 
 **Update Command**: `fspec tag-stats`
 

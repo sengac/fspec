@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-07T01:05:37.391Z"
+    "lastUpdated": "2025-11-07T02:13:07.732Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -41808,6 +41808,121 @@
       "nextNoteId": 0,
       "updated": "2025-11-05T21:54:46.321Z"
     },
+    "BUG-070": {
+      "id": "BUG-070",
+      "title": "work-units.json not stamped with current version on initial creation",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-11-07T01:45:00.000Z",
+      "updatedAt": "2025-11-07T02:13:07.755Z",
+      "description": "When work-units.json is created for the first time (doesn't exist in spec/ directory), it's not stamped with the current version (0.7.0). Instead, the migration system detects it as version 0.6.0 and has to migrate it, creating unnecessary backup files and console warnings. Root cause: ensureWorkUnitsFile() in src/utils/ensure-files.ts creates initialData without the root-level 'version' field. CRITICAL: Fix must use DRY principles - centralize version management in shared code to avoid repeating version strings across multiple files.",
+      "children": [],
+      "rules": [
+        {
+          "id": 0,
+          "text": "New work-units.json files MUST be stamped with current version immediately on creation",
+          "deleted": false,
+          "createdAt": "2025-11-07T01:45:00.000Z"
+        },
+        {
+          "id": 1,
+          "text": "Version string MUST be managed using DRY principles - NO version string repetition across files",
+          "deleted": false,
+          "createdAt": "2025-11-07T01:45:00.000Z"
+        },
+        {
+          "id": 2,
+          "text": "MUST create/use a shared version constant that both ensure-files.ts and migrations use",
+          "deleted": false,
+          "createdAt": "2025-11-07T01:45:00.000Z"
+        },
+        {
+          "id": 3,
+          "text": "The single source of truth for current version MUST be accessible to all version-dependent code",
+          "deleted": false,
+          "createdAt": "2025-11-07T01:45:00.000Z"
+        },
+        {
+          "id": 4,
+          "text": "Hardcoded version strings like '0.7.0' MUST NOT appear in multiple files",
+          "deleted": false,
+          "createdAt": "2025-11-07T01:45:00.000Z"
+        }
+      ],
+      "nextRuleId": 5,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User creates new project, runs first fspec command, work-units.json created with version: '0.7.0', no migration runs",
+          "deleted": false,
+          "createdAt": "2025-11-07T01:45:00.000Z"
+        },
+        {
+          "id": 1,
+          "text": "User deletes spec/work-units.json, runs fspec command, file recreated with current version, no backup created",
+          "deleted": false,
+          "createdAt": "2025-11-07T01:45:00.000Z"
+        },
+        {
+          "id": 2,
+          "text": "Version constant updated to 0.8.0 in shared file, both ensure-files and migrations automatically use new version",
+          "deleted": false,
+          "createdAt": "2025-11-07T01:45:00.000Z"
+        }
+      ],
+      "nextExampleId": 3,
+      "questions": [],
+      "nextQuestionId": 0,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Current implementation has CURRENT_VERSION defined separately in src/utils/ensure-files.ts and DEFAULT_VERSION in src/migrations/registry.ts - this violates DRY",
+          "deleted": false,
+          "createdAt": "2025-11-07T01:45:00.000Z"
+        },
+        {
+          "id": 1,
+          "text": "Solution: Create src/utils/version.ts with single export const CURRENT_VERSION = '0.7.0', import from both files",
+          "deleted": false,
+          "createdAt": "2025-11-07T01:45:00.000Z"
+        },
+        {
+          "id": 2,
+          "text": "Alternatively: Export CURRENT_VERSION from migrations/registry.ts and import in ensure-files.ts (reuse existing constant)",
+          "deleted": false,
+          "createdAt": "2025-11-07T01:45:00.000Z"
+        }
+      ],
+      "nextNoteId": 3,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-07T02:03:13.489Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-07T02:05:07.125Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-07T02:07:41.749Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-07T02:09:36.397Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-07T02:13:07.755Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using fspec for the first time",
+        "action": "initialize a new project with work-units.json",
+        "benefit": "I don't see unnecessary migration warnings or backup files"
+      },
+      "updated": "2025-11-07T02:13:07.755Z"
+    },
     "FEAT-020": {
       "id": "FEAT-020",
       "title": "Auto-update check on startup",
@@ -42826,6 +42941,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "BUG-070",
       "REMIND-011",
       "REMIND-010",
       "VIEW-002",
@@ -43161,7 +43277,7 @@
   "prefixCounters": {
     "CLI": 14,
     "HELP": 5,
-    "BUG": 69,
+    "BUG": 70,
     "DISC": 2,
     "COV": 53,
     "TUI": 28,

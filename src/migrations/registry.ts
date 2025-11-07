@@ -12,6 +12,12 @@ import migration001 from './migrations/001-stable-indices';
 export const DEFAULT_VERSION = '0.6.0';
 
 /**
+ * Current version of fspec (used for version stamping on file creation)
+ * This is the single source of truth for the current version
+ */
+export const CURRENT_VERSION = '0.7.1';
+
+/**
  * Registry of all available migrations, in version order
  * Add new migrations to this array in ascending version order
  */
