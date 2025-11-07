@@ -16,6 +16,7 @@ import { getWorkerPath } from '../../git/worker-path';
 import { useFspecStore } from '../store/fspecStore';
 import * as git from 'isomorphic-git';
 import fs from 'fs';
+import { join } from 'path';
 import type { Checkpoint as GitCheckpoint } from '../../utils/git-checkpoint';
 import {
   getCheckpointFilesChangedFromHead,
