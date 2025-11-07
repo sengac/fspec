@@ -191,6 +191,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@checkpoints` | Git checkpoint and state restoration features |
 | `@cleanup` | Cleanup and resource management features |
 | `@code-review` | Code review and quality analysis features |
+| `@codex` | Codex AI agent integration features |
 | `@command-registration` | CLI command registration features |
 | `@concurrency` | Concurrent access coordination and file locking mechanisms |
 | `@config` | Configuration loading and management features |
@@ -264,6 +265,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@system-reminder` | Anti-drift pattern for AI agents using contextual reminders |
 | `@template` | Template System |
 | `@template-generation` | Template and documentation generation |
+| `@toml` | TOML configuration file parsing and manipulation |
 | `@traceability` | Scenario-to-test-to-implementation traceability and coverage tracking |
 | `@trackpad` | Trackpad and touchpad input handling with smoothing and gesture support |
 | `@type-system` | Work unit type system features for categorizing work (story, task, bug) |
@@ -608,7 +610,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-11-05T22:29:35.974Z_
+_Last updated: 2025-11-07T00:06:05.706Z_
 
 **Update Command**: `fspec tag-stats`
 

@@ -199,6 +199,41 @@
       "prefix": "VIEW",
       "description": "Attachment viewer features and enhancements",
       "createdAt": "2025-11-05T05:34:26.371Z"
+    },
+    "CODEX": {
+      "prefix": "CODEX",
+      "description": "Codex agent integration features",
+      "createdAt": "2025-11-06T13:12:23.629Z"
+    },
+    "GRAPH": {
+      "prefix": "GRAPH",
+      "description": "Knowledge Graph Infrastructure",
+      "createdAt": "2025-11-07T01:02:06.098Z"
+    },
+    "NAV": {
+      "prefix": "NAV",
+      "description": "Navigation and Guidance",
+      "createdAt": "2025-11-07T01:02:07.677Z"
+    },
+    "DOMAIN": {
+      "prefix": "DOMAIN",
+      "description": "Domain Modeling and Event Storming",
+      "createdAt": "2025-11-07T01:02:10.584Z"
+    },
+    "TAG": {
+      "prefix": "TAG",
+      "description": "Tag Ontology System",
+      "createdAt": "2025-11-07T01:02:12.044Z"
+    },
+    "VIZ": {
+      "prefix": "VIZ",
+      "description": "Graph Visualization",
+      "createdAt": "2025-11-07T01:02:13.693Z"
+    },
+    "INT": {
+      "prefix": "INT",
+      "description": "System Integration",
+      "createdAt": "2025-11-07T01:02:15.173Z"
     }
   }
 }

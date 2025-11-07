@@ -223,6 +223,44 @@
         "BOARD-012",
         "ITF-007"
       ]
+    },
+    "domain-knowledge-graph": {
+      "id": "domain-knowledge-graph",
+      "title": "Domain Knowledge Graph System",
+      "createdAt": "2025-11-07T01:01:45.109Z",
+      "workUnits": [
+        "GRAPH-001",
+        "GRAPH-002",
+        "GRAPH-003",
+        "NAV-001",
+        "NAV-002",
+        "NAV-003",
+        "DOC-007",
+        "DOC-008",
+        "DOC-009",
+        "DOC-010",
+        "DOC-011",
+        "DOMAIN-001",
+        "DOMAIN-002",
+        "DOMAIN-003",
+        "DOMAIN-004",
+        "DOMAIN-005",
+        "TAG-001",
+        "TAG-002",
+        "TAG-003",
+        "TAG-004",
+        "VIZ-001",
+        "VIZ-002",
+        "VIZ-003",
+        "VIZ-004",
+        "INT-001",
+        "INT-002",
+        "INT-003",
+        "INT-004",
+        "DOC-012",
+        "DOC-013",
+        "DOC-014"
+      ]
     }
   }
 }
