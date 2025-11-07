@@ -14,7 +14,7 @@
 
 ## Why
 
-AI agents lack the infrastructure that professional developers take for granted. No ACDD/TDD guardrails to enforce test-first discipline. No checkpoints for safe experimentation. No Kanban boards for tracking workflow state. No specification management systems with mermaid diagram viewers and markdown documentation. No coverage tracking to link code back to business rules. AI agents are coding in the dark, and you're left babysitting instead of building.
+AI agents lack the infrastructure that professional developers take for granted. No ACDD/TDD guardrails to enforce test-first discipline. No or poorly implemented checkpoint systems for safe experimentation. No Kanban boards for tracking workflow state. No specification management systems with mermaid diagram viewers and markdown documentation. No coverage tracking to link code back to business rules. AI agents are coding in the dark, and you're left babysitting instead of building.
 
 ## What
 
