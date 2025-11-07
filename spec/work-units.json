@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-06T05:47:35.061Z"
+    "lastUpdated": "2025-11-07T01:05:37.391Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -42316,6 +42316,443 @@
       "architectureNotes": [],
       "nextNoteId": 0,
       "updated": "2025-11-06T05:47:35.081Z"
+    },
+    "AGENT-019": {
+      "id": "AGENT-019",
+      "title": "Optimize AI agent information ingestion with state-aware documentation",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-11-07T00:18:30.412Z",
+      "updatedAt": "2025-11-07T01:05:37.391Z",
+      "description": "Implement state-aware bootstrap, progressive disclosure guides, and inline tips to help ALL AI agents efficiently consume fspec workflow information. Uses Codex's 10KB/256-line limits as baseline constraint to ensure universal compatibility.",
+      "children": [],
+      "attachments": [
+        "spec/attachments/AGENT-019/agent-information-ingestion-optimization-v2.md",
+        "spec/attachments/AGENT-019/domain-knowledge-graph-epic.md"
+      ]
+    },
+    "GRAPH-001": {
+      "id": "GRAPH-001",
+      "title": "Graph Core Infrastructure",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-11-07T01:02:29.624Z",
+      "updatedAt": "2025-11-07T01:02:29.624Z",
+      "description": "Natural boundary: Basic graph operations working. Install ngraph.graph, create graph builder, define node types (Command, State, Event, Guide, Tag, Help), define edge types (suggests, requires, triggers, documents, contains, uses), build JSON serialization, write unit tests. MUST use 'fspec' command for testing, NOT npx/npm/node. TDD required: RED-GREEN-REFACTOR.",
+      "epic": "domain-knowledge-graph",
+      "children": []
+    },
+    "GRAPH-002": {
+      "id": "GRAPH-002",
+      "title": "Command Graph Population",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-11-07T01:02:31.222Z",
+      "updatedAt": "2025-11-07T01:07:32.909Z",
+      "description": "Natural boundary: All existing fspec commands mapped to graph. Every command exists as graph node with metadata, state transitions modeled as edges, command relationships defined, prerequisites added, help text linked. DO NOT use 'node dist/index.js' - use 'fspec' command. Parse help text programmatically. TDD required.",
+      "epic": "domain-knowledge-graph",
+      "children": [],
+      "dependsOn": [
+        "GRAPH-001"
+      ]
+    },
+    "GRAPH-003": {
+      "id": "GRAPH-003",
+      "title": "Graph Query Foundation",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-11-07T01:02:32.727Z",
+      "updatedAt": "2025-11-07T01:10:30.315Z",
+      "description": "Natural boundary: Basic graph queries working. Graph traversal utilities, pathfinding algorithms (ngraph.path), query by node/edge type, unit tests pass. Dependencies: GRAPH-001, GRAPH-002. Blocks: NAV-001, NAV-002. TDD required.",
+      "epic": "domain-knowledge-graph",
+      "children": [],
+      "dependsOn": [
+        "GRAPH-002",
+        "GRAPH-001"
+      ]
+    },
+    "NAV-001": {
+      "id": "NAV-001",
+      "title": "Suggest Command",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-11-07T01:02:46.473Z",
+      "updatedAt": "2025-11-07T01:07:36.242Z",
+      "description": "Natural boundary: 'fspec suggest' returns contextual suggestions. Queries graph for current context, returns 1-3 next-step suggestions with examples, output ≤300 bytes, help text included. Dependencies: GRAPH-003. Blocks: NAV-003. Use 'fspec' command only. TDD required.",
+      "epic": "domain-knowledge-graph",
+      "children": [],
+      "dependsOn": [
+        "GRAPH-003"
+      ]
+    },
+    "NAV-002": {
+      "id": "NAV-002",
+      "title": "Path Command",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-11-07T01:02:47.862Z",
+      "updatedAt": "2025-11-07T01:07:38.053Z",
+      "description": "Natural boundary: 'fspec path <goal>' shows command sequence. Uses ngraph.path for pathfinding, supports goals (done/implementing/testing), shows step-by-step sequence, output ≤800 bytes, help text included. Dependencies: GRAPH-003. Use 'fspec' command only. TDD required.",
+      "epic": "domain-knowledge-graph",
+      "children": [],
+      "dependsOn": [
+        "GRAPH-003"
+      ]
+    },
+    "NAV-003": {
+      "id": "NAV-003",
+      "title": "Inline Contextual Tips",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-11-07T01:02:49.524Z",
+      "updatedAt": "2025-11-07T01:07:39.920Z",
+      "description": "Natural boundary: Key commands output graph-powered suggestions. Tips appear after success, graph-powered (not hardcoded), added to create-story/update-work-unit-status/set-user-story/generate-scenarios, overhead ≤200-300 bytes. Dependencies: NAV-001. Use 'fspec' command only. TDD required.",
+      "epic": "domain-knowledge-graph",
+      "children": [],
+      "dependsOn": [
+        "NAV-001"
+      ]
+    },
+    "DOC-007": {
+      "id": "DOC-007",
+      "title": "Guide System Core",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-11-07T01:03:09.848Z",
+      "updatedAt": "2025-11-07T01:03:09.848Z",
+      "description": "Natural boundary: 'fspec guide <topic>' command working. Reads guide files from spec/guides/, output checked (≤5KB per guide), help text included, list available guides, feature file and tests. Dependencies: None. Use 'fspec' command only. TDD required.",
+      "epic": "domain-knowledge-graph",
+      "children": []
+    },
+    "DOC-008": {
+      "id": "DOC-008",
+      "title": "Core Workflow Guides",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-11-07T01:03:11.420Z",
+      "updatedAt": "2025-11-07T01:11:29.413Z",
+      "description": "Natural boundary: All essential guides written. Guide files (≤5KB each): acdd.md, example-mapping.md, coverage.md, hooks.md, kanban.md, getting-started.md. All guides linked in graph, accessible via 'fspec guide <topic>', output size validated. Dependencies: DOC-001, GRAPH-002. Use 'fspec' command only. TDD required.",
+      "epic": "domain-knowledge-graph",
+      "children": [],
+      "dependsOn": [
+        "GRAPH-002",
+        "DOC-007"
+      ]
+    },
+    "DOC-009": {
+      "id": "DOC-009",
+      "title": "Enhanced Help System",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-11-07T01:03:13.132Z",
+      "updatedAt": "2025-11-07T01:10:44.544Z",
+      "description": "Natural boundary: Graph-powered help with semantic search. 'fspec help' shows graph-powered list, 'fspec help <command>' shows graph-enhanced details, NEW: 'fspec help specs' (workflow guide), 'fspec help commands' (grouped by phase), 'fspec help workflows' (all workflows). Dependencies: GRAPH-002, DOC-001. Use 'fspec' command only. TDD required.",
+      "epic": "domain-knowledge-graph",
+      "children": [],
+      "dependsOn": [
+        "DOC-007",
+        "GRAPH-002"
+      ]
+    },
+    "DOC-010": {
+      "id": "DOC-010",
+      "title": "AGENTS.md Restructure",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-11-07T01:03:14.590Z",
+      "updatedAt": "2025-11-07T01:10:03.319Z",
+      "description": "Natural boundary: Minimal navigation hub complete (≤4KB). AGENTS.md rewritten as navigation hub, file ≤4KB, contains quick start/core concepts/graph query examples, delegates to guides, tested with Codex (10KB limit - NO TRUNCATION) and Claude Code. Dependencies: DOC-001, DOC-002. Use 'fspec' command only. TDD required.",
+      "epic": "domain-knowledge-graph",
+      "children": [],
+      "dependsOn": [
+        "DOC-008",
+        "DOC-007"
+      ]
+    },
+    "DOC-011": {
+      "id": "DOC-011",
+      "title": "Context-Aware Bootstrap",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-11-07T01:03:16.361Z",
+      "updatedAt": "2025-11-07T01:09:53.761Z",
+      "description": "Natural boundary: Bootstrap supports optional context flags. Default ≤8KB (general overview), --work-unit=<id> ≤7KB (work unit context), --phase=<phase> ≤6KB (phase guide), all modes tested with Codex. Dependencies: DOC-004, NAV-001. Use 'fspec' command only. TDD required.",
+      "epic": "domain-knowledge-graph",
+      "children": [],
+      "dependsOn": [
+        "NAV-001",
+        "DOC-010"
+      ]
+    },
+    "DOMAIN-001": {
+      "id": "DOMAIN-001",
+      "title": "Event Storming Workflow State",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-11-07T01:03:35.664Z",
+      "updatedAt": "2025-11-07T01:03:35.664Z",
+      "description": "Natural boundary: New workflow state working. 'event_storming' state added, transitions defined (backlog→event_storming, event_storming→specifying), state validation updated, help text updated. Dependencies: None. Use 'fspec' command only. TDD required.",
+      "epic": "domain-knowledge-graph",
+      "children": []
+    },
+    "DOMAIN-002": {
+      "id": "DOMAIN-002",
+      "title": "Event Storm Data Model",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-11-07T01:03:37.300Z",
+      "updatedAt": "2025-11-07T01:07:47.921Z",
+      "description": "Natural boundary: Event Storm artifacts stored in graph. Event node types added (DomainEvent, Command, Aggregate, Policy, ExternalSystem, Hotspot, BoundedContext), metadata schema defined, work unit/foundation data structures, serialization working. Dependencies: GRAPH-001. Blocks: DOMAIN-003, DOMAIN-004, DOMAIN-005, DOMAIN-006. Use 'fspec' command only. TDD required.",
+      "epic": "domain-knowledge-graph",
+      "children": [],
+      "dependsOn": [
+        "GRAPH-001"
+      ]
+    },
+    "DOMAIN-003": {
+      "id": "DOMAIN-003",
+      "title": "Event Storm Commands Part 1",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-11-07T01:03:39.498Z",
+      "updatedAt": "2025-11-07T01:07:49.626Z",
+      "description": "Natural boundary: Basic artifact capture working. Commands: add-domain-event, add-command (--triggers flag), add-aggregate (--context flag). Artifacts added to graph, stored in work-units.json, help text included. Dependencies: DOMAIN-002. Use 'fspec' command only. TDD required.",
+      "epic": "domain-knowledge-graph",
+      "children": [],
+      "dependsOn": [
+        "DOMAIN-002"
+      ]
+    },
+    "DOMAIN-004": {
+      "id": "DOMAIN-004",
+      "title": "Event Storm Commands Part 2",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-11-07T01:03:41.019Z",
+      "updatedAt": "2025-11-07T01:07:51.146Z",
+      "description": "Natural boundary: Advanced artifact capture working. Commands: add-policy, add-hotspot, add-external-system, add-bounded-context-to-foundation, list-event-storm. Artifacts added to graph, stored in work-units.json/foundation.json, help text included. Dependencies: DOMAIN-002. Use 'fspec' command only. TDD required.",
+      "epic": "domain-knowledge-graph",
+      "children": [],
+      "dependsOn": [
+        "DOMAIN-002"
+      ]
+    },
+    "DOMAIN-005": {
+      "id": "DOMAIN-005",
+      "title": "Event Storm Transformation",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-11-07T01:03:42.613Z",
+      "updatedAt": "2025-11-07T01:11:26.245Z",
+      "description": "Natural boundary: Event Storm → Example Mapping transformation working. Command: transform-event-storm. Transforms domain events→examples, policies→rules, hotspots→questions, advances work unit to specifying (--auto-advance). Dependencies: DOMAIN-003, DOMAIN-004. Use 'fspec' command only. TDD required.",
+      "epic": "domain-knowledge-graph",
+      "children": [],
+      "dependsOn": [
+        "DOMAIN-004",
+        "DOMAIN-003"
+      ]
+    },
+    "TAG-001": {
+      "id": "TAG-001",
+      "title": "Tag Relationship Data Model",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-11-07T01:03:57.935Z",
+      "updatedAt": "2025-11-07T01:03:57.935Z",
+      "description": "Natural boundary: Enhanced tags.json with relationships. tags.json schema updated, relationship types defined (hierarchical/semantic/domain), JSON Schema validation, migration script, unit tests pass. Dependencies: None. Blocks: TAG-002, TAG-003, TAG-004. Use 'fspec' command only. TDD required.",
+      "epic": "domain-knowledge-graph",
+      "children": []
+    },
+    "TAG-002": {
+      "id": "TAG-002",
+      "title": "Tag Relationship Commands",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-11-07T01:03:59.359Z",
+      "updatedAt": "2025-11-07T01:07:56.291Z",
+      "description": "Natural boundary: CRUD operations for tag relationships. Commands: add-tag-relationship (--parent/--requires/--domain-event flags), show-tag-relationships, remove-tag-relationship. Stored in tags.json, circular hierarchy prevention, help text. Dependencies: TAG-001. Use 'fspec' command only. TDD required.",
+      "epic": "domain-knowledge-graph",
+      "children": [],
+      "dependsOn": [
+        "TAG-001"
+      ]
+    },
+    "TAG-003": {
+      "id": "TAG-003",
+      "title": "Tag Discovery from Events",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-11-07T01:04:01.042Z",
+      "updatedAt": "2025-11-07T01:08:38.344Z",
+      "description": "Natural boundary: Automatic tag suggestion from Event Storm. Commands: suggest-tags-from-events, sync-tags-with-event-storm. Algorithm: cluster events by aggregate/context→component tags, group by similarity→feature tags, identify external systems→technical tags. Dependencies: TAG-002, DOMAIN-005. Use 'fspec' command only. TDD required.",
+      "epic": "domain-knowledge-graph",
+      "children": [],
+      "dependsOn": [
+        "DOMAIN-005"
+      ]
+    },
+    "TAG-004": {
+      "id": "TAG-004",
+      "title": "Tag Validation",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-11-07T01:04:02.575Z",
+      "updatedAt": "2025-11-07T01:11:27.965Z",
+      "description": "Natural boundary: Comprehensive tag validation. Command: validate-tag-relationships. Checks: no circular hierarchies, valid semantic relationships, feature tags have domain mappings, component tags have bounded context mappings, orphaned tags. Dependencies: TAG-001, TAG-002. Use 'fspec' command only. TDD required.",
+      "epic": "domain-knowledge-graph",
+      "children": [],
+      "dependsOn": [
+        "TAG-002",
+        "TAG-001"
+      ]
+    },
+    "VIZ-001": {
+      "id": "VIZ-001",
+      "title": "Graph Visualization Core",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-11-07T01:04:18.022Z",
+      "updatedAt": "2025-11-07T01:08:01.270Z",
+      "description": "Natural boundary: Graph export to multiple formats. Commands: 'fspec graph show', 'fspec graph export --format=<format> --output=<file>'. Formats: mermaid, dot, json. Mermaid/DOT/JSON generators. Dependencies: GRAPH-003. Use 'fspec' command only. TDD required.",
+      "epic": "domain-knowledge-graph",
+      "children": [],
+      "dependsOn": [
+        "GRAPH-003"
+      ]
+    },
+    "VIZ-002": {
+      "id": "VIZ-002",
+      "title": "Graph Filtering",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-11-07T01:04:19.705Z",
+      "updatedAt": "2025-11-07T01:08:03.101Z",
+      "description": "Natural boundary: Filter graph by type, context, epic. Filtering options: --type=<node-type>, --context=<bounded-context>, --epic=<epic-name>, --depth=<n>. Command: 'fspec graph show --type=Command --context=Authentication'. Dependencies: VIZ-001. Use 'fspec' command only. TDD required.",
+      "epic": "domain-knowledge-graph",
+      "children": [],
+      "dependsOn": [
+        "VIZ-001"
+      ]
+    },
+    "VIZ-003": {
+      "id": "VIZ-003",
+      "title": "Tag Graph Visualization",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-11-07T01:04:21.231Z",
+      "updatedAt": "2025-11-07T01:11:02.884Z",
+      "description": "Natural boundary: Specialized tag graph export. Command: 'fspec export-tag-graph'. Graph types: hierarchy, semantic, domain, complete. Command: 'fspec export-tag-graph --type=<type> --format=mermaid --output=<file>'. Dependencies: TAG-002, VIZ-001. Use 'fspec' command only. TDD required.",
+      "epic": "domain-knowledge-graph",
+      "children": [],
+      "dependsOn": [
+        "VIZ-001",
+        "TAG-002"
+      ]
+    },
+    "VIZ-004": {
+      "id": "VIZ-004",
+      "title": "Event Storm Diagrams",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-11-07T01:04:22.808Z",
+      "updatedAt": "2025-11-07T01:11:04.533Z",
+      "description": "Natural boundary: Generate Event Storm visualizations. Generate timeline (events in sequence), bounded context map, command-event flow. Command: 'fspec export-event-storm-diagram <work-unit-id> --type=<type> --output=<file>'. Auto-attach diagrams to work units. Dependencies: DOMAIN-005, VIZ-001. Use 'fspec' command only. TDD required.",
+      "epic": "domain-knowledge-graph",
+      "children": [],
+      "dependsOn": [
+        "VIZ-001",
+        "DOMAIN-005"
+      ]
+    },
+    "INT-001": {
+      "id": "INT-001",
+      "title": "Auto-Tagging During Scenario Generation",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-11-07T01:04:39.521Z",
+      "updatedAt": "2025-11-07T01:10:21.409Z",
+      "description": "Natural boundary: Feature files auto-tagged from Event Storm. 'fspec generate-scenarios' queries Event Storm, auto-applies tags from domain mappings (bounded context/aggregates/events), coverage file includes domain event links. Dependencies: TAG-003, DOMAIN-005. Use 'fspec' command only. TDD required.",
+      "epic": "domain-knowledge-graph",
+      "children": [],
+      "dependsOn": [
+        "DOMAIN-005",
+        "TAG-003"
+      ]
+    },
+    "INT-002": {
+      "id": "INT-002",
+      "title": "System Reminder Integration",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-11-07T01:04:41.127Z",
+      "updatedAt": "2025-11-07T01:04:41.127Z",
+      "description": "Natural boundary: All reminders integrated into workflow. Estimation reminder on transition without estimate, status duration reminder on show-work-unit, estimation blocked for stories without feature files, estimation blocked for prefill placeholders, temporal validation on state transitions. Dependencies: None. Use 'fspec' command only. TDD required.",
+      "epic": "domain-knowledge-graph",
+      "children": []
+    },
+    "INT-003": {
+      "id": "INT-003",
+      "title": "Research Tool Integration",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-11-07T01:04:42.966Z",
+      "updatedAt": "2025-11-07T01:08:09.331Z",
+      "description": "Natural boundary: Event Storming integrated with fspec research. 'fspec research' queries Event Storm artifacts, research prompts reference domain events/aggregates/bounded contexts, graph queries integrated. Dependencies: DOMAIN-005. Use 'fspec' command only. TDD required.",
+      "epic": "domain-knowledge-graph",
+      "children": [],
+      "dependsOn": [
+        "DOMAIN-005"
+      ]
+    },
+    "INT-004": {
+      "id": "INT-004",
+      "title": "Validation Hooks",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-11-07T01:04:44.377Z",
+      "updatedAt": "2025-11-07T01:08:11.365Z",
+      "description": "Natural boundary: Tag-Event Storm alignment validation. Lifecycle hook: pre-validating state checks tag alignment, runs 'validate-tag-relationships' automatically, fails if orphaned tags/missing domain mappings, emits system-reminder with fix instructions. Dependencies: TAG-004. Use 'fspec' command only. TDD required.",
+      "epic": "domain-knowledge-graph",
+      "children": [],
+      "dependsOn": [
+        "TAG-004"
+      ]
+    },
+    "DOC-012": {
+      "id": "DOC-012",
+      "title": "Event Storming Guides",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-11-07T01:04:59.978Z",
+      "updatedAt": "2025-11-07T01:08:12.906Z",
+      "description": "Natural boundary: Event Storming guides written. Guides: spec/guides/event-storming.md, spec/guides/tag-ontology.md. Guides ≤5KB each, accessible via 'fspec guide event-storming' and 'fspec guide tag-ontology', linked in graph. Dependencies: DOC-001. Use 'fspec' command only. TDD required.",
+      "epic": "domain-knowledge-graph",
+      "children": [],
+      "dependsOn": [
+        "DOC-007"
+      ]
+    },
+    "DOC-013": {
+      "id": "DOC-013",
+      "title": "Comprehensive Help Documentation",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-11-07T01:05:01.617Z",
+      "updatedAt": "2025-11-07T01:05:01.617Z",
+      "description": "Natural boundary: All commands have help text. Every new command has comprehensive --help output, help text follows fspec conventions (AI-optimized sections), examples use 'fspec' command (NOT npx/npm/node), all help text added to graph nodes. Dependencies: All command work units. Use 'fspec' command only.",
+      "epic": "domain-knowledge-graph",
+      "children": []
+    },
+    "DOC-014": {
+      "id": "DOC-014",
+      "title": "Example Sessions",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-11-07T01:05:03.079Z",
+      "updatedAt": "2025-11-07T01:05:03.079Z",
+      "description": "Natural boundary: Example workflows documented. Examples: Greenfield project with Big Picture Event Storming, Adding feature with Process Modeling Event Storming, Refactoring with tag-domain alignment. All examples use ONLY 'fspec' command. Dependencies: All previous work units.",
+      "epic": "domain-knowledge-graph",
+      "children": []
     }
   },
   "states": {
@@ -42344,7 +42781,39 @@
       "RES-005",
       "FEAT-018",
       "CLEAN-002",
-      "FEAT-020"
+      "FEAT-020",
+      "AGENT-019",
+      "GRAPH-001",
+      "GRAPH-002",
+      "GRAPH-003",
+      "NAV-001",
+      "NAV-002",
+      "NAV-003",
+      "DOC-007",
+      "DOC-008",
+      "DOC-009",
+      "DOC-010",
+      "DOC-011",
+      "DOMAIN-001",
+      "DOMAIN-002",
+      "DOMAIN-003",
+      "DOMAIN-004",
+      "DOMAIN-005",
+      "TAG-001",
+      "TAG-002",
+      "TAG-003",
+      "TAG-004",
+      "VIZ-001",
+      "VIZ-002",
+      "VIZ-003",
+      "VIZ-004",
+      "INT-001",
+      "INT-002",
+      "INT-003",
+      "INT-004",
+      "DOC-012",
+      "DOC-013",
+      "DOC-014"
     ],
     "specifying": [
       "RES-006",
@@ -42698,9 +43167,17 @@
     "TUI": 28,
     "REFAC": 4,
     "VIEW": 2,
-    "DOC": 6,
+    "DOC": 14,
     "GIT": 12,
     "FEAT": 20,
-    "REMIND": 11
+    "REMIND": 11,
+    "CODEX": 1,
+    "AGENT": 19,
+    "GRAPH": 3,
+    "NAV": 3,
+    "DOMAIN": 5,
+    "TAG": 4,
+    "VIZ": 4,
+    "INT": 4
   }
 }

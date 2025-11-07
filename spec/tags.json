@@ -666,6 +666,10 @@
           "description": "Code review and quality analysis features"
         },
         {
+          "name": "@codex",
+          "description": "Codex AI agent integration features"
+        },
+        {
           "name": "@command-registration",
           "description": "CLI command registration features"
         },
@@ -956,6 +960,10 @@
         {
           "name": "@template-generation",
           "description": "Template and documentation generation"
+        },
+        {
+          "name": "@toml",
+          "description": "TOML configuration file parsing and manipulation"
         },
         {
           "name": "@traceability",
@@ -1466,7 +1474,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-11-05T22:29:35.974Z",
+    "lastUpdated": "2025-11-07T00:06:05.706Z",
     "phaseStats": [
       {
         "phase": "Phase 1",
