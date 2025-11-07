@@ -26,18 +26,25 @@ export function getWorkerPath(): string {
   const currentModulePath = fileURLToPath(import.meta.url);
   const currentModuleDir = dirname(currentModulePath);
 
-  // Navigate from src/git/worker-path.ts to dist/git/diff-worker.js
-  // Current: src/git/worker-path.ts
-  // Target:  dist/git/diff-worker.js
-  // Path:    ../.. (go to root), then dist/git/diff-worker.js
-  const workerPath = join(
-    currentModuleDir,
-    '..',
-    '..',
-    'dist',
-    'git',
-    'diff-worker.js'
-  );
+  let workerPath: string;
+
+  if (currentModulePath.includes('/dist/')) {
+    // Production: Running from bundled code in dist/index.js
+    // currentModuleDir is /path/to/fspec/dist
+    workerPath = join(currentModuleDir, 'git', 'diff-worker.js');
+  } else {
+    // Development: Running from source in src/git/worker-path.ts
+    // currentModuleDir is /path/to/fspec/src/git
+    // Need to go up to project root, then to dist/git/diff-worker.js
+    workerPath = join(
+      currentModuleDir,
+      '..',
+      '..',
+      'dist',
+      'git',
+      'diff-worker.js'
+    );
+  }
 
   return workerPath;
 }
