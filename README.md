@@ -12,11 +12,13 @@
 
 ---
 
-## WHY?
+## Why
 
-**AI coding is broken. Admit it.** Your agent writes code without tests, forgets what it did yesterday, and ships features based on vibes. You're babysitting more than building. fspec fixes this by making discipline non-negotiable. It's a workflow enforcer that forces AI to follow test-driven development: write acceptance criteria, generate tests, then code—in that exact order. No shortcuts. No exceptions. The payoff? Autonomous AI that ships production-ready code while you focus on actual problems. Stop micromanaging. Start shipping.
+AI agents lack the infrastructure that professional developers take for granted. No ACDD/TDD guardrails to enforce test-first discipline. No checkpoints for safe experimentation. No Kanban boards for tracking workflow state. No specification management systems with mermaid diagram viewers and markdown documentation. No coverage tracking to link code back to business rules. AI agents are coding in the dark, and you're left babysitting instead of building.
 
-Why pay someone to write tests when AI does it better—and fspec ensures it's always done first?
+## What
+
+fspec is the holy grail: a complete spec-driven system that shepherds AI through professional Gherkin scenarios, auto-generates tests from Given/When/Then criteria, enforces TDD discipline, and links every line of code back to the business rule it implements. A productivity goldmine that transforms AI agents into autonomous builders of your dreams.
 
 ---
 
