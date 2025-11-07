@@ -88,6 +88,12 @@ export interface WorkUnit {
 }
 
 export interface WorkUnitsData {
+  version?: string;
+  migrationHistory?: Array<{
+    version: string;
+    applied: string;
+    backupPath: string;
+  }>;
   meta?: {
     version: string;
     lastUpdated: string;

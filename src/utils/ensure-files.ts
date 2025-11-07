@@ -5,11 +5,7 @@ import type { Tags } from '../types/tags';
 import { findOrCreateSpecDirectory } from './project-root-detection';
 import { fileManager } from './file-manager';
 import { ensureLatestVersion } from '../migrations';
-
-/**
- * Current version of fspec (used for auto-migration)
- */
-const CURRENT_VERSION = '0.7.0';
+import { CURRENT_VERSION } from '../migrations/registry';
 
 /**
  * Ensures spec/work-units.json exists with proper initial structure.
@@ -23,6 +19,7 @@ export async function ensureWorkUnitsFile(cwd: string): Promise<WorkUnitsData> {
   const filePath = join(specPath, 'work-units.json');
 
   const initialData: WorkUnitsData = {
+    version: CURRENT_VERSION,
     meta: {
       version: '1.0.0',
       lastUpdated: new Date().toISOString(),

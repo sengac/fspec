@@ -1,0 +1,101 @@
+{
+  "scenarios": [
+    {
+      "name": "Create work-units.json with current version on first run",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/ensure-files.test.ts",
+          "lines": "193-215",
+          "implMappings": [
+            {
+              "file": "src/migrations/registry.ts",
+              "lines": [
+                14,
+                15,
+                16,
+                17,
+                18
+              ]
+            },
+            {
+              "file": "src/utils/ensure-files.ts",
+              "lines": [
+                8,
+                22
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Recreate work-units.json with current version after deletion",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/ensure-files.test.ts",
+          "lines": "226-254",
+          "implMappings": [
+            {
+              "file": "src/migrations/registry.ts",
+              "lines": [
+                14,
+                15,
+                16,
+                17,
+                18
+              ]
+            },
+            {
+              "file": "src/utils/ensure-files.ts",
+              "lines": [
+                8,
+                22
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Version constant shared across ensure-files and migrations",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/ensure-files.test.ts",
+          "lines": "263-283",
+          "implMappings": [
+            {
+              "file": "src/migrations/registry.ts",
+              "lines": [
+                14,
+                15,
+                16,
+                17,
+                18
+              ]
+            },
+            {
+              "file": "src/utils/ensure-files.ts",
+              "lines": [
+                8,
+                22
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/utils/__tests__/ensure-files.test.ts"
+    ],
+    "implFiles": [
+      "src/migrations/registry.ts",
+      "src/utils/ensure-files.ts"
+    ],
+    "totalLinesCovered": 94
+  }
+}

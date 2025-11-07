@@ -990,6 +990,10 @@
           "description": "UI rendering and layout issues"
         },
         {
+          "name": "@versioning",
+          "description": "Version management and migration features"
+        },
+        {
           "name": "@vitest",
           "description": "Vitest testing framework related features"
         },
@@ -1474,7 +1478,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-11-07T00:06:05.706Z",
+    "lastUpdated": "2025-11-07T02:04:23.450Z",
     "phaseStats": [
       {
         "phase": "Phase 1",
