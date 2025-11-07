@@ -149,15 +149,6 @@ How long would that normally take? A traditional QA and business analyst team wo
 - 🏷️ **[Tags](https://fspec.dev/commands/specs/)** - Organization system
 - 🔧 **[CLI Reference](https://fspec.dev/reference/cli/)** - Command cheatsheet
 
-**Pro tip:** All commands have comprehensive `--help` output:
-
-```bash
-fspec <command> --help
-fspec help specs      # Gherkin commands
-fspec help work       # Kanban commands
-fspec help discovery  # Example mapping commands
-```
-
 ---
 
 ## Bug Reporting & Support
