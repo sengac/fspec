@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-07T03:36:52.898Z"
+    "lastUpdated": "2025-11-07T07:25:03.345Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -42876,6 +42876,110 @@
       "description": "Natural boundary: Example workflows documented. Examples: Greenfield project with Big Picture Event Storming, Adding feature with Process Modeling Event Storming, Refactoring with tag-domain alignment. All examples use ONLY 'fspec' command. Dependencies: All previous work units.",
       "epic": "domain-knowledge-graph",
       "children": []
+    },
+    "BUG-071": {
+      "id": "BUG-071",
+      "title": "Worker module not bundled - MODULE_NOT_FOUND for diff-worker.js",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-11-07T07:11:57.014Z",
+      "updatedAt": "2025-11-07T07:25:03.366Z",
+      "description": "Critical bundling issue: Worker file is being called from static location instead of being bundled with the application.\n\nError: Cannot find module '/Users/rquast/projects/ollama/dist/git/diff-worker.js'\n    at Function._resolveFilename (node:internal/modules/cjs/loader:1383:15)\n    at MessagePort.<anonymous> (node:internal/main/worker_thread:226:26)\n\nRoot cause: Build configuration is not bundling worker files, causing hard-coded paths to fail.\n\nRequirements:\n- Worker file MUST be bundled with the application\n- Worker path resolution must use bundled location, not static paths\n- Fix must work in both development and production environments",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-07T07:13:27.404Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-07T07:15:39.573Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-07T07:24:33.814Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-07T07:24:36.263Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-07T07:25:03.366Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "Worker path must resolve relative to the fspec module location, not process.cwd()",
+          "deleted": false,
+          "createdAt": "2025-11-07T07:13:39.243Z"
+        },
+        {
+          "id": 1,
+          "text": "Worker file must be accessible when fspec is installed as a dependency in another project",
+          "deleted": false,
+          "createdAt": "2025-11-07T07:13:39.844Z"
+        },
+        {
+          "id": 2,
+          "text": "Fix must work in both development (running from source) and production (installed as dependency)",
+          "deleted": false,
+          "createdAt": "2025-11-07T07:13:41.311Z"
+        }
+      ],
+      "nextRuleId": 3,
+      "examples": [
+        {
+          "id": 0,
+          "text": "When fspec is used in /Users/rquast/projects/ollama, process.cwd() returns /Users/rquast/projects/ollama, but worker is at /Users/rquast/projects/ollama/node_modules/@sengac/fspec/dist/git/diff-worker.js",
+          "deleted": false,
+          "createdAt": "2025-11-07T07:13:42.856Z"
+        },
+        {
+          "id": 1,
+          "text": "Current code in FileDiffViewer.tsx:60 uses join(process.cwd(), 'dist', 'git', 'diff-worker.js') which fails when cwd is not fspec directory",
+          "deleted": false,
+          "createdAt": "2025-11-07T07:13:44.723Z"
+        },
+        {
+          "id": 2,
+          "text": "CheckpointViewer.tsx:175 has the same issue with hardcoded process.cwd() path resolution",
+          "deleted": false,
+          "createdAt": "2025-11-07T07:13:46.271Z"
+        }
+      ],
+      "nextExampleId": 3,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Solution: Use import.meta.url and fileURLToPath to resolve worker path relative to module location. This works in both development and production environments.",
+          "deleted": false,
+          "createdAt": "2025-11-07T07:13:57.848Z"
+        },
+        {
+          "id": 1,
+          "text": "Affected files: src/tui/components/FileDiffViewer.tsx:60 and src/tui/components/CheckpointViewer.tsx:175",
+          "deleted": false,
+          "createdAt": "2025-11-07T07:13:59.515Z"
+        },
+        {
+          "id": 2,
+          "text": "Worker is already bundled separately via esbuild in package.json build script. No changes needed to build process.",
+          "deleted": false,
+          "createdAt": "2025-11-07T07:14:01.059Z"
+        }
+      ],
+      "nextNoteId": 3,
+      "userStory": {
+        "role": "developer using fspec as a dependency",
+        "action": "spawn worker threads for git diff operations",
+        "benefit": "the worker module is found and loaded correctly regardless of project location"
+      },
+      "estimate": 2,
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2025-11-07T07:25:03.366Z"
     }
   },
   "states": {
@@ -42949,6 +43053,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "BUG-071",
       "BUG-070",
       "REMIND-011",
       "REMIND-010",
@@ -43285,7 +43390,7 @@
   "prefixCounters": {
     "CLI": 14,
     "HELP": 5,
-    "BUG": 70,
+    "BUG": 71,
     "DISC": 2,
     "COV": 53,
     "TUI": 28,
