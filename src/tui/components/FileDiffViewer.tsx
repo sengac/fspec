@@ -14,8 +14,8 @@ import { VirtualList } from './VirtualList';
 import { useFspecStore } from '../store/fspecStore';
 import { logger } from '../../utils/logger';
 import { Worker } from 'worker_threads';
-import { join } from 'path';
 import { parseDiff, DiffLine } from '../../git/diff-parser';
+import { getWorkerPath } from '../../git/worker-path';
 
 export interface FileItem {
   path: string;
@@ -57,7 +57,7 @@ export const FileDiffViewer: React.FC<FileDiffViewerProps> = ({
 
   // Initialize worker thread on mount
   useEffect(() => {
-    const workerPath = join(process.cwd(), 'dist', 'git', 'diff-worker.js');
+    const workerPath = getWorkerPath();
     logger.info(`[${componentId.current}] Initializing worker thread at: ${workerPath}`);
 
     try {

@@ -188,6 +188,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@bdd` | Behavior-Driven Development methodology |
 | `@browser-integration` | Features requiring browser launcher integration |
 | `@build` | Build system configuration and bundling |
+| `@bundling` | Features related to build bundling and module resolution |
 | `@checkpoints` | Git checkpoint and state restoration features |
 | `@cleanup` | Cleanup and resource management features |
 | `@code-review` | Code review and quality analysis features |
@@ -275,6 +276,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@versioning` | Version management and migration features |
 | `@vitest` | Vitest testing framework related features |
 | `@web` | Web-based features and browser functionality |
+| `@worker-threads` | Features involving Node.js worker threads for parallel processing |
 | `@zoom` | Zoom and scaling functionality for diagrams and visualizations |
 | `@zoom-pan` | Zoom and pan interaction features |
 | `@zustand` | Zustand state management library |
@@ -611,7 +613,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-11-07T02:04:23.450Z_
+_Last updated: 2025-11-07T07:15:08.603Z_
 
 **Update Command**: `fspec tag-stats`
 

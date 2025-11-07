@@ -11,8 +11,8 @@ import { Box, Text, useInput } from 'ink';
 import { VirtualList } from './VirtualList';
 import type { FileItem } from './FileDiffViewer';
 import { Worker } from 'worker_threads';
-import { join } from 'path';
 import { parseDiff, DiffLine } from '../../git/diff-parser';
+import { getWorkerPath } from '../../git/worker-path';
 import { useFspecStore } from '../store/fspecStore';
 import * as git from 'isomorphic-git';
 import fs from 'fs';
@@ -172,7 +172,7 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
 
   // Initialize worker thread on mount
   useEffect(() => {
-    const workerPath = join(process.cwd(), 'dist', 'git', 'diff-worker.js');
+    const workerPath = getWorkerPath();
 
     try {
       workerRef.current = new Worker(workerPath);

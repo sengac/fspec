@@ -654,6 +654,10 @@
           "description": "Build system configuration and bundling"
         },
         {
+          "name": "@bundling",
+          "description": "Features related to build bundling and module resolution"
+        },
+        {
           "name": "@checkpoints",
           "description": "Git checkpoint and state restoration features"
         },
@@ -1000,6 +1004,10 @@
         {
           "name": "@web",
           "description": "Web-based features and browser functionality"
+        },
+        {
+          "name": "@worker-threads",
+          "description": "Features involving Node.js worker threads for parallel processing"
         },
         {
           "name": "@zoom",
@@ -1478,7 +1486,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-11-07T02:04:23.450Z",
+    "lastUpdated": "2025-11-07T07:15:08.603Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

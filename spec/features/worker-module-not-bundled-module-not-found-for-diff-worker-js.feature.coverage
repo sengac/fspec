@@ -1,0 +1,86 @@
+{
+  "scenarios": [
+    {
+      "name": "Worker path resolution when fspec is installed as a dependency",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/worker-path-resolution.test.tsx",
+          "lines": "12-44",
+          "implMappings": [
+            {
+              "file": "src/git/worker-path.ts",
+              "lines": [
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "FileDiffViewer component worker initialization with correct path resolution",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/worker-path-resolution.test.tsx",
+          "lines": "47-73",
+          "implMappings": [
+            {
+              "file": "src/tui/components/FileDiffViewer.tsx",
+              "lines": [
+                60
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CheckpointViewer component worker initialization with correct path resolution",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/worker-path-resolution.test.tsx",
+          "lines": "75-101",
+          "implMappings": [
+            {
+              "file": "src/tui/components/CheckpointViewer.tsx",
+              "lines": [
+                175
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/components/__tests__/worker-path-resolution.test.tsx"
+    ],
+    "implFiles": [
+      "src/git/worker-path.ts",
+      "src/tui/components/FileDiffViewer.tsx",
+      "src/tui/components/CheckpointViewer.tsx"
+    ],
+    "totalLinesCovered": 107
+  }
+}
