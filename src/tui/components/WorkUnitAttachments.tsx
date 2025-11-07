@@ -70,7 +70,23 @@ export const WorkUnitAttachments: React.FC<WorkUnitAttachmentsProps> = ({
     // Add the "...N more" suffix
     const remaining = filenames.length - count;
     if (remaining > 0) {
-      displayText = fittedText + `, ...${remaining} more`;
+      if (count === 0) {
+        // No filenames fit - show first filename truncated with "...N more" if possible
+        const moreText = `, ...${remaining} more`;
+        const maxFirstFilenameWidth = contentWidth - moreText.length;
+
+        if (maxFirstFilenameWidth > 3) {
+          // Enough room to show truncated filename + suffix
+          const truncatedFirst = cliTruncate(filenames[0], maxFirstFilenameWidth, { position: 'end' });
+          displayText = truncatedFirst + moreText;
+        } else {
+          // Not enough room for suffix, just show truncated filename
+          displayText = cliTruncate(filenames[0], contentWidth, { position: 'end' });
+        }
+      } else {
+        // Some filenames fit - use fitted text + suffix
+        displayText = fittedText + `, ...${remaining} more`;
+      }
     } else {
       displayText = fittedText;
     }
