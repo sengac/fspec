@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-07T07:25:03.345Z"
+    "lastUpdated": "2025-11-07T23:44:49.128Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -42980,6 +42980,90 @@
       "questions": [],
       "nextQuestionId": 0,
       "updated": "2025-11-07T07:25:03.366Z"
+    },
+    "BUG-072": {
+      "id": "BUG-072",
+      "title": "TUI hangs when foundation.json is missing",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-11-07T23:33:33.203Z",
+      "updatedAt": "2025-11-07T23:44:49.150Z",
+      "description": "When running 'fspec' (no arguments) in a project without spec/foundation.json, the TUI pauses/hangs instead of showing an empty board or a helpful error message.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-07T23:33:46.248Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-07T23:35:17.984Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-07T23:37:50.630Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-07T23:39:13.268Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-07T23:44:49.150Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using fspec in a new project",
+        "action": "run the TUI without a foundation.json file",
+        "benefit": "I see either an empty board or a helpful error message instead of the app hanging"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "TUI must not hang or pause when foundation.json is missing",
+          "deleted": false,
+          "createdAt": "2025-11-07T23:34:04.701Z"
+        },
+        {
+          "id": 1,
+          "text": "TUI should display an empty board when no work units exist",
+          "deleted": false,
+          "createdAt": "2025-11-07T23:34:06.784Z"
+        },
+        {
+          "id": 2,
+          "text": "TUI must be responsive and allow user to exit with ESC key",
+          "deleted": false,
+          "createdAt": "2025-11-07T23:34:08.272Z"
+        }
+      ],
+      "nextRuleId": 3,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User runs 'fspec' in ~/projects/cagetools (no spec dir), TUI loads showing empty board",
+          "deleted": false,
+          "createdAt": "2025-11-07T23:34:16.234Z"
+        },
+        {
+          "id": 1,
+          "text": "User runs 'fspec' in project with spec dir but no foundation.json, TUI loads showing empty board",
+          "deleted": false,
+          "createdAt": "2025-11-07T23:34:17.940Z"
+        },
+        {
+          "id": 2,
+          "text": "User presses ESC key in TUI, app exits gracefully",
+          "deleted": false,
+          "createdAt": "2025-11-07T23:34:19.336Z"
+        }
+      ],
+      "nextExampleId": 3,
+      "questions": [],
+      "architectureNotes": [],
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-07T23:44:49.150Z"
     }
   },
   "states": {
@@ -43053,6 +43137,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "BUG-072",
       "BUG-071",
       "BUG-070",
       "REMIND-011",
@@ -43390,7 +43475,7 @@
   "prefixCounters": {
     "CLI": 14,
     "HELP": 5,
-    "BUG": 71,
+    "BUG": 72,
     "DISC": 2,
     "COV": 53,
     "TUI": 28,

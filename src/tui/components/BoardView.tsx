@@ -48,6 +48,8 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
   const loadStashes = useFspecStore(state => state.loadStashes);
   const moveWorkUnitUp = useFspecStore(state => state.moveWorkUnitUp);
   const moveWorkUnitDown = useFspecStore(state => state.moveWorkUnitDown);
+  const error = useFspecStore(state => state.error);
+  const isLoaded = useFspecStore(state => state.isLoaded);
 
   const [focusedColumnIndex, setFocusedColumnIndex] = useState(0);
   const [selectedWorkUnitIndex, setSelectedWorkUnitIndex] = useState(0);
@@ -325,6 +327,57 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
           terminalWidth={terminalWidth}
           terminalHeight={terminalHeight}
         />
+      </FullScreenWrapper>
+    );
+  }
+
+  // Display loading state while data is being loaded (BUG-072)
+  if (!isLoaded && !error) {
+    // Loading view component with ESC key handler
+    const LoadingView = () => {
+      useInput((input, key) => {
+        if (key.escape) {
+          onExit?.();
+        }
+      }, { isActive: true });
+
+      return (
+        <Box flexDirection="column" padding={1}>
+          <Text>Loading fspec board...</Text>
+          <Text dimColor>{'\n'}Press ESC to exit</Text>
+        </Box>
+      );
+    };
+
+    return (
+      <FullScreenWrapper>
+        <LoadingView />
+      </FullScreenWrapper>
+    );
+  }
+
+  // Display error state if data loading failed (BUG-072)
+  if (error) {
+    // Error view component with ESC key handler
+    const ErrorView = () => {
+      useInput((input, key) => {
+        if (key.escape) {
+          onExit?.();
+        }
+      }, { isActive: true });
+
+      return (
+        <Box flexDirection="column" padding={1}>
+          <Text color="red">Error loading board:</Text>
+          <Text>{error}</Text>
+          <Text dimColor>{'\n'}Press ESC to exit</Text>
+        </Box>
+      );
+    };
+
+    return (
+      <FullScreenWrapper>
+        <ErrorView />
       </FullScreenWrapper>
     );
   }

@@ -1,0 +1,72 @@
+{
+  "scenarios": [
+    {
+      "name": "TUI loads with no spec directory",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/bug-072-tui-hangs-missing-foundation.test.ts",
+          "lines": "15-29",
+          "implMappings": [
+            {
+              "file": "src/tui/components/BoardView.tsx",
+              "lines": [
+                51,
+                52
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "TUI loads with spec directory but no foundation.json",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/bug-072-tui-hangs-missing-foundation.test.ts",
+          "lines": "47-66",
+          "implMappings": [
+            {
+              "file": "src/tui/components/BoardView.tsx",
+              "lines": [
+                51,
+                52
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "User can exit TUI with ESC key",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/bug-072-tui-hangs-missing-foundation.test.ts",
+          "lines": "74-86",
+          "implMappings": [
+            {
+              "file": "src/tui/components/BoardView.tsx",
+              "lines": [
+                338,
+                339,
+                340,
+                341
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/components/__tests__/bug-072-tui-hangs-missing-foundation.test.ts"
+    ],
+    "implFiles": [
+      "src/tui/components/BoardView.tsx"
+    ],
+    "totalLinesCovered": 56
+  }
+}
