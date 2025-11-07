@@ -19,13 +19,34 @@ import { join } from 'path';
 vi.mock('../../../utils/git-checkpoint');
 vi.mock('../../../utils/ipc');
 vi.mock('isomorphic-git');
-vi.mock('fs');
+vi.mock('fs', () => ({
+  default: {
+    existsSync: vi.fn(),
+    readdirSync: vi.fn(),
+    readFileSync: vi.fn(),
+  },
+}));
+
+// Import store for proper mocking
+import { useFspecStore } from '../../store/fspecStore';
 
 describe('Feature: Delete checkpoint or all checkpoints from checkpoint viewer with confirmation', () => {
   const mockCwd = '/test/project';
 
   beforeEach(() => {
     vi.clearAllMocks();
+
+    // Reset store to clean state before each test (like ChangedFilesViewer.test.tsx does)
+    useFspecStore.setState({
+      stagedFiles: [],
+      unstagedFiles: [],
+      workUnits: [],
+      epics: [],
+      stashes: [],
+      isLoaded: false,
+      error: null,
+      cwd: mockCwd, // Set the cwd so CheckpointViewer can read it
+    });
 
     // Mock sendIPCMessage
     vi.mocked(ipc.sendIPCMessage).mockResolvedValue(undefined);
@@ -41,11 +62,12 @@ describe('Feature: Delete checkpoint or all checkpoints from checkpoint viewer w
 
       // @step Given I am in the checkpoint viewer
       // @step And there is a checkpoint named "AUTH-001-baseline" selected
+      const now = Date.now();
       const mockCheckpoints = [
         {
           name: 'AUTH-001-baseline',
           workUnitId: 'AUTH-001',
-          timestamp: new Date().toISOString(),
+          timestamp: new Date(now).toISOString(),
           stashRef: 'refs/fspec-checkpoints/AUTH-001/AUTH-001-baseline',
           isAutomatic: false,
           files: ['src/auth.ts'],
@@ -54,7 +76,7 @@ describe('Feature: Delete checkpoint or all checkpoints from checkpoint viewer w
         {
           name: 'AUTH-001-experiment',
           workUnitId: 'AUTH-001',
-          timestamp: new Date().toISOString(),
+          timestamp: new Date(now).toISOString(),
           stashRef: 'refs/fspec-checkpoints/AUTH-001/AUTH-001-experiment',
           isAutomatic: false,
           files: ['src/auth.ts'],
@@ -63,13 +85,29 @@ describe('Feature: Delete checkpoint or all checkpoints from checkpoint viewer w
       ];
 
       // Mock checkpoint loading
-      vi.mocked(fs.existsSync).mockReturnValue(true);
+      const indexDir = join(mockCwd, '.git', 'fspec-checkpoints-index');
+      const indexFile = join(indexDir, 'AUTH-001.json');
+
+      // Mock fs methods
+      vi.mocked(fs.existsSync).mockImplementation((path: any) => {
+        const pathStr = String(path);
+        return pathStr === indexDir || pathStr === indexFile;
+      });
+
       vi.mocked(fs.readdirSync).mockReturnValue(['AUTH-001.json'] as any);
-      vi.mocked(fs.readFileSync).mockReturnValue(
-        JSON.stringify({
-          checkpoints: mockCheckpoints.map(cp => ({ name: cp.name, message: `fspec-checkpoint:${cp.workUnitId}:${cp.name}:${Date.now()}` }))
-        })
-      );
+
+      vi.mocked(fs.readFileSync).mockImplementation((path: any, encoding?: any) => {
+        const pathStr = String(path);
+        if (pathStr.includes('AUTH-001.json')) {
+          return JSON.stringify({
+            checkpoints: mockCheckpoints.map(cp => ({
+              name: cp.name,
+              message: `fspec-checkpoint:${cp.workUnitId}:${cp.name}:${now}`
+            }))
+          });
+        }
+        return '{}';
+      });
 
       // Mock git.resolveRef to return OIDs for checkpoints
       vi.mocked(git.resolveRef).mockResolvedValue('mock-checkpoint-oid-123');
@@ -82,16 +120,17 @@ describe('Feature: Delete checkpoint or all checkpoints from checkpoint viewer w
         deletedCheckpoint: 'AUTH-001-baseline',
       });
 
+      // Render the component
       const { stdin, lastFrame } = render(
         React.createElement(CheckpointViewer, { onExit })
       );
 
-      // Wait for checkpoints to load
+      // Wait for checkpoints to load - useEffect is async
       await new Promise(resolve => setTimeout(resolve, 100));
 
       // @step When I press the D key
       stdin.write('d');
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 200));
 
       // @step Then a yellow confirmation dialog should appear with message "Delete checkpoint 'AUTH-001-baseline'?"
       // @step And the dialog should use yesno confirmation mode
@@ -144,7 +183,10 @@ describe('Feature: Delete checkpoint or all checkpoints from checkpoint viewer w
         },
       ];
 
-      vi.mocked(fs.existsSync).mockReturnValue(true);
+      const indexDir = join(mockCwd, '.git', 'fspec-checkpoints-index');
+      vi.mocked(fs.existsSync).mockImplementation((path: any) => {
+        return path === indexDir;
+      });
       vi.mocked(fs.readdirSync).mockReturnValue(['AUTH-001.json'] as any);
       vi.mocked(fs.readFileSync).mockReturnValue(
         JSON.stringify({
@@ -198,7 +240,10 @@ describe('Feature: Delete checkpoint or all checkpoints from checkpoint viewer w
         fileCount: 1,
       }));
 
-      vi.mocked(fs.existsSync).mockReturnValue(true);
+      const indexDir = join(mockCwd, '.git', 'fspec-checkpoints-index');
+      vi.mocked(fs.existsSync).mockImplementation((path: any) => {
+        return path === indexDir;
+      });
       vi.mocked(fs.readdirSync).mockReturnValue(['AUTH-001.json'] as any);
       vi.mocked(fs.readFileSync).mockReturnValue(
         JSON.stringify({
@@ -277,7 +322,10 @@ describe('Feature: Delete checkpoint or all checkpoints from checkpoint viewer w
         },
       ];
 
-      vi.mocked(fs.existsSync).mockReturnValue(true);
+      const indexDir = join(mockCwd, '.git', 'fspec-checkpoints-index');
+      vi.mocked(fs.existsSync).mockImplementation((path: any) => {
+        return path === indexDir;
+      });
       vi.mocked(fs.readdirSync).mockReturnValue(['AUTH-001.json'] as any);
       vi.mocked(fs.readFileSync).mockReturnValue(
         JSON.stringify({
@@ -329,7 +377,10 @@ describe('Feature: Delete checkpoint or all checkpoints from checkpoint viewer w
         fileCount: 1,
       }));
 
-      vi.mocked(fs.existsSync).mockReturnValue(true);
+      const indexDir = join(mockCwd, '.git', 'fspec-checkpoints-index');
+      vi.mocked(fs.existsSync).mockImplementation((path: any) => {
+        return path === indexDir;
+      });
       vi.mocked(fs.readdirSync).mockReturnValue(['TUI-001.json'] as any);
       vi.mocked(fs.readFileSync).mockReturnValue(
         JSON.stringify({

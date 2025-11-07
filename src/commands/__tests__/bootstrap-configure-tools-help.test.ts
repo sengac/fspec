@@ -128,32 +128,6 @@ describe('Feature: Add comprehensive help documentation for bootstrap and config
     });
   });
 
-  describe('Scenario: README.md directs users to command help', () => {
-    it('should direct users to use --help for command documentation', async () => {
-      // Given the README.md file exists
-      const fs = await import('fs/promises');
-      const readmePath = path.resolve(__dirname, '../../../README.md');
-
-      // When I search for help documentation in README.md
-      const readmeContent = await fs.readFile(readmePath, 'utf-8');
-
-      // Then I should find the "Pro tip" section
-      expect(readmeContent).toContain('Pro tip');
-
-      // And I should see "fspec <command> --help"
-      expect(readmeContent).toContain('fspec <command> --help');
-
-      // And I should see "fspec help specs"
-      expect(readmeContent).toContain('fspec help specs');
-
-      // And I should see "fspec help work"
-      expect(readmeContent).toContain('fspec help work');
-
-      // And I should see "fspec help discovery"
-      expect(readmeContent).toContain('fspec help discovery');
-    });
-  });
-
   describe('Scenario: Documentation consistency across all sources', () => {
     it('should have consistent documentation across all sources', async () => {
       // Given bootstrap-help.ts exists
@@ -181,13 +155,12 @@ describe('Feature: Add comprehensive help documentation for bootstrap and config
       // And configure-tools documentation should be consistent
       expect(configureToolsHelpExists).toBe(true);
 
-      // And README.md should direct users to --help
+      // And README.md should direct users to fspec.dev documentation
       const readmePath = path.resolve(__dirname, '../../../README.md');
       const readmeContent = await fs.readFile(readmePath, 'utf-8');
-      expect(readmeContent).toContain('fspec <command> --help');
-      expect(readmeContent).toContain('fspec help specs');
-      expect(readmeContent).toContain('fspec help work');
-      expect(readmeContent).toContain('fspec help discovery');
+      expect(readmeContent).toContain('fspec.dev');
+      expect(readmeContent).toContain('Documentation');
+      expect(readmeContent).toContain('CLI Reference');
 
       // And no inconsistencies should exist
       expect(bootstrapHelpExists && configureToolsHelpExists).toBe(true);
