@@ -20,6 +20,10 @@ AI agents lack the infrastructure that professional developers take for granted.
 
 fspec is the holy grail: a complete spec-driven system that shepherds AI through professional Gherkin scenarios, auto-generates tests from Given/When/Then criteria, enforces TDD discipline, and links every line of code back to the business rule it implements. A productivity goldmine that transforms AI agents into autonomous builders of your dreams.
 
+## How
+
+Follow the [Quick Start](#quick-start) below and start talking naturally with your AI agent. Don't know what to do next? Just ask your agent—it knows fspec inside and out and will suggest the best ways to use it for your workflow.
+
 ---
 
 ## Quick Start
