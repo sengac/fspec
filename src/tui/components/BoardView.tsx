@@ -286,6 +286,24 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
       return;
     }
 
+    // D key to open FOUNDATION.md in browser (TUI-029)
+    if (input === 'd' || input === 'D') {
+      const foundationPath = 'spec/FOUNDATION.md';
+
+      if (attachmentServerPort) {
+        // Open via HTTP server (same as attachments)
+        const url = `http://localhost:${attachmentServerPort}/view/${foundationPath}`;
+        logger.info(`[BoardView] Opening FOUNDATION.md URL: ${url}`);
+
+        openInBrowser({ url, wait: false }).catch((error: Error) => {
+          logger.error(`[BoardView] Failed to open FOUNDATION.md: ${error.message}`);
+        });
+      } else {
+        logger.warn(`[BoardView] Attachment server not available, cannot open FOUNDATION.md`);
+      }
+      return;
+    }
+
     // A key to open attachment dialog (TUI-019)
     if (input === 'a' || input === 'A') {
       if (hasAttachments()) {

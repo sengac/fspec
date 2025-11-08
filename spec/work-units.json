@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-07T23:44:49.128Z"
+    "lastUpdated": "2025-11-08T00:22:24.981Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -43064,6 +43064,206 @@
       "nextQuestionId": 0,
       "nextNoteId": 0,
       "updated": "2025-11-07T23:44:49.150Z"
+    },
+    "TUI-029": {
+      "id": "TUI-029",
+      "title": "View FOUNDATION.md in TUI with attachment viewer",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-11-07T23:54:31.267Z",
+      "updatedAt": "2025-11-08T00:22:25.003Z",
+      "description": "Enable viewing spec/FOUNDATION.md file using the existing attachment viewer infrastructure with a new 'D' keybinding in the main TUI board view",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-07T23:54:43.663Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-08T00:03:34.728Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-08T00:05:22.086Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-08T00:07:17.892Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-08T00:09:24.826Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-08T00:11:35.022Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-08T00:22:08.599Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-08T00:22:25.004Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using fspec TUI",
+        "action": "view the spec/FOUNDATION.md file directly from the main board",
+        "benefit": "I can quickly review project foundation documentation without leaving the TUI"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Must reuse existing attachment viewer code by making it shared/reusable (refactor for code reuse)",
+          "deleted": false,
+          "createdAt": "2025-11-07T23:55:07.136Z"
+        },
+        {
+          "id": 1,
+          "text": "FOUNDATION.md is NOT an attachment and does NOT belong to any work unit",
+          "deleted": false,
+          "createdAt": "2025-11-07T23:55:09.267Z"
+        },
+        {
+          "id": 2,
+          "text": "New keybinding 'D' (uppercase D) must open spec/FOUNDATION.md in viewer",
+          "deleted": false,
+          "createdAt": "2025-11-07T23:55:10.725Z"
+        },
+        {
+          "id": 3,
+          "text": "UI must display '◆ D View FOUNDATION.md' in the keybinding help line",
+          "deleted": false,
+          "createdAt": "2025-11-07T23:55:12.183Z"
+        },
+        {
+          "id": 4,
+          "text": "UI element must appear to the RIGHT of 'F View Changed Files' with diamond separator",
+          "deleted": false,
+          "createdAt": "2025-11-07T23:55:13.941Z"
+        },
+        {
+          "id": 5,
+          "text": "Must use diamond separator '◆' before 'D View FOUNDATION.md' text",
+          "deleted": false,
+          "createdAt": "2025-11-07T23:55:15.651Z"
+        },
+        {
+          "id": 6,
+          "text": "File path is spec/FOUNDATION.md relative to project root (cwd)",
+          "deleted": false,
+          "createdAt": "2025-11-07T23:55:17.306Z"
+        },
+        {
+          "id": 7,
+          "text": "Viewer must support all Markdown features (headings, lists, links, code blocks, etc.)",
+          "deleted": false,
+          "createdAt": "2025-11-07T23:55:19.004Z"
+        },
+        {
+          "id": 8,
+          "text": "If FOUNDATION.md does not exist, show helpful error message instead of crashing",
+          "deleted": false,
+          "createdAt": "2025-11-07T23:55:22.225Z"
+        },
+        {
+          "id": 9,
+          "text": "When D key is pressed, open spec/FOUNDATION.md in browser via HTTP server (like attachments)",
+          "deleted": false,
+          "createdAt": "2025-11-08T00:07:55.429Z"
+        },
+        {
+          "id": 10,
+          "text": "Use openInBrowser() with HTTP URL http://localhost:{port}/view/spec/FOUNDATION.md",
+          "deleted": false,
+          "createdAt": "2025-11-08T00:07:57.452Z"
+        },
+        {
+          "id": 11,
+          "text": "Reuse attachment server infrastructure (same HTTP server serves both attachments and FOUNDATION.md)",
+          "deleted": false,
+          "createdAt": "2025-11-08T00:07:59.542Z"
+        }
+      ],
+      "nextRuleId": 12,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User runs 'fspec' (TUI), presses 'D' key, opens spec/FOUNDATION.md in viewer with Markdown rendering",
+          "deleted": false,
+          "createdAt": "2025-11-07T23:55:36.099Z"
+        },
+        {
+          "id": 1,
+          "text": "User sees keybinding help line showing '◆ F View Changed Files ◆ D View FOUNDATION.md' in main TUI",
+          "deleted": false,
+          "createdAt": "2025-11-07T23:55:37.454Z"
+        },
+        {
+          "id": 2,
+          "text": "User opens FOUNDATION.md viewer, sees rendered Markdown with headings/lists/code blocks, presses ESC, returns to board",
+          "deleted": false,
+          "createdAt": "2025-11-07T23:55:38.931Z"
+        },
+        {
+          "id": 3,
+          "text": "User presses 'D' in project without spec/FOUNDATION.md, sees error 'FOUNDATION.md not found at spec/FOUNDATION.md'",
+          "deleted": false,
+          "createdAt": "2025-11-07T23:55:40.514Z"
+        },
+        {
+          "id": 4,
+          "text": "Attachment viewer code is refactored into shared component, both attachment viewing and FOUNDATION.md viewing use same code",
+          "deleted": false,
+          "createdAt": "2025-11-07T23:55:41.896Z"
+        },
+        {
+          "id": 5,
+          "text": "Diamond separator '◆' appears between 'F View Changed Files' and 'D View FOUNDATION.md' in help line",
+          "deleted": false,
+          "createdAt": "2025-11-07T23:55:43.769Z"
+        }
+      ],
+      "nextExampleId": 6,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Refactor attachment server viewer code into shared component that can render any Markdown file (not just attachments)",
+          "deleted": false,
+          "createdAt": "2025-11-07T23:55:56.016Z"
+        },
+        {
+          "id": 1,
+          "text": "Bind 'D' key in BoardView useInput handler to set viewMode to 'foundation-viewer'",
+          "deleted": false,
+          "createdAt": "2025-11-07T23:55:59.088Z"
+        },
+        {
+          "id": 2,
+          "text": "Update UnifiedBoardLayout help line to include '◆ D View FOUNDATION.md' after 'F View Changed Files'",
+          "deleted": false,
+          "createdAt": "2025-11-07T23:56:00.875Z"
+        },
+        {
+          "id": 3,
+          "text": "Foundation viewer should use attachment server to serve spec/FOUNDATION.md via HTTP (reuse existing server infrastructure)",
+          "deleted": false,
+          "createdAt": "2025-11-07T23:56:02.249Z"
+        },
+        {
+          "id": 4,
+          "text": "D key handler directly calls openInBrowser() with HTTP URL (no view mode change)",
+          "deleted": false,
+          "createdAt": "2025-11-08T00:08:03.681Z"
+        }
+      ],
+      "nextNoteId": 5,
+      "estimate": 5,
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2025-11-08T00:22:25.003Z"
     }
   },
   "states": {
@@ -43137,6 +43337,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "TUI-029",
       "BUG-072",
       "BUG-071",
       "BUG-070",
@@ -43478,7 +43679,7 @@
     "BUG": 72,
     "DISC": 2,
     "COV": 53,
-    "TUI": 28,
+    "TUI": 29,
     "REFAC": 4,
     "VIEW": 2,
     "DOC": 15,
