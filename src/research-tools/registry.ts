@@ -11,6 +11,10 @@ import type { ResearchTool, ResearchToolModule } from './types';
 
 // Import bundled tools
 import astTool from './ast';
+import perplexityTool from './perplexity';
+import jiraTool from './jira';
+import confluenceTool from './confluence';
+import stakeholderTool from './stakeholder';
 
 /**
  * Bundled tools registry
@@ -18,7 +22,10 @@ import astTool from './ast';
  */
 const BUNDLED_TOOLS: Map<string, ResearchTool> = new Map([
   ['ast', astTool],
-  // TODO: Add other bundled tools (perplexity, jira, confluence, stakeholder)
+  ['perplexity', perplexityTool],
+  ['jira', jiraTool],
+  ['confluence', confluenceTool],
+  ['stakeholder', stakeholderTool],
 ]);
 
 /**
@@ -88,10 +95,10 @@ export async function getResearchTool(
  * List all available research tools
  * Returns both bundled and discovered custom tools
  *
- * @param cwd - Current working directory
+ * @param _cwd - Current working directory
  * @returns Array of tool names
  */
-export function listAvailableTools(cwd: string = process.cwd()): string[] {
+export function listAvailableTools(_cwd: string = process.cwd()): string[] {
   // For now, just return bundled tools
   // TODO: Scan spec/research-tools/ for custom .js files
   return Array.from(BUNDLED_TOOLS.keys());
