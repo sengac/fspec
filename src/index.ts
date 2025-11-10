@@ -126,6 +126,8 @@ import { registerReportBugToGitHubCommand } from './commands/report-bug-to-githu
 import { registerRepairWorkUnitsCommand } from './commands/repair-work-units';
 import { registerRetagCommand } from './commands/retag';
 import { registerReverseCommand } from './commands/reverse';
+import { registerResearchCommand } from './commands/research';
+import { registerCompileResearchCommand } from './commands/compile-research';
 import { registerSearchImplementationCommand } from './commands/search-implementation';
 import { registerSearchScenariosCommand } from './commands/search-scenarios';
 import { registerSetUserStoryCommand } from './commands/set-user-story';
@@ -296,6 +298,8 @@ registerReportBugToGitHubCommand(program);
 registerRepairWorkUnitsCommand(program);
 registerRetagCommand(program);
 registerReverseCommand(program);
+registerResearchCommand(program);
+registerCompileResearchCommand(program);
 registerSearchImplementationCommand(program);
 registerSearchScenariosCommand(program);
 registerSetUserStoryCommand(program);

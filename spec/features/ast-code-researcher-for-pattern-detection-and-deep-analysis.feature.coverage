@@ -1,0 +1,268 @@
+{
+  "scenarios": [
+    {
+      "name": "Find all async functions in codebase",
+      "testMappings": [
+        {
+          "file": "src/__tests__/ast-research-tool.test.ts",
+          "lines": "23-72",
+          "implMappings": [
+            {
+              "file": "spec/research-scripts/ast",
+              "lines": [
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Analyze functions exceeding parameter count threshold",
+      "testMappings": [
+        {
+          "file": "src/__tests__/ast-research-tool.test.ts",
+          "lines": "74-115",
+          "implMappings": [
+            {
+              "file": "spec/research-scripts/ast",
+              "lines": [
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Find structurally similar code across multiple languages",
+      "testMappings": [
+        {
+          "file": "src/__tests__/ast-research-tool.test.ts",
+          "lines": "117-169",
+          "implMappings": [
+            {
+              "file": "spec/research-scripts/ast",
+              "lines": [
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Parse incomplete code with syntax errors",
+      "testMappings": [
+        {
+          "file": "src/__tests__/ast-research-tool.test.ts",
+          "lines": "171-206",
+          "implMappings": [
+            {
+              "file": "spec/research-scripts/ast",
+              "lines": [
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Query for classes implementing specific interface",
+      "testMappings": [
+        {
+          "file": "src/__tests__/ast-research-tool.test.ts",
+          "lines": "208-246",
+          "implMappings": [
+            {
+              "file": "spec/research-scripts/ast",
+              "lines": [
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Identify high-complexity functions for refactoring",
+      "testMappings": [
+        {
+          "file": "src/__tests__/ast-research-tool.test.ts",
+          "lines": "248-291",
+          "implMappings": [
+            {
+              "file": "spec/research-scripts/ast",
+              "lines": [
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Extract exported functions for API documentation",
+      "testMappings": [
+        {
+          "file": "src/__tests__/ast-research-tool.test.ts",
+          "lines": "293-328",
+          "implMappings": [
+            {
+              "file": "spec/research-scripts/ast",
+              "lines": [
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Detect unused imports in TypeScript files",
+      "testMappings": [
+        {
+          "file": "src/__tests__/ast-research-tool.test.ts",
+          "lines": "330-377",
+          "implMappings": [
+            {
+              "file": "spec/research-scripts/ast",
+              "lines": [
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 8,
+    "coveredScenarios": 8,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/__tests__/ast-research-tool.test.ts"
+    ],
+    "implFiles": [
+      "spec/research-scripts/ast"
+    ],
+    "totalLinesCovered": 472
+  }
+}

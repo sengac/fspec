@@ -59,10 +59,20 @@ describe('Feature: Architecture notes in Example Mapping', () => {
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
             rules: [
-              { id: 0, text: 'Rule 1', deleted: false, createdAt: new Date().toISOString() },
+              {
+                id: 0,
+                text: 'Rule 1',
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
             ],
             examples: [
-              { id: 0, text: 'Example 1', deleted: false, createdAt: new Date().toISOString() },
+              {
+                id: 0,
+                text: 'Example 1',
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
             ],
             questions: [],
             nextRuleId: 1,
@@ -94,9 +104,9 @@ describe('Feature: Architecture notes in Example Mapping', () => {
       expect(updatedData.workUnits['WORK-001'].architectureNotes).toBeDefined();
 
       // And the section should contain "Uses @cucumber/gherkin parser"
-      const activeNotes = updatedData.workUnits['WORK-001'].architectureNotes.filter(
-        (n: any) => !n.deleted
-      );
+      const activeNotes = updatedData.workUnits[
+        'WORK-001'
+      ].architectureNotes.filter((n: any) => !n.deleted);
       expect(activeNotes).toHaveLength(1);
       expect(activeNotes[0].text).toBe('Uses @cucumber/gherkin parser');
     });
@@ -119,10 +129,20 @@ describe('Feature: Architecture notes in Example Mapping', () => {
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
             rules: [
-              { id: 0, text: 'Rule', deleted: false, createdAt: new Date().toISOString() },
+              {
+                id: 0,
+                text: 'Rule',
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
             ],
             examples: [
-              { id: 0, text: 'Example', deleted: false, createdAt: new Date().toISOString() },
+              {
+                id: 0,
+                text: 'Example',
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
             ],
             questions: [],
             nextRuleId: 1,
@@ -131,8 +151,18 @@ describe('Feature: Architecture notes in Example Mapping', () => {
             // And the work unit has the note "Uses @cucumber/gherkin parser"
             // And the work unit has the note "Must complete validation within 2 seconds"
             architectureNotes: [
-              { id: 0, text: 'Uses @cucumber/gherkin parser', deleted: false, createdAt: new Date().toISOString() },
-              { id: 1, text: 'Must complete validation within 2 seconds', deleted: false, createdAt: new Date().toISOString() },
+              {
+                id: 0,
+                text: 'Uses @cucumber/gherkin parser',
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
+              {
+                id: 1,
+                text: 'Must complete validation within 2 seconds',
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
             ],
             nextNoteId: 2,
           },
@@ -186,9 +216,24 @@ describe('Feature: Architecture notes in Example Mapping', () => {
             examples: ['Example 1'],
             questions: [],
             architectureNotes: [
-              { id: 0, text: 'Uses @cucumber/gherkin parser', deleted: false, createdAt: new Date().toISOString() },
-              { id: 1, text: 'Must complete within 2 seconds', deleted: false, createdAt: new Date().toISOString() },
-              { id: 2, text: 'Validates all Gherkin keywords', deleted: false, createdAt: new Date().toISOString() },
+              {
+                id: 0,
+                text: 'Uses @cucumber/gherkin parser',
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
+              {
+                id: 1,
+                text: 'Must complete within 2 seconds',
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
+              {
+                id: 2,
+                text: 'Validates all Gherkin keywords',
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
             ],
             nextNoteId: 3,
           },
@@ -239,19 +284,44 @@ describe('Feature: Architecture notes in Example Mapping', () => {
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
             rules: [
-              { id: 0, text: 'Rule', deleted: false, createdAt: new Date().toISOString() },
+              {
+                id: 0,
+                text: 'Rule',
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
             ],
             examples: [
-              { id: 0, text: 'Example', deleted: false, createdAt: new Date().toISOString() },
+              {
+                id: 0,
+                text: 'Example',
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
             ],
             questions: [],
             nextRuleId: 1,
             nextExampleId: 1,
             nextQuestionId: 0,
             architectureNotes: [
-              { id: 0, text: 'Note 1', deleted: false, createdAt: new Date().toISOString() },
-              { id: 1, text: 'Note 2', deleted: false, createdAt: new Date().toISOString() },
-              { id: 2, text: 'Note 3', deleted: false, createdAt: new Date().toISOString() },
+              {
+                id: 0,
+                text: 'Note 1',
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
+              {
+                id: 1,
+                text: 'Note 2',
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
+              {
+                id: 2,
+                text: 'Note 3',
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
             ],
             nextNoteId: 3,
           },
@@ -277,14 +347,11 @@ describe('Feature: Architecture notes in Example Mapping', () => {
 
       // And when I run "fspec show-work-unit WORK-001"
       // Then I should see 2 remaining architecture notes (non-deleted)
-      const activeNotes = updatedData.workUnits['WORK-001'].architectureNotes.filter(
-        (n: any) => !n.deleted
-      );
+      const activeNotes = updatedData.workUnits[
+        'WORK-001'
+      ].architectureNotes.filter((n: any) => !n.deleted);
       expect(activeNotes.length).toBe(2);
-      expect(activeNotes.map((n: any) => n.text)).toEqual([
-        'Note 1',
-        'Note 3',
-      ]);
+      expect(activeNotes.map((n: any) => n.text)).toEqual(['Note 1', 'Note 3']);
     });
   });
 
@@ -305,10 +372,20 @@ describe('Feature: Architecture notes in Example Mapping', () => {
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
             rules: [
-              { id: 0, text: 'Rule', deleted: false, createdAt: new Date().toISOString() },
+              {
+                id: 0,
+                text: 'Rule',
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
             ],
             examples: [
-              { id: 0, text: 'Example', deleted: false, createdAt: new Date().toISOString() },
+              {
+                id: 0,
+                text: 'Example',
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
             ],
             questions: [],
             nextRuleId: 1,
@@ -318,9 +395,24 @@ describe('Feature: Architecture notes in Example Mapping', () => {
             // And I have note "Performance: Must complete within 2 seconds"
             // And I have note "Refactoring: Share validation logic with formatter"
             architectureNotes: [
-              { id: 0, text: 'Dependency: @cucumber/gherkin parser', deleted: false, createdAt: new Date().toISOString() },
-              { id: 1, text: 'Performance: Must complete within 2 seconds', deleted: false, createdAt: new Date().toISOString() },
-              { id: 2, text: 'Refactoring: Share validation logic with formatter', deleted: false, createdAt: new Date().toISOString() },
+              {
+                id: 0,
+                text: 'Dependency: @cucumber/gherkin parser',
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
+              {
+                id: 1,
+                text: 'Performance: Must complete within 2 seconds',
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
+              {
+                id: 2,
+                text: 'Refactoring: Share validation logic with formatter',
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
             ],
             nextNoteId: 3,
           },

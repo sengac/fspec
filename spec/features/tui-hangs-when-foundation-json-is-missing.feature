@@ -7,7 +7,6 @@
 @ui-enhancement
 @BUG-072
 Feature: TUI hangs when foundation.json is missing
-
   """
   Architecture notes:
   - TUI is launched from src/index.ts when no command arguments provided
@@ -39,7 +38,6 @@ Feature: TUI hangs when foundation.json is missing
   #   3. User presses ESC key in TUI, app exits gracefully
   #
   # ========================================
-
   Background: User Story
     As a developer using fspec in a new project
     I want to run the TUI without a foundation.json file

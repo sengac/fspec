@@ -24,6 +24,7 @@ export default defineConfig({
         'module',
         'net',
         'http',
+        'readline',
         '@cucumber/gherkin',
         '@cucumber/messages',
         'tinyglobby',

@@ -1,0 +1,369 @@
+{
+  "scenarios": [
+    {
+      "name": "List available research tools without arguments",
+      "testMappings": [
+        {
+          "file": "src/__tests__/research-command.test.ts",
+          "lines": "17-44",
+          "implMappings": [
+            {
+              "file": "src/commands/research.ts",
+              "lines": [
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Execute perplexity research tool with query",
+      "testMappings": [
+        {
+          "file": "src/__tests__/research-command.test.ts",
+          "lines": "46-73",
+          "implMappings": [
+            {
+              "file": "src/commands/research.ts",
+              "lines": [
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Execute jira research tool with issue key",
+      "testMappings": [
+        {
+          "file": "src/__tests__/research-command.test.ts",
+          "lines": "75-97",
+          "implMappings": [
+            {
+              "file": "src/commands/research.ts",
+              "lines": [
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Attach research results to work unit",
+      "testMappings": [
+        {
+          "file": "src/__tests__/research-command.test.ts",
+          "lines": "99-131",
+          "implMappings": [
+            {
+              "file": "src/commands/research.ts",
+              "lines": [
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Execute confluence research tool with page title",
+      "testMappings": [
+        {
+          "file": "src/__tests__/research-command.test.ts",
+          "lines": "133-155",
+          "implMappings": [
+            {
+              "file": "src/commands/research.ts",
+              "lines": [
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Error on invalid research tool",
+      "testMappings": [
+        {
+          "file": "src/__tests__/research-command.test.ts",
+          "lines": "157-183",
+          "implMappings": [
+            {
+              "file": "src/commands/research.ts",
+              "lines": [
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Auto-discover new research tool",
+      "testMappings": [
+        {
+          "file": "src/__tests__/research-command.test.ts",
+          "lines": "185-218",
+          "implMappings": [
+            {
+              "file": "src/commands/research.ts",
+              "lines": [
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Decline attachment prompt",
+      "testMappings": [
+        {
+          "file": "src/__tests__/research-command.test.ts",
+          "lines": "220-254",
+          "implMappings": [
+            {
+              "file": "src/commands/research.ts",
+              "lines": [
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 8,
+    "coveredScenarios": 8,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/__tests__/research-command.test.ts"
+    ],
+    "implFiles": [
+      "src/commands/research.ts"
+    ],
+    "totalLinesCovered": 456
+  }
+}

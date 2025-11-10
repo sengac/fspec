@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-08T00:22:24.981Z"
+    "lastUpdated": "2025-11-10T06:59:09.460Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -16834,15 +16834,110 @@
       "id": "TECH-001",
       "title": "JSONL format investigation for work-units.json scalability",
       "type": "story",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2025-10-21T05:25:29.539Z",
-      "updatedAt": "2025-10-21T05:25:29.539Z",
+      "updatedAt": "2025-11-08T05:11:30.675Z",
       "description": "Investigate migrating from JSON to JSONL (JSON Lines) format for work-units.json to address file size limitations as projects scale. Research: 1) performance comparison for large datasets (1000+ work units), 2) append-only operations vs full file rewrites, 3) streaming read/write capabilities, 4) git diff friendliness, 5) backward compatibility strategies, 6) migration path from JSON to JSONL. Deliver recommendation with proof-of-concept if beneficial.",
       "children": [],
-      "nextRuleId": 0,
-      "nextExampleId": 0,
+      "nextRuleId": 5,
+      "nextExampleId": 5,
       "nextQuestionId": 0,
-      "nextNoteId": 0
+      "nextNoteId": 0,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-08T05:05:52.066Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-08T05:08:21.067Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-08T05:10:12.511Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-08T05:11:12.276Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-08T05:11:30.675Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer working on large fspec projects",
+        "action": "store work units efficiently without performance degradation",
+        "benefit": "the system remains responsive even with 1000+ work units"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "JSONL format must support append-only operations to avoid full file rewrites",
+          "deleted": false,
+          "createdAt": "2025-11-08T05:06:12.282Z"
+        },
+        {
+          "id": 1,
+          "text": "JSONL must be backward compatible with existing JSON format or provide migration path",
+          "deleted": false,
+          "createdAt": "2025-11-08T05:06:13.820Z"
+        },
+        {
+          "id": 2,
+          "text": "JSONL must provide better git diff output than monolithic JSON (show only changed lines)",
+          "deleted": false,
+          "createdAt": "2025-11-08T05:06:15.147Z"
+        },
+        {
+          "id": 3,
+          "text": "JSONL streaming reads must handle large datasets (1000+ work units) without loading entire file in memory",
+          "deleted": false,
+          "createdAt": "2025-11-08T05:06:16.563Z"
+        },
+        {
+          "id": 4,
+          "text": "Performance benchmarks must compare JSON vs JSONL for: read all, write one, update one, delete one operations",
+          "deleted": false,
+          "createdAt": "2025-11-08T05:06:18.020Z"
+        }
+      ],
+      "examples": [
+        {
+          "id": 0,
+          "text": "Appending new work unit FEAT-100 to JSONL: write one line to file, no full rewrite needed",
+          "deleted": false,
+          "createdAt": "2025-11-08T05:06:28.708Z"
+        },
+        {
+          "id": 1,
+          "text": "Streaming read of 1000 work units from JSONL: memory usage stays constant at ~10MB regardless of dataset size",
+          "deleted": false,
+          "createdAt": "2025-11-08T05:06:30.304Z"
+        },
+        {
+          "id": 2,
+          "text": "Git diff shows: +{\"id\":\"FEAT-100\", ...} (one line added), not entire file change",
+          "deleted": false,
+          "createdAt": "2025-11-08T05:06:31.853Z"
+        },
+        {
+          "id": 3,
+          "text": "Migration command: fspec migrate-to-jsonl converts work-units.json to work-units.jsonl with backup",
+          "deleted": false,
+          "createdAt": "2025-11-08T05:06:33.595Z"
+        },
+        {
+          "id": 4,
+          "text": "Performance test: writing 1000 work units to JSONL takes 0.5s vs 10s for JSON (20x faster)",
+          "deleted": false,
+          "createdAt": "2025-11-08T05:06:34.972Z"
+        }
+      ],
+      "estimate": 8,
+      "questions": [],
+      "architectureNotes": [],
+      "updated": "2025-11-08T05:11:30.675Z"
     },
     "BOARD-002": {
       "id": "BOARD-002",
@@ -17711,14 +17806,14 @@
       "id": "RES-001",
       "title": "Interactive research command with multiple backend support",
       "type": "story",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2025-10-21T07:32:19.749Z",
-      "updatedAt": "2025-11-07T02:53:41.459Z",
+      "updatedAt": "2025-11-08T02:10:56.865Z",
       "description": "Implement 'fspec research' command that provides AI agents with interactive choice of registered research endpoints during specifying phase (example mapping, architecture planning). Support multiple backends: (1) Perplexity via MCP (https://github.com/jsonallen/perplexity-mcp) for web search, (2) Nanobrowser via MCP for browser automation and web scraping, (3) Mindstrike via CLI for AI-powered knowledge queries. Command should register available endpoints, present interactive selection to AI agent, execute research query, and return formatted results.",
       "epic": "example-driven-discovery",
       "children": [],
-      "nextRuleId": 0,
-      "nextExampleId": 0,
+      "nextRuleId": 9,
+      "nextExampleId": 8,
       "nextQuestionId": 0,
       "nextNoteId": 0,
       "dependsOn": [
@@ -17726,7 +17821,144 @@
         "RES-003",
         "RES-004",
         "RES-005"
-      ]
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-08T01:48:44.751Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-08T01:51:46.774Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-08T01:54:28.344Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-08T02:07:05.651Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-08T02:10:56.866Z"
+        }
+      ],
+      "userStory": {
+        "role": "AI agent or developer using fspec",
+        "action": "research questions interactively during Example Mapping",
+        "benefit": "I can choose from multiple research backends and get formatted results"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Command lists available research tools when run without arguments",
+          "deleted": false,
+          "createdAt": "2025-11-08T01:49:07.076Z"
+        },
+        {
+          "id": 1,
+          "text": "Auto-discover tools from spec/research-scripts/ directory by scanning for executable files",
+          "deleted": false,
+          "createdAt": "2025-11-08T01:49:07.588Z"
+        },
+        {
+          "id": 2,
+          "text": "Tool name derived from filename (e.g., perplexity → 'perplexity')",
+          "deleted": false,
+          "createdAt": "2025-11-08T01:49:08.092Z"
+        },
+        {
+          "id": 3,
+          "text": "Execute research tool with --tool and --query flags",
+          "deleted": false,
+          "createdAt": "2025-11-08T01:49:08.602Z"
+        },
+        {
+          "id": 4,
+          "text": "Prompt user to attach results to work unit after research completes",
+          "deleted": false,
+          "createdAt": "2025-11-08T01:49:09.108Z"
+        },
+        {
+          "id": 5,
+          "text": "Display tool usage examples when listing available tools",
+          "deleted": false,
+          "createdAt": "2025-11-08T01:49:18.197Z"
+        },
+        {
+          "id": 6,
+          "text": "Return error with helpful message if tool not found",
+          "deleted": false,
+          "createdAt": "2025-11-08T01:49:18.703Z"
+        },
+        {
+          "id": 7,
+          "text": "Save research results as attachment in spec/attachments/WORK-ID/ directory",
+          "deleted": false,
+          "createdAt": "2025-11-08T01:49:19.202Z"
+        },
+        {
+          "id": 8,
+          "text": "Support all research scripts: perplexity, jira, confluence, and future tools",
+          "deleted": false,
+          "createdAt": "2025-11-08T01:49:19.708Z"
+        }
+      ],
+      "examples": [
+        {
+          "id": 0,
+          "text": "Developer runs 'fspec research' without args, sees list of available tools with descriptions and usage examples",
+          "deleted": false,
+          "createdAt": "2025-11-08T01:49:29.377Z"
+        },
+        {
+          "id": 1,
+          "text": "Developer runs 'fspec research --tool=perplexity --query=\"How does OAuth2 work?\"', perplexity script executes and returns formatted results",
+          "deleted": false,
+          "createdAt": "2025-11-08T01:49:29.881Z"
+        },
+        {
+          "id": 2,
+          "text": "Developer runs 'fspec research --tool=jira --issue AUTH-123', jira script fetches issue details",
+          "deleted": false,
+          "createdAt": "2025-11-08T01:49:30.379Z"
+        },
+        {
+          "id": 3,
+          "text": "After research completes, system prompts 'Attach results to work unit? (y/n)', user says yes, results saved to spec/attachments/AUTH-001/perplexity-oauth2-2025-11-08.md",
+          "deleted": false,
+          "createdAt": "2025-11-08T01:49:30.882Z"
+        },
+        {
+          "id": 4,
+          "text": "Developer runs 'fspec research --tool=confluence --page \"Authentication Guide\"', confluence script fetches page content",
+          "deleted": false,
+          "createdAt": "2025-11-08T01:49:38.994Z"
+        },
+        {
+          "id": 5,
+          "text": "Developer runs 'fspec research --tool=invalid', command returns error 'Error: Research tool not found: invalid'",
+          "deleted": false,
+          "createdAt": "2025-11-08T01:49:39.501Z"
+        },
+        {
+          "id": 6,
+          "text": "Developer adds new research script spec/research-scripts/github with executable permissions, runs 'fspec research', sees github in available tools list",
+          "deleted": false,
+          "createdAt": "2025-11-08T01:49:40.017Z"
+        },
+        {
+          "id": 7,
+          "text": "During Example Mapping, developer answers no to attachment prompt, research results displayed but not saved",
+          "deleted": false,
+          "createdAt": "2025-11-08T01:49:40.521Z"
+        }
+      ],
+      "estimate": 5,
+      "questions": [],
+      "architectureNotes": [],
+      "updated": "2025-11-08T02:10:56.865Z"
     },
     "BUG-024": {
       "id": "BUG-024",
@@ -20967,16 +21199,88 @@
       "id": "AGENT-001",
       "title": "Test Cursor agent compatibility",
       "type": "story",
-      "status": "backlog",
+      "status": "specifying",
       "createdAt": "2025-10-22T13:55:09.683Z",
-      "updatedAt": "2025-10-22T13:55:09.683Z",
+      "updatedAt": "2025-11-08T05:15:06.333Z",
       "description": "Verify fspec init --agent=cursor works correctly: creates .cursor/commands/fspec.md, creates spec/CURSOR.md, shows correct activation instructions, and supports full ACDD workflow",
       "epic": "agent-testing",
       "children": [],
-      "nextRuleId": 0,
-      "nextExampleId": 0,
+      "nextRuleId": 4,
+      "nextExampleId": 4,
       "nextQuestionId": 0,
-      "nextNoteId": 0
+      "nextNoteId": 0,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-08T05:11:54.646Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-08T05:13:22.121Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-08T05:15:06.333Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using Cursor AI agent",
+        "action": "initialize fspec with Cursor-specific configuration",
+        "benefit": "I can use fspec's ACDD workflow within Cursor environment"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "fspec init --agent=cursor must create .cursor/commands/fspec.md file with fspec command integration",
+          "deleted": false,
+          "createdAt": "2025-11-08T05:12:12.061Z"
+        },
+        {
+          "id": 1,
+          "text": "fspec init --agent=cursor must create spec/CURSOR.md with agent-specific instructions and ACDD workflow",
+          "deleted": false,
+          "createdAt": "2025-11-08T05:12:13.545Z"
+        },
+        {
+          "id": 2,
+          "text": "Cursor activation instructions must be displayed after successful initialization",
+          "deleted": false,
+          "createdAt": "2025-11-08T05:12:15.700Z"
+        },
+        {
+          "id": 3,
+          "text": "All core fspec commands must work in Cursor environment (create-story, add-scenario, generate-scenarios, etc.)",
+          "deleted": false,
+          "createdAt": "2025-11-08T05:12:17.239Z"
+        }
+      ],
+      "examples": [
+        {
+          "id": 0,
+          "text": "Run 'fspec init --agent=cursor' in empty project → creates .cursor/commands/fspec.md and spec/CURSOR.md",
+          "deleted": false,
+          "createdAt": "2025-11-08T05:12:26.971Z"
+        },
+        {
+          "id": 1,
+          "text": "After init, activation message shows: 'Cursor: open command palette and select fspec command'",
+          "deleted": false,
+          "createdAt": "2025-11-08T05:12:28.558Z"
+        },
+        {
+          "id": 2,
+          "text": "Created .cursor/commands/fspec.md contains fspec CLI command invocations and ACDD workflow instructions",
+          "deleted": false,
+          "createdAt": "2025-11-08T05:12:30.107Z"
+        },
+        {
+          "id": 3,
+          "text": "Created spec/CURSOR.md contains Cursor-specific ACDD guidelines and Example Mapping workflow",
+          "deleted": false,
+          "createdAt": "2025-11-08T05:12:31.570Z"
+        }
+      ],
+      "estimate": 5
     },
     "AGENT-002": {
       "id": "AGENT-002",
@@ -21780,30 +22084,173 @@
       "id": "RES-003",
       "title": "Perplexity research tool integration",
       "type": "story",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2025-10-23T21:16:30.953Z",
-      "updatedAt": "2025-11-07T03:14:52.607Z",
+      "updatedAt": "2025-11-08T01:46:08.882Z",
       "description": "Create custom script for Perplexity API integration. Allows users to research questions using Perplexity during Example Mapping. Script should accept question input, call Perplexity API, and return formatted research results.",
       "epic": "research-tools",
       "children": [],
       "dependsOn": [
         "RES-002"
       ],
-      "nextRuleId": 0,
-      "nextExampleId": 0,
+      "nextRuleId": 8,
+      "nextExampleId": 10,
       "nextQuestionId": 0,
       "nextNoteId": 0,
       "attachments": [
         "spec/attachments/RES-003/RES-003-perplexity-integration-design.md"
-      ]
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-08T00:37:33.164Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-08T00:50:01.770Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-08T01:33:40.342Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-08T01:44:23.149Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-08T01:46:08.882Z"
+        }
+      ],
+      "userStory": {
+        "role": "AI agent or developer using fspec",
+        "action": "research questions using Perplexity during Example Mapping",
+        "benefit": "I get real-time AI-powered search results to inform acceptance criteria"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Script must be auto-discoverable in spec/research-scripts/ with executable bit set (framework scans for any executable file, not just .sh)",
+          "deleted": false,
+          "createdAt": "2025-11-08T00:38:04.851Z"
+        },
+        {
+          "id": 1,
+          "text": "Script must be standalone with its own CLI interface supporting flags: --query (required), --help, --format (markdown/json/text), --model",
+          "deleted": false,
+          "createdAt": "2025-11-08T00:38:12.943Z"
+        },
+        {
+          "id": 2,
+          "text": "API key must be stored in user-level config ~/.fspec/fspec-config.json under research.perplexity.apiKey (NOT project-level)",
+          "deleted": false,
+          "createdAt": "2025-11-08T00:38:13.450Z"
+        },
+        {
+          "id": 3,
+          "text": "Script must support multiple output formats: markdown (default), json, text",
+          "deleted": false,
+          "createdAt": "2025-11-08T00:38:13.957Z"
+        },
+        {
+          "id": 4,
+          "text": "Script must provide comprehensive help text with --help flag showing usage, options, examples, configuration, and exit codes",
+          "deleted": false,
+          "createdAt": "2025-11-08T00:38:14.468Z"
+        },
+        {
+          "id": 5,
+          "text": "Script must handle errors with proper exit codes: 1 (missing args), 2 (config errors), 3 (API/network errors)",
+          "deleted": false,
+          "createdAt": "2025-11-08T00:38:21.698Z"
+        },
+        {
+          "id": 6,
+          "text": "Script uses Perplexity API POST /chat/completions endpoint with Bearer token authentication",
+          "deleted": false,
+          "createdAt": "2025-11-08T00:38:22.201Z"
+        },
+        {
+          "id": 7,
+          "text": "Default model is llama-3.1-sonar-small-128k-online (overridable via --model flag or config)",
+          "deleted": false,
+          "createdAt": "2025-11-08T00:38:22.712Z"
+        }
+      ],
+      "examples": [
+        {
+          "id": 0,
+          "text": "Developer runs 'perplexity --query \"How does OAuth2 work?\"', receives markdown-formatted research results with source, date, answer, and token usage",
+          "deleted": false,
+          "createdAt": "2025-11-08T00:38:34.724Z"
+        },
+        {
+          "id": 1,
+          "text": "Developer runs 'perplexity --query \"What is BDD?\" --format json', receives JSON output with query, source, model, timestamp, answer, and usage fields",
+          "deleted": false,
+          "createdAt": "2025-11-08T00:38:35.240Z"
+        },
+        {
+          "id": 2,
+          "text": "Developer runs 'perplexity --query \"Explain ACDD\" --format text', receives plain text answer without metadata",
+          "deleted": false,
+          "createdAt": "2025-11-08T00:38:35.748Z"
+        },
+        {
+          "id": 3,
+          "text": "Developer runs 'perplexity --help', sees comprehensive help text with usage, options, examples, configuration instructions, and exit codes",
+          "deleted": false,
+          "createdAt": "2025-11-08T00:38:43.627Z"
+        },
+        {
+          "id": 4,
+          "text": "Developer runs 'perplexity' without --query flag, script exits with code 1 and error message: 'Error: Missing required flag --query'",
+          "deleted": false,
+          "createdAt": "2025-11-08T00:38:44.138Z"
+        },
+        {
+          "id": 5,
+          "text": "Developer runs perplexity but ~/.fspec/fspec-config.json doesn't exist, script exits with code 2 and shows config setup instructions",
+          "deleted": false,
+          "createdAt": "2025-11-08T00:38:44.642Z"
+        },
+        {
+          "id": 6,
+          "text": "Developer runs perplexity with invalid API key, Perplexity API returns 401, script exits with code 3 and shows API error details",
+          "deleted": false,
+          "createdAt": "2025-11-08T00:38:53.500Z"
+        },
+        {
+          "id": 7,
+          "text": "Developer hits rate limit, Perplexity API returns 429, script exits with code 3 and shows 'Rate limit exceeded. Retry after 60s' message",
+          "deleted": false,
+          "createdAt": "2025-11-08T00:38:54.008Z"
+        },
+        {
+          "id": 8,
+          "text": "fspec research framework scans spec/research-scripts/, finds executable perplexity file, auto-discovers it as available tool",
+          "deleted": false,
+          "createdAt": "2025-11-08T00:38:54.517Z"
+        },
+        {
+          "id": 9,
+          "text": "Developer runs 'fspec research --tool=perplexity --query \"OAuth2 token refresh\"', framework executes script and prompts 'Attach results to work unit? (y/n)', results saved to spec/attachments/AUTH-001/perplexity-oauth2-refresh-2025-11-07.md",
+          "deleted": false,
+          "createdAt": "2025-11-08T00:39:02.162Z"
+        }
+      ],
+      "estimate": 5,
+      "questions": [],
+      "architectureNotes": [],
+      "updated": "2025-11-08T01:46:08.882Z"
     },
     "RES-004": {
       "id": "RES-004",
       "title": "JIRA research tool integration",
       "type": "story",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2025-10-23T21:16:31.444Z",
-      "updatedAt": "2025-11-07T02:53:57.153Z",
+      "updatedAt": "2025-11-08T01:46:17.324Z",
       "description": "Create custom script for JIRA API integration. Allows users to search JIRA issues, tickets, and documentation during Example Mapping. Script should support querying by project, labels, status, and return relevant issue details.",
       "epic": "research-tools",
       "children": [],
@@ -21811,18 +22258,161 @@
         "RES-002",
         "RES-003"
       ],
-      "nextRuleId": 0,
-      "nextExampleId": 0,
+      "nextRuleId": 8,
+      "nextExampleId": 10,
       "nextQuestionId": 0,
-      "nextNoteId": 0
+      "nextNoteId": 0,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-08T00:44:14.787Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-08T00:53:51.966Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-08T01:38:40.823Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-08T01:44:35.122Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-08T01:46:17.325Z"
+        }
+      ],
+      "userStory": {
+        "role": "AI agent or developer using fspec",
+        "action": "search JIRA issues and tickets during Example Mapping",
+        "benefit": "I can reference existing work items and requirements from JIRA"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Script must be auto-discoverable in spec/research-scripts/ with executable bit set",
+          "deleted": false,
+          "createdAt": "2025-11-08T00:44:34.993Z"
+        },
+        {
+          "id": 1,
+          "text": "Script must be standalone with CLI interface supporting flags: --query (JQL query), --issue (issue key), --project (project key), --help, --format (markdown/json/text)",
+          "deleted": false,
+          "createdAt": "2025-11-08T00:44:35.523Z"
+        },
+        {
+          "id": 2,
+          "text": "JIRA credentials (URL, username, API token) must be stored in user-level config ~/.fspec/fspec-config.json under research.jira (NOT project-level)",
+          "deleted": false,
+          "createdAt": "2025-11-08T00:44:36.040Z"
+        },
+        {
+          "id": 3,
+          "text": "Script must support multiple output formats: markdown (default), json, text",
+          "deleted": false,
+          "createdAt": "2025-11-08T00:44:36.555Z"
+        },
+        {
+          "id": 4,
+          "text": "Script must provide comprehensive help text with --help flag showing usage, options, JQL examples, configuration, and exit codes",
+          "deleted": false,
+          "createdAt": "2025-11-08T00:44:44.867Z"
+        },
+        {
+          "id": 5,
+          "text": "Script must handle errors with proper exit codes: 1 (missing args/invalid input), 2 (config/auth errors), 3 (API/network errors)",
+          "deleted": false,
+          "createdAt": "2025-11-08T00:44:45.399Z"
+        },
+        {
+          "id": 6,
+          "text": "Script uses JIRA REST API v2 or v3 with Basic authentication (username + API token)",
+          "deleted": false,
+          "createdAt": "2025-11-08T00:44:45.917Z"
+        },
+        {
+          "id": 7,
+          "text": "Script must support JQL (JIRA Query Language) for advanced issue filtering",
+          "deleted": false,
+          "createdAt": "2025-11-08T00:44:46.435Z"
+        }
+      ],
+      "examples": [
+        {
+          "id": 0,
+          "text": "Developer runs 'jira --issue AUTH-123', receives markdown-formatted issue details with key, summary, description, status, assignee, labels",
+          "deleted": false,
+          "createdAt": "2025-11-08T00:44:55.289Z"
+        },
+        {
+          "id": 1,
+          "text": "Developer runs 'jira --project MYPROJ --format json', receives JSON array of issues in the project with key, summary, status fields",
+          "deleted": false,
+          "createdAt": "2025-11-08T00:44:55.828Z"
+        },
+        {
+          "id": 2,
+          "text": "Developer runs 'jira --query \"project = AUTH AND status = Open\"', receives issues matching JQL query in markdown format",
+          "deleted": false,
+          "createdAt": "2025-11-08T00:44:56.339Z"
+        },
+        {
+          "id": 3,
+          "text": "Developer runs 'jira --help', sees comprehensive help with usage, JQL examples, config instructions, exit codes",
+          "deleted": false,
+          "createdAt": "2025-11-08T00:45:04.619Z"
+        },
+        {
+          "id": 4,
+          "text": "Developer runs 'jira' without any flags, script exits with code 1 and error: 'Error: At least one of --query, --issue, or --project is required'",
+          "deleted": false,
+          "createdAt": "2025-11-08T00:45:05.132Z"
+        },
+        {
+          "id": 5,
+          "text": "Developer runs jira but ~/.fspec/fspec-config.json is missing JIRA config, script exits with code 2 and shows config setup instructions with jiraUrl, username, apiToken fields",
+          "deleted": false,
+          "createdAt": "2025-11-08T00:45:05.650Z"
+        },
+        {
+          "id": 6,
+          "text": "Developer runs jira with invalid API token, JIRA API returns 401 Unauthorized, script exits with code 2 and shows authentication error",
+          "deleted": false,
+          "createdAt": "2025-11-08T00:45:16.368Z"
+        },
+        {
+          "id": 7,
+          "text": "Developer runs 'jira --issue INVALID-999', JIRA API returns 404 Not Found, script exits with code 3 and shows 'Issue not found' error",
+          "deleted": false,
+          "createdAt": "2025-11-08T00:45:16.875Z"
+        },
+        {
+          "id": 8,
+          "text": "fspec research framework scans spec/research-scripts/, finds executable jira file, auto-discovers it as available tool",
+          "deleted": false,
+          "createdAt": "2025-11-08T00:45:17.385Z"
+        },
+        {
+          "id": 9,
+          "text": "Developer runs 'fspec research --tool=jira --query=\"project = AUTH\" during Example Mapping, framework executes script, prompts to attach results, saves to spec/attachments/WORK-001/jira-auth-issues-{date}.md",
+          "deleted": false,
+          "createdAt": "2025-11-08T00:45:17.901Z"
+        }
+      ],
+      "estimate": 5,
+      "questions": [],
+      "architectureNotes": [],
+      "updated": "2025-11-08T01:46:17.324Z"
     },
     "RES-005": {
       "id": "RES-005",
       "title": "Confluence research tool integration",
       "type": "story",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2025-10-23T21:16:31.938Z",
-      "updatedAt": "2025-11-07T02:53:58.620Z",
+      "updatedAt": "2025-11-08T01:46:24.106Z",
       "description": "Create custom script for Confluence API integration. Allows users to search Confluence pages and documentation during Example Mapping. Script should support full-text search and return page summaries with links.",
       "epic": "research-tools",
       "children": [],
@@ -21830,10 +22420,153 @@
         "RES-002",
         "RES-003"
       ],
-      "nextRuleId": 0,
-      "nextExampleId": 0,
+      "nextRuleId": 8,
+      "nextExampleId": 10,
       "nextQuestionId": 0,
-      "nextNoteId": 0
+      "nextNoteId": 0,
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-08T00:46:27.848Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-08T00:57:28.280Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-08T01:39:40.966Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-08T01:44:48.083Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-08T01:46:24.106Z"
+        }
+      ],
+      "userStory": {
+        "role": "AI agent or developer using fspec",
+        "action": "search Confluence pages and documentation during Example Mapping",
+        "benefit": "I can reference existing documentation and knowledge base articles"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Script must be auto-discoverable in spec/research-scripts/ with executable bit set",
+          "deleted": false,
+          "createdAt": "2025-11-08T00:46:44.335Z"
+        },
+        {
+          "id": 1,
+          "text": "Script must be standalone with CLI interface supporting flags: --query (full-text search), --space (space key), --page (page title), --help, --format (markdown/json/text)",
+          "deleted": false,
+          "createdAt": "2025-11-08T00:46:44.842Z"
+        },
+        {
+          "id": 2,
+          "text": "Confluence credentials (URL, username, API token) must be stored in user-level config ~/.fspec/fspec-config.json under research.confluence (NOT project-level)",
+          "deleted": false,
+          "createdAt": "2025-11-08T00:46:45.353Z"
+        },
+        {
+          "id": 3,
+          "text": "Script must support multiple output formats: markdown (default), json, text",
+          "deleted": false,
+          "createdAt": "2025-11-08T00:46:45.863Z"
+        },
+        {
+          "id": 4,
+          "text": "Script must provide comprehensive help text with --help flag showing usage, options, search examples, configuration, and exit codes",
+          "deleted": false,
+          "createdAt": "2025-11-08T00:46:55.125Z"
+        },
+        {
+          "id": 5,
+          "text": "Script must handle errors with proper exit codes: 1 (missing args/invalid input), 2 (config/auth errors), 3 (API/network errors)",
+          "deleted": false,
+          "createdAt": "2025-11-08T00:46:55.669Z"
+        },
+        {
+          "id": 6,
+          "text": "Script uses Confluence REST API v2 with Basic authentication (username + API token)",
+          "deleted": false,
+          "createdAt": "2025-11-08T00:46:56.213Z"
+        },
+        {
+          "id": 7,
+          "text": "Script must support CQL (Confluence Query Language) for advanced page searching and full-text search",
+          "deleted": false,
+          "createdAt": "2025-11-08T00:46:56.722Z"
+        }
+      ],
+      "examples": [
+        {
+          "id": 0,
+          "text": "Developer runs 'confluence --query \"API documentation\"', receives markdown-formatted list of pages with titles, space keys, excerpts, and URLs",
+          "deleted": false,
+          "createdAt": "2025-11-08T00:47:05.500Z"
+        },
+        {
+          "id": 1,
+          "text": "Developer runs 'confluence --space DOCS --format json', receives JSON array of pages in the DOCS space with id, title, excerpt, url fields",
+          "deleted": false,
+          "createdAt": "2025-11-08T00:47:06.021Z"
+        },
+        {
+          "id": 2,
+          "text": "Developer runs 'confluence --page \"Authentication Guide\"', receives full page content in markdown format with title, body, last modified date",
+          "deleted": false,
+          "createdAt": "2025-11-08T00:47:06.537Z"
+        },
+        {
+          "id": 3,
+          "text": "Developer runs 'confluence --help', sees comprehensive help with usage, search examples, CQL syntax, config instructions, exit codes",
+          "deleted": false,
+          "createdAt": "2025-11-08T00:47:15.117Z"
+        },
+        {
+          "id": 4,
+          "text": "Developer runs 'confluence' without any flags, script exits with code 1 and error: 'Error: At least one of --query, --space, or --page is required'",
+          "deleted": false,
+          "createdAt": "2025-11-08T00:47:15.623Z"
+        },
+        {
+          "id": 5,
+          "text": "Developer runs confluence but ~/.fspec/fspec-config.json is missing Confluence config, script exits with code 2 and shows config setup instructions with confluenceUrl, username, apiToken fields",
+          "deleted": false,
+          "createdAt": "2025-11-08T00:47:16.142Z"
+        },
+        {
+          "id": 6,
+          "text": "Developer runs confluence with invalid API token, Confluence API returns 401 Unauthorized, script exits with code 2 and shows authentication error",
+          "deleted": false,
+          "createdAt": "2025-11-08T00:47:27.742Z"
+        },
+        {
+          "id": 7,
+          "text": "Developer runs 'confluence --page \"NonExistent Page\"', Confluence API returns 404 or empty results, script exits with code 3 and shows 'Page not found' error",
+          "deleted": false,
+          "createdAt": "2025-11-08T00:47:28.262Z"
+        },
+        {
+          "id": 8,
+          "text": "fspec research framework scans spec/research-scripts/, finds executable confluence file, auto-discovers it as available tool",
+          "deleted": false,
+          "createdAt": "2025-11-08T00:47:28.773Z"
+        },
+        {
+          "id": 9,
+          "text": "Developer runs 'fspec research --tool=confluence --query=\"OAuth implementation\" during Example Mapping, framework executes script, prompts to attach results, saves to spec/attachments/WORK-001/confluence-oauth-docs-{date}.md",
+          "deleted": false,
+          "createdAt": "2025-11-08T00:47:29.287Z"
+        }
+      ],
+      "estimate": 5,
+      "questions": [],
+      "architectureNotes": [],
+      "updated": "2025-11-08T01:46:24.106Z"
     },
     "BOARD-004": {
       "id": "BOARD-004",
@@ -22355,9 +23088,9 @@
       "id": "RES-006",
       "title": "Stakeholder communication research script for unanswered questions",
       "type": "story",
-      "status": "specifying",
+      "status": "done",
       "createdAt": "2025-10-23T23:34:32.464Z",
-      "updatedAt": "2025-10-23T23:43:29.518Z",
+      "updatedAt": "2025-11-08T05:05:12.614Z",
       "description": "Create research script that contacts stakeholders via chat platforms (Teams, Slack) when questions arise during Example Mapping that require human input. Integrates with fspec research framework to send questions and receive answers from project stakeholders.",
       "epic": "research-tools",
       "children": [],
@@ -22365,6 +23098,22 @@
         {
           "state": "specifying",
           "timestamp": "2025-10-23T23:34:38.818Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-08T03:42:11.645Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-08T03:48:07.146Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-08T05:04:14.704Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-08T05:05:12.614Z"
         }
       ],
       "rules": [
@@ -22483,7 +23232,15 @@
       "nextRuleId": 9,
       "nextExampleId": 7,
       "nextQuestionId": 1,
-      "nextNoteId": 0
+      "nextNoteId": 0,
+      "userStory": {
+        "role": "AI agent or developer using fspec during Example Mapping",
+        "action": "contact stakeholders via chat platforms when questions arise",
+        "benefit": "I can get human input on unclear requirements without blocking progress"
+      },
+      "estimate": 8,
+      "architectureNotes": [],
+      "updated": "2025-11-08T05:05:12.614Z"
     },
     "CONFIG-001": {
       "id": "CONFIG-001",
@@ -36500,9 +37257,9 @@
       "id": "RES-007",
       "title": "AST code researcher for pattern detection and deep analysis",
       "type": "story",
-      "status": "specifying",
+      "status": "done",
       "createdAt": "2025-11-01T19:31:38.476Z",
-      "updatedAt": "2025-11-01T19:34:50.752Z",
+      "updatedAt": "2025-11-08T03:29:15.188Z",
       "description": "Create an AST-based code research backend that analyzes code structure, detects patterns, finds similar code, and provides deep insights using TypeScript/JavaScript AST parsing. Integrates with fspec research command as a registered backend.",
       "epic": "example-driven-discovery",
       "children": [],
@@ -36510,116 +37267,83 @@
         {
           "state": "specifying",
           "timestamp": "2025-11-01T19:31:51.335Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-08T03:16:59.543Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-08T03:20:34.976Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-08T03:28:46.318Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-08T03:29:15.189Z"
         }
       ],
       "dependsOn": [
         "RES-001"
       ],
       "userStory": {
-        "role": "AI agent performing code discovery during Example Mapping",
-        "action": "analyze code structure and patterns using AST parsing",
-        "benefit": "I can detect similar patterns, understand code complexity, and find relevant examples without manual code reading"
+        "role": "AI agent or developer using fspec",
+        "action": "analyze code structure using AST parsing during Example Mapping",
+        "benefit": "I can discover patterns, find similar code, and get deep insights without manual code review"
       },
       "rules": [
         {
           "id": 0,
-          "text": "Use TypeScript Compiler API (ts.createSourceFile, ts.forEachChild) for AST parsing",
-          "deleted": true,
-          "createdAt": "2025-11-01T19:32:08.803Z",
-          "deletedAt": "2025-11-01T19:34:04.808Z"
-        },
-        {
-          "id": 1,
-          "text": "Support pattern detection queries: class definitions, function signatures, imports, exports, interface declarations",
-          "deleted": true,
-          "createdAt": "2025-11-01T19:32:10.309Z",
-          "deletedAt": "2025-11-01T19:34:05.294Z"
-        },
-        {
-          "id": 2,
-          "text": "Integrate as a research backend in 'fspec research' command (registers as 'ast' tool)",
-          "deleted": true,
-          "createdAt": "2025-11-01T19:32:12.116Z",
-          "deletedAt": "2025-11-01T19:34:05.784Z"
-        },
-        {
-          "id": 3,
-          "text": "Analyze code complexity: cyclomatic complexity, nesting depth, function length, parameter count",
-          "deleted": true,
-          "createdAt": "2025-11-01T19:32:13.401Z",
-          "deletedAt": "2025-11-01T19:34:06.269Z"
-        },
-        {
-          "id": 4,
-          "text": "Find similar code patterns using AST structure matching (not text-based)",
-          "deleted": true,
-          "createdAt": "2025-11-01T19:32:14.796Z",
-          "deletedAt": "2025-11-01T19:34:06.758Z"
-        },
-        {
-          "id": 5,
-          "text": "Support both TypeScript (.ts, .tsx) and JavaScript (.js, .jsx) files",
-          "deleted": true,
-          "createdAt": "2025-11-01T19:32:16.361Z",
-          "deletedAt": "2025-11-01T19:34:07.248Z"
-        },
-        {
-          "id": 6,
-          "text": "Return structured results in JSON format with file paths, line numbers, and code snippets",
-          "deleted": true,
-          "createdAt": "2025-11-01T19:32:17.713Z",
-          "deletedAt": "2025-11-01T19:34:07.732Z"
-        },
-        {
-          "id": 7,
           "text": "Use tree-sitter as the AST parsing foundation (supports 40+ languages including TypeScript, JavaScript, Python, Go, Rust, Java, C++)",
           "deleted": false,
           "createdAt": "2025-11-01T19:34:20.601Z"
         },
         {
-          "id": 8,
+          "id": 1,
           "text": "Use tree-sitter query language for pattern matching (find specific code constructs across syntax trees)",
           "deleted": false,
           "createdAt": "2025-11-01T19:34:22.081Z"
         },
         {
-          "id": 9,
+          "id": 2,
           "text": "Support error-tolerant parsing (analyze incomplete or broken code without failing)",
           "deleted": false,
           "createdAt": "2025-11-01T19:34:23.458Z"
         },
         {
-          "id": 10,
+          "id": 3,
           "text": "Integrate as 'ast' research backend in 'fspec research' command (auto-discovered from spec/research-scripts/)",
           "deleted": false,
           "createdAt": "2025-11-01T19:34:25.165Z"
         },
         {
-          "id": 11,
+          "id": 4,
           "text": "Support common pattern queries: function definitions, class declarations, imports, exports, variable assignments, conditionals, loops",
           "deleted": false,
           "createdAt": "2025-11-01T19:34:26.843Z"
         },
         {
-          "id": 12,
+          "id": 5,
           "text": "Analyze code complexity metrics: cyclomatic complexity, nesting depth, function length, parameter count",
           "deleted": false,
           "createdAt": "2025-11-01T19:34:28.478Z"
         },
         {
-          "id": 13,
+          "id": 6,
           "text": "Find structurally similar code using AST pattern matching (not text-based regex)",
           "deleted": false,
           "createdAt": "2025-11-01T19:34:29.985Z"
         },
         {
-          "id": 14,
+          "id": 7,
           "text": "Return structured JSON results with file paths, line numbers, matched code snippets, and AST node types",
           "deleted": false,
           "createdAt": "2025-11-01T19:34:31.366Z"
         }
       ],
-      "nextRuleId": 15,
+      "nextRuleId": 8,
       "examples": [
         {
           "id": 0,
@@ -36650,9 +37374,70 @@
           "text": "Developer queries 'classes implementing interface UserRepository', AST tool uses tree-sitter queries to find all implementing classes with file locations and code snippets",
           "deleted": false,
           "createdAt": "2025-11-01T19:34:50.752Z"
+        },
+        {
+          "id": 5,
+          "text": "AI searches for functions with high cyclomatic complexity (>10) to identify refactoring candidates, gets JSON with file paths and complexity scores",
+          "deleted": false,
+          "createdAt": "2025-11-08T03:14:58.477Z"
+        },
+        {
+          "id": 6,
+          "text": "Developer queries for all exported functions to generate API documentation, AST tool extracts function signatures and JSDoc comments",
+          "deleted": false,
+          "createdAt": "2025-11-08T03:14:59.011Z"
+        },
+        {
+          "id": 7,
+          "text": "AI agent looks for unused imports across TypeScript files, tree-sitter parses import statements and checks for usage in AST",
+          "deleted": false,
+          "createdAt": "2025-11-08T03:14:59.524Z"
         }
       ],
-      "nextExampleId": 5
+      "nextExampleId": 8,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Uses tree-sitter Node.js bindings (node-tree-sitter or web-tree-sitter) for AST parsing across 40+ languages",
+          "deleted": false,
+          "createdAt": "2025-11-08T03:15:05.875Z"
+        },
+        {
+          "id": 1,
+          "text": "Implements as Node.js script (#!/usr/bin/env node) in spec/research-scripts/ast with executable permissions for auto-discovery",
+          "deleted": false,
+          "createdAt": "2025-11-08T03:15:18.672Z"
+        },
+        {
+          "id": 2,
+          "text": "Uses tree-sitter S-expression queries for pattern matching (similar to AST-grep but more powerful)",
+          "deleted": false,
+          "createdAt": "2025-11-08T03:15:19.213Z"
+        },
+        {
+          "id": 3,
+          "text": "Supports --query, --file, --format (json/markdown/text), --language flags for CLI interface",
+          "deleted": false,
+          "createdAt": "2025-11-08T03:15:19.755Z"
+        },
+        {
+          "id": 4,
+          "text": "Returns JSON schema: {matches: [{file, startLine, endLine, code, nodeType, metadata}], stats: {filesScanned, matchCount}}",
+          "deleted": false,
+          "createdAt": "2025-11-08T03:15:20.312Z"
+        },
+        {
+          "id": 5,
+          "text": "Includes FSPEC_TEST_MODE=1 support for testing without actual AST parsing (returns mock data)",
+          "deleted": false,
+          "createdAt": "2025-11-08T03:15:20.843Z"
+        }
+      ],
+      "nextNoteId": 6,
+      "estimate": 8,
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2025-11-08T03:29:15.188Z"
     },
     "CLEAN-003": {
       "id": "CLEAN-003",
@@ -43264,13 +44049,1332 @@
       "questions": [],
       "nextQuestionId": 0,
       "updated": "2025-11-08T00:22:25.003Z"
+    },
+    "RES-008": {
+      "id": "RES-008",
+      "title": "Integrate research guidance into AI agent assistance and ULTRATHINK compilation",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-11-08T05:44:18.552Z",
+      "updatedAt": "2025-11-08T06:17:23.155Z",
+      "description": "Update system-reminders, bootstrap content, and spec/CLAUDE.md to guide agents on using fspec research during specifying phase. Add ULTRATHINK-powered research compilation that creates markdown files with mermaid diagrams and auto-attaches to work units.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-08T05:47:18.921Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-08T05:51:26.594Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-08T05:56:02.278Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-08T06:10:16.993Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-08T06:17:23.155Z"
+        }
+      ],
+      "userStory": {
+        "role": "AI agent using fspec during discovery",
+        "action": "receive guidance on using research tools and compile findings",
+        "benefit": "I can answer questions with high-quality research that includes diagrams and gets attached to work units"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "System-reminders during SPECIFYING phase must mention available research tools (fspec research)",
+          "deleted": false,
+          "createdAt": "2025-11-08T05:47:43.242Z"
+        },
+        {
+          "id": 1,
+          "text": "Bootstrap content (fspec bootstrap) must include RESEARCH section documenting when and how to use research tools",
+          "deleted": false,
+          "createdAt": "2025-11-08T05:47:45.139Z"
+        },
+        {
+          "id": 2,
+          "text": "spec/CLAUDE.md must document research workflow with concrete examples",
+          "deleted": false,
+          "createdAt": "2025-11-08T05:47:47.152Z"
+        },
+        {
+          "id": 3,
+          "text": "Research compilation must use agent detection (agentRegistry.ts) to determine ULTRATHINK support",
+          "deleted": false,
+          "createdAt": "2025-11-08T05:47:48.678Z"
+        },
+        {
+          "id": 4,
+          "text": "Compiled research must be markdown format with front matter metadata (work unit ID, timestamp, tool used)",
+          "deleted": false,
+          "createdAt": "2025-11-08T05:47:50.316Z"
+        },
+        {
+          "id": 5,
+          "text": "Compiled research must generate mermaid diagrams for visual concepts (flowcharts, architecture, relationships)",
+          "deleted": false,
+          "createdAt": "2025-11-08T05:47:52.090Z"
+        },
+        {
+          "id": 6,
+          "text": "Compiled research must auto-attach to work unit using add-attachment command",
+          "deleted": false,
+          "createdAt": "2025-11-08T05:47:53.738Z"
+        }
+      ],
+      "nextRuleId": 7,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Agent moves AUTH-001 to specifying → system-reminder shows: 'Use fspec research --tool=ast or --tool=stakeholder to answer questions'",
+          "deleted": false,
+          "createdAt": "2025-11-08T05:48:06.387Z"
+        },
+        {
+          "id": 1,
+          "text": "Agent runs 'fspec bootstrap' → output includes RESEARCH section with tool examples and workflow",
+          "deleted": false,
+          "createdAt": "2025-11-08T05:48:08.187Z"
+        },
+        {
+          "id": 2,
+          "text": "spec/CLAUDE.md contains: 'During specifying, use fspec research --tool=ast --query=\"pattern\" to analyze code'",
+          "deleted": false,
+          "createdAt": "2025-11-08T05:48:09.866Z"
+        },
+        {
+          "id": 3,
+          "text": "Agent runs 'fspec compile-research AUTH-001' → creates markdown with ULTRATHINK analysis (Claude) or deep analysis (other agents)",
+          "deleted": false,
+          "createdAt": "2025-11-08T05:48:11.964Z"
+        },
+        {
+          "id": 4,
+          "text": "Compiled research includes: mermaid flowchart showing authentication flow, markdown summary, auto-attached to spec/attachments/AUTH-001/",
+          "deleted": false,
+          "createdAt": "2025-11-08T05:48:13.655Z"
+        }
+      ],
+      "nextExampleId": 5,
+      "estimate": 13,
+      "questions": [],
+      "architectureNotes": [],
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-08T06:17:23.155Z"
+    },
+    "BROWSE-001": {
+      "id": "BROWSE-001",
+      "title": "Remote Browser Control via EventSource",
+      "type": "story",
+      "status": "specifying",
+      "createdAt": "2025-11-08T06:48:42.824Z",
+      "updatedAt": "2025-11-08T06:56:45.261Z",
+      "description": "Allow openBrowser function to connect to remote browser window using EventSource for tab/window control",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-08T06:48:48.365Z"
+        }
+      ],
+      "userStory": {
+        "role": "fspec developer",
+        "action": "configure browser opening to use remote EventSource-controlled browser",
+        "benefit": "I can control browser behavior from a central location without spawning new processes"
+      },
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: Where will the EventSource server be running? (separate process, browser extension, web page?)",
+          "deleted": false,
+          "createdAt": "2025-11-08T06:49:17.350Z",
+          "selected": false
+        },
+        {
+          "id": 1,
+          "text": "@human: What config structure in fspec-config.json? (simple URL string or complex object with auth/retry?)",
+          "deleted": false,
+          "createdAt": "2025-11-08T06:49:18.812Z",
+          "selected": false
+        },
+        {
+          "id": 2,
+          "text": "@human: When to fallback to 'open' library? (config missing, connection fails, or both?)",
+          "deleted": false,
+          "createdAt": "2025-11-08T06:49:20.814Z",
+          "selected": true,
+          "answer": "Both: fallback when config missing AND when connection fails"
+        },
+        {
+          "id": 3,
+          "text": "@human: What event payload should be sent? (just URL, or include tab/window preferences?)",
+          "deleted": false,
+          "createdAt": "2025-11-08T06:49:22.272Z",
+          "selected": false
+        }
+      ],
+      "nextQuestionId": 4,
+      "attachments": [
+        "spec/attachments/BROWSE-001/eventsource-research.md"
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "Configuration in fspec-config.json must include EventSource URL and fallback behavior",
+          "deleted": false,
+          "createdAt": "2025-11-08T06:56:13.909Z"
+        },
+        {
+          "id": 1,
+          "text": "Must fall back to 'open' library when EventSource config is missing or connection fails",
+          "deleted": false,
+          "createdAt": "2025-11-08T06:56:15.565Z"
+        },
+        {
+          "id": 2,
+          "text": "Event payload must include URL and optional tab/window preference",
+          "deleted": false,
+          "createdAt": "2025-11-08T06:56:17.049Z"
+        },
+        {
+          "id": 3,
+          "text": "EventSource connection must handle disconnects gracefully and retry",
+          "deleted": false,
+          "createdAt": "2025-11-08T06:56:18.692Z"
+        },
+        {
+          "id": 4,
+          "text": "Both: fallback when config missing AND when connection fails",
+          "deleted": false,
+          "createdAt": "2025-11-08T06:56:45.261Z"
+        }
+      ],
+      "nextRuleId": 5,
+      "examples": [
+        {
+          "id": 0,
+          "text": "openBrowser called with no EventSource config → uses 'open' library (current behavior)",
+          "deleted": false,
+          "createdAt": "2025-11-08T06:56:27.252Z"
+        },
+        {
+          "id": 1,
+          "text": "openBrowser called with EventSource config present → sends event to remote browser listener",
+          "deleted": false,
+          "createdAt": "2025-11-08T06:56:28.988Z"
+        },
+        {
+          "id": 2,
+          "text": "EventSource connection fails → falls back to 'open' library",
+          "deleted": false,
+          "createdAt": "2025-11-08T06:56:30.531Z"
+        },
+        {
+          "id": 3,
+          "text": "Config specifies EventSource URL http://localhost:3000/browser-control → openBrowser sends POST to that endpoint",
+          "deleted": false,
+          "createdAt": "2025-11-08T06:56:32.345Z"
+        }
+      ],
+      "nextExampleId": 4
+    },
+    "RES-009": {
+      "id": "RES-009",
+      "title": "Research Tool Discovery and Configuration UX",
+      "type": "story",
+      "status": "blocked",
+      "createdAt": "2025-11-08T06:58:20.872Z",
+      "updatedAt": "2025-11-10T06:34:36.922Z",
+      "description": "Improve discoverability, configuration, and integration of fspec research tools to make them a natural part of Example Mapping workflow",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-08T06:58:27.598Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-10T05:47:44.958Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-10T05:49:07.794Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-10T05:54:16.723Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-10T05:55:35.420Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-10T06:14:09.363Z"
+        },
+        {
+          "state": "blocked",
+          "timestamp": "2025-11-10T06:34:31.350Z",
+          "reason": "Waiting for RES-015 (TypeScript plugin system) - tool execution requires TypeScript architecture, RES-009 UX improvements complete"
+        }
+      ],
+      "userStory": {
+        "role": "AI agent using fspec for Example Mapping",
+        "action": "discover and use research tools easily without reading source code",
+        "benefit": "I can answer technical questions efficiently and integrate findings into work units"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Tool listing must show tool status (configured vs unconfigured) at a glance",
+          "deleted": false,
+          "createdAt": "2025-11-08T06:58:51.869Z"
+        },
+        {
+          "id": 1,
+          "text": "Tool listing must include brief description of what each tool does and when to use it",
+          "deleted": false,
+          "createdAt": "2025-11-08T06:58:53.423Z"
+        },
+        {
+          "id": 2,
+          "text": "System-reminder when entering specifying state must prominently suggest research tools with status",
+          "deleted": false,
+          "createdAt": "2025-11-08T06:58:54.900Z"
+        },
+        {
+          "id": 3,
+          "text": "Tool-specific help must be accessible via --help flag (not generic research help)",
+          "deleted": false,
+          "createdAt": "2025-11-08T06:58:56.384Z"
+        },
+        {
+          "id": 4,
+          "text": "Configuration wizard must guide setup for unconfigured tools with validation",
+          "deleted": false,
+          "createdAt": "2025-11-08T06:58:58.032Z"
+        },
+        {
+          "id": 5,
+          "text": "Research tool configs must support environment variables for API keys (avoid plain text)",
+          "deleted": false,
+          "createdAt": "2025-11-08T06:58:59.879Z"
+        },
+        {
+          "id": 6,
+          "text": "Config validation command must check all tools and report which are ready vs need setup",
+          "deleted": false,
+          "createdAt": "2025-11-08T06:59:01.650Z"
+        },
+        {
+          "id": 7,
+          "text": "Research output with --work-unit flag must prompt to save as attachment automatically",
+          "deleted": false,
+          "createdAt": "2025-11-08T06:59:03.361Z"
+        },
+        {
+          "id": 8,
+          "text": "Attachment prompt must offer to extract rules/examples from research findings",
+          "deleted": false,
+          "createdAt": "2025-11-08T06:59:05.002Z"
+        },
+        {
+          "id": 9,
+          "text": "AST tool must work in production mode (not just FSPEC_TEST_MODE=1)",
+          "deleted": false,
+          "createdAt": "2025-11-08T06:59:06.543Z"
+        },
+        {
+          "id": 10,
+          "text": "No environment variables for API keys - use config file only",
+          "deleted": false,
+          "createdAt": "2025-11-10T01:42:30.182Z"
+        },
+        {
+          "id": 11,
+          "text": "AI auto-parse research findings but ask user for clarification when uncertain (Example Mapping approach)",
+          "deleted": false,
+          "createdAt": "2025-11-10T01:47:01.927Z"
+        },
+        {
+          "id": 12,
+          "text": "Three configuration methods: 1) CLI flags (--api-key=...), 2) Interactive wizard (detect TTY), 3) TUI config view (in main fspec TUI)",
+          "deleted": false,
+          "createdAt": "2025-11-10T01:49:24.999Z"
+        },
+        {
+          "id": 13,
+          "text": "Yes, but use feedback loop pattern like 'fspec reverse' - emit system-reminder with tool suggestions, let AI analyze and choose, no hardcoded semantic analysis",
+          "deleted": false,
+          "createdAt": "2025-11-10T05:42:43.581Z"
+        },
+        {
+          "id": 14,
+          "text": "AST tool help/interface exists but production implementation blocked - needs actual AST parsing logic implemented and tested (currently only works with FSPEC_TEST_MODE=1)",
+          "deleted": false,
+          "createdAt": "2025-11-10T05:43:48.851Z"
+        },
+        {
+          "id": 15,
+          "text": "Research command must forward ALL unknown arguments to the research tool script (use Commander.js .allowUnknownOption())",
+          "deleted": false,
+          "createdAt": "2025-11-10T06:15:10.863Z"
+        },
+        {
+          "id": 16,
+          "text": "YES\\! Research tools must be integrated TypeScript commands, not bash scripts. When user installs 'fspec' globally, ALL research tools work immediately without separate script installation. Use subcommands: 'fspec research ast', 'fspec research perplexity', etc.",
+          "deleted": true,
+          "createdAt": "2025-11-10T06:16:34.713Z",
+          "deletedAt": "2025-11-10T06:19:22.072Z"
+        },
+        {
+          "id": 17,
+          "text": "YES! Research tools MUST be platform-agnostic TypeScript modules (not bash scripts). Use tsx/ts-node to execute .ts files in spec/research-scripts/, or bundle them with fspec. Tools must work on Windows, macOS, Linux without modification.",
+          "deleted": false,
+          "createdAt": "2025-11-10T06:19:29.506Z"
+        },
+        {
+          "id": 18,
+          "text": "Research tools are dynamically loaded TypeScript modules - fspec uses dynamic import() to load and execute tools from spec/research-tools/*.ts",
+          "deleted": false,
+          "createdAt": "2025-11-10T06:19:51.877Z"
+        },
+        {
+          "id": 19,
+          "text": "DEPENDENCY: Tool execution blocked on RES-015 (TypeScript plugin system). RES-009 scope limited to UX improvements only (listing, status, descriptions).",
+          "deleted": false,
+          "createdAt": "2025-11-10T06:34:23.637Z"
+        }
+      ],
+      "nextRuleId": 20,
+      "examples": [
+        {
+          "id": 0,
+          "text": "BEFORE: Run 'fspec research' → get list of tool names only (ast, confluence, jira, perplexity, stakeholder)",
+          "deleted": false,
+          "createdAt": "2025-11-08T06:59:27.480Z"
+        },
+        {
+          "id": 1,
+          "text": "AFTER: Run 'fspec research' → see status (✓ configured ✗ not configured), descriptions, and usage hints",
+          "deleted": false,
+          "createdAt": "2025-11-08T06:59:29.358Z"
+        },
+        {
+          "id": 2,
+          "text": "BEFORE: Run 'fspec research --tool=perplexity --help' → get GENERIC research help (not tool-specific)",
+          "deleted": false,
+          "createdAt": "2025-11-08T06:59:31.281Z"
+        },
+        {
+          "id": 3,
+          "text": "AFTER: Run 'fspec research --tool=perplexity --help' → get perplexity script's --help output (query, model, format options)",
+          "deleted": false,
+          "createdAt": "2025-11-08T06:59:32.884Z"
+        },
+        {
+          "id": 4,
+          "text": "BEFORE: Try perplexity tool → get error about missing API key, manually create ~/.fspec/fspec-config.json",
+          "deleted": false,
+          "createdAt": "2025-11-08T06:59:34.487Z"
+        },
+        {
+          "id": 5,
+          "text": "AFTER: Run 'fspec research --configure perplexity' → wizard prompts for API key, validates, saves config",
+          "deleted": false,
+          "createdAt": "2025-11-08T06:59:36.851Z"
+        },
+        {
+          "id": 6,
+          "text": "BEFORE: Research output to stdout → manually save to file → manually attach with 'fspec add-attachment'",
+          "deleted": false,
+          "createdAt": "2025-11-08T06:59:38.472Z"
+        },
+        {
+          "id": 7,
+          "text": "AFTER: Research with --work-unit flag → prompts 'Save to attachments? (y/n)' → auto-attaches → offers to extract rules",
+          "deleted": false,
+          "createdAt": "2025-11-08T06:59:40.183Z"
+        },
+        {
+          "id": 8,
+          "text": "BEFORE: AST tool requires FSPEC_TEST_MODE=1 → unusable in production Example Mapping workflow",
+          "deleted": false,
+          "createdAt": "2025-11-08T06:59:41.754Z"
+        },
+        {
+          "id": 9,
+          "text": "AFTER: AST tool works in production without test mode flag",
+          "deleted": false,
+          "createdAt": "2025-11-08T06:59:43.457Z"
+        },
+        {
+          "id": 10,
+          "text": "CURRENT: Perplexity script has outdated model 'llama-3.1-sonar-small-128k-online' → must guess 'sonar'",
+          "deleted": false,
+          "createdAt": "2025-11-08T06:59:45.272Z"
+        },
+        {
+          "id": 11,
+          "text": "FIXED: Perplexity default model is up-to-date and works without guessing",
+          "deleted": false,
+          "createdAt": "2025-11-08T06:59:46.903Z"
+        },
+        {
+          "id": 12,
+          "text": "Run 'fspec research --tool=ast --query \"find all async functions\"' → executes ast script with --query flag",
+          "deleted": false,
+          "createdAt": "2025-11-10T06:14:58.878Z"
+        },
+        {
+          "id": 13,
+          "text": "Run 'fspec research --tool=ast --file src/index.ts' → executes ast script with --file flag",
+          "deleted": false,
+          "createdAt": "2025-11-10T06:15:04.309Z"
+        },
+        {
+          "id": 14,
+          "text": "ARCHITECTURE: spec/research-tools/ast.ts exports { execute(args) => Promise<string> } interface, fspec dynamically imports and calls execute()",
+          "deleted": false,
+          "createdAt": "2025-11-10T06:19:57.917Z"
+        }
+      ],
+      "nextExampleId": 15,
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: Should research tool configs stay in ~/.fspec/fspec-config.json or move to project spec/fspec-config.json?",
+          "deleted": false,
+          "createdAt": "2025-11-08T07:00:02.351Z",
+          "selected": true,
+          "answer": "~/.fspec/fspec-config.json (user-level config)"
+        },
+        {
+          "id": 1,
+          "text": "@human: Which environment variables should be supported? (e.g., PERPLEXITY_API_KEY, JIRA_TOKEN, CONFLUENCE_TOKEN, etc.)",
+          "deleted": false,
+          "createdAt": "2025-11-08T07:00:04.026Z",
+          "selected": true,
+          "answer": "No environment variables for API keys - use config file only"
+        },
+        {
+          "id": 2,
+          "text": "@human: For rule/example extraction from research: AI auto-parse or AI suggest + human approve?",
+          "deleted": false,
+          "createdAt": "2025-11-08T07:00:06.154Z",
+          "selected": true,
+          "answer": "AI auto-parse research findings but ask user for clarification when uncertain (Example Mapping approach)"
+        },
+        {
+          "id": 3,
+          "text": "@human: Config wizard: Interactive prompts (y/n questions) or command-line flags (--api-key=...)",
+          "deleted": false,
+          "createdAt": "2025-11-08T07:00:07.681Z",
+          "selected": true,
+          "answer": "Three configuration methods: 1) CLI flags (--api-key=...), 2) Interactive wizard (detect TTY), 3) TUI config view (in main fspec TUI)"
+        },
+        {
+          "id": 4,
+          "text": "@human: Should system proactively suggest which research tool to use based on question type?",
+          "deleted": false,
+          "createdAt": "2025-11-08T07:00:09.156Z",
+          "selected": true,
+          "answer": "Yes, but use feedback loop pattern like 'fspec reverse' - emit system-reminder with tool suggestions, let AI analyze and choose, no hardcoded semantic analysis"
+        },
+        {
+          "id": 5,
+          "text": "@human: AST production mode - are there technical blockers or just not implemented yet?",
+          "deleted": false,
+          "createdAt": "2025-11-08T07:00:10.776Z",
+          "selected": true,
+          "answer": "AST tool help/interface exists but production implementation blocked - needs actual AST parsing logic implemented and tested (currently only works with FSPEC_TEST_MODE=1)"
+        },
+        {
+          "id": 6,
+          "text": "@human: Should research tools be integrated TypeScript commands within fspec (like 'fspec research ast --query') instead of separate bash scripts?",
+          "deleted": false,
+          "createdAt": "2025-11-10T06:16:27.253Z",
+          "selected": true,
+          "answer": "YES! Research tools MUST be platform-agnostic TypeScript modules (not bash scripts). Use tsx/ts-node to execute .ts files in spec/research-scripts/, or bundle them with fspec. Tools must work on Windows, macOS, Linux without modification."
+        }
+      ],
+      "nextQuestionId": 7,
+      "assumptions": [
+        "~/.fspec/fspec-config.json (user-level config)"
+      ],
+      "architectureNotes": [],
+      "nextNoteId": 0,
+      "updated": "2025-11-10T05:55:35.419Z",
+      "blockedReason": "Waiting for RES-015 (TypeScript plugin system) - tool execution requires TypeScript architecture, RES-009 UX improvements complete",
+      "blockedBy": [
+        "RES-015"
+      ]
+    },
+    "RES-010": {
+      "id": "RES-010",
+      "title": "Tool Discovery and Status Display",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-11-08T07:15:35.103Z",
+      "updatedAt": "2025-11-09T00:10:36.326Z",
+      "description": "Improve research tool listing to show configuration status, descriptions, and usage guidance at a glance",
+      "epic": "research-tool-experience",
+      "children": [],
+      "dependsOn": [
+        "RES-012"
+      ],
+      "relatesTo": [
+        "RES-011"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-08T22:59:01.966Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-08T23:12:54.950Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-08T23:15:07.185Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-09T00:10:00.406Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-09T00:10:36.327Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using research tools",
+        "action": "see configuration status and usage guidance for all available tools",
+        "benefit": "I can quickly understand which tools are ready to use and how to configure them"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Tool listing command must show all registered research tools with their names and descriptions",
+          "deleted": false,
+          "createdAt": "2025-11-08T22:59:24.796Z"
+        },
+        {
+          "id": 1,
+          "text": "Each tool must display configuration status: CONFIGURED (ready), NOT CONFIGURED (missing required config), or PARTIALLY CONFIGURED (some optional config missing)",
+          "deleted": false,
+          "createdAt": "2025-11-08T22:59:31.099Z"
+        },
+        {
+          "id": 2,
+          "text": "Configuration status must use the config resolution system from RES-012 to check all config sources (ENV, User, Project, Defaults)",
+          "deleted": false,
+          "createdAt": "2025-11-08T22:59:37.406Z"
+        },
+        {
+          "id": 3,
+          "text": "Tool listing must show which configuration source is being used for configured tools (ENV, USER, PROJECT, DEFAULT)",
+          "deleted": false,
+          "createdAt": "2025-11-08T22:59:42.559Z"
+        },
+        {
+          "id": 4,
+          "text": "For unconfigured tools, output must show usage guidance with configuration command examples",
+          "deleted": false,
+          "createdAt": "2025-11-08T22:59:48.240Z"
+        },
+        {
+          "id": 5,
+          "text": "Tool listing output must be AI-agent friendly (structured, clear status indicators, machine-parseable)",
+          "deleted": false,
+          "createdAt": "2025-11-08T22:59:53.488Z"
+        }
+      ],
+      "nextRuleId": 6,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User runs 'fspec research' and sees Perplexity tool with status CONFIGURED (source: ENV) because PERPLEXITY_API_KEY is set",
+          "deleted": false,
+          "createdAt": "2025-11-08T23:00:04.898Z"
+        },
+        {
+          "id": 1,
+          "text": "User runs 'fspec research' and sees Jira tool with status NOT CONFIGURED along with command example: export JIRA_URL=... JIRA_TOKEN=...",
+          "deleted": false,
+          "createdAt": "2025-11-08T23:00:10.312Z"
+        },
+        {
+          "id": 2,
+          "text": "User runs 'fspec research' and sees Confluence tool with status CONFIGURED (source: USER) showing config from ~/.fspec/fspec-config.json",
+          "deleted": false,
+          "createdAt": "2025-11-08T23:00:15.775Z"
+        },
+        {
+          "id": 3,
+          "text": "User runs 'fspec research' and sees all tools listed with descriptions, status indicators (✓ or ✗), and config sources",
+          "deleted": false,
+          "createdAt": "2025-11-08T23:00:21.393Z"
+        },
+        {
+          "id": 4,
+          "text": "User runs 'fspec research --tool=perplexity --help' and sees tool-specific help with configuration requirements and usage examples",
+          "deleted": false,
+          "createdAt": "2025-11-08T23:00:27.312Z"
+        }
+      ],
+      "nextExampleId": 5,
+      "estimate": 5,
+      "questions": [],
+      "architectureNotes": [],
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-09T00:10:36.326Z"
+    },
+    "RES-011": {
+      "id": "RES-011",
+      "title": "Tool-Specific Help System",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-11-08T07:15:45.799Z",
+      "updatedAt": "2025-11-08T07:59:52.602Z",
+      "description": "Forward --help flag to actual research tool scripts for tool-specific documentation instead of generic help",
+      "epic": "research-tool-experience",
+      "children": [],
+      "relatesTo": [
+        "RES-010"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-08T07:36:40.575Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-08T07:40:26.824Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-08T07:42:04.889Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-08T07:54:46.320Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-08T07:59:52.602Z"
+        }
+      ],
+      "userStory": {
+        "role": "AI agent or developer using fspec research tools",
+        "action": "get tool-specific help documentation when running --help flag",
+        "benefit": "I can learn tool options without reading source code or generic help"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "When --help flag is used with --tool specified, forward --help to the tool script",
+          "deleted": false,
+          "createdAt": "2025-11-08T07:36:59.974Z"
+        },
+        {
+          "id": 1,
+          "text": "When --help flag is used without --tool, show generic research help",
+          "deleted": false,
+          "createdAt": "2025-11-08T07:37:01.450Z"
+        },
+        {
+          "id": 2,
+          "text": "When tool does not exist, show error with available tools list",
+          "deleted": false,
+          "createdAt": "2025-11-08T07:37:03.260Z"
+        },
+        {
+          "id": 3,
+          "text": "All research tool scripts must implement --help flag with standardized format",
+          "deleted": false,
+          "createdAt": "2025-11-08T07:37:04.754Z"
+        },
+        {
+          "id": 4,
+          "text": "Tool help must include: usage, options, examples, configuration, exit codes",
+          "deleted": false,
+          "createdAt": "2025-11-08T07:37:06.259Z"
+        }
+      ],
+      "nextRuleId": 5,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Run 'fspec research --help' → shows generic research help with list of available tools",
+          "deleted": false,
+          "createdAt": "2025-11-08T07:37:15.415Z"
+        },
+        {
+          "id": 1,
+          "text": "Run 'fspec research --tool=perplexity --help' → shows Perplexity-specific help (query, model, format options)",
+          "deleted": false,
+          "createdAt": "2025-11-08T07:37:17.878Z"
+        },
+        {
+          "id": 2,
+          "text": "Run 'fspec research --tool=nonexistent --help' → error: tool not found, shows available tools",
+          "deleted": false,
+          "createdAt": "2025-11-08T07:37:19.493Z"
+        },
+        {
+          "id": 3,
+          "text": "Tool script without --help implementation → warning message with fallback to file location",
+          "deleted": false,
+          "createdAt": "2025-11-08T07:37:21.182Z"
+        }
+      ],
+      "nextExampleId": 4,
+      "estimate": 3,
+      "questions": [],
+      "architectureNotes": [],
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-08T07:59:52.602Z"
+    },
+    "RES-012": {
+      "id": "RES-012",
+      "title": "Configuration Management with TUI Integration",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-11-08T07:15:47.493Z",
+      "updatedAt": "2025-11-08T11:24:06.945Z",
+      "description": "Build comprehensive config system with wizard, validation, env var support, and dedicated TUI view for managing research tool settings",
+      "epic": "research-tool-experience",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-08T09:08:59.450Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-08T11:12:56.102Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-08T11:14:58.560Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-08T11:18:25.627Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-08T11:24:06.946Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using research tools",
+        "action": "configure and validate research tool settings without manual file editing",
+        "benefit": "I can quickly set up tools with confidence and see configuration status at a glance"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Configuration sources are checked in priority order: ENV vars → User config (~/.fspec/fspec-config.json) → Project config (spec/fspec-config.json) → Defaults",
+          "deleted": false,
+          "createdAt": "2025-11-08T10:59:54.392Z"
+        },
+        {
+          "id": 1,
+          "text": "Environment variables take precedence over all config files (e.g., PERPLEXITY_API_KEY overrides config file settings)",
+          "deleted": false,
+          "createdAt": "2025-11-08T11:00:00.232Z"
+        },
+        {
+          "id": 2,
+          "text": "User-level config (~/.fspec/fspec-config.json) stores personal API keys and is never version controlled",
+          "deleted": false,
+          "createdAt": "2025-11-08T11:00:05.929Z"
+        },
+        {
+          "id": 3,
+          "text": "Project-level config (spec/fspec-config.json) stores team defaults and URLs but no secrets (can be version controlled)",
+          "deleted": false,
+          "createdAt": "2025-11-08T11:00:11.695Z"
+        },
+        {
+          "id": 4,
+          "text": "Config validation must check for required fields before tool execution",
+          "deleted": false,
+          "createdAt": "2025-11-08T11:00:17.097Z"
+        },
+        {
+          "id": 5,
+          "text": ".env file support must load environment variables from project root .env file if it exists",
+          "deleted": false,
+          "createdAt": "2025-11-08T11:00:22.396Z"
+        }
+      ],
+      "nextRuleId": 6,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Perplexity API key set via PERPLEXITY_API_KEY env var overrides user config file setting",
+          "deleted": false,
+          "createdAt": "2025-11-08T11:00:28.437Z"
+        },
+        {
+          "id": 1,
+          "text": "Jira URL in project config (spec/fspec-config.json) is used when JIRA_URL env var is not set and user config doesn't exist",
+          "deleted": false,
+          "createdAt": "2025-11-08T11:00:34.902Z"
+        },
+        {
+          "id": 2,
+          "text": ".env file in project root loads PERPLEXITY_API_KEY=pplx-abc123 which then takes precedence over config files",
+          "deleted": false,
+          "createdAt": "2025-11-08T11:00:40.639Z"
+        },
+        {
+          "id": 3,
+          "text": "Validation detects missing CONFLUENCE_TOKEN before tool execution and shows clear error message",
+          "deleted": false,
+          "createdAt": "2025-11-08T11:00:46.342Z"
+        },
+        {
+          "id": 4,
+          "text": "Default Perplexity model 'sonar' is used when no PERPLEXITY_MODEL env var or config file setting exists",
+          "deleted": false,
+          "createdAt": "2025-11-08T11:00:52.164Z"
+        }
+      ],
+      "nextExampleId": 5,
+      "estimate": 5,
+      "questions": [],
+      "architectureNotes": [],
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-08T11:24:06.945Z"
+    },
+    "RES-013": {
+      "id": "RES-013",
+      "title": "Smart Research Integration and Auto-Attachment",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-11-08T07:15:49.704Z",
+      "updatedAt": "2025-11-09T00:46:14.964Z",
+      "description": "Automatically prompt to save research results as attachments and extract rules/examples with AI assistance",
+      "epic": "research-tool-experience",
+      "children": [],
+      "dependsOn": [
+        "RES-010",
+        "RES-012"
+      ],
+      "relatesTo": [
+        "RES-014"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-09T00:24:59.088Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-09T00:36:32.795Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-09T00:40:00.690Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-09T00:42:03.869Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-09T00:46:14.965Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using research tools during Example Mapping",
+        "action": "automatically save research results as attachments and extract rules/examples with AI assistance",
+        "benefit": "I can quickly capture research findings and convert them into actionable specification artifacts"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "After running a research tool, system must prompt user to save results as attachment to current work unit",
+          "deleted": false,
+          "createdAt": "2025-11-09T00:25:25.011Z"
+        },
+        {
+          "id": 1,
+          "text": "AI assistant must analyze research output and suggest extractable business rules, examples, and questions",
+          "deleted": false,
+          "createdAt": "2025-11-09T00:25:35.051Z"
+        },
+        {
+          "id": 2,
+          "text": "User must be able to accept/reject/edit AI-suggested rules and examples before adding to Example Map",
+          "deleted": false,
+          "createdAt": "2025-11-09T00:25:35.715Z"
+        },
+        {
+          "id": 3,
+          "text": "Saved attachments must be stored in spec/attachments/<work-unit-id>/ directory",
+          "deleted": false,
+          "createdAt": "2025-11-09T00:25:36.337Z"
+        },
+        {
+          "id": 4,
+          "text": "Research output must be saved as both raw format and AI-extracted structured format",
+          "deleted": false,
+          "createdAt": "2025-11-09T00:25:36.974Z"
+        },
+        {
+          "id": 5,
+          "text": "System must support --auto-attach flag to skip prompt and auto-save research results",
+          "deleted": false,
+          "createdAt": "2025-11-09T00:25:37.606Z"
+        }
+      ],
+      "nextRuleId": 6,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User runs 'fspec research --tool=perplexity --query=\"OAuth best practices\" --work-unit=AUTH-001' and after receiving results, system prompts: 'Save research results as attachment? (y/n)'",
+          "deleted": false,
+          "createdAt": "2025-11-09T00:25:55.266Z"
+        },
+        {
+          "id": 1,
+          "text": "User saves research results, AI analyzes output and suggests: 'Found 3 rules, 5 examples. Add to AUTH-001? (y/n/edit)'",
+          "deleted": false,
+          "createdAt": "2025-11-09T00:25:55.886Z"
+        },
+        {
+          "id": 2,
+          "text": "User accepts AI suggestions, system adds rules/examples to AUTH-001 Example Map and saves raw output to spec/attachments/AUTH-001/perplexity-oauth-research.md",
+          "deleted": false,
+          "createdAt": "2025-11-09T00:25:56.529Z"
+        },
+        {
+          "id": 3,
+          "text": "User runs 'fspec research --tool=ast --query=\"authentication patterns\" --work-unit=AUTH-001 --auto-attach' and results are automatically saved without prompts",
+          "deleted": false,
+          "createdAt": "2025-11-09T00:25:57.141Z"
+        },
+        {
+          "id": 4,
+          "text": "AI extracts rule 'JWT tokens must expire within 24 hours' from research output and adds it to Example Map after user confirmation",
+          "deleted": false,
+          "createdAt": "2025-11-09T00:25:57.757Z"
+        }
+      ],
+      "nextExampleId": 5,
+      "estimate": 8,
+      "questions": [],
+      "architectureNotes": [],
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-09T00:46:14.964Z"
+    },
+    "RES-014": {
+      "id": "RES-014",
+      "title": "Language-Agnostic AST Tool for AI Analysis",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-11-08T07:15:51.252Z",
+      "updatedAt": "2025-11-10T01:04:40.318Z",
+      "description": "Implement production-ready AST tool using tree-sitter for language-agnostic codebase analysis and pattern detection",
+      "epic": "research-tool-experience",
+      "children": [],
+      "dependsOn": [
+        "RES-012"
+      ],
+      "relatesTo": [
+        "RES-013"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-09T06:00:33.341Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-09T06:04:35.595Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-09T22:41:34.133Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-09T22:45:34.434Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-10T01:04:40.318Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using research tools",
+        "action": "analyze code patterns across multiple programming languages",
+        "benefit": "I can understand codebase structure without language-specific tools"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "AST tool must use tree-sitter for language-agnostic parsing",
+          "deleted": false,
+          "createdAt": "2025-11-09T06:00:58.838Z"
+        },
+        {
+          "id": 1,
+          "text": "Tool must support JavaScript, TypeScript, Python, Go, Rust, and Java",
+          "deleted": false,
+          "createdAt": "2025-11-09T06:01:00.656Z"
+        },
+        {
+          "id": 2,
+          "text": "AST queries must support finding function definitions, class definitions, imports, and exports",
+          "deleted": false,
+          "createdAt": "2025-11-09T06:01:02.533Z"
+        },
+        {
+          "id": 3,
+          "text": "Results must include file path, line number, and code snippet for each match",
+          "deleted": false,
+          "createdAt": "2025-11-09T06:01:04.251Z"
+        },
+        {
+          "id": 4,
+          "text": "Tool must integrate with research command system (RES-010) using --tool=ast flag",
+          "deleted": false,
+          "createdAt": "2025-11-09T06:01:05.960Z"
+        },
+        {
+          "id": 5,
+          "text": "AST results must be formatted for AI agent consumption with structured JSON output",
+          "deleted": false,
+          "createdAt": "2025-11-09T06:01:07.496Z"
+        }
+      ],
+      "nextRuleId": 6,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User runs 'fspec research --tool=ast --query=\"function definitions\"' and sees list of all functions in codebase with file paths and line numbers",
+          "deleted": false,
+          "createdAt": "2025-11-09T06:01:21.638Z"
+        },
+        {
+          "id": 1,
+          "text": "User queries 'class AuthService' and AST tool finds AuthService class definition in src/auth/service.ts:42-150",
+          "deleted": false,
+          "createdAt": "2025-11-09T06:01:23.495Z"
+        },
+        {
+          "id": 2,
+          "text": "User searches for 'import statements' across TypeScript files and gets JSON output with import paths, line numbers, and imported symbols",
+          "deleted": false,
+          "createdAt": "2025-11-09T06:01:25.430Z"
+        },
+        {
+          "id": 3,
+          "text": "AST tool parses Python file and finds all class definitions with their methods using tree-sitter Python grammar",
+          "deleted": false,
+          "createdAt": "2025-11-09T06:01:27.229Z"
+        },
+        {
+          "id": 4,
+          "text": "User queries 'export default' pattern and AST finds all default exports across JavaScript and TypeScript files",
+          "deleted": false,
+          "createdAt": "2025-11-09T06:01:29.016Z"
+        }
+      ],
+      "nextExampleId": 5,
+      "estimate": 8,
+      "questions": [],
+      "architectureNotes": [],
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-10T01:04:40.318Z"
+    },
+    "BUG-073": {
+      "id": "BUG-073",
+      "title": "Mermaid Validation Fails with DOMPurify Error",
+      "type": "bug",
+      "status": "backlog",
+      "createdAt": "2025-11-08T07:21:42.797Z",
+      "updatedAt": "2025-11-08T07:21:42.797Z",
+      "description": "fspec add-attachment fails when markdown contains Mermaid diagrams with error: DOMPurify.addHook is not a function",
+      "children": []
+    },
+    "RES-015": {
+      "id": "RES-015",
+      "title": "Convert Research Tools to TypeScript Plugin System",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-11-10T06:21:08.581Z",
+      "updatedAt": "2025-11-10T06:59:09.637Z",
+      "description": "Replace bash scripts with platform-agnostic TypeScript modules. Implement hybrid architecture: core tools bundled with fspec, optional custom tools loaded dynamically from spec/research-tools/",
+      "epic": "research-tools",
+      "children": [],
+      "userStory": {
+        "role": "developer using fspec on any platform (Windows/macOS/Linux)",
+        "action": "use research tools without bash dependency",
+        "benefit": "research tools work cross-platform and integrate seamlessly with fspec's TypeScript ecosystem"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-10T06:21:34.853Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-10T06:37:57.584Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-10T06:39:22.610Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-10T06:56:15.247Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-10T06:59:09.637Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "ARCHITECTURE: Hybrid plugin system - core tools (ast, perplexity, jira, confluence, stakeholder) bundled with fspec, custom tools loaded dynamically from spec/research-tools/",
+          "deleted": false,
+          "createdAt": "2025-11-10T06:21:42.140Z"
+        },
+        {
+          "id": 1,
+          "text": "INTERFACE: Standard TypeScript interface - export interface ResearchTool { name, description, execute(args), help() }",
+          "deleted": false,
+          "createdAt": "2025-11-10T06:21:49.139Z"
+        },
+        {
+          "id": 2,
+          "text": "DISCOVERY: Tool registry merges bundled tools (import) + dynamic tools (dynamic import from spec/research-tools/*.ts)",
+          "deleted": false,
+          "createdAt": "2025-11-10T06:21:56.595Z"
+        },
+        {
+          "id": 3,
+          "text": "ARGS: Use Commander.js .allowUnknownOption() to forward ALL args to tool.execute() - tools parse their own arguments",
+          "deleted": false,
+          "createdAt": "2025-11-10T06:22:04.671Z"
+        },
+        {
+          "id": 4,
+          "text": "MIGRATION: Convert existing bash scripts to TypeScript - ast.ts, perplexity.ts, jira.ts, confluence.ts, stakeholder.ts in src/research-tools/",
+          "deleted": false,
+          "createdAt": "2025-11-10T06:22:12.777Z"
+        },
+        {
+          "id": 5,
+          "text": "TESTING: Tools are testable TypeScript modules - unit tests verify execute() logic, integration tests verify fspec loads and runs tools correctly",
+          "deleted": false,
+          "createdAt": "2025-11-10T06:22:20.756Z"
+        },
+        {
+          "id": 6,
+          "text": "CONFIG: Each tool handles its own config resolution via resolveConfig(toolName) from config-resolution.ts - tools check required fields and throw clear errors",
+          "deleted": false,
+          "createdAt": "2025-11-10T06:22:28.518Z"
+        },
+        {
+          "id": 7,
+          "text": "Custom tools must be .js files. Provide 'fspec build-tool <name>' command that uses esbuild (already a dependency) to transpile spec/research-tools/<name>.ts → spec/research-tools/<name>.js. Users write TypeScript, run build command, fspec loads .js.",
+          "deleted": false,
+          "createdAt": "2025-11-10T06:29:05.644Z"
+        },
+        {
+          "id": 8,
+          "text": "Wrap tool errors in <system-reminder> tags for AI visibility. When tool.execute() throws, catch and wrap stderr/error message in system-reminder block so AI agents can see and self-correct. Example: <system-reminder>RESEARCH TOOL ERROR\\n\\nTool: ast\\nError: {message}\\n</system-reminder>",
+          "deleted": false,
+          "createdAt": "2025-11-10T06:31:56.161Z"
+        }
+      ],
+      "nextRuleId": 9,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User runs 'fspec research --tool=ast --query \"find async functions\"' → fspec loads bundled ast.ts → calls ast.execute({ query: 'find async functions' }) → returns JSON output",
+          "deleted": false,
+          "createdAt": "2025-11-10T06:22:37.972Z"
+        },
+        {
+          "id": 1,
+          "text": "User creates spec/research-tools/custom.ts with ResearchTool interface → runs 'fspec research --tool=custom --arg=value' → fspec dynamically imports custom.ts → executes tool",
+          "deleted": false,
+          "createdAt": "2025-11-10T06:22:46.762Z"
+        },
+        {
+          "id": 2,
+          "text": "User runs 'fspec research --tool=perplexity --help' → fspec loads perplexity.ts → calls perplexity.help() → displays tool-specific help with options",
+          "deleted": false,
+          "createdAt": "2025-11-10T06:22:55.163Z"
+        }
+      ],
+      "nextExampleId": 3,
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: Should custom tools in spec/research-tools/ be transpiled on-the-fly (tsx/ts-node) or pre-compiled by user?",
+          "deleted": false,
+          "createdAt": "2025-11-10T06:23:02.532Z",
+          "selected": true,
+          "answer": "Custom tools must be .js files. Provide 'fspec build-tool <name>' command that uses esbuild (already a dependency) to transpile spec/research-tools/<name>.ts → spec/research-tools/<name>.js. Users write TypeScript, run build command, fspec loads .js."
+        },
+        {
+          "id": 1,
+          "text": "@human: Should tool registry cache loaded tools or reload on every invocation?",
+          "deleted": false,
+          "createdAt": "2025-11-10T06:23:10.349Z",
+          "selected": true,
+          "answer": "No explicit caching - rely on Node.js module cache. Each CLI invocation is a new process, so caching between invocations is irrelevant. Within a single invocation, Node.js automatically caches dynamic imports. Keep it simple."
+        },
+        {
+          "id": 2,
+          "text": "@human: When tool.execute() throws error, should fspec wrap it in system-reminder for AI visibility or pass through raw?",
+          "deleted": false,
+          "createdAt": "2025-11-10T06:23:18.800Z",
+          "selected": true,
+          "answer": "Wrap tool errors in <system-reminder> tags for AI visibility. When tool.execute() throws, catch and wrap stderr/error message in system-reminder block so AI agents can see and self-correct. Example: <system-reminder>RESEARCH TOOL ERROR\\n\\nTool: ast\\nError: {message}\\n</system-reminder>"
+        }
+      ],
+      "nextQuestionId": 3,
+      "assumptions": [
+        "No explicit caching - rely on Node.js module cache. Each CLI invocation is a new process, so caching between invocations is irrelevant. Within a single invocation, Node.js automatically caches dynamic imports. Keep it simple."
+      ],
+      "blocks": [
+        "RES-009"
+      ],
+      "estimate": 8,
+      "architectureNotes": [],
+      "nextNoteId": 0,
+      "updated": "2025-11-10T06:59:09.637Z"
     }
   },
   "states": {
     "backlog": [
-      "TECH-001",
-      "RES-001",
-      "AGENT-001",
       "AGENT-002",
       "AGENT-003",
       "AGENT-004",
@@ -43287,9 +45391,6 @@
       "AGENT-015",
       "AGENT-016",
       "AGENT-017",
-      "RES-003",
-      "RES-004",
-      "RES-005",
       "FEAT-018",
       "CLEAN-002",
       "FEAT-020",
@@ -43324,19 +45425,34 @@
       "INT-004",
       "DOC-012",
       "DOC-013",
-      "DOC-014"
+      "DOC-014",
+      "BUG-073"
     ],
     "specifying": [
-      "RES-006",
       "LANG-001",
       "EXMAP-004",
       "BOARD-020",
-      "RES-007"
+      "AGENT-001",
+      "BROWSE-001"
     ],
     "testing": [],
     "implementing": [],
     "validating": [],
     "done": [
+      "RES-015",
+      "RES-014",
+      "RES-013",
+      "RES-010",
+      "RES-012",
+      "RES-011",
+      "RES-008",
+      "TECH-001",
+      "RES-006",
+      "RES-007",
+      "RES-001",
+      "RES-005",
+      "RES-004",
+      "RES-003",
       "TUI-029",
       "BUG-072",
       "BUG-071",
@@ -43657,7 +45773,8 @@
       "EXMAP-001"
     ],
     "blocked": [
-      "QUERY-001"
+      "QUERY-001",
+      "RES-009"
     ]
   },
   "migrationHistory": [
@@ -43676,7 +45793,7 @@
   "prefixCounters": {
     "CLI": 14,
     "HELP": 5,
-    "BUG": 72,
+    "BUG": 73,
     "DISC": 2,
     "COV": 53,
     "TUI": 29,
@@ -43693,6 +45810,9 @@
     "DOMAIN": 5,
     "TAG": 4,
     "VIZ": 4,
-    "INT": 4
+    "INT": 4,
+    "VID": 2,
+    "RES": 15,
+    "BROWSE": 1
   }
 }

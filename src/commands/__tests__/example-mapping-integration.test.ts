@@ -468,15 +468,41 @@ describe('Feature: Example Mapping Integration', () => {
             title: 'OAuth login',
             status: 'specifying',
             rules: [
-              { id: 0, text: 'OAuth tokens expire after 1 hour', deleted: false, createdAt: new Date().toISOString() },
-              { id: 1, text: 'Users must authenticate first', deleted: false, createdAt: new Date().toISOString() },
+              {
+                id: 0,
+                text: 'OAuth tokens expire after 1 hour',
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
+              {
+                id: 1,
+                text: 'Users must authenticate first',
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
             ],
             examples: [
-              { id: 0, text: 'User logs in with Google', deleted: false, createdAt: new Date().toISOString() },
-              { id: 1, text: 'User logs in with expired token', deleted: false, createdAt: new Date().toISOString() },
+              {
+                id: 0,
+                text: 'User logs in with Google',
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
+              {
+                id: 1,
+                text: 'User logs in with expired token',
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
             ],
             questions: [
-              { id: 0, text: '@bob: Support GitHub Enterprise?', selected: false, deleted: false, createdAt: new Date().toISOString() },
+              {
+                id: 0,
+                text: '@bob: Support GitHub Enterprise?',
+                selected: false,
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
             ],
             assumptions: ['Users have valid OAuth accounts'],
             nextRuleId: 2,
@@ -525,9 +551,24 @@ describe('Feature: Example Mapping Integration', () => {
             title: 'OAuth login',
             status: 'specifying',
             rules: [
-              { id: 0, text: 'OAuth tokens expire after 1 hour', deleted: false, createdAt: new Date().toISOString() },
-              { id: 1, text: 'Users must authenticate first', deleted: false, createdAt: new Date().toISOString() },
-              { id: 2, text: 'Refresh tokens valid for 30 days', deleted: false, createdAt: new Date().toISOString() },
+              {
+                id: 0,
+                text: 'OAuth tokens expire after 1 hour',
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
+              {
+                id: 1,
+                text: 'Users must authenticate first',
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
+              {
+                id: 2,
+                text: 'Refresh tokens valid for 30 days',
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
             ],
             nextRuleId: 3,
             createdAt: new Date().toISOString(),
@@ -579,9 +620,24 @@ describe('Feature: Example Mapping Integration', () => {
             title: 'OAuth login',
             status: 'specifying',
             examples: [
-              { id: 0, text: 'User logs in with Google', deleted: false, createdAt: new Date().toISOString() },
-              { id: 1, text: 'User logs in with expired token', deleted: false, createdAt: new Date().toISOString() },
-              { id: 2, text: 'User logs out', deleted: false, createdAt: new Date().toISOString() },
+              {
+                id: 0,
+                text: 'User logs in with Google',
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
+              {
+                id: 1,
+                text: 'User logs in with expired token',
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
+              {
+                id: 2,
+                text: 'User logs out',
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
             ],
             nextExampleId: 3,
             createdAt: new Date().toISOString(),
@@ -633,8 +689,20 @@ describe('Feature: Example Mapping Integration', () => {
             title: 'OAuth login',
             status: 'specifying',
             questions: [
-              { id: 0, text: '@bob: Support GitHub Enterprise?', selected: false, deleted: false, createdAt: new Date().toISOString() },
-              { id: 1, text: 'What is the token expiry policy?', selected: false, deleted: false, createdAt: new Date().toISOString() },
+              {
+                id: 0,
+                text: '@bob: Support GitHub Enterprise?',
+                selected: false,
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
+              {
+                id: 1,
+                text: 'What is the token expiry policy?',
+                selected: false,
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
             ],
             nextQuestionId: 2,
             createdAt: new Date().toISOString(),
@@ -686,8 +754,18 @@ describe('Feature: Example Mapping Integration', () => {
             title: 'OAuth login',
             status: 'specifying',
             rules: [
-              { id: 0, text: 'Rule 1', deleted: false, createdAt: new Date().toISOString() },
-              { id: 1, text: 'Rule 2', deleted: false, createdAt: new Date().toISOString() },
+              {
+                id: 0,
+                text: 'Rule 1',
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
+              {
+                id: 1,
+                text: 'Rule 2',
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
             ],
             nextRuleId: 2,
             createdAt: new Date().toISOString(),
@@ -786,7 +864,13 @@ describe('Feature: Example Mapping Integration', () => {
             title: 'OAuth login',
             status: 'specifying',
             questions: [
-              { id: 0, text: 'What is the maximum session length?', selected: false, deleted: false, createdAt: new Date().toISOString() },
+              {
+                id: 0,
+                text: 'What is the maximum session length?',
+                selected: false,
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
             ],
             nextQuestionId: 1,
             createdAt: new Date().toISOString(),
@@ -824,9 +908,9 @@ describe('Feature: Example Mapping Integration', () => {
 
       expect(updated.workUnits['AUTH-001'].questions[0].selected).toBe(true);
       // Check non-deleted rules
-      const activeRules = updated.workUnits['AUTH-001'].rules?.filter(
-        (r: any) => !r.deleted
-      ) || [];
+      const activeRules =
+        updated.workUnits['AUTH-001'].rules?.filter((r: any) => !r.deleted) ||
+        [];
       expect(activeRules).toHaveLength(1);
       expect(activeRules[0].text).toContain('24 hours');
     });
@@ -841,7 +925,13 @@ describe('Feature: Example Mapping Integration', () => {
             title: 'OAuth login',
             status: 'specifying',
             questions: [
-              { id: 0, text: 'Is this feature needed?', selected: false, deleted: false, createdAt: new Date().toISOString() },
+              {
+                id: 0,
+                text: 'Is this feature needed?',
+                selected: false,
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
             ],
             nextQuestionId: 1,
             createdAt: new Date().toISOString(),
@@ -897,10 +987,20 @@ describe('Feature: Example Mapping Integration', () => {
               benefit: 'access my account',
             },
             rules: [
-              { id: 0, text: 'Valid OAuth token required', deleted: false, createdAt: new Date().toISOString() },
+              {
+                id: 0,
+                text: 'Valid OAuth token required',
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
             ],
             examples: [
-              { id: 0, text: 'User logs in with OAuth', deleted: false, createdAt: new Date().toISOString() },
+              {
+                id: 0,
+                text: 'User logs in with OAuth',
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
             ],
             assumptions: ['OAuth provider is available'],
             nextRuleId: 1,
@@ -973,7 +1073,13 @@ describe('Feature: Example Mapping Integration', () => {
             title: 'OAuth login',
             status: 'specifying',
             questions: [
-              { id: 0, text: '@bob: Should we support OAuth 2.0?', selected: false, deleted: false, createdAt: new Date().toISOString() },
+              {
+                id: 0,
+                text: '@bob: Should we support OAuth 2.0?',
+                selected: false,
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
             ],
             nextQuestionId: 1,
             createdAt: new Date().toISOString(),
@@ -1107,15 +1213,41 @@ describe('Feature: Example Mapping Integration', () => {
 
       const exampleMapping = {
         rules: [
-          { id: 0, text: 'OAuth tokens expire after 1 hour', deleted: false, createdAt: new Date().toISOString() },
-          { id: 1, text: 'Users must authenticate first', deleted: false, createdAt: new Date().toISOString() },
+          {
+            id: 0,
+            text: 'OAuth tokens expire after 1 hour',
+            deleted: false,
+            createdAt: new Date().toISOString(),
+          },
+          {
+            id: 1,
+            text: 'Users must authenticate first',
+            deleted: false,
+            createdAt: new Date().toISOString(),
+          },
         ],
         examples: [
-          { id: 0, text: 'User logs in with Google', deleted: false, createdAt: new Date().toISOString() },
-          { id: 1, text: 'User logs in with expired token', deleted: false, createdAt: new Date().toISOString() },
+          {
+            id: 0,
+            text: 'User logs in with Google',
+            deleted: false,
+            createdAt: new Date().toISOString(),
+          },
+          {
+            id: 1,
+            text: 'User logs in with expired token',
+            deleted: false,
+            createdAt: new Date().toISOString(),
+          },
         ],
         questions: [
-          { id: 0, text: '@bob: Support GitHub Enterprise?', selected: false, deleted: false, createdAt: new Date().toISOString() },
+          {
+            id: 0,
+            text: '@bob: Support GitHub Enterprise?',
+            selected: false,
+            deleted: false,
+            createdAt: new Date().toISOString(),
+          },
         ],
         assumptions: ['Users have valid OAuth accounts'],
         nextRuleId: 2,
@@ -1155,13 +1287,29 @@ describe('Feature: Example Mapping Integration', () => {
             title: 'OAuth login',
             status: 'specifying',
             rules: [
-              { id: 0, text: 'OAuth tokens expire after 1 hour', deleted: false, createdAt: new Date().toISOString() },
+              {
+                id: 0,
+                text: 'OAuth tokens expire after 1 hour',
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
             ],
             examples: [
-              { id: 0, text: 'User logs in with Google', deleted: false, createdAt: new Date().toISOString() },
+              {
+                id: 0,
+                text: 'User logs in with Google',
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
             ],
             questions: [
-              { id: 0, text: '@bob: Support GitHub Enterprise?', selected: false, deleted: false, createdAt: new Date().toISOString() },
+              {
+                id: 0,
+                text: '@bob: Support GitHub Enterprise?',
+                selected: false,
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
             ],
             assumptions: ['Users have valid OAuth accounts'],
             nextRuleId: 1,
@@ -1214,7 +1362,13 @@ describe('Feature: Example Mapping Integration', () => {
             title: 'Work 1',
             status: 'specifying',
             questions: [
-              { id: 0, text: '@bob: Support OAuth?', selected: false, deleted: false, createdAt: new Date().toISOString() },
+              {
+                id: 0,
+                text: '@bob: Support OAuth?',
+                selected: false,
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
             ],
             nextQuestionId: 1,
             createdAt: new Date().toISOString(),
@@ -1232,7 +1386,13 @@ describe('Feature: Example Mapping Integration', () => {
             title: 'Work 3',
             status: 'specifying',
             questions: [
-              { id: 0, text: 'What should timeout be?', selected: false, deleted: false, createdAt: new Date().toISOString() },
+              {
+                id: 0,
+                text: 'What should timeout be?',
+                selected: false,
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
             ],
             nextQuestionId: 1,
             createdAt: new Date().toISOString(),
@@ -1283,7 +1443,13 @@ describe('Feature: Example Mapping Integration', () => {
             title: 'Work 1',
             status: 'specifying',
             questions: [
-              { id: 0, text: '@bob: Support GitHub?', selected: false, deleted: false, createdAt: new Date().toISOString() },
+              {
+                id: 0,
+                text: '@bob: Support GitHub?',
+                selected: false,
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
             ],
             nextQuestionId: 1,
             createdAt: new Date().toISOString(),
@@ -1294,7 +1460,13 @@ describe('Feature: Example Mapping Integration', () => {
             title: 'Work 2',
             status: 'specifying',
             questions: [
-              { id: 0, text: '@alice: What is the timeout?', selected: false, deleted: false, createdAt: new Date().toISOString() },
+              {
+                id: 0,
+                text: '@alice: What is the timeout?',
+                selected: false,
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
             ],
             nextQuestionId: 1,
             createdAt: new Date().toISOString(),
@@ -1305,7 +1477,13 @@ describe('Feature: Example Mapping Integration', () => {
             title: 'Work 3',
             status: 'specifying',
             questions: [
-              { id: 0, text: '@bob: Show user metrics?', selected: false, deleted: false, createdAt: new Date().toISOString() },
+              {
+                id: 0,
+                text: '@bob: Show user metrics?',
+                selected: false,
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
             ],
             nextQuestionId: 1,
             createdAt: new Date().toISOString(),
@@ -1431,16 +1609,56 @@ describe('Feature: Example Mapping Integration', () => {
             title: 'Work 1',
             status: 'specifying',
             rules: [
-              { id: 0, text: 'R1', deleted: false, createdAt: new Date().toISOString() },
-              { id: 1, text: 'R2', deleted: false, createdAt: new Date().toISOString() },
-              { id: 2, text: 'R3', deleted: false, createdAt: new Date().toISOString() },
+              {
+                id: 0,
+                text: 'R1',
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
+              {
+                id: 1,
+                text: 'R2',
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
+              {
+                id: 2,
+                text: 'R3',
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
             ],
             examples: [
-              { id: 0, text: 'E1', deleted: false, createdAt: new Date().toISOString() },
-              { id: 1, text: 'E2', deleted: false, createdAt: new Date().toISOString() },
-              { id: 2, text: 'E3', deleted: false, createdAt: new Date().toISOString() },
-              { id: 3, text: 'E4', deleted: false, createdAt: new Date().toISOString() },
-              { id: 4, text: 'E5', deleted: false, createdAt: new Date().toISOString() },
+              {
+                id: 0,
+                text: 'E1',
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
+              {
+                id: 1,
+                text: 'E2',
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
+              {
+                id: 2,
+                text: 'E3',
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
+              {
+                id: 3,
+                text: 'E4',
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
+              {
+                id: 4,
+                text: 'E5',
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
             ],
             assumptions: ['A1', 'A2'],
             nextRuleId: 3,
@@ -1453,9 +1671,27 @@ describe('Feature: Example Mapping Integration', () => {
             title: 'Work 2',
             status: 'specifying',
             questions: [
-              { id: 0, text: 'Q1', selected: false, deleted: false, createdAt: new Date().toISOString() },
-              { id: 1, text: 'Q2', selected: false, deleted: false, createdAt: new Date().toISOString() },
-              { id: 2, text: 'Q3', selected: false, deleted: false, createdAt: new Date().toISOString() },
+              {
+                id: 0,
+                text: 'Q1',
+                selected: false,
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
+              {
+                id: 1,
+                text: 'Q2',
+                selected: false,
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
+              {
+                id: 2,
+                text: 'Q3',
+                selected: false,
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
             ],
             nextQuestionId: 3,
             createdAt: new Date().toISOString(),
@@ -1466,17 +1702,53 @@ describe('Feature: Example Mapping Integration', () => {
             title: 'Work 3',
             status: 'specifying',
             rules: [
-              { id: 0, text: 'R1', deleted: false, createdAt: new Date().toISOString() },
-              { id: 1, text: 'R2', deleted: false, createdAt: new Date().toISOString() },
+              {
+                id: 0,
+                text: 'R1',
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
+              {
+                id: 1,
+                text: 'R2',
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
             ],
             examples: [
-              { id: 0, text: 'E1', deleted: false, createdAt: new Date().toISOString() },
-              { id: 1, text: 'E2', deleted: false, createdAt: new Date().toISOString() },
-              { id: 2, text: 'E3', deleted: false, createdAt: new Date().toISOString() },
-              { id: 3, text: 'E4', deleted: false, createdAt: new Date().toISOString() },
+              {
+                id: 0,
+                text: 'E1',
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
+              {
+                id: 1,
+                text: 'E2',
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
+              {
+                id: 2,
+                text: 'E3',
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
+              {
+                id: 3,
+                text: 'E4',
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
             ],
             questions: [
-              { id: 0, text: 'Q1', selected: false, deleted: false, createdAt: new Date().toISOString() },
+              {
+                id: 0,
+                text: 'Q1',
+                selected: false,
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
             ],
             assumptions: ['A1'],
             nextRuleId: 2,

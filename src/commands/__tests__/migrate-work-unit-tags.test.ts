@@ -40,7 +40,7 @@ Feature: Example Feature
       expect(featureLevelTags.some(tag => tag.includes('@COV-002'))).toBe(true);
 
       // And the scenario should no longer have @COV-001 tag
-      const scenarioSections = migratedContent.split(/\n(?=  Scenario:)/);
+      const scenarioSections = migratedContent.split(/\n(?= {2}Scenario:)/);
 
       for (const section of scenarioSections) {
         // Skip non-scenario sections
@@ -52,7 +52,7 @@ Feature: Example Feature
         const scenarioLines = section.split('\n');
         const scenarioLevelTags = scenarioLines.filter(
           line =>
-            line.match(/^  @/) && // Indented tag (scenario-level)
+            line.match(/^ {2}@/) && // Indented tag (scenario-level)
             (line.includes('@COV-') || line.includes('@AUTH-'))
         );
 
@@ -103,7 +103,7 @@ function migrateWorkUnitTags(featureContent: string): string {
   // Add collected work unit ID tags to feature level (without indentation)
   const featureTagsInsertIndex = featureLine;
   for (const tag of scenarioLevelWorkUnitTags.reverse()) {
-    lines.splice(featureTagsInsertIndex, 0, tag.replace(/^  /, '')); // Remove indentation
+    lines.splice(featureTagsInsertIndex, 0, tag.replace(/^ {2}/, '')); // Remove indentation
   }
 
   return lines.join('\n');

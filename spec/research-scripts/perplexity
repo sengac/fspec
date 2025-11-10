@@ -1,0 +1,275 @@
+#!/usr/bin/env node
+
+/**
+ * Perplexity Research Tool
+ * Integrates with fspec research framework (RES-002)
+ */
+
+import fs from 'fs';
+import path from 'path';
+import os from 'os';
+import https from 'https';
+
+// Parse command-line arguments
+function parseArgs() {
+  const args = process.argv.slice(2);
+  const parsed = {
+    query: null,
+    format: 'markdown',
+    model: 'llama-3.1-sonar-small-128k-online',
+    help: false,
+  };
+
+  for (let i = 0; i < args.length; i++) {
+    if (args[i] === '--help') {
+      parsed.help = true;
+    } else if (args[i] === '--query' && args[i + 1]) {
+      parsed.query = args[i + 1];
+      i++;
+    } else if (args[i] === '--format' && args[i + 1]) {
+      parsed.format = args[i + 1];
+      i++;
+    } else if (args[i] === '--model' && args[i + 1]) {
+      parsed.model = args[i + 1];
+      i++;
+    }
+  }
+
+  return parsed;
+}
+
+// Show help text
+function showHelp() {
+  console.log(`PERPLEXITY RESEARCH TOOL
+
+Research questions using Perplexity AI during Example Mapping.
+
+USAGE
+  perplexity --query "your question here" [options]
+
+OPTIONS
+  --query <text>      Question to research (required)
+  --model <name>      Perplexity model (default: llama-3.1-sonar-small-128k-online)
+  --format <type>     Output format: markdown, json, text (default: markdown)
+  --help              Show this help message
+
+EXAMPLES
+  perplexity --query "How does OAuth2 work?"
+  perplexity --query "What is Example Mapping?" --format json
+
+CONFIGURATION
+  API key must be set in ~/.fspec/fspec-config.json:
+  {
+    "research": {
+      "perplexity": {
+        "apiKey": "pplx-..."
+      }
+    }
+  }
+
+EXIT CODES
+  0  Success
+  1  Missing required flag (--query)
+  2  API key not configured
+  3  API error (network, rate limit, etc.)`);
+}
+
+// Load config from ~/.fspec/fspec-config.json
+function loadConfig() {
+  const configPath = path.join(os.homedir(), '.fspec', 'fspec-config.json');
+
+  if (!fs.existsSync(configPath)) {
+    console.error('Error: Config file not found at ~/.fspec/fspec-config.json');
+    console.error('Create config with Perplexity API key:');
+    console.error('  mkdir -p ~/.fspec');
+    console.error('  echo \'{"research":{"perplexity":{"apiKey":"pplx-..."}}}\'');
+    process.exit(2);
+  }
+
+  const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+
+  if (!config.research?.perplexity?.apiKey) {
+    console.error('Error: Perplexity API key not configured');
+    console.error('Add to ~/.fspec/fspec-config.json:');
+    console.error('  "research": { "perplexity": { "apiKey": "pplx-..." } }');
+    process.exit(2);
+  }
+
+  return config.research.perplexity;
+}
+
+// Call Perplexity API
+function callPerplexityAPI(query, config, model) {
+  return new Promise((resolve, reject) => {
+    const payload = JSON.stringify({
+      model: model,
+      messages: [
+        { role: 'system', content: 'Be precise and concise.' },
+        { role: 'user', content: query },
+      ],
+    });
+
+    const options = {
+      hostname: 'api.perplexity.ai',
+      port: 443,
+      path: '/chat/completions',
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${config.apiKey}`,
+        'Content-Length': Buffer.byteLength(payload),
+      },
+    };
+
+    const req = https.request(options, (res) => {
+      let data = '';
+
+      res.on('data', (chunk) => {
+        data += chunk;
+      });
+
+      res.on('end', () => {
+        if (res.statusCode !== 200) {
+          const error = JSON.parse(data);
+          console.error(`Error: Perplexity API request failed (HTTP ${res.statusCode})`);
+          console.error(`Reason: ${error.error?.message || 'Unknown error'}`);
+          console.error(`\nAPI Response:\n${JSON.stringify(error, null, 2)}`);
+          process.exit(3);
+        }
+        resolve(JSON.parse(data));
+      });
+    });
+
+    req.on('error', (err) => {
+      console.error(`Error: Network request failed`);
+      console.error(`Reason: ${err.message}`);
+      console.error(`\nFix: Check internet connection and API endpoint availability`);
+      process.exit(3);
+    });
+
+    req.write(payload);
+    req.end();
+  });
+}
+
+// Format output as markdown
+function formatMarkdown(query, response, model) {
+  const answer = response.choices[0].message.content;
+  const timestamp = new Date().toISOString();
+  const usage = response.usage;
+
+  return `# Research Results: ${query}
+
+**Source:** Perplexity AI (${model})
+**Date:** ${timestamp}
+
+---
+
+## Answer
+
+${answer}
+
+---
+
+**Tokens Used:** ${usage.total_tokens} (prompt: ${usage.prompt_tokens}, completion: ${usage.completion_tokens})`;
+}
+
+// Format output as JSON
+function formatJSON(query, response, model) {
+  const answer = response.choices[0].message.content;
+  const timestamp = new Date().toISOString();
+  const usage = response.usage;
+
+  return JSON.stringify(
+    {
+      query: query,
+      source: 'Perplexity AI',
+      model: model,
+      timestamp: timestamp,
+      answer: answer,
+      usage: {
+        promptTokens: usage.prompt_tokens,
+        completionTokens: usage.completion_tokens,
+        totalTokens: usage.total_tokens,
+      },
+    },
+    null,
+    2
+  );
+}
+
+// Format output as plain text
+function formatText(response) {
+  return response.choices[0].message.content;
+}
+
+// Main function
+async function main() {
+  const args = parseArgs();
+
+  // Show help
+  if (args.help) {
+    showHelp();
+    process.exit(0);
+  }
+
+  // Validate required args
+  if (!args.query) {
+    console.error('Error: Missing required flag --query');
+    process.exit(1);
+  }
+
+  // Test mode: return mock data
+  if (process.env.FSPEC_TEST_MODE === '1') {
+    const mockResponse = {
+      choices: [
+        {
+          message: {
+            content: `Mock research results for query: "${args.query}"\n\nThis is test mode output. In production, this would contain real research results from Perplexity AI.`,
+          },
+        },
+      ],
+      usage: {
+        prompt_tokens: 10,
+        completion_tokens: 20,
+        total_tokens: 30,
+      },
+    };
+
+    let output;
+    if (args.format === 'json') {
+      output = formatJSON(args.query, mockResponse, args.model);
+    } else if (args.format === 'text') {
+      output = formatText(mockResponse);
+    } else {
+      output = formatMarkdown(args.query, mockResponse, args.model);
+    }
+
+    console.log(output);
+    process.exit(0);
+  }
+
+  // Load config
+  const config = loadConfig();
+
+  // Call API
+  const response = await callPerplexityAPI(args.query, config, args.model);
+
+  // Format and output
+  let output;
+  if (args.format === 'json') {
+    output = formatJSON(args.query, response, args.model);
+  } else if (args.format === 'text') {
+    output = formatText(response);
+  } else {
+    output = formatMarkdown(args.query, response, args.model);
+  }
+
+  console.log(output);
+  process.exit(0);
+}
+
+main().catch((err) => {
+  console.error('Error:', err.message);
+  process.exit(3);
+});

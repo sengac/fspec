@@ -7,7 +7,6 @@
 @bundling
 @BUG-071
 Feature: Worker module not bundled - MODULE_NOT_FOUND for diff-worker.js
-
   """
   Solution: Use import.meta.url and fileURLToPath to resolve worker path relative to module location. This works in both development and production environments.
   Affected files: src/tui/components/FileDiffViewer.tsx:60 and src/tui/components/CheckpointViewer.tsx:175
@@ -29,7 +28,6 @@ Feature: Worker module not bundled - MODULE_NOT_FOUND for diff-worker.js
   #   3. CheckpointViewer.tsx:175 has the same issue with hardcoded process.cwd() path resolution
   #
   # ========================================
-
   Background: User Story
     As a developer using fspec as a dependency
     I want to spawn worker threads for git diff operations
