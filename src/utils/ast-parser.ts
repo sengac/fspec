@@ -244,28 +244,39 @@ function findAllClasses(node: Parser.SyntaxNode, filePath: string): ASTMatch[] {
 /**
  * Find all import statements
  */
-function findImports(node: Parser.SyntaxNode, filePath: string): ASTMatch {
-  const imports: Array<{
-    lineNumber: number;
-    symbols: string[];
-    path?: string;
-  }> = [];
+function findImports(node: Parser.SyntaxNode, filePath: string): ASTMatch[] {
+  const matches: ASTMatch[] = [];
 
   function traverse(n: Parser.SyntaxNode) {
     if (n.type === 'import_statement' || n.type === 'import_declaration') {
       const symbols: string[] = [];
+      let importPath = '';
 
-      // Extract imported symbols
+      // Extract imported symbols and path
       for (const child of n.children) {
         if (child.type === 'import_specifier' || child.type === 'identifier') {
           symbols.push(child.text);
         }
+        if (child.type === 'string' || child.type === 'string_fragment') {
+          importPath = child.text.replace(/['"]/g, '');
+        }
       }
 
-      imports.push({
+      matches.push({
+        filePath,
         lineNumber: n.startPosition.row + 1,
+        startLine: n.startPosition.row + 1,
+        endLine: n.endPosition.row + 1,
+        code: n.text,
+        nodeType: n.type,
         symbols,
-        path: undefined, // Could extract from string_literal if needed
+        imports: [
+          {
+            lineNumber: n.startPosition.row + 1,
+            symbols,
+            path: importPath || undefined,
+          },
+        ],
       });
     }
 
@@ -275,11 +286,7 @@ function findImports(node: Parser.SyntaxNode, filePath: string): ASTMatch {
   }
 
   traverse(node);
-
-  return {
-    filePath,
-    imports,
-  };
+  return matches;
 }
 
 /**
@@ -456,7 +463,10 @@ export async function parseFile(
 
   // Import statements
   if (queryLower.includes('import')) {
-    return findImports(tree.rootNode, filePath);
+    const imports = findImports(tree.rootNode, filePath);
+    return {
+      matches: imports,
+    };
   }
 
   // Python classes with methods
