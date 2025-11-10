@@ -1,0 +1,44 @@
+{
+  "scenarios": [
+    {
+      "name": "Attach markdown file with valid Mermaid code block",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/mermaid-validation-dompurify-fix.test.ts",
+          "lines": "11-30",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Attach Mermaid diagram file with valid syntax",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/mermaid-validation-dompurify-fix.test.ts",
+          "lines": "33-55",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Attach Mermaid diagram with invalid syntax shows clear error",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/mermaid-validation-dompurify-fix.test.ts",
+          "lines": "58-80",
+          "implMappings": []
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/utils/__tests__/mermaid-validation-dompurify-fix.test.ts"
+    ],
+    "implFiles": [],
+    "totalLinesCovered": 66
+  }
+}
