@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-10T08:26:28.284Z"
+    "lastUpdated": "2025-11-10T08:42:28.131Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -45211,6 +45211,86 @@
       "nextQuestionId": 0,
       "nextNoteId": 0,
       "updated": "2025-11-10T08:26:28.305Z"
+    },
+    "TEST-008": {
+      "id": "TEST-008",
+      "title": "Fix all failing tests (15 failures across 3 test suites)",
+      "type": "bug",
+      "status": "implementing",
+      "createdAt": "2025-11-10T08:40:08.348Z",
+      "updatedAt": "2025-11-10T08:49:03.463Z",
+      "description": "Comprehensive fix for all test failures identified in test suite. Includes outdated AST tests, TUI formatting tests, and research integration tests. See attached analysis document for detailed breakdown and recommendations.",
+      "children": [],
+      "attachments": [
+        "spec/attachments/TEST-008/test-failures-analysis.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-10T08:40:24.507Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-10T08:47:50.096Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-10T08:49:03.463Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "ALL tests must be passing (0 failures) before this work unit can be marked as done. Run 'npm test' and verify all test suites pass with 100% success rate.",
+          "deleted": false,
+          "createdAt": "2025-11-10T08:40:33.322Z"
+        },
+        {
+          "id": 1,
+          "text": "AST Research Tool tests (8 failures in src/__tests__/ast-research-tool.test.ts) are OUTDATED - written for old stub implementation. These tests must be DELETED and REWRITTEN for actual tree-sitter parser behavior.",
+          "deleted": false,
+          "createdAt": "2025-11-10T08:40:46.198Z"
+        },
+        {
+          "id": 2,
+          "text": "TUI formatting tests (5 failures in src/tui/__tests__/work-unit-details-formatting.test.tsx) need investigation - determine if implementation regressed or test expectations are outdated, then fix whichever is wrong.",
+          "deleted": false,
+          "createdAt": "2025-11-10T08:40:48.129Z"
+        },
+        {
+          "id": 3,
+          "text": "Research integration tests (2 failures in src/commands/__tests__/integrate-research-guidance.test.ts) need investigation - verify if bootstrap/CLAUDE.md features still exist, update tests accordingly or remove if deprecated.",
+          "deleted": false,
+          "createdAt": "2025-11-10T08:40:50.260Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "examples": [
+        {
+          "id": 0,
+          "text": "BEFORE: Run npm test → 15 failures across 3 test suites. AFTER: Run npm test → 0 failures, all tests passing.",
+          "deleted": false,
+          "createdAt": "2025-11-10T08:41:03.352Z"
+        },
+        {
+          "id": 1,
+          "text": "AST tests show error 'At least one of --query or --file is required' because tests invoke tool without required arguments. Tests expect stub JSON response but tool now returns real tree-sitter parsing results.",
+          "deleted": false,
+          "createdAt": "2025-11-10T08:41:07.428Z"
+        },
+        {
+          "id": 2,
+          "text": "TUI tests validate specific line-by-line rendering layout (ID+Title on line 1, description on line 2, etc.) All 5 tests in suite failing suggests systematic rendering change or test expectation drift.",
+          "deleted": false,
+          "createdAt": "2025-11-10T08:41:11.700Z"
+        }
+      ],
+      "nextExampleId": 3,
+      "userStory": {
+        "role": "developer maintaining fspec test suite",
+        "action": "fix all failing tests identified in test run",
+        "benefit": "test suite passes with 100% success rate and validates all functionality correctly"
+      }
     }
   },
   "states": {
@@ -45276,7 +45356,9 @@
       "BROWSE-001"
     ],
     "testing": [],
-    "implementing": [],
+    "implementing": [
+      "TEST-008"
+    ],
     "validating": [],
     "done": [
       "RES-016",
@@ -45655,7 +45737,7 @@
     "VID": 2,
     "RES": 16,
     "BROWSE": 1,
-    "TEST": 7,
+    "TEST": 8,
     "HOOK": 12
   }
 }

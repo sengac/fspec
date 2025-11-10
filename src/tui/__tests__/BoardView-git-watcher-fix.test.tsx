@@ -106,8 +106,8 @@ describe('Feature: Git file watchers broken due to direct file watching and atom
       // @step And chokidar is watching .git/refs/stash file
       // @step And I am on macOS where fs.watch filename parameter is unreliable
 
-      // Spy on loadStashes BEFORE rendering
-      const loadStashesSpy = spyOnStoreAction('loadStashes', restoreStoreActions);
+      // Spy on loadCheckpointCounts BEFORE rendering
+      const loadCheckpointCountsSpy = spyOnStoreAction('loadCheckpointCounts', restoreStoreActions);
 
       const { unmount } = render(<BoardView cwd={tmpDir} />);
 
@@ -124,9 +124,9 @@ describe('Feature: Git file watchers broken due to direct file watching and atom
       await new Promise(resolve => setTimeout(resolve, 500));
 
       // @step Then chokidar should detect the file change event
-      // @step And loadStashes() should be called
-      // @step And the stash panel should update with the new stash
-      expect(loadStashesSpy).toHaveBeenCalled();
+      // @step And loadCheckpointCounts() should be called
+      // @step And the checkpoint panel should update with the new checkpoint
+      expect(loadCheckpointCountsSpy).toHaveBeenCalled();
 
       unmount();
     });

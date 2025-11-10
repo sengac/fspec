@@ -1,0 +1,54 @@
+{
+  "scenarios": [
+    {
+      "name": "All tests pass with 100% success rate",
+      "testMappings": [
+        {
+          "file": "src/__tests__/test-suite-fixes.test.ts",
+          "lines": "13-29",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Delete and rewrite outdated AST research tool tests",
+      "testMappings": [
+        {
+          "file": "src/__tests__/test-suite-fixes.test.ts",
+          "lines": "32-53",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Fix TUI formatting tests by correcting implementation or expectations",
+      "testMappings": [
+        {
+          "file": "src/__tests__/test-suite-fixes.test.ts",
+          "lines": "56-74",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Fix or remove research integration tests based on feature existence",
+      "testMappings": [
+        {
+          "file": "src/__tests__/test-suite-fixes.test.ts",
+          "lines": "77-97",
+          "implMappings": []
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/__tests__/test-suite-fixes.test.ts"
+    ],
+    "implFiles": [],
+    "totalLinesCovered": 79
+  }
+}

@@ -75,6 +75,15 @@ describe('Feature: Improve work unit details panel formatting', () => {
             updatedAt: new Date().toISOString(),
           } satisfies WorkUnit,
         },
+        states: {
+          backlog: ['TEST-001'],
+          specifying: [],
+          testing: [],
+          implementing: [],
+          validating: [],
+          done: [],
+          blocked: [],
+        },
       };
 
       await writeFile(workUnitsPath, JSON.stringify(workUnitsData, null, 2));
@@ -134,6 +143,15 @@ describe('Feature: Improve work unit details panel formatting', () => {
             updatedAt: new Date().toISOString(),
           } satisfies WorkUnit,
         },
+        states: {
+          backlog: ['TEST-002'],
+          specifying: [],
+          testing: [],
+          implementing: [],
+          validating: [],
+          done: [],
+          blocked: [],
+        },
       };
 
       await writeFile(workUnitsPath, JSON.stringify(workUnitsData, null, 2));
@@ -183,6 +201,15 @@ describe('Feature: Improve work unit details panel formatting', () => {
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           } satisfies WorkUnit,
+        },
+        states: {
+          backlog: ['TEST-003'],
+          specifying: [],
+          testing: [],
+          implementing: [],
+          validating: [],
+          done: [],
+          blocked: [],
         },
       };
 
@@ -238,6 +265,15 @@ describe('Feature: Improve work unit details panel formatting', () => {
             updatedAt: new Date().toISOString(),
           } satisfies WorkUnit,
         },
+        states: {
+          backlog: ['TEST-004'],
+          specifying: [],
+          testing: [],
+          implementing: [],
+          validating: [],
+          done: [],
+          blocked: [],
+        },
       };
 
       await writeFile(workUnitsPath, JSON.stringify(workUnitsData, null, 2));
@@ -279,6 +315,15 @@ describe('Feature: Improve work unit details panel formatting', () => {
       // And no work unit is selected
       const workUnitsData = {
         workUnits: {},
+        states: {
+          backlog: [],
+          specifying: [],
+          testing: [],
+          implementing: [],
+          validating: [],
+          done: [],
+          blocked: [],
+        },
       };
 
       await writeFile(workUnitsPath, JSON.stringify(workUnitsData, null, 2));
