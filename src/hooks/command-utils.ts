@@ -2,8 +2,8 @@
  * Hook command utilities
  */
 
-import { access } from 'node:fs/promises';
-import { join } from 'node:path';
+import { access } from 'fs/promises';
+import { join } from 'path';
 
 /**
  * Determines if a hook command is a shell command or script path

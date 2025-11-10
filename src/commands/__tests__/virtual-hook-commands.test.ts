@@ -55,12 +55,19 @@ describe('Feature: Work unit-scoped hooks for dynamic validation', () => {
 
   describe('Scenario: AI prompts for virtual hooks at end of specifying phase', () => {
     it('should document expected AI prompting behavior', async () => {
-      // This scenario documents expected AI behavior
-      // Given: Work unit is transitioning from specifying to testing
-      // When: Transition completes
-      // Then: AI should ask: "Do you want me to run a command or program at any stage of this story?"
-      // And: AI should list available hook events (post-implementing, post-testing, etc.)
-      // And: If user says yes, AI should run: fspec add-virtual-hook <work-unit-id> <event> <command>
+      // @step Given I am working on work unit "AUTH-001" in specifying status
+      // @step And I have completed the Example Mapping and generated scenarios
+      // @step When I prepare to move to testing status
+      // @step Then AI should ask "Do you want me to run a command or program at any stage of this story?"
+      // @step And AI should provide examples "For example, I could run eslint after implementing, or run prettier before validating"
+      // @step And AI should list available stages "post-implementing, post-testing, post-validating, pre-specifying"
+      // @step When user responds "Yes, run eslint and prettier"
+      // @step Then AI should ask "At which stage should eslint run?"
+      // @step And AI should ask "Should I block transitions if eslint fails?"
+      // @step And AI should ask "At which stage should prettier run?"
+      // @step And AI should ask "Should I block transitions if prettier fails?"
+      // @step And AI should run "fspec add-virtual-hook AUTH-001 <event> <command>" for each hook
+      // @step And virtual hooks should be stored in work-units.json under AUTH-001.virtualHooks array
 
       // All required commands exist (add-virtual-hook, list-virtual-hooks, etc.)
       // This test documents when AI should prompt for virtual hooks
@@ -70,8 +77,8 @@ describe('Feature: Work unit-scoped hooks for dynamic validation', () => {
 
   describe('Scenario: Add virtual hook to work unit', () => {
     it('should add virtual hook with command and blocking flag', async () => {
-      // Given: Work unit AUTH-001 exists in specifying status
-      // When: User runs 'fspec add-virtual-hook AUTH-001 post-implementing "eslint src/" --blocking'
+      // @step Given work unit "AUTH-001" exists in specifying status
+      // @step When I run "fspec add-virtual-hook AUTH-001 post-implementing \"eslint src/\" --blocking"
       const result = await addVirtualHook({
         workUnitId: 'AUTH-001',
         event: 'post-implementing',

@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-10T06:59:09.460Z"
+    "lastUpdated": "2025-11-10T08:26:28.284Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -15893,334 +15893,6 @@
       "nextExampleId": 12,
       "nextQuestionId": 8,
       "nextNoteId": 6
-    },
-    "HOOK-011": {
-      "id": "HOOK-011",
-      "title": "Work unit-scoped hooks for dynamic validation",
-      "type": "story",
-      "status": "done",
-      "createdAt": "2025-10-20T22:40:29.609Z",
-      "updatedAt": "2025-10-21T00:52:25.364Z",
-      "description": "Enable AI agents to attach hooks to specific work units without modifying global hook configuration",
-      "children": [],
-      "userStory": {
-        "role": "AI agent working on a specific work unit",
-        "action": "attach validation hooks (like eslint) to this work unit dynamically",
-        "benefit": "I can enforce quality checks for this story without modifying global hook configuration"
-      },
-      "stateHistory": [
-        {
-          "state": "specifying",
-          "timestamp": "2025-10-20T22:41:29.303Z"
-        },
-        {
-          "state": "testing",
-          "timestamp": "2025-10-20T23:11:34.037Z"
-        },
-        {
-          "state": "implementing",
-          "timestamp": "2025-10-20T23:14:41.456Z"
-        },
-        {
-          "state": "validating",
-          "timestamp": "2025-10-20T23:18:21.442Z"
-        },
-        {
-          "state": "done",
-          "timestamp": "2025-10-20T23:23:22.138Z"
-        },
-        {
-          "state": "implementing",
-          "timestamp": "2025-10-20T23:23:59.562Z"
-        },
-        {
-          "state": "validating",
-          "timestamp": "2025-10-20T23:35:46.088Z"
-        },
-        {
-          "state": "done",
-          "timestamp": "2025-10-20T23:35:58.490Z"
-        },
-        {
-          "state": "implementing",
-          "timestamp": "2025-10-20T23:36:45.753Z"
-        },
-        {
-          "state": "validating",
-          "timestamp": "2025-10-20T23:51:10.746Z"
-        },
-        {
-          "state": "done",
-          "timestamp": "2025-10-20T23:51:29.247Z"
-        },
-        {
-          "state": "implementing",
-          "timestamp": "2025-10-20T23:57:49.686Z"
-        },
-        {
-          "state": "validating",
-          "timestamp": "2025-10-21T00:48:39.048Z"
-        },
-        {
-          "state": "done",
-          "timestamp": "2025-10-21T00:48:55.509Z"
-        }
-      ],
-      "questions": [
-        {
-          "id": 0,
-          "text": "@human: Should work unit-scoped hooks be saved permanently (persisted in work-units.json) or ephemeral (exist only during the current session)?",
-          "selected": true,
-          "answer": "Ephemeral by default - hooks run once when requested without persisting. AI can offer to convert useful virtual hooks into permanent hooks (saved to spec/fspec-hooks.json) if the user wants to reuse them.",
-          "deleted": false,
-          "createdAt": "2025-10-20T22:40:29.609Z"
-        },
-        {
-          "id": 1,
-          "text": "@human: How should the AI discover what virtual hooks are available? Should we have predefined templates (like 'eslint', 'prettier', 'test-coverage') or allow arbitrary commands (like 'npm run custom-lint'), or both?",
-          "selected": true,
-          "answer": "Virtual hooks are created conversationally - AI proactively asks user 'Do you want me to run anything at specific stages?' User names tools (e.g., 'eslint', 'stylelint'). AI then: 1) Checks if tools exist/are installed, 2) Looks up how to use them (help commands, web search), 3) Creates virtual hooks dynamically. No predefined registry needed.",
-          "deleted": false,
-          "createdAt": "2025-10-20T22:40:29.609Z"
-        },
-        {
-          "id": 2,
-          "text": "@human: When should the AI ask 'Do you want me to run anything at specific stages?' - at the start of the story, at specific workflow stages (like before implementing), or any time during the story?",
-          "selected": true,
-          "answer": "At the end of specifying phase - after specifications are complete and before moving to testing. This is when AI has full context of what will be built and can meaningfully ask about quality checks.",
-          "deleted": false,
-          "createdAt": "2025-10-20T22:40:29.609Z"
-        },
-        {
-          "id": 3,
-          "text": "@human: When a virtual hook executes (e.g., eslint at post-validating), should it only run for THIS work unit or apply globally to all work units until removed?",
-          "selected": true,
-          "answer": "Scoped to current work unit only by default. After the virtual hook executes successfully, AI should ask: 'This [tool] hook worked well. Do you want to make it permanent so it runs for all work units at this stage?' If yes, AI saves it to spec/fspec-hooks.json using 'fspec add-hook' command.",
-          "deleted": false,
-          "createdAt": "2025-10-20T22:40:29.609Z"
-        },
-        {
-          "id": 4,
-          "text": "@human: If a virtual hook fails (e.g., eslint finds errors), should it be blocking (prevent workflow transition) or non-blocking (show output but allow transition)? Or should AI ask the user which behavior they want?",
-          "selected": true,
-          "answer": "AI asks user when setting up hook: 'Should I block transitions if [tool] fails?' If user says blocking: STRICT ENFORCEMENT with <system-reminder> wrapping the failure output, AI CANNOT proceed with workflow transition until issues are fixed. If non-blocking: show output but allow transition.",
-          "deleted": false,
-          "createdAt": "2025-10-20T22:40:29.609Z"
-        },
-        {
-          "id": 5,
-          "text": "@human: What happens to virtual hooks when the work unit reaches 'done' status? Should they automatically be removed, or persist for potential future edits to this work unit?",
-          "selected": true,
-          "answer": "When work unit reaches 'done' status, AI asks user: 'Do you want to keep these virtual hooks for future edits to this story, or remove them?' If keep: hooks remain attached to work unit. If remove: hooks are cleaned up.",
-          "deleted": false,
-          "createdAt": "2025-10-20T22:40:29.609Z"
-        },
-        {
-          "id": 6,
-          "text": "@human: Where should virtual hooks be stored temporarily? Should they be in work-units.json (in a 'virtualHooks' field), or in a separate temporary file, or in memory only during the AI session?",
-          "selected": true,
-          "answer": "Virtual hooks stored in work-units.json as a 'virtualHooks' array field on the work unit. This ties hooks to the story lifecycle, persists across sessions, visible in 'fspec show-work-unit', and can be cleaned up when story is done.",
-          "deleted": false,
-          "createdAt": "2025-10-20T22:40:29.609Z"
-        },
-        {
-          "id": 7,
-          "text": "@human: When AI creates a virtual hook to run a tool (like eslint), should it: 1) Execute the command directly (e.g., store 'eslint src/' as the command), or 2) Generate a temporary script file in spec/hooks/.virtual/ that wraps the command?",
-          "selected": true,
-          "answer": "AI decides based on complexity: simple commands use direct execution (e.g., 'eslint src/'), complex ones generate script files in spec/hooks/.virtual/. If hook fails to execute (command not found, script errors, permission issues), AI must: 1) Detect execution failure, 2) Show error to user with <system-reminder>, 3) Offer to fix or remove the broken hook, 4) Ask user if they want to try a different approach.",
-          "deleted": false,
-          "createdAt": "2025-10-20T22:40:29.609Z"
-        },
-        {
-          "id": 8,
-          "text": "@human: Can a user add multiple virtual hooks to different stages (e.g., eslint at post-implementing AND prettier at post-validating)? And can they add multiple hooks to the SAME stage (e.g., both eslint and stylelint at post-implementing)?",
-          "selected": true,
-          "answer": "Unlimited virtual hooks allowed. User can add multiple hooks to different stages (eslint at post-implementing, prettier at post-validating) AND multiple hooks to the same stage (eslint AND stylelint both at post-implementing). Hooks execute sequentially in the order they were added.",
-          "deleted": false,
-          "createdAt": "2025-10-20T22:40:29.609Z"
-        },
-        {
-          "id": 9,
-          "text": "@human: How should users view and manage their virtual hooks after they're created? Should there be commands like 'fspec list-virtual-hooks HOOK-011' or should they appear in 'fspec show-work-unit HOOK-011' output? And how should users remove unwanted virtual hooks?",
-          "selected": true,
-          "answer": "Both dedicated commands AND AI conversational management. Commands: 'fspec add-virtual-hook HOOK-011 <event> <command>', 'fspec list-virtual-hooks HOOK-011', 'fspec remove-virtual-hook HOOK-011 <hook-name>'. Virtual hooks also appear in 'fspec show-work-unit HOOK-011' output. AI uses these commands when user says 'add eslint hook' or 'remove the prettier hook'. Commands MUST have comprehensive --help documentation so AI can use them correctly.",
-          "deleted": false,
-          "createdAt": "2025-10-20T22:40:29.609Z"
-        },
-        {
-          "id": 10,
-          "text": "@human: If a work unit has a virtual hook AND there's a global hook configured for the same event (both at post-implementing), what order should they run? Virtual first then global, or global first then virtual?",
-          "selected": true,
-          "answer": "Virtual hooks run BEFORE global hooks. Execution order: 1) Virtual hooks (work unit-specific), 2) Global hooks (from spec/fspec-hooks.json). This allows work unit-specific validation to happen first before broader project-wide checks.",
-          "deleted": false,
-          "createdAt": "2025-10-20T22:40:29.609Z"
-        },
-        {
-          "id": 11,
-          "text": "@human: How should users copy virtual hooks from one work unit to another? Should there be a command like 'fspec copy-virtual-hooks --from AUTH-001 --to HOOK-011', or should AI handle it conversationally ('use the same hooks as AUTH-001')? And should it copy all hooks or allow selecting specific ones?",
-          "selected": true,
-          "answer": "Both dedicated command AND AI conversational management. Command: 'fspec copy-virtual-hooks --from AUTH-001 --to HOOK-011' (copies all hooks) or 'fspec copy-virtual-hooks --from AUTH-001 --to HOOK-011 --hook-name eslint' (copies specific hook). AI can handle conversationally: 'use the same hooks as AUTH-001' (all) or 'copy the eslint hook from AUTH-001' (specific). Command must have comprehensive --help.",
-          "deleted": false,
-          "createdAt": "2025-10-20T22:40:29.609Z"
-        }
-      ],
-      "rules": [
-        {
-          "id": 0,
-          "text": "Ephemeral by default - hooks run once when requested without persisting. AI can offer to convert useful virtual hooks into permanent hooks (saved to spec/fspec-hooks.json) if the user wants to reuse them.",
-          "deleted": false,
-          "createdAt": "2025-10-20T22:40:29.609Z"
-        },
-        {
-          "id": 1,
-          "text": "Virtual hooks are created conversationally - AI proactively asks user 'Do you want me to run anything at specific stages?' User names tools (e.g., 'eslint', 'stylelint'). AI then: 1) Checks if tools exist/are installed, 2) Looks up how to use them (help commands, web search), 3) Creates virtual hooks dynamically. No predefined registry needed.",
-          "deleted": false,
-          "createdAt": "2025-10-20T22:40:29.609Z"
-        },
-        {
-          "id": 2,
-          "text": "When AI asks 'Do you want me to run anything at specific stages?', it MUST list the available hook events (post-implementing, post-testing, post-validating, pre-specifying, etc.) so the human knows their options",
-          "deleted": false,
-          "createdAt": "2025-10-20T22:40:29.609Z"
-        },
-        {
-          "id": 3,
-          "text": "At the end of specifying phase - after specifications are complete and before moving to testing. This is when AI has full context of what will be built and can meaningfully ask about quality checks.",
-          "deleted": false,
-          "createdAt": "2025-10-20T22:40:29.609Z"
-        },
-        {
-          "id": 4,
-          "text": "AI must phrase the question clearly with examples: 'Do you want me to run a command or program at any stage of this story? For example, I could run eslint after implementing, or run prettier before validating. Here are the available stages: [list stages]'",
-          "deleted": false,
-          "createdAt": "2025-10-20T22:40:29.609Z"
-        },
-        {
-          "id": 5,
-          "text": "Scoped to current work unit only by default. After the virtual hook executes successfully, AI should ask: 'This [tool] hook worked well. Do you want to make it permanent so it runs for all work units at this stage?' If yes, AI saves it to spec/fspec-hooks.json using 'fspec add-hook' command.",
-          "deleted": false,
-          "createdAt": "2025-10-20T22:40:29.609Z"
-        },
-        {
-          "id": 6,
-          "text": "AI asks user when setting up hook: 'Should I block transitions if [tool] fails?' If user says blocking: STRICT ENFORCEMENT with <system-reminder> wrapping the failure output, AI CANNOT proceed with workflow transition until issues are fixed. If non-blocking: show output but allow transition.",
-          "deleted": false,
-          "createdAt": "2025-10-20T22:40:29.609Z"
-        },
-        {
-          "id": 7,
-          "text": "When work unit reaches 'done' status, AI asks user: 'Do you want to keep these virtual hooks for future edits to this story, or remove them?' If keep: hooks remain attached to work unit. If remove: hooks are cleaned up.",
-          "deleted": false,
-          "createdAt": "2025-10-20T22:40:29.609Z"
-        },
-        {
-          "id": 8,
-          "text": "Virtual hooks stored in work-units.json as a 'virtualHooks' array field on the work unit. This ties hooks to the story lifecycle, persists across sessions, visible in 'fspec show-work-unit', and can be cleaned up when story is done.",
-          "deleted": false,
-          "createdAt": "2025-10-20T22:40:29.609Z"
-        },
-        {
-          "id": 9,
-          "text": "AI decides based on complexity: simple commands use direct execution (e.g., 'eslint src/'), complex ones generate script files in spec/hooks/.virtual/. If hook fails to execute (command not found, script errors, permission issues), AI must: 1) Detect execution failure, 2) Show error to user with <system-reminder>, 3) Offer to fix or remove the broken hook, 4) Ask user if they want to try a different approach.",
-          "deleted": false,
-          "createdAt": "2025-10-20T22:40:29.609Z"
-        },
-        {
-          "id": 10,
-          "text": "Unlimited virtual hooks allowed. User can add multiple hooks to different stages (eslint at post-implementing, prettier at post-validating) AND multiple hooks to the same stage (eslint AND stylelint both at post-implementing). Hooks execute sequentially in the order they were added.",
-          "deleted": false,
-          "createdAt": "2025-10-20T22:40:29.609Z"
-        },
-        {
-          "id": 11,
-          "text": "Both dedicated commands AND AI conversational management. Commands: 'fspec add-virtual-hook HOOK-011 <event> <command>', 'fspec list-virtual-hooks HOOK-011', 'fspec remove-virtual-hook HOOK-011 <hook-name>'. Virtual hooks also appear in 'fspec show-work-unit HOOK-011' output. AI uses these commands when user says 'add eslint hook' or 'remove the prettier hook'. Commands MUST have comprehensive --help documentation so AI can use them correctly.",
-          "deleted": false,
-          "createdAt": "2025-10-20T22:40:29.609Z"
-        },
-        {
-          "id": 12,
-          "text": "Virtual hooks run BEFORE global hooks. Execution order: 1) Virtual hooks (work unit-specific), 2) Global hooks (from spec/fspec-hooks.json). This allows work unit-specific validation to happen first before broader project-wide checks.",
-          "deleted": false,
-          "createdAt": "2025-10-20T22:40:29.609Z"
-        },
-        {
-          "id": 13,
-          "text": "Both dedicated command AND AI conversational management. Command: 'fspec copy-virtual-hooks --from AUTH-001 --to HOOK-011' (copies all hooks) or 'fspec copy-virtual-hooks --from AUTH-001 --to HOOK-011 --hook-name eslint' (copies specific hook). AI can handle conversationally: 'use the same hooks as AUTH-001' (all) or 'copy the eslint hook from AUTH-001' (specific). Command must have comprehensive --help.",
-          "deleted": false,
-          "createdAt": "2025-10-20T22:40:29.609Z"
-        },
-        {
-          "id": 14,
-          "text": "Virtual hooks can receive git context (staged/unstaged files) via hook context JSON. AI can create hooks that target specific changed files. For complex hooks needing git context, AI generates script files in spec/hooks/.virtual/ that process the file list.",
-          "deleted": false,
-          "createdAt": "2025-10-20T22:40:29.609Z"
-        },
-        {
-          "id": 15,
-          "text": "Git context is OPTIONAL. When setting up a virtual hook, AI asks: 'Do you want this hook to target only changed files (staged/unstaged)? For example, I can run eslint only on your modified .ts files.' If yes: AI generates script that uses git context. If no: command runs as-is without git context (e.g., 'eslint src/' runs against entire codebase).",
-          "deleted": false,
-          "createdAt": "2025-10-20T22:40:29.609Z"
-        }
-      ],
-      "examples": [
-        {
-          "id": 0,
-          "text": "User is working on AUTH-001. At end of specifying, AI asks: 'Do you want me to run a command or program at any stage? For example, eslint after implementing. Available stages: post-implementing, post-testing, post-validating.' User says: 'Yes, run eslint and prettier.' AI creates two virtual hooks, asks if blocking, stores in work-units.json.",
-          "deleted": false,
-          "createdAt": "2025-10-20T22:40:29.609Z"
-        },
-        {
-          "id": 1,
-          "text": "Virtual hook 'eslint' runs at post-implementing. Eslint finds 3 errors. Hook is blocking. AI shows errors wrapped in <system-reminder>, CANNOT proceed to validating until user fixes errors. User fixes errors, re-runs transition, eslint passes, transition succeeds.",
-          "deleted": false,
-          "createdAt": "2025-10-20T22:40:29.609Z"
-        },
-        {
-          "id": 2,
-          "text": "Virtual hook runs successfully. AI asks: 'The eslint hook worked well. Do you want to make it permanent for all work units?' User says yes. AI runs 'fspec add-hook post-implementing eslint spec/hooks/.virtual/eslint-HOOK-011.sh --blocking' to save to spec/fspec-hooks.json.",
-          "deleted": false,
-          "createdAt": "2025-10-20T22:40:29.609Z"
-        },
-        {
-          "id": 3,
-          "text": "Work unit reaches done status. AI asks: 'Do you want to keep these virtual hooks for future edits to this story, or remove them?' User says remove. AI cleans up virtualHooks array from work-units.json and deletes generated script files.",
-          "deleted": false,
-          "createdAt": "2025-10-20T22:40:29.609Z"
-        },
-        {
-          "id": 4,
-          "text": "User says 'use the same hooks as AUTH-001'. AI runs 'fspec copy-virtual-hooks --from AUTH-001 --to HOOK-011', copies all virtual hooks (eslint, prettier) with their configurations (blocking status, event names) to current work unit.",
-          "deleted": false,
-          "createdAt": "2025-10-20T22:40:29.609Z"
-        },
-        {
-          "id": 5,
-          "text": "Virtual hook command 'eslint src/' fails to execute (command not found). AI detects execution failure, shows error in <system-reminder>: 'Hook failed to execute: eslint: command not found. Install eslint or check PATH.' AI offers to remove broken hook or try different command.",
-          "deleted": false,
-          "createdAt": "2025-10-20T22:40:29.609Z"
-        },
-        {
-          "id": 6,
-          "text": "User runs 'fspec show-work-unit HOOK-011'. Output includes 'Virtual Hooks' section showing: 'post-implementing: eslint (blocking), prettier (non-blocking)', 'post-validating: test-coverage (blocking)'. User can see all active hooks at a glance.",
-          "deleted": false,
-          "createdAt": "2025-10-20T22:40:29.609Z"
-        },
-        {
-          "id": 7,
-          "text": "User says 'run eslint only on changed files'. AI creates virtual hook with script in spec/hooks/.virtual/eslint-changed-files.sh. Hook context includes git info: {stagedFiles: ['src/auth.ts'], unstagedFiles: ['src/utils.ts']}. Script runs: eslint $STAGED_FILES. This is more efficient than linting entire codebase.",
-          "deleted": false,
-          "createdAt": "2025-10-20T22:40:29.609Z"
-        }
-      ],
-      "estimate": 8,
-      "virtualHooks": [],
-      "attachments": [
-        "spec/attachments/HOOK-011/HOOK-011-issues-found.md"
-      ],
-      "nextRuleId": 16,
-      "nextExampleId": 8,
-      "nextQuestionId": 12,
-      "nextNoteId": 0
     },
     "BUG-023": {
       "id": "BUG-023",
@@ -44291,9 +43963,9 @@
       "id": "RES-009",
       "title": "Research Tool Discovery and Configuration UX",
       "type": "story",
-      "status": "blocked",
+      "status": "done",
       "createdAt": "2025-11-08T06:58:20.872Z",
-      "updatedAt": "2025-11-10T06:34:36.922Z",
+      "updatedAt": "2025-11-10T08:20:25.900Z",
       "description": "Improve discoverability, configuration, and integration of fspec research tools to make them a natural part of Example Mapping workflow",
       "children": [],
       "stateHistory": [
@@ -44325,6 +43997,26 @@
           "state": "blocked",
           "timestamp": "2025-11-10T06:34:31.350Z",
           "reason": "Waiting for RES-015 (TypeScript plugin system) - tool execution requires TypeScript architecture, RES-009 UX improvements complete"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-10T08:17:48.189Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-10T08:18:41.657Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-10T08:19:48.588Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-10T08:20:24.212Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-10T08:20:25.900Z"
         }
       ],
       "userStory": {
@@ -44431,31 +44123,24 @@
         },
         {
           "id": 16,
-          "text": "YES\\! Research tools must be integrated TypeScript commands, not bash scripts. When user installs 'fspec' globally, ALL research tools work immediately without separate script installation. Use subcommands: 'fspec research ast', 'fspec research perplexity', etc.",
-          "deleted": true,
-          "createdAt": "2025-11-10T06:16:34.713Z",
-          "deletedAt": "2025-11-10T06:19:22.072Z"
-        },
-        {
-          "id": 17,
           "text": "YES! Research tools MUST be platform-agnostic TypeScript modules (not bash scripts). Use tsx/ts-node to execute .ts files in spec/research-scripts/, or bundle them with fspec. Tools must work on Windows, macOS, Linux without modification.",
           "deleted": false,
           "createdAt": "2025-11-10T06:19:29.506Z"
         },
         {
-          "id": 18,
+          "id": 17,
           "text": "Research tools are dynamically loaded TypeScript modules - fspec uses dynamic import() to load and execute tools from spec/research-tools/*.ts",
           "deleted": false,
           "createdAt": "2025-11-10T06:19:51.877Z"
         },
         {
-          "id": 19,
+          "id": 18,
           "text": "DEPENDENCY: Tool execution blocked on RES-015 (TypeScript plugin system). RES-009 scope limited to UX improvements only (listing, status, descriptions).",
           "deleted": false,
           "createdAt": "2025-11-10T06:34:23.637Z"
         }
       ],
-      "nextRuleId": 20,
+      "nextRuleId": 19,
       "examples": [
         {
           "id": 0,
@@ -44613,8 +44298,7 @@
       ],
       "architectureNotes": [],
       "nextNoteId": 0,
-      "updated": "2025-11-10T05:55:35.419Z",
-      "blockedReason": "Waiting for RES-015 (TypeScript plugin system) - tool execution requires TypeScript architecture, RES-009 UX improvements complete",
+      "updated": "2025-11-10T08:20:25.900Z",
       "blockedBy": [
         "RES-015"
       ]
@@ -45372,25 +45056,161 @@
       "nextNoteId": 0,
       "updated": "2025-11-10T06:59:09.637Z"
     },
-    "TEST-007": {
-      "id": "TEST-007",
-      "title": "Fix failing tests - remove deprecated bash script tests, fix valid tests",
-      "type": "task",
-      "status": "implementing",
-      "createdAt": "2025-11-10T07:18:24.983Z",
-      "updatedAt": "2025-11-10T07:21:27.890Z",
-      "description": "ULTRATHINK ANALYSIS:\n\nDEPRECATED TESTS (REMOVE - test OLD bash script system):\n1. research-command.test.ts: Execute perplexity script (line ~56-79)\n2. research-command.test.ts: Execute jira script (line ~82-106)\n3. research-command.test.ts: Attach research results (line ~109-141)\n4. research-command.test.ts: Execute confluence script (line ~144-168)\n5. research-command.test.ts: Decline attachment prompt (line ~240-274)\nTotal: 5 deprecated tests testing OLD bash scripts in spec/research-scripts/\n\nVALID TESTS (FIX):\nAST Tool (8 tests - stub needs implementation):\n- ast-research-tool.test.ts: All 8 scenarios\n\nResearch System (2 tests - need updating for TypeScript plugin system):\n- research-command.test.ts: Error on invalid tool (update assertion)\n- research-command.test.ts: Auto-discover tool (update for TypeScript plugins)\n\nBootstrap/Documentation (3 tests - add RESEARCH section):\n- integrate-research-guidance.test.ts: Bootstrap RESEARCH section\n- integrate-research-guidance.test.ts: CLAUDE.md research docs\n- integrate-research-guidance.test.ts: Ultrathink compilation\n\nTUI Formatting (5 tests - unrelated to research):\n- work-unit-details-formatting.test.tsx: All 5 scenarios\n\nTotal: 18 valid tests to fix",
+    "HOOK-012": {
+      "id": "HOOK-012",
+      "title": "Virtual hooks don't execute during status transitions",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-11-10T07:36:39.959Z",
+      "updatedAt": "2025-11-10T08:11:01.835Z",
+      "description": "Virtual hooks are stored in work-units.json but never actually execute. The update-work-unit-status command doesn't call executeVirtualHooks at all. Need to integrate execa library to execute hooks before/after status transitions.",
       "children": [],
       "stateHistory": [
         {
           "state": "specifying",
-          "timestamp": "2025-11-10T07:21:23.611Z"
+          "timestamp": "2025-11-10T07:38:47.921Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-10T07:42:35.178Z"
         },
         {
           "state": "implementing",
-          "timestamp": "2025-11-10T07:21:27.890Z"
+          "timestamp": "2025-11-10T07:43:41.936Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-10T07:52:30.025Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-10T08:11:01.835Z"
         }
-      ]
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "Virtual hooks MUST execute during status transitions using execa library",
+          "deleted": false,
+          "createdAt": "2025-11-10T07:39:00.772Z"
+        },
+        {
+          "id": 1,
+          "text": "update-work-unit-status command MUST call executeVirtualHooks before status change",
+          "deleted": false,
+          "createdAt": "2025-11-10T07:39:02.735Z"
+        },
+        {
+          "id": 2,
+          "text": "Blocking hook failures MUST prevent status transitions and wrap errors in <system-reminder> tags",
+          "deleted": false,
+          "createdAt": "2025-11-10T07:39:04.685Z"
+        }
+      ],
+      "nextRuleId": 3,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Work unit has blocking virtual hook 'exit 1' at pre-validating. When moving to validating, hook executes and fails with exit code 1. Transition is blocked and stderr contains <system-reminder>BLOCKING HOOK FAILURE</system-reminder>.",
+          "deleted": false,
+          "createdAt": "2025-11-10T07:39:06.432Z"
+        },
+        {
+          "id": 1,
+          "text": "Work unit has passing hook 'echo success' at pre-validating. When moving to validating, hook executes successfully with exit code 0. Transition proceeds and status becomes validating.",
+          "deleted": false,
+          "createdAt": "2025-11-10T07:39:08.040Z"
+        }
+      ],
+      "nextExampleId": 2,
+      "userStory": {
+        "role": "AI agent using fspec workflow",
+        "action": "have virtual hooks execute during status transitions",
+        "benefit": "I can enforce quality gates and blocking checks for specific work units"
+      },
+      "questions": [],
+      "architectureNotes": [],
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-10T08:11:01.835Z"
+    },
+    "RES-016": {
+      "id": "RES-016",
+      "title": "AST tool returns stub instead of actual parsing",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-11-10T08:22:44.023Z",
+      "updatedAt": "2025-11-10T08:26:28.305Z",
+      "description": "AST research tool shows 'stub-implementation' message instead of performing actual AST analysis using tree-sitter. Need to investigate if implementation exists but isn't connected, or if it was never completed.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-10T08:23:11.190Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-10T08:23:58.812Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-10T08:24:38.260Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-10T08:26:26.601Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-10T08:26:28.306Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "AST parser implementation EXISTS in src/utils/ast-parser.ts with full tree-sitter support (JavaScript, TypeScript, Python, Go)",
+          "deleted": false,
+          "createdAt": "2025-11-10T08:23:22.125Z"
+        },
+        {
+          "id": 1,
+          "text": "src/research-tools/ast.ts returns stub instead of calling parseFile() from ast-parser.ts",
+          "deleted": false,
+          "createdAt": "2025-11-10T08:23:22.779Z"
+        },
+        {
+          "id": 2,
+          "text": "Fix: Import parseFile from ../utils/ast-parser and call it instead of returning stub JSON",
+          "deleted": false,
+          "createdAt": "2025-11-10T08:23:23.413Z"
+        }
+      ],
+      "nextRuleId": 3,
+      "examples": [
+        {
+          "id": 0,
+          "text": "BEFORE: fspec research --tool=ast --query 'find async functions' → Returns stub JSON",
+          "deleted": false,
+          "createdAt": "2025-11-10T08:23:24.047Z"
+        },
+        {
+          "id": 1,
+          "text": "AFTER: fspec research --tool=ast --query 'find async functions' → Returns actual AST matches using tree-sitter",
+          "deleted": false,
+          "createdAt": "2025-11-10T08:23:24.685Z"
+        }
+      ],
+      "nextExampleId": 2,
+      "userStory": {
+        "role": "AI agent using fspec",
+        "action": "use AST research tool to analyze code",
+        "benefit": "I can find patterns and analyze code structure during Example Mapping"
+      },
+      "questions": [],
+      "architectureNotes": [],
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-10T08:26:28.305Z"
     }
   },
   "states": {
@@ -45456,11 +45276,12 @@
       "BROWSE-001"
     ],
     "testing": [],
-    "implementing": [
-      "TEST-007"
-    ],
+    "implementing": [],
     "validating": [],
     "done": [
+      "RES-016",
+      "RES-009",
+      "HOOK-012",
       "RES-015",
       "RES-014",
       "RES-013",
@@ -45643,7 +45464,6 @@
       "GIT-001",
       "HELP-003",
       "BUG-023",
-      "HOOK-011",
       "SPEC-003",
       "SPEC-002",
       "BUG-022",
@@ -45795,8 +45615,7 @@
       "EXMAP-001"
     ],
     "blocked": [
-      "QUERY-001",
-      "RES-009"
+      "QUERY-001"
     ]
   },
   "migrationHistory": [
@@ -45834,8 +45653,9 @@
     "VIZ": 4,
     "INT": 4,
     "VID": 2,
-    "RES": 15,
+    "RES": 16,
     "BROWSE": 1,
-    "TEST": 7
+    "TEST": 7,
+    "HOOK": 12
   }
 }

@@ -3,7 +3,7 @@
  */
 
 import { execa } from 'execa';
-import { join } from 'node:path';
+import { join } from 'path';
 import type {
   HookDefinition,
   HookContext,
@@ -21,9 +21,9 @@ export async function executeHook(
   const timeout = hook.timeout ?? 60;
 
   // Create AbortController for custom timeout implementation
-  const controller = new AbortController();
+  const controller = new globalThis.AbortController();
   let timedOut = false;
-  let timeoutId: NodeJS.Timeout | null = null;
+  let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
   // Set up timeout with AbortController
   timeoutId = setTimeout(() => {
@@ -80,7 +80,7 @@ export async function executeHook(
       timedOut,
       duration,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     // Clear timeout
     if (timeoutId) {
       clearTimeout(timeoutId);
@@ -88,27 +88,37 @@ export async function executeHook(
 
     const duration = Date.now() - startTime;
 
+    // Type guard for execa error
+    const execaError = error as {
+      isCanceled?: boolean;
+      killed?: boolean;
+      stdout?: string;
+      stderr?: string;
+      exitCode?: number;
+      message?: string;
+    };
+
     // Handle timeout/abort case
-    if (error.isCanceled || error.killed || timedOut) {
+    if (execaError.isCanceled || execaError.killed || timedOut) {
       return {
         hookName: hook.name,
         success: false,
         exitCode: null,
-        stdout: error.stdout || '',
-        stderr: error.stderr || '',
+        stdout: execaError.stdout || '',
+        stderr: execaError.stderr || '',
         timedOut: true,
         duration,
       };
     }
 
     // Handle non-zero exit codes (execa throws on non-zero)
-    if (error.exitCode !== undefined) {
+    if (execaError.exitCode !== undefined) {
       return {
         hookName: hook.name,
         success: false,
-        exitCode: error.exitCode,
-        stdout: error.stdout || '',
-        stderr: error.stderr || '',
+        exitCode: execaError.exitCode,
+        stdout: execaError.stdout || '',
+        stderr: execaError.stderr || '',
         timedOut: false,
         duration,
       };
@@ -119,8 +129,11 @@ export async function executeHook(
       hookName: hook.name,
       success: false,
       exitCode: null,
-      stdout: error.stdout || '',
-      stderr: (error.stderr || '') + '\n' + error.message,
+      stdout: execaError.stdout || '',
+      stderr:
+        (execaError.stderr || '') +
+        '\n' +
+        (execaError.message || 'Unknown error'),
       timedOut: false,
       duration,
     };

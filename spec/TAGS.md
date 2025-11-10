@@ -103,6 +103,7 @@ Tags that categorize features by functional area.
 | `@generate-scenarios` | Scenario generation from examples |
 | `@help-system` | Help system and documentation features |
 | `@help-text` | Help and documentation features |
+| `@hook-execution` | Hook execution and lifecycle management |
 | `@impact-analysis` | Impact analysis and dependency chains |
 | `@infrastructure` | Core infrastructure and shared utilities |
 | `@interaction` | User interaction and input handling features |
@@ -625,7 +626,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-11-10T06:36:45.945Z_
+_Last updated: 2025-11-10T07:42:17.794Z_
 
 **Update Command**: `fspec tag-stats`
 

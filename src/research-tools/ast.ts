@@ -6,6 +6,8 @@
  */
 
 import type { ResearchTool } from './types';
+import { parseFile } from '../utils/ast-parser';
+import { glob } from 'tinyglobby';
 
 export const tool: ResearchTool = {
   name: 'ast',
@@ -21,16 +23,39 @@ export const tool: ResearchTool = {
       throw new Error('At least one of --query or --file is required');
     }
 
-    // For now, return stub implementation
-    // TODO: Implement actual AST parsing using tree-sitter
-    const result = {
-      tool: 'ast',
-      args,
-      status: 'stub-implementation',
-      message: 'AST tool converted to TypeScript - full implementation pending',
-    };
+    const query = queryIndex >= 0 ? args[queryIndex + 1] : undefined;
+    const filePath = fileIndex >= 0 ? args[fileIndex + 1] : undefined;
 
-    return JSON.stringify(result, null, 2);
+    // If file path provided, parse that specific file
+    if (filePath) {
+      const result = await parseFile(filePath, query);
+      return JSON.stringify(result, null, 2);
+    }
+
+    // If query provided without file, search all TypeScript/JavaScript files
+    if (query) {
+      const files = await glob('src/**/*.{ts,js,tsx,jsx}', {
+        ignore: ['**/node_modules/**', '**/dist/**', '**/__tests__/**'],
+      });
+
+      const allMatches = [];
+      for (const file of files.slice(0, 10)) {
+        // Limit to first 10 files
+        try {
+          const result = await parseFile(file, query);
+          if (result.matches && result.matches.length > 0) {
+            allMatches.push(...result.matches);
+          }
+        } catch {
+          // Skip files that can't be parsed
+          continue;
+        }
+      }
+
+      return JSON.stringify({ query, matches: allMatches }, null, 2);
+    }
+
+    throw new Error('No valid query or file provided');
   },
 
   help(): string {

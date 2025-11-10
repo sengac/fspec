@@ -2,8 +2,8 @@
  * Hook configuration loading and validation
  */
 
-import { readFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { readFile } from 'fs/promises';
+import { join } from 'path';
 import type { HookConfig, HookDefinition } from './types.js';
 import { isShellCommand, validateScriptExists } from './command-utils.js';
 
