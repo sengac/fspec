@@ -41,11 +41,10 @@ interface BoardViewProps {
 // UNIFIED TABLE LAYOUT IMPLEMENTATION (ITF-004)
 export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = true, showFilesPanel = true, focusedPanel: initialFocusedPanel = 'board', cwd, terminalWidth, terminalHeight }) => {
   const workUnits = useFspecStore(state => state.workUnits);
-  const stashes = useFspecStore(state => state.stashes);
   const storeCwd = useFspecStore(state => state.cwd);
   const setCwd = useFspecStore(state => state.setCwd);
   const loadData = useFspecStore(state => state.loadData);
-  const loadStashes = useFspecStore(state => state.loadStashes);
+  const loadCheckpointCounts = useFspecStore(state => state.loadCheckpointCounts);
   const moveWorkUnitUp = useFspecStore(state => state.moveWorkUnitUp);
   const moveWorkUnitDown = useFspecStore(state => state.moveWorkUnitDown);
   const error = useFspecStore(state => state.error);
@@ -91,7 +90,7 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
   // Load data on mount
   useEffect(() => {
     void loadData();
-    void loadStashes();
+    void loadCheckpointCounts();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -144,7 +143,7 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
 
     // Listen for all change events (chokidar normalizes across platforms)
     watcher.on('change', () => {
-      void loadStashes();
+      void loadCheckpointCounts();
     });
 
     // Add error handler to prevent silent failures (BOARD-018)
@@ -462,7 +461,6 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
     <FullScreenWrapper>
       <UnifiedBoardLayout
         workUnits={workUnits}
-        stashes={stashes}
         focusedColumnIndex={focusedColumnIndex}
         selectedWorkUnitIndex={selectedWorkUnitIndex}
         selectedWorkUnit={currentlySelectedWorkUnit}

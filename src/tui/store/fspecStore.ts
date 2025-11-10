@@ -135,8 +135,11 @@ export const useFspecStore = create<FspecState>()(
           state.isLoaded = true;
         });
       } catch (error) {
+        const err = error as Error;
+        console.error('[ZUSTAND] loadData error:', err);
+        console.error('[ZUSTAND] Stack trace:', err.stack);
         set(state => {
-          state.error = (error as Error).message;
+          state.error = err.stack || err.message;
         });
       }
     },
