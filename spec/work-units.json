@@ -45371,6 +45371,26 @@
       "architectureNotes": [],
       "nextNoteId": 0,
       "updated": "2025-11-10T06:59:09.637Z"
+    },
+    "TEST-007": {
+      "id": "TEST-007",
+      "title": "Fix failing tests - remove deprecated bash script tests, fix valid tests",
+      "type": "task",
+      "status": "implementing",
+      "createdAt": "2025-11-10T07:18:24.983Z",
+      "updatedAt": "2025-11-10T07:21:27.890Z",
+      "description": "ULTRATHINK ANALYSIS:\n\nDEPRECATED TESTS (REMOVE - test OLD bash script system):\n1. research-command.test.ts: Execute perplexity script (line ~56-79)\n2. research-command.test.ts: Execute jira script (line ~82-106)\n3. research-command.test.ts: Attach research results (line ~109-141)\n4. research-command.test.ts: Execute confluence script (line ~144-168)\n5. research-command.test.ts: Decline attachment prompt (line ~240-274)\nTotal: 5 deprecated tests testing OLD bash scripts in spec/research-scripts/\n\nVALID TESTS (FIX):\nAST Tool (8 tests - stub needs implementation):\n- ast-research-tool.test.ts: All 8 scenarios\n\nResearch System (2 tests - need updating for TypeScript plugin system):\n- research-command.test.ts: Error on invalid tool (update assertion)\n- research-command.test.ts: Auto-discover tool (update for TypeScript plugins)\n\nBootstrap/Documentation (3 tests - add RESEARCH section):\n- integrate-research-guidance.test.ts: Bootstrap RESEARCH section\n- integrate-research-guidance.test.ts: CLAUDE.md research docs\n- integrate-research-guidance.test.ts: Ultrathink compilation\n\nTUI Formatting (5 tests - unrelated to research):\n- work-unit-details-formatting.test.tsx: All 5 scenarios\n\nTotal: 18 valid tests to fix",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-10T07:21:23.611Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-10T07:21:27.890Z"
+        }
+      ]
     }
   },
   "states": {
@@ -45436,7 +45456,9 @@
       "BROWSE-001"
     ],
     "testing": [],
-    "implementing": [],
+    "implementing": [
+      "TEST-007"
+    ],
     "validating": [],
     "done": [
       "RES-015",
@@ -45813,6 +45835,7 @@
     "INT": 4,
     "VID": 2,
     "RES": 15,
-    "BROWSE": 1
+    "BROWSE": 1,
+    "TEST": 7
   }
 }
