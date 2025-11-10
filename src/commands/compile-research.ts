@@ -4,7 +4,7 @@ import { readdir, readFile, writeFile, mkdir } from 'fs/promises';
 import { existsSync } from 'fs';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
 import { getAgentConfig } from '../utils/agentRuntimeConfig';
-import mermaid from 'mermaid';
+import { validateMermaidSyntax } from '../utils/mermaid-validation';
 
 interface CompileResearchOptions {
   workUnitId: string;
@@ -77,15 +77,14 @@ flowchart TB
 \`\`\``;
 
     // Validate mermaid syntax
-    try {
-      // mermaid.parse returns undefined on success, throws on error
-      await mermaid.parse(
-        mermaidDiagram.replace(/```mermaid\n/, '').replace(/```$/, '')
-      );
-    } catch (error) {
+    const mermaidCode = mermaidDiagram
+      .replace(/```mermaid\n/, '')
+      .replace(/```$/, '');
+    const result = await validateMermaidSyntax(mermaidCode);
+    if (!result.valid) {
       console.warn(
         'Mermaid diagram validation failed, including anyway:',
-        error
+        result.error
       );
     }
   }

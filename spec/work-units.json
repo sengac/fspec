@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-10T08:42:28.131Z"
+    "lastUpdated": "2025-11-10T12:24:44.312Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -44897,11 +44897,76 @@
       "id": "BUG-073",
       "title": "Mermaid Validation Fails with DOMPurify Error",
       "type": "bug",
-      "status": "backlog",
+      "status": "implementing",
       "createdAt": "2025-11-08T07:21:42.797Z",
-      "updatedAt": "2025-11-08T07:21:42.797Z",
+      "updatedAt": "2025-11-10T12:24:44.312Z",
       "description": "fspec add-attachment fails when markdown contains Mermaid diagrams with error: DOMPurify.addHook is not a function",
-      "children": []
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-10T11:51:09.805Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-10T11:53:51.581Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-10T11:55:22.455Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "Mermaid validation must work in Node.js environment using jsdom",
+          "deleted": false,
+          "createdAt": "2025-11-10T11:51:50.203Z"
+        },
+        {
+          "id": 1,
+          "text": "DOMPurify must be properly initialized before Mermaid library loads",
+          "deleted": false,
+          "createdAt": "2025-11-10T11:51:56.264Z"
+        },
+        {
+          "id": 2,
+          "text": "Mermaid validation should fail gracefully with clear error messages",
+          "deleted": false,
+          "createdAt": "2025-11-10T11:52:01.097Z"
+        }
+      ],
+      "nextRuleId": 3,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User attaches architecture.md with valid Mermaid block, validation succeeds without DOMPurify error",
+          "deleted": false,
+          "createdAt": "2025-11-10T11:52:07.721Z"
+        },
+        {
+          "id": 1,
+          "text": "User attaches flowchart.mmd with valid syntax, no DOMPurify.addHook error occurs",
+          "deleted": false,
+          "createdAt": "2025-11-10T11:52:14.032Z"
+        },
+        {
+          "id": 2,
+          "text": "User attaches diagram.mermaid with invalid syntax, gets clear error message about syntax issue (not DOMPurify error)",
+          "deleted": false,
+          "createdAt": "2025-11-10T11:52:19.732Z"
+        }
+      ],
+      "nextExampleId": 3,
+      "userStory": {
+        "role": "developer using fspec to attach Mermaid diagrams",
+        "action": "validate Mermaid syntax without DOMPurify errors",
+        "benefit": "I can successfully attach diagram files to work units"
+      },
+      "estimate": 3,
+      "attachments": [
+        "spec/attachments/BUG-073/test-diagram.mmd"
+      ]
     },
     "RES-015": {
       "id": "RES-015",
@@ -45265,8 +45330,7 @@
       "INT-004",
       "DOC-012",
       "DOC-013",
-      "DOC-014",
-      "BUG-073"
+      "DOC-014"
     ],
     "specifying": [
       "LANG-001",
@@ -45276,7 +45340,9 @@
       "BROWSE-001"
     ],
     "testing": [],
-    "implementing": [],
+    "implementing": [
+      "BUG-073"
+    ],
     "validating": [],
     "done": [
       "RES-016",
