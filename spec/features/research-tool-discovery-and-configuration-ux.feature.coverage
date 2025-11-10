@@ -10,12 +10,6 @@
             {
               "file": "src/commands/research-tool-list.ts",
               "lines": [
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
                 82,
                 83,
                 84,
@@ -51,7 +45,17 @@
                 114,
                 115,
                 116,
-                117
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127
               ]
             },
             {
@@ -73,6 +77,11 @@
               ]
             }
           ]
+        },
+        {
+          "file": "src/commands/__tests__/research-tool-discovery-ux.test.ts",
+          "lines": "13-46",
+          "implMappings": []
         }
       ]
     },
@@ -237,19 +246,120 @@
                 149,
                 150
               ]
+            },
+            {
+              "file": "src/commands/research-tool-list.ts",
+              "lines": [
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164
+              ]
             }
           ]
+        },
+        {
+          "file": "src/commands/__tests__/research-tool-discovery-ux.test.ts",
+          "lines": "49-67",
+          "implMappings": []
         }
       ]
     },
     {
       "name": "Execute research tool with arguments forwarded",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/research-tool-discovery-ux.test.ts",
+          "lines": "69-89",
+          "implMappings": [
+            {
+              "file": "src/commands/research-tool-list.ts",
+              "lines": [
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
   "stats": {
     "totalScenarios": 3,
-    "coveredScenarios": 2,
+    "coveredScenarios": 3,
     "coveragePercent": 100,
     "testFiles": [
       "src/commands/__tests__/research-tool-discovery-ux.test.ts"
@@ -259,6 +369,6 @@
       "src/commands/research.ts",
       "src/utils/help-interceptor.ts"
     ],
-    "totalLinesCovered": 255
+    "totalLinesCovered": 412
   }
 }

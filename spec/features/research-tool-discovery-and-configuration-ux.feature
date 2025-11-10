@@ -87,6 +87,7 @@ Feature: Research Tool Discovery and Configuration UX
 
   Scenario: Execute research tool with arguments forwarded
     Given I want to search for async functions using AST tool
-    When [action]
-    Then [expected outcome]
+    When I run "fspec research --tool=ast --query 'find all async functions'"
+    Then the AST tool should execute with the --query flag forwarded
+    And the output should contain async function results
 

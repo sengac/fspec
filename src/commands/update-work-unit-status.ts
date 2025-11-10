@@ -29,6 +29,8 @@ import { compactWorkUnit } from './compact-work-unit';
 import { validateSteps, formatValidationError } from '../utils/step-validation';
 import { parseAllFeatures } from '../utils/feature-parser';
 import { sendIPCMessage } from '../utils/ipc.js';
+import { executeHooks } from '../hooks/executor';
+import type { HookDefinition } from '../hooks/types';
 
 type WorkUnitStatus =
   | 'backlog'
@@ -536,6 +538,43 @@ export async function updateWorkUnitStatus(
   // sort orders through the auto-compact operation.
   workUnitsData.states = updatedWorkUnitsData.states;
 
+  // HOOK-012: Execute virtual hooks BEFORE status transition
+  // Virtual hooks run for the event matching the transition
+  const hookEvent = `pre-${newStatus}`; // e.g., "pre-validating"
+  const virtualHooks = workUnit.virtualHooks || [];
+  const hooksToExecute = virtualHooks.filter(h => h.event === hookEvent);
+
+  if (hooksToExecute.length > 0) {
+    // Convert VirtualHook[] to HookDefinition[] format
+    const hookDefinitions: HookDefinition[] = hooksToExecute.map(h => ({
+      name: h.name,
+      command: h.command,
+      blocking: h.blocking,
+    }));
+
+    // Execute hooks with context
+    const hookContext = {
+      workUnitId: options.workUnitId,
+      event: hookEvent,
+      timestamp: new Date().toISOString(),
+    };
+
+    const results = await executeHooks(hookDefinitions, hookContext, cwd);
+
+    // Check for blocking hook failures
+    for (const result of results) {
+      const hook = hooksToExecute.find(h => h.name === result.hookName);
+      if (hook?.blocking && !result.success) {
+        // Wrap error in <system-reminder> tags for AI visibility
+        const errorMessage = `<system-reminder>\nBLOCKING HOOK FAILURE: Virtual hook '${result.hookName}' for ${options.workUnitId} failed.\n\nStderr:\n${result.stderr || '(no stderr)'}\n\nThis is a BLOCKING hook. Fix the errors before proceeding.\n</system-reminder>`;
+        console.error(errorMessage);
+        throw new Error(
+          `Blocking virtual hook '${result.hookName}' failed with exit code ${result.exitCode}`
+        );
+      }
+    }
+  }
+
   // Update work unit status
   workUnit.status = newStatus;
   workUnit.updatedAt = new Date().toISOString();
@@ -781,6 +820,11 @@ async function validateTestStepDocstrings(
       // For each feature, validate all scenario steps
       for (const feature of matchingFeatures) {
         for (const scenario of feature.scenarios) {
+          // Skip scenarios without steps (parsing issue)
+          if (!scenario.steps || !Array.isArray(scenario.steps)) {
+            continue;
+          }
+
           const featureSteps = scenario.steps.map(
             s => `${s.keyword} ${s.text}`
           );

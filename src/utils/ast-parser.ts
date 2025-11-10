@@ -8,6 +8,14 @@ import JavaScript from 'tree-sitter-javascript';
 import TypeScript from 'tree-sitter-typescript';
 import Python from 'tree-sitter-python';
 import Go from 'tree-sitter-go';
+import Rust from 'tree-sitter-rust';
+import Java from 'tree-sitter-java';
+import Ruby from 'tree-sitter-ruby';
+import CSharp from 'tree-sitter-c-sharp';
+import Php from 'tree-sitter-php';
+import Cpp from 'tree-sitter-cpp';
+import Bash from 'tree-sitter-bash';
+import Json from 'tree-sitter-json';
 import { readFile } from 'fs/promises';
 import { extname } from 'path';
 
@@ -70,6 +78,38 @@ function getLanguageParser(
     case '.go':
       parser.setLanguage(Go);
       return { parser, language: 'go' };
+    case '.rs':
+      parser.setLanguage(Rust);
+      return { parser, language: 'rust' };
+    case '.java':
+      parser.setLanguage(Java);
+      return { parser, language: 'java' };
+    case '.rb':
+      parser.setLanguage(Ruby);
+      return { parser, language: 'ruby' };
+    case '.cs':
+      parser.setLanguage(CSharp);
+      return { parser, language: 'csharp' };
+    case '.php':
+      parser.setLanguage(Php.php);
+      return { parser, language: 'php' };
+    case '.cpp':
+    case '.cc':
+    case '.cxx':
+    case '.c++':
+    case '.hpp':
+    case '.hh':
+    case '.hxx':
+    case '.h++':
+      parser.setLanguage(Cpp);
+      return { parser, language: 'cpp' };
+    case '.sh':
+    case '.bash':
+      parser.setLanguage(Bash);
+      return { parser, language: 'bash' };
+    case '.json':
+      parser.setLanguage(Json);
+      return { parser, language: 'json' };
     default:
       return null;
   }
