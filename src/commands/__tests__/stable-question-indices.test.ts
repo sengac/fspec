@@ -227,17 +227,17 @@ describe('Feature: Stable Question Indices for Concurrent Answers', () => {
       expect(updatedWorkUnits.workUnits['WORK-001'].rules).toHaveLength(3);
       expect(
         updatedWorkUnits.workUnits['WORK-001'].rules.some(
-          (r) => r.text === 'Answer 0'
+          r => r.text === 'Answer 0'
         )
       ).toBe(true);
       expect(
         updatedWorkUnits.workUnits['WORK-001'].rules.some(
-          (r) => r.text === 'Answer 1'
+          r => r.text === 'Answer 1'
         )
       ).toBe(true);
       expect(
         updatedWorkUnits.workUnits['WORK-001'].rules.some(
-          (r) => r.text === 'Answer 2'
+          r => r.text === 'Answer 2'
         )
       ).toBe(true);
 
@@ -385,12 +385,12 @@ describe('Feature: Stable Question Indices for Concurrent Answers', () => {
       expect(updatedWorkUnits.workUnits['WORK-001'].rules).toHaveLength(2);
       expect(
         updatedWorkUnits.workUnits['WORK-001'].rules.some(
-          (r) => r.text === 'Answer A'
+          r => r.text === 'Answer A'
         )
       ).toBe(true);
       expect(
         updatedWorkUnits.workUnits['WORK-001'].rules.some(
-          (r) => r.text === 'Answer B'
+          r => r.text === 'Answer B'
         )
       ).toBe(true);
     });

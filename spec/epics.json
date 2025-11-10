@@ -198,7 +198,8 @@
         "RES-003",
         "RES-004",
         "RES-005",
-        "RES-006"
+        "RES-006",
+        "RES-015"
       ]
     },
     "interactive-tui-foundation": {
@@ -260,6 +261,19 @@
         "DOC-012",
         "DOC-013",
         "DOC-014"
+      ]
+    },
+    "research-tool-experience": {
+      "id": "research-tool-experience",
+      "title": "Research Tool Experience",
+      "createdAt": "2025-11-08T07:15:20.761Z",
+      "description": "Comprehensive improvements to research tool discovery, configuration, and integration for seamless Example Mapping workflow",
+      "workUnits": [
+        "RES-010",
+        "RES-011",
+        "RES-012",
+        "RES-013",
+        "RES-014"
       ]
     }
   }

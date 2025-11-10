@@ -6,7 +6,6 @@
 @high
 @REMIND-011
 Feature: Auto-replace placeholder personas and capabilities when adding first item
-
   """
   Architecture notes:
   - Modifies add-persona and add-capability commands to detect placeholders before adding new items
@@ -46,7 +45,6 @@ Feature: Auto-replace placeholder personas and capabilities when adding first it
   #   A: true
   #
   # ========================================
-
   Background: User Story
     As a developer using discover-foundation workflow
     I want to add my first real persona or capability

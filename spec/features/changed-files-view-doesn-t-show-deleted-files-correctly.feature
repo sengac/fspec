@@ -5,7 +5,6 @@
 @diff-viewer
 @BUG-069
 Feature: Changed files view doesn't show deleted files correctly
-
   """
   This bug fix modifies the TUI changed files view component to correctly display deleted files with proper status indicators and diff panel messages. The fix involves: (1) Color-coding the 'D' status indicator in red following git conventions, (2) Displaying 'File was deleted' message in the diff panel instead of 'No changes to display' when a deleted file is selected. Implementation will touch the file status display component and the diff panel rendering logic.
   """
@@ -25,7 +24,6 @@ Feature: Changed files view doesn't show deleted files correctly
   #   3. User selects deleted file in changed files view, diff panel shows 'File was deleted' instead of 'No changes to display'
   #
   # ========================================
-
   Background: User Story
     As a developer using fspec
     I want to view deleted files in the changed files view

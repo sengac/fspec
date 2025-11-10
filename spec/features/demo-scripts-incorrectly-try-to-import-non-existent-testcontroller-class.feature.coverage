@@ -1,0 +1,158 @@
+{
+  "scenarios": [
+    {
+      "name": "Demo script uses shell with terminal fixture",
+      "testMappings": [
+        {
+          "file": "../fspec.videos/src/__tests__/demo-script-api-fix.test.ts",
+          "lines": "57-99",
+          "implMappings": [
+            {
+              "file": "../fspec.videos/demos/shell-commands.test.ts",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Demo script runs a program with terminal fixture",
+      "testMappings": [
+        {
+          "file": "../fspec.videos/src/__tests__/demo-script-api-fix.test.ts",
+          "lines": "101-148",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Demo script uses keyboard navigation methods",
+      "testMappings": [
+        {
+          "file": "../fspec.videos/src/__tests__/demo-script-api-fix.test.ts",
+          "lines": "150-181",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Demo script controls fspec TUI application",
+      "testMappings": [
+        {
+          "file": "../fspec.videos/src/__tests__/demo-script-api-fix.test.ts",
+          "lines": "183-227",
+          "implMappings": [
+            {
+              "file": "../fspec.videos/demos/fspec-navigation.test.ts",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Existing broken demo script fails with import error",
+      "testMappings": [
+        {
+          "file": "../fspec.videos/src/__tests__/demo-script-api-fix.test.ts",
+          "lines": "30-55",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Migrated demo script uses correct tui-test API",
+      "testMappings": [
+        {
+          "file": "../fspec.videos/src/__tests__/demo-script-api-fix.test.ts",
+          "lines": "229-286",
+          "implMappings": []
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "../fspec.videos/src/__tests__/demo-script-api-fix.test.ts"
+    ],
+    "implFiles": [
+      "../fspec.videos/demos/shell-commands.test.ts",
+      "../fspec.videos/demos/fspec-navigation.test.ts"
+    ],
+    "totalLinesCovered": 321
+  }
+}

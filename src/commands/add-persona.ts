@@ -6,7 +6,11 @@ import type { GenericFoundation } from '../types/foundation';
 /**
  * Check if a persona is a placeholder (contains [QUESTION:] or [DETECTED:] patterns)
  */
-function isPlaceholderPersona(persona: { name: string; description: string; goals: string[] }): boolean {
+function isPlaceholderPersona(persona: {
+  name: string;
+  description: string;
+  goals: string[];
+}): boolean {
   const placeholderPattern = /\[QUESTION:|\[DETECTED:/;
   return (
     placeholderPattern.test(persona.name) ||
@@ -18,7 +22,9 @@ function isPlaceholderPersona(persona: { name: string; description: string; goal
 /**
  * Check if personas array contains only placeholders (no real personas)
  */
-function hasOnlyPlaceholders(personas: { name: string; description: string; goals: string[] }[]): boolean {
+function hasOnlyPlaceholders(
+  personas: { name: string; description: string; goals: string[] }[]
+): boolean {
   if (personas.length === 0) return false;
   return personas.every(persona => isPlaceholderPersona(persona));
 }

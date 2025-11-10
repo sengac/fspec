@@ -5,7 +5,6 @@
 @versioning
 @BUG-070
 Feature: work-units.json not stamped with current version on initial creation
-
   """
   Current implementation has CURRENT_VERSION defined separately in src/utils/ensure-files.ts and DEFAULT_VERSION in src/migrations/registry.ts - this violates DRY
   Solution: Create src/utils/version.ts with single export const CURRENT_VERSION = '0.7.0', import from both files
@@ -29,7 +28,6 @@ Feature: work-units.json not stamped with current version on initial creation
   #   3. Version constant updated to 0.8.0 in shared file, both ensure-files and migrations automatically use new version
   #
   # ========================================
-
   Background: User Story
     As a developer using fspec for the first time
     I want to initialize a new project with work-units.json

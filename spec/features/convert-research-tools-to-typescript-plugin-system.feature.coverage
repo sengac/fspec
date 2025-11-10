@@ -1,0 +1,163 @@
+{
+  "scenarios": [
+    {
+      "name": "Execute bundled AST research tool",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/typescript-plugin-system.test.ts",
+          "lines": "24-45",
+          "implMappings": [
+            {
+              "file": "src/research-tools/ast.ts",
+              "lines": [
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32
+              ]
+            },
+            {
+              "file": "src/research-tools/registry.ts",
+              "lines": [
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Build and execute custom research tool",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/typescript-plugin-system.test.ts",
+          "lines": "48-95",
+          "implMappings": [
+            {
+              "file": "src/research-tools/types.ts",
+              "lines": [
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/commands/__tests__/typescript-plugin-system.test.ts"
+    ],
+    "implFiles": [
+      "src/research-tools/ast.ts",
+      "src/research-tools/registry.ts",
+      "src/research-tools/types.ts"
+    ],
+    "totalLinesCovered": 178
+  }
+}

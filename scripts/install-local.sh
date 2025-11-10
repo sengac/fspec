@@ -13,7 +13,7 @@ fi
 
 # Install dependencies
 echo "📦 Installing dependencies..."
-npm install
+npm install --legacy-peer-deps
 
 # Build the CLI
 echo "🔨 Building CLI..."

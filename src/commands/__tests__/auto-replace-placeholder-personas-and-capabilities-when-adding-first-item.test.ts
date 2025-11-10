@@ -78,7 +78,8 @@ describe('Feature: Auto-replace placeholder personas and capabilities when addin
       const updatedContent = await readFile(foundationPath, 'utf-8');
       const updated: GenericFoundation = JSON.parse(updatedContent);
       const hasPlaceholder = updated.personas.some(
-        p => p.name.includes('[QUESTION:') || p.description.includes('[QUESTION:')
+        p =>
+          p.name.includes('[QUESTION:') || p.description.includes('[QUESTION:')
       );
       expect(hasPlaceholder).toBe(false);
 
@@ -141,7 +142,8 @@ describe('Feature: Auto-replace placeholder personas and capabilities when addin
       const updatedContent = await readFile(foundationPath, 'utf-8');
       const updated: GenericFoundation = JSON.parse(updatedContent);
       const hasPlaceholder = updated.solutionSpace.capabilities.some(
-        c => c.name.includes('[QUESTION:') || c.description.includes('[QUESTION:')
+        c =>
+          c.name.includes('[QUESTION:') || c.description.includes('[QUESTION:')
       );
       expect(hasPlaceholder).toBe(false);
 
@@ -197,7 +199,9 @@ describe('Feature: Auto-replace placeholder personas and capabilities when addin
       };
 
       // @step When I run "fspec add-persona \"QA Engineer\" \"Tests features\""
-      await addPersona(testDir, 'QA Engineer', 'Tests features', ['Ensure quality']);
+      await addPersona(testDir, 'QA Engineer', 'Tests features', [
+        'Ensure quality',
+      ]);
 
       // Restore console.log
       console.log = originalLog;
@@ -210,7 +214,9 @@ describe('Feature: Auto-replace placeholder personas and capabilities when addin
       const updated: GenericFoundation = JSON.parse(updatedContent);
       expect(updated.personas).toHaveLength(2);
       expect(updated.personas.find(p => p.name === 'Developer')).toBeDefined();
-      expect(updated.personas.find(p => p.name === 'QA Engineer')).toBeDefined();
+      expect(
+        updated.personas.find(p => p.name === 'QA Engineer')
+      ).toBeDefined();
 
       // @step And the output should NOT show placeholder removal message
       const output = logs.join('\n');
@@ -268,7 +274,9 @@ describe('Feature: Auto-replace placeholder personas and capabilities when addin
       };
 
       // @step When I run "fspec add-persona \"Developer\" \"First real persona\""
-      await addPersona(testDir, 'Developer', 'First real persona', ['Build features']);
+      await addPersona(testDir, 'Developer', 'First real persona', [
+        'Build features',
+      ]);
 
       // Restore console.log
       console.log = originalLog;
@@ -277,10 +285,11 @@ describe('Feature: Auto-replace placeholder personas and capabilities when addin
       const updatedContent = await readFile(foundationPath, 'utf-8');
       const updated: GenericFoundation = JSON.parse(updatedContent);
       const hasAnyPlaceholder = updated.personas.some(
-        p => p.name.includes('[QUESTION:') ||
-             p.name.includes('[DETECTED:') ||
-             p.description.includes('[QUESTION:') ||
-             p.description.includes('[DETECTED:')
+        p =>
+          p.name.includes('[QUESTION:') ||
+          p.name.includes('[DETECTED:') ||
+          p.description.includes('[QUESTION:') ||
+          p.description.includes('[DETECTED:')
       );
       expect(hasAnyPlaceholder).toBe(false);
 
@@ -339,7 +348,9 @@ describe('Feature: Auto-replace placeholder personas and capabilities when addin
       };
 
       // @step When I run "fspec add-persona \"QA Engineer\" \"Tests features\""
-      await addPersona(testDir, 'QA Engineer', 'Tests features', ['Ensure quality']);
+      await addPersona(testDir, 'QA Engineer', 'Tests features', [
+        'Ensure quality',
+      ]);
 
       // Restore console.log
       console.log = originalLog;
@@ -347,16 +358,20 @@ describe('Feature: Auto-replace placeholder personas and capabilities when addin
       // @step Then no placeholders should be removed
       const updatedContent = await readFile(foundationPath, 'utf-8');
       const updated: GenericFoundation = JSON.parse(updatedContent);
-      const placeholderStillExists = updated.personas.some(
-        p => p.name.includes('[QUESTION:')
+      const placeholderStillExists = updated.personas.some(p =>
+        p.name.includes('[QUESTION:')
       );
       expect(placeholderStillExists).toBe(true);
 
       // @step And the foundation should contain personas "Developer", "QA Engineer", and the placeholder
       expect(updated.personas).toHaveLength(3);
       expect(updated.personas.find(p => p.name === 'Developer')).toBeDefined();
-      expect(updated.personas.find(p => p.name === 'QA Engineer')).toBeDefined();
-      expect(updated.personas.find(p => p.name.includes('[QUESTION:'))).toBeDefined();
+      expect(
+        updated.personas.find(p => p.name === 'QA Engineer')
+      ).toBeDefined();
+      expect(
+        updated.personas.find(p => p.name.includes('[QUESTION:'))
+      ).toBeDefined();
 
       // @step And the output should NOT show placeholder removal message
       const output = logs.join('\n');
@@ -413,8 +428,8 @@ describe('Feature: Auto-replace placeholder personas and capabilities when addin
       // @step Then the placeholder persona should be removed from the draft
       const updatedContent = await readFile(draftPath, 'utf-8');
       const updated: GenericFoundation = JSON.parse(updatedContent);
-      const hasPlaceholder = updated.personas.some(
-        p => p.name.includes('[QUESTION:')
+      const hasPlaceholder = updated.personas.some(p =>
+        p.name.includes('[QUESTION:')
       );
       expect(hasPlaceholder).toBe(false);
 
@@ -475,8 +490,8 @@ describe('Feature: Auto-replace placeholder personas and capabilities when addin
       // @step Then the placeholder capability should be removed from the draft
       const updatedContent = await readFile(draftPath, 'utf-8');
       const updated: GenericFoundation = JSON.parse(updatedContent);
-      const hasPlaceholder = updated.solutionSpace.capabilities.some(
-        c => c.name.includes('[DETECTED:')
+      const hasPlaceholder = updated.solutionSpace.capabilities.some(c =>
+        c.name.includes('[DETECTED:')
       );
       expect(hasPlaceholder).toBe(false);
 

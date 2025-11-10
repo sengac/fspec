@@ -234,6 +234,16 @@
       "prefix": "INT",
       "description": "System Integration",
       "createdAt": "2025-11-07T01:02:15.173Z"
+    },
+    "VID": {
+      "prefix": "VID",
+      "description": "Video recording and demo script features",
+      "createdAt": "2025-11-08T01:47:40.859Z"
+    },
+    "BROWSE": {
+      "prefix": "BROWSE",
+      "description": "Browser integration and control features",
+      "createdAt": "2025-11-08T06:48:39.525Z"
     }
   }
 }

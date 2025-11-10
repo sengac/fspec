@@ -1058,6 +1058,90 @@ function displayDiscoveryHelp(): void {
   console.log('    Examples:');
   console.log('      fspec query-example-mapping-stats');
   console.log('');
+
+  console.log(
+    chalk.bold('RESEARCH TOOLS (Answering Questions During Discovery)')
+  );
+  console.log('  ' + chalk.cyan('fspec research'));
+  console.log('    Description: List available research tools');
+  console.log('    Examples:');
+  console.log('      fspec research');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec research --tool=<name> [args...]'));
+  console.log('    Description: Execute research tool with arguments');
+  console.log('    Options:');
+  console.log('      --tool <name>                    Research tool to use');
+  console.log(
+    '      --work-unit <id>                 Work unit context (forwarded to tool)'
+  );
+  console.log(
+    '      [tool-specific args]             Additional args passed to tool'
+  );
+  console.log('    Examples:');
+  console.log(
+    '      fspec research --tool=ast --query "find all async functions"'
+  );
+  console.log('      fspec research --tool=ast --file "src/broken.ts"');
+  console.log(
+    '      fspec research --tool=stakeholder --platform=teams --question="Support OAuth?" --work-unit=AUTH-001'
+  );
+  console.log('');
+  console.log('  Available Research Tools:');
+  console.log(
+    '    ' +
+      chalk.cyan('ast') +
+      '          - AST code analysis and pattern detection'
+  );
+  console.log(
+    '      --query <query>          Natural language query (e.g., "find async functions")'
+  );
+  console.log('      --file <path>            Analyze specific file');
+  console.log('      --format <type>          Output: json, markdown, text');
+  console.log('      --language <lang>        Filter by language');
+  console.log('');
+  console.log(
+    '    ' +
+      chalk.cyan('stakeholder') +
+      ' - Send questions to stakeholders via chat platforms'
+  );
+  console.log(
+    '      --platform <platform>    Platform: teams, slack, discord (comma-separated)'
+  );
+  console.log('      --question <question>    Question to send');
+  console.log('      --work-unit <id>         Work unit for context');
+  console.log('');
+  console.log('  Integration with Example Mapping:');
+  console.log(
+    '    1. Add question: ' +
+      chalk.dim('fspec add-question AUTH-001 "@human: Support OAuth?"')
+  );
+  console.log(
+    '    2. Research: ' +
+      chalk.dim(
+        'fspec research --tool=stakeholder --platform=teams --question="Support OAuth?" --work-unit=AUTH-001'
+      )
+  );
+  console.log(
+    '    3. Attach results: ' +
+      chalk.dim('When prompted, choose to attach results to work unit')
+  );
+  console.log(
+    '    4. Answer question: ' +
+      chalk.dim('fspec answer-question AUTH-001 0 --answer "Yes" --add-to rule')
+  );
+  console.log('');
+  console.log('  Notes:');
+  console.log(
+    '    - Research tools auto-discovered from spec/research-scripts/'
+  );
+  console.log(
+    '    - Use --help on any tool: ' +
+      chalk.dim('fspec research --tool=ast --help')
+  );
+  console.log(
+    '    - Results can be attached to work units during Example Mapping'
+  );
+  console.log('');
 }
 
 // ===== METRICS HELP =====

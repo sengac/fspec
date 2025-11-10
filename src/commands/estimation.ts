@@ -231,8 +231,7 @@ export async function queryEstimateAccuracyByPrefix(options: {
 
   for (const [prefix, stats] of Object.entries(byPrefix)) {
     result[prefix] = {
-      avgAccuracy:
-        Math.round((stats.totalIterations / stats.count) * 10) / 10,
+      avgAccuracy: Math.round((stats.totalIterations / stats.count) * 10) / 10,
       samples: stats.count,
     };
   }

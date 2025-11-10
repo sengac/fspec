@@ -4,7 +4,6 @@
 @ui-enhancement
 @TUI-029
 Feature: View FOUNDATION.md in TUI with attachment viewer
-
   """
   Add 'D' key binding in BoardView to open spec/FOUNDATION.md in browser via HTTP
   Reuse existing attachment server to serve FOUNDATION.md (same /view/{path} endpoint)
@@ -38,7 +37,6 @@ Feature: View FOUNDATION.md in TUI with attachment viewer
   #   6. Diamond separator '◆' appears between 'F View Changed Files' and 'D View FOUNDATION.md' in help line
   #
   # ========================================
-
   Background: User Story
     As a developer using fspec TUI
     I want to view the spec/FOUNDATION.md file directly from the main board

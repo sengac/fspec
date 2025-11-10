@@ -18,6 +18,10 @@
           "description": "Command-Line Interface"
         },
         {
+          "name": "@demos",
+          "description": "Demo script functionality and video recording infrastructure"
+        },
+        {
           "name": "@dialog",
           "description": "Dialog and modal UI components in TUI"
         },
@@ -116,6 +120,14 @@
         {
           "name": "@agent-integration",
           "description": "Features related to AI agent initialization, detection, and integration"
+        },
+        {
+          "name": "@agent-support",
+          "description": "Multi-agent support and agent-specific configurations"
+        },
+        {
+          "name": "@ai-assistance",
+          "description": "AI-assisted features for analysis and extraction"
         },
         {
           "name": "@answer-question",
@@ -224,6 +236,10 @@
         {
           "name": "@compound",
           "description": "Compound query operations"
+        },
+        {
+          "name": "@config-management",
+          "description": "Configuration management and settings features"
         },
         {
           "name": "@configuration",
@@ -462,6 +478,10 @@
           "description": "Research and discovery tools"
         },
         {
+          "name": "@research-tools",
+          "description": "Research tool system features and integrations"
+        },
+        {
           "name": "@reverse-acdd",
           "description": "Features related to reverse ACDD for documenting existing codebases"
         },
@@ -472,6 +492,10 @@
         {
           "name": "@scaffolding",
           "description": "Project Setup & Templates"
+        },
+        {
+          "name": "@scalability",
+          "description": "Scalability and performance optimization features"
         },
         {
           "name": "@scenario-deduplication",
@@ -530,6 +554,10 @@
           "description": "Testing and quality assurance features"
         },
         {
+          "name": "@tool-discovery",
+          "description": "Tool discovery and listing features"
+        },
+        {
           "name": "@tracking",
           "description": "Metric tracking operations"
         },
@@ -560,6 +588,10 @@
         {
           "name": "@version-management",
           "description": "Features related to version checking, upgrading, and file synchronization"
+        },
+        {
+          "name": "@video-recording",
+          "description": "Video recording and demo playback features"
         },
         {
           "name": "@visual-design",
@@ -802,6 +834,10 @@
           "description": "Internal Utility"
         },
         {
+          "name": "@investigation",
+          "description": "Investigation and research tasks for evaluating technical approaches"
+        },
+        {
           "name": "@ipc",
           "description": "Inter-process communication features using Unix sockets or named pipes"
         },
@@ -876,6 +912,10 @@
         {
           "name": "@platform-agnostic",
           "description": "Features supporting multiple platforms (Python, Rust, Go, JavaScript, etc.)"
+        },
+        {
+          "name": "@plugin-system",
+          "description": "Plugin architecture and dynamic module loading"
         },
         {
           "name": "@prettier",
@@ -978,6 +1018,10 @@
           "description": "Trackpad and touchpad input handling with smoothing and gesture support"
         },
         {
+          "name": "@tree-sitter",
+          "description": "Tree-sitter library for language-agnostic AST parsing"
+        },
+        {
           "name": "@type-system",
           "description": "Work unit type system features for categorizing work (story, task, bug)"
         },
@@ -1076,6 +1120,10 @@
         {
           "name": "@medium",
           "description": "Medium Priority - Nice to Have"
+        },
+        {
+          "name": "@p1",
+          "description": "Phase 1 - Core foundation and infrastructure"
         },
         {
           "name": "@phase-1",
@@ -1486,7 +1534,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-11-07T07:15:08.603Z",
+    "lastUpdated": "2025-11-10T06:36:45.945Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

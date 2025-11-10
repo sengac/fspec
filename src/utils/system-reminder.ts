@@ -60,6 +60,17 @@ CRITICAL: Use Example Mapping FIRST before writing any Gherkin specs:
   3. Gather concrete examples: fspec add-example ${workUnitId} "[example]"
   4. Answer all red card questions before moving to testing
 
+RESEARCH TOOLS: Use research tools to answer questions during Example Mapping:
+  fspec research                                  # List available research tools
+  fspec research --tool=ast --query="pattern"     # Search codebase using AST analysis
+  fspec research --tool=stakeholder --platform=teams --question="question" --work-unit=${workUnitId}
+
+Available research tools (--tool=ast or --tool=stakeholder):
+  - ast: AST code analysis and pattern detection
+  - stakeholder: Send questions to stakeholders via Teams/Slack/Discord
+
+Research results can be attached to work units for Example Mapping context.
+
 Common commands for SPECIFYING state:
   fspec add-rule <id> "rule"
   fspec remove-rule <id> <index>
@@ -67,6 +78,8 @@ Common commands for SPECIFYING state:
   fspec remove-example <id> <index>
   fspec add-question <id> "@human: question?"
   fspec answer-question <id> <index> --answer "..."
+  fspec research --tool=ast --query="pattern"
+  fspec research --tool=stakeholder --platform=teams --question="..." --work-unit=<id>
   fspec generate-scenarios <id>
 
 For more: fspec help discovery

@@ -56,7 +56,9 @@ describe('Feature: Foundation discovery removal commands documentation', () => {
       expect(result.stdout).toContain('fspec remove-persona <name>');
 
       // @step And the output should include "Description: Remove persona from foundation.json"
-      expect(result.stdout).toContain('Description: Remove persona from foundation.json');
+      expect(result.stdout).toContain(
+        'Description: Remove persona from foundation.json'
+      );
 
       // @step And the output should include example usage for removing personas
       expect(result.stdout).toMatch(/example.*remove-persona/is);
@@ -80,7 +82,9 @@ describe('Feature: Foundation discovery removal commands documentation', () => {
       expect(result.stdout).toContain('fspec remove-capability <name>');
 
       // @step And the output should include "Description: Remove capability from foundation.json"
-      expect(result.stdout).toContain('Description: Remove capability from foundation.json');
+      expect(result.stdout).toContain(
+        'Description: Remove capability from foundation.json'
+      );
 
       // @step And the output should include example usage for removing capabilities
       expect(result.stdout).toMatch(/example.*remove-capability/is);
@@ -103,11 +107,15 @@ describe('Feature: Foundation discovery removal commands documentation', () => {
       expect(result.exitCode).toBe(0);
 
       // @step And the output should show 'fspec remove-persona "[QUESTION: Who uses this?]"'
-      expect(result.stdout).toContain('fspec remove-persona "[QUESTION: Who uses this?]"');
+      expect(result.stdout).toContain(
+        'fspec remove-persona "[QUESTION: Who uses this?]"'
+      );
 
       // @step And the remove-capability examples should include removing placeholder text
       // @step And the output should show 'fspec remove-capability "[QUESTION: What can users DO?]"'
-      expect(result.stdout).toContain('fspec remove-capability "[QUESTION: What can users DO?]"');
+      expect(result.stdout).toContain(
+        'fspec remove-capability "[QUESTION: What can users DO?]"'
+      );
     });
   });
 

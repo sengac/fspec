@@ -1,0 +1,268 @@
+{
+  "scenarios": [
+    {
+      "name": "Show tool with CONFIGURED status from environment variable",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/research-tool-discovery.test.ts",
+          "lines": "26-43",
+          "implMappings": [
+            {
+              "file": "src/commands/research-tool-list.ts",
+              "lines": [
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Show tool with NOT CONFIGURED status and usage guidance",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/research-tool-discovery.test.ts",
+          "lines": "46-71",
+          "implMappings": [
+            {
+              "file": "src/commands/research-tool-list.ts",
+              "lines": [
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Show tool with CONFIGURED status from user config file",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/research-tool-discovery.test.ts",
+          "lines": "74-99",
+          "implMappings": [
+            {
+              "file": "src/commands/research-tool-list.ts",
+              "lines": [
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "List all tools with status indicators and config sources",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/research-tool-discovery.test.ts",
+          "lines": "102-133",
+          "implMappings": [
+            {
+              "file": "src/commands/research-tool-list.ts",
+              "lines": [
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Show tool-specific help with configuration requirements",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/research-tool-discovery.test.ts",
+          "lines": "136-157",
+          "implMappings": [
+            {
+              "file": "src/commands/research-tool-list.ts",
+              "lines": [
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/commands/__tests__/research-tool-discovery.test.ts"
+    ],
+    "implFiles": [
+      "src/commands/research-tool-list.ts"
+    ],
+    "totalLinesCovered": 296
+  }
+}

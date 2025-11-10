@@ -1,0 +1,393 @@
+#!/usr/bin/env node
+
+/**
+ * Confluence Research Tool
+ * Integrates with fspec research framework (RES-002)
+ */
+
+import fs from 'fs';
+import path from 'path';
+import os from 'os';
+import https from 'https';
+
+// Parse command-line arguments
+function parseArgs() {
+  const args = process.argv.slice(2);
+  const parsed = {
+    query: null,
+    space: null,
+    page: null,
+    format: 'markdown',
+    help: false,
+  };
+
+  for (let i = 0; i < args.length; i++) {
+    if (args[i] === '--help') {
+      parsed.help = true;
+    } else if (args[i] === '--query' && args[i + 1]) {
+      parsed.query = args[i + 1];
+      i++;
+    } else if (args[i] === '--space' && args[i + 1]) {
+      parsed.space = args[i + 1];
+      i++;
+    } else if (args[i] === '--page' && args[i + 1]) {
+      parsed.page = args[i + 1];
+      i++;
+    } else if (args[i] === '--format' && args[i + 1]) {
+      parsed.format = args[i + 1];
+      i++;
+    }
+  }
+
+  return parsed;
+}
+
+// Show help text
+function showHelp() {
+  console.log(`CONFLUENCE RESEARCH TOOL
+
+Research Confluence pages during Example Mapping.
+
+USAGE
+  confluence --query <text> [options]
+  confluence --space <key> [options]
+  confluence --page <title> [options]
+
+OPTIONS
+  --query <text>      Full-text search (required if no --space or --page)
+  --space <key>       List all pages in space (required if no --query or --page)
+  --page <title>      Fetch single page by title (required if no --query or --space)
+  --format <type>     Output format: markdown, json, text (default: markdown)
+  --help              Show this help message
+
+SEARCH EXAMPLES
+  confluence --query "API documentation"
+  confluence --space DOCS
+  confluence --page "Authentication Guide"
+
+CQL SYNTAX
+  Confluence Query Language (CQL) can be used with --query:
+  confluence --query "type=page AND space=DOCS"
+  confluence --query "label=security AND lastModified>=-7d"
+
+CONFIGURATION
+  API credentials must be set in ~/.fspec/fspec-config.json:
+  {
+    "research": {
+      "confluence": {
+        "confluenceUrl": "https://example.atlassian.net/wiki",
+        "username": "your-email@example.com",
+        "apiToken": "your-api-token"
+      }
+    }
+  }
+
+EXIT CODES
+  0  Success
+  1  Missing required flag (--query, --space, or --page)
+  2  Configuration or authentication error
+  3  API error (network, not found, etc.)`);
+}
+
+// Load config from ~/.fspec/fspec-config.json
+function loadConfig() {
+  const configPath = path.join(os.homedir(), '.fspec', 'fspec-config.json');
+
+  if (!fs.existsSync(configPath)) {
+    console.error('Error: Config file not found at ~/.fspec/fspec-config.json');
+    console.error('Create config with Confluence credentials:');
+    console.error('  mkdir -p ~/.fspec');
+    console.error('  echo \'{"research":{"confluence":{"confluenceUrl":"https://example.atlassian.net/wiki","username":"your-email","apiToken":"your-token"}}}\' > ~/.fspec/fspec-config.json');
+    process.exit(2);
+  }
+
+  const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+
+  if (
+    !config.research?.confluence?.confluenceUrl ||
+    !config.research?.confluence?.username ||
+    !config.research?.confluence?.apiToken
+  ) {
+    console.error('Error: Confluence configuration not found');
+    console.error('Add to ~/.fspec/fspec-config.json:');
+    console.error(
+      '  "research": { "confluence": { "confluenceUrl": "...", "username": "...", "apiToken": "..." } }'
+    );
+    console.error('');
+    console.error('Required config fields: confluenceUrl, username, apiToken');
+    process.exit(2);
+  }
+
+  return config.research.confluence;
+}
+
+// Call Confluence API
+function callConfluenceAPI(config, path) {
+  return new Promise((resolve, reject) => {
+    const urlObj = new URL(config.confluenceUrl);
+    const auth = Buffer.from(`${config.username}:${config.apiToken}`).toString('base64');
+
+    const options = {
+      hostname: urlObj.hostname,
+      port: 443,
+      path: path,
+      method: 'GET',
+      headers: {
+        Authorization: `Basic ${auth}`,
+        Accept: 'application/json',
+      },
+    };
+
+    const req = https.request(options, (res) => {
+      let data = '';
+
+      res.on('data', (chunk) => {
+        data += chunk;
+      });
+
+      res.on('end', () => {
+        if (res.statusCode === 401) {
+          console.error(`Error: Confluence API authentication failed (HTTP 401)`);
+          console.error(`Reason: Unauthorized - Invalid credentials`);
+          process.exit(2);
+        } else if (res.statusCode === 404) {
+          console.error(`Error: Page not found`);
+          process.exit(3);
+        } else if (res.statusCode !== 200) {
+          const error = JSON.parse(data);
+          console.error(`Error: Confluence API request failed (HTTP ${res.statusCode})`);
+          console.error(`Reason: ${error.message || 'Unknown error'}`);
+          process.exit(3);
+        }
+        resolve(JSON.parse(data));
+      });
+    });
+
+    req.on('error', (err) => {
+      console.error(`Error: Network request failed`);
+      console.error(`Reason: ${err.message}`);
+      process.exit(3);
+    });
+
+    req.end();
+  });
+}
+
+// Format single page as markdown
+function formatPageMarkdown(page) {
+  const timestamp = new Date().toISOString();
+
+  return `# Page: ${page.title}
+
+**Space:** ${page.space?.key || 'Unknown'}
+**Modified:** ${page.version?.when || 'Unknown'}
+**URL:** ${page._links?.webui ? `${page._links.base}${page._links.webui}` : 'Unknown'}
+**Date:** ${timestamp}
+
+---
+
+## Content
+
+${page.body?.storage?.value || page.body?.view?.value || 'No content available'}
+
+---`;
+}
+
+// Format page list as markdown
+function formatPagesMarkdown(pages, query) {
+  const timestamp = new Date().toISOString();
+
+  let output = `# Confluence Search Results\n\n**Query:** ${query}\n**Date:** ${timestamp}\n**Results:** ${pages.length}\n\n---\n\n`;
+
+  for (const page of pages) {
+    output += `## ${page.title}\n\n`;
+    output += `**Space:** ${page.space?.key || 'Unknown'}\n`;
+    output += `**Excerpt:** ${page.excerpt || 'No excerpt available'}\n`;
+    output += `**URL:** ${page._links?.webui ? `${page._links.base}${page._links.webui}` : 'Unknown'}\n\n`;
+  }
+
+  return output;
+}
+
+// Format as JSON
+function formatJSON(data) {
+  if (Array.isArray(data)) {
+    return JSON.stringify(
+      data.map((page) => ({
+        id: page.id,
+        title: page.title,
+        excerpt: page.excerpt || '',
+        url: page._links?.webui ? `${page._links.base}${page._links.webui}` : '',
+      })),
+      null,
+      2
+    );
+  } else {
+    return JSON.stringify(
+      {
+        id: data.id,
+        title: data.title,
+        space: data.space?.key,
+        excerpt: data.excerpt || '',
+        url: data._links?.webui ? `${data._links.base}${data._links.webui}` : '',
+      },
+      null,
+      2
+    );
+  }
+}
+
+// Format as plain text
+function formatText(data) {
+  if (Array.isArray(data)) {
+    return data.map((page) => `${page.title}: ${page.excerpt || 'No excerpt'}`).join('\n');
+  } else {
+    return `${data.title}\n\n${data.body?.storage?.value || data.body?.view?.value || 'No content'}`;
+  }
+}
+
+// Main function
+async function main() {
+  const args = parseArgs();
+
+  // Show help
+  if (args.help) {
+    showHelp();
+    process.exit(0);
+  }
+
+  // Validate required args
+  if (!args.query && !args.space && !args.page) {
+    console.error('Error: At least one of --query, --space, or --page is required');
+    process.exit(1);
+  }
+
+  // Test mode: return mock data
+  if (process.env.FSPEC_TEST_MODE === '1') {
+    let mockData;
+    let query = '';
+
+    if (args.page) {
+      query = `Page "${args.page}"`;
+      mockData = {
+        title: args.page,
+        type: 'page',
+        space: { name: 'Test Space' },
+        body: {
+          storage: {
+            value: '<p>This is test mode output. In production, this would contain real page content from Confluence.</p>',
+          },
+        },
+        version: { number: 1, when: new Date().toISOString() },
+        _links: { webui: '/wiki/spaces/TEST/pages/123/' },
+      };
+    } else if (args.space) {
+      query = `Space ${args.space}`;
+      mockData = [
+        {
+          id: '1',
+          title: 'Mock Page 1',
+          type: 'page',
+          space: { name: args.space, key: args.space },
+          excerpt: 'Mock page excerpt 1',
+          url: '/wiki/spaces/TEST/pages/1',
+        },
+        {
+          id: '2',
+          title: 'Mock Page 2',
+          type: 'page',
+          space: { name: args.space, key: args.space },
+          excerpt: 'Mock page excerpt 2',
+          url: '/wiki/spaces/TEST/pages/2',
+        },
+      ];
+    } else if (args.query) {
+      query = args.query;
+      mockData = [
+        {
+          id: '1',
+          title: 'Mock Search Result',
+          type: 'page',
+          space: { name: 'Test Space', key: 'TEST' },
+          excerpt: 'Mock search result matching query',
+          url: '/wiki/spaces/TEST/pages/1',
+        },
+      ];
+    }
+
+    let output;
+    if (args.format === 'json') {
+      output = formatJSON(mockData);
+    } else if (args.format === 'text') {
+      output = formatText(mockData);
+    } else {
+      if (Array.isArray(mockData)) {
+        output = formatPagesMarkdown(mockData, query);
+      } else {
+        output = formatPageMarkdown(mockData);
+      }
+    }
+
+    console.log(output);
+    process.exit(0);
+  }
+
+  // Load config
+  const config = loadConfig();
+
+  // Fetch data from Confluence
+  let data;
+  let query = '';
+
+  if (args.page) {
+    // Fetch single page by title
+    query = `Page "${args.page}"`;
+    const result = await callConfluenceAPI(
+      config,
+      `/wiki/rest/api/content?title=${encodeURIComponent(args.page)}&expand=body.storage,body.view,space,version`
+    );
+    if (result.results.length === 0) {
+      console.error(`Error: Page not found`);
+      process.exit(3);
+    }
+    data = result.results[0];
+  } else if (args.space) {
+    // Fetch pages in space
+    query = `Space ${args.space}`;
+    const result = await callConfluenceAPI(
+      config,
+      `/wiki/rest/api/content?spaceKey=${args.space}&expand=space`
+    );
+    data = result.results;
+  } else if (args.query) {
+    // Search with CQL
+    query = args.query;
+    const result = await callConfluenceAPI(
+      config,
+      `/wiki/rest/api/content/search?cql=${encodeURIComponent(args.query)}&expand=space`
+    );
+    data = result.results;
+  }
+
+  // Format and output
+  let output;
+  if (args.format === 'json') {
+    output = formatJSON(data);
+  } else if (args.format === 'text') {
+    output = formatText(data);
+  } else {
+    if (Array.isArray(data)) {
+      output = formatPagesMarkdown(data, query);
+    } else {
+      output = formatPageMarkdown(data);
+    }
+  }
+
+  console.log(output);
+  process.exit(0);
+}
+
+main().catch((err) => {
+  console.error('Error:', err.message);
+  process.exit(3);
+});

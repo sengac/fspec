@@ -15,6 +15,7 @@ Tags that identify which architectural component a feature belongs to.
 | `@agent-registry` | Agent registry and configuration management |
 | `@algorithm` | Algorithmic components - similarity matching, scoring, deduplication algorithms |
 | `@cli` | Command-Line Interface |
+| `@demos` | Demo script functionality and video recording infrastructure |
 | `@dialog` | Dialog and modal UI components in TUI |
 | `@file-ops` | File Operations |
 | `@formatter` | Formatting & Prettification |
@@ -47,6 +48,8 @@ Tags that categorize features by functional area.
 | `@agent-compatibility` | Features ensuring correct behavior across all 18 supported AI agents |
 | `@agent-detection` | Agent detection and runtime configuration features |
 | `@agent-integration` | Features related to AI agent initialization, detection, and integration |
+| `@agent-support` | Multi-agent support and agent-specific configurations |
+| `@ai-assistance` | AI-assisted features for analysis and extraction |
 | `@answer-question` | Question answering operations |
 | `@assumption-management` | Assumption tracking in Example Mapping |
 | `@attachment-management` | Attachment management features for work units |
@@ -74,6 +77,7 @@ Tags that categorize features by functional area.
 | `@comparison` | Comparison operations |
 | `@completion` | Completion operations |
 | `@compound` | Compound query operations |
+| `@config-management` | Configuration management and settings features |
 | `@configuration` | Configuration loading and validation |
 | `@coverage` | Coverage tracking and traceability features |
 | `@coverage-tracking` | Coverage tracking and traceability from scenarios to tests to implementation code |
@@ -133,9 +137,11 @@ Tags that categorize features by functional area.
 | `@report-bug` | Features related to reporting bugs to GitHub |
 | `@reporting` | Reporting and statistics |
 | `@research` | Research and discovery tools |
+| `@research-tools` | Research tool system features and integrations |
 | `@reverse-acdd` | Features related to reverse ACDD for documenting existing codebases |
 | `@safety` | Safety and security features preventing accidental operations |
 | `@scaffolding` | Project Setup & Templates |
+| `@scalability` | Scalability and performance optimization features |
 | `@scenario-deduplication` | Scenario deduplication and refactoring detection features |
 | `@scenario-generation` | Features related to generating scenarios from example mapping |
 | `@schema-design` | Schema design and data structure definition |
@@ -150,6 +156,7 @@ Tags that categorize features by functional area.
 | `@tag-management` | TAGS.md Operations |
 | `@test-coverage` | Test coverage tracking and validation features |
 | `@testing` | Testing and quality assurance features |
+| `@tool-discovery` | Tool discovery and listing features |
 | `@tracking` | Metric tracking operations |
 | `@ui-enhancement` | TUI user interface enhancements and visual improvements |
 | `@ui-refinement` | UI refinement and enhancement operations |
@@ -158,6 +165,7 @@ Tags that categorize features by functional area.
 | `@validation` | Syntax & Structure Validation |
 | `@velocity` | Velocity calculation |
 | `@version-management` | Features related to version checking, upgrading, and file synchronization |
+| `@video-recording` | Video recording and demo playback features |
 | `@visual-design` | Visual design and branding features |
 | `@visualization` | Data visualization |
 | `@work-management` | Work unit management and Kanban workflow operations |
@@ -225,6 +233,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@ink` | Ink (React for CLIs) rendering engine |
 | `@interactive` | Interactive terminal UI features using Ink |
 | `@internal` | Internal Utility |
+| `@investigation` | Investigation and research tasks for evaluating technical approaches |
 | `@ipc` | Inter-process communication features using Unix sockets or named pipes |
 | `@isomorphic-git` | Uses isomorphic-git library for pure JavaScript git operations |
 | `@json-backed` | JSON-Backed Documentation |
@@ -244,6 +253,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@pattern-detection` | Features involving pattern detection and analysis from historical data |
 | `@performance` | Performance optimization and efficiency features |
 | `@platform-agnostic` | Features supporting multiple platforms (Python, Rust, Go, JavaScript, etc.) |
+| `@plugin-system` | Plugin architecture and dynamic module loading |
 | `@prettier` | Prettier configuration and code formatting |
 | `@push` | Push notification functionality |
 | `@react` | React framework and component lifecycle features |
@@ -269,6 +279,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@toml` | TOML configuration file parsing and manipulation |
 | `@traceability` | Scenario-to-test-to-implementation traceability and coverage tracking |
 | `@trackpad` | Trackpad and touchpad input handling with smoothing and gesture support |
+| `@tree-sitter` | Tree-sitter library for language-agnostic AST parsing |
 | `@type-system` | Work unit type system features for categorizing work (story, task, bug) |
 | `@typescript` | TypeScript-specific features and configuration |
 | `@ui-formatting` | UI formatting and layout features |
@@ -308,6 +319,7 @@ Tags indicating implementation priority or criticality.
 | `@high` | High Priority - Should Have |
 | `@low` | Low Priority - Future Enhancement |
 | `@medium` | Medium Priority - Nice to Have |
+| `@p1` | Phase 1 - Core foundation and infrastructure |
 | `@phase-1` | Phase 1 features - core functionality |
 
 **Rule**: Use priority tags to guide implementation order within a phase.
@@ -613,7 +625,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-11-07T07:15:08.603Z_
+_Last updated: 2025-11-10T06:36:45.945Z_
 
 **Update Command**: `fspec tag-stats`
 

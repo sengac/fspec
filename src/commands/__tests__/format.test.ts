@@ -75,16 +75,16 @@ Scenario: Another scenario
 
       // Then all scenarios should be indented by 2 spaces
       const content = await readFile(filePath, 'utf-8');
-      expect(content).toMatch(/^  Scenario: Inconsistent spacing$/m);
-      expect(content).toMatch(/^  Scenario: Another scenario$/m);
+      expect(content).toMatch(/^ {2}Scenario: Inconsistent spacing$/m);
+      expect(content).toMatch(/^ {2}Scenario: Another scenario$/m);
 
       // And all steps should be indented by 4 spaces from feature level
-      expect(content).toMatch(/^    Given something$/m);
-      expect(content).toMatch(/^    When action$/m);
-      expect(content).toMatch(/^    Then result$/m);
-      expect(content).toMatch(/^    Given different spacing$/m);
-      expect(content).toMatch(/^    When another action$/m);
-      expect(content).toMatch(/^    Then another result$/m);
+      expect(content).toMatch(/^ {4}Given something$/m);
+      expect(content).toMatch(/^ {4}When action$/m);
+      expect(content).toMatch(/^ {4}Then result$/m);
+      expect(content).toMatch(/^ {4}Given different spacing$/m);
+      expect(content).toMatch(/^ {4}When another action$/m);
+      expect(content).toMatch(/^ {4}Then another result$/m);
     });
   });
 

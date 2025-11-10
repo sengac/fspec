@@ -5,7 +5,6 @@
 @cli
 @REMIND-010
 Feature: Foundation discovery removal commands documentation
-
   """
   Help text should show examples of removing BOTH actual personas/capabilities AND placeholder text like '[QUESTION: Who uses this?]'
   """
@@ -38,7 +37,6 @@ Feature: Foundation discovery removal commands documentation
   #   A: true
   #
   # ========================================
-
   Background: User Story
     As a developer using fspec
     I want to understand how to remove placeholder items during foundation discovery

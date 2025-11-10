@@ -4,6 +4,9 @@ import { displayHelpAndExit } from './help-formatter';
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import { spawn } from 'child_process';
+import chalk from 'chalk';
+import { discoverResearchTools } from '../commands/research';
 
 /**
  * Process-level help interceptor
@@ -49,6 +52,93 @@ export async function handleCustomHelp(): Promise<boolean> {
     const version = getVersion();
     displayCustomHelpWithNote(version);
     return true; // Help was displayed, prevent Commander from showing help again
+  }
+
+  // RES-011: Special handling for research command with --tool flag
+  if (commandName === 'research' && hasHelp) {
+    const toolArgIndex = args.findIndex(arg => arg.startsWith('--tool'));
+    let toolName: string | undefined;
+
+    if (toolArgIndex !== -1) {
+      const toolArg = args[toolArgIndex];
+      if (toolArg.includes('=')) {
+        toolName = toolArg.split('=')[1];
+      } else if (
+        toolArgIndex + 1 < args.length &&
+        !args[toolArgIndex + 1].startsWith('-')
+      ) {
+        toolName = args[toolArgIndex + 1];
+      }
+    }
+
+    // If tool is specified, forward help to research tool script
+    if (toolName) {
+      const cwd = process.cwd();
+      const tools = await discoverResearchTools(cwd);
+      const tool = tools.find(t => t.name === toolName);
+
+      if (!tool) {
+        console.error(
+          chalk.red(`Error: Research tool '${toolName}' not found\n`)
+        );
+        console.log('Available tools:');
+        for (const t of tools) {
+          console.log(chalk.cyan(`  - ${t.name}`));
+        }
+        console.log(
+          chalk.dim(`\nRun 'fspec research' for full list with status`)
+        );
+        process.exit(1);
+      }
+
+      // Forward --help to tool script
+      return new Promise(resolve => {
+        const child = spawn(tool.path, ['--help'], {
+          stdio: ['inherit', 'pipe', 'pipe'],
+        });
+
+        let output = '';
+        let errorOutput = '';
+
+        child.stdout.on('data', (data: Buffer) => {
+          output += data.toString();
+        });
+
+        child.stderr.on('data', (data: Buffer) => {
+          errorOutput += data.toString();
+        });
+
+        child.on('close', (code: number) => {
+          if (code === 0 && output) {
+            console.log(output);
+            process.exit(0);
+          } else if (code !== 0 && errorOutput) {
+            // Tool doesn't implement --help, show warning
+            console.log(
+              chalk.yellow(
+                `Warning: Tool '${toolName}' does not implement --help flag\n`
+              )
+            );
+            console.log('Showing generic usage:');
+            console.log(
+              chalk.dim(`  fspec research --tool=${toolName} [args...]\n`)
+            );
+            console.log(`For more information, check: ${tool.path}`);
+            process.exit(0);
+          } else {
+            // Tool output to stderr or no output
+            console.log(output || errorOutput);
+            process.exit(code || 0);
+          }
+        });
+
+        child.on('error', (error: Error) => {
+          console.error(chalk.red(`Error executing tool: ${error.message}`));
+          process.exit(1);
+        });
+      });
+    }
+    // No tool specified - fall through to show comprehensive research help
   }
 
   // Check if command has custom help registered (pre-loaded via import.meta.glob)

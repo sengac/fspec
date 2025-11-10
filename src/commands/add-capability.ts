@@ -6,7 +6,10 @@ import type { GenericFoundation } from '../types/foundation';
 /**
  * Check if a capability is a placeholder (contains [QUESTION:] or [DETECTED:] patterns)
  */
-function isPlaceholderCapability(capability: { name: string; description: string }): boolean {
+function isPlaceholderCapability(capability: {
+  name: string;
+  description: string;
+}): boolean {
   const placeholderPattern = /\[QUESTION:|\[DETECTED:/;
   return (
     placeholderPattern.test(capability.name) ||
@@ -17,7 +20,9 @@ function isPlaceholderCapability(capability: { name: string; description: string
 /**
  * Check if capabilities array contains only placeholders (no real capabilities)
  */
-function hasOnlyPlaceholders(capabilities: { name: string; description: string }[]): boolean {
+function hasOnlyPlaceholders(
+  capabilities: { name: string; description: string }[]
+): boolean {
   if (capabilities.length === 0) return false;
   return capabilities.every(capability => isPlaceholderCapability(capability));
 }
@@ -86,7 +91,9 @@ export async function addCapability(
 
   // Show placeholder removal message if any were removed
   if (removedCount > 0) {
-    console.log(chalk.yellow(`Removed ${removedCount} placeholder capability(ies)`));
+    console.log(
+      chalk.yellow(`Removed ${removedCount} placeholder capability(ies)`)
+    );
   }
 
   console.log(chalk.green(`✓ Added capability to ${fileName}`));
