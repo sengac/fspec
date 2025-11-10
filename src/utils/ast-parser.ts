@@ -208,6 +208,40 @@ function findClass(
 }
 
 /**
+ * Find all class declarations
+ */
+function findAllClasses(node: Parser.SyntaxNode, filePath: string): ASTMatch[] {
+  const matches: ASTMatch[] = [];
+
+  function traverse(n: Parser.SyntaxNode) {
+    if (n.type === 'class_declaration' || n.type === 'class') {
+      // Find the class name identifier
+      const nameNode = n.children.find(
+        c => c.type === 'identifier' || c.type === 'type_identifier'
+      );
+      const className = nameNode?.text || 'Anonymous';
+
+      matches.push({
+        className,
+        filePath,
+        lineNumber: n.startPosition.row + 1,
+        startLine: n.startPosition.row + 1,
+        endLine: n.endPosition.row + 1,
+        code: n.text,
+        nodeType: n.type,
+      });
+    }
+
+    for (const child of n.children) {
+      traverse(child);
+    }
+  }
+
+  traverse(node);
+  return matches;
+}
+
+/**
  * Find all import statements
  */
 function findImports(node: Parser.SyntaxNode, filePath: string): ASTMatch {
@@ -379,24 +413,45 @@ export async function parseFile(
 
   const queryLower = query.toLowerCase();
 
+  // Check for "find all" or "all" patterns
+  const isFindAll =
+    queryLower.includes('find all') ||
+    queryLower.includes('all ') ||
+    queryLower.startsWith('all');
+
+  // Class search
+  if (queryLower.includes('class')) {
+    if (isFindAll) {
+      // Find all classes
+      const classes = findAllClasses(tree.rootNode, filePath);
+      return {
+        matches: classes,
+      };
+    } else {
+      // Check for specific class name pattern
+      const classMatch = /class\s+(\w+)/.exec(query);
+      if (classMatch) {
+        const className = classMatch[1];
+        const result = findClass(tree.rootNode, className, filePath);
+        if (result) {
+          return result;
+        }
+      } else {
+        // Default to finding all classes when no specific name
+        const classes = findAllClasses(tree.rootNode, filePath);
+        return {
+          matches: classes,
+        };
+      }
+    }
+  }
+
   // Function definitions
   if (queryLower.includes('function')) {
     const functions = findFunctions(tree.rootNode, filePath);
     return {
       matches: functions,
     };
-  }
-
-  // Class search
-  if (queryLower.includes('class')) {
-    const classMatch = /class\s+(\w+)/.exec(query);
-    if (classMatch) {
-      const className = classMatch[1];
-      const result = findClass(tree.rootNode, className, filePath);
-      if (result) {
-        return result;
-      }
-    }
   }
 
   // Import statements

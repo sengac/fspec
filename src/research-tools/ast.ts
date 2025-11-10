@@ -34,13 +34,19 @@ export const tool: ResearchTool = {
 
     // If query provided without file, search all TypeScript/JavaScript files
     if (query) {
-      const files = await glob('src/**/*.{ts,js,tsx,jsx}', {
-        ignore: ['**/node_modules/**', '**/dist/**', '**/__tests__/**'],
+      const files = await glob('**/*.{ts,js,tsx,jsx}', {
+        ignore: [
+          '**/node_modules/**',
+          '**/dist/**',
+          '**/__tests__/**',
+          '**/build/**',
+          '**/.next/**',
+        ],
       });
 
       const allMatches = [];
-      for (const file of files.slice(0, 10)) {
-        // Limit to first 10 files
+      for (const file of files) {
+        // Process ALL files
         try {
           const result = await parseFile(file, query);
           if (result.matches && result.matches.length > 0) {
