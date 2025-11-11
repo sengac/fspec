@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-11T01:22:54.662Z"
+    "lastUpdated": "2025-11-11T22:43:25.896Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -45206,11 +45206,156 @@
       "id": "BUG-074",
       "title": "Fix 'fspec research --tool=ast --help' command - should display tool-specific help instead of failing",
       "type": "bug",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2025-11-10T12:38:37.177Z",
-      "updatedAt": "2025-11-10T12:38:37.177Z",
+      "updatedAt": "2025-11-11T22:43:25.918Z",
       "description": "When running 'fspec research --tool=ast --help', the command fails with 'Error: Research tool 'ast' not found'. However, running 'fspec research --tool=ast --query \"find X\"' works correctly. The --help flag should work for individual research tools to show tool-specific usage and options.",
-      "children": []
+      "children": [],
+      "attachments": [
+        "spec/attachments/BUG-074/help-system-architecture-analysis.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-11T21:58:27.174Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-11T22:10:07.053Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-11T22:13:07.666Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-11T22:36:56.605Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-11T22:43:25.918Z"
+        }
+      ],
+      "userStory": {
+        "role": "AI agent or developer using fspec research tools",
+        "action": "get help for a specific research tool using --help flag",
+        "benefit": "I can understand tool usage without trial-and-error or reading source code"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Help display must work for both bundled tools (src/research-tools/) and custom tools (spec/research-tools/)",
+          "deleted": false,
+          "createdAt": "2025-11-11T22:04:03.358Z"
+        },
+        {
+          "id": 1,
+          "text": "Help output must follow standardized format with AI-optimized sections (WHEN TO USE, PREREQUISITES, COMMON ERRORS)",
+          "deleted": false,
+          "createdAt": "2025-11-11T22:04:05.440Z"
+        },
+        {
+          "id": 2,
+          "text": "All research tools must use structured ResearchToolHelpConfig instead of hand-crafted strings",
+          "deleted": false,
+          "createdAt": "2025-11-11T22:04:07.150Z"
+        },
+        {
+          "id": 3,
+          "text": "Help formatting logic must be centralized in help-formatter.ts to avoid duplication",
+          "deleted": false,
+          "createdAt": "2025-11-11T22:04:10.449Z"
+        },
+        {
+          "id": 4,
+          "text": "The help flag must be checked BEFORE tool validation to show help even if tool has loading issues",
+          "deleted": false,
+          "createdAt": "2025-11-11T22:04:17.793Z"
+        },
+        {
+          "id": 5,
+          "text": "Help formatter must support custom sections beyond standard ones for advanced documentation",
+          "deleted": false,
+          "createdAt": "2025-11-11T22:07:14.931Z"
+        },
+        {
+          "id": 6,
+          "text": "TypeScript compiler provides validation for ResearchToolHelpConfig - no runtime JSON Schema validation needed",
+          "deleted": false,
+          "createdAt": "2025-11-11T22:07:16.546Z"
+        },
+        {
+          "id": 7,
+          "text": "CONFIGURATION section is optional and shown only when tool provides it in config",
+          "deleted": false,
+          "createdAt": "2025-11-11T22:07:18.093Z"
+        }
+      ],
+      "nextRuleId": 8,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User runs 'fspec research --tool=ast --help' and sees structured help with USAGE, OPTIONS, EXAMPLES, WHEN TO USE sections",
+          "deleted": false,
+          "createdAt": "2025-11-11T22:04:29.414Z"
+        },
+        {
+          "id": 1,
+          "text": "User runs 'fspec research --tool=jira --help' and sees help with CONFIGURATION section showing required credentials",
+          "deleted": false,
+          "createdAt": "2025-11-11T22:04:30.915Z"
+        },
+        {
+          "id": 2,
+          "text": "User runs 'fspec research --tool=custom --help' where custom is in spec/research-tools/ and sees same formatted help as bundled tools",
+          "deleted": false,
+          "createdAt": "2025-11-11T22:04:32.751Z"
+        },
+        {
+          "id": 3,
+          "text": "User runs 'fspec research --tool=nonexistent --help' and sees error with list of available tools",
+          "deleted": false,
+          "createdAt": "2025-11-11T22:04:34.379Z"
+        },
+        {
+          "id": 4,
+          "text": "Developer refactors ast.ts help from string-based help() method to structured getHelpConfig() returning ResearchToolHelpConfig",
+          "deleted": false,
+          "createdAt": "2025-11-11T22:04:36.105Z"
+        }
+      ],
+      "nextExampleId": 5,
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: Should the help formatter support custom sections beyond the standard ones (USAGE, OPTIONS, EXAMPLES, etc.)?",
+          "deleted": false,
+          "createdAt": "2025-11-11T22:04:46.576Z",
+          "selected": true,
+          "answer": "Yes, support custom sections for tools that need ADVANCED USAGE or TROUBLESHOOTING sections"
+        },
+        {
+          "id": 1,
+          "text": "@human: Should we validate ResearchToolHelpConfig with JSON Schema to enforce required fields?",
+          "deleted": false,
+          "createdAt": "2025-11-11T22:04:48.419Z",
+          "selected": true,
+          "answer": "No, rely on TypeScript only for compile-time validation - simpler approach"
+        },
+        {
+          "id": 2,
+          "text": "@human: Should the CONFIGURATION section be optional or required for tools that need config files?",
+          "deleted": false,
+          "createdAt": "2025-11-11T22:04:50.612Z",
+          "selected": true,
+          "answer": "Optional - CONFIGURATION section shown only when tool provides it in getHelpConfig()"
+        }
+      ],
+      "nextQuestionId": 3,
+      "estimate": 8,
+      "architectureNotes": [],
+      "nextNoteId": 0,
+      "updated": "2025-11-11T22:43:25.918Z"
     },
     "COV-054": {
       "id": "COV-054",
@@ -45279,7 +45424,6 @@
       "DOC-012",
       "DOC-013",
       "DOC-014",
-      "BUG-074",
       "COV-054"
     ],
     "specifying": [
@@ -45293,6 +45437,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "BUG-074",
       "RES-016",
       "RES-009",
       "HOOK-012",

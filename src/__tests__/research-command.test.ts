@@ -111,7 +111,13 @@ describe('Feature: Interactive research command with multiple backend support', 
   name: 'github',
   description: 'GitHub research tool for issues and PRs',
   async execute(args) { return 'GitHub tool output'; },
-  help() { return 'GitHub tool help'; }
+  getHelpConfig() {
+    return {
+      name: 'github',
+      description: 'GitHub research tool for issues and PRs',
+      usage: 'fspec research --tool=github [options]'
+    };
+  }
 };`,
         'utf8'
       );

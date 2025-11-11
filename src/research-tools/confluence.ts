@@ -287,50 +287,69 @@ export const tool: ResearchTool = {
     }
   },
 
-  help(): string {
-    return `CONFLUENCE RESEARCH TOOL
-
-Research Confluence pages during Example Mapping.
-
-USAGE
-  confluence --query <text> [options]
-  confluence --space <key> [options]
-  confluence --page <title> [options]
-
-OPTIONS
-  --query <text>      Full-text search (required if no --space or --page)
-  --space <key>       List all pages in space (required if no --query or --page)
-  --page <title>      Fetch single page by title (required if no --query or --space)
-  --format <type>     Output format: markdown, json, text (default: markdown)
-  --help              Show this help message
-
-SEARCH EXAMPLES
-  confluence --query "API documentation"
-  confluence --space DOCS
-  confluence --page "Authentication Guide"
-
-CQL SYNTAX
-  Confluence Query Language (CQL) can be used with --query:
-  confluence --query "type=page AND space=DOCS"
-  confluence --query "label=security AND lastModified>=-7d"
-
-CONFIGURATION
-  API credentials must be set in ~/.fspec/fspec-config.json:
-  {
-    "research": {
-      "confluence": {
-        "confluenceUrl": "https://example.atlassian.net/wiki",
-        "username": "your-email@example.com",
-        "apiToken": "your-api-token"
-      }
-    }
-  }
-
-EXIT CODES
-  0  Success
-  1  Missing required flag (--query, --space, or --page)
-  2  Configuration or authentication error
-  3  API error (network, not found, etc.)`;
+  getHelpConfig() {
+    return {
+      name: 'confluence',
+      description: 'Research Confluence pages during Example Mapping',
+      usage: 'fspec research --tool=confluence [options]',
+      whenToUse:
+        'Use during Example Mapping to research documentation, requirements, or design decisions stored in Confluence.',
+      options: [
+        {
+          flag: '--query <text>',
+          description: 'Full-text search (required if no --space or --page)',
+        },
+        {
+          flag: '--space <key>',
+          description:
+            'List all pages in space (required if no --query or --page)',
+        },
+        {
+          flag: '--page <title>',
+          description:
+            'Fetch single page by title (required if no --query or --space)',
+        },
+        {
+          flag: '--format <type>',
+          description: 'Output format',
+          defaultValue: 'markdown',
+        },
+      ],
+      examples: [
+        {
+          command: '--query "API documentation"',
+          description: 'Full-text search',
+        },
+        { command: '--space DOCS', description: 'List pages in space' },
+        {
+          command: '--page "Authentication Guide"',
+          description: 'Fetch specific page',
+        },
+      ],
+      configuration: {
+        required: true,
+        location: '~/.fspec/fspec-config.json',
+        example: JSON.stringify(
+          {
+            research: {
+              confluence: {
+                confluenceUrl: 'https://example.atlassian.net/wiki',
+                username: 'your-email',
+                apiToken: 'your-token',
+              },
+            },
+          },
+          null,
+          2
+        ),
+      },
+      exitCodes: [
+        { code: 0, description: 'Success' },
+        { code: 1, description: 'Missing required flag' },
+        { code: 2, description: 'Configuration or authentication error' },
+        { code: 3, description: 'API error' },
+      ],
+    };
   },
 };
 

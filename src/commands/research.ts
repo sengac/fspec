@@ -242,14 +242,35 @@ export function registerResearchCommand(program: Command): void {
           forwardedArgs.push(arg);
         }
 
+        // Check if --help is requested BEFORE loading tool (BUG-074 fix)
+        if (forwardedArgs.includes('--help') || forwardedArgs.includes('-h')) {
+          try {
+            const tool = await getResearchTool(options.tool, cwd);
+            const { displayResearchToolHelp } = await import(
+              '../utils/help-formatter'
+            );
+            displayResearchToolHelp(tool);
+            return;
+          } catch (error: any) {
+            // If tool not found, show helpful error with available tools
+            const chalk = (await import('chalk')).default;
+            console.error(
+              chalk.red(`Research tool '${options.tool}' not found\n`)
+            );
+            console.error('Available research tools:');
+            const toolsWithStatus = listResearchTools();
+            for (const tool of toolsWithStatus) {
+              console.log(
+                `  ${tool.statusIndicator} ${tool.name} - ${tool.description}`
+              );
+            }
+            console.error(`\nTry: fspec research --tool=<name> --help`);
+            process.exit(1);
+          }
+        }
+
         // Load and execute tool
         const tool = await getResearchTool(options.tool, cwd);
-
-        // Check if --help is requested
-        if (forwardedArgs.includes('--help') || forwardedArgs.includes('-h')) {
-          console.log(tool.help());
-          return;
-        }
 
         // Execute tool with forwarded arguments
         try {

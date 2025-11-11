@@ -71,72 +71,31 @@ export async function handleCustomHelp(): Promise<boolean> {
       }
     }
 
-    // If tool is specified, forward help to research tool script
+    // If tool is specified, use new TypeScript tool system (BUG-074 fix)
     if (toolName) {
-      const cwd = process.cwd();
-      const tools = await discoverResearchTools(cwd);
-      const tool = tools.find(t => t.name === toolName);
-
-      if (!tool) {
+      try {
+        const { getResearchTool } = await import('../research-tools/registry');
+        const { displayResearchToolHelp } = await import('./help-formatter');
+        const cwd = process.cwd();
+        const tool = await getResearchTool(toolName, cwd);
+        displayResearchToolHelp(tool);
+        process.exit(0);
+      } catch (error: any) {
+        // Tool not found, show helpful error with available tools
         console.error(
           chalk.red(`Error: Research tool '${toolName}' not found\n`)
         );
-        console.log('Available tools:');
-        for (const t of tools) {
-          console.log(chalk.cyan(`  - ${t.name}`));
-        }
-        console.log(
-          chalk.dim(`\nRun 'fspec research' for full list with status`)
+        const { listResearchTools } = await import(
+          '../commands/research-tool-list'
         );
+        const toolsWithStatus = listResearchTools();
+        console.error('Available tools:');
+        for (const t of toolsWithStatus) {
+          console.error(`  ${t.statusIndicator} ${t.name} - ${t.description}`);
+        }
+        console.error(chalk.dim(`\nTry: fspec research --tool=<name> --help`));
         process.exit(1);
       }
-
-      // Forward --help to tool script
-      return new Promise(resolve => {
-        const child = spawn(tool.path, ['--help'], {
-          stdio: ['inherit', 'pipe', 'pipe'],
-        });
-
-        let output = '';
-        let errorOutput = '';
-
-        child.stdout.on('data', (data: Buffer) => {
-          output += data.toString();
-        });
-
-        child.stderr.on('data', (data: Buffer) => {
-          errorOutput += data.toString();
-        });
-
-        child.on('close', (code: number) => {
-          if (code === 0 && output) {
-            console.log(output);
-            process.exit(0);
-          } else if (code !== 0 && errorOutput) {
-            // Tool doesn't implement --help, show warning
-            console.log(
-              chalk.yellow(
-                `Warning: Tool '${toolName}' does not implement --help flag\n`
-              )
-            );
-            console.log('Showing generic usage:');
-            console.log(
-              chalk.dim(`  fspec research --tool=${toolName} [args...]\n`)
-            );
-            console.log(`For more information, check: ${tool.path}`);
-            process.exit(0);
-          } else {
-            // Tool output to stderr or no output
-            console.log(output || errorOutput);
-            process.exit(code || 0);
-          }
-        });
-
-        child.on('error', (error: Error) => {
-          console.error(chalk.red(`Error executing tool: ${error.message}`));
-          process.exit(1);
-        });
-      });
     }
     // No tool specified - fall through to show comprehensive research help
   }
