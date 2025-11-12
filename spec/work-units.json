@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-11T23:58:10.668Z"
+    "lastUpdated": "2025-11-12T00:32:17.759Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -45461,6 +45461,20 @@
       "nextQuestionId": 0,
       "nextNoteId": 0,
       "updated": "2025-11-11T23:58:10.691Z"
+    },
+    "RES-017": {
+      "id": "RES-017",
+      "title": "Refactor AST tool to use deterministic tree-sitter queries instead of semantic natural language parsing",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-11-12T00:32:11.601Z",
+      "updatedAt": "2025-11-12T00:32:17.759Z",
+      "description": "Replace semantic natural language query parsing (e.g., 'find all functions') with deterministic tree-sitter query operations (e.g., --operation=list-functions). Expose all tree-sitter capabilities through explicit command-line flags and predefined query files.",
+      "epic": "research-tools",
+      "children": [],
+      "attachments": [
+        "spec/attachments/RES-017/ast-tool-refactoring-research.md"
+      ]
     }
   },
   "states": {
@@ -45515,7 +45529,8 @@
       "INT-004",
       "DOC-012",
       "DOC-013",
-      "DOC-014"
+      "DOC-014",
+      "RES-017"
     ],
     "specifying": [
       "LANG-001",
@@ -45904,7 +45919,7 @@
     "VIZ": 4,
     "INT": 4,
     "VID": 2,
-    "RES": 16,
+    "RES": 17,
     "BROWSE": 1,
     "TEST": 8,
     "HOOK": 12

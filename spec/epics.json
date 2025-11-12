@@ -199,7 +199,8 @@
         "RES-004",
         "RES-005",
         "RES-006",
-        "RES-015"
+        "RES-015",
+        "RES-017"
       ]
     },
     "interactive-tui-foundation": {
