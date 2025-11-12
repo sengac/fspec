@@ -370,6 +370,10 @@
           "description": "Kanban board and workflow management"
         },
         {
+          "name": "@language-support",
+          "description": "Programming language support and integration"
+        },
+        {
           "name": "@list",
           "description": "List operations"
         },
@@ -746,6 +750,10 @@
           "description": "Cucumber-style step definition and matching patterns"
         },
         {
+          "name": "@dart",
+          "description": "Dart language and Flutter framework features"
+        },
+        {
           "name": "@data-integrity",
           "description": "Data integrity validation and consistency checks"
         },
@@ -884,6 +892,10 @@
         {
           "name": "@keyboard-navigation",
           "description": "Keyboard input and navigation features"
+        },
+        {
+          "name": "@kotlin",
+          "description": "Kotlin language and JVM features"
         },
         {
           "name": "@layout",
@@ -1562,7 +1574,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-11-12T11:17:38.560Z",
+    "lastUpdated": "2025-11-12T11:25:46.462Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

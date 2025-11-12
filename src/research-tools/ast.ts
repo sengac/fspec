@@ -13,6 +13,24 @@ import Parser from 'tree-sitter';
 import JavaScript from 'tree-sitter-javascript';
 // @ts-expect-error - tree-sitter-typescript doesn't have type definitions
 import TypeScript from 'tree-sitter-typescript';
+// @ts-expect-error - tree-sitter-kotlin doesn't have type definitions
+import Kotlin from 'tree-sitter-kotlin';
+// @ts-expect-error - tree-sitter-dart doesn't have type definitions
+import Dart from 'tree-sitter-dart';
+// @ts-expect-error - tree-sitter-python doesn't have type definitions
+import Python from 'tree-sitter-python';
+// @ts-expect-error - tree-sitter-go doesn't have type definitions
+import Go from 'tree-sitter-go';
+// @ts-expect-error - tree-sitter-rust doesn't have type definitions
+import Rust from 'tree-sitter-rust';
+// @ts-expect-error - tree-sitter-swift doesn't have type definitions
+import Swift from 'tree-sitter-swift';
+// @ts-expect-error - tree-sitter-c-sharp doesn't have type definitions
+import CSharp from 'tree-sitter-c-sharp';
+// @ts-expect-error - tree-sitter-c doesn't have type definitions
+import C from 'tree-sitter-c';
+// @ts-expect-error - tree-sitter-cpp doesn't have type definitions
+import Cpp from 'tree-sitter-cpp';
 
 export const tool: ResearchTool = {
   name: 'ast',
@@ -88,6 +106,33 @@ export const tool: ResearchTool = {
     } else if (language === 'typescript') {
       parserLanguage = TypeScript.typescript;
       parser.setLanguage(TypeScript.typescript);
+    } else if (language === 'kotlin') {
+      parserLanguage = Kotlin;
+      parser.setLanguage(Kotlin);
+    } else if (language === 'dart') {
+      parserLanguage = Dart;
+      parser.setLanguage(Dart);
+    } else if (language === 'python') {
+      parserLanguage = Python;
+      parser.setLanguage(Python);
+    } else if (language === 'go') {
+      parserLanguage = Go;
+      parser.setLanguage(Go);
+    } else if (language === 'rust') {
+      parserLanguage = Rust;
+      parser.setLanguage(Rust);
+    } else if (language === 'swift') {
+      parserLanguage = Swift;
+      parser.setLanguage(Swift);
+    } else if (language === 'csharp') {
+      parserLanguage = CSharp;
+      parser.setLanguage(CSharp);
+    } else if (language === 'c') {
+      parserLanguage = C;
+      parser.setLanguage(C);
+    } else if (language === 'cpp') {
+      parserLanguage = Cpp;
+      parser.setLanguage(Cpp);
     } else {
       throw new Error(`Unsupported language: ${language}`);
     }
@@ -118,7 +163,7 @@ export const tool: ResearchTool = {
       whenToUse:
         'Use during Example Mapping to understand code structure, find patterns, or analyze existing implementations using deterministic tree-sitter queries.',
       prerequisites: [
-        'Codebase must contain TypeScript, JavaScript, Python, Go, Rust, or Java files',
+        'Codebase must contain TypeScript, JavaScript, Python, Go, Rust, Kotlin, Dart, Swift, C#, C, or C++ files',
         'Tree-sitter parsers are bundled (no additional setup required)',
       ],
       options: [
@@ -184,7 +229,7 @@ export const tool: ResearchTool = {
         'Predefined operations for common patterns',
         'Custom query support via .scm files',
         'Parametric predicates for filtering (name, pattern, min-params)',
-        'Supports TypeScript, JavaScript, Python, Go, Rust',
+        'Supports TypeScript, JavaScript, Python, Go, Rust, Kotlin, Dart, Swift, C#, C, C++',
       ],
       commonErrors: [
         {
@@ -229,6 +274,30 @@ function detectLanguage(filePath: string): string {
   }
   if (filePath.endsWith('.rs')) {
     return 'rust';
+  }
+  if (filePath.endsWith('.kt') || filePath.endsWith('.kts')) {
+    return 'kotlin';
+  }
+  if (filePath.endsWith('.dart')) {
+    return 'dart';
+  }
+  if (filePath.endsWith('.swift')) {
+    return 'swift';
+  }
+  if (filePath.endsWith('.cs')) {
+    return 'csharp';
+  }
+  if (filePath.endsWith('.c') || filePath.endsWith('.h')) {
+    return 'c';
+  }
+  if (
+    filePath.endsWith('.cpp') ||
+    filePath.endsWith('.hpp') ||
+    filePath.endsWith('.cc') ||
+    filePath.endsWith('.cxx') ||
+    filePath.endsWith('.hxx')
+  ) {
+    return 'cpp';
   }
   throw new Error(`Cannot detect language from file extension: ${filePath}`);
 }

@@ -1,0 +1,24 @@
+{
+  "scenarios": [
+    {
+      "name": "Parse Kotlin file and list functions",
+      "testMappings": [
+        {
+          "file": "src/research-tools/__tests__/kotlin-language-support.test.ts",
+          "lines": "12-38",
+          "implMappings": []
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 1,
+    "coveredScenarios": 1,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/research-tools/__tests__/kotlin-language-support.test.ts"
+    ],
+    "implFiles": [],
+    "totalLinesCovered": 27
+  }
+}

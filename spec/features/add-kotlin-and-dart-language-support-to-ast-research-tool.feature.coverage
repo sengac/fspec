@@ -1,0 +1,44 @@
+{
+  "scenarios": [
+    {
+      "name": "Parse Kotlin file and list functions",
+      "testMappings": [
+        {
+          "file": "src/research-tools/__tests__/kotlin-dart-language-support.test.ts",
+          "lines": "10-42",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Parse Dart file and list classes",
+      "testMappings": [
+        {
+          "file": "src/research-tools/__tests__/kotlin-dart-language-support.test.ts",
+          "lines": "44-74",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Parse Dart Flutter app and list functions",
+      "testMappings": [
+        {
+          "file": "src/research-tools/__tests__/kotlin-dart-language-support.test.ts",
+          "lines": "76-106",
+          "implMappings": []
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/research-tools/__tests__/kotlin-dart-language-support.test.ts"
+    ],
+    "implFiles": [],
+    "totalLinesCovered": 95
+  }
+}

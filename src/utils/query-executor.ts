@@ -102,16 +102,26 @@ export class QueryExecutor {
 
   private findFunctions(node: Parser.SyntaxNode, matches: QueryMatch[]) {
     if (
-      node.type === 'function_declaration' ||
-      node.type === 'function_expression' ||
-      node.type === 'arrow_function' ||
-      node.type === 'method_definition' ||
-      node.type === 'generator_function_declaration'
+      node.type === 'function_declaration' || // JS/TS/Kotlin/Go/Python/C/C++/Swift/Rust
+      node.type === 'function_expression' || // JS/TS
+      node.type === 'arrow_function' || // JS/TS
+      node.type === 'method_definition' || // JS/TS
+      node.type === 'generator_function_declaration' || // JS/TS
+      node.type === 'method_signature' || // Dart method signatures
+      node.type === 'method_declaration' || // Go/Java/C#
+      node.type === 'function_definition' || // Python
+      node.type === 'function_item' // Rust
     ) {
       const nameNode = node.childForFieldName('name');
+      // For Dart method_signature, the name is in the function_signature child
+      const dartFuncSig = node.childForFieldName('name')
+        ? undefined
+        : node.children.find(c => c.type === 'function_signature');
+      const actualNameNode = nameNode || dartFuncSig?.childForFieldName('name');
+
       matches.push({
         type: node.type,
-        name: nameNode?.text,
+        name: actualNameNode?.text,
         line: node.startPosition.row + 1,
         column: node.startPosition.column,
         text: node.text,
@@ -124,7 +134,10 @@ export class QueryExecutor {
   }
 
   private findClasses(node: Parser.SyntaxNode, matches: QueryMatch[]) {
-    if (node.type === 'class_declaration') {
+    if (
+      node.type === 'class_declaration' ||
+      node.type === 'class_definition' // Dart class definitions
+    ) {
       const nameNode = node.childForFieldName('name');
       const bodyNode = node.childForFieldName('body');
       matches.push({
