@@ -546,6 +546,10 @@
           "description": "Strategy detection and selection for reverse ACDD workflows"
         },
         {
+          "name": "@system-reminders",
+          "description": "System reminder and anti-drift pattern features"
+        },
+        {
           "name": "@tag-management",
           "description": "TAGS.md Operations"
         },
@@ -1542,7 +1546,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-11-12T01:44:34.682Z",
+    "lastUpdated": "2025-11-12T06:22:16.661Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

@@ -626,10 +626,12 @@ export async function updateWorkUnitStatus(
   // Collect all system reminders
   const reminders: string[] = [];
 
-  // Get status change reminder
-  const statusReminder = getStatusChangeReminder(
+  // Get status change reminder (now async)
+  const statusReminder = await getStatusChangeReminder(
     options.workUnitId,
-    newStatus as WorkflowState
+    newStatus as WorkflowState,
+    workUnitsData.workUnits[options.workUnitId],
+    options.cwd
   );
   if (statusReminder) {
     reminders.push(statusReminder);

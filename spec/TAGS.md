@@ -154,6 +154,7 @@ Tags that categorize features by functional area.
 | `@state-transition` | State transition operations |
 | `@statistics` | Statistical analysis |
 | `@strategy-detection` | Strategy detection and selection for reverse ACDD workflows |
+| `@system-reminders` | System reminder and anti-drift pattern features |
 | `@tag-management` | TAGS.md Operations |
 | `@test-coverage` | Test coverage tracking and validation features |
 | `@testing` | Testing and quality assurance features |
@@ -627,7 +628,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-11-12T01:44:34.682Z_
+_Last updated: 2025-11-12T06:22:16.661Z_
 
 **Update Command**: `fspec tag-stats`
 
