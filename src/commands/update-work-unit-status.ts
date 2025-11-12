@@ -899,15 +899,24 @@ async function checkCoverageCompleteness(
   workUnit: any,
   cwd: string
 ): Promise<CoverageCheckResult> {
-  // Get linked features
-  const linkedFeatures = workUnit.linkedFeatures || [];
+  // Get linked features (explicit linking takes precedence)
+  let linkedFeatures = workUnit.linkedFeatures || [];
 
+  // COV-054: Auto-discover features from @TAG when linkedFeatures is empty
   if (linkedFeatures.length === 0) {
-    // No linked features, allow update with warning
-    return {
-      complete: true,
-      warning: 'No linked features found. Coverage tracking is optional.',
-    };
+    const { findFeaturesByTag } = await import('../utils/feature-parser.js');
+    const discoveredFeatures = await findFeaturesByTag(workUnit.id, cwd);
+
+    if (discoveredFeatures.length > 0) {
+      // Auto-discovery found features tagged with @WORK-UNIT-ID
+      linkedFeatures = discoveredFeatures;
+    } else {
+      // No linked features and no @TAG found, allow update with warning
+      return {
+        complete: true,
+        warning: 'No linked features found. Coverage tracking is optional.',
+      };
+    }
   }
 
   // Check coverage for each linked feature

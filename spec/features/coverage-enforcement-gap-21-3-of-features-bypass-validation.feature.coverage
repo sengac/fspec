@@ -1,0 +1,356 @@
+{
+  "scenarios": [
+    {
+      "name": "Auto-discover features from @TAG when linkedFeatures is empty",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/update-work-unit-status-coverage-auto-discovery.test.ts",
+          "lines": "28-141",
+          "implMappings": [
+            {
+              "file": "src/utils/feature-parser.ts",
+              "lines": [
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281
+              ]
+            },
+            {
+              "file": "src/commands/update-work-unit-status.ts",
+              "lines": [
+                898,
+                899,
+                900,
+                901,
+                902,
+                903,
+                904,
+                905,
+                906,
+                907,
+                908,
+                909,
+                910,
+                911,
+                912,
+                913,
+                914,
+                915,
+                916,
+                917,
+                918,
+                919,
+                920
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Explicit linkedFeatures takes precedence over @TAG auto-discovery",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/update-work-unit-status-coverage-auto-discovery.test.ts",
+          "lines": "144-250",
+          "implMappings": [
+            {
+              "file": "src/utils/feature-parser.ts",
+              "lines": [
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281
+              ]
+            },
+            {
+              "file": "src/commands/update-work-unit-status.ts",
+              "lines": [
+                898,
+                899,
+                900,
+                901,
+                902,
+                903,
+                904,
+                905,
+                906,
+                907,
+                908,
+                909,
+                910,
+                911,
+                912,
+                913,
+                914,
+                915,
+                916,
+                917,
+                918,
+                919,
+                920
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Task work units are exempt from coverage validation",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/update-work-unit-status-coverage-auto-discovery.test.ts",
+          "lines": "253-312",
+          "implMappings": [
+            {
+              "file": "src/commands/update-work-unit-status.ts",
+              "lines": [
+                898,
+                899,
+                900,
+                901,
+                902,
+                903,
+                904,
+                905,
+                906,
+                907,
+                908,
+                909,
+                910,
+                911,
+                912,
+                913,
+                914,
+                915,
+                916,
+                917,
+                918,
+                919,
+                920
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Block progression when auto-discovered feature has incomplete coverage",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/update-work-unit-status-coverage-auto-discovery.test.ts",
+          "lines": "314-414",
+          "implMappings": [
+            {
+              "file": "src/utils/feature-parser.ts",
+              "lines": [
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281
+              ]
+            },
+            {
+              "file": "src/commands/update-work-unit-status.ts",
+              "lines": [
+                898,
+                899,
+                900,
+                901,
+                902,
+                903,
+                904,
+                905,
+                906,
+                907,
+                908,
+                909,
+                910,
+                911,
+                912,
+                913,
+                914,
+                915,
+                916,
+                917,
+                918,
+                919,
+                920
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/commands/__tests__/update-work-unit-status-coverage-auto-discovery.test.ts"
+    ],
+    "implFiles": [
+      "src/utils/feature-parser.ts",
+      "src/commands/update-work-unit-status.ts"
+    ],
+    "totalLinesCovered": 642
+  }
+}
