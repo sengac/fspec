@@ -58,9 +58,9 @@ export default defineConfig({
         'tree-sitter-bash',
         'tree-sitter-json',
         'tree-sitter-kotlin',
-        'tree-sitter-dart',
         'tree-sitter-swift',
         'tree-sitter-c',
+        /^\.\.\/vendor\//,
       ],
       output: {
         preserveModules: false,
@@ -92,6 +92,13 @@ export default defineConfig({
         cpSync(
           resolve(__dirname, 'src', 'git'),
           resolve(__dirname, 'dist', 'git'),
+          { recursive: true }
+        );
+
+        // Bundle vendor directory (includes tree-sitter-dart)
+        cpSync(
+          resolve(__dirname, 'vendor'),
+          resolve(__dirname, 'dist', 'vendor'),
           { recursive: true }
         );
       },
