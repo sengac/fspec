@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-12T10:07:26.904Z"
+    "lastUpdated": "2025-11-12T11:18:48.840Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -46308,6 +46308,98 @@
       "nextQuestionId": 0,
       "nextNoteId": 0,
       "updated": "2025-11-12T09:50:55.948Z"
+    },
+    "BUG-076": {
+      "id": "BUG-076",
+      "title": "JIRA research tool outputs [object Object] in markdown format for description field",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-11-12T11:08:36.058Z",
+      "updatedAt": "2025-11-12T11:18:48.863Z",
+      "children": [],
+      "attachments": [
+        "spec/attachments/BUG-076/bug-076-jira-markdown-description.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-12T11:10:19.567Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-12T11:13:29.022Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-12T11:15:17.839Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-12T11:16:07.648Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-12T11:18:48.863Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "JIRA API returns description field as Atlassian Document Format (ADF) object, not plain string",
+          "deleted": false,
+          "createdAt": "2025-11-12T11:10:52.264Z"
+        },
+        {
+          "id": 1,
+          "text": "ADF object has nested content structure with type/version/content fields",
+          "deleted": false,
+          "createdAt": "2025-11-12T11:10:59.567Z"
+        },
+        {
+          "id": 2,
+          "text": "Markdown formatter must recursively parse ADF content array to extract text nodes",
+          "deleted": false,
+          "createdAt": "2025-11-12T11:11:05.044Z"
+        },
+        {
+          "id": 3,
+          "text": "JSON format works correctly because it preserves ADF object structure",
+          "deleted": false,
+          "createdAt": "2025-11-12T11:11:11.030Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User runs 'fspec research --tool=jira --issue CCS-6' and sees description text instead of [object Object]",
+          "deleted": false,
+          "createdAt": "2025-11-12T11:11:18.033Z"
+        },
+        {
+          "id": 1,
+          "text": "Issue CCS-6 description 'The frontend interface should be user-friendly...' displays correctly in markdown format",
+          "deleted": false,
+          "createdAt": "2025-11-12T11:11:24.826Z"
+        },
+        {
+          "id": 2,
+          "text": "Empty or missing description field shows 'No description provided' instead of [object Object]",
+          "deleted": false,
+          "createdAt": "2025-11-12T11:11:31.966Z"
+        }
+      ],
+      "nextExampleId": 3,
+      "userStory": {
+        "role": "developer using fspec research tool",
+        "action": "view JIRA issue descriptions in markdown format",
+        "benefit": "I can read issue details without switching to JSON format"
+      },
+      "questions": [],
+      "architectureNotes": [],
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-12T11:18:48.863Z"
     }
   },
   "states": {
@@ -46375,6 +46467,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "BUG-076",
       "TUI-030",
       "BUG-075",
       "REVIEW-001",
@@ -46738,7 +46831,7 @@
   "prefixCounters": {
     "CLI": 14,
     "HELP": 5,
-    "BUG": 75,
+    "BUG": 76,
     "DISC": 2,
     "COV": 54,
     "TUI": 30,
