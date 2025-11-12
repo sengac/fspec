@@ -31,11 +31,19 @@ import CSharp from 'tree-sitter-c-sharp';
 import C from 'tree-sitter-c';
 // @ts-expect-error - tree-sitter-cpp doesn't have type definitions
 import Cpp from 'tree-sitter-cpp';
+// @ts-expect-error - tree-sitter-java doesn't have type definitions
+import Java from 'tree-sitter-java';
+// @ts-expect-error - tree-sitter-php doesn't have type definitions
+import Php from 'tree-sitter-php';
+// @ts-expect-error - tree-sitter-ruby doesn't have type definitions
+import Ruby from 'tree-sitter-ruby';
+// @ts-expect-error - tree-sitter-bash doesn't have type definitions
+import Bash from 'tree-sitter-bash';
 
 export const tool: ResearchTool = {
   name: 'ast',
   description:
-    'AST code analysis tool using deterministic tree-sitter query operations',
+    'AST code analysis tool using deterministic tree-sitter query operations. Supports 15 programming languages.',
 
   async execute(args: string[]): Promise<string> {
     // Helper function to parse argument (handles both --flag=value and --flag value)
@@ -133,6 +141,18 @@ export const tool: ResearchTool = {
     } else if (language === 'cpp') {
       parserLanguage = Cpp;
       parser.setLanguage(Cpp);
+    } else if (language === 'java') {
+      parserLanguage = Java;
+      parser.setLanguage(Java);
+    } else if (language === 'php') {
+      parserLanguage = Php.php;
+      parser.setLanguage(Php.php);
+    } else if (language === 'ruby') {
+      parserLanguage = Ruby;
+      parser.setLanguage(Ruby);
+    } else if (language === 'bash') {
+      parserLanguage = Bash;
+      parser.setLanguage(Bash);
     } else {
       throw new Error(`Unsupported language: ${language}`);
     }
@@ -158,12 +178,12 @@ export const tool: ResearchTool = {
     return {
       name: 'ast',
       description:
-        'AST code analysis tool using deterministic tree-sitter query operations',
+        'AST code analysis tool using deterministic tree-sitter query operations. Supports 15 languages: JavaScript, TypeScript, Python, Go, Rust, Kotlin, Dart, Swift, C#, C, C++, Java, PHP, Ruby, Bash',
       usage: 'fspec research --tool=ast [options]',
       whenToUse:
         'Use during Example Mapping to understand code structure, find patterns, or analyze existing implementations using deterministic tree-sitter queries.',
       prerequisites: [
-        'Codebase must contain TypeScript, JavaScript, Python, Go, Rust, Kotlin, Dart, Swift, C#, C, or C++ files',
+        'Codebase must contain one of 15 supported languages: JavaScript, TypeScript, Python, Go, Rust, Kotlin, Dart, Swift, C#, C, C++, Java, PHP, Ruby, Bash',
         'Tree-sitter parsers are bundled (no additional setup required)',
       ],
       options: [
@@ -229,7 +249,7 @@ export const tool: ResearchTool = {
         'Predefined operations for common patterns',
         'Custom query support via .scm files',
         'Parametric predicates for filtering (name, pattern, min-params)',
-        'Supports TypeScript, JavaScript, Python, Go, Rust, Kotlin, Dart, Swift, C#, C, C++',
+        'Supports 15 languages: JavaScript, TypeScript, Python, Go, Rust, Kotlin, Dart, Swift, C#, C, C++, Java, PHP, Ruby, Bash',
       ],
       commonErrors: [
         {
@@ -298,6 +318,18 @@ function detectLanguage(filePath: string): string {
     filePath.endsWith('.hxx')
   ) {
     return 'cpp';
+  }
+  if (filePath.endsWith('.java')) {
+    return 'java';
+  }
+  if (filePath.endsWith('.php')) {
+    return 'php';
+  }
+  if (filePath.endsWith('.rb')) {
+    return 'ruby';
+  }
+  if (filePath.endsWith('.sh') || filePath.endsWith('.bash')) {
+    return 'bash';
   }
   throw new Error(`Cannot detect language from file extension: ${filePath}`);
 }

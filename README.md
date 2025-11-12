@@ -135,22 +135,6 @@ How long would that normally take? A traditional QA and business analyst team wo
 
 ---
 
-## Documentation
-
-- 📘 **[Getting Started](https://fspec.dev/getting-started/quickstart/)** - 5-minute quickstart
-- 📖 **[User Guide](https://fspec.dev/getting-started/introduction/)** - Comprehensive usage
-- 🎯 **[ACDD Workflow](https://fspec.dev/concepts/acdd/)** - Understanding the process
-- 🤝 **[Example Mapping](https://fspec.dev/concepts/example-mapping/)** - Discovery techniques
-- 📊 **[Work Units](https://fspec.dev/concepts/kanban/)** - Project management
-- 🔗 **[Coverage Tracking](https://fspec.dev/docs/coverage-tracking/)** - Traceability
-- 🔄 **[Reverse ACDD](https://fspec.dev/docs/reverse-acdd/)** - Existing codebases
-- 💾 **[Git Checkpoints](https://fspec.dev/docs/checkpoints/)** - Safe experimentation
-- ⚡ **[Virtual Hooks](https://fspec.dev/docs/virtual-hooks/)** - Quality gates
-- 🏷️ **[Tags](https://fspec.dev/commands/specs/)** - Organization system
-- 🔧 **[CLI Reference](https://fspec.dev/reference/cli/)** - Command cheatsheet
-
----
-
 ## Bug Reporting & Support
 
 Found a bug? Just tell your AI agent:

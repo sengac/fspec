@@ -1,0 +1,205 @@
+{
+  "scenarios": [
+    {
+      "name": "Parse Java file and list methods",
+      "testMappings": [
+        {
+          "file": "src/research-tools/__tests__/multi-language-support.test.ts",
+          "lines": "184-210",
+          "implMappings": [
+            {
+              "file": "src/research-tools/ast.ts",
+              "lines": [
+                34,
+                35
+              ]
+            },
+            {
+              "file": "src/utils/query-executor.ts",
+              "lines": [
+                111
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Parse PHP file and list functions",
+      "testMappings": [
+        {
+          "file": "src/research-tools/__tests__/multi-language-support.test.ts",
+          "lines": "212-238",
+          "implMappings": [
+            {
+              "file": "src/research-tools/ast.ts",
+              "lines": [
+                36,
+                37
+              ]
+            },
+            {
+              "file": "src/utils/query-executor.ts",
+              "lines": [
+                111,
+                112
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Parse Ruby file and list methods",
+      "testMappings": [
+        {
+          "file": "src/research-tools/__tests__/multi-language-support.test.ts",
+          "lines": "240-266",
+          "implMappings": [
+            {
+              "file": "src/research-tools/ast.ts",
+              "lines": [
+                38,
+                39
+              ]
+            },
+            {
+              "file": "src/utils/query-executor.ts",
+              "lines": [
+                114,
+                115
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Parse Bash script and list functions",
+      "testMappings": [
+        {
+          "file": "src/research-tools/__tests__/multi-language-support.test.ts",
+          "lines": "268-294",
+          "implMappings": [
+            {
+              "file": "src/research-tools/ast.ts",
+              "lines": [
+                40,
+                41
+              ]
+            },
+            {
+              "file": "src/utils/query-executor.ts",
+              "lines": [
+                105,
+                112
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "AST tool help documents all 15 languages",
+      "testMappings": [
+        {
+          "file": "src/research-tools/__tests__/multi-language-support.test.ts",
+          "lines": "296-321",
+          "implMappings": [
+            {
+              "file": "src/research-tools/ast.ts",
+              "lines": [
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Research command lists AST tool with correct capabilities",
+      "testMappings": [
+        {
+          "file": "src/research-tools/__tests__/multi-language-support.test.ts",
+          "lines": "323-340",
+          "implMappings": [
+            {
+              "file": "src/research-tools/ast.ts",
+              "lines": [
+                43,
+                44,
+                45,
+                46
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Help file documents all research tools",
+      "testMappings": [
+        {
+          "file": "src/research-tools/__tests__/multi-language-support.test.ts",
+          "lines": "342-361",
+          "implMappings": [
+            {
+              "file": "src/help.ts",
+              "lines": [
+                1089,
+                1090,
+                1091,
+                1092,
+                1093,
+                1094,
+                1095,
+                1096,
+                1097,
+                1098,
+                1099,
+                1100,
+                1101,
+                1102,
+                1103,
+                1104,
+                1105,
+                1106,
+                1107,
+                1108,
+                1109,
+                1110,
+                1111,
+                1112,
+                1113,
+                1114,
+                1115
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/research-tools/__tests__/multi-language-support.test.ts"
+    ],
+    "implFiles": [
+      "src/research-tools/ast.ts",
+      "src/utils/query-executor.ts",
+      "src/help.ts"
+    ],
+    "totalLinesCovered": 227
+  }
+}
