@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-12T00:32:17.759Z"
+    "lastUpdated": "2025-11-12T01:48:00.253Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -45466,15 +45466,158 @@
       "id": "RES-017",
       "title": "Refactor AST tool to use deterministic tree-sitter queries instead of semantic natural language parsing",
       "type": "story",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2025-11-12T00:32:11.601Z",
-      "updatedAt": "2025-11-12T00:32:17.759Z",
+      "updatedAt": "2025-11-12T01:48:00.274Z",
       "description": "Replace semantic natural language query parsing (e.g., 'find all functions') with deterministic tree-sitter query operations (e.g., --operation=list-functions). Expose all tree-sitter capabilities through explicit command-line flags and predefined query files.",
       "epic": "research-tools",
       "children": [],
       "attachments": [
         "spec/attachments/RES-017/ast-tool-refactoring-research.md"
-      ]
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-12T00:50:15.437Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-12T01:31:07.035Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-12T01:31:47.613Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-12T01:32:39.665Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-12T01:34:46.770Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-12T01:44:10.301Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-12T01:48:00.275Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "AST tool MUST NOT use semantic natural language parsing (e.g., queryLower.includes('find all'))",
+          "deleted": false,
+          "createdAt": "2025-11-12T00:50:27.863Z"
+        },
+        {
+          "id": 1,
+          "text": "All AST operations MUST use deterministic tree-sitter query language (S-expressions)",
+          "deleted": false,
+          "createdAt": "2025-11-12T00:50:32.520Z"
+        },
+        {
+          "id": 2,
+          "text": "CLI MUST use --operation flag instead of --query for predefined operations",
+          "deleted": false,
+          "createdAt": "2025-11-12T00:51:54.776Z"
+        },
+        {
+          "id": 3,
+          "text": "Query library MUST be organized by language (javascript/, typescript/, python/, go/, rust/)",
+          "deleted": false,
+          "createdAt": "2025-11-12T00:52:00.236Z"
+        },
+        {
+          "id": 4,
+          "text": "Each operation MUST map to a predefined tree-sitter S-expression query stored in .scm files",
+          "deleted": false,
+          "createdAt": "2025-11-12T00:52:05.798Z"
+        },
+        {
+          "id": 5,
+          "text": "Power users MUST be able to provide custom queries via --query-file flag pointing to .scm files",
+          "deleted": false,
+          "createdAt": "2025-11-12T00:52:11.776Z"
+        },
+        {
+          "id": 6,
+          "text": "File flag MUST be required for all AST operations (no implicit glob search)",
+          "deleted": false,
+          "createdAt": "2025-11-12T00:52:27.298Z"
+        },
+        {
+          "id": 7,
+          "text": "Operations MUST support parametric predicates (e.g., min-params, pattern, name filters)",
+          "deleted": false,
+          "createdAt": "2025-11-12T00:52:32.585Z"
+        },
+        {
+          "id": 8,
+          "text": "Structural operations MUST include: list-functions, list-classes, list-imports, list-exports, find-class, find-function",
+          "deleted": false,
+          "createdAt": "2025-11-12T00:52:38.642Z"
+        }
+      ],
+      "nextRuleId": 9,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User runs: fspec research --tool=ast --operation=list-functions --file=src/auth.ts, receives JSON with all function declarations, expressions, and arrow functions",
+          "deleted": false,
+          "createdAt": "2025-11-12T00:52:45.875Z"
+        },
+        {
+          "id": 1,
+          "text": "User runs: fspec research --tool=ast --operation=find-class --name=AuthController --file=src/auth.ts, receives class definition with line numbers",
+          "deleted": false,
+          "createdAt": "2025-11-12T00:52:51.660Z"
+        },
+        {
+          "id": 2,
+          "text": "User runs: fspec research --tool=ast --operation=find-functions --min-params=5 --file=src/api.ts, receives functions with parameter count >= 5",
+          "deleted": false,
+          "createdAt": "2025-11-12T00:52:57.688Z"
+        },
+        {
+          "id": 3,
+          "text": "Power user runs: fspec research --tool=ast --query-file=queries/custom-pattern.scm --file=src/utils.ts, executes custom tree-sitter query from .scm file",
+          "deleted": false,
+          "createdAt": "2025-11-12T00:53:04.885Z"
+        },
+        {
+          "id": 4,
+          "text": "User runs: fspec research --tool=ast --operation=find-identifiers --pattern=\"^[A-Z][A-Z_]+\" --file=src/constants.ts, receives all CONSTANT_CASE identifiers",
+          "deleted": false,
+          "createdAt": "2025-11-12T00:53:10.952Z"
+        },
+        {
+          "id": 5,
+          "text": "User runs: fspec research --tool=ast --operation=find-async-functions --file=src/api.ts, receives all async function declarations",
+          "deleted": false,
+          "createdAt": "2025-11-12T00:53:23.195Z"
+        },
+        {
+          "id": 6,
+          "text": "User runs: fspec research --tool=ast --operation=find-exports --export-type=default --file=src/index.ts, receives default export statement",
+          "deleted": false,
+          "createdAt": "2025-11-12T00:53:27.967Z"
+        }
+      ],
+      "nextExampleId": 7,
+      "userStory": {
+        "role": "developer using fspec for code analysis",
+        "action": "use deterministic tree-sitter query operations instead of ambiguous natural language queries",
+        "benefit": "I get predictable, composable AST analysis without language-dependent semantic parsing"
+      },
+      "estimate": 8,
+      "questions": [],
+      "architectureNotes": [],
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-12T01:48:00.274Z"
     }
   },
   "states": {
@@ -45529,8 +45672,7 @@
       "INT-004",
       "DOC-012",
       "DOC-013",
-      "DOC-014",
-      "RES-017"
+      "DOC-014"
     ],
     "specifying": [
       "LANG-001",
@@ -45543,6 +45685,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "RES-017",
       "COV-054",
       "BUG-074",
       "RES-016",

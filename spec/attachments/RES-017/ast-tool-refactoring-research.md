@@ -212,12 +212,6 @@ graph TB
     QueryBuilder --> TreeSitter
     TreeSitter --> Formatter
     Formatter --> CLI
-
-    style CLI fill:#e1f5ff
-    style Parser fill:#fff4e1
-    style QueryBuilder fill:#ffe1f5
-    style TreeSitter fill:#e1ffe1
-    style Formatter fill:#f5e1ff
 ```
 
 ### Command-Line Interface Redesign
@@ -275,11 +269,6 @@ graph LR
     Semantic --> ErrorNodes["find-errors<br/>(syntax errors)"]
 
     Custom --> QueryFile["--query-file<br/>(*.scm)"]
-
-    style Operations fill:#e1f5ff
-    style Structural fill:#ffe1e1
-    style Semantic fill:#e1ffe1
-    style Custom fill:#f5e1ff
 ```
 
 ---
@@ -737,12 +726,6 @@ graph TB
     Directive --> SetDir["#set!"]
     Directive --> StripDir["#strip!"]
     Directive --> SelectDir["#select-adjacent!"]
-
-    style Query fill:#e1f5ff
-    style Pattern fill:#ffe1e1
-    style Capture fill:#e1ffe1
-    style Predicate fill:#f5e1ff
-    style Directive fill:#fff4e1
 ```
 
 ### Query Components

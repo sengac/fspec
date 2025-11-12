@@ -190,6 +190,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@ai-guidance` | Features that provide contextual guidance to AI agents |
 | `@anti-drift` | Features that prevent AI drift and maintain workflow discipline |
 | `@ast` | Abstract Syntax Tree |
+| `@ast-analysis` | AST-based code analysis features |
 | `@auth-001` | Work unit identifier for authentication features (example in example-mapping feature) |
 | `@auto-create` | Scenarios testing automatic file creation when files are missing |
 | `@automation` | Automated workflow operations and state transitions |
@@ -626,7 +627,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-11-10T07:42:17.794Z_
+_Last updated: 2025-11-12T01:44:34.682Z_
 
 **Update Command**: `fspec tag-stats`
 

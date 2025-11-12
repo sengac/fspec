@@ -662,6 +662,10 @@
           "description": "Abstract Syntax Tree"
         },
         {
+          "name": "@ast-analysis",
+          "description": "AST-based code analysis features"
+        },
+        {
           "name": "@auth-001",
           "description": "Work unit identifier for authentication features (example in example-mapping feature)"
         },
@@ -1538,7 +1542,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-11-10T07:42:17.794Z",
+    "lastUpdated": "2025-11-12T01:44:34.682Z",
     "phaseStats": [
       {
         "phase": "Phase 1",
