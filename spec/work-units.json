@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-12T20:38:42.747Z"
+    "lastUpdated": "2025-11-12T22:26:05.358Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -46812,6 +46812,113 @@
       "nextQuestionId": 0,
       "nextNoteId": 0,
       "updated": "2025-11-12T20:38:42.771Z"
+    },
+    "VAL-001": {
+      "id": "VAL-001",
+      "title": "Mermaid validation using parse() instead of render() misses semantic errors",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-11-12T22:09:52.108Z",
+      "updatedAt": "2025-11-12T22:26:05.358Z",
+      "description": "The add-attachment command validates mermaid diagrams using mermaid.parse() which only checks syntax/grammar but not rendering semantics. This allows invalid diagrams (e.g., quoted subgraph titles) to pass validation but fail in browser rendering.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-12T22:09:58.883Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-12T22:16:53.208Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-12T22:18:57.824Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-12T22:22:34.665Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-12T22:23:23.077Z"
+        }
+      ],
+      "attachments": [
+        "spec/attachments/VAL-001/MERMAID_VALIDATION_BUG_INVESTIGATION.md",
+        "spec/attachments/VAL-001/test-valid-subgraph.md"
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "Mermaid validation must catch ALL errors that would occur during browser rendering",
+          "deleted": false,
+          "createdAt": "2025-11-12T22:13:56.653Z"
+        },
+        {
+          "id": 1,
+          "text": "Validation must reject semantically invalid diagrams (e.g., quoted subgraph titles)",
+          "deleted": false,
+          "createdAt": "2025-11-12T22:14:04.086Z"
+        },
+        {
+          "id": 2,
+          "text": "Validation must occur at attachment time (one-time operation)",
+          "deleted": false,
+          "createdAt": "2025-11-12T22:14:09.901Z"
+        },
+        {
+          "id": 3,
+          "text": "Error messages must clearly indicate what is wrong and how to fix it",
+          "deleted": false,
+          "createdAt": "2025-11-12T22:14:15.794Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User attaches markdown with quoted subgraph title 'subgraph \"Server Side\"' - validation REJECTS with clear error",
+          "deleted": false,
+          "createdAt": "2025-11-12T22:14:23.583Z"
+        },
+        {
+          "id": 1,
+          "text": "User attaches markdown with proper subgraph syntax 'subgraph ServerSide[Server Side]' - validation PASSES",
+          "deleted": false,
+          "createdAt": "2025-11-12T22:14:29.787Z"
+        },
+        {
+          "id": 2,
+          "text": "User attaches markdown with invalid subgraph identifier 'subgraph INVALID\\!\\!\\!' - validation REJECTS",
+          "deleted": false,
+          "createdAt": "2025-11-12T22:14:35.364Z"
+        },
+        {
+          "id": 3,
+          "text": "User attaches markdown with broken syntax (missing closing bracket) - validation REJECTS (already working)",
+          "deleted": false,
+          "createdAt": "2025-11-12T22:14:41.310Z"
+        },
+        {
+          "id": 4,
+          "text": "User attaches markdown with multiple diagrams, one invalid - validation REJECTS with clear indication which diagram failed",
+          "deleted": false,
+          "createdAt": "2025-11-12T22:14:47.076Z"
+        }
+      ],
+      "nextExampleId": 5,
+      "userStory": {
+        "role": "developer using fspec to document architecture",
+        "action": "validate mermaid diagrams for both syntax and semantic errors",
+        "benefit": "I catch rendering errors before viewing in browser"
+      },
+      "estimate": 5,
+      "questions": [],
+      "architectureNotes": [],
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-12T22:23:23.077Z"
     }
   },
   "states": {
@@ -46879,6 +46986,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "VAL-001",
       "DEP-003",
       "RES-020",
       "RES-019",
@@ -47270,6 +47378,7 @@
     "TEST": 8,
     "HOOK": 12,
     "REVIEW": 1,
-    "DEP": 3
+    "DEP": 3,
+    "VAL": 1
   }
 }

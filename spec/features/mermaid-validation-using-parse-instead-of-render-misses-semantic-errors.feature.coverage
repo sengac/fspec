@@ -1,0 +1,205 @@
+{
+  "scenarios": [
+    {
+      "name": "Reject markdown with quoted subgraph title",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/mermaid-semantic-validation.test.ts",
+          "lines": "10-30",
+          "implMappings": [
+            {
+              "file": "src/utils/mermaid-validation.ts",
+              "lines": [
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Accept markdown with proper subgraph syntax",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/mermaid-semantic-validation.test.ts",
+          "lines": "33-50",
+          "implMappings": [
+            {
+              "file": "src/utils/mermaid-validation.ts",
+              "lines": [
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Reject markdown with invalid subgraph identifier",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/mermaid-semantic-validation.test.ts",
+          "lines": "53-68",
+          "implMappings": [
+            {
+              "file": "src/utils/mermaid-validation.ts",
+              "lines": [
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Reject markdown with broken syntax",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/mermaid-semantic-validation.test.ts",
+          "lines": "71-86",
+          "implMappings": [
+            {
+              "file": "src/utils/mermaid-validation.ts",
+              "lines": [
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Reject markdown with multiple diagrams where one is invalid",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/mermaid-semantic-validation.test.ts",
+          "lines": "89-117",
+          "implMappings": [
+            {
+              "file": "src/utils/mermaid-validation.ts",
+              "lines": [
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/utils/__tests__/mermaid-semantic-validation.test.ts"
+    ],
+    "implFiles": [
+      "src/utils/mermaid-validation.ts"
+    ],
+    "totalLinesCovered": 209
+  }
+}

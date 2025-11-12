@@ -1,0 +1,28 @@
+{
+  "version": "2.0.0",
+  "project": {
+    "name": "[QUESTION: What is the project name?]",
+    "vision": "[QUESTION: What is the one-sentence vision?]",
+    "projectType": "[DETECTED: cli-tool]"
+  },
+  "problemSpace": {
+    "primaryProblem": {
+      "title": "[QUESTION: What problem does this solve?]",
+      "description": "[QUESTION: What problem does this solve?]",
+      "impact": "high"
+    }
+  },
+  "solutionSpace": {
+    "overview": "[QUESTION: What can users DO?]",
+    "capabilities": []
+  },
+  "personas": [
+    {
+      "name": "[QUESTION: Who uses this?]",
+      "description": "[QUESTION: Who uses this?]",
+      "goals": [
+        "[QUESTION: What are their goals?]"
+      ]
+    }
+  ]
+}
