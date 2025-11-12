@@ -1,0 +1,96 @@
+{
+  "scenarios": [
+    {
+      "name": "Clean npm install succeeds without legacy-peer-deps flag",
+      "testMappings": [
+        {
+          "file": "src/__tests__/tree-sitter-peer-deps.test.ts",
+          "lines": "13-33",
+          "implMappings": [
+            {
+              "file": "package.json",
+              "lines": [
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "All tree-sitter packages resolve to version 0.25.0",
+      "testMappings": [
+        {
+          "file": "src/__tests__/tree-sitter-peer-deps.test.ts",
+          "lines": "37-56",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Tree-sitter C parser works with tree-sitter 0.25.0",
+      "testMappings": [
+        {
+          "file": "src/__tests__/tree-sitter-peer-deps.test.ts",
+          "lines": "68-85",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Tree-sitter TypeScript parser works with tree-sitter 0.25.0",
+      "testMappings": [
+        {
+          "file": "src/__tests__/tree-sitter-peer-deps.test.ts",
+          "lines": "99-116",
+          "implMappings": []
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/__tests__/tree-sitter-peer-deps.test.ts"
+    ],
+    "implFiles": [
+      "package.json"
+    ],
+    "totalLinesCovered": 111
+  }
+}
