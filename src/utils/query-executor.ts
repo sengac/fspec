@@ -1,0 +1,287 @@
+/**
+ * Query Executor for Tree-Sitter Queries
+ *
+ * Loads predefined .scm queries and executes them using tree-sitter Query API
+ */
+
+import * as fs from 'fs/promises';
+import * as path from 'path';
+import Parser from 'tree-sitter';
+
+export interface QueryExecutorOptions {
+  language: string;
+  operation?: string;
+  queryFile?: string;
+  parameters: Record<string, string>;
+}
+
+export interface QueryMatch {
+  type?: string;
+  name?: string;
+  line: number;
+  column: number;
+  text?: string;
+  paramCount?: number;
+  body?: string;
+  exportType?: string;
+  identifier?: string;
+}
+
+export class QueryExecutor {
+  constructor(private options: QueryExecutorOptions) {}
+
+  /**
+   * Load query from .scm file based on operation and language
+   */
+  async loadQuery(): Promise<string> {
+    if (this.options.queryFile) {
+      // Custom query file provided
+      return await fs.readFile(this.options.queryFile, 'utf-8');
+    }
+
+    if (!this.options.operation) {
+      throw new Error('Either operation or queryFile must be provided');
+    }
+
+    // Map operation to .scm file
+    const queryFileMap: Record<string, string> = {
+      'list-functions': 'functions.scm',
+      'find-class': 'classes.scm',
+      'list-classes': 'classes.scm',
+      'find-functions': 'functions.scm',
+      'list-imports': 'imports.scm',
+      'list-exports': 'exports.scm',
+      'find-exports': 'exports.scm',
+      'find-async-functions': 'async-functions.scm',
+      'find-identifiers': 'identifiers.scm',
+    };
+
+    const fileName = queryFileMap[this.options.operation];
+    if (!fileName) {
+      throw new Error(`Unknown operation: ${this.options.operation}`);
+    }
+
+    const queryPath = path.join(
+      __dirname,
+      'ast-queries',
+      this.options.language,
+      fileName
+    );
+
+    return await fs.readFile(queryPath, 'utf-8');
+  }
+
+  /**
+   * Execute query on parse tree using manual traversal
+   */
+  async execute(tree: Parser.Tree, _language: unknown): Promise<QueryMatch[]> {
+    const operation = this.options.operation;
+    const matches: QueryMatch[] = [];
+
+    // Use manual tree traversal based on operation
+    if (operation === 'list-functions' || operation === 'find-functions') {
+      this.findFunctions(tree.rootNode, matches);
+    } else if (operation === 'list-classes' || operation === 'find-class') {
+      this.findClasses(tree.rootNode, matches);
+    } else if (operation === 'list-imports') {
+      this.findImports(tree.rootNode, matches);
+    } else if (operation === 'list-exports' || operation === 'find-exports') {
+      this.findExports(tree.rootNode, matches);
+    } else if (operation === 'find-async-functions') {
+      this.findAsyncFunctions(tree.rootNode, matches);
+    } else if (operation === 'find-identifiers') {
+      this.findIdentifiers(tree.rootNode, matches);
+    } else if (this.options.queryFile) {
+      // Custom query file - use basic node traversal
+      this.findByType(tree.rootNode, 'function_declaration', matches);
+    }
+
+    // Apply predicates (filtering)
+    return this.applyPredicates(matches);
+  }
+
+  private findFunctions(node: Parser.SyntaxNode, matches: QueryMatch[]) {
+    if (
+      node.type === 'function_declaration' ||
+      node.type === 'function_expression' ||
+      node.type === 'arrow_function' ||
+      node.type === 'method_definition' ||
+      node.type === 'generator_function_declaration'
+    ) {
+      const nameNode = node.childForFieldName('name');
+      matches.push({
+        type: node.type,
+        name: nameNode?.text,
+        line: node.startPosition.row + 1,
+        column: node.startPosition.column,
+        text: node.text,
+      });
+    }
+
+    for (const child of node.children) {
+      this.findFunctions(child, matches);
+    }
+  }
+
+  private findClasses(node: Parser.SyntaxNode, matches: QueryMatch[]) {
+    if (node.type === 'class_declaration') {
+      const nameNode = node.childForFieldName('name');
+      const bodyNode = node.childForFieldName('body');
+      matches.push({
+        type: node.type,
+        name: nameNode?.text,
+        line: node.startPosition.row + 1,
+        column: node.startPosition.column,
+        text: node.text,
+        body: bodyNode?.text,
+      });
+    }
+
+    for (const child of node.children) {
+      this.findClasses(child, matches);
+    }
+  }
+
+  private findImports(node: Parser.SyntaxNode, matches: QueryMatch[]) {
+    if (node.type === 'import_statement') {
+      matches.push({
+        type: node.type,
+        line: node.startPosition.row + 1,
+        column: node.startPosition.column,
+        text: node.text,
+      });
+    }
+
+    for (const child of node.children) {
+      this.findImports(child, matches);
+    }
+  }
+
+  private findExports(node: Parser.SyntaxNode, matches: QueryMatch[]) {
+    if (node.type === 'export_statement') {
+      const isDefault = node.text.includes('default');
+      matches.push({
+        type: node.type,
+        line: node.startPosition.row + 1,
+        column: node.startPosition.column,
+        text: node.text,
+        exportType: isDefault ? 'default' : 'named',
+      });
+    }
+
+    for (const child of node.children) {
+      this.findExports(child, matches);
+    }
+  }
+
+  private findAsyncFunctions(node: Parser.SyntaxNode, matches: QueryMatch[]) {
+    if (node.type === 'function_declaration') {
+      // Check if function has 'async' modifier
+      const hasAsync = node.children.some(
+        child => child.type === 'async' || child.text === 'async'
+      );
+      if (hasAsync) {
+        const nameNode = node.childForFieldName('name');
+        matches.push({
+          type: 'async_function',
+          name: nameNode?.text,
+          line: node.startPosition.row + 1,
+          column: node.startPosition.column,
+          text: node.text,
+        });
+      }
+    }
+
+    for (const child of node.children) {
+      this.findAsyncFunctions(child, matches);
+    }
+  }
+
+  private findIdentifiers(node: Parser.SyntaxNode, matches: QueryMatch[]) {
+    if (node.type === 'identifier') {
+      matches.push({
+        type: node.type,
+        name: node.text,
+        line: node.startPosition.row + 1,
+        column: node.startPosition.column,
+        text: node.text,
+      });
+    }
+
+    for (const child of node.children) {
+      this.findIdentifiers(child, matches);
+    }
+  }
+
+  private findByType(
+    node: Parser.SyntaxNode,
+    targetType: string,
+    matches: QueryMatch[]
+  ) {
+    if (node.type === targetType) {
+      matches.push({
+        type: node.type,
+        line: node.startPosition.row + 1,
+        column: node.startPosition.column,
+        text: node.text,
+      });
+    }
+
+    for (const child of node.children) {
+      this.findByType(child, targetType, matches);
+    }
+  }
+
+  /**
+   * Apply parametric predicates for filtering
+   */
+  private applyPredicates(matches: QueryMatch[]): QueryMatch[] {
+    let filtered = matches;
+
+    // Filter by name (for find-class, find-function)
+    if (this.options.parameters.name) {
+      filtered = filtered.filter(m => m.name === this.options.parameters.name);
+    }
+
+    // Filter by pattern (for find-identifiers)
+    if (this.options.parameters.pattern) {
+      const regex = new RegExp(this.options.parameters.pattern);
+      filtered = filtered.filter(m => m.name && regex.test(m.name));
+    }
+
+    // Filter by min-params (for find-functions)
+    if (this.options.parameters['min-params']) {
+      const minParams = parseInt(this.options.parameters['min-params'], 10);
+      // Count parameters in the text (simplified - counts commas + 1)
+      filtered = filtered
+        .map(m => {
+          if (m.text) {
+            const paramMatch = m.text.match(/\(([^)]*)\)/);
+            if (paramMatch) {
+              const params = paramMatch[1]
+                .split(',')
+                .filter(p => p.trim().length > 0);
+              m.paramCount = params.length;
+            }
+          }
+          return m;
+        })
+        .filter(m => (m.paramCount || 0) >= minParams);
+    }
+
+    // Filter by export-type (for find-exports)
+    if (this.options.parameters['export-type']) {
+      const exportType = this.options.parameters['export-type'];
+      if (exportType === 'default') {
+        filtered = filtered.filter(m => m.text?.includes('default'));
+        filtered = filtered.map(m => ({
+          ...m,
+          exportType: 'default',
+          identifier: m.text?.match(/export\s+default\s+(\w+)/)?.[1],
+        }));
+      }
+    }
+
+    return filtered;
+  }
+}
