@@ -241,6 +241,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@investigation` | Investigation and research tasks for evaluating technical approaches |
 | `@ipc` | Inter-process communication features using Unix sockets or named pipes |
 | `@isomorphic-git` | Uses isomorphic-git library for pure JavaScript git operations |
+| `@jira` | JIRA integration and API features |
 | `@json-backed` | JSON-Backed Documentation |
 | `@json-output` | JSON format output support |
 | `@json-schema` | JSON Schema Validation |
@@ -249,6 +250,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@learning` | Machine learning and adaptive features based on usage patterns |
 | `@logging` | Logging and diagnostics features |
 | `@markdown` | Markdown rendering and processing |
+| `@markdown-formatting` | Markdown formatting and rendering features |
 | `@marked` | Marked library for markdown parsing |
 | `@mermaid` | Mermaid Diagram Support |
 | `@modal` | Modal overlay and dialog components |
@@ -630,7 +632,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-11-12T09:57:46.526Z_
+_Last updated: 2025-11-12T11:17:38.560Z_
 
 **Update Command**: `fspec tag-stats`
 

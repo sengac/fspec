@@ -866,6 +866,10 @@
           "description": "Uses isomorphic-git library for pure JavaScript git operations"
         },
         {
+          "name": "@jira",
+          "description": "JIRA integration and API features"
+        },
+        {
           "name": "@json-backed",
           "description": "JSON-Backed Documentation"
         },
@@ -896,6 +900,10 @@
         {
           "name": "@markdown",
           "description": "Markdown rendering and processing"
+        },
+        {
+          "name": "@markdown-formatting",
+          "description": "Markdown formatting and rendering features"
         },
         {
           "name": "@marked",
@@ -1554,7 +1562,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-11-12T09:57:46.526Z",
+    "lastUpdated": "2025-11-12T11:17:38.560Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

@@ -126,10 +126,97 @@ async function callJiraAPI(config: JiraConfig, apiPath: string): Promise<any> {
 }
 
 /**
+ * Parse Atlassian Document Format (ADF) to plain text
+ */
+function parseADF(adf: any): string {
+  if (!adf || typeof adf !== 'object') {
+    return '';
+  }
+
+  // If it's already a string, return it
+  if (typeof adf === 'string') {
+    return adf;
+  }
+
+  // If it's an ADF document with content array
+  if (adf.type === 'doc' && Array.isArray(adf.content)) {
+    return adf.content.map((node: any) => parseADFNode(node)).join('\n\n');
+  }
+
+  return '';
+}
+
+/**
+ * Parse individual ADF node recursively
+ */
+function parseADFNode(node: any): string {
+  if (!node || typeof node !== 'object') {
+    return '';
+  }
+
+  // Handle text nodes
+  if (node.type === 'text') {
+    return node.text || '';
+  }
+
+  // Handle paragraph nodes
+  if (node.type === 'paragraph' && Array.isArray(node.content)) {
+    return node.content.map((child: any) => parseADFNode(child)).join('');
+  }
+
+  // Handle heading nodes
+  if (node.type === 'heading' && Array.isArray(node.content)) {
+    const level = node.attrs?.level || 1;
+    const text = node.content.map((child: any) => parseADFNode(child)).join('');
+    return '#'.repeat(level) + ' ' + text;
+  }
+
+  // Handle bullet list
+  if (node.type === 'bulletList' && Array.isArray(node.content)) {
+    return node.content
+      .map((item: any) => '- ' + parseADFNode(item))
+      .join('\n');
+  }
+
+  // Handle ordered list
+  if (node.type === 'orderedList' && Array.isArray(node.content)) {
+    return node.content
+      .map((item: any, index: number) => `${index + 1}. ${parseADFNode(item)}`)
+      .join('\n');
+  }
+
+  // Handle list item
+  if (node.type === 'listItem' && Array.isArray(node.content)) {
+    return node.content.map((child: any) => parseADFNode(child)).join('');
+  }
+
+  // Handle code block
+  if (node.type === 'codeBlock' && Array.isArray(node.content)) {
+    return (
+      '```\n' +
+      node.content.map((child: any) => parseADFNode(child)).join('') +
+      '\n```'
+    );
+  }
+
+  // Handle other nodes with content
+  if (Array.isArray(node.content)) {
+    return node.content.map((child: any) => parseADFNode(child)).join('');
+  }
+
+  return '';
+}
+
+/**
  * Format single issue as markdown
  */
 function formatIssueMarkdown(issue: any): string {
   const timestamp = new Date().toISOString();
+
+  // Parse description from ADF format to plain text
+  const descriptionText = issue.fields?.description
+    ? parseADF(issue.fields.description)
+    : 'No description provided';
 
   return `# Issue: ${issue.key}
 
@@ -143,7 +230,7 @@ function formatIssueMarkdown(issue: any): string {
 
 ## Description
 
-${issue.fields?.description || 'No description provided'}
+${descriptionText}
 
 ---
 
