@@ -244,6 +244,11 @@
       "prefix": "BROWSE",
       "description": "Browser integration and control features",
       "createdAt": "2025-11-08T06:48:39.525Z"
+    },
+    "REVIEW": {
+      "prefix": "REVIEW",
+      "description": "Code review and quality analysis enhancements",
+      "createdAt": "2025-11-12T07:18:20.319Z"
     }
   }
 }

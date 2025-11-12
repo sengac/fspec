@@ -5,12 +5,20 @@
  * Tests tool listing with config status indicators and usage guidance.
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { resolveConfig } from '../../utils/config-resolution';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { listResearchTools, getToolHelp } from '../research-tool-list';
 
+interface ToolInfo {
+  name: string;
+  description: string;
+  status?: string;
+  statusIndicator: string;
+  configSource?: string;
+  configGuidance?: string;
+}
+
 describe('Feature: Tool Discovery and Status Display', () => {
-  let originalEnv: NodeJS.ProcessEnv;
+  let originalEnv: typeof process.env;
 
   beforeEach(() => {
     // Save original environment
@@ -32,7 +40,9 @@ describe('Feature: Tool Discovery and Status Display', () => {
 
       // @step Then the output should list Perplexity tool
       expect(tools).toBeDefined();
-      const perplexityTool = tools.find((t: any) => t.name === 'perplexity');
+      const perplexityTool = tools.find(
+        (t: ToolInfo) => t.name === 'perplexity'
+      );
       expect(perplexityTool).toBeDefined();
 
       // @step And the status should be "CONFIGURED"
@@ -50,11 +60,11 @@ describe('Feature: Tool Discovery and Status Display', () => {
       delete process.env.JIRA_TOKEN;
 
       // @step When I run "fspec research"
-      const tools = listResearchTools();
+      const tools = listResearchTools(undefined, true); // Show all tools including unconfigured
 
       // @step Then the output should list Jira tool
       expect(tools).toBeDefined();
-      const jiraTool = tools.find((t: any) => t.name === 'jira');
+      const jiraTool = tools.find((t: ToolInfo) => t.name === 'jira');
       expect(jiraTool).toBeDefined();
 
       // @step And the status should be "NOT CONFIGURED"
@@ -84,7 +94,9 @@ describe('Feature: Tool Discovery and Status Display', () => {
 
       // @step Then the output should list Confluence tool
       expect(tools).toBeDefined();
-      const confluenceTool = tools.find((t: any) => t.name === 'confluence');
+      const confluenceTool = tools.find(
+        (t: ToolInfo) => t.name === 'confluence'
+      );
       expect(confluenceTool).toBeDefined();
 
       // @step And the status should be "CONFIGURED"
@@ -123,7 +135,7 @@ describe('Feature: Tool Discovery and Status Display', () => {
 
       // @step And configured tools should show their config source
       const configuredTools = tools.filter(
-        (t: any) => t.status === 'CONFIGURED'
+        (t: ToolInfo) => t.status === 'CONFIGURED'
       );
       for (const tool of configuredTools) {
         expect(tool.configSource).toMatch(/^(ENV|USER|PROJECT|DEFAULT)$/);

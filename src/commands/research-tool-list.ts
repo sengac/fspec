@@ -5,13 +5,14 @@
  * Integrates with config resolution system from RES-012.
  */
 
-import { resolveConfig, validateConfig } from '../utils/config-resolution';
+import { resolveConfig } from '../utils/config-resolution';
 
 export interface ToolInfo {
   name: string;
   description: string;
   status: 'CONFIGURED' | 'NOT CONFIGURED' | 'PARTIALLY CONFIGURED';
   statusIndicator: string;
+  configured: boolean;
   configSource?: 'ENV' | 'USER' | 'PROJECT' | 'DEFAULT';
   configGuidance?: string;
 }
@@ -25,7 +26,7 @@ export interface ToolHelp {
 /**
  * Tool registry with descriptions and required config fields
  */
-const TOOL_REGISTRY: Record<
+export const TOOL_REGISTRY: Record<
   string,
   { description: string; required: string[] }
 > = {
@@ -45,7 +46,7 @@ const TOOL_REGISTRY: Record<
   },
   stakeholder: {
     description: 'Stakeholder communication tool for Teams/Slack/Discord',
-    required: [],
+    required: ['teamsWebhook'],
   },
   ast: {
     description:
@@ -78,17 +79,35 @@ const ENV_VAR_MAPPINGS: Record<string, Record<string, string>> = {
 
 /**
  * List all research tools with configuration status
+ * @param cwd - Current working directory for resolving project config
+ * @param showAll - If true, show all tools; if false, show only configured tools
+ * @param userConfigPath - Optional path to user config (for testing)
  */
-export function listResearchTools(): ToolInfo[] {
-  const tools: ToolInfo[] = [];
+export function listResearchTools(
+  cwd?: string,
+  showAll: boolean = false,
+  userConfigPath?: string
+): ToolInfo[] {
+  const allTools: ToolInfo[] = [];
+
+  // Prepare config options with project-specific path if cwd provided
+  const configOptions: any = cwd
+    ? { projectConfigPath: `${cwd}/spec/fspec-config.json` }
+    : {};
+
+  // Add user config path if provided (mainly for testing to avoid real user config)
+  if (userConfigPath) {
+    configOptions.userConfigPath = userConfigPath;
+  }
 
   for (const [toolName, toolMeta] of Object.entries(TOOL_REGISTRY)) {
-    const config = resolveConfig(toolName);
+    const config = resolveConfig(toolName, configOptions);
     const toolInfo: ToolInfo = {
       name: toolName,
       description: toolMeta.description,
       status: 'NOT CONFIGURED',
       statusIndicator: '✗',
+      configured: false,
     };
 
     // Check if tool is configured
@@ -103,6 +122,7 @@ export function listResearchTools(): ToolInfo[] {
     if (hasRequiredFields) {
       toolInfo.status = 'CONFIGURED';
       toolInfo.statusIndicator = '✓';
+      toolInfo.configured = true;
       toolInfo.configSource = config.source;
     } else {
       // Generate configuration guidance for unconfigured tools
@@ -120,10 +140,15 @@ export function listResearchTools(): ToolInfo[] {
       }
     }
 
-    tools.push(toolInfo);
+    allTools.push(toolInfo);
   }
 
-  return tools;
+  // Filter to only configured tools if showAll is false
+  if (!showAll) {
+    return allTools.filter(tool => tool.configured);
+  }
+
+  return allTools;
 }
 
 /**

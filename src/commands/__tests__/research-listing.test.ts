@@ -24,6 +24,16 @@ describe('Feature: Unconfigured research tool visibility and discovery', () => {
     // Ensure spec directory exists
     fs.mkdirSync(path.join(testDir, 'spec'), { recursive: true });
 
+    // Clear environment variables that might affect tool configuration
+    delete process.env.PERPLEXITY_API_KEY;
+    delete process.env.JIRA_URL;
+    delete process.env.JIRA_TOKEN;
+    delete process.env.CONFLUENCE_URL;
+    delete process.env.CONFLUENCE_TOKEN;
+    delete process.env.SLACK_WEBHOOK_URL;
+    delete process.env.TEAMS_WEBHOOK_URL;
+    delete process.env.DISCORD_WEBHOOK_URL;
+
     // Spy on console output
     consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
     consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
@@ -71,7 +81,11 @@ describe('Feature: Unconfigured research tool visibility and discovery', () => {
       fs.writeFileSync(configPath, JSON.stringify({}), 'utf-8');
 
       // @step When I run 'fspec research --all'
-      await research([], { cwd: testDir, all: true });
+      await research([], {
+        cwd: testDir,
+        all: true,
+        userConfigPath: '/nonexistent/user-config.json',
+      });
 
       const output = consoleLogSpy.mock.calls
         .map((call: any) => call[0])
@@ -105,9 +119,8 @@ describe('Feature: Unconfigured research tool visibility and discovery', () => {
             apiKey: 'test-key',
           },
           jira: {
-            jiraUrl: 'https://example.atlassian.net',
-            username: 'test@example.com',
-            apiToken: 'test-token',
+            url: 'https://example.atlassian.net',
+            token: 'test-token',
           },
         },
       };

@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-12T06:35:12.907Z"
+    "lastUpdated": "2025-11-12T07:26:34.433Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -45965,6 +45965,139 @@
       "architectureNotes": [],
       "nextNoteId": 0,
       "updated": "2025-11-12T06:35:12.931Z"
+    },
+    "REVIEW-001": {
+      "id": "REVIEW-001",
+      "title": "Enhance fspec review with DRY and SOLID principles checking using AST analysis",
+      "type": "story",
+      "status": "validating",
+      "createdAt": "2025-11-12T07:18:27.910Z",
+      "updatedAt": "2025-11-12T08:01:30.548Z",
+      "description": "Refactor the fspec review command to integrate AST-based code quality analysis for detecting DRY (Don't Repeat Yourself) violations and SOLID principle violations. Use the existing fspec research AST tool to analyze implementation files and provide actionable feedback on code duplication, class design, and dependency management.",
+      "children": [],
+      "attachments": [
+        "spec/attachments/REVIEW-001/research-fspec-review-ast-integration-v2.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-12T07:26:15.379Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-12T07:37:23.289Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-12T07:41:56.272Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-12T08:01:30.548Z"
+        }
+      ],
+      "userStory": {
+        "role": "AI agent using fspec review command",
+        "action": "receive AST-based structural data about implementation files",
+        "benefit": "I can analyze code for DRY/SOLID principles using the data and tools provided"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "fspec MUST NOT perform semantic code analysis or make quality judgments",
+          "deleted": false,
+          "createdAt": "2025-11-12T07:27:10.680Z"
+        },
+        {
+          "id": 1,
+          "text": "fspec review must gather structural data using fspec research --tool=ast commands",
+          "deleted": false,
+          "createdAt": "2025-11-12T07:30:19.680Z"
+        },
+        {
+          "id": 2,
+          "text": "System-reminders must present structural data in neutral, factual format without judgments",
+          "deleted": false,
+          "createdAt": "2025-11-12T07:30:26.629Z"
+        },
+        {
+          "id": 3,
+          "text": "System-reminders must suggest AST commands AI can run for deeper investigation",
+          "deleted": false,
+          "createdAt": "2025-11-12T07:30:32.617Z"
+        },
+        {
+          "id": 4,
+          "text": "System-reminders must include guidance questions to prompt AI thinking about DRY/SOLID principles",
+          "deleted": false,
+          "createdAt": "2025-11-12T07:30:38.933Z"
+        },
+        {
+          "id": 5,
+          "text": "fspec review must gather function counts, class counts, import counts, and export counts per file",
+          "deleted": false,
+          "createdAt": "2025-11-12T07:30:45.512Z"
+        },
+        {
+          "id": 6,
+          "text": "fspec review must identify functions/classes with identical names across multiple files",
+          "deleted": false,
+          "createdAt": "2025-11-12T07:30:53.365Z"
+        },
+        {
+          "id": 7,
+          "text": "AST data gathering must add less than 2 seconds overhead to fspec review command",
+          "deleted": false,
+          "createdAt": "2025-11-12T07:31:01.180Z"
+        }
+      ],
+      "nextRuleId": 8,
+      "examples": [
+        {
+          "id": 0,
+          "text": "AI runs fspec review AUTH-001, receives system-reminder with function counts for each implementation file",
+          "deleted": false,
+          "createdAt": "2025-11-12T07:31:15.392Z"
+        },
+        {
+          "id": 1,
+          "text": "System-reminder shows formatOutput() function appears in review.ts:156 and validate.ts:234",
+          "deleted": false,
+          "createdAt": "2025-11-12T07:31:22.653Z"
+        },
+        {
+          "id": 2,
+          "text": "System-reminder suggests running: fspec research --tool=ast --operation=list-functions --file=src/commands/review.ts",
+          "deleted": false,
+          "createdAt": "2025-11-12T07:31:31.215Z"
+        },
+        {
+          "id": 3,
+          "text": "System-reminder asks: Are there functions with similar names that might have duplicate logic?",
+          "deleted": false,
+          "createdAt": "2025-11-12T07:31:38.080Z"
+        },
+        {
+          "id": 4,
+          "text": "System-reminder reports ReviewCommand class has 15 public methods detected",
+          "deleted": false,
+          "createdAt": "2025-11-12T07:31:45.090Z"
+        },
+        {
+          "id": 5,
+          "text": "System-reminder says 'Patterns detected (NOT violations, just observations)' when listing similar function names",
+          "deleted": false,
+          "createdAt": "2025-11-12T07:31:52.794Z"
+        },
+        {
+          "id": 6,
+          "text": "AI reads system-reminder data, runs suggested AST commands, uses Read tool, and decides if refactoring is needed",
+          "deleted": false,
+          "createdAt": "2025-11-12T07:32:00.814Z"
+        }
+      ],
+      "nextExampleId": 7,
+      "estimate": 5
     }
   },
   "states": {
@@ -46030,7 +46163,9 @@
     ],
     "testing": [],
     "implementing": [],
-    "validating": [],
+    "validating": [
+      "REVIEW-001"
+    ],
     "done": [
       "REMIND-013",
       "RES-018",
@@ -46414,6 +46549,7 @@
     "RES": 18,
     "BROWSE": 1,
     "TEST": 8,
-    "HOOK": 12
+    "HOOK": 12,
+    "REVIEW": 1
   }
 }
