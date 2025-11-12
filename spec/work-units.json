@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-12T01:48:00.253Z"
+    "lastUpdated": "2025-11-12T05:45:29.623Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -45618,6 +45618,205 @@
       "nextQuestionId": 0,
       "nextNoteId": 0,
       "updated": "2025-11-12T01:48:00.274Z"
+    },
+    "REMIND-012": {
+      "id": "REMIND-012",
+      "title": "Enhanced research tool guidance in system reminders",
+      "type": "task",
+      "status": "backlog",
+      "createdAt": "2025-11-12T02:11:15.192Z",
+      "updatedAt": "2025-11-12T02:14:25.477Z",
+      "description": "Improve system reminders to guide AI agents about available research tools, when to use AST for code tasks, and promote AI-powered search tools like Perplexity with natural language queries.",
+      "children": [],
+      "attachments": [
+        "spec/attachments/REMIND-012/REMIND-012-research-tool-guidance-refactoring.md"
+      ]
+    },
+    "RES-018": {
+      "id": "RES-018",
+      "title": "Unconfigured research tool visibility and discovery",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-11-12T03:26:03.534Z",
+      "updatedAt": "2025-11-12T05:45:29.649Z",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-12T03:27:20.923Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-12T05:35:31.705Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-12T05:39:29.887Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-12T05:41:40.435Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-12T05:42:43.549Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-12T05:45:29.650Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer or AI agent using fspec research tools",
+        "action": "discover available research tools even when not configured",
+        "benefit": "I know what tools exist and can configure them when needed"
+      },
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: Should 'fspec research' list only configured tools, all tools with visual distinction, or have a flag to show all?",
+          "deleted": false,
+          "createdAt": "2025-11-12T03:28:51.606Z",
+          "selected": true,
+          "answer": "Option B with enhancement: Show all tools with visual distinction in system-reminders for AI awareness. User-facing output shows configured tools by default, with --all flag to show unconfigured tools. This balances AI discoverability with clean user experience."
+        },
+        {
+          "id": 1,
+          "text": "@human: When using an unconfigured tool, should it fail with setup instructions, offer alternative tool, have interactive setup, or different behavior for AI vs humans?",
+          "deleted": false,
+          "createdAt": "2025-11-12T04:44:44.644Z",
+          "selected": true,
+          "answer": "Option A: Fail fast with setup instructions. Show clear error message with step-by-step setup guide and suggest alternative configured tools. This is clear, non-interactive (good for AI agents), and educational."
+        },
+        {
+          "id": 2,
+          "text": "@human: In system-reminders, should all tools be shown equally, or should configured tools be emphasized with unconfigured tools mentioned separately?",
+          "deleted": false,
+          "createdAt": "2025-11-12T04:45:51.588Z",
+          "selected": true,
+          "answer": "Option A: Always show all tools equally in system-reminders with accurate configuration information. Show config file paths (spec/fspec-config.json or ~/.fspec/fspec-config.json) and JSON structure, NOT environment variable examples."
+        },
+        {
+          "id": 3,
+          "text": "@human: For checking if tools are configured, should we do full validation, quick key existence check, or hybrid approach?",
+          "deleted": false,
+          "createdAt": "2025-11-12T05:19:38.990Z",
+          "selected": true,
+          "answer": "Option A: Try to validate the full configuration. Use the existing loadConfig() and validation logic from each tool to accurately determine if it's configured. Accept the slight performance cost for accuracy."
+        },
+        {
+          "id": 4,
+          "text": "@human: For setup guidance, show minimal hint, full JSON example inline, or reference setup command?",
+          "deleted": false,
+          "createdAt": "2025-11-12T05:25:57.993Z",
+          "selected": true,
+          "answer": "Option B: Show full JSON example inline. This is clear and immediately actionable - users can copy-paste the JSON structure directly into their config file. System-reminders can be more concise since AI agents can run --help commands."
+        }
+      ],
+      "nextQuestionId": 5,
+      "rules": [
+        {
+          "id": 0,
+          "text": "Option B with enhancement: Show all tools with visual distinction in system-reminders for AI awareness. User-facing output shows configured tools by default, with --all flag to show unconfigured tools. This balances AI discoverability with clean user experience.",
+          "deleted": false,
+          "createdAt": "2025-11-12T04:44:30.869Z"
+        },
+        {
+          "id": 1,
+          "text": "Option A: Fail fast with setup instructions. Show clear error message with step-by-step setup guide and suggest alternative configured tools. This is clear, non-interactive (good for AI agents), and educational.",
+          "deleted": false,
+          "createdAt": "2025-11-12T04:45:38.381Z"
+        },
+        {
+          "id": 2,
+          "text": "Option A: Always show all tools equally in system-reminders with accurate configuration information. Show config file paths (spec/fspec-config.json or ~/.fspec/fspec-config.json) and JSON structure, NOT environment variable examples.",
+          "deleted": false,
+          "createdAt": "2025-11-12T05:18:47.924Z"
+        },
+        {
+          "id": 3,
+          "text": "Configuration uses JSON files at spec/fspec-config.json (project) or ~/.fspec/fspec-config.json (user), with structure: {\"research\": {\"toolName\": {config}}}",
+          "deleted": false,
+          "createdAt": "2025-11-12T05:18:58.021Z"
+        },
+        {
+          "id": 4,
+          "text": "AST tool requires no configuration. Perplexity requires apiKey. JIRA requires jiraUrl, username, apiToken. Confluence requires confluenceUrl, username, apiToken. Stakeholder requires at least one platform webhook/token.",
+          "deleted": false,
+          "createdAt": "2025-11-12T05:19:00.026Z"
+        },
+        {
+          "id": 5,
+          "text": "Tools validate configuration on execution and throw helpful errors with setup instructions pointing to config file locations",
+          "deleted": false,
+          "createdAt": "2025-11-12T05:19:01.728Z"
+        },
+        {
+          "id": 6,
+          "text": "Option A: Try to validate the full configuration. Use the existing loadConfig() and validation logic from each tool to accurately determine if it's configured. Accept the slight performance cost for accuracy.",
+          "deleted": false,
+          "createdAt": "2025-11-12T05:25:45.036Z"
+        },
+        {
+          "id": 7,
+          "text": "Option B: Show full JSON example inline. This is clear and immediately actionable - users can copy-paste the JSON structure directly into their config file. System-reminders can be more concise since AI agents can run --help commands.",
+          "deleted": false,
+          "createdAt": "2025-11-12T05:27:28.412Z"
+        },
+        {
+          "id": 8,
+          "text": "User-facing 'fspec research' output shows only configured tools by default. Use --all flag to show unconfigured tools with setup instructions.",
+          "deleted": false,
+          "createdAt": "2025-11-12T05:27:39.767Z"
+        },
+        {
+          "id": 9,
+          "text": "System-reminders (AI-only) always show all tools with status to enable AI agents to suggest and guide setup for better tools.",
+          "deleted": false,
+          "createdAt": "2025-11-12T05:27:42.327Z"
+        }
+      ],
+      "nextRuleId": 10,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User runs 'fspec research' with no tools configured. Output shows only AST (no config needed) as available. Shows message about other tools with --all flag.",
+          "deleted": false,
+          "createdAt": "2025-11-12T05:19:19.654Z"
+        },
+        {
+          "id": 1,
+          "text": "User runs 'fspec research --all'. Output shows all 5 tools: AST (✓ ready), Perplexity (✗ not configured - needs config.research.perplexity.apiKey in spec/fspec-config.json), etc.",
+          "deleted": false,
+          "createdAt": "2025-11-12T05:19:21.493Z"
+        },
+        {
+          "id": 2,
+          "text": "AI agent sees system-reminder listing all 5 tools with configuration status and JSON config structure examples for each unconfigured tool.",
+          "deleted": false,
+          "createdAt": "2025-11-12T05:19:23.025Z"
+        },
+        {
+          "id": 3,
+          "text": "User runs 'fspec research --tool=perplexity --query=\"test\"' without config. Error message shows: missing apiKey, how to add to spec/fspec-config.json with JSON example, suggests using AST instead.",
+          "deleted": false,
+          "createdAt": "2025-11-12T05:19:24.960Z"
+        },
+        {
+          "id": 4,
+          "text": "User has only AST configured. Runs 'fspec research'. Sees: 'Available: ast (ready)' and footer message: 'Run fspec research --all to see 4 additional tools that require configuration.'",
+          "deleted": false,
+          "createdAt": "2025-11-12T05:27:44.099Z"
+        }
+      ],
+      "nextExampleId": 5,
+      "attachments": [
+        "spec/attachments/RES-018/RES-018-unconfigured-tool-visibility-research.md"
+      ],
+      "estimate": 3,
+      "architectureNotes": [],
+      "nextNoteId": 0,
+      "updated": "2025-11-12T05:45:29.649Z"
     }
   },
   "states": {
@@ -45672,7 +45871,8 @@
       "INT-004",
       "DOC-012",
       "DOC-013",
-      "DOC-014"
+      "DOC-014",
+      "REMIND-012"
     ],
     "specifying": [
       "LANG-001",
@@ -45685,6 +45885,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "RES-018",
       "RES-017",
       "COV-054",
       "BUG-074",
@@ -46052,7 +46253,7 @@
     "DOC": 15,
     "GIT": 12,
     "FEAT": 20,
-    "REMIND": 11,
+    "REMIND": 12,
     "CODEX": 1,
     "AGENT": 19,
     "GRAPH": 3,
@@ -46062,7 +46263,7 @@
     "VIZ": 4,
     "INT": 4,
     "VID": 2,
-    "RES": 17,
+    "RES": 18,
     "BROWSE": 1,
     "TEST": 8,
     "HOOK": 12
