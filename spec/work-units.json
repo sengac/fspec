@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-12T05:45:29.623Z"
+    "lastUpdated": "2025-11-12T06:35:12.907Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -45619,19 +45619,6 @@
       "nextNoteId": 0,
       "updated": "2025-11-12T01:48:00.274Z"
     },
-    "REMIND-012": {
-      "id": "REMIND-012",
-      "title": "Enhanced research tool guidance in system reminders",
-      "type": "task",
-      "status": "backlog",
-      "createdAt": "2025-11-12T02:11:15.192Z",
-      "updatedAt": "2025-11-12T02:14:25.477Z",
-      "description": "Improve system reminders to guide AI agents about available research tools, when to use AST for code tasks, and promote AI-powered search tools like Perplexity with natural language queries.",
-      "children": [],
-      "attachments": [
-        "spec/attachments/REMIND-012/REMIND-012-research-tool-guidance-refactoring.md"
-      ]
-    },
     "RES-018": {
       "id": "RES-018",
       "title": "Unconfigured research tool visibility and discovery",
@@ -45817,6 +45804,167 @@
       "architectureNotes": [],
       "nextNoteId": 0,
       "updated": "2025-11-12T05:45:29.649Z"
+    },
+    "REMIND-013": {
+      "id": "REMIND-013",
+      "title": "Enhanced research tool guidance in system reminders",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-11-12T06:12:23.191Z",
+      "updatedAt": "2025-11-12T06:35:12.931Z",
+      "description": "Improve system reminders to guide AI agents about available research tools, when to use AST for code tasks, and promote AI-powered search tools like Perplexity with natural language queries.",
+      "children": [],
+      "attachments": [
+        "spec/attachments/REMIND-013/REMIND-012-research-tool-guidance-refactoring.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-12T06:12:48.977Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-12T06:22:43.602Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-12T06:28:47.645Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-12T06:31:58.977Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-12T06:35:12.931Z"
+        }
+      ],
+      "userStory": {
+        "role": "AI agent using fspec",
+        "action": "receive context-aware research tool guidance in system reminders",
+        "benefit": "I use the right research tool at the right time with proper natural language queries"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "System reminders must show all 5 bundled research tools (ast, perplexity, jira, confluence, stakeholder) with their configuration status",
+          "deleted": false,
+          "createdAt": "2025-11-12T06:13:14.524Z"
+        },
+        {
+          "id": 1,
+          "text": "Configuration status must be determined using RES-018's getToolConfigurationStatus() function, not environment variables",
+          "deleted": false,
+          "createdAt": "2025-11-12T06:13:20.797Z"
+        },
+        {
+          "id": 2,
+          "text": "When work unit title contains code-related keywords (refactor, implement, create, add, update), emphasize AST tool in reminder",
+          "deleted": false,
+          "createdAt": "2025-11-12T06:13:27.245Z"
+        },
+        {
+          "id": 3,
+          "text": "When work unit title contains research keywords (research, explore, investigate), emphasize Perplexity tool with natural language guidance",
+          "deleted": false,
+          "createdAt": "2025-11-12T06:13:32.948Z"
+        },
+        {
+          "id": 4,
+          "text": "Reminders must be emitted at TWO points: work unit creation AND when entering specifying state",
+          "deleted": false,
+          "createdAt": "2025-11-12T06:13:38.985Z"
+        },
+        {
+          "id": 5,
+          "text": "For unconfigured tools, reminder must show JSON config example from RES-018's getConfigExample()",
+          "deleted": false,
+          "createdAt": "2025-11-12T06:13:45.164Z"
+        },
+        {
+          "id": 6,
+          "text": "Yes, reminders should be tailored by type. Stories: emphasize new functionality/refactoring scenarios. Bugs: emphasize different strategies like asking Perplexity for solutions and using AST to check linkage/structure. Tasks: emphasize code analysis and infrastructure work.",
+          "deleted": false,
+          "createdAt": "2025-11-12T06:16:31.007Z"
+        },
+        {
+          "id": 7,
+          "text": "Make getStatusChangeReminder() fully async (Option B). Only one call site to update, already have async specifyingStateReminder(), and it's future-proof for adding tool guidance to other states if needed. Clean architecture with await handling both Promise and string returns.",
+          "deleted": false,
+          "createdAt": "2025-11-12T06:19:10.799Z"
+        },
+        {
+          "id": 8,
+          "text": "Tool emphasis should show in BOTH creation and specifying reminders. Creation (backlog): AI needs immediate guidance for initial discovery/research. Specifying: AI needs tool guidance for Example Mapping to answer questions and gather rules/examples. Both states benefit from context-aware AST/Perplexity emphasis based on work unit type and title.",
+          "deleted": false,
+          "createdAt": "2025-11-12T06:20:35.035Z"
+        }
+      ],
+      "nextRuleId": 9,
+      "examples": [
+        {
+          "id": 0,
+          "text": "AI creates task 'Refactor authentication module', reminder shows 'CODE-RELATED task' and emphasizes AST tool with example commands",
+          "deleted": false,
+          "createdAt": "2025-11-12T06:13:52.628Z"
+        },
+        {
+          "id": 1,
+          "text": "AI creates story 'Research OAuth2 implementation patterns', reminder shows 'RESEARCH-HEAVY story' and emphasizes Perplexity with 'USE NATURAL LANGUAGE' guidance",
+          "deleted": false,
+          "createdAt": "2025-11-12T06:13:59.080Z"
+        },
+        {
+          "id": 2,
+          "text": "AI moves work unit to specifying state, reminder lists all 5 tools with ✓ for configured and ✗ for unconfigured, showing JSON config examples for unconfigured tools",
+          "deleted": false,
+          "createdAt": "2025-11-12T06:14:04.666Z"
+        },
+        {
+          "id": 3,
+          "text": "Perplexity is not configured, reminder shows '✗ perplexity (not configured)' with JSON example showing {\"research\": {\"perplexity\": {\"apiKey\": \"...\"}}}",
+          "deleted": false,
+          "createdAt": "2025-11-12T06:14:10.650Z"
+        },
+        {
+          "id": 4,
+          "text": "AST tool is always shown as '✓ ast (configured)' with reason 'No configuration required'",
+          "deleted": false,
+          "createdAt": "2025-11-12T06:14:16.699Z"
+        }
+      ],
+      "nextExampleId": 5,
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: Should reminders be different for bugs vs stories vs tasks, or only based on title keywords?",
+          "deleted": false,
+          "createdAt": "2025-11-12T06:14:22.747Z",
+          "selected": true,
+          "answer": "Yes, reminders should be tailored by type. Stories: emphasize new functionality/refactoring scenarios. Bugs: emphasize different strategies like asking Perplexity for solutions and using AST to check linkage/structure. Tasks: emphasize code analysis and infrastructure work."
+        },
+        {
+          "id": 1,
+          "text": "@human: The research document says reminder functions must be async. Should we add async support to ALL state reminders or just specifying and creation?",
+          "deleted": false,
+          "createdAt": "2025-11-12T06:14:29.041Z",
+          "selected": true,
+          "answer": "Make getStatusChangeReminder() fully async (Option B). Only one call site to update, already have async specifyingStateReminder(), and it's future-proof for adding tool guidance to other states if needed. Clean architecture with await handling both Promise and string returns."
+        },
+        {
+          "id": 2,
+          "text": "@human: Should tool emphasis (AST vs Perplexity) only show in creation reminders, only in specifying reminders, or both?",
+          "deleted": false,
+          "createdAt": "2025-11-12T06:14:34.567Z",
+          "selected": true,
+          "answer": "Tool emphasis should show in BOTH creation and specifying reminders. Creation (backlog): AI needs immediate guidance for initial discovery/research. Specifying: AI needs tool guidance for Example Mapping to answer questions and gather rules/examples. Both states benefit from context-aware AST/Perplexity emphasis based on work unit type and title."
+        }
+      ],
+      "nextQuestionId": 3,
+      "estimate": 5,
+      "architectureNotes": [],
+      "nextNoteId": 0,
+      "updated": "2025-11-12T06:35:12.931Z"
     }
   },
   "states": {
@@ -45871,8 +46019,7 @@
       "INT-004",
       "DOC-012",
       "DOC-013",
-      "DOC-014",
-      "REMIND-012"
+      "DOC-014"
     ],
     "specifying": [
       "LANG-001",
@@ -45885,6 +46032,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "REMIND-013",
       "RES-018",
       "RES-017",
       "COV-054",
@@ -46253,7 +46401,7 @@
     "DOC": 15,
     "GIT": 12,
     "FEAT": 20,
-    "REMIND": 12,
+    "REMIND": 13,
     "CODEX": 1,
     "AGENT": 19,
     "GRAPH": 3,

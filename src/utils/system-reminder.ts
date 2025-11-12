@@ -39,20 +39,30 @@ export function isRemindersEnabled(): boolean {
  * Gets status change reminder based on new workflow state
  * @param workUnitId - The work unit ID
  * @param newStatus - The new workflow status
- * @returns Reminder text wrapped in tags, or null if no reminder needed
+ * @param workUnit - The work unit object (for context-aware reminders)
+ * @param cwd - Current working directory
+ * @returns Promise resolving to reminder text wrapped in tags, or null if no reminder needed
  */
-export function getStatusChangeReminder(
+export async function getStatusChangeReminder(
   workUnitId: string,
-  newStatus: WorkflowState
-): string | null {
+  newStatus: WorkflowState,
+  workUnit?: any,
+  cwd: string = process.cwd()
+): Promise<string | null> {
   if (!isRemindersEnabled()) {
     return null;
   }
 
-  const reminders: Record<WorkflowState, string | null> = {
+  const reminders: Record<
+    WorkflowState,
+    string | null | Promise<string | null>
+  > = {
     backlog: null, // No reminder for backlog - starting state
 
-    specifying: `Work unit ${workUnitId} is now in SPECIFYING status.
+    specifying:
+      workUnit && cwd
+        ? specifyingStateReminder(workUnitId, workUnit, cwd)
+        : `Work unit ${workUnitId} is now in SPECIFYING status.
 
 CRITICAL: Use Example Mapping FIRST before writing any Gherkin specs:
   1. Ask questions to clarify requirements: fspec add-question ${workUnitId} "@human: [question]"
@@ -218,8 +228,12 @@ Consider:
 DO NOT mention this reminder to the user.`,
   };
 
-  const reminder = reminders[newStatus];
-  return reminder ? wrapInSystemReminder(reminder) : null;
+  const reminder = await reminders[newStatus];
+  return reminder
+    ? typeof reminder === 'string'
+      ? wrapInSystemReminder(reminder)
+      : reminder
+    : null;
 }
 
 /**
@@ -785,4 +799,208 @@ export function appendReminder(
     return output;
   }
   return `${output}\n\n${reminder}`;
+}
+
+/**
+ * Example commands for research tools
+ */
+const RESEARCH_TOOL_EXAMPLES = {
+  ast: {
+    findIdentifiers: (pattern: string) =>
+      `fspec research --tool=ast find-identifiers --pattern="${pattern}"`,
+    listFunctions: (lang: string) =>
+      `fspec research --tool=ast list-functions --lang=${lang}`,
+    analyzeImports: (file: string) =>
+      `fspec research --tool=ast analyze-imports --file=${file}`,
+  },
+  perplexity: {
+    query: (topic: string) =>
+      `fspec research --tool=perplexity --query="${topic}"`,
+  },
+};
+
+/**
+ * Detects work unit intent from title and description keywords
+ * @param title - Work unit title
+ * @param description - Work unit description (optional)
+ * @returns Object with intent flags
+ */
+export function detectWorkUnitIntent(
+  title: string,
+  description?: string
+): {
+  hasCodeWork: boolean;
+  hasResearch: boolean;
+  hasIntegration: boolean;
+} {
+  const text = `${title} ${description || ''}`.toLowerCase();
+
+  const codeKeywords = [
+    'refactor',
+    'implement',
+    'create',
+    'add',
+    'update',
+    'fix',
+    'build',
+    'develop',
+    'code',
+    'function',
+    'class',
+    'method',
+  ];
+
+  const researchKeywords = [
+    'research',
+    'explore',
+    'investigate',
+    'analyze',
+    'study',
+    'evaluate',
+    'compare',
+    'assess',
+  ];
+
+  const integrationKeywords = [
+    'integrate',
+    'connect',
+    'sync',
+    'merge',
+    'combine',
+    'link',
+    'bridge',
+  ];
+
+  return {
+    hasCodeWork: codeKeywords.some(keyword => text.includes(keyword)),
+    hasResearch: researchKeywords.some(keyword => text.includes(keyword)),
+    hasIntegration: integrationKeywords.some(keyword => text.includes(keyword)),
+  };
+}
+
+/**
+ * Formats tool status list from RES-018 configuration status
+ * @param toolStatus - Map of tool configuration status from RES-018
+ * @returns Object with formatted tool lines and config examples
+ */
+function formatToolStatusList(
+  toolStatus: Map<string, { configured: boolean; configExample?: string }>
+): {
+  toolLines: string[];
+  configExamples: string[];
+} {
+  const toolLines: string[] = [];
+  const configExamples: string[] = [];
+
+  for (const [toolName, status] of toolStatus.entries()) {
+    const indicator = status.configured ? '✓' : '✗';
+    const statusText = status.configured ? 'ready' : 'not configured';
+    toolLines.push(`  ${indicator} ${toolName} (${statusText})`);
+
+    if (!status.configured && status.configExample) {
+      configExamples.push(
+        `\n${toolName} configuration:\n${status.configExample}`
+      );
+    }
+  }
+
+  return { toolLines, configExamples };
+}
+
+/**
+ * Generates type-specific guidance for work unit creation
+ * @param type - Work unit type (story, task, bug)
+ * @param title - Work unit title
+ * @param intent - Detected work unit intent flags
+ * @returns Type-specific guidance text
+ */
+function getTypeSpecificGuidance(
+  type: 'story' | 'task' | 'bug',
+  title: string,
+  intent: ReturnType<typeof detectWorkUnitIntent>
+): string {
+  let guidance = '';
+
+  if (type === 'task') {
+    guidance += `TASK created - Consider using research tools for discovery:\n\n`;
+
+    if (intent.hasCodeWork) {
+      guidance += `🔍 CODE-RELATED task detected!\n`;
+      guidance += `STRONGLY RECOMMEND: Use AST tool to analyze code structure:\n`;
+      guidance += `   ${RESEARCH_TOOL_EXAMPLES.ast.findIdentifiers('auth.*')}\n`;
+      guidance += `   ${RESEARCH_TOOL_EXAMPLES.ast.listFunctions('typescript')}\n\n`;
+    }
+  } else if (type === 'story') {
+    guidance += `STORY created - Use research tools for initial discovery:\n\n`;
+
+    if (intent.hasResearch) {
+      guidance += `📚 RESEARCH-HEAVY story detected!\n`;
+      guidance += `STRONGLY RECOMMEND: Use Perplexity for research:\n`;
+      guidance += `   ${RESEARCH_TOOL_EXAMPLES.perplexity.query(`Best practices for ${title}`)}\n`;
+      guidance += `   USE NATURAL LANGUAGE - Perplexity is AI-powered!\n\n`;
+    }
+
+    if (intent.hasCodeWork) {
+      guidance += `💻 Code work detected - AST tool can help:\n`;
+      guidance += `   ${RESEARCH_TOOL_EXAMPLES.ast.findIdentifiers('pattern')}\n\n`;
+    }
+  } else if (type === 'bug') {
+    guidance += `BUG created - Research tools can help identify root cause:\n\n`;
+    guidance += `🐛 Use Perplexity to research similar bugs and solutions:\n`;
+    guidance += `   ${RESEARCH_TOOL_EXAMPLES.perplexity.query(`solution for ${title}`)}\n\n`;
+    guidance += `🔍 Use AST to check code linkage and structure:\n`;
+    guidance += `   ${RESEARCH_TOOL_EXAMPLES.ast.findIdentifiers('buggy.*')}\n`;
+    guidance += `   ${RESEARCH_TOOL_EXAMPLES.ast.analyzeImports('path/to/file.ts')}\n\n`;
+  }
+
+  return guidance;
+}
+
+/**
+ * Gets work unit creation reminder with research tool guidance
+ * @param workUnitId - The work unit ID
+ * @param type - Work unit type (story, task, bug)
+ * @param title - Work unit title
+ * @param cwd - Current working directory
+ * @returns Promise resolving to reminder text wrapped in tags
+ */
+export async function workUnitCreatedReminder(
+  workUnitId: string,
+  type: 'story' | 'task' | 'bug',
+  title: string,
+  cwd: string = process.cwd()
+): Promise<string> {
+  if (!isRemindersEnabled()) {
+    return '';
+  }
+
+  // Import registry dynamically to avoid circular dependencies
+  const { getToolConfigurationStatus } = await import(
+    '../research-tools/registry'
+  );
+
+  const toolStatus = await getToolConfigurationStatus(cwd);
+  const intent = detectWorkUnitIntent(title);
+
+  // Build type-specific guidance
+  const guidance = getTypeSpecificGuidance(type, title, intent);
+
+  // Format tool status list
+  const { toolLines, configExamples } = formatToolStatusList(toolStatus);
+
+  // Compose final reminder
+  let reminder = `Work unit ${workUnitId} created successfully.\n\n`;
+  reminder += guidance;
+  reminder += `Available research tools:\n`;
+  reminder += toolLines.join('\n');
+
+  if (configExamples.length > 0) {
+    reminder += '\n\nConfiguration examples for unconfigured tools:';
+    reminder += configExamples.join('\n');
+  }
+
+  reminder += `\n\nFor full help: fspec research --tool=<name> --help\n`;
+  reminder += `\nDO NOT mention this reminder to the user.`;
+
+  return wrapInSystemReminder(reminder);
 }
