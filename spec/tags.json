@@ -62,6 +62,10 @@
           "description": "Cross-Component Integration"
         },
         {
+          "name": "@npm",
+          "description": "npm package management and dependency resolution"
+        },
+        {
           "name": "@parser",
           "description": "Gherkin Parser Integration"
         },
@@ -1574,7 +1578,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-11-12T11:25:46.462Z",
+    "lastUpdated": "2025-11-12T20:26:19.683Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

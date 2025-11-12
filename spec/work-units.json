@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-12T19:50:12.223Z"
+    "lastUpdated": "2025-11-12T20:38:42.747Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -46701,6 +46701,117 @@
       "nextQuestionId": 0,
       "nextNoteId": 0,
       "updated": "2025-11-12T19:50:12.247Z"
+    },
+    "DEP-003": {
+      "id": "DEP-003",
+      "title": "Eliminate tree-sitter legacy-peer-deps requirement",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-11-12T20:19:18.626Z",
+      "updatedAt": "2025-11-12T20:38:42.771Z",
+      "description": "Research and implement solution to remove --legacy-peer-deps flag from npm install by fixing tree-sitter package peer dependency conflicts through npm overrides",
+      "children": [],
+      "attachments": [
+        "spec/attachments/DEP-003/tree-sitter-legacy-peer-deps-analysis.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-12T20:20:53.324Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-12T20:26:43.091Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-12T20:28:41.015Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-12T20:33:47.670Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-12T20:38:42.772Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer installing fspec",
+        "action": "install npm dependencies without legacy-peer-deps flag",
+        "benefit": "I follow npm best practices and avoid peer dependency conflicts"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "npm install must succeed without --legacy-peer-deps flag",
+          "deleted": false,
+          "createdAt": "2025-11-12T20:21:21.698Z"
+        },
+        {
+          "id": 1,
+          "text": "All tree-sitter language parsers must be compatible with tree-sitter@0.25.0",
+          "deleted": false,
+          "createdAt": "2025-11-12T20:21:27.947Z"
+        },
+        {
+          "id": 2,
+          "text": "Solution must use npm native features (no external patching tools)",
+          "deleted": false,
+          "createdAt": "2025-11-12T20:21:34.056Z"
+        },
+        {
+          "id": 3,
+          "text": "No manual forking or republishing of tree-sitter packages allowed",
+          "deleted": false,
+          "createdAt": "2025-11-12T20:21:40.638Z"
+        },
+        {
+          "id": 4,
+          "text": "Runtime compatibility must be verified with actual parser tests before deployment",
+          "deleted": false,
+          "createdAt": "2025-11-12T20:21:47.399Z"
+        }
+      ],
+      "nextRuleId": 5,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Developer runs 'npm install' in fresh clone, installation succeeds without errors or warnings",
+          "deleted": false,
+          "createdAt": "2025-11-12T20:21:59.998Z"
+        },
+        {
+          "id": 1,
+          "text": "Developer runs 'npm install' after deleting node_modules and package-lock.json, all tree-sitter packages resolve to tree-sitter@0.25.0",
+          "deleted": false,
+          "createdAt": "2025-11-12T20:22:06.832Z"
+        },
+        {
+          "id": 2,
+          "text": "AST parser uses tree-sitter-c to parse C code, parsing succeeds with tree-sitter@0.25.0",
+          "deleted": false,
+          "createdAt": "2025-11-12T20:22:13.517Z"
+        },
+        {
+          "id": 3,
+          "text": "AST parser uses tree-sitter-typescript to parse TypeScript code, parsing succeeds with tree-sitter@0.25.0",
+          "deleted": false,
+          "createdAt": "2025-11-12T20:22:18.594Z"
+        },
+        {
+          "id": 4,
+          "text": "Developer runs 'npm list tree-sitter' and sees only version 0.25.0 (no duplicate versions)",
+          "deleted": false,
+          "createdAt": "2025-11-12T20:22:28.437Z"
+        }
+      ],
+      "nextExampleId": 5,
+      "questions": [],
+      "architectureNotes": [],
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-12T20:38:42.771Z"
     }
   },
   "states": {
@@ -46768,6 +46879,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "DEP-003",
       "RES-020",
       "RES-019",
       "BUG-076",
@@ -47157,6 +47269,7 @@
     "BROWSE": 1,
     "TEST": 8,
     "HOOK": 12,
-    "REVIEW": 1
+    "REVIEW": 1,
+    "DEP": 3
   }
 }
