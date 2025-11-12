@@ -222,3 +222,60 @@ export async function getScenarioSteps(
 
   throw new Error(`Scenario "${scenarioName}" not found in ${featureFilePath}`);
 }
+
+/**
+ * Find all feature files tagged with a specific work unit ID
+ * Part of COV-054: Auto-discover features from @TAG when linkedFeatures is empty
+ *
+ * @param workUnitId - Work unit ID to search for (e.g., "AUTH-001")
+ * @param cwd - Current working directory (defaults to process.cwd())
+ * @returns Array of feature names (without .feature extension)
+ */
+export async function findFeaturesByTag(
+  workUnitId: string,
+  cwd?: string
+): Promise<string[]> {
+  const basePath = cwd || process.cwd();
+  const featuresDir = join(basePath, 'spec', 'features');
+
+  const featureNames: string[] = [];
+
+  try {
+    // Find all .feature files
+    const featureFiles = await glob(['*.feature'], {
+      cwd: featuresDir,
+      absolute: false,
+    });
+
+    // Parse each feature file and check for work unit tag
+    for (const file of featureFiles) {
+      const filePath = join(featuresDir, file);
+      const content = await readFile(filePath, 'utf-8');
+
+      try {
+        const parser = new Gherkin.Parser(builder, matcher);
+        const gherkinDocument = parser.parse(content);
+
+        if (gherkinDocument.feature) {
+          // Check feature-level tags for @WORK-UNIT-ID
+          for (const tag of gherkinDocument.feature.tags) {
+            if (tag.name === `@${workUnitId}`) {
+              // Extract feature name from filename (remove .feature extension)
+              const featureName = file.replace('.feature', '');
+              featureNames.push(featureName);
+              break; // Found the tag, no need to check other tags
+            }
+          }
+        }
+      } catch {
+        // Skip files with parse errors
+        continue;
+      }
+    }
+  } catch {
+    // If features directory doesn't exist, return empty array
+    return [];
+  }
+
+  return featureNames;
+}

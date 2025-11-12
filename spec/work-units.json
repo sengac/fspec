@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-11T22:43:25.896Z"
+    "lastUpdated": "2025-11-11T23:58:10.668Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -45361,14 +45361,106 @@
       "id": "COV-054",
       "title": "Coverage enforcement gap: 21.3% of features bypass validation",
       "type": "bug",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2025-11-11T01:21:20.107Z",
-      "updatedAt": "2025-11-11T01:22:54.662Z",
+      "updatedAt": "2025-11-11T23:58:10.691Z",
       "description": "Coverage validation only runs if linkedFeatures is populated, but @TAGs don't auto-populate this array. Developers forget to run 'fspec link-feature', resulting in 62/291 (21.3%) empty coverage files for done work units.",
       "children": [],
       "attachments": [
         "spec/attachments/COV-054/coverage-enforcement-gap-analysis.md"
-      ]
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-11T23:46:19.413Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-11T23:49:25.381Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-11T23:54:09.124Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-11T23:54:42.919Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-11T23:58:10.691Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using fspec",
+        "action": "have coverage validation automatically detect features tagged with work unit IDs",
+        "benefit": "I don't need to manually run link-feature commands and coverage validation never gets skipped"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Coverage validation must auto-discover feature files tagged with @WORK-UNIT-ID when linkedFeatures array is empty",
+          "deleted": false,
+          "createdAt": "2025-11-11T23:46:45.117Z"
+        },
+        {
+          "id": 1,
+          "text": "Auto-discovery must scan all feature files in spec/features directory",
+          "deleted": false,
+          "createdAt": "2025-11-11T23:46:53.729Z"
+        },
+        {
+          "id": 2,
+          "text": "Auto-discovery must use extractWorkUnitTags() utility from src/utils/work-unit-tags.ts",
+          "deleted": false,
+          "createdAt": "2025-11-11T23:46:54.287Z"
+        },
+        {
+          "id": 3,
+          "text": "If both linkedFeatures array AND @TAG exist, linkedFeatures takes precedence (explicit override)",
+          "deleted": false,
+          "createdAt": "2025-11-11T23:46:54.855Z"
+        },
+        {
+          "id": 4,
+          "text": "Coverage validation must run for ALL scenarios in auto-discovered features",
+          "deleted": false,
+          "createdAt": "2025-11-11T23:46:55.418Z"
+        }
+      ],
+      "nextRuleId": 5,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Work unit AUTH-001 has linkedFeatures: null but feature file has @AUTH-001 tag → Auto-discovery finds user-authentication.feature → Coverage validation runs",
+          "deleted": false,
+          "createdAt": "2025-11-11T23:47:01.795Z"
+        },
+        {
+          "id": 1,
+          "text": "Work unit with both linkedFeatures: ['custom-name'] AND @TAG in feature file → Use linkedFeatures (explicit wins over auto-discovery)",
+          "deleted": false,
+          "createdAt": "2025-11-11T23:47:10.952Z"
+        },
+        {
+          "id": 2,
+          "text": "Work unit TASK-001 (type=task) has no @TAG and no linkedFeatures → Allow progression with warning (tasks exempt)",
+          "deleted": false,
+          "createdAt": "2025-11-11T23:47:11.518Z"
+        },
+        {
+          "id": 3,
+          "text": "Work unit BUG-042 has @BUG-042 tag in feature file but 0% coverage → Block progression with coverage error",
+          "deleted": false,
+          "createdAt": "2025-11-11T23:47:12.079Z"
+        }
+      ],
+      "nextExampleId": 4,
+      "questions": [],
+      "architectureNotes": [],
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-11T23:58:10.691Z"
     }
   },
   "states": {
@@ -45423,8 +45515,7 @@
       "INT-004",
       "DOC-012",
       "DOC-013",
-      "DOC-014",
-      "COV-054"
+      "DOC-014"
     ],
     "specifying": [
       "LANG-001",
@@ -45437,6 +45528,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "COV-054",
       "BUG-074",
       "RES-016",
       "RES-009",
