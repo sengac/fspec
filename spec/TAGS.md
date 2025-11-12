@@ -110,6 +110,7 @@ Tags that categorize features by functional area.
 | `@interaction` | User interaction and input handling features |
 | `@interactive-cli` | Interactive CLI features and TUI workflows |
 | `@kanban` | Kanban board and workflow management |
+| `@language-support` | Programming language support and integration |
 | `@list` | List operations |
 | `@metrics` | Metrics and measurements |
 | `@metrics-estimation` | Metrics and estimation tracking |
@@ -211,6 +212,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@config` | Configuration loading and management features |
 | `@cucumber-parser` | Cucumber Parser Integration |
 | `@cucumber-style` | Cucumber-style step definition and matching patterns |
+| `@dart` | Dart language and Flutter framework features |
 | `@data-integrity` | Data integrity validation and consistency checks |
 | `@data-model` | Features related to data models, schemas, and data structure transformations |
 | `@destructive-action` | Features requiring confirmation dialogs for destructive operations (delete, overwrite, etc.) |
@@ -246,6 +248,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@json-output` | JSON format output support |
 | `@json-schema` | JSON Schema Validation |
 | `@keyboard-navigation` | Keyboard input and navigation features |
+| `@kotlin` | Kotlin language and JVM features |
 | `@layout` | Layout and visual presentation features |
 | `@learning` | Machine learning and adaptive features based on usage patterns |
 | `@logging` | Logging and diagnostics features |
@@ -632,7 +635,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-11-12T11:17:38.560Z_
+_Last updated: 2025-11-12T11:25:46.462Z_
 
 **Update Command**: `fspec tag-stats`
 

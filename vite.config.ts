@@ -57,6 +57,10 @@ export default defineConfig({
         'tree-sitter-cpp',
         'tree-sitter-bash',
         'tree-sitter-json',
+        'tree-sitter-kotlin',
+        'tree-sitter-dart',
+        'tree-sitter-swift',
+        'tree-sitter-c',
       ],
       output: {
         preserveModules: false,

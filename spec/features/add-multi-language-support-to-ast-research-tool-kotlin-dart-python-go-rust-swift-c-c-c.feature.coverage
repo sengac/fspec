@@ -1,0 +1,84 @@
+{
+  "scenarios": [
+    {
+      "name": "Parse Python file and list functions",
+      "testMappings": [
+        {
+          "file": "src/research-tools/__tests__/multi-language-support.test.ts",
+          "lines": "11-38",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Parse Go file and list functions",
+      "testMappings": [
+        {
+          "file": "src/research-tools/__tests__/multi-language-support.test.ts",
+          "lines": "40-63",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Parse Rust file and list functions",
+      "testMappings": [
+        {
+          "file": "src/research-tools/__tests__/multi-language-support.test.ts",
+          "lines": "65-88",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Parse Swift file and list functions",
+      "testMappings": [
+        {
+          "file": "src/research-tools/__tests__/multi-language-support.test.ts",
+          "lines": "90-113",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Parse C# file and list methods",
+      "testMappings": [
+        {
+          "file": "src/research-tools/__tests__/multi-language-support.test.ts",
+          "lines": "115-138",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Parse C file and list functions",
+      "testMappings": [
+        {
+          "file": "src/research-tools/__tests__/multi-language-support.test.ts",
+          "lines": "140-163",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Parse C++ file and list functions",
+      "testMappings": [
+        {
+          "file": "src/research-tools/__tests__/multi-language-support.test.ts",
+          "lines": "165-188",
+          "implMappings": []
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/research-tools/__tests__/multi-language-support.test.ts"
+    ],
+    "implFiles": [],
+    "totalLinesCovered": 172
+  }
+}

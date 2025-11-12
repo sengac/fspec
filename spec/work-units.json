@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-12T11:18:48.840Z"
+    "lastUpdated": "2025-11-12T12:12:46.666Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -46400,6 +46400,162 @@
       "nextQuestionId": 0,
       "nextNoteId": 0,
       "updated": "2025-11-12T11:18:48.863Z"
+    },
+    "RES-019": {
+      "id": "RES-019",
+      "title": "Add multi-language support to AST research tool (Kotlin, Dart, Python, Go, Rust, Swift, C#, C, C++)",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-11-12T11:23:07.338Z",
+      "updatedAt": "2025-11-12T12:12:46.688Z",
+      "description": "Extend AST research tool to support Kotlin and Dart languages by integrating tree-sitter-kotlin and tree-sitter-dart parsers",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-12T11:23:16.315Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-12T11:26:08.154Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-12T11:28:13.779Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-12T11:58:28.909Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-12T12:01:18.623Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-12T12:11:13.048Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-12T12:11:44.502Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-12T12:12:46.688Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using AST research tool",
+        "action": "analyze Kotlin and Dart codebases",
+        "benefit": "I can use fspec research commands with projects written in these languages"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "AST tool must support tree-sitter-kotlin for Kotlin language parsing",
+          "deleted": false,
+          "createdAt": "2025-11-12T11:23:31.831Z"
+        },
+        {
+          "id": 1,
+          "text": "AST tool must support tree-sitter-dart for Dart language parsing",
+          "deleted": false,
+          "createdAt": "2025-11-12T11:23:32.371Z"
+        },
+        {
+          "id": 2,
+          "text": "Language detection must identify .kt and .kts files as Kotlin",
+          "deleted": false,
+          "createdAt": "2025-11-12T11:23:32.912Z"
+        },
+        {
+          "id": 3,
+          "text": "Language detection must identify .dart files as Dart",
+          "deleted": false,
+          "createdAt": "2025-11-12T11:23:33.455Z"
+        },
+        {
+          "id": 4,
+          "text": "AST tool must support tree-sitter parsers for Python, Go, Rust, Swift, C#, C, and C++",
+          "deleted": false,
+          "createdAt": "2025-11-12T11:58:56.774Z"
+        },
+        {
+          "id": 5,
+          "text": "Language detection must identify file extensions: .py (Python), .go (Go), .rs (Rust), .swift (Swift), .cs (C#), .c/.h (C), .cpp/.hpp/.cc/.cxx (C++)",
+          "deleted": false,
+          "createdAt": "2025-11-12T11:59:03.870Z"
+        }
+      ],
+      "nextRuleId": 6,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User runs 'fspec research --tool=ast --operation=list-functions --file=MyClass.kt' and gets list of Kotlin functions",
+          "deleted": false,
+          "createdAt": "2025-11-12T11:23:41.665Z"
+        },
+        {
+          "id": 1,
+          "text": "User runs 'fspec research --tool=ast --operation=list-classes --file=MyWidget.dart' and gets list of Dart classes",
+          "deleted": false,
+          "createdAt": "2025-11-12T11:23:42.210Z"
+        },
+        {
+          "id": 2,
+          "text": "User runs 'fspec research --tool=ast --operation=list-functions --file=app.dart' and gets Flutter/Dart functions",
+          "deleted": false,
+          "createdAt": "2025-11-12T11:23:42.751Z"
+        },
+        {
+          "id": 3,
+          "text": "User runs 'fspec research --tool=ast --operation=list-functions --file=main.py' and gets list of Python functions",
+          "deleted": false,
+          "createdAt": "2025-11-12T11:59:11.526Z"
+        },
+        {
+          "id": 4,
+          "text": "User runs 'fspec research --tool=ast --operation=list-functions --file=main.go' and gets list of Go functions",
+          "deleted": false,
+          "createdAt": "2025-11-12T11:59:19.393Z"
+        },
+        {
+          "id": 5,
+          "text": "User runs 'fspec research --tool=ast --operation=list-functions --file=main.rs' and gets list of Rust functions",
+          "deleted": false,
+          "createdAt": "2025-11-12T11:59:29.228Z"
+        },
+        {
+          "id": 6,
+          "text": "User runs 'fspec research --tool=ast --operation=list-functions --file=App.swift' and gets list of Swift functions",
+          "deleted": false,
+          "createdAt": "2025-11-12T11:59:35.521Z"
+        },
+        {
+          "id": 7,
+          "text": "User runs 'fspec research --tool=ast --operation=list-functions --file=Program.cs' and gets list of C# methods",
+          "deleted": false,
+          "createdAt": "2025-11-12T11:59:42.618Z"
+        },
+        {
+          "id": 8,
+          "text": "User runs 'fspec research --tool=ast --operation=list-functions --file=main.c' and gets list of C functions",
+          "deleted": false,
+          "createdAt": "2025-11-12T11:59:49.974Z"
+        },
+        {
+          "id": 9,
+          "text": "User runs 'fspec research --tool=ast --operation=list-functions --file=main.cpp' and gets list of C++ functions",
+          "deleted": false,
+          "createdAt": "2025-11-12T11:59:58.105Z"
+        }
+      ],
+      "nextExampleId": 10,
+      "questions": [],
+      "architectureNotes": [],
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-12T12:12:46.688Z"
     }
   },
   "states": {
@@ -46467,6 +46623,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "RES-019",
       "BUG-076",
       "TUI-030",
       "BUG-075",
@@ -46850,7 +47007,7 @@
     "VIZ": 4,
     "INT": 4,
     "VID": 2,
-    "RES": 18,
+    "RES": 19,
     "BROWSE": 1,
     "TEST": 8,
     "HOOK": 12,
