@@ -110,7 +110,7 @@ describe('Feature: Unconfigured research tool visibility and discovery', () => {
       // Verify Perplexity is now detected as configured
       const perplexityStatus = status.get('perplexity');
       expect(perplexityStatus!.configured).toBe(true);
-      expect(perplexityStatus!.reason).toContain('configured');
+      expect(perplexityStatus!.reason.toLowerCase()).toContain('configured');
 
       // AST still configured (no config needed)
       const astStatus = status.get('ast');

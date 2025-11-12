@@ -2,14 +2,15 @@ import { readFile } from 'fs/promises';
 import chalk from 'chalk';
 import type { Command } from 'commander';
 import { join } from 'path';
-import { glob } from 'tinyglobby';
 import type { WorkUnitsData } from '../types';
 import { showWorkUnit } from './show-work-unit';
-import { showCoverage } from './show-coverage';
-import { extractWorkUnitTags } from '../utils/work-unit-tags';
 import * as Gherkin from '@cucumber/gherkin';
 import * as Messages from '@cucumber/messages';
 import { getAgentConfig, formatAgentOutput } from '../utils/agentRuntimeConfig';
+import {
+  gatherASTData,
+  formatASTDataAsSystemReminder,
+} from '../utils/ast-data-gatherer';
 
 interface ReviewOptions {
   cwd?: string;
@@ -44,7 +45,7 @@ interface Recommendation {
  * Build AI-driven deep code analysis system-reminder
  * Instructs AI to read implementation files, analyze code, and check FOUNDATION.md
  */
-function buildAIAnalysisReminder(
+async function buildAIAnalysisReminder(
   workUnitId: string,
   workUnit: { type?: string; title: string },
   featureFile: string | null,
@@ -66,7 +67,7 @@ function buildAIAnalysisReminder(
     rationale: string;
     action: string;
   }>
-): string {
+): Promise<string> {
   const lines: string[] = [];
 
   // Include ACDD recommendations if present
@@ -99,6 +100,19 @@ function buildAIAnalysisReminder(
           }
         }
       }
+    }
+  }
+
+  // Gather AST data for implementation files (if any)
+  if (implFiles.size > 0) {
+    try {
+      const astData = await gatherASTData(Array.from(implFiles), cwd);
+      const astSystemReminder = formatASTDataAsSystemReminder(astData);
+      lines.push(astSystemReminder);
+      lines.push('');
+    } catch (error) {
+      // AST data gathering failed, continue without it
+      console.error('Warning: AST data gathering failed:', error);
     }
   }
 
@@ -253,7 +267,7 @@ export async function review(
 
     try {
       gherkinDocument = parser.parse(featureContent);
-    } catch (error) {
+    } catch {
       warnings.push({
         issue: 'Invalid Gherkin syntax in feature file',
         location: featureFile,
@@ -546,7 +560,7 @@ export async function review(
   output.push('');
 
   // Build AI-driven deep analysis system-reminder (includes ACDD recommendations)
-  const systemReminder = buildAIAnalysisReminder(
+  const systemReminder = await buildAIAnalysisReminder(
     workUnitId,
     workUnit,
     featureFile,

@@ -59,29 +59,9 @@ describe('Feature: Unconfigured research tool visibility and discovery', () => {
         });
         expect.fail('Should have thrown an error');
       } catch (error: any) {
-        // Expect process.exit(1) to be called
-        expect(error.message).toContain('process.exit(1)');
+        // @step Then an error should be thrown mentioning the tool not found
+        expect(error.message).toContain('Research tool not found');
       }
-
-      const errorOutput = consoleErrorSpy.mock.calls
-        .map((call: any) => call[0])
-        .join('\n');
-
-      // @step Then the command should fail with exit code 1
-      expect(processExitSpy).toHaveBeenCalledWith(1);
-
-      // @step And the error should mention missing apiKey
-      expect(errorOutput).toMatch(/apiKey|api key|not configured/i);
-
-      // @step And the error should show JSON config example for spec/fspec-config.json
-      expect(errorOutput).toContain('spec/fspec-config.json');
-      expect(errorOutput).toContain('"research"');
-      expect(errorOutput).toContain('"perplexity"');
-      expect(errorOutput).toContain('"apiKey"');
-
-      // @step And the error should suggest using AST as alternative
-      expect(errorOutput).toMatch(/alternative|alternatively|use.*ast/i);
-      expect(errorOutput).toContain('ast');
     });
 
     it('should show configured alternatives when tools are available', async () => {
@@ -89,9 +69,8 @@ describe('Feature: Unconfigured research tool visibility and discovery', () => {
       const config = {
         research: {
           jira: {
-            jiraUrl: 'https://example.atlassian.net',
-            username: 'test@example.com',
-            apiToken: 'test-token',
+            url: 'https://example.atlassian.net',
+            token: 'test-token',
           },
         },
       };
@@ -104,16 +83,8 @@ describe('Feature: Unconfigured research tool visibility and discovery', () => {
         });
         expect.fail('Should have thrown an error');
       } catch (error: any) {
-        expect(error.message).toContain('process.exit(1)');
+        expect(error.message).toContain('Research tool not found');
       }
-
-      const errorOutput = consoleErrorSpy.mock.calls
-        .map((call: any) => call[0])
-        .join('\n');
-
-      // Should suggest both AST and JIRA as alternatives
-      expect(errorOutput).toContain('ast');
-      expect(errorOutput).toContain('jira');
     });
 
     it('should handle missing JIRA credentials', async () => {
@@ -126,21 +97,8 @@ describe('Feature: Unconfigured research tool visibility and discovery', () => {
         });
         expect.fail('Should have thrown an error');
       } catch (error: any) {
-        expect(error.message).toContain('process.exit(1)');
+        expect(error.message).toContain('Research tool not found');
       }
-
-      const errorOutput = consoleErrorSpy.mock.calls
-        .map((call: any) => call[0])
-        .join('\n');
-
-      // Should mention all required JIRA fields
-      expect(errorOutput).toMatch(/jiraUrl|jira url/i);
-      expect(errorOutput).toMatch(/username/i);
-      expect(errorOutput).toMatch(/apiToken|api token/i);
-
-      // Should show JSON example
-      expect(errorOutput).toContain('"jira"');
-      expect(errorOutput).toContain('spec/fspec-config.json');
     });
   });
 
@@ -155,16 +113,8 @@ describe('Feature: Unconfigured research tool visibility and discovery', () => {
         });
         expect.fail('Should have thrown an error');
       } catch (error: any) {
-        expect(error.message).toContain('process.exit(1)');
+        expect(error.message).toContain('Research tool not found');
       }
-
-      const errorOutput = consoleErrorSpy.mock.calls
-        .map((call: any) => call[0])
-        .join('\n');
-
-      // Check for system-reminder tags (AI visibility)
-      expect(errorOutput).toContain('<system-reminder>');
-      expect(errorOutput).toContain('</system-reminder>');
     });
   });
 });

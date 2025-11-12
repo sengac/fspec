@@ -1,0 +1,302 @@
+{
+  "scenarios": [
+    {
+      "name": "Gather structural data for implementation files",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/review-ast-data-gathering.test.ts",
+          "lines": "26-46",
+          "implMappings": []
+        },
+        {
+          "file": "src/commands/__tests__/review-ast-data-gathering.test.ts",
+          "lines": "27-48",
+          "implMappings": [
+            {
+              "file": "src/utils/ast-data-gatherer.ts",
+              "lines": [
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Identify functions with identical names across files",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/review-ast-data-gathering.test.ts",
+          "lines": "51-68",
+          "implMappings": []
+        },
+        {
+          "file": "src/commands/__tests__/review-ast-data-gathering.test.ts",
+          "lines": "52-68",
+          "implMappings": [
+            {
+              "file": "src/utils/ast-data-gatherer.ts",
+              "lines": [
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Suggest AST commands for deeper investigation",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/review-ast-data-gathering.test.ts",
+          "lines": "73-89",
+          "implMappings": []
+        },
+        {
+          "file": "src/commands/__tests__/review-ast-data-gathering.test.ts",
+          "lines": "71-87",
+          "implMappings": [
+            {
+              "file": "src/utils/ast-data-gatherer.ts",
+              "lines": [
+                100,
+                101,
+                102,
+                103,
+                104,
+                105
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Include guidance questions for AI analysis",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/review-ast-data-gathering.test.ts",
+          "lines": "94-107",
+          "implMappings": []
+        },
+        {
+          "file": "src/commands/__tests__/review-ast-data-gathering.test.ts",
+          "lines": "90-105",
+          "implMappings": [
+            {
+              "file": "src/utils/ast-data-gatherer.ts",
+              "lines": [
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Present data in neutral format without judgments",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/review-ast-data-gathering.test.ts",
+          "lines": "112-130",
+          "implMappings": []
+        },
+        {
+          "file": "src/commands/__tests__/review-ast-data-gathering.test.ts",
+          "lines": "108-130",
+          "implMappings": [
+            {
+              "file": "src/utils/ast-data-gatherer.ts",
+              "lines": [
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/commands/__tests__/review-ast-data-gathering.test.ts"
+    ],
+    "implFiles": [
+      "src/utils/ast-data-gatherer.ts"
+    ],
+    "totalLinesCovered": 365
+  }
+}

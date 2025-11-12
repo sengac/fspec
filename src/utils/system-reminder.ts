@@ -534,7 +534,7 @@ RESEARCH TOOLS: Use research tools to answer questions during Example Mapping:
   fspec research --tool=ast --query="pattern"     # Search codebase using AST analysis
   fspec research --tool=stakeholder --platform=teams --question="question" --work-unit=${workUnitId}
 
-Available research tools:
+Available research tools (--tool=ast or --tool=stakeholder):
 ${toolLines.join('\n')}
 
 Configuration:

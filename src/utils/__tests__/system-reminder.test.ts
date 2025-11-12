@@ -23,13 +23,13 @@ import {
 
 describe('Feature: System Reminder Anti-Drift Pattern', () => {
   describe('Scenario: Remind about failing tests when moving to testing phase', () => {
-    it('should return reminder about failing tests for testing status', () => {
+    it('should return reminder about failing tests for testing status', async () => {
       // Given: Work unit UI-001 moving to testing status
       const workUnitId = 'UI-001';
       const newStatus = 'testing';
 
       // When: Getting status change reminder
-      const reminder = getStatusChangeReminder(workUnitId, newStatus);
+      const reminder = await getStatusChangeReminder(workUnitId, newStatus);
 
       // Then: Should contain failing tests reminder
       expect(reminder).toContain('<system-reminder>');
@@ -44,13 +44,13 @@ describe('Feature: System Reminder Anti-Drift Pattern', () => {
   });
 
   describe('Scenario: Remind about minimal code when moving to implementing phase', () => {
-    it('should return reminder about minimal code for implementing status', () => {
+    it('should return reminder about minimal code for implementing status', async () => {
       // Given: Work unit UI-001 moving to implementing status
       const workUnitId = 'UI-001';
       const newStatus = 'implementing';
 
       // When: Getting status change reminder
-      const reminder = getStatusChangeReminder(workUnitId, newStatus);
+      const reminder = await getStatusChangeReminder(workUnitId, newStatus);
 
       // Then: Should contain minimal code reminder
       expect(reminder).toContain('<system-reminder>');
@@ -63,13 +63,13 @@ describe('Feature: System Reminder Anti-Drift Pattern', () => {
   });
 
   describe('Scenario: Remind about running all tests when moving to validating phase', () => {
-    it('should return reminder about running all tests for validating status', () => {
+    it('should return reminder about running all tests for validating status', async () => {
       // Given: Work unit UI-001 moving to validating status
       const workUnitId = 'UI-001';
       const newStatus = 'validating';
 
       // When: Getting status change reminder
-      const reminder = getStatusChangeReminder(workUnitId, newStatus);
+      const reminder = await getStatusChangeReminder(workUnitId, newStatus);
 
       // Then: Should contain validation reminder
       expect(reminder).toContain('<system-reminder>');
@@ -81,13 +81,13 @@ describe('Feature: System Reminder Anti-Drift Pattern', () => {
   });
 
   describe('Scenario: Remind about tag updates when moving to done status', () => {
-    it('should return reminder about feature file tags for done status', () => {
+    it('should return reminder about feature file tags for done status', async () => {
       // Given: Work unit UI-001 moving to done status
       const workUnitId = 'UI-001';
       const newStatus = 'done';
 
       // When: Getting status change reminder
-      const reminder = getStatusChangeReminder(workUnitId, newStatus);
+      const reminder = await getStatusChangeReminder(workUnitId, newStatus);
 
       // Then: Should contain tag update reminder
       expect(reminder).toContain('<system-reminder>');
@@ -451,13 +451,13 @@ describe('Feature: System Reminder Anti-Drift Pattern', () => {
 
   describe('REMIND-007: Update Status Reminder Enhancement', () => {
     describe('Scenario: Done state reminder', () => {
-      it('should return reminder about feature file tags', () => {
+      it('should return reminder about feature file tags', async () => {
         // Given: Work unit moving to done status
         const workUnitId = 'WORK-001';
         const newStatus = 'done';
 
         // When: Getting status change reminder
-        const reminder = getStatusChangeReminder(workUnitId, newStatus);
+        const reminder = await getStatusChangeReminder(workUnitId, newStatus);
 
         // Then: Should contain done state reminder
         expect(reminder).toContain('<system-reminder>');
@@ -471,13 +471,13 @@ describe('Feature: System Reminder Anti-Drift Pattern', () => {
     });
 
     describe('Scenario: Blocked state reminder', () => {
-      it('should return reminder about documenting blocker', () => {
+      it('should return reminder about documenting blocker', async () => {
         // Given: Work unit moving to blocked status
         const workUnitId = 'WORK-001';
         const newStatus = 'blocked';
 
         // When: Getting status change reminder
-        const reminder = getStatusChangeReminder(workUnitId, newStatus);
+        const reminder = await getStatusChangeReminder(workUnitId, newStatus);
 
         // Then: Should contain blocked state reminder
         expect(reminder).toContain('<system-reminder>');

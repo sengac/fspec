@@ -19,8 +19,8 @@ describe('Feature: Improve @step workflow clarity', () => {
     // @step Given work unit moves to testing state
     // @step When system-reminder is shown
     // @step Then @step requirement should be in FIRST 10 lines of reminder
-    it('should show @step requirement in first 10 lines of testing state reminder', () => {
-      const reminder = getStatusChangeReminder('TEST-001', 'testing');
+    it('should show @step requirement in first 10 lines of testing state reminder', async () => {
+      const reminder = await getStatusChangeReminder('TEST-001', 'testing');
       expect(reminder).not.toBeNull();
 
       if (!reminder) {
@@ -40,8 +40,8 @@ describe('Feature: Improve @step workflow clarity', () => {
     });
 
     // @step And requirement should emphasize ONE scenario = ONE test mapping
-    it('should emphasize ONE scenario = ONE test mapping in reminder', () => {
-      const reminder = getStatusChangeReminder('TEST-001', 'testing');
+    it('should emphasize ONE scenario = ONE test mapping in reminder', async () => {
+      const reminder = await getStatusChangeReminder('TEST-001', 'testing');
       expect(reminder).not.toBeNull();
 
       if (!reminder) {
@@ -53,8 +53,8 @@ describe('Feature: Improve @step workflow clarity', () => {
     });
 
     // @step And reminder should state @step comments added DURING test writing
-    it('should state @step comments added DURING test writing', () => {
-      const reminder = getStatusChangeReminder('TEST-001', 'testing');
+    it('should state @step comments added DURING test writing', async () => {
+      const reminder = await getStatusChangeReminder('TEST-001', 'testing');
       expect(reminder).not.toBeNull();
 
       if (!reminder) {

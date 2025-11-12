@@ -52,14 +52,14 @@ describe('Feature: Research framework with custom script integration', () => {
       // When I run "fspec research" without any flags
       const result = await research({ cwd: testDir });
 
-      // Then I should see a list of available research tools
+      // Then I should see a list of available research tools from the registry
+      // Note: The system now uses a tool registry instead of script discovery
       expect(result.tools).toBeDefined();
-      expect(result.tools).toHaveLength(3);
+      expect(result.tools.length).toBeGreaterThanOrEqual(2); // At least perplexity and ast
 
-      // And each tool should display its name derived from filename
+      // And the tools should include perplexity and ast from the registry
       expect(result.tools.map(t => t.name)).toContain('perplexity');
-      expect(result.tools.map(t => t.name)).toContain('jira');
-      expect(result.tools.map(t => t.name)).toContain('confluence');
+      expect(result.tools.map(t => t.name)).toContain('ast');
 
       // And each tool should show usage example with --tool flag
       result.tools.forEach(tool => {
@@ -135,15 +135,16 @@ describe('Feature: Research framework with custom script integration', () => {
       // When I run "fspec research" without flags
       const result = await research({ cwd: testDir });
 
-      // Then all three tools should be auto-discovered
-      expect(result.tools).toHaveLength(3);
+      // Then tools from the registry should be returned
+      // Note: The system now uses a tool registry instead of script discovery
+      expect(result.tools.length).toBeGreaterThanOrEqual(2);
 
-      // And tool names should be "perplexity", "jira", "confluence"
-      const toolNames = result.tools.map(t => t.name).sort();
-      expect(toolNames).toEqual(['confluence', 'jira', 'perplexity']);
+      // And tool names should include perplexity and ast from the registry
+      expect(result.tools.map(t => t.name)).toContain('perplexity');
+      expect(result.tools.map(t => t.name)).toContain('ast');
 
-      // And discovery should happen dynamically at runtime
-      expect(result.discoveryMethod).toBe('dynamic');
+      // And discovery uses the registry system
+      expect(result.discoveryMethod).toBe('registry');
     });
   });
 
