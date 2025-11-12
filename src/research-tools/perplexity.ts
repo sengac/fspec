@@ -208,39 +208,57 @@ export const tool: ResearchTool = {
     }
   },
 
-  help(): string {
-    return `PERPLEXITY RESEARCH TOOL
-
-Research questions using Perplexity AI during Example Mapping.
-
-USAGE
-  perplexity --query "your question here" [options]
-
-OPTIONS
-  --query <text>      Question to research (required)
-  --model <name>      Perplexity model (default: sonar)
-  --format <type>     Output format: markdown, json, text (default: markdown)
-  --help              Show this help message
-
-EXAMPLES
-  perplexity --query "How does OAuth2 work?"
-  perplexity --query "What is Example Mapping?" --format json
-
-CONFIGURATION
-  API key must be set in ~/.fspec/fspec-config.json:
-  {
-    "research": {
-      "perplexity": {
-        "apiKey": "pplx-..."
-      }
-    }
-  }
-
-EXIT CODES
-  0  Success
-  1  Missing required flag (--query)
-  2  API key not configured
-  3  API error (network, rate limit, etc.)`;
+  getHelpConfig() {
+    return {
+      name: 'perplexity',
+      description:
+        'Research questions using Perplexity AI during Example Mapping',
+      usage:
+        'fspec research --tool=perplexity --query "your question" [options]',
+      whenToUse:
+        'Use during Example Mapping to research domain knowledge, technical concepts, or best practices.',
+      options: [
+        {
+          flag: '--query <text>',
+          description: 'Question to research (required)',
+        },
+        {
+          flag: '--model <name>',
+          description: 'Perplexity model',
+          defaultValue: 'sonar',
+        },
+        {
+          flag: '--format <type>',
+          description: 'Output format',
+          defaultValue: 'markdown',
+        },
+      ],
+      examples: [
+        {
+          command: '--query "How does OAuth2 work?"',
+          description: 'Research OAuth2',
+        },
+        {
+          command: '--query "What is Example Mapping?" --format json',
+          description: 'Research with JSON output',
+        },
+      ],
+      configuration: {
+        required: true,
+        location: '~/.fspec/fspec-config.json',
+        example: JSON.stringify(
+          { research: { perplexity: { apiKey: 'pplx-...' } } },
+          null,
+          2
+        ),
+      },
+      exitCodes: [
+        { code: 0, description: 'Success' },
+        { code: 1, description: 'Missing required flag (--query)' },
+        { code: 2, description: 'API key not configured' },
+        { code: 3, description: 'API error (network, rate limit, etc.)' },
+      ],
+    };
   },
 };
 

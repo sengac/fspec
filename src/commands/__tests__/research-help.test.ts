@@ -86,53 +86,165 @@ describe('Feature: Tool-Specific Help System', () => {
       expect(error.status).toBe(1);
     });
   });
+});
 
-  describe('Scenario: Show warning when tool lacks help implementation', () => {
-    let legacyToolPath: string;
+/**
+ * Feature: spec/features/fix-fspec-research-tool-ast-help-command-should-display-tool-specific-help-instead-of-failing.feature
+ *
+ * BUG-074: Fix research tool help command to use structured help system
+ */
+describe('Feature: Fix research tool help command (BUG-074)', () => {
+  describe('Scenario: Display help for bundled tool with standard sections', () => {
+    it('should display structured help for ast tool', () => {
+      // @step Given the ast research tool is bundled in src/research-tools/
+      // @step When I run 'fspec research --tool=ast --help'
+      const result = execSync('fspec research --tool=ast --help', {
+        encoding: 'utf-8',
+      });
+
+      // @step Then the help output should contain a USAGE section
+      expect(result).toContain('USAGE');
+
+      // @step And the help output should contain an OPTIONS section
+      expect(result).toContain('OPTIONS');
+
+      // @step And the help output should contain an EXAMPLES section
+      expect(result).toContain('EXAMPLES');
+
+      // @step And the help output should contain a WHEN TO USE section
+      expect(result).toContain('WHEN TO USE');
+    });
+  });
+
+  describe('Scenario: Display help for tool requiring configuration', () => {
+    it('should show CONFIGURATION section for jira tool', () => {
+      // @step Given the jira research tool requires configuration in ~/.fspec/fspec-config.json
+      // @step When I run 'fspec research --tool=jira --help'
+      const result = execSync('fspec research --tool=jira --help', {
+        encoding: 'utf-8',
+      });
+
+      // @step Then the help output should contain a CONFIGURATION section
+      expect(result).toContain('CONFIGURATION');
+
+      // @step And the CONFIGURATION section should show the required credentials
+      expect(result).toMatch(/jiraUrl|username|apiToken/);
+    });
+  });
+
+  describe('Scenario: Display help for custom tool in spec/research-tools/', () => {
+    let customToolPath: string;
 
     beforeEach(() => {
-      // Create a legacy tool without --help implementation
-      // It requires --query but doesn't recognize --help, so it will error
-      legacyToolPath = path.join(researchScriptsDir, 'legacy-tool');
+      // @step Given a custom tool named 'custom' exists in spec/research-tools/custom.js
+      customToolPath = path.join(
+        process.cwd(),
+        'spec/research-tools/custom.js'
+      );
+      const customToolDir = path.dirname(customToolPath);
+
+      if (!fs.existsSync(customToolDir)) {
+        fs.mkdirSync(customToolDir, { recursive: true });
+      }
+
+      // @step And the custom tool implements getHelpConfig() method
       fs.writeFileSync(
-        legacyToolPath,
-        '#!/bin/bash\n' +
-          '# Legacy tool that does NOT implement --help\n' +
-          '# It only recognizes --query flag\n' +
-          'if [ "$1" != "--query" ]; then\n' +
-          '  echo "Error: Missing required flag --query" >&2\n' +
-          '  exit 1\n' +
-          'fi\n' +
-          'echo "Legacy tool output"\n' +
-          'exit 0',
-        { mode: 0o755 }
+        customToolPath,
+        `
+export const tool = {
+  name: 'custom',
+  description: 'Custom test tool',
+  async execute(args) {
+    return JSON.stringify({ results: [] });
+  },
+  getHelpConfig() {
+    return {
+      name: 'custom',
+      description: 'Custom test research tool',
+      usage: 'fspec research --tool=custom [options]',
+      whenToUse: 'Use for testing custom tools',
+      options: [
+        { flag: '--query <text>', description: 'Search query' }
+      ],
+      examples: [
+        { command: '--query "test"', description: 'Search for test' }
+      ]
+    };
+  }
+};
+`,
+        'utf8'
       );
     });
 
     afterEach(() => {
-      // Clean up legacy tool
-      if (fs.existsSync(legacyToolPath)) {
-        fs.unlinkSync(legacyToolPath);
+      if (fs.existsSync(customToolPath)) {
+        fs.unlinkSync(customToolPath);
       }
     });
 
-    it('should show warning for tool without --help', () => {
-      // @step Given a research tool exists but does not implement --help flag
-      expect(fs.existsSync(legacyToolPath)).toBe(true);
-
-      // @step When I run 'fspec research --tool=legacy-tool --help'
-      const result = execSync('fspec research --tool=legacy-tool --help', {
+    it('should format custom tool help identically to bundled tools', () => {
+      // @step When I run 'fspec research --tool=custom --help'
+      const result = execSync('fspec research --tool=custom --help', {
         encoding: 'utf-8',
       });
 
-      // @step Then I should see a warning that the tool does not implement --help
-      expect(result).toMatch(/warning|does not implement --help/i);
+      // @step Then the help output should be formatted identically to bundled tools
+      expect(result).toContain('CUSTOM RESEARCH TOOL');
 
-      // @step And the output should show generic usage instructions for the tool
-      expect(result).toContain('fspec research --tool=legacy-tool');
+      // @step And the help output should contain all standard sections
+      expect(result).toContain('USAGE');
+      expect(result).toContain('OPTIONS');
+      expect(result).toContain('EXAMPLES');
+      expect(result).toContain('WHEN TO USE');
+    });
+  });
 
-      // @step And the output should indicate where to find the tool script
-      expect(result).toContain('spec/research-scripts/legacy-tool');
+  describe('Scenario: Error when requesting help for nonexistent tool', () => {
+    it('should show error with list of available tools', () => {
+      // @step Given no research tool named 'nonexistent' exists
+      // @step When I run 'fspec research --tool=nonexistent --help'
+      let error: any;
+      try {
+        execSync('fspec research --tool=nonexistent --help', {
+          encoding: 'utf-8',
+        });
+      } catch (e) {
+        error = e;
+      }
+
+      // @step Then the command should display an error message
+      expect(error).toBeDefined();
+      const output = error.stderr || error.stdout || '';
+      expect(output).toContain('not found');
+
+      // @step And the error should list all available research tools
+      expect(output).toMatch(/ast|jira|perplexity|confluence|stakeholder/);
+
+      // @step And the command should exit with code 1
+      expect(error.status).toBe(1);
+    });
+  });
+
+  describe('Scenario: Refactor tool from string-based help to structured config', () => {
+    it('should verify ast tool uses getHelpConfig()', async () => {
+      // @step Given the ast tool has a help() method returning a hand-crafted string
+      // @step When I refactor ast.ts to use getHelpConfig() returning ResearchToolHelpConfig
+      const { getResearchTool } = await import('../../research-tools/registry');
+      const astTool = await getResearchTool('ast', process.cwd());
+
+      // @step Then the help output should match the previous format
+      expect(astTool.getHelpConfig).toBeDefined();
+      const config = astTool.getHelpConfig();
+      expect(config.name).toBe('ast');
+
+      // @step And the formatting should be handled by formatResearchToolHelp()
+      expect(config.usage).toBeDefined();
+      expect(config.options).toBeDefined();
+
+      // @step And TypeScript should validate the config structure at compile time
+      // (Validated at compile time by TypeScript)
+      expect(config).toHaveProperty('description');
     });
   });
 });

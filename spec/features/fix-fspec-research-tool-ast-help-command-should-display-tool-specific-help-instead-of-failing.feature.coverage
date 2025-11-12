@@ -1,0 +1,65 @@
+{
+  "scenarios": [
+    {
+      "name": "Display help for bundled tool with standard sections",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/help-formatter-research-tools.test.ts",
+          "lines": "21-49",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Display help for tool requiring configuration",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/help-formatter-research-tools.test.ts",
+          "lines": "51-98",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Display help for custom tool in spec/research-tools/",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/help-formatter-research-tools.test.ts",
+          "lines": "100-122",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Error when requesting help for nonexistent tool",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/research-help.test.ts",
+          "lines": "252-276",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Refactor tool from string-based help to structured config",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/help-formatter-research-tools.test.ts",
+          "lines": "150-185",
+          "implMappings": []
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/utils/__tests__/help-formatter-research-tools.test.ts",
+      "src/commands/__tests__/research-help.test.ts"
+    ],
+    "implFiles": [],
+    "totalLinesCovered": 161
+  }
+}

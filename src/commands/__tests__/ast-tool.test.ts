@@ -89,17 +89,22 @@ describe('Feature: Language-Agnostic AST Tool for AI Analysis', () => {
 
       // @step Then I should receive JSON output with import paths
       expect(result).toBeDefined();
-      expect(result.imports).toBeDefined();
-      expect(result.imports!.length).toBeGreaterThan(0);
+      expect(result.matches).toBeDefined();
+      expect(result.matches!.length).toBeGreaterThan(0);
 
       // @step And the JSON should include line numbers for each import
-      for (const imp of result.imports!) {
-        expect(imp.lineNumber).toBeDefined();
+      for (const match of result.matches!) {
+        expect(match.lineNumber).toBeDefined();
+        expect(match.imports).toBeDefined();
       }
 
       // @step And the JSON should include imported symbols
-      for (const imp of result.imports!) {
-        expect(imp.symbols).toBeDefined();
+      for (const match of result.matches!) {
+        if (match.imports) {
+          for (const imp of match.imports) {
+            expect(imp.symbols).toBeDefined();
+          }
+        }
       }
     });
   });

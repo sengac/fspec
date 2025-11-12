@@ -64,41 +64,74 @@ export const tool: ResearchTool = {
     throw new Error('No valid query or file provided');
   },
 
-  help(): string {
-    return `AST RESEARCH TOOL
-
-Research code structure using AST parsing during Example Mapping.
-
-USAGE
-  ast --query <query> [options]
-  ast --file <path> [options]
-
-OPTIONS
-  --query <query>     Natural language query for pattern detection (required if no --file)
-  --file <path>       Specific file to analyze (required if no --query)
-  --format <type>     Output format: json, markdown, text (default: json)
-  --language <lang>   Language filter: typescript, python, go, rust, etc.
-  --help              Show this help message
-
-QUERY EXAMPLES
-  ast --query "find all async functions"
-  ast --query "functions with more than 5 parameters"
-  ast --query "classes implementing interface UserRepository"
-
-FILE EXAMPLES
-  ast --file "src/broken.ts"
-  ast --file "src/auth/login.ts"
-
-FEATURES
-  - AST parsing using tree-sitter (supports 40+ languages)
-  - Pattern detection across TypeScript, JavaScript, Python, Go, Rust, Java, C++
-  - Error-tolerant parsing (analyzes incomplete or broken code)
-
-EXIT CODES
-  0  Success
-  1  Missing required flag (--query or --file)
-  2  File not found or parsing error
-  3  Invalid query or unsupported language`;
+  getHelpConfig() {
+    return {
+      name: 'ast',
+      description:
+        'AST code analysis tool for pattern detection and deep code analysis',
+      usage: 'fspec research --tool=ast [options]',
+      whenToUse:
+        'Use during Example Mapping to understand code structure, find patterns, or analyze existing implementations before writing specifications.',
+      prerequisites: [
+        'Codebase must contain TypeScript, JavaScript, Python, Go, Rust, or Java files',
+        'Tree-sitter parsers are bundled (no additional setup required)',
+      ],
+      options: [
+        {
+          flag: '--query <query>',
+          description:
+            'Natural language query for pattern detection (required if no --file)',
+        },
+        {
+          flag: '--file <path>',
+          description: 'Specific file to analyze (required if no --query)',
+        },
+        {
+          flag: '--format <type>',
+          description: 'Output format',
+          defaultValue: 'json',
+        },
+        {
+          flag: '--language <lang>',
+          description: 'Language filter: typescript, python, go, rust, etc.',
+        },
+      ],
+      examples: [
+        {
+          command: '--query "find all async functions"',
+          description: 'Find all async function definitions',
+        },
+        {
+          command: '--query "functions with more than 5 parameters"',
+          description: 'Detect functions with high parameter count',
+        },
+        {
+          command: '--file "src/auth/login.ts"',
+          description: 'Analyze specific file structure',
+        },
+      ],
+      features: [
+        'AST parsing using tree-sitter (supports 40+ languages)',
+        'Pattern detection across TypeScript, JavaScript, Python, Go, Rust, Java, C++',
+        'Error-tolerant parsing (analyzes incomplete or broken code)',
+      ],
+      commonErrors: [
+        {
+          error: 'At least one of --query or --file is required',
+          fix: 'Provide either --query "your query" or --file "path/to/file"',
+        },
+        {
+          error: 'File not found or parsing error',
+          fix: 'Check file path exists and is a valid source file',
+        },
+      ],
+      exitCodes: [
+        { code: 0, description: 'Success' },
+        { code: 1, description: 'Missing required flag (--query or --file)' },
+        { code: 2, description: 'File not found or parsing error' },
+        { code: 3, description: 'Invalid query or unsupported language' },
+      ],
+    };
   },
 };
 

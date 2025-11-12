@@ -5,6 +5,8 @@
  * Tools implement this interface to integrate with fspec research command.
  */
 
+import type { ResearchToolHelpConfig } from '../utils/help-formatter';
+
 /**
  * Research tool interface
  * All tools (bundled and custom) must implement this interface
@@ -24,10 +26,11 @@ export interface ResearchTool {
   execute(args: string[]): Promise<string>;
 
   /**
-   * Get help text for this tool
-   * @returns Help text describing tool usage, options, examples
+   * Get help configuration for this tool
+   * Returns structured configuration for standardized help display
+   * @returns ResearchToolHelpConfig object
    */
-  help(): string;
+  getHelpConfig(): ResearchToolHelpConfig;
 }
 
 /**

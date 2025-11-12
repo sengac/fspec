@@ -72,7 +72,12 @@ export async function getResearchTool(
     }
 
     // Validate tool implements interface
-    if (!tool.name || !tool.description || !tool.execute || !tool.help) {
+    if (
+      !tool.name ||
+      !tool.description ||
+      !tool.execute ||
+      !tool.getHelpConfig
+    ) {
       throw new Error(
         `Custom tool "${toolName}" does not implement ResearchTool interface correctly`
       );

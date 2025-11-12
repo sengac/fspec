@@ -126,47 +126,62 @@ export const tool: ResearchTool = {
     );
   },
 
-  help(): string {
-    return `STAKEHOLDER COMMUNICATION RESEARCH TOOL
-
-Send questions to stakeholders via chat platforms during Example Mapping.
-
-USAGE
-  stakeholder --platform <platform> --question <question> [options]
-
-OPTIONS
-  --platform <platform>   Platform to send to: teams, slack, discord (required)
-                         Multiple platforms: --platform=teams,slack
-  --question <question>   Question to send to stakeholders (required)
-  --work-unit <id>        Work unit ID for context (optional)
-  --help                  Show this help message
-
-EXAMPLES
-  stakeholder --platform=teams --question="Should we support OAuth2?"
-  stakeholder --platform=slack --question="OAuth support needed?" --work-unit=AUTH-001
-  stakeholder --platform=teams,slack --question="test"
-
-PLUGIN ARCHITECTURE
-  - Platform plugins stored in spec/research-scripts/plugins/
-  - Plugins can be any executable file (shell, Python, Node, compiled binary)
-  - Auto-discovered by checking executable bit
-  - No file extension required
-
-CONFIGURATION
-  Credentials stored in ~/.fspec/fspec-config.json:
-  {
-    "research": {
-      "stakeholder": {
-        "teams": { "webhookUrl": "..." },
-        "slack": { "token": "...", "channel": "..." }
-      }
-    }
-  }
-
-EXIT CODES
-  0  Success
-  1  Missing required arguments
-  2  Configuration error`;
+  getHelpConfig() {
+    return {
+      name: 'stakeholder',
+      description:
+        'Send questions to stakeholders via chat platforms during Example Mapping',
+      usage:
+        'fspec research --tool=stakeholder --platform <platform> --question <question> [options]',
+      whenToUse:
+        'Use during Example Mapping to ask questions to product owners, business stakeholders, or domain experts via Teams, Slack, or Discord.',
+      options: [
+        {
+          flag: '--platform <platform>',
+          description: 'Platform to send to: teams, slack, discord (required)',
+        },
+        {
+          flag: '--question <question>',
+          description: 'Question to send to stakeholders (required)',
+        },
+        {
+          flag: '--work-unit <id>',
+          description: 'Work unit ID for context (optional)',
+        },
+      ],
+      examples: [
+        {
+          command: '--platform=teams --question="Should we support OAuth2?"',
+          description: 'Send question to Teams',
+        },
+        {
+          command:
+            '--platform=slack --question="OAuth support?" --work-unit=AUTH-001',
+          description: 'Send with work unit context',
+        },
+      ],
+      configuration: {
+        required: true,
+        location: '~/.fspec/fspec-config.json',
+        example: JSON.stringify(
+          {
+            research: {
+              stakeholder: {
+                teams: { webhookUrl: '...' },
+                slack: { token: '...', channel: '...' },
+              },
+            },
+          },
+          null,
+          2
+        ),
+      },
+      exitCodes: [
+        { code: 0, description: 'Success' },
+        { code: 1, description: 'Missing required arguments' },
+        { code: 2, description: 'Configuration error' },
+      ],
+    };
   },
 };
 

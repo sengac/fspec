@@ -289,45 +289,85 @@ export const tool: ResearchTool = {
     }
   },
 
-  help(): string {
-    return `JIRA RESEARCH TOOL
-
-Research JIRA issues during Example Mapping.
-
-USAGE
-  jira --issue <key> [options]
-  jira --project <key> [options]
-  jira --query <jql> [options]
-
-OPTIONS
-  --issue <key>       Fetch single issue by key (required if no --project or --query)
-  --project <key>     List all issues in project (required if no --issue or --query)
-  --query <jql>       JQL query to search issues (required if no --issue or --project)
-  --format <type>     Output format: markdown, json, text (default: markdown)
-  --help              Show this help message
-
-JQL EXAMPLES
-  jira --query "project = AUTH AND status = Open"
-  jira --query "assignee = currentUser() AND status != Done"
-  jira --query "labels = security AND priority = High"
-
-CONFIGURATION
-  API credentials must be set in ~/.fspec/fspec-config.json:
-  {
-    "research": {
-      "jira": {
-        "jiraUrl": "https://example.atlassian.net",
-        "username": "your-email@example.com",
-        "apiToken": "your-api-token"
-      }
-    }
-  }
-
-EXIT CODES
-  0  Success
-  1  Missing required flag (--issue, --project, or --query)
-  2  Configuration or authentication error
-  3  API error (network, not found, etc.)`;
+  getHelpConfig() {
+    return {
+      name: 'jira',
+      description:
+        'JIRA research tool for fetching issues and running JQL queries',
+      usage: 'fspec research --tool=jira [options]',
+      whenToUse:
+        'Use during Example Mapping to research existing JIRA issues, understand requirements from tickets, or verify acceptance criteria.',
+      options: [
+        {
+          flag: '--issue <key>',
+          description:
+            'Fetch single issue by key (required if no --project or --query)',
+        },
+        {
+          flag: '--project <key>',
+          description:
+            'List all issues in project (required if no --issue or --query)',
+        },
+        {
+          flag: '--query <jql>',
+          description:
+            'JQL query to search issues (required if no --issue or --project)',
+        },
+        {
+          flag: '--format <type>',
+          description: 'Output format',
+          defaultValue: 'markdown',
+        },
+      ],
+      examples: [
+        {
+          command: '--issue AUTH-001',
+          description: 'Fetch single issue by key',
+        },
+        {
+          command: '--project AUTH',
+          description: 'List all issues in project',
+        },
+        {
+          command: '--query "project = AUTH AND status = Open"',
+          description: 'Search issues with JQL query',
+        },
+      ],
+      configuration: {
+        required: true,
+        location: '~/.fspec/fspec-config.json',
+        example: JSON.stringify(
+          {
+            research: {
+              jira: {
+                jiraUrl: 'https://example.atlassian.net',
+                username: 'your-email@example.com',
+                apiToken: 'your-api-token',
+              },
+            },
+          },
+          null,
+          2
+        ),
+        instructions: 'API credentials must be set in config file',
+      },
+      commonErrors: [
+        {
+          error: 'Missing required flag (--issue, --project, or --query)',
+          fix: 'Provide at least one of --issue, --project, or --query',
+        },
+        {
+          error: 'Configuration or authentication error',
+          fix: 'Check ~/.fspec/fspec-config.json has valid JIRA credentials',
+        },
+      ],
+      exitCodes: [
+        { code: 0, description: 'Success' },
+        { code: 1, description: 'Missing required flag' },
+        { code: 2, description: 'Configuration or authentication error' },
+        { code: 3, description: 'API error (network, not found, etc.)' },
+      ],
+    };
   },
 };
 
