@@ -95,6 +95,10 @@ Follow the [Quick Start](#quick-start) below and start talking naturally with yo
    - Clear your agent's context and bootstrap fspec again
    - Repeat as needed to maintain clean workflow
 
+10. **Ask your agent how to use fspec**
+
+    Your agent knows everything about fspec, so just ask it how to use it, or visit [fspec.dev](https://fspec.dev).
+
 ---
 
 ## Checkpoints
