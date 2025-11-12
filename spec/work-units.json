@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-12T12:12:46.666Z"
+    "lastUpdated": "2025-11-12T19:50:12.223Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -46556,6 +46556,151 @@
       "nextQuestionId": 0,
       "nextNoteId": 0,
       "updated": "2025-11-12T12:12:46.688Z"
+    },
+    "RES-020": {
+      "id": "RES-020",
+      "title": "Add Java, PHP, Ruby, Bash support to AST research tool",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-11-12T12:24:29.732Z",
+      "updatedAt": "2025-11-12T19:50:12.247Z",
+      "description": "Complete AST research tool language support by adding Java, PHP, Ruby, and Bash languages with full configuration, testing, and documentation",
+      "epic": "research-tools",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-12T12:24:36.379Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-12T19:34:21.460Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-12T19:39:34.114Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-12T19:46:07.337Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-12T19:50:12.247Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using AST research tool",
+        "action": "analyze codebases in Java, PHP, Ruby, and Bash",
+        "benefit": "I can use fspec research tool with all major programming languages in my projects"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "AST tool must support tree-sitter-java for Java language parsing (.java files)",
+          "deleted": false,
+          "createdAt": "2025-11-12T12:24:55.902Z"
+        },
+        {
+          "id": 1,
+          "text": "AST tool must support tree-sitter-php for PHP language parsing (.php files)",
+          "deleted": false,
+          "createdAt": "2025-11-12T12:25:06.104Z"
+        },
+        {
+          "id": 2,
+          "text": "AST tool must support tree-sitter-ruby for Ruby language parsing (.rb files)",
+          "deleted": false,
+          "createdAt": "2025-11-12T12:25:06.669Z"
+        },
+        {
+          "id": 3,
+          "text": "AST tool must support tree-sitter-bash for Bash script parsing (.sh, .bash files)",
+          "deleted": false,
+          "createdAt": "2025-11-12T12:25:07.237Z"
+        },
+        {
+          "id": 4,
+          "text": "All parsers must be properly imported and initialized in src/research-tools/ast.ts",
+          "deleted": false,
+          "createdAt": "2025-11-12T12:25:07.794Z"
+        },
+        {
+          "id": 5,
+          "text": "Language detection must identify file extensions for all 4 new languages",
+          "deleted": false,
+          "createdAt": "2025-11-12T12:25:08.352Z"
+        },
+        {
+          "id": 6,
+          "text": "Query executor must handle language-specific AST node types for each language",
+          "deleted": false,
+          "createdAt": "2025-11-12T12:25:08.909Z"
+        },
+        {
+          "id": 7,
+          "text": "Help documentation in src/help.ts must list all research tools and their capabilities",
+          "deleted": false,
+          "createdAt": "2025-11-12T12:25:09.462Z"
+        },
+        {
+          "id": 8,
+          "text": "AST tool help must document all 15 supported languages",
+          "deleted": false,
+          "createdAt": "2025-11-12T12:25:10.022Z"
+        }
+      ],
+      "nextRuleId": 9,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User runs 'fspec research --tool=ast --operation=list-functions --file=Example.java' and gets list of Java methods",
+          "deleted": false,
+          "createdAt": "2025-11-12T12:25:22.072Z"
+        },
+        {
+          "id": 1,
+          "text": "User runs 'fspec research --tool=ast --operation=list-functions --file=example.php' and gets list of PHP functions",
+          "deleted": false,
+          "createdAt": "2025-11-12T12:25:22.627Z"
+        },
+        {
+          "id": 2,
+          "text": "User runs 'fspec research --tool=ast --operation=list-functions --file=example.rb' and gets list of Ruby methods",
+          "deleted": false,
+          "createdAt": "2025-11-12T12:25:23.185Z"
+        },
+        {
+          "id": 3,
+          "text": "User runs 'fspec research --tool=ast --operation=list-functions --file=script.sh' and gets list of Bash functions",
+          "deleted": false,
+          "createdAt": "2025-11-12T12:25:23.743Z"
+        },
+        {
+          "id": 4,
+          "text": "User runs 'fspec research --tool=ast --help' and sees all 15 supported languages documented",
+          "deleted": false,
+          "createdAt": "2025-11-12T12:25:24.299Z"
+        },
+        {
+          "id": 5,
+          "text": "User runs 'fspec research' and sees AST tool listed with correct language support count",
+          "deleted": false,
+          "createdAt": "2025-11-12T12:25:24.855Z"
+        },
+        {
+          "id": 6,
+          "text": "Developer checks src/help.ts and finds complete research tools documentation",
+          "deleted": false,
+          "createdAt": "2025-11-12T12:25:25.416Z"
+        }
+      ],
+      "nextExampleId": 7,
+      "questions": [],
+      "architectureNotes": [],
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-12T19:50:12.247Z"
     }
   },
   "states": {
@@ -46623,6 +46768,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "RES-020",
       "RES-019",
       "BUG-076",
       "TUI-030",
@@ -47007,7 +47153,7 @@
     "VIZ": 4,
     "INT": 4,
     "VID": 2,
-    "RES": 19,
+    "RES": 20,
     "BROWSE": 1,
     "TEST": 8,
     "HOOK": 12,

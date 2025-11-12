@@ -102,15 +102,17 @@ export class QueryExecutor {
 
   private findFunctions(node: Parser.SyntaxNode, matches: QueryMatch[]) {
     if (
-      node.type === 'function_declaration' || // JS/TS/Kotlin/Go/Python/C/C++/Swift/Rust
+      node.type === 'function_declaration' || // JS/TS/Kotlin/Go/Python/C/C++/Swift/Rust/Bash
       node.type === 'function_expression' || // JS/TS
       node.type === 'arrow_function' || // JS/TS
       node.type === 'method_definition' || // JS/TS
       node.type === 'generator_function_declaration' || // JS/TS
       node.type === 'method_signature' || // Dart method signatures
-      node.type === 'method_declaration' || // Go/Java/C#
-      node.type === 'function_definition' || // Python
-      node.type === 'function_item' // Rust
+      node.type === 'method_declaration' || // Go/Java/C#/PHP
+      node.type === 'function_definition' || // Python/PHP/Bash
+      node.type === 'function_item' || // Rust
+      node.type === 'method' || // Ruby
+      node.type === 'def' // Ruby
     ) {
       const nameNode = node.childForFieldName('name');
       // For Dart method_signature, the name is in the function_signature child

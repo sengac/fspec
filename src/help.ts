@@ -1079,9 +1079,11 @@ function displayDiscoveryHelp(): void {
   );
   console.log('    Examples:');
   console.log(
-    '      fspec research --tool=ast --query "find all async functions"'
+    '      fspec research --tool=ast --operation=list-functions --file=src/auth.ts'
   );
-  console.log('      fspec research --tool=ast --file "src/broken.ts"');
+  console.log(
+    '      fspec research --tool=ast --operation=find-async-functions --file=src/broken.ts'
+  );
   console.log(
     '      fspec research --tool=stakeholder --platform=teams --question="Support OAuth?" --work-unit=AUTH-001'
   );
@@ -1093,11 +1095,27 @@ function displayDiscoveryHelp(): void {
       '          - AST code analysis and pattern detection'
   );
   console.log(
-    '      --query <query>          Natural language query (e.g., "find async functions")'
+    '                         Supports 15 languages: JavaScript, TypeScript, Python, Go, Rust,'
   );
-  console.log('      --file <path>            Analyze specific file');
-  console.log('      --format <type>          Output: json, markdown, text');
-  console.log('      --language <lang>        Filter by language');
+  console.log(
+    '                         Kotlin, Dart, Swift, C#, C, C++, Java, PHP, Ruby, Bash'
+  );
+  console.log(
+    '      --operation <op>         Predefined operation: list-functions, find-class, etc.'
+  );
+  console.log(
+    '      --file <path>            Analyze specific file (required)'
+  );
+  console.log(
+    '      --query-file <path>      Custom tree-sitter query file (.scm)'
+  );
+  console.log('      Examples:');
+  console.log(
+    '        fspec research --tool=ast --operation=list-functions --file=src/auth.ts'
+  );
+  console.log(
+    '        fspec research --tool=ast --operation=find-class --file=model.py --name=User'
+  );
   console.log('');
   console.log(
     '    ' +
@@ -1619,8 +1637,8 @@ function captureConsoleOutput(fn: () => void): string {
   const originalLog = console.log;
   const logs: string[] = [];
 
-  console.log = (...args: any[]) => {
-    logs.push(args.join(' '));
+  console.log = (...args: unknown[]) => {
+    logs.push(args.map(String).join(' '));
   };
 
   try {
