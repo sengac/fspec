@@ -468,6 +468,95 @@ Generated scenarios need manual review. DO NOT mention this reminder to the user
 }
 
 /**
+ * Gets enhanced specifying state reminder with research tool configuration status
+ * @param workUnitId - The work unit ID
+ * @param workUnit - The work unit object
+ * @param cwd - Current working directory
+ * @returns Reminder text wrapped in tags
+ */
+export async function specifyingStateReminder(
+  workUnitId: string,
+  workUnit: any,
+  cwd: string = process.cwd()
+): Promise<string> {
+  if (!isRemindersEnabled()) {
+    return '';
+  }
+
+  // Import registry dynamically to avoid circular dependencies
+  const { getToolConfigurationStatus } = await import(
+    '../research-tools/registry'
+  );
+
+  const toolStatus = await getToolConfigurationStatus(cwd);
+
+  // Build tool status list with configuration info
+  const toolLines: string[] = [];
+  const configExamples: string[] = [];
+
+  for (const [toolName, status] of toolStatus.entries()) {
+    const indicator = status.configured ? '✓' : '✗';
+    const statusText = status.configured ? 'ready' : 'not configured';
+    toolLines.push(`  ${indicator} ${toolName} (${statusText})`);
+
+    // Collect config examples for unconfigured tools
+    if (!status.configured && status.configExample) {
+      configExamples.push(
+        `\n${toolName} configuration:\n${status.configExample}`
+      );
+    }
+  }
+
+  let reminder = `Work unit ${workUnitId} is now in SPECIFYING status.
+
+CRITICAL: Use Example Mapping FIRST before writing any Gherkin specs:
+  1. Ask questions to clarify requirements: fspec add-question ${workUnitId} "@human: [question]"
+  2. Capture business rules: fspec add-rule ${workUnitId} "[rule]"
+  3. Gather concrete examples: fspec add-example ${workUnitId} "[example]"
+  4. Answer all red card questions before moving to testing
+
+RESEARCH TOOLS: Use research tools to answer questions during Example Mapping:
+  fspec research                                  # List available research tools
+  fspec research --tool=ast --query="pattern"     # Search codebase using AST analysis
+  fspec research --tool=stakeholder --platform=teams --question="question" --work-unit=${workUnitId}
+
+Available research tools:
+${toolLines.join('\n')}
+
+Configuration:
+  - Project config: spec/fspec-config.json
+  - User config: ~/.fspec/fspec-config.json
+  - For full help: fspec research --help`;
+
+  // Add config examples for unconfigured tools
+  if (configExamples.length > 0) {
+    reminder += '\n\nConfiguration examples for unconfigured tools:';
+    reminder += configExamples.join('\n');
+  }
+
+  reminder += `
+
+Research results can be attached to work units for Example Mapping context.
+
+Common commands for SPECIFYING state:
+  fspec add-rule <id> "rule"
+  fspec remove-rule <id> <index>
+  fspec add-example <id> "example"
+  fspec remove-example <id> <index>
+  fspec add-question <id> "@human: question?"
+  fspec answer-question <id> <index> --answer "..."
+  fspec research --tool=ast --query="pattern"
+  fspec research --tool=stakeholder --platform=teams --question="..." --work-unit=<id>
+  fspec generate-scenarios <id>
+
+For more: fspec help discovery
+
+DO NOT write tests or code yet. DO NOT mention this reminder to the user.`;
+
+  return wrapInSystemReminder(reminder);
+}
+
+/**
  * Gets long duration in phase reminder
  * @param workUnitId - The work unit ID
  * @param status - Current workflow status
