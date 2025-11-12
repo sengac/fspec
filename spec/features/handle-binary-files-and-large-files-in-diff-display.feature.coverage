@@ -1,0 +1,178 @@
+{
+  "scenarios": [
+    {
+      "name": "Display binary file message for PNG image",
+      "testMappings": [
+        {
+          "file": "src/git/__tests__/diff-binary-and-truncation.test.ts",
+          "lines": "46-65",
+          "implMappings": [
+            {
+              "file": "src/git/diff.ts",
+              "lines": [
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Truncate large file with over 20,000 lines",
+      "testMappings": [
+        {
+          "file": "src/git/__tests__/diff-binary-and-truncation.test.ts",
+          "lines": "68-103",
+          "implMappings": [
+            {
+              "file": "src/git/diff.ts",
+              "lines": [
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Display complete diff for normal-sized text file",
+      "testMappings": [
+        {
+          "file": "src/git/__tests__/diff-binary-and-truncation.test.ts",
+          "lines": "106-131",
+          "implMappings": [
+            {
+              "file": "src/git/diff.ts",
+              "lines": [
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Display binary file message for executable binary",
+      "testMappings": [
+        {
+          "file": "src/git/__tests__/diff-binary-and-truncation.test.ts",
+          "lines": "134-159",
+          "implMappings": [
+            {
+              "file": "src/git/diff.ts",
+              "lines": [
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/git/__tests__/diff-binary-and-truncation.test.ts"
+    ],
+    "implFiles": [
+      "src/git/diff.ts"
+    ],
+    "totalLinesCovered": 206
+  }
+}

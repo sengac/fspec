@@ -29,6 +29,7 @@ export async function getFileDiff(
     }
 
     // Get HEAD version of file (if it exists)
+    let headBuffer = Buffer.alloc(0);
     let headContent = '';
     try {
       const headCommitOid = await git.resolveRef({
@@ -42,14 +43,21 @@ export async function getFileDiff(
         oid: headCommitOid,
         filepath,
       });
-      headContent = Buffer.from(blob).toString('utf8');
-    } catch (error) {
+      headBuffer = Buffer.from(blob);
+      headContent = headBuffer.toString('utf8');
+    } catch {
       // File doesn't exist in HEAD (new file)
       headContent = '';
     }
 
     // Get working directory version
-    const workingContent = await fs.readFile(fullPath, 'utf8');
+    const workingBuffer = await fs.readFile(fullPath);
+    const workingContent = workingBuffer.toString('utf8');
+
+    // Check if either version is binary
+    if (isBinaryContent(headBuffer) || isBinaryContent(workingBuffer)) {
+      return '[Binary file - no diff available]';
+    }
 
     // If contents are identical, no diff
     if (headContent === workingContent) {
@@ -78,9 +86,8 @@ export async function getCheckpointFileDiff(
   checkpointRef: string
 ): Promise<string | null> {
   try {
-    const fs = fsNode.promises;
-
     // Get checkpoint version of file
+    let checkpointBuffer = Buffer.alloc(0);
     let checkpointContent = '';
     try {
       const checkpointOid = await git.resolveRef({
@@ -94,13 +101,15 @@ export async function getCheckpointFileDiff(
         oid: checkpointOid,
         filepath,
       });
-      checkpointContent = Buffer.from(blob).toString('utf8');
-    } catch (error) {
+      checkpointBuffer = Buffer.from(blob);
+      checkpointContent = checkpointBuffer.toString('utf8');
+    } catch {
       // File doesn't exist in checkpoint - will be deleted on restore
       return `Will be deleted on restore: ${filepath}\n\nThis file exists in HEAD but not in the checkpoint.\nRestoring the checkpoint will remove this file from the working directory.`;
     }
 
     // Get HEAD version of file (if it exists)
+    let headBuffer = Buffer.alloc(0);
     let headContent = '';
     try {
       const headCommitOid = await git.resolveRef({
@@ -114,10 +123,16 @@ export async function getCheckpointFileDiff(
         oid: headCommitOid,
         filepath,
       });
-      headContent = Buffer.from(blob).toString('utf8');
-    } catch (error) {
+      headBuffer = Buffer.from(blob);
+      headContent = headBuffer.toString('utf8');
+    } catch {
       // File doesn't exist in HEAD (was deleted)
       headContent = '';
+    }
+
+    // Check if either version is binary
+    if (isBinaryContent(headBuffer) || isBinaryContent(checkpointBuffer)) {
+      return '[Binary file - no diff available]';
     }
 
     // If contents are identical, no diff
@@ -186,7 +201,43 @@ function generateUnifiedDiff(
   const diff: string[] = [];
   diff.push(`--- Lines that will be REMOVED on restore: ${removedCount} lines`);
   diff.push(`+++ Lines that will be ADDED on restore: ${addedCount} lines`);
-  diff.push(...chunks);
+
+  // Truncate if more than 20,000 lines
+  const MAX_LINES = 20000;
+  const totalLines = Math.max(oldLines.length, newLines.length);
+
+  if (chunks.length > MAX_LINES) {
+    const truncatedChunks = chunks.slice(0, MAX_LINES);
+    diff.push(...truncatedChunks);
+    diff.push('');
+    diff.push(
+      `[File truncated - showing first ${MAX_LINES.toLocaleString()} of ${totalLines.toLocaleString()} lines]`
+    );
+  } else {
+    diff.push(...chunks);
+  }
 
   return diff.join('\n');
+}
+
+/**
+ * Check if buffer content contains binary data
+ * @param buffer - Buffer to check
+ * @returns true if binary, false if text
+ */
+function isBinaryContent(buffer: Buffer): boolean {
+  if (buffer.length === 0) {
+    return false;
+  }
+
+  // Check for null bytes (common indicator of binary content)
+  // Scan first 8000 bytes for performance
+  const checkLength = Math.min(buffer.length, 8000);
+  for (let i = 0; i < checkLength; i++) {
+    if (buffer[i] === 0) {
+      return true;
+    }
+  }
+
+  return false;
 }

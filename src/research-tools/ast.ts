@@ -20,25 +20,38 @@ export const tool: ResearchTool = {
     'AST code analysis tool using deterministic tree-sitter query operations',
 
   async execute(args: string[]): Promise<string> {
-    // Parse arguments
-    const operationIndex = args.indexOf('--operation');
-    const fileIndex = args.indexOf('--file');
-    const queryFileIndex = args.indexOf('--query-file');
+    // Helper function to parse argument (handles both --flag=value and --flag value)
+    function parseArg(args: string[], flagName: string): string | undefined {
+      const flagWithEquals = `${flagName}=`;
+
+      // Check for --flag=value format
+      const equalsArg = args.find(arg => arg.startsWith(flagWithEquals));
+      if (equalsArg) {
+        return equalsArg.substring(flagWithEquals.length);
+      }
+
+      // Check for --flag value format
+      const index = args.indexOf(flagName);
+      if (index >= 0 && index + 1 < args.length) {
+        return args[index + 1];
+      }
+
+      return undefined;
+    }
+
+    // Parse arguments (handles both --flag=value and --flag value formats)
+    const operation = parseArg(args, '--operation');
+    const filePath = parseArg(args, '--file');
+    const queryFile = parseArg(args, '--query-file');
 
     // Validate required flags
-    if (fileIndex === -1) {
+    if (!filePath) {
       throw new Error('--file is required');
     }
 
-    if (operationIndex === -1 && queryFileIndex === -1) {
+    if (!operation && !queryFile) {
       throw new Error('Either --operation or --query-file is required');
     }
-
-    const operation =
-      operationIndex >= 0 ? args[operationIndex + 1] : undefined;
-    const filePath = args[fileIndex + 1];
-    const queryFile =
-      queryFileIndex >= 0 ? args[queryFileIndex + 1] : undefined;
 
     // Extract parameters
     const parameters: Record<string, string> = {};
