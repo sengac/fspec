@@ -16,7 +16,7 @@ import TypeScript from 'tree-sitter-typescript';
 // @ts-expect-error - tree-sitter-kotlin doesn't have type definitions
 import Kotlin from 'tree-sitter-kotlin';
 // @ts-expect-error - tree-sitter-dart doesn't have type definitions
-import Dart from 'tree-sitter-dart';
+import Dart from '../../vendor/tree-sitter-dart-wrapper.js';
 // @ts-expect-error - tree-sitter-python doesn't have type definitions
 import Python from 'tree-sitter-python';
 // @ts-expect-error - tree-sitter-go doesn't have type definitions
