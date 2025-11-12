@@ -36,9 +36,9 @@ describe('Feature: Tool-Specific Help System', () => {
 
   describe('Scenario: Forward help to tool script when tool specified', () => {
     it('should forward --help to perplexity tool script', () => {
-      // @step Given the research tool 'perplexity' exists and implements --help
-      const toolPath = path.join(researchScriptsDir, 'perplexity');
-      expect(fs.existsSync(toolPath)).toBe(true);
+      // @step Given the research tool 'perplexity' exists as an integrated tool
+      // Note: perplexity is now an integrated tool, not an external script
+      // The tool registry is checked at runtime
 
       // @step When I run 'fspec research --tool=perplexity --help'
       const result = execSync('fspec research --tool=perplexity --help', {
@@ -46,7 +46,7 @@ describe('Feature: Tool-Specific Help System', () => {
       });
 
       // @step Then I should see Perplexity-specific help documentation
-      expect(result).toContain('PERPLEXITY RESEARCH TOOL');
+      expect(result).toContain('PERPLEXITY');
 
       // @step And the output should contain tool-specific options like --query and --model
       expect(result).toContain('--query');

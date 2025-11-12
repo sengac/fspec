@@ -27,7 +27,7 @@ import {
 } from '../utils/states-array';
 import { compactWorkUnit } from './compact-work-unit';
 import { validateSteps, formatValidationError } from '../utils/step-validation';
-import { parseAllFeatures } from '../utils/feature-parser';
+import { parseAllFeatures, findFeaturesByTag } from '../utils/feature-parser';
 import { sendIPCMessage } from '../utils/ipc.js';
 import { executeHooks } from '../hooks/executor';
 import type { HookDefinition } from '../hooks/types';
@@ -904,7 +904,6 @@ async function checkCoverageCompleteness(
 
   // COV-054: Auto-discover features from @TAG when linkedFeatures is empty
   if (linkedFeatures.length === 0) {
-    const { findFeaturesByTag } = await import('../utils/feature-parser.js');
     const discoveredFeatures = await findFeaturesByTag(workUnit.id, cwd);
 
     if (discoveredFeatures.length > 0) {
