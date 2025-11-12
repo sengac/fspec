@@ -22,16 +22,9 @@ describe('Feature: Interactive research command with multiple backend support', 
 
   describe('Scenario: List available research tools without arguments', () => {
     it('should list all available research tools with descriptions', () => {
-      // @step Given research tools exist in spec/research-scripts/ directory
-      expect(fs.existsSync(RESEARCH_SCRIPTS_DIR)).toBe(true);
-
-      // @step And the tools include perplexity, jira, and confluence
-      const perplexityScript = path.join(RESEARCH_SCRIPTS_DIR, 'perplexity');
-      const jiraScript = path.join(RESEARCH_SCRIPTS_DIR, 'jira');
-      const confluenceScript = path.join(RESEARCH_SCRIPTS_DIR, 'confluence');
-      expect(fs.existsSync(perplexityScript)).toBe(true);
-      expect(fs.existsSync(jiraScript)).toBe(true);
-      expect(fs.existsSync(confluenceScript)).toBe(true);
+      // @step Given research tools are registered in the tool registry
+      // Note: Research tools are now integrated, not external scripts
+      // The tool registry is defined in src/commands/research-tool-list.ts
 
       // @step When I run "fspec research" without arguments
       const result = execSync('fspec research', {
