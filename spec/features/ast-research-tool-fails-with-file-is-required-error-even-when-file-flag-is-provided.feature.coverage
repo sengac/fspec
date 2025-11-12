@@ -1,0 +1,84 @@
+{
+  "scenarios": [
+    {
+      "name": "Parse --file argument in equals format",
+      "testMappings": [
+        {
+          "file": "src/research-tools/__tests__/ast-argument-parsing.test.ts",
+          "lines": "10-37",
+          "implMappings": [
+            {
+              "file": "src/research-tools/ast.ts",
+              "lines": [
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Parse --file argument in space-separated format",
+      "testMappings": [
+        {
+          "file": "src/research-tools/__tests__/ast-argument-parsing.test.ts",
+          "lines": "39-62",
+          "implMappings": [
+            {
+              "file": "src/research-tools/ast.ts",
+              "lines": [
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/research-tools/__tests__/ast-argument-parsing.test.ts"
+    ],
+    "implFiles": [
+      "src/research-tools/ast.ts"
+    ],
+    "totalLinesCovered": 88
+  }
+}

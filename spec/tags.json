@@ -278,6 +278,10 @@
           "description": "Diagram viewing and fullscreen modal features"
         },
         {
+          "name": "@diff-display",
+          "description": "Diff display and visualization features in TUI"
+        },
+        {
           "name": "@diff-viewer",
           "description": "Diff visualization and comparison features"
         },
@@ -480,6 +484,10 @@
         {
           "name": "@research",
           "description": "Research and discovery tools"
+        },
+        {
+          "name": "@research-integration",
+          "description": "Research tool integration and plugin system features"
         },
         {
           "name": "@research-tools",
@@ -1546,7 +1554,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-11-12T06:22:16.661Z",
+    "lastUpdated": "2025-11-12T09:57:46.526Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

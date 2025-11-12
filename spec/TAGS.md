@@ -87,6 +87,7 @@ Tags that categorize features by functional area.
 | `@dependencies` | Dependency management between work units |
 | `@dependency-management` | Work unit dependency tracking |
 | `@diagram-viewer` | Diagram viewing and fullscreen modal features |
+| `@diff-display` | Diff display and visualization features in TUI |
 | `@diff-viewer` | Diff visualization and comparison features |
 | `@discovery-command` | Example Mapping discovery commands |
 | `@documentation` | Documentation Display |
@@ -138,6 +139,7 @@ Tags that categorize features by functional area.
 | `@report-bug` | Features related to reporting bugs to GitHub |
 | `@reporting` | Reporting and statistics |
 | `@research` | Research and discovery tools |
+| `@research-integration` | Research tool integration and plugin system features |
 | `@research-tools` | Research tool system features and integrations |
 | `@reverse-acdd` | Features related to reverse ACDD for documenting existing codebases |
 | `@safety` | Safety and security features preventing accidental operations |
@@ -628,7 +630,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-11-12T06:22:16.661Z_
+_Last updated: 2025-11-12T09:57:46.526Z_
 
 **Update Command**: `fspec tag-stats`
 

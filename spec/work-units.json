@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-12T07:26:34.433Z"
+    "lastUpdated": "2025-11-12T10:07:26.904Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -45970,9 +45970,9 @@
       "id": "REVIEW-001",
       "title": "Enhance fspec review with DRY and SOLID principles checking using AST analysis",
       "type": "story",
-      "status": "validating",
+      "status": "done",
       "createdAt": "2025-11-12T07:18:27.910Z",
-      "updatedAt": "2025-11-12T08:01:30.548Z",
+      "updatedAt": "2025-11-12T09:36:07.753Z",
       "description": "Refactor the fspec review command to integrate AST-based code quality analysis for detecting DRY (Don't Repeat Yourself) violations and SOLID principle violations. Use the existing fspec research AST tool to analyze implementation files and provide actionable feedback on code duplication, class design, and dependency management.",
       "children": [],
       "attachments": [
@@ -45994,6 +45994,10 @@
         {
           "state": "validating",
           "timestamp": "2025-11-12T08:01:30.548Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-12T09:36:07.754Z"
         }
       ],
       "userStory": {
@@ -46097,7 +46101,213 @@
         }
       ],
       "nextExampleId": 7,
-      "estimate": 5
+      "estimate": 5,
+      "questions": [],
+      "architectureNotes": [],
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-12T09:36:07.753Z"
+    },
+    "TUI-030": {
+      "id": "TUI-030",
+      "title": "Handle binary files and large files in diff display",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-11-12T09:36:40.241Z",
+      "updatedAt": "2025-11-12T10:07:26.926Z",
+      "description": "Improve checkpoint viewer diff display to handle binary files (show message instead of diff) and truncate files over 20,000 lines. Binary files should show '[Binary file - no diff available]' and large files should show first 20,000 lines with a message '[File truncated - showing first 20,000 of N lines]'.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-12T09:37:53.480Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-12T09:58:09.753Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-12T09:59:12.337Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-12T10:03:33.488Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-12T10:07:26.926Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using checkpoint viewer",
+        "action": "view diffs for all file types without performance issues or display errors",
+        "benefit": "I can quickly understand changes in checkpoints regardless of file type or size"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Binary files must not show diff content, only a message indicating it's binary",
+          "deleted": false,
+          "createdAt": "2025-11-12T09:38:10.966Z"
+        },
+        {
+          "id": 1,
+          "text": "Files with more than 20,000 lines must be truncated at 20,000 lines",
+          "deleted": false,
+          "createdAt": "2025-11-12T09:38:11.512Z"
+        },
+        {
+          "id": 2,
+          "text": "Truncated files must show a message with total line count",
+          "deleted": false,
+          "createdAt": "2025-11-12T09:38:12.058Z"
+        },
+        {
+          "id": 3,
+          "text": "Binary file detection must check file content, not just extension",
+          "deleted": false,
+          "createdAt": "2025-11-12T09:38:12.605Z"
+        },
+        {
+          "id": 4,
+          "text": "Normal text files under 20,000 lines must show complete diff",
+          "deleted": false,
+          "createdAt": "2025-11-12T09:38:13.158Z"
+        }
+      ],
+      "nextRuleId": 5,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User views checkpoint with image file (PNG), sees '[Binary file - no diff available]' instead of garbled text",
+          "deleted": false,
+          "createdAt": "2025-11-12T09:38:22.440Z"
+        },
+        {
+          "id": 1,
+          "text": "User views checkpoint with PDF file, sees binary file message",
+          "deleted": false,
+          "createdAt": "2025-11-12T09:38:22.986Z"
+        },
+        {
+          "id": 2,
+          "text": "User views checkpoint with 50,000-line log file, sees first 20,000 lines plus '[File truncated - showing first 20,000 of 50,000 lines]'",
+          "deleted": false,
+          "createdAt": "2025-11-12T09:38:23.546Z"
+        },
+        {
+          "id": 3,
+          "text": "User views checkpoint with normal 500-line source file, sees complete diff",
+          "deleted": false,
+          "createdAt": "2025-11-12T09:38:24.097Z"
+        },
+        {
+          "id": 4,
+          "text": "User views checkpoint with executable binary, sees binary file message",
+          "deleted": false,
+          "createdAt": "2025-11-12T09:38:24.642Z"
+        }
+      ],
+      "nextExampleId": 5,
+      "estimate": 5,
+      "questions": [],
+      "architectureNotes": [],
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-12T10:07:26.926Z"
+    },
+    "BUG-075": {
+      "id": "BUG-075",
+      "title": "AST research tool fails with '--file is required' error even when --file flag is provided",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-11-12T09:41:58.355Z",
+      "updatedAt": "2025-11-12T09:50:55.948Z",
+      "children": [],
+      "attachments": [
+        "spec/attachments/BUG-075/bug-075-ast-tool-investigation.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-12T09:42:52.055Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-12T09:47:17.580Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-12T09:48:28.449Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-12T09:50:30.541Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-12T09:50:55.948Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "The research command must correctly forward all arguments after --tool to the tool's execute() function",
+          "deleted": false,
+          "createdAt": "2025-11-12T09:43:02.554Z"
+        },
+        {
+          "id": 1,
+          "text": "The tool's execute() function must correctly parse --file argument from the forwarded args array",
+          "deleted": false,
+          "createdAt": "2025-11-12T09:43:03.104Z"
+        },
+        {
+          "id": 2,
+          "text": "AST tool must handle both --flag=value and --flag value argument formats",
+          "deleted": false,
+          "createdAt": "2025-11-12T09:45:13.710Z"
+        },
+        {
+          "id": 3,
+          "text": "When --file is not found in args array, check if any element starts with '--file='",
+          "deleted": false,
+          "createdAt": "2025-11-12T09:45:14.274Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User runs 'fspec research --tool=ast --operation=list-functions --file=src/git/diff.ts', AST tool should receive ['--operation=list-functions', '--file=src/git/diff.ts'] as args",
+          "deleted": false,
+          "createdAt": "2025-11-12T09:43:03.646Z"
+        },
+        {
+          "id": 1,
+          "text": "User runs 'fspec research --tool=ast --operation=list-functions --file=src/git/diff.ts' (equals format), tool should parse --file=src/git/diff.ts correctly",
+          "deleted": false,
+          "createdAt": "2025-11-12T09:45:12.615Z"
+        },
+        {
+          "id": 2,
+          "text": "User runs 'fspec research --tool=ast --operation list-functions --file src/git/diff.ts' (space format), tool should parse arguments correctly",
+          "deleted": false,
+          "createdAt": "2025-11-12T09:45:13.163Z"
+        }
+      ],
+      "nextExampleId": 3,
+      "userStory": {
+        "role": "developer using fspec research tool",
+        "action": "use either --flag=value or --flag value syntax for all arguments",
+        "benefit": "the tool works reliably regardless of which argument format I choose"
+      },
+      "questions": [],
+      "architectureNotes": [],
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-12T09:50:55.948Z"
     }
   },
   "states": {
@@ -46163,10 +46373,11 @@
     ],
     "testing": [],
     "implementing": [],
-    "validating": [
-      "REVIEW-001"
-    ],
+    "validating": [],
     "done": [
+      "TUI-030",
+      "BUG-075",
+      "REVIEW-001",
       "REMIND-013",
       "RES-018",
       "RES-017",
@@ -46527,10 +46738,10 @@
   "prefixCounters": {
     "CLI": 14,
     "HELP": 5,
-    "BUG": 74,
+    "BUG": 75,
     "DISC": 2,
     "COV": 54,
-    "TUI": 29,
+    "TUI": 30,
     "REFAC": 4,
     "VIEW": 2,
     "DOC": 15,
