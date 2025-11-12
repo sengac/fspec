@@ -227,6 +227,8 @@ export async function getScenarioSteps(
  * Find all feature files tagged with a specific work unit ID
  * Part of COV-054: Auto-discover features from @TAG when linkedFeatures is empty
  *
+ * Supports nested directories within spec/features/ for better organization.
+ *
  * @param workUnitId - Work unit ID to search for (e.g., "AUTH-001")
  * @param cwd - Current working directory (defaults to process.cwd())
  * @returns Array of feature names (without .feature extension)
@@ -241,11 +243,14 @@ export async function findFeaturesByTag(
   const featureNames: string[] = [];
 
   try {
-    // Find all .feature files
-    const featureFiles = await glob(['*.feature'], {
+    // Find all .feature files (including nested directories)
+    const featureFiles = await glob(['**/*.feature'], {
       cwd: featuresDir,
       absolute: false,
     });
+
+    // Reuse parser instance for all files (performance optimization)
+    const parser = new Gherkin.Parser(builder, matcher);
 
     // Parse each feature file and check for work unit tag
     for (const file of featureFiles) {
@@ -253,7 +258,6 @@ export async function findFeaturesByTag(
       const content = await readFile(filePath, 'utf-8');
 
       try {
-        const parser = new Gherkin.Parser(builder, matcher);
         const gherkinDocument = parser.parse(content);
 
         if (gherkinDocument.feature) {
@@ -261,6 +265,7 @@ export async function findFeaturesByTag(
           for (const tag of gherkinDocument.feature.tags) {
             if (tag.name === `@${workUnitId}`) {
               // Extract feature name from filename (remove .feature extension)
+              // Preserve directory structure if file is nested
               const featureName = file.replace('.feature', '');
               featureNames.push(featureName);
               break; // Found the tag, no need to check other tags

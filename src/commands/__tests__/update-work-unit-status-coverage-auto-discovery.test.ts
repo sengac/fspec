@@ -419,4 +419,108 @@ Feature: Auth Bug Fix
       expect(result.message).toMatch(/uncovered|coverage/i);
     });
   });
+
+  describe('Scenario: Auto-discover features in nested directories', () => {
+    it('should find features tagged with @WORK-UNIT-ID in subdirectories', async () => {
+      // @step Given a work unit AUTH-003 with linkedFeatures: null
+      const workUnitsData = {
+        workUnits: {
+          'AUTH-003': {
+            id: 'AUTH-003',
+            title: 'Nested Feature Test',
+            type: 'story',
+            status: 'validating',
+            linkedFeatures: null,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            stateHistory: [
+              {
+                state: 'backlog',
+                timestamp: new Date(Date.now() - 10000).toISOString(),
+              },
+              {
+                state: 'validating',
+                timestamp: new Date(Date.now() - 5000).toISOString(),
+              },
+            ],
+          },
+        },
+        states: {
+          backlog: [],
+          specifying: [],
+          testing: [],
+          implementing: [],
+          validating: ['AUTH-003'],
+          done: [],
+          blocked: [],
+        },
+      };
+
+      await writeFile(
+        join(tempDir, 'spec', 'work-units.json'),
+        JSON.stringify(workUnitsData, null, 2)
+      );
+
+      // @step And a nested directory spec/features/auth/
+      await mkdir(join(tempDir, 'spec', 'features', 'auth'), {
+        recursive: true,
+      });
+
+      // @step And a feature file spec/features/auth/nested-auth.feature with @AUTH-003 tag
+      const nestedFeatureContent = `@AUTH-003 @critical @cli
+Feature: Nested Authentication Feature
+
+  Scenario: Test nested directory support
+    Given I have a feature in a subdirectory
+    When I tag it with @AUTH-003
+    Then auto-discovery should find it
+`;
+
+      await writeFile(
+        join(tempDir, 'spec', 'features', 'auth', 'nested-auth.feature'),
+        nestedFeatureContent
+      );
+
+      // @step And the feature has 1 scenario with 0% coverage
+      const nestedCoverageContent = {
+        featureName: 'auth/nested-auth',
+        scenarios: [
+          {
+            name: 'Test nested directory support',
+            testMappings: [],
+          },
+        ],
+        stats: {
+          totalScenarios: 1,
+          coveredScenarios: 0,
+          coveragePercent: 0,
+        },
+      };
+
+      await writeFile(
+        join(
+          tempDir,
+          'spec',
+          'features',
+          'auth',
+          'nested-auth.feature.coverage'
+        ),
+        JSON.stringify(nestedCoverageContent, null, 2)
+      );
+
+      // @step When moving AUTH-003 to done status
+      const result = await updateWorkUnitStatus({
+        workUnitId: 'AUTH-003',
+        status: 'done',
+        cwd: tempDir,
+      });
+
+      // @step Then auto-discovery should find auth/nested-auth.feature in subdirectory
+      // @step And coverage validation should run
+      // @step And the status update should fail with coverage error
+      expect(result.success).toBe(false);
+      expect(result.message).toMatch(/nested-auth/);
+      expect(result.message).toMatch(/uncovered|coverage/i);
+    });
+  });
 });
