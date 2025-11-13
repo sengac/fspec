@@ -45,22 +45,22 @@ export default defineConfig({
         'dompurify',
         'execa',
         'tree-sitter',
-        'tree-sitter-javascript',
-        'tree-sitter-typescript',
+        '@sengac/tree-sitter-dart',
+        '@sengac/tree-sitter-javascript',
+        '@sengac/tree-sitter-typescript',
         'tree-sitter-python',
         'tree-sitter-go',
-        'tree-sitter-rust',
-        'tree-sitter-java',
-        'tree-sitter-ruby',
-        'tree-sitter-c-sharp',
-        'tree-sitter-php',
-        'tree-sitter-cpp',
+        '@sengac/tree-sitter-rust',
+        '@sengac/tree-sitter-java',
+        '@sengac/tree-sitter-ruby',
+        '@sengac/tree-sitter-c-sharp',
+        '@sengac/tree-sitter-php',
+        '@sengac/tree-sitter-cpp',
         'tree-sitter-bash',
-        'tree-sitter-json',
-        'tree-sitter-kotlin',
-        'tree-sitter-swift',
-        'tree-sitter-c',
-        /^\.\.\/vendor\//,
+        '@sengac/tree-sitter-json',
+        '@sengac/tree-sitter-kotlin',
+        '@sengac/tree-sitter-swift',
+        '@sengac/tree-sitter-c',
       ],
       output: {
         preserveModules: false,
@@ -92,13 +92,6 @@ export default defineConfig({
         cpSync(
           resolve(__dirname, 'src', 'git'),
           resolve(__dirname, 'dist', 'git'),
-          { recursive: true }
-        );
-
-        // Bundle vendor directory (includes tree-sitter-dart)
-        cpSync(
-          resolve(__dirname, 'vendor'),
-          resolve(__dirname, 'dist', 'vendor'),
           { recursive: true }
         );
       },
