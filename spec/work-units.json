@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-12T22:26:05.358Z"
+    "lastUpdated": "2025-11-12T22:50:29.788Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -46919,6 +46919,56 @@
       "nextQuestionId": 0,
       "nextNoteId": 0,
       "updated": "2025-11-12T22:23:23.077Z"
+    },
+    "VAL-003": {
+      "id": "VAL-003",
+      "title": "Refactor mermaid validation for code quality improvements",
+      "type": "task",
+      "status": "done",
+      "createdAt": "2025-11-12T22:36:40.375Z",
+      "updatedAt": "2025-11-12T22:50:29.810Z",
+      "description": "Apply code review recommendations: 1) Fix global cleanup inconsistency in error path, 2) Validate all subgraphs not just first, 3) Add proper TypeScript global declarations",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-12T22:37:03.150Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-12T22:37:11.073Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-12T22:49:45.412Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-12T22:50:29.811Z"
+        }
+      ],
+      "rules": [],
+      "examples": [],
+      "questions": [],
+      "architectureNotes": [],
+      "nextRuleId": 0,
+      "nextExampleId": 0,
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-12T22:50:29.810Z"
+    },
+    "VAL-004": {
+      "id": "VAL-004",
+      "title": "Multiple consecutive system-reminder blocks in update-work-unit-status",
+      "type": "bug",
+      "status": "backlog",
+      "createdAt": "2025-11-12T22:47:24.951Z",
+      "updatedAt": "2025-11-12T22:49:31.905Z",
+      "description": "The update-work-unit-status command creates multiple consecutive <system-reminder> blocks instead of a single unified block when multiple reminders are applicable",
+      "children": [],
+      "attachments": [
+        "spec/attachments/VAL-004/VAL-004-system-reminder-duplication-analysis.md"
+      ]
     }
   },
   "states": {
@@ -46973,7 +47023,8 @@
       "INT-004",
       "DOC-012",
       "DOC-013",
-      "DOC-014"
+      "DOC-014",
+      "VAL-004"
     ],
     "specifying": [
       "LANG-001",
@@ -46986,6 +47037,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "VAL-003",
       "VAL-001",
       "DEP-003",
       "RES-020",
@@ -47379,6 +47431,6 @@
     "HOOK": 12,
     "REVIEW": 1,
     "DEP": 3,
-    "VAL": 1
+    "VAL": 4
   }
 }

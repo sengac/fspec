@@ -10,33 +10,33 @@ import { QueryExecutor } from '../utils/query-executor';
 import * as fs from 'fs/promises';
 import Parser from 'tree-sitter';
 // @ts-expect-error - tree-sitter-javascript doesn't have type definitions
-import JavaScript from 'tree-sitter-javascript';
+import JavaScript from '@sengac/tree-sitter-javascript';
 // @ts-expect-error - tree-sitter-typescript doesn't have type definitions
-import TypeScript from 'tree-sitter-typescript';
+import TypeScript from '@sengac/tree-sitter-typescript';
 // @ts-expect-error - tree-sitter-kotlin doesn't have type definitions
-import Kotlin from 'tree-sitter-kotlin';
+import Kotlin from '@sengac/tree-sitter-kotlin';
 // @ts-expect-error - tree-sitter-dart doesn't have type definitions
-import Dart from '../../vendor/tree-sitter-dart-wrapper.js';
+import Dart from '@sengac/tree-sitter-dart';
 // @ts-expect-error - tree-sitter-python doesn't have type definitions
 import Python from 'tree-sitter-python';
 // @ts-expect-error - tree-sitter-go doesn't have type definitions
 import Go from 'tree-sitter-go';
 // @ts-expect-error - tree-sitter-rust doesn't have type definitions
-import Rust from 'tree-sitter-rust';
+import Rust from '@sengac/tree-sitter-rust';
 // @ts-expect-error - tree-sitter-swift doesn't have type definitions
-import Swift from 'tree-sitter-swift';
+import Swift from '@sengac/tree-sitter-swift';
 // @ts-expect-error - tree-sitter-c-sharp doesn't have type definitions
-import CSharp from 'tree-sitter-c-sharp';
+import CSharp from '@sengac/tree-sitter-c-sharp';
 // @ts-expect-error - tree-sitter-c doesn't have type definitions
-import C from 'tree-sitter-c';
+import C from '@sengac/tree-sitter-c';
 // @ts-expect-error - tree-sitter-cpp doesn't have type definitions
-import Cpp from 'tree-sitter-cpp';
+import Cpp from '@sengac/tree-sitter-cpp';
 // @ts-expect-error - tree-sitter-java doesn't have type definitions
-import Java from 'tree-sitter-java';
+import Java from '@sengac/tree-sitter-java';
 // @ts-expect-error - tree-sitter-php doesn't have type definitions
-import Php from 'tree-sitter-php';
+import Php from '@sengac/tree-sitter-php';
 // @ts-expect-error - tree-sitter-ruby doesn't have type definitions
-import Ruby from 'tree-sitter-ruby';
+import Ruby from '@sengac/tree-sitter-ruby';
 // @ts-expect-error - tree-sitter-bash doesn't have type definitions
 import Bash from 'tree-sitter-bash';
 
