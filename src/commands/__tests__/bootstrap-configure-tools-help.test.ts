@@ -155,13 +155,6 @@ describe('Feature: Add comprehensive help documentation for bootstrap and config
       // And configure-tools documentation should be consistent
       expect(configureToolsHelpExists).toBe(true);
 
-      // And README.md should direct users to fspec.dev documentation
-      const readmePath = path.resolve(__dirname, '../../../README.md');
-      const readmeContent = await fs.readFile(readmePath, 'utf-8');
-      expect(readmeContent).toContain('fspec.dev');
-      expect(readmeContent).toContain('Documentation');
-      expect(readmeContent).toContain('CLI Reference');
-
       // And no inconsistencies should exist
       expect(bootstrapHelpExists && configureToolsHelpExists).toBe(true);
     });

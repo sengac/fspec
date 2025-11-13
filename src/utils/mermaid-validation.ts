@@ -1,5 +1,15 @@
 import { JSDOM } from 'jsdom';
 
+// TypeScript global declarations to reduce 'as any' usage
+declare global {
+  // eslint-disable-next-line no-undef
+  var window: Window & typeof globalThis;
+  // eslint-disable-next-line no-undef
+  var document: Document;
+  // eslint-disable-next-line no-undef
+  var navigator: Navigator;
+}
+
 export interface MermaidValidationResult {
   valid: boolean;
   error?: string;
@@ -24,18 +34,22 @@ export async function validateMermaidSyntax(
   // Check for invalid subgraph identifiers (special characters in the ID part before optional [Title])
   // Valid: subgraph ID or subgraph ID[Title] where ID contains only letters, numbers, underscores, hyphens
   // Invalid: subgraph ID!!! or subgraph ID@#$ (contains special chars)
-  const subgraphMatch = code.match(/subgraph\s+(\S+?)(?:\s*\[|\s|$)/);
-  if (subgraphMatch) {
-    const subgraphId = subgraphMatch[1];
+  // Use matchAll() to check ALL subgraphs, not just the first one
+  const subgraphMatches = code.matchAll(/subgraph\s+(\S+?)(?:\s*\[|\s|$)/g);
+  for (const match of subgraphMatches) {
+    const subgraphId = match[1];
     // Check if ID contains invalid characters (anything other than alphanumeric, underscore, hyphen)
     if (!/^[a-zA-Z0-9_-]+$/.test(subgraphId)) {
       return {
         valid: false,
-        error:
-          'Invalid subgraph identifier. Use only letters, numbers, underscores, and hyphens',
+        error: `Invalid subgraph identifier '${subgraphId}'. Use only letters, numbers, underscores, and hyphens`,
       };
     }
   }
+
+  // Store original globals before try block so they're accessible in catch
+  const originalWindow = globalThis.window;
+  const originalDocument = globalThis.document;
 
   try {
     // Create a jsdom instance with a minimal HTML document
@@ -49,13 +63,11 @@ export async function validateMermaidSyntax(
 
     // Set up global DOM objects for mermaid
     const { window } = dom;
-    const originalWindow = globalThis.window;
-    const originalDocument = globalThis.document;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    globalThis.window = window as any;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    globalThis.document = window.document as any;
+    // eslint-disable-next-line no-undef
+    globalThis.window = window as Window & typeof globalThis;
+    // eslint-disable-next-line no-undef
+    globalThis.document = window.document as Document;
     Object.defineProperty(globalThis, 'navigator', {
       value: window.navigator,
       configurable: true,
@@ -91,27 +103,29 @@ export async function validateMermaidSyntax(
     if (originalWindow) {
       globalThis.window = originalWindow;
     } else {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      delete (globalThis as any).window;
+      delete globalThis.window;
     }
     if (originalDocument) {
       globalThis.document = originalDocument;
     } else {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      delete (globalThis as any).document;
+      delete globalThis.document;
     }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    delete (globalThis as any).navigator;
+    delete globalThis.navigator;
 
     return { valid: true };
   } catch (error: unknown) {
-    // Clean up globals even on error
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    delete (globalThis as any).window;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    delete (globalThis as any).document;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    delete (globalThis as any).navigator;
+    // Clean up globals even on error (match success path logic)
+    if (originalWindow) {
+      globalThis.window = originalWindow;
+    } else {
+      delete globalThis.window;
+    }
+    if (originalDocument) {
+      globalThis.document = originalDocument;
+    } else {
+      delete globalThis.document;
+    }
+    delete globalThis.navigator;
 
     const errorMessage =
       error instanceof Error ? error.message : 'Unknown Mermaid syntax error';
