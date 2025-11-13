@@ -1,6 +1,6 @@
 {
   "name": "@sengac/fspec",
-  "version": "0.8.5",
+  "version": "0.8.6",
   "description": "Feature Specification & Project Management for AI Agents - Manage Gherkin specs and work units with ACDD workflow",
   "type": "module",
   "main": "./dist/index.js",
@@ -91,7 +91,7 @@
     "tree-sitter-bash": "^0.25.0",
     "@sengac/tree-sitter-c": "^0.25.2",
     "@sengac/tree-sitter-c-sharp": "^0.25.1",
-    "@sengac/tree-sitter-cpp": "^0.25.1",
+    "@sengac/tree-sitter-cpp": "^0.25.2",
     "@sengac/tree-sitter-dart": "^1.1.1",
     "tree-sitter-go": "^0.25.0",
     "@sengac/tree-sitter-java": "^0.25.1",
