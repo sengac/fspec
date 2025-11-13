@@ -4,18 +4,18 @@
  */
 
 import Parser from 'tree-sitter';
-import JavaScript from 'tree-sitter-javascript';
-import TypeScript from 'tree-sitter-typescript';
+import JavaScript from '@sengac/tree-sitter-javascript';
+import TypeScript from '@sengac/tree-sitter-typescript';
 import Python from 'tree-sitter-python';
 import Go from 'tree-sitter-go';
-import Rust from 'tree-sitter-rust';
-import Java from 'tree-sitter-java';
-import Ruby from 'tree-sitter-ruby';
-import CSharp from 'tree-sitter-c-sharp';
-import Php from 'tree-sitter-php';
-import Cpp from 'tree-sitter-cpp';
+import Rust from '@sengac/tree-sitter-rust';
+import Java from '@sengac/tree-sitter-java';
+import Ruby from '@sengac/tree-sitter-ruby';
+import CSharp from '@sengac/tree-sitter-c-sharp';
+import Php from '@sengac/tree-sitter-php';
+import Cpp from '@sengac/tree-sitter-cpp';
 import Bash from 'tree-sitter-bash';
-import Json from 'tree-sitter-json';
+import Json from '@sengac/tree-sitter-json';
 import { readFile } from 'fs/promises';
 import { extname } from 'path';
 
