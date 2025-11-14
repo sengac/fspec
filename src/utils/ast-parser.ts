@@ -3,18 +3,18 @@
  * RES-014: Language-Agnostic AST Tool for AI Analysis
  */
 
-import Parser from 'tree-sitter';
+import Parser from '@sengac/tree-sitter';
 import JavaScript from '@sengac/tree-sitter-javascript';
 import TypeScript from '@sengac/tree-sitter-typescript';
-import Python from 'tree-sitter-python';
-import Go from 'tree-sitter-go';
+import Python from '@sengac/tree-sitter-python';
+import Go from '@sengac/tree-sitter-go';
 import Rust from '@sengac/tree-sitter-rust';
 import Java from '@sengac/tree-sitter-java';
 import Ruby from '@sengac/tree-sitter-ruby';
 import CSharp from '@sengac/tree-sitter-c-sharp';
 import Php from '@sengac/tree-sitter-php';
 import Cpp from '@sengac/tree-sitter-cpp';
-import Bash from 'tree-sitter-bash';
+import Bash from '@sengac/tree-sitter-bash';
 import Json from '@sengac/tree-sitter-json';
 import { readFile } from 'fs/promises';
 import { extname } from 'path';

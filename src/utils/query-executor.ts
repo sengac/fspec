@@ -6,7 +6,7 @@
 
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import Parser from 'tree-sitter';
+import Parser from '@sengac/tree-sitter';
 
 export interface QueryExecutorOptions {
   language: string;
