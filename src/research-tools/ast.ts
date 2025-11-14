@@ -8,7 +8,7 @@
 import type { ResearchTool } from './types';
 import { QueryExecutor } from '../utils/query-executor';
 import * as fs from 'fs/promises';
-import Parser from 'tree-sitter';
+import Parser from '@sengac/tree-sitter';
 // @ts-expect-error - tree-sitter-javascript doesn't have type definitions
 import JavaScript from '@sengac/tree-sitter-javascript';
 // @ts-expect-error - tree-sitter-typescript doesn't have type definitions
@@ -18,9 +18,9 @@ import Kotlin from '@sengac/tree-sitter-kotlin';
 // @ts-expect-error - tree-sitter-dart doesn't have type definitions
 import Dart from '@sengac/tree-sitter-dart';
 // @ts-expect-error - tree-sitter-python doesn't have type definitions
-import Python from 'tree-sitter-python';
+import Python from '@sengac/tree-sitter-python';
 // @ts-expect-error - tree-sitter-go doesn't have type definitions
-import Go from 'tree-sitter-go';
+import Go from '@sengac/tree-sitter-go';
 // @ts-expect-error - tree-sitter-rust doesn't have type definitions
 import Rust from '@sengac/tree-sitter-rust';
 // @ts-expect-error - tree-sitter-swift doesn't have type definitions
@@ -38,7 +38,7 @@ import Php from '@sengac/tree-sitter-php';
 // @ts-expect-error - tree-sitter-ruby doesn't have type definitions
 import Ruby from '@sengac/tree-sitter-ruby';
 // @ts-expect-error - tree-sitter-bash doesn't have type definitions
-import Bash from 'tree-sitter-bash';
+import Bash from '@sengac/tree-sitter-bash';
 
 export const tool: ResearchTool = {
   name: 'ast',
