@@ -7,38 +7,9 @@
 
 import type { ResearchTool } from './types';
 import { QueryExecutor } from '../utils/query-executor';
+import { loadLanguageParser } from '../utils/language-loader';
 import * as fs from 'fs/promises';
 import Parser from '@sengac/tree-sitter';
-// @ts-expect-error - tree-sitter-javascript doesn't have type definitions
-import JavaScript from '@sengac/tree-sitter-javascript';
-// @ts-expect-error - tree-sitter-typescript doesn't have type definitions
-import TypeScript from '@sengac/tree-sitter-typescript';
-// @ts-expect-error - tree-sitter-kotlin doesn't have type definitions
-import Kotlin from '@sengac/tree-sitter-kotlin';
-// @ts-expect-error - tree-sitter-dart doesn't have type definitions
-import Dart from '@sengac/tree-sitter-dart';
-// @ts-expect-error - tree-sitter-python doesn't have type definitions
-import Python from '@sengac/tree-sitter-python';
-// @ts-expect-error - tree-sitter-go doesn't have type definitions
-import Go from '@sengac/tree-sitter-go';
-// @ts-expect-error - tree-sitter-rust doesn't have type definitions
-import Rust from '@sengac/tree-sitter-rust';
-// @ts-expect-error - tree-sitter-swift doesn't have type definitions
-import Swift from '@sengac/tree-sitter-swift';
-// @ts-expect-error - tree-sitter-c-sharp doesn't have type definitions
-import CSharp from '@sengac/tree-sitter-c-sharp';
-// @ts-expect-error - tree-sitter-c doesn't have type definitions
-import C from '@sengac/tree-sitter-c';
-// @ts-expect-error - tree-sitter-cpp doesn't have type definitions
-import Cpp from '@sengac/tree-sitter-cpp';
-// @ts-expect-error - tree-sitter-java doesn't have type definitions
-import Java from '@sengac/tree-sitter-java';
-// @ts-expect-error - tree-sitter-php doesn't have type definitions
-import Php from '@sengac/tree-sitter-php';
-// @ts-expect-error - tree-sitter-ruby doesn't have type definitions
-import Ruby from '@sengac/tree-sitter-ruby';
-// @ts-expect-error - tree-sitter-bash doesn't have type definitions
-import Bash from '@sengac/tree-sitter-bash';
 
 export const tool: ResearchTool = {
   name: 'ast',
@@ -105,57 +76,10 @@ export const tool: ResearchTool = {
       parameters,
     });
 
-    // Parse file with tree-sitter
+    // Parse file with tree-sitter (lazy load parser)
     const parser = new Parser();
-    let parserLanguage;
-    if (language === 'javascript') {
-      parserLanguage = JavaScript;
-      parser.setLanguage(JavaScript);
-    } else if (language === 'typescript') {
-      parserLanguage = TypeScript.typescript;
-      parser.setLanguage(TypeScript.typescript);
-    } else if (language === 'kotlin') {
-      parserLanguage = Kotlin;
-      parser.setLanguage(Kotlin);
-    } else if (language === 'dart') {
-      parserLanguage = Dart;
-      parser.setLanguage(Dart);
-    } else if (language === 'python') {
-      parserLanguage = Python;
-      parser.setLanguage(Python);
-    } else if (language === 'go') {
-      parserLanguage = Go;
-      parser.setLanguage(Go);
-    } else if (language === 'rust') {
-      parserLanguage = Rust;
-      parser.setLanguage(Rust);
-    } else if (language === 'swift') {
-      parserLanguage = Swift;
-      parser.setLanguage(Swift);
-    } else if (language === 'csharp') {
-      parserLanguage = CSharp;
-      parser.setLanguage(CSharp);
-    } else if (language === 'c') {
-      parserLanguage = C;
-      parser.setLanguage(C);
-    } else if (language === 'cpp') {
-      parserLanguage = Cpp;
-      parser.setLanguage(Cpp);
-    } else if (language === 'java') {
-      parserLanguage = Java;
-      parser.setLanguage(Java);
-    } else if (language === 'php') {
-      parserLanguage = Php.php;
-      parser.setLanguage(Php.php);
-    } else if (language === 'ruby') {
-      parserLanguage = Ruby;
-      parser.setLanguage(Ruby);
-    } else if (language === 'bash') {
-      parserLanguage = Bash;
-      parser.setLanguage(Bash);
-    } else {
-      throw new Error(`Unsupported language: ${language}`);
-    }
+    const parserLanguage = await loadLanguageParser(language);
+    parser.setLanguage(parserLanguage);
 
     const fileContent = await fs.readFile(filePath, 'utf-8');
     const tree = parser.parse(fileContent);

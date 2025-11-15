@@ -254,6 +254,11 @@
       "prefix": "VAL",
       "description": "Validation bugs and issues",
       "createdAt": "2025-11-12T22:09:46.849Z"
+    },
+    "PERF": {
+      "prefix": "PERF",
+      "description": "Performance optimization and refactoring",
+      "createdAt": "2025-11-15T05:08:35.768Z"
     }
   }
 }
