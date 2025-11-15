@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-12T22:50:29.788Z"
+    "lastUpdated": "2025-11-15T06:03:33.004Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -46969,6 +46969,116 @@
       "attachments": [
         "spec/attachments/VAL-004/VAL-004-system-reminder-duplication-analysis.md"
       ]
+    },
+    "PERF-001": {
+      "id": "PERF-001",
+      "title": "Lazy Load Tree-Sitter Language Parsers",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-11-15T05:08:40.769Z",
+      "updatedAt": "2025-11-15T05:20:29.478Z",
+      "description": "Refactor AST utilities to lazy-load tree-sitter language parsers on-demand instead of eagerly importing all 15 parsers at startup, improving CLI load time by 85-93% for single-language analysis",
+      "children": [],
+      "userStory": {
+        "role": "developer using fspec AST research tools",
+        "action": "have fast CLI startup time when analyzing code",
+        "benefit": "I can quickly analyze single files without loading all 15 language parsers unnecessarily"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-15T05:09:07.155Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-15T05:12:51.847Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-15T05:14:06.421Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-15T05:16:10.839Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-15T05:20:29.478Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "Language parsers must be loaded on-demand using dynamic imports, not eagerly at module load time",
+          "deleted": false,
+          "createdAt": "2025-11-15T05:09:14.926Z"
+        },
+        {
+          "id": 1,
+          "text": "Only the parser needed for the target file's language should be loaded",
+          "deleted": false,
+          "createdAt": "2025-11-15T05:09:15.593Z"
+        },
+        {
+          "id": 2,
+          "text": "Loaded parsers should be cached to avoid re-importing the same language parser multiple times",
+          "deleted": false,
+          "createdAt": "2025-11-15T05:09:16.256Z"
+        },
+        {
+          "id": 3,
+          "text": "Refactoring must not change the external API of ast-parser.ts or research-tools/ast.ts",
+          "deleted": false,
+          "createdAt": "2025-11-15T05:09:16.927Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Developer analyzes a TypeScript file using 'fspec research --tool=ast --file=src/auth.ts' and only the TypeScript parser is loaded (not all 15 parsers)",
+          "deleted": false,
+          "createdAt": "2025-11-15T05:09:25.619Z"
+        },
+        {
+          "id": 1,
+          "text": "Developer analyzes multiple TypeScript files and the TypeScript parser is loaded once and cached for subsequent analyses",
+          "deleted": false,
+          "createdAt": "2025-11-15T05:09:26.984Z"
+        },
+        {
+          "id": 2,
+          "text": "CLI startup time improves by 85-93% when analyzing a single TypeScript file (from ~750-3000ms to ~50-200ms)",
+          "deleted": false,
+          "createdAt": "2025-11-15T05:09:28.273Z"
+        },
+        {
+          "id": 3,
+          "text": "All existing tests pass after refactoring without modification",
+          "deleted": false,
+          "createdAt": "2025-11-15T05:09:29.991Z"
+        }
+      ],
+      "nextExampleId": 4,
+      "estimate": 5,
+      "questions": [],
+      "architectureNotes": [],
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-15T05:20:29.478Z"
+    },
+    "RES-021": {
+      "id": "RES-021",
+      "title": "Enhance AST Research Tool with Missing Tree-Sitter Capabilities",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-11-15T06:03:25.947Z",
+      "updatedAt": "2025-11-15T06:03:33.004Z",
+      "description": "Leverage advanced tree-sitter features (Query API, TreeCursor, field-based access, closest() navigation, etc.) to make fspec's AST research tool more powerful, performant, and maintainable. Analysis shows 7 major capability categories currently unused.",
+      "children": [],
+      "attachments": [
+        "spec/attachments/RES-021/tree-sitter-missing-capabilities.md"
+      ]
     }
   },
   "states": {
@@ -47024,7 +47134,8 @@
       "DOC-012",
       "DOC-013",
       "DOC-014",
-      "VAL-004"
+      "VAL-004",
+      "RES-021"
     ],
     "specifying": [
       "LANG-001",
@@ -47037,6 +47148,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "PERF-001",
       "VAL-003",
       "VAL-001",
       "DEP-003",
@@ -47425,12 +47537,13 @@
     "VIZ": 4,
     "INT": 4,
     "VID": 2,
-    "RES": 20,
+    "RES": 21,
     "BROWSE": 1,
     "TEST": 8,
     "HOOK": 12,
     "REVIEW": 1,
     "DEP": 3,
-    "VAL": 4
+    "VAL": 4,
+    "PERF": 1
   }
 }

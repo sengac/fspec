@@ -4,18 +4,7 @@
  */
 
 import Parser from '@sengac/tree-sitter';
-import JavaScript from '@sengac/tree-sitter-javascript';
-import TypeScript from '@sengac/tree-sitter-typescript';
-import Python from '@sengac/tree-sitter-python';
-import Go from '@sengac/tree-sitter-go';
-import Rust from '@sengac/tree-sitter-rust';
-import Java from '@sengac/tree-sitter-java';
-import Ruby from '@sengac/tree-sitter-ruby';
-import CSharp from '@sengac/tree-sitter-c-sharp';
-import Php from '@sengac/tree-sitter-php';
-import Cpp from '@sengac/tree-sitter-cpp';
-import Bash from '@sengac/tree-sitter-bash';
-import Json from '@sengac/tree-sitter-json';
+import { loadLanguageParser } from './language-loader';
 import { readFile } from 'fs/promises';
 import { extname } from 'path';
 
@@ -55,44 +44,46 @@ export interface ASTMatch {
 /**
  * Get language parser based on file extension
  */
-function getLanguageParser(
+async function getLanguageParser(
   filePath: string
-): { parser: Parser; language: string } | null {
+): Promise<{ parser: Parser; language: string } | null> {
   const ext = extname(filePath);
   const parser = new Parser();
+
+  let language: string;
 
   switch (ext) {
     case '.js':
     case '.jsx':
-      parser.setLanguage(JavaScript);
-      return { parser, language: 'javascript' };
+      language = 'javascript';
+      break;
     case '.ts':
-      parser.setLanguage(TypeScript.typescript);
-      return { parser, language: 'typescript' };
+      language = 'typescript';
+      break;
     case '.tsx':
-      parser.setLanguage(TypeScript.tsx);
-      return { parser, language: 'typescript' };
+      language = 'tsx';
+      break;
     case '.py':
-      parser.setLanguage(Python);
-      return { parser, language: 'python' };
+      language = 'python';
+      break;
     case '.go':
-      parser.setLanguage(Go);
-      return { parser, language: 'go' };
+      language = 'go';
+      break;
     case '.rs':
-      parser.setLanguage(Rust);
-      return { parser, language: 'rust' };
+      language = 'rust';
+      break;
     case '.java':
-      parser.setLanguage(Java);
-      return { parser, language: 'java' };
+      language = 'java';
+      break;
     case '.rb':
-      parser.setLanguage(Ruby);
-      return { parser, language: 'ruby' };
+      language = 'ruby';
+      break;
     case '.cs':
-      parser.setLanguage(CSharp);
-      return { parser, language: 'csharp' };
+      language = 'csharp';
+      break;
     case '.php':
-      parser.setLanguage(Php.php);
-      return { parser, language: 'php' };
+      language = 'php';
+      break;
     case '.cpp':
     case '.cc':
     case '.cxx':
@@ -101,18 +92,24 @@ function getLanguageParser(
     case '.hh':
     case '.hxx':
     case '.h++':
-      parser.setLanguage(Cpp);
-      return { parser, language: 'cpp' };
+      language = 'cpp';
+      break;
     case '.sh':
     case '.bash':
-      parser.setLanguage(Bash);
-      return { parser, language: 'bash' };
+      language = 'bash';
+      break;
     case '.json':
-      parser.setLanguage(Json);
-      return { parser, language: 'json' };
+      language = 'json';
+      break;
     default:
       return null;
   }
+
+  // Lazy load the language parser
+  const languageModule = await loadLanguageParser(language);
+  parser.setLanguage(languageModule);
+
+  return { parser, language };
 }
 
 /**
@@ -401,7 +398,7 @@ export async function parseFile(
   filePath: string,
   query?: string
 ): Promise<ASTMatch> {
-  const parserInfo = getLanguageParser(filePath);
+  const parserInfo = await getLanguageParser(filePath);
   if (!parserInfo) {
     throw new Error(`Unsupported file type: ${filePath}`);
   }
