@@ -227,6 +227,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@file-initialization` | Scenarios testing initialization of project files |
 | `@file-structure` | File and directory structure validation |
 | `@file-system` | File System Operations |
+| `@file-watcher` | File system watching and monitoring features |
 | `@file-watching` | Features using file system watchers (fs.watch) for change detection |
 | `@flexbox` | Flexbox layout implementation and responsive design |
 | `@format-check` | Format and style checking |
@@ -271,6 +272,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@query-api` | Tree-sitter Query API features using S-expression pattern matching |
 | `@react` | React framework and component lifecycle features |
 | `@real-time` | Features with real-time data synchronization and live updates |
+| `@resilience` | Error handling and graceful degradation features |
 | `@responsive` | Components that respond to viewport or terminal dimension changes |
 | `@reverse-engineering` | Reverse engineering existing code to create specifications |
 | `@review` | Code review and quality analysis |
@@ -638,7 +640,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-11-15T06:14:57.480Z_
+_Last updated: 2025-11-15T11:35:46.077Z_
 
 **Update Command**: `fspec tag-stats`
 

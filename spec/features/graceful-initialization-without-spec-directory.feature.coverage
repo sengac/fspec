@@ -1,0 +1,345 @@
+{
+  "scenarios": [
+    {
+      "name": "Display empty board when spec directory does not exist",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/graceful-initialization-without-spec-directory.test.tsx",
+          "lines": "47-78",
+          "implMappings": [
+            {
+              "file": "src/tui/store/fspecStore.ts",
+              "lines": [
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Auto-reload when spec directory is created",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/graceful-initialization-without-spec-directory.test.tsx",
+          "lines": "80-151",
+          "implMappings": [
+            {
+              "file": "src/tui/store/fspecStore.ts",
+              "lines": [
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Handle temporary file removal during upgrade",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/graceful-initialization-without-spec-directory.test.tsx",
+          "lines": "153-227",
+          "implMappings": [
+            {
+              "file": "src/tui/store/fspecStore.ts",
+              "lines": [
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Handle corrupted work-units.json gracefully",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/graceful-initialization-without-spec-directory.test.tsx",
+          "lines": "229-299",
+          "implMappings": [
+            {
+              "file": "src/tui/store/fspecStore.ts",
+              "lines": [
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Clean exit on user termination",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/graceful-initialization-without-spec-directory.test.tsx",
+          "lines": "301-358",
+          "implMappings": [
+            {
+              "file": "src/tui/components/BoardView.tsx",
+              "lines": [
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/__tests__/graceful-initialization-without-spec-directory.test.tsx"
+    ],
+    "implFiles": [
+      "src/tui/store/fspecStore.ts",
+      "src/tui/components/BoardView.tsx"
+    ],
+    "totalLinesCovered": 556
+  }
+}

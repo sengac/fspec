@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-15T09:20:43.501Z"
+    "lastUpdated": "2025-11-15T11:48:20.036Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -47329,6 +47329,47 @@
       "nextQuestionId": 0,
       "nextNoteId": 0,
       "updated": "2025-11-15T09:20:43.523Z"
+    },
+    "INIT-016": {
+      "id": "INIT-016",
+      "title": "Graceful Initialization Without Spec Directory",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-11-15T11:41:45.094Z",
+      "updatedAt": "2025-11-15T11:48:20.057Z",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-15T11:41:52.135Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-15T21:44:00.000Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-15T21:45:00.000Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-15T11:44:57.562Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-15T11:48:20.057Z"
+        }
+      ],
+      "estimate": 5,
+      "rules": [],
+      "examples": [],
+      "questions": [],
+      "architectureNotes": [],
+      "nextRuleId": 0,
+      "nextExampleId": 0,
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-15T11:48:20.057Z"
     }
   },
   "states": {
@@ -47397,6 +47438,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "INIT-016",
       "REMIND-014",
       "RES-021",
       "PERF-001",
@@ -47795,6 +47837,7 @@
     "REVIEW": 1,
     "DEP": 3,
     "VAL": 4,
-    "PERF": 1
+    "PERF": 1,
+    "INIT": 16
   }
 }
