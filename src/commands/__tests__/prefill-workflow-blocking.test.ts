@@ -57,11 +57,27 @@ Feature: Test Feature
           'TEST-001': {
             id: 'TEST-001',
             title: 'Test work unit',
+            type: 'story',
             status: 'specifying',
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
             children: [],
             linkedFeatures: ['test-feature'],
+            rules: [
+              'Feature file must not contain prefill placeholders before testing',
+            ],
+            examples: ['All [placeholder] values replaced with actual content'],
+            architectureNotes: [
+              'Implementation: Scan feature files for bracket-enclosed placeholders',
+            ],
+            attachments: [
+              {
+                path: 'spec/attachments/TEST-001/ast-research.json',
+                description:
+                  'Prefill detection regex patterns and validation logic',
+                addedAt: new Date().toISOString(),
+              },
+            ],
           },
         },
         states: {
@@ -138,11 +154,28 @@ Feature: Complete Feature
           'TEST-002': {
             id: 'TEST-002',
             title: 'Complete work unit',
+            type: 'story',
             status: 'specifying',
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
             children: [],
             linkedFeatures: ['complete-feature'],
+            rules: [
+              'Complete feature files can move to testing without prefill blocking',
+            ],
+            examples: [
+              'Feature with fully specified scenarios passes prefill check',
+            ],
+            architectureNotes: [
+              'Implementation: Prefill validator allows transition when no placeholders found',
+            ],
+            attachments: [
+              {
+                path: 'spec/attachments/TEST-002/ast-research.json',
+                description: 'Prefill validation success path implementation',
+                addedAt: new Date().toISOString(),
+              },
+            ],
           },
         },
         states: {

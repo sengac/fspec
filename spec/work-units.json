@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-15T06:24:10.894Z"
+    "lastUpdated": "2025-11-15T09:20:43.501Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -47221,6 +47221,114 @@
       "architectureNotes": [],
       "nextNoteId": 0,
       "updated": "2025-11-15T06:24:10.916Z"
+    },
+    "REMIND-014": {
+      "id": "REMIND-014",
+      "title": "Enhance fspec review with architecture alignment and AST verification",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-11-15T08:39:22.326Z",
+      "updatedAt": "2025-11-15T09:20:43.523Z",
+      "children": [],
+      "userStory": {
+        "role": "AI agent working on a feature",
+        "action": "run architectural review before moving to testing phase",
+        "benefit": "I ensure alignment with existing codebase architecture, follow DRY/SOLID principles, and verify complete code understanding via AST analysis"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-15T08:41:12.358Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-15T08:59:52.385Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-15T09:01:56.602Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-15T09:06:00.953Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-15T09:20:43.524Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "Architectural review must be automatic and mandatory before transitioning from specifying to testing",
+          "deleted": false,
+          "createdAt": "2025-11-15T08:41:16.140Z"
+        },
+        {
+          "id": 1,
+          "text": "AST analysis must verify: all referenced files were analyzed, all mentioned functions/classes exist, all dependencies/imports are documented, and refactoring candidates were researched via AST",
+          "deleted": false,
+          "createdAt": "2025-11-15T08:43:51.370Z"
+        },
+        {
+          "id": 2,
+          "text": "Architecture alignment must verify: proposed approach matches existing code patterns, decisions align with FOUNDATION.md/CLAUDE.md/AGENTS.md principles, architectural notes reference actual discovered code structures, and explicit justification required when diverging from established patterns",
+          "deleted": false,
+          "createdAt": "2025-11-15T08:45:51.283Z"
+        },
+        {
+          "id": 3,
+          "text": "DRY/SOLID validation must verify: AI performed AST research during specifying phase (check attachments), architectural notes reference actual discovered code (not assumptions), AI is not proposing to reinvent existing utilities/functions, and proposed solutions follow SOLID principles based on architectural notes",
+          "deleted": false,
+          "createdAt": "2025-11-15T08:48:08.973Z"
+        },
+        {
+          "id": 4,
+          "text": "Review enforcement must be hard block implemented inside update-work-unit-status command (not as hook), automatically run review when transitioning specifying to testing, throw error and prevent state change if critical issues or ACDD compliance failed, output full review report with specific issues and guidance",
+          "deleted": false,
+          "createdAt": "2025-11-15T08:49:14.667Z"
+        },
+        {
+          "id": 5,
+          "text": "CRITICAL: fspec MUST NOT perform semantic code analysis - NO code quality judgments, NO similarity detection, NO anti-pattern detection in fspec itself. fspec ONLY provides structural data via AST (counts, names, locations). The AI agent makes ALL analysis decisions based on data provided.",
+          "deleted": false,
+          "createdAt": "2025-11-15T08:49:53.259Z"
+        },
+        {
+          "id": 6,
+          "text": "Review has two-level blocking: Level 1 (Objective ACDD) - fspec hard blocks for no Example Mapping, no architectural notes, no AST research attachments, no feature file, invalid Gherkin. Level 2 (Subjective Analysis) - review passes but emits system-reminder with AST data, architectural notes, guidance questions for AI to analyze and decide whether to continue or revert to specifying",
+          "deleted": false,
+          "createdAt": "2025-11-15T08:51:51.557Z"
+        }
+      ],
+      "nextRuleId": 7,
+      "examples": [
+        {
+          "id": 0,
+          "text": "AI moves work unit from specifying to testing, review auto-runs and finds no AST research attachments, command fails with error: 'Cannot transition to testing - no AST research performed during discovery', AI must go back and run fspec research --tool=ast",
+          "deleted": false,
+          "createdAt": "2025-11-15T08:51:58.767Z"
+        },
+        {
+          "id": 1,
+          "text": "AI moves work unit from specifying to testing, objective checks pass, review outputs system-reminder showing AST data (15 functions found across 3 files, validateFeature appears in 2 locations), AI analyzes data and realizes it was about to reinvent validateFeature, AI reverts to specifying using fspec update-work-unit-status WORK-001 specifying",
+          "deleted": false,
+          "createdAt": "2025-11-15T08:52:06.785Z"
+        },
+        {
+          "id": 2,
+          "text": "AI creates architectural note 'Refactoring: Extract validation logic to shared utility because current code has 3 copies of same validation pattern across files', attaches AST research showing the 3 locations, review passes and allows transition to testing with all data validated",
+          "deleted": false,
+          "createdAt": "2025-11-15T08:52:12.930Z"
+        }
+      ],
+      "nextExampleId": 3,
+      "estimate": 8,
+      "questions": [],
+      "architectureNotes": [],
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-15T09:20:43.523Z"
     }
   },
   "states": {
@@ -47289,6 +47397,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "REMIND-014",
       "RES-021",
       "PERF-001",
       "VAL-003",
@@ -47669,7 +47778,7 @@
     "DOC": 15,
     "GIT": 12,
     "FEAT": 20,
-    "REMIND": 13,
+    "REMIND": 14,
     "CODEX": 1,
     "AGENT": 19,
     "GRAPH": 3,

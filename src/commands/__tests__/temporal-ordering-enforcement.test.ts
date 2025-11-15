@@ -48,6 +48,20 @@ describe('Feature: Prevent retroactive state walking - enforce temporal ordering
         ],
         createdAt: '2025-01-15T09:00:00.000Z',
         updatedAt: specifyingTime.toISOString(),
+        rules: [
+          'Feature files must be created after entering specifying state',
+        ],
+        examples: ['Valid ACDD workflow with proper temporal ordering'],
+        architectureNotes: [
+          'Implementation: Validate file timestamps during state transitions',
+        ],
+        attachments: [
+          {
+            path: 'spec/attachments/TEST-001/ast-research.json',
+            description: 'AST analysis for temporal validation implementation',
+            addedAt: new Date().toISOString(),
+          },
+        ],
       };
 
       workUnitsData.states.specifying = [workUnitId];
@@ -86,21 +100,15 @@ Feature: Test Feature
 
       // When I try to move to testing state
       // Then the command should fail with temporal ordering violation
-      await expect(
-        updateWorkUnitStatus({
-          workUnitId,
-          status: 'testing',
-          cwd: tmpDir,
-        })
-      ).rejects.toThrow(/ACDD temporal ordering violation/);
+      const result = await updateWorkUnitStatus({
+        workUnitId,
+        status: 'testing',
+        cwd: tmpDir,
+      });
 
-      await expect(
-        updateWorkUnitStatus({
-          workUnitId,
-          status: 'testing',
-          cwd: tmpDir,
-        })
-      ).rejects.toThrow(
+      expect(result.success).toBe(false);
+      expect(result.error).toMatch(/ACDD temporal ordering violation/);
+      expect(result.error).toMatch(
         /Feature files were created.*BEFORE entering specifying state/
       );
     });
@@ -126,6 +134,20 @@ Feature: Test Feature
         ],
         createdAt: '2025-01-15T09:00:00.000Z',
         updatedAt: specifyingTime.toISOString(),
+        rules: [
+          'Feature files must be created after entering specifying state',
+        ],
+        examples: ['Valid ACDD workflow with proper temporal ordering'],
+        architectureNotes: [
+          'Implementation: Validate file timestamps during state transitions',
+        ],
+        attachments: [
+          {
+            path: 'spec/attachments/TEST-002/ast-research.json',
+            description: 'AST analysis for temporal validation implementation',
+            addedAt: new Date().toISOString(),
+          },
+        ],
       };
 
       workUnitsData.states.specifying = [workUnitId];
@@ -279,6 +301,20 @@ describe('Feature: Test Feature', () => {
         ],
         createdAt: '2025-01-15T09:00:00.000Z',
         updatedAt: specifyingTime.toISOString(),
+        rules: ['Legacy code can be imported with --skip-temporal-validation'],
+        examples: [
+          'Import existing feature files that predate work unit creation',
+        ],
+        architectureNotes: [
+          'Implementation: Provide escape hatch for legacy code imports',
+        ],
+        attachments: [
+          {
+            path: 'spec/attachments/TEST-004/ast-research.json',
+            description: 'AST analysis for legacy code import handling',
+            addedAt: new Date().toISOString(),
+          },
+        ],
       };
 
       workUnitsData.states.specifying = [workUnitId];

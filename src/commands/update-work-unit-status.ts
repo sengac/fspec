@@ -31,6 +31,7 @@ import { parseAllFeatures, findFeaturesByTag } from '../utils/feature-parser';
 import { sendIPCMessage } from '../utils/ipc.js';
 import { executeHooks } from '../hooks/executor';
 import type { HookDefinition } from '../hooks/types';
+import { performReviewValidation } from '../utils/review-validation';
 
 type WorkUnitStatus =
   | 'backlog'
@@ -102,6 +103,9 @@ export async function updateWorkUnitStatus(
   const currentStatus = workUnit.status;
   const newStatus = options.status;
   const workUnitType: WorkUnitType = workUnit.type || 'story'; // Default to 'story' for backward compatibility
+
+  // REMIND-014: Store review system-reminder for Level 2 subjective analysis
+  let reviewSystemReminder: string | undefined;
 
   // Validate state is allowed
   if (!ALLOWED_STATES.includes(newStatus)) {
@@ -222,6 +226,19 @@ export async function updateWorkUnitStatus(
 
   // Validate prerequisites for testing state
   if (newStatus === 'testing' && currentStatus === 'specifying') {
+    // REMIND-014: Perform architectural review validation before testing
+    const reviewResult = await performReviewValidation(workUnit);
+    if (!reviewResult.passed) {
+      return {
+        success: false,
+        error: reviewResult.error,
+        newStatus: currentStatus, // Status remains unchanged on validation failure
+      };
+    }
+
+    // Store system-reminder for later (Level 2 subjective analysis)
+    reviewSystemReminder = reviewResult.systemReminder;
+
     // Type-specific validation for bugs: must link to existing feature file
     // Bugs can use either linkedFeatures array or @WORK-UNIT-ID tags in scenarios
     if (workUnitType === 'bug') {
@@ -267,9 +284,11 @@ export async function updateWorkUnitStatus(
           })
           .join('\n');
 
-        throw new Error(
-          `Unanswered questions prevent state transition from '${currentStatus}' to '${newStatus}':\n${questionsList}\n\nAnswer questions with 'fspec answer-question ${options.workUnitId} <index>' before moving to testing.`
-        );
+        return {
+          success: false,
+          error: `Unanswered questions prevent state transition from '${currentStatus}' to '${newStatus}':\n${questionsList}\n\nAnswer questions with 'fspec answer-question ${options.workUnitId} <index>' before moving to testing.`,
+          newStatus: currentStatus,
+        };
       }
     }
 
@@ -295,12 +314,22 @@ export async function updateWorkUnitStatus(
     if (!options.skipTemporalValidation) {
       const specifyingEntry = findStateHistoryEntry(workUnit, 'specifying');
       if (specifyingEntry) {
-        await checkFileCreatedAfter(
-          options.workUnitId,
-          specifyingEntry.timestamp,
-          'feature',
-          cwd
-        );
+        try {
+          await checkFileCreatedAfter(
+            options.workUnitId,
+            specifyingEntry.timestamp,
+            'feature',
+            cwd
+          );
+        } catch (error: unknown) {
+          const errorMessage =
+            error instanceof Error ? error.message : String(error);
+          return {
+            success: false,
+            error: errorMessage,
+            newStatus: currentStatus,
+          };
+        }
       }
     }
 
@@ -643,6 +672,11 @@ export async function updateWorkUnitStatus(
     if (virtualHooksReminder) {
       reminders.push(virtualHooksReminder);
     }
+  }
+
+  // REMIND-014: Add review system-reminder for Level 2 subjective analysis
+  if (reviewSystemReminder) {
+    reminders.push(reviewSystemReminder);
   }
 
   // Get cleanup reminder when transitioning to done

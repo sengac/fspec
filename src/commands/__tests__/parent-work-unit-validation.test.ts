@@ -42,10 +42,25 @@ describe('Feature: Parent Work Unit Validation (BUG-006)', () => {
               'PARENT-001': {
                 id: 'PARENT-001',
                 title: 'Parent Feature',
+                type: 'story',
                 status: 'specifying',
                 children: ['CHILD-001', 'CHILD-002'],
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString(),
+                rules: [
+                  'Parent work units can move to testing without scenario validation',
+                ],
+                examples: ['Parent with completed children moves to testing'],
+                architectureNotes: [
+                  'Implementation: Parents bypass scenario checks but still need ACDD data',
+                ],
+                attachments: [
+                  {
+                    path: 'spec/attachments/PARENT-001/ast-research.json',
+                    description: 'Parent work unit validation bypass logic',
+                    addedAt: new Date().toISOString(),
+                  },
+                ],
               },
               'CHILD-001': {
                 id: 'CHILD-001',
@@ -107,9 +122,24 @@ describe('Feature: Parent Work Unit Validation (BUG-006)', () => {
               'LEAF-001': {
                 id: 'LEAF-001',
                 title: 'Leaf Feature',
+                type: 'story',
                 status: 'specifying',
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString(),
+                rules: ['Leaf work units must have scenarios before testing'],
+                examples: [
+                  'Work unit with no children requires scenario validation',
+                ],
+                architectureNotes: [
+                  'Implementation: Scenario validation applies to leaf work units only',
+                ],
+                attachments: [
+                  {
+                    path: 'spec/attachments/LEAF-001/ast-research.json',
+                    description: 'Leaf vs parent work unit validation logic',
+                    addedAt: new Date().toISOString(),
+                  },
+                ],
               },
             },
             states: {

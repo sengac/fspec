@@ -46,6 +46,20 @@ describe('Virtual hooks system reminders', () => {
               timestamp: '2025-01-01T01:00:00.000Z',
             },
           ],
+          rules: ['User must authenticate with valid credentials'],
+          examples: [
+            'User successfully logs in with valid username and password',
+          ],
+          architectureNotes: [
+            'Implementation: Use secure authentication with password hashing',
+          ],
+          attachments: [
+            {
+              path: 'spec/attachments/AUTH-001/ast-research.json',
+              description: 'AST research for authentication implementation',
+              addedAt: new Date().toISOString(),
+            },
+          ],
         },
         'BUG-001': {
           id: 'BUG-001',
