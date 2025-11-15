@@ -1,0 +1,78 @@
+{
+  "scenarios": [
+    {
+      "name": "Multiple reminders combined into single block",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/system-reminder-consolidation.test.ts",
+          "lines": "31-77",
+          "implMappings": [
+            {
+              "file": "src/commands/update-work-unit-status.ts",
+              "lines": [
+                716,
+                717,
+                718,
+                719,
+                720,
+                721,
+                722,
+                723,
+                724,
+                725,
+                726,
+                727,
+                728,
+                729,
+                730
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Status transition to done with multiple applicable reminders",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/system-reminder-consolidation.test.ts",
+          "lines": "80-179",
+          "implMappings": [
+            {
+              "file": "src/commands/update-work-unit-status.ts",
+              "lines": [
+                716,
+                717,
+                718,
+                719,
+                720,
+                721,
+                722,
+                723,
+                724,
+                725,
+                726,
+                727,
+                728,
+                729,
+                730
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/commands/__tests__/system-reminder-consolidation.test.ts"
+    ],
+    "implFiles": [
+      "src/commands/update-work-unit-status.ts"
+    ],
+    "totalLinesCovered": 177
+  }
+}

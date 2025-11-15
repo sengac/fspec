@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-15T11:48:20.036Z"
+    "lastUpdated": "2025-11-15T12:00:45.802Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -46961,14 +46961,76 @@
       "id": "VAL-004",
       "title": "Multiple consecutive system-reminder blocks in update-work-unit-status",
       "type": "bug",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2025-11-12T22:47:24.951Z",
-      "updatedAt": "2025-11-12T22:49:31.905Z",
+      "updatedAt": "2025-11-15T12:00:45.826Z",
       "description": "The update-work-unit-status command creates multiple consecutive <system-reminder> blocks instead of a single unified block when multiple reminders are applicable",
       "children": [],
       "attachments": [
         "spec/attachments/VAL-004/VAL-004-system-reminder-duplication-analysis.md"
-      ]
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-15T11:55:04.495Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-15T11:57:33.447Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-15T12:00:26.333Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-15T12:00:31.657Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-15T12:00:45.826Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using fspec CLI",
+        "action": "see single unified system-reminder blocks",
+        "benefit": "I don't get confused by multiple consecutive reminder blocks"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "All system-reminder content must be in a single unified block",
+          "deleted": false,
+          "createdAt": "2025-11-15T11:56:14.645Z"
+        },
+        {
+          "id": 1,
+          "text": "Multiple reminders should be combined by unwrapping individual blocks and re-wrapping once",
+          "deleted": false,
+          "createdAt": "2025-11-15T11:56:19.366Z"
+        }
+      ],
+      "nextRuleId": 2,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Work unit transitions to done status with multiple applicable reminders - output should have single system-reminder block containing all reminder content",
+          "deleted": false,
+          "createdAt": "2025-11-15T11:56:24.411Z"
+        },
+        {
+          "id": 1,
+          "text": "Status change reminder, virtual hooks reminder, and cleanup reminder all triggered - should combine into one block, not three separate blocks",
+          "deleted": false,
+          "createdAt": "2025-11-15T11:56:30.010Z"
+        }
+      ],
+      "nextExampleId": 2,
+      "questions": [],
+      "architectureNotes": [],
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-15T12:00:45.826Z"
     },
     "PERF-001": {
       "id": "PERF-001",
@@ -47424,8 +47486,7 @@
       "INT-004",
       "DOC-012",
       "DOC-013",
-      "DOC-014",
-      "VAL-004"
+      "DOC-014"
     ],
     "specifying": [
       "LANG-001",
@@ -47438,6 +47499,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "VAL-004",
       "INIT-016",
       "REMIND-014",
       "RES-021",

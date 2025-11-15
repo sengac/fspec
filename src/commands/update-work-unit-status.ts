@@ -713,9 +713,21 @@ This is optional but recommended to catch issues early.
     }
   }
 
-  // Combine all reminders
-  const systemReminder =
-    reminders.length > 0 ? reminders.join('\n\n') : undefined;
+  // Combine all reminders - strip wrappers first, then wrap once
+  let systemReminder: string | undefined;
+  if (reminders.length > 0) {
+    // Strip <system-reminder> tags from each reminder
+    const unwrappedContents = reminders.map(r =>
+      r
+        .replace(/<system-reminder>\n?/g, '')
+        .replace(/<\/system-reminder>\n?/g, '')
+        .trim()
+    );
+
+    // Wrap combined content once
+    const { wrapInSystemReminder } = await import('../utils/system-reminder');
+    systemReminder = wrapInSystemReminder(unwrappedContents.join('\n\n'));
+  }
 
   // Check for tool configuration when moving to validating state
   if (newStatus === 'validating') {
