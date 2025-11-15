@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-15T12:00:45.802Z"
+    "lastUpdated": "2025-11-15T23:42:34.817Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -36016,9 +36016,16 @@
       "type": "story",
       "status": "specifying",
       "createdAt": "2025-11-01T17:50:17.784Z",
-      "updatedAt": "2025-11-05T03:38:52.988Z",
+      "updatedAt": "2025-11-15T12:18:41.865Z",
       "description": "Add Event Storming as a discovery technique done before Example Mapping to identify domain events, commands, aggregates, and bounded contexts that inform tag naming and domain structure",
-      "children": [],
+      "children": [
+        "EXMAP-005",
+        "EXMAP-006",
+        "EXMAP-007",
+        "EXMAP-008",
+        "EXMAP-009",
+        "EXMAP-010"
+      ],
       "stateHistory": [
         {
           "state": "specifying",
@@ -36026,9 +36033,9 @@
         }
       ],
       "userStory": {
-        "role": "project team member",
-        "action": "use Event Storming to discover domain events and bounded contexts",
-        "benefit": "we have better tag names and domain understanding before writing specifications"
+        "role": "AI agent using fspec for domain-driven development",
+        "action": "perform Event Storming discovery before Example Mapping",
+        "benefit": "I identify bounded contexts, aggregates, and domain events that inform tag naming and domain structure"
       },
       "rules": [
         {
@@ -36054,9 +36061,39 @@
           "text": "Current fspec workflow has no Event Storming support - discovery goes straight to Example Mapping",
           "deleted": false,
           "createdAt": "2025-11-01T17:50:47.248Z"
+        },
+        {
+          "id": 4,
+          "text": "Event Storming data stored in both foundation.json (Big Picture ES with bounded contexts) and work-units.json (Process/Design ES per story). Tags.json gets enhanced relationships section.",
+          "deleted": false,
+          "createdAt": "2025-11-15T12:15:28.140Z"
+        },
+        {
+          "id": 5,
+          "text": "Yes, fspec commands: add-domain-event, add-command, add-aggregate, add-policy, add-hotspot, add-external-system, add-bounded-context, suggest-tags-from-events, sync-tags-with-event-storm, add-tag-relationship, show-tag-relationships",
+          "deleted": false,
+          "createdAt": "2025-11-15T12:15:33.932Z"
+        },
+        {
+          "id": 6,
+          "text": "Yes, domain events visible during Example Mapping via transformation (policies→rules, hotspots→questions). Also used for tag suggestions when generating scenarios.",
+          "deleted": false,
+          "createdAt": "2025-11-15T12:15:40.454Z"
+        },
+        {
+          "id": 7,
+          "text": "Both. Big Picture ES done at foundation level (foundation.json) for strategic bounded contexts. Process/Design ES done per epic/feature (work-units.json) for tactical discovery.",
+          "deleted": false,
+          "createdAt": "2025-11-15T12:15:46.013Z"
+        },
+        {
+          "id": 8,
+          "text": "Track all: domain events, commands, aggregates, policies, external systems, bounded contexts, hotspots. This provides complete domain model for tag discovery and transformation to Example Mapping.",
+          "deleted": false,
+          "createdAt": "2025-11-15T12:15:51.477Z"
         }
       ],
-      "nextRuleId": 4,
+      "nextRuleId": 9,
       "examples": [
         {
           "id": 0,
@@ -36078,35 +36115,40 @@
           "text": "@human: How should Event Storming data be stored? New section in foundation.json, separate event-storm.json file, or in work units themselves?",
           "deleted": false,
           "createdAt": "2025-11-01T17:51:20.313Z",
-          "selected": false
+          "selected": true,
+          "answer": "Event Storming data stored in both foundation.json (Big Picture ES with bounded contexts) and work-units.json (Process/Design ES per story). Tags.json gets enhanced relationships section."
         },
         {
           "id": 1,
           "text": "@human: Should there be fspec commands for Event Storming? E.g., fspec add-domain-event, fspec add-command, fspec add-aggregate, fspec suggest-tags-from-events?",
           "deleted": false,
           "createdAt": "2025-11-01T17:51:21.657Z",
-          "selected": false
+          "selected": true,
+          "answer": "Yes, fspec commands: add-domain-event, add-command, add-aggregate, add-policy, add-hotspot, add-external-system, add-bounded-context, suggest-tags-from-events, sync-tags-with-event-storm, add-tag-relationship, show-tag-relationships"
         },
         {
           "id": 2,
           "text": "@human: How should Event Storming integrate with Example Mapping? Should domain events from Event Storming be visible when doing Example Mapping for a story?",
           "deleted": false,
           "createdAt": "2025-11-01T17:51:23.300Z",
-          "selected": false
+          "selected": true,
+          "answer": "Yes, domain events visible during Example Mapping via transformation (policies→rules, hotspots→questions). Also used for tag suggestions when generating scenarios."
         },
         {
           "id": 3,
           "text": "@human: Should Event Storming be part of foundation discovery (done once at project start) or per-epic/feature discovery (done multiple times)?",
           "deleted": false,
           "createdAt": "2025-11-01T17:51:25.922Z",
-          "selected": false
+          "selected": true,
+          "answer": "Both. Big Picture ES done at foundation level (foundation.json) for strategic bounded contexts. Process/Design ES done per epic/feature (work-units.json) for tactical discovery."
         },
         {
           "id": 4,
           "text": "@human: What Event Storming elements should be tracked? Just domain events and commands, or also aggregates, policies, external systems, hotspots?",
           "deleted": false,
           "createdAt": "2025-11-01T17:51:27.304Z",
-          "selected": false
+          "selected": true,
+          "answer": "Track all: domain events, commands, aggregates, policies, external systems, bounded contexts, hotspots. This provides complete domain model for tag discovery and transformation to Example Mapping."
         }
       ],
       "nextQuestionId": 5,
@@ -36115,7 +36157,8 @@
       ],
       "attachments": [
         "spec/attachments/EXMAP-004/event-storming-tag-integration-no-colors.md"
-      ]
+      ],
+      "estimate": 5
     },
     "QUERY-001": {
       "id": "QUERY-001",
@@ -47432,6 +47475,280 @@
       "nextQuestionId": 0,
       "nextNoteId": 0,
       "updated": "2025-11-15T11:48:20.057Z"
+    },
+    "EXMAP-005": {
+      "id": "EXMAP-005",
+      "title": "Event Storm data model for work units",
+      "type": "story",
+      "status": "specifying",
+      "createdAt": "2025-11-15T12:16:15.377Z",
+      "updatedAt": "2025-11-15T23:42:34.817Z",
+      "description": "Add eventStorm section to WorkUnit type in work-units.json for storing Process/Design Event Storming artifacts per story",
+      "parent": "EXMAP-004",
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-15T12:19:48.294Z"
+        }
+      ],
+      "userStory": {
+        "role": "AI agent performing Event Storming during specifying phase",
+        "action": "store Event Storm artifacts in work-units.json",
+        "benefit": "I have persistent structured data for tag discovery and Example Mapping transformation"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Event Storm data model uses stable IDs with soft-delete pattern (id, text, deleted, createdAt, deletedAt) consistent with existing rules/examples/questions pattern",
+          "deleted": false,
+          "createdAt": "2025-11-15T12:20:15.096Z"
+        },
+        {
+          "id": 1,
+          "text": "WorkUnit.eventStorm section stores: level (process_modeling or software_design), sessionDate, items array (events, commands, aggregates, policies, hotspots, external systems, bounded contexts), nextItemId counter",
+          "deleted": false,
+          "createdAt": "2025-11-15T12:20:21.557Z"
+        },
+        {
+          "id": 2,
+          "text": "Event Storm items have type field: 'event', 'command', 'aggregate', 'policy', 'hotspot', 'external_system', 'bounded_context'",
+          "deleted": false,
+          "createdAt": "2025-11-15T12:20:26.714Z"
+        },
+        {
+          "id": 3,
+          "text": "Items support relationships via relatedTo array containing IDs of related items (e.g., command triggersEvent, policy when/then)",
+          "deleted": false,
+          "createdAt": "2025-11-15T12:20:32.311Z"
+        },
+        {
+          "id": 4,
+          "text": "Suggested tags generated from Event Storm stored in suggestedTags object with componentTags, featureGroupTags, technicalTags arrays and reasoning field",
+          "deleted": false,
+          "createdAt": "2025-11-15T12:20:38.138Z"
+        },
+        {
+          "id": 5,
+          "text": "Data model must be versioned and support JSON Schema validation",
+          "deleted": false,
+          "createdAt": "2025-11-15T12:20:43.246Z"
+        },
+        {
+          "id": 6,
+          "text": "Yes, add timestamp field for timeline visualization. Makes Event Storm temporal and enables Mermaid timeline diagrams.",
+          "deleted": false,
+          "createdAt": "2025-11-15T12:21:32.004Z"
+        },
+        {
+          "id": 7,
+          "text": "Yes, add color field matching Event Storming convention (orange/blue/yellow/pink/purple/green/red) for visualization and adherence to Event Storming standard.",
+          "deleted": false,
+          "createdAt": "2025-11-15T12:21:38.099Z"
+        },
+        {
+          "id": 8,
+          "text": "Use discriminated union with type field for type safety. Each item type has specific required fields (e.g., commands have triggersEvent, policies have when/then).",
+          "deleted": false,
+          "createdAt": "2025-11-15T12:21:44.395Z"
+        }
+      ],
+      "nextRuleId": 9,
+      "examples": [
+        {
+          "id": 0,
+          "text": "WorkUnit AUTH-001 has eventStorm section with level='process_modeling', 5 domain events (UserRegistered, EmailVerified, UserAuthenticated, SessionCreated, PasswordResetRequested), each with id, text, type='event', deleted=false",
+          "deleted": false,
+          "createdAt": "2025-11-15T12:20:49.670Z"
+        },
+        {
+          "id": 1,
+          "text": "Event with id=0 'UserAuthenticated' has relatedTo=[1] linking to command id=1 'AuthenticateUser' which has triggersEvent=0",
+          "deleted": false,
+          "createdAt": "2025-11-15T12:20:54.782Z"
+        },
+        {
+          "id": 2,
+          "text": "suggestedTags object contains componentTags=['@auth', '@session-management'], featureGroupTags=['@authentication', '@user-management'], technicalTags=['@oauth2-integration'], reasoning='Derived from Authentication bounded context, User aggregate, and OAuth2Provider external system'",
+          "deleted": false,
+          "createdAt": "2025-11-15T12:21:00.895Z"
+        },
+        {
+          "id": 3,
+          "text": "Soft-delete: item id=3 marked deleted=true with deletedAt timestamp, still in items array, ID not reused, can be restored via restore commands",
+          "deleted": false,
+          "createdAt": "2025-11-15T12:21:06.852Z"
+        }
+      ],
+      "nextExampleId": 4,
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: Should timestamp field be added to Event Storm items for timeline visualization (like in the attachment's example with timestamp: 5000, 15000)?",
+          "deleted": false,
+          "createdAt": "2025-11-15T12:21:14.074Z",
+          "selected": true,
+          "answer": "Yes, add timestamp field for timeline visualization. Makes Event Storm temporal and enables Mermaid timeline diagrams."
+        },
+        {
+          "id": 1,
+          "text": "@human: Should the data model include color field (orange, blue, yellow, etc.) to match physical Event Storming sticky note colors for better visualization?",
+          "deleted": false,
+          "createdAt": "2025-11-15T12:21:19.850Z",
+          "selected": true,
+          "answer": "Yes, add color field matching Event Storming convention (orange/blue/yellow/pink/purple/green/red) for visualization and adherence to Event Storming standard."
+        },
+        {
+          "id": 2,
+          "text": "@human: For TypeScript types, should we create EventStormItem interface with discriminated union based on type field, or simpler base interface with optional fields?",
+          "deleted": false,
+          "createdAt": "2025-11-15T12:21:25.869Z",
+          "selected": true,
+          "answer": "Use discriminated union with type field for type safety. Each item type has specific required fields (e.g., commands have triggersEvent, policies have when/then)."
+        }
+      ],
+      "nextQuestionId": 3,
+      "estimate": 3,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Uses TypeScript discriminated unions for Event Storm item types, following ItemWithId pattern for stable IDs and soft-delete. Data stored in work-units.json eventStorm section.",
+          "deleted": false,
+          "createdAt": "2025-11-15T23:42:34.817Z"
+        }
+      ],
+      "nextNoteId": 1
+    },
+    "EXMAP-006": {
+      "id": "EXMAP-006",
+      "title": "Event Storm artifact commands (events, commands, aggregates)",
+      "type": "story",
+      "status": "testing",
+      "createdAt": "2025-11-15T12:16:21.432Z",
+      "updatedAt": "2025-11-15T23:20:10.586Z",
+      "description": "Implement fspec commands: add-domain-event, add-command, add-aggregate for capturing Event Storm sticky notes",
+      "parent": "EXMAP-004",
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-15T23:10:09.499Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-15T23:20:10.586Z"
+        }
+      ],
+      "userStory": {
+        "role": "AI agent performing Event Storming during specifying phase",
+        "action": "add domain events, commands, and aggregates using fspec CLI",
+        "benefit": "I capture Event Storm sticky notes in structured format for tag discovery and traceability"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Commands: add-domain-event, add-command, add-aggregate take work-unit-id and text as required arguments",
+          "deleted": false,
+          "createdAt": "2025-11-15T23:10:30.054Z"
+        },
+        {
+          "id": 1,
+          "text": "Each command creates item with auto-incremented ID, type field, color (orange/blue/yellow), deleted=false, createdAt timestamp",
+          "deleted": false,
+          "createdAt": "2025-11-15T23:10:35.955Z"
+        },
+        {
+          "id": 2,
+          "text": "Commands initialize eventStorm section if not present with level='process_modeling', items=[], nextItemId=0",
+          "deleted": false,
+          "createdAt": "2025-11-15T23:10:41.479Z"
+        },
+        {
+          "id": 3,
+          "text": "add-command supports --actor flag for who executes command, add-aggregate supports --responsibilities flag (comma-separated list)",
+          "deleted": false,
+          "createdAt": "2025-11-15T23:10:47.369Z"
+        },
+        {
+          "id": 4,
+          "text": "All commands support --timestamp flag for timeline visualization (milliseconds), --bounded-context for domain association",
+          "deleted": false,
+          "createdAt": "2025-11-15T23:10:53.696Z"
+        },
+        {
+          "id": 5,
+          "text": "Commands must validate work unit exists and is not in done/blocked state before adding Event Storm items",
+          "deleted": false,
+          "createdAt": "2025-11-15T23:10:59.386Z"
+        }
+      ],
+      "nextRuleId": 6,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Run 'fspec add-domain-event AUTH-001 \"UserRegistered\"' creates event with id=0, type='event', color='orange', text='UserRegistered'",
+          "deleted": false,
+          "createdAt": "2025-11-15T23:11:06.386Z"
+        },
+        {
+          "id": 1,
+          "text": "Run 'fspec add-command AUTH-001 \"AuthenticateUser\" --actor \"User\"' creates command with id=1, type='command', color='blue', actor='User'",
+          "deleted": false,
+          "createdAt": "2025-11-15T23:11:11.844Z"
+        },
+        {
+          "id": 2,
+          "text": "Run 'fspec add-aggregate AUTH-001 \"User\" --responsibilities \"Authentication,Profile management\"' creates aggregate with id=2, type='aggregate', color='yellow', responsibilities=['Authentication','Profile management']",
+          "deleted": false,
+          "createdAt": "2025-11-15T23:11:17.650Z"
+        },
+        {
+          "id": 3,
+          "text": "First command on work unit initializes eventStorm section, subsequent commands append to items array and increment nextItemId",
+          "deleted": false,
+          "createdAt": "2025-11-15T23:11:24.541Z"
+        }
+      ],
+      "nextExampleId": 4,
+      "estimate": 5
+    },
+    "EXMAP-007": {
+      "id": "EXMAP-007",
+      "title": "Event Storm artifact commands (policies, hotspots, external systems)",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-11-15T12:16:27.272Z",
+      "updatedAt": "2025-11-15T12:16:27.272Z",
+      "description": "Implement fspec commands: add-policy, add-hotspot, add-external-system, add-bounded-context for complete Event Storm capture",
+      "parent": "EXMAP-004"
+    },
+    "EXMAP-008": {
+      "id": "EXMAP-008",
+      "title": "Tag discovery from Event Storm artifacts",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-11-15T12:16:33.710Z",
+      "updatedAt": "2025-11-15T12:16:33.710Z",
+      "description": "Implement suggest-tags-from-events command to analyze Event Storm data and suggest component/feature group/technical tags based on bounded contexts, aggregates, and domain events",
+      "parent": "EXMAP-004"
+    },
+    "EXMAP-009": {
+      "id": "EXMAP-009",
+      "title": "Sync tags with Event Storm data",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-11-15T12:16:39.132Z",
+      "updatedAt": "2025-11-15T12:16:39.132Z",
+      "description": "Implement sync-tags-with-event-storm command to auto-register suggested tags and create tag relationships in tags.json",
+      "parent": "EXMAP-004"
+    },
+    "EXMAP-010": {
+      "id": "EXMAP-010",
+      "title": "Big Picture Event Storm in foundation.json",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-11-15T12:16:45.145Z",
+      "updatedAt": "2025-11-15T12:16:45.145Z",
+      "description": "Add eventStorm section to foundation.json for storing foundation-level Big Picture Event Storming (bounded contexts, major aggregates, pivotal events)",
+      "parent": "EXMAP-004"
     }
   },
   "states": {
@@ -47486,16 +47803,23 @@
       "INT-004",
       "DOC-012",
       "DOC-013",
-      "DOC-014"
+      "DOC-014",
+      "EXMAP-007",
+      "EXMAP-008",
+      "EXMAP-009",
+      "EXMAP-010"
     ],
     "specifying": [
       "LANG-001",
       "EXMAP-004",
       "BOARD-020",
       "AGENT-001",
-      "BROWSE-001"
+      "BROWSE-001",
+      "EXMAP-005"
     ],
-    "testing": [],
+    "testing": [
+      "EXMAP-006"
+    ],
     "implementing": [],
     "validating": [],
     "done": [
@@ -47900,6 +48224,7 @@
     "DEP": 3,
     "VAL": 4,
     "PERF": 1,
-    "INIT": 16
+    "INIT": 16,
+    "EXMAP": 10
   }
 }

@@ -1,0 +1,42 @@
+{
+  "scenarios": [
+    {
+      "name": "Add domain event to work unit",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/event-storm-artifact-commands.test.ts",
+          "lines": "26-86",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Add command with actor flag",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/event-storm-artifact-commands.test.ts",
+          "lines": "88-136",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Add aggregate with responsibilities flag",
+      "testMappings": []
+    },
+    {
+      "name": "Initialize eventStorm section on first command",
+      "testMappings": []
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 2,
+    "coveragePercent": 50,
+    "testFiles": [
+      "src/commands/__tests__/event-storm-artifact-commands.test.ts"
+    ],
+    "implFiles": [],
+    "totalLinesCovered": 110
+  }
+}

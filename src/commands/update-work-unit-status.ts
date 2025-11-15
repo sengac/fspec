@@ -645,11 +645,29 @@ export async function updateWorkUnitStatus(
   });
 
   // LOCK-002: Use fileManager.transaction() for atomic write
-  // Note: All modifications above already happened to workUnitsData in memory
-  // Now we need to write them atomically
+  // CRITICAL: Transaction re-reads from disk, so we must apply changes to FRESH data
   await fileManager.transaction(workUnitsFile, async data => {
-    // Copy all modifications into the locked data
-    Object.assign(data, workUnitsData);
+    const typedData = data as WorkUnitsData;
+
+    // Apply ALL modifications to the fresh data from disk
+    // 1. Update the specific work unit
+    typedData.workUnits[options.workUnitId].status = workUnit.status;
+    typedData.workUnits[options.workUnitId].updatedAt = workUnit.updatedAt;
+    typedData.workUnits[options.workUnitId].stateHistory =
+      workUnit.stateHistory;
+
+    // 2. Copy 'updated' field if set (for done status)
+    if (workUnit.updated) {
+      typedData.workUnits[options.workUnitId].updated = workUnit.updated;
+    }
+
+    // 3. Update states arrays (sorting was done above)
+    typedData.states = workUnitsData.states;
+
+    // 4. Update meta
+    if (workUnitsData.meta) {
+      typedData.meta = workUnitsData.meta;
+    }
   });
 
   // Collect all system reminders
@@ -1079,6 +1097,16 @@ export function registerUpdateWorkUnitStatusCommand(program: Command): void {
             reason: options.reason,
             skipTemporalValidation: options.skipTemporalValidation,
           });
+
+          // Check if operation failed
+          if (result.success === false) {
+            console.error(
+              chalk.red('✗ Failed to update work unit status:'),
+              result.error || 'Unknown error'
+            );
+            process.exit(1);
+          }
+
           console.log(
             chalk.green(`✓ Work unit ${workUnitId} status updated to ${status}`)
           );
