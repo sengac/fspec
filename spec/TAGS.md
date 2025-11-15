@@ -74,6 +74,7 @@ Tags that categorize features by functional area.
 | `@cascade` | Cascade operations |
 | `@checkpoint` | Checkpoint and snapshot management for experimentation and recovery |
 | `@checkpoint-management` | Checkpoint creation, restoration, and management functionality |
+| `@code-analysis` | Code analysis and AST research features |
 | `@code-quality` | Code quality validation and review features |
 | `@comparison` | Comparison operations |
 | `@completion` | Completion operations |
@@ -267,6 +268,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@plugin-system` | Plugin architecture and dynamic module loading |
 | `@prettier` | Prettier configuration and code formatting |
 | `@push` | Push notification functionality |
+| `@query-api` | Tree-sitter Query API features using S-expression pattern matching |
 | `@react` | React framework and component lifecycle features |
 | `@real-time` | Features with real-time data synchronization and live updates |
 | `@responsive` | Components that respond to viewport or terminal dimension changes |
@@ -636,7 +638,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-11-12T20:26:19.683Z_
+_Last updated: 2025-11-15T06:14:57.480Z_
 
 **Update Command**: `fspec tag-stats`
 
