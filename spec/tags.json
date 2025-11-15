@@ -810,6 +810,10 @@
           "description": "File System Operations"
         },
         {
+          "name": "@file-watcher",
+          "description": "File system watching and monitoring features"
+        },
+        {
           "name": "@file-watching",
           "description": "Features using file system watchers (fs.watch) for change detection"
         },
@@ -984,6 +988,10 @@
         {
           "name": "@real-time",
           "description": "Features with real-time data synchronization and live updates"
+        },
+        {
+          "name": "@resilience",
+          "description": "Error handling and graceful degradation features"
         },
         {
           "name": "@responsive",
@@ -1586,7 +1594,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-11-15T06:14:57.480Z",
+    "lastUpdated": "2025-11-15T11:35:46.077Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

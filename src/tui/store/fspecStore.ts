@@ -138,9 +138,31 @@ export const useFspecStore = create<FspecState>()(
         const err = error as Error;
         console.error('[ZUSTAND] loadData error:', err);
         console.error('[ZUSTAND] Stack trace:', err.stack);
-        set(state => {
-          state.error = err.stack || err.message;
-        });
+
+        // INIT-016: Only handle corrupted JSON gracefully (temporary state during upgrades)
+        // Other errors (permissions, disk full, bugs) should be shown to user
+        // Check for JSON parse errors using both error type and message pattern
+        const isJsonParseError =
+          err instanceof SyntaxError ||
+          err.message.includes('Failed to parse') ||
+          err.message.includes('JSON');
+
+        if (isJsonParseError) {
+          console.warn(
+            '[ZUSTAND] Corrupted JSON detected, showing empty board and watching for fix'
+          );
+          set(state => {
+            state.workUnits = [];
+            state.epics = [];
+            state.isLoaded = true;
+            state.error = null; // Clear error to show empty board, file watcher will reload when fixed
+          });
+        } else {
+          // Real error (permission denied, disk full, migration failure, code bug) - show to user
+          set(state => {
+            state.error = err.stack || err.message;
+          });
+        }
       }
     },
 
