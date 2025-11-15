@@ -1545,9 +1545,25 @@ describe('Feature: Work Unit Dependency Management', () => {
             id: 'DASH-001',
             title: 'Dashboard',
             status: 'specifying',
+            type: 'story',
             dependsOn: ['AUTH-001'],
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
+            rules: [
+              'Dashboard must display user data when dependencies are complete',
+            ],
+            examples: ['Dashboard loads successfully after authentication'],
+            architectureNotes: [
+              'Implementation: Implement dashboard with dependency awareness',
+            ],
+            attachments: [
+              {
+                path: 'spec/attachments/DASH-001/ast-research.json',
+                description:
+                  'AST research for dashboard component implementation',
+                addedAt: new Date().toISOString(),
+              },
+            ],
           },
         },
         states: {

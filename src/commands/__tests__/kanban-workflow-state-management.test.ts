@@ -102,12 +102,30 @@ describe('Feature: Kanban Workflow State Management', () => {
           'AUTH-001': {
             id: 'AUTH-001',
             title: 'OAuth login',
+            type: 'story',
             status: 'backlog',
             estimate: 5,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
             stateHistory: [
               { state: 'backlog', timestamp: new Date().toISOString() },
+            ],
+            rules: [
+              'Complete ACDD workflow must transition through all states',
+            ],
+            examples: [
+              'OAuth feature progresses from backlog to done through all ACDD states',
+            ],
+            architectureNotes: [
+              'Implementation: State machine enforces sequential workflow progression',
+            ],
+            attachments: [
+              {
+                path: 'spec/attachments/AUTH-001/ast-research.json',
+                description:
+                  'ACDD workflow state transitions and validation logic',
+                addedAt: new Date().toISOString(),
+              },
             ],
           },
         },
@@ -315,6 +333,7 @@ Scenario: Login
           'AUTH-001': {
             id: 'AUTH-001',
             title: 'OAuth login',
+            type: 'story',
             status: 'specifying',
             estimate: 5,
             createdAt: new Date().toISOString(),
@@ -322,6 +341,19 @@ Scenario: Login
             stateHistory: [
               { state: 'backlog', timestamp: new Date().toISOString() },
               { state: 'specifying', timestamp: new Date().toISOString() },
+            ],
+            rules: ['OAuth flow must support industry-standard providers'],
+            examples: ['User authenticates via Google OAuth provider'],
+            architectureNotes: [
+              'Implementation: Use OAuth 2.0 libraries for secure authentication',
+            ],
+            attachments: [
+              {
+                path: 'spec/attachments/AUTH-001/ast-research.json',
+                description:
+                  'OAuth library API research and integration patterns',
+                addedAt: new Date().toISOString(),
+              },
             ],
           },
         },
@@ -563,12 +595,28 @@ Scenario: Login
           'AUTH-001': {
             id: 'AUTH-001',
             title: 'OAuth login',
+            type: 'story',
             status: 'specifying',
             estimate: 5,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
             stateHistory: [
               { state: 'specifying', timestamp: new Date().toISOString() },
+            ],
+            rules: ['Gherkin scenarios must be tagged with work unit ID'],
+            examples: [
+              'Feature file has @AUTH-001 tag on at least one scenario',
+            ],
+            architectureNotes: [
+              'Implementation: Validate scenario tags before allowing testing transition',
+            ],
+            attachments: [
+              {
+                path: 'spec/attachments/AUTH-001/ast-research.json',
+                description:
+                  'Scenario tag validation and Gherkin parsing logic',
+                addedAt: new Date().toISOString(),
+              },
             ],
           },
         },
@@ -593,15 +641,21 @@ Scenario: Login
         'Feature: Auth\nScenario: Test\n  Given x'
       );
 
+      await expect(
+        updateWorkUnitStatus({
+          workUnitId: 'AUTH-001',
+          status: 'testing',
+          cwd: testDir,
+        })
+      ).rejects.toThrow('No Gherkin scenarios found');
+
       const error = await updateWorkUnitStatus({
         workUnitId: 'AUTH-001',
         status: 'testing',
         cwd: testDir,
       }).catch((e: Error) => e);
 
-      expect(error).toBeInstanceOf(Error);
       if (error instanceof Error) {
-        expect(error.message).toContain('No Gherkin scenarios found');
         expect(error.message).toContain(
           'At least one scenario must be tagged with @AUTH-001'
         );
@@ -619,12 +673,28 @@ Scenario: Login
           'AUTH-001': {
             id: 'AUTH-001',
             title: 'OAuth login',
+            type: 'story',
             status: 'specifying',
             estimate: 5,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
             stateHistory: [
               { state: 'specifying', timestamp: new Date().toISOString() },
+            ],
+            rules: ['User authentication must create a valid session'],
+            examples: [
+              'User logs in with correct credentials and session is established',
+            ],
+            architectureNotes: [
+              'Implementation: Session management with secure token generation',
+            ],
+            attachments: [
+              {
+                path: 'spec/attachments/AUTH-001/ast-research.json',
+                description:
+                  'Session token generation and security best practices',
+                addedAt: new Date().toISOString(),
+              },
             ],
           },
         },
@@ -678,11 +748,25 @@ Scenario: User logs in
           'AUTH-001': {
             id: 'AUTH-001',
             title: 'OAuth login',
+            type: 'story',
             status: 'specifying',
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
             stateHistory: [
               { state: 'specifying', timestamp: new Date().toISOString() },
+            ],
+            rules: ['OAuth flow must support industry-standard providers'],
+            examples: ['User authenticates via Google OAuth provider'],
+            architectureNotes: [
+              'Implementation: Use OAuth 2.0 libraries for secure authentication',
+            ],
+            attachments: [
+              {
+                path: 'spec/attachments/AUTH-001/ast-research.json',
+                description:
+                  'OAuth library API research and integration patterns',
+                addedAt: new Date().toISOString(),
+              },
             ],
           },
         },

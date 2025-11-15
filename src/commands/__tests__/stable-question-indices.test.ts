@@ -292,6 +292,7 @@ describe('Feature: Stable Question Indices for Concurrent Answers', () => {
       workUnits.workUnits['WORK-001'] = {
         id: 'WORK-001',
         title: 'Test work unit',
+        type: 'story',
         status: 'specifying',
         questions: [
           { text: '@human: Question 0?', selected: false },
@@ -300,36 +301,38 @@ describe('Feature: Stable Question Indices for Concurrent Answers', () => {
         ],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
+        rules: ['All questions must be answered before testing'],
+        examples: ['Questions marked as selected before state transition'],
+        architectureNotes: [
+          'Implementation: Validate all questions are selected before testing phase',
+        ],
+        attachments: [
+          {
+            path: 'spec/attachments/WORK-001/ast-research.json',
+            description: 'Question validation logic and state tracking',
+            addedAt: new Date().toISOString(),
+          },
+        ],
       };
       workUnits.states.specifying.push('WORK-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       // When I run `fspec update-work-unit-status WORK-001 testing`
       // Then the command should fail with error about unanswered questions
-      await expect(
-        updateWorkUnitStatus({
-          workUnitId: 'WORK-001',
-          status: 'testing',
-          cwd: testDir,
-        })
-      ).rejects.toThrow('Unanswered questions prevent state transition');
+      const result = await updateWorkUnitStatus({
+        workUnitId: 'WORK-001',
+        status: 'testing',
+        cwd: testDir,
+      });
+
+      expect(result.success).toBe(false);
+      expect(result.error).toContain(
+        'Unanswered questions prevent state transition'
+      );
 
       // And the error should list questions at indices 0 and 2
-      await expect(
-        updateWorkUnitStatus({
-          workUnitId: 'WORK-001',
-          status: 'testing',
-          cwd: testDir,
-        })
-      ).rejects.toThrow('Question 0?');
-
-      await expect(
-        updateWorkUnitStatus({
-          workUnitId: 'WORK-001',
-          status: 'testing',
-          cwd: testDir,
-        })
-      ).rejects.toThrow('Question 2?');
+      expect(result.error).toContain('Question 0?');
+      expect(result.error).toContain('Question 2?');
     });
   });
 

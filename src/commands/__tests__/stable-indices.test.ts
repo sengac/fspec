@@ -458,6 +458,36 @@ describe('Feature: Implement Stable Indices with Soft Delete', () => {
         await addRule({ workUnitId: 'AUTH-001', rule: `Rule ${i}`, cwd });
       }
 
+      // Add other required ACDD data
+      const dataWithAcdd = JSON.parse(
+        vol.readFileSync(workUnitsPath, 'utf-8') as string
+      ) as WorkUnitsData;
+      dataWithAcdd.workUnits['AUTH-001'].type = 'story';
+      dataWithAcdd.workUnits['AUTH-001'].examples = [
+        {
+          id: 0,
+          text: 'Example for auto-compact test',
+          deleted: false,
+          createdAt: new Date().toISOString(),
+        },
+      ];
+      dataWithAcdd.workUnits['AUTH-001'].architectureNotes = [
+        {
+          id: 0,
+          text: 'Implementation: Auto-compact on done status',
+          deleted: false,
+          createdAt: new Date().toISOString(),
+        },
+      ];
+      dataWithAcdd.workUnits['AUTH-001'].attachments = [
+        {
+          path: 'spec/attachments/AUTH-001/ast-research.json',
+          description: 'Auto-compact implementation research',
+          addedAt: new Date().toISOString(),
+        },
+      ];
+      vol.writeFileSync(workUnitsPath, JSON.stringify(dataWithAcdd, null, 2));
+
       // And work unit has 10 rules with 3 deleted (while still in specifying)
       await removeRule({ workUnitId: 'AUTH-001', index: 2, cwd });
       await removeRule({ workUnitId: 'AUTH-001', index: 5, cwd });

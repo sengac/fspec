@@ -495,6 +495,18 @@ describe('Feature: Work unit types for stories, tasks, and bugs', () => {
             status: 'specifying',
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
+            rules: ['User authentication must validate credentials'],
+            examples: ['User logs in with valid credentials'],
+            architectureNotes: [
+              'Implementation: Authentication validation for story work units',
+            ],
+            attachments: [
+              {
+                path: 'spec/attachments/AUTH-001/ast-research.json',
+                description: 'Authentication flow research',
+                addedAt: new Date().toISOString(),
+              },
+            ],
           },
         },
         states: {

@@ -1,0 +1,160 @@
+
+> @sengac/fspec@0.8.13 test
+> npm run build && vitest run src/commands/__tests__/temporal-ordering-enforcement.test.ts src/commands/__tests__/generate-scenarios-deleted-questions.test.ts
+
+
+> @sengac/fspec@0.8.13 build
+> vite build && npx esbuild src/git/diff-worker.ts --bundle --platform=node --target=node18 --format=esm --outfile=dist/git/diff-worker.js --external:worker_threads --external:isomorphic-git && chmod +x dist/index.js
+
+vite v7.2.2 building client environment for production...
+transforming...
+✓ 582 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.js  1,487.77 kB │ gzip: 358.40 kB
+✓ built in 1.09s
+
+  dist/git/diff-worker.js  14.0kb
+
+⚡ Done in 3ms
+
+[1m[46m RUN [49m[22m [36mv4.0.9 [39m[90m/Users/rquast/projects/fspec[39m
+
+[90mstdout[2m | src/commands/__tests__/temporal-ordering-enforcement.test.ts[2m > [22m[2mFeature: Prevent retroactive state walking - enforce temporal ordering[2m > [22m[2mScenario: Tasks are exempt from test file temporal validation[2m > [22m[2mshould not validate test file timestamps for task work units
+[22m[39m**IMPORTANT:** NO TEST COMMAND CONFIGURED
+
+No test command configured. Use Read/Glob tools to detect test framework, then run:
+
+  fspec configure-tools --test-command <cmd>
+
+If no test tools detected, search for current best practices:
+  Query: "best <platform> testing tools 2025"
+
+Replace <platform> with detected project type (Node.js, Python, Rust, Go, etc.)
+
+Example:
+  fspec configure-tools --test-command "npm test"
+  fspec configure-tools --test-command "pytest"
+  fspec configure-tools --test-command "cargo test"
+
+
+[90mstdout[2m | src/commands/__tests__/temporal-ordering-enforcement.test.ts[2m > [22m[2mFeature: Prevent retroactive state walking - enforce temporal ordering[2m > [22m[2mScenario: Tasks are exempt from test file temporal validation[2m > [22m[2mshould not validate test file timestamps for task work units
+[22m[39m**IMPORTANT:** No quality check commands configured
+
+ [31m❯[39m src/commands/__tests__/temporal-ordering-enforcement.test.ts [2m([22m[2m5 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 78[2mms[22m[39m
+[31m       [31m×[31m should block transition to testing when feature file exists before specifying state[39m[32m 14[2mms[22m[39m
+       [32m✓[39m should allow transition to testing when feature file created after specifying state[32m 30[2mms[22m[39m
+       [32m✓[39m should block transition to implementing when test file exists before testing state[32m 6[2mms[22m[39m
+       [32m✓[39m should allow retroactive completion when explicitly skipping validation[32m 16[2mms[22m[39m
+       [32m✓[39m should not validate test file timestamps for task work units[32m 11[2mms[22m[39m
+[90mstdout[2m | src/commands/__tests__/generate-scenarios-deleted-questions.test.ts[2m > [22m[2mFeature: generate-scenarios counts deleted questions as unanswered[2m > [22m[2mScenario: Deleted questions should not be counted as unanswered[2m > [22m[2mshould not count deleted questions as unanswered and allow generation
+[22m[39m⚠ Migrating work-units.json from v0.6.0 to 0.7.0...
+
+[90mstdout[2m | src/commands/__tests__/generate-scenarios-deleted-questions.test.ts[2m > [22m[2mFeature: generate-scenarios counts deleted questions as unanswered[2m > [22m[2mScenario: Deleted questions should not be counted as unanswered[2m > [22m[2mshould not count deleted questions as unanswered and allow generation
+[22m[39mBackup created: spec/work-units.json.backup-0.7.0-1763204517566
+Applying: stable-indices (0.7.0)
+
+[90mstdout[2m | src/commands/__tests__/generate-scenarios-deleted-questions.test.ts[2m > [22m[2mFeature: generate-scenarios counts deleted questions as unanswered[2m > [22m[2mScenario: Deleted questions should not be counted as unanswered[2m > [22m[2mshould not count deleted questions as unanswered and allow generation
+[22m[39m✓ Migration complete: v0.6.0 → 0.7.0
+
+[90mstdout[2m | src/commands/__tests__/generate-scenarios-deleted-questions.test.ts[2m > [22m[2mFeature: generate-scenarios counts deleted questions as unanswered[2m > [22m[2mScenario: Unanswered non-deleted questions should block generation[2m > [22m[2mshould count unanswered non-deleted questions and fail with error
+[22m[39m⚠ Migrating work-units.json from v0.6.0 to 0.7.0...
+
+[90mstdout[2m | src/commands/__tests__/generate-scenarios-deleted-questions.test.ts[2m > [22m[2mFeature: generate-scenarios counts deleted questions as unanswered[2m > [22m[2mScenario: Unanswered non-deleted questions should block generation[2m > [22m[2mshould count unanswered non-deleted questions and fail with error
+[22m[39mBackup created: spec/work-units.json.backup-0.7.0-1763204517573
+Applying: stable-indices (0.7.0)
+
+[90mstdout[2m | src/commands/__tests__/generate-scenarios-deleted-questions.test.ts[2m > [22m[2mFeature: generate-scenarios counts deleted questions as unanswered[2m > [22m[2mScenario: Unanswered non-deleted questions should block generation[2m > [22m[2mshould count unanswered non-deleted questions and fail with error
+[22m[39m✓ Migration complete: v0.6.0 → 0.7.0
+
+[90mstdout[2m | src/commands/__tests__/generate-scenarios-deleted-questions.test.ts[2m > [22m[2mFeature: generate-scenarios counts deleted questions as unanswered[2m > [22m[2mScenario: Work unit with no questions should allow generation[2m > [22m[2mshould allow generation when work unit has no questions
+[22m[39m⚠ Migrating work-units.json from v0.6.0 to 0.7.0...
+
+[90mstdout[2m | src/commands/__tests__/generate-scenarios-deleted-questions.test.ts[2m > [22m[2mFeature: generate-scenarios counts deleted questions as unanswered[2m > [22m[2mScenario: Work unit with no questions should allow generation[2m > [22m[2mshould allow generation when work unit has no questions
+[22m[39mBackup created: spec/work-units.json.backup-0.7.0-1763204517576
+Applying: stable-indices (0.7.0)
+
+[90mstdout[2m | src/commands/__tests__/generate-scenarios-deleted-questions.test.ts[2m > [22m[2mFeature: generate-scenarios counts deleted questions as unanswered[2m > [22m[2mScenario: Work unit with no questions should allow generation[2m > [22m[2mshould allow generation when work unit has no questions
+[22m[39m✓ Migration complete: v0.6.0 → 0.7.0
+
+[90mstdout[2m | src/commands/__tests__/generate-scenarios-deleted-questions.test.ts[2m > [22m[2mFeature: generate-scenarios counts deleted questions as unanswered[2m > [22m[2mScenario: Deleted questions should not block status transition in update-work-unit-status[2m > [22m[2mshould not count deleted questions and allow status transition
+[22m[39m⚠ Migrating work-units.json from v0.6.0 to 0.7.0...
+
+[90mstdout[2m | src/commands/__tests__/generate-scenarios-deleted-questions.test.ts[2m > [22m[2mFeature: generate-scenarios counts deleted questions as unanswered[2m > [22m[2mScenario: Deleted questions should not block status transition in update-work-unit-status[2m > [22m[2mshould not count deleted questions and allow status transition
+[22m[39mBackup created: spec/work-units.json.backup-0.7.0-1763204517579
+Applying: stable-indices (0.7.0)
+
+[90mstdout[2m | src/commands/__tests__/generate-scenarios-deleted-questions.test.ts[2m > [22m[2mFeature: generate-scenarios counts deleted questions as unanswered[2m > [22m[2mScenario: Deleted questions should not block status transition in update-work-unit-status[2m > [22m[2mshould not count deleted questions and allow status transition
+[22m[39m✓ Migration complete: v0.6.0 → 0.7.0
+
+[90mstdout[2m | src/commands/__tests__/generate-scenarios-deleted-questions.test.ts[2m > [22m[2mFeature: generate-scenarios counts deleted questions as unanswered[2m > [22m[2mScenario: Unanswered non-deleted questions should block status transition[2m > [22m[2mshould count unanswered non-deleted questions and block transition
+[22m[39m⚠ Migrating work-units.json from v0.6.0 to 0.7.0...
+
+[90mstdout[2m | src/commands/__tests__/generate-scenarios-deleted-questions.test.ts[2m > [22m[2mFeature: generate-scenarios counts deleted questions as unanswered[2m > [22m[2mScenario: Unanswered non-deleted questions should block status transition[2m > [22m[2mshould count unanswered non-deleted questions and block transition
+[22m[39mBackup created: spec/work-units.json.backup-0.7.0-1763204517618
+Applying: stable-indices (0.7.0)
+
+[90mstdout[2m | src/commands/__tests__/generate-scenarios-deleted-questions.test.ts[2m > [22m[2mFeature: generate-scenarios counts deleted questions as unanswered[2m > [22m[2mScenario: Unanswered non-deleted questions should block status transition[2m > [22m[2mshould count unanswered non-deleted questions and block transition
+[22m[39m✓ Migration complete: v0.6.0 → 0.7.0
+
+ [31m❯[39m src/commands/__tests__/generate-scenarios-deleted-questions.test.ts [2m([22m[2m5 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 61[2mms[22m[39m
+       [32m✓[39m should not count deleted questions as unanswered and allow generation[32m 10[2mms[22m[39m
+       [32m✓[39m should count unanswered non-deleted questions and fail with error[32m 3[2mms[22m[39m
+       [32m✓[39m should allow generation when work unit has no questions[32m 3[2mms[22m[39m
+       [32m✓[39m should not count deleted questions and allow status transition[32m 39[2mms[22m[39m
+[31m       [31m×[31m should count unanswered non-deleted questions and block transition[39m[32m 5[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 2 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/commands/__tests__/generate-scenarios-deleted-questions.test.ts[2m > [22mFeature: generate-scenarios counts deleted questions as unanswered[2m > [22mScenario: Unanswered non-deleted questions should block status transition[2m > [22mshould count unanswered non-deleted questions and block transition
+[31m[1mError[22m: Unanswered questions prevent state transition from 'specifying' to 'testing':
+  - [0] @human: Unanswered question 1?
+  - [1] @human: Unanswered question 2?
+
+Answer questions with 'fspec answer-question TEST-005 <index>' before moving to testing.[39m
+[36m [2m❯[22m updateWorkUnitStatus src/commands/update-work-unit-status.ts:[2m287:15[22m[39m
+
+[90m [2m❯[22m src/commands/__tests__/generate-scenarios-deleted-questions.test.ts:[2m470:22[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/commands/__tests__/temporal-ordering-enforcement.test.ts[2m > [22mFeature: Prevent retroactive state walking - enforce temporal ordering[2m > [22mScenario: Detect retroactive feature file creation[2m > [22mshould block transition to testing when feature file exists before specifying state
+[31m[1mError[22m: ACDD temporal ordering violation detected!
+
+Feature files were created/modified BEFORE entering specifying state.
+This indicates retroactive completion (doing work first, then walking through states as theater).
+
+Violations:
+  - /Users/rquast/projects/fspec/test-tmp-temporal-1763204517265-880q3srui4j/spec/features/test-feature.feature
+    File modified: 2025-01-15T09:00:00.000Z
+    Entered specifying: 2025-01-15T10:00:00.000Z
+    Gap: 60 minutes BEFORE state entry
+
+ACDD requires work to be done IN each state, not BEFORE entering it:
+  - Feature files must be created AFTER entering specifying state
+  - Timestamps prove when work was actually done
+
+To fix:
+  1. If this is reverse ACDD or importing existing work: Use --skip-temporal-validation flag
+  2. If this is a mistake: Delete TEST-001 and restart with proper ACDD workflow
+  3. If recovering from error: Move work unit back to specifying state and update files
+
+For more info: See FEAT-011 "Prevent retroactive state walking"[39m
+[36m [2m❯[22m checkFileCreatedAfter src/utils/temporal-validation.ts:[2m74:11[22m[39m
+    [90m 72| [39m    const stateName = fileType === 'feature' ? 'specifying' : 'testing…
+    [90m 73| [39m
+    [90m 74| [39m    [35mthrow[39m [35mnew[39m [33mError[39m(
+    [90m   | [39m          [31m^[39m
+    [90m 75| [39m      [32m`ACDD temporal ordering violation detected!\n\n`[39m [33m+[39m
+    [90m 76| [39m        `${fileType === 'feature' ? 'Feature files' : 'Test files'} we…
+[90m [2m❯[22m updateWorkUnitStatus src/commands/update-work-unit-status.ts:[2m315:9[22m[39m
+[90m [2m❯[22m src/commands/__tests__/temporal-ordering-enforcement.test.ts:[2m99:22[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m2 failed[39m[22m[90m (2)[39m
+[2m      Tests [22m [1m[31m2 failed[39m[22m[2m | [22m[1m[32m8 passed[39m[22m[90m (10)[39m
+[2m   Start at [22m 21:01:56
+[2m   Duration [22m 711ms[2m (transform 191ms, setup 0ms, collect 408ms, tests 139ms, environment 0ms, prepare 8ms)[22m
+

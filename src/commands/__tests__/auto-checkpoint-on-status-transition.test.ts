@@ -53,6 +53,20 @@ describe('Feature: Auto-checkpoints not working - lazy import fails in bundled d
           prefix: 'TEST',
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
+          rules: ['Auto-checkpoints must be created on state transitions'],
+          examples: [
+            'Work unit transitions from specifying to testing with uncommitted changes',
+          ],
+          architectureNotes: [
+            'Implementation: Auto-checkpoints use git stash to save uncommitted changes',
+          ],
+          attachments: [
+            {
+              path: 'spec/attachments/TEST-001/ast-research.json',
+              description: 'AST research for checkpoint functionality',
+              addedAt: new Date().toISOString(),
+            },
+          ],
           stateHistory: [
             {
               state: 'backlog',

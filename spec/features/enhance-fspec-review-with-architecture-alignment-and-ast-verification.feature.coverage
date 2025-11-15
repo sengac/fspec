@@ -1,0 +1,198 @@
+{
+  "scenarios": [
+    {
+      "name": "Block transition when AST research is missing",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/review-architecture-alignment.test.ts",
+          "lines": "31-115",
+          "implMappings": [
+            {
+              "file": "src/utils/review-validation.ts",
+              "lines": [
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28
+              ]
+            },
+            {
+              "file": "src/commands/update-work-unit-status.ts",
+              "lines": [
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "AI detects reinvention via AST data in system-reminder",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/review-architecture-alignment.test.ts",
+          "lines": "117-215",
+          "implMappings": [
+            {
+              "file": "src/utils/review-validation.ts",
+              "lines": [
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151
+              ]
+            },
+            {
+              "file": "src/commands/update-work-unit-status.ts",
+              "lines": [
+                664,
+                665,
+                666,
+                667
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pass review with proper architecture documentation and AST research",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/review-architecture-alignment.test.ts",
+          "lines": "217-333",
+          "implMappings": [
+            {
+              "file": "src/utils/review-validation.ts",
+              "lines": [
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/commands/__tests__/review-architecture-alignment.test.ts"
+    ],
+    "implFiles": [
+      "src/utils/review-validation.ts",
+      "src/commands/update-work-unit-status.ts"
+    ],
+    "totalLinesCovered": 424
+  }
+}

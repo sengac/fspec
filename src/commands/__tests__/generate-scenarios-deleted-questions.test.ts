@@ -137,6 +137,17 @@ describe('Feature: generate-scenarios counts deleted questions as unanswered', (
           },
         ],
         examples: [{ id: 0, text: 'Example 1', deleted: false }],
+        rules: ['Test work unit must properly track deleted questions'],
+        architectureNotes: [
+          'Implementation: Ensure deleted questions are filtered from validation',
+        ],
+        attachments: [
+          {
+            path: 'spec/attachments/TEST-001/ast-research.json',
+            description: 'AST research for question tracking implementation',
+            addedAt: new Date().toISOString(),
+          },
+        ],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -330,6 +341,17 @@ describe('Feature: generate-scenarios counts deleted questions as unanswered', (
           },
         ],
         examples: [{ id: 0, text: 'Example 1', deleted: false }],
+        rules: ['Status transition must not be blocked by deleted questions'],
+        architectureNotes: [
+          'Implementation: Filter deleted questions during state validation',
+        ],
+        attachments: [
+          {
+            path: 'spec/attachments/TEST-004/ast-research.json',
+            description: 'AST analysis for state transition validation logic',
+            addedAt: new Date().toISOString(),
+          },
+        ],
         stateHistory: [
           { state: 'specifying', timestamp: new Date().toISOString() },
         ],
@@ -409,6 +431,17 @@ Feature: Test Feature 4
           },
         ],
         examples: [{ id: 0, text: 'Example 1', deleted: false }],
+        rules: ['Unanswered questions must block transition'],
+        architectureNotes: [
+          'Implementation: Validate question status before state transition',
+        ],
+        attachments: [
+          {
+            path: 'spec/attachments/TEST-005/ast-research.json',
+            description: 'AST analysis for question validation logic',
+            addedAt: new Date().toISOString(),
+          },
+        ],
         stateHistory: [
           { state: 'specifying', timestamp: new Date().toISOString() },
         ],
@@ -440,14 +473,17 @@ Feature: Test Feature 5
       // @step When I run "fspec update-work-unit-status TEST-005 testing"
       // @step Then the validation should count 2 unanswered questions
       // @step And the command should fail with "Unanswered questions prevent state transition" error
-      await expect(
-        updateWorkUnitStatus({
-          workUnitId: 'TEST-005',
-          status: 'testing',
-          cwd: testDir,
-          skipTemporalValidation: true,
-        })
-      ).rejects.toThrow(/Unanswered questions prevent state transition/);
+      const result = await updateWorkUnitStatus({
+        workUnitId: 'TEST-005',
+        status: 'testing',
+        cwd: testDir,
+        skipTemporalValidation: true,
+      });
+
+      expect(result.success).toBe(false);
+      expect(result.error).toMatch(
+        /Unanswered questions prevent state transition/
+      );
 
       // @step And the status should remain "specifying"
       const updatedWorkUnits = JSON.parse(
