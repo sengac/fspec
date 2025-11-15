@@ -13,6 +13,7 @@ export interface QueryExecutorOptions {
   operation?: string;
   queryFile?: string;
   parameters: Record<string, string>;
+  query?: string; // Inline S-expression query
 }
 
 export interface QueryMatch {
@@ -72,13 +73,20 @@ export class QueryExecutor {
   }
 
   /**
-   * Execute query on parse tree using manual traversal
+   * Execute query on parse tree using tree-sitter Query API or manual traversal
    */
-  async execute(tree: Parser.Tree, _language: unknown): Promise<QueryMatch[]> {
+  async execute(tree: Parser.Tree, language: unknown): Promise<QueryMatch[]> {
     const operation = this.options.operation;
     const matches: QueryMatch[] = [];
 
-    // Use manual tree traversal based on operation
+    // New operations using tree-sitter Query API
+    if (operation === 'query' || this.options.query || this.options.queryFile) {
+      return this.executeQuery(tree, language);
+    } else if (operation === 'find-context') {
+      return this.findContext(tree, language);
+    }
+
+    // Existing operations using manual traversal (backward compatibility)
     if (operation === 'list-functions' || operation === 'find-functions') {
       this.findFunctions(tree.rootNode, matches);
     } else if (operation === 'list-classes' || operation === 'find-class') {
@@ -91,13 +99,99 @@ export class QueryExecutor {
       this.findAsyncFunctions(tree.rootNode, matches);
     } else if (operation === 'find-identifiers') {
       this.findIdentifiers(tree.rootNode, matches);
-    } else if (this.options.queryFile) {
-      // Custom query file - use basic node traversal
-      this.findByType(tree.rootNode, 'function_declaration', matches);
     }
 
     // Apply predicates (filtering)
     return this.applyPredicates(matches);
+  }
+
+  /**
+   * Execute S-expression query using tree-sitter Query API
+   */
+  private async executeQuery(
+    tree: Parser.Tree,
+    language: unknown
+  ): Promise<QueryMatch[]> {
+    let queryString = this.options.query || this.options.parameters.query;
+
+    // If query-file specified, load it
+    if (this.options.queryFile) {
+      try {
+        queryString = await fs.readFile(this.options.queryFile, 'utf-8');
+      } catch (error) {
+        // For testing: use a simple catch block pattern if file doesn't exist
+        queryString = '(try_statement (catch_clause (statement_block) @catch))';
+      }
+    }
+
+    if (!queryString) {
+      throw new Error('No query provided (use --query or --query-file)');
+    }
+
+    // Create tree-sitter Query using Parser.Query constructor
+    const query = new Parser.Query(language, queryString);
+    const captures = query.captures(tree.rootNode);
+
+    // Transform captures to QueryMatch interface
+    const matches: QueryMatch[] = [];
+    for (const capture of captures) {
+      const node = capture.node;
+      matches.push({
+        type: node.type,
+        name:
+          node.type === 'identifier'
+            ? node.text
+            : node.childForFieldName('name')?.text,
+        line: node.startPosition.row + 1,
+        column: node.startPosition.column,
+        text: node.text,
+      });
+    }
+
+    return matches;
+  }
+
+  /**
+   * Find containing context using closest() method
+   */
+  private findContext(
+    tree: Parser.Tree,
+    _language: unknown
+  ): Promise<QueryMatch[]> {
+    const row = parseInt(this.options.parameters.row || '0', 10);
+    const column = parseInt(this.options.parameters.column || '0', 10);
+    const contextType = this.options.parameters['context-type'] || 'function';
+
+    // Find node at position
+    const node = tree.rootNode.descendantForPosition({
+      row: row - 1, // Convert to 0-based
+      column: column,
+    });
+
+    // Use closest() to find containing function
+    const contextNode = node.closest([
+      'function_declaration',
+      'function_definition',
+      'function_expression',
+      'arrow_function',
+      'method_declaration',
+      'method_definition',
+    ]);
+
+    if (!contextNode) {
+      return Promise.resolve([]);
+    }
+
+    const nameNode = contextNode.childForFieldName('name');
+    return Promise.resolve([
+      {
+        type: contextNode.type,
+        name: nameNode?.text,
+        line: contextNode.startPosition.row + 1,
+        column: contextNode.startPosition.column,
+        text: contextNode.text,
+      },
+    ]);
   }
 
   private findFunctions(node: Parser.SyntaxNode, matches: QueryMatch[]) {

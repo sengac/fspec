@@ -226,6 +226,10 @@
           "description": "Checkpoint creation, restoration, and management functionality"
         },
         {
+          "name": "@code-analysis",
+          "description": "Code analysis and AST research features"
+        },
+        {
           "name": "@code-quality",
           "description": "Code quality validation and review features"
         },
@@ -970,6 +974,10 @@
           "description": "Push notification functionality"
         },
         {
+          "name": "@query-api",
+          "description": "Tree-sitter Query API features using S-expression pattern matching"
+        },
+        {
           "name": "@react",
           "description": "React framework and component lifecycle features"
         },
@@ -1578,7 +1586,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-11-12T20:26:19.683Z",
+    "lastUpdated": "2025-11-15T06:14:57.480Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

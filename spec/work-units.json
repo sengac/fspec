@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-15T06:03:33.004Z"
+    "lastUpdated": "2025-11-15T06:24:10.894Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -47071,14 +47071,156 @@
       "id": "RES-021",
       "title": "Enhance AST Research Tool with Missing Tree-Sitter Capabilities",
       "type": "story",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2025-11-15T06:03:25.947Z",
-      "updatedAt": "2025-11-15T06:03:33.004Z",
+      "updatedAt": "2025-11-15T06:24:10.916Z",
       "description": "Leverage advanced tree-sitter features (Query API, TreeCursor, field-based access, closest() navigation, etc.) to make fspec's AST research tool more powerful, performant, and maintainable. Analysis shows 7 major capability categories currently unused.",
       "children": [],
       "attachments": [
         "spec/attachments/RES-021/tree-sitter-missing-capabilities.md"
-      ]
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-15T06:10:08.313Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-15T06:15:19.843Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-15T06:16:48.699Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-15T06:20:09.854Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-15T06:24:10.916Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using fspec AST research tools",
+        "action": "leverage advanced tree-sitter capabilities for powerful code analysis",
+        "benefit": "I can perform complex pattern matching, improve performance, and analyze code more effectively"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Phase 1 implementation must include Query System (S-expression pattern matching), Field-Based Access, and closest() method",
+          "deleted": false,
+          "createdAt": "2025-11-15T06:10:32.003Z"
+        },
+        {
+          "id": 1,
+          "text": "Query operations must support inline queries via --query parameter and external .scm files via --query-file parameter",
+          "deleted": false,
+          "createdAt": "2025-11-15T06:10:33.637Z"
+        },
+        {
+          "id": 2,
+          "text": "Field-based access (childForFieldName) must be used internally instead of type-based child searches for reliability",
+          "deleted": false,
+          "createdAt": "2025-11-15T06:10:35.203Z"
+        },
+        {
+          "id": 3,
+          "text": "New operations must be backward compatible - existing operations (list-functions, find-class, etc.) continue to work",
+          "deleted": false,
+          "createdAt": "2025-11-15T06:10:36.805Z"
+        },
+        {
+          "id": 4,
+          "text": "Query predicates must support at minimum: #eq?, #match?, #any-of? for filtering captures",
+          "deleted": false,
+          "createdAt": "2025-11-15T06:10:38.342Z"
+        },
+        {
+          "id": 5,
+          "text": "Defer TreeCursor to Phase 2 (v0.10.0) - Phase 1 focuses on Query System, Field Access, and closest() for high-impact features first",
+          "deleted": false,
+          "createdAt": "2025-11-15T06:12:43.925Z"
+        },
+        {
+          "id": 6,
+          "text": "Transform to QueryMatch interface for consistency with existing operations - include captures metadata in extended format",
+          "deleted": false,
+          "createdAt": "2025-11-15T06:12:46.280Z"
+        },
+        {
+          "id": 7,
+          "text": "Separate work unit - fspec review enhancement is RES-022, Phase 1 provides the tools (query operations) that review can use later",
+          "deleted": false,
+          "createdAt": "2025-11-15T06:12:48.281Z"
+        }
+      ],
+      "nextRuleId": 8,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Developer uses --operation=query --query='(function_declaration name: (identifier) @name)' to find all function names declaratively instead of manual traversal",
+          "deleted": false,
+          "createdAt": "2025-11-15T06:10:50.646Z"
+        },
+        {
+          "id": 1,
+          "text": "Developer uses --operation=find-context --row=42 --column=10 --context-type=function to find the containing function at a specific position (uses closest() internally)",
+          "deleted": false,
+          "createdAt": "2025-11-15T06:10:52.419Z"
+        },
+        {
+          "id": 2,
+          "text": "Developer creates queries/anti-patterns.scm with pattern for empty catch blocks and runs --query-file=queries/anti-patterns.scm to detect code smells",
+          "deleted": false,
+          "createdAt": "2025-11-15T06:10:53.941Z"
+        },
+        {
+          "id": 3,
+          "text": "Existing operation 'fspec research --tool=ast --operation=list-functions' continues to work exactly as before (backward compatibility verified)",
+          "deleted": false,
+          "createdAt": "2025-11-15T06:10:55.549Z"
+        },
+        {
+          "id": 4,
+          "text": "Query with predicate: '(function_declaration name: (identifier) @name (#match? @name \"^handle\"))' finds only functions starting with 'handle'",
+          "deleted": false,
+          "createdAt": "2025-11-15T06:10:57.229Z"
+        }
+      ],
+      "nextExampleId": 5,
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: Should Phase 1 include TreeCursor performance optimization or defer to Phase 2?",
+          "deleted": false,
+          "createdAt": "2025-11-15T06:11:05.981Z",
+          "selected": true,
+          "answer": "Defer TreeCursor to Phase 2 (v0.10.0) - Phase 1 focuses on Query System, Field Access, and closest() for high-impact features first"
+        },
+        {
+          "id": 1,
+          "text": "@human: Should query operations return raw tree-sitter captures or transform them into the existing QueryMatch interface format?",
+          "deleted": false,
+          "createdAt": "2025-11-15T06:11:07.670Z",
+          "selected": true,
+          "answer": "Transform to QueryMatch interface for consistency with existing operations - include captures metadata in extended format"
+        },
+        {
+          "id": 2,
+          "text": "@human: Should fspec review command be enhanced with anti-pattern detection in Phase 1, or is that a separate work unit?",
+          "deleted": false,
+          "createdAt": "2025-11-15T06:11:09.452Z",
+          "selected": true,
+          "answer": "Separate work unit - fspec review enhancement is RES-022, Phase 1 provides the tools (query operations) that review can use later"
+        }
+      ],
+      "nextQuestionId": 3,
+      "estimate": 5,
+      "architectureNotes": [],
+      "nextNoteId": 0,
+      "updated": "2025-11-15T06:24:10.916Z"
     }
   },
   "states": {
@@ -47134,8 +47276,7 @@
       "DOC-012",
       "DOC-013",
       "DOC-014",
-      "VAL-004",
-      "RES-021"
+      "VAL-004"
     ],
     "specifying": [
       "LANG-001",
@@ -47148,6 +47289,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "RES-021",
       "PERF-001",
       "VAL-003",
       "VAL-001",
