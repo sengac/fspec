@@ -127,5 +127,19 @@
       "title": "Checkpoint System Flow",
       "mermaidCode": "graph TB\n    A[Work Unit Status Change] -->|Dirty Working Dir?| B{Check Git Status}\n    B -->|Yes| C[Create Auto Checkpoint]\n    B -->|No| D[Skip Checkpoint]\n    C --> E[Git Stash with fspec-checkpoint Message]\n    E --> F[Update Work Unit Status]\n    D --> F\n    \n    G[Manual Checkpoint Command] --> H[Capture All Changes]\n    H --> E\n    \n    I[Restore Checkpoint] -->|Dirty Working Dir?| J{Interactive Prompt}\n    J -->|Commit First| K[Git Commit]\n    J -->|Stash & Restore| L[Git Stash Current]\n    J -->|Force Merge| M[Git Stash Apply]\n    K --> M\n    L --> M\n    M -->|Conflicts?| N{Detect Conflicts}\n    N -->|Yes| O[Emit System-Reminder]\n    N -->|No| P[Restoration Complete]\n    O --> Q[AI Resolves with Read/Edit]\n    Q --> R[Run Tests]\n    R -->|Pass| P\n    R -->|Fail| Q\n    \n    S[List Checkpoints] --> T[Query Git Stashes]\n    T --> U[Filter by fspec-checkpoint Pattern]\n    U --> V[Display with Emoji Indicators]\n    \n    W[Cleanup Checkpoints] --> X[List All Checkpoints]\n    X --> Y[Sort by Timestamp]\n    Y --> Z[Delete Oldest, Keep N Recent]"
     }
-  ]
+  ],
+  "eventStorm": {
+    "level": "big_picture",
+    "items": [
+      {
+        "id": 1,
+        "type": "bounded_context",
+        "text": "User Management",
+        "color": null,
+        "deleted": false,
+        "createdAt": "2025-11-16T05:17:18.112Z"
+      }
+    ],
+    "nextItemId": 2
+  }
 }

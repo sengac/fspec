@@ -1,3 +1,5 @@
+import type { EventStormBase } from './generic-foundation';
+
 // Base interface for items with stable IDs and soft-delete support
 export interface ItemWithId {
   id: number; // Auto-incrementing, never reused
@@ -120,13 +122,8 @@ export interface SuggestedTags {
 }
 
 // Event Storm section for work units
-export interface EventStorm {
+export interface EventStorm extends EventStormBase {
   level: 'process_modeling' | 'software_design'; // Type of Event Storming
-  sessionDate?: string; // ISO 8601 timestamp of session
-  facilitator?: string; // Who facilitated the session
-  participants?: string[]; // Who participated
-  items: EventStormItem[]; // All Event Storm artifacts
-  nextItemId: number; // Auto-increment counter for stable IDs
   suggestedTags?: SuggestedTags; // Tags suggested from Event Storm analysis
 }
 

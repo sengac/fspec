@@ -15,6 +15,28 @@
  * - Preserves Mermaid diagram validation
  */
 
+import type { EventStormItem } from './index';
+
+/**
+ * Shared base interface for Event Storm structures
+ * Reused by both foundation-level and work unit-level Event Storms
+ */
+export interface EventStormBase {
+  sessionDate?: string; // ISO 8601 timestamp
+  facilitator?: string; // Who facilitated the session
+  participants?: string[]; // Who participated
+  items: EventStormItem[]; // All Event Storm artifacts
+  nextItemId: number; // Auto-increment counter for stable IDs
+}
+
+/**
+ * Foundation-level Event Storm (Big Picture Event Storming)
+ * Used for strategic domain understanding at the foundation level
+ */
+export interface FoundationEventStorm extends EventStormBase {
+  level: 'big_picture'; // Fixed value for foundation-level Event Storm
+}
+
 /**
  * Main Generic Foundation Document
  * Maps to generic-foundation.schema.json
@@ -43,6 +65,9 @@ export interface GenericFoundation {
 
   // OPTIONAL: Detailed personas
   personas?: Persona[];
+
+  // OPTIONAL: Big Picture Event Storm
+  eventStorm?: FoundationEventStorm;
 }
 
 /**
