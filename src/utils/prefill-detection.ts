@@ -60,14 +60,14 @@ const PREFILL_PATTERNS = [
   { regex: /TODO:/gi, name: 'TODO:', command: 'fspec add-architecture' },
 
   // Generic tag placeholders (literal placeholders only, not valid tags like @cli)
-  // Only match at line start (with optional whitespace), not in comments or prose
+  // Match on lines that start with @ (tag lines), but not in comments or prose
   {
-    regex: /^[ \t]*@component(?!\w)/gm,
+    regex: /^@.*@component(?!\w)/gm,
     name: '@component',
     command: 'fspec add-tag-to-feature',
   },
   {
-    regex: /^[ \t]*@feature-group(?!\w)/gm,
+    regex: /^@.*@feature-group(?!\w)/gm,
     name: '@feature-group',
     command: 'fspec add-tag-to-feature',
   },
@@ -81,17 +81,39 @@ export function detectPrefill(content: string): PrefillDetectionResult {
   const lines = content.split('\n');
 
   for (const pattern of PREFILL_PATTERNS) {
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
-      const match = line.match(pattern.regex);
+    // Reset regex to ensure global flag works correctly
+    pattern.regex.lastIndex = 0;
 
-      if (match) {
+    // For multiline patterns (with ^ anchor), match against full content
+    if (pattern.regex.flags.includes('m')) {
+      let match;
+      while ((match = pattern.regex.exec(content)) !== null) {
+        // Find which line this match is on
+        const beforeMatch = content.substring(0, match.index);
+        const lineNumber = beforeMatch.split('\n').length;
+        const line = lines[lineNumber - 1];
+
         matches.push({
           pattern: pattern.name,
-          line: i + 1,
+          line: lineNumber,
           context: line.trim(),
           suggestion: `Use '${pattern.command}' to replace this placeholder`,
         });
+      }
+    } else {
+      // For non-multiline patterns, match line-by-line
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        const match = line.match(pattern.regex);
+
+        if (match) {
+          matches.push({
+            pattern: pattern.name,
+            line: i + 1,
+            context: line.trim(),
+            suggestion: `Use '${pattern.command}' to replace this placeholder`,
+          });
+        }
       }
     }
   }
