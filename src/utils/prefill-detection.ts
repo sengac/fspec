@@ -60,13 +60,14 @@ const PREFILL_PATTERNS = [
   { regex: /TODO:/gi, name: 'TODO:', command: 'fspec add-architecture' },
 
   // Generic tag placeholders (literal placeholders only, not valid tags like @cli)
+  // Only match at line start (with optional whitespace), not in comments or prose
   {
-    regex: /@component(?!\w)/g,
+    regex: /^[ \t]*@component(?!\w)/gm,
     name: '@component',
     command: 'fspec add-tag-to-feature',
   },
   {
-    regex: /@feature-group(?!\w)/g,
+    regex: /^[ \t]*@feature-group(?!\w)/gm,
     name: '@feature-group',
     command: 'fspec add-tag-to-feature',
   },
