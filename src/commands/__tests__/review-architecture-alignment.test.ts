@@ -102,6 +102,8 @@ Feature: Test Feature
       expect(result.error).toContain(
         'no AST research performed during discovery'
       );
+      expect(result.error).toContain('fspec research --tool=ast');
+      expect(result.error).toContain('fspec add-attachment');
 
       // @step And the work unit status should remain 'specifying'
       expect(result.newStatus).toBe('specifying');

@@ -82,6 +82,7 @@ export interface EventStormPolicy extends EventStormItemBase {
 export interface EventStormHotspot extends EventStormItemBase {
   type: 'hotspot';
   color: 'red';
+  concern?: string; // Description of risk, uncertainty, or problem
 }
 
 // External System (pink sticky note)
@@ -92,9 +93,11 @@ export interface EventStormExternalSystem extends EventStormItemBase {
 }
 
 // Bounded Context (blue tape / pivotal event marker)
-export interface EventStormBoundedContext extends EventStormItemBase {
+export interface EventStormBoundedContext
+  extends Omit<EventStormItemBase, 'color'> {
   type: 'bounded_context';
-  color: 'blue';
+  color: null; // Conceptual boundary, not a sticky note
+  description?: string; // Scope and responsibilities
   itemIds?: number[]; // IDs of items within this bounded context
 }
 

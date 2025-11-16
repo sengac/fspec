@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-16T00:47:36.384Z"
+    "lastUpdated": "2025-11-16T02:30:56.502Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -47759,11 +47759,204 @@
       "id": "EXMAP-007",
       "title": "Event Storm artifact commands (policies, hotspots, external systems)",
       "type": "story",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2025-11-15T12:16:27.272Z",
-      "updatedAt": "2025-11-15T12:16:27.272Z",
+      "updatedAt": "2025-11-16T02:30:56.524Z",
       "description": "Implement fspec commands: add-policy, add-hotspot, add-external-system, add-bounded-context for complete Event Storm capture",
-      "parent": "EXMAP-004"
+      "parent": "EXMAP-004",
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-16T01:49:39.968Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-16T02:15:30.239Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-16T02:18:10.511Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-16T02:25:58.388Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-16T02:30:56.524Z"
+        }
+      ],
+      "userStory": {
+        "role": "AI agent or developer conducting Event Storming",
+        "action": "capture policies, hotspots, external systems, and bounded contexts",
+        "benefit": "I can document complete Event Storm sessions with all artifact types"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Commands add-policy, add-hotspot, add-external-system, add-bounded-context take work-unit-id and text as required arguments",
+          "deleted": false,
+          "createdAt": "2025-11-16T01:50:32.179Z"
+        },
+        {
+          "id": 1,
+          "text": "Each command creates item with auto-incremented ID, type field, appropriate color code, deleted=false, createdAt timestamp",
+          "deleted": false,
+          "createdAt": "2025-11-16T01:50:33.871Z"
+        },
+        {
+          "id": 2,
+          "text": "Commands initialize eventStorm section if not present with level='process_modeling', items=[], nextItemId=0",
+          "deleted": false,
+          "createdAt": "2025-11-16T01:50:35.362Z"
+        },
+        {
+          "id": 3,
+          "text": "All commands support --timestamp flag for timeline visualization (milliseconds) and --bounded-context flag for domain association",
+          "deleted": false,
+          "createdAt": "2025-11-16T01:50:37.433Z"
+        },
+        {
+          "id": 4,
+          "text": "Commands must validate work unit exists and is not in done/blocked state before adding Event Storm items",
+          "deleted": false,
+          "createdAt": "2025-11-16T01:50:38.848Z"
+        },
+        {
+          "id": 5,
+          "text": "Color codes: Policies='purple', Hotspots='red', External Systems='pink', Bounded Contexts (default to 'purple' if not specified in Event Storming standard)",
+          "deleted": false,
+          "createdAt": "2025-11-16T01:50:45.604Z"
+        },
+        {
+          "id": 6,
+          "text": "Yes, support --when and --then flags to capture policy rule (event triggering it and resulting command)",
+          "deleted": false,
+          "createdAt": "2025-11-16T02:04:21.969Z"
+        },
+        {
+          "id": 7,
+          "text": "Yes, support --concern flag to capture description of risk/uncertainty/problem",
+          "deleted": false,
+          "createdAt": "2025-11-16T02:04:23.289Z"
+        },
+        {
+          "id": 8,
+          "text": "Yes, support --type flag with values: REST_API, MESSAGE_QUEUE, DATABASE, THIRD_PARTY_SERVICE, FILE_SYSTEM",
+          "deleted": false,
+          "createdAt": "2025-11-16T02:04:24.727Z"
+        },
+        {
+          "id": 9,
+          "text": "Yes, support --description flag to capture scope (what the bounded context covers)",
+          "deleted": false,
+          "createdAt": "2025-11-16T02:04:26.436Z"
+        },
+        {
+          "id": 10,
+          "text": "Use null/undefined for color since bounded contexts are conceptual boundaries, not sticky note artifacts",
+          "deleted": false,
+          "createdAt": "2025-11-16T02:04:27.972Z"
+        }
+      ],
+      "nextRuleId": 11,
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: Should add-policy command support --when and --then flags to capture the policy rule (when X happens, then Y should occur)?",
+          "deleted": false,
+          "createdAt": "2025-11-16T01:50:59.507Z",
+          "selected": true,
+          "answer": "Yes, support --when and --then flags to capture policy rule (event triggering it and resulting command)"
+        },
+        {
+          "id": 1,
+          "text": "@human: Should add-hotspot command support a --concern or --question flag to capture what needs clarification or what the risk/issue is?",
+          "deleted": false,
+          "createdAt": "2025-11-16T01:51:00.854Z",
+          "selected": true,
+          "answer": "Yes, support --concern flag to capture description of risk/uncertainty/problem"
+        },
+        {
+          "id": 2,
+          "text": "@human: Should add-external-system command support --type or --protocol flags to describe the external system integration (e.g., REST API, Message Queue, Database)?",
+          "deleted": false,
+          "createdAt": "2025-11-16T01:51:02.292Z",
+          "selected": true,
+          "answer": "Yes, support --type flag with values: REST_API, MESSAGE_QUEUE, DATABASE, THIRD_PARTY_SERVICE, FILE_SYSTEM"
+        },
+        {
+          "id": 3,
+          "text": "@human: Should add-bounded-context command support --description and/or --responsibilities flags similar to add-aggregate?",
+          "deleted": false,
+          "createdAt": "2025-11-16T01:51:03.795Z",
+          "selected": true,
+          "answer": "Yes, support --description flag to capture scope (what the bounded context covers)"
+        },
+        {
+          "id": 4,
+          "text": "@human: What color should bounded contexts use? The Event Storming standard doesn't specify a color for bounded contexts - should we use a specific color or allow --color flag?",
+          "deleted": false,
+          "createdAt": "2025-11-16T01:51:05.512Z",
+          "selected": true,
+          "answer": "Use null/undefined for color since bounded contexts are conceptual boundaries, not sticky note artifacts"
+        }
+      ],
+      "nextQuestionId": 5,
+      "attachments": [
+        "spec/attachments/EXMAP-007/perplexity-event-storming-artifacts-2025-11-16.md",
+        "spec/attachments/EXMAP-007/ast-research-event-storm-commands-2025-11-16.md"
+      ],
+      "examples": [
+        {
+          "id": 0,
+          "text": "Run 'fspec add-policy AUTH-001 \"Send welcome email\" --when \"UserRegistered\" --then \"SendWelcomeEmail\"' creates policy with id=0, type='policy', color='purple', when='UserRegistered', then='SendWelcomeEmail'",
+          "deleted": false,
+          "createdAt": "2025-11-16T02:04:41.898Z"
+        },
+        {
+          "id": 1,
+          "text": "Run 'fspec add-hotspot AUTH-001 \"Password reset token expiration\" --concern \"Unclear timeout duration\"' creates hotspot with id=1, type='hotspot', color='red', concern='Unclear timeout duration'",
+          "deleted": false,
+          "createdAt": "2025-11-16T02:04:43.614Z"
+        },
+        {
+          "id": 2,
+          "text": "Run 'fspec add-bounded-context AUTH-001 \"User Management\" --description \"Handles user registration, authentication, and profile management\"' creates bounded context with id=3, type='bounded_context', color=null, description='Handles user registration...'",
+          "deleted": false,
+          "createdAt": "2025-11-16T02:04:47.922Z"
+        },
+        {
+          "id": 3,
+          "text": "Commands initialize eventStorm section if not present, then append to items array and increment nextItemId counter",
+          "deleted": false,
+          "createdAt": "2025-11-16T02:04:49.416Z"
+        },
+        {
+          "id": 4,
+          "text": "All commands support optional --timestamp and --bounded-context flags for timeline visualization and domain association",
+          "deleted": false,
+          "createdAt": "2025-11-16T02:04:50.992Z"
+        },
+        {
+          "id": 5,
+          "text": "Run fspec add-external-system AUTH-001 \"OAuth2Provider\" --type REST_API creates external system with id=2, type=external_system, color=pink, integrationType=REST_API",
+          "deleted": false,
+          "createdAt": "2025-11-16T02:04:56.501Z"
+        }
+      ],
+      "nextExampleId": 6,
+      "estimate": 5,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Implementation: Extends EXMAP-006 pattern with 4 new commands (add-policy, add-hotspot, add-external-system, add-bounded-context). Uses same data model (stable IDs, soft-delete, TypeScript discriminated unions). Each command has specific flags based on Event Storming research.",
+          "deleted": false,
+          "createdAt": "2025-11-16T02:11:29.836Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "updated": "2025-11-16T02:30:56.524Z"
     },
     "EXMAP-008": {
       "id": "EXMAP-008",
@@ -47927,7 +48120,6 @@
       "DOC-012",
       "DOC-013",
       "DOC-014",
-      "EXMAP-007",
       "EXMAP-008",
       "EXMAP-009",
       "EXMAP-010"
@@ -47943,6 +48135,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "EXMAP-007",
       "BUG-077",
       "EXMAP-006",
       "EXMAP-005",

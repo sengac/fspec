@@ -95,6 +95,7 @@ Tags that categorize features by functional area.
 | `@documentation` | Documentation Display |
 | `@epics` | Epic management and high-level work grouping |
 | `@estimation` | Estimation operations |
+| `@event-storming` | Event Storming discovery and domain modeling features |
 | `@example-mapping` | Example mapping for BDD discovery (rules, examples, questions, assumptions) |
 | `@export` | Export operations |
 | `@feature-management` | Feature File Operations |
@@ -641,7 +642,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-11-15T12:18:05.678Z_
+_Last updated: 2025-11-16T02:07:32.298Z_
 
 **Update Command**: `fspec tag-stats`
 

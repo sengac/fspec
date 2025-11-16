@@ -310,6 +310,10 @@
           "description": "Estimation operations"
         },
         {
+          "name": "@event-storming",
+          "description": "Event Storming discovery and domain modeling features"
+        },
+        {
           "name": "@example-mapping",
           "description": "Example mapping for BDD discovery (rules, examples, questions, assumptions)"
         },
@@ -1598,7 +1602,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-11-15T12:18:05.678Z",
+    "lastUpdated": "2025-11-16T02:07:32.298Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

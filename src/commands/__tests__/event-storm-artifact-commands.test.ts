@@ -1,21 +1,23 @@
 /**
- * Feature: spec/features/event-storm-artifact-commands-events-commands-aggregates.feature
+ * Feature: spec/features/event-storm-artifact-commands-policies-hotspots-external-systems.feature
  *
- * Tests for Event Storm artifact commands (add-domain-event, add-command, add-aggregate)
+ * Tests for Event Storm artifact commands: add-policy, add-hotspot, add-external-system, add-bounded-context
+ * Coverage: EXMAP-007
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdir, writeFile, rm } from 'fs/promises';
+import { mkdir, writeFile, readFile, rm } from 'fs/promises';
 import { join } from 'path';
-import { addDomainEvent } from '../add-domain-event';
-import { addCommand } from '../add-command';
-import { addAggregate } from '../add-aggregate';
+import { addPolicy } from '../add-policy';
+import { addHotspot } from '../add-hotspot';
+import { addExternalSystem } from '../add-external-system';
+import { addBoundedContext } from '../add-bounded-context';
 
-describe('Feature: Event Storm artifact commands (events, commands, aggregates)', () => {
+describe('Feature: Event Storm artifact commands (policies, hotspots, external systems)', () => {
   let testDir: string;
 
   beforeEach(async () => {
-    testDir = join(process.cwd(), 'test-tmp-event-storm-commands');
+    testDir = join(process.cwd(), 'test-tmp-event-storm-artifacts');
     await mkdir(testDir, { recursive: true });
     await mkdir(join(testDir, 'spec'), { recursive: true });
   });
@@ -24,9 +26,9 @@ describe('Feature: Event Storm artifact commands (events, commands, aggregates)'
     await rm(testDir, { recursive: true, force: true });
   });
 
-  describe('Scenario: Add domain event to work unit', () => {
-    it('should create event with proper Event Storm fields', async () => {
-      // @step Given I have a work unit "AUTH-001" in specifying status
+  describe('Scenario: Add policy with when and then flags', () => {
+    it('should create policy item with when and then fields', async () => {
+      // @step Given I have a work unit AUTH-001 in specifying status
       const workUnitsContent = {
         meta: { version: '1.0.0', lastUpdated: new Date().toISOString() },
         states: {
@@ -55,56 +57,38 @@ describe('Feature: Event Storm artifact commands (events, commands, aggregates)'
         JSON.stringify(workUnitsContent, null, 2)
       );
 
-      // @step When I run "fspec add-domain-event AUTH-001 "UserRegistered""
-      const result = await addDomainEvent({
+      // @step When I run fspec add-policy AUTH-001 "Send welcome email" --when "UserRegistered" --then "SendWelcomeEmail"
+      const result = await addPolicy({
         workUnitId: 'AUTH-001',
-        text: 'UserRegistered',
+        text: 'Send welcome email',
+        when: 'UserRegistered',
+        then: 'SendWelcomeEmail',
         cwd: testDir,
       });
 
+      // @step Then a policy item should be created with id 0
       expect(result.success).toBe(true);
+      expect(result.policyId).toBe(0);
 
-      // Read the updated work units file
-      const { readFile: read } = await import('fs/promises');
-      const updatedContent = await read(
-        join(testDir, 'spec', 'work-units.json'),
-        'utf-8'
+      // @step And the policy should have type "policy"
+      // @step And the policy should have color "purple"
+      // @step And the policy should have when "UserRegistered"
+      // @step And the policy should have then "SendWelcomeEmail"
+      const workUnitsData = JSON.parse(
+        await readFile(join(testDir, 'spec', 'work-units.json'), 'utf-8')
       );
-      const updatedData = JSON.parse(updatedContent);
-      const workUnit = updatedData.workUnits['AUTH-001'];
-
-      // @step Then eventStorm section should be initialized with level "process_modeling"
-      expect(workUnit.eventStorm).toBeDefined();
-      expect(workUnit.eventStorm.level).toBe('process_modeling');
-
-      // @step And an event item should be created with id=0
-      expect(workUnit.eventStorm.items).toHaveLength(1);
-      expect(workUnit.eventStorm.items[0].id).toBe(0);
-
-      // @step And the event should have type="event"
-      expect(workUnit.eventStorm.items[0].type).toBe('event');
-
-      // @step And the event should have color="orange"
-      expect(workUnit.eventStorm.items[0].color).toBe('orange');
-
-      // @step And the event should have text="UserRegistered"
-      expect(workUnit.eventStorm.items[0].text).toBe('UserRegistered');
-
-      // @step And the event should have deleted=false
-      expect(workUnit.eventStorm.items[0].deleted).toBe(false);
-
-      // @step And the event should have createdAt timestamp
-      expect(workUnit.eventStorm.items[0].createdAt).toBeDefined();
-      expect(typeof workUnit.eventStorm.items[0].createdAt).toBe('string');
-
-      // @step And nextItemId should be 1
-      expect(workUnit.eventStorm.nextItemId).toBe(1);
+      const policy = workUnitsData.workUnits['AUTH-001'].eventStorm.items[0];
+      expect(policy.type).toBe('policy');
+      expect(policy.color).toBe('purple');
+      expect(policy.text).toBe('Send welcome email');
+      expect(policy.when).toBe('UserRegistered');
+      expect(policy.then).toBe('SendWelcomeEmail');
     });
   });
 
-  describe('Scenario: Add command with actor flag', () => {
-    it('should create command with actor field', async () => {
-      // @step Given I have a work unit "AUTH-001" with existing eventStorm section
+  describe('Scenario: Add hotspot with concern flag', () => {
+    it('should create hotspot item with concern field', async () => {
+      // @step Given I have a work unit AUTH-001 with existing Event Storm items
       const workUnitsContent = {
         meta: { version: '1.0.0', lastUpdated: new Date().toISOString() },
         states: {
@@ -147,49 +131,35 @@ describe('Feature: Event Storm artifact commands (events, commands, aggregates)'
         JSON.stringify(workUnitsContent, null, 2)
       );
 
-      // @step When I run "fspec add-command AUTH-001 "AuthenticateUser" --actor "User""
-      const result = await addCommand({
+      // @step When I run fspec add-hotspot AUTH-001 "Password reset token expiration" --concern "Unclear timeout duration"
+      const result = await addHotspot({
         workUnitId: 'AUTH-001',
-        text: 'AuthenticateUser',
-        actor: 'User',
+        text: 'Password reset token expiration',
+        concern: 'Unclear timeout duration',
         cwd: testDir,
       });
 
+      // @step Then a hotspot item should be created
       expect(result.success).toBe(true);
+      expect(result.hotspotId).toBe(1);
 
-      // Read the updated work units file
-      const { readFile: read } = await import('fs/promises');
-      const updatedContent = await read(
-        join(testDir, 'spec', 'work-units.json'),
-        'utf-8'
+      // @step And the hotspot should have type "hotspot"
+      // @step And the hotspot should have color "red"
+      // @step And the hotspot should have concern "Unclear timeout duration"
+      const workUnitsData = JSON.parse(
+        await readFile(join(testDir, 'spec', 'work-units.json'), 'utf-8')
       );
-      const updatedData = JSON.parse(updatedContent);
-      const workUnit = updatedData.workUnits['AUTH-001'];
-
-      // @step Then a command item should be created with id=1
-      expect(workUnit.eventStorm.items).toHaveLength(2);
-      expect(workUnit.eventStorm.items[1].id).toBe(1);
-
-      // @step And the command should have type="command"
-      expect(workUnit.eventStorm.items[1].type).toBe('command');
-
-      // @step And the command should have color="blue"
-      expect(workUnit.eventStorm.items[1].color).toBe('blue');
-
-      // @step And the command should have text="AuthenticateUser"
-      expect(workUnit.eventStorm.items[1].text).toBe('AuthenticateUser');
-
-      // @step And the command should have actor="User"
-      expect(workUnit.eventStorm.items[1].actor).toBe('User');
-
-      // @step And nextItemId should be 2
-      expect(workUnit.eventStorm.nextItemId).toBe(2);
+      const hotspot = workUnitsData.workUnits['AUTH-001'].eventStorm.items[1];
+      expect(hotspot.type).toBe('hotspot');
+      expect(hotspot.color).toBe('red');
+      expect(hotspot.text).toBe('Password reset token expiration');
+      expect(hotspot.concern).toBe('Unclear timeout duration');
     });
   });
 
-  describe('Scenario: Add aggregate with responsibilities flag', () => {
-    it('should create aggregate with responsibilities array', async () => {
-      // @step Given I have a work unit "AUTH-001" with 2 Event Storm items
+  describe('Scenario: Add external system with type flag', () => {
+    it('should create external system item with integrationType field', async () => {
+      // @step Given I have a work unit AUTH-001 in specifying status
       const workUnitsContent = {
         meta: { version: '1.0.0', lastUpdated: new Date().toISOString() },
         states: {
@@ -209,29 +179,6 @@ describe('Feature: Event Storm artifact commands (events, commands, aggregates)'
             status: 'specifying',
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
-            eventStorm: {
-              level: 'process_modeling',
-              items: [
-                {
-                  id: 0,
-                  type: 'event',
-                  color: 'orange',
-                  text: 'UserRegistered',
-                  deleted: false,
-                  createdAt: new Date().toISOString(),
-                },
-                {
-                  id: 1,
-                  type: 'command',
-                  color: 'blue',
-                  text: 'AuthenticateUser',
-                  actor: 'User',
-                  deleted: false,
-                  createdAt: new Date().toISOString(),
-                },
-              ],
-              nextItemId: 2,
-            },
           },
         },
       };
@@ -241,52 +188,97 @@ describe('Feature: Event Storm artifact commands (events, commands, aggregates)'
         JSON.stringify(workUnitsContent, null, 2)
       );
 
-      // @step When I run "fspec add-aggregate AUTH-001 "User" --responsibilities "Authentication,Profile management""
-      const result = await addAggregate({
+      // @step When I run fspec add-external-system AUTH-001 "OAuth2Provider" --type REST_API
+      const result = await addExternalSystem({
         workUnitId: 'AUTH-001',
-        text: 'User',
-        responsibilities: 'Authentication,Profile management',
+        text: 'OAuth2Provider',
+        type: 'REST_API',
         cwd: testDir,
       });
 
+      // @step Then an external system item should be created
       expect(result.success).toBe(true);
+      expect(result.externalSystemId).toBe(0);
 
-      // Read the updated work units file
-      const { readFile: read } = await import('fs/promises');
-      const updatedContent = await read(
-        join(testDir, 'spec', 'work-units.json'),
-        'utf-8'
+      // @step And the external system should have type "external_system"
+      // @step And the external system should have color "pink"
+      // @step And the external system should have integrationType "REST_API"
+      const workUnitsData = JSON.parse(
+        await readFile(join(testDir, 'spec', 'work-units.json'), 'utf-8')
       );
-      const updatedData = JSON.parse(updatedContent);
-      const workUnit = updatedData.workUnits['AUTH-001'];
+      const externalSystem =
+        workUnitsData.workUnits['AUTH-001'].eventStorm.items[0];
+      expect(externalSystem.type).toBe('external_system');
+      expect(externalSystem.color).toBe('pink');
+      expect(externalSystem.text).toBe('OAuth2Provider');
+      expect(externalSystem.integrationType).toBe('REST_API');
+    });
+  });
 
-      // @step Then an aggregate item should be created with id=2
-      expect(workUnit.eventStorm.items).toHaveLength(3);
-      expect(workUnit.eventStorm.items[2].id).toBe(2);
+  describe('Scenario: Add bounded context with description flag', () => {
+    it('should create bounded context item with description field and null color', async () => {
+      // @step Given I have a work unit AUTH-001 in specifying status
+      const workUnitsContent = {
+        meta: { version: '1.0.0', lastUpdated: new Date().toISOString() },
+        states: {
+          backlog: [],
+          specifying: ['AUTH-001'],
+          testing: [],
+          implementing: [],
+          validating: [],
+          done: [],
+          blocked: [],
+        },
+        workUnits: {
+          'AUTH-001': {
+            id: 'AUTH-001',
+            title: 'User Authentication',
+            type: 'story',
+            status: 'specifying',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+        },
+      };
 
-      // @step And the aggregate should have type="aggregate"
-      expect(workUnit.eventStorm.items[2].type).toBe('aggregate');
+      await writeFile(
+        join(testDir, 'spec', 'work-units.json'),
+        JSON.stringify(workUnitsContent, null, 2)
+      );
 
-      // @step And the aggregate should have color="yellow"
-      expect(workUnit.eventStorm.items[2].color).toBe('yellow');
+      // @step When I run fspec add-bounded-context AUTH-001 "User Management" --description "Handles user registration, authentication, and profile management"
+      const result = await addBoundedContext({
+        workUnitId: 'AUTH-001',
+        text: 'User Management',
+        description:
+          'Handles user registration, authentication, and profile management',
+        cwd: testDir,
+      });
 
-      // @step And the aggregate should have text="User"
-      expect(workUnit.eventStorm.items[2].text).toBe('User');
+      // @step Then a bounded context item should be created
+      expect(result.success).toBe(true);
+      expect(result.boundedContextId).toBe(0);
 
-      // @step And the aggregate should have responsibilities=["Authentication", "Profile management"]
-      expect(workUnit.eventStorm.items[2].responsibilities).toEqual([
-        'Authentication',
-        'Profile management',
-      ]);
-
-      // @step And nextItemId should be 3
-      expect(workUnit.eventStorm.nextItemId).toBe(3);
+      // @step And the bounded context should have type "bounded_context"
+      // @step And the bounded context should have color null
+      // @step And the bounded context should have description "Handles user registration, authentication, and profile management"
+      const workUnitsData = JSON.parse(
+        await readFile(join(testDir, 'spec', 'work-units.json'), 'utf-8')
+      );
+      const boundedContext =
+        workUnitsData.workUnits['AUTH-001'].eventStorm.items[0];
+      expect(boundedContext.type).toBe('bounded_context');
+      expect(boundedContext.color).toBeNull();
+      expect(boundedContext.text).toBe('User Management');
+      expect(boundedContext.description).toBe(
+        'Handles user registration, authentication, and profile management'
+      );
     });
   });
 
   describe('Scenario: Initialize eventStorm section on first command', () => {
-    it('should create eventStorm section when adding first item', async () => {
-      // @step Given I have a work unit "AUTH-001" without eventStorm section
+    it('should initialize eventStorm section with correct structure', async () => {
+      // @step Given I have a work unit AUTH-001 with no eventStorm section
       const workUnitsContent = {
         meta: { version: '1.0.0', lastUpdated: new Date().toISOString() },
         states: {
@@ -315,39 +307,28 @@ describe('Feature: Event Storm artifact commands (events, commands, aggregates)'
         JSON.stringify(workUnitsContent, null, 2)
       );
 
-      // @step When I run "fspec add-domain-event AUTH-001 "FirstEvent""
-      const result = await addDomainEvent({
+      // @step When I run fspec add-policy AUTH-001 "Send notification"
+      const result = await addPolicy({
         workUnitId: 'AUTH-001',
-        text: 'FirstEvent',
+        text: 'Send notification',
         cwd: testDir,
       });
 
       expect(result.success).toBe(true);
 
-      // Read the updated work units file
-      const { readFile: read } = await import('fs/promises');
-      const updatedContent = await read(
-        join(testDir, 'spec', 'work-units.json'),
-        'utf-8'
+      // @step Then the eventStorm section should be initialized
+      // @step And the eventStorm level should be "process_modeling"
+      // @step And the eventStorm items array should contain the new policy
+      // @step And the nextItemId should be 1
+      const workUnitsData = JSON.parse(
+        await readFile(join(testDir, 'spec', 'work-units.json'), 'utf-8')
       );
-      const updatedData = JSON.parse(updatedContent);
-      const workUnit = updatedData.workUnits['AUTH-001'];
-
-      // @step Then eventStorm section should be created
-      expect(workUnit.eventStorm).toBeDefined();
-
-      // @step And eventStorm.level should be "process_modeling"
-      expect(workUnit.eventStorm.level).toBe('process_modeling');
-
-      // @step And eventStorm.items should be an empty array initially
-      // (This step is conceptual - items array is initialized empty, then the event is added)
-
-      // @step And the new event should be appended to items
-      expect(workUnit.eventStorm.items).toHaveLength(1);
-      expect(workUnit.eventStorm.items[0].text).toBe('FirstEvent');
-
-      // @step And eventStorm.nextItemId should start at 0 and increment to 1
-      expect(workUnit.eventStorm.nextItemId).toBe(1);
+      const eventStorm = workUnitsData.workUnits['AUTH-001'].eventStorm;
+      expect(eventStorm).toBeDefined();
+      expect(eventStorm.level).toBe('process_modeling');
+      expect(eventStorm.items).toHaveLength(1);
+      expect(eventStorm.items[0].type).toBe('policy');
+      expect(eventStorm.nextItemId).toBe(1);
     });
   });
 });
