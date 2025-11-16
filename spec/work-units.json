@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-16T06:45:04.116Z"
+    "lastUpdated": "2025-11-16T22:54:21.453Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -48398,6 +48398,290 @@
       "questions": [],
       "nextQuestionId": 0,
       "updated": "2025-11-16T06:45:04.138Z"
+    },
+    "EXMAP-013": {
+      "id": "EXMAP-013",
+      "title": "Event Storm workflow enhancements and gap fixes",
+      "type": "story",
+      "status": "specifying",
+      "createdAt": "2025-11-16T10:56:24.292Z",
+      "updatedAt": "2025-11-16T22:54:58.011Z",
+      "description": "Address minor gaps identified in Event Storm workflow: auto-generate Example Mapping from Event Storm, diagram generation, relationship validation, bounded context queries, and architecture notes automation",
+      "epic": "example-driven-discovery",
+      "children": [],
+      "attachments": [
+        "spec/attachments/EXMAP-013/event-storm-workflow-gaps-and-enhancements.md",
+        "spec/attachments/EXMAP-013/ast-research-event-storm-commands.json"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-16T22:26:55.323Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-16T22:31:02.553Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-16T22:42:00.346Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-16T22:54:44.378Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-16T22:54:58.011Z"
+        }
+      ],
+      "userStory": {
+        "role": "AI agent performing Event Storming",
+        "action": "leverage Event Storm data to automate Example Mapping, visualize domain structure, and maintain data integrity",
+        "benefit": "I can reduce manual work, improve documentation quality, and catch modeling errors early"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Command generate-example-mapping-from-event-storm must derive business rules from Event Storm policies (when/then → rule text)",
+          "deleted": false,
+          "createdAt": "2025-11-16T22:27:22.224Z"
+        },
+        {
+          "id": 1,
+          "text": "Command generate-example-mapping-from-event-storm must derive examples from domain events (event text → scenario example)",
+          "deleted": false,
+          "createdAt": "2025-11-16T22:27:27.741Z"
+        },
+        {
+          "id": 2,
+          "text": "Command generate-example-mapping-from-event-storm must derive questions from hotspots (concern text → question for human)",
+          "deleted": false,
+          "createdAt": "2025-11-16T22:27:32.550Z"
+        },
+        {
+          "id": 3,
+          "text": "All add-* Event Storm commands must validate relationship IDs (triggersEvent, relatedTo) exist before creating items",
+          "deleted": false,
+          "createdAt": "2025-11-16T22:27:38.287Z"
+        },
+        {
+          "id": 4,
+          "text": "Command validate-event-storm must detect broken references (triggersEvent pointing to non-existent IDs, orphaned relatedTo entries)",
+          "deleted": false,
+          "createdAt": "2025-11-16T22:27:43.450Z"
+        },
+        {
+          "id": 5,
+          "text": "Command add-event-storm-diagram must generate Mermaid diagrams using color codes matching Event Storming convention (orange/blue/yellow/purple/red/pink)",
+          "deleted": false,
+          "createdAt": "2025-11-16T22:27:49.453Z"
+        },
+        {
+          "id": 6,
+          "text": "Timeline diagrams must use timestamp field for ordering Event Storm items chronologically",
+          "deleted": false,
+          "createdAt": "2025-11-16T22:27:54.930Z"
+        },
+        {
+          "id": 7,
+          "text": "Show commands (show-event-storm, show-foundation-event-storm) must support --bounded-context filter to show items within specific context only",
+          "deleted": false,
+          "createdAt": "2025-11-16T22:28:00.499Z"
+        },
+        {
+          "id": 8,
+          "text": "Command validate-bounded-contexts must detect bounded contexts in work unit that don't match foundation-level bounded contexts (typos or missing)",
+          "deleted": false,
+          "createdAt": "2025-11-16T22:28:07.259Z"
+        },
+        {
+          "id": 9,
+          "text": "Command generate-scenarios must auto-generate architecture notes from Event Storm data (bounded contexts, aggregates, external systems, key events)",
+          "deleted": false,
+          "createdAt": "2025-11-16T22:28:12.890Z"
+        }
+      ],
+      "nextRuleId": 10,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Work unit AUTH-001 has policy 'when UserRegistered then SendWelcomeEmail' → generate-example-mapping creates rule 'System must send welcome email after user registration'",
+          "deleted": false,
+          "createdAt": "2025-11-16T22:28:25.475Z"
+        },
+        {
+          "id": 1,
+          "text": "Work unit AUTH-001 has event 'UserAuthenticated' → generate-example-mapping creates example 'User enters valid credentials and is logged in'",
+          "deleted": false,
+          "createdAt": "2025-11-16T22:28:31.145Z"
+        },
+        {
+          "id": 2,
+          "text": "Work unit AUTH-001 has hotspot 'Unclear password reset timeout' → generate-example-mapping creates question '@human: What should password reset token timeout be?'",
+          "deleted": false,
+          "createdAt": "2025-11-16T22:28:37.132Z"
+        },
+        {
+          "id": 3,
+          "text": "Command 'add-command AUTH-001 Login --triggers-event=99' fails with 'Event ID 99 does not exist' before creating command",
+          "deleted": false,
+          "createdAt": "2025-11-16T22:28:43.092Z"
+        },
+        {
+          "id": 4,
+          "text": "Command 'validate-event-storm AUTH-001' detects 'Command ID 2 has triggersEvent=99 but event ID 99 does not exist' and suggests fix",
+          "deleted": false,
+          "createdAt": "2025-11-16T22:28:49.151Z"
+        },
+        {
+          "id": 5,
+          "text": "Command 'add-event-storm-diagram AUTH-001 --type=timeline' generates Mermaid timeline using timestamp field and attaches as spec/attachments/AUTH-001/event-storm-timeline.png",
+          "deleted": false,
+          "createdAt": "2025-11-16T22:28:55.725Z"
+        },
+        {
+          "id": 6,
+          "text": "Command 'add-event-storm-diagram AUTH-001 --type=flow' generates Mermaid flow diagram showing command→event→policy relationships with correct colors (blue→orange→purple)",
+          "deleted": false,
+          "createdAt": "2025-11-16T22:29:01.604Z"
+        },
+        {
+          "id": 7,
+          "text": "Command 'show-event-storm AUTH-001 --bounded-context=\"User Management\"' shows only 5 items assigned to User Management context, filters out 3 items from Authentication context",
+          "deleted": false,
+          "createdAt": "2025-11-16T22:29:07.639Z"
+        },
+        {
+          "id": 8,
+          "text": "Command 'validate-bounded-contexts AUTH-001' detects 'Session Managment' (typo) doesn't match foundation 'Session Management' and suggests fix",
+          "deleted": false,
+          "createdAt": "2025-11-16T22:29:13.098Z"
+        },
+        {
+          "id": 9,
+          "text": "Command 'generate-scenarios AUTH-001' with Event Storm data creates feature file with architecture notes: 'Bounded Context: User Management, Aggregates: User, Session, External Systems: OAuth2Provider'",
+          "deleted": false,
+          "createdAt": "2025-11-16T22:29:19.740Z"
+        }
+      ],
+      "nextExampleId": 10,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Extends existing Event Storm commands (EXMAP-005, 006, 007, 010, 011, 012) with automation and validation. New commands: generate-example-mapping-from-event-storm, add-event-storm-diagram, validate-event-storm, validate-bounded-contexts. Enhances generate-scenarios to auto-populate architecture notes. Uses Mermaid for diagram generation, JSON Schema for validation, fuzzy matching for typo detection.",
+          "deleted": false,
+          "createdAt": "2025-11-16T22:30:34.218Z"
+        }
+      ],
+      "nextNoteId": 1
+    },
+    "EXMAP-014": {
+      "id": "EXMAP-014",
+      "title": "Generate Example Mapping from Event Storm",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-11-16T22:42:15.008Z",
+      "updatedAt": "2025-11-16T22:54:21.476Z",
+      "description": "Implement generate-example-mapping-from-event-storm command that derives rules from policies, examples from events, and questions from hotspots",
+      "epic": "example-driven-discovery",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-16T22:42:28.757Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-16T22:44:02.010Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-16T22:46:39.984Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-16T22:46:45.557Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-16T22:54:21.476Z"
+        }
+      ],
+      "userStory": {
+        "role": "AI agent performing Event Storming",
+        "action": "automatically generate Example Mapping from Event Storm artifacts",
+        "benefit": "I reduce manual work and ensure Event Storm knowledge flows to acceptance criteria"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Command must derive business rules from Event Storm policies by combining when/then fields into rule text",
+          "deleted": false,
+          "createdAt": "2025-11-16T22:42:37.011Z"
+        },
+        {
+          "id": 1,
+          "text": "Command must derive scenario examples from domain events by converting PascalCase event names to natural language",
+          "deleted": false,
+          "createdAt": "2025-11-16T22:42:37.561Z"
+        },
+        {
+          "id": 2,
+          "text": "Command must derive questions for humans from hotspot concerns",
+          "deleted": false,
+          "createdAt": "2025-11-16T22:42:38.121Z"
+        },
+        {
+          "id": 3,
+          "text": "Command must skip deleted Event Storm items (deleted: true)",
+          "deleted": false,
+          "createdAt": "2025-11-16T22:42:38.678Z"
+        },
+        {
+          "id": 4,
+          "text": "Generated rules, examples, and questions must include timestamps and proper ID sequencing",
+          "deleted": false,
+          "createdAt": "2025-11-16T22:42:39.223Z"
+        }
+      ],
+      "nextRuleId": 5,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Policy 'when UserRegistered then SendWelcomeEmail' generates rule 'System must send welcome email after user registration'",
+          "deleted": false,
+          "createdAt": "2025-11-16T22:42:45.983Z"
+        },
+        {
+          "id": 1,
+          "text": "Event 'UserAuthenticated' generates example 'User user authenticated and is logged in'",
+          "deleted": false,
+          "createdAt": "2025-11-16T22:42:46.580Z"
+        },
+        {
+          "id": 2,
+          "text": "Hotspot with concern 'Unclear password reset timeout' generates question '@human: What should unclear password reset timeout be?'",
+          "deleted": false,
+          "createdAt": "2025-11-16T22:42:47.139Z"
+        }
+      ],
+      "nextExampleId": 3,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Implements Gap 1 from EXMAP-013 analysis. Uses fileManager.transaction for atomic updates to work-units.json. Processes Event Storm items to derive Example Mapping (policies→rules, events→examples, hotspots→questions). Follows pattern from existing Event Storm commands (add-domain-event, add-command, etc.)",
+          "deleted": false,
+          "createdAt": "2025-11-16T22:43:47.096Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "attachments": [
+        "spec/attachments/EXMAP-014/ast-research-event-storm-commands.json"
+      ],
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2025-11-16T22:54:21.476Z"
     }
   },
   "states": {
@@ -48459,12 +48743,14 @@
       "EXMAP-004",
       "BOARD-020",
       "AGENT-001",
-      "BROWSE-001"
+      "BROWSE-001",
+      "EXMAP-013"
     ],
     "testing": [],
     "implementing": [],
     "validating": [],
     "done": [
+      "EXMAP-014",
       "EXMAP-012",
       "EXMAP-010",
       "EXMAP-011",
@@ -48874,6 +49160,6 @@
     "VAL": 4,
     "PERF": 1,
     "INIT": 16,
-    "EXMAP": 12
+    "EXMAP": 14
   }
 }

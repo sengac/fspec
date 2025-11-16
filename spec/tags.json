@@ -310,6 +310,10 @@
           "description": "Estimation operations"
         },
         {
+          "name": "@event-storm",
+          "description": "Event Storming functionality for domain modeling"
+        },
+        {
           "name": "@event-storming",
           "description": "Event Storming discovery and domain modeling features"
         },
@@ -1606,7 +1610,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-11-16T06:18:59.544Z",
+    "lastUpdated": "2025-11-16T22:43:22.683Z",
     "phaseStats": [
       {
         "phase": "Phase 1",
