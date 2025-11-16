@@ -94,6 +94,13 @@ export default defineConfig({
           resolve(__dirname, 'dist', 'git'),
           { recursive: true }
         );
+
+        // Bundle ast-queries directory (.scm query files)
+        cpSync(
+          resolve(__dirname, 'src', 'utils', 'ast-queries'),
+          resolve(__dirname, 'dist', 'ast-queries'),
+          { recursive: true }
+        );
       },
     },
   ],

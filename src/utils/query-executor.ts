@@ -6,7 +6,13 @@
 
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
 import Parser from '@sengac/tree-sitter';
+
+// ESM __dirname equivalent
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 export interface QueryExecutorOptions {
   language: string;
@@ -55,6 +61,8 @@ export class QueryExecutor {
       'find-exports': 'exports.scm',
       'find-async-functions': 'async-functions.scm',
       'find-identifiers': 'identifiers.scm',
+      'list-keys': 'keys.scm',
+      'list-properties': 'properties.scm',
     };
 
     const fileName = queryFileMap[this.options.operation];
@@ -84,6 +92,9 @@ export class QueryExecutor {
       return this.executeQuery(tree, language);
     } else if (operation === 'find-context') {
       return this.findContext(tree, language);
+    } else if (operation === 'list-keys' || operation === 'list-properties') {
+      // JSON operations use tree-sitter Query API
+      return this.executeQuery(tree, language);
     }
 
     // Existing operations using manual traversal (backward compatibility)
@@ -122,6 +133,11 @@ export class QueryExecutor {
         // For testing: use a simple catch block pattern if file doesn't exist
         queryString = '(try_statement (catch_clause (statement_block) @catch))';
       }
+    }
+
+    // If operation is specified (list-keys, list-properties, etc.), load the query
+    if (!queryString && this.options.operation) {
+      queryString = await this.loadQuery();
     }
 
     if (!queryString) {

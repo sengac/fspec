@@ -279,6 +279,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@reverse-engineering` | Reverse engineering existing code to create specifications |
 | `@review` | Code review and quality analysis |
 | `@runtime` | Runtime behavior and dynamic configuration |
+| `@schema-validation` | JSON Schema validation features and commands |
 | `@search` | Search and query functionality for finding scenarios, work units, and code patterns |
 | `@server` | Server-side components and HTTP endpoints |
 | `@session-based` | Session-based interactive command pattern (similar to discover-foundation) |
@@ -642,7 +643,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-11-16T02:07:32.298Z_
+_Last updated: 2025-11-16T06:18:59.544Z_
 
 **Update Command**: `fspec tag-stats`
 

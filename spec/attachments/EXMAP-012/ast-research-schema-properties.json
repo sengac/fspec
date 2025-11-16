@@ -1,0 +1,2488 @@
+{
+  "matches": [
+    {
+      "type": "string",
+      "line": 2,
+      "column": 2,
+      "text": "\"$schema\""
+    },
+    {
+      "type": "string",
+      "line": 2,
+      "column": 13,
+      "text": "\"http://json-schema.org/draft-07/schema#\""
+    },
+    {
+      "type": "string",
+      "line": 3,
+      "column": 2,
+      "text": "\"$id\""
+    },
+    {
+      "type": "string",
+      "line": 3,
+      "column": 9,
+      "text": "\"https://github.com/sengac/fspec/schemas/generic-foundation.schema.json\""
+    },
+    {
+      "type": "string",
+      "line": 4,
+      "column": 2,
+      "text": "\"title\""
+    },
+    {
+      "type": "string",
+      "line": 4,
+      "column": 11,
+      "text": "\"Generic Foundation Document Schema\""
+    },
+    {
+      "type": "string",
+      "line": 5,
+      "column": 2,
+      "text": "\"description\""
+    },
+    {
+      "type": "string",
+      "line": 5,
+      "column": 17,
+      "text": "\"A generic schema for foundation documents that works for ANY project type (web apps, CLI tools, libraries, services, mobile apps). Focuses ONLY on WHY (problem) and WHAT (solution), never HOW (implementation).\""
+    },
+    {
+      "type": "string",
+      "line": 6,
+      "column": 2,
+      "text": "\"type\""
+    },
+    {
+      "type": "string",
+      "line": 6,
+      "column": 10,
+      "text": "\"object\""
+    },
+    {
+      "type": "string",
+      "line": 7,
+      "column": 2,
+      "text": "\"required\""
+    },
+    {
+      "type": "array",
+      "line": 7,
+      "column": 14,
+      "text": "[\"version\", \"project\", \"problemSpace\", \"solutionSpace\"]"
+    },
+    {
+      "type": "string",
+      "line": 8,
+      "column": 2,
+      "text": "\"additionalProperties\""
+    },
+    {
+      "type": "false",
+      "line": 8,
+      "column": 26,
+      "text": "false"
+    },
+    {
+      "type": "string",
+      "line": 9,
+      "column": 2,
+      "text": "\"properties\""
+    },
+    {
+      "type": "object",
+      "line": 9,
+      "column": 16,
+      "text": "{\n    \"$schema\": {\n      \"type\": \"string\",\n      \"description\": \"JSON Schema reference\"\n    },\n    \"version\": {\n      \"type\": \"string\",\n      \"description\": \"Schema version for migration compatibility\",\n      \"pattern\": \"^\\\\d+\\\\.\\\\d+\\\\.\\\\d+$\",\n      \"examples\": [\"2.0.0\"]\n    },\n    \"project\": {\n      \"type\": \"object\",\n      \"description\": \"REQUIRED: Project identity and basic metadata\",\n      \"required\": [\"name\", \"vision\", \"projectType\"],\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"name\": {\n          \"type\": \"string\",\n          \"description\": \"Project name\",\n          \"minLength\": 1\n        },\n        \"vision\": {\n          \"type\": \"string\",\n          \"description\": \"One-sentence elevator pitch\",\n          \"minLength\": 1\n        },\n        \"projectType\": {\n          \"type\": \"string\",\n          \"description\": \"Type of software project\",\n          \"enum\": [\n            \"web-app\",\n            \"cli-tool\",\n            \"library\",\n            \"sdk\",\n            \"mobile-app\",\n            \"desktop-app\",\n            \"service\",\n            \"api\",\n            \"other\"\n          ]\n        },\n        \"repository\": {\n          \"type\": \"string\",\n          \"description\": \"Repository URL (optional)\",\n          \"format\": \"uri\"\n        },\n        \"license\": {\n          \"type\": \"string\",\n          \"description\": \"License identifier (optional)\",\n          \"examples\": [\"MIT\", \"Apache-2.0\", \"GPL-3.0\"]\n        }\n      }\n    },\n    \"problemSpace\": {\n      \"type\": \"object\",\n      \"description\": \"REQUIRED: Problem space (WHY) - captures the problems this project solves\",\n      \"required\": [\"primaryProblem\"],\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"primaryProblem\": {\n          \"$ref\": \"#/definitions/problem\"\n        },\n        \"additionalProblems\": {\n          \"type\": \"array\",\n          \"description\": \"Additional problems (can have thousands - use subFoundations for scalability)\",\n          \"items\": {\n            \"$ref\": \"#/definitions/problem\"\n          }\n        },\n        \"currentStatePainPoints\": {\n          \"type\": \"array\",\n          \"description\": \"Current state pain points\",\n          \"items\": {\n            \"type\": \"string\"\n          }\n        }\n      }\n    },\n    \"solutionSpace\": {\n      \"type\": \"object\",\n      \"description\": \"REQUIRED: Solution space (WHAT) - broad capabilities only (3-7 high-level abilities)\",\n      \"required\": [\"overview\", \"capabilities\"],\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"overview\": {\n          \"type\": \"string\",\n          \"description\": \"High-level solution overview\",\n          \"minLength\": 1\n        },\n        \"capabilities\": {\n          \"type\": \"array\",\n          \"description\": \"High-level capabilities (3-7 recommended). Granular features belong in .feature files.\",\n          \"minItems\": 1,\n          \"items\": {\n            \"$ref\": \"#/definitions/capability\"\n          }\n        },\n        \"outOfScope\": {\n          \"type\": \"array\",\n          \"description\": \"What this solution does NOT do (optional)\",\n          \"items\": {\n            \"type\": \"string\"\n          }\n        },\n        \"successCriteria\": {\n          \"type\": \"array\",\n          \"description\": \"Success criteria (optional)\",\n          \"items\": {\n            \"type\": \"string\"\n          }\n        }\n      }\n    },\n    \"subFoundations\": {\n      \"type\": \"array\",\n      \"description\": \"OPTIONAL: Hierarchical foundations - references to external sub-foundation documents\",\n      \"items\": {\n        \"type\": \"string\",\n        \"description\": \"Path to sub-foundation file\",\n        \"pattern\": \"\\\\.foundation\\\\.json$\"\n      }\n    },\n    \"architectureDiagrams\": {\n      \"type\": \"array\",\n      \"description\": \"OPTIONAL: Architecture diagrams using Mermaid syntax\",\n      \"items\": {\n        \"$ref\": \"#/definitions/mermaidDiagram\"\n      }\n    },\n    \"constraints\": {\n      \"type\": \"object\",\n      \"description\": \"OPTIONAL: Business, technical, and timeline constraints\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"business\": {\n          \"type\": \"array\",\n          \"items\": { \"type\": \"string\" }\n        },\n        \"technical\": {\n          \"type\": \"array\",\n          \"items\": { \"type\": \"string\" }\n        },\n        \"timeline\": {\n          \"type\": \"array\",\n          \"items\": { \"type\": \"string\" }\n        },\n        \"budget\": {\n          \"type\": \"array\",\n          \"items\": { \"type\": \"string\" }\n        }\n      }\n    },\n    \"personas\": {\n      \"type\": \"array\",\n      \"description\": \"OPTIONAL: Detailed personas (unlimited allowed, suggest 3-7 as best practice)\",\n      \"items\": {\n        \"$ref\": \"#/definitions/persona\"\n      }\n    }\n  }"
+    },
+    {
+      "type": "string",
+      "line": 10,
+      "column": 4,
+      "text": "\"$schema\""
+    },
+    {
+      "type": "object",
+      "line": 10,
+      "column": 15,
+      "text": "{\n      \"type\": \"string\",\n      \"description\": \"JSON Schema reference\"\n    }"
+    },
+    {
+      "type": "string",
+      "line": 11,
+      "column": 6,
+      "text": "\"type\""
+    },
+    {
+      "type": "string",
+      "line": 11,
+      "column": 14,
+      "text": "\"string\""
+    },
+    {
+      "type": "string",
+      "line": 12,
+      "column": 6,
+      "text": "\"description\""
+    },
+    {
+      "type": "string",
+      "line": 12,
+      "column": 21,
+      "text": "\"JSON Schema reference\""
+    },
+    {
+      "type": "string",
+      "line": 14,
+      "column": 4,
+      "text": "\"version\""
+    },
+    {
+      "type": "object",
+      "line": 14,
+      "column": 15,
+      "text": "{\n      \"type\": \"string\",\n      \"description\": \"Schema version for migration compatibility\",\n      \"pattern\": \"^\\\\d+\\\\.\\\\d+\\\\.\\\\d+$\",\n      \"examples\": [\"2.0.0\"]\n    }"
+    },
+    {
+      "type": "string",
+      "line": 15,
+      "column": 6,
+      "text": "\"type\""
+    },
+    {
+      "type": "string",
+      "line": 15,
+      "column": 14,
+      "text": "\"string\""
+    },
+    {
+      "type": "string",
+      "line": 16,
+      "column": 6,
+      "text": "\"description\""
+    },
+    {
+      "type": "string",
+      "line": 16,
+      "column": 21,
+      "text": "\"Schema version for migration compatibility\""
+    },
+    {
+      "type": "string",
+      "line": 17,
+      "column": 6,
+      "text": "\"pattern\""
+    },
+    {
+      "type": "string",
+      "line": 17,
+      "column": 17,
+      "text": "\"^\\\\d+\\\\.\\\\d+\\\\.\\\\d+$\""
+    },
+    {
+      "type": "string",
+      "line": 18,
+      "column": 6,
+      "text": "\"examples\""
+    },
+    {
+      "type": "array",
+      "line": 18,
+      "column": 18,
+      "text": "[\"2.0.0\"]"
+    },
+    {
+      "type": "string",
+      "line": 20,
+      "column": 4,
+      "text": "\"project\""
+    },
+    {
+      "type": "object",
+      "line": 20,
+      "column": 15,
+      "text": "{\n      \"type\": \"object\",\n      \"description\": \"REQUIRED: Project identity and basic metadata\",\n      \"required\": [\"name\", \"vision\", \"projectType\"],\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"name\": {\n          \"type\": \"string\",\n          \"description\": \"Project name\",\n          \"minLength\": 1\n        },\n        \"vision\": {\n          \"type\": \"string\",\n          \"description\": \"One-sentence elevator pitch\",\n          \"minLength\": 1\n        },\n        \"projectType\": {\n          \"type\": \"string\",\n          \"description\": \"Type of software project\",\n          \"enum\": [\n            \"web-app\",\n            \"cli-tool\",\n            \"library\",\n            \"sdk\",\n            \"mobile-app\",\n            \"desktop-app\",\n            \"service\",\n            \"api\",\n            \"other\"\n          ]\n        },\n        \"repository\": {\n          \"type\": \"string\",\n          \"description\": \"Repository URL (optional)\",\n          \"format\": \"uri\"\n        },\n        \"license\": {\n          \"type\": \"string\",\n          \"description\": \"License identifier (optional)\",\n          \"examples\": [\"MIT\", \"Apache-2.0\", \"GPL-3.0\"]\n        }\n      }\n    }"
+    },
+    {
+      "type": "string",
+      "line": 21,
+      "column": 6,
+      "text": "\"type\""
+    },
+    {
+      "type": "string",
+      "line": 21,
+      "column": 14,
+      "text": "\"object\""
+    },
+    {
+      "type": "string",
+      "line": 22,
+      "column": 6,
+      "text": "\"description\""
+    },
+    {
+      "type": "string",
+      "line": 22,
+      "column": 21,
+      "text": "\"REQUIRED: Project identity and basic metadata\""
+    },
+    {
+      "type": "string",
+      "line": 23,
+      "column": 6,
+      "text": "\"required\""
+    },
+    {
+      "type": "array",
+      "line": 23,
+      "column": 18,
+      "text": "[\"name\", \"vision\", \"projectType\"]"
+    },
+    {
+      "type": "string",
+      "line": 24,
+      "column": 6,
+      "text": "\"additionalProperties\""
+    },
+    {
+      "type": "false",
+      "line": 24,
+      "column": 30,
+      "text": "false"
+    },
+    {
+      "type": "string",
+      "line": 25,
+      "column": 6,
+      "text": "\"properties\""
+    },
+    {
+      "type": "object",
+      "line": 25,
+      "column": 20,
+      "text": "{\n        \"name\": {\n          \"type\": \"string\",\n          \"description\": \"Project name\",\n          \"minLength\": 1\n        },\n        \"vision\": {\n          \"type\": \"string\",\n          \"description\": \"One-sentence elevator pitch\",\n          \"minLength\": 1\n        },\n        \"projectType\": {\n          \"type\": \"string\",\n          \"description\": \"Type of software project\",\n          \"enum\": [\n            \"web-app\",\n            \"cli-tool\",\n            \"library\",\n            \"sdk\",\n            \"mobile-app\",\n            \"desktop-app\",\n            \"service\",\n            \"api\",\n            \"other\"\n          ]\n        },\n        \"repository\": {\n          \"type\": \"string\",\n          \"description\": \"Repository URL (optional)\",\n          \"format\": \"uri\"\n        },\n        \"license\": {\n          \"type\": \"string\",\n          \"description\": \"License identifier (optional)\",\n          \"examples\": [\"MIT\", \"Apache-2.0\", \"GPL-3.0\"]\n        }\n      }"
+    },
+    {
+      "type": "string",
+      "line": 26,
+      "column": 8,
+      "text": "\"name\""
+    },
+    {
+      "type": "object",
+      "line": 26,
+      "column": 16,
+      "text": "{\n          \"type\": \"string\",\n          \"description\": \"Project name\",\n          \"minLength\": 1\n        }"
+    },
+    {
+      "type": "string",
+      "line": 27,
+      "column": 10,
+      "text": "\"type\""
+    },
+    {
+      "type": "string",
+      "line": 27,
+      "column": 18,
+      "text": "\"string\""
+    },
+    {
+      "type": "string",
+      "line": 28,
+      "column": 10,
+      "text": "\"description\""
+    },
+    {
+      "type": "string",
+      "line": 28,
+      "column": 25,
+      "text": "\"Project name\""
+    },
+    {
+      "type": "string",
+      "line": 29,
+      "column": 10,
+      "text": "\"minLength\""
+    },
+    {
+      "type": "number",
+      "line": 29,
+      "column": 23,
+      "text": "1"
+    },
+    {
+      "type": "string",
+      "line": 31,
+      "column": 8,
+      "text": "\"vision\""
+    },
+    {
+      "type": "object",
+      "line": 31,
+      "column": 18,
+      "text": "{\n          \"type\": \"string\",\n          \"description\": \"One-sentence elevator pitch\",\n          \"minLength\": 1\n        }"
+    },
+    {
+      "type": "string",
+      "line": 32,
+      "column": 10,
+      "text": "\"type\""
+    },
+    {
+      "type": "string",
+      "line": 32,
+      "column": 18,
+      "text": "\"string\""
+    },
+    {
+      "type": "string",
+      "line": 33,
+      "column": 10,
+      "text": "\"description\""
+    },
+    {
+      "type": "string",
+      "line": 33,
+      "column": 25,
+      "text": "\"One-sentence elevator pitch\""
+    },
+    {
+      "type": "string",
+      "line": 34,
+      "column": 10,
+      "text": "\"minLength\""
+    },
+    {
+      "type": "number",
+      "line": 34,
+      "column": 23,
+      "text": "1"
+    },
+    {
+      "type": "string",
+      "line": 36,
+      "column": 8,
+      "text": "\"projectType\""
+    },
+    {
+      "type": "object",
+      "line": 36,
+      "column": 23,
+      "text": "{\n          \"type\": \"string\",\n          \"description\": \"Type of software project\",\n          \"enum\": [\n            \"web-app\",\n            \"cli-tool\",\n            \"library\",\n            \"sdk\",\n            \"mobile-app\",\n            \"desktop-app\",\n            \"service\",\n            \"api\",\n            \"other\"\n          ]\n        }"
+    },
+    {
+      "type": "string",
+      "line": 37,
+      "column": 10,
+      "text": "\"type\""
+    },
+    {
+      "type": "string",
+      "line": 37,
+      "column": 18,
+      "text": "\"string\""
+    },
+    {
+      "type": "string",
+      "line": 38,
+      "column": 10,
+      "text": "\"description\""
+    },
+    {
+      "type": "string",
+      "line": 38,
+      "column": 25,
+      "text": "\"Type of software project\""
+    },
+    {
+      "type": "string",
+      "line": 39,
+      "column": 10,
+      "text": "\"enum\""
+    },
+    {
+      "type": "array",
+      "line": 39,
+      "column": 18,
+      "text": "[\n            \"web-app\",\n            \"cli-tool\",\n            \"library\",\n            \"sdk\",\n            \"mobile-app\",\n            \"desktop-app\",\n            \"service\",\n            \"api\",\n            \"other\"\n          ]"
+    },
+    {
+      "type": "string",
+      "line": 51,
+      "column": 8,
+      "text": "\"repository\""
+    },
+    {
+      "type": "object",
+      "line": 51,
+      "column": 22,
+      "text": "{\n          \"type\": \"string\",\n          \"description\": \"Repository URL (optional)\",\n          \"format\": \"uri\"\n        }"
+    },
+    {
+      "type": "string",
+      "line": 52,
+      "column": 10,
+      "text": "\"type\""
+    },
+    {
+      "type": "string",
+      "line": 52,
+      "column": 18,
+      "text": "\"string\""
+    },
+    {
+      "type": "string",
+      "line": 53,
+      "column": 10,
+      "text": "\"description\""
+    },
+    {
+      "type": "string",
+      "line": 53,
+      "column": 25,
+      "text": "\"Repository URL (optional)\""
+    },
+    {
+      "type": "string",
+      "line": 54,
+      "column": 10,
+      "text": "\"format\""
+    },
+    {
+      "type": "string",
+      "line": 54,
+      "column": 20,
+      "text": "\"uri\""
+    },
+    {
+      "type": "string",
+      "line": 56,
+      "column": 8,
+      "text": "\"license\""
+    },
+    {
+      "type": "object",
+      "line": 56,
+      "column": 19,
+      "text": "{\n          \"type\": \"string\",\n          \"description\": \"License identifier (optional)\",\n          \"examples\": [\"MIT\", \"Apache-2.0\", \"GPL-3.0\"]\n        }"
+    },
+    {
+      "type": "string",
+      "line": 57,
+      "column": 10,
+      "text": "\"type\""
+    },
+    {
+      "type": "string",
+      "line": 57,
+      "column": 18,
+      "text": "\"string\""
+    },
+    {
+      "type": "string",
+      "line": 58,
+      "column": 10,
+      "text": "\"description\""
+    },
+    {
+      "type": "string",
+      "line": 58,
+      "column": 25,
+      "text": "\"License identifier (optional)\""
+    },
+    {
+      "type": "string",
+      "line": 59,
+      "column": 10,
+      "text": "\"examples\""
+    },
+    {
+      "type": "array",
+      "line": 59,
+      "column": 22,
+      "text": "[\"MIT\", \"Apache-2.0\", \"GPL-3.0\"]"
+    },
+    {
+      "type": "string",
+      "line": 63,
+      "column": 4,
+      "text": "\"problemSpace\""
+    },
+    {
+      "type": "object",
+      "line": 63,
+      "column": 20,
+      "text": "{\n      \"type\": \"object\",\n      \"description\": \"REQUIRED: Problem space (WHY) - captures the problems this project solves\",\n      \"required\": [\"primaryProblem\"],\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"primaryProblem\": {\n          \"$ref\": \"#/definitions/problem\"\n        },\n        \"additionalProblems\": {\n          \"type\": \"array\",\n          \"description\": \"Additional problems (can have thousands - use subFoundations for scalability)\",\n          \"items\": {\n            \"$ref\": \"#/definitions/problem\"\n          }\n        },\n        \"currentStatePainPoints\": {\n          \"type\": \"array\",\n          \"description\": \"Current state pain points\",\n          \"items\": {\n            \"type\": \"string\"\n          }\n        }\n      }\n    }"
+    },
+    {
+      "type": "string",
+      "line": 64,
+      "column": 6,
+      "text": "\"type\""
+    },
+    {
+      "type": "string",
+      "line": 64,
+      "column": 14,
+      "text": "\"object\""
+    },
+    {
+      "type": "string",
+      "line": 65,
+      "column": 6,
+      "text": "\"description\""
+    },
+    {
+      "type": "string",
+      "line": 65,
+      "column": 21,
+      "text": "\"REQUIRED: Problem space (WHY) - captures the problems this project solves\""
+    },
+    {
+      "type": "string",
+      "line": 66,
+      "column": 6,
+      "text": "\"required\""
+    },
+    {
+      "type": "array",
+      "line": 66,
+      "column": 18,
+      "text": "[\"primaryProblem\"]"
+    },
+    {
+      "type": "string",
+      "line": 67,
+      "column": 6,
+      "text": "\"additionalProperties\""
+    },
+    {
+      "type": "false",
+      "line": 67,
+      "column": 30,
+      "text": "false"
+    },
+    {
+      "type": "string",
+      "line": 68,
+      "column": 6,
+      "text": "\"properties\""
+    },
+    {
+      "type": "object",
+      "line": 68,
+      "column": 20,
+      "text": "{\n        \"primaryProblem\": {\n          \"$ref\": \"#/definitions/problem\"\n        },\n        \"additionalProblems\": {\n          \"type\": \"array\",\n          \"description\": \"Additional problems (can have thousands - use subFoundations for scalability)\",\n          \"items\": {\n            \"$ref\": \"#/definitions/problem\"\n          }\n        },\n        \"currentStatePainPoints\": {\n          \"type\": \"array\",\n          \"description\": \"Current state pain points\",\n          \"items\": {\n            \"type\": \"string\"\n          }\n        }\n      }"
+    },
+    {
+      "type": "string",
+      "line": 69,
+      "column": 8,
+      "text": "\"primaryProblem\""
+    },
+    {
+      "type": "object",
+      "line": 69,
+      "column": 26,
+      "text": "{\n          \"$ref\": \"#/definitions/problem\"\n        }"
+    },
+    {
+      "type": "string",
+      "line": 70,
+      "column": 10,
+      "text": "\"$ref\""
+    },
+    {
+      "type": "string",
+      "line": 70,
+      "column": 18,
+      "text": "\"#/definitions/problem\""
+    },
+    {
+      "type": "string",
+      "line": 72,
+      "column": 8,
+      "text": "\"additionalProblems\""
+    },
+    {
+      "type": "object",
+      "line": 72,
+      "column": 30,
+      "text": "{\n          \"type\": \"array\",\n          \"description\": \"Additional problems (can have thousands - use subFoundations for scalability)\",\n          \"items\": {\n            \"$ref\": \"#/definitions/problem\"\n          }\n        }"
+    },
+    {
+      "type": "string",
+      "line": 73,
+      "column": 10,
+      "text": "\"type\""
+    },
+    {
+      "type": "string",
+      "line": 73,
+      "column": 18,
+      "text": "\"array\""
+    },
+    {
+      "type": "string",
+      "line": 74,
+      "column": 10,
+      "text": "\"description\""
+    },
+    {
+      "type": "string",
+      "line": 74,
+      "column": 25,
+      "text": "\"Additional problems (can have thousands - use subFoundations for scalability)\""
+    },
+    {
+      "type": "string",
+      "line": 75,
+      "column": 10,
+      "text": "\"items\""
+    },
+    {
+      "type": "object",
+      "line": 75,
+      "column": 19,
+      "text": "{\n            \"$ref\": \"#/definitions/problem\"\n          }"
+    },
+    {
+      "type": "string",
+      "line": 76,
+      "column": 12,
+      "text": "\"$ref\""
+    },
+    {
+      "type": "string",
+      "line": 76,
+      "column": 20,
+      "text": "\"#/definitions/problem\""
+    },
+    {
+      "type": "string",
+      "line": 79,
+      "column": 8,
+      "text": "\"currentStatePainPoints\""
+    },
+    {
+      "type": "object",
+      "line": 79,
+      "column": 34,
+      "text": "{\n          \"type\": \"array\",\n          \"description\": \"Current state pain points\",\n          \"items\": {\n            \"type\": \"string\"\n          }\n        }"
+    },
+    {
+      "type": "string",
+      "line": 80,
+      "column": 10,
+      "text": "\"type\""
+    },
+    {
+      "type": "string",
+      "line": 80,
+      "column": 18,
+      "text": "\"array\""
+    },
+    {
+      "type": "string",
+      "line": 81,
+      "column": 10,
+      "text": "\"description\""
+    },
+    {
+      "type": "string",
+      "line": 81,
+      "column": 25,
+      "text": "\"Current state pain points\""
+    },
+    {
+      "type": "string",
+      "line": 82,
+      "column": 10,
+      "text": "\"items\""
+    },
+    {
+      "type": "object",
+      "line": 82,
+      "column": 19,
+      "text": "{\n            \"type\": \"string\"\n          }"
+    },
+    {
+      "type": "string",
+      "line": 83,
+      "column": 12,
+      "text": "\"type\""
+    },
+    {
+      "type": "string",
+      "line": 83,
+      "column": 20,
+      "text": "\"string\""
+    },
+    {
+      "type": "string",
+      "line": 88,
+      "column": 4,
+      "text": "\"solutionSpace\""
+    },
+    {
+      "type": "object",
+      "line": 88,
+      "column": 21,
+      "text": "{\n      \"type\": \"object\",\n      \"description\": \"REQUIRED: Solution space (WHAT) - broad capabilities only (3-7 high-level abilities)\",\n      \"required\": [\"overview\", \"capabilities\"],\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"overview\": {\n          \"type\": \"string\",\n          \"description\": \"High-level solution overview\",\n          \"minLength\": 1\n        },\n        \"capabilities\": {\n          \"type\": \"array\",\n          \"description\": \"High-level capabilities (3-7 recommended). Granular features belong in .feature files.\",\n          \"minItems\": 1,\n          \"items\": {\n            \"$ref\": \"#/definitions/capability\"\n          }\n        },\n        \"outOfScope\": {\n          \"type\": \"array\",\n          \"description\": \"What this solution does NOT do (optional)\",\n          \"items\": {\n            \"type\": \"string\"\n          }\n        },\n        \"successCriteria\": {\n          \"type\": \"array\",\n          \"description\": \"Success criteria (optional)\",\n          \"items\": {\n            \"type\": \"string\"\n          }\n        }\n      }\n    }"
+    },
+    {
+      "type": "string",
+      "line": 89,
+      "column": 6,
+      "text": "\"type\""
+    },
+    {
+      "type": "string",
+      "line": 89,
+      "column": 14,
+      "text": "\"object\""
+    },
+    {
+      "type": "string",
+      "line": 90,
+      "column": 6,
+      "text": "\"description\""
+    },
+    {
+      "type": "string",
+      "line": 90,
+      "column": 21,
+      "text": "\"REQUIRED: Solution space (WHAT) - broad capabilities only (3-7 high-level abilities)\""
+    },
+    {
+      "type": "string",
+      "line": 91,
+      "column": 6,
+      "text": "\"required\""
+    },
+    {
+      "type": "array",
+      "line": 91,
+      "column": 18,
+      "text": "[\"overview\", \"capabilities\"]"
+    },
+    {
+      "type": "string",
+      "line": 92,
+      "column": 6,
+      "text": "\"additionalProperties\""
+    },
+    {
+      "type": "false",
+      "line": 92,
+      "column": 30,
+      "text": "false"
+    },
+    {
+      "type": "string",
+      "line": 93,
+      "column": 6,
+      "text": "\"properties\""
+    },
+    {
+      "type": "object",
+      "line": 93,
+      "column": 20,
+      "text": "{\n        \"overview\": {\n          \"type\": \"string\",\n          \"description\": \"High-level solution overview\",\n          \"minLength\": 1\n        },\n        \"capabilities\": {\n          \"type\": \"array\",\n          \"description\": \"High-level capabilities (3-7 recommended). Granular features belong in .feature files.\",\n          \"minItems\": 1,\n          \"items\": {\n            \"$ref\": \"#/definitions/capability\"\n          }\n        },\n        \"outOfScope\": {\n          \"type\": \"array\",\n          \"description\": \"What this solution does NOT do (optional)\",\n          \"items\": {\n            \"type\": \"string\"\n          }\n        },\n        \"successCriteria\": {\n          \"type\": \"array\",\n          \"description\": \"Success criteria (optional)\",\n          \"items\": {\n            \"type\": \"string\"\n          }\n        }\n      }"
+    },
+    {
+      "type": "string",
+      "line": 94,
+      "column": 8,
+      "text": "\"overview\""
+    },
+    {
+      "type": "object",
+      "line": 94,
+      "column": 20,
+      "text": "{\n          \"type\": \"string\",\n          \"description\": \"High-level solution overview\",\n          \"minLength\": 1\n        }"
+    },
+    {
+      "type": "string",
+      "line": 95,
+      "column": 10,
+      "text": "\"type\""
+    },
+    {
+      "type": "string",
+      "line": 95,
+      "column": 18,
+      "text": "\"string\""
+    },
+    {
+      "type": "string",
+      "line": 96,
+      "column": 10,
+      "text": "\"description\""
+    },
+    {
+      "type": "string",
+      "line": 96,
+      "column": 25,
+      "text": "\"High-level solution overview\""
+    },
+    {
+      "type": "string",
+      "line": 97,
+      "column": 10,
+      "text": "\"minLength\""
+    },
+    {
+      "type": "number",
+      "line": 97,
+      "column": 23,
+      "text": "1"
+    },
+    {
+      "type": "string",
+      "line": 99,
+      "column": 8,
+      "text": "\"capabilities\""
+    },
+    {
+      "type": "object",
+      "line": 99,
+      "column": 24,
+      "text": "{\n          \"type\": \"array\",\n          \"description\": \"High-level capabilities (3-7 recommended). Granular features belong in .feature files.\",\n          \"minItems\": 1,\n          \"items\": {\n            \"$ref\": \"#/definitions/capability\"\n          }\n        }"
+    },
+    {
+      "type": "string",
+      "line": 100,
+      "column": 10,
+      "text": "\"type\""
+    },
+    {
+      "type": "string",
+      "line": 100,
+      "column": 18,
+      "text": "\"array\""
+    },
+    {
+      "type": "string",
+      "line": 101,
+      "column": 10,
+      "text": "\"description\""
+    },
+    {
+      "type": "string",
+      "line": 101,
+      "column": 25,
+      "text": "\"High-level capabilities (3-7 recommended). Granular features belong in .feature files.\""
+    },
+    {
+      "type": "string",
+      "line": 102,
+      "column": 10,
+      "text": "\"minItems\""
+    },
+    {
+      "type": "number",
+      "line": 102,
+      "column": 22,
+      "text": "1"
+    },
+    {
+      "type": "string",
+      "line": 103,
+      "column": 10,
+      "text": "\"items\""
+    },
+    {
+      "type": "object",
+      "line": 103,
+      "column": 19,
+      "text": "{\n            \"$ref\": \"#/definitions/capability\"\n          }"
+    },
+    {
+      "type": "string",
+      "line": 104,
+      "column": 12,
+      "text": "\"$ref\""
+    },
+    {
+      "type": "string",
+      "line": 104,
+      "column": 20,
+      "text": "\"#/definitions/capability\""
+    },
+    {
+      "type": "string",
+      "line": 107,
+      "column": 8,
+      "text": "\"outOfScope\""
+    },
+    {
+      "type": "object",
+      "line": 107,
+      "column": 22,
+      "text": "{\n          \"type\": \"array\",\n          \"description\": \"What this solution does NOT do (optional)\",\n          \"items\": {\n            \"type\": \"string\"\n          }\n        }"
+    },
+    {
+      "type": "string",
+      "line": 108,
+      "column": 10,
+      "text": "\"type\""
+    },
+    {
+      "type": "string",
+      "line": 108,
+      "column": 18,
+      "text": "\"array\""
+    },
+    {
+      "type": "string",
+      "line": 109,
+      "column": 10,
+      "text": "\"description\""
+    },
+    {
+      "type": "string",
+      "line": 109,
+      "column": 25,
+      "text": "\"What this solution does NOT do (optional)\""
+    },
+    {
+      "type": "string",
+      "line": 110,
+      "column": 10,
+      "text": "\"items\""
+    },
+    {
+      "type": "object",
+      "line": 110,
+      "column": 19,
+      "text": "{\n            \"type\": \"string\"\n          }"
+    },
+    {
+      "type": "string",
+      "line": 111,
+      "column": 12,
+      "text": "\"type\""
+    },
+    {
+      "type": "string",
+      "line": 111,
+      "column": 20,
+      "text": "\"string\""
+    },
+    {
+      "type": "string",
+      "line": 114,
+      "column": 8,
+      "text": "\"successCriteria\""
+    },
+    {
+      "type": "object",
+      "line": 114,
+      "column": 27,
+      "text": "{\n          \"type\": \"array\",\n          \"description\": \"Success criteria (optional)\",\n          \"items\": {\n            \"type\": \"string\"\n          }\n        }"
+    },
+    {
+      "type": "string",
+      "line": 115,
+      "column": 10,
+      "text": "\"type\""
+    },
+    {
+      "type": "string",
+      "line": 115,
+      "column": 18,
+      "text": "\"array\""
+    },
+    {
+      "type": "string",
+      "line": 116,
+      "column": 10,
+      "text": "\"description\""
+    },
+    {
+      "type": "string",
+      "line": 116,
+      "column": 25,
+      "text": "\"Success criteria (optional)\""
+    },
+    {
+      "type": "string",
+      "line": 117,
+      "column": 10,
+      "text": "\"items\""
+    },
+    {
+      "type": "object",
+      "line": 117,
+      "column": 19,
+      "text": "{\n            \"type\": \"string\"\n          }"
+    },
+    {
+      "type": "string",
+      "line": 118,
+      "column": 12,
+      "text": "\"type\""
+    },
+    {
+      "type": "string",
+      "line": 118,
+      "column": 20,
+      "text": "\"string\""
+    },
+    {
+      "type": "string",
+      "line": 123,
+      "column": 4,
+      "text": "\"subFoundations\""
+    },
+    {
+      "type": "object",
+      "line": 123,
+      "column": 22,
+      "text": "{\n      \"type\": \"array\",\n      \"description\": \"OPTIONAL: Hierarchical foundations - references to external sub-foundation documents\",\n      \"items\": {\n        \"type\": \"string\",\n        \"description\": \"Path to sub-foundation file\",\n        \"pattern\": \"\\\\.foundation\\\\.json$\"\n      }\n    }"
+    },
+    {
+      "type": "string",
+      "line": 124,
+      "column": 6,
+      "text": "\"type\""
+    },
+    {
+      "type": "string",
+      "line": 124,
+      "column": 14,
+      "text": "\"array\""
+    },
+    {
+      "type": "string",
+      "line": 125,
+      "column": 6,
+      "text": "\"description\""
+    },
+    {
+      "type": "string",
+      "line": 125,
+      "column": 21,
+      "text": "\"OPTIONAL: Hierarchical foundations - references to external sub-foundation documents\""
+    },
+    {
+      "type": "string",
+      "line": 126,
+      "column": 6,
+      "text": "\"items\""
+    },
+    {
+      "type": "object",
+      "line": 126,
+      "column": 15,
+      "text": "{\n        \"type\": \"string\",\n        \"description\": \"Path to sub-foundation file\",\n        \"pattern\": \"\\\\.foundation\\\\.json$\"\n      }"
+    },
+    {
+      "type": "string",
+      "line": 127,
+      "column": 8,
+      "text": "\"type\""
+    },
+    {
+      "type": "string",
+      "line": 127,
+      "column": 16,
+      "text": "\"string\""
+    },
+    {
+      "type": "string",
+      "line": 128,
+      "column": 8,
+      "text": "\"description\""
+    },
+    {
+      "type": "string",
+      "line": 128,
+      "column": 23,
+      "text": "\"Path to sub-foundation file\""
+    },
+    {
+      "type": "string",
+      "line": 129,
+      "column": 8,
+      "text": "\"pattern\""
+    },
+    {
+      "type": "string",
+      "line": 129,
+      "column": 19,
+      "text": "\"\\\\.foundation\\\\.json$\""
+    },
+    {
+      "type": "string",
+      "line": 132,
+      "column": 4,
+      "text": "\"architectureDiagrams\""
+    },
+    {
+      "type": "object",
+      "line": 132,
+      "column": 28,
+      "text": "{\n      \"type\": \"array\",\n      \"description\": \"OPTIONAL: Architecture diagrams using Mermaid syntax\",\n      \"items\": {\n        \"$ref\": \"#/definitions/mermaidDiagram\"\n      }\n    }"
+    },
+    {
+      "type": "string",
+      "line": 133,
+      "column": 6,
+      "text": "\"type\""
+    },
+    {
+      "type": "string",
+      "line": 133,
+      "column": 14,
+      "text": "\"array\""
+    },
+    {
+      "type": "string",
+      "line": 134,
+      "column": 6,
+      "text": "\"description\""
+    },
+    {
+      "type": "string",
+      "line": 134,
+      "column": 21,
+      "text": "\"OPTIONAL: Architecture diagrams using Mermaid syntax\""
+    },
+    {
+      "type": "string",
+      "line": 135,
+      "column": 6,
+      "text": "\"items\""
+    },
+    {
+      "type": "object",
+      "line": 135,
+      "column": 15,
+      "text": "{\n        \"$ref\": \"#/definitions/mermaidDiagram\"\n      }"
+    },
+    {
+      "type": "string",
+      "line": 136,
+      "column": 8,
+      "text": "\"$ref\""
+    },
+    {
+      "type": "string",
+      "line": 136,
+      "column": 16,
+      "text": "\"#/definitions/mermaidDiagram\""
+    },
+    {
+      "type": "string",
+      "line": 139,
+      "column": 4,
+      "text": "\"constraints\""
+    },
+    {
+      "type": "object",
+      "line": 139,
+      "column": 19,
+      "text": "{\n      \"type\": \"object\",\n      \"description\": \"OPTIONAL: Business, technical, and timeline constraints\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"business\": {\n          \"type\": \"array\",\n          \"items\": { \"type\": \"string\" }\n        },\n        \"technical\": {\n          \"type\": \"array\",\n          \"items\": { \"type\": \"string\" }\n        },\n        \"timeline\": {\n          \"type\": \"array\",\n          \"items\": { \"type\": \"string\" }\n        },\n        \"budget\": {\n          \"type\": \"array\",\n          \"items\": { \"type\": \"string\" }\n        }\n      }\n    }"
+    },
+    {
+      "type": "string",
+      "line": 140,
+      "column": 6,
+      "text": "\"type\""
+    },
+    {
+      "type": "string",
+      "line": 140,
+      "column": 14,
+      "text": "\"object\""
+    },
+    {
+      "type": "string",
+      "line": 141,
+      "column": 6,
+      "text": "\"description\""
+    },
+    {
+      "type": "string",
+      "line": 141,
+      "column": 21,
+      "text": "\"OPTIONAL: Business, technical, and timeline constraints\""
+    },
+    {
+      "type": "string",
+      "line": 142,
+      "column": 6,
+      "text": "\"additionalProperties\""
+    },
+    {
+      "type": "false",
+      "line": 142,
+      "column": 30,
+      "text": "false"
+    },
+    {
+      "type": "string",
+      "line": 143,
+      "column": 6,
+      "text": "\"properties\""
+    },
+    {
+      "type": "object",
+      "line": 143,
+      "column": 20,
+      "text": "{\n        \"business\": {\n          \"type\": \"array\",\n          \"items\": { \"type\": \"string\" }\n        },\n        \"technical\": {\n          \"type\": \"array\",\n          \"items\": { \"type\": \"string\" }\n        },\n        \"timeline\": {\n          \"type\": \"array\",\n          \"items\": { \"type\": \"string\" }\n        },\n        \"budget\": {\n          \"type\": \"array\",\n          \"items\": { \"type\": \"string\" }\n        }\n      }"
+    },
+    {
+      "type": "string",
+      "line": 144,
+      "column": 8,
+      "text": "\"business\""
+    },
+    {
+      "type": "object",
+      "line": 144,
+      "column": 20,
+      "text": "{\n          \"type\": \"array\",\n          \"items\": { \"type\": \"string\" }\n        }"
+    },
+    {
+      "type": "string",
+      "line": 145,
+      "column": 10,
+      "text": "\"type\""
+    },
+    {
+      "type": "string",
+      "line": 145,
+      "column": 18,
+      "text": "\"array\""
+    },
+    {
+      "type": "string",
+      "line": 146,
+      "column": 10,
+      "text": "\"items\""
+    },
+    {
+      "type": "object",
+      "line": 146,
+      "column": 19,
+      "text": "{ \"type\": \"string\" }"
+    },
+    {
+      "type": "string",
+      "line": 146,
+      "column": 21,
+      "text": "\"type\""
+    },
+    {
+      "type": "string",
+      "line": 146,
+      "column": 29,
+      "text": "\"string\""
+    },
+    {
+      "type": "string",
+      "line": 148,
+      "column": 8,
+      "text": "\"technical\""
+    },
+    {
+      "type": "object",
+      "line": 148,
+      "column": 21,
+      "text": "{\n          \"type\": \"array\",\n          \"items\": { \"type\": \"string\" }\n        }"
+    },
+    {
+      "type": "string",
+      "line": 149,
+      "column": 10,
+      "text": "\"type\""
+    },
+    {
+      "type": "string",
+      "line": 149,
+      "column": 18,
+      "text": "\"array\""
+    },
+    {
+      "type": "string",
+      "line": 150,
+      "column": 10,
+      "text": "\"items\""
+    },
+    {
+      "type": "object",
+      "line": 150,
+      "column": 19,
+      "text": "{ \"type\": \"string\" }"
+    },
+    {
+      "type": "string",
+      "line": 150,
+      "column": 21,
+      "text": "\"type\""
+    },
+    {
+      "type": "string",
+      "line": 150,
+      "column": 29,
+      "text": "\"string\""
+    },
+    {
+      "type": "string",
+      "line": 152,
+      "column": 8,
+      "text": "\"timeline\""
+    },
+    {
+      "type": "object",
+      "line": 152,
+      "column": 20,
+      "text": "{\n          \"type\": \"array\",\n          \"items\": { \"type\": \"string\" }\n        }"
+    },
+    {
+      "type": "string",
+      "line": 153,
+      "column": 10,
+      "text": "\"type\""
+    },
+    {
+      "type": "string",
+      "line": 153,
+      "column": 18,
+      "text": "\"array\""
+    },
+    {
+      "type": "string",
+      "line": 154,
+      "column": 10,
+      "text": "\"items\""
+    },
+    {
+      "type": "object",
+      "line": 154,
+      "column": 19,
+      "text": "{ \"type\": \"string\" }"
+    },
+    {
+      "type": "string",
+      "line": 154,
+      "column": 21,
+      "text": "\"type\""
+    },
+    {
+      "type": "string",
+      "line": 154,
+      "column": 29,
+      "text": "\"string\""
+    },
+    {
+      "type": "string",
+      "line": 156,
+      "column": 8,
+      "text": "\"budget\""
+    },
+    {
+      "type": "object",
+      "line": 156,
+      "column": 18,
+      "text": "{\n          \"type\": \"array\",\n          \"items\": { \"type\": \"string\" }\n        }"
+    },
+    {
+      "type": "string",
+      "line": 157,
+      "column": 10,
+      "text": "\"type\""
+    },
+    {
+      "type": "string",
+      "line": 157,
+      "column": 18,
+      "text": "\"array\""
+    },
+    {
+      "type": "string",
+      "line": 158,
+      "column": 10,
+      "text": "\"items\""
+    },
+    {
+      "type": "object",
+      "line": 158,
+      "column": 19,
+      "text": "{ \"type\": \"string\" }"
+    },
+    {
+      "type": "string",
+      "line": 158,
+      "column": 21,
+      "text": "\"type\""
+    },
+    {
+      "type": "string",
+      "line": 158,
+      "column": 29,
+      "text": "\"string\""
+    },
+    {
+      "type": "string",
+      "line": 162,
+      "column": 4,
+      "text": "\"personas\""
+    },
+    {
+      "type": "object",
+      "line": 162,
+      "column": 16,
+      "text": "{\n      \"type\": \"array\",\n      \"description\": \"OPTIONAL: Detailed personas (unlimited allowed, suggest 3-7 as best practice)\",\n      \"items\": {\n        \"$ref\": \"#/definitions/persona\"\n      }\n    }"
+    },
+    {
+      "type": "string",
+      "line": 163,
+      "column": 6,
+      "text": "\"type\""
+    },
+    {
+      "type": "string",
+      "line": 163,
+      "column": 14,
+      "text": "\"array\""
+    },
+    {
+      "type": "string",
+      "line": 164,
+      "column": 6,
+      "text": "\"description\""
+    },
+    {
+      "type": "string",
+      "line": 164,
+      "column": 21,
+      "text": "\"OPTIONAL: Detailed personas (unlimited allowed, suggest 3-7 as best practice)\""
+    },
+    {
+      "type": "string",
+      "line": 165,
+      "column": 6,
+      "text": "\"items\""
+    },
+    {
+      "type": "object",
+      "line": 165,
+      "column": 15,
+      "text": "{\n        \"$ref\": \"#/definitions/persona\"\n      }"
+    },
+    {
+      "type": "string",
+      "line": 166,
+      "column": 8,
+      "text": "\"$ref\""
+    },
+    {
+      "type": "string",
+      "line": 166,
+      "column": 16,
+      "text": "\"#/definitions/persona\""
+    },
+    {
+      "type": "string",
+      "line": 170,
+      "column": 2,
+      "text": "\"definitions\""
+    },
+    {
+      "type": "object",
+      "line": 170,
+      "column": 17,
+      "text": "{\n    \"problem\": {\n      \"type\": \"object\",\n      \"description\": \"Problem definition with impact, frequency, and cost ratings\",\n      \"required\": [\"title\", \"description\", \"impact\"],\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"title\": {\n          \"type\": \"string\",\n          \"minLength\": 1\n        },\n        \"description\": {\n          \"type\": \"string\",\n          \"minLength\": 1\n        },\n        \"impact\": {\n          \"type\": \"string\",\n          \"enum\": [\"high\", \"medium\", \"low\"],\n          \"description\": \"Impact rating\"\n        },\n        \"frequency\": {\n          \"type\": \"string\",\n          \"enum\": [\"constant\", \"frequent\", \"occasional\", \"rare\"],\n          \"description\": \"Frequency rating (optional)\"\n        },\n        \"cost\": {\n          \"type\": \"string\",\n          \"enum\": [\"critical\", \"significant\", \"moderate\", \"minor\"],\n          \"description\": \"Cost rating (optional)\"\n        },\n        \"affectedStakeholders\": {\n          \"type\": \"array\",\n          \"description\": \"Stakeholders affected by this problem (optional)\",\n          \"items\": {\n            \"type\": \"string\"\n          }\n        }\n      }\n    },\n    \"capability\": {\n      \"type\": \"object\",\n      \"description\": \"High-level capability (WHAT the system does, not HOW)\",\n      \"required\": [\"name\", \"description\"],\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"name\": {\n          \"type\": \"string\",\n          \"description\": \"Capability name (e.g., 'User Authentication', NOT 'Login with OAuth')\",\n          \"minLength\": 1\n        },\n        \"description\": {\n          \"type\": \"string\",\n          \"description\": \"Capability description (focus on WHAT, not HOW)\",\n          \"minLength\": 1\n        },\n        \"rationale\": {\n          \"type\": \"string\",\n          \"description\": \"Why this capability is important (optional)\"\n        }\n      }\n    },\n    \"persona\": {\n      \"type\": \"object\",\n      \"description\": \"User persona (unlimited allowed, suggest 3-7)\",\n      \"required\": [\"name\", \"description\"],\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"name\": {\n          \"type\": \"string\",\n          \"minLength\": 1\n        },\n        \"description\": {\n          \"type\": \"string\",\n          \"minLength\": 1\n        },\n        \"goals\": {\n          \"type\": \"array\",\n          \"items\": {\n            \"type\": \"string\"\n          }\n        },\n        \"painPoints\": {\n          \"type\": \"array\",\n          \"items\": {\n            \"type\": \"string\"\n          }\n        }\n      }\n    },\n    \"mermaidDiagram\": {\n      \"type\": \"object\",\n      \"description\": \"Mermaid diagram (validated using mermaid.parse() with jsdom)\",\n      \"required\": [\"title\", \"mermaidCode\"],\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"title\": {\n          \"type\": \"string\",\n          \"minLength\": 1\n        },\n        \"mermaidCode\": {\n          \"type\": \"string\",\n          \"description\": \"Mermaid diagram syntax\",\n          \"minLength\": 1\n        },\n        \"description\": {\n          \"type\": \"string\",\n          \"description\": \"Diagram description (optional)\"\n        }\n      }\n    }\n  }"
+    },
+    {
+      "type": "string",
+      "line": 171,
+      "column": 4,
+      "text": "\"problem\""
+    },
+    {
+      "type": "object",
+      "line": 171,
+      "column": 15,
+      "text": "{\n      \"type\": \"object\",\n      \"description\": \"Problem definition with impact, frequency, and cost ratings\",\n      \"required\": [\"title\", \"description\", \"impact\"],\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"title\": {\n          \"type\": \"string\",\n          \"minLength\": 1\n        },\n        \"description\": {\n          \"type\": \"string\",\n          \"minLength\": 1\n        },\n        \"impact\": {\n          \"type\": \"string\",\n          \"enum\": [\"high\", \"medium\", \"low\"],\n          \"description\": \"Impact rating\"\n        },\n        \"frequency\": {\n          \"type\": \"string\",\n          \"enum\": [\"constant\", \"frequent\", \"occasional\", \"rare\"],\n          \"description\": \"Frequency rating (optional)\"\n        },\n        \"cost\": {\n          \"type\": \"string\",\n          \"enum\": [\"critical\", \"significant\", \"moderate\", \"minor\"],\n          \"description\": \"Cost rating (optional)\"\n        },\n        \"affectedStakeholders\": {\n          \"type\": \"array\",\n          \"description\": \"Stakeholders affected by this problem (optional)\",\n          \"items\": {\n            \"type\": \"string\"\n          }\n        }\n      }\n    }"
+    },
+    {
+      "type": "string",
+      "line": 172,
+      "column": 6,
+      "text": "\"type\""
+    },
+    {
+      "type": "string",
+      "line": 172,
+      "column": 14,
+      "text": "\"object\""
+    },
+    {
+      "type": "string",
+      "line": 173,
+      "column": 6,
+      "text": "\"description\""
+    },
+    {
+      "type": "string",
+      "line": 173,
+      "column": 21,
+      "text": "\"Problem definition with impact, frequency, and cost ratings\""
+    },
+    {
+      "type": "string",
+      "line": 174,
+      "column": 6,
+      "text": "\"required\""
+    },
+    {
+      "type": "array",
+      "line": 174,
+      "column": 18,
+      "text": "[\"title\", \"description\", \"impact\"]"
+    },
+    {
+      "type": "string",
+      "line": 175,
+      "column": 6,
+      "text": "\"additionalProperties\""
+    },
+    {
+      "type": "false",
+      "line": 175,
+      "column": 30,
+      "text": "false"
+    },
+    {
+      "type": "string",
+      "line": 176,
+      "column": 6,
+      "text": "\"properties\""
+    },
+    {
+      "type": "object",
+      "line": 176,
+      "column": 20,
+      "text": "{\n        \"title\": {\n          \"type\": \"string\",\n          \"minLength\": 1\n        },\n        \"description\": {\n          \"type\": \"string\",\n          \"minLength\": 1\n        },\n        \"impact\": {\n          \"type\": \"string\",\n          \"enum\": [\"high\", \"medium\", \"low\"],\n          \"description\": \"Impact rating\"\n        },\n        \"frequency\": {\n          \"type\": \"string\",\n          \"enum\": [\"constant\", \"frequent\", \"occasional\", \"rare\"],\n          \"description\": \"Frequency rating (optional)\"\n        },\n        \"cost\": {\n          \"type\": \"string\",\n          \"enum\": [\"critical\", \"significant\", \"moderate\", \"minor\"],\n          \"description\": \"Cost rating (optional)\"\n        },\n        \"affectedStakeholders\": {\n          \"type\": \"array\",\n          \"description\": \"Stakeholders affected by this problem (optional)\",\n          \"items\": {\n            \"type\": \"string\"\n          }\n        }\n      }"
+    },
+    {
+      "type": "string",
+      "line": 177,
+      "column": 8,
+      "text": "\"title\""
+    },
+    {
+      "type": "object",
+      "line": 177,
+      "column": 17,
+      "text": "{\n          \"type\": \"string\",\n          \"minLength\": 1\n        }"
+    },
+    {
+      "type": "string",
+      "line": 178,
+      "column": 10,
+      "text": "\"type\""
+    },
+    {
+      "type": "string",
+      "line": 178,
+      "column": 18,
+      "text": "\"string\""
+    },
+    {
+      "type": "string",
+      "line": 179,
+      "column": 10,
+      "text": "\"minLength\""
+    },
+    {
+      "type": "number",
+      "line": 179,
+      "column": 23,
+      "text": "1"
+    },
+    {
+      "type": "string",
+      "line": 181,
+      "column": 8,
+      "text": "\"description\""
+    },
+    {
+      "type": "object",
+      "line": 181,
+      "column": 23,
+      "text": "{\n          \"type\": \"string\",\n          \"minLength\": 1\n        }"
+    },
+    {
+      "type": "string",
+      "line": 182,
+      "column": 10,
+      "text": "\"type\""
+    },
+    {
+      "type": "string",
+      "line": 182,
+      "column": 18,
+      "text": "\"string\""
+    },
+    {
+      "type": "string",
+      "line": 183,
+      "column": 10,
+      "text": "\"minLength\""
+    },
+    {
+      "type": "number",
+      "line": 183,
+      "column": 23,
+      "text": "1"
+    },
+    {
+      "type": "string",
+      "line": 185,
+      "column": 8,
+      "text": "\"impact\""
+    },
+    {
+      "type": "object",
+      "line": 185,
+      "column": 18,
+      "text": "{\n          \"type\": \"string\",\n          \"enum\": [\"high\", \"medium\", \"low\"],\n          \"description\": \"Impact rating\"\n        }"
+    },
+    {
+      "type": "string",
+      "line": 186,
+      "column": 10,
+      "text": "\"type\""
+    },
+    {
+      "type": "string",
+      "line": 186,
+      "column": 18,
+      "text": "\"string\""
+    },
+    {
+      "type": "string",
+      "line": 187,
+      "column": 10,
+      "text": "\"enum\""
+    },
+    {
+      "type": "array",
+      "line": 187,
+      "column": 18,
+      "text": "[\"high\", \"medium\", \"low\"]"
+    },
+    {
+      "type": "string",
+      "line": 188,
+      "column": 10,
+      "text": "\"description\""
+    },
+    {
+      "type": "string",
+      "line": 188,
+      "column": 25,
+      "text": "\"Impact rating\""
+    },
+    {
+      "type": "string",
+      "line": 190,
+      "column": 8,
+      "text": "\"frequency\""
+    },
+    {
+      "type": "object",
+      "line": 190,
+      "column": 21,
+      "text": "{\n          \"type\": \"string\",\n          \"enum\": [\"constant\", \"frequent\", \"occasional\", \"rare\"],\n          \"description\": \"Frequency rating (optional)\"\n        }"
+    },
+    {
+      "type": "string",
+      "line": 191,
+      "column": 10,
+      "text": "\"type\""
+    },
+    {
+      "type": "string",
+      "line": 191,
+      "column": 18,
+      "text": "\"string\""
+    },
+    {
+      "type": "string",
+      "line": 192,
+      "column": 10,
+      "text": "\"enum\""
+    },
+    {
+      "type": "array",
+      "line": 192,
+      "column": 18,
+      "text": "[\"constant\", \"frequent\", \"occasional\", \"rare\"]"
+    },
+    {
+      "type": "string",
+      "line": 193,
+      "column": 10,
+      "text": "\"description\""
+    },
+    {
+      "type": "string",
+      "line": 193,
+      "column": 25,
+      "text": "\"Frequency rating (optional)\""
+    },
+    {
+      "type": "string",
+      "line": 195,
+      "column": 8,
+      "text": "\"cost\""
+    },
+    {
+      "type": "object",
+      "line": 195,
+      "column": 16,
+      "text": "{\n          \"type\": \"string\",\n          \"enum\": [\"critical\", \"significant\", \"moderate\", \"minor\"],\n          \"description\": \"Cost rating (optional)\"\n        }"
+    },
+    {
+      "type": "string",
+      "line": 196,
+      "column": 10,
+      "text": "\"type\""
+    },
+    {
+      "type": "string",
+      "line": 196,
+      "column": 18,
+      "text": "\"string\""
+    },
+    {
+      "type": "string",
+      "line": 197,
+      "column": 10,
+      "text": "\"enum\""
+    },
+    {
+      "type": "array",
+      "line": 197,
+      "column": 18,
+      "text": "[\"critical\", \"significant\", \"moderate\", \"minor\"]"
+    },
+    {
+      "type": "string",
+      "line": 198,
+      "column": 10,
+      "text": "\"description\""
+    },
+    {
+      "type": "string",
+      "line": 198,
+      "column": 25,
+      "text": "\"Cost rating (optional)\""
+    },
+    {
+      "type": "string",
+      "line": 200,
+      "column": 8,
+      "text": "\"affectedStakeholders\""
+    },
+    {
+      "type": "object",
+      "line": 200,
+      "column": 32,
+      "text": "{\n          \"type\": \"array\",\n          \"description\": \"Stakeholders affected by this problem (optional)\",\n          \"items\": {\n            \"type\": \"string\"\n          }\n        }"
+    },
+    {
+      "type": "string",
+      "line": 201,
+      "column": 10,
+      "text": "\"type\""
+    },
+    {
+      "type": "string",
+      "line": 201,
+      "column": 18,
+      "text": "\"array\""
+    },
+    {
+      "type": "string",
+      "line": 202,
+      "column": 10,
+      "text": "\"description\""
+    },
+    {
+      "type": "string",
+      "line": 202,
+      "column": 25,
+      "text": "\"Stakeholders affected by this problem (optional)\""
+    },
+    {
+      "type": "string",
+      "line": 203,
+      "column": 10,
+      "text": "\"items\""
+    },
+    {
+      "type": "object",
+      "line": 203,
+      "column": 19,
+      "text": "{\n            \"type\": \"string\"\n          }"
+    },
+    {
+      "type": "string",
+      "line": 204,
+      "column": 12,
+      "text": "\"type\""
+    },
+    {
+      "type": "string",
+      "line": 204,
+      "column": 20,
+      "text": "\"string\""
+    },
+    {
+      "type": "string",
+      "line": 209,
+      "column": 4,
+      "text": "\"capability\""
+    },
+    {
+      "type": "object",
+      "line": 209,
+      "column": 18,
+      "text": "{\n      \"type\": \"object\",\n      \"description\": \"High-level capability (WHAT the system does, not HOW)\",\n      \"required\": [\"name\", \"description\"],\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"name\": {\n          \"type\": \"string\",\n          \"description\": \"Capability name (e.g., 'User Authentication', NOT 'Login with OAuth')\",\n          \"minLength\": 1\n        },\n        \"description\": {\n          \"type\": \"string\",\n          \"description\": \"Capability description (focus on WHAT, not HOW)\",\n          \"minLength\": 1\n        },\n        \"rationale\": {\n          \"type\": \"string\",\n          \"description\": \"Why this capability is important (optional)\"\n        }\n      }\n    }"
+    },
+    {
+      "type": "string",
+      "line": 210,
+      "column": 6,
+      "text": "\"type\""
+    },
+    {
+      "type": "string",
+      "line": 210,
+      "column": 14,
+      "text": "\"object\""
+    },
+    {
+      "type": "string",
+      "line": 211,
+      "column": 6,
+      "text": "\"description\""
+    },
+    {
+      "type": "string",
+      "line": 211,
+      "column": 21,
+      "text": "\"High-level capability (WHAT the system does, not HOW)\""
+    },
+    {
+      "type": "string",
+      "line": 212,
+      "column": 6,
+      "text": "\"required\""
+    },
+    {
+      "type": "array",
+      "line": 212,
+      "column": 18,
+      "text": "[\"name\", \"description\"]"
+    },
+    {
+      "type": "string",
+      "line": 213,
+      "column": 6,
+      "text": "\"additionalProperties\""
+    },
+    {
+      "type": "false",
+      "line": 213,
+      "column": 30,
+      "text": "false"
+    },
+    {
+      "type": "string",
+      "line": 214,
+      "column": 6,
+      "text": "\"properties\""
+    },
+    {
+      "type": "object",
+      "line": 214,
+      "column": 20,
+      "text": "{\n        \"name\": {\n          \"type\": \"string\",\n          \"description\": \"Capability name (e.g., 'User Authentication', NOT 'Login with OAuth')\",\n          \"minLength\": 1\n        },\n        \"description\": {\n          \"type\": \"string\",\n          \"description\": \"Capability description (focus on WHAT, not HOW)\",\n          \"minLength\": 1\n        },\n        \"rationale\": {\n          \"type\": \"string\",\n          \"description\": \"Why this capability is important (optional)\"\n        }\n      }"
+    },
+    {
+      "type": "string",
+      "line": 215,
+      "column": 8,
+      "text": "\"name\""
+    },
+    {
+      "type": "object",
+      "line": 215,
+      "column": 16,
+      "text": "{\n          \"type\": \"string\",\n          \"description\": \"Capability name (e.g., 'User Authentication', NOT 'Login with OAuth')\",\n          \"minLength\": 1\n        }"
+    },
+    {
+      "type": "string",
+      "line": 216,
+      "column": 10,
+      "text": "\"type\""
+    },
+    {
+      "type": "string",
+      "line": 216,
+      "column": 18,
+      "text": "\"string\""
+    },
+    {
+      "type": "string",
+      "line": 217,
+      "column": 10,
+      "text": "\"description\""
+    },
+    {
+      "type": "string",
+      "line": 217,
+      "column": 25,
+      "text": "\"Capability name (e.g., 'User Authentication', NOT 'Login with OAuth')\""
+    },
+    {
+      "type": "string",
+      "line": 218,
+      "column": 10,
+      "text": "\"minLength\""
+    },
+    {
+      "type": "number",
+      "line": 218,
+      "column": 23,
+      "text": "1"
+    },
+    {
+      "type": "string",
+      "line": 220,
+      "column": 8,
+      "text": "\"description\""
+    },
+    {
+      "type": "object",
+      "line": 220,
+      "column": 23,
+      "text": "{\n          \"type\": \"string\",\n          \"description\": \"Capability description (focus on WHAT, not HOW)\",\n          \"minLength\": 1\n        }"
+    },
+    {
+      "type": "string",
+      "line": 221,
+      "column": 10,
+      "text": "\"type\""
+    },
+    {
+      "type": "string",
+      "line": 221,
+      "column": 18,
+      "text": "\"string\""
+    },
+    {
+      "type": "string",
+      "line": 222,
+      "column": 10,
+      "text": "\"description\""
+    },
+    {
+      "type": "string",
+      "line": 222,
+      "column": 25,
+      "text": "\"Capability description (focus on WHAT, not HOW)\""
+    },
+    {
+      "type": "string",
+      "line": 223,
+      "column": 10,
+      "text": "\"minLength\""
+    },
+    {
+      "type": "number",
+      "line": 223,
+      "column": 23,
+      "text": "1"
+    },
+    {
+      "type": "string",
+      "line": 225,
+      "column": 8,
+      "text": "\"rationale\""
+    },
+    {
+      "type": "object",
+      "line": 225,
+      "column": 21,
+      "text": "{\n          \"type\": \"string\",\n          \"description\": \"Why this capability is important (optional)\"\n        }"
+    },
+    {
+      "type": "string",
+      "line": 226,
+      "column": 10,
+      "text": "\"type\""
+    },
+    {
+      "type": "string",
+      "line": 226,
+      "column": 18,
+      "text": "\"string\""
+    },
+    {
+      "type": "string",
+      "line": 227,
+      "column": 10,
+      "text": "\"description\""
+    },
+    {
+      "type": "string",
+      "line": 227,
+      "column": 25,
+      "text": "\"Why this capability is important (optional)\""
+    },
+    {
+      "type": "string",
+      "line": 231,
+      "column": 4,
+      "text": "\"persona\""
+    },
+    {
+      "type": "object",
+      "line": 231,
+      "column": 15,
+      "text": "{\n      \"type\": \"object\",\n      \"description\": \"User persona (unlimited allowed, suggest 3-7)\",\n      \"required\": [\"name\", \"description\"],\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"name\": {\n          \"type\": \"string\",\n          \"minLength\": 1\n        },\n        \"description\": {\n          \"type\": \"string\",\n          \"minLength\": 1\n        },\n        \"goals\": {\n          \"type\": \"array\",\n          \"items\": {\n            \"type\": \"string\"\n          }\n        },\n        \"painPoints\": {\n          \"type\": \"array\",\n          \"items\": {\n            \"type\": \"string\"\n          }\n        }\n      }\n    }"
+    },
+    {
+      "type": "string",
+      "line": 232,
+      "column": 6,
+      "text": "\"type\""
+    },
+    {
+      "type": "string",
+      "line": 232,
+      "column": 14,
+      "text": "\"object\""
+    },
+    {
+      "type": "string",
+      "line": 233,
+      "column": 6,
+      "text": "\"description\""
+    },
+    {
+      "type": "string",
+      "line": 233,
+      "column": 21,
+      "text": "\"User persona (unlimited allowed, suggest 3-7)\""
+    },
+    {
+      "type": "string",
+      "line": 234,
+      "column": 6,
+      "text": "\"required\""
+    },
+    {
+      "type": "array",
+      "line": 234,
+      "column": 18,
+      "text": "[\"name\", \"description\"]"
+    },
+    {
+      "type": "string",
+      "line": 235,
+      "column": 6,
+      "text": "\"additionalProperties\""
+    },
+    {
+      "type": "false",
+      "line": 235,
+      "column": 30,
+      "text": "false"
+    },
+    {
+      "type": "string",
+      "line": 236,
+      "column": 6,
+      "text": "\"properties\""
+    },
+    {
+      "type": "object",
+      "line": 236,
+      "column": 20,
+      "text": "{\n        \"name\": {\n          \"type\": \"string\",\n          \"minLength\": 1\n        },\n        \"description\": {\n          \"type\": \"string\",\n          \"minLength\": 1\n        },\n        \"goals\": {\n          \"type\": \"array\",\n          \"items\": {\n            \"type\": \"string\"\n          }\n        },\n        \"painPoints\": {\n          \"type\": \"array\",\n          \"items\": {\n            \"type\": \"string\"\n          }\n        }\n      }"
+    },
+    {
+      "type": "string",
+      "line": 237,
+      "column": 8,
+      "text": "\"name\""
+    },
+    {
+      "type": "object",
+      "line": 237,
+      "column": 16,
+      "text": "{\n          \"type\": \"string\",\n          \"minLength\": 1\n        }"
+    },
+    {
+      "type": "string",
+      "line": 238,
+      "column": 10,
+      "text": "\"type\""
+    },
+    {
+      "type": "string",
+      "line": 238,
+      "column": 18,
+      "text": "\"string\""
+    },
+    {
+      "type": "string",
+      "line": 239,
+      "column": 10,
+      "text": "\"minLength\""
+    },
+    {
+      "type": "number",
+      "line": 239,
+      "column": 23,
+      "text": "1"
+    },
+    {
+      "type": "string",
+      "line": 241,
+      "column": 8,
+      "text": "\"description\""
+    },
+    {
+      "type": "object",
+      "line": 241,
+      "column": 23,
+      "text": "{\n          \"type\": \"string\",\n          \"minLength\": 1\n        }"
+    },
+    {
+      "type": "string",
+      "line": 242,
+      "column": 10,
+      "text": "\"type\""
+    },
+    {
+      "type": "string",
+      "line": 242,
+      "column": 18,
+      "text": "\"string\""
+    },
+    {
+      "type": "string",
+      "line": 243,
+      "column": 10,
+      "text": "\"minLength\""
+    },
+    {
+      "type": "number",
+      "line": 243,
+      "column": 23,
+      "text": "1"
+    },
+    {
+      "type": "string",
+      "line": 245,
+      "column": 8,
+      "text": "\"goals\""
+    },
+    {
+      "type": "object",
+      "line": 245,
+      "column": 17,
+      "text": "{\n          \"type\": \"array\",\n          \"items\": {\n            \"type\": \"string\"\n          }\n        }"
+    },
+    {
+      "type": "string",
+      "line": 246,
+      "column": 10,
+      "text": "\"type\""
+    },
+    {
+      "type": "string",
+      "line": 246,
+      "column": 18,
+      "text": "\"array\""
+    },
+    {
+      "type": "string",
+      "line": 247,
+      "column": 10,
+      "text": "\"items\""
+    },
+    {
+      "type": "object",
+      "line": 247,
+      "column": 19,
+      "text": "{\n            \"type\": \"string\"\n          }"
+    },
+    {
+      "type": "string",
+      "line": 248,
+      "column": 12,
+      "text": "\"type\""
+    },
+    {
+      "type": "string",
+      "line": 248,
+      "column": 20,
+      "text": "\"string\""
+    },
+    {
+      "type": "string",
+      "line": 251,
+      "column": 8,
+      "text": "\"painPoints\""
+    },
+    {
+      "type": "object",
+      "line": 251,
+      "column": 22,
+      "text": "{\n          \"type\": \"array\",\n          \"items\": {\n            \"type\": \"string\"\n          }\n        }"
+    },
+    {
+      "type": "string",
+      "line": 252,
+      "column": 10,
+      "text": "\"type\""
+    },
+    {
+      "type": "string",
+      "line": 252,
+      "column": 18,
+      "text": "\"array\""
+    },
+    {
+      "type": "string",
+      "line": 253,
+      "column": 10,
+      "text": "\"items\""
+    },
+    {
+      "type": "object",
+      "line": 253,
+      "column": 19,
+      "text": "{\n            \"type\": \"string\"\n          }"
+    },
+    {
+      "type": "string",
+      "line": 254,
+      "column": 12,
+      "text": "\"type\""
+    },
+    {
+      "type": "string",
+      "line": 254,
+      "column": 20,
+      "text": "\"string\""
+    },
+    {
+      "type": "string",
+      "line": 259,
+      "column": 4,
+      "text": "\"mermaidDiagram\""
+    },
+    {
+      "type": "object",
+      "line": 259,
+      "column": 22,
+      "text": "{\n      \"type\": \"object\",\n      \"description\": \"Mermaid diagram (validated using mermaid.parse() with jsdom)\",\n      \"required\": [\"title\", \"mermaidCode\"],\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"title\": {\n          \"type\": \"string\",\n          \"minLength\": 1\n        },\n        \"mermaidCode\": {\n          \"type\": \"string\",\n          \"description\": \"Mermaid diagram syntax\",\n          \"minLength\": 1\n        },\n        \"description\": {\n          \"type\": \"string\",\n          \"description\": \"Diagram description (optional)\"\n        }\n      }\n    }"
+    },
+    {
+      "type": "string",
+      "line": 260,
+      "column": 6,
+      "text": "\"type\""
+    },
+    {
+      "type": "string",
+      "line": 260,
+      "column": 14,
+      "text": "\"object\""
+    },
+    {
+      "type": "string",
+      "line": 261,
+      "column": 6,
+      "text": "\"description\""
+    },
+    {
+      "type": "string",
+      "line": 261,
+      "column": 21,
+      "text": "\"Mermaid diagram (validated using mermaid.parse() with jsdom)\""
+    },
+    {
+      "type": "string",
+      "line": 262,
+      "column": 6,
+      "text": "\"required\""
+    },
+    {
+      "type": "array",
+      "line": 262,
+      "column": 18,
+      "text": "[\"title\", \"mermaidCode\"]"
+    },
+    {
+      "type": "string",
+      "line": 263,
+      "column": 6,
+      "text": "\"additionalProperties\""
+    },
+    {
+      "type": "false",
+      "line": 263,
+      "column": 30,
+      "text": "false"
+    },
+    {
+      "type": "string",
+      "line": 264,
+      "column": 6,
+      "text": "\"properties\""
+    },
+    {
+      "type": "object",
+      "line": 264,
+      "column": 20,
+      "text": "{\n        \"title\": {\n          \"type\": \"string\",\n          \"minLength\": 1\n        },\n        \"mermaidCode\": {\n          \"type\": \"string\",\n          \"description\": \"Mermaid diagram syntax\",\n          \"minLength\": 1\n        },\n        \"description\": {\n          \"type\": \"string\",\n          \"description\": \"Diagram description (optional)\"\n        }\n      }"
+    },
+    {
+      "type": "string",
+      "line": 265,
+      "column": 8,
+      "text": "\"title\""
+    },
+    {
+      "type": "object",
+      "line": 265,
+      "column": 17,
+      "text": "{\n          \"type\": \"string\",\n          \"minLength\": 1\n        }"
+    },
+    {
+      "type": "string",
+      "line": 266,
+      "column": 10,
+      "text": "\"type\""
+    },
+    {
+      "type": "string",
+      "line": 266,
+      "column": 18,
+      "text": "\"string\""
+    },
+    {
+      "type": "string",
+      "line": 267,
+      "column": 10,
+      "text": "\"minLength\""
+    },
+    {
+      "type": "number",
+      "line": 267,
+      "column": 23,
+      "text": "1"
+    },
+    {
+      "type": "string",
+      "line": 269,
+      "column": 8,
+      "text": "\"mermaidCode\""
+    },
+    {
+      "type": "object",
+      "line": 269,
+      "column": 23,
+      "text": "{\n          \"type\": \"string\",\n          \"description\": \"Mermaid diagram syntax\",\n          \"minLength\": 1\n        }"
+    },
+    {
+      "type": "string",
+      "line": 270,
+      "column": 10,
+      "text": "\"type\""
+    },
+    {
+      "type": "string",
+      "line": 270,
+      "column": 18,
+      "text": "\"string\""
+    },
+    {
+      "type": "string",
+      "line": 271,
+      "column": 10,
+      "text": "\"description\""
+    },
+    {
+      "type": "string",
+      "line": 271,
+      "column": 25,
+      "text": "\"Mermaid diagram syntax\""
+    },
+    {
+      "type": "string",
+      "line": 272,
+      "column": 10,
+      "text": "\"minLength\""
+    },
+    {
+      "type": "number",
+      "line": 272,
+      "column": 23,
+      "text": "1"
+    },
+    {
+      "type": "string",
+      "line": 274,
+      "column": 8,
+      "text": "\"description\""
+    },
+    {
+      "type": "object",
+      "line": 274,
+      "column": 23,
+      "text": "{\n          \"type\": \"string\",\n          \"description\": \"Diagram description (optional)\"\n        }"
+    },
+    {
+      "type": "string",
+      "line": 275,
+      "column": 10,
+      "text": "\"type\""
+    },
+    {
+      "type": "string",
+      "line": 275,
+      "column": 18,
+      "text": "\"string\""
+    },
+    {
+      "type": "string",
+      "line": 276,
+      "column": 10,
+      "text": "\"description\""
+    },
+    {
+      "type": "string",
+      "line": 276,
+      "column": 25,
+      "text": "\"Diagram description (optional)\""
+    }
+  ]
+}

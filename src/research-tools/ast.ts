@@ -102,19 +102,19 @@ export const tool: ResearchTool = {
     return {
       name: 'ast',
       description:
-        'AST code analysis tool using deterministic tree-sitter query operations. Supports 15 languages: JavaScript, TypeScript, Python, Go, Rust, Kotlin, Dart, Swift, C#, C, C++, Java, PHP, Ruby, Bash',
+        'AST code analysis tool using deterministic tree-sitter query operations. Supports 16 languages: JavaScript, TypeScript, Python, Go, Rust, Kotlin, Dart, Swift, C#, C, C++, Java, PHP, Ruby, Bash, JSON',
       usage: 'fspec research --tool=ast [options]',
       whenToUse:
         'Use during Example Mapping to understand code structure, find patterns, or analyze existing implementations using deterministic tree-sitter queries.',
       prerequisites: [
-        'Codebase must contain one of 15 supported languages: JavaScript, TypeScript, Python, Go, Rust, Kotlin, Dart, Swift, C#, C, C++, Java, PHP, Ruby, Bash',
+        'Codebase must contain one of 16 supported languages: JavaScript, TypeScript, Python, Go, Rust, Kotlin, Dart, Swift, C#, C, C++, Java, PHP, Ruby, Bash, JSON',
         'Tree-sitter parsers are bundled (no additional setup required)',
       ],
       options: [
         {
           flag: '--operation <operation>',
           description:
-            'Predefined query operation: list-functions, find-class, find-async-functions, etc. (required if no --query-file)',
+            'Predefined query operation: list-functions, find-class, find-async-functions, list-keys (JSON), list-properties (JSON), etc. (required if no --query-file)',
         },
         {
           flag: '--query-file <path>',
@@ -167,13 +167,21 @@ export const tool: ResearchTool = {
           command: '--query-file=queries/custom.scm --file=src/utils.ts',
           description: 'Execute custom tree-sitter query from file',
         },
+        {
+          command: '--operation=list-keys --file=src/schemas/schema.json',
+          description: 'List all JSON object keys in a schema file',
+        },
+        {
+          command: '--operation=list-properties --file=config.json',
+          description: 'List all key-value pairs in a JSON configuration file',
+        },
       ],
       features: [
         'Deterministic tree-sitter query language (S-expressions)',
         'Predefined operations for common patterns',
         'Custom query support via .scm files',
         'Parametric predicates for filtering (name, pattern, min-params)',
-        'Supports 15 languages: JavaScript, TypeScript, Python, Go, Rust, Kotlin, Dart, Swift, C#, C, C++, Java, PHP, Ruby, Bash',
+        'Supports 16 languages: JavaScript, TypeScript, Python, Go, Rust, Kotlin, Dart, Swift, C#, C, C++, Java, PHP, Ruby, Bash, JSON',
       ],
       commonErrors: [
         {
@@ -254,6 +262,9 @@ function detectLanguage(filePath: string): string {
   }
   if (filePath.endsWith('.sh') || filePath.endsWith('.bash')) {
     return 'bash';
+  }
+  if (filePath.endsWith('.json')) {
+    return 'json';
   }
   throw new Error(`Cannot detect language from file extension: ${filePath}`);
 }
