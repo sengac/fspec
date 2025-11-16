@@ -34,7 +34,7 @@ export function validateASTResearch(
       passed: false,
       error:
         'Cannot transition to testing - no AST research performed during discovery. ' +
-        'Run: fspec research --tool=ast to analyze relevant code before proceeding.',
+        'Use: fspec research --tool=ast --file <path> --operation <op> to analyze relevant code, then attach results with: fspec add-attachment <work-unit-id> <file-path>',
     };
   }
 
@@ -64,7 +64,7 @@ export function validateArchitecturalNotes(
       passed: false,
       error:
         'Cannot transition to testing - no architectural notes documented. ' +
-        'Add architectural notes explaining implementation approach and alignment with existing codebase.',
+        'Use: fspec add-architecture-note <work-unit-id> <note> to add architectural notes explaining implementation approach and alignment with existing codebase.',
     };
   }
 
@@ -94,7 +94,7 @@ export function validateExampleMapping(
       passed: false,
       error:
         'Cannot transition to testing - Example Mapping incomplete. ' +
-        'Add at least one rule and one example using: fspec add-rule / fspec add-example',
+        'Use: fspec add-rule <work-unit-id> "<rule>" and fspec add-example <work-unit-id> "<example>" to complete Example Mapping.',
     };
   }
 

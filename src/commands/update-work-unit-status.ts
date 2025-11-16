@@ -1168,7 +1168,7 @@ export function registerUpdateWorkUnitStatusCommand(program: Command): void {
           if (result.success === false) {
             console.error(
               chalk.red('✗ Failed to update work unit status:'),
-              result.message || 'Unknown error'
+              result.error || result.message || 'Unknown error'
             );
 
             // Show system reminder if present
