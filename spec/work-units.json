@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-15T23:57:49.867Z"
+    "lastUpdated": "2025-11-16T00:47:36.384Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -47642,9 +47642,9 @@
       "id": "EXMAP-006",
       "title": "Event Storm artifact commands (events, commands, aggregates)",
       "type": "story",
-      "status": "testing",
+      "status": "done",
       "createdAt": "2025-11-15T12:16:21.432Z",
-      "updatedAt": "2025-11-15T23:20:10.586Z",
+      "updatedAt": "2025-11-16T00:47:21.999Z",
       "description": "Implement fspec commands: add-domain-event, add-command, add-aggregate for capturing Event Storm sticky notes",
       "parent": "EXMAP-004",
       "stateHistory": [
@@ -47655,6 +47655,26 @@
         {
           "state": "testing",
           "timestamp": "2025-11-15T23:20:10.586Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-16T00:26:30.263Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-16T00:26:36.178Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-16T00:31:06.895Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-16T00:43:20.775Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-16T00:47:22.000Z"
         }
       ],
       "userStory": {
@@ -47728,7 +47748,12 @@
         }
       ],
       "nextExampleId": 4,
-      "estimate": 5
+      "estimate": 5,
+      "questions": [],
+      "architectureNotes": [],
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-16T00:47:21.999Z"
     },
     "EXMAP-007": {
       "id": "EXMAP-007",
@@ -47769,6 +47794,84 @@
       "updatedAt": "2025-11-15T12:16:45.145Z",
       "description": "Add eventStorm section to foundation.json for storing foundation-level Big Picture Event Storming (bounded contexts, major aggregates, pivotal events)",
       "parent": "EXMAP-004"
+    },
+    "BUG-077": {
+      "id": "BUG-077",
+      "title": "Coverage validation missing for implementing→validating transition",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-11-16T00:29:34.882Z",
+      "updatedAt": "2025-11-16T00:47:36.407Z",
+      "description": "System validates coverage only when moving to done, but should validate implementation coverage exists when moving from implementing to validating. Currently allows validating non-existent implementation.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-16T00:29:40.824Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-16T00:36:05.966Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-16T00:37:44.510Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-16T00:47:30.027Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-16T00:47:36.407Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "Step validation must check that validateSteps() actually validates @step comments exist in test file, not just that coverage file exists",
+          "deleted": false,
+          "createdAt": "2025-11-16T00:29:51.363Z"
+        },
+        {
+          "id": 1,
+          "text": "validateTestStepDocstrings() currently passes if coverage file exists with test mappings, but doesn't verify @step comments",
+          "deleted": false,
+          "createdAt": "2025-11-16T00:29:52.905Z"
+        },
+        {
+          "id": 2,
+          "text": "Coverage validation (checkCoverageCompleteness) should run when moving from implementing to validating, not just done",
+          "deleted": false,
+          "createdAt": "2025-11-16T00:32:11.675Z"
+        }
+      ],
+      "nextRuleId": 3,
+      "examples": [
+        {
+          "id": 0,
+          "text": "EXMAP-006 moved from testing to implementing to validating without any @step comments in test file, validation should have blocked this",
+          "deleted": false,
+          "createdAt": "2025-11-16T00:29:54.386Z"
+        },
+        {
+          "id": 1,
+          "text": "EXMAP-006 moved from implementing to validating without any implementation files linked in coverage, should have been blocked",
+          "deleted": false,
+          "createdAt": "2025-11-16T00:32:13.153Z"
+        }
+      ],
+      "nextExampleId": 2,
+      "userStory": {
+        "role": "AI agent following ACDD workflow",
+        "action": "move work unit from implementing to validating",
+        "benefit": "system validates implementation exists before allowing validation phase"
+      },
+      "questions": [],
+      "architectureNotes": [],
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-16T00:47:36.407Z"
     }
   },
   "states": {
@@ -47836,12 +47939,12 @@
       "AGENT-001",
       "BROWSE-001"
     ],
-    "testing": [
-      "EXMAP-006"
-    ],
+    "testing": [],
     "implementing": [],
     "validating": [],
     "done": [
+      "BUG-077",
+      "EXMAP-006",
       "EXMAP-005",
       "VAL-004",
       "INIT-016",
@@ -48217,7 +48320,7 @@
   "prefixCounters": {
     "CLI": 14,
     "HELP": 5,
-    "BUG": 76,
+    "BUG": 77,
     "DISC": 2,
     "COV": 54,
     "TUI": 30,

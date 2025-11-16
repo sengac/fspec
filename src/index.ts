@@ -18,9 +18,12 @@ const packageJson = JSON.parse(
 const version = packageJson.version;
 
 // Command registration functions
+import { registerAddAggregateCommand } from './commands/add-aggregate';
 import { registerAddArchitectureCommand } from './commands/add-architecture';
 import { registerAddArchitectureNoteCommand } from './commands/add-architecture-note';
 import { registerAddAttachmentCommand } from './commands/add-attachment';
+import { registerAddCommandCommand } from './commands/add-command';
+import { registerAddDomainEventCommand } from './commands/add-domain-event';
 import { registerAddAssumptionCommand } from './commands/add-assumption';
 import { registerAddBackgroundCommand } from './commands/add-background';
 import { registerAddCapabilityCommand } from './commands/register-add-capability';
@@ -191,10 +194,13 @@ program
   .action((group?: string) => handleHelpCommand(group, version));
 
 // Register all commands
+registerAddAggregateCommand(program);
 registerAddArchitectureCommand(program);
 registerAddArchitectureNoteCommand(program);
 registerAddAttachmentCommand(program);
 registerBootstrapCommand(program);
+registerAddCommandCommand(program);
+registerAddDomainEventCommand(program);
 registerAddAssumptionCommand(program);
 registerAddBackgroundCommand(program);
 registerAddCapabilityCommand(program);
