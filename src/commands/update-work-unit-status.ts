@@ -11,6 +11,7 @@ import {
   getStatusChangeReminder,
   getVirtualHooksReminder,
   getVirtualHooksCleanupReminder,
+  wrapInSystemReminder,
   type WorkflowState,
 } from '../utils/system-reminder';
 import { checkWorkUnitFeatureForPrefill } from '../utils/prefill-detection';
@@ -678,10 +679,20 @@ export async function updateWorkUnitStatus(
       typedData.workUnits[options.workUnitId].updated = workUnit.updated;
     }
 
-    // 3. Update states arrays (sorting was done above)
+    // 3. Copy blockedReason field (set when moving to blocked, deleted when unblocking)
+    if (workUnit.blockedReason !== undefined) {
+      typedData.workUnits[options.workUnitId].blockedReason =
+        workUnit.blockedReason;
+    } else if (
+      typedData.workUnits[options.workUnitId].blockedReason !== undefined
+    ) {
+      delete typedData.workUnits[options.workUnitId].blockedReason;
+    }
+
+    // 4. Update states arrays (sorting was done above)
     typedData.states = workUnitsData.states;
 
-    // 4. Update meta
+    // 5. Update meta
     if (workUnitsData.meta) {
       typedData.meta = workUnitsData.meta;
     }
@@ -760,7 +771,6 @@ This is optional but recommended to catch issues early.
     );
 
     // Wrap combined content once
-    const { wrapInSystemReminder } = await import('../utils/system-reminder');
     systemReminder = wrapInSystemReminder(unwrappedContents.join('\n\n'));
   }
 

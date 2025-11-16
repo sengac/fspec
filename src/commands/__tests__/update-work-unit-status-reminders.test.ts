@@ -82,7 +82,12 @@ Feature: Test Feature
             {
               file: 'src/__tests__/test-feature.test.ts',
               lines: '1-10',
-              implMappings: [],
+              implMappings: [
+                {
+                  file: 'src/test-impl.ts',
+                  lines: '1-10',
+                },
+              ],
             },
           ],
         },
@@ -108,6 +113,13 @@ describe('Test scenario', () => {
       join(TEST_DIR, 'src', '__tests__', 'test-feature.test.ts'),
       testFileContent
     );
+
+    // Create the implementation file referenced in coverage
+    const implFileContent = `export function testImpl() {
+  return true;
+}
+`;
+    await writeFile(join(TEST_DIR, 'src', 'test-impl.ts'), implFileContent);
   });
 
   afterEach(async () => {

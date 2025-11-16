@@ -108,7 +108,12 @@ describe('Virtual hooks system reminders', () => {
             {
               file: 'src/__tests__/user-login.test.ts',
               lines: '1-10',
-              implMappings: [],
+              implMappings: [
+                {
+                  file: 'src/auth/login.ts',
+                  lines: '1-20',
+                },
+              ],
             },
           ],
         },
@@ -134,6 +139,15 @@ describe('Login success', () => {
       join(testDir, 'src', '__tests__', 'user-login.test.ts'),
       testFileContent
     );
+
+    // Create the implementation file referenced in coverage
+    await mkdir(join(testDir, 'src', 'auth'), { recursive: true });
+    const implFileContent = `export function login(username: string, password: string) {
+  // Authentication logic
+  return true;
+}
+`;
+    await writeFile(join(testDir, 'src', 'auth', 'login.ts'), implFileContent);
   });
 
   afterEach(async () => {
@@ -187,11 +201,11 @@ describe('Login success', () => {
       expect(result.systemReminder).toContain('TESTING status');
       expect(result.systemReminder).toContain('VIRTUAL HOOKS');
 
-      // And they should be separate reminder blocks
+      // And they should be in a consolidated reminder block (as of BUG-077 consolidation)
       const reminderCount = (
         result.systemReminder?.match(/<system-reminder>/g) || []
       ).length;
-      expect(reminderCount).toBeGreaterThanOrEqual(2);
+      expect(reminderCount).toBeGreaterThanOrEqual(1);
     });
   });
 
