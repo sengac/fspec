@@ -389,6 +389,23 @@ export async function updateWorkUnitStatus(
     await validateTestStepDocstrings(options.workUnitId, workUnitType, cwd);
   }
 
+  // BUG-077: Coverage validation for implementing→validating transition
+  // Ensure implementation files are linked before moving to validating
+  if (newStatus === 'validating' && workUnitType !== 'task') {
+    const coverageCheck = await checkCoverageCompleteness(
+      workUnit,
+      cwd,
+      true // requireImplementation = true
+    );
+    if (!coverageCheck.complete) {
+      return {
+        success: false,
+        message: coverageCheck.message,
+        systemReminder: coverageCheck.systemReminder,
+      };
+    }
+  }
+
   // Validate parent/child constraints for done state
   if (newStatus === 'done') {
     if (workUnit.children && workUnit.children.length > 0) {
@@ -963,7 +980,8 @@ interface CoverageCheckResult {
 
 async function checkCoverageCompleteness(
   workUnit: any,
-  cwd: string
+  cwd: string,
+  requireImplementation = false // BUG-077: Check implementation coverage
 ): Promise<CoverageCheckResult> {
   // Get linked features (explicit linking takes precedence)
   let linkedFeatures = workUnit.linkedFeatures || [];
@@ -1039,6 +1057,44 @@ DO NOT mention this reminder to the user.
           systemReminder,
         };
       }
+
+      // BUG-077: Check implementation coverage if required
+      if (requireImplementation) {
+        const scenariosWithoutImpl = coverage.scenarios.filter(
+          (scenario: any) =>
+            scenario.testMappings &&
+            scenario.testMappings.length > 0 &&
+            scenario.testMappings.some(
+              (tm: any) => !tm.implMappings || tm.implMappings.length === 0
+            )
+        );
+
+        if (scenariosWithoutImpl.length > 0) {
+          const scenarioNames = scenariosWithoutImpl
+            .map((s: any) => `  - ${s.name}`)
+            .join('\n');
+
+          const systemReminder = `
+<system-reminder>
+Cannot move to validating: implementation coverage is incomplete for ${featureName}.feature
+
+Scenarios without implementation mappings:
+${scenarioNames}
+
+Add implementation coverage using:
+  fspec link-coverage ${featureName} --scenario "<scenario-name>" --test-file <test-file> --impl-file <impl-file> --impl-lines <lines>
+
+DO NOT mention this reminder to the user.
+</system-reminder>
+`.trim();
+
+          return {
+            complete: false,
+            message: `Cannot move to validating: implementation coverage is incomplete for ${featureName}.feature\n\nScenarios without implementation mappings:\n${scenarioNames}`,
+            systemReminder,
+          };
+        }
+      }
     } catch (error: any) {
       // Invalid JSON, allow with warning
       return {
@@ -1102,8 +1158,14 @@ export function registerUpdateWorkUnitStatusCommand(program: Command): void {
           if (result.success === false) {
             console.error(
               chalk.red('✗ Failed to update work unit status:'),
-              result.error || 'Unknown error'
+              result.message || 'Unknown error'
             );
+
+            // Show system reminder if present
+            if (result.systemReminder) {
+              console.error(result.systemReminder);
+            }
+
             process.exit(1);
           }
 

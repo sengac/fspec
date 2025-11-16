@@ -1,0 +1,48 @@
+{
+  "scenarios": [
+    {
+      "name": "Block implementing→validating when implementation coverage is missing",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/update-work-unit-status-coverage-validation.test.ts",
+          "lines": "25-165",
+          "implMappings": [
+            {
+              "file": "src/commands/update-work-unit-status.ts",
+              "lines": [
+                392,
+                393,
+                394,
+                395,
+                396,
+                397,
+                398,
+                399,
+                400,
+                401,
+                402,
+                403,
+                404,
+                405,
+                406,
+                407
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 1,
+    "coveredScenarios": 1,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/commands/__tests__/update-work-unit-status-coverage-validation.test.ts"
+    ],
+    "implFiles": [
+      "src/commands/update-work-unit-status.ts"
+    ],
+    "totalLinesCovered": 157
+  }
+}
