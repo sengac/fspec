@@ -3,12 +3,10 @@
  * Coverage: EXMAP-007
  */
 
-import { existsSync } from 'fs';
-import { join } from 'path';
 import type { Command } from 'commander';
 import chalk from 'chalk';
-import type { WorkUnitsData, EventStormExternalSystem } from '../types';
-import { fileManager } from '../utils/file-manager';
+import type { EventStormExternalSystem } from '../types';
+import { addEventStormItem } from './event-storm-utils';
 
 export interface AddExternalSystemOptions {
   workUnitId: string;
@@ -39,109 +37,40 @@ export interface AddExternalSystemResult {
 export async function addExternalSystem(
   options: AddExternalSystemOptions
 ): Promise<AddExternalSystemResult> {
-  const cwd = options.cwd || process.cwd();
-  const workUnitsFile = join(cwd, 'spec', 'work-units.json');
+  // Build external system item data
+  const itemData: Omit<
+    EventStormExternalSystem,
+    'id' | 'deleted' | 'createdAt'
+  > = {
+    type: 'external_system',
+    color: 'pink',
+    text: options.text,
+  };
 
-  // Check if work-units.json exists
-  if (!existsSync(workUnitsFile)) {
-    return {
-      success: false,
-      error: 'spec/work-units.json not found. Run fspec init first.',
-    };
+  // Add optional fields
+  if (options.type) {
+    itemData.integrationType = options.type;
+  }
+  if (options.timestamp !== undefined) {
+    itemData.timestamp = options.timestamp;
+  }
+  if (options.boundedContext) {
+    itemData.boundedContext = options.boundedContext;
   }
 
-  try {
-    // Read work units data
-    const workUnitsData = await fileManager.readJSON<WorkUnitsData>(
-      workUnitsFile,
-      {
-        meta: { version: '1.0.0', lastUpdated: new Date().toISOString() },
-        states: {
-          backlog: [],
-          specifying: [],
-          testing: [],
-          implementing: [],
-          validating: [],
-          done: [],
-          blocked: [],
-        },
-        workUnits: {},
-      }
-    );
+  // Use shared utility to add item
+  const result = await addEventStormItem<EventStormExternalSystem>({
+    workUnitId: options.workUnitId,
+    itemData,
+    cwd: options.cwd,
+  });
 
-    // Validate work unit exists
-    const workUnit = workUnitsData.workUnits[options.workUnitId];
-    if (!workUnit) {
-      return {
-        success: false,
-        error: `Work unit ${options.workUnitId} not found`,
-      };
-    }
-
-    // Validate work unit is not in done/blocked state
-    if (workUnit.status === 'done' || workUnit.status === 'blocked') {
-      return {
-        success: false,
-        error: `Cannot add Event Storm items to work unit in ${workUnit.status} state`,
-      };
-    }
-
-    // Initialize eventStorm section if not present
-    if (!workUnit.eventStorm) {
-      workUnit.eventStorm = {
-        level: 'process_modeling',
-        items: [],
-        nextItemId: 0,
-      };
-    }
-
-    // Create external system item
-    const externalSystemId = workUnit.eventStorm.nextItemId;
-    const externalSystem: EventStormExternalSystem = {
-      id: externalSystemId,
-      type: 'external_system',
-      color: 'pink',
-      text: options.text,
-      deleted: false,
-      createdAt: new Date().toISOString(),
-    };
-
-    // Add optional fields
-    if (options.type) {
-      externalSystem.integrationType = options.type;
-    }
-    if (options.timestamp !== undefined) {
-      externalSystem.timestamp = options.timestamp;
-    }
-    if (options.boundedContext) {
-      externalSystem.boundedContext = options.boundedContext;
-    }
-
-    // Add external system to items array and increment ID using transaction
-    await fileManager.transaction(workUnitsFile, (data: WorkUnitsData) => {
-      const wu = data.workUnits[options.workUnitId];
-      if (!wu.eventStorm) {
-        wu.eventStorm = {
-          level: 'process_modeling',
-          items: [],
-          nextItemId: 0,
-        };
-      }
-      wu.eventStorm.items.push(externalSystem);
-      wu.eventStorm.nextItemId += 1;
-    });
-
-    return {
-      success: true,
-      externalSystemId,
-    };
-  } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    return {
-      success: false,
-      error: `Failed to add external system: ${errorMessage}`,
-    };
-  }
+  // Map result to external system-specific format
+  return {
+    success: result.success,
+    error: result.error,
+    externalSystemId: result.itemId,
+  };
 }
 
 export function registerAddExternalSystemCommand(program: Command): void {

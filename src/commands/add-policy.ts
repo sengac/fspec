@@ -3,12 +3,10 @@
  * Coverage: EXMAP-007
  */
 
-import { existsSync } from 'fs';
-import { join } from 'path';
 import type { Command } from 'commander';
 import chalk from 'chalk';
-import type { WorkUnitsData, EventStormPolicy } from '../types';
-import { fileManager } from '../utils/file-manager';
+import type { EventStormPolicy } from '../types';
+import { addEventStormItem } from './event-storm-utils';
 
 export interface AddPolicyOptions {
   workUnitId: string;
@@ -35,112 +33,40 @@ export interface AddPolicyResult {
 export async function addPolicy(
   options: AddPolicyOptions
 ): Promise<AddPolicyResult> {
-  const cwd = options.cwd || process.cwd();
-  const workUnitsFile = join(cwd, 'spec', 'work-units.json');
+  // Build policy item data
+  const itemData: Omit<EventStormPolicy, 'id' | 'deleted' | 'createdAt'> = {
+    type: 'policy',
+    color: 'purple',
+    text: options.text,
+  };
 
-  // Check if work-units.json exists
-  if (!existsSync(workUnitsFile)) {
-    return {
-      success: false,
-      error: 'spec/work-units.json not found. Run fspec init first.',
-    };
+  // Add optional fields
+  if (options.when) {
+    itemData.when = options.when;
+  }
+  if (options.then) {
+    itemData.then = options.then;
+  }
+  if (options.timestamp !== undefined) {
+    itemData.timestamp = options.timestamp;
+  }
+  if (options.boundedContext) {
+    itemData.boundedContext = options.boundedContext;
   }
 
-  try {
-    // Read work units data
-    const workUnitsData = await fileManager.readJSON<WorkUnitsData>(
-      workUnitsFile,
-      {
-        meta: { version: '1.0.0', lastUpdated: new Date().toISOString() },
-        states: {
-          backlog: [],
-          specifying: [],
-          testing: [],
-          implementing: [],
-          validating: [],
-          done: [],
-          blocked: [],
-        },
-        workUnits: {},
-      }
-    );
+  // Use shared utility to add item
+  const result = await addEventStormItem<EventStormPolicy>({
+    workUnitId: options.workUnitId,
+    itemData,
+    cwd: options.cwd,
+  });
 
-    // Validate work unit exists
-    const workUnit = workUnitsData.workUnits[options.workUnitId];
-    if (!workUnit) {
-      return {
-        success: false,
-        error: `Work unit ${options.workUnitId} not found`,
-      };
-    }
-
-    // Validate work unit is not in done/blocked state
-    if (workUnit.status === 'done' || workUnit.status === 'blocked') {
-      return {
-        success: false,
-        error: `Cannot add Event Storm items to work unit in ${workUnit.status} state`,
-      };
-    }
-
-    // Initialize eventStorm section if not present
-    if (!workUnit.eventStorm) {
-      workUnit.eventStorm = {
-        level: 'process_modeling',
-        items: [],
-        nextItemId: 0,
-      };
-    }
-
-    // Create policy item
-    const policyId = workUnit.eventStorm.nextItemId;
-    const policy: EventStormPolicy = {
-      id: policyId,
-      type: 'policy',
-      color: 'purple',
-      text: options.text,
-      deleted: false,
-      createdAt: new Date().toISOString(),
-    };
-
-    // Add optional fields
-    if (options.when) {
-      policy.when = options.when;
-    }
-    if (options.then) {
-      policy.then = options.then;
-    }
-    if (options.timestamp !== undefined) {
-      policy.timestamp = options.timestamp;
-    }
-    if (options.boundedContext) {
-      policy.boundedContext = options.boundedContext;
-    }
-
-    // Add policy to items array and increment ID using transaction
-    await fileManager.transaction(workUnitsFile, (data: WorkUnitsData) => {
-      const wu = data.workUnits[options.workUnitId];
-      if (!wu.eventStorm) {
-        wu.eventStorm = {
-          level: 'process_modeling',
-          items: [],
-          nextItemId: 0,
-        };
-      }
-      wu.eventStorm.items.push(policy);
-      wu.eventStorm.nextItemId += 1;
-    });
-
-    return {
-      success: true,
-      policyId,
-    };
-  } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    return {
-      success: false,
-      error: `Failed to add policy: ${errorMessage}`,
-    };
-  }
+  // Map result to policy-specific format
+  return {
+    success: result.success,
+    error: result.error,
+    policyId: result.itemId,
+  };
 }
 
 export function registerAddPolicyCommand(program: Command): void {
