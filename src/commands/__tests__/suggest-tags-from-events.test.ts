@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm } from 'fs/promises';
+import { mkdtemp, rm, mkdir, writeFile } from 'fs/promises';
 import { join } from 'path';
 import { tmpdir } from 'os';
 import { fileManager } from '../../utils/file-manager';
@@ -19,7 +19,7 @@ describe('Feature: Tag discovery from Event Storm artifacts', () => {
 
   beforeEach(async () => {
     tmpDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
-    await fileManager.ensureDir(join(tmpDir, 'spec'));
+    await mkdir(join(tmpDir, 'spec'), { recursive: true });
   });
 
   afterEach(async () => {
@@ -67,9 +67,9 @@ describe('Feature: Tag discovery from Event Storm artifacts', () => {
         createdAt: new Date().toISOString(),
       });
 
-      await fileManager.writeJSON(
+      await writeFile(
         join(tmpDir, 'spec', 'work-units.json'),
-        workUnitsData
+        JSON.stringify(workUnitsData, null, 2)
       );
 
       // @step When I run fspec suggest-tags-from-events TEST-001
@@ -162,9 +162,9 @@ describe('Feature: Tag discovery from Event Storm artifacts', () => {
         }
       );
 
-      await fileManager.writeJSON(
+      await writeFile(
         join(tmpDir, 'spec', 'work-units.json'),
-        workUnitsData
+        JSON.stringify(workUnitsData, null, 2)
       );
 
       // @step When I run fspec suggest-tags-from-events TEST-002
@@ -238,9 +238,9 @@ describe('Feature: Tag discovery from Event Storm artifacts', () => {
         emits: ['UserRegistered', 'ProfileUpdated'],
       });
 
-      await fileManager.writeJSON(
+      await writeFile(
         join(tmpDir, 'spec', 'work-units.json'),
-        workUnitsData
+        JSON.stringify(workUnitsData, null, 2)
       );
 
       // @step When I run fspec suggest-tags-from-events TEST-003
@@ -308,9 +308,9 @@ describe('Feature: Tag discovery from Event Storm artifacts', () => {
         integrationType: 'REST_API',
       });
 
-      await fileManager.writeJSON(
+      await writeFile(
         join(tmpDir, 'spec', 'work-units.json'),
-        workUnitsData
+        JSON.stringify(workUnitsData, null, 2)
       );
 
       // @step When I run fspec suggest-tags-from-events TEST-004
@@ -375,9 +375,9 @@ describe('Feature: Tag discovery from Event Storm artifacts', () => {
         },
       };
 
-      await fileManager.writeJSON(
+      await writeFile(
         join(tmpDir, 'spec', 'work-units.json'),
-        workUnitsData
+        JSON.stringify(workUnitsData, null, 2)
       );
 
       // @step When I run fspec suggest-tags-from-events TEST-005
@@ -454,9 +454,9 @@ describe('Feature: Tag discovery from Event Storm artifacts', () => {
         }
       );
 
-      await fileManager.writeJSON(
+      await writeFile(
         join(tmpDir, 'spec', 'work-units.json'),
-        workUnitsData
+        JSON.stringify(workUnitsData, null, 2)
       );
 
       // @step When I run fspec suggest-tags-from-events TEST-006

@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-16T03:11:53.820Z"
+    "lastUpdated": "2025-11-16T03:25:15.117Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -47962,9 +47962,9 @@
       "id": "EXMAP-008",
       "title": "Tag discovery from Event Storm artifacts",
       "type": "story",
-      "status": "testing",
+      "status": "done",
       "createdAt": "2025-11-15T12:16:33.710Z",
-      "updatedAt": "2025-11-16T03:11:59.111Z",
+      "updatedAt": "2025-11-16T03:25:15.140Z",
       "description": "Implement suggest-tags-from-events command to analyze Event Storm data and suggest component/feature group/technical tags based on bounded contexts, aggregates, and domain events",
       "parent": "EXMAP-004",
       "stateHistory": [
@@ -47975,6 +47975,18 @@
         {
           "state": "testing",
           "timestamp": "2025-11-16T03:11:59.111Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-16T03:15:24.964Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-16T03:22:22.575Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-16T03:25:15.140Z"
         }
       ],
       "userStory": {
@@ -48083,7 +48095,10 @@
       "nextNoteId": 1,
       "attachments": [
         "spec/attachments/EXMAP-008/ast-research-event-storm-commands.json"
-      ]
+      ],
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2025-11-16T03:25:15.140Z"
     },
     "EXMAP-009": {
       "id": "EXMAP-009",
@@ -48247,12 +48262,11 @@
       "AGENT-001",
       "BROWSE-001"
     ],
-    "testing": [
-      "EXMAP-008"
-    ],
+    "testing": [],
     "implementing": [],
     "validating": [],
     "done": [
+      "EXMAP-008",
       "EXMAP-007",
       "BUG-077",
       "EXMAP-006",
