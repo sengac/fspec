@@ -293,17 +293,17 @@ describe('Feature: Add multi-language support to AST research tool', () => {
     });
   });
 
-  describe('Scenario: AST tool help documents all 15 languages', () => {
-    it('should list all 15 supported languages in help output', async () => {
+  describe('Scenario: AST tool help documents all 16 languages', () => {
+    it('should list all 16 supported languages in help output', async () => {
       // @step When I run "fspec research --tool=ast --help"
       const helpConfig = astTool.getHelpConfig();
       const helpText = JSON.stringify(helpConfig);
 
-      // @step Then the output should list all 15 supported languages
-      expect(helpText).toContain('15');
+      // @step Then the output should list all 16 supported languages
+      expect(helpText).toContain('16');
       expect(helpText).toContain('languages');
 
-      // @step And the language list should include JavaScript, TypeScript, Python, Go, Rust, Kotlin, Dart, Swift, C#, C, C++, Java, PHP, Ruby, Bash
+      // @step And the language list should include JavaScript, TypeScript, Python, Go, Rust, Kotlin, Dart, Swift, C#, C, C++, Java, PHP, Ruby, Bash, JSON
       expect(helpText).toContain('JavaScript');
       expect(helpText).toContain('TypeScript');
       expect(helpText).toContain('Python');
@@ -318,6 +318,7 @@ describe('Feature: Add multi-language support to AST research tool', () => {
       expect(helpText).toContain('PHP');
       expect(helpText).toContain('Ruby');
       expect(helpText).toContain('Bash');
+      expect(helpText).toContain('JSON');
     });
   });
 

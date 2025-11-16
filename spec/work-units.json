@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-16T05:21:01.344Z"
+    "lastUpdated": "2025-11-16T06:45:04.116Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -48277,6 +48277,127 @@
       "questions": [],
       "nextQuestionId": 0,
       "updated": "2025-11-16T04:51:46.917Z"
+    },
+    "EXMAP-012": {
+      "id": "EXMAP-012",
+      "title": "Complete Big Picture Event Storm Schema Integration",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-11-16T06:15:15.532Z",
+      "updatedAt": "2025-11-16T06:45:04.138Z",
+      "children": [],
+      "attachments": [
+        "spec/attachments/EXMAP-012/exmap-010-integration-analysis.md",
+        "spec/attachments/EXMAP-012/generic-foundation-schema-research.json",
+        "spec/attachments/EXMAP-012/json-ast-support-fix.md",
+        "spec/attachments/EXMAP-012/ast-research-schema-properties.json"
+      ],
+      "userStory": {
+        "role": "developer maintaining fspec foundation system",
+        "action": "have Event Storm data validated by JSON Schema during foundation discovery and regeneration",
+        "benefit": "invalid Event Storm structures are caught early and foundation integrity is maintained"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-16T06:17:29.338Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-16T06:30:05.093Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-16T06:38:12.537Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-16T06:44:47.121Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-16T06:45:04.138Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "eventStorm property must be defined in generic-foundation.schema.json as optional field",
+          "deleted": false,
+          "createdAt": "2025-11-16T06:17:40.528Z"
+        },
+        {
+          "id": 1,
+          "text": "eventStorm.level must be constrained to 'big_picture' constant in schema",
+          "deleted": false,
+          "createdAt": "2025-11-16T06:17:41.154Z"
+        },
+        {
+          "id": 2,
+          "text": "eventStormItem discriminated union must validate all 7 item types (event, command, aggregate, policy, hotspot, external_system, bounded_context)",
+          "deleted": false,
+          "createdAt": "2025-11-16T06:17:41.777Z"
+        },
+        {
+          "id": 3,
+          "text": "Schema validation must enforce type-specific fields (e.g., actor for commands, responsibilities for aggregates)",
+          "deleted": false,
+          "createdAt": "2025-11-16T06:17:42.404Z"
+        },
+        {
+          "id": 4,
+          "text": "discover-foundation --finalize must validate eventStorm structure if present in draft",
+          "deleted": false,
+          "createdAt": "2025-11-16T06:17:43.038Z"
+        }
+      ],
+      "nextRuleId": 5,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Foundation with Event Storm containing bounded context validates successfully when level='big_picture'",
+          "deleted": false,
+          "createdAt": "2025-11-16T06:17:51.996Z"
+        },
+        {
+          "id": 1,
+          "text": "Schema validation fails when eventStorm.level='process_modeling' (invalid for foundation)",
+          "deleted": false,
+          "createdAt": "2025-11-16T06:17:53.494Z"
+        },
+        {
+          "id": 2,
+          "text": "EventStormCommand item with actor field passes validation",
+          "deleted": false,
+          "createdAt": "2025-11-16T06:17:55.037Z"
+        },
+        {
+          "id": 3,
+          "text": "EventStormBoundedContext item with null color passes validation (conceptual boundary, not sticky note)",
+          "deleted": false,
+          "createdAt": "2025-11-16T06:17:56.475Z"
+        },
+        {
+          "id": 4,
+          "text": "discover-foundation --finalize rejects draft with invalid Event Storm item type",
+          "deleted": false,
+          "createdAt": "2025-11-16T06:17:57.990Z"
+        }
+      ],
+      "nextExampleId": 5,
+      "estimate": 3,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Update src/schemas/generic-foundation.schema.json to add eventStorm property with level='big_picture' constraint. Define eventStormItem discriminated union using oneOf pattern matching TypeScript EventStormItem union (7 types). Reuse validation pattern from existing schema definitions. Integration via validateGenericFoundationObject() and discover-foundation --finalize flow.",
+          "deleted": false,
+          "createdAt": "2025-11-16T06:19:41.877Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2025-11-16T06:45:04.138Z"
     }
   },
   "states": {
@@ -48344,6 +48465,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "EXMAP-012",
       "EXMAP-010",
       "EXMAP-011",
       "EXMAP-007",
@@ -48752,6 +48874,6 @@
     "VAL": 4,
     "PERF": 1,
     "INIT": 16,
-    "EXMAP": 11
+    "EXMAP": 12
   }
 }

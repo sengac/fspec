@@ -1018,6 +1018,10 @@
           "description": "Runtime behavior and dynamic configuration"
         },
         {
+          "name": "@schema-validation",
+          "description": "JSON Schema validation features and commands"
+        },
+        {
           "name": "@search",
           "description": "Search and query functionality for finding scenarios, work units, and code patterns"
         },
@@ -1602,7 +1606,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-11-16T02:07:32.298Z",
+    "lastUpdated": "2025-11-16T06:18:59.544Z",
     "phaseStats": [
       {
         "phase": "Phase 1",
