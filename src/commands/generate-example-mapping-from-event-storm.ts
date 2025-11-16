@@ -8,6 +8,7 @@ import { existsSync } from 'fs';
 import type { Command } from 'commander';
 import { logger } from '../utils/logger';
 import { fileManager } from '../utils/file-manager';
+import { pascalCaseToSentence } from '../utils/text-formatting';
 import type {
   WorkUnitsData,
   EventStormPolicy,
@@ -86,14 +87,8 @@ export async function generateExampleMappingFromEventStorm(
         if (item.type === 'policy') {
           const policy = item as EventStormPolicy;
           if (policy.when && policy.then) {
-            const whenText = policy.when
-              .replace(/([A-Z])/g, ' $1')
-              .trim()
-              .toLowerCase();
-            const thenText = policy.then
-              .replace(/([A-Z])/g, ' $1')
-              .trim()
-              .toLowerCase();
+            const whenText = pascalCaseToSentence(policy.when);
+            const thenText = pascalCaseToSentence(policy.then);
             const ruleText = `System must ${thenText} after ${whenText}`;
             workUnit.rules.push({
               id: nextRuleId + rulesAdded,
@@ -109,10 +104,7 @@ export async function generateExampleMappingFromEventStorm(
         if (item.type === 'event') {
           const event = item as EventStormEvent;
           // Convert PascalCase event name to sentence
-          const eventSentence = event.text
-            .replace(/([A-Z])/g, ' $1')
-            .trim()
-            .toLowerCase();
+          const eventSentence = pascalCaseToSentence(event.text);
           // Create more natural example text based on common patterns
           const exampleText =
             eventSentence.includes('authenticated') ||
