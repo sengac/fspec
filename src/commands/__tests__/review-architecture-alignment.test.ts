@@ -136,13 +136,7 @@ Feature: Test Feature
             examples: ['Example 1'],
             questions: [],
             architectureNotes: ['Implementation: Create validation utility'],
-            attachments: [
-              {
-                path: 'spec/attachments/WORK-001/ast-research.json',
-                description: 'AST research showing validateFeature in 2 files',
-                addedAt: new Date().toISOString(),
-              },
-            ],
+            attachments: ['spec/attachments/WORK-001/ast-research.json'],
             stateHistory: [
               { state: 'specifying', timestamp: new Date().toISOString() },
             ],
@@ -205,9 +199,9 @@ Feature: Test Feature
       expect(result.systemReminder).toContain('<system-reminder>');
       expect(result.systemReminder).toContain('</system-reminder>');
 
-      // @step And the system-reminder should show 'validateFeature appears in 2 files'
-      expect(result.systemReminder).toContain('validateFeature');
-      expect(result.systemReminder).toMatch(/2 files|appears in 2/i);
+      // @step And the system-reminder should show AST research attachments
+      expect(result.systemReminder).toContain('AST RESEARCH ATTACHMENTS');
+      expect(result.systemReminder).toContain('ast-research.json');
 
       // @step And the AI should revert to specifying state after analyzing the data
       // (This step is AI behavior - not tested in this unit test, but the system-reminder
@@ -245,14 +239,7 @@ Feature: Test Feature
             architectureNotes: [
               'Refactoring: Extract validation logic to shared utility because current code has 3 copies',
             ],
-            attachments: [
-              {
-                path: 'spec/attachments/WORK-001/ast-research.json',
-                description:
-                  'AST research showing 3 locations with duplicate validation',
-                addedAt: new Date().toISOString(),
-              },
-            ],
+            attachments: ['spec/attachments/WORK-001/ast-research.json'],
             stateHistory: [
               { state: 'specifying', timestamp: new Date().toISOString() },
             ],

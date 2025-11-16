@@ -27,11 +27,7 @@ export function validateASTResearch(
   workUnit: WorkUnit
 ): ReviewValidationResult {
   const attachments = workUnit.attachments || [];
-  const hasASTResearch = attachments.some(
-    att =>
-      att.path.includes('ast-research') ||
-      att.description?.toLowerCase().includes('ast')
-  );
+  const hasASTResearch = attachments.some(att => att.includes('ast-research'));
 
   if (!hasASTResearch) {
     return {
@@ -132,17 +128,15 @@ export function buildSubjectiveAnalysisReminder(
   // Show AST research attachments
   lines.push('AST RESEARCH ATTACHMENTS:');
   attachments.forEach((att, idx) => {
-    lines.push(`  ${idx + 1}. ${att.path}`);
-    if (att.description) {
-      lines.push(`     Description: ${att.description}`);
-    }
+    lines.push(`  ${idx + 1}. ${att}`);
   });
   lines.push('');
 
   // Show architectural notes
   lines.push('ARCHITECTURAL NOTES:');
   architectureNotes.forEach((note, idx) => {
-    lines.push(`  ${idx + 1}. ${note}`);
+    const noteText = typeof note === 'string' ? note : note.text;
+    lines.push(`  ${idx + 1}. ${noteText}`);
   });
   lines.push('');
 

@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-15T23:42:34.817Z"
+    "lastUpdated": "2025-11-15T23:57:49.867Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -47480,15 +47480,31 @@
       "id": "EXMAP-005",
       "title": "Event Storm data model for work units",
       "type": "story",
-      "status": "specifying",
+      "status": "done",
       "createdAt": "2025-11-15T12:16:15.377Z",
-      "updatedAt": "2025-11-15T23:42:34.817Z",
+      "updatedAt": "2025-11-15T23:57:49.896Z",
       "description": "Add eventStorm section to WorkUnit type in work-units.json for storing Process/Design Event Storming artifacts per story",
       "parent": "EXMAP-004",
       "stateHistory": [
         {
           "state": "specifying",
           "timestamp": "2025-11-15T12:19:48.294Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-15T23:54:39.372Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-15T23:54:59.293Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-15T23:55:04.874Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-15T23:57:49.896Z"
         }
       ],
       "userStory": {
@@ -47616,7 +47632,11 @@
           "createdAt": "2025-11-15T23:42:34.817Z"
         }
       ],
-      "nextNoteId": 1
+      "nextNoteId": 1,
+      "attachments": [
+        "spec/attachments/EXMAP-005/ast-research-types.md"
+      ],
+      "updated": "2025-11-15T23:57:49.896Z"
     },
     "EXMAP-006": {
       "id": "EXMAP-006",
@@ -47814,8 +47834,7 @@
       "EXMAP-004",
       "BOARD-020",
       "AGENT-001",
-      "BROWSE-001",
-      "EXMAP-005"
+      "BROWSE-001"
     ],
     "testing": [
       "EXMAP-006"
@@ -47823,6 +47842,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "EXMAP-005",
       "VAL-004",
       "INIT-016",
       "REMIND-014",
