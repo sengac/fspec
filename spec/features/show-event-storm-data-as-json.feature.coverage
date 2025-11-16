@@ -1,0 +1,280 @@
+{
+  "scenarios": [
+    {
+      "name": "Output Event Storm events as JSON array",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/show-event-storm.test.ts",
+          "lines": "37-114",
+          "implMappings": [
+            {
+              "file": "src/commands/show-event-storm.ts",
+              "lines": [
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Output Event Storm bounded context as JSON object",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/show-event-storm.test.ts",
+          "lines": "116-169",
+          "implMappings": [
+            {
+              "file": "src/commands/show-event-storm.ts",
+              "lines": [
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Handle work unit with no Event Storm data",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/show-event-storm.test.ts",
+          "lines": "171-202",
+          "implMappings": [
+            {
+              "file": "src/commands/show-event-storm.ts",
+              "lines": [
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Filter out deleted Event Storm items",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/show-event-storm.test.ts",
+          "lines": "204-304",
+          "implMappings": [
+            {
+              "file": "src/commands/show-event-storm.ts",
+              "lines": [
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/commands/__tests__/show-event-storm.test.ts"
+    ],
+    "implFiles": [
+      "src/commands/show-event-storm.ts"
+    ],
+    "totalLinesCovered": 465
+  }
+}

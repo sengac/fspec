@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-16T03:25:15.117Z"
+    "lastUpdated": "2025-11-16T04:51:46.893Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -47962,9 +47962,9 @@
       "id": "EXMAP-008",
       "title": "Tag discovery from Event Storm artifacts",
       "type": "story",
-      "status": "done",
+      "status": "blocked",
       "createdAt": "2025-11-15T12:16:33.710Z",
-      "updatedAt": "2025-11-16T03:25:15.140Z",
+      "updatedAt": "2025-11-16T04:36:47.965Z",
       "description": "Implement suggest-tags-from-events command to analyze Event Storm data and suggest component/feature group/technical tags based on bounded contexts, aggregates, and domain events",
       "parent": "EXMAP-004",
       "stateHistory": [
@@ -47987,6 +47987,11 @@
         {
           "state": "done",
           "timestamp": "2025-11-16T03:25:15.140Z"
+        },
+        {
+          "state": "blocked",
+          "timestamp": "2025-11-16T04:36:47.965Z",
+          "reason": "Architectural flaw: Contains semantic pattern matching (oauth, Login, etc). fspec should expose Event Storm data as structural JSON - AI agents should interpret semantics."
         }
       ],
       "userStory": {
@@ -48098,17 +48103,168 @@
       ],
       "questions": [],
       "nextQuestionId": 0,
-      "updated": "2025-11-16T03:25:15.140Z"
+      "updated": "2025-11-16T03:25:15.140Z",
+      "blockedReason": "Architectural flaw: Contains semantic pattern matching (oauth, Login, etc). fspec should expose Event Storm data as structural JSON - AI agents should interpret semantics."
     },
     "EXMAP-009": {
       "id": "EXMAP-009",
       "title": "Sync tags with Event Storm data",
       "type": "story",
-      "status": "backlog",
+      "status": "blocked",
       "createdAt": "2025-11-15T12:16:39.132Z",
-      "updatedAt": "2025-11-15T12:16:39.132Z",
+      "updatedAt": "2025-11-16T04:36:45.297Z",
       "description": "Implement sync-tags-with-event-storm command to auto-register suggested tags and create tag relationships in tags.json",
-      "parent": "EXMAP-004"
+      "parent": "EXMAP-004",
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-16T04:15:58.097Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-16T04:18:57.068Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-16T04:22:13.284Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-16T04:25:43.329Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-16T04:26:23.808Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-16T04:28:50.261Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-16T04:29:58.975Z"
+        },
+        {
+          "state": "blocked",
+          "timestamp": "2025-11-16T04:36:45.297Z",
+          "reason": "Architectural flaw: Contains semantic tag suggestion logic. fspec should be dumb about domain semantics - AI agents should analyze Event Storm data and decide tags."
+        }
+      ],
+      "userStory": {
+        "role": "developer using Event Storm for domain modeling",
+        "action": "automatically register and organize discovered tags from Event Storm artifacts",
+        "benefit": "I can maintain a consistent tag taxonomy without manual registration overhead"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Command must call suggest-tags-from-events internally to get tag suggestions",
+          "deleted": false,
+          "createdAt": "2025-11-16T04:16:33.605Z"
+        },
+        {
+          "id": 1,
+          "text": "Each suggested tag must be registered in tags.json with proper category and description",
+          "deleted": false,
+          "createdAt": "2025-11-16T04:16:42.639Z"
+        },
+        {
+          "id": 2,
+          "text": "Component tags must have category 'Component Tags'",
+          "deleted": false,
+          "createdAt": "2025-11-16T04:16:43.184Z"
+        },
+        {
+          "id": 3,
+          "text": "Feature-group tags must have category 'Feature Group Tags'",
+          "deleted": false,
+          "createdAt": "2025-11-16T04:16:43.718Z"
+        },
+        {
+          "id": 4,
+          "text": "Technical tags must have category 'Technical Tags'",
+          "deleted": false,
+          "createdAt": "2025-11-16T04:16:44.262Z"
+        },
+        {
+          "id": 5,
+          "text": "Tag descriptions should be auto-generated from Event Storm source context",
+          "deleted": false,
+          "createdAt": "2025-11-16T04:16:44.802Z"
+        },
+        {
+          "id": 6,
+          "text": "Command should not duplicate tags that already exist in tags.json",
+          "deleted": false,
+          "createdAt": "2025-11-16T04:16:45.344Z"
+        },
+        {
+          "id": 7,
+          "text": "Command should update existing tag descriptions if source provides better context",
+          "deleted": true,
+          "createdAt": "2025-11-16T04:16:45.882Z",
+          "deletedAt": "2025-11-16T04:29:15.678Z"
+        },
+        {
+          "id": 8,
+          "text": "Command should preserve existing tag descriptions when tag already exists (no updates)",
+          "deleted": false,
+          "createdAt": "2025-11-16T04:29:17.329Z"
+        }
+      ],
+      "nextRuleId": 9,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Work unit with bounded context 'User Management' suggests @user-management component tag and registers it in tags.json",
+          "deleted": false,
+          "createdAt": "2025-11-16T04:16:58.327Z"
+        },
+        {
+          "id": 1,
+          "text": "Work unit with events UserRegistered, UserLoggedIn suggests @authentication feature-group tag and registers it",
+          "deleted": false,
+          "createdAt": "2025-11-16T04:16:58.862Z"
+        },
+        {
+          "id": 2,
+          "text": "Work unit with external system OAuth2Provider suggests @oauth technical tag and registers it",
+          "deleted": false,
+          "createdAt": "2025-11-16T04:16:59.403Z"
+        },
+        {
+          "id": 3,
+          "text": "Running sync on work unit with tags that already exist in tags.json skips duplicates",
+          "deleted": false,
+          "createdAt": "2025-11-16T04:16:59.951Z"
+        },
+        {
+          "id": 4,
+          "text": "Work unit with no Event Storm artifacts returns error and registers no tags",
+          "deleted": false,
+          "createdAt": "2025-11-16T04:17:00.488Z"
+        },
+        {
+          "id": 5,
+          "text": "Multiple work units synced in sequence build up comprehensive tag registry",
+          "deleted": false,
+          "createdAt": "2025-11-16T04:17:01.029Z"
+        }
+      ],
+      "nextExampleId": 6,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Implementation approach: Reuse suggest-tags-from-events function internally. Read tags.json, merge suggestions with existing tags (deduplicating), write back to tags.json. Category mapping: component→'Component Tags', feature-group→'Feature Group Tags', technical→'Technical Tags'. Auto-generate descriptions from source field in suggestions.",
+          "deleted": false,
+          "createdAt": "2025-11-16T04:17:22.984Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "attachments": [
+        "spec/attachments/EXMAP-009/ast-research-sync-tags.json"
+      ],
+      "blockedReason": "Architectural flaw: Contains semantic tag suggestion logic. fspec should be dumb about domain semantics - AI agents should analyze Event Storm data and decide tags."
     },
     "EXMAP-010": {
       "id": "EXMAP-010",
@@ -48197,6 +48353,125 @@
       "nextQuestionId": 0,
       "nextNoteId": 0,
       "updated": "2025-11-16T00:47:36.407Z"
+    },
+    "EXMAP-011": {
+      "id": "EXMAP-011",
+      "title": "Show Event Storm data as JSON",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-11-16T04:37:30.470Z",
+      "updatedAt": "2025-11-16T04:51:46.917Z",
+      "description": "Expose Event Storm artifacts from work unit as queryable JSON structure for AI agent analysis",
+      "epic": "example-driven-discovery",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-16T04:37:39.377Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-16T04:43:49.675Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-16T04:45:33.391Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-16T04:51:16.108Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-16T04:51:46.918Z"
+        }
+      ],
+      "userStory": {
+        "role": "AI agent analyzing Event Storm sessions",
+        "action": "query Event Storm artifacts as structured JSON data",
+        "benefit": "I can use my language understanding to interpret domain semantics and suggest appropriate tags"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Command must output Event Storm data as valid JSON to stdout",
+          "deleted": false,
+          "createdAt": "2025-11-16T04:37:54.412Z"
+        },
+        {
+          "id": 1,
+          "text": "Must include all Event Storm item types: bounded_context, aggregate, event, command, policy, hotspot, external_system",
+          "deleted": false,
+          "createdAt": "2025-11-16T04:37:56.159Z"
+        },
+        {
+          "id": 2,
+          "text": "Must filter out deleted items (deleted: true)",
+          "deleted": false,
+          "createdAt": "2025-11-16T04:37:57.873Z"
+        },
+        {
+          "id": 3,
+          "text": "Output structure must match EventStorm type from types/index.ts",
+          "deleted": false,
+          "createdAt": "2025-11-16T04:37:59.523Z"
+        },
+        {
+          "id": 4,
+          "text": "Must fail gracefully if work unit has no Event Storm data",
+          "deleted": false,
+          "createdAt": "2025-11-16T04:38:01.337Z"
+        },
+        {
+          "id": 5,
+          "text": "No semantic interpretation - just return raw structural data",
+          "deleted": false,
+          "createdAt": "2025-11-16T04:38:03.062Z"
+        }
+      ],
+      "nextRuleId": 6,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Work unit AUTH-001 with 3 events (UserLoggedIn, UserRegistered, PasswordChanged) outputs JSON array with 3 event objects",
+          "deleted": false,
+          "createdAt": "2025-11-16T04:38:16.911Z"
+        },
+        {
+          "id": 1,
+          "text": "Work unit with bounded context 'User Management' outputs JSON with bounded_context object",
+          "deleted": false,
+          "createdAt": "2025-11-16T04:38:18.817Z"
+        },
+        {
+          "id": 2,
+          "text": "Work unit with no Event Storm data returns error message",
+          "deleted": false,
+          "createdAt": "2025-11-16T04:38:20.696Z"
+        },
+        {
+          "id": 3,
+          "text": "Work unit with deleted items (deleted: true) excludes them from output",
+          "deleted": false,
+          "createdAt": "2025-11-16T04:38:22.403Z"
+        }
+      ],
+      "nextExampleId": 4,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Implementation: Read work-units.json, extract eventStorm.items array, filter deleted=false, output as JSON. Use existing WorkUnitsData and EventStorm types. Command: fspec show-event-storm <work-unit-id> [--format=json|pretty]",
+          "deleted": false,
+          "createdAt": "2025-11-16T04:38:24.035Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "attachments": [
+        "spec/attachments/EXMAP-011/ast-research-event-storm-types.md"
+      ],
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2025-11-16T04:51:46.917Z"
     }
   },
   "states": {
@@ -48252,7 +48527,6 @@
       "DOC-012",
       "DOC-013",
       "DOC-014",
-      "EXMAP-009",
       "EXMAP-010"
     ],
     "specifying": [
@@ -48266,7 +48540,7 @@
     "implementing": [],
     "validating": [],
     "done": [
-      "EXMAP-008",
+      "EXMAP-011",
       "EXMAP-007",
       "BUG-077",
       "EXMAP-006",
@@ -48626,7 +48900,9 @@
       "EXMAP-001"
     ],
     "blocked": [
-      "QUERY-001"
+      "QUERY-001",
+      "EXMAP-009",
+      "EXMAP-008"
     ]
   },
   "migrationHistory": [
@@ -48673,6 +48949,6 @@
     "VAL": 4,
     "PERF": 1,
     "INIT": 16,
-    "EXMAP": 10
+    "EXMAP": 11
   }
 }
