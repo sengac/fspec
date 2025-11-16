@@ -770,6 +770,10 @@
           "description": "Features related to data models, schemas, and data structure transformations"
         },
         {
+          "name": "@ddd",
+          "description": "Domain-Driven Design concepts, Event Storming, bounded contexts, aggregates"
+        },
+        {
           "name": "@destructive-action",
           "description": "Features requiring confirmation dialogs for destructive operations (delete, overwrite, etc.)"
         },
@@ -1594,7 +1598,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-11-15T11:35:46.077Z",
+    "lastUpdated": "2025-11-15T12:18:05.678Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

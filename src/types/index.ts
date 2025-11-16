@@ -38,6 +38,95 @@ export interface VirtualHook {
   gitContext?: boolean;
 }
 
+// Event Storm Types
+
+// Base Event Storm item interface (extends ItemWithId pattern)
+export interface EventStormItemBase extends ItemWithId {
+  color: string; // Event Storming color convention
+  timestamp?: number; // For timeline visualization
+  boundedContext?: string; // Optional bounded context association
+  relatedTo?: number[]; // IDs of related items for traceability
+}
+
+// Domain Event (orange sticky note)
+export interface EventStormEvent extends EventStormItemBase {
+  type: 'event';
+  color: 'orange';
+}
+
+// Command (blue sticky note)
+export interface EventStormCommand extends EventStormItemBase {
+  type: 'command';
+  color: 'blue';
+  actor?: string; // Who executes the command
+  triggersEvent?: number; // ID of event this command triggers
+}
+
+// Aggregate (yellow large sticky note)
+export interface EventStormAggregate extends EventStormItemBase {
+  type: 'aggregate';
+  color: 'yellow';
+  responsibilities?: string[]; // What this aggregate is responsible for
+  emits?: string[]; // Domain event names this aggregate emits
+}
+
+// Policy (purple sticky note)
+export interface EventStormPolicy extends EventStormItemBase {
+  type: 'policy';
+  color: 'purple';
+  when?: string; // Trigger condition
+  then?: string; // Resulting action
+}
+
+// Hotspot/Question (red sticky note)
+export interface EventStormHotspot extends EventStormItemBase {
+  type: 'hotspot';
+  color: 'red';
+}
+
+// External System (pink sticky note)
+export interface EventStormExternalSystem extends EventStormItemBase {
+  type: 'external_system';
+  color: 'pink';
+  integrationType?: string; // API, library, service, etc.
+}
+
+// Bounded Context (blue tape / pivotal event marker)
+export interface EventStormBoundedContext extends EventStormItemBase {
+  type: 'bounded_context';
+  color: 'blue';
+  itemIds?: number[]; // IDs of items within this bounded context
+}
+
+// Discriminated union of all Event Storm item types
+export type EventStormItem =
+  | EventStormEvent
+  | EventStormCommand
+  | EventStormAggregate
+  | EventStormPolicy
+  | EventStormHotspot
+  | EventStormExternalSystem
+  | EventStormBoundedContext;
+
+// Suggested tags generated from Event Storm analysis
+export interface SuggestedTags {
+  componentTags: string[]; // Derived from bounded contexts and aggregates
+  featureGroupTags: string[]; // Derived from domain events and processes
+  technicalTags: string[]; // Derived from external systems and integrations
+  reasoning: string; // Explanation of how tags were derived
+}
+
+// Event Storm section for work units
+export interface EventStorm {
+  level: 'process_modeling' | 'software_design'; // Type of Event Storming
+  sessionDate?: string; // ISO 8601 timestamp of session
+  facilitator?: string; // Who facilitated the session
+  participants?: string[]; // Who participated
+  items: EventStormItem[]; // All Event Storm artifacts
+  nextItemId: number; // Auto-increment counter for stable IDs
+  suggestedTags?: SuggestedTags; // Tags suggested from Event Storm analysis
+}
+
 // Work Unit Type
 export type WorkUnitType = 'story' | 'task' | 'bug';
 
@@ -77,6 +166,7 @@ export interface WorkUnit {
   nextNoteId?: number;
   userStory?: UserStory;
   virtualHooks?: VirtualHook[]; // Work unit-scoped hooks for dynamic validation
+  eventStorm?: EventStorm; // Event Storming discovery artifacts
   stateHistory?: Array<{
     state: string;
     timestamp: string;

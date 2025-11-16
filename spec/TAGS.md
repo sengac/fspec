@@ -217,6 +217,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@dart` | Dart language and Flutter framework features |
 | `@data-integrity` | Data integrity validation and consistency checks |
 | `@data-model` | Features related to data models, schemas, and data structure transformations |
+| `@ddd` | Domain-Driven Design concepts, Event Storming, bounded contexts, aggregates |
 | `@destructive-action` | Features requiring confirmation dialogs for destructive operations (delete, overwrite, etc.) |
 | `@development-tools` | Development tooling and utilities |
 | `@discovery` | BDD discovery technique used before writing Gherkin scenarios |
@@ -640,7 +641,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-11-15T11:35:46.077Z_
+_Last updated: 2025-11-15T12:18:05.678Z_
 
 **Update Command**: `fspec tag-stats`
 
