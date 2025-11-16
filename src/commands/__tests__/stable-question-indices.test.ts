@@ -306,13 +306,7 @@ describe('Feature: Stable Question Indices for Concurrent Answers', () => {
         architectureNotes: [
           'Implementation: Validate all questions are selected before testing phase',
         ],
-        attachments: [
-          {
-            path: 'spec/attachments/WORK-001/ast-research.json',
-            description: 'Question validation logic and state tracking',
-            addedAt: new Date().toISOString(),
-          },
-        ],
+        attachments: ['spec/attachments/WORK-001/ast-research.json'],
       };
       workUnits.states.specifying.push('WORK-001');
       await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));

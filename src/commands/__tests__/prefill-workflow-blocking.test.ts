@@ -70,14 +70,7 @@ Feature: Test Feature
             architectureNotes: [
               'Implementation: Scan feature files for bracket-enclosed placeholders',
             ],
-            attachments: [
-              {
-                path: 'spec/attachments/TEST-001/ast-research.json',
-                description:
-                  'Prefill detection regex patterns and validation logic',
-                addedAt: new Date().toISOString(),
-              },
-            ],
+            attachments: ['spec/attachments/TEST-001/ast-research.json'],
           },
         },
         states: {
@@ -169,13 +162,7 @@ Feature: Complete Feature
             architectureNotes: [
               'Implementation: Prefill validator allows transition when no placeholders found',
             ],
-            attachments: [
-              {
-                path: 'spec/attachments/TEST-002/ast-research.json',
-                description: 'Prefill validation success path implementation',
-                addedAt: new Date().toISOString(),
-              },
-            ],
+            attachments: ['spec/attachments/TEST-002/ast-research.json'],
           },
         },
         states: {

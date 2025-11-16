@@ -53,13 +53,7 @@ describe('Virtual hooks system reminders', () => {
           architectureNotes: [
             'Implementation: Use secure authentication with password hashing',
           ],
-          attachments: [
-            {
-              path: 'spec/attachments/AUTH-001/ast-research.json',
-              description: 'AST research for authentication implementation',
-              addedAt: new Date().toISOString(),
-            },
-          ],
+          attachments: ['spec/attachments/AUTH-001/ast-research.json'],
         },
         'BUG-001': {
           id: 'BUG-001',
