@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-16T02:30:56.502Z"
+    "lastUpdated": "2025-11-16T03:11:53.820Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -47962,11 +47962,128 @@
       "id": "EXMAP-008",
       "title": "Tag discovery from Event Storm artifacts",
       "type": "story",
-      "status": "backlog",
+      "status": "testing",
       "createdAt": "2025-11-15T12:16:33.710Z",
-      "updatedAt": "2025-11-15T12:16:33.710Z",
+      "updatedAt": "2025-11-16T03:11:59.111Z",
       "description": "Implement suggest-tags-from-events command to analyze Event Storm data and suggest component/feature group/technical tags based on bounded contexts, aggregates, and domain events",
-      "parent": "EXMAP-004"
+      "parent": "EXMAP-004",
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-16T03:05:48.641Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-16T03:11:59.111Z"
+        }
+      ],
+      "userStory": {
+        "role": "AI agent or developer using Event Storming for domain discovery",
+        "action": "automatically suggest relevant tags based on Event Storm artifacts",
+        "benefit": "I can quickly create appropriate component, feature group, and technical tags aligned with the domain model without manual analysis"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Command suggest-tags-from-events analyzes work unit's eventStorm section to suggest component, feature group, and technical tags",
+          "deleted": false,
+          "createdAt": "2025-11-16T03:06:54.036Z"
+        },
+        {
+          "id": 1,
+          "text": "Bounded contexts map to @component tags (e.g., bounded context 'User Management' suggests @user-management component tag)",
+          "deleted": false,
+          "createdAt": "2025-11-16T03:06:59.710Z"
+        },
+        {
+          "id": 2,
+          "text": "Domain event clusters map to @feature-group tags (e.g., events 'UserRegistered', 'UserLoggedIn' suggest @authentication feature group)",
+          "deleted": false,
+          "createdAt": "2025-11-16T03:07:04.642Z"
+        },
+        {
+          "id": 3,
+          "text": "Aggregates map to @component tags (e.g., 'User' aggregate suggests @user component tag)",
+          "deleted": false,
+          "createdAt": "2025-11-16T03:07:09.853Z"
+        },
+        {
+          "id": 4,
+          "text": "External systems suggest @integration or @external-service technical tags based on integration type",
+          "deleted": false,
+          "createdAt": "2025-11-16T03:07:14.851Z"
+        },
+        {
+          "id": 5,
+          "text": "Command outputs suggested tags in structured format with category, tag name, source artifact, and confidence score",
+          "deleted": false,
+          "createdAt": "2025-11-16T03:07:19.963Z"
+        },
+        {
+          "id": 6,
+          "text": "Command fails with error if work unit has no Event Storm artifacts or eventStorm section is empty",
+          "deleted": false,
+          "createdAt": "2025-11-16T03:07:24.986Z"
+        },
+        {
+          "id": 7,
+          "text": "Tag names are normalized to kebab-case format (lowercase with hyphens)",
+          "deleted": false,
+          "createdAt": "2025-11-16T03:07:29.480Z"
+        }
+      ],
+      "nextRuleId": 8,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Work unit has bounded context 'User Management' → suggests @component:@user-management with confidence:high",
+          "deleted": false,
+          "createdAt": "2025-11-16T03:07:35.512Z"
+        },
+        {
+          "id": 1,
+          "text": "Work unit has events 'UserRegistered', 'UserLoggedIn', 'PasswordReset' → suggests @feature-group:@authentication",
+          "deleted": false,
+          "createdAt": "2025-11-16T03:07:41.274Z"
+        },
+        {
+          "id": 2,
+          "text": "Work unit has aggregate 'User' with events 'UserRegistered', 'ProfileUpdated' → suggests @component:@user",
+          "deleted": false,
+          "createdAt": "2025-11-16T03:07:46.597Z"
+        },
+        {
+          "id": 3,
+          "text": "Work unit has external system 'OAuth2Provider' with integrationType:REST_API → suggests @technical:@oauth, @technical:@rest-api",
+          "deleted": false,
+          "createdAt": "2025-11-16T03:07:52.144Z"
+        },
+        {
+          "id": 4,
+          "text": "Work unit has no Event Storm artifacts → command fails with error 'No Event Storm artifacts found for WORK-001'",
+          "deleted": false,
+          "createdAt": "2025-11-16T03:07:57.460Z"
+        },
+        {
+          "id": 5,
+          "text": "Multiple related events like 'CheckpointCreated', 'CheckpointRestored', 'CheckpointDeleted' → suggests @feature-group:@checkpoint-management",
+          "deleted": false,
+          "createdAt": "2025-11-16T03:08:02.558Z"
+        }
+      ],
+      "nextExampleId": 6,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Analyze eventStorm.items array to extract bounded contexts, aggregates, domain events, and external systems. Use pattern matching to suggest component tags from bounded contexts/aggregates, feature-group tags from event clusters, and technical tags from external systems. Output structured JSON with category, tag name (kebab-case), source artifact, and confidence score.",
+          "deleted": false,
+          "createdAt": "2025-11-16T03:11:03.362Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "attachments": [
+        "spec/attachments/EXMAP-008/ast-research-event-storm-commands.json"
+      ]
     },
     "EXMAP-009": {
       "id": "EXMAP-009",
@@ -48120,7 +48237,6 @@
       "DOC-012",
       "DOC-013",
       "DOC-014",
-      "EXMAP-008",
       "EXMAP-009",
       "EXMAP-010"
     ],
@@ -48131,7 +48247,9 @@
       "AGENT-001",
       "BROWSE-001"
     ],
-    "testing": [],
+    "testing": [
+      "EXMAP-008"
+    ],
     "implementing": [],
     "validating": [],
     "done": [
