@@ -1088,13 +1088,7 @@ describe('Feature: Example Mapping Integration', () => {
             architectureNotes: [
               'Implementation: OAuth 2.0 with PKCE for security',
             ],
-            attachments: [
-              {
-                path: 'spec/attachments/AUTH-001/ast-research.json',
-                description: 'AST research for OAuth implementation',
-                addedAt: new Date().toISOString(),
-              },
-            ],
+            attachments: ['spec/attachments/AUTH-001/ast-research.json'],
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           },
@@ -1159,13 +1153,7 @@ describe('Feature: Example Mapping Integration', () => {
             architectureNotes: [
               'Implementation: Use OAuth 2.0 protocol with PKCE',
             ],
-            attachments: [
-              {
-                path: 'spec/attachments/AUTH-001/ast-research.json',
-                description: 'AST analysis for OAuth authentication flow',
-                addedAt: new Date().toISOString(),
-              },
-            ],
+            attachments: ['spec/attachments/AUTH-001/ast-research.json'],
           },
         },
         states: {

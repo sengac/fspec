@@ -55,13 +55,7 @@ describe('Feature: Prevent retroactive state walking - enforce temporal ordering
         architectureNotes: [
           'Implementation: Validate file timestamps during state transitions',
         ],
-        attachments: [
-          {
-            path: 'spec/attachments/TEST-001/ast-research.json',
-            description: 'AST analysis for temporal validation implementation',
-            addedAt: new Date().toISOString(),
-          },
-        ],
+        attachments: ['spec/attachments/TEST-001/ast-research.json'],
       };
 
       workUnitsData.states.specifying = [workUnitId];
@@ -141,13 +135,7 @@ Feature: Test Feature
         architectureNotes: [
           'Implementation: Validate file timestamps during state transitions',
         ],
-        attachments: [
-          {
-            path: 'spec/attachments/TEST-002/ast-research.json',
-            description: 'AST analysis for temporal validation implementation',
-            addedAt: new Date().toISOString(),
-          },
-        ],
+        attachments: ['spec/attachments/TEST-002/ast-research.json'],
       };
 
       workUnitsData.states.specifying = [workUnitId];
@@ -308,13 +296,7 @@ describe('Feature: Test Feature', () => {
         architectureNotes: [
           'Implementation: Provide escape hatch for legacy code imports',
         ],
-        attachments: [
-          {
-            path: 'spec/attachments/TEST-004/ast-research.json',
-            description: 'AST analysis for legacy code import handling',
-            addedAt: new Date().toISOString(),
-          },
-        ],
+        attachments: ['spec/attachments/TEST-004/ast-research.json'],
       };
 
       workUnitsData.states.specifying = [workUnitId];

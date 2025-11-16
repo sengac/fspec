@@ -1556,14 +1556,7 @@ describe('Feature: Work Unit Dependency Management', () => {
             architectureNotes: [
               'Implementation: Implement dashboard with dependency awareness',
             ],
-            attachments: [
-              {
-                path: 'spec/attachments/DASH-001/ast-research.json',
-                description:
-                  'AST research for dashboard component implementation',
-                addedAt: new Date().toISOString(),
-              },
-            ],
+            attachments: ['spec/attachments/DASH-001/ast-research.json'],
           },
         },
         states: {

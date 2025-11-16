@@ -119,14 +119,7 @@ describe('Feature: Kanban Workflow State Management', () => {
             architectureNotes: [
               'Implementation: State machine enforces sequential workflow progression',
             ],
-            attachments: [
-              {
-                path: 'spec/attachments/AUTH-001/ast-research.json',
-                description:
-                  'ACDD workflow state transitions and validation logic',
-                addedAt: new Date().toISOString(),
-              },
-            ],
+            attachments: ['spec/attachments/AUTH-001/ast-research.json'],
           },
         },
         states: {
@@ -347,14 +340,7 @@ Scenario: Login
             architectureNotes: [
               'Implementation: Use OAuth 2.0 libraries for secure authentication',
             ],
-            attachments: [
-              {
-                path: 'spec/attachments/AUTH-001/ast-research.json',
-                description:
-                  'OAuth library API research and integration patterns',
-                addedAt: new Date().toISOString(),
-              },
-            ],
+            attachments: ['spec/attachments/AUTH-001/ast-research.json'],
           },
         },
         states: {
@@ -610,14 +596,7 @@ Scenario: Login
             architectureNotes: [
               'Implementation: Validate scenario tags before allowing testing transition',
             ],
-            attachments: [
-              {
-                path: 'spec/attachments/AUTH-001/ast-research.json',
-                description:
-                  'Scenario tag validation and Gherkin parsing logic',
-                addedAt: new Date().toISOString(),
-              },
-            ],
+            attachments: ['spec/attachments/AUTH-001/ast-research.json'],
           },
         },
         states: {
@@ -688,14 +667,7 @@ Scenario: Login
             architectureNotes: [
               'Implementation: Session management with secure token generation',
             ],
-            attachments: [
-              {
-                path: 'spec/attachments/AUTH-001/ast-research.json',
-                description:
-                  'Session token generation and security best practices',
-                addedAt: new Date().toISOString(),
-              },
-            ],
+            attachments: ['spec/attachments/AUTH-001/ast-research.json'],
           },
         },
         states: {
@@ -760,14 +732,7 @@ Scenario: User logs in
             architectureNotes: [
               'Implementation: Use OAuth 2.0 libraries for secure authentication',
             ],
-            attachments: [
-              {
-                path: 'spec/attachments/AUTH-001/ast-research.json',
-                description:
-                  'OAuth library API research and integration patterns',
-                addedAt: new Date().toISOString(),
-              },
-            ],
+            attachments: ['spec/attachments/AUTH-001/ast-research.json'],
           },
         },
         states: {

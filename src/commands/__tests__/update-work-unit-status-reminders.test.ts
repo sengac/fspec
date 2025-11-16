@@ -34,13 +34,7 @@ describe('Feature: Context-aware system-reminders for workflow state transitions
           architectureNotes: [
             'Implementation: Display context-aware reminders for each workflow state',
           ],
-          attachments: [
-            {
-              path: 'spec/attachments/TEST-001/ast-research.json',
-              description: 'AST analysis for reminder system implementation',
-              addedAt: new Date().toISOString(),
-            },
-          ],
+          attachments: ['spec/attachments/TEST-001/ast-research.json'],
         },
       },
       states: {

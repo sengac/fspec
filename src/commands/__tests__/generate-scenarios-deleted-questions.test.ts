@@ -141,13 +141,7 @@ describe('Feature: generate-scenarios counts deleted questions as unanswered', (
         architectureNotes: [
           'Implementation: Ensure deleted questions are filtered from validation',
         ],
-        attachments: [
-          {
-            path: 'spec/attachments/TEST-001/ast-research.json',
-            description: 'AST research for question tracking implementation',
-            addedAt: new Date().toISOString(),
-          },
-        ],
+        attachments: ['spec/attachments/TEST-001/ast-research.json'],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -345,13 +339,7 @@ describe('Feature: generate-scenarios counts deleted questions as unanswered', (
         architectureNotes: [
           'Implementation: Filter deleted questions during state validation',
         ],
-        attachments: [
-          {
-            path: 'spec/attachments/TEST-004/ast-research.json',
-            description: 'AST analysis for state transition validation logic',
-            addedAt: new Date().toISOString(),
-          },
-        ],
+        attachments: ['spec/attachments/TEST-004/ast-research.json'],
         stateHistory: [
           { state: 'specifying', timestamp: new Date().toISOString() },
         ],
@@ -435,13 +423,7 @@ Feature: Test Feature 4
         architectureNotes: [
           'Implementation: Validate question status before state transition',
         ],
-        attachments: [
-          {
-            path: 'spec/attachments/TEST-005/ast-research.json',
-            description: 'AST analysis for question validation logic',
-            addedAt: new Date().toISOString(),
-          },
-        ],
+        attachments: ['spec/attachments/TEST-005/ast-research.json'],
         stateHistory: [
           { state: 'specifying', timestamp: new Date().toISOString() },
         ],

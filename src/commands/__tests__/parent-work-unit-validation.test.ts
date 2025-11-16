@@ -54,13 +54,7 @@ describe('Feature: Parent Work Unit Validation (BUG-006)', () => {
                 architectureNotes: [
                   'Implementation: Parents bypass scenario checks but still need ACDD data',
                 ],
-                attachments: [
-                  {
-                    path: 'spec/attachments/PARENT-001/ast-research.json',
-                    description: 'Parent work unit validation bypass logic',
-                    addedAt: new Date().toISOString(),
-                  },
-                ],
+                attachments: ['spec/attachments/PARENT-001/ast-research.json'],
               },
               'CHILD-001': {
                 id: 'CHILD-001',
@@ -133,13 +127,7 @@ describe('Feature: Parent Work Unit Validation (BUG-006)', () => {
                 architectureNotes: [
                   'Implementation: Scenario validation applies to leaf work units only',
                 ],
-                attachments: [
-                  {
-                    path: 'spec/attachments/LEAF-001/ast-research.json',
-                    description: 'Leaf vs parent work unit validation logic',
-                    addedAt: new Date().toISOString(),
-                  },
-                ],
+                attachments: ['spec/attachments/LEAF-001/ast-research.json'],
               },
             },
             states: {

@@ -60,13 +60,7 @@ describe('Feature: Auto-checkpoints not working - lazy import fails in bundled d
           architectureNotes: [
             'Implementation: Auto-checkpoints use git stash to save uncommitted changes',
           ],
-          attachments: [
-            {
-              path: 'spec/attachments/TEST-001/ast-research.json',
-              description: 'AST research for checkpoint functionality',
-              addedAt: new Date().toISOString(),
-            },
-          ],
+          attachments: ['spec/attachments/TEST-001/ast-research.json'],
           stateHistory: [
             {
               state: 'backlog',

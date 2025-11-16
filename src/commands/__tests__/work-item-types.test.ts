@@ -500,13 +500,7 @@ describe('Feature: Work unit types for stories, tasks, and bugs', () => {
             architectureNotes: [
               'Implementation: Authentication validation for story work units',
             ],
-            attachments: [
-              {
-                path: 'spec/attachments/AUTH-001/ast-research.json',
-                description: 'Authentication flow research',
-                addedAt: new Date().toISOString(),
-              },
-            ],
+            attachments: ['spec/attachments/AUTH-001/ast-research.json'],
           },
         },
         states: {

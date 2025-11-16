@@ -480,11 +480,7 @@ describe('Feature: Implement Stable Indices with Soft Delete', () => {
         },
       ];
       dataWithAcdd.workUnits['AUTH-001'].attachments = [
-        {
-          path: 'spec/attachments/AUTH-001/ast-research.json',
-          description: 'Auto-compact implementation research',
-          addedAt: new Date().toISOString(),
-        },
+        'spec/attachments/AUTH-001/ast-research.json',
       ];
       vol.writeFileSync(workUnitsPath, JSON.stringify(dataWithAcdd, null, 2));
 
