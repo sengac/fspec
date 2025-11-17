@@ -677,6 +677,7 @@ describe('Feature: Implement draft-driven discovery workflow with AI chaining', 
       // When command re-scans draft
       const result = await discoverFoundation({
         draftPath,
+        cwd: tmpDir,
         finalize: true,
         outputPath: join(tmpDir, 'spec', 'foundation.json'),
         autoGenerateMd: true,
@@ -835,6 +836,7 @@ describe('Feature: Implement draft-driven discovery workflow with AI chaining', 
       // When command validates draft
       const result = await discoverFoundation({
         draftPath,
+        cwd: tmpDir,
         finalize: true,
         outputPath: join(tmpDir, 'spec', 'foundation.json'),
       });
@@ -909,6 +911,7 @@ describe('Feature: Implement draft-driven discovery workflow with AI chaining', 
       // When AI re-runs discover-foundation
       const result = await discoverFoundation({
         draftPath,
+        cwd: tmpDir,
         finalize: true,
         outputPath: join(tmpDir, 'spec', 'foundation.json'),
       });
