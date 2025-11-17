@@ -50217,22 +50217,6 @@
       "updatedAt": "2025-11-17T13:01:05.811Z",
       "description": "Test in generate-event-storm-section-in-foundation-md.test.ts expects generateFoundationMd to throw for 'Invalid{Context}' but that's valid Mermaid. Needs actually-invalid syntax or redesign.",
       "children": []
-    },
-    "TEST-010": {
-      "id": "TEST-010",
-      "title": "Tests modify live data files - test isolation violation",
-      "type": "bug",
-      "status": "done",
-      "createdAt": "2025-11-17T13:01:13.511Z",
-      "updatedAt": "2025-11-17T21:40:31.522Z",
-      "description": "CRITICAL BUG: Tests were modifying live spec/foundation.json during full test suite run.\n\nROOT CAUSE:\nThe discover-foundation.ts command was using hardcoded relative paths:\n- Line 204: 'spec/foundation.json.draft' instead of join(cwd, 'spec/foundation.json.draft')\n- Line 294: 'spec/foundation.json' instead of join(cwd, 'spec/foundation.json')\n\nThese hardcoded paths resolved to process.cwd() + '/spec/foundation.json', not to the test directory's cwd parameter. When tests called discoverFoundation({ cwd: testDir, finalize: true }), the command wrote to the LIVE foundation.json despite being passed a test directory path.\n\nTESTS FIXED:\n1. src/commands/__tests__/add-foundation-bounded-context.test.ts - Converted to mkdtemp temp directories\n2. src/commands/__tests__/show-event-storm.test.ts - Converted to mkdtemp temp directories  \n3. src/commands/__tests__/bug-078-dry-solid-work-unit-creation.test.ts - Now works correctly with temp dir\n\nIMPACT:\n- Running full test suite no longer modifies spec/foundation.json\n- Test isolation is now properly maintained\n- Tests use isolated temp directories exclusively\n\nAll fixes committed in:\n- fix: add-foundation-bounded-context test isolation (bb15d9d)\n- fix: show-event-storm test isolation (previous commit)\n- fix: discover-foundation cwd parameter usage (bb15d9d)",
-      "children": [],
-      "stateHistory": [
-        {
-          "state": "specifying",
-          "timestamp": "2025-11-17T21:40:31.522Z"
-        }
-      ]
     }
   },
   "states": {
@@ -50296,8 +50280,7 @@
       "EXMAP-004",
       "BOARD-020",
       "AGENT-001",
-      "BROWSE-001",
-      "TEST-010"
+      "BROWSE-001"
     ],
     "testing": [],
     "implementing": [],
