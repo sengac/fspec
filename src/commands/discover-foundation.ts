@@ -201,7 +201,8 @@ export async function discoverFoundation(
   workUnitId?: string;
 }> {
   const cwd = options.cwd || process.cwd();
-  const draftPath = options.draftPath || 'spec/foundation.json.draft';
+  const draftPath =
+    options.draftPath || join(cwd, 'spec/foundation.json.draft');
 
   // Handle manual editing detection
   if (options.detectManualEdit && options.lastKnownState) {
@@ -291,7 +292,7 @@ Reverting your changes. Draft restored to last valid state. Try again with prope
 
   // Finalize mode (validate draft and create final foundation.json)
   if (options.finalize) {
-    const finalPath = options.outputPath || 'spec/foundation.json';
+    const finalPath = options.outputPath || join(cwd, 'spec/foundation.json');
 
     // Read and parse draft file
     const draftContent = await readFile(draftPath, 'utf-8');
