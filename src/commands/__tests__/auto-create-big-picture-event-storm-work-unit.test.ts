@@ -146,7 +146,7 @@ describe('Feature: Auto-create Big Picture Event Storming work unit after founda
       // (Preconditions met by beforeEach)
 
       // @step When I run "fspec discover-foundation" without --finalize flag
-      execSync(`node ${CLI_PATH} discover-foundation`, {
+      execSync(`node ${CLI_PATH} discover-foundation --force`, {
         cwd: TEST_DIR,
         encoding: 'utf-8',
       });

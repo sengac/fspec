@@ -32,6 +32,8 @@ describe('Feature: Implement draft-driven discovery workflow with AI chaining', 
       // When command creates foundation.json.draft
       const result = await discoverFoundation({
         draftPath: join(tmpDir, 'spec', 'foundation.json.draft'),
+        cwd: tmpDir,
+        force: true,
       });
 
       // Then draft should contain REQUIRED field structure
@@ -66,6 +68,8 @@ describe('Feature: Implement draft-driven discovery workflow with AI chaining', 
       // When command creates draft
       const result = await discoverFoundation({
         draftPath: join(tmpDir, 'spec', 'foundation.json.draft'),
+        cwd: tmpDir,
+        force: true,
       });
       delete process.env.FSPEC_AGENT;
 

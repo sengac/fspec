@@ -101,3 +101,18 @@ Technical leads and architects who review code quality, ensure architectural sta
 - Validate that technical standards are followed across all work units
 
 ---
+
+# Domain Architecture
+
+## Bounded Contexts
+
+- Payment Processing
+
+## Bounded Context Map
+
+```mermaid
+graph TB
+  BC1[Payment Processing]
+```
+
+---
