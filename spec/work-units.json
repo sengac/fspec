@@ -50207,6 +50207,26 @@
       "updatedAt": "2025-11-17T11:55:13.570Z",
       "description": "Replace test data in foundation.json with actual fspec project vision, problem space, solution space, capabilities, and personas",
       "children": []
+    },
+    "TEST-009": {
+      "id": "TEST-009",
+      "title": "Mermaid validation test uses invalid test data",
+      "type": "bug",
+      "status": "backlog",
+      "createdAt": "2025-11-17T13:01:05.811Z",
+      "updatedAt": "2025-11-17T13:01:05.811Z",
+      "description": "Test in generate-event-storm-section-in-foundation-md.test.ts expects generateFoundationMd to throw for 'Invalid{Context}' but that's valid Mermaid. Needs actually-invalid syntax or redesign.",
+      "children": []
+    },
+    "TEST-010": {
+      "id": "TEST-010",
+      "title": "Tests modify live data files - test isolation violation",
+      "type": "bug",
+      "status": "backlog",
+      "createdAt": "2025-11-17T13:01:13.511Z",
+      "updatedAt": "2025-11-17T13:01:13.511Z",
+      "description": "Tests in add-foundation-bounded-context.test.ts and 5 other files use live spec/ paths instead of temp directories. When tests hang/crash, afterEach cleanup never runs, leaving test data in production files. ALL tests must use isolated temp directories.",
+      "children": []
     }
   },
   "states": {
@@ -50262,7 +50282,9 @@
       "DOC-012",
       "DOC-013",
       "DOC-014",
-      "FOUND-043"
+      "FOUND-043",
+      "TEST-009",
+      "TEST-010"
     ],
     "specifying": [
       "LANG-001",
@@ -50694,7 +50716,7 @@
     "VID": 2,
     "RES": 21,
     "BROWSE": 1,
-    "TEST": 8,
+    "TEST": 10,
     "HOOK": 12,
     "REVIEW": 1,
     "DEP": 3,
