@@ -8,6 +8,7 @@ import type {
   FoundationEventStorm,
 } from '../types/generic-foundation';
 import type { EventStormBoundedContext } from '../types';
+import { generateFoundationMdCommand } from './generate-foundation-md';
 
 export interface AddFoundationBoundedContextOptions {
   cwd?: string;
@@ -79,6 +80,9 @@ export async function addFoundationBoundedContext(
       data.eventStorm.nextItemId++;
     }
   );
+
+  // Auto-regenerate FOUNDATION.md after updating foundation.json
+  await generateFoundationMdCommand({ cwd });
 
   return {
     success: true,

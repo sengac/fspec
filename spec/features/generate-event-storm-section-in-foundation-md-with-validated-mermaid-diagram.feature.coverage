@@ -1,0 +1,184 @@
+{
+  "scenarios": [
+    {
+      "name": "FOUNDATION.md auto-regenerates with Event Storm section when bounded context added",
+      "testMappings": [
+        {
+          "file": "src/generators/__tests__/generate-event-storm-section-in-foundation-md.test.ts",
+          "lines": "10-89",
+          "implMappings": [
+            {
+              "file": "src/commands/add-foundation-bounded-context.ts",
+              "lines": [
+                85
+              ]
+            },
+            {
+              "file": "src/generators/foundation-md.ts",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "FOUNDATION.md includes Mermaid graph with all bounded contexts",
+      "testMappings": [
+        {
+          "file": "src/generators/__tests__/generate-event-storm-section-in-foundation-md.test.ts",
+          "lines": "91-176",
+          "implMappings": [
+            {
+              "file": "src/generators/foundation-md.ts",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Mermaid validation error prevents FOUNDATION.md generation",
+      "testMappings": [
+        {
+          "file": "src/generators/__tests__/generate-event-storm-section-in-foundation-md.test.ts",
+          "lines": "178-234",
+          "implMappings": [
+            {
+              "file": "src/generators/foundation-md.ts",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Event Storm section only appears when eventStorm data exists",
+      "testMappings": [
+        {
+          "file": "src/generators/__tests__/generate-event-storm-section-in-foundation-md.test.ts",
+          "lines": "236-271",
+          "implMappings": [
+            {
+              "file": "src/generators/foundation-md.ts",
+              "lines": [
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/generators/__tests__/generate-event-storm-section-in-foundation-md.test.ts"
+    ],
+    "implFiles": [
+      "src/commands/add-foundation-bounded-context.ts",
+      "src/generators/foundation-md.ts"
+    ],
+    "totalLinesCovered": 357
+  }
+}

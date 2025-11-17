@@ -2,106 +2,66 @@
   "version": "2.0.0",
   "project": {
     "name": "fspec",
-    "vision": "Transform AI agents from code babysitters into autonomous builders through complete spec-driven infrastructure with Gherkin scenarios, TDD discipline, coverage tracking, and Kanban workflow management",
+    "vision": "Enable AI agents to build production-quality software through spec-driven development with ACDD workflow, eliminating babysitting and enforcing professional TDD discipline.",
     "projectType": "cli-tool"
   },
   "problemSpace": {
     "primaryProblem": {
-      "title": "AI agents lack professional development infrastructure",
-      "description": "AI agents confabulate without quality examples, skip acceptance criteria, don't follow TDD discipline, lack checkpoint systems for experimentation, have no Kanban workflow tracking, no specification management, and no coverage tracking to link code to business rules. Developers are forced to micromanage AI agents instead of building features, resulting in wasted time and low-quality code.",
+      "title": "AI agents lack professional development infrastructure and quality examples",
+      "description": "AI agents code without acceptance criteria enforcement, TDD guardrails, quality gates, or workflow management. Without quality examples, AI confabulates and hallucinates instead of asking clarifying questions, forcing developers to babysit instead of build.",
       "impact": "high"
     }
   },
   "solutionSpace": {
-    "overview": "A complete spec-driven development system for AI agents featuring Gherkin scenario management, Example Mapping discovery, Kanban workflow tracking, TDD enforcement through ACDD (Acceptance Criteria Driven Development), git-based checkpoint system for safe experimentation, coverage tracking linking code to business rules, and interactive TUI for workflow visualization. Transforms AI agents into autonomous builders through professional development infrastructure.",
+    "overview": "A complete spec-driven development system that provides AI agents with professional Gherkin scenarios, Example Mapping and Event Storming for discovery and quality examples, automated test generation from acceptance criteria, TDD enforcement with temporal ordering validation, interactive Kanban TUI with live updates, git-based checkpoint systems for safe experimentation, work unit-scoped virtual hooks for quality gates, reverse ACDD for legacy codebases, foundation-level domain architecture modeling, coverage tracking linking code to business rules, and attachment viewers for rich documentation.",
     "capabilities": [
       {
-        "name": "Work Unit Management",
-        "description": "Create, track, and manage work units (stories, bugs, tasks) through Kanban workflow states (backlog → specifying → testing → implementing → validating → done)"
+        "name": "Manage Work Units",
+        "description": "Create, track, and move work through ACDD workflow states (backlog → specifying → testing → implementing → validating → done)"
       },
       {
-        "name": "Gherkin Specification Management",
-        "description": "Create, edit, validate, and format Gherkin feature files with scenarios, steps, backgrounds, and examples"
+        "name": "Conduct Discovery",
+        "description": "Use Example Mapping and Event Storming to clarify requirements with quality examples before writing specifications"
       },
       {
-        "name": "Example Mapping Discovery",
-        "description": "Conduct Example Mapping sessions to clarify requirements through rules (blue cards), examples (green cards), and questions (red cards) before writing specifications"
+        "name": "Write Specifications",
+        "description": "Create Gherkin feature files with Given-When-Then scenarios that serve as living documentation and test foundations"
       },
       {
-        "name": "Event Storming",
-        "description": "Capture domain events, commands, aggregates, policies, and bounded contexts for domain-driven design and tag discovery"
+        "name": "Track Coverage",
+        "description": "Link tests and implementation code to Gherkin scenarios for complete traceability from business rules to code"
       },
       {
-        "name": "ACDD Workflow Enforcement",
-        "description": "Enforce Acceptance Criteria Driven Development through temporal validation, prefill detection, and state transition rules ensuring specs before tests, tests before code"
+        "name": "Create Checkpoints",
+        "description": "Save and restore git-based snapshots of work for safe experimentation and rollback"
       },
       {
-        "name": "Coverage Tracking",
-        "description": "Link Gherkin scenarios to test files and implementation code for complete traceability from business rules to code"
+        "name": "Manage Quality Gates",
+        "description": "Add work unit-scoped virtual hooks to enforce linting, testing, and validation at workflow transitions"
       },
       {
-        "name": "Git Checkpoint System",
-        "description": "Create automatic and manual git-based checkpoints for safe experimentation, with conflict resolution and re-restoration support"
+        "name": "Visualize Progress",
+        "description": "View interactive Kanban TUI with live updates, work unit details, attachments, and checkpoint management"
       },
       {
-        "name": "Tag Management & Ontology",
-        "description": "Organize features and scenarios using hierarchical tags with validation, statistics, and automatic tag discovery from Event Storming"
-      },
-      {
-        "name": "Lifecycle Hooks",
-        "description": "Execute custom scripts at workflow events (pre/post command execution) with blocking/non-blocking support and virtual work unit-scoped hooks"
-      },
-      {
-        "name": "Interactive Kanban TUI",
-        "description": "Real-time terminal UI for visualizing Kanban board, work unit details, checkpoints, attachments with markdown/mermaid rendering"
-      },
-      {
-        "name": "Reverse ACDD",
-        "description": "Reverse engineer existing codebases to generate work units, epics, feature files, and test skeletons for legacy code documentation"
-      },
-      {
-        "name": "Scenario Generation",
-        "description": "Automatically generate Gherkin scenarios from Example Mapping rules and examples with proper Given-When-Then structure"
-      },
-      {
-        "name": "Quality Gate Validation",
-        "description": "Validate Gherkin syntax, tag compliance, feature file structure, and enforce quality standards before workflow progression"
-      },
-      {
-        "name": "Attachment Management",
-        "description": "Attach and view markdown documents with mermaid diagrams to work units for rich documentation and visual designs"
+        "name": "Reverse Engineer Codebases",
+        "description": "Document existing codebases with feature files, test skeletons, and coverage mappings using reverse ACDD"
       }
     ]
   },
   "personas": [
     {
       "name": "AI Agent",
-      "description": "Autonomous coding assistant (Claude Code, Codex, etc.) that needs structured guidance to follow professional development practices",
+      "description": "AI coding assistant (Claude Code, Codex, etc.) that follows ACDD workflow to build features",
       "goals": [
-        "Follow ACDD workflow without human micromanagement",
-        "Generate quality specifications and tests",
-        "Track work through Kanban states",
-        "Safely experiment with checkpoints"
+        "Execute spec-driven development workflow with proper TDD discipline and quality gates"
       ]
     },
     {
-      "name": "Developer",
-      "description": "Human developer managing AI agents and using fspec for project workflow",
+      "name": "Developer/Product Owner",
+      "description": "Human developer or product owner who guides AI agents through discovery and validates implementations",
       "goals": [
-        "Shepherd AI agents through professional development practices",
-        "Track project progress via Kanban board",
-        "Ensure quality through specifications and tests",
-        "Maintain living documentation"
-      ]
-    },
-    {
-      "name": "Product Owner",
-      "description": "Stakeholder defining features and acceptance criteria through Example Mapping",
-      "goals": [
-        "Define clear acceptance criteria for features",
-        "Track work unit progress and priority",
-        "Ensure business rules are captured in Gherkin scenarios",
-        "Maintain traceability from business rules to code"
+        "Guide AI agents to build production-quality software without constant babysitting"
       ]
     }
   ],
@@ -111,12 +71,60 @@
       {
         "id": 1,
         "type": "bounded_context",
-        "text": "User Management",
+        "text": "Work Management",
         "color": null,
         "deleted": false,
-        "createdAt": "2025-11-17T02:45:58.251Z"
+        "createdAt": "2025-11-17T04:10:40.311Z"
+      },
+      {
+        "id": 2,
+        "type": "bounded_context",
+        "text": "Specification",
+        "color": null,
+        "deleted": false,
+        "createdAt": "2025-11-17T04:10:40.919Z"
+      },
+      {
+        "id": 3,
+        "type": "bounded_context",
+        "text": "Testing & Validation",
+        "color": null,
+        "deleted": false,
+        "createdAt": "2025-11-17T04:10:41.532Z"
+      },
+      {
+        "id": 4,
+        "type": "bounded_context",
+        "text": "Quality Assurance",
+        "color": null,
+        "deleted": false,
+        "createdAt": "2025-11-17T04:10:42.140Z"
+      },
+      {
+        "id": 5,
+        "type": "bounded_context",
+        "text": "Version Control Integration",
+        "color": null,
+        "deleted": false,
+        "createdAt": "2025-11-17T04:10:42.775Z"
+      },
+      {
+        "id": 6,
+        "type": "bounded_context",
+        "text": "User Interface",
+        "color": null,
+        "deleted": false,
+        "createdAt": "2025-11-17T04:10:43.382Z"
+      },
+      {
+        "id": 7,
+        "type": "bounded_context",
+        "text": "Foundation Management",
+        "color": null,
+        "deleted": false,
+        "createdAt": "2025-11-17T04:10:43.998Z"
       }
     ],
-    "nextItemId": 2
+    "nextItemId": 8
   }
 }

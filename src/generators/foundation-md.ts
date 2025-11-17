@@ -1,8 +1,33 @@
+import { validateMermaidSyntax } from '../utils/mermaid-validation';
+import type { GenericFoundation } from '../types/generic-foundation';
+import type { EventStormBoundedContext } from '../types';
+
+/**
+ * Generate Mermaid diagram for bounded contexts
+ */
+function generateBoundedContextMermaid(
+  boundedContexts: EventStormBoundedContext[]
+): string {
+  const lines: string[] = [];
+  lines.push('graph TB');
+
+  // Generate nodes for each bounded context
+  for (let i = 0; i < boundedContexts.length; i++) {
+    const context = boundedContexts[i];
+    const nodeId = `BC${i + 1}`;
+    lines.push(`  ${nodeId}[${context.text}]`);
+  }
+
+  return lines.join('\n');
+}
+
 /**
  * Generate FOUNDATION.md from foundation.json (Generic Schema v2.0.0)
  * This is a template-based markdown generator for the generic foundation schema
  */
-export async function generateFoundationMd(foundation: any): Promise<string> {
+export async function generateFoundationMd(
+  foundation: GenericFoundation
+): Promise<string> {
   const sections: string[] = [];
 
   // Header with auto-generation warning
@@ -150,6 +175,51 @@ export async function generateFoundationMd(foundation: any): Promise<string> {
 
     sections.push('---');
     sections.push('');
+  }
+
+  // Domain Architecture (Event Storm)
+  if (foundation.eventStorm && foundation.eventStorm.items) {
+    // Filter bounded contexts (not deleted)
+    const boundedContexts = foundation.eventStorm.items.filter(
+      (item): item is EventStormBoundedContext =>
+        item.type === 'bounded_context' && !item.deleted
+    );
+
+    if (boundedContexts.length > 0) {
+      sections.push('# Domain Architecture');
+      sections.push('');
+
+      // Bounded Contexts list
+      sections.push('## Bounded Contexts');
+      sections.push('');
+      for (const context of boundedContexts) {
+        sections.push(`- ${context.text}`);
+      }
+      sections.push('');
+
+      // Bounded Context Map (Mermaid diagram)
+      sections.push('## Bounded Context Map');
+      sections.push('');
+
+      // Generate Mermaid diagram
+      const mermaidCode = generateBoundedContextMermaid(boundedContexts);
+
+      // Validate Mermaid syntax before adding to FOUNDATION.md
+      const validationResult = await validateMermaidSyntax(mermaidCode);
+      if (!validationResult.valid) {
+        throw new Error(
+          `Mermaid validation failed: ${validationResult.error || 'Unknown error'}`
+        );
+      }
+
+      sections.push('```mermaid');
+      sections.push(mermaidCode);
+      sections.push('```');
+      sections.push('');
+
+      sections.push('---');
+      sections.push('');
+    }
   }
 
   return sections.join('\n');

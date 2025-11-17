@@ -415,7 +415,7 @@ Why this matters:
 - Supports EXMAP-004 tag discovery workflow
 
 See spec/CLAUDE.md "Big Picture Event Storming" section for detailed guidance.`,
-        type: 'story',
+        type: 'task',
         status: 'backlog',
         createdAt: now,
         updatedAt: now,
