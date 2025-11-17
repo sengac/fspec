@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-17T06:01:48.681Z"
+    "lastUpdated": "2025-11-17T07:27:31.643Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -49649,6 +49649,52 @@
       "nextQuestionId": 0,
       "nextNoteId": 0,
       "updated": "2025-11-17T06:01:48.706Z"
+    },
+    "FOUND-022": {
+      "id": "FOUND-022",
+      "title": "Conduct Big Picture Event Storming for Foundation",
+      "description": "Complete the foundation by capturing domain architecture through Big Picture Event Storming.\n\nUse these commands to populate foundation.json eventStorm field:\n- fspec add-foundation-bounded-context <name>\n- fspec add-aggregate-to-foundation <context> <aggregate>\n- fspec add-domain-event-to-foundation <context> <event>\n- fspec show-foundation-event-storm\n\nWhy this matters:\n- Establishes bounded contexts for domain-driven design\n- Enables tag ontology generation from domain model\n- Provides foundation for architectural documentation\n- Supports EXMAP-004 tag discovery workflow\n\nSee spec/CLAUDE.md \"Big Picture Event Storming\" section for detailed guidance.",
+      "type": "task",
+      "status": "backlog",
+      "createdAt": "2025-11-17T06:47:08.326Z",
+      "updatedAt": "2025-11-17T06:47:08.326Z"
+    },
+    "DOCS-003": {
+      "id": "DOCS-003",
+      "title": "Fix step numbering in bootstrap documentation",
+      "type": "task",
+      "status": "done",
+      "createdAt": "2025-11-17T06:56:28.014Z",
+      "updatedAt": "2025-11-17T07:27:31.666Z",
+      "description": "The bootstrap command outputs confusing step numbers (1, 1.5, 1.5a, 1.6, 2, 2.5, 3, 3 duplicate, 5 no 4, 7 no 6, 6.5, 2 duplicate). Need to renumber to clear sequential steps: 1, 2, 3, 4, etc. Affects: bootstrap command help output, spec/CLAUDE.md, spec/AGENTS.md (if exists), and any source templates that generate these docs.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-17T06:57:07.359Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-17T06:57:13.679Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-17T07:01:15.044Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-17T07:27:31.667Z"
+        }
+      ],
+      "rules": [],
+      "examples": [],
+      "questions": [],
+      "architectureNotes": [],
+      "nextRuleId": 0,
+      "nextExampleId": 0,
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-17T07:27:31.666Z"
     }
   },
   "states": {
@@ -49716,6 +49762,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "DOCS-003",
       "FOUND-021",
       "FOUND-019",
       "FOUND-017",
@@ -50137,6 +50184,7 @@
     "PERF": 1,
     "INIT": 16,
     "EXMAP": 16,
-    "FOUND": 21
+    "FOUND": 21,
+    "DOCS": 3
   }
 }

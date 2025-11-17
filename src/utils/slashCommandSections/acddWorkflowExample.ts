@@ -1,5 +1,5 @@
 export function getAcddWorkflowExampleSection(): string {
-  return `## Step 5: Complete ACDD Workflow Example
+  return `## Step 9: Complete ACDD Workflow Example
 
 Here's the complete ACDD flow from backlog to done:
 

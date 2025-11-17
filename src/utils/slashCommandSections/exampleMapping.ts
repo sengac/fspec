@@ -1,5 +1,5 @@
 export function getExampleMappingSection(): string {
-  return `## Step 2: Example Mapping - Discovery BEFORE Specification
+  return `## Step 5: Example Mapping - Discovery BEFORE Specification
 
 **CRITICAL**: Before writing any Gherkin feature file, you MUST do Example Mapping to clarify requirements through conversation.
 

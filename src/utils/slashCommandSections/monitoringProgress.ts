@@ -1,5 +1,5 @@
 export function getMonitoringProgressSection(): string {
-  return `## Step 7: Monitoring Progress
+  return `## Step 11: Monitoring Progress
 
 \`\`\`bash
 fspec board                           # Visual Kanban board

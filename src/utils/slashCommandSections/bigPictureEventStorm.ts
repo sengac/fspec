@@ -6,11 +6,11 @@
 
 export function getBigPictureEventStormSection(): string {
   return `
-## Step 1.5a: Big Picture Event Storming (Foundation Level)
+## Step 3: Big Picture Event Storming (Foundation Level)
 
 **WHEN TO USE**: Immediately after completing foundation discovery (\`fspec discover-foundation --finalize\`).
 
-**CRITICAL**: Big Picture Event Storming is conducted at the FOUNDATION level to establish domain architecture before creating individual work units. This is different from work unit-level Event Storming (Step 1.6).
+**CRITICAL**: Big Picture Event Storming is conducted at the FOUNDATION level to establish domain architecture before creating individual work units. This is different from work unit-level Event Storming (Step 4).
 
 ### What is Big Picture Event Storming?
 

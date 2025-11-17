@@ -8,8 +8,8 @@ import { describe, it, expect } from 'vitest';
 import { getBigPictureEventStormSection } from '../bigPictureEventStorm';
 
 describe('Feature: Update CLAUDE.md with Big Picture Event Storming workflow documentation', () => {
-  describe('Scenario: AI agent reads Step 1.5a documentation after foundation discovery', () => {
-    it('should contain Step 1.5a section with proper structure and foundation commands', () => {
+  describe('Scenario: AI agent reads Step 3 documentation after foundation discovery', () => {
+    it('should contain Step 3 section with proper structure and foundation commands', () => {
       // @step Given foundation discovery has been completed with discover-foundation --finalize
       // @step And a work unit exists in backlog prompting Big Picture Event Storming
       // (No setup needed - testing static documentation)
@@ -17,15 +17,15 @@ describe('Feature: Update CLAUDE.md with Big Picture Event Storming workflow doc
       // @step When AI agent runs fspec bootstrap to load context
       const section = getBigPictureEventStormSection();
 
-      // @step Then CLAUDE.md should contain Step 1.5a section titled "Big Picture Event Storming (Foundation Level)"
-      expect(section).toContain('Step 1.5a');
+      // @step Then CLAUDE.md should contain Step 3 section titled "Big Picture Event Storming (Foundation Level)"
+      expect(section).toContain('Step 3');
       expect(section).toContain('Big Picture Event Storming');
       expect(section).toContain('Foundation Level');
 
-      // @step And the section should appear after Step 1.5 "Bootstrap Foundation"
+      // @step And the section should appear after Step 2 "Bootstrap Foundation"
       // (Section ordering tested in integration test - this is unit level)
 
-      // @step And the section should appear before Step 1.6 "Event Storm - Work Unit Level"
+      // @step And the section should appear before Step 4 "Event Storm - Work Unit Level"
       // (Section ordering tested in integration test - this is unit level)
 
       // @step And the section should explain when to conduct Big Picture Event Storming
@@ -43,7 +43,7 @@ describe('Feature: Update CLAUDE.md with Big Picture Event Storming workflow doc
 
   describe('Scenario: Developer distinguishes foundation vs work unit Event Storming commands', () => {
     it('should contain comparison table showing foundation vs work unit commands', () => {
-      // @step Given CLAUDE.md has been updated with Step 1.5a
+      // @step Given CLAUDE.md has been updated with Step 3
       const section = getBigPictureEventStormSection();
 
       // @step When developer reads the comparison table
@@ -78,7 +78,7 @@ describe('Feature: Update CLAUDE.md with Big Picture Event Storming workflow doc
 
   describe('Scenario: AI agent follows Big Picture Event Storm session flow guidance', () => {
     it('should explain workflow steps with example commands and conversations', () => {
-      // @step Given CLAUDE.md Step 1.5a explains session flow
+      // @step Given CLAUDE.md Step 3 explains session flow
       const section = getBigPictureEventStormSection();
 
       // @step When AI agent reads the workflow steps

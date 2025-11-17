@@ -92,7 +92,7 @@ describe('discover-foundation workflow clarity', () => {
     );
   });
 
-  it('System-reminder clarifies workflow to prevent confusion', async () => {
+  it('System-reminder guides to next field without confusing instructions', async () => {
     // @step Given a foundation draft exists
     await discoverFoundation({ cwd: testDir, draftPath });
 
@@ -105,7 +105,6 @@ describe('discover-foundation workflow clarity', () => {
     });
 
     // @step Then the system-reminder must NOT suggest running "fspec discover-foundation"
-    // It's okay to mention discover-foundation in workflow explanation, but NOT as next command
     expect(result.systemReminder).not.toMatch(
       /^Run: fspec discover-foundation/m
     );
@@ -113,12 +112,13 @@ describe('discover-foundation workflow clarity', () => {
       /Next.*fspec discover-foundation/i
     );
 
-    // @step And the system-reminder must explain the workflow: "discover once → update many → finalize once"
-    expect(
-      result.systemReminder.toLowerCase().includes('discover') &&
-        result.systemReminder.toLowerCase().includes('update') &&
-        result.systemReminder.toLowerCase().includes('finalize')
-    ).toBe(true);
+    // @step And the system-reminder must NOT contain confusing "DO NOT" warnings about discover-foundation
+    expect(result.systemReminder).not.toContain('DO NOT run');
+    expect(result.systemReminder).not.toContain('will regenerate the draft');
+
+    // @step And the system-reminder must show the next field to work on
+    expect(result.systemReminder).toContain('Field 2/8');
+    expect(result.systemReminder).toContain('project.vision');
 
     // @step And the system-reminder must show the next update-foundation or add-persona/add-capability command
     const hasUpdateCommand =

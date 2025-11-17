@@ -1,5 +1,5 @@
 export function getEventStormSection(): string {
-  return `## Step 1.6: Event Storm - Domain Discovery BEFORE Example Mapping
+  return `## Step 4: Event Storm - Domain Discovery BEFORE Example Mapping
 
 **WHEN TO USE EVENT STORM**: STOP and assess domain complexity before jumping to Example Mapping.
 
