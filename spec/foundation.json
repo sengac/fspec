@@ -78,52 +78,10 @@
       ]
     },
     {
-      "name": "AI Agent",
-      "description": "Autonomous coding agents (Claude Code, Cursor, Codex, etc.) that need structured workflows and quality enforcement",
-      "goals": [
-        "Generate specs from business conversations"
-      ]
-    },
-    {
-      "name": "AI Agent",
-      "description": "Autonomous coding agents (Claude Code, Cursor, Codex, etc.) that need structured workflows and quality enforcement",
-      "goals": [
-        "Maintain traceability from requirements to code"
-      ]
-    },
-    {
-      "name": "AI Agent",
-      "description": "Autonomous coding agents (Claude Code, Cursor, Codex, etc.) that need structured workflows and quality enforcement",
-      "goals": [
-        "Self-recover from mistakes using checkpoints"
-      ]
-    },
-    {
       "name": "Developer",
       "description": "Software developers working with AI agents or manually following ACDD workflow",
       "goals": [
         "Clear acceptance criteria before coding"
-      ]
-    },
-    {
-      "name": "Developer",
-      "description": "Software developers working with AI agents or manually following ACDD workflow",
-      "goals": [
-        "Enforce test-first development"
-      ]
-    },
-    {
-      "name": "Developer",
-      "description": "Software developers working with AI agents or manually following ACDD workflow",
-      "goals": [
-        "Track work through Kanban states"
-      ]
-    },
-    {
-      "name": "Developer",
-      "description": "Software developers working with AI agents or manually following ACDD workflow",
-      "goals": [
-        "Collaborate with AI agents effectively"
       ]
     },
     {
@@ -134,20 +92,6 @@
       ]
     },
     {
-      "name": "Business Analyst",
-      "description": "BAs facilitating Example Mapping and Event Storming sessions to capture requirements",
-      "goals": [
-        "Capture rules, examples, and questions systematically"
-      ]
-    },
-    {
-      "name": "Business Analyst",
-      "description": "BAs facilitating Example Mapping and Event Storming sessions to capture requirements",
-      "goals": [
-        "Ensure requirements are complete before development"
-      ]
-    },
-    {
       "name": "Product Owner",
       "description": "POs defining business value and making prioritization decisions",
       "goals": [
@@ -155,38 +99,10 @@
       ]
     },
     {
-      "name": "Product Owner",
-      "description": "POs defining business value and making prioritization decisions",
-      "goals": [
-        "Prioritize work units on Kanban board"
-      ]
-    },
-    {
-      "name": "Product Owner",
-      "description": "POs defining business value and making prioritization decisions",
-      "goals": [
-        "Verify features meet acceptance criteria"
-      ]
-    },
-    {
       "name": "QA Engineer",
       "description": "QA engineers validating feature implementation against specs",
       "goals": [
         "Trace every test back to business requirements"
-      ]
-    },
-    {
-      "name": "QA Engineer",
-      "description": "QA engineers validating feature implementation against specs",
-      "goals": [
-        "Verify 100% scenario coverage"
-      ]
-    },
-    {
-      "name": "QA Engineer",
-      "description": "QA engineers validating feature implementation against specs",
-      "goals": [
-        "Validate implementation matches acceptance criteria"
       ]
     }
   ],
