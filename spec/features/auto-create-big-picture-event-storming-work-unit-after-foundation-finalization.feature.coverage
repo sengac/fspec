@@ -1,0 +1,242 @@
+{
+  "scenarios": [
+    {
+      "name": "Work unit created when foundation finalized successfully",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/auto-create-big-picture-event-storm-work-unit.test.ts",
+          "lines": "82-132",
+          "implMappings": [
+            {
+              "file": "src/commands/discover-foundation.ts",
+              "lines": [
+                385,
+                386,
+                387,
+                388,
+                389,
+                390,
+                391,
+                392,
+                393,
+                394,
+                395,
+                396,
+                397,
+                398,
+                399,
+                400,
+                401,
+                402,
+                403,
+                404,
+                405,
+                406,
+                407,
+                408,
+                409,
+                410,
+                411,
+                412,
+                413,
+                414,
+                415,
+                416,
+                417,
+                418,
+                419,
+                420,
+                421,
+                422,
+                423,
+                424,
+                425,
+                426,
+                427,
+                428,
+                429,
+                430,
+                431,
+                432,
+                433
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Work unit NOT created without finalize flag",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/auto-create-big-picture-event-storm-work-unit.test.ts",
+          "lines": "138-165",
+          "implMappings": [
+            {
+              "file": "src/commands/discover-foundation.ts",
+              "lines": [
+                385,
+                386,
+                387,
+                388,
+                389,
+                390,
+                391,
+                392,
+                393,
+                394,
+                395,
+                396,
+                397,
+                398,
+                399,
+                400,
+                401,
+                402,
+                403,
+                404,
+                405,
+                406,
+                407,
+                408,
+                409,
+                410,
+                411,
+                412,
+                413,
+                414,
+                415,
+                416,
+                417,
+                418,
+                419,
+                420,
+                421,
+                422,
+                423,
+                424,
+                425,
+                426,
+                427,
+                428,
+                429,
+                430,
+                431,
+                432,
+                433
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Work unit NOT created when validation fails",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/auto-create-big-picture-event-storm-work-unit.test.ts",
+          "lines": "171-222",
+          "implMappings": [
+            {
+              "file": "src/commands/discover-foundation.ts",
+              "lines": [
+                385,
+                386,
+                387,
+                388,
+                389,
+                390,
+                391,
+                392,
+                393,
+                394,
+                395,
+                396,
+                397,
+                398,
+                399,
+                400,
+                401,
+                402,
+                403,
+                404,
+                405,
+                406,
+                407,
+                408,
+                409,
+                410,
+                411,
+                412,
+                413,
+                414,
+                415,
+                416,
+                417,
+                418,
+                419,
+                420,
+                421,
+                422,
+                423,
+                424,
+                425,
+                426,
+                427,
+                428,
+                429,
+                430,
+                431,
+                432,
+                433
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Work unit description contains Event Storming guidance",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/auto-create-big-picture-event-storm-work-unit.test.ts",
+          "lines": "228-267",
+          "implMappings": [
+            {
+              "file": "src/commands/discover-foundation.ts",
+              "lines": [
+                401,
+                402,
+                403,
+                404,
+                405,
+                406,
+                407,
+                408,
+                409,
+                410,
+                411,
+                412,
+                413,
+                414,
+                415
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/commands/__tests__/auto-create-big-picture-event-storm-work-unit.test.ts"
+    ],
+    "implFiles": [
+      "src/commands/discover-foundation.ts"
+    ],
+    "totalLinesCovered": 333
+  }
+}

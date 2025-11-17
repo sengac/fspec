@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-17T02:06:12.648Z"
+    "lastUpdated": "2025-11-17T03:14:45.524Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -48935,6 +48935,359 @@
         "spec/attachments/EXMAP-016/ast-research-example-mapping-pattern.json"
       ],
       "updated": "2025-11-17T01:27:57.294Z"
+    },
+    "FOUND-013": {
+      "id": "FOUND-013",
+      "title": "Auto-create Big Picture Event Storming work unit after foundation finalization",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-11-17T02:26:30.387Z",
+      "updatedAt": "2025-11-17T03:00:05.991Z",
+      "description": "When discover-foundation --finalize completes successfully, automatically create a new work unit in backlog status that prompts AI to conduct Big Picture Event Storming. The work unit should have clear description explaining it should use existing foundation Event Storm commands (add-foundation-bounded-context, add-aggregate-to-foundation, add-domain-event-to-foundation, show-foundation-event-storm) to populate the foundation.json eventStorm field.",
+      "children": [],
+      "attachments": [
+        "spec/attachments/FOUND-013/implementation-plan.md",
+        "spec/attachments/FOUND-013/ast-research-discover-foundation.md"
+      ],
+      "dependsOn": [
+        "FOUND-014"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-17T02:49:31.375Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-17T02:51:48.235Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-17T02:54:47.264Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-17T02:57:08.108Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-17T03:00:05.992Z"
+        }
+      ],
+      "userStory": {
+        "role": "AI agent using fspec",
+        "action": "be prompted to conduct Big Picture Event Storming after foundation discovery",
+        "benefit": "I capture domain architecture in foundation.json eventStorm field"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Work unit is created ONLY when --finalize flag is used",
+          "deleted": false,
+          "createdAt": "2025-11-17T02:49:53.753Z"
+        },
+        {
+          "id": 1,
+          "text": "Work unit is created ONLY when validation passes",
+          "deleted": false,
+          "createdAt": "2025-11-17T02:49:55.413Z"
+        },
+        {
+          "id": 2,
+          "text": "Work unit ID uses FOUND prefix with next available number",
+          "deleted": false,
+          "createdAt": "2025-11-17T02:49:57.023Z"
+        },
+        {
+          "id": 3,
+          "text": "Work unit description includes Event Storming commands and CLAUDE.md reference",
+          "deleted": false,
+          "createdAt": "2025-11-17T02:49:58.586Z"
+        },
+        {
+          "id": 4,
+          "text": "Console output confirms work unit creation with ID and command to view details",
+          "deleted": false,
+          "createdAt": "2025-11-17T02:50:00.130Z"
+        }
+      ],
+      "nextRuleId": 5,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User runs 'fspec discover-foundation --finalize', validation passes, work unit FOUND-XXX is created in backlog with Big Picture Event Storming guidance",
+          "deleted": false,
+          "createdAt": "2025-11-17T02:50:10.371Z"
+        },
+        {
+          "id": 1,
+          "text": "User runs 'fspec discover-foundation' without --finalize flag, NO work unit is created",
+          "deleted": false,
+          "createdAt": "2025-11-17T02:50:12.020Z"
+        },
+        {
+          "id": 2,
+          "text": "User runs 'fspec discover-foundation --finalize' but validation fails, NO work unit is created",
+          "deleted": false,
+          "createdAt": "2025-11-17T02:50:13.792Z"
+        },
+        {
+          "id": 3,
+          "text": "AI agent reads created work unit description and sees list of foundation Event Storm commands (add-foundation-bounded-context, add-aggregate-to-foundation, etc.)",
+          "deleted": false,
+          "createdAt": "2025-11-17T02:50:15.375Z"
+        }
+      ],
+      "nextExampleId": 4,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Modifies src/commands/discover-foundation.ts to auto-create work unit after successful finalization. Uses existing getNextWorkUnitId() utility for FOUND prefix ID generation. Work unit includes description with foundation Event Storm commands and CLAUDE.md reference. Implementation adds logic after foundation.json write (line ~300-350). No new commands needed - reuses existing Event Storming infrastructure (SOLID/DRY principles).",
+          "deleted": false,
+          "createdAt": "2025-11-17T02:50:49.146Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2025-11-17T03:00:05.991Z"
+    },
+    "FOUND-014": {
+      "id": "FOUND-014",
+      "title": "Update CLAUDE.md with Big Picture Event Storming workflow documentation",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-11-17T02:26:37.003Z",
+      "updatedAt": "2025-11-17T02:48:20.193Z",
+      "description": "Add section to spec/CLAUDE.md explaining that after foundation discovery, AI should conduct Big Picture Event Storming to capture bounded contexts, aggregates, and domain events. Include workflow steps, commands to use, and explain this populates foundation.json eventStorm field which is used for tag ontology generation and domain architecture visualization.",
+      "children": [],
+      "attachments": [
+        "spec/attachments/FOUND-014/implementation-plan.md",
+        "spec/attachments/FOUND-014/ast-research-event-storm-section.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-17T02:31:44.445Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-17T02:36:49.072Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-17T02:38:19.351Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-17T02:42:14.731Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-17T02:48:20.193Z"
+        }
+      ],
+      "userStory": {
+        "role": "AI agent using fspec",
+        "action": "understand when and how to conduct Big Picture Event Storming after foundation discovery",
+        "benefit": "I can properly capture bounded contexts and domain architecture in foundation.json eventStorm field"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "New section must be added to CLAUDE.md after Step 1.5 (Bootstrap Foundation) and before Step 1.6 (Event Storm - Work Unit Level)",
+          "deleted": false,
+          "createdAt": "2025-11-17T02:32:08.540Z"
+        },
+        {
+          "id": 1,
+          "text": "Section must explain difference between Big Picture (foundation-level) and Process Modeling (work unit-level) Event Storming",
+          "deleted": false,
+          "createdAt": "2025-11-17T02:32:13.877Z"
+        },
+        {
+          "id": 2,
+          "text": "All foundation Event Storm commands must be documented with examples (add-foundation-bounded-context, add-aggregate-to-foundation, add-domain-event-to-foundation, add-command-to-foundation, show-foundation-event-storm)",
+          "deleted": false,
+          "createdAt": "2025-11-17T02:32:20.611Z"
+        },
+        {
+          "id": 3,
+          "text": "Section must include table comparing foundation vs work unit Event Storming (scope, storage, commands, timing, output)",
+          "deleted": false,
+          "createdAt": "2025-11-17T02:32:26.670Z"
+        },
+        {
+          "id": 4,
+          "text": "Section must explain integration with EXMAP-004 tag ontology generation (derive-tags-from-foundation command)",
+          "deleted": false,
+          "createdAt": "2025-11-17T02:32:32.528Z"
+        },
+        {
+          "id": 5,
+          "text": "Existing Step 1.5 (Event Storm) must be renumbered to Step 1.6 to make room for new Step 1.5a (Big Picture Event Storm)",
+          "deleted": false,
+          "createdAt": "2025-11-17T02:32:37.692Z"
+        }
+      ],
+      "nextRuleId": 6,
+      "examples": [
+        {
+          "id": 0,
+          "text": "AI agent completes discover-foundation --finalize, sees work unit FOUND-XXX in backlog, reads CLAUDE.md Step 1.5a, understands to conduct Big Picture Event Storm using foundation commands",
+          "deleted": false,
+          "createdAt": "2025-11-17T02:32:44.469Z"
+        },
+        {
+          "id": 1,
+          "text": "Developer reads CLAUDE.md and sees clear table showing foundation Event Storm uses add-foundation-bounded-context while work unit Event Storm uses add-bounded-context with work unit ID",
+          "deleted": false,
+          "createdAt": "2025-11-17T02:32:51.265Z"
+        },
+        {
+          "id": 2,
+          "text": "AI agent reads section explaining Big Picture Event Storm session flow, asks human for bounded contexts, uses add-foundation-bounded-context command, then populates aggregates and events per context",
+          "deleted": false,
+          "createdAt": "2025-11-17T02:32:57.004Z"
+        },
+        {
+          "id": 3,
+          "text": "AI agent completes Big Picture Event Storm, reads CLAUDE.md integration section, runs derive-tags-from-foundation command to generate component tags from bounded contexts (EXMAP-004)",
+          "deleted": false,
+          "createdAt": "2025-11-17T02:33:02.686Z"
+        }
+      ],
+      "nextExampleId": 4,
+      "estimate": 2,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "This feature requires editing spec/CLAUDE.md only - no code changes. Will insert new Step 1.5a section after existing Step 1.5 (Bootstrap Foundation). Existing Step 1.5 (Event Storm) will be renumbered to Step 1.6. Section will include: (1) explanation of Big Picture vs work unit Event Storming, (2) comparison table with 6 dimensions, (3) workflow steps with examples, (4) foundation Event Storm commands documentation, (5) EXMAP-004 integration guidance. Manual testing will verify markdown format, section placement, and command accuracy against implementation.",
+          "deleted": false,
+          "createdAt": "2025-11-17T02:34:50.566Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2025-11-17T02:48:20.193Z"
+    },
+    "FOUND-015": {
+      "id": "FOUND-015",
+      "title": "Update bootstrap output with Big Picture Event Storming guidance",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-11-17T02:26:42.990Z",
+      "updatedAt": "2025-11-17T03:14:45.546Z",
+      "description": "Enhance fspec bootstrap command output to include guidance about Big Picture Event Storming workflow after foundation discovery. Add system-reminder explaining when and why to conduct foundation-level Event Storming, which commands to use, and how it integrates with tag ontology and domain architecture.",
+      "children": [],
+      "attachments": [
+        "spec/attachments/FOUND-015/implementation-plan.md",
+        "spec/attachments/FOUND-015/ast-research-bootstrap-structure.json"
+      ],
+      "dependsOn": [
+        "FOUND-014",
+        "FOUND-013"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-17T03:02:34.314Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-17T03:06:22.620Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-17T03:08:08.441Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-17T03:09:35.754Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-17T03:14:45.546Z"
+        }
+      ],
+      "userStory": {
+        "role": "AI agent using fspec",
+        "action": "be reminded to conduct Big Picture Event Storming when foundation exists but eventStorm field is empty",
+        "benefit": "I don't skip critical domain architecture discovery step"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "System-reminder emitted ONLY when foundation.json exists",
+          "deleted": false,
+          "createdAt": "2025-11-17T03:02:57.538Z"
+        },
+        {
+          "id": 1,
+          "text": "System-reminder emitted ONLY when eventStorm field is empty or missing",
+          "deleted": false,
+          "createdAt": "2025-11-17T03:02:58.100Z"
+        },
+        {
+          "id": 2,
+          "text": "System-reminder references work unit ID if FOUND-XXX Event Storm work unit exists and not done",
+          "deleted": false,
+          "createdAt": "2025-11-17T03:02:58.639Z"
+        },
+        {
+          "id": 3,
+          "text": "System-reminder appears AFTER CLAUDE.md content, BEFORE final message",
+          "deleted": false,
+          "createdAt": "2025-11-17T03:02:59.195Z"
+        },
+        {
+          "id": 4,
+          "text": "System-reminder provides commands, CLAUDE.md reference, and explains why Event Storm matters",
+          "deleted": false,
+          "createdAt": "2025-11-17T03:02:59.742Z"
+        }
+      ],
+      "nextRuleId": 5,
+      "examples": [
+        {
+          "id": 0,
+          "text": "AI runs 'fspec bootstrap', foundation.json exists with empty eventStorm, FOUND-XXX work unit exists in backlog, system-reminder emitted with work unit ID and next steps",
+          "deleted": false,
+          "createdAt": "2025-11-17T03:03:07.963Z"
+        },
+        {
+          "id": 1,
+          "text": "AI runs 'fspec bootstrap', foundation.json exists with empty eventStorm, NO work unit exists, system-reminder emitted suggesting to create work unit or run commands directly",
+          "deleted": false,
+          "createdAt": "2025-11-17T03:03:08.508Z"
+        },
+        {
+          "id": 2,
+          "text": "AI runs 'fspec bootstrap', foundation.json exists with populated eventStorm field, NO system-reminder emitted",
+          "deleted": false,
+          "createdAt": "2025-11-17T03:03:09.049Z"
+        },
+        {
+          "id": 3,
+          "text": "AI runs 'fspec bootstrap', NO foundation.json exists, NO system-reminder emitted",
+          "deleted": false,
+          "createdAt": "2025-11-17T03:03:09.599Z"
+        }
+      ],
+      "nextExampleId": 4,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Modifies src/commands/bootstrap.ts to emit system-reminder when Event Storm needed. Detection logic: Check foundation.json exists, eventStorm empty, find FOUND-XXX work units. System-reminder emitted AFTER CLAUDE.md content, BEFORE final fspec mode message. Uses existing wrapInSystemReminder utility for consistent formatting. Reuses existing file reading utilities (readFile, existsSync, JSON.parse).",
+          "deleted": false,
+          "createdAt": "2025-11-17T03:06:02.413Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2025-11-17T03:14:45.546Z"
     }
   },
   "states": {
@@ -49002,6 +49355,9 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "FOUND-015",
+      "FOUND-013",
+      "FOUND-014",
       "EXMAP-016",
       "HELP-006",
       "EXMAP-015",
@@ -49415,6 +49771,7 @@
     "VAL": 4,
     "PERF": 1,
     "INIT": 16,
-    "EXMAP": 16
+    "EXMAP": 16,
+    "FOUND": 15
   }
 }

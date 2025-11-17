@@ -2,7 +2,6 @@
 @demos
 @video-recording
 @bug
-@VID-002
 Feature: Demo scripts incorrectly try to import non-existent TestController class
 
   """

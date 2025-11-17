@@ -53,6 +53,7 @@ Tags that categorize features by functional area.
 | `@ai-assistance` | AI-assisted features for analysis and extraction |
 | `@answer-question` | Question answering operations |
 | `@assumption-management` | Assumption tracking in Example Mapping |
+| `@attachment` | File attachment management features |
 | `@attachment-management` | Attachment management features for work units |
 | `@attachment-viewer` | Features related to viewing and rendering work unit attachments |
 | `@attachments` | Feature related to work unit attachments (diagrams, documents, mockups) |
@@ -164,6 +165,7 @@ Tags that categorize features by functional area.
 | `@system-reminders` | System reminder and anti-drift pattern features |
 | `@tag-management` | TAGS.md Operations |
 | `@test-coverage` | Test coverage tracking and validation features |
+| `@test-maintenance` | Test maintenance and quality assurance features |
 | `@testing` | Testing and quality assurance features |
 | `@tool-discovery` | Tool discovery and listing features |
 | `@tracking` | Metric tracking operations |
@@ -295,6 +297,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@system-reminder` | Anti-drift pattern for AI agents using contextual reminders |
 | `@template` | Template System |
 | `@template-generation` | Template and documentation generation |
+| `@testing-framework` | Testing framework and infrastructure features |
 | `@toml` | TOML configuration file parsing and manipulation |
 | `@traceability` | Scenario-to-test-to-implementation traceability and coverage tracking |
 | `@trackpad` | Trackpad and touchpad input handling with smoothing and gesture support |
@@ -644,7 +647,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-11-16T22:43:22.683Z_
+_Last updated: 2025-11-17T03:16:37.913Z_
 
 **Update Command**: `fspec tag-stats`
 

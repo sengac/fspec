@@ -1,3 +1,5 @@
+@event-storm
+@cli
 @EXMAP-011
 Feature: Show Event Storm data as JSON
 

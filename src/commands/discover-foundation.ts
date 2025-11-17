@@ -9,10 +9,12 @@ import type { GenericFoundation } from '../types/generic-foundation';
 import { wrapInSystemReminder } from '../utils/system-reminder';
 import type { Command } from 'commander';
 import { writeFile, mkdir, readFile, unlink } from 'fs/promises';
-import { dirname } from 'path';
+import { dirname, join } from 'path';
 import chalk from 'chalk';
 import { generateFoundationMdCommand } from './generate-foundation-md';
 import { getAgentConfig } from '../utils/agentRuntimeConfig';
+import { getNextWorkUnitId } from './work-unit';
+import type { WorkUnitsData } from '../types/work-unit';
 
 export interface DiscoverFoundationOptions {
   outputPath?: string;
@@ -194,6 +196,8 @@ export async function discoverFoundation(
   validationErrors?: string;
   mdGenerated?: boolean;
   completionMessage?: string;
+  workUnitCreated?: boolean;
+  workUnitId?: string;
 }> {
   const cwd = options.cwd || process.cwd();
   const draftPath = options.draftPath || 'spec/foundation.json.draft';
@@ -380,6 +384,56 @@ Then re-run: fspec discover-foundation --finalize`;
     // Delete draft file
     await unlink(draftPath);
 
+    // Auto-create Big Picture Event Storming work unit
+    let workUnitCreated = false;
+    let workUnitId = '';
+    try {
+      const workUnitsPath = join(dirname(finalPath), 'work-units.json');
+      const workUnitsContent = await readFile(workUnitsPath, 'utf-8');
+      const workUnitsData = JSON.parse(workUnitsContent) as WorkUnitsData;
+
+      // Generate next FOUND-XXX ID
+      workUnitId = getNextWorkUnitId('FOUND', workUnitsData.workUnits);
+
+      // Create work unit
+      const now = new Date().toISOString();
+      workUnitsData.workUnits[workUnitId] = {
+        id: workUnitId,
+        title: 'Conduct Big Picture Event Storming for Foundation',
+        description: `Complete the foundation by capturing domain architecture through Big Picture Event Storming.
+
+Use these commands to populate foundation.json eventStorm field:
+- fspec add-foundation-bounded-context <name>
+- fspec add-aggregate-to-foundation <context> <aggregate>
+- fspec add-domain-event-to-foundation <context> <event>
+- fspec show-foundation-event-storm
+
+Why this matters:
+- Establishes bounded contexts for domain-driven design
+- Enables tag ontology generation from domain model
+- Provides foundation for architectural documentation
+- Supports EXMAP-004 tag discovery workflow
+
+See spec/CLAUDE.md "Big Picture Event Storming" section for detailed guidance.`,
+        type: 'story',
+        status: 'backlog',
+        createdAt: now,
+        updatedAt: now,
+      };
+
+      // Write updated work units
+      await writeFile(
+        workUnitsPath,
+        JSON.stringify(workUnitsData, null, 2),
+        'utf-8'
+      );
+
+      workUnitCreated = true;
+    } catch (error) {
+      // Silently fail if work-units.json doesn't exist or can't be updated
+      // This is acceptable since work unit creation is optional
+    }
+
     // Auto-generate FOUNDATION.md if requested
     let mdGenerated = false;
     if (options.autoGenerateMd) {
@@ -406,6 +460,8 @@ Foundation is ready.`;
       allFieldsComplete,
       mdGenerated,
       completionMessage,
+      workUnitCreated,
+      workUnitId,
     };
   }
 
@@ -540,6 +596,16 @@ export function registerDiscoverFoundationCommand(program: Command): void {
           console.log(
             chalk.green('✓ Foundation discovered and validated successfully')
           );
+          if (result.workUnitCreated && result.workUnitId) {
+            console.log(
+              chalk.green(
+                `✓ Created work unit ${result.workUnitId}: Big Picture Event Storming`
+              )
+            );
+            console.log(
+              chalk.dim(`  Run: fspec show-work-unit ${result.workUnitId}`)
+            );
+          }
         } else {
           // Creating draft
           console.log(chalk.green(`✓ Generated ${result.draftPath}`));
