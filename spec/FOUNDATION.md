@@ -98,15 +98,50 @@ QA engineers validating feature implementation against specs
 
 ```mermaid
 graph TB
-  BC1[Work Management]
-  BC2[Specification]
-  BC3[Discovery]
-  BC4[Event Storming]
-  BC5[Foundation]
-  BC6[Testing & Validation]
+  BC1["Work Management<br/>Stories, Epics, Dependencies"]
+  BC2["Specification<br/>Features, Scenarios, Steps"]
+  BC3["Discovery<br/>Rules, Examples, Questions"]
+  BC4["Event Storming<br/>Events, Commands, Policies"]
+  BC5["Foundation<br/>Vision, Capabilities, Personas"]
+  BC6["Testing & Validation<br/>Coverage, Test Mappings"]
+
+  BC3 -->|generates| BC2
+  BC1 -->|links to| BC2
+  BC2 -->|tracked by| BC6
+  BC4 -->|populates| BC5
+  BC5 -->|guides| BC3
 ```
 
 ## Work Management Context
+
+### Event Flow
+
+```mermaid
+flowchart TB
+  subgraph Commands["⚡ Commands"]
+    C55[CreateWorkUnit]
+    C56[UpdateWorkUnitStatus]
+    C57[BlockWorkUnit]
+    C58[AddDependency]
+  end
+
+  subgraph Aggregates["📦 Aggregates"]
+    A7[WorkUnit]
+    A8[Epic]
+    A9[Dependency]
+    A10[Prefix]
+  end
+
+  subgraph Events["📢 Events"]
+    E31[WorkUnitCreated]
+    E32[WorkUnitStatusChanged]
+    E33[WorkUnitBlocked]
+    E34[DependencyAdded]
+  end
+
+  Commands -.-> Aggregates
+  Aggregates -.-> Events
+```
 
 **Aggregates:**
 - WorkUnit - Story, task, or bug tracking unit
@@ -128,6 +163,35 @@ graph TB
 
 ## Specification Context
 
+### Event Flow
+
+```mermaid
+flowchart TB
+  subgraph Commands["⚡ Commands"]
+    C59[CreateFeature]
+    C60[AddScenario]
+    C61[ValidateFeature]
+    C62[RegisterTag]
+  end
+
+  subgraph Aggregates["📦 Aggregates"]
+    A11[Feature]
+    A12[Scenario]
+    A13[Step]
+    A14[Tag]
+  end
+
+  subgraph Events["📢 Events"]
+    E35[FeatureCreated]
+    E36[ScenarioAdded]
+    E37[FeatureValidated]
+    E38[TagRegistered]
+  end
+
+  Commands -.-> Aggregates
+  Aggregates -.-> Events
+```
+
 **Aggregates:**
 - Feature - Gherkin feature file
 - Scenario - Test scenario within feature
@@ -147,6 +211,35 @@ graph TB
 - RegisterTag - Add tag to registry
 
 ## Discovery Context
+
+### Event Flow
+
+```mermaid
+flowchart TB
+  subgraph Commands["⚡ Commands"]
+    C63[AddRule]
+    C64[AddExample]
+    C65[AskQuestion]
+    C66[GenerateScenarios]
+  end
+
+  subgraph Aggregates["📦 Aggregates"]
+    A15[Rule]
+    A16[Example]
+    A17[Question]
+    A18[Assumption]
+  end
+
+  subgraph Events["📢 Events"]
+    E39[RuleAdded]
+    E40[ExampleAdded]
+    E41[QuestionAsked]
+    E42[ScenariosGenerated]
+  end
+
+  Commands -.-> Aggregates
+  Aggregates -.-> Events
+```
 
 **Aggregates:**
 - Rule - Business rule (blue card)
@@ -168,6 +261,35 @@ graph TB
 
 ## Event Storming Context
 
+### Event Flow
+
+```mermaid
+flowchart TB
+  subgraph Commands["⚡ Commands"]
+    C67[StartEventStormSession]
+    C68[CaptureDomainEvent]
+    C69[CaptureCommand]
+    C70[CaptureHotspot]
+  end
+
+  subgraph Aggregates["📦 Aggregates"]
+    A19[DomainEvent]
+    A20[Command]
+    A21[Policy]
+    A22[Hotspot]
+  end
+
+  subgraph Events["📢 Events"]
+    E43[EventStormSessionStarted]
+    E44[DomainEventCaptured]
+    E45[CommandCaptured]
+    E46[HotspotCaptured]
+  end
+
+  Commands -.-> Aggregates
+  Aggregates -.-> Events
+```
+
 **Aggregates:**
 - DomainEvent - Orange sticky - business event
 - Command - Blue sticky - user action
@@ -188,6 +310,35 @@ graph TB
 
 ## Foundation Context
 
+### Event Flow
+
+```mermaid
+flowchart TB
+  subgraph Commands["⚡ Commands"]
+    C71[DiscoverFoundation]
+    C72[DefineVision]
+    C73[AddCapability]
+    C74[AddDiagram]
+  end
+
+  subgraph Aggregates["📦 Aggregates"]
+    A23[ProjectVision]
+    A24[Capability]
+    A25[Persona]
+    A26[Diagram]
+  end
+
+  subgraph Events["📢 Events"]
+    E47[FoundationDiscovered]
+    E48[VisionDefined]
+    E49[CapabilityAdded]
+    E50[DiagramCreated]
+  end
+
+  Commands -.-> Aggregates
+  Aggregates -.-> Events
+```
+
 **Aggregates:**
 - ProjectVision - What we're building
 - Capability - What the system can do
@@ -207,6 +358,35 @@ graph TB
 - AddDiagram - Create architecture diagram
 
 ## Testing & Validation Context
+
+### Event Flow
+
+```mermaid
+flowchart TB
+  subgraph Commands["⚡ Commands"]
+    C75[GenerateCoverage]
+    C76[LinkTest]
+    C77[ValidateFeature]
+    C78[ValidateTags]
+  end
+
+  subgraph Aggregates["📦 Aggregates"]
+    A27[Coverage]
+    A28[TestMapping]
+    A29[ImplementationMapping]
+    A30[ValidationResult]
+  end
+
+  subgraph Events["📢 Events"]
+    E51[CoverageGenerated]
+    E52[TestLinked]
+    E53[FeatureValidated]
+    E54[TagsValidated]
+  end
+
+  Commands -.-> Aggregates
+  Aggregates -.-> Events
+```
 
 **Aggregates:**
 - Coverage - Scenario-to-test-to-implementation mapping
