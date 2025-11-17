@@ -6,15 +6,15 @@
 
 ## Vision
 
-Enable AI agents to build production-quality software through spec-driven development with ACDD workflow, eliminating babysitting and enforcing professional TDD discipline.
+Transform AI agents into professional software builders by providing complete infrastructure for spec-driven development—from collaborative discovery (Example Mapping, Event Storming) through disciplined ACDD workflow (Kanban, work units, dependencies), safety nets (checkpoints, validation, quality gates), and full traceability (scenarios → tests → code), enabling teams to ship production-ready systems with living documentation and end-to-end accountability.
 
 ---
 
 ## Problem Space
 
-### AI agents lack professional development infrastructure and quality examples
+### AI agents lack professional software development infrastructure and discipline
 
-AI agents code without acceptance criteria enforcement, TDD guardrails, quality gates, or workflow management. Without quality examples, AI confabulates and hallucinates instead of asking clarifying questions, forcing developers to babysit instead of build.
+AI agents operate without the foundational tools and processes that professional developers rely on. While it's possible to manually enforce acceptance criteria or capture requirements through collaborative discovery, there's nothing easy or automated to help AI agents do it correctly. AI agents confabulate without quality examples and don't ask clarifying questions when faced with uncertainty. TDD guardrails aren't automated. Checkpoint systems for safe experimentation are either missing or poorly implemented. Kanban boards for tracking workflow state require manual effort. Specification management systems with diagram viewers and documentation aren't integrated into AI workflows. Coverage tracking to link code back to business rules isn't automated. Without easy, automated infrastructure, AI agents code blindly, making teams spend time babysitting rather than building, unable to trust AI for production-grade development.
 
 **Impact:** high
 
@@ -24,18 +24,17 @@ AI agents code without acceptance criteria enforcement, TDD guardrails, quality 
 
 ### Overview
 
-A complete spec-driven development system that provides AI agents with professional Gherkin scenarios, Example Mapping and Event Storming for discovery and quality examples, automated test generation from acceptance criteria, TDD enforcement with temporal ordering validation, interactive Kanban TUI with live updates, git-based checkpoint systems for safe experimentation, work unit-scoped virtual hooks for quality gates, reverse ACDD for legacy codebases, foundation-level domain architecture modeling, coverage tracking linking code to business rules, and attachment viewers for rich documentation.
+Provide a complete, automated infrastructure that integrates directly into AI agent workflows. Offer easy-to-use tools for collaborative discovery (Example Mapping, Event Storming) that guide AI agents through proper requirements gathering. Automate ACDD workflow management with Kanban boards, work units, and dependency tracking. Build in automatic checkpoints for safe experimentation and instant rollback. Enforce TDD discipline with automated validation gates that prevent code-before-tests. Provide integrated specification management with visual diagram support. Automatically track full traceability from business rules through scenarios to tests to implementation. Transform the AI development experience from manual babysitting to automated, disciplined, production-ready software delivery.
 
 ### Capabilities
 
-- **Manage Work Units**: Create, track, and move work through ACDD workflow states (backlog → specifying → testing → implementing → validating → done)
-- **Conduct Discovery**: Use Example Mapping and Event Storming to clarify requirements with quality examples before writing specifications
-- **Write Specifications**: Create Gherkin feature files with Given-When-Then scenarios that serve as living documentation and test foundations
-- **Track Coverage**: Link tests and implementation code to Gherkin scenarios for complete traceability from business rules to code
-- **Create Checkpoints**: Save and restore git-based snapshots of work for safe experimentation and rollback
-- **Manage Quality Gates**: Add work unit-scoped virtual hooks to enforce linting, testing, and validation at workflow transitions
-- **Visualize Progress**: View interactive Kanban TUI with live updates, work unit details, attachments, and checkpoint management
-- **Reverse Engineer Codebases**: Document existing codebases with feature files, test skeletons, and coverage mappings using reverse ACDD
+- **Collaborative Discovery**: Guide teams through Example Mapping and Event Storming sessions to capture requirements, business rules, and domain events before writing code
+- **ACDD Workflow Management**: Track work units through Kanban states (backlog → specifying → testing → implementing → validating → done) with automatic checkpoints and quality gates
+- **Specification Management**: Create, validate, and manage Gherkin feature files with scenarios, tags, and automatic syntax checking
+- **Coverage Tracking**: Link Gherkin scenarios to test implementations to production code with automatic traceability and gap detection
+- **Safety Nets**: Automatic Git checkpoints before state transitions with instant rollback capability for safe experimentation
+- **Analytics & Metrics**: Track velocity, estimate accuracy, bottlenecks, and quality metrics across the development lifecycle
+- **Interactive Visualization**: Real-time TUI with Kanban board, attachment viewer (markdown + mermaid diagrams), and checkpoint management
 
 ---
 
@@ -43,17 +42,31 @@ A complete spec-driven development system that provides AI agents with professio
 
 ### AI Agent
 
-AI coding assistant (Claude Code, Codex, etc.) that follows ACDD workflow to build features
+Autonomous coding agent that needs guided workflow and quality gates
 
 **Goals:**
-- Execute spec-driven development workflow with proper TDD discipline and quality gates
+- Follow disciplined ACDD workflow without human intervention
 
-### Developer/Product Owner
+### Developer Using AI Agent
 
-Human developer or product owner who guides AI agents through discovery and validates implementations
+Software developer directing AI agents to build features
 
 **Goals:**
-- Guide AI agents to build production-quality software without constant babysitting
+- Ship production-ready code with confidence, not babysitting
+
+### Product Owner/Business Analyst
+
+Stakeholder who defines requirements and acceptance criteria
+
+**Goals:**
+- Ensure AI builds exactly what's needed with full traceability
+
+### QA Engineer
+
+Quality assurance professional validating AI-generated code
+
+**Goals:**
+- Verify complete test coverage and spec alignment
 
 ---
 

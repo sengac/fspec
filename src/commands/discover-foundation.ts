@@ -167,9 +167,16 @@ Run: fspec add-persona "Persona Name" "Persona Description" --goal "Primary goal
 Run again for each persona (repeat --goal for multiple goals)`,
   };
 
+  const workflowClarification = `\n\nWORKFLOW: discover once → update many → finalize once
+  1. 'fspec discover-foundation' creates initial draft (ONCE)
+  2. Use 'fspec update-foundation' or 'fspec add-persona/add-capability' to fill fields (MANY TIMES)
+  3. 'fspec discover-foundation --finalize' validates and creates foundation.json (ONCE)
+
+DO NOT run 'fspec discover-foundation' again - it will regenerate the draft and lose all progress!`;
+
   const message =
     reminders[fieldPath] || `Field ${fieldNum}/${totalFields}: ${fieldPath}`;
-  return wrapInSystemReminder(message);
+  return wrapInSystemReminder(message + workflowClarification);
 }
 
 /**

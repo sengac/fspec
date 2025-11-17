@@ -12,18 +12,25 @@ interface UpdateFoundationOptions {
   section: string;
   content: string;
   cwd?: string;
+  draftPath?: string;
 }
 
 interface UpdateFoundationResult {
   success: boolean;
   message?: string;
   error?: string;
+  systemReminder?: string;
 }
 
 export async function updateFoundation(
   options: UpdateFoundationOptions
 ): Promise<UpdateFoundationResult> {
-  const { section, content, cwd = process.cwd() } = options;
+  const {
+    section,
+    content,
+    cwd = process.cwd(),
+    draftPath: draftPathOption,
+  } = options;
 
   // Validate inputs
   if (!section || section.trim().length === 0) {
@@ -45,7 +52,8 @@ export async function updateFoundation(
   }
 
   try {
-    const draftPath = join(cwd, 'spec/foundation.json.draft');
+    const draftPath =
+      draftPathOption || join(cwd, 'spec/foundation.json.draft');
     const foundationJsonPath = join(cwd, 'spec/foundation.json');
     const foundationMdPath = join(cwd, 'spec/FOUNDATION.md');
 
@@ -89,9 +97,18 @@ export async function updateFoundation(
     if (isDraft) {
       // When updating draft, don't validate or regenerate FOUNDATION.md
       // (those happen during finalize step)
+
+      // Chain to next field during draft-driven discovery
+      const scanResult = await discoverFoundation({
+        scanOnly: true,
+        draftPath,
+        cwd,
+      });
+
       return {
         success: true,
         message: `Updated "${section}" in foundation.json.draft`,
+        systemReminder: scanResult.systemReminder,
       };
     } else {
       // When updating final foundation, validate and regenerate FOUNDATION.md

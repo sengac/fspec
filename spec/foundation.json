@@ -2,66 +2,76 @@
   "version": "2.0.0",
   "project": {
     "name": "fspec",
-    "vision": "Enable AI agents to build production-quality software through spec-driven development with ACDD workflow, eliminating babysitting and enforcing professional TDD discipline.",
+    "vision": "Transform AI agents into professional software builders by providing complete infrastructure for spec-driven development—from collaborative discovery (Example Mapping, Event Storming) through disciplined ACDD workflow (Kanban, work units, dependencies), safety nets (checkpoints, validation, quality gates), and full traceability (scenarios → tests → code), enabling teams to ship production-ready systems with living documentation and end-to-end accountability.",
     "projectType": "cli-tool"
   },
   "problemSpace": {
     "primaryProblem": {
-      "title": "AI agents lack professional development infrastructure and quality examples",
-      "description": "AI agents code without acceptance criteria enforcement, TDD guardrails, quality gates, or workflow management. Without quality examples, AI confabulates and hallucinates instead of asking clarifying questions, forcing developers to babysit instead of build.",
+      "title": "AI agents lack professional software development infrastructure and discipline",
+      "description": "AI agents operate without the foundational tools and processes that professional developers rely on. While it's possible to manually enforce acceptance criteria or capture requirements through collaborative discovery, there's nothing easy or automated to help AI agents do it correctly. AI agents confabulate without quality examples and don't ask clarifying questions when faced with uncertainty. TDD guardrails aren't automated. Checkpoint systems for safe experimentation are either missing or poorly implemented. Kanban boards for tracking workflow state require manual effort. Specification management systems with diagram viewers and documentation aren't integrated into AI workflows. Coverage tracking to link code back to business rules isn't automated. Without easy, automated infrastructure, AI agents code blindly, making teams spend time babysitting rather than building, unable to trust AI for production-grade development.",
       "impact": "high"
     }
   },
   "solutionSpace": {
-    "overview": "A complete spec-driven development system that provides AI agents with professional Gherkin scenarios, Example Mapping and Event Storming for discovery and quality examples, automated test generation from acceptance criteria, TDD enforcement with temporal ordering validation, interactive Kanban TUI with live updates, git-based checkpoint systems for safe experimentation, work unit-scoped virtual hooks for quality gates, reverse ACDD for legacy codebases, foundation-level domain architecture modeling, coverage tracking linking code to business rules, and attachment viewers for rich documentation.",
+    "overview": "Provide a complete, automated infrastructure that integrates directly into AI agent workflows. Offer easy-to-use tools for collaborative discovery (Example Mapping, Event Storming) that guide AI agents through proper requirements gathering. Automate ACDD workflow management with Kanban boards, work units, and dependency tracking. Build in automatic checkpoints for safe experimentation and instant rollback. Enforce TDD discipline with automated validation gates that prevent code-before-tests. Provide integrated specification management with visual diagram support. Automatically track full traceability from business rules through scenarios to tests to implementation. Transform the AI development experience from manual babysitting to automated, disciplined, production-ready software delivery.",
     "capabilities": [
       {
-        "name": "Manage Work Units",
-        "description": "Create, track, and move work through ACDD workflow states (backlog → specifying → testing → implementing → validating → done)"
+        "name": "Collaborative Discovery",
+        "description": "Guide teams through Example Mapping and Event Storming sessions to capture requirements, business rules, and domain events before writing code"
       },
       {
-        "name": "Conduct Discovery",
-        "description": "Use Example Mapping and Event Storming to clarify requirements with quality examples before writing specifications"
+        "name": "ACDD Workflow Management",
+        "description": "Track work units through Kanban states (backlog → specifying → testing → implementing → validating → done) with automatic checkpoints and quality gates"
       },
       {
-        "name": "Write Specifications",
-        "description": "Create Gherkin feature files with Given-When-Then scenarios that serve as living documentation and test foundations"
+        "name": "Specification Management",
+        "description": "Create, validate, and manage Gherkin feature files with scenarios, tags, and automatic syntax checking"
       },
       {
-        "name": "Track Coverage",
-        "description": "Link tests and implementation code to Gherkin scenarios for complete traceability from business rules to code"
+        "name": "Coverage Tracking",
+        "description": "Link Gherkin scenarios to test implementations to production code with automatic traceability and gap detection"
       },
       {
-        "name": "Create Checkpoints",
-        "description": "Save and restore git-based snapshots of work for safe experimentation and rollback"
+        "name": "Safety Nets",
+        "description": "Automatic Git checkpoints before state transitions with instant rollback capability for safe experimentation"
       },
       {
-        "name": "Manage Quality Gates",
-        "description": "Add work unit-scoped virtual hooks to enforce linting, testing, and validation at workflow transitions"
+        "name": "Analytics & Metrics",
+        "description": "Track velocity, estimate accuracy, bottlenecks, and quality metrics across the development lifecycle"
       },
       {
-        "name": "Visualize Progress",
-        "description": "View interactive Kanban TUI with live updates, work unit details, attachments, and checkpoint management"
-      },
-      {
-        "name": "Reverse Engineer Codebases",
-        "description": "Document existing codebases with feature files, test skeletons, and coverage mappings using reverse ACDD"
+        "name": "Interactive Visualization",
+        "description": "Real-time TUI with Kanban board, attachment viewer (markdown + mermaid diagrams), and checkpoint management"
       }
     ]
   },
   "personas": [
     {
       "name": "AI Agent",
-      "description": "AI coding assistant (Claude Code, Codex, etc.) that follows ACDD workflow to build features",
+      "description": "Autonomous coding agent that needs guided workflow and quality gates",
       "goals": [
-        "Execute spec-driven development workflow with proper TDD discipline and quality gates"
+        "Follow disciplined ACDD workflow without human intervention"
       ]
     },
     {
-      "name": "Developer/Product Owner",
-      "description": "Human developer or product owner who guides AI agents through discovery and validates implementations",
+      "name": "Developer Using AI Agent",
+      "description": "Software developer directing AI agents to build features",
       "goals": [
-        "Guide AI agents to build production-quality software without constant babysitting"
+        "Ship production-ready code with confidence, not babysitting"
+      ]
+    },
+    {
+      "name": "Product Owner/Business Analyst",
+      "description": "Stakeholder who defines requirements and acceptance criteria",
+      "goals": [
+        "Ensure AI builds exactly what's needed with full traceability"
+      ]
+    },
+    {
+      "name": "QA Engineer",
+      "description": "Quality assurance professional validating AI-generated code",
+      "goals": [
+        "Verify complete test coverage and spec alignment"
       ]
     }
   ],
@@ -71,60 +81,12 @@
       {
         "id": 1,
         "type": "bounded_context",
-        "text": "Work Management",
+        "text": "User Management",
         "color": null,
         "deleted": false,
-        "createdAt": "2025-11-17T04:10:40.311Z"
-      },
-      {
-        "id": 2,
-        "type": "bounded_context",
-        "text": "Specification",
-        "color": null,
-        "deleted": false,
-        "createdAt": "2025-11-17T04:10:40.919Z"
-      },
-      {
-        "id": 3,
-        "type": "bounded_context",
-        "text": "Testing & Validation",
-        "color": null,
-        "deleted": false,
-        "createdAt": "2025-11-17T04:10:41.532Z"
-      },
-      {
-        "id": 4,
-        "type": "bounded_context",
-        "text": "Quality Assurance",
-        "color": null,
-        "deleted": false,
-        "createdAt": "2025-11-17T04:10:42.140Z"
-      },
-      {
-        "id": 5,
-        "type": "bounded_context",
-        "text": "Version Control Integration",
-        "color": null,
-        "deleted": false,
-        "createdAt": "2025-11-17T04:10:42.775Z"
-      },
-      {
-        "id": 6,
-        "type": "bounded_context",
-        "text": "User Interface",
-        "color": null,
-        "deleted": false,
-        "createdAt": "2025-11-17T04:10:43.382Z"
-      },
-      {
-        "id": 7,
-        "type": "bounded_context",
-        "text": "Foundation Management",
-        "color": null,
-        "deleted": false,
-        "createdAt": "2025-11-17T04:10:43.998Z"
+        "createdAt": "2025-11-17T05:32:17.738Z"
       }
     ],
-    "nextItemId": 8
+    "nextItemId": 2
   }
 }
