@@ -3,7 +3,6 @@
 @validation
 @validator
 @critical
-@BUG-073
 Feature: Mermaid Validation Fails with DOMPurify Error
 
   """

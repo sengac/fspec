@@ -1,3 +1,5 @@
+@coverage-tracking
+@validator
 @BUG-077
 Feature: Coverage validation missing for implementing→validating transition
 

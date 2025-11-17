@@ -1,4 +1,5 @@
-@EXMAP-013
+@event-storm
+@cli
 Feature: Event Storm workflow enhancements and gap fixes
   """
   Extends existing Event Storm commands (EXMAP-005, 006, 007, 010, 011, 012) with automation and validation. New commands: generate-example-mapping-from-event-storm, add-event-storm-diagram, validate-event-storm, validate-bounded-contexts. Enhances generate-scenarios to auto-populate architecture notes. Uses Mermaid for diagram generation, JSON Schema for validation, fuzzy matching for typo detection.

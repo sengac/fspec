@@ -142,6 +142,10 @@
           "description": "Assumption tracking in Example Mapping"
         },
         {
+          "name": "@attachment",
+          "description": "File attachment management features"
+        },
+        {
           "name": "@attachment-management",
           "description": "Attachment management features for work units"
         },
@@ -584,6 +588,10 @@
         {
           "name": "@test-coverage",
           "description": "Test coverage tracking and validation features"
+        },
+        {
+          "name": "@test-maintenance",
+          "description": "Test maintenance and quality assurance features"
         },
         {
           "name": "@testing",
@@ -1080,6 +1088,10 @@
         {
           "name": "@template-generation",
           "description": "Template and documentation generation"
+        },
+        {
+          "name": "@testing-framework",
+          "description": "Testing framework and infrastructure features"
         },
         {
           "name": "@toml",
@@ -1610,7 +1622,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-11-16T22:43:22.683Z",
+    "lastUpdated": "2025-11-17T03:16:37.913Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

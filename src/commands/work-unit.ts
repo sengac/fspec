@@ -98,7 +98,7 @@ async function saveEpics(data: EpicsData, cwd: string): Promise<void> {
   });
 }
 
-function getNextWorkUnitId(
+export function getNextWorkUnitId(
   prefix: string,
   workUnits: Record<string, WorkUnit>
 ): string {

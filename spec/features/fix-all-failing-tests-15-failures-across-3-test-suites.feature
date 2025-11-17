@@ -1,9 +1,9 @@
+@validator
 @test-maintenance
 @testing-framework
 @bug
 @testing
 @critical
-@TEST-008
 Feature: Fix all failing tests (15 failures across 3 test suites)
   """
   Test failure breakdown: 8 AST tests (outdated), 5 TUI tests (needs investigation), 2 research integration tests (needs investigation). AST tests written for stub implementation before RES-016 connected real tree-sitter parser. Comprehensive analysis document attached at spec/attachments/TEST-008/test-failures-analysis.md with detailed recommendations.

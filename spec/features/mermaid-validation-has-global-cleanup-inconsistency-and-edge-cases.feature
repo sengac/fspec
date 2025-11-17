@@ -4,7 +4,6 @@
 @code-quality
 @refactor
 @validator
-@VAL-002
 Feature: Mermaid validation has global cleanup inconsistency and edge cases
 
   """

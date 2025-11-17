@@ -2,7 +2,6 @@
 @cli
 @workflow-automation
 @hooks
-@HOOK-011
 Feature: Work unit-scoped hooks for dynamic validation
   """
   Virtual hooks extend the existing fspec hooks system (src/hooks/) to support work unit-scoped ephemeral hooks. Key components: virtualHooks array in WorkUnit type, commands (add-virtual-hook, list-virtual-hooks, remove-virtual-hook, copy-virtual-hooks), hook executor integration to run virtual hooks BEFORE global hooks, git context provider for staged/unstaged file lists. Implementation leverages existing hook infrastructure (executor, discovery, conditions, formatting) with new virtual hook discovery layer.

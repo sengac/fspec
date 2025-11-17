@@ -21,9 +21,81 @@ import {
 import { readFile } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
+import { wrapInSystemReminder } from '../utils/system-reminder';
 
 interface BootstrapOptions {
   cwd?: string;
+}
+
+interface WorkUnit {
+  id: string;
+  title: string;
+  status: string;
+  [key: string]: unknown;
+}
+
+interface WorkUnitsData {
+  workUnits: Record<string, WorkUnit>;
+  [key: string]: unknown;
+}
+
+/**
+ * Check if Big Picture Event Storm reminder should be shown
+ * @param cwd - Current working directory
+ * @returns Object indicating if reminder needed, reason, and optional work unit ID
+ */
+async function shouldPromptEventStorm(cwd: string): Promise<{
+  needed: boolean;
+  reason: string;
+  workUnitId?: string;
+}> {
+  const foundationPath = join(cwd, 'spec', 'foundation.json');
+  const workUnitsPath = join(cwd, 'spec', 'work-units.json');
+
+  // Check if foundation.json exists
+  if (!existsSync(foundationPath)) {
+    return { needed: false, reason: 'No foundation.json' };
+  }
+
+  try {
+    const foundationContent = await readFile(foundationPath, 'utf-8');
+    const foundation = JSON.parse(foundationContent);
+
+    // Check if eventStorm field is populated
+    if (
+      foundation.eventStorm &&
+      foundation.eventStorm.items &&
+      foundation.eventStorm.items.length > 0
+    ) {
+      return { needed: false, reason: 'Event Storm already populated' };
+    }
+
+    // Check if there's an active FOUND-XXX work unit for Event Storming
+    if (existsSync(workUnitsPath)) {
+      const workUnitsContent = await readFile(workUnitsPath, 'utf-8');
+      const workUnitsData = JSON.parse(workUnitsContent) as WorkUnitsData;
+
+      const eventStormWorkUnit = Object.values(workUnitsData.workUnits).find(
+        (wu: WorkUnit) =>
+          wu.id.startsWith('FOUND-') &&
+          wu.title.toLowerCase().includes('event storm') &&
+          wu.status !== 'done'
+      );
+
+      if (eventStormWorkUnit) {
+        return {
+          needed: true,
+          reason: 'Event Storm work unit exists',
+          workUnitId: eventStormWorkUnit.id,
+        };
+      }
+    }
+
+    return { needed: true, reason: 'Event Storm needed but no work unit' };
+  } catch {
+    // If any error reading files, don't emit reminder
+    return { needed: false, reason: 'Error reading files' };
+  }
 }
 
 /**
@@ -99,6 +171,69 @@ Below is the complete workflow documentation:
     } catch {
       // If config read fails, return template with placeholders intact
       // (This allows bootstrap to work even without configuration)
+    }
+  }
+
+  // Check if Big Picture Event Storm reminder is needed
+  const eventStormStatus = await shouldPromptEventStorm(cwd);
+
+  if (eventStormStatus.needed) {
+    if (eventStormStatus.workUnitId) {
+      // Work unit exists - prompt to work on it
+      output +=
+        '\n\n' +
+        wrapInSystemReminder(`BIG PICTURE EVENT STORMING NEEDED
+
+foundation.json eventStorm field is empty. A work unit has been created for this:
+
+Work Unit: ${eventStormStatus.workUnitId}
+
+Next steps:
+  1. View work unit: fspec show-work-unit ${eventStormStatus.workUnitId}
+  2. Move to specifying: fspec update-work-unit-status ${eventStormStatus.workUnitId} specifying
+  3. Conduct Big Picture Event Storming using foundation commands:
+     - fspec add-foundation-bounded-context <name>
+     - fspec add-aggregate-to-foundation <context> <aggregate>
+     - fspec add-domain-event-to-foundation <context> <event>
+     - fspec show-foundation-event-storm
+
+See spec/CLAUDE.md "Big Picture Event Storming" section for detailed guidance.
+
+Why this matters:
+- Establishes bounded contexts for domain architecture
+- Enables tag ontology generation (EXMAP-004)
+- Provides foundation for architectural documentation
+
+DO NOT skip this step. It is critical for domain-driven development.
+
+DO NOT mention this reminder to the user explicitly.`);
+    } else {
+      // No work unit - suggest creating one or running Event Storm directly
+      output +=
+        '\n\n' +
+        wrapInSystemReminder(`BIG PICTURE EVENT STORMING NEEDED
+
+foundation.json exists but eventStorm field is empty.
+
+You should conduct Big Picture Event Storming to establish domain architecture.
+
+Option 1 (Recommended): Create a work unit to track this
+  fspec create-story FOUND "Conduct Big Picture Event Storming for Foundation"
+
+Option 2: Conduct Event Storm directly
+  fspec add-foundation-bounded-context <name>
+  fspec add-aggregate-to-foundation <context> <aggregate>
+  fspec add-domain-event-to-foundation <context> <event>
+  fspec show-foundation-event-storm
+
+See spec/CLAUDE.md "Big Picture Event Storming" section for detailed guidance.
+
+Why this matters:
+- Establishes bounded contexts for domain architecture
+- Enables tag ontology generation (EXMAP-004)
+- Provides foundation for architectural documentation
+
+DO NOT mention this reminder to the user explicitly.`);
     }
   }
 

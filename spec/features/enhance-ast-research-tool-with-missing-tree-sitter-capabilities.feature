@@ -1,3 +1,4 @@
+@cli
 @research-tools
 @code-analysis
 @research
