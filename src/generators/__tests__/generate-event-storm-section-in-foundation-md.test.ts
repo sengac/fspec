@@ -270,8 +270,8 @@ describe('Feature: Generate Event Storm section in FOUNDATION.md with validated 
       }
     });
 
-    it('should throw validation error and prevent FOUNDATION.md generation with invalid Mermaid syntax', async () => {
-      // @step Given foundation.json has eventStorm field with bounded contexts
+    it('Scenario: Bounded context with malicious code injection causes validation error', async () => {
+      // @step Given foundation.json has eventStorm field with bounded context 'Context"];malicious[("code'
       const foundationData = {
         version: '2.0.0',
         project: {
@@ -305,37 +305,141 @@ describe('Feature: Generate Event Storm section in FOUNDATION.md with validated 
             {
               id: 1,
               type: 'bounded_context',
-              text: 'Invalid{Context}',
+              text: 'Context"];malicious[("code',
               deleted: false,
             },
           ],
           nextItemId: 2,
         },
       };
-      fs.writeFileSync(
-        foundationJsonPath,
-        JSON.stringify(foundationData, null, 2)
-      );
 
-      // @step And the generated Mermaid diagram contains invalid syntax
-      // (The invalid bounded context name will trigger Mermaid validation error)
-
-      // @step When FOUNDATION.md generation is attempted
-      // @step Then an error should be thrown with the validation error message
+      // @step When generateFoundationMd is called with this Event Storm data
+      // @step Then a validation error should be thrown
       await expect(async () => {
         await generateFoundationMd(foundationData);
       }).rejects.toThrow();
 
-      // @step And FOUNDATION.md should not be written with invalid Mermaid syntax
-      expect(fs.existsSync(foundationMdPath)).toBe(false);
+      // @step And the error should indicate invalid Mermaid syntax
+      try {
+        await generateFoundationMd(foundationData);
+      } catch (error) {
+        expect(error).toBeDefined();
+        expect((error as Error).message).toContain('Mermaid');
+      }
+    });
+
+    it('Scenario: generateFoundationMd throws error with helpful message pointing to invalid syntax', async () => {
+      // @step Given foundation.json has Event Storm data with invalid Mermaid syntax in bounded context name
+      const foundationData = {
+        version: '2.0.0',
+        project: {
+          name: 'Test Project',
+          vision: 'Test vision',
+          projectType: 'cli-tool',
+        },
+        problemSpace: {
+          primaryProblem: {
+            title: 'Test Problem',
+            description: 'Test problem description',
+            impact: 'medium',
+          },
+        },
+        solutionSpace: {
+          overview: 'Test solution overview',
+          capabilities: [
+            { name: 'Test capability', description: 'Test description' },
+          ],
+        },
+        personas: [
+          {
+            name: 'Test Persona',
+            description: 'Tester role',
+            goals: ['Test goal'],
+          },
+        ],
+        eventStorm: {
+          level: 'big_picture',
+          items: [
+            {
+              id: 1,
+              type: 'bounded_context',
+              text: 'Context"];malicious[("code',
+              deleted: false,
+            },
+          ],
+          nextItemId: 2,
+        },
+      };
+
+      // @step When generateFoundationMd attempts to generate FOUNDATION.md
+      // @step Then an error should be thrown
+      await expect(async () => {
+        await generateFoundationMd(foundationData);
+      }).rejects.toThrow();
 
       // @step And the error message should help identify the syntax issue
+      // @step And the error message should be descriptive enough for developers to fix the problem
       try {
         await generateFoundationMd(foundationData);
       } catch (error) {
         expect(error).toBeDefined();
         expect((error as Error).message).toBeTruthy();
+        expect((error as Error).message.length).toBeGreaterThan(10);
       }
+    });
+
+    it('Scenario: FOUNDATION.md is not written when Event Storm diagram validation fails', async () => {
+      // @step Given foundation.json has eventStorm field with invalid bounded context 'Context"];malicious[("code'
+      const foundationData = {
+        version: '2.0.0',
+        project: {
+          name: 'Test Project',
+          vision: 'Test vision',
+          projectType: 'cli-tool',
+        },
+        problemSpace: {
+          primaryProblem: {
+            title: 'Test Problem',
+            description: 'Test problem description',
+            impact: 'medium',
+          },
+        },
+        solutionSpace: {
+          overview: 'Test solution overview',
+          capabilities: [
+            { name: 'Test capability', description: 'Test description' },
+          ],
+        },
+        personas: [
+          {
+            name: 'Test Persona',
+            description: 'Tester role',
+            goals: ['Test goal'],
+          },
+        ],
+        eventStorm: {
+          level: 'big_picture',
+          items: [
+            {
+              id: 1,
+              type: 'bounded_context',
+              text: 'Context"];malicious[("code',
+              deleted: false,
+            },
+          ],
+          nextItemId: 2,
+        },
+      };
+
+      // @step When generateFoundationMd is called
+      // @step Then an error should be thrown before FOUNDATION.md is written
+      await expect(async () => {
+        await generateFoundationMd(foundationData);
+      }).rejects.toThrow();
+
+      // @step And FOUNDATION.md should not exist or should remain unchanged
+      // @step And no file with broken Mermaid diagrams should be created
+      expect(fs.existsSync(foundationMdPath)).toBe(false);
     });
   });
 

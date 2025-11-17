@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-17T12:07:02.072Z"
+    "lastUpdated": "2025-11-17T22:08:18.063Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -50212,11 +50212,73 @@
       "id": "TEST-009",
       "title": "Mermaid validation test uses invalid test data",
       "type": "bug",
-      "status": "backlog",
+      "status": "validating",
       "createdAt": "2025-11-17T13:01:05.811Z",
-      "updatedAt": "2025-11-17T13:01:05.811Z",
+      "updatedAt": "2025-11-17T22:19:52.728Z",
       "description": "Test in generate-event-storm-section-in-foundation-md.test.ts expects generateFoundationMd to throw for 'Invalid{Context}' but that's valid Mermaid. Needs actually-invalid syntax or redesign.",
-      "children": []
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-17T22:07:55.534Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-17T22:11:58.809Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-17T22:15:16.788Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-17T22:19:52.728Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer writing tests for Mermaid validation",
+        "action": "validate that Event Storm diagrams with invalid Mermaid syntax are rejected",
+        "benefit": "FOUNDATION.md is never generated with broken diagrams"
+      },
+      "attachments": [
+        "spec/attachments/TEST-009/TEST-009-root-cause.md"
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "generateFoundationMd must validate Event Storm Mermaid diagrams before writing FOUNDATION.md",
+          "deleted": false,
+          "createdAt": "2025-11-17T22:08:25.024Z"
+        },
+        {
+          "id": 1,
+          "text": "Invalid Mermaid syntax in Event Storm bounded context names must trigger validation error",
+          "deleted": false,
+          "createdAt": "2025-11-17T22:08:31.218Z"
+        }
+      ],
+      "nextRuleId": 2,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Bounded context with unclosed bracket 'Context[Unclosed' causes validation error",
+          "deleted": false,
+          "createdAt": "2025-11-17T22:08:38.843Z"
+        },
+        {
+          "id": 1,
+          "text": "generateFoundationMd throws error with helpful message pointing to invalid syntax",
+          "deleted": false,
+          "createdAt": "2025-11-17T22:08:45.918Z"
+        },
+        {
+          "id": 2,
+          "text": "FOUNDATION.md is not written when Event Storm diagram validation fails",
+          "deleted": false,
+          "createdAt": "2025-11-17T22:08:52.581Z"
+        }
+      ],
+      "nextExampleId": 3
     }
   },
   "states": {
@@ -50272,8 +50334,7 @@
       "DOC-012",
       "DOC-013",
       "DOC-014",
-      "FOUND-043",
-      "TEST-009"
+      "FOUND-043"
     ],
     "specifying": [
       "LANG-001",
@@ -50284,7 +50345,9 @@
     ],
     "testing": [],
     "implementing": [],
-    "validating": [],
+    "validating": [
+      "TEST-009"
+    ],
     "done": [
       "FOUND-042",
       "FOUND-022",

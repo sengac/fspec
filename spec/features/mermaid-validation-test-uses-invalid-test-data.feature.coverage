@@ -1,0 +1,82 @@
+{
+  "scenarios": [
+    {
+      "name": "Bounded context with malicious code injection causes validation error",
+      "testMappings": [
+        {
+          "file": "src/generators/__tests__/generate-event-storm-section-in-foundation-md.test.ts",
+          "lines": "273-329",
+          "implMappings": [
+            {
+              "file": "src/generators/foundation-md.ts",
+              "lines": [
+                348,
+                349,
+                350,
+                351,
+                352,
+                353
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "generateFoundationMd throws error with helpful message pointing to invalid syntax",
+      "testMappings": [
+        {
+          "file": "src/generators/__tests__/generate-event-storm-section-in-foundation-md.test.ts",
+          "lines": "331-389",
+          "implMappings": [
+            {
+              "file": "src/generators/foundation-md.ts",
+              "lines": [
+                348,
+                349,
+                350,
+                351,
+                352,
+                353
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "FOUNDATION.md is not written when Event Storm diagram validation fails",
+      "testMappings": [
+        {
+          "file": "src/generators/__tests__/generate-event-storm-section-in-foundation-md.test.ts",
+          "lines": "391-443",
+          "implMappings": [
+            {
+              "file": "src/generators/foundation-md.ts",
+              "lines": [
+                348,
+                349,
+                350,
+                351,
+                352,
+                353
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/generators/__tests__/generate-event-storm-section-in-foundation-md.test.ts"
+    ],
+    "implFiles": [
+      "src/generators/foundation-md.ts"
+    ],
+    "totalLinesCovered": 187
+  }
+}
