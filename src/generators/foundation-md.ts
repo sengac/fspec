@@ -3,7 +3,8 @@ import type { GenericFoundation } from '../types/generic-foundation';
 import type { EventStormBoundedContext } from '../types';
 
 /**
- * Generate Mermaid diagram for bounded contexts
+ * Generate Mermaid diagram for bounded contexts with relationships
+ * Uses neutral styling (no colors) for dark/light mode compatibility
  */
 function generateBoundedContextMermaid(
   boundedContexts: EventStormBoundedContext[]
@@ -11,11 +12,150 @@ function generateBoundedContextMermaid(
   const lines: string[] = [];
   lines.push('graph TB');
 
-  // Generate nodes for each bounded context
+  // Create map of context names to IDs for relationship mapping
+  const contextMap = new Map<string, string>();
   for (let i = 0; i < boundedContexts.length; i++) {
     const context = boundedContexts[i];
     const nodeId = `BC${i + 1}`;
-    lines.push(`  ${nodeId}[${context.text}]`);
+    contextMap.set(context.text, nodeId);
+  }
+
+  // Generate nodes for each bounded context with brief description
+  for (let i = 0; i < boundedContexts.length; i++) {
+    const context = boundedContexts[i];
+    const nodeId = `BC${i + 1}`;
+
+    // Add brief description based on context
+    let description = '';
+    switch (context.text) {
+      case 'Work Management':
+        description = 'Stories, Epics, Dependencies';
+        break;
+      case 'Specification':
+        description = 'Features, Scenarios, Steps';
+        break;
+      case 'Discovery':
+        description = 'Rules, Examples, Questions';
+        break;
+      case 'Event Storming':
+        description = 'Events, Commands, Policies';
+        break;
+      case 'Foundation':
+        description = 'Vision, Capabilities, Personas';
+        break;
+      case 'Testing & Validation':
+        description = 'Coverage, Test Mappings';
+        break;
+      default:
+        description = context.text;
+    }
+
+    lines.push(`  ${nodeId}["${context.text}<br/>${description}"]`);
+  }
+
+  lines.push('');
+
+  // Add relationships between contexts
+  const relationships = [
+    { from: 'Discovery', to: 'Specification', label: 'generates' },
+    { from: 'Work Management', to: 'Specification', label: 'links to' },
+    { from: 'Specification', to: 'Testing & Validation', label: 'tracked by' },
+    { from: 'Event Storming', to: 'Foundation', label: 'populates' },
+    { from: 'Foundation', to: 'Discovery', label: 'guides' },
+  ];
+
+  for (const rel of relationships) {
+    const fromId = contextMap.get(rel.from);
+    const toId = contextMap.get(rel.to);
+    if (fromId && toId) {
+      lines.push(`  ${fromId} -->|${rel.label}| ${toId}`);
+    }
+  }
+
+  return lines.join('\n');
+}
+
+/**
+ * Generate Event Flow diagram for a bounded context
+ * Shows Commands → Aggregates → Events pattern
+ * Uses neutral styling (no colors) for dark/light mode compatibility
+ */
+function generateContextEventFlowMermaid(
+  contextId: number,
+  foundation: GenericFoundation
+): string {
+  const lines: string[] = [];
+  lines.push('flowchart TB');
+
+  // Extract commands, aggregates, and events for this context
+  const commands = foundation.eventStorm.items.filter(
+    (item): item is any =>
+      item.type === 'command' &&
+      !item.deleted &&
+      'boundedContextId' in item &&
+      item.boundedContextId === contextId
+  );
+
+  const aggregates = foundation.eventStorm.items.filter(
+    (item): item is any =>
+      item.type === 'aggregate' &&
+      !item.deleted &&
+      'boundedContextId' in item &&
+      item.boundedContextId === contextId
+  );
+
+  const events = foundation.eventStorm.items.filter(
+    (item): item is any =>
+      item.type === 'event' &&
+      !item.deleted &&
+      'boundedContextId' in item &&
+      item.boundedContextId === contextId
+  );
+
+  // Only generate diagram if there are items to display
+  if (commands.length === 0 && aggregates.length === 0 && events.length === 0) {
+    return '';
+  }
+
+  // Commands subgraph
+  if (commands.length > 0) {
+    lines.push('  subgraph Commands["⚡ Commands"]');
+    for (const cmd of commands) {
+      const nodeId = `C${cmd.id}`;
+      lines.push(`    ${nodeId}[${cmd.text}]`);
+    }
+    lines.push('  end');
+    lines.push('');
+  }
+
+  // Aggregates subgraph
+  if (aggregates.length > 0) {
+    lines.push('  subgraph Aggregates["📦 Aggregates"]');
+    for (const agg of aggregates) {
+      const nodeId = `A${agg.id}`;
+      lines.push(`    ${nodeId}[${agg.text}]`);
+    }
+    lines.push('  end');
+    lines.push('');
+  }
+
+  // Events subgraph
+  if (events.length > 0) {
+    lines.push('  subgraph Events["📢 Events"]');
+    for (const evt of events) {
+      const nodeId = `E${evt.id}`;
+      lines.push(`    ${nodeId}[${evt.text}]`);
+    }
+    lines.push('  end');
+    lines.push('');
+  }
+
+  // Add flow arrows
+  if (commands.length > 0 && aggregates.length > 0) {
+    lines.push('  Commands -.-> Aggregates');
+  }
+  if (aggregates.length > 0 && events.length > 0) {
+    lines.push('  Aggregates -.-> Events');
   }
 
   return lines.join('\n');
@@ -221,6 +361,25 @@ export async function generateFoundationMd(
       for (const context of boundedContexts) {
         sections.push(`## ${context.text} Context`);
         sections.push('');
+
+        // Generate Event Flow diagram for this context
+        const eventFlowMermaid = generateContextEventFlowMermaid(
+          context.id,
+          foundation
+        );
+
+        if (eventFlowMermaid) {
+          // Validate Mermaid syntax before adding
+          const flowValidation = await validateMermaidSyntax(eventFlowMermaid);
+          if (flowValidation.valid) {
+            sections.push('### Event Flow');
+            sections.push('');
+            sections.push('```mermaid');
+            sections.push(eventFlowMermaid);
+            sections.push('```');
+            sections.push('');
+          }
+        }
 
         // Filter aggregates for this bounded context
         const aggregates = foundation.eventStorm.items.filter(
