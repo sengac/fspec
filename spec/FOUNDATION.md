@@ -53,54 +53,12 @@ Autonomous coding agents (Claude Code, Cursor, Codex, etc.) that need structured
 **Goals:**
 - Follow TDD discipline automatically
 
-### AI Agent
-
-Autonomous coding agents (Claude Code, Cursor, Codex, etc.) that need structured workflows and quality enforcement
-
-**Goals:**
-- Generate specs from business conversations
-
-### AI Agent
-
-Autonomous coding agents (Claude Code, Cursor, Codex, etc.) that need structured workflows and quality enforcement
-
-**Goals:**
-- Maintain traceability from requirements to code
-
-### AI Agent
-
-Autonomous coding agents (Claude Code, Cursor, Codex, etc.) that need structured workflows and quality enforcement
-
-**Goals:**
-- Self-recover from mistakes using checkpoints
-
 ### Developer
 
 Software developers working with AI agents or manually following ACDD workflow
 
 **Goals:**
 - Clear acceptance criteria before coding
-
-### Developer
-
-Software developers working with AI agents or manually following ACDD workflow
-
-**Goals:**
-- Enforce test-first development
-
-### Developer
-
-Software developers working with AI agents or manually following ACDD workflow
-
-**Goals:**
-- Track work through Kanban states
-
-### Developer
-
-Software developers working with AI agents or manually following ACDD workflow
-
-**Goals:**
-- Collaborate with AI agents effectively
 
 ### Business Analyst
 
@@ -109,20 +67,6 @@ BAs facilitating Example Mapping and Event Storming sessions to capture requirem
 **Goals:**
 - Transform business conversations into executable specs
 
-### Business Analyst
-
-BAs facilitating Example Mapping and Event Storming sessions to capture requirements
-
-**Goals:**
-- Capture rules, examples, and questions systematically
-
-### Business Analyst
-
-BAs facilitating Example Mapping and Event Storming sessions to capture requirements
-
-**Goals:**
-- Ensure requirements are complete before development
-
 ### Product Owner
 
 POs defining business value and making prioritization decisions
@@ -130,40 +74,12 @@ POs defining business value and making prioritization decisions
 **Goals:**
 - See exactly what's being built (acceptance criteria)
 
-### Product Owner
-
-POs defining business value and making prioritization decisions
-
-**Goals:**
-- Prioritize work units on Kanban board
-
-### Product Owner
-
-POs defining business value and making prioritization decisions
-
-**Goals:**
-- Verify features meet acceptance criteria
-
 ### QA Engineer
 
 QA engineers validating feature implementation against specs
 
 **Goals:**
 - Trace every test back to business requirements
-
-### QA Engineer
-
-QA engineers validating feature implementation against specs
-
-**Goals:**
-- Verify 100% scenario coverage
-
-### QA Engineer
-
-QA engineers validating feature implementation against specs
-
-**Goals:**
-- Validate implementation matches acceptance criteria
 
 ---
 
