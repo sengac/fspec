@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-17T22:24:28.169Z"
+    "lastUpdated": "2025-11-17T23:28:44.492Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -50278,6 +50278,131 @@
       "nextQuestionId": 0,
       "nextNoteId": 0,
       "updated": "2025-11-17T22:24:28.198Z"
+    },
+    "BUG-081": {
+      "id": "BUG-081",
+      "title": "show-foundation command has multiple quality issues",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-11-17T23:07:18.725Z",
+      "updatedAt": "2025-11-17T23:28:44.517Z",
+      "description": "Parameters are ignored (--list-sections, --section), unintended file creation, documentation mismatches between display names and property names. Reported in GitHub issue #6.",
+      "children": [],
+      "attachments": [
+        "spec/attachments/BUG-081/issue-6-show-foundation-quality-issues.md",
+        "spec/attachments/BUG-081/bug-081-investigation-findings.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-17T23:16:38.604Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-17T23:18:48.708Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-17T23:20:06.420Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-17T23:22:03.181Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-17T23:28:44.517Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using show-foundation command",
+        "action": "view foundation data with correct parameter handling",
+        "benefit": "I can access foundation content using documented syntax without confusion"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "The --section parameter must correctly filter to show only the specified field",
+          "deleted": false,
+          "createdAt": "2025-11-17T23:17:04.415Z"
+        },
+        {
+          "id": 1,
+          "text": "Positional argument syntax 'fspec show-foundation <field>' must work as documented in help text",
+          "deleted": false,
+          "createdAt": "2025-11-17T23:17:06.072Z"
+        },
+        {
+          "id": 2,
+          "text": "Both --section flag and positional argument must accept field names from FIELD_MAP or JSON paths",
+          "deleted": false,
+          "createdAt": "2025-11-17T23:17:07.587Z"
+        },
+        {
+          "id": 3,
+          "text": "When no field specified, show entire foundation in formatted text",
+          "deleted": false,
+          "createdAt": "2025-11-17T23:17:09.028Z"
+        },
+        {
+          "id": 4,
+          "text": "Auto-creation of foundation.json with template data is expected behavior when file is missing",
+          "deleted": false,
+          "createdAt": "2025-11-17T23:17:10.526Z"
+        }
+      ],
+      "nextRuleId": 5,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Run 'fspec show-foundation --section projectOverview' and see only the project overview content, not the entire foundation",
+          "deleted": false,
+          "createdAt": "2025-11-17T23:17:20.723Z"
+        },
+        {
+          "id": 1,
+          "text": "Run 'fspec show-foundation projectOverview' (positional) and get the same result as using --section flag",
+          "deleted": false,
+          "createdAt": "2025-11-17T23:17:22.419Z"
+        },
+        {
+          "id": 2,
+          "text": "Run 'fspec show-foundation solutionSpace.overview' using JSON path and retrieve the nested field",
+          "deleted": false,
+          "createdAt": "2025-11-17T23:17:23.963Z"
+        },
+        {
+          "id": 3,
+          "text": "Run 'fspec show-foundation' with no arguments and see the entire foundation formatted as text with sections",
+          "deleted": false,
+          "createdAt": "2025-11-17T23:17:25.777Z"
+        },
+        {
+          "id": 4,
+          "text": "Run 'fspec show-foundation --section nonExistentField' and receive error message 'Field not found'",
+          "deleted": false,
+          "createdAt": "2025-11-17T23:17:27.369Z"
+        }
+      ],
+      "nextExampleId": 5,
+      "questions": [],
+      "architectureNotes": [],
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-17T23:28:44.517Z"
+    },
+    "BUG-082": {
+      "id": "BUG-082",
+      "title": "add-diagram fails with 'screen is not defined' error for valid C4 diagrams",
+      "type": "bug",
+      "status": "backlog",
+      "createdAt": "2025-11-17T23:07:36.502Z",
+      "updatedAt": "2025-11-17T23:07:42.810Z",
+      "description": "C4Context diagrams fail Mermaid validation with error 'screen is not defined'. Valid C4 syntax is rejected. Reported in GitHub issue #5.",
+      "children": [],
+      "attachments": [
+        "spec/attachments/BUG-082/issue-5-add-diagram-screen-not-defined.md"
+      ]
     }
   },
   "states": {
@@ -50332,7 +50457,8 @@
       "INT-004",
       "DOC-012",
       "DOC-013",
-      "DOC-014"
+      "DOC-014",
+      "BUG-082"
     ],
     "specifying": [
       "LANG-001",
@@ -50345,6 +50471,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "BUG-081",
       "TEST-009",
       "FOUND-042",
       "FOUND-022",
@@ -50744,7 +50871,7 @@
   "prefixCounters": {
     "CLI": 14,
     "HELP": 6,
-    "BUG": 80,
+    "BUG": 82,
     "DISC": 2,
     "COV": 54,
     "TUI": 30,
