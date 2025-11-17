@@ -6,7 +6,6 @@
 @attachment-management
 @RES-013
 Feature: Smart Research Integration and Auto-Attachment
-
   """
   Integrates with research tool system (RES-010) to capture research output. Uses AI (Claude/GPT) to analyze research results and extract business rules, examples, and questions. Provides interactive prompts for user acceptance/rejection/editing of AI suggestions. Stores attachments in spec/attachments/<work-unit-id>/ with both raw and structured formats. Supports --auto-attach flag for non-interactive mode. Updates Example Map (work-units.json) with extracted artifacts.
   """
@@ -31,7 +30,6 @@ Feature: Smart Research Integration and Auto-Attachment
   #   5. AI extracts rule 'JWT tokens must expire within 24 hours' from research output and adds it to Example Map after user confirmation
   #
   # ========================================
-
   Background: User Story
     As a developer using research tools during Example Mapping
     I want to automatically save research results as attachments and extract rules/examples with AI assistance
@@ -44,13 +42,11 @@ Feature: Smart Research Integration and Auto-Attachment
     And the research tool returns results
     And the prompt should wait for user input
 
-
   Scenario: AI analyzes research output and suggests extractable rules and examples
     Given I have saved research results for AUTH-001
     When the AI analyzes the research output
     Then the system should display "Found 3 rules, 5 examples"
     And the system should prompt "Add to AUTH-001? (y/n/edit)"
-
 
   Scenario: Accept AI suggestions and add to Example Map with attachment saved
     Given AI has suggested 3 rules and 5 examples for AUTH-001
@@ -59,13 +55,11 @@ Feature: Smart Research Integration and Auto-Attachment
     And the raw output should be saved to spec/attachments/AUTH-001/perplexity-oauth-research.md
     And the structured extraction should be saved to spec/attachments/AUTH-001/perplexity-oauth-research-extracted.json
 
-
   Scenario: Auto-attach research results without prompts using --auto-attach flag
     Given I have a work unit AUTH-001 in specifying state
     When I run "fspec research --tool=ast --query=\"authentication patterns\" --work-unit=AUTH-001 --auto-attach"
     Then the research results should be automatically saved without prompts
     And the attachment should be saved to spec/attachments/AUTH-001/
-
 
   Scenario: AI extracts specific business rule from research output
     Given I have research output about JWT token expiration
@@ -73,4 +67,3 @@ Feature: Smart Research Integration and Auto-Attachment
     Then the AI should extract rule "JWT tokens must expire within 24 hours"
     And the extracted rule should be presented for user confirmation
     And after confirmation the rule should be added to the Example Map
-

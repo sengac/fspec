@@ -5,7 +5,6 @@
 @config-management
 @RES-012
 Feature: Configuration Management with TUI Integration
-
   """
   Phase 1 implementation: Multi-layer config resolution and validation only. Uses dotenv for .env file loading. Config resolution follows priority: ENV vars (highest) → User config → Project config → Defaults (lowest). Validation checks required fields before tool execution to prevent runtime errors.
   """
@@ -30,7 +29,6 @@ Feature: Configuration Management with TUI Integration
   #   5. Default Perplexity model 'sonar' is used when no PERPLEXITY_MODEL env var or config file setting exists
   #
   # ========================================
-
   Background: User Story
     As a developer using research tools
     I want to configure and validate research tool settings without manual file editing

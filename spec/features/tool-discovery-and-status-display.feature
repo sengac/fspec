@@ -5,7 +5,6 @@
 @tool-discovery
 @RES-010
 Feature: Tool Discovery and Status Display
-
   """
   Uses config resolution system from RES-012 (resolveConfig, validateConfig). Integrates with existing research tool registry. Shows configuration status (CONFIGURED, NOT CONFIGURED, PARTIALLY CONFIGURED) using visual indicators. Provides usage guidance with configuration command examples for unconfigured tools. Output is structured for both human and AI agent consumption.
   """
@@ -30,7 +29,6 @@ Feature: Tool Discovery and Status Display
   #   5. User runs 'fspec research --tool=perplexity --help' and sees tool-specific help with configuration requirements and usage examples
   #
   # ========================================
-
   Background: User Story
     As a developer using research tools
     I want to see configuration status and usage guidance for all available tools
@@ -43,7 +41,6 @@ Feature: Tool Discovery and Status Display
     And the status should be "CONFIGURED"
     And the config source should be "ENV"
 
-
   Scenario: Show tool with NOT CONFIGURED status and usage guidance
     Given I have no JIRA_URL or JIRA_TOKEN configured
     When I run "fspec research"
@@ -53,14 +50,12 @@ Feature: Tool Discovery and Status Display
     And the examples should include "export JIRA_URL=..."
     And the examples should include "export JIRA_TOKEN=..."
 
-
   Scenario: Show tool with CONFIGURED status from user config file
     Given I have Confluence configuration in ~/.fspec/fspec-config.json
     When I run "fspec research"
     Then the output should list Confluence tool
     And the status should be "CONFIGURED"
     And the config source should be "USER"
-
 
   Scenario: List all tools with status indicators and config sources
     Given I have mixed tool configurations (some configured, some not)
@@ -70,11 +65,9 @@ Feature: Tool Discovery and Status Display
     And each tool should show a status indicator (✓ or ✗)
     And configured tools should show their config source
 
-
   Scenario: Show tool-specific help with configuration requirements
     Given I want to learn how to configure a specific tool
     When I run "fspec research --tool=perplexity --help"
     Then the output should show Perplexity tool description
     And the output should show configuration requirements
     And the output should show usage examples
-

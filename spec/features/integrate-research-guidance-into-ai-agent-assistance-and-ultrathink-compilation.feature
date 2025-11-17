@@ -5,7 +5,6 @@
 @discovery
 @RES-008
 Feature: Integrate research guidance into AI agent assistance and ULTRATHINK compilation
-
   """
   Integrates research guidance into multiple touchpoints: system-reminders (src/commands/update-work-unit-status.ts), bootstrap content (src/commands/bootstrap.ts), spec/CLAUDE.md template. Adds compile-research command using agentRegistry.ts for ULTRATHINK detection, markdown-it for rendering, mermaid validation from existing add-diagram command. Auto-attaches compiled research using add-attachment flow.
   """
@@ -31,7 +30,6 @@ Feature: Integrate research guidance into AI agent assistance and ULTRATHINK com
   #   5. Compiled research includes: mermaid flowchart showing authentication flow, markdown summary, auto-attached to spec/attachments/AUTH-001/
   #
   # ========================================
-
   Background: User Story
     As a AI agent using fspec during discovery
     I want to receive guidance on using research tools and compile findings

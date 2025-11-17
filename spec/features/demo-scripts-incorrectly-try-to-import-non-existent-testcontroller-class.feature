@@ -3,21 +3,20 @@
 @video-recording
 @bug
 Feature: Demo scripts incorrectly try to import non-existent TestController class
-
   """
-  
+
   Key architectural decisions:
   - @microsoft/tui-test is a TEST FRAMEWORK (like Jest/Vitest for terminals)
   - Provides test() and expect() functions for defining terminal tests
   - Terminal instance is passed as a fixture to test functions
   - Uses node-pty for PTY management and @xterm/headless for terminal emulation
-  
+
   Dependencies and integrations:
   - @microsoft/tui-test (test framework)
   - node-pty (PTY spawning)
   - @xterm/headless (terminal emulation)
   - Jest expect library (assertions)
-  
+
   Critical implementation requirements:
   - MUST convert existing demos from standalone scripts to .test.ts test files
   - MUST replace import { TestController } with import { test, expect }
@@ -26,7 +25,7 @@ Feature: Demo scripts incorrectly try to import non-existent TestController clas
   - MUST use await expect(terminal.getByText(...)).toBeVisible() for synchronization
   - MUST update recorder to execute test files with tui-test CLI
   - See attached docs/tui-test-usage-guide.md for complete migration guide
-  
+
   """
 
   # ========================================
@@ -47,7 +46,6 @@ Feature: Demo scripts incorrectly try to import non-existent TestController clas
   #   4. fspec demo: test.use({ program: { file: 'node', args: ['~/projects/fspec/dist/index.js'] } }); test('demo', async ({ terminal }) => { await expect(terminal.getByText('fspec')).toBeVisible(); terminal.keyDown(); });
   #
   # ========================================
-
   Background: User Story
     As a developer using fspec.videos
     I want to write demo scripts using @microsoft/tui-test framework

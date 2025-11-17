@@ -6,7 +6,6 @@
 @high
 @BUG-075
 Feature: AST research tool fails with '--file is required' error even when --file flag is provided
-
   """
   The AST tool uses indexOf() to find '--file' flag, which fails when argument is '--file=value' format. The fix parses both '--flag value' and '--flag=value' formats by checking if arg starts with '--file=' and extracting value after equals sign.
   """
@@ -27,7 +26,6 @@ Feature: AST research tool fails with '--file is required' error even when --fil
   #   3. User runs 'fspec research --tool=ast --operation list-functions --file src/git/diff.ts' (space format), tool should parse arguments correctly
   #
   # ========================================
-
   Background: User Story
     As a developer using fspec research tool
     I want to use either --flag=value or --flag value syntax for all arguments
@@ -39,10 +37,8 @@ Feature: AST research tool fails with '--file is required' error even when --fil
     Then the tool should successfully parse the --file argument
     And the tool should return JSON with matches
 
-
   Scenario: Parse --file argument in space-separated format
     Given I have the AST research tool
     When I run 'fspec research --tool=ast --operation list-functions --file src/git/diff.ts'
     Then the tool should successfully parse the --file argument
     And the tool should return JSON with matches
-

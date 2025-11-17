@@ -5,7 +5,6 @@
 @critical
 @COV-054
 Feature: Coverage enforcement gap: 21.3% of features bypass validation
-
   """
   Uses extractWorkUnitTags() from src/utils/work-unit-tags.ts to parse feature files and detect @WORK-UNIT-ID tags. Auto-discovery fallback when workUnit.linkedFeatures is empty or null. Maintains backward compatibility with explicit linkedFeatures array (explicit wins over auto-discovery).
   """
@@ -28,7 +27,6 @@ Feature: Coverage enforcement gap: 21.3% of features bypass validation
   #   4. Work unit BUG-042 has @BUG-042 tag in feature file but 0% coverage → Block progression with coverage error
   #
   # ========================================
-
   Background: User Story
     As a developer using fspec
     I want to have coverage validation automatically detect features tagged with work unit IDs
@@ -43,7 +41,6 @@ Feature: Coverage enforcement gap: 21.3% of features bypass validation
     And coverage validation should run for all 3 scenarios
     And the status update should fail with coverage error
 
-
   Scenario: Explicit linkedFeatures takes precedence over @TAG auto-discovery
     Given a work unit AUTH-002 with linkedFeatures: ['custom-feature']
     When moving AUTH-002 to done status
@@ -52,7 +49,6 @@ Feature: Coverage enforcement gap: 21.3% of features bypass validation
     And a feature file spec/features/custom-feature.feature without @AUTH-002 tag
     And coverage validation should NOT use user-login.feature
     And explicit linkedFeatures should override auto-discovery
-
 
   Scenario: Task work units are exempt from coverage validation
     Given a work unit TASK-001 with type: 'task'
@@ -63,7 +59,6 @@ Feature: Coverage enforcement gap: 21.3% of features bypass validation
     And the status update should succeed with warning
     And tasks should be exempt from coverage requirements
 
-
   Scenario: Block progression when auto-discovered feature has incomplete coverage
     Given a work unit BUG-042 with linkedFeatures: null
     When moving BUG-042 to done status
@@ -73,4 +68,3 @@ Feature: Coverage enforcement gap: 21.3% of features bypass validation
     And coverage shows 0% (0/2 scenarios covered)
     And coverage validation should detect 0% coverage
     And the status update should fail with coverage error
-

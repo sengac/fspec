@@ -3,7 +3,6 @@
 @research-tools
 @RES-019
 Feature: Add multi-language support to AST research tool (Kotlin, Dart, Python, Go, Rust, Swift, C#, C, C++)
-
   """
   Extends existing AST research tool with tree-sitter parsers for multiple languages. Each language requires: (1) npm package installation, (2) import statement, (3) parser initialization in ast.ts, (4) language detection in detectLanguage() function, (5) query-executor updates for language-specific node types. Python, Go, Rust already have detection but lack parser implementation. New languages (Swift, C#, C, C++) need full implementation from scratch.
   """
@@ -33,7 +32,6 @@ Feature: Add multi-language support to AST research tool (Kotlin, Dart, Python, 
   #   10. User runs 'fspec research --tool=ast --operation=list-functions --file=main.cpp' and gets list of C++ functions
   #
   # ========================================
-
   Background: User Story
     As a developer using AST research tool
     I want to analyze codebases in multiple programming languages

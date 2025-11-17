@@ -4,7 +4,6 @@
 @event-storm
 @EXMAP-014
 Feature: Generate Example Mapping from Event Storm
-
   """
   Architecture notes:
   - Implements Gap 1 from EXMAP-013 analysis
@@ -32,7 +31,6 @@ Feature: Generate Example Mapping from Event Storm
   #   3. Hotspot with concern 'Unclear password reset timeout' generates question '@human: What should unclear password reset timeout be?'
   #
   # ========================================
-
   Background: User Story
     As a AI agent performing Event Storming
     I want to automatically generate Example Mapping from Event Storm artifacts

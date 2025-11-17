@@ -5,7 +5,6 @@
 @integration
 @RES-001
 Feature: Interactive research command with multiple backend support
-
   """
   Integrates with RES-002 research framework for auto-discovery of research tools. Scans spec/research-scripts/ directory for executable files at runtime. Uses child_process.execSync to execute research scripts with arguments. Supports attachment workflow via fspec add-attachment command. Tool discovery is dynamic (no manifest file required).
   """
@@ -36,7 +35,6 @@ Feature: Interactive research command with multiple backend support
   #   8. During Example Mapping, developer answers no to attachment prompt, research results displayed but not saved
   #
   # ========================================
-
   Background: User Story
     As a AI agent or developer using fspec
     I want to research questions interactively during Example Mapping

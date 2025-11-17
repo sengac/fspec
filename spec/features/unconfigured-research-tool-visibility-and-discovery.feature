@@ -5,7 +5,6 @@
 @research-tools
 @RES-018
 Feature: Unconfigured research tool visibility and discovery
-
   """
   Uses existing research tool registry and loadConfig() validation from each tool. Adds new --all flag to 'fspec research' command. Modifies system-reminder output to always show all tools. Updates error messages to include full JSON config examples.
   """
@@ -50,7 +49,6 @@ Feature: Unconfigured research tool visibility and discovery
   #   A: true
   #
   # ========================================
-
   Background: User Story
     As a developer or AI agent using fspec research tools
     I want to discover available research tools even when not configured
@@ -62,7 +60,6 @@ Feature: Unconfigured research tool visibility and discovery
     Then I should see only AST listed as available
     And I should see a message about using --all to see unconfigured tools
 
-
   Scenario: List all tools including unconfigured ones
     Given I have no research tools configured except AST
     When I run 'fspec research --all'
@@ -70,7 +67,6 @@ Feature: Unconfigured research tool visibility and discovery
     And AST should show as configured with ✓ indicator
     And Perplexity should show as not configured with ✗ indicator
     And each unconfigured tool should show JSON config example
-
 
   Scenario: System-reminder shows all tools to AI agents
     Given I am an AI agent
@@ -80,7 +76,6 @@ Feature: Unconfigured research tool visibility and discovery
     And each unconfigured tool should show JSON config structure
     And config file paths should be mentioned
 
-
   Scenario: Error when using unconfigured tool
     Given Perplexity is not configured
     When I run 'fspec research --tool=perplexity --query="test"'
@@ -89,11 +84,9 @@ Feature: Unconfigured research tool visibility and discovery
     And the error should show JSON config example for spec/fspec-config.json
     And the error should suggest using AST as alternative
 
-
   Scenario: Discovery message when listing configured tools
     Given only AST is configured
     When I run 'fspec research'
     Then I should see AST marked as ready
     And I should see a footer message stating the number of unconfigured tools
     And the footer should mention using --all to see them
-

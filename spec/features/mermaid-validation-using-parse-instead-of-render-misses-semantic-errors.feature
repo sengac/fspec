@@ -7,7 +7,6 @@
 @bug-fix
 @VAL-001
 Feature: Mermaid validation using parse() instead of render() misses semantic errors
-
   """
   Uses mermaid.render() instead of mermaid.parse() for complete validation. Catches both syntax and semantic errors (subgraph format, style constraints, etc.). Requires JSDOM for headless browser environment. Error messages include diagram number and error details for easy debugging.
   """
@@ -30,7 +29,6 @@ Feature: Mermaid validation using parse() instead of render() misses semantic er
   #   5. User attaches markdown with multiple diagrams, one invalid - validation REJECTS with clear indication which diagram failed
   #
   # ========================================
-
   Background: User Story
     As a developer using fspec to document architecture
     I want to validate mermaid diagrams for both syntax and semantic errors

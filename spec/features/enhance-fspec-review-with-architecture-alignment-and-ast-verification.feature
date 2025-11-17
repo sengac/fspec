@@ -5,7 +5,6 @@
 @code-quality
 @REMIND-014
 Feature: Enhance fspec review with architecture alignment and AST verification
-
   """
   Critical implementation: Must check work unit attachments for AST research results. Must validate architectural notes reference actual code (not assumptions). Must align proposed approach with FOUNDATION.md/CLAUDE.md/AGENTS.md principles. Must detect if AI is reinventing existing utilities/functions. Must follow existing ast-data-gatherer.ts pattern (data presentation, not judgment).
   """
@@ -29,7 +28,6 @@ Feature: Enhance fspec review with architecture alignment and AST verification
   #   3. AI creates architectural note 'Refactoring: Extract validation logic to shared utility because current code has 3 copies of same validation pattern across files', attaches AST research showing the 3 locations, review passes and allows transition to testing with all data validated
   #
   # ========================================
-
   Background: User Story
     As a AI agent working on a feature
     I want to run architectural review before moving to testing phase
@@ -43,7 +41,6 @@ Feature: Enhance fspec review with architecture alignment and AST verification
     And the error message should contain 'Cannot transition to testing - no AST research performed during discovery'
     And the work unit status should remain 'specifying'
 
-
   Scenario: AI detects reinvention via AST data in system-reminder
     Given I have a work unit with AST research attachments showing 'validateFeature' exists in 2 files
     When I run 'fspec update-work-unit-status WORK-001 testing'
@@ -53,7 +50,6 @@ Feature: Enhance fspec review with architecture alignment and AST verification
     And the system-reminder should show 'validateFeature appears in 2 files'
     And the AI should revert to specifying state after analyzing the data
 
-
   Scenario: Pass review with proper architecture documentation and AST research
     Given I have a work unit with architectural note 'Refactoring: Extract validation logic to shared utility'
     When I run 'fspec update-work-unit-status WORK-001 testing'
@@ -62,4 +58,3 @@ Feature: Enhance fspec review with architecture alignment and AST verification
     And the work unit has a completed feature file with no prefill placeholders
     And the work unit status should be 'testing'
     And the review validation should pass all objective ACDD checks
-

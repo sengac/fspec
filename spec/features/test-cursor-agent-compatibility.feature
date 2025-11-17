@@ -4,7 +4,6 @@
 @integration
 @AGENT-001
 Feature: Test Cursor agent compatibility
-
   """
   Tests multi-agent support system for Cursor AI editor. Cursor uses .cursor/commands/ directory for custom commands. Initialization creates agent-specific files: .cursor/commands/fspec.md (command integration), spec/CURSOR.md (agent instructions). Validates file creation, content structure, and activation message display. Uses vitest for testing, fs/promises for file operations.
   """
@@ -26,7 +25,6 @@ Feature: Test Cursor agent compatibility
   #   4. Created spec/CURSOR.md contains Cursor-specific ACDD guidelines and Example Mapping workflow
   #
   # ========================================
-
   Background: User Story
     As a developer using Cursor AI agent
     I want to initialize fspec with Cursor-specific configuration

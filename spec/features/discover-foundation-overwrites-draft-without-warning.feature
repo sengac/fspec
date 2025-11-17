@@ -4,7 +4,6 @@
 @bug-fix
 @FOUND-021
 Feature: discover-foundation overwrites draft without warning
-
   """
   Architecture notes:
   - Modify discover-foundation.ts discoverFoundation() function (lines 475-544)
@@ -41,7 +40,6 @@ Feature: discover-foundation overwrites draft without warning
   #   5. User runs 'fspec discover-foundation --finalize' when draft exists → Normal finalization flow (no change to existing behavior)
   #
   # ========================================
-
   Background: User Story
     As a AI agent or developer using fspec
     I want to run discover-foundation command safely without losing draft progress

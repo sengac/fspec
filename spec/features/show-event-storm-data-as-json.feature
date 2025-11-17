@@ -2,7 +2,6 @@
 @cli
 @EXMAP-011
 Feature: Show Event Storm data as JSON
-
   """
   Implementation:
   - Read work-units.json, extract eventStorm.items array, filter deleted=false, output as JSON. Use existing WorkUnitsData and EventStorm types. Command: fspec show-event-storm <work-unit-id> [--format=json|pretty]
@@ -27,7 +26,6 @@ Feature: Show Event Storm data as JSON
   #   4. Work unit with deleted items (deleted: true) excludes them from output
   #
   # ========================================
-
   Background: User Story
     As a AI agent analyzing Event Storm sessions
     I want to query Event Storm artifacts as structured JSON data

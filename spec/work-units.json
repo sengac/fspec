@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-17T07:27:31.643Z"
+    "lastUpdated": "2025-11-17T08:39:53.765Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -49655,9 +49655,19 @@
       "title": "Conduct Big Picture Event Storming for Foundation",
       "description": "Complete the foundation by capturing domain architecture through Big Picture Event Storming.\n\nUse these commands to populate foundation.json eventStorm field:\n- fspec add-foundation-bounded-context <name>\n- fspec add-aggregate-to-foundation <context> <aggregate>\n- fspec add-domain-event-to-foundation <context> <event>\n- fspec show-foundation-event-storm\n\nWhy this matters:\n- Establishes bounded contexts for domain-driven design\n- Enables tag ontology generation from domain model\n- Provides foundation for architectural documentation\n- Supports EXMAP-004 tag discovery workflow\n\nSee spec/CLAUDE.md \"Big Picture Event Storming\" section for detailed guidance.",
       "type": "task",
-      "status": "backlog",
+      "status": "specifying",
       "createdAt": "2025-11-17T06:47:08.326Z",
-      "updatedAt": "2025-11-17T06:47:08.326Z"
+      "updatedAt": "2025-11-17T08:23:00.545Z",
+      "stateHistory": [
+        {
+          "state": "backlog",
+          "timestamp": "2025-11-17T08:21:54.659Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-17T08:23:00.545Z"
+        }
+      ]
     },
     "DOCS-003": {
       "id": "DOCS-003",
@@ -49695,6 +49705,198 @@
       "nextQuestionId": 0,
       "nextNoteId": 0,
       "updated": "2025-11-17T07:27:31.666Z"
+    },
+    "BUG-078": {
+      "id": "BUG-078",
+      "title": "discover-foundation --finalize creates work unit without adding to states array",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-11-17T07:37:59.496Z",
+      "updatedAt": "2025-11-17T08:15:23.272Z",
+      "description": "The discover-foundation.ts --finalize code directly creates FOUND-022 work unit by manually constructing the object (lines 399-423) instead of calling createWorkUnit() from work-unit.ts. This violates DRY/SOLID principles and causes the work unit to be missing from states.backlog array, making it invisible in the TUI.\n\nRoot cause: Code duplication - discover-foundation.ts reimplements work unit creation logic instead of reusing the existing createWorkUnit() function.\n\nImpact: FOUND-022 exists in workUnits object but not in states.backlog, so TUI filtering (fspecStore.ts lines 109-130) skips it.\n\nFix: Refactor discover-foundation.ts to import and call createWorkUnit() instead of manually creating the work unit object.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-17T07:38:39.351Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-17T07:45:38.080Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-17T07:47:05.726Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-17T08:08:44.541Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-17T08:15:23.273Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "Work unit creation logic must be centralized - all commands must call createWorkUnit() from work-unit.ts",
+          "deleted": false,
+          "createdAt": "2025-11-17T07:38:52.613Z"
+        },
+        {
+          "id": 1,
+          "text": "All work unit creation commands (create-story, create-bug, create-task, discover-foundation) must call createWorkUnit() instead of duplicating logic",
+          "deleted": false,
+          "createdAt": "2025-11-17T07:40:10.932Z"
+        },
+        {
+          "id": 2,
+          "text": "states.backlog array must be updated atomically with workUnits object to prevent TUI display bugs",
+          "deleted": false,
+          "createdAt": "2025-11-17T07:40:18.161Z"
+        }
+      ],
+      "nextRuleId": 3,
+      "examples": [
+        {
+          "id": 0,
+          "text": "discover-foundation.ts:401 manually creates work unit object and FORGETS to add to states.backlog array - causing FOUND-022 to be invisible in TUI",
+          "deleted": false,
+          "createdAt": "2025-11-17T07:39:50.046Z"
+        },
+        {
+          "id": 1,
+          "text": "create-story.ts:110, create-bug.ts:110, create-task.ts:110 all DUPLICATE the logic from work-unit.ts:212 - violating DRY principle",
+          "deleted": false,
+          "createdAt": "2025-11-17T07:39:58.194Z"
+        },
+        {
+          "id": 2,
+          "text": "work-unit.ts:212 has the CORRECT logic that adds to states.backlog array - this should be the ONLY place this logic exists (Single Responsibility Principle)",
+          "deleted": false,
+          "createdAt": "2025-11-17T07:40:04.760Z"
+        }
+      ],
+      "nextExampleId": 3,
+      "userStory": {
+        "role": "developer using fspec",
+        "action": "create work units through any command",
+        "benefit": "all work units appear in the TUI Kanban board without missing entries"
+      },
+      "questions": [],
+      "architectureNotes": [],
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-17T08:15:23.272Z"
+    },
+    "BUG-079": {
+      "id": "BUG-079",
+      "title": "Prefill detection incorrectly flags code syntax as placeholders",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-11-17T07:45:29.630Z",
+      "updatedAt": "2025-11-17T08:39:53.790Z",
+      "description": "The prefill detection regex matches ANY text inside square brackets, causing false positives when Gherkin steps describe code syntax like 'workUnitsData.workUnits[id]'.\n\nRoot cause: Overly broad regex pattern matches [anything] instead of specific placeholder patterns we generate.\n\nImpact: \n- Valid feature files blocked from workflow progression\n- Forces workarounds (rewording steps to avoid brackets)\n- Breaks when describing array access, generics, or other bracket syntax\n\nFix: Only detect actual placeholder patterns we generate:\n- [role], [action], [benefit] (user story placeholders)\n- [precondition], [expected outcome] (step placeholders)  \n- TODO: markers (architecture note placeholders)\n- @component, @critical (tag placeholders)\n\nDo NOT match arbitrary bracket syntax that happens to be in step descriptions.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-17T08:28:28.244Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-17T08:30:56.441Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-17T08:32:35.637Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-17T08:34:58.670Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-17T08:39:53.791Z"
+        }
+      ],
+      "userStory": {
+        "role": "AI agent writing Gherkin specifications",
+        "action": "describe code syntax in steps without triggering false positive prefill detection",
+        "benefit": "I can write clear, accurate specifications without workarounds"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Prefill detection MUST only match actual placeholder text patterns we generate: [role], [action], [benefit], [precondition], [expected outcome], TODO:",
+          "deleted": false,
+          "createdAt": "2025-11-17T08:28:44.210Z"
+        },
+        {
+          "id": 1,
+          "text": "Prefill detection MUST NOT match arbitrary bracket syntax like array access [id], TypeScript generics Array<T>, or code examples",
+          "deleted": false,
+          "createdAt": "2025-11-17T08:28:50.764Z"
+        }
+      ],
+      "nextRuleId": 2,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Step 'Then only work-unit.ts should contain workUnitsData.workUnits[id] = object logic' incorrectly flagged as containing placeholder",
+          "deleted": false,
+          "createdAt": "2025-11-17T08:28:59.075Z"
+        },
+        {
+          "id": 1,
+          "text": "Step 'Given I have [role] placeholder' should be flagged as containing placeholder",
+          "deleted": false,
+          "createdAt": "2025-11-17T08:29:05.633Z"
+        },
+        {
+          "id": 2,
+          "text": "Step 'When I access array[index] in code' should NOT be flagged as placeholder",
+          "deleted": false,
+          "createdAt": "2025-11-17T08:29:12.168Z"
+        }
+      ],
+      "nextExampleId": 3,
+      "questions": [],
+      "architectureNotes": [],
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-17T08:39:53.790Z"
+    },
+    "FOUND-023": {
+      "id": "FOUND-023",
+      "title": "Conduct Big Picture Event Storming for Foundation",
+      "status": "backlog",
+      "createdAt": "2025-11-17T08:38:32.393Z",
+      "updatedAt": "2025-11-17T08:38:32.393Z",
+      "stateHistory": [
+        {
+          "state": "backlog",
+          "timestamp": "2025-11-17T08:38:32.393Z"
+        }
+      ],
+      "description": "Complete the foundation by capturing domain architecture through Big Picture Event Storming.\n\nUse these commands to populate foundation.json eventStorm field:\n- fspec add-foundation-bounded-context <name>\n- fspec add-aggregate-to-foundation <context> <aggregate>\n- fspec add-domain-event-to-foundation <context> <event>\n- fspec show-foundation-event-storm\n\nWhy this matters:\n- Establishes bounded contexts for domain-driven design\n- Enables tag ontology generation from domain model\n- Provides foundation for architectural documentation\n- Supports EXMAP-004 tag discovery workflow\n\nSee spec/CLAUDE.md \"Big Picture Event Storming\" section for detailed guidance.",
+      "type": "task"
+    },
+    "FOUND-024": {
+      "id": "FOUND-024",
+      "title": "Conduct Big Picture Event Storming for Foundation",
+      "status": "backlog",
+      "createdAt": "2025-11-17T08:38:32.481Z",
+      "updatedAt": "2025-11-17T08:38:32.481Z",
+      "stateHistory": [
+        {
+          "state": "backlog",
+          "timestamp": "2025-11-17T08:38:32.481Z"
+        }
+      ],
+      "description": "Complete the foundation by capturing domain architecture through Big Picture Event Storming.\n\nUse these commands to populate foundation.json eventStorm field:\n- fspec add-foundation-bounded-context <name>\n- fspec add-aggregate-to-foundation <context> <aggregate>\n- fspec add-domain-event-to-foundation <context> <event>\n- fspec show-foundation-event-storm\n\nWhy this matters:\n- Establishes bounded contexts for domain-driven design\n- Enables tag ontology generation from domain model\n- Provides foundation for architectural documentation\n- Supports EXMAP-004 tag discovery workflow\n\nSee spec/CLAUDE.md \"Big Picture Event Storming\" section for detailed guidance.",
+      "type": "task"
     }
   },
   "states": {
@@ -49749,19 +49951,24 @@
       "INT-004",
       "DOC-012",
       "DOC-013",
-      "DOC-014"
+      "DOC-014",
+      "FOUND-023",
+      "FOUND-024"
     ],
     "specifying": [
       "LANG-001",
       "EXMAP-004",
       "BOARD-020",
       "AGENT-001",
-      "BROWSE-001"
+      "BROWSE-001",
+      "FOUND-022"
     ],
     "testing": [],
     "implementing": [],
     "validating": [],
     "done": [
+      "BUG-079",
+      "BUG-078",
       "DOCS-003",
       "FOUND-021",
       "FOUND-019",
@@ -50155,7 +50362,7 @@
   "prefixCounters": {
     "CLI": 14,
     "HELP": 6,
-    "BUG": 77,
+    "BUG": 80,
     "DISC": 2,
     "COV": 54,
     "TUI": 30,

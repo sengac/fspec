@@ -1,3 +1,5 @@
+@foundation-management
+@cli
 @done
 @discovery
 @foundation

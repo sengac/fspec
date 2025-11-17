@@ -5,7 +5,6 @@
 @bug-fix
 @VAL-004
 Feature: Multiple consecutive system-reminder blocks in update-work-unit-status
-
   """
   The update-work-unit-status command collects multiple system reminders from helper functions (getStatusChangeReminder, getVirtualHooksReminder, getVirtualHooksCleanupReminder) that each return content wrapped in system-reminder tags. To avoid consecutive blocks, the implementation strips wrapper tags from each reminder, then wraps the combined content once using wrapInSystemReminder utility.
   """
@@ -23,7 +22,6 @@ Feature: Multiple consecutive system-reminder blocks in update-work-unit-status
   #   2. Status change reminder, virtual hooks reminder, and cleanup reminder all triggered - should combine into one block, not three separate blocks
   #
   # ========================================
-
   Background: User Story
     As a developer using fspec CLI
     I want to see single unified system-reminder blocks

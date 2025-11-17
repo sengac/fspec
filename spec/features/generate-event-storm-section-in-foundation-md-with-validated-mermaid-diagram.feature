@@ -7,7 +7,6 @@
 @cli
 @FOUND-017
 Feature: Generate Event Storm section in FOUNDATION.md with validated Mermaid diagram
-
   """
   Use existing validateMermaidSyntax() utility from src/utils/mermaid-validation.ts to validate generated Mermaid diagram. Call validateMermaidSyntax() before writing to FOUNDATION.md. Reuse existing pattern from add-diagram command. Auto-regenerate FOUNDATION.md by calling generateFoundationMd() at end of add-foundation-bounded-context command.
   """
@@ -29,7 +28,6 @@ Feature: Generate Event Storm section in FOUNDATION.md with validated Mermaid di
   #   3. Invalid Mermaid syntax detected during generation, error thrown with line number and helpful message
   #
   # ========================================
-
   Background: User Story
     As a AI agent using fspec for any project
     I want to see Event Storm bounded contexts visualized in FOUNDATION.md with a Mermaid diagram
