@@ -1,0 +1,52 @@
+{
+  "scenarios": [
+    {
+      "name": "Generate business rule from Event Storm policy",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/generate-example-mapping-from-event-storm.test.ts",
+          "lines": "25-94",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Generate scenario example from domain event",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/generate-example-mapping-from-event-storm.test.ts",
+          "lines": "96-184",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Generate question from Event Storm hotspot",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/generate-example-mapping-from-event-storm.test.ts",
+          "lines": "183-263",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Reject command with non-existent triggersEvent ID",
+      "testMappings": []
+    },
+    {
+      "name": "Detect broken references in Event Storm",
+      "testMappings": []
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 3,
+    "coveragePercent": 60,
+    "testFiles": [
+      "src/commands/__tests__/generate-example-mapping-from-event-storm.test.ts"
+    ],
+    "implFiles": [],
+    "totalLinesCovered": 240
+  }
+}

@@ -130,7 +130,9 @@
         "GIT-003",
         "RES-001",
         "RES-007",
-        "EXMAP-011"
+        "EXMAP-011",
+        "EXMAP-013",
+        "EXMAP-014"
       ]
     },
     "reverse-acdd-refactor": {

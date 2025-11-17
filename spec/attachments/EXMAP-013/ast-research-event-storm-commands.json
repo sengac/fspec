@@ -1,0 +1,30 @@
+{
+  "matches": [
+    {
+      "type": "function_declaration",
+      "name": "addDomainEvent",
+      "line": 34,
+      "column": 7,
+      "text": "async function addDomainEvent(\n  options: AddDomainEventOptions\n): Promise<AddDomainEventResult> {\n  const cwd = options.cwd || process.cwd();\n  const workUnitsFile = join(cwd, 'spec', 'work-units.json');\n\n  // Check if work-units.json exists\n  if (!existsSync(workUnitsFile)) {\n    return {\n      success: false,\n      error: 'spec/work-units.json not found. Run fspec init first.',\n    };\n  }\n\n  try {\n    // Read work units data\n    const workUnitsData = await fileManager.readJSON<WorkUnitsData>(\n      workUnitsFile,\n      {\n        meta: { version: '1.0.0', lastUpdated: new Date().toISOString() },\n        states: {\n          backlog: [],\n          specifying: [],\n          testing: [],\n          implementing: [],\n          validating: [],\n          done: [],\n          blocked: [],\n        },\n        workUnits: {},\n      }\n    );\n\n    // Validate work unit exists\n    const workUnit = workUnitsData.workUnits[options.workUnitId];\n    if (!workUnit) {\n      return {\n        success: false,\n        error: `Work unit ${options.workUnitId} not found`,\n      };\n    }\n\n    // Validate work unit is not in done/blocked state\n    if (workUnit.status === 'done' || workUnit.status === 'blocked') {\n      return {\n        success: false,\n        error: `Cannot add Event Storm items to work unit in ${workUnit.status} state`,\n      };\n    }\n\n    // Initialize eventStorm section if not present\n    if (!workUnit.eventStorm) {\n      workUnit.eventStorm = {\n        level: 'process_modeling',\n        items: [],\n        nextItemId: 0,\n      };\n    }\n\n    // Create domain event item\n    const eventId = workUnit.eventStorm.nextItemId;\n    const event: EventStormEvent = {\n      id: eventId,\n      type: 'event',\n      color: 'orange',\n      text: options.text,\n      deleted: false,\n      createdAt: new Date().toISOString(),\n    };\n\n    // Add optional fields\n    if (options.timestamp !== undefined) {\n      event.timestamp = options.timestamp;\n    }\n    if (options.boundedContext) {\n      event.boundedContext = options.boundedContext;\n    }\n\n    // Add event to items array\n    workUnit.eventStorm.items.push(event);\n    workUnit.eventStorm.nextItemId++;\n\n    // Update work unit timestamp\n    workUnit.updatedAt = new Date().toISOString();\n\n    // Update meta\n    if (workUnitsData.meta) {\n      workUnitsData.meta.lastUpdated = new Date().toISOString();\n    }\n\n    // Write updated data using transaction\n    await fileManager.transaction(workUnitsFile, async data => {\n      const typedData = data as WorkUnitsData;\n      typedData.workUnits[options.workUnitId] = workUnit;\n      if (workUnitsData.meta) {\n        typedData.meta = workUnitsData.meta;\n      }\n    });\n\n    return {\n      success: true,\n      eventId,\n    };\n  } catch (error: any) {\n    return {\n      success: false,\n      error: error.message || 'Unknown error occurred',\n    };\n  }\n}"
+    },
+    {
+      "type": "arrow_function",
+      "line": 125,
+      "column": 49,
+      "text": "async data => {\n      const typedData = data as WorkUnitsData;\n      typedData.workUnits[options.workUnitId] = workUnit;\n      if (workUnitsData.meta) {\n        typedData.meta = workUnitsData.meta;\n      }\n    }"
+    },
+    {
+      "type": "function_declaration",
+      "name": "registerAddDomainEventCommand",
+      "line": 145,
+      "column": 7,
+      "text": "function registerAddDomainEventCommand(program: Command): void {\n  program\n    .command('add-domain-event')\n    .description('Add domain event to Event Storm section of work unit')\n    .argument('<workUnitId>', 'Work unit ID')\n    .argument('<text>', 'Event text/name')\n    .option('--timestamp <ms>', 'Timeline timestamp in milliseconds', parseInt)\n    .option(\n      '--bounded-context <context>',\n      'Bounded context for domain association'\n    )\n    .action(async (workUnitId: string, text: string, options: any) => {\n      try {\n        const result = await addDomainEvent({\n          workUnitId,\n          text,\n          timestamp: options.timestamp,\n          boundedContext: options.boundedContext,\n        });\n\n        if (!result.success) {\n          logger.error(result.error || 'Failed to add domain event');\n          process.exit(1);\n        }\n\n        logger.success(\n          `Added domain event \"${text}\" to ${workUnitId} (ID: ${result.eventId})`\n        );\n      } catch (error: any) {\n        logger.error(`Error: ${error.message}`);\n        process.exit(1);\n      }\n    });\n}"
+    },
+    {
+      "type": "arrow_function",
+      "line": 156,
+      "column": 12,
+      "text": "async (workUnitId: string, text: string, options: any) => {\n      try {\n        const result = await addDomainEvent({\n          workUnitId,\n          text,\n          timestamp: options.timestamp,\n          boundedContext: options.boundedContext,\n        });\n\n        if (!result.success) {\n          logger.error(result.error || 'Failed to add domain event');\n          process.exit(1);\n        }\n\n        logger.success(\n          `Added domain event \"${text}\" to ${workUnitId} (ID: ${result.eventId})`\n        );\n      } catch (error: any) {\n        logger.error(`Error: ${error.message}`);\n        process.exit(1);\n      }\n    }"
+    }
+  ]
+}
