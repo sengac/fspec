@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-16T22:54:21.453Z"
+    "lastUpdated": "2025-11-17T01:27:57.269Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -48505,6 +48505,435 @@
       "questions": [],
       "nextQuestionId": 0,
       "updated": "2025-11-16T22:54:21.476Z"
+    },
+    "EXMAP-015": {
+      "id": "EXMAP-015",
+      "title": "Wire up comprehensive help for all Event Storm commands",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-11-16T23:18:24.211Z",
+      "updatedAt": "2025-11-16T23:36:09.091Z",
+      "description": "Add dedicated help files (*-help.ts) for all 7 Event Storm commands and integrate them into src/help.ts under the discovery group. Event Storm commands currently lack AI-optimized help documentation.",
+      "epic": "example-driven-discovery",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-16T23:18:33.021Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-16T23:24:29.186Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-16T23:26:00.559Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-16T23:31:40.591Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-16T23:36:09.092Z"
+        }
+      ],
+      "userStory": {
+        "role": "AI agent using fspec",
+        "action": "access comprehensive help for Event Storm commands",
+        "benefit": "I can understand how to use Event Storm features without reading source code"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "All 7 Event Storm commands must have dedicated *-help.ts files following existing help file patterns",
+          "deleted": false,
+          "createdAt": "2025-11-16T23:18:44.688Z"
+        },
+        {
+          "id": 1,
+          "text": "Help files must include AI-optimized sections: WHEN TO USE, PREREQUISITES, TYPICAL WORKFLOW, COMMON ERRORS, COMMON PATTERNS",
+          "deleted": false,
+          "createdAt": "2025-11-16T23:18:49.418Z"
+        },
+        {
+          "id": 2,
+          "text": "Event Storm commands must be added to src/help.ts under the discovery group section",
+          "deleted": false,
+          "createdAt": "2025-11-16T23:18:54.386Z"
+        },
+        {
+          "id": 3,
+          "text": "Help content must cover all 7 Event Storm commands: add-command, add-domain-event, add-hotspot, add-policy, generate-example-mapping-from-event-storm, show-event-storm, show-foundation-event-storm",
+          "deleted": false,
+          "createdAt": "2025-11-16T23:18:59.974Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Running 'fspec add-domain-event --help' shows comprehensive usage with examples and AI-optimized sections",
+          "deleted": false,
+          "createdAt": "2025-11-16T23:19:04.795Z"
+        },
+        {
+          "id": 1,
+          "text": "Running 'fspec help discovery' displays Event Storm commands section with add-domain-event, add-command, add-policy, add-hotspot, show-event-storm, show-foundation-event-storm, generate-example-mapping-from-event-storm",
+          "deleted": false,
+          "createdAt": "2025-11-16T23:19:09.649Z"
+        },
+        {
+          "id": 2,
+          "text": "File src/commands/generate-example-mapping-from-event-storm-help.ts exists and exports getGenerateExampleMappingFromEventStormHelp function",
+          "deleted": false,
+          "createdAt": "2025-11-16T23:19:14.201Z"
+        }
+      ],
+      "nextExampleId": 3,
+      "estimate": 8,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Help files follow the pattern in src/commands/generate-scenarios-help.ts. Each exports a function returning formatted help text with sections for description, usage, AI-optimized guidance, and examples. Integration requires adding commands to displayDiscoveryHelp() in src/help.ts under an EVENT STORM section after existing Example Mapping commands.",
+          "deleted": false,
+          "createdAt": "2025-11-16T23:21:36.740Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "attachments": [
+        "spec/attachments/EXMAP-015/ast-research-help-file-pattern.json"
+      ],
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2025-11-16T23:36:09.091Z"
+    },
+    "HELP-006": {
+      "id": "HELP-006",
+      "title": "Fix help formatter option name rendering and commonErrors property mismatch",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-11-16T23:39:01.898Z",
+      "updatedAt": "2025-11-16T23:47:35.613Z",
+      "description": "During EXMAP-015 review, discovered two issues: (1) Option names render as 'undefined' in help output instead of showing flag names like '--timestamp <ms>', and (2) help files use 'solution' property but interface expects 'fix' property in commonErrors array.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-16T23:39:07.955Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-16T23:41:52.366Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-16T23:43:23.642Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-16T23:46:07.251Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-16T23:47:35.613Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer viewing help for Event Storm commands",
+        "action": "see properly formatted option names in help output",
+        "benefit": "I can understand what flags are available without seeing 'undefined'"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Option names in help output must show the actual flag name (e.g., '--timestamp <ms>'), not 'undefined'",
+          "deleted": false,
+          "createdAt": "2025-11-16T23:39:24.087Z"
+        },
+        {
+          "id": 1,
+          "text": "CommandHelpConfig commonErrors array should use 'fix' property consistently (not 'solution')",
+          "deleted": false,
+          "createdAt": "2025-11-16T23:39:24.629Z"
+        },
+        {
+          "id": 2,
+          "text": "Help formatter must parse option.name field correctly to extract flag names",
+          "deleted": false,
+          "createdAt": "2025-11-16T23:39:25.171Z"
+        }
+      ],
+      "nextRuleId": 3,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Running 'fspec add-domain-event --help' shows OPTIONS section with '--timestamp <ms>' and '--bounded-context <context>' (not 'undefined')",
+          "deleted": false,
+          "createdAt": "2025-11-16T23:39:32.516Z"
+        },
+        {
+          "id": 1,
+          "text": "All Event Storm help files use 'fix' property in commonErrors, not 'solution'",
+          "deleted": false,
+          "createdAt": "2025-11-16T23:39:33.071Z"
+        },
+        {
+          "id": 2,
+          "text": "Help formatter extracts flag name from option.name using regex or string parsing",
+          "deleted": false,
+          "createdAt": "2025-11-16T23:39:33.624Z"
+        }
+      ],
+      "nextExampleId": 3,
+      "attachments": [
+        "spec/attachments/HELP-006/ast-research-help-formatter-options.json"
+      ],
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Fix requires two changes: (1) Update all 7 Event Storm help files to use 'flag' property instead of 'name' in options array, matching CommandOption interface. (2) Update commonErrors to use 'fix' property instead of 'solution'. Interface is in src/utils/help-formatter.ts. No formatter changes needed - help files are using wrong property names.",
+          "deleted": false,
+          "createdAt": "2025-11-16T23:40:44.237Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "estimate": 2,
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2025-11-16T23:47:35.613Z"
+    },
+    "EXMAP-016": {
+      "id": "EXMAP-016",
+      "title": "Complete Event Storm interactive workflow with Example Mapping integration",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-11-17T00:37:42.612Z",
+      "updatedAt": "2025-11-17T01:27:57.294Z",
+      "description": "Implement guided Event Storm sessions with automatic detection, system-reminders, and seamless Example Mapping integration",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-17T00:37:52.614Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-17T00:57:46.537Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-17T01:05:01.092Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-17T01:23:00.178Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-17T01:27:57.294Z"
+        }
+      ],
+      "userStory": {
+        "role": "AI agent working with fspec",
+        "action": "perform Event Storm discovery interactively with automatic detection and guidance",
+        "benefit": "I understand domain complexity before Example Mapping and write better specifications"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Event Storm must have an interactive guided workflow like discover-foundation and Example Mapping (step-by-step with system-reminders)",
+          "deleted": false,
+          "createdAt": "2025-11-17T00:38:15.910Z"
+        },
+        {
+          "id": 1,
+          "text": "System must automatically detect WHEN Event Storm is needed based on work unit complexity (like Example Mapping is triggered for specifying state)",
+          "deleted": false,
+          "createdAt": "2025-11-17T00:38:17.737Z"
+        },
+        {
+          "id": 2,
+          "text": "Event Storm artifacts (policies, events, hotspots) must automatically pipe into Example Mapping using generate-example-mapping-from-event-storm command",
+          "deleted": false,
+          "createdAt": "2025-11-17T00:38:19.936Z"
+        },
+        {
+          "id": 3,
+          "text": "Event Storm guidance must be agent-aware (detect Claude Code vs Cursor) like discover-foundation uses getAgentConfig",
+          "deleted": false,
+          "createdAt": "2025-11-17T00:38:23.112Z"
+        },
+        {
+          "id": 4,
+          "text": "CRITICAL: NO semantic code understanding allowed - fspec uses only AST/syntax analysis, file operations, and explicit human input",
+          "deleted": false,
+          "createdAt": "2025-11-17T00:39:31.402Z"
+        },
+        {
+          "id": 5,
+          "text": "Event Storm is a HUMAN-DRIVEN collaborative workshop - AI facilitates but does NOT infer domain knowledge from code semantics",
+          "deleted": false,
+          "createdAt": "2025-11-17T00:39:32.836Z"
+        },
+        {
+          "id": 6,
+          "text": "ABSOLUTELY NO semantic code - fspec relies on AI responses and tool calling with guidance and AST/research tools to help AI figure things out",
+          "deleted": false,
+          "createdAt": "2025-11-17T00:41:24.726Z"
+        },
+        {
+          "id": 7,
+          "text": "ABSOLUTELY NO heuristics - Leave it up to AI to interactively figure out if Event Storm is needed. Ask AI if it's appropriate for what needs to be written/done. Do this interactively using guidance, same way other interactive commands work (fspec review, fspec reverse)",
+          "deleted": false,
+          "createdAt": "2025-11-17T00:42:47.753Z"
+        },
+        {
+          "id": 8,
+          "text": "Yes, manual opt-in command 'fspec discover-event-storm <work-unit-id>' - BUT the critical part is CRYSTAL CLEAR GUIDANCE that makes AI understand WHEN to run it and WHY. Guidance must prevent AI from skipping this valuable discovery step when appropriate. Use ULTRATHINK prompts in guidance to make AI pause and consider if Event Storm would help before jumping to Example Mapping.",
+          "deleted": false,
+          "createdAt": "2025-11-17T00:46:45.452Z"
+        },
+        {
+          "id": 9,
+          "text": "System-reminder when moving to specifying state that prompts AI to ASSESS domain complexity with self-assessment questions (Do you understand core domain events? Are commands/policies clear? Significant domain complexity?). Makes AI CONSCIOUSLY CHOOSE between: (1) Run Event Storm FIRST then transform to Example Mapping, or (2) Skip Event Storm go directly to Example Mapping. Uses ULTRATHINK-style prompts to prevent skipping. Shows flow: Event Storm → generate-example-mapping-from-event-storm → Example Mapping → Scenarios. CRITICAL: Include concrete EXAMPLES in guidance showing when Event Storm helped vs when it was unnecessary.",
+          "deleted": false,
+          "createdAt": "2025-11-17T00:49:05.867Z"
+        },
+        {
+          "id": 10,
+          "text": "Different pattern from discover-foundation - use free-form pattern like Example Mapping. Command 'fspec discover-event-storm <work-unit-id>' emits comprehensive guidance showing conversation pattern with examples. AI uses existing commands (add-domain-event, add-command, add-policy, add-hotspot) freely in whatever order conversation goes. Explains flow: Events → Commands → Policies → Hotspots. Shows when to stop (like Example Mapping stop criteria). When complete, AI runs generate-example-mapping-from-event-storm to transform artifacts. NO draft/finalize - just guidance + existing tools.",
+          "deleted": false,
+          "createdAt": "2025-11-17T00:50:29.082Z"
+        },
+        {
+          "id": 11,
+          "text": "Create new section file src/utils/slashCommandSections/eventStorm.ts (similar to exampleMapping.ts) with comprehensive Event Storm guidance including examples",
+          "deleted": false,
+          "createdAt": "2025-11-17T00:56:17.997Z"
+        },
+        {
+          "id": 12,
+          "text": "Import eventStorm section in slashCommandTemplate.ts and add to getCompleteWorkflowDocumentation() array (appears in bootstrap output)",
+          "deleted": false,
+          "createdAt": "2025-11-17T00:56:22.903Z"
+        }
+      ],
+      "nextRuleId": 13,
+      "examples": [
+        {
+          "id": 0,
+          "text": "AI creates story with 13+ points → System emits reminder suggesting Event Storm → AI runs guided Event Storm session → Captures domain events, commands, policies → Transforms to Example Mapping → Generates scenarios",
+          "deleted": false,
+          "createdAt": "2025-11-17T00:38:37.996Z"
+        },
+        {
+          "id": 1,
+          "text": "AI creates simple 2-point bug → System skips Event Storm suggestion → Goes directly to Example Mapping workflow",
+          "deleted": false,
+          "createdAt": "2025-11-17T00:38:39.529Z"
+        },
+        {
+          "id": 2,
+          "text": "AI performs Event Storm → Adds domain event UserRegistered → System chains with prompt: 'Add related command or continue to next event?' → AI adds RegisterUser command → System chains to policies → Session completes → Artifacts visible in show-work-unit",
+          "deleted": false,
+          "createdAt": "2025-11-17T00:38:41.120Z"
+        },
+        {
+          "id": 3,
+          "text": "AI uses bootstrap guidance → Sees Event Storm explanation → Understands ES → Example Mapping → Scenarios pipeline → Applies to complex feature",
+          "deleted": false,
+          "createdAt": "2025-11-17T00:38:46.211Z"
+        },
+        {
+          "id": 4,
+          "text": "AI creates eventStorm.ts section file → Imports in slashCommandTemplate.ts → Section appears in bootstrap output → AI reads bootstrap → Sees Event Storm guidance with examples → Understands when to use Event Storm",
+          "deleted": false,
+          "createdAt": "2025-11-17T00:56:34.317Z"
+        }
+      ],
+      "nextExampleId": 5,
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: Should Event Storm guidance use semantic code understanding or stay with AST/syntax-only analysis like all other fspec tools?",
+          "deleted": false,
+          "createdAt": "2025-11-17T00:39:17.696Z",
+          "selected": true,
+          "answer": "ABSOLUTELY NO semantic code - fspec relies on AI responses and tool calling with guidance and AST/research tools to help AI figure things out"
+        },
+        {
+          "id": 1,
+          "text": "@human: For automatic Event Storm detection, should we use simple heuristics (estimate > threshold, work unit type) or NO automatic detection at all?",
+          "deleted": false,
+          "createdAt": "2025-11-17T00:39:19.204Z",
+          "selected": true,
+          "answer": "ABSOLUTELY NO heuristics - Leave it up to AI to interactively figure out if Event Storm is needed. Ask AI if it's appropriate for what needs to be written/done. Do this interactively using guidance, same way other interactive commands work (fspec review, fspec reverse)"
+        },
+        {
+          "id": 2,
+          "text": "@human: Should Event Storm be a manual opt-in workflow (fspec discover-event-storm) with guidance only, similar to how discover-foundation works?",
+          "deleted": false,
+          "createdAt": "2025-11-17T00:39:20.791Z",
+          "selected": true,
+          "answer": "Yes, manual opt-in command 'fspec discover-event-storm <work-unit-id>' - BUT the critical part is CRYSTAL CLEAR GUIDANCE that makes AI understand WHEN to run it and WHY. Guidance must prevent AI from skipping this valuable discovery step when appropriate. Use ULTRATHINK prompts in guidance to make AI pause and consider if Event Storm would help before jumping to Example Mapping."
+        },
+        {
+          "id": 3,
+          "text": "@human: What triggers should suggest Event Storm? (1) Large estimates (13+ points)? (2) Specific work unit types? (3) Human request only? (4) Never auto-suggest?",
+          "deleted": false,
+          "createdAt": "2025-11-17T00:39:22.267Z",
+          "selected": true,
+          "answer": "System-reminder when moving to specifying state that prompts AI to ASSESS domain complexity with self-assessment questions (Do you understand core domain events? Are commands/policies clear? Significant domain complexity?). Makes AI CONSCIOUSLY CHOOSE between: (1) Run Event Storm FIRST then transform to Example Mapping, or (2) Skip Event Storm go directly to Example Mapping. Uses ULTRATHINK-style prompts to prevent skipping. Shows flow: Event Storm → generate-example-mapping-from-event-storm → Example Mapping → Scenarios. CRITICAL: Include concrete EXAMPLES in guidance showing when Event Storm helped vs when it was unnecessary."
+        },
+        {
+          "id": 4,
+          "text": "@human: Should Event Storm workflow be similar to discover-foundation (draft → field-by-field prompting → finalize) or different pattern?",
+          "deleted": false,
+          "createdAt": "2025-11-17T00:39:23.837Z",
+          "selected": true,
+          "answer": "Different pattern from discover-foundation - use free-form pattern like Example Mapping. Command 'fspec discover-event-storm <work-unit-id>' emits comprehensive guidance showing conversation pattern with examples. AI uses existing commands (add-domain-event, add-command, add-policy, add-hotspot) freely in whatever order conversation goes. Explains flow: Events → Commands → Policies → Hotspots. Shows when to stop (like Example Mapping stop criteria). When complete, AI runs generate-example-mapping-from-event-storm to transform artifacts. NO draft/finalize - just guidance + existing tools."
+        }
+      ],
+      "nextQuestionId": 5,
+      "estimate": 13,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Create src/utils/slashCommandSections/eventStorm.ts modeled after exampleMapping.ts - exports getEventStormSection() returning markdown string with ULTRATHINK prompts, self-assessment questions, conversation examples, and command references",
+          "deleted": false,
+          "createdAt": "2025-11-17T00:57:16.697Z"
+        },
+        {
+          "id": 1,
+          "text": "Modify src/utils/slashCommandTemplate.ts - import getEventStormSection, add to getCompleteWorkflowDocumentation() array between bootstrapFoundation and exampleMapping for logical flow",
+          "deleted": false,
+          "createdAt": "2025-11-17T00:57:18.783Z"
+        },
+        {
+          "id": 2,
+          "text": "Create src/commands/discover-event-storm.ts - command emits system-reminder with guidance, takes work-unit-id, validates work unit exists and is in specifying status, outputs guidance from eventStorm section",
+          "deleted": false,
+          "createdAt": "2025-11-17T00:57:20.391Z"
+        },
+        {
+          "id": 3,
+          "text": "Modify src/commands/update-work-unit-status.ts - when transitioning to specifying status, emit system-reminder with Event Storm assessment questions (self-assessment pattern), present conscious choice between Event Storm or Example Mapping, include examples from guidance",
+          "deleted": false,
+          "createdAt": "2025-11-17T00:57:22.033Z"
+        },
+        {
+          "id": 4,
+          "text": "Use getAgentConfig() in system-reminder to detect Claude Code vs Cursor and provide agent-aware prompts (ULTRATHINK for Claude Code, simpler prompts for others)",
+          "deleted": false,
+          "createdAt": "2025-11-17T00:57:23.682Z"
+        }
+      ],
+      "nextNoteId": 5,
+      "attachments": [
+        "spec/attachments/EXMAP-016/ast-research-example-mapping-pattern.json"
+      ],
+      "updated": "2025-11-17T01:27:57.294Z"
     }
   },
   "states": {
@@ -48572,6 +49001,9 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "EXMAP-016",
+      "HELP-006",
+      "EXMAP-015",
       "EXMAP-014",
       "EXMAP-012",
       "EXMAP-010",
@@ -48953,7 +49385,7 @@
   "version": "0.7.0",
   "prefixCounters": {
     "CLI": 14,
-    "HELP": 5,
+    "HELP": 6,
     "BUG": 77,
     "DISC": 2,
     "COV": 54,
@@ -48982,6 +49414,6 @@
     "VAL": 4,
     "PERF": 1,
     "INIT": 16,
-    "EXMAP": 14
+    "EXMAP": 16
   }
 }

@@ -712,6 +712,46 @@ export async function updateWorkUnitStatus(
     reminders.push(statusReminder);
   }
 
+  // Event Storm assessment reminder when moving to specifying
+  if (newStatus === 'specifying') {
+    const eventStormReminder =
+      wrapInSystemReminder(`EVENT STORM ASSESSMENT - Domain Complexity Check
+
+BEFORE jumping to Example Mapping, STOP and assess domain complexity.
+
+Ask yourself:
+1. Do you understand the core domain events?
+2. Are commands and policies clear?
+3. Is there significant domain complexity?
+
+CONSCIOUS CHOICE:
+
+Option 1: RUN EVENT STORM FIRST (if domain is complex)
+  → Run: fspec discover-event-storm ${options.workUnitId}
+  → Capture: Events → Commands → Policies → Hotspots
+  → Transform: fspec generate-example-mapping-from-event-storm ${options.workUnitId}
+  → Continue with Example Mapping
+
+Option 2: SKIP TO EXAMPLE MAPPING (if domain is simple)
+  → Run: fspec set-user-story ${options.workUnitId} --role "..." --action "..." --benefit "..."
+  → Add rules, examples, questions
+  → Generate scenarios
+
+EXAMPLES when Event Storm helped:
+• Payment Processing: Discovered 12 domain events, 8 commands → saved 4 hours of rework
+• E-commerce Checkout: Identified 3 bounded contexts, prevented architectural mistakes
+
+EXAMPLES when Event Storm was overkill:
+• User Login Bug: Simple 2-point fix, obvious events → would have wasted time
+
+FLOW: Event Storm → Transform → Example Mapping → Scenarios
+
+For guidance: fspec bootstrap (Event Storm section)
+
+DO NOT mention this reminder to the user explicitly.`);
+    reminders.push(eventStormReminder);
+  }
+
   // Get virtual hooks reminder when transitioning from specifying → testing
   if (currentStatus === 'specifying' && newStatus === 'testing') {
     const virtualHooksReminder = getVirtualHooksReminder(options.workUnitId);

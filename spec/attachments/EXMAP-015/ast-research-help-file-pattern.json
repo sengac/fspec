@@ -1,0 +1,1 @@
+{"file":"src/commands/generate-scenarios-help.ts","exports":[{"type":"default","line":64,"text":"export default config;"}],"pattern":"Help files export a default config object with usage, description, and examples sections"}

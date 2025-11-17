@@ -1,0 +1,1 @@
+{"file":"src/utils/help-formatter.ts","issue":"OPTIONS section expects opt.flag property but Event Storm help files provide option.name","line":99,"solution":"Event Storm help files should use flag property matching CommandOption interface: {flag: string, description: string}"}

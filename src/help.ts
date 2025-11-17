@@ -1059,6 +1059,59 @@ function displayDiscoveryHelp(): void {
   console.log('      fspec query-example-mapping-stats');
   console.log('');
 
+  console.log(chalk.bold('EVENT STORM'));
+  console.log(
+    '  ' + chalk.cyan('fspec add-domain-event <work-unit-id> <text>')
+  );
+  console.log('    Description: Add domain event to Event Storm section');
+  console.log('    Examples:');
+  console.log('      fspec add-domain-event AUTH-001 "UserRegistered"');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec add-command <work-unit-id> <text>'));
+  console.log('    Description: Add command to Event Storm section');
+  console.log('    Examples:');
+  console.log('      fspec add-command AUTH-001 "RegisterUser"');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec add-policy <work-unit-id> <text>'));
+  console.log('    Description: Add policy (WHEN/THEN) to Event Storm section');
+  console.log('    Examples:');
+  console.log(
+    '      fspec add-policy AUTH-001 "Send welcome email" --when "UserRegistered" --then "SendWelcomeEmail"'
+  );
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec add-hotspot <work-unit-id> <text>'));
+  console.log(
+    '    Description: Add hotspot (uncertainty/risk) to Event Storm section'
+  );
+  console.log('    Examples:');
+  console.log(
+    '      fspec add-hotspot AUTH-001 "Password Reset Flow" --concern "Unclear timeout logic"'
+  );
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec show-event-storm <work-unit-id>'));
+  console.log('    Description: Display Event Storm artifacts as JSON');
+  console.log('    Examples:');
+  console.log('      fspec show-event-storm AUTH-001');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec show-foundation-event-storm'));
+  console.log('    Description: Display foundation Event Storm artifacts');
+  console.log('    Examples:');
+  console.log('      fspec show-foundation-event-storm');
+  console.log('      fspec show-foundation-event-storm --type bounded-context');
+  console.log('');
+  console.log(
+    '  ' +
+      chalk.cyan(
+        'fspec generate-example-mapping-from-event-storm <work-unit-id>'
+      )
+  );
+  console.log(
+    '    Description: Convert Event Storm artifacts to Example Mapping'
+  );
+  console.log('    Examples:');
+  console.log('      fspec generate-example-mapping-from-event-storm AUTH-001');
+  console.log('');
+
   console.log(
     chalk.bold('RESEARCH TOOLS (Answering Questions During Discovery)')
   );
