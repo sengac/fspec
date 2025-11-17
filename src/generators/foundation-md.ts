@@ -217,6 +217,75 @@ export async function generateFoundationMd(
       sections.push('```');
       sections.push('');
 
+      // Bounded Context Sections (Aggregates, Events, Commands)
+      for (const context of boundedContexts) {
+        sections.push(`## ${context.text} Context`);
+        sections.push('');
+
+        // Filter aggregates for this bounded context
+        const aggregates = foundation.eventStorm.items.filter(
+          (item): item is any =>
+            item.type === 'aggregate' &&
+            !item.deleted &&
+            'boundedContextId' in item &&
+            item.boundedContextId === context.id
+        );
+
+        if (aggregates.length > 0) {
+          sections.push('**Aggregates:**');
+          for (const aggregate of aggregates) {
+            const description =
+              'description' in aggregate && aggregate.description
+                ? ` - ${aggregate.description}`
+                : '';
+            sections.push(`- ${aggregate.text}${description}`);
+          }
+          sections.push('');
+        }
+
+        // Filter events for this bounded context
+        const events = foundation.eventStorm.items.filter(
+          (item): item is any =>
+            item.type === 'event' &&
+            !item.deleted &&
+            'boundedContextId' in item &&
+            item.boundedContextId === context.id
+        );
+
+        if (events.length > 0) {
+          sections.push('**Domain Events:**');
+          for (const event of events) {
+            const description =
+              'description' in event && event.description
+                ? ` - ${event.description}`
+                : '';
+            sections.push(`- ${event.text}${description}`);
+          }
+          sections.push('');
+        }
+
+        // Filter commands for this bounded context
+        const commands = foundation.eventStorm.items.filter(
+          (item): item is any =>
+            item.type === 'command' &&
+            !item.deleted &&
+            'boundedContextId' in item &&
+            item.boundedContextId === context.id
+        );
+
+        if (commands.length > 0) {
+          sections.push('**Commands:**');
+          for (const command of commands) {
+            const description =
+              'description' in command && command.description
+                ? ` - ${command.description}`
+                : '';
+            sections.push(`- ${command.text}${description}`);
+          }
+          sections.push('');
+        }
+      }
+
       sections.push('---');
       sections.push('');
     }

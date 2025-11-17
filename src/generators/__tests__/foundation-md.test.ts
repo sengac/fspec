@@ -190,4 +190,356 @@ describe('Feature: Generate FOUNDATION.md from foundation.json', () => {
       expect(content).toContain('# Test Project Project Foundation');
     });
   });
+
+  // Feature: spec/features/enhance-foundation-md-event-storm-visualization.feature
+  describe('Feature: Enhance FOUNDATION.md Event Storm visualization', () => {
+    describe('Scenario: Render bounded context with aggregates, events, and commands', () => {
+      it('should render Work Management context with complete Event Storm items', async () => {
+        // @step Given foundation.json has Work Management context with 4 aggregates, 4 events, 4 commands
+        const foundation: GenericFoundation = {
+          ...createMinimalFoundation(),
+          eventStorm: {
+            level: 'big_picture',
+            items: [
+              {
+                id: 1,
+                type: 'bounded_context',
+                text: 'Work Management',
+                color: null,
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
+              {
+                id: 2,
+                type: 'aggregate',
+                text: 'WorkUnit',
+                description: 'Story, task, or bug tracking unit',
+                boundedContextId: 1,
+                color: null,
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
+              {
+                id: 3,
+                type: 'aggregate',
+                text: 'Epic',
+                description: 'Collection of related work units',
+                boundedContextId: 1,
+                color: null,
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
+              {
+                id: 4,
+                type: 'aggregate',
+                text: 'Dependency',
+                description: 'Relationship between work units',
+                boundedContextId: 1,
+                color: null,
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
+              {
+                id: 5,
+                type: 'aggregate',
+                text: 'Prefix',
+                description: 'Namespace for work unit IDs',
+                boundedContextId: 1,
+                color: null,
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
+              {
+                id: 6,
+                type: 'event',
+                text: 'WorkUnitCreated',
+                description: 'Work unit was created',
+                boundedContextId: 1,
+                color: null,
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
+              {
+                id: 7,
+                type: 'event',
+                text: 'WorkUnitStatusChanged',
+                description: 'Work unit moved through ACDD workflow',
+                boundedContextId: 1,
+                color: null,
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
+              {
+                id: 8,
+                type: 'event',
+                text: 'WorkUnitBlocked',
+                description: 'Work unit blocked by dependency',
+                boundedContextId: 1,
+                color: null,
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
+              {
+                id: 9,
+                type: 'event',
+                text: 'DependencyAdded',
+                description: 'Dependency relationship created',
+                boundedContextId: 1,
+                color: null,
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
+              {
+                id: 10,
+                type: 'command',
+                text: 'CreateWorkUnit',
+                description: 'Create story, task, or bug',
+                boundedContextId: 1,
+                color: null,
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
+              {
+                id: 11,
+                type: 'command',
+                text: 'UpdateWorkUnitStatus',
+                description: 'Move through ACDD workflow',
+                boundedContextId: 1,
+                color: null,
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
+              {
+                id: 12,
+                type: 'command',
+                text: 'BlockWorkUnit',
+                description: 'Block work unit with reason',
+                boundedContextId: 1,
+                color: null,
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
+              {
+                id: 13,
+                type: 'command',
+                text: 'AddDependency',
+                description: 'Link work units',
+                boundedContextId: 1,
+                color: null,
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
+            ],
+            nextItemId: 14,
+          },
+        };
+
+        // @step When I run generate-foundation-md
+        const markdown = await generateFoundationMd(foundation);
+
+        // @step Then FOUNDATION.md should have a 'Work Management Context' section
+        expect(markdown).toContain('## Work Management Context');
+
+        // @step And the section should list 4 aggregates with descriptions
+        expect(markdown).toContain('**Aggregates:**');
+        expect(markdown).toContain(
+          '- WorkUnit - Story, task, or bug tracking unit'
+        );
+        expect(markdown).toContain('- Epic - Collection of related work units');
+        expect(markdown).toContain(
+          '- Dependency - Relationship between work units'
+        );
+        expect(markdown).toContain('- Prefix - Namespace for work unit IDs');
+
+        // @step And the section should list 4 domain events with descriptions
+        expect(markdown).toContain('**Domain Events:**');
+        expect(markdown).toContain('- WorkUnitCreated - Work unit was created');
+        expect(markdown).toContain(
+          '- WorkUnitStatusChanged - Work unit moved through ACDD workflow'
+        );
+        expect(markdown).toContain(
+          '- WorkUnitBlocked - Work unit blocked by dependency'
+        );
+        expect(markdown).toContain(
+          '- DependencyAdded - Dependency relationship created'
+        );
+
+        // @step And the section should list 4 commands with descriptions
+        expect(markdown).toContain('**Commands:**');
+        expect(markdown).toContain(
+          '- CreateWorkUnit - Create story, task, or bug'
+        );
+        expect(markdown).toContain(
+          '- UpdateWorkUnitStatus - Move through ACDD workflow'
+        );
+        expect(markdown).toContain(
+          '- BlockWorkUnit - Block work unit with reason'
+        );
+        expect(markdown).toContain('- AddDependency - Link work units');
+      });
+    });
+
+    describe('Scenario: Render all bounded contexts with complete sections', () => {
+      it('should render all 6 bounded contexts with their items', async () => {
+        // @step Given foundation.json has 6 bounded contexts with Event Storm items
+        const foundation: GenericFoundation = {
+          ...createMinimalFoundation(),
+          eventStorm: {
+            level: 'big_picture',
+            items: [
+              {
+                id: 1,
+                type: 'bounded_context',
+                text: 'Work Management',
+                color: null,
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
+              {
+                id: 2,
+                type: 'bounded_context',
+                text: 'Specification',
+                color: null,
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
+              {
+                id: 3,
+                type: 'bounded_context',
+                text: 'Discovery',
+                color: null,
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
+              {
+                id: 4,
+                type: 'bounded_context',
+                text: 'Event Storming',
+                color: null,
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
+              {
+                id: 5,
+                type: 'bounded_context',
+                text: 'Foundation',
+                color: null,
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
+              {
+                id: 6,
+                type: 'bounded_context',
+                text: 'Testing & Validation',
+                color: null,
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
+              {
+                id: 7,
+                type: 'aggregate',
+                text: 'WorkUnit',
+                description: 'Test aggregate',
+                boundedContextId: 1,
+                color: null,
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
+              {
+                id: 8,
+                type: 'event',
+                text: 'TestEvent',
+                description: 'Test event',
+                boundedContextId: 2,
+                color: null,
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
+            ],
+            nextItemId: 9,
+          },
+        };
+
+        // @step When I run generate-foundation-md
+        const markdown = await generateFoundationMd(foundation);
+
+        // @step Then FOUNDATION.md should have 6 context sections after the Bounded Context Map
+        expect(markdown).toContain('## Work Management Context');
+        expect(markdown).toContain('## Specification Context');
+        expect(markdown).toContain('## Discovery Context');
+        expect(markdown).toContain('## Event Storming Context');
+        expect(markdown).toContain('## Foundation Context');
+        expect(markdown).toContain('## Testing & Validation Context');
+
+        // @step And each section should show aggregates, events, and commands for that context only
+        const workManagementSection = markdown.substring(
+          markdown.indexOf('## Work Management Context'),
+          markdown.indexOf('## Specification Context')
+        );
+        expect(workManagementSection).toContain('WorkUnit');
+        expect(workManagementSection).not.toContain('TestEvent');
+
+        const specificationSection = markdown.substring(
+          markdown.indexOf('## Specification Context'),
+          markdown.indexOf('## Discovery Context')
+        );
+        expect(specificationSection).toContain('TestEvent');
+        expect(specificationSection).not.toContain('WorkUnit');
+      });
+    });
+
+    describe('Scenario: Exclude deleted items from visualization', () => {
+      it('should not render deleted Event Storm items', async () => {
+        // @step Given foundation.json has Work Management context with 1 deleted aggregate
+        const foundation: GenericFoundation = {
+          ...createMinimalFoundation(),
+          eventStorm: {
+            level: 'big_picture',
+            items: [
+              {
+                id: 1,
+                type: 'bounded_context',
+                text: 'Work Management',
+                color: null,
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
+              {
+                id: 2,
+                type: 'aggregate',
+                text: 'WorkUnit',
+                description: 'Active aggregate',
+                boundedContextId: 1,
+                color: null,
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
+              {
+                id: 3,
+                type: 'aggregate',
+                text: 'DeletedAggregate',
+                description: 'This should not appear',
+                boundedContextId: 1,
+                color: null,
+                deleted: true,
+                createdAt: new Date().toISOString(),
+              },
+            ],
+            nextItemId: 4,
+          },
+        };
+
+        // @step When I run generate-foundation-md
+        const markdown = await generateFoundationMd(foundation);
+
+        // @step Then the deleted aggregate should not appear in FOUNDATION.md
+        expect(markdown).not.toContain('DeletedAggregate');
+        expect(markdown).not.toContain('This should not appear');
+
+        // @step And only non-deleted items should be listed
+        expect(markdown).toContain('WorkUnit');
+        expect(markdown).toContain('Active aggregate');
+      });
+    });
+  });
 });

@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-17T11:11:44.143Z"
+    "lastUpdated": "2025-11-17T12:07:02.072Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -49440,15 +49440,6 @@
       "nextQuestionId": 0,
       "updated": "2025-11-17T04:55:26.241Z"
     },
-    "FOUND-018": {
-      "id": "FOUND-018",
-      "title": "Conduct Big Picture Event Storming for Foundation",
-      "description": "Complete the foundation by capturing domain architecture through Big Picture Event Storming.\n\nUse these commands to populate foundation.json eventStorm field:\n- fspec add-foundation-bounded-context <name>\n- fspec add-aggregate-to-foundation <context> <aggregate>\n- fspec add-domain-event-to-foundation <context> <event>\n- fspec show-foundation-event-storm\n\nWhy this matters:\n- Establishes bounded contexts for domain-driven design\n- Enables tag ontology generation from domain model\n- Provides foundation for architectural documentation\n- Supports EXMAP-004 tag discovery workflow\n\nSee spec/CLAUDE.md \"Big Picture Event Storming\" section for detailed guidance.",
-      "type": "task",
-      "status": "backlog",
-      "createdAt": "2025-11-17T05:22:31.020Z",
-      "updatedAt": "2025-11-17T05:22:31.020Z"
-    },
     "FOUND-019": {
       "id": "FOUND-019",
       "title": "discover-foundation regenerates draft when used to check next field",
@@ -49532,15 +49523,6 @@
       "nextQuestionId": 0,
       "nextNoteId": 0,
       "updated": "2025-11-17T05:33:53.244Z"
-    },
-    "FOUND-020": {
-      "id": "FOUND-020",
-      "title": "Conduct Big Picture Event Storming for Foundation",
-      "description": "Complete the foundation by capturing domain architecture through Big Picture Event Storming.\n\nUse these commands to populate foundation.json eventStorm field:\n- fspec add-foundation-bounded-context <name>\n- fspec add-aggregate-to-foundation <context> <aggregate>\n- fspec add-domain-event-to-foundation <context> <event>\n- fspec show-foundation-event-storm\n\nWhy this matters:\n- Establishes bounded contexts for domain-driven design\n- Enables tag ontology generation from domain model\n- Provides foundation for architectural documentation\n- Supports EXMAP-004 tag discovery workflow\n\nSee spec/CLAUDE.md \"Big Picture Event Storming\" section for detailed guidance.",
-      "type": "task",
-      "status": "backlog",
-      "createdAt": "2025-11-17T05:52:25.313Z",
-      "updatedAt": "2025-11-17T05:52:25.313Z"
     },
     "FOUND-021": {
       "id": "FOUND-021",
@@ -49655,9 +49637,9 @@
       "title": "Conduct Big Picture Event Storming for Foundation",
       "description": "Complete the foundation by capturing domain architecture through Big Picture Event Storming.\n\nUse these commands to populate foundation.json eventStorm field:\n- fspec add-foundation-bounded-context <name>\n- fspec add-aggregate-to-foundation <context> <aggregate>\n- fspec add-domain-event-to-foundation <context> <event>\n- fspec show-foundation-event-storm\n\nWhy this matters:\n- Establishes bounded contexts for domain-driven design\n- Enables tag ontology generation from domain model\n- Provides foundation for architectural documentation\n- Supports EXMAP-004 tag discovery workflow\n\nSee spec/CLAUDE.md \"Big Picture Event Storming\" section for detailed guidance.",
       "type": "task",
-      "status": "specifying",
+      "status": "done",
       "createdAt": "2025-11-17T06:47:08.326Z",
-      "updatedAt": "2025-11-17T11:16:35.511Z",
+      "updatedAt": "2025-11-17T11:51:40.314Z",
       "stateHistory": [
         {
           "state": "backlog",
@@ -49675,6 +49657,18 @@
         {
           "state": "specifying",
           "timestamp": "2025-11-17T11:16:35.511Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-17T11:51:19.665Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-17T11:51:27.575Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-17T11:51:40.314Z"
         }
       ],
       "attachments": [
@@ -49682,7 +49676,16 @@
       ],
       "blockedBy": [
         "FOUND-033"
-      ]
+      ],
+      "rules": [],
+      "examples": [],
+      "questions": [],
+      "architectureNotes": [],
+      "nextRuleId": 0,
+      "nextExampleId": 0,
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-17T11:51:40.314Z"
     },
     "DOCS-003": {
       "id": "DOCS-003",
@@ -49883,156 +49886,6 @@
       "nextNoteId": 0,
       "updated": "2025-11-17T08:39:53.790Z"
     },
-    "FOUND-023": {
-      "id": "FOUND-023",
-      "title": "Conduct Big Picture Event Storming for Foundation",
-      "status": "backlog",
-      "createdAt": "2025-11-17T08:38:32.393Z",
-      "updatedAt": "2025-11-17T08:38:32.393Z",
-      "stateHistory": [
-        {
-          "state": "backlog",
-          "timestamp": "2025-11-17T08:38:32.393Z"
-        }
-      ],
-      "description": "Complete the foundation by capturing domain architecture through Big Picture Event Storming.\n\nUse these commands to populate foundation.json eventStorm field:\n- fspec add-foundation-bounded-context <name>\n- fspec add-aggregate-to-foundation <context> <aggregate>\n- fspec add-domain-event-to-foundation <context> <event>\n- fspec show-foundation-event-storm\n\nWhy this matters:\n- Establishes bounded contexts for domain-driven design\n- Enables tag ontology generation from domain model\n- Provides foundation for architectural documentation\n- Supports EXMAP-004 tag discovery workflow\n\nSee spec/CLAUDE.md \"Big Picture Event Storming\" section for detailed guidance.",
-      "type": "task"
-    },
-    "FOUND-024": {
-      "id": "FOUND-024",
-      "title": "Conduct Big Picture Event Storming for Foundation",
-      "status": "backlog",
-      "createdAt": "2025-11-17T08:38:32.481Z",
-      "updatedAt": "2025-11-17T08:38:32.481Z",
-      "stateHistory": [
-        {
-          "state": "backlog",
-          "timestamp": "2025-11-17T08:38:32.481Z"
-        }
-      ],
-      "description": "Complete the foundation by capturing domain architecture through Big Picture Event Storming.\n\nUse these commands to populate foundation.json eventStorm field:\n- fspec add-foundation-bounded-context <name>\n- fspec add-aggregate-to-foundation <context> <aggregate>\n- fspec add-domain-event-to-foundation <context> <event>\n- fspec show-foundation-event-storm\n\nWhy this matters:\n- Establishes bounded contexts for domain-driven design\n- Enables tag ontology generation from domain model\n- Provides foundation for architectural documentation\n- Supports EXMAP-004 tag discovery workflow\n\nSee spec/CLAUDE.md \"Big Picture Event Storming\" section for detailed guidance.",
-      "type": "task"
-    },
-    "FOUND-025": {
-      "id": "FOUND-025",
-      "title": "Conduct Big Picture Event Storming for Foundation",
-      "status": "backlog",
-      "createdAt": "2025-11-17T09:05:32.475Z",
-      "updatedAt": "2025-11-17T09:05:32.475Z",
-      "stateHistory": [
-        {
-          "state": "backlog",
-          "timestamp": "2025-11-17T09:05:32.475Z"
-        }
-      ],
-      "description": "Complete the foundation by capturing domain architecture through Big Picture Event Storming.\n\nUse these commands to populate foundation.json eventStorm field:\n- fspec add-foundation-bounded-context <name>\n- fspec add-aggregate-to-foundation <context> <aggregate>\n- fspec add-domain-event-to-foundation <context> <event>\n- fspec show-foundation-event-storm\n\nWhy this matters:\n- Establishes bounded contexts for domain-driven design\n- Enables tag ontology generation from domain model\n- Provides foundation for architectural documentation\n- Supports EXMAP-004 tag discovery workflow\n\nSee spec/CLAUDE.md \"Big Picture Event Storming\" section for detailed guidance.",
-      "type": "task"
-    },
-    "FOUND-026": {
-      "id": "FOUND-026",
-      "title": "Conduct Big Picture Event Storming for Foundation",
-      "status": "backlog",
-      "createdAt": "2025-11-17T09:05:32.549Z",
-      "updatedAt": "2025-11-17T09:05:32.549Z",
-      "stateHistory": [
-        {
-          "state": "backlog",
-          "timestamp": "2025-11-17T09:05:32.549Z"
-        }
-      ],
-      "description": "Complete the foundation by capturing domain architecture through Big Picture Event Storming.\n\nUse these commands to populate foundation.json eventStorm field:\n- fspec add-foundation-bounded-context <name>\n- fspec add-aggregate-to-foundation <context> <aggregate>\n- fspec add-domain-event-to-foundation <context> <event>\n- fspec show-foundation-event-storm\n\nWhy this matters:\n- Establishes bounded contexts for domain-driven design\n- Enables tag ontology generation from domain model\n- Provides foundation for architectural documentation\n- Supports EXMAP-004 tag discovery workflow\n\nSee spec/CLAUDE.md \"Big Picture Event Storming\" section for detailed guidance.",
-      "type": "task"
-    },
-    "FOUND-027": {
-      "id": "FOUND-027",
-      "title": "Conduct Big Picture Event Storming for Foundation",
-      "status": "backlog",
-      "createdAt": "2025-11-17T09:09:17.983Z",
-      "updatedAt": "2025-11-17T09:09:17.983Z",
-      "stateHistory": [
-        {
-          "state": "backlog",
-          "timestamp": "2025-11-17T09:09:17.983Z"
-        }
-      ],
-      "description": "Complete the foundation by capturing domain architecture through Big Picture Event Storming.\n\nUse these commands to populate foundation.json eventStorm field:\n- fspec add-foundation-bounded-context <name>\n- fspec add-aggregate-to-foundation <context> <aggregate>\n- fspec add-domain-event-to-foundation <context> <event>\n- fspec show-foundation-event-storm\n\nWhy this matters:\n- Establishes bounded contexts for domain-driven design\n- Enables tag ontology generation from domain model\n- Provides foundation for architectural documentation\n- Supports EXMAP-004 tag discovery workflow\n\nSee spec/CLAUDE.md \"Big Picture Event Storming\" section for detailed guidance.",
-      "type": "task"
-    },
-    "FOUND-028": {
-      "id": "FOUND-028",
-      "title": "Conduct Big Picture Event Storming for Foundation",
-      "status": "backlog",
-      "createdAt": "2025-11-17T09:09:18.055Z",
-      "updatedAt": "2025-11-17T09:09:18.055Z",
-      "stateHistory": [
-        {
-          "state": "backlog",
-          "timestamp": "2025-11-17T09:09:18.055Z"
-        }
-      ],
-      "description": "Complete the foundation by capturing domain architecture through Big Picture Event Storming.\n\nUse these commands to populate foundation.json eventStorm field:\n- fspec add-foundation-bounded-context <name>\n- fspec add-aggregate-to-foundation <context> <aggregate>\n- fspec add-domain-event-to-foundation <context> <event>\n- fspec show-foundation-event-storm\n\nWhy this matters:\n- Establishes bounded contexts for domain-driven design\n- Enables tag ontology generation from domain model\n- Provides foundation for architectural documentation\n- Supports EXMAP-004 tag discovery workflow\n\nSee spec/CLAUDE.md \"Big Picture Event Storming\" section for detailed guidance.",
-      "type": "task"
-    },
-    "FOUND-029": {
-      "id": "FOUND-029",
-      "title": "Conduct Big Picture Event Storming for Foundation",
-      "status": "backlog",
-      "createdAt": "2025-11-17T09:13:41.586Z",
-      "updatedAt": "2025-11-17T09:13:41.586Z",
-      "stateHistory": [
-        {
-          "state": "backlog",
-          "timestamp": "2025-11-17T09:13:41.586Z"
-        }
-      ],
-      "description": "Complete the foundation by capturing domain architecture through Big Picture Event Storming.\n\nUse these commands to populate foundation.json eventStorm field:\n- fspec add-foundation-bounded-context <name>\n- fspec add-aggregate-to-foundation <context> <aggregate>\n- fspec add-domain-event-to-foundation <context> <event>\n- fspec show-foundation-event-storm\n\nWhy this matters:\n- Establishes bounded contexts for domain-driven design\n- Enables tag ontology generation from domain model\n- Provides foundation for architectural documentation\n- Supports EXMAP-004 tag discovery workflow\n\nSee spec/CLAUDE.md \"Big Picture Event Storming\" section for detailed guidance.",
-      "type": "task"
-    },
-    "FOUND-030": {
-      "id": "FOUND-030",
-      "title": "Conduct Big Picture Event Storming for Foundation",
-      "status": "backlog",
-      "createdAt": "2025-11-17T09:13:41.666Z",
-      "updatedAt": "2025-11-17T09:13:41.666Z",
-      "stateHistory": [
-        {
-          "state": "backlog",
-          "timestamp": "2025-11-17T09:13:41.666Z"
-        }
-      ],
-      "description": "Complete the foundation by capturing domain architecture through Big Picture Event Storming.\n\nUse these commands to populate foundation.json eventStorm field:\n- fspec add-foundation-bounded-context <name>\n- fspec add-aggregate-to-foundation <context> <aggregate>\n- fspec add-domain-event-to-foundation <context> <event>\n- fspec show-foundation-event-storm\n\nWhy this matters:\n- Establishes bounded contexts for domain-driven design\n- Enables tag ontology generation from domain model\n- Provides foundation for architectural documentation\n- Supports EXMAP-004 tag discovery workflow\n\nSee spec/CLAUDE.md \"Big Picture Event Storming\" section for detailed guidance.",
-      "type": "task"
-    },
-    "FOUND-031": {
-      "id": "FOUND-031",
-      "title": "Conduct Big Picture Event Storming for Foundation",
-      "status": "backlog",
-      "createdAt": "2025-11-17T10:34:19.474Z",
-      "updatedAt": "2025-11-17T10:34:19.474Z",
-      "stateHistory": [
-        {
-          "state": "backlog",
-          "timestamp": "2025-11-17T10:34:19.474Z"
-        }
-      ],
-      "description": "Complete the foundation by capturing domain architecture through Big Picture Event Storming.\n\nUse these commands to populate foundation.json eventStorm field:\n- fspec add-foundation-bounded-context <name>\n- fspec add-aggregate-to-foundation <context> <aggregate>\n- fspec add-domain-event-to-foundation <context> <event>\n- fspec show-foundation-event-storm\n\nWhy this matters:\n- Establishes bounded contexts for domain-driven design\n- Enables tag ontology generation from domain model\n- Provides foundation for architectural documentation\n- Supports EXMAP-004 tag discovery workflow\n\nSee spec/CLAUDE.md \"Big Picture Event Storming\" section for detailed guidance.",
-      "type": "task"
-    },
-    "FOUND-032": {
-      "id": "FOUND-032",
-      "title": "Conduct Big Picture Event Storming for Foundation",
-      "status": "backlog",
-      "createdAt": "2025-11-17T10:34:19.549Z",
-      "updatedAt": "2025-11-17T10:34:19.549Z",
-      "stateHistory": [
-        {
-          "state": "backlog",
-          "timestamp": "2025-11-17T10:34:19.549Z"
-        }
-      ],
-      "description": "Complete the foundation by capturing domain architecture through Big Picture Event Storming.\n\nUse these commands to populate foundation.json eventStorm field:\n- fspec add-foundation-bounded-context <name>\n- fspec add-aggregate-to-foundation <context> <aggregate>\n- fspec add-domain-event-to-foundation <context> <event>\n- fspec show-foundation-event-storm\n\nWhy this matters:\n- Establishes bounded contexts for domain-driven design\n- Enables tag ontology generation from domain model\n- Provides foundation for architectural documentation\n- Supports EXMAP-004 tag discovery workflow\n\nSee spec/CLAUDE.md \"Big Picture Event Storming\" section for detailed guidance.",
-      "type": "task"
-    },
     "FOUND-033": {
       "id": "FOUND-033",
       "title": "Implement Foundation Event Storm Commands for Aggregates, Events, and Commands",
@@ -50220,125 +50073,140 @@
       "nextNoteId": 5,
       "updated": "2025-11-17T11:11:44.168Z"
     },
-    "FOUND-034": {
-      "id": "FOUND-034",
-      "title": "Conduct Big Picture Event Storming for Foundation",
-      "status": "backlog",
-      "createdAt": "2025-11-17T11:12:17.192Z",
-      "updatedAt": "2025-11-17T11:12:17.192Z",
+    "FOUND-042": {
+      "id": "FOUND-042",
+      "title": "Enhance FOUNDATION.md Event Storm visualization",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-11-17T11:53:57.786Z",
+      "updatedAt": "2025-11-17T12:07:02.097Z",
+      "description": "generate-foundation-md should render complete Event Storm with aggregates, domain events, and commands for each bounded context",
+      "children": [],
+      "attachments": [
+        "spec/attachments/FOUND-042/found-042-analysis.md",
+        "spec/attachments/FOUND-042/ast-research-foundation-md-functions.json"
+      ],
       "stateHistory": [
         {
-          "state": "backlog",
-          "timestamp": "2025-11-17T11:12:17.192Z"
+          "state": "specifying",
+          "timestamp": "2025-11-17T11:55:49.956Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-17T12:00:19.051Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-17T12:02:12.114Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-17T12:03:58.688Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-17T12:07:02.097Z"
         }
       ],
-      "description": "Complete the foundation by capturing domain architecture through Big Picture Event Storming.\n\nUse these commands to populate foundation.json eventStorm field:\n- fspec add-foundation-bounded-context <name>\n- fspec add-aggregate-to-foundation <context> <aggregate>\n- fspec add-domain-event-to-foundation <context> <event>\n- fspec show-foundation-event-storm\n\nWhy this matters:\n- Establishes bounded contexts for domain-driven design\n- Enables tag ontology generation from domain model\n- Provides foundation for architectural documentation\n- Supports EXMAP-004 tag discovery workflow\n\nSee spec/CLAUDE.md \"Big Picture Event Storming\" section for detailed guidance.",
-      "type": "task"
+      "userStory": {
+        "role": "developer viewing foundation architecture",
+        "action": "see complete Event Storm visualization in FOUNDATION.md",
+        "benefit": "I understand the domain model with aggregates, events, and commands for each bounded context"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Each bounded context must have a dedicated section in FOUNDATION.md",
+          "deleted": false,
+          "createdAt": "2025-11-17T11:57:29.870Z"
+        },
+        {
+          "id": 1,
+          "text": "Aggregates must be listed under each bounded context with their descriptions",
+          "deleted": false,
+          "createdAt": "2025-11-17T11:57:31.837Z"
+        },
+        {
+          "id": 2,
+          "text": "Domain events must be listed under each bounded context with their descriptions",
+          "deleted": false,
+          "createdAt": "2025-11-17T11:57:33.436Z"
+        },
+        {
+          "id": 3,
+          "text": "Commands must be listed under each bounded context with their descriptions",
+          "deleted": false,
+          "createdAt": "2025-11-17T11:57:35.100Z"
+        },
+        {
+          "id": 4,
+          "text": "Items must only appear under their parent bounded context (filter by boundedContextId)",
+          "deleted": false,
+          "createdAt": "2025-11-17T11:57:36.616Z"
+        },
+        {
+          "id": 5,
+          "text": "Deleted items must be excluded from the visualization",
+          "deleted": false,
+          "createdAt": "2025-11-17T11:57:38.217Z"
+        }
+      ],
+      "nextRuleId": 6,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Work Management context shows 4 aggregates: WorkUnit, Epic, Dependency, Prefix with descriptions",
+          "deleted": false,
+          "createdAt": "2025-11-17T11:57:51.668Z"
+        },
+        {
+          "id": 1,
+          "text": "Work Management context shows 4 events: WorkUnitCreated, WorkUnitStatusChanged, WorkUnitBlocked, DependencyAdded with descriptions",
+          "deleted": false,
+          "createdAt": "2025-11-17T11:57:53.231Z"
+        },
+        {
+          "id": 2,
+          "text": "Work Management context shows 4 commands: CreateWorkUnit, UpdateWorkUnitStatus, BlockWorkUnit, AddDependency with descriptions",
+          "deleted": false,
+          "createdAt": "2025-11-17T11:57:54.622Z"
+        },
+        {
+          "id": 3,
+          "text": "All 6 bounded contexts have their own sections after the Bounded Context Map diagram",
+          "deleted": false,
+          "createdAt": "2025-11-17T11:57:55.979Z"
+        },
+        {
+          "id": 4,
+          "text": "Deleted items (deleted: true) do not appear in the output",
+          "deleted": false,
+          "createdAt": "2025-11-17T11:57:58.470Z"
+        }
+      ],
+      "nextExampleId": 5,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Implementation will modify src/generators/foundation-md.ts lines 180-223 to add new sections after the Bounded Context Map. For each bounded context, filter items by boundedContextId and type (aggregate/event/command), then generate markdown sections with heading level 2 for context name and bold subsections for Aggregates/Domain Events/Commands. Each item will be rendered as a bullet list with item.text and item.description. Existing Mermaid diagram generation remains unchanged.",
+          "deleted": false,
+          "createdAt": "2025-11-17T12:00:00.180Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2025-11-17T12:07:02.097Z"
     },
-    "FOUND-035": {
-      "id": "FOUND-035",
-      "title": "Conduct Big Picture Event Storming for Foundation",
+    "FOUND-043": {
+      "id": "FOUND-043",
+      "title": "Initialize foundation.json with real fspec project data",
+      "type": "task",
       "status": "backlog",
-      "createdAt": "2025-11-17T11:12:17.280Z",
-      "updatedAt": "2025-11-17T11:12:17.280Z",
-      "stateHistory": [
-        {
-          "state": "backlog",
-          "timestamp": "2025-11-17T11:12:17.280Z"
-        }
-      ],
-      "description": "Complete the foundation by capturing domain architecture through Big Picture Event Storming.\n\nUse these commands to populate foundation.json eventStorm field:\n- fspec add-foundation-bounded-context <name>\n- fspec add-aggregate-to-foundation <context> <aggregate>\n- fspec add-domain-event-to-foundation <context> <event>\n- fspec show-foundation-event-storm\n\nWhy this matters:\n- Establishes bounded contexts for domain-driven design\n- Enables tag ontology generation from domain model\n- Provides foundation for architectural documentation\n- Supports EXMAP-004 tag discovery workflow\n\nSee spec/CLAUDE.md \"Big Picture Event Storming\" section for detailed guidance.",
-      "type": "task"
-    },
-    "FOUND-036": {
-      "id": "FOUND-036",
-      "title": "Conduct Big Picture Event Storming for Foundation",
-      "status": "backlog",
-      "createdAt": "2025-11-17T11:31:35.958Z",
-      "updatedAt": "2025-11-17T11:31:35.958Z",
-      "stateHistory": [
-        {
-          "state": "backlog",
-          "timestamp": "2025-11-17T11:31:35.958Z"
-        }
-      ],
-      "description": "Complete the foundation by capturing domain architecture through Big Picture Event Storming.\n\nUse these commands to populate foundation.json eventStorm field:\n- fspec add-foundation-bounded-context <name>\n- fspec add-aggregate-to-foundation <context> <aggregate>\n- fspec add-domain-event-to-foundation <context> <event>\n- fspec show-foundation-event-storm\n\nWhy this matters:\n- Establishes bounded contexts for domain-driven design\n- Enables tag ontology generation from domain model\n- Provides foundation for architectural documentation\n- Supports EXMAP-004 tag discovery workflow\n\nSee spec/CLAUDE.md \"Big Picture Event Storming\" section for detailed guidance.",
-      "type": "task"
-    },
-    "FOUND-037": {
-      "id": "FOUND-037",
-      "title": "Conduct Big Picture Event Storming for Foundation",
-      "status": "backlog",
-      "createdAt": "2025-11-17T11:31:36.031Z",
-      "updatedAt": "2025-11-17T11:31:36.031Z",
-      "stateHistory": [
-        {
-          "state": "backlog",
-          "timestamp": "2025-11-17T11:31:36.031Z"
-        }
-      ],
-      "description": "Complete the foundation by capturing domain architecture through Big Picture Event Storming.\n\nUse these commands to populate foundation.json eventStorm field:\n- fspec add-foundation-bounded-context <name>\n- fspec add-aggregate-to-foundation <context> <aggregate>\n- fspec add-domain-event-to-foundation <context> <event>\n- fspec show-foundation-event-storm\n\nWhy this matters:\n- Establishes bounded contexts for domain-driven design\n- Enables tag ontology generation from domain model\n- Provides foundation for architectural documentation\n- Supports EXMAP-004 tag discovery workflow\n\nSee spec/CLAUDE.md \"Big Picture Event Storming\" section for detailed guidance.",
-      "type": "task"
-    },
-    "FOUND-038": {
-      "id": "FOUND-038",
-      "title": "Conduct Big Picture Event Storming for Foundation",
-      "status": "backlog",
-      "createdAt": "2025-11-17T11:35:36.539Z",
-      "updatedAt": "2025-11-17T11:35:36.539Z",
-      "stateHistory": [
-        {
-          "state": "backlog",
-          "timestamp": "2025-11-17T11:35:36.539Z"
-        }
-      ],
-      "description": "Complete the foundation by capturing domain architecture through Big Picture Event Storming.\n\nUse these commands to populate foundation.json eventStorm field:\n- fspec add-foundation-bounded-context <name>\n- fspec add-aggregate-to-foundation <context> <aggregate>\n- fspec add-domain-event-to-foundation <context> <event>\n- fspec show-foundation-event-storm\n\nWhy this matters:\n- Establishes bounded contexts for domain-driven design\n- Enables tag ontology generation from domain model\n- Provides foundation for architectural documentation\n- Supports EXMAP-004 tag discovery workflow\n\nSee spec/CLAUDE.md \"Big Picture Event Storming\" section for detailed guidance.",
-      "type": "task"
-    },
-    "FOUND-039": {
-      "id": "FOUND-039",
-      "title": "Conduct Big Picture Event Storming for Foundation",
-      "status": "backlog",
-      "createdAt": "2025-11-17T11:35:36.621Z",
-      "updatedAt": "2025-11-17T11:35:36.621Z",
-      "stateHistory": [
-        {
-          "state": "backlog",
-          "timestamp": "2025-11-17T11:35:36.621Z"
-        }
-      ],
-      "description": "Complete the foundation by capturing domain architecture through Big Picture Event Storming.\n\nUse these commands to populate foundation.json eventStorm field:\n- fspec add-foundation-bounded-context <name>\n- fspec add-aggregate-to-foundation <context> <aggregate>\n- fspec add-domain-event-to-foundation <context> <event>\n- fspec show-foundation-event-storm\n\nWhy this matters:\n- Establishes bounded contexts for domain-driven design\n- Enables tag ontology generation from domain model\n- Provides foundation for architectural documentation\n- Supports EXMAP-004 tag discovery workflow\n\nSee spec/CLAUDE.md \"Big Picture Event Storming\" section for detailed guidance.",
-      "type": "task"
-    },
-    "FOUND-040": {
-      "id": "FOUND-040",
-      "title": "Conduct Big Picture Event Storming for Foundation",
-      "status": "backlog",
-      "createdAt": "2025-11-17T11:40:03.794Z",
-      "updatedAt": "2025-11-17T11:40:03.794Z",
-      "stateHistory": [
-        {
-          "state": "backlog",
-          "timestamp": "2025-11-17T11:40:03.794Z"
-        }
-      ],
-      "description": "Complete the foundation by capturing domain architecture through Big Picture Event Storming.\n\nUse these commands to populate foundation.json eventStorm field:\n- fspec add-foundation-bounded-context <name>\n- fspec add-aggregate-to-foundation <context> <aggregate>\n- fspec add-domain-event-to-foundation <context> <event>\n- fspec show-foundation-event-storm\n\nWhy this matters:\n- Establishes bounded contexts for domain-driven design\n- Enables tag ontology generation from domain model\n- Provides foundation for architectural documentation\n- Supports EXMAP-004 tag discovery workflow\n\nSee spec/CLAUDE.md \"Big Picture Event Storming\" section for detailed guidance.",
-      "type": "task"
-    },
-    "FOUND-041": {
-      "id": "FOUND-041",
-      "title": "Conduct Big Picture Event Storming for Foundation",
-      "status": "backlog",
-      "createdAt": "2025-11-17T11:40:03.883Z",
-      "updatedAt": "2025-11-17T11:40:03.883Z",
-      "stateHistory": [
-        {
-          "state": "backlog",
-          "timestamp": "2025-11-17T11:40:03.883Z"
-        }
-      ],
-      "description": "Complete the foundation by capturing domain architecture through Big Picture Event Storming.\n\nUse these commands to populate foundation.json eventStorm field:\n- fspec add-foundation-bounded-context <name>\n- fspec add-aggregate-to-foundation <context> <aggregate>\n- fspec add-domain-event-to-foundation <context> <event>\n- fspec show-foundation-event-storm\n\nWhy this matters:\n- Establishes bounded contexts for domain-driven design\n- Enables tag ontology generation from domain model\n- Provides foundation for architectural documentation\n- Supports EXMAP-004 tag discovery workflow\n\nSee spec/CLAUDE.md \"Big Picture Event Storming\" section for detailed guidance.",
-      "type": "task"
+      "createdAt": "2025-11-17T11:55:13.570Z",
+      "updatedAt": "2025-11-17T11:55:13.570Z",
+      "description": "Replace test data in foundation.json with actual fspec project vision, problem space, solution space, capabilities, and personas",
+      "children": []
     }
   },
   "states": {
@@ -50394,37 +50262,21 @@
       "DOC-012",
       "DOC-013",
       "DOC-014",
-      "FOUND-023",
-      "FOUND-024",
-      "FOUND-025",
-      "FOUND-026",
-      "FOUND-027",
-      "FOUND-028",
-      "FOUND-029",
-      "FOUND-030",
-      "FOUND-031",
-      "FOUND-032",
-      "FOUND-034",
-      "FOUND-035",
-      "FOUND-036",
-      "FOUND-037",
-      "FOUND-038",
-      "FOUND-039",
-      "FOUND-040",
-      "FOUND-041"
+      "FOUND-043"
     ],
     "specifying": [
       "LANG-001",
       "EXMAP-004",
       "BOARD-020",
       "AGENT-001",
-      "BROWSE-001",
-      "FOUND-022"
+      "BROWSE-001"
     ],
     "testing": [],
     "implementing": [],
     "validating": [],
     "done": [
+      "FOUND-042",
+      "FOUND-022",
       "FOUND-033",
       "BUG-079",
       "BUG-078",
@@ -50850,7 +50702,7 @@
     "PERF": 1,
     "INIT": 16,
     "EXMAP": 16,
-    "FOUND": 33,
+    "FOUND": 43,
     "DOCS": 3
   }
 }

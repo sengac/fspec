@@ -21,5 +21,779 @@
       }
     ]
   },
-  "personas": []
+  "personas": [],
+  "eventStorm": {
+    "level": "big_picture",
+    "items": [
+      {
+        "id": 1,
+        "type": "bounded_context",
+        "text": "Work Management",
+        "color": null,
+        "deleted": false,
+        "createdAt": "2025-11-17T11:46:47.948Z"
+      },
+      {
+        "id": 2,
+        "type": "bounded_context",
+        "text": "Specification",
+        "color": null,
+        "deleted": false,
+        "createdAt": "2025-11-17T11:46:48.930Z"
+      },
+      {
+        "id": 3,
+        "type": "bounded_context",
+        "text": "Discovery",
+        "color": null,
+        "deleted": false,
+        "createdAt": "2025-11-17T11:46:49.806Z"
+      },
+      {
+        "id": 4,
+        "type": "bounded_context",
+        "text": "Event Storming",
+        "color": null,
+        "deleted": false,
+        "createdAt": "2025-11-17T11:46:50.650Z"
+      },
+      {
+        "id": 5,
+        "type": "bounded_context",
+        "text": "Foundation",
+        "color": null,
+        "deleted": false,
+        "createdAt": "2025-11-17T11:46:51.528Z"
+      },
+      {
+        "id": 6,
+        "type": "bounded_context",
+        "text": "Testing & Validation",
+        "color": null,
+        "deleted": false,
+        "createdAt": "2025-11-17T11:46:52.463Z"
+      },
+      {
+        "id": 7,
+        "type": "aggregate",
+        "text": "WorkUnit",
+        "boundedContextId": 1,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:46:59.131Z",
+        "description": "Story, task, or bug tracking unit"
+      },
+      {
+        "id": 8,
+        "type": "aggregate",
+        "text": "Epic",
+        "boundedContextId": 1,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:47:00.004Z",
+        "description": "Collection of related work units"
+      },
+      {
+        "id": 9,
+        "type": "aggregate",
+        "text": "Dependency",
+        "boundedContextId": 1,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:47:00.885Z",
+        "description": "Relationship between work units"
+      },
+      {
+        "id": 10,
+        "type": "aggregate",
+        "text": "Prefix",
+        "boundedContextId": 1,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:47:01.775Z",
+        "description": "Namespace for work unit IDs"
+      },
+      {
+        "id": 11,
+        "type": "aggregate",
+        "text": "Feature",
+        "boundedContextId": 2,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:47:11.275Z",
+        "description": "Gherkin feature file"
+      },
+      {
+        "id": 12,
+        "type": "aggregate",
+        "text": "Scenario",
+        "boundedContextId": 2,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:47:12.216Z",
+        "description": "Test scenario within feature"
+      },
+      {
+        "id": 13,
+        "type": "aggregate",
+        "text": "Step",
+        "boundedContextId": 2,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:47:13.138Z",
+        "description": "Given/When/Then step"
+      },
+      {
+        "id": 14,
+        "type": "aggregate",
+        "text": "Tag",
+        "boundedContextId": 2,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:47:14.042Z",
+        "description": "Classification metadata"
+      },
+      {
+        "id": 15,
+        "type": "aggregate",
+        "text": "Rule",
+        "boundedContextId": 3,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:47:21.771Z",
+        "description": "Business rule (blue card)"
+      },
+      {
+        "id": 16,
+        "type": "aggregate",
+        "text": "Example",
+        "boundedContextId": 3,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:47:22.630Z",
+        "description": "Concrete example (green card)"
+      },
+      {
+        "id": 17,
+        "type": "aggregate",
+        "text": "Question",
+        "boundedContextId": 3,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:47:23.490Z",
+        "description": "Uncertainty (red card)"
+      },
+      {
+        "id": 18,
+        "type": "aggregate",
+        "text": "Assumption",
+        "boundedContextId": 3,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:47:24.345Z",
+        "description": "Answered question converted to assumption"
+      },
+      {
+        "id": 19,
+        "type": "aggregate",
+        "text": "DomainEvent",
+        "boundedContextId": 4,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:47:32.333Z",
+        "description": "Orange sticky - business event"
+      },
+      {
+        "id": 20,
+        "type": "aggregate",
+        "text": "Command",
+        "boundedContextId": 4,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:47:33.224Z",
+        "description": "Blue sticky - user action"
+      },
+      {
+        "id": 21,
+        "type": "aggregate",
+        "text": "Policy",
+        "boundedContextId": 4,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:47:34.093Z",
+        "description": "Purple sticky - reactive rule"
+      },
+      {
+        "id": 22,
+        "type": "aggregate",
+        "text": "Hotspot",
+        "boundedContextId": 4,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:47:35.012Z",
+        "description": "Red sticky - uncertainty/risk"
+      },
+      {
+        "id": 23,
+        "type": "aggregate",
+        "text": "ProjectVision",
+        "boundedContextId": 5,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:47:42.823Z",
+        "description": "What we're building"
+      },
+      {
+        "id": 24,
+        "type": "aggregate",
+        "text": "Capability",
+        "boundedContextId": 5,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:47:43.685Z",
+        "description": "What the system can do"
+      },
+      {
+        "id": 25,
+        "type": "aggregate",
+        "text": "Persona",
+        "boundedContextId": 5,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:47:44.541Z",
+        "description": "Who uses the system"
+      },
+      {
+        "id": 26,
+        "type": "aggregate",
+        "text": "Diagram",
+        "boundedContextId": 5,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:47:45.417Z",
+        "description": "Mermaid architecture diagrams"
+      },
+      {
+        "id": 27,
+        "type": "aggregate",
+        "text": "Coverage",
+        "boundedContextId": 6,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:47:54.462Z",
+        "description": "Scenario-to-test-to-implementation mapping"
+      },
+      {
+        "id": 28,
+        "type": "aggregate",
+        "text": "TestMapping",
+        "boundedContextId": 6,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:47:55.342Z",
+        "description": "Test file linked to scenario"
+      },
+      {
+        "id": 29,
+        "type": "aggregate",
+        "text": "ImplementationMapping",
+        "boundedContextId": 6,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:47:56.258Z",
+        "description": "Source code linked to test"
+      },
+      {
+        "id": 30,
+        "type": "aggregate",
+        "text": "ValidationResult",
+        "boundedContextId": 6,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:47:57.165Z",
+        "description": "Syntax check, tag validation"
+      },
+      {
+        "id": 31,
+        "type": "event",
+        "text": "WorkUnitCreated",
+        "boundedContextId": 1,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:48:11.197Z",
+        "description": "Work unit was created"
+      },
+      {
+        "id": 32,
+        "type": "event",
+        "text": "WorkUnitStatusChanged",
+        "boundedContextId": 1,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:48:12.070Z",
+        "description": "Work unit moved through ACDD workflow"
+      },
+      {
+        "id": 33,
+        "type": "event",
+        "text": "WorkUnitBlocked",
+        "boundedContextId": 1,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:48:12.949Z",
+        "description": "Work unit blocked by dependency"
+      },
+      {
+        "id": 34,
+        "type": "event",
+        "text": "DependencyAdded",
+        "boundedContextId": 1,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:48:13.815Z",
+        "description": "Dependency relationship created"
+      },
+      {
+        "id": 35,
+        "type": "event",
+        "text": "FeatureCreated",
+        "boundedContextId": 2,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:48:21.270Z",
+        "description": "Feature file created"
+      },
+      {
+        "id": 36,
+        "type": "event",
+        "text": "ScenarioAdded",
+        "boundedContextId": 2,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:48:22.158Z",
+        "description": "Scenario added to feature"
+      },
+      {
+        "id": 37,
+        "type": "event",
+        "text": "FeatureValidated",
+        "boundedContextId": 2,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:48:23.019Z",
+        "description": "Feature file passed validation"
+      },
+      {
+        "id": 38,
+        "type": "event",
+        "text": "TagRegistered",
+        "boundedContextId": 2,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:48:23.887Z",
+        "description": "Tag added to registry"
+      },
+      {
+        "id": 39,
+        "type": "event",
+        "text": "RuleAdded",
+        "boundedContextId": 3,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:48:31.738Z",
+        "description": "Business rule captured"
+      },
+      {
+        "id": 40,
+        "type": "event",
+        "text": "ExampleAdded",
+        "boundedContextId": 3,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:48:32.585Z",
+        "description": "Concrete example captured"
+      },
+      {
+        "id": 41,
+        "type": "event",
+        "text": "QuestionAsked",
+        "boundedContextId": 3,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:48:33.436Z",
+        "description": "Uncertainty identified"
+      },
+      {
+        "id": 42,
+        "type": "event",
+        "text": "ScenariosGenerated",
+        "boundedContextId": 3,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:48:34.298Z",
+        "description": "Scenarios generated from example map"
+      },
+      {
+        "id": 43,
+        "type": "event",
+        "text": "EventStormSessionStarted",
+        "boundedContextId": 4,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:48:42.887Z",
+        "description": "Event Storm session initiated"
+      },
+      {
+        "id": 44,
+        "type": "event",
+        "text": "DomainEventCaptured",
+        "boundedContextId": 4,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:48:43.801Z",
+        "description": "Domain event sticky added"
+      },
+      {
+        "id": 45,
+        "type": "event",
+        "text": "CommandCaptured",
+        "boundedContextId": 4,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:48:44.665Z",
+        "description": "Command sticky added"
+      },
+      {
+        "id": 46,
+        "type": "event",
+        "text": "HotspotCaptured",
+        "boundedContextId": 4,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:48:45.516Z",
+        "description": "Hotspot identified"
+      },
+      {
+        "id": 47,
+        "type": "event",
+        "text": "FoundationDiscovered",
+        "boundedContextId": 5,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:48:53.630Z",
+        "description": "Foundation initialized"
+      },
+      {
+        "id": 48,
+        "type": "event",
+        "text": "VisionDefined",
+        "boundedContextId": 5,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:48:54.485Z",
+        "description": "Project vision articulated"
+      },
+      {
+        "id": 49,
+        "type": "event",
+        "text": "CapabilityAdded",
+        "boundedContextId": 5,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:48:55.334Z",
+        "description": "New capability documented"
+      },
+      {
+        "id": 50,
+        "type": "event",
+        "text": "DiagramCreated",
+        "boundedContextId": 5,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:48:56.181Z",
+        "description": "Architecture diagram added"
+      },
+      {
+        "id": 51,
+        "type": "event",
+        "text": "CoverageGenerated",
+        "boundedContextId": 6,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:49:03.975Z",
+        "description": "Coverage file created"
+      },
+      {
+        "id": 52,
+        "type": "event",
+        "text": "TestLinked",
+        "boundedContextId": 6,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:49:04.827Z",
+        "description": "Test file linked to scenario"
+      },
+      {
+        "id": 53,
+        "type": "event",
+        "text": "FeatureValidated",
+        "boundedContextId": 6,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:49:05.681Z",
+        "description": "Feature passed validation"
+      },
+      {
+        "id": 54,
+        "type": "event",
+        "text": "TagsValidated",
+        "boundedContextId": 6,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:49:06.528Z",
+        "description": "Tags verified against registry"
+      },
+      {
+        "id": 55,
+        "type": "command",
+        "text": "CreateWorkUnit",
+        "boundedContextId": 1,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:49:20.660Z",
+        "description": "Create story, task, or bug"
+      },
+      {
+        "id": 56,
+        "type": "command",
+        "text": "UpdateWorkUnitStatus",
+        "boundedContextId": 1,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:49:21.506Z",
+        "description": "Move through ACDD workflow"
+      },
+      {
+        "id": 57,
+        "type": "command",
+        "text": "BlockWorkUnit",
+        "boundedContextId": 1,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:49:22.360Z",
+        "description": "Block work unit with reason"
+      },
+      {
+        "id": 58,
+        "type": "command",
+        "text": "AddDependency",
+        "boundedContextId": 1,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:49:23.212Z",
+        "description": "Link work units"
+      },
+      {
+        "id": 59,
+        "type": "command",
+        "text": "CreateFeature",
+        "boundedContextId": 2,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:49:31.083Z",
+        "description": "Create Gherkin feature file"
+      },
+      {
+        "id": 60,
+        "type": "command",
+        "text": "AddScenario",
+        "boundedContextId": 2,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:49:31.944Z",
+        "description": "Add scenario to feature"
+      },
+      {
+        "id": 61,
+        "type": "command",
+        "text": "ValidateFeature",
+        "boundedContextId": 2,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:49:32.806Z",
+        "description": "Validate Gherkin syntax"
+      },
+      {
+        "id": 62,
+        "type": "command",
+        "text": "RegisterTag",
+        "boundedContextId": 2,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:49:33.655Z",
+        "description": "Add tag to registry"
+      },
+      {
+        "id": 63,
+        "type": "command",
+        "text": "AddRule",
+        "boundedContextId": 3,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:49:41.942Z",
+        "description": "Capture business rule"
+      },
+      {
+        "id": 64,
+        "type": "command",
+        "text": "AddExample",
+        "boundedContextId": 3,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:49:42.799Z",
+        "description": "Capture concrete example"
+      },
+      {
+        "id": 65,
+        "type": "command",
+        "text": "AskQuestion",
+        "boundedContextId": 3,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:49:43.649Z",
+        "description": "Record uncertainty"
+      },
+      {
+        "id": 66,
+        "type": "command",
+        "text": "GenerateScenarios",
+        "boundedContextId": 3,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:49:44.507Z",
+        "description": "Generate from example map"
+      },
+      {
+        "id": 67,
+        "type": "command",
+        "text": "StartEventStormSession",
+        "boundedContextId": 4,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:49:51.838Z",
+        "description": "Initiate Event Storm"
+      },
+      {
+        "id": 68,
+        "type": "command",
+        "text": "CaptureDomainEvent",
+        "boundedContextId": 4,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:49:52.695Z",
+        "description": "Add domain event sticky"
+      },
+      {
+        "id": 69,
+        "type": "command",
+        "text": "CaptureCommand",
+        "boundedContextId": 4,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:49:53.549Z",
+        "description": "Add command sticky"
+      },
+      {
+        "id": 70,
+        "type": "command",
+        "text": "CaptureHotspot",
+        "boundedContextId": 4,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:49:54.402Z",
+        "description": "Mark uncertainty"
+      },
+      {
+        "id": 71,
+        "type": "command",
+        "text": "DiscoverFoundation",
+        "boundedContextId": 5,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:50:02.756Z",
+        "description": "Initialize foundation"
+      },
+      {
+        "id": 72,
+        "type": "command",
+        "text": "DefineVision",
+        "boundedContextId": 5,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:50:03.612Z",
+        "description": "Articulate project vision"
+      },
+      {
+        "id": 73,
+        "type": "command",
+        "text": "AddCapability",
+        "boundedContextId": 5,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:50:04.460Z",
+        "description": "Document capability"
+      },
+      {
+        "id": 74,
+        "type": "command",
+        "text": "AddDiagram",
+        "boundedContextId": 5,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:50:05.306Z",
+        "description": "Create architecture diagram"
+      },
+      {
+        "id": 75,
+        "type": "command",
+        "text": "GenerateCoverage",
+        "boundedContextId": 6,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:50:14.668Z",
+        "description": "Create coverage file"
+      },
+      {
+        "id": 76,
+        "type": "command",
+        "text": "LinkTest",
+        "boundedContextId": 6,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:50:15.532Z",
+        "description": "Link test to scenario"
+      },
+      {
+        "id": 77,
+        "type": "command",
+        "text": "ValidateFeature",
+        "boundedContextId": 6,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:50:16.381Z",
+        "description": "Check Gherkin syntax"
+      },
+      {
+        "id": 78,
+        "type": "command",
+        "text": "ValidateTags",
+        "boundedContextId": 6,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2025-11-17T11:50:17.229Z",
+        "description": "Verify tag registry"
+      }
+    ],
+    "nextItemId": 79
+  }
 }
