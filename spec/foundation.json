@@ -115,5 +115,19 @@
         "Validate that technical standards are followed across all work units"
       ]
     }
-  ]
+  ],
+  "eventStorm": {
+    "level": "big_picture",
+    "items": [
+      {
+        "id": 1,
+        "type": "bounded_context",
+        "text": "User Management",
+        "color": null,
+        "deleted": false,
+        "createdAt": "2025-11-17T06:14:32.601Z"
+      }
+    ],
+    "nextItemId": 2
+  }
 }

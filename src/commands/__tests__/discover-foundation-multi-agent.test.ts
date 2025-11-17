@@ -46,7 +46,7 @@ describe('Feature: No support for ULTRATHINK in discovery-driven feedback loop',
       process.env.FSPEC_AGENT = 'claude';
 
       // When I run fspec discover-foundation
-      const result = await discoverFoundation({ cwd: tmpDir });
+      const result = await discoverFoundation({ cwd: tmpDir, force: true });
 
       // Then I should see "ULTRATHINK" in the initial draft guidance
       expect(result.systemReminder).toContain('ULTRATHINK');
@@ -66,7 +66,7 @@ describe('Feature: No support for ULTRATHINK in discovery-driven feedback loop',
       process.env.FSPEC_AGENT = 'cursor';
 
       // When I run fspec discover-foundation
-      const result = await discoverFoundation({ cwd: tmpDir });
+      const result = await discoverFoundation({ cwd: tmpDir, force: true });
 
       // Then I should see "think a lot" in the output
       expect(result.systemReminder.toLowerCase()).toContain('think a lot');
@@ -86,7 +86,7 @@ describe('Feature: No support for ULTRATHINK in discovery-driven feedback loop',
       process.env.FSPEC_AGENT = 'aider';
 
       // When I run fspec discover-foundation
-      const result = await discoverFoundation({ cwd: tmpDir });
+      const result = await discoverFoundation({ cwd: tmpDir, force: true });
 
       // Then I should see "think a lot" in the output
       expect(result.systemReminder.toLowerCase()).toContain('think a lot');
@@ -106,7 +106,7 @@ describe('Feature: No support for ULTRATHINK in discovery-driven feedback loop',
       // (We don't set FSPEC_AGENT, so it defaults to safe default)
 
       // When I run fspec discover-foundation
-      const result = await discoverFoundation({ cwd: tmpDir });
+      const result = await discoverFoundation({ cwd: tmpDir, force: true });
 
       // Then I should see "think a lot" in the output
       expect(result.systemReminder.toLowerCase()).toContain('think a lot');
@@ -126,7 +126,10 @@ describe('Feature: No support for ULTRATHINK in discovery-driven feedback loop',
 
       // Test with Claude (supportsMetaCognition = true)
       process.env.FSPEC_AGENT = 'claude';
-      const claudeResult = await discoverFoundation({ cwd: tmpDir });
+      const claudeResult = await discoverFoundation({
+        cwd: tmpDir,
+        force: true,
+      });
 
       // Then the reminder should include "you must ULTRATHINK the entire codebase"
       expect(claudeResult.systemReminder).toContain('ULTRATHINK');
@@ -134,7 +137,10 @@ describe('Feature: No support for ULTRATHINK in discovery-driven feedback loop',
 
       // Test with Cursor (supportsMetaCognition = false)
       process.env.FSPEC_AGENT = 'cursor';
-      const cursorResult = await discoverFoundation({ cwd: tmpDir });
+      const cursorResult = await discoverFoundation({
+        cwd: tmpDir,
+        force: true,
+      });
 
       // Then the reminder should include "think a lot"
       expect(cursorResult.systemReminder.toLowerCase()).toContain(
@@ -151,7 +157,10 @@ describe('Feature: No support for ULTRATHINK in discovery-driven feedback loop',
 
       // Test with Claude (supportsMetaCognition = true)
       process.env.FSPEC_AGENT = 'claude';
-      const claudeResult = await discoverFoundation({ cwd: tmpDir });
+      const claudeResult = await discoverFoundation({
+        cwd: tmpDir,
+        force: true,
+      });
 
       // Then the guidance should include "ULTRATHINK"
       expect(claudeResult.systemReminder).toContain('ULTRATHINK');
@@ -161,7 +170,10 @@ describe('Feature: No support for ULTRATHINK in discovery-driven feedback loop',
 
       // Test with Aider (supportsMetaCognition = false)
       process.env.FSPEC_AGENT = 'aider';
-      const aiderResult = await discoverFoundation({ cwd: tmpDir });
+      const aiderResult = await discoverFoundation({
+        cwd: tmpDir,
+        force: true,
+      });
 
       // Then the guidance should include "think a lot"
       expect(aiderResult.systemReminder.toLowerCase()).toContain('think a lot');

@@ -27,9 +27,9 @@ describe('discover-foundation workflow clarity', () => {
     }
   });
 
-  it('AI accidentally runs discover-foundation and loses progress', async () => {
+  it('AI accidentally runs discover-foundation and draft is protected', async () => {
     // @step Given a foundation draft exists with 3 fields already filled
-    await discoverFoundation({ cwd: testDir, draftPath });
+    await discoverFoundation({ cwd: testDir, draftPath, force: true });
 
     // @step And the draft contains filled values for projectName, projectVision, and projectType
     const draftContent = JSON.parse(await readFile(draftPath, 'utf-8'));
@@ -45,24 +45,29 @@ describe('discover-foundation workflow clarity', () => {
     expect(filledDraft.project.projectType).toBe('cli-tool');
 
     // @step When AI runs "fspec discover-foundation" without flags
-    await discoverFoundation({ cwd: testDir, draftPath });
+    const result = await discoverFoundation({ cwd: testDir, draftPath });
 
-    // @step Then the draft is regenerated from scratch
-    const regeneratedDraft = JSON.parse(await readFile(draftPath, 'utf-8'));
+    // @step Then the command fails with error
+    expect(result.valid).toBe(false);
+    expect(result.systemReminder).toContain(
+      'foundation.json.draft already exists'
+    );
 
-    // @step And all 3 previously filled fields are replaced with [QUESTION:] placeholders
-    expect(regeneratedDraft.project.name).toContain('[QUESTION:');
-    expect(regeneratedDraft.project.vision).toContain('[QUESTION:');
-    expect(regeneratedDraft.project.projectType).toContain('[DETECTED:');
+    // @step And the draft is NOT overwritten
+    const unchangedDraft = JSON.parse(await readFile(draftPath, 'utf-8'));
 
-    // @step And all progress is lost
-    expect(regeneratedDraft.project.name).not.toBe('fspec');
-    expect(regeneratedDraft.project.vision).not.toBe('Test vision');
+    // @step And all 3 previously filled fields remain unchanged
+    expect(unchangedDraft.project.name).toBe('fspec');
+    expect(unchangedDraft.project.vision).toBe('Test vision');
+    expect(unchangedDraft.project.projectType).toBe('cli-tool');
+
+    // @step And no progress is lost
+    expect(unchangedDraft.project.name).not.toContain('[QUESTION:');
   });
 
   it('update-foundation emits next field reminder', async () => {
     // @step Given a foundation draft exists
-    await discoverFoundation({ cwd: testDir, draftPath });
+    await discoverFoundation({ cwd: testDir, draftPath, force: true });
 
     // @step When AI runs "fspec update-foundation projectName 'fspec'"
     const result = await updateFoundation({
