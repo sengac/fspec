@@ -115,8 +115,8 @@ describe('Feature: Auto-create Big Picture Event Storming work unit after founda
       // @step And the work unit status should be "backlog"
       expect(workUnit.status).toBe('backlog');
 
-      // @step And the work unit type should be "story"
-      expect(workUnit.type).toBe('story');
+      // @step And the work unit type should be "task"
+      expect(workUnit.type).toBe('task');
 
       // @step And the work unit title should contain "Big Picture Event Storming"
       expect(workUnit.title).toContain('Big Picture Event Storming');

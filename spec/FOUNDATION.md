@@ -6,15 +6,15 @@
 
 ## Vision
 
-Transform AI agents from code babysitters into autonomous builders through complete spec-driven infrastructure with Gherkin scenarios, TDD discipline, coverage tracking, and Kanban workflow management
+Enable AI agents to build production-quality software through spec-driven development with ACDD workflow, eliminating babysitting and enforcing professional TDD discipline.
 
 ---
 
 ## Problem Space
 
-### AI agents lack professional development infrastructure
+### AI agents lack professional development infrastructure and quality examples
 
-AI agents confabulate without quality examples, skip acceptance criteria, don't follow TDD discipline, lack checkpoint systems for experimentation, have no Kanban workflow tracking, no specification management, and no coverage tracking to link code to business rules. Developers are forced to micromanage AI agents instead of building features, resulting in wasted time and low-quality code.
+AI agents code without acceptance criteria enforcement, TDD guardrails, quality gates, or workflow management. Without quality examples, AI confabulates and hallucinates instead of asking clarifying questions, forcing developers to babysit instead of build.
 
 **Impact:** high
 
@@ -24,24 +24,18 @@ AI agents confabulate without quality examples, skip acceptance criteria, don't 
 
 ### Overview
 
-A complete spec-driven development system for AI agents featuring Gherkin scenario management, Example Mapping discovery, Kanban workflow tracking, TDD enforcement through ACDD (Acceptance Criteria Driven Development), git-based checkpoint system for safe experimentation, coverage tracking linking code to business rules, and interactive TUI for workflow visualization. Transforms AI agents into autonomous builders through professional development infrastructure.
+A complete spec-driven development system that provides AI agents with professional Gherkin scenarios, Example Mapping and Event Storming for discovery and quality examples, automated test generation from acceptance criteria, TDD enforcement with temporal ordering validation, interactive Kanban TUI with live updates, git-based checkpoint systems for safe experimentation, work unit-scoped virtual hooks for quality gates, reverse ACDD for legacy codebases, foundation-level domain architecture modeling, coverage tracking linking code to business rules, and attachment viewers for rich documentation.
 
 ### Capabilities
 
-- **Work Unit Management**: Create, track, and manage work units (stories, bugs, tasks) through Kanban workflow states (backlog → specifying → testing → implementing → validating → done)
-- **Gherkin Specification Management**: Create, edit, validate, and format Gherkin feature files with scenarios, steps, backgrounds, and examples
-- **Example Mapping Discovery**: Conduct Example Mapping sessions to clarify requirements through rules (blue cards), examples (green cards), and questions (red cards) before writing specifications
-- **Event Storming**: Capture domain events, commands, aggregates, policies, and bounded contexts for domain-driven design and tag discovery
-- **ACDD Workflow Enforcement**: Enforce Acceptance Criteria Driven Development through temporal validation, prefill detection, and state transition rules ensuring specs before tests, tests before code
-- **Coverage Tracking**: Link Gherkin scenarios to test files and implementation code for complete traceability from business rules to code
-- **Git Checkpoint System**: Create automatic and manual git-based checkpoints for safe experimentation, with conflict resolution and re-restoration support
-- **Tag Management & Ontology**: Organize features and scenarios using hierarchical tags with validation, statistics, and automatic tag discovery from Event Storming
-- **Lifecycle Hooks**: Execute custom scripts at workflow events (pre/post command execution) with blocking/non-blocking support and virtual work unit-scoped hooks
-- **Interactive Kanban TUI**: Real-time terminal UI for visualizing Kanban board, work unit details, checkpoints, attachments with markdown/mermaid rendering
-- **Reverse ACDD**: Reverse engineer existing codebases to generate work units, epics, feature files, and test skeletons for legacy code documentation
-- **Scenario Generation**: Automatically generate Gherkin scenarios from Example Mapping rules and examples with proper Given-When-Then structure
-- **Quality Gate Validation**: Validate Gherkin syntax, tag compliance, feature file structure, and enforce quality standards before workflow progression
-- **Attachment Management**: Attach and view markdown documents with mermaid diagrams to work units for rich documentation and visual designs
+- **Manage Work Units**: Create, track, and move work through ACDD workflow states (backlog → specifying → testing → implementing → validating → done)
+- **Conduct Discovery**: Use Example Mapping and Event Storming to clarify requirements with quality examples before writing specifications
+- **Write Specifications**: Create Gherkin feature files with Given-When-Then scenarios that serve as living documentation and test foundations
+- **Track Coverage**: Link tests and implementation code to Gherkin scenarios for complete traceability from business rules to code
+- **Create Checkpoints**: Save and restore git-based snapshots of work for safe experimentation and rollback
+- **Manage Quality Gates**: Add work unit-scoped virtual hooks to enforce linting, testing, and validation at workflow transitions
+- **Visualize Progress**: View interactive Kanban TUI with live updates, work unit details, attachments, and checkpoint management
+- **Reverse Engineer Codebases**: Document existing codebases with feature files, test skeletons, and coverage mappings using reverse ACDD
 
 ---
 
@@ -49,32 +43,31 @@ A complete spec-driven development system for AI agents featuring Gherkin scenar
 
 ### AI Agent
 
-Autonomous coding assistant (Claude Code, Codex, etc.) that needs structured guidance to follow professional development practices
+AI coding assistant (Claude Code, Codex, etc.) that follows ACDD workflow to build features
 
 **Goals:**
-- Follow ACDD workflow without human micromanagement
-- Generate quality specifications and tests
-- Track work through Kanban states
-- Safely experiment with checkpoints
+- Execute spec-driven development workflow with proper TDD discipline and quality gates
 
-### Developer
+### Developer/Product Owner
 
-Human developer managing AI agents and using fspec for project workflow
+Human developer or product owner who guides AI agents through discovery and validates implementations
 
 **Goals:**
-- Shepherd AI agents through professional development practices
-- Track project progress via Kanban board
-- Ensure quality through specifications and tests
-- Maintain living documentation
+- Guide AI agents to build production-quality software without constant babysitting
 
-### Product Owner
+---
 
-Stakeholder defining features and acceptance criteria through Example Mapping
+# Domain Architecture
 
-**Goals:**
-- Define clear acceptance criteria for features
-- Track work unit progress and priority
-- Ensure business rules are captured in Gherkin scenarios
-- Maintain traceability from business rules to code
+## Bounded Contexts
+
+- Payment Processing
+
+## Bounded Context Map
+
+```mermaid
+graph TB
+  BC1[Payment Processing]
+```
 
 ---

@@ -46,7 +46,7 @@ Feature: Auto-create Big Picture Event Storming work unit after foundation final
     And validation passes
     Then a new work unit should be created with FOUND prefix
     And the work unit status should be "backlog"
-    And the work unit type should be "story"
+    And the work unit type should be "task"
     And the work unit title should contain "Big Picture Event Storming"
     And the work unit description should include foundation Event Storm commands
     And the work unit description should reference CLAUDE.md documentation

@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-17T03:14:45.524Z"
+    "lastUpdated": "2025-11-17T04:55:26.216Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -49288,6 +49288,157 @@
       "questions": [],
       "nextQuestionId": 0,
       "updated": "2025-11-17T03:14:45.546Z"
+    },
+    "FOUND-016": {
+      "id": "FOUND-016",
+      "title": "Conduct Big Picture Event Storming for Foundation",
+      "description": "Complete the foundation by capturing domain architecture through Big Picture Event Storming.\n\nUse these commands to populate foundation.json eventStorm field:\n- fspec add-foundation-bounded-context <name>\n- fspec add-aggregate-to-foundation <context> <aggregate>\n- fspec add-domain-event-to-foundation <context> <event>\n- fspec show-foundation-event-storm\n\nWhy this matters:\n- Establishes bounded contexts for domain-driven design\n- Enables tag ontology generation from domain model\n- Provides foundation for architectural documentation\n- Supports EXMAP-004 tag discovery workflow\n\nSee spec/CLAUDE.md \"Big Picture Event Storming\" section for detailed guidance.",
+      "type": "task",
+      "status": "done",
+      "createdAt": "2025-11-17T04:06:55.787Z",
+      "updatedAt": "2025-11-17T04:11:20.433Z",
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-17T04:10:32.260Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-17T04:11:06.449Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-17T04:11:14.623Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-17T04:11:20.433Z"
+        }
+      ],
+      "rules": [],
+      "examples": [],
+      "questions": [],
+      "architectureNotes": [],
+      "nextRuleId": 0,
+      "nextExampleId": 0,
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-17T04:11:20.433Z"
+    },
+    "FOUND-017": {
+      "id": "FOUND-017",
+      "title": "Generate Event Storm section in FOUNDATION.md with validated Mermaid diagram",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-11-17T04:14:28.263Z",
+      "updatedAt": "2025-11-17T04:55:26.241Z",
+      "description": "Update foundation-md.ts generator to include Event Storm bounded contexts as both text list and Mermaid bounded context map. Validate Mermaid syntax before adding to FOUNDATION.md. Auto-regenerate FOUNDATION.md when Event Storm commands are run (add-foundation-bounded-context, etc.).",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-17T04:14:34.699Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-17T04:17:48.782Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-17T04:20:48.475Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-17T04:22:50.917Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-17T04:29:48.019Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-17T04:44:51.268Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-17T04:55:26.242Z"
+        }
+      ],
+      "userStory": {
+        "role": "AI agent using fspec for any project",
+        "action": "see Event Storm bounded contexts visualized in FOUNDATION.md with a Mermaid diagram",
+        "benefit": "I understand the strategic domain architecture at a glance"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Mermaid diagram syntax must be validated using mermaid.parse() before adding to FOUNDATION.md",
+          "deleted": false,
+          "createdAt": "2025-11-17T04:14:51.666Z"
+        },
+        {
+          "id": 1,
+          "text": "FOUNDATION.md must auto-regenerate when Event Storm commands are run (add-foundation-bounded-context, etc.)",
+          "deleted": false,
+          "createdAt": "2025-11-17T04:14:52.214Z"
+        },
+        {
+          "id": 2,
+          "text": "Event Storm section should include both text list AND Mermaid bounded context map",
+          "deleted": false,
+          "createdAt": "2025-11-17T04:14:52.777Z"
+        },
+        {
+          "id": 3,
+          "text": "Event Storm section only appears if foundation.json has eventStorm field with items",
+          "deleted": false,
+          "createdAt": "2025-11-17T04:14:53.353Z"
+        },
+        {
+          "id": 4,
+          "text": "Mermaid diagram should show bounded contexts as nodes in a graph",
+          "deleted": false,
+          "createdAt": "2025-11-17T04:14:53.910Z"
+        }
+      ],
+      "nextRuleId": 5,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User runs 'fspec add-foundation-bounded-context Work Management', FOUNDATION.md auto-regenerates with Domain Architecture section showing bounded context in text list and Mermaid diagram",
+          "deleted": false,
+          "createdAt": "2025-11-17T04:15:02.832Z"
+        },
+        {
+          "id": 1,
+          "text": "foundation.json has 7 bounded contexts, FOUNDATION.md includes Mermaid graph with 7 nodes",
+          "deleted": false,
+          "createdAt": "2025-11-17T04:15:03.381Z"
+        },
+        {
+          "id": 2,
+          "text": "Invalid Mermaid syntax detected during generation, error thrown with line number and helpful message",
+          "deleted": false,
+          "createdAt": "2025-11-17T04:15:03.926Z"
+        }
+      ],
+      "nextExampleId": 3,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Use existing validateMermaidSyntax() utility from src/utils/mermaid-validation.ts to validate generated Mermaid diagram. Call validateMermaidSyntax() before writing to FOUNDATION.md. Reuse existing pattern from add-diagram command. Auto-regenerate FOUNDATION.md by calling generateFoundationMd() at end of add-foundation-bounded-context command.",
+          "deleted": false,
+          "createdAt": "2025-11-17T04:15:23.535Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "attachments": [
+        "spec/attachments/FOUND-017/ast-research-foundation-md-generator.json",
+        "spec/attachments/FOUND-017/ast-research-add-foundation-bounded-context.json"
+      ],
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2025-11-17T04:55:26.241Z"
     }
   },
   "states": {
@@ -49355,6 +49506,8 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "FOUND-017",
+      "FOUND-016",
       "FOUND-015",
       "FOUND-013",
       "FOUND-014",
@@ -49772,6 +49925,6 @@
     "PERF": 1,
     "INIT": 16,
     "EXMAP": 16,
-    "FOUND": 15
+    "FOUND": 17
   }
 }

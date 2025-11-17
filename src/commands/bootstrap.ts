@@ -218,7 +218,7 @@ foundation.json exists but eventStorm field is empty.
 You should conduct Big Picture Event Storming to establish domain architecture.
 
 Option 1 (Recommended): Create a work unit to track this
-  fspec create-story FOUND "Conduct Big Picture Event Storming for Foundation"
+  fspec create-task FOUND "Conduct Big Picture Event Storming for Foundation"
 
 Option 2: Conduct Event Storm directly
   fspec add-foundation-bounded-context <name>
