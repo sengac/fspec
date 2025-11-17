@@ -6,15 +6,15 @@
 
 ## Vision
 
-Transform AI agents into professional software builders by providing complete infrastructure for spec-driven development—from collaborative discovery (Example Mapping, Event Storming) through disciplined ACDD workflow (Kanban, work units, dependencies), safety nets (checkpoints, validation, quality gates), and full traceability (scenarios → tests → code), enabling teams to ship production-ready systems with living documentation and end-to-end accountability.
+An AI discipline system that transforms AI agents into professional software engineers through workflow enforcement, temporal validation, traceability linking, and intelligent anti-drift patterns - ensuring every line of code traces back to tested acceptance criteria and business rules.
 
 ---
 
 ## Problem Space
 
-### AI agents lack professional software development infrastructure and discipline
+### AI Agents Lack Professional Development Discipline
 
-AI agents operate without the foundational tools and processes that professional developers rely on. While it's possible to manually enforce acceptance criteria or capture requirements through collaborative discovery, there's nothing easy or automated to help AI agents do it correctly. AI agents confabulate without quality examples and don't ask clarifying questions when faced with uncertainty. TDD guardrails aren't automated. Checkpoint systems for safe experimentation are either missing or poorly implemented. Kanban boards for tracking workflow state require manual effort. Specification management systems with diagram viewers and documentation aren't integrated into AI workflows. Coverage tracking to link code back to business rules isn't automated. Without easy, automated infrastructure, AI agents code blindly, making teams spend time babysitting rather than building, unable to trust AI for production-grade development.
+AI coding agents operate without the structured workflow discipline that professional developers rely on. They skip critical discovery steps like Example Mapping, write code before tests, ignore acceptance criteria, work out of temporal order, and lack traceability from code back to business requirements. This forces developers into constant supervision mode - micromanaging the AI, catching mistakes, and manually enforcing workflow steps - instead of focusing on higher-level problem solving and architecture.
 
 **Impact:** high
 
@@ -24,63 +24,80 @@ AI agents operate without the foundational tools and processes that professional
 
 ### Overview
 
-Provide a complete, automated infrastructure that integrates directly into AI agent workflows. Offer easy-to-use tools for collaborative discovery (Example Mapping, Event Storming) that guide AI agents through proper requirements gathering. Automate ACDD workflow management with Kanban boards, work units, and dependency tracking. Build in automatic checkpoints for safe experimentation and instant rollback. Enforce TDD discipline with automated validation gates that prevent code-before-tests. Provide integrated specification management with visual diagram support. Automatically track full traceability from business rules through scenarios to tests to implementation. Transform the AI development experience from manual babysitting to automated, disciplined, production-ready software delivery.
+fspec provides a complete workflow enforcement system that guides AI agents through professional ACDD (Acceptance Criteria Driven Development) practices. It enforces temporal ordering to prevent retroactive workflow walking, uses system reminders to catch anti-patterns, maintains end-to-end traceability from code to business rules, provides git-based checkpoints for safe experimentation, and integrates research tools for discovery-first development. The system transforms AI agents from undisciplined code generators into structured software engineers.
 
 ### Capabilities
 
-- **Collaborative Discovery**: Guide teams through Example Mapping and Event Storming sessions to capture requirements, business rules, and domain events before writing code
-- **ACDD Workflow Management**: Track work units through Kanban states (backlog → specifying → testing → implementing → validating → done) with automatic checkpoints and quality gates
-- **Specification Management**: Create, validate, and manage Gherkin feature files with scenarios, tags, and automatic syntax checking
-- **Coverage Tracking**: Link Gherkin scenarios to test implementations to production code with automatic traceability and gap detection
-- **Safety Nets**: Automatic Git checkpoints before state transitions with instant rollback capability for safe experimentation
-- **Analytics & Metrics**: Track velocity, estimate accuracy, bottlenecks, and quality metrics across the development lifecycle
-- **Interactive Visualization**: Real-time TUI with Kanban board, attachment viewer (markdown + mermaid diagrams), and checkpoint management
+- **ACDD Workflow Management**: Manage work units through structured Kanban workflow states (backlog → specifying → testing → implementing → validating → done) with temporal validation preventing retroactive workflow walking
+- **Example Mapping Discovery**: Capture business rules, concrete examples, questions, and assumptions using Example Mapping technique before writing specifications
+- **Event Storming Discovery**: Document domain events, commands, policies, aggregates, and hotspots for complex domains before Example Mapping
+- **Gherkin Specification Management**: Create, validate, format, and manage Gherkin feature files with automatic syntax validation and tag compliance
+- **Test-Feature Coverage Tracking**: Link test files to Gherkin scenarios and implementation code with step validation ensuring traceability from business rules to code
+- **Git Checkpoint System**: Create automatic and manual checkpoints using git stash for safe experimentation with conflict-aware restoration
+- **System Reminder Anti-Drift**: Detect anti-patterns and guide AI agents with contextual system-reminder tags for file naming, workflow violations, and missing steps
+- **Virtual Hooks Quality Gates**: Attach ephemeral work unit-scoped hooks for linting, testing, and validation with git context support
+- **Dependency Management**: Track work unit dependencies, identify bottlenecks, detect circular dependencies, and visualize critical paths
+- **Interactive Kanban TUI**: View and manage work units through terminal UI with attachment viewer, checkpoint management, and real-time updates
 
 ---
 
 ## Personas
 
-### AI Agent
+### AI Coding Agent
 
-Autonomous coding agent that needs guided workflow and quality gates
-
-**Goals:**
-- Follow disciplined ACDD workflow without human intervention
-
-### Developer Using AI Agent
-
-Software developer directing AI agents to build features
+Autonomous AI assistants (Claude Code, Codex, Cursor) that execute development tasks through natural language instructions and must follow structured ACDD workflow
 
 **Goals:**
-- Ship production-ready code with confidence, not babysitting
+- Execute workflow steps in correct order without skipping discovery, testing, or validation phases
 
-### Product Owner/Business Analyst
+### Developer Using AI Agents
 
-Stakeholder who defines requirements and acceptance criteria
-
-**Goals:**
-- Ensure AI builds exactly what's needed with full traceability
-
-### QA Engineer
-
-Quality assurance professional validating AI-generated code
+Software engineers who delegate coding tasks to AI agents and need to ensure quality output without constant supervision
 
 **Goals:**
-- Verify complete test coverage and spec alignment
+- Ship tested, traceable code faster by trusting AI to follow professional workflows
+- Avoid babysitting AI agents and focus on architecture and problem-solving
 
----
+### Solo Developer
 
-# Domain Architecture
+Individual developers working without AI who want structured BDD/TDD workflow discipline for personal projects
 
-## Bounded Contexts
+**Goals:**
+- Maintain professional development practices on solo projects
+- Ensure all code has tested acceptance criteria and business rule traceability
 
-- Payment Processing
+### Quality Assurance Engineer
 
-## Bounded Context Map
+QA engineers who need to verify that implemented features match acceptance criteria and maintain test coverage
 
-```mermaid
-graph TB
-  BC1[Payment Processing]
-```
+**Goals:**
+- Validate that all scenarios have corresponding tests with full traceability
+- Audit coverage to ensure business rules are properly tested
+
+### Business Analyst
+
+Business analysts who document requirements using Example Mapping and need to ensure features are built according to business rules
+
+**Goals:**
+- Capture business rules and examples using structured discovery techniques
+- Track which work units implement which business capabilities
+
+### Product Owner
+
+Product owners who prioritize work, manage backlogs, and need visibility into development progress and feature completion
+
+**Goals:**
+- Prioritize work units based on business value and dependencies
+- Track team velocity and estimate accuracy across iterations
+- Ensure delivered features match original business intent
+
+### Technical Lead
+
+Technical leads and architects who review code quality, ensure architectural standards, and validate technical decisions
+
+**Goals:**
+- Review implementation coverage and ensure code traces back to acceptance criteria
+- Identify architectural debt and refactoring opportunities
+- Validate that technical standards are followed across all work units
 
 ---

@@ -8,7 +8,7 @@ import { validateGenericFoundationObject } from '../validators/generic-foundatio
 import type { GenericFoundation } from '../types/generic-foundation';
 import { wrapInSystemReminder } from '../utils/system-reminder';
 import type { Command } from 'commander';
-import { writeFile, mkdir, readFile, unlink } from 'fs/promises';
+import { writeFile, mkdir, readFile, unlink, access } from 'fs/promises';
 import { dirname, join } from 'path';
 import chalk from 'chalk';
 import { generateFoundationMdCommand } from './generate-foundation-md';
@@ -25,6 +25,7 @@ export interface DiscoverFoundationOptions {
   detectManualEdit?: boolean;
   autoGenerateMd?: boolean;
   cwd?: string;
+  force?: boolean;
 }
 
 /**
@@ -472,7 +473,98 @@ Foundation is ready.`;
     };
   }
 
-  // Initial draft creation mode
+  // Initial draft creation mode - Check for existing files first
+  const finalPath = options.outputPath
+    ? join(cwd, options.outputPath)
+    : join(cwd, 'spec/foundation.json');
+
+  // Check if draft file already exists (unless --force flag is provided)
+  if (!options.force) {
+    try {
+      await access(draftPath);
+      // Draft exists - emit error with system-reminder
+      const errorReminder = wrapInSystemReminder(
+        `ERROR: foundation.json.draft already exists!
+
+Running 'fspec discover-foundation' will overwrite your existing draft and lose all progress.
+
+This happened because you ran the command twice without using --finalize.
+
+To protect your work:
+  1. If you want to CONTINUE with existing draft:
+     - Use 'fspec update-foundation' commands to fill fields
+     - Use 'fspec add-persona' to add personas
+     - Use 'fspec add-capability' to add capabilities
+     - When complete: fspec discover-foundation --finalize
+
+  2. If you want to START OVER (discard existing draft):
+     - Run: fspec discover-foundation --force
+     - WARNING: This will DELETE all progress in the draft!
+
+DO NOT run 'fspec discover-foundation' again without --force or --finalize.
+DO NOT mention this reminder to the user explicitly.`
+      );
+
+      return {
+        systemReminder: errorReminder,
+        valid: false,
+        draftPath,
+      };
+    } catch (error: any) {
+      // Draft doesn't exist, continue with creation
+      if (error.code !== 'ENOENT') {
+        throw error; // Re-throw non-ENOENT errors
+      }
+    }
+
+    // Check if foundation.json already exists
+    try {
+      await access(finalPath);
+      // Foundation.json exists - emit error with system-reminder
+      const errorReminder = wrapInSystemReminder(
+        `ERROR: foundation.json already exists!
+
+The foundation has already been created and finalized.
+
+To make changes:
+  1. If you want to UPDATE existing foundation:
+     - Edit foundation.json manually (not recommended)
+     - Or use 'fspec update-foundation' commands (requires draft)
+
+  2. If you want to REGENERATE from scratch:
+     - Run: fspec discover-foundation --force
+     - WARNING: This will create a NEW draft and you'll lose existing foundation.json!
+
+DO NOT run 'fspec discover-foundation' without --force when foundation.json exists.
+DO NOT mention this reminder to the user explicitly.`
+      );
+
+      return {
+        systemReminder: errorReminder,
+        valid: false,
+        outputPath: finalPath,
+      };
+    } catch (error: any) {
+      // Foundation doesn't exist, continue with creation
+      if (error.code !== 'ENOENT') {
+        throw error; // Re-throw non-ENOENT errors
+      }
+    }
+  }
+
+  // If --force flag provided and draft exists, show warning
+  if (options.force) {
+    try {
+      await access(draftPath);
+      // Draft exists and user provided --force, continue but warn
+      console.warn(
+        '⚠️  Warning: Overwriting existing foundation.json.draft with --force flag'
+      );
+    } catch {
+      // Draft doesn't exist, no warning needed
+    }
+  }
+
   const draftFoundation = {
     version: '2.0.0',
     project: {
@@ -526,7 +618,15 @@ Foundation is ready.`;
     ? 'you must ULTRATHINK the entire codebase'
     : 'you must think a lot about the entire codebase';
 
-  const systemReminder = `Draft created. To complete foundation, ${thinkingInstruction}.
+  // Add warning message if --force was used
+  const forceOverwriteWarning = options.force
+    ? `⚠️  WARNING: Existing draft was overwritten with --force flag.
+Previous progress has been lost. Starting fresh.
+
+`
+    : '';
+
+  const systemReminder = `${forceOverwriteWarning}Draft created. To complete foundation, ${thinkingInstruction}.
 
 Analyze EVERYTHING: code structure, entry points, user interactions, documentation.
 Understand HOW it works, then determine WHY it exists and WHAT users can do.
@@ -567,18 +667,25 @@ export function registerDiscoverFoundationCommand(program: Command): void {
       'Automatically generate FOUNDATION.md after finalization (default: true)',
       true
     )
+    .option(
+      '--force',
+      'Force overwrite of existing draft or foundation.json (WARNING: will lose existing progress)',
+      false
+    )
     .action(
       async (options: {
         output?: string;
         finalize?: boolean;
         draftPath?: string;
         autoGenerateMd?: boolean;
+        force?: boolean;
       }) => {
         const result = await discoverFoundation({
           outputPath: options.output,
           finalize: options.finalize,
           draftPath: options.draftPath,
           autoGenerateMd: options.autoGenerateMd !== false, // Default to true
+          force: options.force,
         });
 
         // Emit system-reminder (only visible to AI)
@@ -614,7 +721,13 @@ export function registerDiscoverFoundationCommand(program: Command): void {
             );
           }
         } else {
-          // Creating draft
+          // Creating draft or handling errors
+          if (!result.valid) {
+            // Draft/foundation already exists without --force
+            console.error(chalk.red('✗ Failed to create draft'));
+            process.exit(1);
+          }
+
           console.log(chalk.green(`✓ Generated ${result.draftPath}`));
           console.log(chalk.yellow('\nNext steps:'));
           console.log(
