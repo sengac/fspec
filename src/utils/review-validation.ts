@@ -34,7 +34,8 @@ export function validateASTResearch(
       passed: false,
       error:
         'Cannot transition to testing - no AST research performed during discovery. ' +
-        'Use: fspec research --tool=ast --file <path> --operation <op> to analyze relevant code. ' +
+        'FIRST run: fspec research --tool=ast --help (to learn HOW to use the AST tool). ' +
+        'THEN use: fspec research --tool=ast --file <path> --operation <op> to analyze relevant code. ' +
         'Save output to file matching pattern: ast-research-<description>.json or ast-research-<description>.md. ' +
         'Then attach: fspec add-attachment <work-unit-id> spec/attachments/<work-unit-id>/ast-research-<description>.{json|md}',
     };

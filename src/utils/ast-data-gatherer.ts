@@ -101,7 +101,9 @@ export async function gatherASTData(
   }
 
   // Generate suggested commands for deeper investigation
+  // IMPORTANT: AI should run 'fspec research --tool=ast --help' FIRST to learn usage
   const suggestedCommands: string[] = [
+    'fspec research --tool=ast --help  # ALWAYS run this FIRST to learn HOW to use AST tool',
     'fspec research --tool=ast --operation=list-functions --file=<file-path>',
     'fspec research --tool=ast --operation=list-classes --file=<file-path>',
     'fspec research --tool=ast --operation=show-imports --file=<file-path>',

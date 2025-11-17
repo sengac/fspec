@@ -72,11 +72,18 @@ CRITICAL: Use Example Mapping FIRST before writing any Gherkin specs:
 
 RESEARCH TOOLS: Use research tools to answer questions during Example Mapping:
   fspec research                                  # List available research tools
+
+CRITICAL: BEFORE using AST research tool, learn HOW to use it:
+  fspec research --tool=ast --help                # Run this FIRST to understand usage
+
+Then use AST research:
   fspec research --tool=ast --query="pattern"     # Search codebase using AST analysis
+
+Or stakeholder research:
   fspec research --tool=stakeholder --platform=teams --question="question" --work-unit=${workUnitId}
 
 Available research tools (--tool=ast or --tool=stakeholder):
-  - ast: AST code analysis and pattern detection
+  - ast: AST code analysis and pattern detection (run --help first to learn usage)
   - stakeholder: Send questions to stakeholders via Teams/Slack/Discord
 
 Research results can be attached to work units for Example Mapping context.
@@ -88,7 +95,8 @@ Common commands for SPECIFYING state:
   fspec remove-example <id> <index>
   fspec add-question <id> "@human: question?"
   fspec answer-question <id> <index> --answer "..."
-  fspec research --tool=ast --query="pattern"
+  fspec research --tool=ast --help                # ALWAYS run this FIRST to learn AST usage
+  fspec research --tool=ast --query="pattern"     # Then use AST research
   fspec research --tool=stakeholder --platform=teams --question="..." --work-unit=<id>
   fspec generate-scenarios <id>
 
@@ -531,7 +539,14 @@ CRITICAL: Use Example Mapping FIRST before writing any Gherkin specs:
 
 RESEARCH TOOLS: Use research tools to answer questions during Example Mapping:
   fspec research                                  # List available research tools
+
+CRITICAL: BEFORE using AST research tool, learn HOW to use it:
+  fspec research --tool=ast --help                # Run this FIRST to understand usage
+
+Then use AST research:
   fspec research --tool=ast --query="pattern"     # Search codebase using AST analysis
+
+Or stakeholder research:
   fspec research --tool=stakeholder --platform=teams --question="question" --work-unit=${workUnitId}
 
 Available research tools (--tool=ast or --tool=stakeholder):
@@ -540,7 +555,8 @@ ${toolLines.join('\n')}
 Configuration:
   - Project config: spec/fspec-config.json
   - User config: ~/.fspec/fspec-config.json
-  - For full help: fspec research --help`;
+  - For full help: fspec research --help
+  - For tool-specific help: fspec research --tool=<name> --help`;
 
   // Add config examples for unconfigured tools
   if (configExamples.length > 0) {
@@ -559,7 +575,8 @@ Common commands for SPECIFYING state:
   fspec remove-example <id> <index>
   fspec add-question <id> "@human: question?"
   fspec answer-question <id> <index> --answer "..."
-  fspec research --tool=ast --query="pattern"
+  fspec research --tool=ast --help                # ALWAYS run this FIRST to learn AST usage
+  fspec research --tool=ast --query="pattern"     # Then use AST research
   fspec research --tool=stakeholder --platform=teams --question="..." --work-unit=<id>
   fspec generate-scenarios <id>
 
