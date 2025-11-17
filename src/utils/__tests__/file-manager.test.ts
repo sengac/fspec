@@ -47,6 +47,9 @@ describe('Feature: Implement file locking for concurrent access safety', () => {
   let testFile: string;
 
   beforeEach(async () => {
+    // Reset singleton state to prevent test pollution
+    fileManager.resetLockState();
+
     // Create temporary test directory
     testDir = join(process.cwd(), 'tmp-test-file-manager-' + Date.now());
     await mkdir(testDir, { recursive: true });

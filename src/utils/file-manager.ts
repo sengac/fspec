@@ -45,6 +45,17 @@ class LockedFileManager {
   }
 
   /**
+   * Reset internal lock state (for testing only)
+   * CRITICAL: Only call this when no file operations are in progress
+   */
+  public resetLockState(): void {
+    this.readCounts.clear();
+    this.writeLocks.clear();
+    this.waitingReaders.clear();
+    this.waitingWriters.clear();
+  }
+
+  /**
    * Acquire in-process read lock (multiple readers allowed)
    */
   private async acquireReadLock(filePath: string): Promise<void> {
