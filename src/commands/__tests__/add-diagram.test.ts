@@ -3,6 +3,7 @@ import { mkdir, writeFile, rm, readFile, access } from 'fs/promises';
 import { join } from 'path';
 import { addDiagram } from '../add-diagram';
 import { createMinimalFoundation } from '../../test-helpers/foundation-fixtures';
+import type { DiagramSection } from '../../types/foundation';
 
 describe('Feature: Add Mermaid Diagram to FOUNDATION.md', () => {
   let testDir: string;
@@ -44,7 +45,7 @@ describe('Feature: Add Mermaid Diagram to FOUNDATION.md', () => {
         await readFile(foundationJsonPath, 'utf-8')
       );
       const diagram = updatedJson.architectureDiagrams.find(
-        (d: any) => d.title === 'Component Diagram'
+        (d: DiagramSection) => d.title === 'Component Diagram'
       );
       expect(diagram).toBeDefined();
       expect(diagram.mermaidCode).toBe('graph TD\n  A-->B');
@@ -88,7 +89,7 @@ describe('Feature: Add Mermaid Diagram to FOUNDATION.md', () => {
         await readFile(foundationJsonPath, 'utf-8')
       );
       const diagram = updatedJson.architectureDiagrams.find(
-        (d: any) => d.title === 'User Login Flow'
+        (d: DiagramSection) => d.title === 'User Login Flow'
       );
       expect(diagram).toBeDefined();
       expect(diagram.mermaidCode).toBe(
@@ -132,7 +133,7 @@ describe('Feature: Add Mermaid Diagram to FOUNDATION.md', () => {
         await readFile(foundationJsonPath, 'utf-8')
       );
       const diagram = updatedJson.architectureDiagrams.find(
-        (d: any) => d.title === 'System Overview'
+        (d: DiagramSection) => d.title === 'System Overview'
       );
       expect(diagram).toBeDefined();
       expect(diagram.mermaidCode).toBe('graph LR\n  New-->Diagram');
@@ -183,13 +184,13 @@ describe('Feature: Add Mermaid Diagram to FOUNDATION.md', () => {
       expect(updatedJson.architectureDiagrams.length).toBe(2);
 
       const diagram1 = updatedJson.architectureDiagrams.find(
-        (d: any) => d.title === 'Diagram 1'
+        (d: DiagramSection) => d.title === 'Diagram 1'
       );
       expect(diagram1).toBeDefined();
       expect(diagram1.mermaidCode).toBe('graph TD\n  A-->B');
 
       const diagram2 = updatedJson.architectureDiagrams.find(
-        (d: any) => d.title === 'Diagram 2'
+        (d: DiagramSection) => d.title === 'Diagram 2'
       );
       expect(diagram2).toBeDefined();
       expect(diagram2.mermaidCode).toBe('graph TD\n  C-->D');
@@ -267,7 +268,7 @@ describe('Feature: Add Mermaid Diagram to FOUNDATION.md', () => {
         'Test problem description'
       );
       const diagram = updatedJson.architectureDiagrams.find(
-        (d: any) => d.title === 'Diagram'
+        (d: DiagramSection) => d.title === 'Diagram'
       );
       expect(diagram).toBeDefined();
       expect(diagram.mermaidCode).toBe('graph TD\n  A-->B');
@@ -493,7 +494,7 @@ describe('Feature: Add Mermaid Diagram to FOUNDATION.md', () => {
 
       // And the new diagram should be in the architectureDiagrams array
       const newDiagram = updatedFoundationJson.architectureDiagrams.find(
-        (d: any) => d.title === 'New System Diagram'
+        (d: DiagramSection) => d.title === 'New System Diagram'
       );
       expect(newDiagram).toBeDefined();
 
@@ -503,7 +504,7 @@ describe('Feature: Add Mermaid Diagram to FOUNDATION.md', () => {
 
       // And existing diagrams should be preserved
       const existingDiagram = updatedFoundationJson.architectureDiagrams.find(
-        (d: any) => d.title === 'Existing Diagram'
+        (d: DiagramSection) => d.title === 'Existing Diagram'
       );
       expect(existingDiagram).toBeDefined();
 
@@ -599,7 +600,7 @@ describe('Feature: Add Mermaid Diagram to FOUNDATION.md', () => {
         await readFile(foundationJsonPath, 'utf-8')
       );
       const diagram = foundationJson.architectureDiagrams.find(
-        (d: any) => d.title === 'Valid Flow'
+        (d: DiagramSection) => d.title === 'Valid Flow'
       );
       expect(diagram).toBeDefined();
       expect(diagram.mermaidCode).toBe('flowchart TD\n  A-->B\n  B-->C');
@@ -628,7 +629,7 @@ describe('Feature: Add Mermaid Diagram to FOUNDATION.md', () => {
         await readFile(foundationJsonPath, 'utf-8')
       );
       const diagram = foundationJson.architectureDiagrams.find(
-        (d: any) => d.title === 'Valid Sequence'
+        (d: DiagramSection) => d.title === 'Valid Sequence'
       );
       expect(diagram).toBeDefined();
     });
@@ -679,6 +680,146 @@ describe('Feature: Add Mermaid Diagram to FOUNDATION.md', () => {
 
       // And the error message should include line number information if available
       expect(result.error).toMatch(/line \d+/i);
+    });
+  });
+
+  // Feature: spec/features/add-diagram-fails-with-screen-is-not-defined-error-for-valid-c4-diagrams.feature
+  describe('Feature: add-diagram fails with "screen is not defined" error for valid C4 diagrams (BUG-082)', () => {
+    describe('Scenario: Add C4Context diagram with complex example', () => {
+      it('should add C4Context diagram without screen error', async () => {
+        // @step Given I have a project with foundation.json
+        const foundationJsonPath = join(testDir, 'spec', 'foundation.json');
+        const minimalFoundation = createMinimalFoundation();
+        await writeFile(
+          foundationJsonPath,
+          JSON.stringify(minimalFoundation, null, 2)
+        );
+
+        // @step When I run add-diagram with a C4Context diagram containing Person, System, System_Ext, and Rel elements
+        const c4Code = `C4Context
+  title System Context diagram for Internet Banking System
+  Person(customer, "Personal Banking Customer", "A customer of the bank")
+  System(banking_system, "Internet Banking System", "Allows customers to check balances")
+  System_Ext(email_system, "E-mail system", "The internal Microsoft Exchange system")
+  Rel(customer, banking_system, "Uses")
+  Rel(banking_system, email_system, "Sends e-mails", "SMTP")`;
+
+        const result = await addDiagram({
+          section: 'Architecture',
+          title: 'Internet Banking Context',
+          code: c4Code,
+          cwd: testDir,
+        });
+
+        // @step Then the command should exit with code 0
+        expect(result.success).toBe(true);
+
+        // @step And the diagram should be added to foundation.json
+        const updatedJson = JSON.parse(
+          await readFile(foundationJsonPath, 'utf-8')
+        );
+        const diagram = updatedJson.architectureDiagrams.find(
+          (d: DiagramSection) => d.title === 'Internet Banking Context'
+        );
+        expect(diagram).toBeDefined();
+        expect(diagram.mermaidCode).toBe(c4Code);
+
+        // @step And no "screen is not defined" error should occur
+        if (result.error) {
+          expect(result.error).not.toContain('screen is not defined');
+        }
+      });
+    });
+
+    describe('Scenario: Add C4Context diagram from reported issue', () => {
+      it('should accept C4Context from GitHub issue #5', async () => {
+        // @step Given I have a project with foundation.json
+        const foundationJsonPath = join(testDir, 'spec', 'foundation.json');
+        const minimalFoundation = createMinimalFoundation();
+        await writeFile(
+          foundationJsonPath,
+          JSON.stringify(minimalFoundation, null, 2)
+        );
+
+        // @step When I run add-diagram with the exact C4Context code from GitHub issue #5
+        // Note: Original issue used Rel_Neighbor which is not valid Mermaid syntax
+        // Changed to use BiRel (bidirectional relationship) which is the correct C4 keyword
+        const c4CodeFromIssue = `C4Context
+  title System Context diagram for Internet Banking System
+  Person(customer, "Personal Banking Customer", "A customer of the bank, with personal bank accounts.")
+  System(banking_system, "Internet Banking System", "Allows customers to view information about their bank accounts, and make payments.")
+  System_Ext(mail_system, "E-mail system", "The internal Microsoft Exchange e-mail system.")
+  Rel(customer, banking_system, "Uses")
+  Rel_Back(customer, mail_system, "Sends e-mails to")
+  BiRel(banking_system, mail_system, "Sends e-mails", "SMTP")`;
+
+        const result = await addDiagram({
+          section: 'Architecture',
+          title: 'Banking System Context',
+          code: c4CodeFromIssue,
+          cwd: testDir,
+        });
+
+        // @step Then the command should exit with code 0
+        expect(result.success).toBe(true);
+
+        // @step And the diagram should be added to foundation.json
+        const updatedJson = JSON.parse(
+          await readFile(foundationJsonPath, 'utf-8')
+        );
+        const diagram = updatedJson.architectureDiagrams.find(
+          (d: DiagramSection) => d.title === 'Banking System Context'
+        );
+        expect(diagram).toBeDefined();
+
+        // @step And the Mermaid validation should not throw an error
+        expect(result.error).toBeUndefined();
+      });
+    });
+
+    describe('Scenario: Add simple C4Context diagram', () => {
+      it('should add simple C4Context with one Person and one System', async () => {
+        // @step Given I have a project with foundation.json
+        const foundationJsonPath = join(testDir, 'spec', 'foundation.json');
+        const minimalFoundation = createMinimalFoundation();
+        await writeFile(
+          foundationJsonPath,
+          JSON.stringify(minimalFoundation, null, 2)
+        );
+
+        // @step When I run add-diagram with a simple C4Context diagram with one Person and one System
+        const simpleC4 = `C4Context
+  title Simple System Context
+  Person(user, "User", "A user of the system")
+  System(system, "System", "The main system")
+  Rel(user, system, "Uses")`;
+
+        const result = await addDiagram({
+          section: 'Architecture',
+          title: 'Simple Context',
+          code: simpleC4,
+          cwd: testDir,
+        });
+
+        // @step Then the command should exit with code 0
+        expect(result.success).toBe(true);
+
+        // @step And the diagram should be added to foundation.json architectureDiagrams array
+        const updatedJson = JSON.parse(
+          await readFile(foundationJsonPath, 'utf-8')
+        );
+        expect(updatedJson.architectureDiagrams).toBeDefined();
+        const diagram = updatedJson.architectureDiagrams.find(
+          (d: DiagramSection) => d.title === 'Simple Context'
+        );
+        expect(diagram).toBeDefined();
+        expect(diagram.mermaidCode).toBe(simpleC4);
+
+        // @step And foundation.json should validate against the schema
+        expect(updatedJson.project).toBeDefined();
+        expect(updatedJson.problemSpace).toBeDefined();
+        expect(updatedJson.solutionSpace).toBeDefined();
+      });
     });
   });
 });

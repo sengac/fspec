@@ -286,6 +286,10 @@
           "description": "Work unit dependency tracking"
         },
         {
+          "name": "@diagram",
+          "description": "Features related to diagram management and visualization"
+        },
+        {
           "name": "@diagram-viewer",
           "description": "Diagram viewing and fullscreen modal features"
         },
@@ -1622,7 +1626,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-11-17T03:16:37.913Z",
+    "lastUpdated": "2025-11-17T23:37:53.265Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

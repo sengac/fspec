@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-17T23:28:44.492Z"
+    "lastUpdated": "2025-11-17T23:48:12.493Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -50395,14 +50395,88 @@
       "id": "BUG-082",
       "title": "add-diagram fails with 'screen is not defined' error for valid C4 diagrams",
       "type": "bug",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2025-11-17T23:07:36.502Z",
-      "updatedAt": "2025-11-17T23:07:42.810Z",
+      "updatedAt": "2025-11-17T23:48:12.519Z",
       "description": "C4Context diagrams fail Mermaid validation with error 'screen is not defined'. Valid C4 syntax is rejected. Reported in GitHub issue #5.",
       "children": [],
       "attachments": [
         "spec/attachments/BUG-082/issue-5-add-diagram-screen-not-defined.md"
-      ]
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-17T23:33:50.119Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-17T23:38:06.769Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-17T23:39:23.717Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-17T23:44:35.723Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-17T23:48:12.519Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer adding C4 diagrams to foundation",
+        "action": "add valid C4Context diagrams without errors",
+        "benefit": "I can document system architecture using C4 notation"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "C4Context diagram syntax must be recognized as valid Mermaid",
+          "deleted": false,
+          "createdAt": "2025-11-17T23:34:45.906Z"
+        },
+        {
+          "id": 1,
+          "text": "Mermaid validation must support C4 diagram types (C4Context, C4Container, C4Component, C4Dynamic, C4Deployment)",
+          "deleted": false,
+          "createdAt": "2025-11-17T23:34:46.453Z"
+        },
+        {
+          "id": 2,
+          "text": "C4 diagrams with valid syntax must not throw 'screen is not defined' error",
+          "deleted": false,
+          "createdAt": "2025-11-17T23:34:47.009Z"
+        }
+      ],
+      "nextRuleId": 3,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Add C4Context diagram with Person, System, and Relationships - should succeed without errors",
+          "deleted": false,
+          "createdAt": "2025-11-17T23:34:54.450Z"
+        },
+        {
+          "id": 1,
+          "text": "Add C4Context diagram similar to reported issue example - validates successfully",
+          "deleted": false,
+          "createdAt": "2025-11-17T23:34:55.006Z"
+        },
+        {
+          "id": 2,
+          "text": "Add simple C4Context with one Person and one System - validates and adds to foundation.json",
+          "deleted": false,
+          "createdAt": "2025-11-17T23:34:55.559Z"
+        }
+      ],
+      "nextExampleId": 3,
+      "questions": [],
+      "architectureNotes": [],
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-17T23:48:12.519Z"
     }
   },
   "states": {
@@ -50457,8 +50531,7 @@
       "INT-004",
       "DOC-012",
       "DOC-013",
-      "DOC-014",
-      "BUG-082"
+      "DOC-014"
     ],
     "specifying": [
       "LANG-001",
@@ -50471,6 +50544,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "BUG-082",
       "BUG-081",
       "TEST-009",
       "FOUND-042",
