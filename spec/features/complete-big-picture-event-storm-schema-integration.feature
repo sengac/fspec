@@ -5,7 +5,6 @@
 @json-schema
 @EXMAP-012
 Feature: Complete Big Picture Event Storm Schema Integration
-
   """
   Architecture notes:
   - Update src/schemas/generic-foundation.schema.json to include eventStorm property definition
@@ -37,7 +36,6 @@ Feature: Complete Big Picture Event Storm Schema Integration
   #   5. discover-foundation --finalize rejects draft with invalid Event Storm item type
   #
   # ========================================
-
   Background: User Story
     As a developer maintaining fspec foundation system
     I want to have Event Storm data validated by JSON Schema during foundation discovery and regeneration

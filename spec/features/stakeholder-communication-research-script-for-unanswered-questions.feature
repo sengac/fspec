@@ -6,7 +6,6 @@
 @integration
 @RES-006
 Feature: Stakeholder communication research script for unanswered questions
-
   """
   Uses plugin architecture for extensible platform support. Main script in spec/research-scripts/stakeholder with platform plugins in spec/research-scripts/plugins/. Plugins can be shell scripts, Python, JavaScript, or compiled binaries - auto-discovered via executable bit. Script is one-way notification (fire-and-forget), does not wait for responses. Reads credentials from user-level config ~/.fspec/fspec-config.json. Message format includes full Example Mapping context: work unit ID, title, epic, question, rules, examples, and previous Q&A.
   """
@@ -40,7 +39,6 @@ Feature: Stakeholder communication research script for unanswered questions
   #   A: true
   #
   # ========================================
-
   Background: User Story
     As a AI agent or developer using fspec during Example Mapping
     I want to contact stakeholders via chat platforms when questions arise
@@ -55,7 +53,6 @@ Feature: Stakeholder communication research script for unanswered questions
     Then the question should be sent via Teams API
     Then the script should exit without waiting for response
 
-
   Scenario: Send question to Slack platform and exit
     Given the Slack plugin exists in spec/research-scripts/plugins/
     When I run "fspec research --tool=stakeholder --platform=slack --question='OAuth support needed?'"
@@ -64,13 +61,11 @@ Feature: Stakeholder communication research script for unanswered questions
     Then the script should exit immediately
     Then stakeholder sees notification for manual response later
 
-
   Scenario: Read credentials from user-level config
     Given ~/.fspec/fspec-config.json contains Slack token and Teams webhook URL
     When the script needs to send stakeholder notifications
     Then it should read from user config (NOT project-level spec/fspec-config.json)
     Then credentials should be loaded from ~/.fspec/fspec-config.json
-
 
   Scenario: Include full Example Mapping context in message
     Given work unit AUTH-001 has title 'User Login', epic 'user-management'
@@ -85,7 +80,6 @@ Feature: Stakeholder communication research script for unanswered questions
     Then the message should include all examples
     Then the message should include previous Q&A history
 
-
   Scenario: Send to multiple platforms with user choice
     Given Teams and Slack are both configured in ~/.fspec/fspec-config.json
     When AI asks 'Send to Teams, Slack, or both?'
@@ -94,13 +88,11 @@ Feature: Stakeholder communication research script for unanswered questions
     Then the script should send to Slack
     Then if no preference specified, default to all configured platforms
 
-
   Scenario: Auto-discover shell script plugins
     Given plugins directory contains teams.sh and slack.sh
     When the main script starts
     Then it should auto-discover both platforms by scanning directory
     Then it should be able to send to either or both based on config and user preference
-
 
   Scenario: Auto-discover plugins of any language by executable bit
     Given plugins directory contains teams.py (Python)
@@ -109,4 +101,3 @@ Feature: Stakeholder communication research script for unanswered questions
     Given plugins directory contains slack (compiled Go binary)
     Given plugins directory contains discord.js (Node script)
     Then it should NOT rely on file extension (.py, .js, etc.)
-

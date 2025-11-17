@@ -6,7 +6,6 @@
 @system-reminder
 @EXMAP-016
 Feature: Complete Event Storm interactive workflow with Example Mapping integration
-
   """
   Uses existing Event Storm commands (add-domain-event, add-command, add-policy, add-hotspot, show-event-storm, generate-example-mapping-from-event-storm). Creates new discover-event-storm command that emits guidance only (no draft/finalize pattern). System-reminder integration in update-work-unit-status.ts when moving to specifying state. Guidance sections in AGENTS.md, spec/CLAUDE.md, and bootstrap. Uses getAgentConfig for agent-aware prompts (Claude Code vs Cursor). NO semantic code analysis - only AST tools and human input. Free-form conversation pattern like Example Mapping, not field-by-field like discover-foundation.
   """
@@ -53,7 +52,6 @@ Feature: Complete Event Storm interactive workflow with Example Mapping integrat
   #   A: true
   #
   # ========================================
-
   Background: User Story
     As a AI agent working with fspec
     I want to perform Event Storm discovery interactively with automatic detection and guidance

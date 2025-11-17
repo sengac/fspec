@@ -13,7 +13,7 @@ import { dirname, join } from 'path';
 import chalk from 'chalk';
 import { generateFoundationMdCommand } from './generate-foundation-md';
 import { getAgentConfig } from '../utils/agentRuntimeConfig';
-import { getNextWorkUnitId } from './work-unit';
+import { createWorkUnit } from './work-unit';
 import type { WorkUnitsData } from '../types/work-unit';
 
 export interface DiscoverFoundationOptions {
@@ -389,19 +389,17 @@ Then re-run: fspec discover-foundation --finalize`;
     let workUnitCreated = false;
     let workUnitId = '';
     try {
-      const workUnitsPath = join(dirname(finalPath), 'work-units.json');
-      const workUnitsContent = await readFile(workUnitsPath, 'utf-8');
-      const workUnitsData = JSON.parse(workUnitsContent) as WorkUnitsData;
+      // Use the cwd from options, not dirname(finalPath) which would be 'spec'
+      const workUnitCwd = cwd;
 
-      // Generate next FOUND-XXX ID
-      workUnitId = getNextWorkUnitId('FOUND', workUnitsData.workUnits);
-
-      // Create work unit
-      const now = new Date().toISOString();
-      workUnitsData.workUnits[workUnitId] = {
-        id: workUnitId,
-        title: 'Conduct Big Picture Event Storming for Foundation',
-        description: `Complete the foundation by capturing domain architecture through Big Picture Event Storming.
+      // Use centralized createWorkUnit() function (BUG-078 fix)
+      workUnitId = await createWorkUnit(
+        'FOUND',
+        'Conduct Big Picture Event Storming for Foundation',
+        {
+          cwd: workUnitCwd,
+          type: 'task',
+          description: `Complete the foundation by capturing domain architecture through Big Picture Event Storming.
 
 Use these commands to populate foundation.json eventStorm field:
 - fspec add-foundation-bounded-context <name>
@@ -416,17 +414,7 @@ Why this matters:
 - Supports EXMAP-004 tag discovery workflow
 
 See spec/CLAUDE.md "Big Picture Event Storming" section for detailed guidance.`,
-        type: 'task',
-        status: 'backlog',
-        createdAt: now,
-        updatedAt: now,
-      };
-
-      // Write updated work units
-      await writeFile(
-        workUnitsPath,
-        JSON.stringify(workUnitsData, null, 2),
-        'utf-8'
+        }
       );
 
       workUnitCreated = true;

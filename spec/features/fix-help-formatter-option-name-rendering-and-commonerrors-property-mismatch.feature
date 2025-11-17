@@ -4,7 +4,6 @@
 @high
 @HELP-006
 Feature: Fix help formatter option name rendering and commonErrors property mismatch
-
   """
   Fix requires two changes: (1) Update all 7 Event Storm help files to use 'flag' property instead of 'name' in options array, matching CommandOption interface. (2) Update commonErrors to use 'fix' property instead of 'solution'. Interface is in src/utils/help-formatter.ts. No formatter changes needed - help files are using wrong property names.
   """
@@ -24,7 +23,6 @@ Feature: Fix help formatter option name rendering and commonErrors property mism
   #   3. Help formatter extracts flag name from option.name using regex or string parsing
   #
   # ========================================
-
   Background: User Story
     As a developer viewing help for Event Storm commands
     I want to see properly formatted option names in help output

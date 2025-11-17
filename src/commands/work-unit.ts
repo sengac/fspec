@@ -139,9 +139,10 @@ export async function createWorkUnit(
     description?: string;
     epic?: string;
     parent?: string;
+    type?: 'story' | 'bug' | 'task';
   }
-): Promise<void> {
-  const { cwd, description, epic, parent } = options;
+): Promise<string> {
+  const { cwd, description, epic, parent, type } = options;
 
   // Validate title
   if (!title || title.trim() === '') {
@@ -195,6 +196,7 @@ export async function createWorkUnit(
   };
 
   if (description) workUnit.description = description;
+  if (type) workUnit.type = type;
   if (epic) workUnit.epic = epic;
   if (parent) {
     workUnit.parent = parent;
@@ -223,6 +225,9 @@ export async function createWorkUnit(
     epics.epics[epic].workUnits.push(id);
     await saveEpics(epics, cwd);
   }
+
+  // Return the generated work unit ID (BUG-078 fix)
+  return id;
 }
 
 export async function updateWorkUnit(

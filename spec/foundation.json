@@ -1,207 +1,25 @@
 {
   "version": "2.0.0",
   "project": {
-    "name": "fspec",
-    "vision": "The only system that transforms business conversations into production-ready features—unifying product owners, business analysts, developers, QA engineers, and AI agents in a single disciplined workflow where requirements become executable specs, specs become tests, and complete traceability prevents anyone (human or AI) from breaking the chain.",
+    "name": "test-project",
+    "vision": "test vision",
     "projectType": "cli-tool"
   },
   "problemSpace": {
     "primaryProblem": {
-      "title": "Requirements and implementation are disconnected across fragmented tools, causing lost context, broken traceability, and undisciplined AI agents",
-      "description": "Product owners define business value in Jira. Business analysts capture requirements in sticky notes during Example Mapping sessions that get photographed and forgotten. Developers write Gherkin specs in .feature files disconnected from those requirements. QA engineers write tests disconnected from the specs. AI agents skip all of this and write code with zero traceability. The result: what gets built rarely matches what was discussed, tests don't validate the right things, and nobody can trace a line of code back to the business requirement that justified it. Every handoff loses context. Every tool works in isolation. Every AI agent operates without discipline or guardrails.",
+      "title": "test problem",
+      "description": "test problem description",
       "impact": "high"
     }
   },
   "solutionSpace": {
-    "overview": "A unified CLI and TUI system that connects business conversations (Example Mapping, Event Storming) directly to executable Gherkin specs, enforces test-first development through workflow states, and maintains complete traceability from requirements through tests to implementation. AI agents and humans work in the same disciplined workflow with automatic checkpoints, quality gates, and coverage tracking that prevents anyone from breaking the chain of accountability.",
+    "overview": "test solution",
     "capabilities": [
       {
-        "name": "Kanban Project Management",
-        "description": "Track work units (stories, tasks, bugs) through ACDD workflow states (backlog → specifying → testing → implementing → validating → done) with dependency management and epic organization"
-      },
-      {
-        "name": "Example Mapping",
-        "description": "Facilitate collaborative discovery sessions by capturing business rules (blue cards), concrete examples (green cards), and questions (red cards), then transform them into Gherkin scenarios"
-      },
-      {
-        "name": "Event Storming",
-        "description": "Conduct Big Picture (foundation-level) and Process Modeling (work-unit-level) Event Storming to discover domain events, commands, aggregates, policies, and bounded contexts"
-      },
-      {
-        "name": "Gherkin Specification Management",
-        "description": "Create, edit, validate, and format .feature files with full Cucumber compatibility, tag management, and automatic prefill detection"
-      },
-      {
-        "name": "Test-Driven Development Enforcement",
-        "description": "Enforce TDD discipline through temporal validation that prevents writing code before tests, with @step comment validation to ensure test-to-spec traceability"
-      },
-      {
-        "name": "Coverage Tracking",
-        "description": "Link Gherkin scenarios to test files to implementation code with .feature.coverage files that provide complete requirement-to-code traceability"
-      },
-      {
-        "name": "Git Checkpoint System",
-        "description": "Create automatic checkpoints before workflow transitions and manual checkpoints for experimentation, with conflict-aware restoration and cleanup management"
-      },
-      {
-        "name": "Virtual Hooks & Quality Gates",
-        "description": "Define work-unit-scoped and global lifecycle hooks that execute custom validation, testing, and automation at workflow transition points"
-      },
-      {
-        "name": "Interactive TUI",
-        "description": "Live Kanban board with real-time updates, attachment viewer with Mermaid diagram rendering, checkpoint management, and keyboard-driven navigation"
-      },
-      {
-        "name": "AST Code Analysis",
-        "description": "Parse and analyze code across 16 languages using tree-sitter for pattern detection, function discovery, and deep codebase understanding during discovery"
-      },
-      {
-        "name": "Query & Analytics",
-        "description": "Query work units, bottlenecks, estimation accuracy, orphaned work, dependency statistics, and generate comprehensive summary reports"
-      },
-      {
-        "name": "Reverse ACDD",
-        "description": "Import existing codebases into fspec by generating feature files, scenarios, and skeleton tests from existing code implementations"
-      },
-      {
-        "name": "Foundation Discovery",
-        "description": "AI-guided field-by-field project foundation bootstrapping that defines project context, personas, capabilities, and problem space"
+        "name": "Test Capability",
+        "description": "A test capability"
       }
     ]
   },
-  "personas": [
-    {
-      "name": "AI Agent",
-      "description": "Autonomous coding agents (Claude Code, Cursor, Codex, etc.) that need structured workflows and quality enforcement",
-      "goals": [
-        "Follow TDD discipline automatically"
-      ]
-    },
-    {
-      "name": "AI Agent",
-      "description": "Autonomous coding agents (Claude Code, Cursor, Codex, etc.) that need structured workflows and quality enforcement",
-      "goals": [
-        "Generate specs from business conversations"
-      ]
-    },
-    {
-      "name": "AI Agent",
-      "description": "Autonomous coding agents (Claude Code, Cursor, Codex, etc.) that need structured workflows and quality enforcement",
-      "goals": [
-        "Maintain traceability from requirements to code"
-      ]
-    },
-    {
-      "name": "AI Agent",
-      "description": "Autonomous coding agents (Claude Code, Cursor, Codex, etc.) that need structured workflows and quality enforcement",
-      "goals": [
-        "Self-recover from mistakes using checkpoints"
-      ]
-    },
-    {
-      "name": "Developer",
-      "description": "Software developers working with AI agents or manually following ACDD workflow",
-      "goals": [
-        "Clear acceptance criteria before coding"
-      ]
-    },
-    {
-      "name": "Developer",
-      "description": "Software developers working with AI agents or manually following ACDD workflow",
-      "goals": [
-        "Enforce test-first development"
-      ]
-    },
-    {
-      "name": "Developer",
-      "description": "Software developers working with AI agents or manually following ACDD workflow",
-      "goals": [
-        "Track work through Kanban states"
-      ]
-    },
-    {
-      "name": "Developer",
-      "description": "Software developers working with AI agents or manually following ACDD workflow",
-      "goals": [
-        "Collaborate with AI agents effectively"
-      ]
-    },
-    {
-      "name": "Business Analyst",
-      "description": "BAs facilitating Example Mapping and Event Storming sessions to capture requirements",
-      "goals": [
-        "Transform business conversations into executable specs"
-      ]
-    },
-    {
-      "name": "Business Analyst",
-      "description": "BAs facilitating Example Mapping and Event Storming sessions to capture requirements",
-      "goals": [
-        "Capture rules, examples, and questions systematically"
-      ]
-    },
-    {
-      "name": "Business Analyst",
-      "description": "BAs facilitating Example Mapping and Event Storming sessions to capture requirements",
-      "goals": [
-        "Ensure requirements are complete before development"
-      ]
-    },
-    {
-      "name": "Product Owner",
-      "description": "POs defining business value and making prioritization decisions",
-      "goals": [
-        "See exactly what's being built (acceptance criteria)"
-      ]
-    },
-    {
-      "name": "Product Owner",
-      "description": "POs defining business value and making prioritization decisions",
-      "goals": [
-        "Prioritize work units on Kanban board"
-      ]
-    },
-    {
-      "name": "Product Owner",
-      "description": "POs defining business value and making prioritization decisions",
-      "goals": [
-        "Verify features meet acceptance criteria"
-      ]
-    },
-    {
-      "name": "QA Engineer",
-      "description": "QA engineers validating feature implementation against specs",
-      "goals": [
-        "Trace every test back to business requirements"
-      ]
-    },
-    {
-      "name": "QA Engineer",
-      "description": "QA engineers validating feature implementation against specs",
-      "goals": [
-        "Verify 100% scenario coverage"
-      ]
-    },
-    {
-      "name": "QA Engineer",
-      "description": "QA engineers validating feature implementation against specs",
-      "goals": [
-        "Validate implementation matches acceptance criteria"
-      ]
-    }
-  ],
-  "eventStorm": {
-    "level": "big_picture",
-    "items": [
-      {
-        "id": 1,
-        "type": "bounded_context",
-        "text": "User Management",
-        "color": null,
-        "deleted": false,
-        "createdAt": "2025-11-17T07:04:22.518Z"
-      }
-    ],
-    "nextItemId": 2
-  }
+  "personas": []
 }

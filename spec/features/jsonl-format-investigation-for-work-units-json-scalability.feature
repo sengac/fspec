@@ -5,7 +5,6 @@
 @medium
 @TECH-001
 Feature: JSONL format investigation for work-units.json scalability
-
   """
   Investigation focuses on JSONL (JSON Lines) format as alternative to monolithic JSON. JSONL stores each work unit as separate line (newline-delimited JSON). Uses Node.js fs.createReadStream for streaming reads, fs.appendFile for append-only writes. Benchmark using hyperfine for performance comparisons. Migration strategy: detect format, support both, migrate on demand. Git diff friendliness: one line per work unit change.
   """
@@ -29,7 +28,6 @@ Feature: JSONL format investigation for work-units.json scalability
   #   5. Performance test: writing 1000 work units to JSONL takes 0.5s vs 10s for JSON (20x faster)
   #
   # ========================================
-
   Background: User Story
     As a developer working on large fspec projects
     I want to store work units efficiently without performance degradation

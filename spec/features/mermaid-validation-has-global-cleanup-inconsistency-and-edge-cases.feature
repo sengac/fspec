@@ -5,7 +5,6 @@
 @refactor
 @validator
 Feature: Mermaid validation has global cleanup inconsistency and edge cases
-
   """
   Improvements to mermaid validation code quality. Fix 1: Error path should restore originalWindow/originalDocument like success path (not unconditionally delete). Fix 2: Use matchAll() to validate ALL subgraphs, not just first one. Fix 3: Add proper TypeScript global declarations to reduce 'as any' usage.
   """
@@ -25,7 +24,6 @@ Feature: Mermaid validation has global cleanup inconsistency and edge cases
   #   3. Global window/document/navigator should use proper TypeScript declarations instead of 'as any' casts
   #
   # ========================================
-
   Background: User Story
     As a developer maintaining mermaid validation code
     I want to have consistent error handling and comprehensive validation

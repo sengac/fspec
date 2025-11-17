@@ -6,7 +6,6 @@
 @high
 @TUI-030
 Feature: Handle binary files and large files in diff display
-
   """
   Uses isomorphic-git for file content access. Binary detection checks for null bytes in file content. Line counting uses newline character counting. Diff display uses react-diff-viewer. Truncation applies to diff lines, not file lines.
   """
@@ -30,7 +29,6 @@ Feature: Handle binary files and large files in diff display
   #   5. User views checkpoint with executable binary, sees binary file message
   #
   # ========================================
-
   Background: User Story
     As a developer using checkpoint viewer
     I want to view diffs for all file types without performance issues or display errors
@@ -42,13 +40,11 @@ Feature: Handle binary files and large files in diff display
     Then I should see the message '[Binary file - no diff available]'
     And I should not see garbled binary content in the diff view
 
-
   Scenario: Truncate large file with over 20,000 lines
     Given I have a checkpoint that includes changes to a log file with 50,000 lines
     When I view the diff for the log file in the checkpoint viewer
     Then I should see the first 20,000 lines of the diff
     And I should see the message '[File truncated - showing first 20,000 of 50,000 lines]'
-
 
   Scenario: Display complete diff for normal-sized text file
     Given I have a checkpoint that includes changes to a source file with 500 lines
@@ -56,10 +52,8 @@ Feature: Handle binary files and large files in diff display
     Then I should see the complete diff without truncation
     And I should not see any truncation message
 
-
   Scenario: Display binary file message for executable binary
     Given I have a checkpoint that includes changes to an executable binary file
     When I view the diff for the executable in the checkpoint viewer
     Then I should see the message '[Binary file - no diff available]'
     And I should not see garbled binary content in the diff view
-

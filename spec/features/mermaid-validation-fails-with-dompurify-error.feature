@@ -4,7 +4,6 @@
 @validator
 @critical
 Feature: Mermaid Validation Fails with DOMPurify Error
-
   """
   Architecture notes:
   - Uses jsdom to create browser-like environment for Mermaid validation
@@ -35,7 +34,6 @@ Feature: Mermaid Validation Fails with DOMPurify Error
   #   3. User attaches diagram.mermaid with invalid syntax, gets clear error message about syntax issue (not DOMPurify error)
   #
   # ========================================
-
   Background: User Story
     As a developer using fspec to attach Mermaid diagrams
     I want to validate Mermaid syntax without DOMPurify errors

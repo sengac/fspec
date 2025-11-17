@@ -5,7 +5,6 @@
 @high
 @REVIEW-001
 Feature: Enhance fspec review with DRY and SOLID principles checking using AST analysis
-
   """
   Uses fspec research --tool=ast for structural data gathering. Creates new module ast-data-gatherer.ts to execute AST commands programmatically. Integrates with existing review.ts command to emit system-reminders with data and guidance questions. NO semantic analysis implemented in fspec - AI agents make all quality decisions.
   """
@@ -34,7 +33,6 @@ Feature: Enhance fspec review with DRY and SOLID principles checking using AST a
   #   7. AI reads system-reminder data, runs suggested AST commands, uses Read tool, and decides if refactoring is needed
   #
   # ========================================
-
   Background: User Story
     As a AI agent using fspec review command
     I want to receive AST-based structural data about implementation files
@@ -47,28 +45,23 @@ Feature: Enhance fspec review with DRY and SOLID principles checking using AST a
     And the system-reminder should include function counts for each file
     And the system-reminder should include class counts for each file
 
-
   Scenario: Identify functions with identical names across files
     Given implementation files have formatOutput() in review.ts and validate.ts
     When fspec review runs AST analysis
     Then the system-reminder should show formatOutput() appears in review.ts:156 and validate.ts:234
-
 
   Scenario: Suggest AST commands for deeper investigation
     Given fspec review has gathered initial structural data
     When the system-reminder is generated
     Then it should include command: fspec research --tool=ast --operation=list-functions --file=src/commands/review.ts
 
-
   Scenario: Include guidance questions for AI analysis
     Given structural data has been gathered
     When the system-reminder is formatted
     Then it should ask: Are there functions with similar names that might have duplicate logic?
-
 
   Scenario: Present data in neutral format without judgments
     Given similar function names have been detected
     When the system-reminder describes the pattern
     Then it should say: Patterns detected (NOT violations, just observations)
     And it should NOT say: violation detected or similarity score calculated
-

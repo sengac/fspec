@@ -7,7 +7,6 @@
 @resilience
 @INIT-016
 Feature: Graceful Initialization Without Spec Directory
-
   """
   Extends existing file watcher mechanism to handle missing files and directories gracefully. Uses fs.watch or chokidar with error handling for ENOENT errors. Implements polling fallback when directory doesn't exist yet. File watcher continues running until explicit termination (Ctrl+C).
   """
@@ -33,7 +32,6 @@ Feature: Graceful Initialization Without Spec Directory
   #   4. User runs 'fspec', work-units.json contains invalid JSON, system shows empty board and watches, file gets fixed, system auto-reloads with valid work units
   #
   # ========================================
-
   Background: User Story
     As a developer using fspec
     I want to run fspec commands before spec directory exists

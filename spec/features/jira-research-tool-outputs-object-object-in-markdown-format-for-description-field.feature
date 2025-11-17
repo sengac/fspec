@@ -8,7 +8,6 @@
 @markdown-formatting
 @BUG-076
 Feature: JIRA research tool outputs [object Object] in markdown format for description field
-
   """
   Bug in formatIssueMarkdown() function at src/research-tools/jira.ts:146 - directly outputs ADF object instead of parsing it. ADF (Atlassian Document Format) is a nested JSON structure with type/version/content fields. Parser must recursively traverse content array, extract text nodes, and convert to markdown. JSON format unaffected because it preserves object structure.
   """
@@ -29,7 +28,6 @@ Feature: JIRA research tool outputs [object Object] in markdown format for descr
   #   3. Empty or missing description field shows 'No description provided' instead of [object Object]
   #
   # ========================================
-
   Background: User Story
     As a developer using fspec research tool
     I want to view JIRA issue descriptions in markdown format

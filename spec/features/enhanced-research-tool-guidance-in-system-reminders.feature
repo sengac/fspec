@@ -5,7 +5,6 @@
 @research-tools
 @REMIND-013
 Feature: Enhanced research tool guidance in system reminders
-
   """
   Uses RES-018's getToolConfigurationStatus() from research-tools/registry.ts for configuration validation. Integrates with existing system-reminder.ts infrastructure. Makes getStatusChangeReminder() async to support tool configuration checking. Adds workUnitCreatedReminder() function for creation-time guidance. Implements detectWorkUnitIntent() for keyword-based AST/Perplexity emphasis. All reminder functions use RES-018's config loading (spec/fspec-config.json, ~/.fspec/fspec-config.json).
   """
@@ -43,7 +42,6 @@ Feature: Enhanced research tool guidance in system reminders
   #   A: true
   #
   # ========================================
-
   Background: User Story
     As a AI agent using fspec
     I want to receive context-aware research tool guidance in system reminders

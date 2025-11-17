@@ -4,7 +4,6 @@
 @parser
 @RES-020
 Feature: Add Java, PHP, Ruby, Bash support to AST research tool
-
   """
   Architecture notes:
   - Extends existing AST research tool (src/research-tools/ast.ts) with 4 additional tree-sitter parsers
@@ -13,10 +12,10 @@ Feature: Add Java, PHP, Ruby, Bash support to AST research tool
   - Language detection in detectLanguage() function must map file extensions: .java, .php, .rb, .sh, .bash
   - Parser initialization follows existing pattern used for other languages (Python, Go, Rust, etc.)
   - Query executor (src/utils/query-executor.ts) must handle language-specific AST node types:
-    * Java: method_declaration, class_declaration
-    * PHP: function_definition, method_declaration
-    * Ruby: method, def, class
-    * Bash: function_definition
+  * Java: method_declaration, class_declaration
+  * PHP: function_definition, method_declaration
+  * Ruby: method, def, class
+  * Bash: function_definition
   - Help documentation (src/help.ts) must be updated to list all research tools
   - AST tool help must reflect total of 15 supported languages
   - All parsers externalized in vite.config.ts (already done for java, php, ruby, bash)
@@ -47,7 +46,6 @@ Feature: Add Java, PHP, Ruby, Bash support to AST research tool
   #   7. Developer checks src/help.ts and finds complete research tools documentation
   #
   # ========================================
-
   Background: User Story
     As a developer using AST research tool
     I want to analyze codebases in Java, PHP, Ruby, and Bash

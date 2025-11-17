@@ -48,13 +48,9 @@ const PREFILL_PATTERNS = [
     command: 'fspec add-scenario',
   },
 
-  // Generic placeholders (but exclude Mermaid node labels like AI[label] or A-->B[label])
-  // Only match standalone brackets with lowercase words or spaces (typical placeholders)
-  {
-    regex: /\b\[(?![A-Z])[a-z\s]+\]/g,
-    name: '[placeholder]',
-    command: 'fspec commands',
-  },
+  // Removed generic bracket pattern to fix BUG-079
+  // Now only match specific placeholder patterns we actually generate
+  // This prevents false positives on code syntax like array[index] or workUnits[id]
 
   // TODO markers
   { regex: /TODO:/gi, name: 'TODO:', command: 'fspec add-architecture' },

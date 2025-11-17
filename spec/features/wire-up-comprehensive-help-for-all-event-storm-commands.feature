@@ -5,7 +5,6 @@
 @high
 @EXMAP-015
 Feature: Wire up comprehensive help for all Event Storm commands
-
   """
   Help files must follow the pattern established by existing commands (e.g., generate-scenarios-help.ts, add-scenario-help.ts). Each help file exports a function that returns formatted help text with sections for description, usage, AI-optimized guidance, examples, and related commands. The help content is integrated into src/help.ts under the appropriate group function (displayDiscoveryHelp for Event Storm commands).
   """
@@ -26,7 +25,6 @@ Feature: Wire up comprehensive help for all Event Storm commands
   #   3. File src/commands/generate-example-mapping-from-event-storm-help.ts exists and exports getGenerateExampleMappingFromEventStormHelp function
   #
   # ========================================
-
   Background: User Story
     As a AI agent using fspec
     I want to access comprehensive help for Event Storm commands

@@ -5,7 +5,6 @@
 @critical
 @RES-016
 Feature: AST tool returns stub instead of actual parsing
-
   """
   Architecture notes:
   - AST parser exists in src/utils/ast-parser.ts using tree-sitter library
@@ -27,7 +26,6 @@ Feature: AST tool returns stub instead of actual parsing
   #   2. AFTER: fspec research --tool=ast --query 'find async functions' → Returns actual AST matches using tree-sitter
   #
   # ========================================
-
   Background: User Story
     As a AI agent using fspec
     I want to use AST research tool to analyze code

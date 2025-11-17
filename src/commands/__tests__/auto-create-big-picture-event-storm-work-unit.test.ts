@@ -22,7 +22,7 @@ describe('Feature: Auto-create Big Picture Event Storming work unit after founda
     await mkdir(TEST_DIR, { recursive: true });
     await mkdir(join(TEST_DIR, 'spec'), { recursive: true });
 
-    // Create minimal work-units.json
+    // Create minimal work-units.json with states arrays
     const workUnitsPath = join(TEST_DIR, 'spec', 'work-units.json');
     await writeFile(
       workUnitsPath,
@@ -30,7 +30,27 @@ describe('Feature: Auto-create Big Picture Event Storming work unit after founda
         {
           version: '2.0.0',
           workUnits: {},
+          states: {
+            backlog: [],
+            specifying: [],
+            testing: [],
+            implementing: [],
+            validating: [],
+            done: [],
+            blocked: [],
+          },
         },
+        null,
+        2
+      )
+    );
+
+    // Create prefixes.json with FOUND prefix
+    const prefixesPath = join(TEST_DIR, 'spec', 'prefixes.json');
+    await writeFile(
+      prefixesPath,
+      JSON.stringify(
+        { prefixes: { FOUND: { description: 'Foundation' } } },
         null,
         2
       )

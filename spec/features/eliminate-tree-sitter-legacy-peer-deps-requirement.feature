@@ -5,7 +5,6 @@
 @high
 @DEP-003
 Feature: Eliminate tree-sitter legacy-peer-deps requirement
-
   """
   Uses npm overrides field to force tree-sitter@0.25.0 resolution for incompatible parsers. Overrides apply to 9 parsers: tree-sitter-c, tree-sitter-cpp, tree-sitter-java, tree-sitter-typescript, tree-sitter-c-sharp, tree-sitter-json, tree-sitter-kotlin, tree-sitter-php, tree-sitter-ruby. Runtime compatibility verified through actual parser testing (C, C++, Java, TypeScript parsers tested and confirmed working). No external dependencies required (uses native npm 8.3.0+ feature).
   """
@@ -29,7 +28,6 @@ Feature: Eliminate tree-sitter legacy-peer-deps requirement
   #   5. Developer runs 'npm list tree-sitter' and sees only version 0.25.0 (no duplicate versions)
   #
   # ========================================
-
   Background: User Story
     As a developer installing fspec
     I want to install npm dependencies without legacy-peer-deps flag
@@ -43,13 +41,11 @@ Feature: Eliminate tree-sitter legacy-peer-deps requirement
     Then no ERESOLVE errors should be displayed
     Then no peer dependency warnings should be shown
 
-
   Scenario: All tree-sitter packages resolve to version 0.25.0
     Given I have successfully run npm install
     When I run npm list tree-sitter
     Then the output should show only tree-sitter@0.25.0
     Then no duplicate tree-sitter versions should exist in node_modules
-
 
   Scenario: Tree-sitter C parser works with tree-sitter 0.25.0
     Given tree-sitter-c is installed with tree-sitter@0.25.0
@@ -57,10 +53,8 @@ Feature: Eliminate tree-sitter legacy-peer-deps requirement
     Then the parsing should succeed without errors
     Then the AST should be correctly generated
 
-
   Scenario: Tree-sitter TypeScript parser works with tree-sitter 0.25.0
     Given tree-sitter-typescript is installed with tree-sitter@0.25.0
     When I use the AST parser to parse TypeScript code
     Then the parsing should succeed without errors
     Then the AST should be correctly generated
-

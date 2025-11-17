@@ -7,7 +7,6 @@
 @integration
 @RES-007
 Feature: AST code researcher for pattern detection and deep analysis
-
   """
   Uses tree-sitter Node.js bindings (node-tree-sitter or web-tree-sitter) for AST parsing across 40+ languages
   Implements as Node.js script (#!/usr/bin/env node) in spec/research-scripts/ast with executable permissions for auto-discovery
@@ -42,7 +41,6 @@ Feature: AST code researcher for pattern detection and deep analysis
   #   8. AI agent looks for unused imports across TypeScript files, tree-sitter parses import statements and checks for usage in AST
   #
   # ========================================
-
   Background: User Story
     As a AI agent or developer using fspec
     I want to analyze code structure using AST parsing during Example Mapping

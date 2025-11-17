@@ -90,4 +90,3 @@ Feature: Research Tool Discovery and Configuration UX
     When I run "fspec research --tool=ast --query 'find all async functions'"
     Then the AST tool should execute with the --query flag forwarded
     And the output should contain async function results
-

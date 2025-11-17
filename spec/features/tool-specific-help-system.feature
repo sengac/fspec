@@ -5,7 +5,6 @@
 @high
 @RES-011
 Feature: Tool-Specific Help System
-
   """
   Tool scripts located in spec/research-scripts/ directory with executable permissions
   """
@@ -28,7 +27,6 @@ Feature: Tool-Specific Help System
   #   4. Tool script without --help implementation → warning message with fallback to file location
   #
   # ========================================
-
   Background: User Story
     As a AI agent or developer using fspec research tools
     I want to get tool-specific help documentation when running --help flag
@@ -40,14 +38,12 @@ Feature: Tool-Specific Help System
     Then I should see generic research help documentation
     And the output should contain a list of available research tools
 
-
   Scenario: Forward help to tool script when tool specified
     Given the research tool 'perplexity' exists and implements --help
     When I run 'fspec research --tool=perplexity --help'
     Then I should see Perplexity-specific help documentation
     And the output should contain tool-specific options like --query and --model
     And the output should NOT contain generic research help
-
 
   Scenario: Show error when tool does not exist
     Given I am using fspec research command
@@ -56,11 +52,9 @@ Feature: Tool-Specific Help System
     And the output should contain a list of available tools
     And the command should exit with code 1
 
-
   Scenario: Show warning when tool lacks help implementation
     Given a research tool exists but does not implement --help flag
     When I run 'fspec research --tool=legacy-tool --help'
     Then I should see a warning that the tool does not implement --help
     And the output should show generic usage instructions for the tool
     And the output should indicate where to find the tool script
-
