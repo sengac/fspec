@@ -8,6 +8,7 @@ import type { EventStormItem } from '../types';
 
 export interface ShowFoundationEventStormOptions {
   type?: string;
+  context?: string;
   cwd?: string;
 }
 
@@ -19,7 +20,12 @@ export interface ShowFoundationEventStormOptions {
  */
 export async function showFoundationEventStorm(
   options: ShowFoundationEventStormOptions = {}
-): Promise<{ success: boolean; data: EventStormItem[]; message?: string }> {
+): Promise<{
+  success: boolean;
+  data?: EventStormItem[];
+  items?: EventStormItem[];
+  message?: string;
+}> {
   const cwd = options.cwd || process.cwd();
   const foundationPath = `${cwd}/spec/foundation.json`;
 
@@ -59,6 +65,27 @@ export async function showFoundationEventStorm(
   // Filter out deleted items (structural filtering only)
   let items = foundation.eventStorm.items.filter(item => !item.deleted);
 
+  // Filter by context if specified
+  if (options.context) {
+    // Find the bounded context ID first
+    const boundedContext = items.find(
+      item => item.type === 'bounded_context' && item.text === options.context
+    );
+
+    if (boundedContext) {
+      // Include the bounded context itself + items linked to it
+      items = items.filter(
+        item =>
+          (item.type === 'bounded_context' && item.text === options.context) ||
+          ('boundedContextId' in item &&
+            item.boundedContextId === boundedContext.id)
+      );
+    } else {
+      // Context not found, return empty
+      items = [];
+    }
+  }
+
   // Filter by type if specified (structural filtering only)
   if (options.type) {
     items = items.filter(item => item.type === options.type);
@@ -67,6 +94,7 @@ export async function showFoundationEventStorm(
   return {
     success: true,
     data: items,
+    items: items, // Also return as 'items' for test compatibility
   };
 }
 
@@ -75,6 +103,7 @@ export async function showFoundationEventStorm(
  */
 export async function showFoundationEventStormCommand(options: {
   type?: string;
+  context?: string;
 }): Promise<void> {
   try {
     const result = await showFoundationEventStorm(options);
@@ -108,7 +137,8 @@ export function registerShowFoundationEventStormCommand(
       'Display foundation Event Storm artifacts as JSON (no semantic interpretation)'
     )
     .option('--type <type>', 'Filter by Event Storm item type')
-    .action(async (options: { type?: string }) => {
+    .option('--context <name>', 'Filter by bounded context name')
+    .action(async (options: { type?: string; context?: string }) => {
       await showFoundationEventStormCommand(options);
     });
 }
