@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-17T22:08:18.063Z"
+    "lastUpdated": "2025-11-17T22:24:28.169Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -50198,23 +50198,13 @@
       "nextQuestionId": 0,
       "updated": "2025-11-17T12:07:02.097Z"
     },
-    "FOUND-043": {
-      "id": "FOUND-043",
-      "title": "Initialize foundation.json with real fspec project data",
-      "type": "task",
-      "status": "backlog",
-      "createdAt": "2025-11-17T11:55:13.570Z",
-      "updatedAt": "2025-11-17T11:55:13.570Z",
-      "description": "Replace test data in foundation.json with actual fspec project vision, problem space, solution space, capabilities, and personas",
-      "children": []
-    },
     "TEST-009": {
       "id": "TEST-009",
       "title": "Mermaid validation test uses invalid test data",
       "type": "bug",
-      "status": "validating",
+      "status": "done",
       "createdAt": "2025-11-17T13:01:05.811Z",
-      "updatedAt": "2025-11-17T22:19:52.728Z",
+      "updatedAt": "2025-11-17T22:24:28.198Z",
       "description": "Test in generate-event-storm-section-in-foundation-md.test.ts expects generateFoundationMd to throw for 'Invalid{Context}' but that's valid Mermaid. Needs actually-invalid syntax or redesign.",
       "children": [],
       "stateHistory": [
@@ -50233,6 +50223,10 @@
         {
           "state": "validating",
           "timestamp": "2025-11-17T22:19:52.728Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-17T22:24:28.198Z"
         }
       ],
       "userStory": {
@@ -50278,7 +50272,12 @@
           "createdAt": "2025-11-17T22:08:52.581Z"
         }
       ],
-      "nextExampleId": 3
+      "nextExampleId": 3,
+      "questions": [],
+      "architectureNotes": [],
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-17T22:24:28.198Z"
     }
   },
   "states": {
@@ -50333,8 +50332,7 @@
       "INT-004",
       "DOC-012",
       "DOC-013",
-      "DOC-014",
-      "FOUND-043"
+      "DOC-014"
     ],
     "specifying": [
       "LANG-001",
@@ -50345,10 +50343,9 @@
     ],
     "testing": [],
     "implementing": [],
-    "validating": [
-      "TEST-009"
-    ],
+    "validating": [],
     "done": [
+      "TEST-009",
       "FOUND-042",
       "FOUND-022",
       "FOUND-033",
