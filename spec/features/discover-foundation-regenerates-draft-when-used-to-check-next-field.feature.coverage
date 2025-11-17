@@ -1,0 +1,128 @@
+{
+  "scenarios": [
+    {
+      "name": "AI accidentally runs discover-foundation and loses progress",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/found-019-discover-foundation-workflow-clarity.test.ts",
+          "lines": "27-66",
+          "implMappings": [
+            {
+              "file": "src/commands/discover-foundation.ts",
+              "lines": [
+                468,
+                469,
+                470,
+                471,
+                472,
+                473,
+                474,
+                475,
+                476,
+                477,
+                478,
+                479,
+                480,
+                481,
+                482,
+                483,
+                484,
+                485,
+                486,
+                487,
+                488,
+                489,
+                490,
+                491,
+                492,
+                493,
+                494,
+                495,
+                496,
+                497,
+                498,
+                499,
+                500,
+                501,
+                502,
+                503
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "update-foundation emits next field reminder",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/found-019-discover-foundation-workflow-clarity.test.ts",
+          "lines": "68-88",
+          "implMappings": [
+            {
+              "file": "src/commands/update-foundation.ts",
+              "lines": [
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "System-reminder clarifies workflow to prevent confusion",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/found-019-discover-foundation-workflow-clarity.test.ts",
+          "lines": "90-120",
+          "implMappings": [
+            {
+              "file": "src/commands/discover-foundation.ts",
+              "lines": [
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/commands/__tests__/found-019-discover-foundation-workflow-clarity.test.ts"
+    ],
+    "implFiles": [
+      "src/commands/discover-foundation.ts",
+      "src/commands/update-foundation.ts"
+    ],
+    "totalLinesCovered": 155
+  }
+}

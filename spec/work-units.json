@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-17T04:55:26.216Z"
+    "lastUpdated": "2025-11-17T05:33:53.218Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -49439,6 +49439,99 @@
       "questions": [],
       "nextQuestionId": 0,
       "updated": "2025-11-17T04:55:26.241Z"
+    },
+    "FOUND-018": {
+      "id": "FOUND-018",
+      "title": "Conduct Big Picture Event Storming for Foundation",
+      "description": "Complete the foundation by capturing domain architecture through Big Picture Event Storming.\n\nUse these commands to populate foundation.json eventStorm field:\n- fspec add-foundation-bounded-context <name>\n- fspec add-aggregate-to-foundation <context> <aggregate>\n- fspec add-domain-event-to-foundation <context> <event>\n- fspec show-foundation-event-storm\n\nWhy this matters:\n- Establishes bounded contexts for domain-driven design\n- Enables tag ontology generation from domain model\n- Provides foundation for architectural documentation\n- Supports EXMAP-004 tag discovery workflow\n\nSee spec/CLAUDE.md \"Big Picture Event Storming\" section for detailed guidance.",
+      "type": "task",
+      "status": "backlog",
+      "createdAt": "2025-11-17T05:22:31.020Z",
+      "updatedAt": "2025-11-17T05:22:31.020Z"
+    },
+    "FOUND-019": {
+      "id": "FOUND-019",
+      "title": "discover-foundation regenerates draft when used to check next field",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-11-17T05:22:42.690Z",
+      "updatedAt": "2025-11-17T05:33:53.244Z",
+      "description": "The discover-foundation command regenerates the entire draft from scratch when run without flags, losing all previously filled fields. AI agents may mistakenly run 'fspec discover-foundation' thinking it will show the next field to fill, but it actually destroys their progress. The guidance in system-reminders should clarify: (1) Run 'fspec discover-foundation' ONCE to create initial draft, (2) Use 'fspec update-foundation' and 'fspec add-persona/add-capability' commands to fill fields (the commands auto-chain to next field), (3) Run 'fspec discover-foundation --finalize' ONCE to validate and create foundation.json. There's no separate command to 'check what field is next' - the update commands handle that automatically via system-reminders.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-17T05:22:48.338Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-17T05:24:07.298Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-17T05:25:23.811Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-17T05:27:51.621Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-17T05:33:53.244Z"
+        }
+      ],
+      "userStory": {
+        "role": "AI agent filling foundation draft",
+        "action": "understand which command to use next",
+        "benefit": "I don't accidentally regenerate the draft and lose my progress"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "discover-foundation without flags ALWAYS regenerates draft from scratch",
+          "deleted": false,
+          "createdAt": "2025-11-17T05:23:07.996Z"
+        },
+        {
+          "id": 1,
+          "text": "update-foundation commands automatically emit system-reminder for next field",
+          "deleted": false,
+          "createdAt": "2025-11-17T05:23:09.528Z"
+        },
+        {
+          "id": 2,
+          "text": "System-reminders must clarify the workflow: discover once → update many → finalize once",
+          "deleted": false,
+          "createdAt": "2025-11-17T05:23:11.160Z"
+        }
+      ],
+      "nextRuleId": 3,
+      "examples": [
+        {
+          "id": 0,
+          "text": "AI runs 'fspec discover-foundation' after filling 3 fields → draft regenerated, all progress lost",
+          "deleted": false,
+          "createdAt": "2025-11-17T05:23:12.971Z"
+        },
+        {
+          "id": 1,
+          "text": "AI runs 'fspec update-foundation projectName fspec' → system-reminder says 'Field 2/8: project.vision' with correct command",
+          "deleted": false,
+          "createdAt": "2025-11-17T05:23:14.779Z"
+        },
+        {
+          "id": 2,
+          "text": "System-reminder after update-foundation should say 'Continue with: fspec update-foundation...' NOT 'Run: fspec discover-foundation'",
+          "deleted": false,
+          "createdAt": "2025-11-17T05:23:16.274Z"
+        }
+      ],
+      "nextExampleId": 3,
+      "questions": [],
+      "architectureNotes": [],
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-17T05:33:53.244Z"
     }
   },
   "states": {
@@ -49506,6 +49599,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "FOUND-019",
       "FOUND-017",
       "FOUND-016",
       "FOUND-015",
@@ -49925,6 +50019,6 @@
     "PERF": 1,
     "INIT": 16,
     "EXMAP": 16,
-    "FOUND": 17
+    "FOUND": 19
   }
 }
