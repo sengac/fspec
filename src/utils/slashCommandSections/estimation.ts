@@ -1,5 +1,5 @@
 export function getEstimationSection(): string {
-  return `## Step 2.5: Story Point Estimation (After Generating Scenarios)
+  return `## Step 6: Story Point Estimation (After Generating Scenarios)
 
 **CRITICAL**: After generating scenarios from Example Mapping, you MUST estimate story points based on feature file complexity to help with prioritization and velocity tracking.
 

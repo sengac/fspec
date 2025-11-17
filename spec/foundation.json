@@ -2,117 +2,191 @@
   "version": "2.0.0",
   "project": {
     "name": "fspec",
-    "vision": "An AI discipline system that transforms AI agents into professional software engineers through workflow enforcement, temporal validation, traceability linking, and intelligent anti-drift patterns - ensuring every line of code traces back to tested acceptance criteria and business rules.",
+    "vision": "The only system that transforms business conversations into production-ready features—unifying product owners, business analysts, developers, QA engineers, and AI agents in a single disciplined workflow where requirements become executable specs, specs become tests, and complete traceability prevents anyone (human or AI) from breaking the chain.",
     "projectType": "cli-tool"
   },
   "problemSpace": {
     "primaryProblem": {
-      "title": "AI Agents Lack Professional Development Discipline",
-      "description": "AI coding agents operate without the structured workflow discipline that professional developers rely on. They skip critical discovery steps like Example Mapping, write code before tests, ignore acceptance criteria, work out of temporal order, and lack traceability from code back to business requirements. This forces developers into constant supervision mode - micromanaging the AI, catching mistakes, and manually enforcing workflow steps - instead of focusing on higher-level problem solving and architecture.",
+      "title": "Requirements and implementation are disconnected across fragmented tools, causing lost context, broken traceability, and undisciplined AI agents",
+      "description": "Product owners define business value in Jira. Business analysts capture requirements in sticky notes during Example Mapping sessions that get photographed and forgotten. Developers write Gherkin specs in .feature files disconnected from those requirements. QA engineers write tests disconnected from the specs. AI agents skip all of this and write code with zero traceability. The result: what gets built rarely matches what was discussed, tests don't validate the right things, and nobody can trace a line of code back to the business requirement that justified it. Every handoff loses context. Every tool works in isolation. Every AI agent operates without discipline or guardrails.",
       "impact": "high"
     }
   },
   "solutionSpace": {
-    "overview": "fspec provides a complete workflow enforcement system that guides AI agents through professional ACDD (Acceptance Criteria Driven Development) practices. It enforces temporal ordering to prevent retroactive workflow walking, uses system reminders to catch anti-patterns, maintains end-to-end traceability from code to business rules, provides git-based checkpoints for safe experimentation, and integrates research tools for discovery-first development. The system transforms AI agents from undisciplined code generators into structured software engineers.",
+    "overview": "A unified CLI and TUI system that connects business conversations (Example Mapping, Event Storming) directly to executable Gherkin specs, enforces test-first development through workflow states, and maintains complete traceability from requirements through tests to implementation. AI agents and humans work in the same disciplined workflow with automatic checkpoints, quality gates, and coverage tracking that prevents anyone from breaking the chain of accountability.",
     "capabilities": [
       {
-        "name": "ACDD Workflow Management",
-        "description": "Manage work units through structured Kanban workflow states (backlog → specifying → testing → implementing → validating → done) with temporal validation preventing retroactive workflow walking"
+        "name": "Kanban Project Management",
+        "description": "Track work units (stories, tasks, bugs) through ACDD workflow states (backlog → specifying → testing → implementing → validating → done) with dependency management and epic organization"
       },
       {
-        "name": "Example Mapping Discovery",
-        "description": "Capture business rules, concrete examples, questions, and assumptions using Example Mapping technique before writing specifications"
+        "name": "Example Mapping",
+        "description": "Facilitate collaborative discovery sessions by capturing business rules (blue cards), concrete examples (green cards), and questions (red cards), then transform them into Gherkin scenarios"
       },
       {
-        "name": "Event Storming Discovery",
-        "description": "Document domain events, commands, policies, aggregates, and hotspots for complex domains before Example Mapping"
+        "name": "Event Storming",
+        "description": "Conduct Big Picture (foundation-level) and Process Modeling (work-unit-level) Event Storming to discover domain events, commands, aggregates, policies, and bounded contexts"
       },
       {
         "name": "Gherkin Specification Management",
-        "description": "Create, validate, format, and manage Gherkin feature files with automatic syntax validation and tag compliance"
+        "description": "Create, edit, validate, and format .feature files with full Cucumber compatibility, tag management, and automatic prefill detection"
       },
       {
-        "name": "Test-Feature Coverage Tracking",
-        "description": "Link test files to Gherkin scenarios and implementation code with step validation ensuring traceability from business rules to code"
+        "name": "Test-Driven Development Enforcement",
+        "description": "Enforce TDD discipline through temporal validation that prevents writing code before tests, with @step comment validation to ensure test-to-spec traceability"
+      },
+      {
+        "name": "Coverage Tracking",
+        "description": "Link Gherkin scenarios to test files to implementation code with .feature.coverage files that provide complete requirement-to-code traceability"
       },
       {
         "name": "Git Checkpoint System",
-        "description": "Create automatic and manual checkpoints using git stash for safe experimentation with conflict-aware restoration"
+        "description": "Create automatic checkpoints before workflow transitions and manual checkpoints for experimentation, with conflict-aware restoration and cleanup management"
       },
       {
-        "name": "System Reminder Anti-Drift",
-        "description": "Detect anti-patterns and guide AI agents with contextual system-reminder tags for file naming, workflow violations, and missing steps"
+        "name": "Virtual Hooks & Quality Gates",
+        "description": "Define work-unit-scoped and global lifecycle hooks that execute custom validation, testing, and automation at workflow transition points"
       },
       {
-        "name": "Virtual Hooks Quality Gates",
-        "description": "Attach ephemeral work unit-scoped hooks for linting, testing, and validation with git context support"
+        "name": "Interactive TUI",
+        "description": "Live Kanban board with real-time updates, attachment viewer with Mermaid diagram rendering, checkpoint management, and keyboard-driven navigation"
       },
       {
-        "name": "Dependency Management",
-        "description": "Track work unit dependencies, identify bottlenecks, detect circular dependencies, and visualize critical paths"
+        "name": "AST Code Analysis",
+        "description": "Parse and analyze code across 16 languages using tree-sitter for pattern detection, function discovery, and deep codebase understanding during discovery"
       },
       {
-        "name": "Interactive Kanban TUI",
-        "description": "View and manage work units through terminal UI with attachment viewer, checkpoint management, and real-time updates"
+        "name": "Query & Analytics",
+        "description": "Query work units, bottlenecks, estimation accuracy, orphaned work, dependency statistics, and generate comprehensive summary reports"
+      },
+      {
+        "name": "Reverse ACDD",
+        "description": "Import existing codebases into fspec by generating feature files, scenarios, and skeleton tests from existing code implementations"
+      },
+      {
+        "name": "Foundation Discovery",
+        "description": "AI-guided field-by-field project foundation bootstrapping that defines project context, personas, capabilities, and problem space"
       }
     ]
   },
   "personas": [
     {
-      "name": "AI Coding Agent",
-      "description": "Autonomous AI assistants (Claude Code, Codex, Cursor) that execute development tasks through natural language instructions and must follow structured ACDD workflow",
+      "name": "AI Agent",
+      "description": "Autonomous coding agents (Claude Code, Cursor, Codex, etc.) that need structured workflows and quality enforcement",
       "goals": [
-        "Execute workflow steps in correct order without skipping discovery, testing, or validation phases"
+        "Follow TDD discipline automatically"
       ]
     },
     {
-      "name": "Developer Using AI Agents",
-      "description": "Software engineers who delegate coding tasks to AI agents and need to ensure quality output without constant supervision",
+      "name": "AI Agent",
+      "description": "Autonomous coding agents (Claude Code, Cursor, Codex, etc.) that need structured workflows and quality enforcement",
       "goals": [
-        "Ship tested, traceable code faster by trusting AI to follow professional workflows",
-        "Avoid babysitting AI agents and focus on architecture and problem-solving"
+        "Generate specs from business conversations"
       ]
     },
     {
-      "name": "Solo Developer",
-      "description": "Individual developers working without AI who want structured BDD/TDD workflow discipline for personal projects",
+      "name": "AI Agent",
+      "description": "Autonomous coding agents (Claude Code, Cursor, Codex, etc.) that need structured workflows and quality enforcement",
       "goals": [
-        "Maintain professional development practices on solo projects",
-        "Ensure all code has tested acceptance criteria and business rule traceability"
+        "Maintain traceability from requirements to code"
       ]
     },
     {
-      "name": "Quality Assurance Engineer",
-      "description": "QA engineers who need to verify that implemented features match acceptance criteria and maintain test coverage",
+      "name": "AI Agent",
+      "description": "Autonomous coding agents (Claude Code, Cursor, Codex, etc.) that need structured workflows and quality enforcement",
       "goals": [
-        "Validate that all scenarios have corresponding tests with full traceability",
-        "Audit coverage to ensure business rules are properly tested"
+        "Self-recover from mistakes using checkpoints"
+      ]
+    },
+    {
+      "name": "Developer",
+      "description": "Software developers working with AI agents or manually following ACDD workflow",
+      "goals": [
+        "Clear acceptance criteria before coding"
+      ]
+    },
+    {
+      "name": "Developer",
+      "description": "Software developers working with AI agents or manually following ACDD workflow",
+      "goals": [
+        "Enforce test-first development"
+      ]
+    },
+    {
+      "name": "Developer",
+      "description": "Software developers working with AI agents or manually following ACDD workflow",
+      "goals": [
+        "Track work through Kanban states"
+      ]
+    },
+    {
+      "name": "Developer",
+      "description": "Software developers working with AI agents or manually following ACDD workflow",
+      "goals": [
+        "Collaborate with AI agents effectively"
       ]
     },
     {
       "name": "Business Analyst",
-      "description": "Business analysts who document requirements using Example Mapping and need to ensure features are built according to business rules",
+      "description": "BAs facilitating Example Mapping and Event Storming sessions to capture requirements",
       "goals": [
-        "Capture business rules and examples using structured discovery techniques",
-        "Track which work units implement which business capabilities"
+        "Transform business conversations into executable specs"
+      ]
+    },
+    {
+      "name": "Business Analyst",
+      "description": "BAs facilitating Example Mapping and Event Storming sessions to capture requirements",
+      "goals": [
+        "Capture rules, examples, and questions systematically"
+      ]
+    },
+    {
+      "name": "Business Analyst",
+      "description": "BAs facilitating Example Mapping and Event Storming sessions to capture requirements",
+      "goals": [
+        "Ensure requirements are complete before development"
       ]
     },
     {
       "name": "Product Owner",
-      "description": "Product owners who prioritize work, manage backlogs, and need visibility into development progress and feature completion",
+      "description": "POs defining business value and making prioritization decisions",
       "goals": [
-        "Prioritize work units based on business value and dependencies",
-        "Track team velocity and estimate accuracy across iterations",
-        "Ensure delivered features match original business intent"
+        "See exactly what's being built (acceptance criteria)"
       ]
     },
     {
-      "name": "Technical Lead",
-      "description": "Technical leads and architects who review code quality, ensure architectural standards, and validate technical decisions",
+      "name": "Product Owner",
+      "description": "POs defining business value and making prioritization decisions",
       "goals": [
-        "Review implementation coverage and ensure code traces back to acceptance criteria",
-        "Identify architectural debt and refactoring opportunities",
-        "Validate that technical standards are followed across all work units"
+        "Prioritize work units on Kanban board"
+      ]
+    },
+    {
+      "name": "Product Owner",
+      "description": "POs defining business value and making prioritization decisions",
+      "goals": [
+        "Verify features meet acceptance criteria"
+      ]
+    },
+    {
+      "name": "QA Engineer",
+      "description": "QA engineers validating feature implementation against specs",
+      "goals": [
+        "Trace every test back to business requirements"
+      ]
+    },
+    {
+      "name": "QA Engineer",
+      "description": "QA engineers validating feature implementation against specs",
+      "goals": [
+        "Verify 100% scenario coverage"
+      ]
+    },
+    {
+      "name": "QA Engineer",
+      "description": "QA engineers validating feature implementation against specs",
+      "goals": [
+        "Validate implementation matches acceptance criteria"
       ]
     }
   ],
@@ -125,7 +199,7 @@
         "text": "User Management",
         "color": null,
         "deleted": false,
-        "createdAt": "2025-11-17T06:14:32.601Z"
+        "createdAt": "2025-11-17T07:04:22.518Z"
       }
     ],
     "nextItemId": 2

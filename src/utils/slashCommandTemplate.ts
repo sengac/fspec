@@ -52,9 +52,9 @@ export function getCompleteWorkflowDocumentation(): string {
     getToolConfigurationSection(),
     getCriticalRulesSection(),
     getAcddWorkflowExampleSection(),
+    getCoverageTrackingSection(),
     getMonitoringProgressSection(),
     getAcddPrinciplesSection(),
-    getCoverageTrackingSection(),
     getReadyToStartSection(),
   ].join('\n');
 }

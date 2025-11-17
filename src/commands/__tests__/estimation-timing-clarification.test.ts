@@ -203,31 +203,31 @@ describe('Feature: Clarify estimation timing in documentation and system-reminde
   });
 
   describe('Scenario: Slash command documentation should clarify estimation timing', () => {
-    it('should show correct workflow order in Step 2.5', async () => {
+    it('should show correct workflow order in Step 6', async () => {
       // Given I run bootstrap to get complete documentation
       const { bootstrap } = await import('../bootstrap');
       const bootstrapOutput = await bootstrap();
 
-      // When I look at "Step 2.5: Story Point Estimation"
-      const step25Match = bootstrapOutput.match(
-        /Step 2\.5[:\s]+Story Point Estimation[\s\S]{0,500}/i
+      // When I look at "Step 6: Story Point Estimation"
+      const step6Match = bootstrapOutput.match(
+        /Step 6[:\s]+Story Point Estimation[\s\S]{0,500}/i
       );
-      expect(step25Match).toBeTruthy();
+      expect(step6Match).toBeTruthy();
 
-      const step25Section = step25Match![0];
+      const step6Section = step6Match![0];
 
       // Then it should explicitly state estimation happens AFTER generating scenarios
       expect(
-        step25Section.toLowerCase().includes('after generating scenarios') ||
-          (step25Section.toLowerCase().includes('generate scenarios') &&
-            step25Section.toLowerCase().includes('estimate'))
+        step6Section.toLowerCase().includes('after generating scenarios') ||
+          (step6Section.toLowerCase().includes('generate scenarios') &&
+            step6Section.toLowerCase().includes('estimate'))
       ).toBe(true);
 
       // And it should show the correct workflow order: Example Mapping → Generate Scenarios → Estimate
       expect(
-        step25Section.toLowerCase().includes('example mapping') &&
-          step25Section.toLowerCase().includes('generate') &&
-          step25Section.toLowerCase().includes('estimate')
+        step6Section.toLowerCase().includes('example mapping') &&
+          step6Section.toLowerCase().includes('generate') &&
+          step6Section.toLowerCase().includes('estimate')
       ).toBe(true);
     });
   });

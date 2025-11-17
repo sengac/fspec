@@ -1,5 +1,5 @@
 export function getBootstrapFoundationSection(): string {
-  return `## Step 1.5: Bootstrap Foundation (REQUIRED for New Projects)
+  return `## Step 2: Bootstrap Foundation (REQUIRED for New Projects)
 
 **CRITICAL**: If \`spec/foundation.json\` does not exist, you MUST bootstrap it using the AI-driven discovery feedback loop. This is ENFORCED by fspec commands.
 

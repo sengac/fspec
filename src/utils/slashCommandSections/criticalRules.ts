@@ -1,5 +1,5 @@
 export function getCriticalRulesSection(): string {
-  return `## Step 3: Critical Rules
+  return `## Step 8: Critical Rules
 
 ### File Modification Rules
 - **NEVER directly edit files in \`spec/work-units.json\`** - ONLY use fspec commands

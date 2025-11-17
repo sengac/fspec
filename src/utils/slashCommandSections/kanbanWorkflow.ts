@@ -1,5 +1,5 @@
 export function getKanbanWorkflowSection(): string {
-  return `## Step 3: Kanban Workflow - How to Track Work
+  return `## Step 7: Kanban Workflow - How to Track Work
 
 ### View the Board
 

@@ -1,5 +1,5 @@
 export function getCoverageTrackingSection(): string {
-  return `## Step 6.5: Coverage Tracking - Link Tests and Implementation
+  return `## Step 10: Coverage Tracking - Link Tests and Implementation
 
 **CRITICAL**: After writing tests and implementation, you MUST update coverage files to maintain traceability. Coverage files (\`*.feature.coverage\`) link Gherkin scenarios to their test files and implementation files.
 

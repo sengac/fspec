@@ -121,7 +121,7 @@ export async function bootstrap(
     getSlashCommandTemplate() + '\n\n' + getCompleteWorkflowDocumentation();
 
   // Add explainer section for AI agents
-  output += `\n\n## Step 2: Load fspec Context
+  output += `\n\n## Step 12: Complete Command Reference
 
 The \`fspec bootstrap\` command outputs complete fspec documentation by internally calling all help section functions.
 

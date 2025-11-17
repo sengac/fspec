@@ -99,7 +99,9 @@ describe('Feature: Update bootstrap output with Big Picture Event Storming guida
       // @step And the reminder should appear after CLAUDE.md content
       // Verify reminder appears after help content but before final "fspec mode" message
       const reminderIndex = output.indexOf('<system-reminder>');
-      const claudeMdIndex = output.indexOf('## Step 2: Load fspec Context');
+      const claudeMdIndex = output.indexOf(
+        '## Step 12: Complete Command Reference'
+      );
       expect(reminderIndex).toBeGreaterThan(claudeMdIndex);
     });
   });
@@ -217,7 +219,7 @@ describe('Feature: Update bootstrap output with Big Picture Event Storming guida
       expect(output).not.toContain('eventStorm field is empty');
 
       // @step And bootstrap output should show normal CLAUDE.md content
-      expect(output).toContain('## Step 2: Load fspec Context');
+      expect(output).toContain('## Step 12: Complete Command Reference');
     });
   });
 
@@ -247,7 +249,7 @@ describe('Feature: Update bootstrap output with Big Picture Event Storming guida
       expect(output).not.toContain('eventStorm field is empty');
 
       // @step And bootstrap output should show normal CLAUDE.md content
-      expect(output).toContain('## Step 2: Load fspec Context');
+      expect(output).toContain('## Step 12: Complete Command Reference');
     });
   });
 });
