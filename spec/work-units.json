@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-17T05:33:53.218Z"
+    "lastUpdated": "2025-11-17T06:01:48.681Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -49532,6 +49532,123 @@
       "nextQuestionId": 0,
       "nextNoteId": 0,
       "updated": "2025-11-17T05:33:53.244Z"
+    },
+    "FOUND-020": {
+      "id": "FOUND-020",
+      "title": "Conduct Big Picture Event Storming for Foundation",
+      "description": "Complete the foundation by capturing domain architecture through Big Picture Event Storming.\n\nUse these commands to populate foundation.json eventStorm field:\n- fspec add-foundation-bounded-context <name>\n- fspec add-aggregate-to-foundation <context> <aggregate>\n- fspec add-domain-event-to-foundation <context> <event>\n- fspec show-foundation-event-storm\n\nWhy this matters:\n- Establishes bounded contexts for domain-driven design\n- Enables tag ontology generation from domain model\n- Provides foundation for architectural documentation\n- Supports EXMAP-004 tag discovery workflow\n\nSee spec/CLAUDE.md \"Big Picture Event Storming\" section for detailed guidance.",
+      "type": "task",
+      "status": "backlog",
+      "createdAt": "2025-11-17T05:52:25.313Z",
+      "updatedAt": "2025-11-17T05:52:25.313Z"
+    },
+    "FOUND-021": {
+      "id": "FOUND-021",
+      "title": "discover-foundation overwrites draft without warning",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-11-17T05:52:33.189Z",
+      "updatedAt": "2025-11-17T06:01:48.706Z",
+      "description": "Running 'fspec discover-foundation' when foundation.json.draft already exists silently regenerates the draft and loses all progress. This happened during foundation discovery when the command was accidentally run again without --finalize flag. Need to add a safety check that prevents overwriting existing draft unless --force flag is provided.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-17T05:53:16.027Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-17T05:54:55.792Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-17T05:56:22.511Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-17T06:00:00.828Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-17T06:01:48.706Z"
+        }
+      ],
+      "userStory": {
+        "role": "AI agent or developer using fspec",
+        "action": "run discover-foundation command safely without losing draft progress",
+        "benefit": "I can recover from accidentally running the command twice without losing all my work"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "discover-foundation without --finalize flag MUST check if foundation.json.draft exists before creating a new draft",
+          "deleted": false,
+          "createdAt": "2025-11-17T05:53:45.495Z"
+        },
+        {
+          "id": 1,
+          "text": "If draft exists, command MUST emit error message with --force flag suggestion",
+          "deleted": false,
+          "createdAt": "2025-11-17T05:53:53.817Z"
+        },
+        {
+          "id": 2,
+          "text": "The --force flag MUST allow overwriting existing draft (explicit opt-in)",
+          "deleted": false,
+          "createdAt": "2025-11-17T05:53:54.360Z"
+        },
+        {
+          "id": 3,
+          "text": "If foundation.json already exists, command MUST also warn and require --force flag",
+          "deleted": false,
+          "createdAt": "2025-11-17T05:53:54.907Z"
+        },
+        {
+          "id": 4,
+          "text": "Error message MUST be wrapped in system-reminder tags for AI visibility",
+          "deleted": false,
+          "createdAt": "2025-11-17T05:53:55.458Z"
+        }
+      ],
+      "nextRuleId": 5,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User runs 'fspec discover-foundation' when draft exists → Error: Draft already exists, use --force to overwrite",
+          "deleted": false,
+          "createdAt": "2025-11-17T05:54:03.101Z"
+        },
+        {
+          "id": 1,
+          "text": "User runs 'fspec discover-foundation --force' when draft exists → Draft is overwritten, warning shown",
+          "deleted": false,
+          "createdAt": "2025-11-17T05:54:03.653Z"
+        },
+        {
+          "id": 2,
+          "text": "User runs 'fspec discover-foundation' when foundation.json exists → Error: Foundation already exists, use --force to regenerate draft",
+          "deleted": false,
+          "createdAt": "2025-11-17T05:54:04.205Z"
+        },
+        {
+          "id": 3,
+          "text": "User runs 'fspec discover-foundation' when neither draft nor foundation.json exist → Draft created successfully",
+          "deleted": false,
+          "createdAt": "2025-11-17T05:54:04.750Z"
+        },
+        {
+          "id": 4,
+          "text": "User runs 'fspec discover-foundation --finalize' when draft exists → Normal finalization flow (no change to existing behavior)",
+          "deleted": false,
+          "createdAt": "2025-11-17T05:54:05.297Z"
+        }
+      ],
+      "nextExampleId": 5,
+      "questions": [],
+      "architectureNotes": [],
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-17T06:01:48.706Z"
     }
   },
   "states": {
@@ -49599,6 +49716,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "FOUND-021",
       "FOUND-019",
       "FOUND-017",
       "FOUND-016",
@@ -50019,6 +50137,6 @@
     "PERF": 1,
     "INIT": 16,
     "EXMAP": 16,
-    "FOUND": 19
+    "FOUND": 21
   }
 }
