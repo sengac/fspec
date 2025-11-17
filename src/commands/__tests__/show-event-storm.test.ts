@@ -7,25 +7,32 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { fileManager } from '../../utils/file-manager';
 import type { WorkUnitsData, EventStormItem } from '../../types';
 import { showEventStorm } from '../show-event-storm';
+import { mkdtemp, rm, mkdir, writeFile } from 'fs/promises';
+import { tmpdir } from 'os';
+import { join } from 'path';
 
 describe('Feature: Show Event Storm data as JSON', () => {
-  const workUnitsFile = 'spec/work-units.json';
-  let originalData: WorkUnitsData;
+  let testDir: string;
+  let workUnitsFile: string;
 
   beforeEach(async () => {
-    // Save original state
-    originalData = await fileManager.readJSON<WorkUnitsData>(workUnitsFile, {
+    // Create isolated temp directory
+    testDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
+    await mkdir(join(testDir, 'spec'), { recursive: true });
+    workUnitsFile = join(testDir, 'spec/work-units.json');
+
+    // Create initial work-units.json in temp directory
+    const initialData: WorkUnitsData = {
       version: '1.0.0',
       workUnits: {},
       states: {},
-    });
+    };
+    await writeFile(workUnitsFile, JSON.stringify(initialData, null, 2));
   });
 
   afterEach(async () => {
-    // Restore original state
-    await fileManager.transaction<WorkUnitsData>(workUnitsFile, async data => {
-      Object.assign(data, originalData);
-    });
+    // Clean up temp directory
+    await rm(testDir, { recursive: true, force: true });
   });
 
   describe('Scenario: Output Event Storm events as JSON array', () => {
@@ -78,7 +85,10 @@ describe('Feature: Show Event Storm data as JSON', () => {
       );
 
       // @step When I run "fspec show-event-storm TEST-001"
-      const result = await showEventStorm({ workUnitId: 'TEST-001' });
+      const result = await showEventStorm({
+        workUnitId: 'TEST-001',
+        cwd: testDir,
+      });
 
       // @step Then the output should be valid JSON
       expect(result.success).toBe(true);
@@ -132,7 +142,10 @@ describe('Feature: Show Event Storm data as JSON', () => {
       );
 
       // @step When I run "fspec show-event-storm DOMAIN-001"
-      const result = await showEventStorm({ workUnitId: 'DOMAIN-001' });
+      const result = await showEventStorm({
+        workUnitId: 'DOMAIN-001',
+        cwd: testDir,
+      });
 
       // @step Then the output should be valid JSON
       expect(result.success).toBe(true);
@@ -168,7 +181,10 @@ describe('Feature: Show Event Storm data as JSON', () => {
       );
 
       // @step When I run "fspec show-event-storm EMPTY-001"
-      const result = await showEventStorm({ workUnitId: 'EMPTY-001' });
+      const result = await showEventStorm({
+        workUnitId: 'EMPTY-001',
+        cwd: testDir,
+      });
 
       // @step Then the command should exit with error
       expect(result.success).toBe(false);
@@ -247,7 +263,10 @@ describe('Feature: Show Event Storm data as JSON', () => {
       );
 
       // @step When I run "fspec show-event-storm MIX-001"
-      const result = await showEventStorm({ workUnitId: 'MIX-001' });
+      const result = await showEventStorm({
+        workUnitId: 'MIX-001',
+        cwd: testDir,
+      });
 
       // @step Then the output should be valid JSON
       expect(result.success).toBe(true);
