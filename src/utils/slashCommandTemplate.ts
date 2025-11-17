@@ -12,6 +12,7 @@ import {
 import { getAcddConceptSection } from './slashCommandSections/acddConcept';
 import { getLoadContextSection } from './slashCommandSections/loadContext';
 import { getBootstrapFoundationSection } from './slashCommandSections/bootstrapFoundation';
+import { getEventStormSection } from './slashCommandSections/eventStorm';
 import { getExampleMappingSection } from './slashCommandSections/exampleMapping';
 import { getEstimationSection } from './slashCommandSections/estimation';
 import { getKanbanWorkflowSection } from './slashCommandSections/kanbanWorkflow';
@@ -42,6 +43,7 @@ export function getCompleteWorkflowDocumentation(): string {
     getAcddConceptSection(),
     getLoadContextSection(),
     getBootstrapFoundationSection(),
+    getEventStormSection(),
     getExampleMappingSection(),
     getEstimationSection(),
     getKanbanWorkflowSection(),

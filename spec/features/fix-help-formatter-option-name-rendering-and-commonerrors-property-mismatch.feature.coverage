@@ -1,0 +1,147 @@
+{
+  "scenarios": [
+    {
+      "name": "Display option flags correctly in help output",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/event-storm-help.test.ts",
+          "lines": "142-159",
+          "implMappings": [
+            {
+              "file": "src/commands/add-domain-event-help.ts",
+              "lines": [
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Use 'fix' property consistently in commonErrors",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/event-storm-help.test.ts",
+          "lines": "161-190",
+          "implMappings": [
+            {
+              "file": "src/commands/add-domain-event-help.ts",
+              "lines": [
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76
+              ]
+            },
+            {
+              "file": "src/commands/add-command-help.ts",
+              "lines": [
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Verify all 7 Event Storm help files are fixed",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/event-storm-help.test.ts",
+          "lines": "192-233",
+          "implMappings": [
+            {
+              "file": "src/commands/add-policy-help.ts",
+              "lines": [
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48
+              ]
+            },
+            {
+              "file": "src/commands/add-hotspot-help.ts",
+              "lines": [
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/commands/__tests__/event-storm-help.test.ts"
+    ],
+    "implFiles": [
+      "src/commands/add-domain-event-help.ts",
+      "src/commands/add-command-help.ts",
+      "src/commands/add-policy-help.ts",
+      "src/commands/add-hotspot-help.ts"
+    ],
+    "totalLinesCovered": 160
+  }
+}
