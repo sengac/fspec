@@ -542,4 +542,136 @@ describe('Feature: Generate FOUNDATION.md from foundation.json', () => {
       });
     });
   });
+
+  // Feature: spec/features/bounded-context-map-ui-duplicates-each-bounded-context-name-in-visualization.feature
+  describe('Feature: BUG-085 - Bounded Context Map UI duplicates each bounded context name in visualization', () => {
+    describe('Scenario: Hardcoded bounded context generates name and description on two lines', () => {
+      it('should generate node label with context name and description separated by <br/>', async () => {
+        // @step Given I have a bounded context "Work Management" with hardcoded description
+        const foundation: GenericFoundation = {
+          ...createMinimalFoundation(),
+          eventStorm: {
+            level: 'big_picture',
+            items: [
+              {
+                id: 1,
+                type: 'bounded_context',
+                text: 'Work Management',
+                color: null,
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
+            ],
+            nextItemId: 2,
+          },
+        };
+
+        // @step When the Mermaid diagram is generated
+        const markdown = await generateFoundationMd(foundation);
+
+        // @step Then the node label should be "Work Management<br/>Stories, Epics, Dependencies"
+        expect(markdown).toContain(
+          'BC1["Work Management<br/>Stories, Epics, Dependencies"]'
+        );
+
+        // @step And the label should display context name on first line
+        expect(markdown).toContain('Work Management<br/>');
+
+        // @step And the label should display description on second line
+        expect(markdown).toContain('<br/>Stories, Epics, Dependencies');
+      });
+    });
+
+    describe('Scenario: Non-hardcoded bounded context generates only context name without duplication', () => {
+      it('should generate node label with only context name, no duplication', async () => {
+        // @step Given I have a bounded context "Conversation Management" without hardcoded description
+        const foundation: GenericFoundation = {
+          ...createMinimalFoundation(),
+          eventStorm: {
+            level: 'big_picture',
+            items: [
+              {
+                id: 1,
+                type: 'bounded_context',
+                text: 'Conversation Management',
+                color: null,
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
+            ],
+            nextItemId: 2,
+          },
+        };
+
+        // @step When the Mermaid diagram is generated
+        const markdown = await generateFoundationMd(foundation);
+
+        // @step Then the node label should be "Conversation Management"
+        expect(markdown).toContain('BC1["Conversation Management"]');
+
+        // @step And the label should NOT contain "<br/>" tag
+        expect(markdown).not.toContain('BC1["Conversation Management<br/>');
+
+        // @step And the label should NOT duplicate the context name
+        expect(markdown).not.toContain(
+          'Conversation Management<br/>Conversation Management'
+        );
+      });
+    });
+
+    describe('Scenario: Generate bounded context map for multiple contexts without duplication', () => {
+      it('should generate map with each context appearing exactly once', async () => {
+        // @step Given I have bounded contexts "Mind Mapping", "AI Integration", and "Workspace & Storage"
+        // @step And none of them have hardcoded descriptions
+        const foundation: GenericFoundation = {
+          ...createMinimalFoundation(),
+          eventStorm: {
+            level: 'big_picture',
+            items: [
+              {
+                id: 1,
+                type: 'bounded_context',
+                text: 'Mind Mapping',
+                color: null,
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
+              {
+                id: 2,
+                type: 'bounded_context',
+                text: 'AI Integration',
+                color: null,
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
+              {
+                id: 3,
+                type: 'bounded_context',
+                text: 'Workspace & Storage',
+                color: null,
+                deleted: false,
+                createdAt: new Date().toISOString(),
+              },
+            ],
+            nextItemId: 4,
+          },
+        };
+
+        // @step When the bounded context map is generated in FOUNDATION.md
+        const markdown = await generateFoundationMd(foundation);
+
+        // @step Then each context should appear exactly once
+        expect(markdown).toContain('BC1["Mind Mapping"]');
+        expect(markdown).toContain('BC2["AI Integration"]');
+        expect(markdown).toContain('BC3["Workspace & Storage"]');
+
+        // @step And no context name should be duplicated in its own node label
+        expect(markdown).not.toContain('Mind Mapping<br/>Mind Mapping');
+        expect(markdown).not.toContain('AI Integration<br/>AI Integration');
+        expect(markdown).not.toContain(
+          'Workspace & Storage<br/>Workspace & Storage'
+        );
+      });
+    });
+  });
 });
