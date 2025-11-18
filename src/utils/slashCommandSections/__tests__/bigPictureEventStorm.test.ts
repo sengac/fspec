@@ -17,10 +17,9 @@ describe('Feature: Update CLAUDE.md with Big Picture Event Storming workflow doc
       // @step When AI agent runs fspec bootstrap to load context
       const section = getBigPictureEventStormSection();
 
-      // @step Then CLAUDE.md should contain Step 3 section titled "Big Picture Event Storming (Foundation Level)"
+      // @step Then CLAUDE.md should contain Step 3 section titled "Foundation Event Storm"
       expect(section).toContain('Step 3');
-      expect(section).toContain('Big Picture Event Storming');
-      expect(section).toContain('Foundation Level');
+      expect(section).toContain('Foundation Event Storm');
 
       // @step And the section should appear after Step 2 "Bootstrap Foundation"
       // (Section ordering tested in integration test - this is unit level)
@@ -28,8 +27,8 @@ describe('Feature: Update CLAUDE.md with Big Picture Event Storming workflow doc
       // @step And the section should appear before Step 4 "Event Storm - Work Unit Level"
       // (Section ordering tested in integration test - this is unit level)
 
-      // @step And the section should explain when to conduct Big Picture Event Storming
-      expect(section).toContain('when to conduct');
+      // @step And the section should explain when to conduct Foundation Event Storm
+      expect(section).toContain('When to conduct');
       expect(section).toContain('after foundation discovery');
 
       // @step And the section should list all foundation Event Storm commands with examples
@@ -66,9 +65,9 @@ describe('Feature: Update CLAUDE.md with Big Picture Event Storming workflow doc
       expect(section).toContain('foundation.json');
       expect(section).toContain('work-units.json');
 
-      // @step And the table should compare timing (once after foundation vs many times per story)
-      expect(section).toContain('once');
-      expect(section).toContain('many times');
+      // @step And the table should compare timing (Once after foundation vs Many times per story)
+      expect(section).toContain('Once');
+      expect(section).toContain('Many times');
 
       // @step And the table should compare output (tag ontology vs scenarios)
       expect(section).toContain('tag ontology');

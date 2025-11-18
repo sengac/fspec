@@ -42,33 +42,6 @@
       ]
     },
     {
-      "name": "Run create-work-unit without foundation.json",
-      "testMappings": [
-        {
-          "file": "src/utils/__tests__/foundation-check.test.ts",
-          "lines": "55-79",
-          "implMappings": []
-        },
-        {
-          "file": "src/commands/__tests__/foundation-existence-check.test.ts",
-          "lines": "64-89",
-          "implMappings": [
-            {
-              "file": "src/commands/create-work-unit.ts",
-              "lines": [
-                41,
-                42,
-                43,
-                44,
-                45,
-                46
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
       "name": "Run board command with foundation.json present",
       "testMappings": [
         {
@@ -99,9 +72,9 @@
     }
   ],
   "stats": {
-    "totalScenarios": 5,
-    "coveredScenarios": 4,
-    "coveragePercent": 100,
+    "totalScenarios": 4,
+    "coveredScenarios": 3,
+    "coveragePercent": 75,
     "testFiles": [
       "src/utils/__tests__/foundation-check.test.ts",
       "src/commands/__tests__/foundation-existence-check.test.ts"

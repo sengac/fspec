@@ -1,40 +1,6 @@
 {
   "scenarios": [
     {
-      "name": "spec/AGENT.md contains comprehensive ACDD workflow documentation",
-      "testMappings": [
-        {
-          "file": "src/utils/__tests__/templateGenerator-comprehensive.test.ts",
-          "lines": "11-145",
-          "implMappings": [
-            {
-              "file": "src/utils/templateGenerator.ts",
-              "lines": [
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Agent-specific transformations are applied to full template",
-      "testMappings": []
-    },
-    {
       "name": "Root stub files remain concise",
       "testMappings": [
         {
@@ -161,9 +127,9 @@
     }
   ],
   "stats": {
-    "totalScenarios": 6,
-    "coveredScenarios": 5,
-    "coveragePercent": 83,
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
     "testFiles": [
       "src/utils/__tests__/templateGenerator-comprehensive.test.ts",
       "src/commands/__tests__/init-multi-agent.test.ts"

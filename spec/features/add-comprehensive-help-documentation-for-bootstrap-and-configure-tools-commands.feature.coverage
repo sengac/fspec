@@ -13,10 +13,6 @@
       "testMappings": []
     },
     {
-      "name": "README.md documents configure-tools command",
-      "testMappings": []
-    },
-    {
       "name": "Documentation consistency across all sources",
       "testMappings": []
     },
@@ -26,7 +22,7 @@
     }
   ],
   "stats": {
-    "totalScenarios": 6,
+    "totalScenarios": 5,
     "coveredScenarios": 0,
     "coveragePercent": 0,
     "testFiles": [],

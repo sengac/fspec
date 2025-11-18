@@ -138,8 +138,8 @@ describe('Feature: Auto-create Big Picture Event Storming work unit after founda
       // @step And the work unit type should be "task"
       expect(workUnit.type).toBe('task');
 
-      // @step And the work unit title should contain "Big Picture Event Storming"
-      expect(workUnit.title).toContain('Big Picture Event Storming');
+      // @step And the work unit title should contain "Foundation Event Storm"
+      expect(workUnit.title).toContain('Foundation Event Storm');
 
       // @step And the work unit description should include foundation Event Storm commands
       expect(workUnit.description).toContain('add-foundation-bounded-context');
@@ -152,7 +152,7 @@ describe('Feature: Auto-create Big Picture Event Storming work unit after founda
 
       // @step And console output should confirm work unit creation
       expect(result).toContain('Created work unit');
-      expect(result).toContain('Big Picture Event Storming');
+      expect(result).toContain('Foundation Event Storm');
 
       // @step And console output should show command to view work unit details
       expect(result).toContain('fspec show-work-unit');

@@ -386,7 +386,7 @@ Then re-run: fspec discover-foundation --finalize`;
     // Delete draft file
     await unlink(draftPath);
 
-    // Auto-create Big Picture Event Storming work unit
+    // Auto-create Foundation Event Storm work unit
     let workUnitCreated = false;
     let workUnitId = '';
     try {
@@ -396,11 +396,11 @@ Then re-run: fspec discover-foundation --finalize`;
       // Use centralized createWorkUnit() function (BUG-078 fix)
       workUnitId = await createWorkUnit(
         'FOUND',
-        'Conduct Big Picture Event Storming for Foundation',
+        'Conduct Foundation Event Storm for Foundation',
         {
           cwd: workUnitCwd,
           type: 'task',
-          description: `Complete the foundation by capturing domain architecture through Big Picture Event Storming.
+          description: `Complete the foundation by capturing domain architecture through Foundation Event Storm.
 
 Use these commands to populate foundation.json eventStorm field:
 - fspec add-foundation-bounded-context <name>
@@ -414,7 +414,7 @@ Why this matters:
 - Provides foundation for architectural documentation
 - Supports EXMAP-004 tag discovery workflow
 
-See spec/CLAUDE.md "Big Picture Event Storming" section for detailed guidance.`,
+See spec/CLAUDE.md "Foundation Event Storm" section for detailed guidance.`,
         }
       );
 
@@ -695,7 +695,7 @@ export function registerDiscoverFoundationCommand(program: Command): void {
           if (result.workUnitCreated && result.workUnitId) {
             console.log(
               chalk.green(
-                `✓ Created work unit ${result.workUnitId}: Big Picture Event Storming`
+                `✓ Created work unit ${result.workUnitId}: Foundation Event Storm`
               )
             );
             console.log(

@@ -30,122 +30,6 @@
       ]
     },
     {
-      "name": "Cursor IDE agent receives \"think a lot\" guidance with emoji warning",
-      "testMappings": [
-        {
-          "file": "src/commands/__tests__/discover-foundation-multi-agent.test.ts",
-          "lines": "64-80",
-          "implMappings": [
-            {
-              "file": "src/commands/discover-foundation.ts",
-              "lines": [
-                435,
-                436,
-                437,
-                438,
-                439,
-                440,
-                441,
-                442,
-                443,
-                444,
-                445,
-                446,
-                447
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Aider CLI agent receives plain text \"think a lot\" guidance",
-      "testMappings": [
-        {
-          "file": "src/commands/__tests__/discover-foundation-multi-agent.test.ts",
-          "lines": "84-101",
-          "implMappings": [
-            {
-              "file": "src/commands/discover-foundation.ts",
-              "lines": [
-                435,
-                436,
-                437,
-                438,
-                439,
-                440,
-                441,
-                442,
-                443,
-                444,
-                445,
-                446,
-                447
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Unknown agent receives \"think a lot\" guidance without system-reminders",
-      "testMappings": [
-        {
-          "file": "src/commands/__tests__/discover-foundation-multi-agent.test.ts",
-          "lines": "104-118",
-          "implMappings": [
-            {
-              "file": "src/commands/discover-foundation.ts",
-              "lines": [
-                435,
-                436,
-                437,
-                438,
-                439,
-                440,
-                441,
-                442,
-                443,
-                444,
-                445,
-                446,
-                447
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Initial draft creation applies agent-aware guidance",
-      "testMappings": [
-        {
-          "file": "src/commands/__tests__/discover-foundation-multi-agent.test.ts",
-          "lines": "122-142",
-          "implMappings": [
-            {
-              "file": "src/commands/discover-foundation.ts",
-              "lines": [
-                435,
-                436,
-                437,
-                438,
-                439,
-                440,
-                441,
-                442,
-                443,
-                444,
-                445,
-                446,
-                447
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
       "name": "Project vision field guidance checks agent capabilities for ULTRATHINK",
       "testMappings": [
         {
@@ -187,9 +71,9 @@
     }
   ],
   "stats": {
-    "totalScenarios": 10,
-    "coveredScenarios": 6,
-    "coveragePercent": 100,
+    "totalScenarios": 6,
+    "coveredScenarios": 2,
+    "coveragePercent": 33,
     "testFiles": [
       "src/commands/__tests__/discover-foundation-multi-agent.test.ts"
     ],

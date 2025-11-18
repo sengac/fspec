@@ -9,14 +9,6 @@
       "testMappings": []
     },
     {
-      "name": "Display work unit with long description (exceeds 2 lines)",
-      "testMappings": []
-    },
-    {
-      "name": "Display work unit with exactly 2 lines of description",
-      "testMappings": []
-    },
-    {
       "name": "Display empty state when no work unit selected",
       "testMappings": []
     },
@@ -30,7 +22,7 @@
     }
   ],
   "stats": {
-    "totalScenarios": 7,
+    "totalScenarios": 5,
     "coveredScenarios": 0,
     "coveragePercent": 0,
     "testFiles": [],

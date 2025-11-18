@@ -353,77 +353,6 @@
       ]
     },
     {
-      "name": "Register resize listener on component mount",
-      "testMappings": [
-        {
-          "file": "src/tui/__tests__/BoardView-table-layout.test.tsx",
-          "lines": "254-279",
-          "implMappings": [
-            {
-              "file": "src/tui/hooks/useTerminalSize.ts",
-              "lines": [
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Cleanup resize listener on component unmount",
-      "testMappings": [
-        {
-          "file": "src/tui/__tests__/BoardView-table-layout.test.tsx",
-          "lines": "281-297",
-          "implMappings": [
-            {
-              "file": "src/tui/hooks/useTerminalSize.ts",
-              "lines": [
-                61,
-                62,
-                63,
-                64,
-                65
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Reactive column width recalculation on terminal resize",
-      "testMappings": [
-        {
-          "file": "src/tui/__tests__/BoardView-table-layout.test.tsx",
-          "lines": "299-321",
-          "implMappings": [
-            {
-              "file": "src/tui/components/UnifiedBoardLayout.tsx",
-              "lines": [
-                79,
-                80,
-                81,
-                82,
-                83
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
       "name": "Table borders stay aligned after terminal resize",
       "testMappings": [
         {
@@ -530,9 +459,9 @@
     }
   ],
   "stats": {
-    "totalScenarios": 15,
-    "coveredScenarios": 13,
-    "coveragePercent": 100,
+    "totalScenarios": 12,
+    "coveredScenarios": 10,
+    "coveragePercent": 83,
     "testFiles": [
       "src/tui/__tests__/BoardView-table-layout.test.tsx"
     ],

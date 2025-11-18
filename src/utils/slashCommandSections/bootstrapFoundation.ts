@@ -47,6 +47,29 @@ fspec discover-foundation --finalize
    - If valid: creates foundation.json, deletes draft, auto-generates FOUNDATION.md
    - If invalid: shows validation errors with exact field paths, prompts AI to fix and re-run
 
+### Foundation Discovery Iteration
+
+**Iteration fully supported** - update-foundation can re-update any field anytime with no restrictions:
+
+**You CAN go back and fix mistakes:**
+- Re-run \`fspec update-foundation\` on any field anytime
+- No restrictions on updating already-filled fields
+- Draft persists through multiple edits
+
+**Review draft before finalization:**
+- Run: \`cat spec/foundation.json.draft\` (or use file reader)
+- No dedicated \`show-foundation-draft\` command yet
+
+**Validation failure recovery:**
+- If \`--finalize\` fails, draft persists (not deleted)
+- Fix the errors using update-foundation commands
+- Re-run \`--finalize\` when ready
+- Draft only deleted on successful finalization
+
+**Manual edit protection:**
+- Direct file edits are detected and reverted (CLI-only enforcement)
+- Always use CLI commands
+
 **Why this is mandatory:**
 
 - fspec commands check for foundation.json existence

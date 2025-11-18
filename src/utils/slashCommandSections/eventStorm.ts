@@ -1,7 +1,32 @@
 export function getEventStormSection(): string {
-  return `## Step 4: Event Storm - Domain Discovery BEFORE Example Mapping
+  return `## Step 4: Feature Event Storm (BEFORE Example Mapping)
 
-**WHEN TO USE EVENT STORM**: STOP and assess domain complexity before jumping to Example Mapping.
+**WHEN TO USE FEATURE EVENT STORM**: STOP and assess domain complexity before jumping to Example Mapping.
+
+### Research-First Workflow
+
+**CRITICAL**: Before deciding whether to use Feature Event Storm, FIRST research the codebase using AST analysis.
+
+\`\`\`bash
+# Step 1: Research relevant code using AST tool
+fspec research --tool=ast --files "src/auth/*.ts"
+
+# Step 2: Analyze findings to understand domain
+# - What domain events exist in the code?
+# - What commands trigger those events?
+# - What business rules/policies are present?
+
+# Step 3: If uncertain after research, ASK USER
+# Share your findings and let the user decide:
+# "I found 3 domain events: UserRegistered, LoginAttempted, SessionExpired.
+#  Should we do Feature Event Storm to map the full authentication flow?"
+
+# Step 4: Proceed with chosen approach
+# - Feature Event Storm (if complex/unfamiliar)
+# - Example Mapping (if simple/clear)
+\`\`\`
+
+**Decision is SUBJECTIVE and COLLABORATIVE** - emphasize no guessing, always ask if unsure. Research builds familiarity before judgment.
 
 ### Self-Assessment Questions
 
@@ -20,9 +45,9 @@ Ask yourself these questions BEFORE deciding to use Event Storm:
    - Complex business workflows?
    - Uncertain about event flow or timing?
 
-### Decision: Event Storm vs Skip to Example Mapping
+### Decision: Feature Event Storm vs Skip to Example Mapping
 
-**RUN EVENT STORM FIRST** if:
+**RUN FEATURE EVENT STORM FIRST** if:
 - ❌ You answered "no" to any self-assessment question
 - ❌ This is a complex domain with many entities and business rules
 - ❌ Multiple teams or bounded contexts involved

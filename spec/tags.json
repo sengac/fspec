@@ -186,6 +186,10 @@
           "description": "Kanban board visualization and layout features"
         },
         {
+          "name": "@bootstrap",
+          "description": "Bootstrap documentation and initialization workflows"
+        },
+        {
           "name": "@bug-reporting",
           "description": "Bug reporting and issue submission features"
         },
@@ -308,6 +312,10 @@
         {
           "name": "@documentation",
           "description": "Documentation Display"
+        },
+        {
+          "name": "@documentation-management",
+          "description": "Documentation generation, updates, and maintenance"
         },
         {
           "name": "@epics",
@@ -1626,7 +1634,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-11-17T23:37:53.265Z",
+    "lastUpdated": "2025-11-18T02:38:59.960Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

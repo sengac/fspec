@@ -64,6 +64,7 @@ Tags that categorize features by functional area.
 | `@board` | Kanban board operations |
 | `@board-view` | Kanban board visualization |
 | `@board-visualization` | Kanban board visualization and layout features |
+| `@bootstrap` | Bootstrap documentation and initialization workflows |
 | `@bug-reporting` | Bug reporting and issue submission features |
 | `@bulk` | Bulk operations |
 | `@bulk-add` | Bulk add operations |
@@ -95,6 +96,7 @@ Tags that categorize features by functional area.
 | `@diff-viewer` | Diff visualization and comparison features |
 | `@discovery-command` | Example Mapping discovery commands |
 | `@documentation` | Documentation Display |
+| `@documentation-management` | Documentation generation, updates, and maintenance |
 | `@epics` | Epic management and high-level work grouping |
 | `@estimation` | Estimation operations |
 | `@event-storm` | Event Storming functionality for domain modeling |
@@ -648,7 +650,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-11-17T23:37:53.265Z_
+_Last updated: 2025-11-18T02:38:59.960Z_
 
 **Update Command**: `fspec tag-stats`
 
