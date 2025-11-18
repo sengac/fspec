@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-18T04:52:47.087Z"
+    "lastUpdated": "2025-11-18T10:04:39.478Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -51141,6 +51141,274 @@
       "nextQuestionId": 0,
       "nextNoteId": 0,
       "updated": "2025-11-18T04:28:51.709Z"
+    },
+    "BUG-086": {
+      "id": "BUG-086",
+      "title": "Event Storm commands exit with code 1 on success",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-11-18T05:24:38.537Z",
+      "updatedAt": "2025-11-18T06:59:30.693Z",
+      "description": "Commands like add-domain-event exit with code 1 even when successfully completing operations, breaking command chaining and CI/CD pipelines",
+      "children": [],
+      "attachments": [
+        "spec/attachments/BUG-086/fspec-exit-code-bug-findings.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-18T06:45:03.334Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-18T06:47:14.898Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-18T06:49:37.356Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-18T06:54:43.784Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-18T06:59:30.693Z"
+        }
+      ],
+      "userStory": {
+        "role": "AI agent or developer chaining fspec Event Storm commands",
+        "action": "receive correct exit codes from Event Storm commands",
+        "benefit": "command chaining with && works correctly and CI/CD pipelines don't fail"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Event Storm commands must return exit code 0 on success",
+          "deleted": false,
+          "createdAt": "2025-11-18T06:45:24.161Z"
+        },
+        {
+          "id": 1,
+          "text": "Event Storm commands must return exit code 1 only on actual errors",
+          "deleted": false,
+          "createdAt": "2025-11-18T06:45:29.434Z"
+        },
+        {
+          "id": 2,
+          "text": "Command chaining with && must work correctly when all commands succeed",
+          "deleted": false,
+          "createdAt": "2025-11-18T06:45:34.108Z"
+        }
+      ],
+      "nextRuleId": 3,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Running 'fspec add-domain-event UI-001 TestEvent' successfully adds event and returns exit code 0",
+          "deleted": false,
+          "createdAt": "2025-11-18T06:45:39.814Z"
+        },
+        {
+          "id": 1,
+          "text": "Running 'fspec add-command UI-001 TestCommand' successfully adds command and returns exit code 0",
+          "deleted": false,
+          "createdAt": "2025-11-18T06:45:45.023Z"
+        },
+        {
+          "id": 2,
+          "text": "Running 'fspec add-policy UI-001 \"Send email\" --when UserRegistered --then SendEmail' successfully adds policy and returns exit code 0",
+          "deleted": false,
+          "createdAt": "2025-11-18T06:45:50.380Z"
+        },
+        {
+          "id": 3,
+          "text": "Running 'fspec add-hotspot UI-001 \"Email timeout\" --concern \"Unclear timeout duration\"' successfully adds hotspot and returns exit code 0",
+          "deleted": false,
+          "createdAt": "2025-11-18T06:45:55.023Z"
+        },
+        {
+          "id": 4,
+          "text": "Chaining commands: 'fspec add-domain-event UI-001 Event1 && fspec add-domain-event UI-001 Event2' should execute both commands when both succeed",
+          "deleted": false,
+          "createdAt": "2025-11-18T06:46:00.112Z"
+        },
+        {
+          "id": 5,
+          "text": "Running 'fspec add-domain-event NONEXISTENT-001 Event' with invalid work unit should return exit code 1",
+          "deleted": false,
+          "createdAt": "2025-11-18T06:46:05.388Z"
+        }
+      ],
+      "nextExampleId": 6,
+      "questions": [],
+      "architectureNotes": [],
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-18T06:59:30.693Z"
+    },
+    "BUG-087": {
+      "id": "BUG-087",
+      "title": "Event Storm commands allow duplicate entries without validation",
+      "type": "bug",
+      "status": "backlog",
+      "createdAt": "2025-11-18T05:36:11.191Z",
+      "updatedAt": "2025-11-18T05:36:15.985Z",
+      "description": "Commands like add-domain-event create duplicate entries when the same text is added multiple times, causing data integrity issues and confusion",
+      "children": [],
+      "attachments": [
+        "spec/attachments/BUG-087/fspec-bug-duplicate-events.md"
+      ]
+    },
+    "BUG-088": {
+      "id": "BUG-088",
+      "title": "Malformed question text when transforming Event Storm hotspots to Example Mapping",
+      "type": "bug",
+      "status": "backlog",
+      "createdAt": "2025-11-18T05:37:18.457Z",
+      "updatedAt": "2025-11-18T05:37:24.188Z",
+      "description": "Questions generated from hotspots have broken grammar with redundant text like 'What should when should... be?' instead of using the concern text directly",
+      "children": [],
+      "attachments": [
+        "spec/attachments/BUG-088/fspec-bug-malformed-questions.md"
+      ]
+    },
+    "BUG-089": {
+      "id": "BUG-089",
+      "title": "Generic and unhelpful examples auto-generated from Event Storm domain events",
+      "type": "bug",
+      "status": "backlog",
+      "createdAt": "2025-11-18T05:38:39.348Z",
+      "updatedAt": "2025-11-18T05:38:44.776Z",
+      "description": "Examples generated from domain events follow template 'User [event] and is logged in' with no concrete data, context, or variation, defeating the purpose of Example Mapping",
+      "children": [],
+      "attachments": [
+        "spec/attachments/BUG-089/fspec-bug-generic-examples.md"
+      ]
+    },
+    "BUG-090": {
+      "id": "BUG-090",
+      "title": "Answered questions display as 'true' instead of actual answer text",
+      "type": "bug",
+      "status": "backlog",
+      "createdAt": "2025-11-18T05:39:59.451Z",
+      "updatedAt": "2025-11-18T05:40:04.958Z",
+      "description": "When answering Example Mapping questions, the answer text is lost and replaced with boolean 'true' in feature files and work unit output, losing critical decision context",
+      "children": [],
+      "attachments": [
+        "spec/attachments/BUG-090/fspec-bug-answers-as-true.md"
+      ]
+    },
+    "VAL-005": {
+      "id": "VAL-005",
+      "title": "Multiple test files mapped to single feature file causes validation errors",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-11-18T08:50:01.873Z",
+      "updatedAt": "2025-11-18T10:04:39.505Z",
+      "description": "When multiple test files are linked to a single feature file via coverage mappings, the step validation logic validates EVERY test file against ALL scenarios in the feature, rather than only validating each test file against its linked scenarios. This causes false validation failures. Design intent: 1 feature file should map to 1 test file (1:1 mapping). AI agents should be reminded to split large feature files into multiple smaller feature files, each with its own test file.",
+      "children": [],
+      "attachments": [
+        "spec/attachments/VAL-005/validation-bug-analysis.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-18T09:43:39.472Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-18T09:46:26.451Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-18T09:49:32.474Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-18T09:53:35.195Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-18T09:56:32.681Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-18T09:58:04.862Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-18T09:59:40.803Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-18T10:04:39.506Z"
+        }
+      ],
+      "userStory": {
+        "role": "AI agent moving work unit through workflow",
+        "action": "enforce 1 feature file = 1 test file",
+        "benefit": "I maintain clean 1:1 mapping and don't allow multiple test files per feature"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "When multiple test files are linked to one feature, emit system-reminder suggesting to split the feature file",
+          "deleted": false,
+          "createdAt": "2025-11-18T09:44:39.799Z"
+        },
+        {
+          "id": 1,
+          "text": "Design intent is 1 feature file = 1 test file for simplicity and maintainability",
+          "deleted": false,
+          "createdAt": "2025-11-18T09:44:45.037Z"
+        },
+        {
+          "id": 2,
+          "text": "ENFORCE: 1 feature file = 1 test file ONLY",
+          "deleted": false,
+          "createdAt": "2025-11-18T09:54:28.778Z"
+        },
+        {
+          "id": 3,
+          "text": "If workUnitTestFiles.size > 1, throw error and BLOCK transition",
+          "deleted": false,
+          "createdAt": "2025-11-18T09:54:34.436Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Coverage file shows 5 test files linked to one feature. System emits reminder: 'MULTIPLE TEST FILES DETECTED... RECOMMENDED: Split this feature file into multiple smaller features.'",
+          "deleted": false,
+          "createdAt": "2025-11-18T09:45:01.140Z"
+        },
+        {
+          "id": 1,
+          "text": "Current bug: PerplexityResearch.test.ts is validated against 'Navigate between layouts' scenario even though coverage links that scenario to useKeyboardNavigation.test.ts. After fix: PerplexityResearch.test.ts only validated against scenarios it's actually linked to",
+          "deleted": false,
+          "createdAt": "2025-11-18T09:45:07.697Z"
+        },
+        {
+          "id": 2,
+          "text": "Coverage has 1 test file linked to feature -> validation proceeds normally",
+          "deleted": false,
+          "createdAt": "2025-11-18T09:54:40.939Z"
+        },
+        {
+          "id": 3,
+          "text": "Coverage has 2 test files linked to feature -> throw error: 'Multiple test files detected. Split feature file.'",
+          "deleted": false,
+          "createdAt": "2025-11-18T09:54:48.725Z"
+        }
+      ],
+      "nextExampleId": 4,
+      "questions": [],
+      "architectureNotes": [],
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-18T10:04:39.505Z"
     }
   },
   "states": {
@@ -51195,7 +51463,11 @@
       "INT-004",
       "DOC-012",
       "DOC-013",
-      "DOC-014"
+      "DOC-014",
+      "BUG-087",
+      "BUG-088",
+      "BUG-089",
+      "BUG-090"
     ],
     "specifying": [
       "LANG-001",
@@ -51208,6 +51480,8 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "VAL-005",
+      "BUG-086",
       "BUG-084",
       "BUG-085",
       "DOC-016",
@@ -51615,7 +51889,7 @@
   "prefixCounters": {
     "CLI": 14,
     "HELP": 6,
-    "BUG": 85,
+    "BUG": 90,
     "DISC": 2,
     "COV": 55,
     "TUI": 30,
@@ -51640,7 +51914,7 @@
     "HOOK": 12,
     "REVIEW": 1,
     "DEP": 3,
-    "VAL": 4,
+    "VAL": 5,
     "PERF": 1,
     "INIT": 16,
     "EXMAP": 16,
