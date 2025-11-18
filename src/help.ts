@@ -1060,6 +1060,13 @@ function displayDiscoveryHelp(): void {
   console.log('');
 
   console.log(chalk.bold('EVENT STORM'));
+  console.log('  ' + chalk.cyan('fspec discover-event-storm <work-unit-id>'));
+  console.log(
+    '    Description: Start Event Storm discovery session for domain modeling'
+  );
+  console.log('    Examples:');
+  console.log('      fspec discover-event-storm AUTH-001');
+  console.log('');
   console.log(
     '  ' + chalk.cyan('fspec add-domain-event <work-unit-id> <text>')
   );
@@ -1088,6 +1095,39 @@ function displayDiscoveryHelp(): void {
     '      fspec add-hotspot AUTH-001 "Password Reset Flow" --concern "Unclear timeout logic"'
   );
   console.log('');
+  console.log('  ' + chalk.cyan('fspec add-aggregate <work-unit-id> <text>'));
+  console.log(
+    '    Description: Add aggregate (domain entity) to Event Storm section'
+  );
+  console.log('    Examples:');
+  console.log('      fspec add-aggregate CHECKOUT-001 "Order"');
+  console.log(
+    '      fspec add-aggregate CHECKOUT-001 "ShoppingCart" --responsibilities "Add items, Calculate total"'
+  );
+  console.log('');
+  console.log(
+    '  ' + chalk.cyan('fspec add-bounded-context <work-unit-id> <text>')
+  );
+  console.log(
+    '    Description: Add bounded context (strategic boundary) to Event Storm section'
+  );
+  console.log('    Examples:');
+  console.log(
+    '      fspec add-bounded-context CHECKOUT-001 "Order Management"'
+  );
+  console.log('');
+  console.log(
+    '  ' + chalk.cyan('fspec add-external-system <work-unit-id> <text>')
+  );
+  console.log(
+    '    Description: Add external system/integration to Event Storm section'
+  );
+  console.log('    Examples:');
+  console.log('      fspec add-external-system CHECKOUT-001 "Payment Gateway"');
+  console.log(
+    '      fspec add-external-system AUTH-001 "Stripe API" --type REST_API'
+  );
+  console.log('');
   console.log('  ' + chalk.cyan('fspec show-event-storm <work-unit-id>'));
   console.log('    Description: Display Event Storm artifacts as JSON');
   console.log('    Examples:');
@@ -1098,6 +1138,14 @@ function displayDiscoveryHelp(): void {
   console.log('    Examples:');
   console.log('      fspec show-foundation-event-storm');
   console.log('      fspec show-foundation-event-storm --type bounded-context');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec add-foundation-bounded-context <text>'));
+  console.log(
+    '    Description: Add bounded context to foundation Big Picture Event Storm'
+  );
+  console.log('    Examples:');
+  console.log('      fspec add-foundation-bounded-context "Work Management"');
+  console.log('      fspec add-foundation-bounded-context "Specification"');
   console.log('');
   console.log(
     '  ' +
