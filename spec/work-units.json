@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-18T02:54:15.621Z"
+    "lastUpdated": "2025-11-18T04:28:51.682Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -50967,6 +50967,106 @@
       ],
       "nextNoteId": 1,
       "updated": "2025-11-18T02:54:15.647Z"
+    },
+    "BUG-084": {
+      "id": "BUG-084",
+      "title": "discover-foundation --finalize does not auto-create Foundation Event Storm work unit",
+      "type": "bug",
+      "status": "backlog",
+      "createdAt": "2025-11-18T03:42:55.104Z",
+      "updatedAt": "2025-11-18T03:43:37.159Z",
+      "description": "After successful foundation discovery finalization, the system should automatically create a work unit for Foundation Event Storm, but it doesn't",
+      "children": [],
+      "attachments": [
+        "spec/attachments/BUG-084/bug-report.md"
+      ]
+    },
+    "BUG-085": {
+      "id": "BUG-085",
+      "title": "Bounded Context Map UI duplicates each bounded context name in visualization",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-11-18T04:12:35.558Z",
+      "updatedAt": "2025-11-18T04:28:51.709Z",
+      "description": "The bounded context map visualization renders each bounded context name twice, even though the foundation.json data contains only single entries",
+      "children": [],
+      "attachments": [
+        "spec/attachments/BUG-085/bug-report.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-18T04:21:11.847Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-18T04:23:04.702Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-18T04:24:33.554Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-18T04:25:20.896Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-18T04:28:51.709Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using fspec",
+        "action": "view bounded context map visualization",
+        "benefit": "I see each context name displayed exactly once without duplication"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Each bounded context must appear exactly once in the Mermaid diagram node label",
+          "deleted": false,
+          "createdAt": "2025-11-18T04:21:24.388Z"
+        },
+        {
+          "id": 1,
+          "text": "Mermaid node labels should display context name on first line and brief description on second line using <br/> tag",
+          "deleted": false,
+          "createdAt": "2025-11-18T04:21:30.842Z"
+        },
+        {
+          "id": 2,
+          "text": "For bounded contexts without hardcoded descriptions, display only the context name without duplication",
+          "deleted": false,
+          "createdAt": "2025-11-18T04:21:36.362Z"
+        }
+      ],
+      "nextRuleId": 3,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Bounded context 'Work Management' generates node label 'Work Management<br/>Stories, Epics, Dependencies' (two lines: name + description)",
+          "deleted": false,
+          "createdAt": "2025-11-18T04:21:42.403Z"
+        },
+        {
+          "id": 1,
+          "text": "Bounded context 'Conversation Management' currently generates 'Conversation Management<br/>Conversation Management' (BUG: duplicated), should generate 'Conversation Management' (single line only)",
+          "deleted": false,
+          "createdAt": "2025-11-18T04:21:48.170Z"
+        },
+        {
+          "id": 2,
+          "text": "After fix, 'Mind Mapping' context generates node label 'Mind Mapping' (single line, no <br/> tag)",
+          "deleted": false,
+          "createdAt": "2025-11-18T04:21:55.712Z"
+        }
+      ],
+      "nextExampleId": 3,
+      "questions": [],
+      "architectureNotes": [],
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-18T04:28:51.709Z"
     }
   },
   "states": {
@@ -51021,7 +51121,8 @@
       "INT-004",
       "DOC-012",
       "DOC-013",
-      "DOC-014"
+      "DOC-014",
+      "BUG-084"
     ],
     "specifying": [
       "LANG-001",
@@ -51034,6 +51135,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "BUG-085",
       "DOC-016",
       "COV-055",
       "BUG-083",
@@ -51439,7 +51541,7 @@
   "prefixCounters": {
     "CLI": 14,
     "HELP": 6,
-    "BUG": 83,
+    "BUG": 85,
     "DISC": 2,
     "COV": 55,
     "TUI": 30,

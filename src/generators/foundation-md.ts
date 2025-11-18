@@ -47,10 +47,14 @@ function generateBoundedContextMermaid(
         description = 'Coverage, Test Mappings';
         break;
       default:
-        description = context.text;
+        description = '';
     }
 
-    lines.push(`  ${nodeId}["${context.text}<br/>${description}"]`);
+    // Only add <br/> and description if description exists
+    const label = description
+      ? `${context.text}<br/>${description}`
+      : context.text;
+    lines.push(`  ${nodeId}["${label}"]`);
   }
 
   lines.push('');
