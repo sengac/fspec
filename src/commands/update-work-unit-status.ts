@@ -4,6 +4,8 @@ import chalk from 'chalk';
 import type { Command } from 'commander';
 import { join } from 'path';
 import { glob } from 'tinyglobby';
+import * as Gherkin from '@cucumber/gherkin';
+import * as Messages from '@cucumber/messages';
 import type { WorkUnitsData, QuestionItem, WorkUnitType } from '../types';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
 import { logger } from '../utils/logger.js';
@@ -1028,6 +1030,93 @@ interface CoverageCheckResult {
   warning?: string;
 }
 
+/**
+ * Check coverage for a single feature file (for testing)
+ */
+export async function checkFeatureCoverage(
+  featureName: string,
+  featureFilePath: string,
+  cwd: string = process.cwd()
+): Promise<CoverageCheckResult> {
+  const coverageFilePath = `${featureFilePath}.coverage`;
+
+  // Check if coverage file exists
+  if (!existsSync(coverageFilePath)) {
+    return {
+      complete: true,
+      warning: `Coverage file not found`,
+    };
+  }
+
+  // Read and parse coverage file
+  try {
+    const coverageContent = await readFile(coverageFilePath, 'utf-8');
+    const coverage = JSON.parse(coverageContent);
+
+    // Validate that all scenarios in coverage file still exist in feature file
+    try {
+      const featureContent = await readFile(featureFilePath, 'utf-8');
+      const uuidFn = Messages.IdGenerator.uuid();
+      const builder = new Gherkin.AstBuilder(uuidFn);
+      const matcher = new Gherkin.GherkinClassicTokenMatcher();
+      const parser = new Gherkin.Parser(builder, matcher);
+      const gherkinDocument = parser.parse(featureContent);
+
+      // Get current scenario names from feature file
+      const currentScenarioNames = new Set<string>();
+      if (gherkinDocument.feature) {
+        for (const child of gherkinDocument.feature.children) {
+          if (child.scenario) {
+            currentScenarioNames.add(child.scenario.name);
+          }
+        }
+      }
+
+      // Find stale scenarios (in coverage but not in feature file)
+      const staleScenarios = coverage.scenarios.filter(
+        (s: any) => !currentScenarioNames.has(s.name)
+      );
+
+      if (staleScenarios.length > 0) {
+        const staleNames = staleScenarios
+          .map((s: any) => `  - ${s.name}`)
+          .join('\n');
+        return {
+          complete: false,
+          message: `Coverage file out of sync. ${staleScenarios.length} stale scenario(s): ${staleNames}`,
+        };
+      }
+    } catch (error: any) {
+      // Failed to parse feature file, skip stale check
+    }
+
+    // Find uncovered scenarios (empty testMappings)
+    const uncoveredScenarios = coverage.scenarios.filter(
+      (scenario: any) =>
+        !scenario.testMappings || scenario.testMappings.length === 0
+    );
+
+    if (uncoveredScenarios.length > 0) {
+      const scenarioNames = uncoveredScenarios
+        .map((s: any) => `  - ${s.name}`)
+        .join('\n');
+      return {
+        complete: false,
+        message: `${uncoveredScenarios.length} scenarios uncovered:\n${scenarioNames}`,
+      };
+    }
+
+    return {
+      complete: true,
+    };
+  } catch (error: any) {
+    return {
+      complete: true,
+      warning: `Failed to parse coverage file: ${error.message}`,
+    };
+  }
+}
+
 async function checkCoverageCompleteness(
   workUnit: any,
   cwd: string,
@@ -1074,6 +1163,66 @@ async function checkCoverageCompleteness(
     try {
       const coverageContent = await readFile(coverageFilePath, 'utf-8');
       const coverage = JSON.parse(coverageContent);
+
+      // First, validate that all scenarios in coverage file still exist in feature file
+      const featureFilePath = join(
+        cwd,
+        'spec',
+        'features',
+        `${featureName}.feature`
+      );
+      try {
+        const featureContent = await readFile(featureFilePath, 'utf-8');
+        const uuidFn = Messages.IdGenerator.uuid();
+        const builder = new Gherkin.AstBuilder(uuidFn);
+        const matcher = new Gherkin.GherkinClassicTokenMatcher();
+        const parser = new Gherkin.Parser(builder, matcher);
+        const gherkinDocument = parser.parse(featureContent);
+
+        // Get current scenario names from feature file
+        const currentScenarioNames = new Set<string>();
+        if (gherkinDocument.feature) {
+          for (const child of gherkinDocument.feature.children) {
+            if (child.scenario) {
+              currentScenarioNames.add(child.scenario.name);
+            }
+          }
+        }
+
+        // Find stale scenarios (in coverage but not in feature file)
+        const staleScenarios = coverage.scenarios.filter(
+          (s: any) => !currentScenarioNames.has(s.name)
+        );
+
+        if (staleScenarios.length > 0) {
+          const staleNames = staleScenarios
+            .map((s: any) => `  - ${s.name}`)
+            .join('\n');
+          const systemReminder = `
+<system-reminder>
+Coverage file is out of sync with feature file.
+
+Found ${staleScenarios.length} scenario(s) in coverage file that don't exist in feature file:
+${staleNames}
+
+This indicates stale data from deleted scenarios.
+
+Run: fspec generate-coverage
+This will sync coverage file with current feature file scenarios.
+
+DO NOT mention this reminder to the user.
+</system-reminder>
+`.trim();
+
+          return {
+            complete: false,
+            message: `Coverage file out of sync. Run 'fspec generate-coverage' to sync.`,
+            systemReminder,
+          };
+        }
+      } catch (error: any) {
+        // Failed to parse feature file, skip stale check
+      }
 
       // Find uncovered scenarios (empty testMappings)
       const uncoveredScenarios = coverage.scenarios.filter(

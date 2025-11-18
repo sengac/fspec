@@ -100,11 +100,19 @@ export async function createCoverageFile(featureFilePath: string): Promise<{
  * Update existing coverage file with new scenarios from feature file
  * Returns true if scenarios were added, false if no changes needed
  */
-async function updateCoverageFile(
+export async function updateCoverageFile(
   featureFilePath: string,
-  coverageFilePath: string,
-  existingCoverage: CoverageFile
+  coverageFilePath?: string,
+  existingCoverage?: CoverageFile
 ): Promise<boolean> {
+  // If called with just featureFilePath (for testing), load coverage file
+  if (!coverageFilePath) {
+    coverageFilePath = `${featureFilePath}.coverage`;
+  }
+  if (!existingCoverage) {
+    const coverageContent = await readFile(coverageFilePath, 'utf-8');
+    existingCoverage = JSON.parse(coverageContent);
+  }
   // Read and parse the feature file to get current scenarios
   const featureContent = await readFile(featureFilePath, 'utf-8');
 
@@ -134,6 +142,7 @@ async function updateCoverageFile(
   const existingScenarioNames = new Set(
     existingCoverage.scenarios.map(s => s.name)
   );
+  const currentScenarioNamesSet = new Set(currentScenarioNames);
 
   // Find new scenarios (in feature file but not in coverage file)
   const newScenarios: CoverageScenario[] = [];
@@ -146,17 +155,37 @@ async function updateCoverageFile(
     }
   }
 
-  // If no new scenarios, return false (no update needed)
-  if (newScenarios.length === 0) {
+  // Find deleted scenarios (in coverage file but not in feature file)
+  const keptScenarios = existingCoverage.scenarios.filter(s =>
+    currentScenarioNamesSet.has(s.name)
+  );
+
+  // If no new scenarios and no deleted scenarios, return false (no update needed)
+  if (
+    newScenarios.length === 0 &&
+    keptScenarios.length === existingCoverage.scenarios.length
+  ) {
     return false;
   }
 
-  // Add new scenarios to coverage file
+  // Rebuild scenarios array: kept scenarios + new scenarios
+  const updatedScenarios = [...keptScenarios, ...newScenarios];
+
+  // Recalculate stats
+  const coveredScenarios = updatedScenarios.filter(
+    s => s.testMappings && s.testMappings.length > 0
+  ).length;
+
   const updatedCoverage: CoverageFile = {
-    scenarios: [...existingCoverage.scenarios, ...newScenarios],
+    scenarios: updatedScenarios,
     stats: {
       ...existingCoverage.stats,
-      totalScenarios: existingCoverage.scenarios.length + newScenarios.length,
+      totalScenarios: updatedScenarios.length,
+      coveredScenarios,
+      coveragePercent:
+        updatedScenarios.length > 0
+          ? Math.round((coveredScenarios / updatedScenarios.length) * 100)
+          : 0,
     },
   };
 

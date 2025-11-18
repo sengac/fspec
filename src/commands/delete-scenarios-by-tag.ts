@@ -214,6 +214,45 @@ export async function deleteScenariosByTag(
       // Write the modified content
       await writeFile(filePath, newContent, 'utf-8');
       filesModified++;
+
+      // Update coverage file to remove deleted scenarios
+      const coverageFilePath = `${filePath}.coverage`;
+      try {
+        const coverageContent = await readFile(coverageFilePath, 'utf-8');
+        const coverage = JSON.parse(coverageContent);
+
+        // Get deleted scenario names for this file
+        const deletedNames = new Set(scenarios.map(s => s.name));
+
+        // Remove deleted scenarios from coverage
+        coverage.scenarios = coverage.scenarios.filter(
+          (s: any) => !deletedNames.has(s.name)
+        );
+
+        // Recalculate stats
+        const coveredScenarios = coverage.scenarios.filter(
+          (s: any) => s.testMappings && s.testMappings.length > 0
+        ).length;
+
+        coverage.stats = {
+          ...coverage.stats,
+          totalScenarios: coverage.scenarios.length,
+          coveredScenarios,
+          coveragePercent:
+            coverage.scenarios.length > 0
+              ? Math.round((coveredScenarios / coverage.scenarios.length) * 100)
+              : 0,
+        };
+
+        // Write updated coverage
+        await writeFile(
+          coverageFilePath,
+          JSON.stringify(coverage, null, 2),
+          'utf-8'
+        );
+      } catch (error: any) {
+        // Coverage file doesn't exist or invalid - skip cleanup but continue
+      }
     }
 
     return {

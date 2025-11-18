@@ -1,0 +1,275 @@
+{
+  "scenarios": [
+    {
+      "name": "Delete scenario removes coverage entry",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/coverage-file-synchronization.test.ts",
+          "lines": "27-87",
+          "implMappings": [
+            {
+              "file": "src/commands/delete-scenario.ts",
+              "lines": [
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Bulk delete scenarios by tag removes coverage entries",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/coverage-file-synchronization.test.ts",
+          "lines": "89-166",
+          "implMappings": [
+            {
+              "file": "src/commands/delete-scenarios-by-tag.ts",
+              "lines": [
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Coverage validation detects stale scenarios",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/coverage-file-synchronization.test.ts",
+          "lines": "168-217",
+          "implMappings": [
+            {
+              "file": "src/commands/update-work-unit-status.ts",
+              "lines": [
+                1078,
+                1079,
+                1080,
+                1081,
+                1082,
+                1083,
+                1084,
+                1085,
+                1086,
+                1087,
+                1088,
+                1089
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Generate coverage syncs deleted scenarios",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/coverage-file-synchronization.test.ts",
+          "lines": "219-270",
+          "implMappings": [
+            {
+              "file": "src/utils/coverage-file.ts",
+              "lines": [
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Deleted scenario no longer causes uncovered error",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/coverage-file-synchronization.test.ts",
+          "lines": "272-311",
+          "implMappings": [
+            {
+              "file": "src/commands/update-work-unit-status.ts",
+              "lines": [
+                1078,
+                1079,
+                1080,
+                1081,
+                1082,
+                1083,
+                1084,
+                1085,
+                1086,
+                1087,
+                1088,
+                1089
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Rename scenario preserves test mappings",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/coverage-file-synchronization.test.ts",
+          "lines": "313-381",
+          "implMappings": [
+            {
+              "file": "src/commands/update-scenario.ts",
+              "lines": [
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/utils/__tests__/coverage-file-synchronization.test.ts"
+    ],
+    "implFiles": [
+      "src/commands/delete-scenario.ts",
+      "src/commands/delete-scenarios-by-tag.ts",
+      "src/commands/update-work-unit-status.ts",
+      "src/utils/coverage-file.ts",
+      "src/commands/update-scenario.ts"
+    ],
+    "totalLinesCovered": 509
+  }
+}
