@@ -56,8 +56,10 @@ const config: CommandHelpConfig = {
   notes: [
     'Coverage files are automatically created by fspec create-feature for new features',
     'This command creates new coverage files AND updates existing ones with missing scenarios',
+    'Automatically removes stale scenarios (in coverage but not in feature file)',
     'Existing test mappings are preserved when updating coverage files',
     'New scenarios are added with empty testMappings arrays',
+    'Coverage statistics are recalculated after adding/removing scenarios',
     'Safe to run anytime - idempotent and preserves existing data',
     'Use --dry-run to preview before making changes',
     'Returns status: created, updated, skipped, or recreated (if invalid JSON)',
