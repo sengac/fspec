@@ -26,12 +26,17 @@ const config: CommandHelpConfig = {
     {
       command:
         'fspec delete-scenario spec/features/login.feature "Deprecated scenario"',
-      description: 'Delete scenario',
-      output: '✓ Deleted scenario "Deprecated scenario"',
+      description: 'Delete scenario and update coverage file',
+      output:
+        '✓ Deleted scenario "Deprecated scenario" from login.feature\n  Updated coverage file',
     },
   ],
   relatedCommands: ['add-scenario', 'delete-scenarios'],
-  notes: ['Scenario name must match exactly (case-sensitive)'],
+  notes: [
+    'Scenario name must match exactly (case-sensitive)',
+    'Automatically removes scenario from .feature.coverage file if it exists',
+    'Coverage statistics (totalScenarios, coveredScenarios, coveragePercent) are recalculated',
+  ],
 };
 
 export default config;

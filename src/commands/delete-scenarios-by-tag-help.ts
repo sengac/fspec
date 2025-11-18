@@ -106,7 +106,8 @@ const config: CommandHelpConfig = {
     'If validation fails, file is NOT modified (rollback)',
     'Excessive blank lines (4+) are cleaned up after deletion',
     'No undo operation - commit work before deleting',
-    'Coverage mappings in .feature.coverage are NOT automatically updated',
+    'Coverage mappings in .feature.coverage files are automatically updated',
+    'Deleted scenarios are removed from coverage files and statistics recalculated',
     'Consider using @deprecated tag for soft deletion instead of immediate removal',
   ],
 };

@@ -25,11 +25,16 @@ const config: CommandHelpConfig = {
     {
       command:
         'fspec update-scenario spec/features/login.feature "Old name" "New name"',
-      description: 'Rename scenario',
+      description: 'Rename scenario and preserve coverage mappings',
       output: '✓ Updated scenario name',
     },
   ],
   relatedCommands: ['add-scenario', 'delete-scenario'],
+  notes: [
+    'Automatically renames scenario in .feature.coverage file if it exists',
+    'All test mappings and implementation mappings are preserved during rename',
+    'Use this command instead of manual delete + create to preserve coverage links',
+  ],
 };
 
 export default config;
