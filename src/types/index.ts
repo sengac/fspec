@@ -21,6 +21,7 @@ export type ArchitectureNoteItem = ItemWithId;
 // Question Item Interface
 export interface QuestionItem extends ItemWithId {
   selected: boolean;
+  answered?: boolean;
   answer?: string;
 }
 
