@@ -6,15 +6,15 @@
 
 export function getBigPictureEventStormSection(): string {
   return `
-## Step 3: Big Picture Event Storming (Foundation Level)
+## Step 3: Foundation Event Storm
 
 **WHEN TO USE**: Immediately after completing foundation discovery (\`fspec discover-foundation --finalize\`).
 
-**CRITICAL**: Big Picture Event Storming is conducted at the FOUNDATION level to establish domain architecture before creating individual work units. This is different from work unit-level Event Storming (Step 4).
+**CRITICAL**: Foundation Event Storm is conducted at the FOUNDATION level to establish domain architecture before creating individual work units. This is different from Feature Event Storm (Step 4).
 
-### What is Big Picture Event Storming?
+### What is Foundation Event Storm?
 
-Big Picture Event Storming is a collaborative session to discover:
+Foundation Event Storm is a collaborative session to discover:
 - **Bounded Contexts** - Strategic boundaries in the domain
 - **Aggregates** - Core domain entities within each bounded context
 - **Domain Events** - Key business events that occur in the domain
@@ -25,7 +25,7 @@ This information is stored in \`foundation.json\` eventStorm field and used for:
 2. **Domain Architecture Visualization** - Generate bounded context maps
 3. **EXMAP-004 Integration** - Tag discovery from Event Storm artifacts
 
-### when to conduct Big Picture Event Storming
+### When to conduct Foundation Event Storm
 
 **Trigger**: After \`fspec discover-foundation --finalize\` completes successfully
 
@@ -34,15 +34,15 @@ This information is stored in \`foundation.json\` eventStorm field and used for:
 # 1. Foundation discovery complete
 fspec discover-foundation --finalize
 ✓ Generated spec/foundation.json
-✓ Created work unit FOUND-XXX: Big Picture Event Storming
+✓ Created work unit FOUND-XXX: Foundation Event Storm
 
 # 2. Move work unit to specifying
 fspec update-work-unit-status FOUND-XXX specifying
 
-# 3. Conduct Big Picture Event Storm (commands below)
+# 3. Conduct Foundation Event Storm (commands below)
 \`\`\`
 
-### Big Picture Event Storm Commands
+### Foundation Event Storm Commands
 
 **Foundation-level commands** (different from work unit-level):
 
@@ -70,18 +70,19 @@ fspec add-command-to-foundation "Work Management" "UpdateWorkUnitStatus"
 fspec show-foundation-event-storm
 \`\`\`
 
-### Foundation vs Work Unit Event Storming
+### Foundation Event Storm vs Feature Event Storm
 
-| Aspect | Foundation (Big Picture) | Work Unit (Process Modeling) |
+| Aspect | Foundation Event Storm | Feature Event Storm |
 |--------|-------------------------|------------------------------|
 | **Scope** | entire domain | single feature |
 | **Storage** | \`foundation.json\` eventStorm field | \`work-units.json\` per work unit |
 | **Bounded Contexts** | Strategic boundaries | Tactical scope |
 | **Commands** | \`add-foundation-bounded-context\` | \`add-bounded-context <work-unit-id>\` |
-| **When** | once after foundation discovery | many times, per story |
+| **When** | Once after foundation discovery | Many times, per story |
 | **Output** | tag ontology, architecture maps | scenarios, feature files |
+| **Purpose** | Establish domain boundaries | Understand feature business flow |
 
-### Big Picture Event Storm Session Flow
+### Foundation Event Storm Session Flow
 
 **CRITICAL**: Ask human for domain knowledge. DO NOT guess bounded contexts or domain events.
 
@@ -123,7 +124,7 @@ fspec show-foundation-event-storm
    fspec show-foundation-event-storm
    \`\`\`
 
-### When to Stop Big Picture Event Storming
+### When to Stop Foundation Event Storm
 
 Stop when:
 1. ✅ All major bounded contexts identified (typically 3-8)
@@ -152,7 +153,7 @@ fspec derive-tags-from-foundation
 
 This populates \`spec/tags.json\` with domain-driven tags automatically generated from your bounded contexts.
 
-### Example: fspec Project Big Picture Event Storm
+### Example: fspec Project Foundation Event Storm
 
 **Bounded Contexts**:
 - Work Management (work units, epics, Kanban)
@@ -179,9 +180,9 @@ This populates \`spec/tags.json\` with domain-driven tags automatically generate
 - CreateEpic
 - AddDependency
 
-### After Big Picture Event Storm
+### After Foundation Event Storm
 
-Once complete, move to work unit-level Event Storming (Step 1.6) when creating individual stories.
+Once complete, move to Feature Event Storm (Step 4) when creating individual stories.
 
 ---
 `;

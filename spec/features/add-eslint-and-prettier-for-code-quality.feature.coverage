@@ -213,60 +213,11 @@
           "implMappings": []
         }
       ]
-    },
-    {
-      "name": "Prettier formats code on save in IDE",
-      "testMappings": [
-        {
-          "file": "src/commands/__tests__/eslint-prettier-integration.test.ts",
-          "lines": "160-176",
-          "implMappings": [
-            {
-              "file": ".prettierrc",
-              "lines": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                6
-              ]
-            },
-            {
-              "file": ".vscode/settings.json",
-              "lines": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12
-              ]
-            }
-          ]
-        },
-        {
-          "file": "src/commands/__tests__/eslint-prettier-integration.test.ts",
-          "lines": "121-138",
-          "implMappings": []
-        },
-        {
-          "file": "src/commands/__tests__/eslint-prettier-integration.test.ts",
-          "lines": "149-177",
-          "implMappings": []
-        }
-      ]
     }
   ],
   "stats": {
-    "totalScenarios": 6,
-    "coveredScenarios": 6,
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
       "src/commands/__tests__/eslint-prettier-integration.test.ts"

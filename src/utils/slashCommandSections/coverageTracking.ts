@@ -11,6 +11,25 @@ export function getCoverageTrackingSection(): string {
 - **Reverse ACDD**: Essential for reverse engineering existing codebases (see \`fspec reverse --help\`)
 - **Refactoring Safety**: Understand impact of code changes on scenarios
 
+### Coverage File Lifecycle
+
+Understanding what's ✨ AUTOMATIC vs 🔧 MANUAL prevents confusion:
+
+**✨ AUTOMATIC (fspec handles this):**
+- **Creation**: \`create-feature\` and \`generate-coverage\` auto-create \`.feature.coverage\` files
+- **Synchronization**: \`delete-scenario\`, \`update-scenario\` auto-update coverage files
+  - Remove deleted scenarios
+  - Rename scenarios (preserving test mappings)
+  - Recalculate stats
+- **Validation**: \`update-work-unit-status <id> validating\` blocks workflow if coverage is stale
+
+**🔧 MANUAL (AI must run commands):**
+- **Linking tests**: \`fspec link-coverage <feature> --scenario "..." --test-file ... --test-lines ...\`
+- **Linking implementation**: \`fspec link-coverage <feature> --scenario "..." --test-file ... --impl-file ... --impl-lines ...\`
+- **Manual re-sync** (if out of sync): \`fspec generate-coverage\`
+
+This prevents confusion between auto-sync and manual linking.
+
 ### Coverage Commands
 
 \`\`\`bash
@@ -83,6 +102,31 @@ fspec show-coverage user-authentication
 - Wait until end of work unit to update coverage
 - Skip coverage linking (breaks traceability)
 - Manually edit \`.coverage\` files (always use \`fspec link-coverage\`)
+
+### @step Comment Matching Rules
+
+**CRITICAL**: @step comments match ONLY the step line text (NOT data tables or docstrings).
+
+**What gets matched:**
+- \`\`\`gherkin
+  Given I have the following items:
+    | Name | Quantity |
+    | Apple | 5 |
+  \`\`\`
+- **@step comment**: \`// @step Given I have the following items:\`
+- **Parser extracts**: ONLY \`step.text\` ("Given I have the following items:")
+- **Table content**: IGNORED by matcher
+
+**Example with data table:**
+\`\`\`javascript
+// @step Given I have the following items:
+const items = [
+  { name: 'Apple', quantity: 5 },
+  { name: 'Orange', quantity: 3 }
+];
+\`\`\`
+
+The table content ignored - you only need to match the step line text. No need for complex edge case documentation - the implementation is simpler than it appears.
 
 ### Coverage File Format
 

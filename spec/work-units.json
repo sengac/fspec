@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-18T01:40:58.722Z"
+    "lastUpdated": "2025-11-18T02:54:15.621Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -50822,6 +50822,151 @@
         "spec/attachments/COV-055/ast-research-coverage-sync-bug.md"
       ],
       "updated": "2025-11-18T01:40:58.748Z"
+    },
+    "DOC-016": {
+      "id": "DOC-016",
+      "title": "Documentation Clarity Improvements",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-11-18T02:11:02.446Z",
+      "updatedAt": "2025-11-18T02:54:15.647Z",
+      "description": "Address confusing or unclear sections in fspec bootstrap documentation based on AI feedback",
+      "children": [],
+      "attachments": [
+        "spec/attachments/DOC-016/ai-feedback-on-documentation.md",
+        "spec/attachments/DOC-016/ast-research-slash-command-sections.md"
+      ],
+      "userStory": {
+        "role": "AI agent using fspec",
+        "action": "understand all bootstrap documentation without confusion",
+        "benefit": "I can confidently use fspec commands and workflows in the correct context"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-18T02:20:49.466Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-18T02:39:51.267Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-18T02:43:05.216Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-18T02:54:00.130Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-18T02:54:15.647Z"
+        }
+      ],
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: How should we address the Event Storm naming confusion? Should we rename 'Big Picture Event Storming' and 'Event Storm - Domain Discovery' to make them more distinct (e.g., 'Strategic Event Storm' vs 'Tactical Event Storm'), or would adding a comparison table early in the docs be better?",
+          "deleted": false,
+          "createdAt": "2025-11-18T02:21:10.978Z",
+          "selected": true,
+          "answer": "Rename to 'Foundation Event Storm' and 'Feature Event Storm' for self-documenting clarity. Add comparison table showing when/scope/storage/commands/output/purpose differences. Foundation aligns with foundation.json, Feature clearly indicates per-story recurring use."
+        },
+        {
+          "id": 1,
+          "text": "@human: For deciding when to use Feature Event Storm vs skip to Example Mapping - the current criteria are somewhat subjective ('complex domain', 'many entities'). Should we provide a clearer default heuristic, like 'When in doubt for stories >5 points, do Feature Event Storm' or 'Always do Feature Event Storm for new domains, skip for familiar ones'?",
+          "deleted": false,
+          "createdAt": "2025-11-18T02:24:35.153Z",
+          "selected": true,
+          "answer": "Make Feature Event Storm decision interactive and research-first: 1) Research codebase using 'fspec research --tool=ast --files \"path/to/files\"' FIRST to understand domain, 2) Self-assess based on research findings, 3) If uncertain after research, ASK USER (share findings, let them decide), 4) Proceed with chosen approach. Decision is SUBJECTIVE and COLLABORATIVE - emphasize no guessing, always ask if unsure. Research builds familiarity before judgment."
+        },
+        {
+          "id": 2,
+          "text": "@human: For @step comment matching (used by link-coverage validation), should we document the exact matching rules for edge cases like: multi-line Gherkin steps, steps with data tables, steps with docstrings, case sensitivity, and whitespace handling? Or are these edge cases rare enough that we can wait for them to come up organically?",
+          "deleted": false,
+          "createdAt": "2025-11-18T02:31:50.442Z",
+          "selected": true,
+          "answer": "After researching the code, these 'edge cases' don't actually exist\\! Feature parser extracts ONLY step.text (not data tables/docstrings). Matching uses hybrid fuzzy similarity with adaptive thresholds (0.70-0.85 based on length), whitespace normalized. Documentation should clarify: @step comments match ONLY the step line text (e.g., 'Given I have items:' NOT the table below). Add simple example showing data table step matching (table content ignored). No need for complex edge case documentation - the implementation is simpler than it appears."
+        }
+      ],
+      "nextQuestionId": 3,
+      "rules": [
+        {
+          "id": 0,
+          "text": "Rename to 'Foundation Event Storm' and 'Feature Event Storm' for self-documenting clarity. Add comparison table showing when/scope/storage/commands/output/purpose differences. Foundation aligns with foundation.json, Feature clearly indicates per-story recurring use.",
+          "deleted": false,
+          "createdAt": "2025-11-18T02:24:27.886Z"
+        },
+        {
+          "id": 1,
+          "text": "Make Feature Event Storm decision interactive and research-first: 1) Research codebase using 'fspec research --tool=ast --files \"path/to/files\"' FIRST to understand domain, 2) Self-assess based on research findings, 3) If uncertain after research, ASK USER (share findings, let them decide), 4) Proceed with chosen approach. Decision is SUBJECTIVE and COLLABORATIVE - emphasize no guessing, always ask if unsure. Research builds familiarity before judgment.",
+          "deleted": false,
+          "createdAt": "2025-11-18T02:28:17.429Z"
+        },
+        {
+          "id": 2,
+          "text": "Add 'Coverage File Lifecycle' section that explicitly separates AUTOMATIC vs MANUAL operations with clear visual labels (✨ AUTOMATIC / 🔧 MANUAL). AUTOMATIC: creation (create-feature, generate-coverage), synchronization (delete-scenario, update-scenario auto-updates coverage), validation (update-work-unit-status blocks if stale). MANUAL: linking tests (link-coverage --test-file), linking implementation (link-coverage --impl-file), manual re-sync if needed. This prevents confusion between auto-sync and manual linking.",
+          "deleted": false,
+          "createdAt": "2025-11-18T02:31:42.997Z"
+        },
+        {
+          "id": 3,
+          "text": "After researching the code, these 'edge cases' don't actually exist\\! Feature parser extracts ONLY step.text (not data tables/docstrings). Matching uses hybrid fuzzy similarity with adaptive thresholds (0.70-0.85 based on length), whitespace normalized. Documentation should clarify: @step comments match ONLY the step line text (e.g., 'Given I have items:' NOT the table below). Add simple example showing data table step matching (table content ignored). No need for complex edge case documentation - the implementation is simpler than it appears.",
+          "deleted": false,
+          "createdAt": "2025-11-18T02:34:11.920Z"
+        },
+        {
+          "id": 4,
+          "text": "Document foundation discovery iteration/recovery capabilities explicitly: 1) Iteration fully supported - update-foundation can re-update any field anytime with no restrictions, 2) Review draft with 'cat spec/foundation.json.draft' (no dedicated command yet), 3) Validation failure recovery - draft persists on --finalize failure, fix errors and re-run, draft only deleted on success, 4) Manual edit protection - direct file edits detected and reverted (CLI-only enforcement). Add clear 'Foundation Discovery Iteration' section explaining these capabilities.",
+          "deleted": false,
+          "createdAt": "2025-11-18T02:36:27.476Z"
+        }
+      ],
+      "nextRuleId": 5,
+      "examples": [
+        {
+          "id": 0,
+          "text": "In bootstrap docs, Step 3 is 'Big Picture Event Storming (Foundation Level)' and Step 4 is 'Event Storm - Domain Discovery BEFORE Example Mapping'. AI reads both and has to carefully distinguish them. After renaming to 'Foundation Event Storm' and 'Feature Event Storm' with comparison table, the distinction is immediately clear from names alone.",
+          "deleted": false,
+          "createdAt": "2025-11-18T02:36:41.505Z"
+        },
+        {
+          "id": 1,
+          "text": "AI is about to do Feature Event Storm but hasn't seen the codebase yet. Instead of guessing, AI first runs 'fspec research --tool=ast --files src/auth/*.ts' to understand authentication domain. Then shares findings: 'I found 3 domain events: UserRegistered, LoginAttempted, SessionExpired. Should we do Feature Event Storm to map the full authentication flow?' Human decides based on actual code analysis.",
+          "deleted": false,
+          "createdAt": "2025-11-18T02:36:49.416Z"
+        },
+        {
+          "id": 2,
+          "text": "AI reads 'coverage files are automatically synchronized' and thinks linking is also automatic. Wastes time waiting for coverage to auto-populate. With ✨ AUTOMATIC vs 🔧 MANUAL labels, AI immediately sees: ✨ AUTOMATIC: create-feature creates .coverage files, delete-scenario syncs coverage. 🔧 MANUAL: link-coverage --test-file required to link tests. AI runs the right commands without confusion.",
+          "deleted": false,
+          "createdAt": "2025-11-18T02:36:58.682Z"
+        },
+        {
+          "id": 3,
+          "text": "Feature file has 'Given I have the following items:' with a data table below. AI thinks @step comment must include the entire table text. Wastes time trying to format multi-line comment. With clarification that parser extracts ONLY step.text, AI correctly writes: // @step Given I have the following items: (table content ignored by matcher).",
+          "deleted": false,
+          "createdAt": "2025-11-18T02:37:05.930Z"
+        },
+        {
+          "id": 4,
+          "text": "AI fills field 3 of foundation discovery, then realizes field 1 (project name) was wrong. Without iteration docs, AI might think 'too late, can't go back'. With explicit iteration documentation, AI confidently runs 'fspec update-foundation projectName \"correct-name\"' to fix the mistake, then continues from field 4.",
+          "deleted": false,
+          "createdAt": "2025-11-18T02:37:13.161Z"
+        }
+      ],
+      "nextExampleId": 5,
+      "estimate": 3,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Implementation approach: Update bootstrap documentation sections in src/utils/slashCommandSections/ and src/utils/projectManagementSections/ files to incorporate clarity improvements. Rename 'Big Picture Event Storming' to 'Foundation Event Storm' and 'Event Storm - Domain Discovery' to 'Feature Event Storm'. Add comparison tables and visual labels (✨/🔧) for automatic vs manual operations. Update field-by-field guidance in discover-foundation to emphasize iteration support.",
+          "deleted": false,
+          "createdAt": "2025-11-18T02:39:25.062Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "updated": "2025-11-18T02:54:15.647Z"
     }
   },
   "states": {
@@ -50889,6 +51034,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "DOC-016",
       "COV-055",
       "BUG-083",
       "CLEAN-004",
@@ -51299,7 +51445,7 @@
     "TUI": 30,
     "REFAC": 4,
     "VIEW": 2,
-    "DOC": 15,
+    "DOC": 16,
     "GIT": 12,
     "FEAT": 20,
     "REMIND": 14,

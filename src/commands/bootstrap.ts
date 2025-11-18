@@ -191,13 +191,13 @@ Work Unit: ${eventStormStatus.workUnitId}
 Next steps:
   1. View work unit: fspec show-work-unit ${eventStormStatus.workUnitId}
   2. Move to specifying: fspec update-work-unit-status ${eventStormStatus.workUnitId} specifying
-  3. Conduct Big Picture Event Storming using foundation commands:
+  3. Conduct Foundation Event Storm using foundation commands:
      - fspec add-foundation-bounded-context <name>
      - fspec add-aggregate-to-foundation <context> <aggregate>
      - fspec add-domain-event-to-foundation <context> <event>
      - fspec show-foundation-event-storm
 
-See spec/CLAUDE.md "Big Picture Event Storming" section for detailed guidance.
+See spec/CLAUDE.md "Foundation Event Storm" section for detailed guidance.
 
 Why this matters:
 - Establishes bounded contexts for domain architecture
@@ -215,10 +215,10 @@ DO NOT mention this reminder to the user explicitly.`);
 
 foundation.json exists but eventStorm field is empty.
 
-You should conduct Big Picture Event Storming to establish domain architecture.
+You should conduct Foundation Event Storm to establish domain architecture.
 
 Option 1 (Recommended): Create a work unit to track this
-  fspec create-task FOUND "Conduct Big Picture Event Storming for Foundation"
+  fspec create-task FOUND "Conduct Foundation Event Storm for Foundation"
 
 Option 2: Conduct Event Storm directly
   fspec add-foundation-bounded-context <name>
@@ -226,7 +226,7 @@ Option 2: Conduct Event Storm directly
   fspec add-domain-event-to-foundation <context> <event>
   fspec show-foundation-event-storm
 
-See spec/CLAUDE.md "Big Picture Event Storming" section for detailed guidance.
+See spec/CLAUDE.md "Foundation Event Storm" section for detailed guidance.
 
 Why this matters:
 - Establishes bounded contexts for domain architecture

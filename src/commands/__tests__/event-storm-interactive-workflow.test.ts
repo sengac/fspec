@@ -239,8 +239,8 @@ describe('Feature: Complete Event Storm interactive workflow with Example Mappin
       // @step Then AI should see Event Storm section in output
       expect(output).toContain('Event Storm');
 
-      // @step And section should explain when to use Event Storm vs skip to Example Mapping
-      expect(output).toContain('RUN EVENT STORM FIRST');
+      // @step And section should explain when to use Feature Event Storm vs skip to Example Mapping
+      expect(output).toContain('RUN FEATURE EVENT STORM FIRST');
       expect(output).toContain('SKIP TO EXAMPLE MAPPING');
 
       // @step And section should include concrete examples (complex domain vs simple bug)

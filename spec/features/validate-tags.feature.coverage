@@ -151,56 +151,6 @@
       ]
     },
     {
-      "name": "Detect missing required phase tag",
-      "testMappings": [
-        {
-          "file": "src/commands/__tests__/validate-tags.test.ts",
-          "lines": "170-198",
-          "implMappings": [
-            {
-              "file": "src/commands/validate-tags.ts",
-              "lines": [
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
       "name": "Detect missing required component tag",
       "testMappings": [
         {
@@ -501,56 +451,6 @@
       ]
     },
     {
-      "name": "CAGE integration - prevent invalid tag commits",
-      "testMappings": [
-        {
-          "file": "src/commands/__tests__/validate-tags.test.ts",
-          "lines": "374-412",
-          "implMappings": [
-            {
-              "file": "src/commands/validate-tags.ts",
-              "lines": [
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
       "name": "JSON-backed workflow - validate against tags.json registry",
       "testMappings": [
         {
@@ -756,56 +656,6 @@
         {
           "file": "src/commands/__tests__/validate-tags.test.ts",
           "lines": "537-582",
-          "implMappings": [
-            {
-              "file": "src/commands/validate-tags.ts",
-              "lines": [
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Validate scenario tags do not require phase/component/feature-group tags",
-      "testMappings": [
-        {
-          "file": "src/commands/__tests__/validate-tags.test.ts",
-          "lines": "584-619",
           "implMappings": [
             {
               "file": "src/commands/validate-tags.ts",
@@ -1206,9 +1056,9 @@
     }
   ],
   "stats": {
-    "totalScenarios": 25,
-    "coveredScenarios": 24,
-    "coveragePercent": 100,
+    "totalScenarios": 22,
+    "coveredScenarios": 21,
+    "coveragePercent": 95,
     "testFiles": [
       "src/commands/__tests__/validate-tags.test.ts"
     ],

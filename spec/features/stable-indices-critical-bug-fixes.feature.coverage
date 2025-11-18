@@ -1,10 +1,6 @@
 {
   "scenarios": [
     {
-      "name": "[Scenario name]",
-      "testMappings": []
-    },
-    {
       "name": "Fix field name mismatch in compact-work-unit",
       "testMappings": []
     },
@@ -71,9 +67,9 @@
     }
   ],
   "stats": {
-    "totalScenarios": 6,
+    "totalScenarios": 5,
     "coveredScenarios": 2,
-    "coveragePercent": 33,
+    "coveragePercent": 40,
     "testFiles": [
       "src/commands/__tests__/stable-indices-bug-fixes.test.ts"
     ],
