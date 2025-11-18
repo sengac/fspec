@@ -14,6 +14,7 @@ import chalk from 'chalk';
 import { generateFoundationMdCommand } from './generate-foundation-md';
 import { getAgentConfig } from '../utils/agentRuntimeConfig';
 import { createWorkUnit } from './work-unit';
+import { createPrefix } from './create-prefix';
 import type { WorkUnitsData } from '../types/work-unit';
 
 export interface DiscoverFoundationOptions {
@@ -393,14 +394,39 @@ Then re-run: fspec discover-foundation --finalize`;
       // Use the cwd from options, not dirname(finalPath) which would be 'spec'
       const workUnitCwd = cwd;
 
-      // Use centralized createWorkUnit() function (BUG-078 fix)
-      workUnitId = await createWorkUnit(
-        'FOUND',
-        'Conduct Foundation Event Storm for Foundation',
-        {
-          cwd: workUnitCwd,
-          type: 'task',
-          description: `Complete the foundation by capturing domain architecture through Foundation Event Storm.
+      // BUG-084 FIX: Check if FOUND work unit already exists (idempotency)
+      const workUnitsFile = join(workUnitCwd, 'spec/work-units.json');
+      const workUnitsContent = await readFile(workUnitsFile, 'utf-8');
+      const workUnitsData = JSON.parse(workUnitsContent) as WorkUnitsData;
+
+      const existingFoundWorkUnit = Object.keys(
+        workUnitsData.workUnits || {}
+      ).find(id => id.startsWith('FOUND-'));
+
+      if (existingFoundWorkUnit) {
+        // FOUND work unit already exists, skip creation (idempotency)
+        workUnitId = existingFoundWorkUnit;
+        workUnitCreated = false;
+      } else {
+        // BUG-084 FIX: Auto-register FOUND prefix if it doesn't exist
+        try {
+          await createPrefix({
+            prefix: 'FOUND',
+            description: 'Foundation Event Storm tasks',
+            cwd: workUnitCwd,
+          });
+        } catch (error) {
+          // Prefix already exists, continue
+        }
+
+        // Use centralized createWorkUnit() function (BUG-078 fix)
+        workUnitId = await createWorkUnit(
+          'FOUND',
+          'Conduct Foundation Event Storm for Foundation',
+          {
+            cwd: workUnitCwd,
+            type: 'task',
+            description: `Complete the foundation by capturing domain architecture through Foundation Event Storm.
 
 Use these commands to populate foundation.json eventStorm field:
 - fspec add-foundation-bounded-context <name>
@@ -415,10 +441,11 @@ Why this matters:
 - Supports EXMAP-004 tag discovery workflow
 
 See spec/CLAUDE.md "Foundation Event Storm" section for detailed guidance.`,
-        }
-      );
+          }
+        );
 
-      workUnitCreated = true;
+        workUnitCreated = true;
+      }
     } catch (error) {
       // Silently fail if work-units.json doesn't exist or can't be updated
       // This is acceptable since work unit creation is optional
