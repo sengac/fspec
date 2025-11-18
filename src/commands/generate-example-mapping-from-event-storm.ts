@@ -124,7 +124,12 @@ export async function generateExampleMappingFromEventStorm(
         if (item.type === 'hotspot') {
           const hotspot = item as EventStormHotspot;
           if (hotspot.concern) {
-            const questionText = `@human: What should ${hotspot.concern.toLowerCase()} be?`;
+            // BUG-088: Preserve concern text as-is, just ensure it ends with '?'
+            let concernText = hotspot.concern.trim();
+            if (!concernText.endsWith('?')) {
+              concernText += '?';
+            }
+            const questionText = `@human: ${concernText}`;
             workUnit.questions.push({
               id: nextQuestionId + questionsAdded,
               text: questionText,
