@@ -118,13 +118,29 @@ Coverage files (\`*.feature.coverage\`) are JSON files automatically created whe
 }
 \`\`\`
 
+### Automatic Coverage Synchronization
+
+Coverage files are automatically synchronized when scenarios are modified:
+
+- **Delete scenario** (\`fspec delete-scenario\`): Automatically removes scenario from coverage file and recalculates stats
+- **Bulk delete** (\`fspec delete-scenarios-by-tag\`): Removes all deleted scenarios from coverage files
+- **Rename scenario** (\`fspec update-scenario\`): Preserves all test mappings and implementation mappings during rename
+- **Generate coverage** (\`fspec generate-coverage\`): Removes stale scenarios (in coverage but not in feature file)
+
+**Key behaviors**:
+- Coverage statistics (totalScenarios, coveredScenarios, coveragePercent) are automatically recalculated
+- Use \`update-scenario\` instead of manual delete + create to preserve coverage links
+- Stale scenarios are detected during validation and prompt you to run \`generate-coverage\`
+
 ### Coverage Best Practices
 
 1. **Update immediately** - Link coverage as soon as tests/code are written
-2. **Check coverage gaps** - Run \`fspec show-coverage\` regularly to find uncovered scenarios
-3. **Use audit** - Run \`fspec audit-coverage <feature>\` to verify file paths are correct
-4. **Track changes** - When refactoring changes line numbers, update coverage mappings
-5. **Project-wide view** - Run \`fspec show-coverage\` (no arguments) to see all features at once
+2. **Use update-scenario for renames** - Preserves test mappings (don't delete + recreate)
+3. **Check coverage gaps** - Run \`fspec show-coverage\` regularly to find uncovered scenarios
+4. **Use audit** - Run \`fspec audit-coverage <feature>\` to verify file paths are correct
+5. **Track changes** - When refactoring changes line numbers, update coverage mappings
+6. **Project-wide view** - Run \`fspec show-coverage\` (no arguments) to see all features at once
+7. **Sync stale coverage** - Run \`fspec generate-coverage\` if validation detects stale scenarios
 
 `;
 }
