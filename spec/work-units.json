@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-17T23:48:12.493Z"
+    "lastUpdated": "2025-11-18T00:36:06.800Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -50477,6 +50477,112 @@
       "nextQuestionId": 0,
       "nextNoteId": 0,
       "updated": "2025-11-17T23:48:12.519Z"
+    },
+    "BUG-083": {
+      "id": "BUG-083",
+      "title": "AST research tool fails with relative file paths",
+      "type": "bug",
+      "status": "backlog",
+      "createdAt": "2025-11-18T00:14:37.981Z",
+      "updatedAt": "2025-11-18T00:14:56.520Z",
+      "children": [],
+      "attachments": [
+        "spec/attachments/BUG-083/bug-report-ast-research-tool.md"
+      ]
+    },
+    "CLEAN-004": {
+      "id": "CLEAN-004",
+      "title": "Remove compile-research command and all references",
+      "type": "task",
+      "status": "done",
+      "createdAt": "2025-11-18T00:25:10.921Z",
+      "updatedAt": "2025-11-18T00:36:06.824Z",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-18T00:25:15.860Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-18T00:27:48.327Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-18T00:36:00.319Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-18T00:36:06.824Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer maintaining fspec",
+        "action": "remove the compile-research command and all its references",
+        "benefit": "eliminate hardcoded semantic diagram generation logic"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "All references to compile-research must be removed from codebase",
+          "deleted": false,
+          "createdAt": "2025-11-18T00:25:30.988Z"
+        },
+        {
+          "id": 1,
+          "text": "Command must be unregistered from CLI (src/index.ts)",
+          "deleted": false,
+          "createdAt": "2025-11-18T00:25:35.533Z"
+        },
+        {
+          "id": 2,
+          "text": "Help file and documentation must be removed from src/help.ts",
+          "deleted": false,
+          "createdAt": "2025-11-18T00:25:40.121Z"
+        }
+      ],
+      "nextRuleId": 3,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Remove src/commands/compile-research.ts command implementation file",
+          "deleted": false,
+          "createdAt": "2025-11-18T00:25:45.989Z"
+        },
+        {
+          "id": 1,
+          "text": "Remove src/commands/compile-research-help.ts help file",
+          "deleted": false,
+          "createdAt": "2025-11-18T00:25:52.458Z"
+        },
+        {
+          "id": 2,
+          "text": "Remove registerCompileResearchCommand import and call from src/index.ts",
+          "deleted": false,
+          "createdAt": "2025-11-18T00:25:57.724Z"
+        },
+        {
+          "id": 3,
+          "text": "Remove compile-research documentation from src/help.ts RESEARCH TOOLS section",
+          "deleted": false,
+          "createdAt": "2025-11-18T00:26:04.230Z"
+        },
+        {
+          "id": 4,
+          "text": "Search for any test files referencing compile-research and remove or update them",
+          "deleted": false,
+          "createdAt": "2025-11-18T00:26:09.280Z"
+        }
+      ],
+      "nextExampleId": 5,
+      "attachments": [
+        "spec/attachments/CLEAN-004/compile-research-removal-plan.md"
+      ],
+      "questions": [],
+      "architectureNotes": [],
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-18T00:36:06.824Z"
     }
   },
   "states": {
@@ -50531,7 +50637,8 @@
       "INT-004",
       "DOC-012",
       "DOC-013",
-      "DOC-014"
+      "DOC-014",
+      "BUG-083"
     ],
     "specifying": [
       "LANG-001",
@@ -50544,6 +50651,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "CLEAN-004",
       "BUG-082",
       "BUG-081",
       "TEST-009",
@@ -50945,7 +51053,7 @@
   "prefixCounters": {
     "CLI": 14,
     "HELP": 6,
-    "BUG": 82,
+    "BUG": 83,
     "DISC": 2,
     "COV": 54,
     "TUI": 30,
@@ -50975,6 +51083,7 @@
     "INIT": 16,
     "EXMAP": 16,
     "FOUND": 43,
-    "DOCS": 3
+    "DOCS": 3,
+    "CLEAN": 4
   }
 }
