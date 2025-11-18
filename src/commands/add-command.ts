@@ -6,9 +6,9 @@
 import { existsSync } from 'fs';
 import { join } from 'path';
 import type { Command } from 'commander';
+import chalk from 'chalk';
 import type { WorkUnitsData, EventStormCommand } from '../types';
 import { fileManager } from '../utils/file-manager';
-import { logger } from '../utils/logger.js';
 
 export interface AddCommandOptions {
   workUnitId: string;
@@ -168,15 +168,17 @@ export function registerAddCommandCommand(program: Command): void {
         });
 
         if (!result.success) {
-          logger.error(result.error || 'Failed to add command');
+          console.error(chalk.red('✗ Failed to add command:'), result.error);
           process.exit(1);
         }
 
-        logger.success(
-          `Added command "${text}" to ${workUnitId} (ID: ${result.commandId})`
+        console.log(
+          chalk.green(
+            `✓ Added command "${text}" to ${workUnitId} (ID: ${result.commandId})`
+          )
         );
       } catch (error: any) {
-        logger.error(`Error: ${error.message}`);
+        console.error(chalk.red('✗ Failed to add command:'), error.message);
         process.exit(1);
       }
     });

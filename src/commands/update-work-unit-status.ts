@@ -935,6 +935,22 @@ async function validateTestStepDocstrings(
     );
   }
 
+  // VAL-005: Enforce 1:1 mapping (1 feature file = 1 test file)
+  if (workUnitTestFiles.size > 1) {
+    const featureFilePaths = matchingFeatures.map(f => f.filePath).join(', ');
+    const testFilePaths = Array.from(workUnitTestFiles).join(', ');
+    throw new Error(
+      `Multiple test files detected for feature file.\n\n` +
+        `Feature: ${featureFilePaths}\n` +
+        `Test files (${workUnitTestFiles.size}): ${testFilePaths}\n\n` +
+        `Design intent: 1 feature file = 1 test file (1:1 mapping)\n\n` +
+        `Split feature file into multiple smaller features, each with its own test file.\n\n` +
+        `Example:\n` +
+        `  - keyboard-navigation.feature → useKeyboardNavigation.test.ts\n` +
+        `  - layout-selector.feature → LayoutSelector.test.tsx`
+    );
+  }
+
   // Validate each test file
   const validationErrors: string[] = [];
 

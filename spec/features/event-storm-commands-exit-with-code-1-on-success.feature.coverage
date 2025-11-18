@@ -1,0 +1,255 @@
+{
+  "scenarios": [
+    {
+      "name": "add-domain-event returns exit code 0 on success",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/event-storm-exit-codes.test.ts",
+          "lines": "67-99",
+          "implMappings": [
+            {
+              "file": "src/commands/add-domain-event.ts",
+              "lines": [
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "add-command returns exit code 0 on success",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/event-storm-exit-codes.test.ts",
+          "lines": "101-131",
+          "implMappings": [
+            {
+              "file": "src/commands/add-command.ts",
+              "lines": [
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "add-policy returns exit code 0 on success",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/event-storm-exit-codes.test.ts",
+          "lines": "133-164",
+          "implMappings": [
+            {
+              "file": "src/commands/add-policy.ts",
+              "lines": [
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "add-hotspot returns exit code 0 on success",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/event-storm-exit-codes.test.ts",
+          "lines": "166-197",
+          "implMappings": [
+            {
+              "file": "src/commands/add-hotspot.ts",
+              "lines": [
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Command chaining with && executes all commands on success",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/event-storm-exit-codes.test.ts",
+          "lines": "199-231",
+          "implMappings": [
+            {
+              "file": "src/commands/add-domain-event.ts",
+              "lines": [
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Event Storm command returns exit code 1 on error",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/event-storm-exit-codes.test.ts",
+          "lines": "233-258",
+          "implMappings": [
+            {
+              "file": "src/commands/add-domain-event.ts",
+              "lines": [
+                164,
+                165,
+                166,
+                167,
+                168,
+                169
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/commands/__tests__/event-storm-exit-codes.test.ts"
+    ],
+    "implFiles": [
+      "src/commands/add-domain-event.ts",
+      "src/commands/add-command.ts",
+      "src/commands/add-policy.ts",
+      "src/commands/add-hotspot.ts"
+    ],
+    "totalLinesCovered": 327
+  }
+}

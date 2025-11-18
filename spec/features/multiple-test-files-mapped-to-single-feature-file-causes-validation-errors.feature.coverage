@@ -1,0 +1,78 @@
+{
+  "scenarios": [
+    {
+      "name": "Allow transition when 1 feature has 1 test file",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/update-work-unit-status-one-to-one-enforcement.test.ts",
+          "lines": "51-146",
+          "implMappings": [
+            {
+              "file": "src/commands/update-work-unit-status.ts",
+              "lines": [
+                938,
+                939,
+                940,
+                941,
+                942,
+                943,
+                944,
+                945,
+                946,
+                947,
+                948,
+                949,
+                950,
+                951,
+                952
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Block transition when 1 feature has multiple test files",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/update-work-unit-status-one-to-one-enforcement.test.ts",
+          "lines": "148-276",
+          "implMappings": [
+            {
+              "file": "src/commands/update-work-unit-status.ts",
+              "lines": [
+                938,
+                939,
+                940,
+                941,
+                942,
+                943,
+                944,
+                945,
+                946,
+                947,
+                948,
+                949,
+                950,
+                951,
+                952
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/commands/__tests__/update-work-unit-status-one-to-one-enforcement.test.ts"
+    ],
+    "implFiles": [
+      "src/commands/update-work-unit-status.ts"
+    ],
+    "totalLinesCovered": 255
+  }
+}

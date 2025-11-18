@@ -9,7 +9,6 @@ import type { Command } from 'commander';
 import chalk from 'chalk';
 import type { WorkUnitsData, EventStormEvent } from '../types';
 import { fileManager } from '../utils/file-manager';
-import { logger } from '../utils/logger.js';
 
 export interface AddDomainEventOptions {
   workUnitId: string;
@@ -163,15 +162,23 @@ export function registerAddDomainEventCommand(program: Command): void {
         });
 
         if (!result.success) {
-          logger.error(result.error || 'Failed to add domain event');
+          console.error(
+            chalk.red('✗ Failed to add domain event:'),
+            result.error
+          );
           process.exit(1);
         }
 
-        logger.success(
-          `Added domain event "${text}" to ${workUnitId} (ID: ${result.eventId})`
+        console.log(
+          chalk.green(
+            `✓ Added domain event "${text}" to ${workUnitId} (ID: ${result.eventId})`
+          )
         );
       } catch (error: any) {
-        logger.error(`Error: ${error.message}`);
+        console.error(
+          chalk.red('✗ Failed to add domain event:'),
+          error.message
+        );
         process.exit(1);
       }
     });
