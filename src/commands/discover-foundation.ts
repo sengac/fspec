@@ -15,6 +15,7 @@ import { generateFoundationMdCommand } from './generate-foundation-md';
 import { getAgentConfig } from '../utils/agentRuntimeConfig';
 import { createWorkUnit } from './work-unit';
 import { createPrefix } from './create-prefix';
+import { ensureWorkUnitsFile } from '../utils/ensure-files';
 import type { WorkUnitsData } from '../types/work-unit';
 
 export interface DiscoverFoundationOptions {
@@ -395,9 +396,8 @@ Then re-run: fspec discover-foundation --finalize`;
       const workUnitCwd = cwd;
 
       // BUG-084 FIX: Check if FOUND work unit already exists (idempotency)
-      const workUnitsFile = join(workUnitCwd, 'spec/work-units.json');
-      const workUnitsContent = await readFile(workUnitsFile, 'utf-8');
-      const workUnitsData = JSON.parse(workUnitsContent) as WorkUnitsData;
+      // Use ensureWorkUnitsFile to handle file initialization properly
+      const workUnitsData = await ensureWorkUnitsFile(workUnitCwd);
 
       const existingFoundWorkUnit = Object.keys(
         workUnitsData.workUnits || {}
