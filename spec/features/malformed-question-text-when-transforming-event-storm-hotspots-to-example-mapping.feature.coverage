@@ -1,0 +1,82 @@
+{
+  "scenarios": [
+    {
+      "name": "Transform question-format concern without modification",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/hotspot-question-transformation.test.ts",
+          "lines": "36-111",
+          "implMappings": [
+            {
+              "file": "src/commands/generate-example-mapping-from-event-storm.ts",
+              "lines": [
+                127,
+                128,
+                129,
+                130,
+                131,
+                132
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Add question mark if concern lacks one",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/hotspot-question-transformation.test.ts",
+          "lines": "115-192",
+          "implMappings": [
+            {
+              "file": "src/commands/generate-example-mapping-from-event-storm.ts",
+              "lines": [
+                127,
+                128,
+                129,
+                130,
+                131,
+                132
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Preserve multiple sentences in concern",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/hotspot-question-transformation.test.ts",
+          "lines": "196-273",
+          "implMappings": [
+            {
+              "file": "src/commands/generate-example-mapping-from-event-storm.ts",
+              "lines": [
+                127,
+                128,
+                129,
+                130,
+                131,
+                132
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/commands/__tests__/hotspot-question-transformation.test.ts"
+    ],
+    "implFiles": [
+      "src/commands/generate-example-mapping-from-event-storm.ts"
+    ],
+    "totalLinesCovered": 250
+  }
+}

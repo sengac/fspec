@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-18T10:27:45.218Z"
+    "lastUpdated": "2025-11-18T10:40:11.478Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -51338,14 +51338,88 @@
       "id": "BUG-088",
       "title": "Malformed question text when transforming Event Storm hotspots to Example Mapping",
       "type": "bug",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2025-11-18T05:37:18.457Z",
-      "updatedAt": "2025-11-18T05:37:24.188Z",
+      "updatedAt": "2025-11-18T10:40:11.504Z",
       "description": "Questions generated from hotspots have broken grammar with redundant text like 'What should when should... be?' instead of using the concern text directly",
       "children": [],
       "attachments": [
         "spec/attachments/BUG-088/fspec-bug-malformed-questions.md"
-      ]
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-18T10:30:57.924Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-18T10:32:39.165Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-18T10:34:28.995Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-18T10:39:45.804Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-18T10:40:11.504Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer transforming Event Storm to Example Mapping",
+        "action": "generate clear, grammatically correct questions from hotspot concerns",
+        "benefit": "questions are readable and usable without manual editing"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "When hotspot concern is already a question, use concern text as-is with '@human:' prefix",
+          "deleted": false,
+          "createdAt": "2025-11-18T10:31:21.646Z"
+        },
+        {
+          "id": 1,
+          "text": "Preserve original capitalization of concern text (don't lowercase)",
+          "deleted": false,
+          "createdAt": "2025-11-18T10:31:22.251Z"
+        },
+        {
+          "id": 2,
+          "text": "Ensure question ends with '?' if concern lacks one",
+          "deleted": false,
+          "createdAt": "2025-11-18T10:31:22.828Z"
+        }
+      ],
+      "nextRuleId": 3,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Concern 'When should playlists be saved?' → '@human: When should playlists be saved?'",
+          "deleted": false,
+          "createdAt": "2025-11-18T10:31:31.918Z"
+        },
+        {
+          "id": 1,
+          "text": "Concern 'How long should metadata be cached' → '@human: How long should metadata be cached?'",
+          "deleted": false,
+          "createdAt": "2025-11-18T10:31:32.473Z"
+        },
+        {
+          "id": 2,
+          "text": "Concern 'Should drag-and-drop support multi-select? How to handle edge cases?' → '@human: Should drag-and-drop support multi-select? How to handle edge cases?'",
+          "deleted": false,
+          "createdAt": "2025-11-18T10:31:33.038Z"
+        }
+      ],
+      "nextExampleId": 3,
+      "questions": [],
+      "architectureNotes": [],
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-18T10:40:11.504Z"
     },
     "BUG-089": {
       "id": "BUG-089",
@@ -51538,7 +51612,6 @@
       "DOC-012",
       "DOC-013",
       "DOC-014",
-      "BUG-088",
       "BUG-089",
       "BUG-090"
     ],
@@ -51553,6 +51626,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "BUG-088",
       "BUG-087",
       "VAL-005",
       "BUG-086",
