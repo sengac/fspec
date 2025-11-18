@@ -255,10 +255,16 @@ describe('Feature: Preserve example mapping context as comments', () => {
             examples: ['User logs in with password'],
             questions: [
               {
+                id: 0,
                 text: '@human: Should we support OAuth?',
-                selected: 'Yes, but deferred to Phase 2',
+                deleted: false,
+                selected: true,
+                answered: true,
+                answer: 'Yes, but deferred to Phase 2',
+                createdAt: new Date().toISOString(),
               },
             ],
+            nextQuestionId: 1,
           },
         },
       };

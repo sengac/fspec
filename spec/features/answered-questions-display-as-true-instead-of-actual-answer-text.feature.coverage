@@ -1,0 +1,89 @@
+{
+  "scenarios": [
+    {
+      "name": "Store answer text in question.answer field",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/answer-question-preserves-text.test.ts",
+          "lines": "34-102",
+          "implMappings": [
+            {
+              "file": "src/types/index.ts",
+              "lines": [
+                24
+              ]
+            },
+            {
+              "file": "src/commands/answer-question.ts",
+              "lines": [
+                72,
+                73
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Display answer text in feature file comments",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/answer-question-preserves-text.test.ts",
+          "lines": "106-190",
+          "implMappings": [
+            {
+              "file": "src/commands/generate-scenarios.ts",
+              "lines": [
+                172
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Preserve multiline answer text",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/answer-question-preserves-text.test.ts",
+          "lines": "194-282",
+          "implMappings": [
+            {
+              "file": "src/types/index.ts",
+              "lines": [
+                24
+              ]
+            },
+            {
+              "file": "src/commands/answer-question.ts",
+              "lines": [
+                72,
+                73
+              ]
+            },
+            {
+              "file": "src/commands/generate-scenarios.ts",
+              "lines": [
+                172
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/commands/__tests__/answer-question-preserves-text.test.ts"
+    ],
+    "implFiles": [
+      "src/types/index.ts",
+      "src/commands/answer-question.ts",
+      "src/commands/generate-scenarios.ts"
+    ],
+    "totalLinesCovered": 251
+  }
+}

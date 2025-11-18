@@ -69,6 +69,7 @@ export async function answerQuestion(
   // Mark question as selected and add answer
   question.selected = true;
   if (options.answer) {
+    question.answered = true;
     question.answer = options.answer;
   }
 

@@ -169,7 +169,7 @@ function generateExampleMappingComments(
         // Remove @human: prefix from question text
         const questionText = q.text.replace(/^@human:\s*/i, '');
         lines.push(`  #   Q: ${questionText}`);
-        lines.push(`  #   A: ${q.selected}`);
+        lines.push(`  #   A: ${q.answer || ''}`);
         lines.push('  #');
       });
     }

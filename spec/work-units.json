@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-18T11:37:01.012Z"
+    "lastUpdated": "2025-11-18T11:57:35.244Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -51512,14 +51512,88 @@
       "id": "BUG-090",
       "title": "Answered questions display as 'true' instead of actual answer text",
       "type": "bug",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2025-11-18T05:39:59.451Z",
-      "updatedAt": "2025-11-18T05:40:04.958Z",
+      "updatedAt": "2025-11-18T11:57:35.269Z",
       "description": "When answering Example Mapping questions, the answer text is lost and replaced with boolean 'true' in feature files and work unit output, losing critical decision context",
       "children": [],
       "attachments": [
         "spec/attachments/BUG-090/fspec-bug-answers-as-true.md"
-      ]
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-18T11:42:30.930Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-18T11:44:38.292Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-18T11:50:27.525Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-18T11:52:30.507Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-18T11:57:35.269Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer answering Example Mapping questions",
+        "action": "preserve answer text instead of boolean true",
+        "benefit": "decision context is retained for documentation and knowledge sharing"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "System must store answer text in question.answer field, not just answered: true boolean",
+          "deleted": false,
+          "createdAt": "2025-11-18T11:43:06.234Z"
+        },
+        {
+          "id": 1,
+          "text": "Feature file comments must display actual answer text, not boolean value",
+          "deleted": false,
+          "createdAt": "2025-11-18T11:43:06.788Z"
+        },
+        {
+          "id": 2,
+          "text": "Work unit output must show complete answer text when displaying answered questions",
+          "deleted": false,
+          "createdAt": "2025-11-18T11:43:07.357Z"
+        }
+      ],
+      "nextRuleId": 3,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Answer question with 'Cache for 24 hours', feature file shows 'A: Cache for 24 hours' not 'A: true'",
+          "deleted": false,
+          "createdAt": "2025-11-18T11:43:16.419Z"
+        },
+        {
+          "id": 1,
+          "text": "Answer multiline question, all text preserved in work unit JSON and feature file comments",
+          "deleted": false,
+          "createdAt": "2025-11-18T11:43:16.971Z"
+        },
+        {
+          "id": 2,
+          "text": "Question answered before BUG-090 fix shows 'A: true', after fix shows actual answer text",
+          "deleted": false,
+          "createdAt": "2025-11-18T11:43:17.519Z"
+        }
+      ],
+      "nextExampleId": 3,
+      "questions": [],
+      "architectureNotes": [],
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-18T11:57:35.269Z"
     },
     "VAL-005": {
       "id": "VAL-005",
@@ -51685,8 +51759,7 @@
       "INT-004",
       "DOC-012",
       "DOC-013",
-      "DOC-014",
-      "BUG-090"
+      "DOC-014"
     ],
     "specifying": [
       "LANG-001",
@@ -51699,6 +51772,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "BUG-090",
       "BUG-089",
       "BUG-088",
       "BUG-087",
