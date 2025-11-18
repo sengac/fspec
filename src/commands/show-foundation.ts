@@ -5,7 +5,7 @@ import type { Foundation } from '../types/foundation';
 import { ensureFoundationFile } from '../utils/ensure-files';
 
 interface ShowFoundationOptions {
-  field?: string;
+  section?: string;
   format?: 'text' | 'json';
   output?: string;
   cwd?: string;
@@ -36,7 +36,7 @@ const FIELD_MAP: Record<string, string> = {
 export async function showFoundation(
   options: ShowFoundationOptions
 ): Promise<ShowFoundationResult> {
-  const { field, format = 'text', output, cwd = process.cwd() } = options;
+  const { section, format = 'text', output, cwd = process.cwd() } = options;
 
   try {
     // Load or create foundation.json using ensureFoundationFile (generic schema v2.0.0)
@@ -45,15 +45,15 @@ export async function showFoundation(
     // Get specific field or entire foundation
     let displayData: any;
 
-    if (field) {
+    if (section) {
       // Try to get field by direct property name or mapped path
-      const fieldPath = FIELD_MAP[field] || field;
+      const fieldPath = FIELD_MAP[section] || section;
       displayData = getNestedProperty(foundationData, fieldPath);
 
       if (displayData === undefined) {
         return {
           success: false,
-          error: `Field '${field}' not found`,
+          error: `Field '${section}' not found`,
         };
       }
     } else {
@@ -67,7 +67,7 @@ export async function showFoundation(
       formattedOutput = JSON.stringify(displayData, null, 2);
     } else {
       // text format - convert to readable text
-      if (field) {
+      if (section) {
         // For specific field, display as plain text
         if (typeof displayData === 'string') {
           formattedOutput = displayData;
@@ -179,16 +179,19 @@ function formatFoundationAsText(foundation: any): string {
   return lines.join('\n');
 }
 
-export async function showFoundationCommand(options: {
-  field?: string;
-  format?: string;
-  output?: string;
-}): Promise<void> {
+export async function showFoundationCommand(
+  section?: string,
+  options?: {
+    section?: string;
+    format?: string;
+    output?: string;
+  }
+): Promise<void> {
   try {
     const result = await showFoundation({
-      field: options.field,
-      format: (options.format as 'text' | 'json') || 'text',
-      output: options.output,
+      section: section || options?.section,
+      format: (options?.format as 'text' | 'json') || 'text',
+      output: options?.output,
     });
 
     if (!result.success) {
@@ -196,7 +199,7 @@ export async function showFoundationCommand(options: {
       process.exit(1);
     }
 
-    if (!options.output) {
+    if (!options?.output) {
       console.log(result.output);
     } else {
       console.log(chalk.green('✓'), `Output written to ${options.output}`);
@@ -213,6 +216,7 @@ export function registerShowFoundationCommand(program: Command): void {
   program
     .command('show-foundation')
     .description('Display FOUNDATION.md content')
+    .argument('[section]', 'Field name or path to display (optional)')
     .option('--section <section>', 'Show specific section only')
     .option(
       '--format <format>',
