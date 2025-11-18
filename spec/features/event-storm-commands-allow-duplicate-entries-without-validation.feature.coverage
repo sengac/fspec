@@ -1,0 +1,106 @@
+{
+  "scenarios": [
+    {
+      "name": "Prevent duplicate domain event",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/event-storm-duplicate-detection.test.ts",
+          "lines": "117-134",
+          "implMappings": [
+            {
+              "file": "src/commands/add-domain-event.ts",
+              "lines": [
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Prevent duplicate with case-insensitive check",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/event-storm-duplicate-detection.test.ts",
+          "lines": "138-160",
+          "implMappings": [
+            {
+              "file": "src/commands/add-domain-event.ts",
+              "lines": [
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Allow same text after deletion",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/event-storm-duplicate-detection.test.ts",
+          "lines": "164-202",
+          "implMappings": [
+            {
+              "file": "src/commands/add-domain-event.ts",
+              "lines": [
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/commands/__tests__/event-storm-duplicate-detection.test.ts"
+    ],
+    "implFiles": [
+      "src/commands/add-domain-event.ts"
+    ],
+    "totalLinesCovered": 122
+  }
+}

@@ -89,6 +89,21 @@ export async function addDomainEvent(
       };
     }
 
+    // BUG-087: Check for duplicate events (case-insensitive, non-deleted only)
+    const existingEvent = workUnit.eventStorm.items.find(
+      item =>
+        item.type === 'event' &&
+        !item.deleted &&
+        item.text.toLowerCase() === options.text.toLowerCase()
+    );
+
+    if (existingEvent) {
+      return {
+        success: false,
+        error: `Event '${options.text}' already exists (ID: ${existingEvent.id})`,
+      };
+    }
+
     // Create domain event item
     const eventId = workUnit.eventStorm.nextItemId;
     const event: EventStormEvent = {

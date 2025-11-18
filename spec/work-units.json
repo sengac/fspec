@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-18T10:04:39.478Z"
+    "lastUpdated": "2025-11-18T10:27:45.218Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -51251,14 +51251,88 @@
       "id": "BUG-087",
       "title": "Event Storm commands allow duplicate entries without validation",
       "type": "bug",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2025-11-18T05:36:11.191Z",
-      "updatedAt": "2025-11-18T05:36:15.985Z",
+      "updatedAt": "2025-11-18T10:27:45.247Z",
       "description": "Commands like add-domain-event create duplicate entries when the same text is added multiple times, causing data integrity issues and confusion",
       "children": [],
       "attachments": [
         "spec/attachments/BUG-087/fspec-bug-duplicate-events.md"
-      ]
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-18T10:15:41.030Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-18T10:19:19.812Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-18T10:20:46.161Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-18T10:26:48.803Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-18T10:27:45.247Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using Event Storm commands",
+        "action": "prevent duplicate entries when adding the same text",
+        "benefit": "Event Storm data stays clean and scenarios generate correctly"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Prevent duplicate Event Storm entries by default (case-insensitive check)",
+          "deleted": false,
+          "createdAt": "2025-11-18T10:16:04.413Z"
+        },
+        {
+          "id": 1,
+          "text": "Throw error with message: Event 'X' already exists (ID: N)",
+          "deleted": false,
+          "createdAt": "2025-11-18T10:16:11.362Z"
+        },
+        {
+          "id": 2,
+          "text": "Only check non-deleted entries for duplicates",
+          "deleted": false,
+          "createdAt": "2025-11-18T10:16:19.138Z"
+        }
+      ],
+      "nextRuleId": 3,
+      "examples": [
+        {
+          "id": 0,
+          "text": "add-domain-event UI-001 'EventA' succeeds, add-domain-event UI-001 'EventA' throws error",
+          "deleted": false,
+          "createdAt": "2025-11-18T10:16:26.671Z"
+        },
+        {
+          "id": 1,
+          "text": "add-domain-event UI-001 'EventA' succeeds, add-domain-event UI-001 'eventa' (lowercase) throws error (case-insensitive)",
+          "deleted": false,
+          "createdAt": "2025-11-18T10:16:33.514Z"
+        },
+        {
+          "id": 2,
+          "text": "add-domain-event UI-001 'EventA', delete event 0, add-domain-event UI-001 'EventA' succeeds (deleted entries ignored)",
+          "deleted": false,
+          "createdAt": "2025-11-18T10:16:41.207Z"
+        }
+      ],
+      "nextExampleId": 3,
+      "questions": [],
+      "architectureNotes": [],
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-18T10:27:45.247Z"
     },
     "BUG-088": {
       "id": "BUG-088",
@@ -51464,7 +51538,6 @@
       "DOC-012",
       "DOC-013",
       "DOC-014",
-      "BUG-087",
       "BUG-088",
       "BUG-089",
       "BUG-090"
@@ -51480,6 +51553,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "BUG-087",
       "VAL-005",
       "BUG-086",
       "BUG-084",
