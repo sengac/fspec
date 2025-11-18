@@ -1,0 +1,54 @@
+{
+  "scenarios": [
+    {
+      "name": "AST research tool resolves relative file paths",
+      "testMappings": [
+        {
+          "file": "src/research-tools/__tests__/ast-relative-paths.test.ts",
+          "lines": "47-77",
+          "implMappings": [
+            {
+              "file": "src/research-tools/ast.ts",
+              "lines": [
+                85,
+                86,
+                87
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "AST research tool works with absolute file paths",
+      "testMappings": [
+        {
+          "file": "src/research-tools/__tests__/ast-relative-paths.test.ts",
+          "lines": "79-113",
+          "implMappings": [
+            {
+              "file": "src/research-tools/ast.ts",
+              "lines": [
+                85,
+                86,
+                87
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/research-tools/__tests__/ast-relative-paths.test.ts"
+    ],
+    "implFiles": [
+      "src/research-tools/ast.ts"
+    ],
+    "totalLinesCovered": 72
+  }
+}

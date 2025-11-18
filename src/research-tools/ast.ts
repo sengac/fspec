@@ -9,6 +9,7 @@ import type { ResearchTool } from './types';
 import { QueryExecutor } from '../utils/query-executor';
 import { loadLanguageParser } from '../utils/language-loader';
 import * as fs from 'fs/promises';
+import { resolve } from 'path';
 import Parser from '@sengac/tree-sitter';
 
 export const tool: ResearchTool = {
@@ -81,7 +82,9 @@ export const tool: ResearchTool = {
     const parserLanguage = await loadLanguageParser(language);
     parser.setLanguage(parserLanguage);
 
-    const fileContent = await fs.readFile(filePath, 'utf-8');
+    // Resolve relative file paths from current working directory
+    const resolvedPath = resolve(process.cwd(), filePath);
+    const fileContent = await fs.readFile(resolvedPath, 'utf-8');
     const tree = parser.parse(fileContent);
 
     // Execute query
