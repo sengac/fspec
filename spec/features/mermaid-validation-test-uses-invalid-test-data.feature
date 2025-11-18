@@ -1,3 +1,5 @@
+@validation
+@validator
 @done
 @TEST-009
 Feature: Mermaid validation test uses invalid test data

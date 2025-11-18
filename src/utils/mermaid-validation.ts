@@ -73,6 +73,18 @@ export async function validateMermaidSyntax(
       configurable: true,
     });
 
+    // Mock screen object for C4 diagrams (C4 renderer uses screen.availWidth)
+    // JSDOM doesn't provide screen by default, causing "screen is not defined" error
+    Object.defineProperty(globalThis, 'screen', {
+      value: {
+        availWidth: 1920,
+        availHeight: 1080,
+        width: 1920,
+        height: 1080,
+      },
+      configurable: true,
+    });
+
     // Mock SVG DOM APIs that mermaid.render() requires but JSDOM doesn't provide
     if (!window.SVGElement.prototype.getBBox) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -111,6 +123,7 @@ export async function validateMermaidSyntax(
       delete globalThis.document;
     }
     delete globalThis.navigator;
+    delete globalThis.screen;
 
     return { valid: true };
   } catch (error: unknown) {
@@ -126,6 +139,7 @@ export async function validateMermaidSyntax(
       delete globalThis.document;
     }
     delete globalThis.navigator;
+    delete globalThis.screen;
 
     const errorMessage =
       error instanceof Error ? error.message : 'Unknown Mermaid syntax error';

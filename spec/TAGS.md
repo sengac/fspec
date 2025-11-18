@@ -89,6 +89,7 @@ Tags that categorize features by functional area.
 | `@delete` | Delete operations |
 | `@dependencies` | Dependency management between work units |
 | `@dependency-management` | Work unit dependency tracking |
+| `@diagram` | Features related to diagram management and visualization |
 | `@diagram-viewer` | Diagram viewing and fullscreen modal features |
 | `@diff-display` | Diff display and visualization features in TUI |
 | `@diff-viewer` | Diff visualization and comparison features |
@@ -647,7 +648,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-11-17T03:16:37.913Z_
+_Last updated: 2025-11-17T23:37:53.265Z_
 
 **Update Command**: `fspec tag-stats`
 

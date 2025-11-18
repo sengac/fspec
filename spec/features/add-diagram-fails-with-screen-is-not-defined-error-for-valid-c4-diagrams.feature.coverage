@@ -1,0 +1,97 @@
+{
+  "scenarios": [
+    {
+      "name": "Add C4Context diagram with complex example",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/add-diagram.test.ts",
+          "lines": "687-729",
+          "implMappings": [
+            {
+              "file": "src/utils/mermaid-validation.ts",
+              "lines": [
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Add C4Context diagram from reported issue",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/add-diagram.test.ts",
+          "lines": "731-773",
+          "implMappings": [
+            {
+              "file": "src/utils/mermaid-validation.ts",
+              "lines": [
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Add simple C4Context diagram",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/add-diagram.test.ts",
+          "lines": "775-818",
+          "implMappings": [
+            {
+              "file": "src/utils/mermaid-validation.ts",
+              "lines": [
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/commands/__tests__/add-diagram.test.ts"
+    ],
+    "implFiles": [
+      "src/utils/mermaid-validation.ts"
+    ],
+    "totalLinesCovered": 163
+  }
+}
