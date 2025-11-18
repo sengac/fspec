@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-18T00:36:06.800Z"
+    "lastUpdated": "2025-11-18T00:45:07.582Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -50482,13 +50482,75 @@
       "id": "BUG-083",
       "title": "AST research tool fails with relative file paths",
       "type": "bug",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2025-11-18T00:14:37.981Z",
-      "updatedAt": "2025-11-18T00:14:56.520Z",
+      "updatedAt": "2025-11-18T00:45:07.608Z",
       "children": [],
       "attachments": [
         "spec/attachments/BUG-083/bug-report-ast-research-tool.md"
-      ]
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-18T00:40:48.391Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-18T00:42:29.154Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-18T00:44:04.679Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-18T00:45:01.306Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-18T00:45:07.608Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using fspec research tools",
+        "action": "use relative file paths with AST research tool",
+        "benefit": "I can analyze code without specifying full absolute paths"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "AST research tool must resolve relative file paths from current working directory",
+          "deleted": false,
+          "createdAt": "2025-11-18T00:40:59.305Z"
+        },
+        {
+          "id": 1,
+          "text": "Absolute paths must continue to work as before",
+          "deleted": false,
+          "createdAt": "2025-11-18T00:41:04.723Z"
+        }
+      ],
+      "nextRuleId": 2,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Run 'fspec research --tool=ast --operation=list-functions --file=src/index.ts' and it successfully analyzes the file",
+          "deleted": false,
+          "createdAt": "2025-11-18T00:41:10.343Z"
+        },
+        {
+          "id": 1,
+          "text": "Run 'fspec research --tool=ast --operation=list-functions --file=/Users/rquast/projects/fspec/src/index.ts' and it successfully analyzes the file",
+          "deleted": false,
+          "createdAt": "2025-11-18T00:41:16.511Z"
+        }
+      ],
+      "nextExampleId": 2,
+      "questions": [],
+      "architectureNotes": [],
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-18T00:45:07.608Z"
     },
     "CLEAN-004": {
       "id": "CLEAN-004",
@@ -50637,8 +50699,7 @@
       "INT-004",
       "DOC-012",
       "DOC-013",
-      "DOC-014",
-      "BUG-083"
+      "DOC-014"
     ],
     "specifying": [
       "LANG-001",
@@ -50651,6 +50712,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "BUG-083",
       "CLEAN-004",
       "BUG-082",
       "BUG-081",
