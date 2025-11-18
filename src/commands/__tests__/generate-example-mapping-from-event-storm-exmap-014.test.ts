@@ -166,24 +166,18 @@ describe('Feature: Generate Example Mapping from Event Storm', () => {
         cwd: tmpDir,
       });
 
-      // @step Then a new example should be added to AUTH-001 Example Mapping
+      // @step Then NO examples should be added to AUTH-001 Example Mapping (BUG-089 fix)
       expect(result.success).toBe(true);
+      expect(result.examplesAdded).toBe(0);
       const updatedData = JSON.parse(
         readFileSync(workUnitsFile, 'utf-8')
       ) as WorkUnitsData;
       const workUnit = updatedData.workUnits['AUTH-001'];
-      expect(workUnit.examples).toHaveLength(1);
+      expect(workUnit.examples).toHaveLength(0);
 
-      // @step And the example text should contain "User enters valid credentials and is logged in"
-      expect(workUnit.examples![0].text).toContain('valid credentials');
-      expect(workUnit.examples![0].text.toLowerCase()).toContain(
-        'authenticated'
-      );
-
-      // @step And the example should be derived from event text
-      expect(workUnit.examples![0].text.toLowerCase()).toContain(
-        'authenticated'
-      );
+      // @step And the examples list should remain empty
+      expect(workUnit.examples).toBeDefined();
+      expect(workUnit.examples).toEqual([]);
     });
   });
 

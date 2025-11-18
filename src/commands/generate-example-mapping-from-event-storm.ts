@@ -100,25 +100,27 @@ export async function generateExampleMappingFromEventStorm(
           }
         }
 
-        // Derive examples from events
-        if (item.type === 'event') {
-          const event = item as EventStormEvent;
-          // Convert PascalCase event name to sentence
-          const eventSentence = pascalCaseToSentence(event.text);
-          // Create more natural example text based on common patterns
-          const exampleText =
-            eventSentence.includes('authenticated') ||
-            eventSentence.includes('logged in')
-              ? `User enters valid credentials and is ${eventSentence}`
-              : `User ${eventSentence} and is logged in`;
-          workUnit.examples.push({
-            id: nextExampleId + examplesAdded,
-            text: exampleText,
-            deleted: false,
-            createdAt: new Date().toISOString(),
-          });
-          examplesAdded++;
-        }
+        // BUG-089: Do NOT derive examples from events
+        // Auto-generated examples are generic and unhelpful (e.g., "User track played and is logged in")
+        // Examples list remains empty for humans to add concrete, contextual examples
+        // if (item.type === 'event') {
+        //   const event = item as EventStormEvent;
+        //   // Convert PascalCase event name to sentence
+        //   const eventSentence = pascalCaseToSentence(event.text);
+        //   // Create more natural example text based on common patterns
+        //   const exampleText =
+        //     eventSentence.includes('authenticated') ||
+        //     eventSentence.includes('logged in')
+        //       ? `User enters valid credentials and is ${eventSentence}`
+        //       : `User ${eventSentence} and is logged in`;
+        //   workUnit.examples.push({
+        //     id: nextExampleId + examplesAdded,
+        //     text: exampleText,
+        //     deleted: false,
+        //     createdAt: new Date().toISOString(),
+        //   });
+        //   examplesAdded++;
+        // }
 
         // Derive questions from hotspots
         if (item.type === 'hotspot') {

@@ -1,0 +1,127 @@
+{
+  "scenarios": [
+    {
+      "name": "Transform Event Storm without generating examples from domain events",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/event-storm-skip-example-generation.test.ts",
+          "lines": "31-104",
+          "implMappings": [
+            {
+              "file": "src/commands/generate-example-mapping-from-event-storm.ts",
+              "lines": [
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Preserve policy and hotspot transformations while skipping event transformation",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/event-storm-skip-example-generation.test.ts",
+          "lines": "106-210",
+          "implMappings": [
+            {
+              "file": "src/commands/generate-example-mapping-from-event-storm.ts",
+              "lines": [
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Verify no generic examples are generated",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/event-storm-skip-example-generation.test.ts",
+          "lines": "212-275",
+          "implMappings": [
+            {
+              "file": "src/commands/generate-example-mapping-from-event-storm.ts",
+              "lines": [
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/commands/__tests__/event-storm-skip-example-generation.test.ts"
+    ],
+    "implFiles": [
+      "src/commands/generate-example-mapping-from-event-storm.ts"
+    ],
+    "totalLinesCovered": 306
+  }
+}

@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-18T10:40:11.478Z"
+    "lastUpdated": "2025-11-18T11:37:01.012Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -51425,14 +51425,88 @@
       "id": "BUG-089",
       "title": "Generic and unhelpful examples auto-generated from Event Storm domain events",
       "type": "bug",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2025-11-18T05:38:39.348Z",
-      "updatedAt": "2025-11-18T05:38:44.776Z",
+      "updatedAt": "2025-11-18T11:37:01.037Z",
       "description": "Examples generated from domain events follow template 'User [event] and is logged in' with no concrete data, context, or variation, defeating the purpose of Example Mapping",
       "children": [],
       "attachments": [
         "spec/attachments/BUG-089/fspec-bug-generic-examples.md"
-      ]
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-18T10:47:27.332Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-18T10:49:28.768Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-18T10:51:15.691Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-18T11:36:28.569Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-18T11:37:01.037Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer transforming Event Storm to Example Mapping",
+        "action": "avoid auto-generated generic examples from domain events",
+        "benefit": "Example Mapping provides value through concrete, specific examples"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "System must NOT auto-generate examples from domain events during Event Storm to Example Mapping transformation",
+          "deleted": false,
+          "createdAt": "2025-11-18T10:47:54.076Z"
+        },
+        {
+          "id": 1,
+          "text": "Example Mapping examples list must remain empty after transformation, allowing humans to add concrete examples",
+          "deleted": false,
+          "createdAt": "2025-11-18T10:48:00.093Z"
+        },
+        {
+          "id": 2,
+          "text": "Transformation should preserve rules and questions from policies and hotspots, but skip event-to-example conversion",
+          "deleted": false,
+          "createdAt": "2025-11-18T10:48:06.550Z"
+        }
+      ],
+      "nextRuleId": 3,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Event Storm with domain event 'TrackPlayed' generates generic example 'User track played and is logged in' (unhelpful)",
+          "deleted": false,
+          "createdAt": "2025-11-18T10:48:12.992Z"
+        },
+        {
+          "id": 1,
+          "text": "After transformation, examples list should be empty (0 examples added) even when domain events exist",
+          "deleted": false,
+          "createdAt": "2025-11-18T10:48:18.261Z"
+        },
+        {
+          "id": 2,
+          "text": "Policies still generate rules and hotspots still generate questions (only event-to-example conversion is removed)",
+          "deleted": false,
+          "createdAt": "2025-11-18T10:48:24.031Z"
+        }
+      ],
+      "nextExampleId": 3,
+      "questions": [],
+      "architectureNotes": [],
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-18T11:37:01.037Z"
     },
     "BUG-090": {
       "id": "BUG-090",
@@ -51612,7 +51686,6 @@
       "DOC-012",
       "DOC-013",
       "DOC-014",
-      "BUG-089",
       "BUG-090"
     ],
     "specifying": [
@@ -51626,6 +51699,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "BUG-089",
       "BUG-088",
       "BUG-087",
       "VAL-005",
