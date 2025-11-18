@@ -143,6 +143,30 @@ export async function updateScenario(
   // Write the updated content
   await writeFile(featurePath, newContent, 'utf-8');
 
+  // Update coverage file to rename scenario entry
+  const coverageFilePath = `${featurePath}.coverage`;
+  try {
+    const coverageContent = await readFile(coverageFilePath, 'utf-8');
+    const coverage = JSON.parse(coverageContent);
+
+    // Find and rename the scenario entry (preserving test mappings)
+    const scenarioEntry = coverage.scenarios.find(
+      (s: any) => s.name === oldName
+    );
+    if (scenarioEntry) {
+      scenarioEntry.name = newName;
+
+      // Write updated coverage
+      await writeFile(
+        coverageFilePath,
+        JSON.stringify(coverage, null, 2),
+        'utf-8'
+      );
+    }
+  } catch (error: any) {
+    // Coverage file doesn't exist or invalid - skip rename but still succeed
+  }
+
   const fileName = featurePath.split('/').pop();
   return {
     success: true,

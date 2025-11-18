@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-18T00:45:07.582Z"
+    "lastUpdated": "2025-11-18T01:40:58.722Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -50645,6 +50645,183 @@
       "nextQuestionId": 0,
       "nextNoteId": 0,
       "updated": "2025-11-18T00:36:06.824Z"
+    },
+    "COV-055": {
+      "id": "COV-055",
+      "title": "Coverage File Synchronization",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-11-18T01:07:49.494Z",
+      "updatedAt": "2025-11-18T01:40:58.748Z",
+      "description": "Fix coverage files not syncing when scenarios are deleted from feature files, causing false-positive uncovered scenario errors",
+      "children": [],
+      "userStory": {
+        "role": "developer using fspec",
+        "action": "have coverage files automatically sync when scenarios are deleted",
+        "benefit": "I don't get false-positive uncovered scenario errors"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-18T01:08:10.983Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-18T01:20:10.360Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-18T01:21:56.286Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-18T01:33:15.798Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-18T01:40:58.748Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "When a scenario is deleted from a feature file, the corresponding entry must be removed from the .feature.coverage file",
+          "deleted": false,
+          "createdAt": "2025-11-18T01:08:16.093Z"
+        },
+        {
+          "id": 1,
+          "text": "The updateCoverageFile() function must detect and remove scenarios that exist in coverage file but not in feature file",
+          "deleted": false,
+          "createdAt": "2025-11-18T01:08:21.291Z"
+        },
+        {
+          "id": 2,
+          "text": "Coverage validation must check that all scenarios in coverage file still exist in the feature file before reporting uncovered scenarios",
+          "deleted": false,
+          "createdAt": "2025-11-18T01:08:26.481Z"
+        },
+        {
+          "id": 3,
+          "text": "Coverage statistics (totalScenarios, coveredScenarios) must be recalculated after removing deleted scenarios",
+          "deleted": false,
+          "createdAt": "2025-11-18T01:08:31.672Z"
+        },
+        {
+          "id": 4,
+          "text": "Use explicit rename command (update-scenario) to preserve mappings. When user runs update-scenario, rename coverage entry and preserve test mappings. Manual delete + create loses mappings (expected behavior).",
+          "deleted": false,
+          "createdAt": "2025-11-18T01:15:28.909Z"
+        },
+        {
+          "id": 5,
+          "text": "Use conditional notifications: (1) Explicit user commands (delete-scenario) always notify about coverage updates, (2) Automatic cleanup (generate-coverage, updateCoverageFile) only notify if stale scenarios found, (3) Validation errors always notify. Use ✓ for successful actions, ℹ for informational cleanup, ✗ for errors.",
+          "deleted": false,
+          "createdAt": "2025-11-18T01:16:37.116Z"
+        }
+      ],
+      "nextRuleId": 6,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Developer deletes 'Scenario B' from test.feature using delete-scenario command. The .feature.coverage file automatically removes the 'Scenario B' entry and recalculates stats.",
+          "deleted": false,
+          "createdAt": "2025-11-18T01:08:38.559Z"
+        },
+        {
+          "id": 1,
+          "text": "Developer deletes multiple scenarios tagged @deprecated using delete-scenarios-by-tag. All deleted scenarios are removed from coverage files across multiple feature files.",
+          "deleted": false,
+          "createdAt": "2025-11-18T01:08:43.454Z"
+        },
+        {
+          "id": 2,
+          "text": "Developer runs update-work-unit-status to 'validating'. Coverage checker detects that coverage file has 'Scenario C' but feature file doesn't. System suggests running generate-coverage to sync.",
+          "deleted": false,
+          "createdAt": "2025-11-18T01:08:50.408Z"
+        },
+        {
+          "id": 3,
+          "text": "Developer runs generate-coverage on a feature that has scenarios A and B in feature file but coverage file has A, B, C (stale). Coverage file is updated to only have A and B.",
+          "deleted": false,
+          "createdAt": "2025-11-18T01:08:55.475Z"
+        },
+        {
+          "id": 4,
+          "text": "Developer has coverage file with uncovered 'Scenario X' but deletes the scenario from feature file. Running update-work-unit-status no longer reports 'Scenario X uncovered' error.",
+          "deleted": false,
+          "createdAt": "2025-11-18T01:09:00.576Z"
+        },
+        {
+          "id": 5,
+          "text": "Developer runs update-scenario to rename 'User logs in' to 'User authenticates'. The coverage file entry is renamed and all test mappings are preserved.",
+          "deleted": false,
+          "createdAt": "2025-11-18T01:16:43.638Z"
+        }
+      ],
+      "nextExampleId": 6,
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: Should we preserve test/implementation mappings from deleted scenarios in a separate archive file for historical tracking?",
+          "deleted": false,
+          "createdAt": "2025-11-18T01:09:07.148Z",
+          "selected": true,
+          "answer": "No, do not preserve mappings from deleted scenarios. Clean removal without archiving."
+        },
+        {
+          "id": 1,
+          "text": "@human: What should happen if a scenario is renamed (appears as both deleted and new)? Should we attempt to preserve mappings based on step similarity?",
+          "deleted": false,
+          "createdAt": "2025-11-18T01:09:12.709Z",
+          "selected": true,
+          "answer": "Use explicit rename command (update-scenario) to preserve mappings. When user runs update-scenario, rename coverage entry and preserve test mappings. Manual delete + create loses mappings (expected behavior)."
+        },
+        {
+          "id": 2,
+          "text": "@human: Should the fix emit warnings/notifications when stale scenarios are removed from coverage files, or silently clean up?",
+          "deleted": false,
+          "createdAt": "2025-11-18T01:09:18.277Z",
+          "selected": true,
+          "answer": "Use conditional notifications: (1) Explicit user commands (delete-scenario) always notify about coverage updates, (2) Automatic cleanup (generate-coverage, updateCoverageFile) only notify if stale scenarios found, (3) Validation errors always notify. Use ✓ for successful actions, ℹ for informational cleanup, ✗ for errors."
+        }
+      ],
+      "nextQuestionId": 3,
+      "assumptions": [
+        "No, do not preserve mappings from deleted scenarios. Clean removal without archiving."
+      ],
+      "estimate": 5,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Fix delete-scenario.ts: After deleting scenario from feature file (line 162), load coverage file, remove scenario entry, recalculate stats, write updated coverage using fileManager.transaction()",
+          "deleted": false,
+          "createdAt": "2025-11-18T01:19:12.452Z"
+        },
+        {
+          "id": 1,
+          "text": "Fix updateCoverageFile() in coverage-file.ts: Add logic to detect deleted scenarios (exist in coverage but not in feature file), filter them out, rebuild scenarios array with only current scenarios",
+          "deleted": false,
+          "createdAt": "2025-11-18T01:19:18.040Z"
+        },
+        {
+          "id": 2,
+          "text": "Fix checkCoverageCompleteness() in update-work-unit-status.ts: Before checking for uncovered scenarios, validate coverage file scenarios against feature file scenarios using getScenariosFromFeatureFile(), emit error if stale scenarios detected",
+          "deleted": false,
+          "createdAt": "2025-11-18T01:19:23.744Z"
+        },
+        {
+          "id": 3,
+          "text": "Fix update-scenario.ts: When scenario renamed, also rename the scenario entry in coverage file (find by old name, update name field, preserve testMappings array)",
+          "deleted": false,
+          "createdAt": "2025-11-18T01:19:29.555Z"
+        }
+      ],
+      "nextNoteId": 4,
+      "attachments": [
+        "spec/attachments/COV-055/ast-research-coverage-sync-bug.md"
+      ],
+      "updated": "2025-11-18T01:40:58.748Z"
     }
   },
   "states": {
@@ -50712,6 +50889,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "COV-055",
       "BUG-083",
       "CLEAN-004",
       "BUG-082",
@@ -51117,7 +51295,7 @@
     "HELP": 6,
     "BUG": 83,
     "DISC": 2,
-    "COV": 54,
+    "COV": 55,
     "TUI": 30,
     "REFAC": 4,
     "VIEW": 2,

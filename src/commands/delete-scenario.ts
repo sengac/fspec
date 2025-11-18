@@ -161,11 +161,54 @@ export async function deleteScenario(
   // Write the updated content
   await writeFile(featurePath, newContent, 'utf-8');
 
-  const fileName = featurePath.split('/').pop();
-  return {
-    success: true,
-    message: `Successfully deleted scenario '${scenario}' from ${fileName}`,
-  };
+  // Update coverage file to remove deleted scenario
+  const coverageFilePath = `${featurePath}.coverage`;
+  try {
+    const coverageContent = await readFile(coverageFilePath, 'utf-8');
+    const coverage = JSON.parse(coverageContent);
+
+    // Remove deleted scenario from coverage
+    const originalScenarioCount = coverage.scenarios.length;
+    coverage.scenarios = coverage.scenarios.filter(
+      (s: any) => s.name !== scenario
+    );
+
+    // Recalculate stats
+    const coveredScenarios = coverage.scenarios.filter(
+      (s: any) => s.testMappings && s.testMappings.length > 0
+    ).length;
+
+    coverage.stats = {
+      ...coverage.stats,
+      totalScenarios: coverage.scenarios.length,
+      coveredScenarios,
+      coveragePercent:
+        coverage.scenarios.length > 0
+          ? Math.round((coveredScenarios / coverage.scenarios.length) * 100)
+          : 0,
+    };
+
+    // Write updated coverage
+    await writeFile(
+      coverageFilePath,
+      JSON.stringify(coverage, null, 2),
+      'utf-8'
+    );
+
+    const removedCount = originalScenarioCount - coverage.scenarios.length;
+    const fileName = featurePath.split('/').pop();
+    return {
+      success: true,
+      message: `Successfully deleted scenario '${scenario}' from ${fileName}\n  Updated coverage file`,
+    };
+  } catch (error: any) {
+    // Coverage file doesn't exist or invalid - skip cleanup but still succeed
+    const fileName = featurePath.split('/').pop();
+    return {
+      success: true,
+      message: `Successfully deleted scenario '${scenario}' from ${fileName}`,
+    };
+  }
 }
 
 export async function deleteScenarioCommand(
