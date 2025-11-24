@@ -73,10 +73,16 @@ export async function generateExampleMappingFromEventStorm(
       if (!workUnit.examples) workUnit.examples = [];
       if (!workUnit.questions) workUnit.questions = [];
 
-      // Get next IDs
-      const nextRuleId = workUnit.rules.length;
-      const nextExampleId = workUnit.examples.length;
-      const nextQuestionId = workUnit.questions.length;
+      // Initialize ID counters if undefined (backward compatibility)
+      if (workUnit.nextRuleId === undefined) {
+        workUnit.nextRuleId = 0;
+      }
+      if (workUnit.nextExampleId === undefined) {
+        workUnit.nextExampleId = 0;
+      }
+      if (workUnit.nextQuestionId === undefined) {
+        workUnit.nextQuestionId = 0;
+      }
 
       // Process Event Storm items
       for (const item of workUnit.eventStorm.items) {
@@ -91,7 +97,7 @@ export async function generateExampleMappingFromEventStorm(
             const thenText = pascalCaseToSentence(policy.then);
             const ruleText = `System must ${thenText} after ${whenText}`;
             workUnit.rules.push({
-              id: nextRuleId + rulesAdded,
+              id: workUnit.nextRuleId++,
               text: ruleText,
               deleted: false,
               createdAt: new Date().toISOString(),
@@ -133,7 +139,7 @@ export async function generateExampleMappingFromEventStorm(
             }
             const questionText = `@human: ${concernText}`;
             workUnit.questions.push({
-              id: nextQuestionId + questionsAdded,
+              id: workUnit.nextQuestionId++,
               text: questionText,
               deleted: false,
               answer: undefined,
