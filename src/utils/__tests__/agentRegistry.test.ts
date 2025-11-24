@@ -29,12 +29,12 @@ describe('Feature: Support multiple AI agents beyond Claude', () => {
       expect(claudeConfig?.slashCommandFormat).toBe('markdown');
     });
 
-    it('should have configuration for all 18 agents', () => {
+    it('should have configuration for all 19 agents', () => {
       // Given the agent registry is loaded
       const agents = getAvailableAgents();
 
-      // Then it should contain 18 agents
-      expect(agents.length).toBe(18);
+      // Then it should contain 19 agents
+      expect(agents.length).toBe(19);
     });
 
     it('should have Cursor configuration with correct fields', () => {

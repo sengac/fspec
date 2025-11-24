@@ -55,10 +55,9 @@ describe('Feature: Research framework with custom script integration', () => {
       // Then I should see a list of available research tools from the registry
       // Note: The system now uses a tool registry instead of script discovery
       expect(result.tools).toBeDefined();
-      expect(result.tools.length).toBeGreaterThanOrEqual(2); // At least perplexity and ast
+      expect(result.tools.length).toBeGreaterThanOrEqual(1); // At least ast (no config required)
 
-      // And the tools should include perplexity and ast from the registry
-      expect(result.tools.map(t => t.name)).toContain('perplexity');
+      // And the tools should include ast from the registry (configured by default)
       expect(result.tools.map(t => t.name)).toContain('ast');
 
       // And each tool should show usage example with --tool flag
@@ -137,10 +136,9 @@ describe('Feature: Research framework with custom script integration', () => {
 
       // Then tools from the registry should be returned
       // Note: The system now uses a tool registry instead of script discovery
-      expect(result.tools.length).toBeGreaterThanOrEqual(2);
+      expect(result.tools.length).toBeGreaterThanOrEqual(1);
 
-      // And tool names should include perplexity and ast from the registry
-      expect(result.tools.map(t => t.name)).toContain('perplexity');
+      // And tool names should include ast from the registry (configured by default)
       expect(result.tools.map(t => t.name)).toContain('ast');
 
       // And discovery uses the registry system

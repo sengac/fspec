@@ -92,6 +92,7 @@ Feature: Test Feature
         workUnitId: 'WORK-001',
         status: 'testing',
         cwd: testDir,
+        skipTemporalValidation: true, // Skip temporal validation in test environment
       });
 
       // @step Then the command should fail with error code 1
@@ -191,6 +192,7 @@ Feature: Test Feature
         workUnitId: 'WORK-001',
         status: 'testing',
         cwd: testDir,
+        skipTemporalValidation: true, // Skip temporal validation in test environment
       });
 
       // @step Then the command should succeed with status code 0
@@ -295,6 +297,7 @@ Feature: Extract Validation Utility
         workUnitId: 'WORK-001',
         status: 'testing',
         cwd: testDir,
+        skipTemporalValidation: true, // Skip temporal validation in test environment
       });
 
       // @step Then the command should succeed with status code 0

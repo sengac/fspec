@@ -54,7 +54,7 @@ describe('Feature: Research Tool Discovery and Configuration UX', () => {
       // @step When I run 'fspec research --tool=perplexity --help'
       // Note: Help forwarding is handled by help-interceptor.ts
       // This test verifies the tool help structure exists
-      const tools = listResearchTools();
+      const tools = listResearchTools(undefined, true); // showAll=true to get all tools
       const perplexityTool = tools.find(t => t.name === toolName);
 
       // @step Then I should see the perplexity script's --help output
@@ -75,7 +75,7 @@ describe('Feature: Research Tool Discovery and Configuration UX', () => {
       // @step When I run "fspec research --tool=ast --query 'find all async functions'"
       // Note: This tests that the tool exists and can be looked up
       // Actual execution is tested in integration tests
-      const tools = listResearchTools();
+      const tools = listResearchTools(undefined, true); // showAll=true to get all tools
       const astTool = tools.find(t => t.name === toolName);
 
       // @step Then the AST tool should execute with the --query flag forwarded
