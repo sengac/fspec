@@ -1,23 +1,28 @@
-import { readFile, access } from 'fs/promises';
+import { readFile } from 'fs/promises';
 import type { Command } from 'commander';
 import { join } from 'path';
 import chalk from 'chalk';
 import type { CoverageFile } from '../utils/coverage-file';
-import { getScenarioSteps } from '../utils/feature-parser';
-import { validateSteps, formatValidationError } from '../utils/step-validation';
 import type { WorkUnitType } from '../types/work-units';
 import { fileManager } from '../utils/file-manager';
-
-interface LinkCoverageOptions {
-  scenario: string;
-  testFile?: string;
-  testLines?: string;
-  implFile?: string;
-  implLines?: string;
-  skipValidation?: boolean;
-  skipStepValidation?: boolean;
-  cwd?: string;
-}
+import {
+  LinkCoverageOptions,
+  validateFlagCombinations,
+  validateFiles,
+} from './link-coverage/validator';
+import {
+  wrapSystemReminder,
+  getScenariosFromFeatureFile,
+  detectWorkUnitType,
+} from './link-coverage/utils';
+import { validateStepConsistency } from './link-coverage/step-validator';
+import {
+  addTestMapping,
+  addImplMapping,
+  addBothMappings,
+  getRemovalHint,
+} from './link-coverage/mapping-ops';
+import { updateStats } from './link-coverage/stats-updater';
 
 interface LinkCoverageResult {
   success: boolean;
@@ -35,7 +40,6 @@ export async function linkCoverage(
     testLines,
     implFile,
     implLines,
-    skipValidation = false,
     skipStepValidation = false,
     cwd = process.cwd(),
   } = options;
@@ -46,30 +50,7 @@ export async function linkCoverage(
   const warnings: string[] = [];
 
   // Validate files exist (unless --skip-validation)
-  if (!skipValidation) {
-    if (testFile) {
-      await validateFileExists(join(cwd, testFile));
-    }
-    if (implFile) {
-      await validateFileExists(join(cwd, implFile));
-    }
-  } else {
-    // Add warnings for missing files when skipping validation
-    if (testFile) {
-      try {
-        await access(join(cwd, testFile));
-      } catch {
-        warnings.push(`⚠️  File not found: ${testFile} (validation skipped)`);
-      }
-    }
-    if (implFile) {
-      try {
-        await access(join(cwd, implFile));
-      } catch {
-        warnings.push(`⚠️  File not found: ${implFile} (validation skipped)`);
-      }
-    }
-  }
+  await validateFiles(options, warnings);
 
   // Load coverage file
   const featuresDir = join(cwd, 'spec', 'features');
@@ -132,10 +113,9 @@ export async function linkCoverage(
   }
 
   // Detect work unit type to enforce skip-step-validation restrictions
-  let workUnitType: WorkUnitType = 'story'; // Default to strictest validation
   if (testFile && skipStepValidation) {
     // Check if skip is allowed for this work unit type
-    workUnitType = await detectWorkUnitType(featureFile, cwd);
+    const workUnitType = await detectWorkUnitType(featureFile, cwd);
 
     if (workUnitType !== 'task') {
       // Story and bug work units CANNOT skip step validation
@@ -168,42 +148,14 @@ export async function linkCoverage(
   }
 
   // Step validation (if test file is being linked and step validation not skipped)
-  if (testFile && !skipStepValidation) {
-    try {
-      // Check if feature file exists before trying to parse it
-      await access(featureFile);
-
-      // Extract steps from feature file scenario
-      const featureSteps = await getScenarioSteps(featureFile, scenario);
-
-      // Read test file content
-      const testFilePath = join(cwd, testFile);
-      const testContent = await readFile(testFilePath, 'utf-8');
-
-      // Detect work unit type for error message customization
-      workUnitType = await detectWorkUnitType(featureFile, cwd);
-
-      // Validate steps match
-      const validationResult = validateSteps(featureSteps, testContent);
-
-      if (!validationResult.valid) {
-        // Step validation failed - throw error with system-reminder
-        const errorMessage = formatValidationError(
-          validationResult,
-          workUnitType
-        );
-        throw new Error(errorMessage + '\n\nStep validation failed');
-      }
-    } catch (error: any) {
-      // If feature file doesn't exist, skip step validation silently
-      if (error.code === 'ENOENT' && error.path === featureFile) {
-        // Feature file not found - skip step validation
-        // This allows forward planning where feature file may not exist yet
-      } else {
-        // Re-throw other errors (includes validation failures with system-reminder)
-        throw error;
-      }
-    }
+  if (testFile) {
+    await validateStepConsistency(
+      featureFile,
+      scenario,
+      testFile,
+      skipStepValidation,
+      cwd
+    );
   }
 
   let message = '';
@@ -248,276 +200,6 @@ export async function linkCoverage(
     message: message + getRemovalHint(featureName, scenario, testFile),
     warnings: warnings.length > 0 ? warnings.join('\n') : undefined,
   };
-}
-
-function validateFlagCombinations(options: LinkCoverageOptions): void {
-  const { testFile, testLines, implFile, implLines } = options;
-
-  // Impl-only requires test-file
-  if (implFile && !testFile) {
-    throw new Error(
-      '--test-file is required when adding implementation mappings\n' +
-        'Implementation mappings attach to specific test mappings'
-    );
-  }
-
-  // Test-only requires both test-file and test-lines
-  if (testFile && !implFile && !testLines) {
-    throw new Error(
-      '--test-lines is required when linking test file\n' +
-        'Example: --test-file src/__tests__/auth.test.ts --test-lines 45-62'
-    );
-  }
-
-  // Impl mapping requires impl-lines
-  if (implFile && !implLines) {
-    throw new Error(
-      '--impl-lines is required when linking implementation file\n' +
-        'Example: --impl-file src/auth/login.ts --impl-lines 10,11,12'
-    );
-  }
-}
-
-async function validateFileExists(filePath: string): Promise<void> {
-  try {
-    await access(filePath);
-  } catch {
-    throw new Error(
-      `File not found: ${filePath}\n` +
-        'Suggestion: Ensure the file exists or use --skip-validation for forward planning'
-    );
-  }
-}
-
-function addTestMapping(
-  scenarioEntry: { testMappings: any[] },
-  testFile: string,
-  testLines: string
-): string {
-  // Append test mapping (allow multiple for same file)
-  scenarioEntry.testMappings.push({
-    file: testFile,
-    lines: testLines,
-    implMappings: [],
-  });
-
-  const count = scenarioEntry.testMappings.filter(
-    tm => tm.file === testFile
-  ).length;
-
-  if (count > 1) {
-    return `✓ Added second test mapping for ${testFile}:${testLines}`;
-  } else {
-    return `✓ Linked test mapping: ${testFile}:${testLines}`;
-  }
-}
-
-function addImplMapping(
-  scenarioEntry: { testMappings: any[] },
-  testFile: string,
-  implFile: string,
-  implLines: string
-): string {
-  // Find the test mapping
-  const testMapping = scenarioEntry.testMappings.find(
-    tm => tm.file === testFile
-  );
-
-  if (!testMapping) {
-    throw new Error(
-      `Test mapping not found: ${testFile}\n` +
-        'Suggestion: Link the test file first using --test-file and --test-lines'
-    );
-  }
-
-  // Parse impl lines
-  const parsedLines = parseImplLines(implLines);
-
-  // Check if impl file already exists (smart append)
-  const existingImplIndex = testMapping.implMappings.findIndex(
-    (im: any) => im.file === implFile
-  );
-
-  if (existingImplIndex >= 0) {
-    // Update existing
-    testMapping.implMappings[existingImplIndex].lines = parsedLines;
-    return `✓ Updated implementation mapping: ${implFile}:${implLines}`;
-  } else {
-    // Add new
-    testMapping.implMappings.push({
-      file: implFile,
-      lines: parsedLines,
-    });
-    return `✓ Added implementation mapping: ${implFile}:${implLines}`;
-  }
-}
-
-function addBothMappings(
-  scenarioEntry: { testMappings: any[] },
-  testFile: string,
-  testLines: string,
-  implFile: string,
-  implLines: string
-): string {
-  // Parse impl lines
-  const parsedLines = parseImplLines(implLines);
-
-  // Add test mapping with impl mapping
-  scenarioEntry.testMappings.push({
-    file: testFile,
-    lines: testLines,
-    implMappings: [
-      {
-        file: implFile,
-        lines: parsedLines,
-      },
-    ],
-  });
-
-  return `✓ Linked test mapping with implementation: ${testFile}:${testLines} → ${implFile}:${implLines}`;
-}
-
-function parseImplLines(implLines: string): number[] {
-  // Support both comma-separated and ranges
-  if (implLines.includes('-')) {
-    // Range format: "10-15" → [10, 11, 12, 13, 14, 15]
-    const [start, end] = implLines.split('-').map(n => parseInt(n.trim(), 10));
-    const result: number[] = [];
-    for (let i = start; i <= end; i++) {
-      result.push(i);
-    }
-    return result;
-  } else {
-    // Comma-separated: "10,11,12" → [10, 11, 12]
-    return implLines.split(',').map(n => parseInt(n.trim(), 10));
-  }
-}
-
-function updateStats(coverage: CoverageFile): void {
-  const testFiles = new Set<string>();
-  const implFiles = new Set<string>();
-  let totalTestLines = 0;
-  let totalImplLines = 0;
-  let coveredScenarios = 0;
-
-  for (const scenario of coverage.scenarios) {
-    if (scenario.testMappings.length > 0) {
-      coveredScenarios++;
-    }
-
-    for (const testMapping of scenario.testMappings) {
-      testFiles.add(testMapping.file);
-
-      // Count test lines
-      const range = testMapping.lines.split('-');
-      if (range.length === 2) {
-        const start = parseInt(range[0], 10);
-        const end = parseInt(range[1], 10);
-        totalTestLines += end - start + 1;
-      }
-
-      for (const implMapping of testMapping.implMappings) {
-        implFiles.add(implMapping.file);
-        totalImplLines += implMapping.lines.length;
-      }
-    }
-  }
-
-  coverage.stats.coveredScenarios = coveredScenarios;
-  coverage.stats.coveragePercent =
-    coverage.stats.totalScenarios > 0
-      ? Math.round((coveredScenarios / coverage.stats.totalScenarios) * 100)
-      : 0;
-  coverage.stats.testFiles = Array.from(testFiles);
-  coverage.stats.implFiles = Array.from(implFiles);
-  coverage.stats.totalLinesCovered = totalTestLines + totalImplLines;
-}
-
-function getRemovalHint(
-  featureName: string,
-  scenario: string,
-  testFile?: string
-): string {
-  return (
-    '\n\n' +
-    chalk.gray('To remove this mapping:') +
-    '\n' +
-    chalk.gray(
-      `  fspec unlink-coverage ${featureName} --scenario "${scenario}"${testFile ? ` --test-file ${testFile}` : ''}`
-    )
-  );
-}
-
-function wrapSystemReminder(content: string): string {
-  return `<system-reminder>\n${content}\n</system-reminder>`;
-}
-
-async function getScenariosFromFeatureFile(
-  featureFilePath: string
-): Promise<string[]> {
-  try {
-    const content = await readFile(featureFilePath, 'utf-8');
-    const scenarios: string[] = [];
-
-    // Simple regex to extract scenario names
-    // Matches: "Scenario: Name" or "Scenario Outline: Name"
-    const scenarioRegex = /^\s*Scenario(?:\s+Outline)?:\s*(.+)$/gm;
-    let match;
-
-    while ((match = scenarioRegex.exec(content)) !== null) {
-      scenarios.push(match[1].trim());
-    }
-
-    return scenarios;
-  } catch {
-    // Feature file doesn't exist
-    return [];
-  }
-}
-
-/**
- * Detect work unit type from feature file tags
- *
- * Looks up work unit ID tag (e.g., @AUTH-001) in work-units.json to determine type.
- * If feature file doesn't exist or tag not found, assumes story/bug (strictest validation).
- *
- * @param featureFilePath - Path to feature file
- * @param cwd - Current working directory
- * @returns Work unit type ('story', 'bug', or 'task')
- */
-async function detectWorkUnitType(
-  featureFilePath: string,
-  cwd: string
-): Promise<WorkUnitType> {
-  try {
-    // Read feature file and extract work unit ID tag
-    const featureContent = await readFile(featureFilePath, 'utf-8');
-    const workUnitIdMatch = featureContent.match(/@([A-Z]+-\d+)/);
-
-    if (!workUnitIdMatch) {
-      // No work unit ID tag found - assume strictest validation (story)
-      return 'story';
-    }
-
-    const workUnitId = workUnitIdMatch[1];
-
-    // Load work units file
-    const workUnitsPath = join(cwd, 'spec', 'work-units.json');
-    const workUnitsContent = await readFile(workUnitsPath, 'utf-8');
-    const workUnitsData = JSON.parse(workUnitsContent);
-
-    // Look up work unit type
-    const workUnit = workUnitsData.workUnits?.[workUnitId];
-    if (workUnit?.type) {
-      return workUnit.type as WorkUnitType;
-    }
-
-    // Work unit not found - assume strictest validation (story)
-    return 'story';
-  } catch {
-    // Feature file or work units file doesn't exist - assume strictest validation (story)
-    return 'story';
-  }
 }
 
 export async function linkCoverageCommand(

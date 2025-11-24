@@ -1,0 +1,162 @@
+{
+  "matches": [
+    {
+      "type": "function_declaration",
+      "name": "linkCoverage",
+      "line": 28,
+      "column": 7,
+      "text": "async function linkCoverage(\n  featureName: string,\n  options: LinkCoverageOptions\n): Promise<LinkCoverageResult> {\n  const {\n    scenario,\n    testFile,\n    testLines,\n    implFile,\n    implLines,\n    skipValidation = false,\n    skipStepValidation = false,\n    cwd = process.cwd(),\n  } = options;\n\n  // Validate flag combinations\n  validateFlagCombinations(options);\n\n  const warnings: string[] = [];\n\n  // Validate files exist (unless --skip-validation)\n  if (!skipValidation) {\n    if (testFile) {\n      await validateFileExists(join(cwd, testFile));\n    }\n    if (implFile) {\n      await validateFileExists(join(cwd, implFile));\n    }\n  } else {\n    // Add warnings for missing files when skipping validation\n    if (testFile) {\n      try {\n        await access(join(cwd, testFile));\n      } catch {\n        warnings.push(`⚠️  File not found: ${testFile} (validation skipped)`);\n      }\n    }\n    if (implFile) {\n      try {\n        await access(join(cwd, implFile));\n      } catch {\n        warnings.push(`⚠️  File not found: ${implFile} (validation skipped)`);\n      }\n    }\n  }\n\n  // Load coverage file\n  const featuresDir = join(cwd, 'spec', 'features');\n  const fileName = featureName.endsWith('.feature')\n    ? featureName\n    : `${featureName}.feature`;\n  const coverageFile = join(featuresDir, `${fileName}.coverage`);\n  const featureFile = join(featuresDir, fileName);\n\n  let coverage: CoverageFile;\n  try {\n    const content = await readFile(coverageFile, 'utf-8');\n    coverage = JSON.parse(content);\n  } catch (error: any) {\n    // Check if feature file exists to provide helpful system-reminder\n    const scenariosInFeature = await getScenariosFromFeatureFile(featureFile);\n    if (scenariosInFeature.length > 0) {\n      // Feature file exists - suggest generate-coverage\n      throw new Error(\n        wrapSystemReminder(\n          `Coverage file not found but feature file exists.\\n` +\n            `The scenario \"${scenario}\" may exist in the feature file but coverage tracking is not set up.\\n` +\n            `Run: fspec generate-coverage\\n` +\n            `This will create coverage files for all feature files, then you can link coverage.`\n        ) +\n          `\\n\\nCoverage file not found: ${fileName}.coverage\\nSuggestion: Run 'fspec generate-coverage' to create coverage tracking`\n      );\n    }\n    throw new Error(\n      `Coverage file not found: ${fileName}.coverage\\nSuggestion: Run 'fspec create-feature' to create the feature with coverage tracking`\n    );\n  }\n\n  // Find the scenario\n  const scenarioEntry = coverage.scenarios.find(s => s.name === scenario);\n  if (!scenarioEntry) {\n    // Check if scenario exists in feature file\n    const scenariosInFeature = await getScenariosFromFeatureFile(featureFile);\n    const scenarioExistsInFeature = scenariosInFeature.some(\n      s => s === scenario\n    );\n\n    if (scenarioExistsInFeature) {\n      // Scenario exists in feature but not in coverage - need to regenerate\n      throw new Error(\n        wrapSystemReminder(\n          `Scenario \"${scenario}\" exists in feature file but not in coverage file.\\n` +\n            `This means the coverage file is out of sync with the feature file.\\n` +\n            `Run: fspec generate-coverage\\n` +\n            `This will update the coverage file with the new scenario, then you can run link-coverage first.`\n        ) +\n          `\\n\\nScenario not found: \"${scenario}\"\\nAvailable scenarios:\\n${coverage.scenarios.map(s => `  - ${s.name}`).join('\\n')}`\n      );\n    }\n\n    // Scenario doesn't exist in feature file - typo or wrong name\n    throw new Error(\n      `Scenario not found: \"${scenario}\"\\nAvailable scenarios:\\n${coverage.scenarios.map(s => `  - ${s.name}`).join('\\n')}`\n    );\n  }\n\n  // Detect work unit type to enforce skip-step-validation restrictions\n  let workUnitType: WorkUnitType = 'story'; // Default to strictest validation\n  if (testFile && skipStepValidation) {\n    // Check if skip is allowed for this work unit type\n    workUnitType = await detectWorkUnitType(featureFile, cwd);\n\n    if (workUnitType !== 'task') {\n      // Story and bug work units CANNOT skip step validation\n      const typeLabel = workUnitType === 'story' ? 'Story' : 'Bug';\n      throw new Error(\n        wrapSystemReminder(\n          `STEP VALIDATION ENFORCEMENT VIOLATION\\n\\n` +\n            `The --skip-step-validation flag is ONLY allowed for task work units.\\n` +\n            `${typeLabel} and bug work units require MANDATORY step validation.\\n\\n` +\n            `This work unit is a ${workUnitType} work unit, detected from feature file tags.\\n\\n` +\n            `⚠️  WARNING: Attempting to skip step validation will be detected and require going back to fix docstrings.\\n\\n` +\n            `ACDD requires test-to-scenario traceability through docstring step comments.\\n` +\n            `There is NO bypass for story and bug work units.\\n\\n` +\n            `Next steps:\\n` +\n            `  1. Remove the --skip-step-validation flag from your command\\n` +\n            `  2. Add step comments to your test file (see step validation error for exact text)\\n` +\n            `  3. Re-run link-coverage without the skip flag\\n\\n` +\n            `DO NOT mention this reminder to the user explicitly.`\n        ) +\n          `\\n\\n--skip-step-validation flag is ONLY allowed for task work units.\\n` +\n          `${typeLabel} work units require MANDATORY step validation.`\n      );\n    } else {\n      // Task work units CAN skip - add warning\n      warnings.push(\n        `⚠️  Step validation skipped (task work unit)\\n` +\n          `   Tasks don't require feature files, but consider adding step comments for traceability.`\n      );\n    }\n  }\n\n  // Step validation (if test file is being linked and step validation not skipped)\n  if (testFile && !skipStepValidation) {\n    try {\n      // Check if feature file exists before trying to parse it\n      await access(featureFile);\n\n      // Extract steps from feature file scenario\n      const featureSteps = await getScenarioSteps(featureFile, scenario);\n\n      // Read test file content\n      const testFilePath = join(cwd, testFile);\n      const testContent = await readFile(testFilePath, 'utf-8');\n\n      // Detect work unit type for error message customization\n      workUnitType = await detectWorkUnitType(featureFile, cwd);\n\n      // Validate steps match\n      const validationResult = validateSteps(featureSteps, testContent);\n\n      if (!validationResult.valid) {\n        // Step validation failed - throw error with system-reminder\n        const errorMessage = formatValidationError(\n          validationResult,\n          workUnitType\n        );\n        throw new Error(errorMessage + '\\n\\nStep validation failed');\n      }\n    } catch (error: any) {\n      // If feature file doesn't exist, skip step validation silently\n      if (error.code === 'ENOENT' && error.path === featureFile) {\n        // Feature file not found - skip step validation\n        // This allows forward planning where feature file may not exist yet\n      } else {\n        // Re-throw other errors (includes validation failures with system-reminder)\n        throw error;\n      }\n    }\n  }\n\n  let message = '';\n\n  // Determine operation mode\n  if (testFile && testLines && !implFile) {\n    // Mode 1: Test-only\n    message = addTestMapping(scenarioEntry, testFile, testLines);\n  } else if (testFile && implFile && implLines) {\n    if (testLines) {\n      // Mode 3: Both at once\n      message = addBothMappings(\n        scenarioEntry,\n        testFile,\n        testLines,\n        implFile,\n        implLines\n      );\n    } else {\n      // Mode 2: Impl-only (add to existing test)\n      message = addImplMapping(scenarioEntry, testFile, implFile, implLines);\n    }\n  } else {\n    throw new Error(\n      'Invalid flag combination\\nSuggestion: Use one of:\\n' +\n        '  - Test only: --test-file <file> --test-lines <range>\\n' +\n        '  - Impl only: --test-file <file> --impl-file <file> --impl-lines <lines>\\n' +\n        '  - Both: --test-file <file> --test-lines <range> --impl-file <file> --impl-lines <lines>'\n    );\n  }\n\n  // Recalculate stats\n  updateStats(coverage);\n\n  // LOCK-002: Use fileManager.transaction() for atomic write\n  await fileManager.transaction(coverageFile, async fileData => {\n    Object.assign(fileData, coverage);\n  });\n\n  return {\n    success: true,\n    message: message + getRemovalHint(featureName, scenario, testFile),\n    warnings: warnings.length > 0 ? warnings.join('\\n') : undefined,\n  };\n}"
+    },
+    {
+      "type": "arrow_function",
+      "line": 107,
+      "column": 48,
+      "text": "s => s.name === scenario"
+    },
+    {
+      "type": "arrow_function",
+      "line": 112,
+      "column": 6,
+      "text": "s => s === scenario"
+    },
+    {
+      "type": "arrow_function",
+      "line": 124,
+      "column": 97,
+      "text": "s => `  - ${s.name}`"
+    },
+    {
+      "type": "arrow_function",
+      "line": 130,
+      "column": 89,
+      "text": "s => `  - ${s.name}`"
+    },
+    {
+      "type": "arrow_function",
+      "line": 242,
+      "column": 46,
+      "text": "async fileData => {\n    Object.assign(fileData, coverage);\n  }"
+    },
+    {
+      "type": "function_declaration",
+      "name": "validateFlagCombinations",
+      "line": 253,
+      "column": 0,
+      "text": "function validateFlagCombinations(options: LinkCoverageOptions): void {\n  const { testFile, testLines, implFile, implLines } = options;\n\n  // Impl-only requires test-file\n  if (implFile && !testFile) {\n    throw new Error(\n      '--test-file is required when adding implementation mappings\\n' +\n        'Implementation mappings attach to specific test mappings'\n    );\n  }\n\n  // Test-only requires both test-file and test-lines\n  if (testFile && !implFile && !testLines) {\n    throw new Error(\n      '--test-lines is required when linking test file\\n' +\n        'Example: --test-file src/__tests__/auth.test.ts --test-lines 45-62'\n    );\n  }\n\n  // Impl mapping requires impl-lines\n  if (implFile && !implLines) {\n    throw new Error(\n      '--impl-lines is required when linking implementation file\\n' +\n        'Example: --impl-file src/auth/login.ts --impl-lines 10,11,12'\n    );\n  }\n}"
+    },
+    {
+      "type": "function_declaration",
+      "name": "validateFileExists",
+      "line": 281,
+      "column": 0,
+      "text": "async function validateFileExists(filePath: string): Promise<void> {\n  try {\n    await access(filePath);\n  } catch {\n    throw new Error(\n      `File not found: ${filePath}\\n` +\n        'Suggestion: Ensure the file exists or use --skip-validation for forward planning'\n    );\n  }\n}"
+    },
+    {
+      "type": "function_declaration",
+      "name": "addTestMapping",
+      "line": 292,
+      "column": 0,
+      "text": "function addTestMapping(\n  scenarioEntry: { testMappings: any[] },\n  testFile: string,\n  testLines: string\n): string {\n  // Append test mapping (allow multiple for same file)\n  scenarioEntry.testMappings.push({\n    file: testFile,\n    lines: testLines,\n    implMappings: [],\n  });\n\n  const count = scenarioEntry.testMappings.filter(\n    tm => tm.file === testFile\n  ).length;\n\n  if (count > 1) {\n    return `✓ Added second test mapping for ${testFile}:${testLines}`;\n  } else {\n    return `✓ Linked test mapping: ${testFile}:${testLines}`;\n  }\n}"
+    },
+    {
+      "type": "arrow_function",
+      "line": 305,
+      "column": 4,
+      "text": "tm => tm.file === testFile"
+    },
+    {
+      "type": "function_declaration",
+      "name": "addImplMapping",
+      "line": 315,
+      "column": 0,
+      "text": "function addImplMapping(\n  scenarioEntry: { testMappings: any[] },\n  testFile: string,\n  implFile: string,\n  implLines: string\n): string {\n  // Find the test mapping\n  const testMapping = scenarioEntry.testMappings.find(\n    tm => tm.file === testFile\n  );\n\n  if (!testMapping) {\n    throw new Error(\n      `Test mapping not found: ${testFile}\\n` +\n        'Suggestion: Link the test file first using --test-file and --test-lines'\n    );\n  }\n\n  // Parse impl lines\n  const parsedLines = parseImplLines(implLines);\n\n  // Check if impl file already exists (smart append)\n  const existingImplIndex = testMapping.implMappings.findIndex(\n    (im: any) => im.file === implFile\n  );\n\n  if (existingImplIndex >= 0) {\n    // Update existing\n    testMapping.implMappings[existingImplIndex].lines = parsedLines;\n    return `✓ Updated implementation mapping: ${implFile}:${implLines}`;\n  } else {\n    // Add new\n    testMapping.implMappings.push({\n      file: implFile,\n      lines: parsedLines,\n    });\n    return `✓ Added implementation mapping: ${implFile}:${implLines}`;\n  }\n}"
+    },
+    {
+      "type": "arrow_function",
+      "line": 323,
+      "column": 4,
+      "text": "tm => tm.file === testFile"
+    },
+    {
+      "type": "arrow_function",
+      "line": 338,
+      "column": 4,
+      "text": "(im: any) => im.file === implFile"
+    },
+    {
+      "type": "function_declaration",
+      "name": "addBothMappings",
+      "line": 355,
+      "column": 0,
+      "text": "function addBothMappings(\n  scenarioEntry: { testMappings: any[] },\n  testFile: string,\n  testLines: string,\n  implFile: string,\n  implLines: string\n): string {\n  // Parse impl lines\n  const parsedLines = parseImplLines(implLines);\n\n  // Add test mapping with impl mapping\n  scenarioEntry.testMappings.push({\n    file: testFile,\n    lines: testLines,\n    implMappings: [\n      {\n        file: implFile,\n        lines: parsedLines,\n      },\n    ],\n  });\n\n  return `✓ Linked test mapping with implementation: ${testFile}:${testLines} → ${implFile}:${implLines}`;\n}"
+    },
+    {
+      "type": "function_declaration",
+      "name": "parseImplLines",
+      "line": 380,
+      "column": 0,
+      "text": "function parseImplLines(implLines: string): number[] {\n  // Support both comma-separated and ranges\n  if (implLines.includes('-')) {\n    // Range format: \"10-15\" → [10, 11, 12, 13, 14, 15]\n    const [start, end] = implLines.split('-').map(n => parseInt(n.trim(), 10));\n    const result: number[] = [];\n    for (let i = start; i <= end; i++) {\n      result.push(i);\n    }\n    return result;\n  } else {\n    // Comma-separated: \"10,11,12\" → [10, 11, 12]\n    return implLines.split(',').map(n => parseInt(n.trim(), 10));\n  }\n}"
+    },
+    {
+      "type": "arrow_function",
+      "line": 384,
+      "column": 50,
+      "text": "n => parseInt(n.trim(), 10)"
+    },
+    {
+      "type": "arrow_function",
+      "line": 392,
+      "column": 36,
+      "text": "n => parseInt(n.trim(), 10)"
+    },
+    {
+      "type": "function_declaration",
+      "name": "updateStats",
+      "line": 396,
+      "column": 0,
+      "text": "function updateStats(coverage: CoverageFile): void {\n  const testFiles = new Set<string>();\n  const implFiles = new Set<string>();\n  let totalTestLines = 0;\n  let totalImplLines = 0;\n  let coveredScenarios = 0;\n\n  for (const scenario of coverage.scenarios) {\n    if (scenario.testMappings.length > 0) {\n      coveredScenarios++;\n    }\n\n    for (const testMapping of scenario.testMappings) {\n      testFiles.add(testMapping.file);\n\n      // Count test lines\n      const range = testMapping.lines.split('-');\n      if (range.length === 2) {\n        const start = parseInt(range[0], 10);\n        const end = parseInt(range[1], 10);\n        totalTestLines += end - start + 1;\n      }\n\n      for (const implMapping of testMapping.implMappings) {\n        implFiles.add(implMapping.file);\n        totalImplLines += implMapping.lines.length;\n      }\n    }\n  }\n\n  // Initialize stats if missing (BUG-091 fix)\n  if (!coverage.stats) {\n    coverage.stats = {\n      totalScenarios: coverage.scenarios.length,\n      coveredScenarios: 0,\n      coveragePercent: 0,\n      testFiles: [],\n      implFiles: [],\n      totalLinesCovered: 0,\n    };\n  }\n\n  coverage.stats.coveredScenarios = coveredScenarios;\n  coverage.stats.coveragePercent =\n    coverage.stats.totalScenarios > 0\n      ? Math.round((coveredScenarios / coverage.stats.totalScenarios) * 100)\n      : 0;\n  coverage.stats.testFiles = Array.from(testFiles);\n  coverage.stats.implFiles = Array.from(implFiles);\n  coverage.stats.totalLinesCovered = totalTestLines + totalImplLines;\n}"
+    },
+    {
+      "type": "function_declaration",
+      "name": "getRemovalHint",
+      "line": 448,
+      "column": 0,
+      "text": "function getRemovalHint(\n  featureName: string,\n  scenario: string,\n  testFile?: string\n): string {\n  return (\n    '\\n\\n' +\n    chalk.gray('To remove this mapping:') +\n    '\\n' +\n    chalk.gray(\n      `  fspec unlink-coverage ${featureName} --scenario \"${scenario}\"${testFile ? ` --test-file ${testFile}` : ''}`\n    )\n  );\n}"
+    },
+    {
+      "type": "function_declaration",
+      "name": "wrapSystemReminder",
+      "line": 463,
+      "column": 0,
+      "text": "function wrapSystemReminder(content: string): string {\n  return `<system-reminder>\\n${content}\\n</system-reminder>`;\n}"
+    },
+    {
+      "type": "function_declaration",
+      "name": "getScenariosFromFeatureFile",
+      "line": 467,
+      "column": 0,
+      "text": "async function getScenariosFromFeatureFile(\n  featureFilePath: string\n): Promise<string[]> {\n  try {\n    const content = await readFile(featureFilePath, 'utf-8');\n    const scenarios: string[] = [];\n\n    // Simple regex to extract scenario names\n    // Matches: \"Scenario: Name\" or \"Scenario Outline: Name\"\n    const scenarioRegex = /^\\s*Scenario(?:\\s+Outline)?:\\s*(.+)$/gm;\n    let match;\n\n    while ((match = scenarioRegex.exec(content)) !== null) {\n      scenarios.push(match[1].trim());\n    }\n\n    return scenarios;\n  } catch {\n    // Feature file doesn't exist\n    return [];\n  }\n}"
+    },
+    {
+      "type": "function_declaration",
+      "name": "detectWorkUnitType",
+      "line": 500,
+      "column": 0,
+      "text": "async function detectWorkUnitType(\n  featureFilePath: string,\n  cwd: string\n): Promise<WorkUnitType> {\n  try {\n    // Read feature file and extract work unit ID tag\n    const featureContent = await readFile(featureFilePath, 'utf-8');\n    const workUnitIdMatch = featureContent.match(/@([A-Z]+-\\d+)/);\n\n    if (!workUnitIdMatch) {\n      // No work unit ID tag found - assume strictest validation (story)\n      return 'story';\n    }\n\n    const workUnitId = workUnitIdMatch[1];\n\n    // Load work units file\n    const workUnitsPath = join(cwd, 'spec', 'work-units.json');\n    const workUnitsContent = await readFile(workUnitsPath, 'utf-8');\n    const workUnitsData = JSON.parse(workUnitsContent);\n\n    // Look up work unit type\n    const workUnit = workUnitsData.workUnits?.[workUnitId];\n    if (workUnit?.type) {\n      return workUnit.type as WorkUnitType;\n    }\n\n    // Work unit not found - assume strictest validation (story)\n    return 'story';\n  } catch {\n    // Feature file or work units file doesn't exist - assume strictest validation (story)\n    return 'story';\n  }\n}"
+    },
+    {
+      "type": "function_declaration",
+      "name": "linkCoverageCommand",
+      "line": 535,
+      "column": 7,
+      "text": "async function linkCoverageCommand(\n  featureName: string,\n  options: Omit<LinkCoverageOptions, 'cwd'>\n): Promise<void> {\n  try {\n    const result = await linkCoverage(featureName, options);\n\n    console.log(result.message);\n\n    if (result.warnings) {\n      console.log('\\n' + chalk.yellow(result.warnings));\n    }\n\n    process.exit(0);\n  } catch (error: any) {\n    console.error(chalk.red('Error:'), error.message);\n    process.exit(1);\n  }\n}"
+    },
+    {
+      "type": "function_declaration",
+      "name": "registerLinkCoverageCommand",
+      "line": 555,
+      "column": 7,
+      "text": "function registerLinkCoverageCommand(program: Command): void {\n  program\n    .command('link-coverage')\n    .description('Link test and implementation files to feature scenarios')\n    .argument(\n      '<feature-name>',\n      'Feature name (e.g., \"user-login\" for user-login.feature)'\n    )\n    .requiredOption('--scenario <name>', 'Scenario name to link')\n    .option(\n      '--test-file <file>',\n      'Test file path (e.g., src/__tests__/auth.test.ts)'\n    )\n    .option('--test-lines <range>', 'Test line range (e.g., \"45-62\")')\n    .option('--impl-file <file>', 'Implementation file path')\n    .option(\n      '--impl-lines <lines>',\n      'Implementation lines (e.g., \"10,11,12\" or \"10-15\")'\n    )\n    .option('--skip-validation', 'Skip file validation (for forward planning)')\n    .option(\n      '--skip-step-validation',\n      'Skip step validation (ONLY for task work units - story/bug require MANDATORY validation)'\n    )\n    .action(linkCoverageCommand);\n}"
+    }
+  ]
+}

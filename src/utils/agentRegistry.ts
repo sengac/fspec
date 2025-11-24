@@ -270,6 +270,20 @@ export const AGENT_REGISTRY: AgentConfig[] = [
     category: 'cli',
     popularity: 18,
   },
+  {
+    id: 'antigravity',
+    name: 'Antigravity',
+    description: 'Google Deepmind Agentic AI',
+    slashCommandPath: '.antigravity/commands/',
+    slashCommandFormat: 'markdown',
+    supportsSystemReminders: true,
+    supportsMetaCognition: true,
+    docTemplate: 'ANTIGRAVITY.md',
+    detectionPaths: ['.antigravity/'],
+    available: true,
+    category: 'cli',
+    popularity: 19,
+  },
 ];
 
 export function getAgentById(id: string): AgentConfig | undefined {
