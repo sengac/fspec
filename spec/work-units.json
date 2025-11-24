@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-18T11:57:35.244Z"
+    "lastUpdated": "2025-11-23T05:44:14.689Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -51705,6 +51705,260 @@
       "nextQuestionId": 0,
       "nextNoteId": 0,
       "updated": "2025-11-18T10:04:39.505Z"
+    },
+    "DOC-017": {
+      "id": "DOC-017",
+      "title": "Spec-Driven Development vs fspec Comparison",
+      "type": "task",
+      "status": "backlog",
+      "createdAt": "2025-11-20T01:18:55.524Z",
+      "updatedAt": "2025-11-20T01:30:00.879Z",
+      "description": "Research and document the fundamental differences between traditional spec-driven development frameworks and fspec's just-in-time command system with deterministic feedback",
+      "children": [],
+      "attachments": [
+        "spec/attachments/DOC-017/ai-spec-frameworks-comparison.md",
+        "spec/attachments/DOC-017/fspec-encapsulation-explained.md",
+        "spec/attachments/DOC-017/diagram-reference.md"
+      ]
+    },
+    "AGENT-020": {
+      "id": "AGENT-020",
+      "title": "Test Antigravity Support",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-11-23T03:45:52.102Z",
+      "updatedAt": "2025-11-23T03:51:59.246Z",
+      "epic": "agent-testing",
+      "children": [],
+      "userStory": {
+        "role": "Antigravity User",
+        "action": "initialize and use fspec with the Antigravity agent",
+        "benefit": "I can leverage fspec's project management capabilities within my Antigravity workflow"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-23T03:46:26.974Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-23T03:47:39.485Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-23T03:49:52.306Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-23T03:50:32.481Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-23T03:51:59.246Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "fspec init should detect or support manual selection of Antigravity agent",
+          "deleted": false,
+          "createdAt": "2025-11-23T03:46:27.851Z"
+        },
+        {
+          "id": 1,
+          "text": "Standard fspec commands should function correctly in the Antigravity environment",
+          "deleted": false,
+          "createdAt": "2025-11-23T03:46:28.698Z"
+        }
+      ],
+      "nextRuleId": 2,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User runs 'fspec init --agent=antigravity' and sees success message",
+          "deleted": false,
+          "createdAt": "2025-11-23T03:46:34.845Z"
+        },
+        {
+          "id": 1,
+          "text": "User runs 'fspec status' and sees correct output in Antigravity terminal",
+          "deleted": false,
+          "createdAt": "2025-11-23T03:46:35.707Z"
+        }
+      ],
+      "nextExampleId": 2,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Implement Antigravity agent support by extending the AgentRegistry and ensuring CLI compatibility.",
+          "deleted": false,
+          "createdAt": "2025-11-23T03:47:13.834Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "attachments": [
+        "spec/attachments/AGENT-020/ast-research-agent-registry.json"
+      ],
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2025-11-23T03:51:59.246Z"
+    },
+    "BUG-091": {
+      "id": "BUG-091",
+      "title": "link-coverage crashes when coverage file stats are missing",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-11-23T03:50:54.682Z",
+      "updatedAt": "2025-11-23T04:05:53.719Z",
+      "epic": "coverage-tracking",
+      "children": [],
+      "attachments": [
+        "spec/attachments/BUG-091/bug-report.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-23T04:03:00.894Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-23T04:03:38.272Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-23T04:04:47.954Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-23T04:05:32.222Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-23T04:05:53.719Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "link-coverage must handle missing 'stats' object in coverage files gracefully",
+          "deleted": false,
+          "createdAt": "2025-11-23T04:03:01.703Z"
+        },
+        {
+          "id": 1,
+          "text": "link-coverage must automatically initialize 'stats' if missing before updating",
+          "deleted": false,
+          "createdAt": "2025-11-23T04:03:02.461Z"
+        }
+      ],
+      "nextRuleId": 2,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User runs link-coverage on a manually created coverage file without stats object",
+          "deleted": false,
+          "createdAt": "2025-11-23T04:03:03.217Z"
+        }
+      ],
+      "nextExampleId": 1,
+      "userStory": {
+        "role": "Developer",
+        "action": "link coverage to a feature file",
+        "benefit": "I don't encounter crashes even if the coverage file is incomplete"
+      },
+      "questions": [],
+      "architectureNotes": [],
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-23T04:05:53.719Z"
+    },
+    "REFAC-005": {
+      "id": "REFAC-005",
+      "title": "Refactor link-coverage command to reduce file size and complexity",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-11-23T05:03:22.570Z",
+      "updatedAt": "2025-11-23T05:44:14.720Z",
+      "epic": "coverage-tracking",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-23T05:03:33.115Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-23T05:04:23.846Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-23T05:41:33.169Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-23T05:43:59.577Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-23T05:44:14.720Z"
+        }
+      ],
+      "userStory": {
+        "role": "Developer",
+        "action": "refactor the link-coverage command",
+        "benefit": "the code is maintainable and complies with project standards"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "link-coverage.ts must be split into smaller, focused modules",
+          "deleted": false,
+          "createdAt": "2025-11-23T05:03:35.832Z"
+        },
+        {
+          "id": 1,
+          "text": "File size must be reduced below 300 lines",
+          "deleted": false,
+          "createdAt": "2025-11-23T05:03:36.550Z"
+        },
+        {
+          "id": 2,
+          "text": "Functionality must remain identical to the original implementation",
+          "deleted": false,
+          "createdAt": "2025-11-23T05:03:37.332Z"
+        }
+      ],
+      "nextRuleId": 3,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Developer runs link-coverage after refactoring and it works exactly as before",
+          "deleted": false,
+          "createdAt": "2025-11-23T05:03:38.145Z"
+        },
+        {
+          "id": 1,
+          "text": "Developer checks file sizes and confirms link-coverage.ts is < 300 lines",
+          "deleted": false,
+          "createdAt": "2025-11-23T05:03:38.938Z"
+        }
+      ],
+      "nextExampleId": 2,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Split link-coverage.ts into core logic, validation, and stats update modules",
+          "deleted": false,
+          "createdAt": "2025-11-23T05:04:12.655Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "attachments": [
+        "spec/attachments/REFAC-005/ast-research-link-coverage.json"
+      ],
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2025-11-23T05:44:14.720Z"
     }
   },
   "states": {
@@ -51759,7 +52013,8 @@
       "INT-004",
       "DOC-012",
       "DOC-013",
-      "DOC-014"
+      "DOC-014",
+      "DOC-017"
     ],
     "specifying": [
       "LANG-001",
@@ -51772,6 +52027,9 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "REFAC-005",
+      "BUG-091",
+      "AGENT-020",
       "BUG-090",
       "BUG-089",
       "BUG-088",
@@ -52185,18 +52443,18 @@
   "prefixCounters": {
     "CLI": 14,
     "HELP": 6,
-    "BUG": 90,
+    "BUG": 91,
     "DISC": 2,
     "COV": 55,
     "TUI": 30,
-    "REFAC": 4,
+    "REFAC": 5,
     "VIEW": 2,
-    "DOC": 16,
+    "DOC": 17,
     "GIT": 12,
     "FEAT": 20,
     "REMIND": 14,
     "CODEX": 1,
-    "AGENT": 19,
+    "AGENT": 20,
     "GRAPH": 3,
     "NAV": 3,
     "DOMAIN": 5,

@@ -1,0 +1,78 @@
+{
+  "scenarios": [
+    {
+      "name": "Initialize fspec with Antigravity agent",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/init-antigravity.test.ts",
+          "lines": "26-47",
+          "implMappings": [
+            {
+              "file": "src/utils/agentRegistry.ts",
+              "lines": [
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286
+              ]
+            }
+          ]
+        }
+      ],
+      "implMappings": []
+    },
+    {
+      "name": "Verify fspec status in Antigravity environment",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/init-antigravity.test.ts",
+          "lines": "49-66",
+          "implMappings": [
+            {
+              "file": "src/utils/agentRegistry.ts",
+              "lines": [
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286
+              ]
+            }
+          ]
+        }
+      ],
+      "implMappings": []
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/commands/__tests__/init-antigravity.test.ts"
+    ],
+    "implFiles": [
+      "src/utils/agentRegistry.ts"
+    ],
+    "totalLinesCovered": 68
+  }
+}

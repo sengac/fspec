@@ -14,7 +14,9 @@
         "COV-006",
         "COV-007",
         "COV-008",
-        "EXMAP-003"
+        "EXMAP-003",
+        "BUG-091",
+        "REFAC-005"
       ]
     },
     "test-coverage": {
@@ -190,7 +192,8 @@
         "AGENT-014",
         "AGENT-015",
         "AGENT-016",
-        "AGENT-017"
+        "AGENT-017",
+        "AGENT-020"
       ]
     },
     "research-tools": {

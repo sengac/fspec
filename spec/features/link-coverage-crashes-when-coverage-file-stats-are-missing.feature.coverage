@@ -1,0 +1,47 @@
+{
+  "scenarios": [
+    {
+      "name": "Link coverage with missing stats object",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/link-coverage-bug-repro.test.ts",
+          "lines": "1-60",
+          "implMappings": [
+            {
+              "file": "src/commands/link-coverage.ts",
+              "lines": [
+                425,
+                426,
+                427,
+                428,
+                429,
+                430,
+                431,
+                432,
+                433,
+                434,
+                435,
+                436,
+                437,
+                438
+              ]
+            }
+          ]
+        }
+      ],
+      "implMappings": []
+    }
+  ],
+  "stats": {
+    "totalScenarios": 1,
+    "coveredScenarios": 1,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/commands/__tests__/link-coverage-bug-repro.test.ts"
+    ],
+    "implFiles": [
+      "src/commands/link-coverage.ts"
+    ],
+    "totalLinesCovered": 74
+  }
+}
