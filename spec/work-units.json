@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-23T05:44:14.689Z"
+    "lastUpdated": "2025-11-24T10:20:32.315Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -51959,6 +51959,105 @@
       "questions": [],
       "nextQuestionId": 0,
       "updated": "2025-11-23T05:44:14.720Z"
+    },
+    "BUG-092": {
+      "id": "BUG-092",
+      "title": "Duplicate question IDs from generate-example-mapping-from-event-storm",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-11-24T10:03:51.019Z",
+      "updatedAt": "2025-11-24T10:20:32.349Z",
+      "description": "generate-example-mapping-from-event-storm creates duplicate question IDs by using questions.length instead of nextQuestionId",
+      "children": [],
+      "attachments": [
+        "spec/attachments/BUG-092/bug-analysis.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-24T10:09:47.383Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-24T10:12:13.018Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-24T10:14:46.041Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-24T10:17:08.272Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-24T10:20:32.349Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using fspec",
+        "action": "have unique question IDs after generating example mapping from event storm",
+        "benefit": "data integrity is maintained and no duplicate IDs corrupt the work unit"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Question IDs must be assigned using workUnit.nextQuestionId counter, not array length",
+          "deleted": false,
+          "createdAt": "2025-11-24T10:10:14.029Z"
+        },
+        {
+          "id": 1,
+          "text": "nextQuestionId counter must be incremented after each question is added",
+          "deleted": false,
+          "createdAt": "2025-11-24T10:10:19.760Z"
+        },
+        {
+          "id": 2,
+          "text": "nextQuestionId must be initialized to 0 if undefined for backward compatibility",
+          "deleted": false,
+          "createdAt": "2025-11-24T10:10:24.975Z"
+        },
+        {
+          "id": 3,
+          "text": "Same pattern must apply to rules and examples for consistency",
+          "deleted": false,
+          "createdAt": "2025-11-24T10:10:31.043Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "examples": [
+        {
+          "id": 0,
+          "text": "When hotspots are transformed to questions, nextQuestionId starts at 0 if undefined",
+          "deleted": false,
+          "createdAt": "2025-11-24T10:10:43.296Z"
+        },
+        {
+          "id": 1,
+          "text": "When 3 hotspots are converted, questions get IDs 0, 1, 2 and nextQuestionId becomes 3",
+          "deleted": false,
+          "createdAt": "2025-11-24T10:10:49.058Z"
+        },
+        {
+          "id": 2,
+          "text": "Running generate-example-mapping-from-event-storm twice does not create duplicate IDs",
+          "deleted": false,
+          "createdAt": "2025-11-24T10:10:54.976Z"
+        },
+        {
+          "id": 3,
+          "text": "After event storm mapping, manual add-question command gets next sequential ID without collision",
+          "deleted": false,
+          "createdAt": "2025-11-24T10:11:00.883Z"
+        }
+      ],
+      "nextExampleId": 4,
+      "questions": [],
+      "architectureNotes": [],
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-24T10:20:32.349Z"
     }
   },
   "states": {
@@ -52027,6 +52126,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "BUG-092",
       "REFAC-005",
       "BUG-091",
       "AGENT-020",
@@ -52443,7 +52543,7 @@
   "prefixCounters": {
     "CLI": 14,
     "HELP": 6,
-    "BUG": 91,
+    "BUG": 92,
     "DISC": 2,
     "COV": 55,
     "TUI": 30,

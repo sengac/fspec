@@ -1,0 +1,120 @@
+{
+  "scenarios": [
+    {
+      "name": "Initialize nextQuestionId when undefined",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/generate-example-mapping-from-event-storm-bug-092.test.ts",
+          "lines": "28-111",
+          "implMappings": [
+            {
+              "file": "src/commands/generate-example-mapping-from-event-storm.ts",
+              "lines": [
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Assign sequential IDs when converting hotspots",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/generate-example-mapping-from-event-storm-bug-092.test.ts",
+          "lines": "113-203",
+          "implMappings": [
+            {
+              "file": "src/commands/generate-example-mapping-from-event-storm.ts",
+              "lines": [
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Prevent duplicate IDs on multiple invocations",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/generate-example-mapping-from-event-storm-bug-092.test.ts",
+          "lines": "205-299",
+          "implMappings": [
+            {
+              "file": "src/commands/generate-example-mapping-from-event-storm.ts",
+              "lines": [
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Integrate with manual add-question command",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/generate-example-mapping-from-event-storm-bug-092.test.ts",
+          "lines": "301-397",
+          "implMappings": [
+            {
+              "file": "src/commands/generate-example-mapping-from-event-storm.ts",
+              "lines": [
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/commands/__tests__/generate-example-mapping-from-event-storm-bug-092.test.ts"
+    ],
+    "implFiles": [
+      "src/commands/generate-example-mapping-from-event-storm.ts"
+    ],
+    "totalLinesCovered": 407
+  }
+}
