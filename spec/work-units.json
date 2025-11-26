@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-24T10:20:32.315Z"
+    "lastUpdated": "2025-11-26T06:27:26.161Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -52058,6 +52058,111 @@
       "nextQuestionId": 0,
       "nextNoteId": 0,
       "updated": "2025-11-24T10:20:32.349Z"
+    },
+    "BUG-093": {
+      "id": "BUG-093",
+      "title": "VAL-005 1:1 validation checks across entire work unit instead of per-feature",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-11-26T05:40:01.619Z",
+      "updatedAt": "2025-11-26T06:27:26.189Z",
+      "children": [],
+      "attachments": [
+        "spec/attachments/BUG-093/bug-report.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-11-26T05:42:10.754Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-11-26T05:44:58.615Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-11-26T05:47:21.419Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-11-26T06:23:05.882Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-11-26T06:27:26.190Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using fspec",
+        "action": "have VAL-005 validate 1:1 feature-to-test mapping per individual feature file",
+        "benefit": "work units with multiple features can pass validation when each feature has exactly one test file"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "VAL-005 must check 1:1 mapping per individual feature file, not across all features",
+          "deleted": false,
+          "createdAt": "2025-11-26T05:42:27.605Z"
+        },
+        {
+          "id": 1,
+          "text": "Each feature file must have exactly one test file linked to it",
+          "deleted": false,
+          "createdAt": "2025-11-26T05:42:29.165Z"
+        },
+        {
+          "id": 2,
+          "text": "A feature file with zero test files should fail validation",
+          "deleted": false,
+          "createdAt": "2025-11-26T05:42:30.769Z"
+        },
+        {
+          "id": 3,
+          "text": "A feature file with more than one test file should fail validation",
+          "deleted": false,
+          "createdAt": "2025-11-26T05:42:32.528Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Work unit with 1 feature + 1 test file = PASS",
+          "deleted": false,
+          "createdAt": "2025-11-26T05:42:41.768Z"
+        },
+        {
+          "id": 1,
+          "text": "Work unit with 1 feature + 2 test files = FAIL (multiple test files for single feature)",
+          "deleted": false,
+          "createdAt": "2025-11-26T05:42:43.299Z"
+        },
+        {
+          "id": 2,
+          "text": "Work unit with 3 features + 3 test files (1 each) = PASS (currently fails - THIS IS THE BUG)",
+          "deleted": false,
+          "createdAt": "2025-11-26T05:42:45.053Z"
+        },
+        {
+          "id": 3,
+          "text": "Work unit with 3 features where one has 2 test files = FAIL",
+          "deleted": false,
+          "createdAt": "2025-11-26T05:42:46.551Z"
+        },
+        {
+          "id": 4,
+          "text": "Work unit with 3 features where one has 0 test files = FAIL",
+          "deleted": false,
+          "createdAt": "2025-11-26T05:42:48.050Z"
+        }
+      ],
+      "nextExampleId": 5,
+      "estimate": 2,
+      "questions": [],
+      "architectureNotes": [],
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-11-26T06:27:26.189Z"
     }
   },
   "states": {
@@ -52126,6 +52231,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "BUG-093",
       "BUG-092",
       "REFAC-005",
       "BUG-091",
@@ -52543,7 +52649,7 @@
   "prefixCounters": {
     "CLI": 14,
     "HELP": 6,
-    "BUG": 92,
+    "BUG": 93,
     "DISC": 2,
     "COV": 55,
     "TUI": 30,

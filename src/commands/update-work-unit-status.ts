@@ -881,10 +881,13 @@ async function validateTestStepDocstrings(
     return;
   }
 
-  // BUG-061: Read coverage files to find test files (language-agnostic)
-  const workUnitTestFiles = new Set<string>();
+  // BUG-093: Validate test files PER FEATURE (1:1 mapping and step validation)
+  const validationErrors: string[] = [];
 
   for (const feature of matchingFeatures) {
+    // BUG-093: Per-feature test file tracking for 1:1 validation
+    const featureTestFiles = new Set<string>();
+
     // Coverage file path: <feature-file-path>.coverage
     const coverageFilePath = join(cwd, feature.filePath + '.coverage');
 
@@ -918,58 +921,56 @@ async function validateTestStepDocstrings(
         if (scenario.testMappings && Array.isArray(scenario.testMappings)) {
           for (const mapping of scenario.testMappings) {
             if (mapping.file) {
-              workUnitTestFiles.add(mapping.file);
+              featureTestFiles.add(mapping.file);
             }
           }
         }
       }
     }
-  }
 
-  if (workUnitTestFiles.size === 0) {
-    throw new Error(
-      `No test files found in coverage files for work unit ${workUnitId}.\n\n` +
-        `Coverage files exist but contain no test mappings.\n` +
-        `Use: fspec link-coverage <feature> --scenario "<name>" --test-file <path> --test-lines <range>\n\n` +
-        `Before moving to implementing or validating, tests must be written and linked.`
-    );
-  }
+    // BUG-093: VAL-005 validation PER FEATURE (not across all features)
+    // Check for no test files linked to this feature
+    if (featureTestFiles.size === 0) {
+      throw new Error(
+        `No test files linked to feature ${feature.filePath}.\n\n` +
+          `Coverage file exists but contains no test mappings for this feature.\n` +
+          `Use: fspec link-coverage <feature> --scenario "<name>" --test-file <path> --test-lines <range>\n\n` +
+          `Before moving to implementing or validating, tests must be written and linked.`
+      );
+    }
 
-  // VAL-005: Enforce 1:1 mapping (1 feature file = 1 test file)
-  if (workUnitTestFiles.size > 1) {
-    const featureFilePaths = matchingFeatures.map(f => f.filePath).join(', ');
-    const testFilePaths = Array.from(workUnitTestFiles).join(', ');
-    throw new Error(
-      `Multiple test files detected for feature file.\n\n` +
-        `Feature: ${featureFilePaths}\n` +
-        `Test files (${workUnitTestFiles.size}): ${testFilePaths}\n\n` +
-        `Design intent: 1 feature file = 1 test file (1:1 mapping)\n\n` +
-        `Split feature file into multiple smaller features, each with its own test file.\n\n` +
-        `Example:\n` +
-        `  - keyboard-navigation.feature → useKeyboardNavigation.test.ts\n` +
-        `  - layout-selector.feature → LayoutSelector.test.tsx`
-    );
-  }
+    // BUG-093: VAL-005 - Enforce 1:1 mapping PER FEATURE (1 feature file = 1 test file)
+    if (featureTestFiles.size > 1) {
+      const testFilePaths = Array.from(featureTestFiles).join(', ');
+      throw new Error(
+        `Multiple test files detected for feature file.\n\n` +
+          `Feature: ${feature.filePath}\n` +
+          `Test files (${featureTestFiles.size}): ${testFilePaths}\n\n` +
+          `Design intent: 1 feature file = 1 test file (1:1 mapping)\n\n` +
+          `Split feature file into multiple smaller features, each with its own test file.\n\n` +
+          `Example:\n` +
+          `  - keyboard-navigation.feature → useKeyboardNavigation.test.ts\n` +
+          `  - layout-selector.feature → LayoutSelector.test.tsx`
+      );
+    }
 
-  // Validate each test file
-  const validationErrors: string[] = [];
+    // BUG-093: Step validation PER FEATURE - validate only THIS feature's test files
+    // against only THIS feature's scenarios (not all features against all test files)
+    for (const testFilePath of featureTestFiles) {
+      const absoluteTestPath = join(cwd, testFilePath);
 
-  for (const testFilePath of workUnitTestFiles) {
-    const absoluteTestPath = join(cwd, testFilePath);
+      try {
+        const testContent = await readFile(absoluteTestPath, 'utf-8');
 
-    try {
-      const testContent = await readFile(absoluteTestPath, 'utf-8');
+        // Validate test file is not empty
+        if (!testContent || testContent.trim().length === 0) {
+          throw new Error(
+            `Test file is empty: ${testFilePath}\n\n` +
+              `Test files must contain step docstrings matching feature scenarios.`
+          );
+        }
 
-      // Validate test file is not empty
-      if (!testContent || testContent.trim().length === 0) {
-        throw new Error(
-          `Test file is empty: ${testFilePath}\n\n` +
-            `Test files must contain step docstrings matching feature scenarios.`
-        );
-      }
-
-      // For each feature, validate all scenario steps
-      for (const feature of matchingFeatures) {
+        // Validate only THIS feature's scenarios against THIS test file
         for (const scenario of feature.scenarios) {
           // Skip scenarios without steps (parsing issue)
           if (!scenario.steps || !Array.isArray(scenario.steps)) {
@@ -994,13 +995,13 @@ async function validateTestStepDocstrings(
             );
           }
         }
+      } catch (error: unknown) {
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
+        throw new Error(
+          `Failed to read test file ${testFilePath}: ${errorMessage}`
+        );
       }
-    } catch (error: unknown) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
-      throw new Error(
-        `Failed to read test file ${testFilePath}: ${errorMessage}`
-      );
     }
   }
 
