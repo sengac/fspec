@@ -74,7 +74,7 @@ fspec link-coverage user-authentication --scenario "Login with valid credentials
 
 fspec update-work-unit-status EXAMPLE-006 implementing
 
-# 5. IMPLEMENT (Write minimal code to make tests pass)
+# 5. IMPLEMENT (Write code AND wire up all integration points)
 # Create: src/commands/validate.ts (lines 10,11,12,23,24)
 <test-command>  # Tests MUST PASS (green phase)
 

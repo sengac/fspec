@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-11-26T06:27:26.161Z"
+    "lastUpdated": "2025-12-04T02:09:32.610Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -36398,13 +36398,25 @@
       "type": "story",
       "status": "specifying",
       "createdAt": "2025-11-01T18:04:36.021Z",
-      "updatedAt": "2025-11-01T18:05:52.910Z",
+      "updatedAt": "2025-12-04T02:02:03.057Z",
       "description": "When a work unit moves backward from done/validating/implementing/testing to specifying, emit system-reminder to guide removal of outdated examples, scenarios, and tests to maintain consistency",
       "children": [],
       "stateHistory": [
         {
           "state": "specifying",
           "timestamp": "2025-11-01T18:04:43.437Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-12-04T01:58:43.198Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-04T02:00:01.657Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-12-04T02:02:03.057Z"
         }
       ],
       "userStory": {
@@ -36466,38 +36478,60 @@
           "text": "@human: Should the system-reminder list specific files to remove (scenarios, tests), or just provide general guidance?",
           "deleted": false,
           "createdAt": "2025-11-01T18:05:46.763Z",
-          "selected": false
+          "selected": true,
+          "answered": true,
+          "answer": "List specific files - the reminder should include actual file paths for feature files and test files linked via coverage, so the AI knows exactly what to clean up"
         },
         {
           "id": 1,
           "text": "@human: Should fspec commands help with cleanup? E.g., fspec cleanup-work-unit AUTH-001 to remove linked scenarios/tests?",
           "deleted": false,
           "createdAt": "2025-11-01T18:05:48.102Z",
-          "selected": false
+          "selected": true,
+          "answered": true,
+          "answer": "No new cleanup command needed - the reminder should guide removal using existing tools: fspec remove-example, fspec remove-scenario (if it exists), and file deletion. Keep it simple."
         },
         {
           "id": 2,
           "text": "@human: Should the reminder only appear when moving TO specifying, or also when moving to backlog?",
           "deleted": false,
           "createdAt": "2025-11-01T18:05:49.673Z",
-          "selected": false
+          "selected": true,
+          "answered": true,
+          "answer": "Only when moving TO specifying - backlog is different (work being deprioritized vs reworked). Specifying transition means requirements are being revisited."
         },
         {
           "id": 3,
           "text": "@human: Should the reminder automatically detect dependent work units and list them, or just provide general warning about checking dependencies?",
           "deleted": false,
           "createdAt": "2025-11-01T18:05:51.063Z",
-          "selected": false
+          "selected": true,
+          "answered": true,
+          "answer": "General warning only - automatic dependency detection is complex. The reminder should warn about checking dependent work units but not try to list them automatically."
         },
         {
           "id": 4,
           "text": "@human: What if no scenarios/tests exist yet (e.g., moving from testing back to specifying before tests written)? Skip reminder or show modified message?",
           "deleted": false,
           "createdAt": "2025-11-01T18:05:52.910Z",
-          "selected": false
+          "selected": true,
+          "answered": true,
+          "answer": "Show modified message - if no artifacts exist yet, remind about revisiting Example Mapping data (rules, examples, questions) since those may also be outdated."
         }
       ],
-      "nextQuestionId": 5
+      "nextQuestionId": 5,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Add new function getBackwardTransitionCleanupReminder in src/utils/system-reminder.ts. Function takes workUnitId, previousStatus, and workUnit object. Returns system-reminder with cleanup guidance when transitioning TO specifying from done/validating/implementing/testing. Look up linked feature files via coverage and list them for cleanup. Wire into getStatusChangeReminder by detecting backward transitions.",
+          "deleted": false,
+          "createdAt": "2025-12-04T01:55:45.608Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "attachments": [
+        "spec/attachments/BOARD-020/ast-research-system-reminder.json"
+      ]
     },
     "CLI-013": {
       "id": "CLI-013",
@@ -52163,6 +52197,158 @@
       "nextQuestionId": 0,
       "nextNoteId": 0,
       "updated": "2025-11-26T06:27:26.189Z"
+    },
+    "REMIND-015": {
+      "id": "REMIND-015",
+      "title": "Reword IMPLEMENTING phase guidance to prevent LLMs skipping integration work",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-12-04T01:18:04.761Z",
+      "updatedAt": "2025-12-04T02:09:32.633Z",
+      "children": [],
+      "attachments": [
+        "spec/attachments/REMIND-015/integration-guidance-analysis.md",
+        "spec/attachments/REMIND-015/ast-research-system-reminder-functions.json"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-12-04T01:33:29.630Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-12-04T01:39:28.369Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-04T01:40:51.247Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-04T01:42:56.263Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-04T01:50:26.231Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-04T02:03:56.323Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-04T02:09:26.988Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-04T02:09:32.634Z"
+        }
+      ],
+      "userStory": {
+        "role": "AI coding agent using fspec",
+        "action": "receive clear guidance during IMPLEMENTING phase that emphasizes integration work",
+        "benefit": "I complete features end-to-end instead of creating isolated modules that exist but aren't connected"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "IMPLEMENTING phase guidance must emphasize CREATION + CONNECTION, not just making tests pass",
+          "deleted": false,
+          "createdAt": "2025-12-04T01:33:48.880Z"
+        },
+        {
+          "id": 1,
+          "text": "Guidance must include WHO CALLS THIS heuristic to prompt integration thinking",
+          "deleted": false,
+          "createdAt": "2025-12-04T01:33:50.202Z"
+        },
+        {
+          "id": 2,
+          "text": "Guidance must explicitly state INTEGRATION IS NOT SCOPE CREEP",
+          "deleted": false,
+          "createdAt": "2025-12-04T01:33:51.566Z"
+        },
+        {
+          "id": 3,
+          "text": "Remove minimization-encouraging phrases: ONLY enough, minimum, minimal, avoid over-implementation",
+          "deleted": false,
+          "createdAt": "2025-12-04T01:33:52.962Z"
+        },
+        {
+          "id": 4,
+          "text": "Suggested next steps must include integration verification steps",
+          "deleted": false,
+          "createdAt": "2025-12-04T01:33:54.211Z"
+        },
+        {
+          "id": 5,
+          "text": "SPECIFYING phase guidance must include WHO CALLS THIS prompt to identify integration points during Example Mapping",
+          "deleted": false,
+          "createdAt": "2025-12-04T01:35:51.222Z"
+        }
+      ],
+      "nextRuleId": 6,
+      "examples": [
+        {
+          "id": 0,
+          "text": "When LLM enters IMPLEMENTING phase, guidance shows IMPLEMENTATION = CREATION + CONNECTION prominently",
+          "deleted": false,
+          "createdAt": "2025-12-04T01:34:03.782Z"
+        },
+        {
+          "id": 1,
+          "text": "Guidance asks For every piece of code you write, ask: WHO CALLS THIS?",
+          "deleted": false,
+          "createdAt": "2025-12-04T01:34:05.580Z"
+        },
+        {
+          "id": 2,
+          "text": "Guidance lists COMPLETE MEANS checklist: unit tests pass, integration tests written, imports added, call sites connected, feature works end-to-end",
+          "deleted": false,
+          "createdAt": "2025-12-04T01:34:06.983Z"
+        },
+        {
+          "id": 3,
+          "text": "Guidance explicitly separates STAY IN SCOPE (dont add unrelated features) from INTEGRATION IS NOT SCOPE CREEP (wiring is required)",
+          "deleted": false,
+          "createdAt": "2025-12-04T01:34:08.289Z"
+        },
+        {
+          "id": 4,
+          "text": "Suggested next steps include: write integration tests, wire up integration points, verify feature works end-to-end",
+          "deleted": false,
+          "createdAt": "2025-12-04T01:34:09.575Z"
+        },
+        {
+          "id": 5,
+          "text": "SPECIFYING phase asks: WHO CALLS THIS? Does this feature need to be wired into other parts of the system?",
+          "deleted": false,
+          "createdAt": "2025-12-04T01:35:52.590Z"
+        }
+      ],
+      "nextExampleId": 6,
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: Should the SPECIFYING phase also be updated to prompt LLMs to think about integration scenarios during Example Mapping?",
+          "deleted": false,
+          "createdAt": "2025-12-04T01:34:34.141Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Yes, include SPECIFYING phase updates in this work unit to prompt integration thinking during Example Mapping"
+        }
+      ],
+      "nextQuestionId": 1,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Modify getStatusChangeReminder function in src/utils/system-reminder.ts. Update implementing reminder (lines 164-187) to replace minimization language with CREATION + CONNECTION pattern. Update specifyingStateReminder function to add WHO CALLS THIS prompt for integration thinking during Example Mapping.",
+          "deleted": false,
+          "createdAt": "2025-12-04T01:39:02.484Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "updated": "2025-12-04T02:09:32.633Z"
     }
   },
   "states": {
@@ -52223,14 +52409,15 @@
     "specifying": [
       "LANG-001",
       "EXMAP-004",
-      "BOARD-020",
       "AGENT-001",
-      "BROWSE-001"
+      "BROWSE-001",
+      "BOARD-020"
     ],
     "testing": [],
     "implementing": [],
     "validating": [],
     "done": [
+      "REMIND-015",
       "BUG-093",
       "BUG-092",
       "REFAC-005",
@@ -52658,7 +52845,7 @@
     "DOC": 17,
     "GIT": 12,
     "FEAT": 20,
-    "REMIND": 14,
+    "REMIND": 15,
     "CODEX": 1,
     "AGENT": 20,
     "GRAPH": 3,

@@ -6,7 +6,7 @@ export function getAcddPrinciplesSection(): string {
 3. **Test Third** - Write test file with header comment linking to feature file
 4. **Link Coverage Immediately** - After writing tests, link them to scenarios with \`fspec link-coverage\`
 5. **Tests Must Fail** - Verify tests fail (red) before implementing (proves they work)
-6. **Implement Fourth** - Write minimal code to make tests pass (green)
+6. **Implement Fourth** - Write code AND wire up integration points (CREATION + CONNECTION)
 7. **Link Implementation Immediately** - After implementing, link code to test mappings with \`fspec link-coverage\`
 8. **Validate All Tests** - Run ALL tests to ensure nothing broke
 9. **No Skipping** - Must follow ACDD order: Discovery → Feature → Test → Coverage → Implementation → Coverage → Validation

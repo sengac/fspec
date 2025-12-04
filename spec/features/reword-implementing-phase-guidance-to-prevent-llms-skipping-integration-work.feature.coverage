@@ -1,0 +1,427 @@
+{
+  "scenarios": [
+    {
+      "name": "IMPLEMENTING phase shows CREATION + CONNECTION prominently",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/implementing-phase-integration-guidance.test.ts",
+          "lines": "20-31",
+          "implMappings": [
+            {
+              "file": "src/utils/system-reminder.ts",
+              "lines": [
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "IMPLEMENTING phase includes WHO CALLS THIS heuristic",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/implementing-phase-integration-guidance.test.ts",
+          "lines": "34-46",
+          "implMappings": [
+            {
+              "file": "src/utils/system-reminder.ts",
+              "lines": [
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "IMPLEMENTING phase lists COMPLETE MEANS checklist",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/implementing-phase-integration-guidance.test.ts",
+          "lines": "48-71",
+          "implMappings": [
+            {
+              "file": "src/utils/system-reminder.ts",
+              "lines": [
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "IMPLEMENTING phase separates STAY IN SCOPE from INTEGRATION IS NOT SCOPE CREEP",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/implementing-phase-integration-guidance.test.ts",
+          "lines": "73-89",
+          "implMappings": [
+            {
+              "file": "src/utils/system-reminder.ts",
+              "lines": [
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "IMPLEMENTING phase removes minimization-encouraging phrases",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/implementing-phase-integration-guidance.test.ts",
+          "lines": "91-115",
+          "implMappings": [
+            {
+              "file": "src/utils/system-reminder.ts",
+              "lines": [
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "IMPLEMENTING phase next steps include integration verification",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/implementing-phase-integration-guidance.test.ts",
+          "lines": "117-133",
+          "implMappings": [
+            {
+              "file": "src/utils/system-reminder.ts",
+              "lines": [
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "SPECIFYING phase includes WHO CALLS THIS prompt for integration points",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/implementing-phase-integration-guidance.test.ts",
+          "lines": "135-152",
+          "implMappings": [
+            {
+              "file": "src/utils/system-reminder.ts",
+              "lines": [
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/commands/__tests__/implementing-phase-integration-guidance.test.ts"
+    ],
+    "implFiles": [
+      "src/utils/system-reminder.ts"
+    ],
+    "totalLinesCovered": 425
+  }
+}

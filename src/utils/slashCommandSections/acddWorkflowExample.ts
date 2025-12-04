@@ -102,9 +102,9 @@ fspec link-coverage example-feature --scenario "Validate feature file with valid
 
 fspec update-work-unit-status EXAMPLE-006 implementing # Move to implementing
 
-# 5. IMPLEMENT (Write minimal code to make tests pass)
+# 5. IMPLEMENT (Write code AND wire up integration points)
 # Create: src/commands/validate.ts (lines 10-24)
-# Write ONLY enough code to make the tests pass
+# IMPLEMENTATION = CREATION + CONNECTION - wire up all call sites
 
 <test-command>                                   # Tests MUST PASS (green phase)
                                                  # Refactor if needed, keep tests green
@@ -140,7 +140,7 @@ fspec board                                      # Verify work unit in DONE colu
    - Use language-appropriate comment syntax: // @step (JS/C/Java), # @step (Python/Ruby), -- @step (SQL), etc.
    - Without @step comments, link-coverage will BLOCK and prevent workflow progression
 4. **Tests FAIL** - Run \`<test-command>\` and verify tests fail (proves they test real behavior)
-5. **Implement FOURTH** - \`validate.ts\` written with minimal code to pass tests
+5. **Implement FOURTH** - \`validate.ts\` written AND wired into call sites (feature works end-to-end)
 6. **Tests PASS** - Run \`<test-command>\` and verify tests now pass (green)
 7. **Validate ALL** - Run \`<test-command>\` again to ensure ALL tests still pass (nothing broke)
 8. **Tags Updated** - Remove \`@wip\`, add \`@done\` when complete
