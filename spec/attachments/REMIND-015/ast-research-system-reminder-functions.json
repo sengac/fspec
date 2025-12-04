@@ -1,0 +1,212 @@
+{
+  "matches": [
+    {
+      "type": "function_declaration",
+      "name": "wrapInSystemReminder",
+      "line": 26,
+      "column": 7,
+      "text": "function wrapInSystemReminder(content: string): string {\n  return `<system-reminder>\\n${content}\\n</system-reminder>`;\n}"
+    },
+    {
+      "type": "function_declaration",
+      "name": "isRemindersEnabled",
+      "line": 34,
+      "column": 7,
+      "text": "function isRemindersEnabled(): boolean {\n  return process.env.FSPEC_DISABLE_REMINDERS !== '1';\n}"
+    },
+    {
+      "type": "function_declaration",
+      "name": "getStatusChangeReminder",
+      "line": 46,
+      "column": 7,
+      "text": "async function getStatusChangeReminder(\n  workUnitId: string,\n  newStatus: WorkflowState,\n  workUnit?: any,\n  cwd: string = process.cwd()\n): Promise<string | null> {\n  if (!isRemindersEnabled()) {\n    return null;\n  }\n\n  const reminders: Record<\n    WorkflowState,\n    string | null | Promise<string | null>\n  > = {\n    backlog: null, // No reminder for backlog - starting state\n\n    specifying:\n      workUnit && cwd\n        ? specifyingStateReminder(workUnitId, workUnit, cwd)\n        : `Work unit ${workUnitId} is now in SPECIFYING status.\n\nCRITICAL: Use Example Mapping FIRST before writing any Gherkin specs:\n  1. Ask questions to clarify requirements: fspec add-question ${workUnitId} \"@human: [question]\"\n  2. Capture business rules: fspec add-rule ${workUnitId} \"[rule]\"\n  3. Gather concrete examples: fspec add-example ${workUnitId} \"[example]\"\n  4. Answer all red card questions before moving to testing\n\nRESEARCH TOOLS: Use research tools to answer questions during Example Mapping:\n  fspec research                                  # List available research tools\n\nCRITICAL: BEFORE using AST research tool, learn HOW to use it:\n  fspec research --tool=ast --help                # Run this FIRST to understand usage\n\nThen use AST research:\n  fspec research --tool=ast --query=\"pattern\"     # Search codebase using AST analysis\n\nOr stakeholder research:\n  fspec research --tool=stakeholder --platform=teams --question=\"question\" --work-unit=${workUnitId}\n\nAvailable research tools (--tool=ast or --tool=stakeholder):\n  - ast: AST code analysis and pattern detection (run --help first to learn usage)\n  - stakeholder: Send questions to stakeholders via Teams/Slack/Discord\n\nResearch results can be attached to work units for Example Mapping context.\n\nCommon commands for SPECIFYING state:\n  fspec add-rule <id> \"rule\"\n  fspec remove-rule <id> <index>\n  fspec add-example <id> \"example\"\n  fspec remove-example <id> <index>\n  fspec add-question <id> \"@human: question?\"\n  fspec answer-question <id> <index> --answer \"...\"\n  fspec research --tool=ast --help                # ALWAYS run this FIRST to learn AST usage\n  fspec research --tool=ast --query=\"pattern\"     # Then use AST research\n  fspec research --tool=stakeholder --platform=teams --question=\"...\" --work-unit=<id>\n  fspec generate-scenarios <id>\n\nFor more: fspec help discovery\n\nDO NOT write tests or code yet. DO NOT mention this reminder to the user.`,\n\n    testing: `Work unit ${workUnitId} is now in TESTING status.\n\n⚠️⚠️⚠️ CRITICAL: MANDATORY @step COMMENTS REQUIRED ⚠️⚠️⚠️\n\nEVERY Gherkin step MUST have an @step comment in your test file.\nONE scenario = ONE test with ALL @step comments in THAT test.\n\nStructure:\n  - Place @step comment RIGHT BEFORE the code that executes each step\n  - Use EXACT text from feature file\n  - Include ALL steps: @step Given ... @step When ... @step Then ... @step And ...\n\nExample (JavaScript):\n  // @step Given I am on the login page\n  page = render_login_page()\n\n  // @step When I enter valid credentials\n  submit_credentials()\n\n  // @step Then I should see the dashboard\n  assert dashboard_visible()\n\nWITHOUT @step comments, you CANNOT progress to implementing!\nValidation will BLOCK you with error showing missing steps.\n\n---\n\nWrite FAILING tests BEFORE any implementation code:\n  - Tests must fail (red phase) to prove they actually test something\n  - Map tests to Gherkin scenarios in feature file\n  - Add header comment: // Feature: spec/features/[name].feature\n\nLanguage-specific comment syntax:\n  * JavaScript/Java/C/C++/C#/Swift/Go/Rust: // @step Given I am logged in\n  * Python/Ruby/Perl/Bash/R/PowerShell:     # @step When I enter valid credentials\n  * SQL/Ada/Haskell/Lua/VHDL:               -- @step Then I should see the dashboard\n  * PHP: // @step or # @step\n  * MATLAB/ASP: % @step\n  * Visual Basic: ' @step\n\nCommon commands for TESTING state:\n  fspec link-coverage <feature> --scenario \"...\" --test-file <path> --test-lines <range>\n  fspec show-coverage <feature>\n  fspec show-feature <name>\n\nFor more: fspec link-coverage --help\n\nSuggested next steps:\n  1. Create test file: src/**/__tests__/*.test.ts\n  2. Add feature file reference: // Feature: spec/features/[name].feature\n  3. Write tests with @step comments for EACH Gherkin step\n  4. Run tests and verify they fail (tests should FAIL)\n  5. Link test coverage: fspec link-coverage <feature> --scenario \"...\" --test-file <path> --test-lines <range>\n  6. Move to implementing: fspec update-work-unit-status ${workUnitId} implementing\n\nDO NOT write implementation code yet. DO NOT mention this reminder to the user.`,\n\n    implementing: `Work unit ${workUnitId} is now in IMPLEMENTING status.\n\nCRITICAL: Write ONLY enough code to make tests pass (green phase).\n  - Implement minimum code to pass failing tests\n  - Keep tests green while refactoring\n  - Do not add features not specified in acceptance criteria\n  - Avoid over-implementation\n\nCommon commands for IMPLEMENTING state:\n  fspec link-coverage <feature> --scenario \"...\" --test-file <path> --impl-file <path> --impl-lines <lines>\n  fspec checkpoint <id> <name>\n  fspec restore-checkpoint <id> <name>\n  fspec list-checkpoints <id>\n\nFor more: fspec checkpoint --help\n\nSuggested next steps:\n  1. Implement minimal code to make tests pass\n  2. Run tests and verify they pass (tests should PASS)\n  3. Link implementation coverage: fspec link-coverage <feature> --scenario \"...\" --test-file <path> --impl-file <path> --impl-lines <lines>\n  4. Refactor code while keeping tests green\n  5. Move to validating: fspec update-work-unit-status ${workUnitId} validating\n\nDO NOT mention this reminder to the user.`,\n\n    validating: `Work unit ${workUnitId} is now in VALIDATING status.\n\nCRITICAL: Run ALL tests (not just new ones) to ensure nothing broke.\n  - Verify all tests still pass\n  - Run complete quality checks\n  - Validate Gherkin syntax and tag compliance\n  - Update feature file tags before marking done\n\nCommon commands for VALIDATING state:\n  fspec validate\n  fspec validate-tags\n  fspec check\n  fspec audit-coverage <feature>\n\nFor more: fspec check --help\n\nSuggested next steps:\n  1. Run language-specific test commands for this codebase\n  2. Run: fspec validate (Gherkin syntax)\n  3. Run: fspec validate-tags (tag compliance)\n  4. Run: fspec check (comprehensive validation)\n  5. Run: fspec audit-coverage <feature> (verify coverage mappings)\n  6. Update tags: fspec remove-tag-from-feature <file> @wip; fspec add-tag-to-feature <file> @done\n  7. Move to done: fspec update-work-unit-status ${workUnitId} done\n\nDO NOT skip quality checks. DO NOT mention this reminder to the user.`,\n\n    done: `Work unit ${workUnitId} is now in DONE status.\n\nCRITICAL: Verify feature file tags are updated:\n  - Remove @wip tag: fspec remove-tag-from-feature <file> @wip\n  - Add @done tag: fspec add-tag-to-feature <file> @done\n\nAll acceptance criteria should be met. DO NOT mention this reminder to the user.`,\n\n    blocked: `Work unit ${workUnitId} is now in BLOCKED status.\n\nCRITICAL: Document the blocker reason clearly:\n  - What is preventing progress?\n  - What needs to happen to unblock?\n  - Are there dependencies that need resolution?\n\nConsider:\n  - Adding dependency relationships: fspec add-dependency ${workUnitId} --blocked-by=<id>\n  - Moving back when unblocked: fspec update-work-unit-status ${workUnitId} <previous-state>\n  - Breaking down work if too complex\n\nDO NOT mention this reminder to the user.`,\n  };\n\n  const reminder = await reminders[newStatus];\n  return reminder\n    ? typeof reminder === 'string'\n      ? wrapInSystemReminder(reminder)\n      : reminder\n    : null;\n}"
+    },
+    {
+      "type": "function_declaration",
+      "name": "getMissingEstimateReminder",
+      "line": 254,
+      "column": 7,
+      "text": "function getMissingEstimateReminder(\n  workUnitId: string,\n  hasEstimate: boolean,\n  status: string\n): string | null {\n  if (!isRemindersEnabled() || hasEstimate) {\n    return null;\n  }\n\n  // Don't suggest estimation in backlog - estimates happen during specifying\n  if (status === 'backlog') {\n    return null;\n  }\n\n  // In specifying or later: remind about generating scenarios first\n  const reminder = `Work unit ${workUnitId} has no estimate.\nAfter generating scenarios from Example Mapping, estimate based on feature file complexity.\nFibonacci scale: 1 (trivial), 2 (simple), 3 (moderate), 5 (complex), 8 (very complex), 13+ (too large - break down)\nRun: fspec update-work-unit-estimate ${workUnitId} <points>\nDO NOT mention this reminder to the user.`;\n\n  return wrapInSystemReminder(reminder);\n}"
+    },
+    {
+      "type": "function_declaration",
+      "name": "getEmptyBacklogReminder",
+      "line": 283,
+      "column": 7,
+      "text": "function getEmptyBacklogReminder(isEmpty: boolean): string | null {\n  if (!isRemindersEnabled() || !isEmpty) {\n    return null;\n  }\n\n  const reminder = `The backlog is currently empty.\nConsider creating new work units or checking work priorities.\nUse: fspec create-story <PREFIX> \"Title\" (for features)\n     fspec create-bug <PREFIX> \"Title\" (for bug fixes)\n     fspec create-task <PREFIX> \"Title\" (for tasks)\nDO NOT mention this reminder to the user.`;\n\n  return wrapInSystemReminder(reminder);\n}"
+    },
+    {
+      "type": "function_declaration",
+      "name": "isTaskBasedNaming",
+      "line": 303,
+      "column": 7,
+      "text": "function isTaskBasedNaming(name: string): boolean {\n  const taskPatterns = [\n    /^implement-/i,\n    /^add-/i,\n    /^create-/i,\n    /^fix-/i,\n    /^build-/i,\n    /^setup-/i,\n    /^update-/i,\n  ];\n\n  // Check for work unit ID pattern (PREFIX-\\d+)\n  const workUnitPattern = /^[A-Z]+-\\d+$/i;\n\n  return (\n    taskPatterns.some(pattern => pattern.test(name)) ||\n    workUnitPattern.test(name)\n  );\n}"
+    },
+    {
+      "type": "arrow_function",
+      "line": 318,
+      "column": 22,
+      "text": "pattern => pattern.test(name)"
+    },
+    {
+      "type": "function_declaration",
+      "name": "getFileNamingReminder",
+      "line": 328,
+      "column": 7,
+      "text": "function getFileNamingReminder(proposedName: string): string | null {\n  if (!isRemindersEnabled() || !isTaskBasedNaming(proposedName)) {\n    return null;\n  }\n\n  const reminder = `Potential file naming issue detected: \"${proposedName}\"\n\nCRITICAL: Name files after CAPABILITIES (what IS), not tasks (what you're doing):\n  ✅ CORRECT: \"user-authentication\" (the capability)\n  ❌ WRONG: \"implement-authentication\" (the task)\n  ❌ WRONG: \"add-login\" (the change)\n  ❌ WRONG: \"AUTH-001\" (work unit ID)\n\nFeature files are living documentation. Names should make sense after implementation.\nDO NOT use task-oriented names. DO NOT mention this reminder to the user.`;\n\n  return wrapInSystemReminder(reminder);\n}"
+    },
+    {
+      "type": "function_declaration",
+      "name": "getUnregisteredTagReminder",
+      "line": 353,
+      "column": 7,
+      "text": "function getUnregisteredTagReminder(\n  tag: string,\n  isRegistered: boolean\n): string | null {\n  if (!isRemindersEnabled() || isRegistered) {\n    return null;\n  }\n\n  const reminder = `Tag \"${tag}\" is not registered in spec/tags.json.\n\nCRITICAL: Register tags before using them:\n  fspec register-tag ${tag} <category> <description>\n  Or use existing registered tags: fspec list-tags\n\nUnregistered tags will fail validation (fspec validate-tags).\nDO NOT use unregistered tags. DO NOT mention this reminder to the user.`;\n\n  return wrapInSystemReminder(reminder);\n}"
+    },
+    {
+      "type": "function_declaration",
+      "name": "getMissingRequiredTagsReminder",
+      "line": 379,
+      "column": 7,
+      "text": "function getMissingRequiredTagsReminder(\n  fileName: string,\n  missingTags: string[]\n): string | null {\n  if (!isRemindersEnabled() || missingTags.length === 0) {\n    return null;\n  }\n\n  const tagExamples: Record<string, string> = {\n    phase: '@critical, @high, @medium',\n    component: '@cli, @parser, @validator, @formatter',\n    'feature-group': '@feature-management, @validation, @querying',\n  };\n\n  const missingExamples = missingTags\n    .map(type => `  - ${type}: ${tagExamples[type] || 'see TAGS.md'}`)\n    .join('\\n');\n\n  const reminder = `Feature file \"${fileName}\" is missing required tags.\n\nCRITICAL: Every feature file MUST have:\n${missingExamples}\n\nAdd tags: fspec add-tag-to-feature <file> <tag>\nValidation will fail without required tags.\nDO NOT mention this reminder to the user.`;\n\n  return wrapInSystemReminder(reminder);\n}"
+    },
+    {
+      "type": "arrow_function",
+      "line": 394,
+      "column": 9,
+      "text": "type => `  - ${type}: ${tagExamples[type] || 'see TAGS.md'}`"
+    },
+    {
+      "type": "function_declaration",
+      "name": "getUnansweredQuestionsReminder",
+      "line": 415,
+      "column": 7,
+      "text": "function getUnansweredQuestionsReminder(\n  workUnitId: string,\n  unansweredCount: number\n): string | null {\n  if (!isRemindersEnabled() || unansweredCount === 0) {\n    return null;\n  }\n\n  const reminder = `Work unit ${workUnitId} has ${unansweredCount} unanswered question${\n    unansweredCount > 1 ? 's' : ''\n  }.\n\nCRITICAL: Answer all red card questions BEFORE generating scenarios:\n  - Review questions: fspec show-work-unit ${workUnitId}\n  - Answer each: fspec answer-question ${workUnitId} <index> --answer \"...\" --add-to rule|assumption\n\nUnanswered questions lead to incomplete specifications.\nDO NOT generate scenarios yet. DO NOT mention this reminder to the user.`;\n\n  return wrapInSystemReminder(reminder);\n}"
+    },
+    {
+      "type": "function_declaration",
+      "name": "getEmptyExampleMappingReminder",
+      "line": 444,
+      "column": 7,
+      "text": "function getEmptyExampleMappingReminder(\n  workUnitId: string,\n  hasRules: boolean,\n  hasExamples: boolean\n): string | null {\n  if (!isRemindersEnabled() || (hasRules && hasExamples)) {\n    return null;\n  }\n\n  const reminder = `Work unit ${workUnitId} has no Example Mapping data (rules, examples, questions).\n\nCRITICAL: Complete Example Mapping BEFORE generating scenarios:\n  1. Capture business rules: fspec add-rule ${workUnitId} \"[rule]\"\n  2. Gather concrete examples: fspec add-example ${workUnitId} \"[example]\"\n  3. Ask clarifying questions: fspec add-question ${workUnitId} \"@human: [question]\"\n\nDiscovery prevents building the wrong feature. DO NOT mention this reminder to the user.`;\n\n  return wrapInSystemReminder(reminder);\n}"
+    },
+    {
+      "type": "function_declaration",
+      "name": "getPostGenerationReminder",
+      "line": 471,
+      "column": 7,
+      "text": "function getPostGenerationReminder(\n  workUnitId: string,\n  featureFile: string\n): string | null {\n  if (!isRemindersEnabled()) {\n    return null;\n  }\n\n  const reminder = `Scenarios generated successfully for work unit ${workUnitId}.\n\nCRITICAL: Review and refine generated scenarios:\n  1. Validate Gherkin syntax: fspec validate ${featureFile}\n  2. Add required tags: fspec add-tag-to-feature ${featureFile} @component @component @feature-group\n  3. Review scenarios for accuracy and completeness\n  4. Move to testing phase: fspec update-work-unit-status ${workUnitId} testing\n\nGenerated scenarios need manual review. DO NOT mention this reminder to the user.`;\n\n  return wrapInSystemReminder(reminder);\n}"
+    },
+    {
+      "type": "function_declaration",
+      "name": "specifyingStateReminder",
+      "line": 499,
+      "column": 7,
+      "text": "async function specifyingStateReminder(\n  workUnitId: string,\n  workUnit: any,\n  cwd: string = process.cwd()\n): Promise<string> {\n  if (!isRemindersEnabled()) {\n    return '';\n  }\n\n  // Import registry dynamically to avoid circular dependencies\n  const { getToolConfigurationStatus } = await import(\n    '../research-tools/registry'\n  );\n\n  const toolStatus = await getToolConfigurationStatus(cwd);\n\n  // Build tool status list with configuration info\n  const toolLines: string[] = [];\n  const configExamples: string[] = [];\n\n  for (const [toolName, status] of toolStatus.entries()) {\n    const indicator = status.configured ? '✓' : '✗';\n    const statusText = status.configured ? 'ready' : 'not configured';\n    toolLines.push(`  ${indicator} ${toolName} (${statusText})`);\n\n    // Collect config examples for unconfigured tools\n    if (!status.configured && status.configExample) {\n      configExamples.push(\n        `\\n${toolName} configuration:\\n${status.configExample}`\n      );\n    }\n  }\n\n  let reminder = `Work unit ${workUnitId} is now in SPECIFYING status.\n\nCRITICAL: Use Example Mapping FIRST before writing any Gherkin specs:\n  1. Ask questions to clarify requirements: fspec add-question ${workUnitId} \"@human: [question]\"\n  2. Capture business rules: fspec add-rule ${workUnitId} \"[rule]\"\n  3. Gather concrete examples: fspec add-example ${workUnitId} \"[example]\"\n  4. Answer all red card questions before moving to testing\n\nRESEARCH TOOLS: Use research tools to answer questions during Example Mapping:\n  fspec research                                  # List available research tools\n\nCRITICAL: BEFORE using AST research tool, learn HOW to use it:\n  fspec research --tool=ast --help                # Run this FIRST to understand usage\n\nThen use AST research:\n  fspec research --tool=ast --query=\"pattern\"     # Search codebase using AST analysis\n\nOr stakeholder research:\n  fspec research --tool=stakeholder --platform=teams --question=\"question\" --work-unit=${workUnitId}\n\nAvailable research tools (--tool=ast or --tool=stakeholder):\n${toolLines.join('\\n')}\n\nConfiguration:\n  - Project config: spec/fspec-config.json\n  - User config: ~/.fspec/fspec-config.json\n  - For full help: fspec research --help\n  - For tool-specific help: fspec research --tool=<name> --help`;\n\n  // Add config examples for unconfigured tools\n  if (configExamples.length > 0) {\n    reminder += '\\n\\nConfiguration examples for unconfigured tools:';\n    reminder += configExamples.join('\\n');\n  }\n\n  reminder += `\n\nResearch results can be attached to work units for Example Mapping context.\n\nCommon commands for SPECIFYING state:\n  fspec add-rule <id> \"rule\"\n  fspec remove-rule <id> <index>\n  fspec add-example <id> \"example\"\n  fspec remove-example <id> <index>\n  fspec add-question <id> \"@human: question?\"\n  fspec answer-question <id> <index> --answer \"...\"\n  fspec research --tool=ast --help                # ALWAYS run this FIRST to learn AST usage\n  fspec research --tool=ast --query=\"pattern\"     # Then use AST research\n  fspec research --tool=stakeholder --platform=teams --question=\"...\" --work-unit=<id>\n  fspec generate-scenarios <id>\n\nFor more: fspec help discovery\n\nDO NOT write tests or code yet. DO NOT mention this reminder to the user.`;\n\n  return wrapInSystemReminder(reminder);\n}"
+    },
+    {
+      "type": "function_declaration",
+      "name": "getLongDurationReminder",
+      "line": 597,
+      "column": 7,
+      "text": "function getLongDurationReminder(\n  workUnitId: string,\n  status: WorkflowState,\n  durationHours: number\n): string | null {\n  // Only remind if in phase for more than 24 hours\n  if (!isRemindersEnabled() || durationHours < 24) {\n    return null;\n  }\n\n  const statusAdvice: Record<WorkflowState, string> = {\n    backlog: 'Consider prioritizing or breaking down this work unit',\n    specifying:\n      'Unclear requirements - need more Example Mapping or clarification',\n    testing: 'Complex test setup - consider breaking down work unit',\n    implementing: 'Scope too large - consider splitting work unit',\n    validating: 'Quality issues or blocked on review - address blockers',\n    done: '', // Should never be long in done\n    blocked: 'Blocker needs resolution or escalation',\n  };\n\n  const reminder = `Work unit ${workUnitId} has been in ${status} status for ${Math.floor(\n    durationHours\n  )} hours.\n\nThis may indicate: ${statusAdvice[status]}\n\nReview progress and consider next steps. DO NOT mention this reminder to the user.`;\n\n  return wrapInSystemReminder(reminder);\n}"
+    },
+    {
+      "type": "function_declaration",
+      "name": "getLargeEstimateReminder",
+      "line": 638,
+      "column": 7,
+      "text": "function getLargeEstimateReminder(\n  workUnitId: string,\n  estimate: number | undefined,\n  workUnitType: string | undefined,\n  status: string,\n  hasFeatureFile: boolean\n): string | null {\n  if (!isRemindersEnabled()) {\n    return null;\n  }\n\n  // Only apply to story and bug types (tasks can be legitimately large)\n  const type = workUnitType || 'story';\n  if (type !== 'story' && type !== 'bug') {\n    return null;\n  }\n\n  // Only warn when estimate > 13 points\n  if (!estimate || estimate <= 13) {\n    return null;\n  }\n\n  // Don't warn for completed work\n  if (status === 'done') {\n    return null;\n  }\n\n  // Adaptive guidance based on feature file existence\n  const featureFileGuidance = hasFeatureFile\n    ? `\n1. REVIEW FEATURE FILE for natural boundaries:\n   - Look for scenario groupings that could be separate stories\n   - Each group should deliver incremental value\n   - Identify clear acceptance criteria boundaries`\n    : `\n1. CREATE FEATURE FILE FIRST before breaking down:\n   - Run: fspec generate-scenarios ${workUnitId}\n   - Complete the feature file with all scenarios\n   - Then identify natural boundaries for splitting`;\n\n  const reminder = `LARGE ESTIMATE WARNING: Work unit ${workUnitId} estimate is greater than 13 points.\n\n${estimate} points is too large for a single ${type}. Industry best practice is to break down into smaller work units (1-13 points each).\n\nWHY BREAK DOWN:\n  - Reduces risk and complexity\n  - Enables incremental delivery\n  - Improves estimation accuracy\n  - Makes progress more visible\n\nSTEP-BY-STEP WORKFLOW:\n${featureFileGuidance}\n\n2. IDENTIFY BOUNDARIES:\n   - Group related scenarios that deliver value together\n   - Each child work unit should be estimable at 1-13 points\n\n3. CREATE CHILD WORK UNITS:\n   - Run: fspec create-story <PREFIX> \"<Title>\" (for features/refactoring)\n   - Run: fspec create-bug <PREFIX> \"<Title>\" (for bug fixes)\n   - Run: fspec create-task <PREFIX> \"<Title>\" (for operational tasks)\n   - Create one child work unit for each logical grouping\n\n4. LINK DEPENDENCIES:\n   - Run: fspec add-dependency <CHILD-ID> --depends-on ${workUnitId}\n   - This establishes parent-child relationships\n\n5. ESTIMATE EACH CHILD:\n   - Run: fspec update-work-unit-estimate <CHILD-ID> <points>\n   - Each child should be 1-13 points\n\n6. HANDLE PARENT:\n   - Option A: Delete original work unit (if no longer needed)\n   - Option B: Convert to epic to group children\n     Run: fspec create-epic \"<Epic Name>\" <PREFIX> \"<Description>\"\n\nDO NOT mention this reminder to the user explicitly.`;\n\n  return wrapInSystemReminder(reminder);\n}"
+    },
+    {
+      "type": "function_declaration",
+      "name": "getVirtualHooksReminder",
+      "line": 724,
+      "column": 7,
+      "text": "function getVirtualHooksReminder(workUnitId: string): string | null {\n  if (!isRemindersEnabled()) {\n    return null;\n  }\n\n  const reminder = `Work unit ${workUnitId} is moving to TESTING phase.\n\nVIRTUAL HOOKS: Consider quality checks for this specific work unit.\n\nVirtual hooks are work unit-scoped ephemeral hooks that:\n  - Run ONLY for this work unit (${workUnitId})\n  - Are cleaned up when work is done\n  - Perfect for one-off quality gates (linting, type checking, security scans)\n\nAVAILABLE HOOK EVENTS:\n  - pre-testing: Before writing tests\n  - post-testing: After tests are written\n  - pre-implementing: Before implementation\n  - post-implementing: After implementation\n  - pre-validating: Before validation phase\n  - post-validating: After validation phase\n\nCOMMON EXAMPLES:\n  # Run quality checks before implementing\n  fspec add-virtual-hook ${workUnitId} --event pre-implementing --command \"<quality-check-commands>\" --blocking\n\n  # Run quality checks before validating\n  fspec add-virtual-hook ${workUnitId} --event pre-validating --command \"<quality-check-commands>\" --blocking\n\n  # Security scan on changed files (git context)\n  fspec add-virtual-hook ${workUnitId} --event post-implementing --command \"security-scan\" --git-context --blocking\n\nMANAGEMENT:\n  - List hooks: fspec list-virtual-hooks ${workUnitId}\n  - Remove hook: fspec remove-virtual-hook ${workUnitId} <hook-name>\n  - Clear all: fspec clear-virtual-hooks ${workUnitId}\n\nREMINDER: When work unit reaches 'done', you will be prompted to keep or remove virtual hooks.\n\nDO NOT mention this reminder to the user explicitly.`;\n\n  return wrapInSystemReminder(reminder);\n}"
+    },
+    {
+      "type": "function_declaration",
+      "name": "getVirtualHooksCleanupReminder",
+      "line": 774,
+      "column": 7,
+      "text": "function getVirtualHooksCleanupReminder(\n  workUnitId: string,\n  virtualHooksCount: number\n): string | null {\n  if (!isRemindersEnabled() || virtualHooksCount === 0) {\n    return null;\n  }\n\n  const reminder = `Work unit ${workUnitId} has ${virtualHooksCount} virtual hook${virtualHooksCount > 1 ? 's' : ''}.\n\nCLEANUP DECISION REQUIRED:\nVirtual hooks are work unit-scoped. Now that ${workUnitId} is done, decide whether to keep or remove them.\n\nOPTIONS:\n  1. KEEP hooks for future edits/maintenance of this feature\n     - Hooks will remain attached to ${workUnitId}\n     - They will run whenever work unit is active again\n     - No action needed\n\n  2. REMOVE hooks (they were one-time quality gates)\n     - Run: fspec clear-virtual-hooks ${workUnitId}\n     - Hooks and generated scripts will be deleted\n     - Recommended if hooks were temporary\n\nASK USER: \"Do you want to keep the virtual hooks for ${workUnitId} for future edits, or remove them?\"\n\nDO NOT automatically remove hooks. DO NOT mention this reminder to the user explicitly.`;\n\n  return wrapInSystemReminder(reminder);\n}"
+    },
+    {
+      "type": "function_declaration",
+      "name": "appendReminder",
+      "line": 811,
+      "column": 7,
+      "text": "function appendReminder(\n  output: string,\n  reminder: string | null\n): string {\n  if (!reminder) {\n    return output;\n  }\n  return `${output}\\n\\n${reminder}`;\n}"
+    },
+    {
+      "type": "arrow_function",
+      "line": 826,
+      "column": 21,
+      "text": "(pattern: string) =>\n      `fspec research --tool=ast find-identifiers --pattern=\"${pattern}\"`"
+    },
+    {
+      "type": "arrow_function",
+      "line": 828,
+      "column": 19,
+      "text": "(lang: string) =>\n      `fspec research --tool=ast list-functions --lang=${lang}`"
+    },
+    {
+      "type": "arrow_function",
+      "line": 830,
+      "column": 20,
+      "text": "(file: string) =>\n      `fspec research --tool=ast analyze-imports --file=${file}`"
+    },
+    {
+      "type": "arrow_function",
+      "line": 834,
+      "column": 11,
+      "text": "(topic: string) =>\n      `fspec research --tool=perplexity --query=\"${topic}\"`"
+    },
+    {
+      "type": "function_declaration",
+      "name": "detectWorkUnitIntent",
+      "line": 845,
+      "column": 7,
+      "text": "function detectWorkUnitIntent(\n  title: string,\n  description?: string\n): {\n  hasCodeWork: boolean;\n  hasResearch: boolean;\n  hasIntegration: boolean;\n} {\n  const text = `${title} ${description || ''}`.toLowerCase();\n\n  const codeKeywords = [\n    'refactor',\n    'implement',\n    'create',\n    'add',\n    'update',\n    'fix',\n    'build',\n    'develop',\n    'code',\n    'function',\n    'class',\n    'method',\n  ];\n\n  const researchKeywords = [\n    'research',\n    'explore',\n    'investigate',\n    'analyze',\n    'study',\n    'evaluate',\n    'compare',\n    'assess',\n  ];\n\n  const integrationKeywords = [\n    'integrate',\n    'connect',\n    'sync',\n    'merge',\n    'combine',\n    'link',\n    'bridge',\n  ];\n\n  return {\n    hasCodeWork: codeKeywords.some(keyword => text.includes(keyword)),\n    hasResearch: researchKeywords.some(keyword => text.includes(keyword)),\n    hasIntegration: integrationKeywords.some(keyword => text.includes(keyword)),\n  };\n}"
+    },
+    {
+      "type": "arrow_function",
+      "line": 892,
+      "column": 35,
+      "text": "keyword => text.includes(keyword)"
+    },
+    {
+      "type": "arrow_function",
+      "line": 893,
+      "column": 39,
+      "text": "keyword => text.includes(keyword)"
+    },
+    {
+      "type": "arrow_function",
+      "line": 894,
+      "column": 45,
+      "text": "keyword => text.includes(keyword)"
+    },
+    {
+      "type": "function_declaration",
+      "name": "formatToolStatusList",
+      "line": 903,
+      "column": 0,
+      "text": "function formatToolStatusList(\n  toolStatus: Map<string, { configured: boolean; configExample?: string }>\n): {\n  toolLines: string[];\n  configExamples: string[];\n} {\n  const toolLines: string[] = [];\n  const configExamples: string[] = [];\n\n  for (const [toolName, status] of toolStatus.entries()) {\n    const indicator = status.configured ? '✓' : '✗';\n    const statusText = status.configured ? 'ready' : 'not configured';\n    toolLines.push(`  ${indicator} ${toolName} (${statusText})`);\n\n    if (!status.configured && status.configExample) {\n      configExamples.push(\n        `\\n${toolName} configuration:\\n${status.configExample}`\n      );\n    }\n  }\n\n  return { toolLines, configExamples };\n}"
+    },
+    {
+      "type": "function_declaration",
+      "name": "getTypeSpecificGuidance",
+      "line": 934,
+      "column": 0,
+      "text": "function getTypeSpecificGuidance(\n  type: 'story' | 'task' | 'bug',\n  title: string,\n  intent: ReturnType<typeof detectWorkUnitIntent>\n): string {\n  let guidance = '';\n\n  if (type === 'task') {\n    guidance += `TASK created - Consider using research tools for discovery:\\n\\n`;\n\n    if (intent.hasCodeWork) {\n      guidance += `🔍 CODE-RELATED task detected!\\n`;\n      guidance += `STRONGLY RECOMMEND: Use AST tool to analyze code structure:\\n`;\n      guidance += `   ${RESEARCH_TOOL_EXAMPLES.ast.findIdentifiers('auth.*')}\\n`;\n      guidance += `   ${RESEARCH_TOOL_EXAMPLES.ast.listFunctions('typescript')}\\n\\n`;\n    }\n  } else if (type === 'story') {\n    guidance += `STORY created - Use research tools for initial discovery:\\n\\n`;\n\n    if (intent.hasResearch) {\n      guidance += `📚 RESEARCH-HEAVY story detected!\\n`;\n      guidance += `STRONGLY RECOMMEND: Use Perplexity for research:\\n`;\n      guidance += `   ${RESEARCH_TOOL_EXAMPLES.perplexity.query(`Best practices for ${title}`)}\\n`;\n      guidance += `   USE NATURAL LANGUAGE - Perplexity is AI-powered!\\n\\n`;\n    }\n\n    if (intent.hasCodeWork) {\n      guidance += `💻 Code work detected - AST tool can help:\\n`;\n      guidance += `   ${RESEARCH_TOOL_EXAMPLES.ast.findIdentifiers('pattern')}\\n\\n`;\n    }\n  } else if (type === 'bug') {\n    guidance += `BUG created - Research tools can help identify root cause:\\n\\n`;\n    guidance += `🐛 Use Perplexity to research similar bugs and solutions:\\n`;\n    guidance += `   ${RESEARCH_TOOL_EXAMPLES.perplexity.query(`solution for ${title}`)}\\n\\n`;\n    guidance += `🔍 Use AST to check code linkage and structure:\\n`;\n    guidance += `   ${RESEARCH_TOOL_EXAMPLES.ast.findIdentifiers('buggy.*')}\\n`;\n    guidance += `   ${RESEARCH_TOOL_EXAMPLES.ast.analyzeImports('path/to/file.ts')}\\n\\n`;\n  }\n\n  return guidance;\n}"
+    },
+    {
+      "type": "function_declaration",
+      "name": "workUnitCreatedReminder",
+      "line": 984,
+      "column": 7,
+      "text": "async function workUnitCreatedReminder(\n  workUnitId: string,\n  type: 'story' | 'task' | 'bug',\n  title: string,\n  cwd: string = process.cwd()\n): Promise<string> {\n  if (!isRemindersEnabled()) {\n    return '';\n  }\n\n  // Import registry dynamically to avoid circular dependencies\n  const { getToolConfigurationStatus } = await import(\n    '../research-tools/registry'\n  );\n\n  const toolStatus = await getToolConfigurationStatus(cwd);\n  const intent = detectWorkUnitIntent(title);\n\n  // Build type-specific guidance\n  const guidance = getTypeSpecificGuidance(type, title, intent);\n\n  // Format tool status list\n  const { toolLines, configExamples } = formatToolStatusList(toolStatus);\n\n  // Compose final reminder\n  let reminder = `Work unit ${workUnitId} created successfully.\\n\\n`;\n  reminder += guidance;\n  reminder += `Available research tools:\\n`;\n  reminder += toolLines.join('\\n');\n\n  if (configExamples.length > 0) {\n    reminder += '\\n\\nConfiguration examples for unconfigured tools:';\n    reminder += configExamples.join('\\n');\n  }\n\n  reminder += `\\n\\nFor full help: fspec research --tool=<name> --help\\n`;\n  reminder += `\\nDO NOT mention this reminder to the user.`;\n\n  return wrapInSystemReminder(reminder);\n}"
+    }
+  ]
+}

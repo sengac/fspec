@@ -70,6 +70,12 @@ CRITICAL: Use Example Mapping FIRST before writing any Gherkin specs:
   3. Gather concrete examples: fspec add-example ${workUnitId} "[example]"
   4. Answer all red card questions before moving to testing
 
+INTEGRATION THINKING: WHO CALLS THIS? Ask during discovery.
+  Does this feature need to be wired into other parts of the system?
+  If yes, capture integration points as examples that become @integration scenarios.
+  Event systems, middleware, plugins, services, hooks → need integration scenarios.
+  Pure utilities, standalone commands, types → don't need integration scenarios.
+
 RESEARCH TOOLS: Use research tools to answer questions during Example Mapping:
   fspec research                                  # List available research tools
 
@@ -163,11 +169,32 @@ DO NOT write implementation code yet. DO NOT mention this reminder to the user.`
 
     implementing: `Work unit ${workUnitId} is now in IMPLEMENTING status.
 
-CRITICAL: Write ONLY enough code to make tests pass (green phase).
-  - Implement minimum code to pass failing tests
-  - Keep tests green while refactoring
-  - Do not add features not specified in acceptance criteria
-  - Avoid over-implementation
+⚠️ COMMON FAILURE MODE: Code that exists but isn't connected.
+Tests passing in isolation is NOT the same as a working feature.
+
+IMPLEMENTATION = CREATION + CONNECTION
+
+For every piece of code you write, ask: "WHO CALLS THIS?"
+If the answer is "nobody yet" — you're not done. Wire it up.
+
+COMPLETE MEANS:
+  ✓ Unit tests pass (code works correctly in isolation)
+  ✓ Integration tests written (code works in context of the system)
+  ✓ Imports added (files that use this code import it)
+  ✓ Call sites connected (code is invoked from where it should be)
+  ✓ Feature works end-to-end (can be demonstrated in the real system)
+
+STAY IN SCOPE (avoid scope creep):
+  ✗ Don't add features beyond the acceptance criteria
+  ✗ Don't refactor unrelated code
+  ✗ Don't gold-plate with "nice to have" enhancements
+
+INTEGRATION IS NOT SCOPE CREEP:
+  ✓ Wiring up call sites is PART OF implementation
+  ✓ Adding imports to existing files is REQUIRED
+  ✓ The feature working in the real system is the goal
+
+A feature isn't done until it's CONNECTED, not just CREATED.
 
 Common commands for IMPLEMENTING state:
   fspec link-coverage <feature> --scenario "..." --test-file <path> --impl-file <path> --impl-lines <lines>
@@ -178,11 +205,13 @@ Common commands for IMPLEMENTING state:
 For more: fspec checkpoint --help
 
 Suggested next steps:
-  1. Implement minimal code to make tests pass
-  2. Run tests and verify they pass (tests should PASS)
-  3. Link implementation coverage: fspec link-coverage <feature> --scenario "..." --test-file <path> --impl-file <path> --impl-lines <lines>
-  4. Refactor code while keeping tests green
-  5. Move to validating: fspec update-work-unit-status ${workUnitId} validating
+  1. Write code to make unit tests pass
+  2. Write integration tests that verify the wiring works
+  3. Wire up all integration points (imports, call sites)
+  4. Run integration tests and verify they pass
+  5. Verify the feature works end-to-end
+  6. Link implementation coverage: fspec link-coverage <feature> --scenario "..." --test-file <path> --impl-file <path> --impl-lines <lines>
+  7. Move to validating: fspec update-work-unit-status ${workUnitId} validating
 
 DO NOT mention this reminder to the user.`,
 
@@ -537,6 +566,12 @@ CRITICAL: Use Example Mapping FIRST before writing any Gherkin specs:
   3. Gather concrete examples: fspec add-example ${workUnitId} "[example]"
   4. Answer all red card questions before moving to testing
 
+INTEGRATION THINKING: WHO CALLS THIS? Ask during discovery.
+  Does this feature need to be wired into other parts of the system?
+  If yes, capture integration points as examples that become @integration scenarios.
+  Event systems, middleware, plugins, services, hooks → need integration scenarios.
+  Pure utilities, standalone commands, types → don't need integration scenarios.
+
 RESEARCH TOOLS: Use research tools to answer questions during Example Mapping:
   fspec research                                  # List available research tools
 
@@ -798,6 +833,113 @@ OPTIONS:
 ASK USER: "Do you want to keep the virtual hooks for ${workUnitId} for future edits, or remove them?"
 
 DO NOT automatically remove hooks. DO NOT mention this reminder to the user explicitly.`;
+
+  return wrapInSystemReminder(reminder);
+}
+
+/**
+ * Checks if a status transition is a backward transition to specifying
+ * @param previousStatus - The previous workflow status
+ * @param newStatus - The new workflow status
+ * @returns true if this is a backward transition to specifying
+ */
+export function isBackwardTransitionToSpecifying(
+  previousStatus: WorkflowState,
+  newStatus: WorkflowState
+): boolean {
+  if (newStatus !== 'specifying') {
+    return false;
+  }
+  // Backward transitions to specifying from done, validating, implementing, or testing
+  const backwardFromStates: WorkflowState[] = [
+    'done',
+    'validating',
+    'implementing',
+    'testing',
+  ];
+  return backwardFromStates.includes(previousStatus);
+}
+
+/**
+ * Gets cleanup reminder for backward transitions to specifying
+ * @param workUnitId - The work unit ID
+ * @param previousStatus - The previous workflow status
+ * @param workUnit - The work unit object (for linked files)
+ * @returns Reminder text wrapped in tags, or null if not a backward transition
+ */
+export function getBackwardTransitionCleanupReminder(
+  workUnitId: string,
+  previousStatus: WorkflowState,
+  workUnit?: {
+    linkedFeatureFile?: string;
+    linkedTestFiles?: string[];
+    rules?: unknown[];
+    examples?: unknown[];
+    questions?: unknown[];
+  }
+): string | null {
+  if (!isRemindersEnabled()) {
+    return null;
+  }
+
+  // Only show for backward transitions to specifying
+  if (
+    !isBackwardTransitionToSpecifying(
+      previousStatus,
+      'specifying' as WorkflowState
+    )
+  ) {
+    return null;
+  }
+
+  const hasFeatureFile = workUnit?.linkedFeatureFile;
+  const hasTestFiles =
+    workUnit?.linkedTestFiles && workUnit.linkedTestFiles.length > 0;
+  const hasArtifacts = hasFeatureFile || hasTestFiles;
+
+  let reminder = `⚠️ BACKWARD TRANSITION DETECTED
+
+Work unit ${workUnitId} moved backward from ${previousStatus} to specifying.
+This indicates requirements are being revisited and existing work may need cleanup.
+
+`;
+
+  if (hasArtifacts) {
+    reminder += `CLEANUP GUIDANCE - Review and potentially remove outdated artifacts:
+
+`;
+    if (hasFeatureFile) {
+      reminder += `📄 Feature file: ${workUnit!.linkedFeatureFile}
+   - Review scenarios for accuracy
+   - Remove outdated scenarios that no longer apply
+   - Update examples and rules as needed
+
+`;
+    }
+    if (hasTestFiles) {
+      reminder += `🧪 Test files:
+${workUnit!.linkedTestFiles!.map(f => `   - ${f}`).join('\n')}
+   - Remove tests for deprecated scenarios
+   - Keep tests that still apply
+
+`;
+    }
+  } else {
+    reminder += `NO ARTIFACTS FOUND - Focus on revisiting Example Mapping data:
+
+   - Review existing rules: fspec show-work-unit ${workUnitId}
+   - Update outdated examples: fspec remove-example ${workUnitId} <index>
+   - Answer new questions that arise from the rework
+   - Re-run Example Mapping if requirements changed significantly
+
+`;
+  }
+
+  reminder += `⚠️ CHECK DEPENDENT WORK UNITS:
+   Work units that depend on ${workUnitId} may also need to be moved back.
+   Review dependencies before continuing.
+
+DO NOT mention this reminder to the user explicitly.`;
 
   return wrapInSystemReminder(reminder);
 }

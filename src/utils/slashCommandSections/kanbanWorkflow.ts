@@ -33,8 +33,8 @@ fspec update-work-unit-status EXAMPLE-006 testing
 # WITHOUT these comments, link-coverage will BLOCK workflow!
 fspec update-work-unit-status EXAMPLE-006 implementing
 
-# 4. IMPLEMENT (make tests pass)
-# Write minimal code to pass tests
+# 4. IMPLEMENT (make tests pass AND wire up integration)
+# Write code AND connect all call sites - feature must work end-to-end
 fspec update-work-unit-status EXAMPLE-006 validating
 
 # 5. VALIDATE (quality checks)

@@ -170,7 +170,7 @@ ACDD Coverage Workflow:
   2. Generate coverage files: fspec generate-coverage
   3. Write tests: Write failing tests for scenarios
   4. Link tests: fspec link-coverage <feature> --scenario "<name>" --test-file <path> --test-lines <range>
-  5. Implement code: Write minimal code to pass tests
+  5. Implement code: Write code AND wire up integration points
   6. Link implementation: fspec link-coverage <feature> --scenario "<name>" --test-file <path> --impl-file <path> --impl-lines <lines>
   7. Verify coverage: fspec show-coverage <feature>
 

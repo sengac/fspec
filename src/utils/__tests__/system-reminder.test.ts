@@ -52,11 +52,12 @@ describe('Feature: System Reminder Anti-Drift Pattern', () => {
       // When: Getting status change reminder
       const reminder = await getStatusChangeReminder(workUnitId, newStatus);
 
-      // Then: Should contain minimal code reminder
+      // Then: Should contain CREATION + CONNECTION reminder
       expect(reminder).toContain('<system-reminder>');
       expect(reminder).toContain('IMPLEMENTING status');
-      expect(reminder).toContain('Write ONLY enough code to make tests pass');
-      expect(reminder).toContain('green phase');
+      expect(reminder).toContain('IMPLEMENTATION = CREATION + CONNECTION');
+      expect(reminder).toContain('WHO CALLS THIS?');
+      expect(reminder).toContain('COMPLETE MEANS:');
       expect(reminder).toContain('DO NOT mention this reminder to the user');
       expect(reminder).toContain('</system-reminder>');
     });

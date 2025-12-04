@@ -29,10 +29,10 @@ BACKLOG → SPECIFYING → TESTING → IMPLEMENTING → VALIDATING → DONE
    - Tests MUST fail (red phase) - proving they test real behavior
    - WITHOUT @step comments, link-coverage will BLOCK workflow progression
 
-3. **IMPLEMENTING** - Write minimal code to make tests pass
-   - Implement ONLY what's needed to pass tests
-   - Tests MUST pass (green phase)
-   - Refactor while keeping tests green
+3. **IMPLEMENTING** - Write code AND wire up integration points
+   - IMPLEMENTATION = CREATION + CONNECTION
+   - Ask "WHO CALLS THIS?" - wire up all call sites
+   - Tests MUST pass AND feature must work end-to-end
 
 4. **VALIDATING** - Ensure all quality checks pass
    - Run ALL tests (not just new ones) to ensure nothing broke
