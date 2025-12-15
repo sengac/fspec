@@ -1,0 +1,157 @@
+{
+  "scenarios": [
+    {
+      "name": "Add system-reminder to messages array",
+      "testMappings": [
+        {
+          "file": "tests/system_reminder_infrastructure_test.rs",
+          "lines": "23-79",
+          "implMappings": [
+            {
+              "file": "src/session/mod.rs",
+              "lines": [
+                144,
+                145,
+                146,
+                147
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Multiple reminder types coexist in messages array",
+      "testMappings": [
+        {
+          "file": "tests/system_reminder_infrastructure_test.rs",
+          "lines": "81-125",
+          "implMappings": [
+            {
+              "file": "src/session/mod.rs",
+              "lines": [
+                144,
+                145,
+                146,
+                147
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Deduplication via retain and push pattern",
+      "testMappings": [
+        {
+          "file": "tests/system_reminder_infrastructure_test.rs",
+          "lines": "127-204",
+          "implMappings": [
+            {
+              "file": "src/session/system_reminders.rs",
+              "lines": [
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Identify system-reminder messages",
+      "testMappings": [
+        {
+          "file": "tests/system_reminder_infrastructure_test.rs",
+          "lines": "211-269",
+          "implMappings": [
+            {
+              "file": "src/session/system_reminders.rs",
+              "lines": [
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Partition messages for compaction",
+      "testMappings": [
+        {
+          "file": "tests/system_reminder_infrastructure_test.rs",
+          "lines": "271-323",
+          "implMappings": [
+            {
+              "file": "src/session/system_reminders.rs",
+              "lines": [
+                157,
+                158,
+                159
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Reconstruct messages after compaction preserves reminders",
+      "testMappings": [
+        {
+          "file": "tests/system_reminder_infrastructure_test.rs",
+          "lines": "325-416",
+          "implMappings": [
+            {
+              "file": "src/session/system_reminders.rs",
+              "lines": [
+                157,
+                158,
+                159
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "tests/system_reminder_infrastructure_test.rs"
+    ],
+    "implFiles": [
+      "src/session/mod.rs",
+      "src/session/system_reminders.rs"
+    ],
+    "totalLinesCovered": 428
+  }
+}

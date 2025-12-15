@@ -1,0 +1,88 @@
+{
+  "matches": [
+    {
+      "type": "function_item",
+      "name": "default",
+      "line": 41,
+      "column": 4,
+      "text": "fn default() -> Self {\n        Self {\n            schema_type: \"object\".to_string(),\n            properties: serde_json::Map::new(),\n            required: Vec::new(),\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "success",
+      "line": 63,
+      "column": 4,
+      "text": "pub fn success(content: String) -> Self {\n        Self {\n            content,\n            truncated: false,\n            is_error: false,\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "error",
+      "line": 72,
+      "column": 4,
+      "text": "pub fn error(message: String) -> Self {\n        Self {\n            content: message,\n            truncated: false,\n            is_error: true,\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "new",
+      "line": 104,
+      "column": 4,
+      "text": "pub fn new() -> Self {\n        Self {\n            tools: std::collections::HashMap::new(),\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "with_core_tools",
+      "line": 111,
+      "column": 4,
+      "text": "pub fn with_core_tools() -> Self {\n        let mut registry = Self::new();\n        registry.register(Box::new(BashTool::new()));\n        registry.register(Box::new(ReadTool::new()));\n        registry.register(Box::new(WriteTool::new()));\n        registry.register(Box::new(EditTool::new()));\n        registry.register(Box::new(GrepTool::new()));\n        registry.register(Box::new(GlobTool::new()));\n        registry\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "register",
+      "line": 123,
+      "column": 4,
+      "text": "pub fn register(&mut self, tool: Box<dyn Tool>) {\n        self.tools.insert(tool.name().to_string(), tool);\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "get",
+      "line": 128,
+      "column": 4,
+      "text": "pub fn get(&self, name: &str) -> Option<&dyn Tool> {\n        self.tools.get(name).map(|t| t.as_ref())\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "execute",
+      "line": 133,
+      "column": 4,
+      "text": "pub async fn execute(&self, name: &str, args: Value) -> Result<ToolOutput> {\n        match self.get(name) {\n            Some(tool) => tool.execute(args).await,\n            None => Ok(ToolOutput::error(format!(\"Unknown tool: {}\", name))),\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "list",
+      "line": 141,
+      "column": 4,
+      "text": "pub fn list(&self) -> Vec<&str> {\n        self.tools.keys().map(|s| s.as_str()).collect()\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "len",
+      "line": 146,
+      "column": 4,
+      "text": "pub fn len(&self) -> usize {\n        self.tools.len()\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "is_empty",
+      "line": 151,
+      "column": 4,
+      "text": "pub fn is_empty(&self) -> bool {\n        self.tools.is_empty()\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "default",
+      "line": 157,
+      "column": 4,
+      "text": "fn default() -> Self {\n        Self::with_core_tools()\n    }"
+    }
+  ]
+}

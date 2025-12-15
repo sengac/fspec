@@ -1,0 +1,85 @@
+{
+  "scenarios": [
+    {
+      "name": "Provider switching clears conversation context",
+      "testMappings": [
+        {
+          "file": "src/session/mod.rs",
+          "lines": "133-153",
+          "implMappings": [
+            {
+              "file": "src/session/mod.rs",
+              "lines": [
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Session creates and stores message history",
+      "testMappings": [
+        {
+          "file": "src/session/mod.rs",
+          "lines": "117-134",
+          "implMappings": [
+            {
+              "file": "src/session/mod.rs",
+              "lines": [
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/session/mod.rs"
+    ],
+    "implFiles": [
+      "src/session/mod.rs"
+    ],
+    "totalLinesCovered": 76
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "description": "AST analysis of src/tools/mod.rs for CORE-003 Bash Tool Implementation",
+  "query": "fspec research --tool=ast --operation=list-functions --file=src/tools/mod.rs",
+  "purpose": "Understand existing Tool trait pattern and ToolRegistry.with_core_tools() for BashTool integration",
+  "findings": {
+    "tool_registry_functions": [
+      {
+        "name": "with_core_tools",
+        "line": 105,
+        "description": "Creates registry with Read, Write, Edit tools - BashTool must be added here"
+      },
+      {
+        "name": "register",
+        "line": 114,
+        "description": "Registers a tool by name - used to add tools to registry"
+      },
+      {
+        "name": "execute",
+        "line": 124,
+        "description": "Async tool execution by name - BashTool will be callable through this"
+      }
+    ],
+    "tool_output_helpers": [
+      {
+        "name": "success",
+        "line": 57,
+        "description": "Creates successful ToolOutput - use for command output"
+      },
+      {
+        "name": "error",
+        "line": 66,
+        "description": "Creates error ToolOutput - use for command failures"
+      }
+    ],
+    "integration_point": "BashTool must be added to with_core_tools() at line 105-111"
+  },
+  "matches": [
+    {
+      "type": "function_item",
+      "name": "with_core_tools",
+      "line": 105,
+      "text": "pub fn with_core_tools() -> Self { ... registry.register(Box::new(ReadTool::new())); ... }"
+    },
+    {
+      "type": "function_item",
+      "name": "register",
+      "line": 114,
+      "text": "pub fn register(&mut self, tool: Box<dyn Tool>) { ... }"
+    },
+    {
+      "type": "function_item",
+      "name": "execute",
+      "line": 124,
+      "text": "pub async fn execute(&self, name: &str, args: Value) -> Result<ToolOutput> { ... }"
+    }
+  ]
+}

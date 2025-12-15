@@ -1,0 +1,66 @@
+{
+  "research": {
+    "description": "AST research for CLI-015: Use model-specific context window limits",
+    "findings": [
+      {
+        "file": "src/providers/mod.rs",
+        "line": 76,
+        "type": "trait_method",
+        "name": "context_window",
+        "signature": "fn context_window(&self) -> usize",
+        "notes": "LlmProvider trait already defines context_window() method"
+      },
+      {
+        "file": "src/providers/claude.rs",
+        "line": 20,
+        "type": "constant",
+        "name": "CONTEXT_WINDOW",
+        "value": 200000,
+        "notes": "Claude provider has 200k context window defined"
+      },
+      {
+        "file": "src/providers/openai.rs",
+        "line": 19,
+        "type": "constant",
+        "name": "CONTEXT_WINDOW",
+        "value": 128000,
+        "notes": "OpenAI provider has 128k context window defined"
+      },
+      {
+        "file": "src/providers/gemini.rs",
+        "line": 20,
+        "type": "constant",
+        "name": "CONTEXT_WINDOW",
+        "value": 1000000,
+        "notes": "Gemini provider has 1M context window defined"
+      },
+      {
+        "file": "src/providers/codex/mod.rs",
+        "line": 21,
+        "type": "constant",
+        "name": "CONTEXT_WINDOW",
+        "value": 272000,
+        "notes": "Codex provider has 272k context window defined"
+      },
+      {
+        "file": "src/providers/manager.rs",
+        "line": 46,
+        "type": "struct",
+        "name": "ProviderManager",
+        "notes": "Manages provider selection, but doesn't expose context_window()"
+      },
+      {
+        "file": "src/cli/interactive.rs",
+        "line": 641,
+        "type": "constant",
+        "name": "CONTEXT_WINDOW",
+        "value": 100000,
+        "notes": "PROBLEM: Hardcoded 100k instead of using provider's context_window()"
+      }
+    ],
+    "implementation_plan": {
+      "step1": "Add context_window() method to ProviderManager that returns context window based on current_provider",
+      "step2": "Replace hardcoded const in interactive.rs with session.provider_manager().context_window() as u64"
+    }
+  }
+}

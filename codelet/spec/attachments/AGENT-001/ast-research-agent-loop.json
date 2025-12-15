@@ -1,0 +1,106 @@
+{
+  "research_type": "ast",
+  "work_unit": "AGENT-001",
+  "description": "AST analysis of agent, provider, and tools modules for agent execution loop implementation",
+  "files_analyzed": [
+    "src/agent/mod.rs",
+    "src/providers/mod.rs",
+    "src/providers/claude.rs",
+    "src/tools/mod.rs"
+  ],
+  "findings": {
+    "agent_module": {
+      "file": "src/agent/mod.rs",
+      "current_runner_functions": [
+        {"name": "new", "line": 100, "purpose": "Create empty runner"},
+        {"name": "with_tools", "line": 108, "purpose": "Create runner with custom tools"},
+        {"name": "messages", "line": 116, "purpose": "Get message history"},
+        {"name": "add_message", "line": 121, "purpose": "Add message to history"},
+        {"name": "tools", "line": 126, "purpose": "Get tool registry"},
+        {"name": "tools_mut", "line": 131, "purpose": "Get mutable tool registry"},
+        {"name": "execute_tool", "line": 136, "purpose": "Execute tool by name"},
+        {"name": "available_tools", "line": 141, "purpose": "List available tools"}
+      ],
+      "missing_for_agent_loop": [
+        "with_provider() - constructor accepting LlmProvider",
+        "run(user_input) - main agent loop",
+        "parse_tool_calls(response) - extract tool_use blocks",
+        "inject_tool_result(id, result) - add result to conversation"
+      ],
+      "message_types": [
+        {"name": "MessageRole", "variants": ["System", "User", "Assistant"]},
+        {"name": "MessageContent", "variants": ["Text(String)", "Parts(Vec<ContentPart>)"]},
+        {"name": "ContentPart", "variants": ["Text", "ToolUse", "ToolResult"]}
+      ]
+    },
+    "provider_module": {
+      "file": "src/providers/mod.rs",
+      "llm_provider_trait_methods": [
+        "name() -> &str",
+        "model() -> &str",
+        "context_window() -> usize",
+        "max_output_tokens() -> usize",
+        "supports_caching() -> bool",
+        "supports_streaming() -> bool",
+        "complete(messages) -> Result<String>"
+      ],
+      "missing_for_agent_loop": [
+        "complete_with_tools(messages, tools) -> Result<CompletionResponse>",
+        "CompletionResponse struct with content blocks and stop_reason",
+        "StopReason enum (EndTurn, ToolUse, MaxTokens)"
+      ]
+    },
+    "claude_provider": {
+      "file": "src/providers/claude.rs",
+      "current_implementation": {
+        "complete_method": {
+          "line": 132,
+          "returns": "Result<String>",
+          "extracts": "text content only",
+          "ignores": "tool_use blocks, stop_reason"
+        }
+      },
+      "needs_update": [
+        "Parse tool_use content blocks from response",
+        "Return stop_reason from response",
+        "Include tools in API request body"
+      ]
+    },
+    "tools_module": {
+      "file": "src/tools/mod.rs",
+      "registry_functions": [
+        {"name": "new", "line": 106},
+        {"name": "with_core_tools", "line": 113},
+        {"name": "register", "line": 126},
+        {"name": "get", "line": 131},
+        {"name": "execute", "line": 136},
+        {"name": "list", "line": 144}
+      ],
+      "missing_for_agent_loop": [
+        "definitions() -> Vec<ToolDefinition> - export tool schemas for API"
+      ],
+      "tool_trait_methods": [
+        "name() -> &str",
+        "description() -> &str",
+        "parameters() -> ToolParameters",
+        "execute(args) -> Result<ToolOutput>"
+      ]
+    }
+  },
+  "implementation_requirements": {
+    "new_types": [
+      "CompletionResponse { content: Vec<ContentBlock>, stop_reason: StopReason }",
+      "ContentBlock::Text(String) | ContentBlock::ToolUse { id, name, input }",
+      "StopReason { EndTurn, ToolUse, MaxTokens }",
+      "ToolDefinition { name, description, input_schema }"
+    ],
+    "trait_updates": [
+      "LlmProvider::complete_with_tools(messages, tools) -> Result<CompletionResponse>"
+    ],
+    "new_functions": [
+      "Runner::with_provider(provider) -> Self",
+      "Runner::run(user_input) -> Result<Vec<Message>>",
+      "ToolRegistry::definitions() -> Vec<ToolDefinition>"
+    ]
+  }
+}

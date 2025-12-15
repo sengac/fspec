@@ -553,6 +553,7 @@ ${backgroundSection}
 
   // Add scenario generation reminder (instructs AI to write scenarios)
   const exampleCount = activeExamples.length;
+  const role = workUnit.userStory?.role || 'the user';
   const scenarioGenerationReminder = `<system-reminder>
 CONTEXT-ONLY FEATURE FILE CREATED
 
@@ -561,10 +562,31 @@ The feature file ${featureFile} contains:
   ✓ Background section with user story
   ✗ ZERO scenarios (AI must write them)
 
-NEXT STEP: Write scenarios based on # EXAMPLES section
+EXAMPLE QUALITY CHECK - BEFORE WRITING SCENARIOS
 
-The # EXAMPLES section lists ${exampleCount} example(s):
-${activeExamples.map((ex: any, i: number) => `  ${i + 1}. ${ex.text}`).join('\n') || '  (none)'}
+User story: "As a ${role}..."
+
+Classify each example - does it describe ${role}'s experience?
+${
+  activeExamples
+    .map(
+      (ex: any, i: number) => `  ${i + 1}. "${ex.text}"
+     Describes ${role}'s experience? [YES/NO]`
+    )
+    .join('\n') || '  (none)'
+}
+
+If ANY answer is NO (describes components, not user experience):
+  - STOP writing scenarios
+  - Remove bad examples: fspec remove-example ${options.workUnitId} <index>
+  - Add examples describing ${role}'s experience
+  - Re-run: fspec generate-scenarios ${options.workUnitId}
+
+Scenarios from component-level examples won't test the real feature.
+
+---
+
+NEXT STEP: Write scenarios based on # EXAMPLES section
 
 INSTRUCTIONS FOR AI:
   1. Read the feature file to see full example mapping context

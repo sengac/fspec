@@ -1,0 +1,250 @@
+//! Read tool implementation
+//!
+//! Reads file contents with line numbers, supporting offset and limit.
+
+use super::limits::OutputLimits;
+use super::truncation::{format_truncation_warning, truncate_line_default};
+use super::validation::{read_file_contents, require_absolute_path, require_file_exists};
+use super::{Tool, ToolOutput, ToolParameters};
+use anyhow::Result;
+use async_trait::async_trait;
+use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
+use serde_json::{json, Value};
+use tracing::debug;
+
+/// Read tool for reading file contents
+pub struct ReadTool {
+    parameters: ToolParameters,
+}
+
+impl ReadTool {
+    /// Create a new Read tool instance
+    pub fn new() -> Self {
+        let mut properties = serde_json::Map::new();
+
+        properties.insert(
+            "file_path".to_string(),
+            json!({
+                "type": "string",
+                "description": "Absolute path to the file to read"
+            }),
+        );
+
+        properties.insert(
+            "offset".to_string(),
+            json!({
+                "type": "integer",
+                "description": "1-based line number to start reading from (optional)"
+            }),
+        );
+
+        properties.insert(
+            "limit".to_string(),
+            json!({
+                "type": "integer",
+                "description": "Number of lines to read (optional)"
+            }),
+        );
+
+        Self {
+            parameters: ToolParameters {
+                schema_type: "object".to_string(),
+                properties,
+                required: vec!["file_path".to_string()],
+            },
+        }
+    }
+}
+
+impl Default for ReadTool {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+#[async_trait]
+impl Tool for ReadTool {
+    fn name(&self) -> &str {
+        "Read"
+    }
+
+    fn description(&self) -> &str {
+        "Read file contents with line numbers. Supports offset and limit parameters."
+    }
+
+    fn parameters(&self) -> &ToolParameters {
+        &self.parameters
+    }
+
+    async fn execute(&self, args: Value) -> Result<ToolOutput> {
+        debug!(tool = "Read", input = ?args, "Executing tool");
+
+        let file_path = args.get("file_path").and_then(|v| v.as_str()).unwrap_or("");
+
+        // Validate absolute path
+        let path = match require_absolute_path(file_path) {
+            Ok(p) => p,
+            Err(e) => return Ok(e),
+        };
+
+        // Check file exists
+        if let Err(e) = require_file_exists(path, file_path) {
+            return Ok(e);
+        }
+
+        // Read file content
+        let content = match read_file_contents(path) {
+            Ok(c) => c,
+            Err(e) => return Ok(e),
+        };
+
+        let lines: Vec<&str> = content.lines().collect();
+        let total_lines = lines.len();
+
+        // Parse offset and limit
+        let offset = args
+            .get("offset")
+            .and_then(serde_json::Value::as_u64)
+            .map(|v| v as usize)
+            .unwrap_or(1);
+        let limit = args
+            .get("limit")
+            .and_then(serde_json::Value::as_u64)
+            .map(|v| v as usize)
+            .unwrap_or(OutputLimits::MAX_LINES);
+
+        // Calculate range (offset is 1-based)
+        let start_idx = offset.saturating_sub(1);
+
+        // Apply line limit
+        let effective_limit = limit.min(OutputLimits::MAX_LINES);
+        let end_idx = (start_idx + effective_limit).min(total_lines);
+
+        // Format lines with numbers and truncate long lines
+        let mut output_lines: Vec<String> = Vec::new();
+        for (idx, line) in lines[start_idx..end_idx].iter().enumerate() {
+            let line_num = start_idx + idx + 1; // 1-based line numbers
+            let truncated_line = truncate_line_default(line);
+            output_lines.push(format!("{line_num}: {truncated_line}"));
+        }
+
+        // Check if we need to truncate due to line limit
+        let lines_after_range = total_lines.saturating_sub(end_idx);
+        let was_truncated = end_idx < total_lines && lines_after_range > 0;
+
+        // Build output
+        let mut output = output_lines.join("\n");
+
+        if was_truncated {
+            let remaining = total_lines - end_idx;
+            let warning =
+                format_truncation_warning(remaining, "lines", true, OutputLimits::MAX_OUTPUT_CHARS);
+            output.push('\n');
+            output.push_str(&warning);
+        }
+
+        Ok(ToolOutput {
+            content: output,
+            truncated: was_truncated,
+            is_error: false,
+        })
+    }
+}
+
+// ========================================
+// Rig Tool Implementation (REFAC-004)
+// ========================================
+
+/// Arguments for Read tool (rig::tool::Tool)
+#[derive(Debug, Deserialize, Serialize, JsonSchema)]
+pub struct ReadArgs {
+    /// Absolute path to the file to read
+    pub file_path: String,
+    /// 1-based line number to start reading from (optional)
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub offset: Option<usize>,
+    /// Number of lines to read (optional)
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub limit: Option<usize>,
+}
+
+/// Error type for Read tool
+#[derive(Debug, thiserror::Error)]
+pub enum ReadError {
+    #[error("File error: {0}")]
+    FileError(String),
+    #[error("Validation error: {0}")]
+    ValidationError(String),
+}
+
+impl rig::tool::Tool for ReadTool {
+    const NAME: &'static str = "read";
+
+    type Error = ReadError;
+    type Args = ReadArgs;
+    type Output = String;
+
+    async fn definition(&self, _prompt: String) -> rig::completion::ToolDefinition {
+        rig::completion::ToolDefinition {
+            name: "read".to_string(),
+            description:
+                "Read file contents with line numbers. Supports offset and limit parameters."
+                    .to_string(),
+            parameters: serde_json::to_value(schemars::schema_for!(ReadArgs))
+                .unwrap_or_else(|_| json!({"type": "object"})),
+        }
+    }
+
+    async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
+        // Validate absolute path
+        let path = require_absolute_path(&args.file_path)
+            .map_err(|e| ReadError::ValidationError(e.content))?;
+
+        // Check file exists
+        require_file_exists(path, &args.file_path)
+            .map_err(|e| ReadError::ValidationError(e.content))?;
+
+        // Read file content
+        let content = read_file_contents(path).map_err(|e| ReadError::FileError(e.content))?;
+
+        let lines: Vec<&str> = content.lines().collect();
+        let total_lines = lines.len();
+
+        // Parse offset and limit
+        let offset = args.offset.unwrap_or(1);
+        let limit = args.limit.unwrap_or(OutputLimits::MAX_LINES);
+
+        // Calculate range (offset is 1-based)
+        let start_idx = offset.saturating_sub(1);
+
+        // Apply line limit
+        let effective_limit = limit.min(OutputLimits::MAX_LINES);
+        let end_idx = (start_idx + effective_limit).min(total_lines);
+
+        // Format lines with numbers and truncate long lines
+        let mut output_lines: Vec<String> = Vec::new();
+        for (idx, line) in lines[start_idx..end_idx].iter().enumerate() {
+            let line_num = start_idx + idx + 1; // 1-based line numbers
+            let truncated_line = truncate_line_default(line);
+            output_lines.push(format!("{line_num}: {truncated_line}"));
+        }
+
+        // Check if we need to truncate due to line limit
+        let lines_after_range = total_lines.saturating_sub(end_idx);
+        let was_truncated = end_idx < total_lines && lines_after_range > 0;
+
+        // Build output
+        let mut output = output_lines.join("\n");
+
+        if was_truncated {
+            let remaining = total_lines - end_idx;
+            let warning =
+                format_truncation_warning(remaining, "lines", true, OutputLimits::MAX_OUTPUT_CHARS);
+            output.push('\n');
+            output.push_str(&warning);
+        }
+
+        Ok(output)
+    }
+}

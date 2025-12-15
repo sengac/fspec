@@ -1,0 +1,73 @@
+{
+  "scenarios": [
+    {
+      "name": "Load API key from .env file on startup",
+      "testMappings": [
+        {
+          "file": "tests/env_config_test.rs",
+          "lines": "21-53",
+          "implMappings": [
+            {
+              "file": "src/main.rs",
+              "lines": [
+                7,
+                8,
+                9
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Run without .env file using exported environment variable",
+      "testMappings": [
+        {
+          "file": "tests/env_config_test.rs",
+          "lines": "60-89",
+          "implMappings": [
+            {
+              "file": "src/main.rs",
+              "lines": [
+                7,
+                8,
+                9
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Exported environment variable takes precedence over .env",
+      "testMappings": [
+        {
+          "file": "tests/env_config_test.rs",
+          "lines": "96-124",
+          "implMappings": [
+            {
+              "file": "src/main.rs",
+              "lines": [
+                7,
+                8,
+                9
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "tests/env_config_test.rs"
+    ],
+    "implFiles": [
+      "src/main.rs"
+    ],
+    "totalLinesCovered": 101
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "agent": "claude",
+  "tools": {
+    "test": {
+      "command": "cargo test"
+    },
+    "qualityCheck": {
+      "commands": [
+        "cargo clippy -- -D warnings",
+        "cargo fmt --check"
+      ]
+    }
+  }
+}

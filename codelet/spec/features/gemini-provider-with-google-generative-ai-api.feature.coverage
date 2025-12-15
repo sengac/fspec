@@ -1,0 +1,159 @@
+{
+  "scenarios": [
+    {
+      "name": "Provider initialization with API key",
+      "testMappings": [
+        {
+          "file": "tests/gemini_provider_test.rs",
+          "lines": "13-32",
+          "implMappings": [
+            {
+              "file": "src/providers/gemini.rs",
+              "lines": [
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Stream text generation with Gemini",
+      "testMappings": [
+        {
+          "file": "tests/gemini_provider_test.rs",
+          "lines": "91-113",
+          "implMappings": [
+            {
+              "file": "src/providers/gemini.rs",
+              "lines": [
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Tool calling with Gemini provider",
+      "testMappings": [
+        {
+          "file": "tests/gemini_provider_test.rs",
+          "lines": "115-135",
+          "implMappings": [
+            {
+              "file": "src/providers/gemini.rs",
+              "lines": [
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Error without API key",
+      "testMappings": [
+        {
+          "file": "tests/gemini_provider_test.rs",
+          "lines": "35-54",
+          "implMappings": [
+            {
+              "file": "src/providers/gemini.rs",
+              "lines": [
+                38,
+                39,
+                40
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "tests/gemini_provider_test.rs"
+    ],
+    "implFiles": [
+      "src/providers/gemini.rs"
+    ],
+    "totalLinesCovered": 163
+  }
+}

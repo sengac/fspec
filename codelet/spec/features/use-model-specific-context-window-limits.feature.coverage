@@ -1,0 +1,155 @@
+{
+  "scenarios": [
+    {
+      "name": "Claude provider returns correct context window",
+      "testMappings": [
+        {
+          "file": "tests/context_window_limits_test.rs",
+          "lines": "11-21",
+          "implMappings": [
+            {
+              "file": "src/providers/manager.rs",
+              "lines": [
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "OpenAI provider returns correct context window",
+      "testMappings": [
+        {
+          "file": "tests/context_window_limits_test.rs",
+          "lines": "27-37",
+          "implMappings": [
+            {
+              "file": "src/providers/manager.rs",
+              "lines": [
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Gemini provider returns correct context window",
+      "testMappings": [
+        {
+          "file": "tests/context_window_limits_test.rs",
+          "lines": "43-53",
+          "implMappings": [
+            {
+              "file": "src/providers/manager.rs",
+              "lines": [
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Codex provider returns correct context window",
+      "testMappings": [
+        {
+          "file": "tests/context_window_limits_test.rs",
+          "lines": "59-69",
+          "implMappings": [
+            {
+              "file": "src/providers/manager.rs",
+              "lines": [
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Compaction threshold uses model-specific context window",
+      "testMappings": [
+        {
+          "file": "tests/context_window_limits_test.rs",
+          "lines": "75-96",
+          "implMappings": [
+            {
+              "file": "src/cli/interactive.rs",
+              "lines": [
+                640,
+                641,
+                642,
+                643,
+                644
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Compaction does not trigger below threshold",
+      "testMappings": [
+        {
+          "file": "tests/context_window_limits_test.rs",
+          "lines": "102-116",
+          "implMappings": [
+            {
+              "file": "src/cli/interactive.rs",
+              "lines": [
+                640,
+                641,
+                642,
+                643,
+                644
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "tests/context_window_limits_test.rs"
+    ],
+    "implFiles": [
+      "src/providers/manager.rs",
+      "src/cli/interactive.rs"
+    ],
+    "totalLinesCovered": 123
+  }
+}

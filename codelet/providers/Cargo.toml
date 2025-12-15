@@ -1,0 +1,55 @@
+[package]
+name = "codelet-providers"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "LLM provider implementations for codelet - Claude, OpenAI, Gemini, Codex"
+
+[dependencies]
+codelet-common.workspace = true
+codelet-tools.workspace = true
+
+# Async
+tokio.workspace = true
+futures.workspace = true
+async-trait.workspace = true
+tokio-stream.workspace = true
+async-stream.workspace = true
+
+# LLM Integration
+rig-core.workspace = true
+
+# HTTP & Networking
+reqwest.workspace = true
+
+# Serialization
+serde.workspace = true
+serde_json.workspace = true
+schemars.workspace = true
+
+# Error handling
+anyhow.workspace = true
+thiserror.workspace = true
+
+# Logging
+tracing.workspace = true
+
+# Codex Provider
+keyring.workspace = true
+sha2.workspace = true
+
+# Configuration
+dotenvy.workspace = true
+
+# Utilities
+regex.workspace = true
+uuid.workspace = true
+chrono.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true
+tokio-test.workspace = true
+
+[lints]
+workspace = true

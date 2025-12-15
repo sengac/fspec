@@ -4,6 +4,7 @@ import { join } from 'path';
 import type { WorkUnitsData, ExampleItem } from '../types';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
 import { fileManager } from '../utils/file-manager';
+import { wrapInSystemReminder } from '../utils/system-reminder';
 
 interface AddExampleOptions {
   workUnitId: string;
@@ -14,6 +15,7 @@ interface AddExampleOptions {
 interface AddExampleResult {
   success: boolean;
   exampleCount: number;
+  systemReminder?: string;
 }
 
 export async function addExample(
@@ -68,9 +70,27 @@ export async function addExample(
     Object.assign(fileData, data);
   });
 
+  // Generate system reminder for example quality check
+  const role = workUnit.userStory?.role || 'the user';
+  const systemReminder = wrapInSystemReminder(`EXAMPLE CHECK
+
+User story: "As a ${role}..."
+Example: "${options.example}"
+
+Does this example describe what ${role} experiences?
+
+  ✓ GOOD: Describes the user's experience from their perspective
+  ✗ BAD: Describes internal component/module behavior
+
+If your example mentions implementation details (widgets, modules, internal state),
+rewrite it to describe what ${role} sees and does.
+
+DO NOT mention this reminder to the user.`);
+
   return {
     success: true,
     exampleCount: workUnit.examples.length,
+    systemReminder,
   };
 }
 
@@ -82,8 +102,11 @@ export function registerAddExampleCommand(program: Command): void {
     .argument('<example>', 'Example description')
     .action(async (workUnitId: string, example: string) => {
       try {
-        await addExample({ workUnitId, example });
+        const result = await addExample({ workUnitId, example });
         console.log(chalk.green(`✓ Example added successfully`));
+        if (result.systemReminder) {
+          console.log('\n' + result.systemReminder);
+        }
       } catch (error: any) {
         console.error(chalk.red('✗ Failed to add example:'), error.message);
         process.exit(1);

@@ -1,0 +1,101 @@
+{
+  "scenarios": [
+    {
+      "name": "Replace ClaudeProvider with rig Anthropic provider",
+      "testMappings": [
+        {
+          "file": "tests/rig_provider_streaming_test.rs",
+          "lines": "19-41",
+          "implMappings": [
+            {
+              "file": "src/providers/claude.rs",
+              "lines": [
+                310
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Stream text chunks in real-time",
+      "testMappings": [
+        {
+          "file": "tests/rig_provider_streaming_test.rs",
+          "lines": "47-68",
+          "implMappings": [
+            {
+              "file": "src/providers/claude.rs",
+              "lines": [
+                310
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Stream tool call deltas during tool execution",
+      "testMappings": [
+        {
+          "file": "tests/rig_provider_streaming_test.rs",
+          "lines": "74-115",
+          "implMappings": [
+            {
+              "file": "src/providers/claude.rs",
+              "lines": [
+                310
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Authenticate using OAuth with custom headers",
+      "testMappings": [
+        {
+          "file": "tests/rig_provider_streaming_test.rs",
+          "lines": "121-159",
+          "implMappings": [
+            {
+              "file": "src/providers/claude.rs",
+              "lines": [
+                310
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Support extended thinking with reasoning chunks",
+      "testMappings": [
+        {
+          "file": "tests/rig_provider_streaming_test.rs",
+          "lines": "165-197",
+          "implMappings": [
+            {
+              "file": "src/providers/claude.rs",
+              "lines": [
+                310
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "tests/rig_provider_streaming_test.rs"
+    ],
+    "implFiles": [
+      "src/providers/claude.rs"
+    ],
+    "totalLinesCovered": 164
+  }
+}

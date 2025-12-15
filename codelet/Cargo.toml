@@ -1,0 +1,151 @@
+[workspace]
+members = [
+    "cli",
+    "common",
+    "core",
+    "providers",
+    "tools",
+    "tui",
+]
+resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+repository = "https://github.com/rquast/codelet"
+
+[workspace.dependencies]
+# Internal
+codelet-cli = { path = "cli" }
+codelet-common = { path = "common" }
+codelet-core = { path = "core" }
+codelet-providers = { path = "providers" }
+codelet-tools = { path = "tools" }
+codelet-tui = { path = "tui" }
+
+# External
+# === CLI Framework ===
+clap = { version = "4", features = ["derive", "env", "string"] }
+clap_complete = "4"
+
+# === Async Runtime ===
+tokio = { version = "1", features = ["full"] }
+futures = "0.3"
+tokio-stream = "0.1"
+async-stream = "0.3"
+
+# === LLM Integration ===
+rig-core = { version = "0.25.0", default-features = false }
+
+# === HTTP & Networking ===
+reqwest = { version = "0.12", default-features = false, features = ["json", "stream", "rustls-tls", "blocking"] }
+
+# === Serialization ===
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+toml = "0.8"
+schemars = "0.8"
+
+# === Error Handling ===
+anyhow = "1"
+thiserror = "1"
+
+# === Configuration ===
+dotenvy = "0.15.7"
+dirs = "6"
+
+# === Terminal & UI ===
+crossterm = { version = "0.28", features = ["event-stream"] }
+
+# === Logging ===
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+tracing-appender = "0.2"
+
+# === File Operations ===
+glob = "0.3"
+ignore = "0.4"
+globset = "0.4"
+
+# === Ripgrep Core ===
+grep-regex = "0.1"
+grep-searcher = "0.1"
+grep-matcher = "0.1"
+
+# === AST-based Code Search ===
+ast-grep-core = "0.40"
+ast-grep-language = "0.40"
+
+# === Syntax Highlighting ===
+tree-sitter-highlight = "0.25"
+tree-sitter-bash = "0.25"
+
+# === Utilities ===
+async-trait = "0.1"
+uuid = { version = "1", features = ["v4"] }
+chrono = { version = "0.4", features = ["serde"] }
+regex = "1"
+
+# === Codex Provider ===
+keyring = "3.3"
+sha2 = "0.10"
+
+# === Testing ===
+tempfile = "3"
+assert_cmd = "2"
+predicates = "3"
+tokio-test = "0.4"
+criterion = { version = "0.5", features = ["html_reports"] }
+serial_test = "3"
+
+[workspace.lints.rust]
+unsafe_code = "deny"
+
+[workspace.lints.clippy]
+expect_used = "deny"
+unwrap_used = "deny"
+panic = "deny"
+todo = "warn"
+dbg_macro = "warn"
+identity_op = "deny"
+manual_clamp = "deny"
+manual_filter = "deny"
+manual_find = "deny"
+manual_flatten = "deny"
+manual_map = "deny"
+manual_memcpy = "deny"
+manual_non_exhaustive = "deny"
+manual_ok_or = "deny"
+manual_range_contains = "deny"
+manual_retain = "deny"
+manual_strip = "deny"
+manual_try_fold = "deny"
+manual_unwrap_or = "deny"
+needless_borrow = "deny"
+needless_borrowed_reference = "deny"
+needless_collect = "deny"
+needless_late_init = "deny"
+needless_option_as_deref = "deny"
+needless_question_mark = "deny"
+needless_update = "deny"
+redundant_clone = "deny"
+redundant_closure = "deny"
+redundant_closure_for_method_calls = "deny"
+redundant_static_lifetimes = "deny"
+trivially_copy_pass_by_ref = "deny"
+uninlined_format_args = "deny"
+unnecessary_filter_map = "deny"
+unnecessary_lazy_evaluations = "deny"
+unnecessary_sort_by = "deny"
+unnecessary_to_owned = "deny"
+
+[profile.release]
+lto = "fat"
+strip = "symbols"
+codegen-units = 1
+
+[profile.ci-test]
+debug = 1
+inherits = "test"
+opt-level = 0

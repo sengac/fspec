@@ -1,0 +1,91 @@
+{
+  "scenarios": [
+    {
+      "name": "Add rig-core dependency to Cargo.toml",
+      "testMappings": [
+        {
+          "file": "tests/rig_dependency_test.rs",
+          "lines": "17-49",
+          "implMappings": [
+            {
+              "file": "Cargo.toml",
+              "lines": [
+                26
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "All existing tests pass after adding rig-core",
+      "testMappings": [
+        {
+          "file": "tests/rig_dependency_test.rs",
+          "lines": "57-96",
+          "implMappings": [
+            {
+              "file": "Cargo.toml",
+              "lines": [
+                26
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Re-export rig types from lib.rs",
+      "testMappings": [
+        {
+          "file": "tests/rig_dependency_test.rs",
+          "lines": "102-132",
+          "implMappings": [
+            {
+              "file": "src/lib.rs",
+              "lines": [
+                18
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Cargo clippy completes without warnings",
+      "testMappings": [
+        {
+          "file": "tests/rig_dependency_test.rs",
+          "lines": "138-174",
+          "implMappings": [
+            {
+              "file": "Cargo.toml",
+              "lines": [
+                26
+              ]
+            },
+            {
+              "file": "src/lib.rs",
+              "lines": [
+                18
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "tests/rig_dependency_test.rs"
+    ],
+    "implFiles": [
+      "Cargo.toml",
+      "src/lib.rs"
+    ],
+    "totalLinesCovered": 146
+  }
+}

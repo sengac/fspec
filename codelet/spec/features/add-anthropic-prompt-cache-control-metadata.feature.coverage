@@ -1,0 +1,367 @@
+{
+  "scenarios": [
+    {
+      "name": "System prompt is sent as array with cache_control for API key mode",
+      "testMappings": [
+        {
+          "file": "tests/prompt_cache_control_test.rs",
+          "lines": "10-35",
+          "implMappings": [
+            {
+              "file": "src/providers/claude.rs",
+              "lines": [
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "System prompt is sent with correct structure for OAuth mode",
+      "testMappings": [
+        {
+          "file": "tests/prompt_cache_control_test.rs",
+          "lines": "37-65",
+          "implMappings": [
+            {
+              "file": "src/providers/claude.rs",
+              "lines": [
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Additional params override plain string system field",
+      "testMappings": [
+        {
+          "file": "tests/prompt_cache_control_test.rs",
+          "lines": "67-82",
+          "implMappings": [
+            {
+              "file": "src/providers/claude.rs",
+              "lines": [
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "cache_control uses ephemeral type",
+      "testMappings": [
+        {
+          "file": "tests/prompt_cache_control_test.rs",
+          "lines": "87-99",
+          "implMappings": [
+            {
+              "file": "src/providers/claude.rs",
+              "lines": [
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Content block without cache_control omits the field",
+      "testMappings": [
+        {
+          "file": "tests/prompt_cache_control_test.rs",
+          "lines": "101-115",
+          "implMappings": [
+            {
+              "file": "src/providers/claude.rs",
+              "lines": [
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "build_cached_system_prompt creates correct array format",
+      "testMappings": [
+        {
+          "file": "tests/prompt_cache_control_test.rs",
+          "lines": "120-140",
+          "implMappings": [
+            {
+              "file": "src/providers/claude.rs",
+              "lines": [
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "build_cached_system_prompt handles OAuth mode correctly",
+      "testMappings": [
+        {
+          "file": "tests/prompt_cache_control_test.rs",
+          "lines": "142-163",
+          "implMappings": [
+            {
+              "file": "src/providers/claude.rs",
+              "lines": [
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Completion request includes cache_control in serialized JSON",
+      "testMappings": [
+        {
+          "file": "tests/prompt_cache_control_test.rs",
+          "lines": "168-182",
+          "implMappings": [
+            {
+              "file": "src/providers/claude.rs",
+              "lines": [
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 8,
+    "coveredScenarios": 8,
+    "coveragePercent": 100,
+    "testFiles": [
+      "tests/prompt_cache_control_test.rs"
+    ],
+    "implFiles": [
+      "src/providers/claude.rs"
+    ],
+    "totalLinesCovered": 380
+  }
+}

@@ -1,0 +1,93 @@
+{
+  "scenarios": [
+    {
+      "name": "OAuth token authentication with Bearer header and system prompt",
+      "testMappings": [
+        {
+          "file": "tests/claude_oauth_test.rs",
+          "lines": "22-51",
+          "implMappings": [
+            {
+              "file": "src/providers/claude.rs",
+              "lines": [
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "API key takes precedence over OAuth token",
+      "testMappings": [
+        {
+          "file": "tests/claude_oauth_test.rs",
+          "lines": "58-82",
+          "implMappings": [
+            {
+              "file": "src/providers/claude.rs",
+              "lines": [
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "OAuth request includes all required beta headers and body modifications",
+      "testMappings": [
+        {
+          "file": "tests/claude_oauth_test.rs",
+          "lines": "89-121",
+          "implMappings": [
+            {
+              "file": "src/providers/claude.rs",
+              "lines": [
+                31,
+                32,
+                33,
+                34,
+                35
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "tests/claude_oauth_test.rs"
+    ],
+    "implFiles": [
+      "src/providers/claude.rs"
+    ],
+    "totalLinesCovered": 117
+  }
+}

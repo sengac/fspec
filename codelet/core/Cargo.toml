@@ -1,0 +1,47 @@
+[package]
+name = "codelet-core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Core agent execution for codelet - runner loop, message history, streaming"
+
+[dependencies]
+codelet-common.workspace = true
+codelet-tools.workspace = true
+codelet-providers.workspace = true
+
+# Async
+tokio.workspace = true
+futures.workspace = true
+async-trait.workspace = true
+tokio-stream.workspace = true
+async-stream.workspace = true
+
+# LLM Integration
+rig-core.workspace = true
+
+# Serialization
+serde.workspace = true
+serde_json.workspace = true
+schemars.workspace = true
+
+# Error handling
+anyhow.workspace = true
+thiserror.workspace = true
+
+# Logging
+tracing.workspace = true
+
+# Utilities
+uuid.workspace = true
+chrono.workspace = true
+regex.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true
+tokio-test.workspace = true
+serial_test.workspace = true
+
+[lints]
+workspace = true

@@ -1,0 +1,182 @@
+{
+  "scenarios": [
+    {
+      "name": "Compaction threshold accounts for autocompact buffer",
+      "testMappings": [
+        {
+          "file": "tests/autocompact_buffer_test.rs",
+          "lines": "31-48",
+          "implMappings": [
+            {
+              "file": "src/cli/compaction_threshold.rs",
+              "lines": [
+                26,
+                33,
+                61,
+                62,
+                63,
+                64
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Buffer scales appropriately for OpenAI",
+      "testMappings": [
+        {
+          "file": "tests/autocompact_buffer_test.rs",
+          "lines": "50-63",
+          "implMappings": [
+            {
+              "file": "src/cli/compaction_threshold.rs",
+              "lines": [
+                26,
+                33,
+                61,
+                62,
+                63,
+                64
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Buffer scales appropriately for Codex",
+      "testMappings": [
+        {
+          "file": "tests/autocompact_buffer_test.rs",
+          "lines": "65-78",
+          "implMappings": [
+            {
+              "file": "src/cli/compaction_threshold.rs",
+              "lines": [
+                26,
+                33,
+                61,
+                62,
+                63,
+                64
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Buffer scales appropriately for Gemini",
+      "testMappings": [
+        {
+          "file": "tests/autocompact_buffer_test.rs",
+          "lines": "80-93",
+          "implMappings": [
+            {
+              "file": "src/cli/compaction_threshold.rs",
+              "lines": [
+                26,
+                33,
+                61,
+                62,
+                63,
+                64
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Buffer does not cause premature compaction for small contexts",
+      "testMappings": [
+        {
+          "file": "tests/autocompact_buffer_test.rs",
+          "lines": "141-158",
+          "implMappings": [
+            {
+              "file": "src/cli/compaction_threshold.rs",
+              "lines": [
+                26,
+                33,
+                61,
+                62,
+                63,
+                64
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Buffer handles edge case where context window is small",
+      "testMappings": [
+        {
+          "file": "tests/autocompact_buffer_test.rs",
+          "lines": "95-109",
+          "implMappings": [
+            {
+              "file": "src/cli/compaction_threshold.rs",
+              "lines": [
+                26,
+                33,
+                61,
+                62,
+                63,
+                64
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "AUTOCOMPACT_BUFFER constant is defined",
+      "testMappings": [
+        {
+          "file": "tests/autocompact_buffer_test.rs",
+          "lines": "13-18",
+          "implMappings": [
+            {
+              "file": "src/cli/compaction_threshold.rs",
+              "lines": [
+                26
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "COMPACTION_THRESHOLD_RATIO constant is defined",
+      "testMappings": [
+        {
+          "file": "tests/autocompact_buffer_test.rs",
+          "lines": "20-25",
+          "implMappings": [
+            {
+              "file": "src/cli/compaction_threshold.rs",
+              "lines": [
+                33
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 8,
+    "coveredScenarios": 8,
+    "coveragePercent": 100,
+    "testFiles": [
+      "tests/autocompact_buffer_test.rs"
+    ],
+    "implFiles": [
+      "src/cli/compaction_threshold.rs"
+    ],
+    "totalLinesCovered": 143
+  }
+}
