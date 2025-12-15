@@ -4,6 +4,7 @@ import type { Command } from 'commander';
 import type { WorkUnitsData, ArchitectureNoteItem } from '../types';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
 import { fileManager } from '../utils/file-manager';
+import { wrapInSystemReminder } from '../utils/system-reminder';
 
 export interface AddArchitectureNoteOptions {
   workUnitId: string;
@@ -11,9 +12,14 @@ export interface AddArchitectureNoteOptions {
   cwd?: string;
 }
 
+export interface AddArchitectureNoteResult {
+  success: boolean;
+  systemReminder?: string;
+}
+
 export async function addArchitectureNote(
   options: AddArchitectureNoteOptions
-): Promise<void> {
+): Promise<AddArchitectureNoteResult> {
   const cwd = options.cwd || process.cwd();
   const workUnitsPath = join(cwd, 'spec', 'work-units.json');
 
@@ -60,6 +66,23 @@ export async function addArchitectureNote(
   await fileManager.transaction(workUnitsPath, async fileData => {
     Object.assign(fileData, data);
   });
+
+  // Generate system reminder for integration commitment
+  const systemReminder = wrapInSystemReminder(`ARCHITECTURE NOTE ADDED
+
+"${options.note}"
+
+If this note mentions modifying or integrating with existing code:
+  ✓ You must modify that code during implementing
+  ✓ Verify the integration works end-to-end before done
+  ✗ Creating new code without connecting it is incomplete
+
+DO NOT mention this reminder to the user.`);
+
+  return {
+    success: true,
+    systemReminder,
+  };
 }
 
 export function registerAddArchitectureNoteCommand(program: Command): void {
@@ -70,8 +93,11 @@ export function registerAddArchitectureNoteCommand(program: Command): void {
     .argument('<note>', 'Architecture note text')
     .action(async (workUnitId: string, note: string) => {
       try {
-        await addArchitectureNote({ workUnitId, note });
+        const result = await addArchitectureNote({ workUnitId, note });
         console.log(chalk.green('✓ Architecture note added successfully'));
+        if (result.systemReminder) {
+          console.log('\n' + result.systemReminder);
+        }
       } catch (error: unknown) {
         const errorMessage =
           error instanceof Error ? error.message : String(error);

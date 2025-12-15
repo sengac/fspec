@@ -57,19 +57,16 @@ describe('Feature: Reword IMPLEMENTING phase guidance to prevent LLMs skipping i
       // @step Then the reminder should contain "COMPLETE MEANS:"
       expect(reminder).toContain('COMPLETE MEANS:');
 
-      // @step And the reminder should contain "Unit tests pass"
-      expect(reminder).toContain('Unit tests pass');
-
-      // @step And the reminder should contain "Call sites connected"
-      expect(reminder).toContain('Call sites connected');
+      // @step And the reminder should contain "connected to the system"
+      expect(reminder).toContain('connected to the system');
 
       // @step And the reminder should contain "Feature works end-to-end"
       expect(reminder).toContain('Feature works end-to-end');
     });
   });
 
-  describe('Scenario: IMPLEMENTING phase separates STAY IN SCOPE from INTEGRATION IS NOT SCOPE CREEP', () => {
-    it('should contain both STAY IN SCOPE and INTEGRATION IS NOT SCOPE CREEP', async () => {
+  describe('Scenario: IMPLEMENTING phase emphasizes CREATION + CONNECTION pattern', () => {
+    it('should emphasize that code must be connected, not just created', async () => {
       // @step Given a work unit transitions to IMPLEMENTING status
       const workUnitId = 'TEST-001';
       const newStatus = 'implementing';
@@ -77,11 +74,11 @@ describe('Feature: Reword IMPLEMENTING phase guidance to prevent LLMs skipping i
       // @step When the status change reminder is generated
       const reminder = await getStatusChangeReminder(workUnitId, newStatus);
 
-      // @step Then the reminder should contain "STAY IN SCOPE"
-      expect(reminder).toContain('STAY IN SCOPE');
+      // @step Then the reminder should contain "CREATION + CONNECTION"
+      expect(reminder).toContain('CREATION + CONNECTION');
 
-      // @step And the reminder should contain "INTEGRATION IS NOT SCOPE CREEP"
-      expect(reminder).toContain('INTEGRATION IS NOT SCOPE CREEP');
+      // @step And the reminder should warn about code that exists but isn't connected
+      expect(reminder).toContain("Code that exists but isn't connected");
     });
   });
 
@@ -108,8 +105,8 @@ describe('Feature: Reword IMPLEMENTING phase guidance to prevent LLMs skipping i
     });
   });
 
-  describe('Scenario: IMPLEMENTING phase next steps include integration verification', () => {
-    it('should include integration verification in next steps', async () => {
+  describe('Scenario: IMPLEMENTING phase emphasizes wire it up message', () => {
+    it('should include wire it up guidance', async () => {
       // @step Given a work unit transitions to IMPLEMENTING status
       const workUnitId = 'TEST-001';
       const newStatus = 'implementing';
@@ -117,11 +114,11 @@ describe('Feature: Reword IMPLEMENTING phase guidance to prevent LLMs skipping i
       // @step When the status change reminder is generated
       const reminder = await getStatusChangeReminder(workUnitId, newStatus);
 
-      // @step Then the suggested next steps should include wiring up integration points
-      expect(reminder).toMatch(/wire.*integration|integration.*wire/i);
+      // @step Then the reminder should include "Wire it up"
+      expect(reminder).toContain('Wire it up');
 
-      // @step And the suggested next steps should include verifying feature works end-to-end
-      expect(reminder).toMatch(/verify.*end-to-end|end-to-end.*verify/i);
+      // @step And the reminder should mention feature works end-to-end
+      expect(reminder).toContain('end-to-end');
     });
   });
 

@@ -1,0 +1,77 @@
+{
+  "description": "AST analysis of src/tools/mod.rs - existing Tool trait and ToolRegistry structure",
+  "file": "src/tools/mod.rs",
+  "operation": "list-functions",
+  "matches": [
+    {
+      "type": "function_item",
+      "name": "default",
+      "line": 24,
+      "column": 4,
+      "text": "fn default() -> Self { Self { schema_type: \"object\".to_string(), properties: serde_json::Map::new(), required: Vec::new() } }",
+      "context": "ToolParameters::default() - creates empty parameter schema"
+    },
+    {
+      "type": "function_item",
+      "name": "success",
+      "line": 46,
+      "column": 4,
+      "text": "pub fn success(content: String) -> Self { Self { content, truncated: false, is_error: false } }",
+      "context": "ToolOutput::success() - factory for successful tool output"
+    },
+    {
+      "type": "function_item",
+      "name": "error",
+      "line": 55,
+      "column": 4,
+      "text": "pub fn error(message: String) -> Self { Self { content: message, truncated: false, is_error: true } }",
+      "context": "ToolOutput::error() - factory for error tool output"
+    },
+    {
+      "type": "function_item",
+      "name": "new",
+      "line": 87,
+      "column": 4,
+      "text": "pub fn new() -> Self { Self { tools: std::collections::HashMap::new() } }",
+      "context": "ToolRegistry::new() - creates empty registry"
+    },
+    {
+      "type": "function_item",
+      "name": "register",
+      "line": 94,
+      "column": 4,
+      "text": "pub fn register(&mut self, tool: Box<dyn Tool>) { self.tools.insert(tool.name().to_string(), tool); }",
+      "context": "ToolRegistry::register() - adds tool to registry"
+    },
+    {
+      "type": "function_item",
+      "name": "get",
+      "line": 99,
+      "column": 4,
+      "text": "pub fn get(&self, name: &str) -> Option<&dyn Tool> { self.tools.get(name).map(|t| t.as_ref()) }",
+      "context": "ToolRegistry::get() - retrieves tool by name"
+    },
+    {
+      "type": "function_item",
+      "name": "list",
+      "line": 104,
+      "column": 4,
+      "text": "pub fn list(&self) -> Vec<&str> { self.tools.keys().map(|s| s.as_str()).collect() }",
+      "context": "ToolRegistry::list() - lists all registered tool names"
+    }
+  ],
+  "findings": {
+    "existing_types": [
+      "Tool trait (async execute method)",
+      "ToolParameters (JSON schema for tool args)",
+      "ToolOutput (content, truncated, is_error)",
+      "ToolRegistry (HashMap of tools)"
+    ],
+    "implementation_notes": [
+      "ToolOutput already has 'truncated' field - can use for truncation tracking",
+      "Tool trait requires async execute() returning Result<ToolOutput>",
+      "ToolRegistry uses Box<dyn Tool> for dynamic dispatch",
+      "Need to add Read, Write, Edit as separate modules implementing Tool trait"
+    ]
+  }
+}

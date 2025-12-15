@@ -1,0 +1,62 @@
+{
+  "scenarios": [
+    {
+      "name": "Display tool name before execution",
+      "testMappings": [
+        {
+          "file": "tests/tool_display_test.rs",
+          "lines": "7-24",
+          "implMappings": [
+            {
+              "file": "src/cli/interactive.rs",
+              "lines": [
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Display multiple tool calls in sequence",
+      "testMappings": [
+        {
+          "file": "tests/tool_display_test.rs",
+          "lines": "27-46",
+          "implMappings": [
+            {
+              "file": "src/cli/interactive.rs",
+              "lines": [
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "tests/tool_display_test.rs"
+    ],
+    "implFiles": [
+      "src/cli/interactive.rs"
+    ],
+    "totalLinesCovered": 52
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "prefixes": {
+    "FOUND": {
+      "prefix": "FOUND",
+      "description": "Foundation Event Storm tasks",
+      "createdAt": "2025-12-01T11:56:53.369Z"
+    },
+    "CORE": {
+      "prefix": "CORE",
+      "description": "Core infrastructure and scaffolding work",
+      "createdAt": "2025-12-01T12:07:50.817Z"
+    },
+    "PROV": {
+      "prefix": "PROV",
+      "description": "LLM provider implementations and management",
+      "createdAt": "2025-12-02T00:55:23.043Z"
+    },
+    "AGENT": {
+      "prefix": "AGENT",
+      "description": "Agent Execution bounded context - runner, message history, conversation orchestration",
+      "createdAt": "2025-12-02T01:14:43.374Z"
+    },
+    "CTX": {
+      "prefix": "CTX",
+      "description": "Context Management bounded context - token tracking, compaction, caching, project context",
+      "createdAt": "2025-12-02T01:31:55.579Z"
+    },
+    "REFAC": {
+      "prefix": "REFAC",
+      "description": "Refactoring and technical debt",
+      "createdAt": "2025-12-02T02:41:31.423Z"
+    },
+    "CLI": {
+      "prefix": "CLI",
+      "description": "CLI Interface bounded context - command parsing, config loading, provider selection",
+      "createdAt": "2025-12-02T08:19:30.346Z"
+    }
+  }
+}

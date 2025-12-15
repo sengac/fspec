@@ -1,0 +1,29 @@
+{
+  "analysis": "AST research for CLI-013 - system_reminders.rs",
+  "file": "src/session/system_reminders.rs",
+  "functions_to_modify": [
+    {
+      "name": "add_system_reminder",
+      "line": 254,
+      "current_behavior": "Removes existing reminders of same type, then appends new one",
+      "required_change": "Do NOT remove existing reminders. Just append new one with supersession marker"
+    },
+    {
+      "name": "partition_for_compaction",
+      "line": 157,
+      "current_behavior": "Partitions all system reminders from compactable messages",
+      "required_change": "Should only extract the LAST reminder of each type for preservation"
+    },
+    {
+      "name": "create_system_reminder_content",
+      "line": 90,
+      "current_behavior": "Creates reminder content with type marker",
+      "required_change": "Need new function or parameter to add supersession marker when replacing"
+    }
+  ],
+  "new_functions_needed": [
+    "create_supersession_marker() - generates marker text for replacement reminders",
+    "has_existing_reminder_of_type() - checks if message array has a reminder of given type",
+    "get_latest_reminders_by_type() - extracts only latest reminder per type for compaction"
+  ]
+}

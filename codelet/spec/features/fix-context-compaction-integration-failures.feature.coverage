@@ -1,0 +1,114 @@
+{
+  "scenarios": [
+    {
+      "name": "Extract token usage from rig streaming in interactive.rs",
+      "testMappings": [
+        {
+          "file": "tests/interactive_compaction_integration_test.rs",
+          "lines": "18-47",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Accumulate tokens across multiple turns in interactive.rs",
+      "testMappings": [
+        {
+          "file": "tests/interactive_compaction_integration_test.rs",
+          "lines": "53-81",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Convert messages to ConversationTurn in interactive.rs",
+      "testMappings": [
+        {
+          "file": "tests/interactive_compaction_integration_test.rs",
+          "lines": "87-117",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Check compaction threshold in interactive.rs",
+      "testMappings": [
+        {
+          "file": "tests/interactive_compaction_integration_test.rs",
+          "lines": "123-152",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Execute compaction when triggered in interactive.rs",
+      "testMappings": [
+        {
+          "file": "tests/interactive_compaction_integration_test.rs",
+          "lines": "158-192",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Reconstruct messages after compaction in interactive.rs",
+      "testMappings": [
+        {
+          "file": "tests/interactive_compaction_integration_test.rs",
+          "lines": "239-274",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Reduce token count after compaction in interactive.rs",
+      "testMappings": [
+        {
+          "file": "tests/interactive_compaction_integration_test.rs",
+          "lines": "280-314",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Preserve system messages during compaction in interactive.rs",
+      "testMappings": [
+        {
+          "file": "tests/interactive_compaction_integration_test.rs",
+          "lines": "320-352",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Notify user during compaction in interactive.rs",
+      "testMappings": [
+        {
+          "file": "tests/interactive_compaction_integration_test.rs",
+          "lines": "358-385",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Full end-to-end compaction integration flow",
+      "testMappings": [
+        {
+          "file": "tests/interactive_compaction_integration_test.rs",
+          "lines": "198-233",
+          "implMappings": []
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 10,
+    "coveredScenarios": 10,
+    "coveragePercent": 100,
+    "testFiles": [
+      "tests/interactive_compaction_integration_test.rs"
+    ],
+    "implFiles": [],
+    "totalLinesCovered": 323
+  }
+}

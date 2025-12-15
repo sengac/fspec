@@ -1,0 +1,306 @@
+{
+  "scenarios": [
+    {
+      "name": "Initialize logging module with daily file rotation",
+      "testMappings": [
+        {
+          "file": "tests/logging_system_test.rs",
+          "lines": "15-43",
+          "implMappings": [
+            {
+              "file": "src/logging/mod.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Replace eprintln with warn! macro for unknown stop_reason",
+      "testMappings": [
+        {
+          "file": "tests/logging_system_test.rs",
+          "lines": "51-75",
+          "implMappings": [
+            {
+              "file": "src/providers/claude.rs",
+              "lines": [
+                315
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Replace eprintln with error! macro for agent execution failures",
+      "testMappings": [
+        {
+          "file": "tests/logging_system_test.rs",
+          "lines": "77-101",
+          "implMappings": [
+            {
+              "file": "src/cli/mod.rs",
+              "lines": [
+                125
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Add info logging to RigAgent for execution tracking",
+      "testMappings": [
+        {
+          "file": "tests/logging_system_test.rs",
+          "lines": "109-138",
+          "implMappings": [
+            {
+              "file": "src/agent/rig_agent.rs",
+              "lines": [
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Add debug logging to all tool execute() methods",
+      "testMappings": [
+        {
+          "file": "tests/logging_system_test.rs",
+          "lines": "146-177",
+          "implMappings": [
+            {
+              "file": "src/tools/read.rs",
+              "lines": [
+                81
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Enable debug mode via RUST_LOG environment variable",
+      "testMappings": [
+        {
+          "file": "tests/logging_system_test.rs",
+          "lines": "185-199",
+          "implMappings": [
+            {
+              "file": "src/logging/mod.rs",
+              "lines": [
+                48,
+                49,
+                50,
+                51,
+                52
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Enable debug mode via --verbose CLI flag",
+      "testMappings": [
+        {
+          "file": "tests/logging_system_test.rs",
+          "lines": "201-213",
+          "implMappings": [
+            {
+              "file": "src/logging/mod.rs",
+              "lines": [
+                48,
+                49,
+                50,
+                51,
+                52
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Log files use JSON format with structured fields",
+      "testMappings": [
+        {
+          "file": "tests/logging_system_test.rs",
+          "lines": "221-239",
+          "implMappings": [
+            {
+              "file": "src/logging/mod.rs",
+              "lines": [
+                55,
+                56,
+                57,
+                58
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Preserve user-facing println! calls",
+      "testMappings": [
+        {
+          "file": "tests/logging_system_test.rs",
+          "lines": "247-267",
+          "implMappings": [
+            {
+              "file": "src/cli/mod.rs",
+              "lines": [
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Log rotation retains only last 5 files",
+      "testMappings": [
+        {
+          "file": "tests/logging_system_test.rs",
+          "lines": "275-290",
+          "implMappings": [
+            {
+              "file": "src/logging/mod.rs",
+              "lines": [
+                40,
+                41,
+                42
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 10,
+    "coveredScenarios": 10,
+    "coveragePercent": 100,
+    "testFiles": [
+      "tests/logging_system_test.rs"
+    ],
+    "implFiles": [
+      "src/logging/mod.rs",
+      "src/providers/claude.rs",
+      "src/cli/mod.rs",
+      "src/agent/rig_agent.rs",
+      "src/tools/read.rs"
+    ],
+    "totalLinesCovered": 351
+  }
+}

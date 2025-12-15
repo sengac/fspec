@@ -1,0 +1,210 @@
+{
+  "scenarios": [
+    {
+      "name": "Initialize OpenAI provider with API key from environment",
+      "testMappings": [
+        {
+          "file": "tests/openai_provider_test.rs",
+          "lines": "19-44",
+          "implMappings": [
+            {
+              "file": "src/providers/openai.rs",
+              "lines": [
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Initialize OpenAI provider fails without API key",
+      "testMappings": [
+        {
+          "file": "tests/openai_provider_test.rs",
+          "lines": "48-66",
+          "implMappings": [
+            {
+              "file": "src/providers/openai.rs",
+              "lines": [
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Override model via OPENAI_MODEL environment variable",
+      "testMappings": [
+        {
+          "file": "tests/openai_provider_test.rs",
+          "lines": "68-89",
+          "implMappings": [
+            {
+              "file": "src/providers/openai.rs",
+              "lines": [
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Provider reports no prompt caching support",
+      "testMappings": [
+        {
+          "file": "tests/openai_provider_test.rs",
+          "lines": "91-105",
+          "implMappings": [
+            {
+              "file": "src/providers/openai.rs",
+              "lines": [
+                245,
+                246,
+                247
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Provider reports streaming support",
+      "testMappings": [
+        {
+          "file": "tests/openai_provider_test.rs",
+          "lines": "107-121",
+          "implMappings": [
+            {
+              "file": "src/providers/openai.rs",
+              "lines": [
+                249,
+                250,
+                251
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Complete simple prompt without tools",
+      "testMappings": [
+        {
+          "file": "tests/openai_provider_test.rs",
+          "lines": "123-144",
+          "implMappings": [
+            {
+              "file": "src/providers/openai.rs",
+              "lines": [
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Create rig agent with all tools configured",
+      "testMappings": [
+        {
+          "file": "tests/openai_provider_test.rs",
+          "lines": "146-170",
+          "implMappings": [
+            {
+              "file": "src/providers/openai.rs",
+              "lines": [
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": [
+      "tests/openai_provider_test.rs"
+    ],
+    "implFiles": [
+      "src/providers/openai.rs"
+    ],
+    "totalLinesCovered": 226
+  }
+}

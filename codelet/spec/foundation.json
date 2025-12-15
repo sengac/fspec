@@ -1,0 +1,667 @@
+{
+  "version": "2.0.0",
+  "project": {
+    "name": "codelet",
+    "vision": "A multi-provider AI coding agent CLI in Rust that enables developers to leverage multiple LLM providers (Claude, OpenAI, Gemini) with advanced context management, tool execution, and conversation compaction for AI-assisted software development.",
+    "projectType": "cli-tool"
+  },
+  "problemSpace": {
+    "primaryProblem": {
+      "title": "Vendor lock-in and lack of flexibility in AI coding agents",
+      "description": "Existing AI coding agents are often monolithic and locked to a single LLM provider. Developers cannot easily switch between providers (Anthropic, OpenAI, Google) based on cost, capabilities, or availability. Additionally, context management becomes unwieldy as conversations grow, leading to token waste and degraded responses.",
+      "impact": "high"
+    }
+  },
+  "solutionSpace": {
+    "overview": "A lightweight, high-performance Rust CLI that provides a unified interface to multiple LLM providers through Rig.rs, with intelligent context management including automatic conversation compaction, prompt caching, and token tracking. The tool exposes file operations, code search, and command execution as tools the AI can use, following the patterns established by OpenAI Codex CLI.",
+    "capabilities": [
+      {
+        "name": "Multi-Provider LLM Integration",
+        "description": "Connect to multiple LLM providers (Anthropic Claude, OpenAI GPT, Google Gemini) through a unified interface using Rig.rs"
+      },
+      {
+        "name": "Tool Execution Framework",
+        "description": "Execute file operations (read, write, edit), code search (grep, glob), and bash commands as AI-callable tools"
+      },
+      {
+        "name": "Context Management",
+        "description": "Intelligent context window management with automatic conversation compaction, token tracking, and prompt caching"
+      },
+      {
+        "name": "Interactive and Non-Interactive Modes",
+        "description": "Support both interactive REPL mode for development and non-interactive exec mode for scripting and CI/CD"
+      }
+    ]
+  },
+  "personas": [
+    {
+      "name": "Software Developer",
+      "description": "A developer who uses AI to assist with coding tasks including writing, debugging, and refactoring code",
+      "goals": [
+        "Quickly get AI assistance for coding tasks",
+        "Switch between LLM providers based on task needs"
+      ]
+    },
+    {
+      "name": "DevOps Engineer",
+      "description": "An engineer who integrates AI coding assistance into CI/CD pipelines and automated workflows",
+      "goals": [
+        "Run AI-assisted code generation in non-interactive mode",
+        "Integrate LLM capabilities into build scripts"
+      ]
+    }
+  ],
+  "eventStorm": {
+    "level": "big_picture",
+    "items": [
+      {
+        "id": 1,
+        "type": "bounded_context",
+        "text": "Agent Execution",
+        "color": null,
+        "deleted": false,
+        "createdAt": "2025-12-01T12:00:06.267Z"
+      },
+      {
+        "id": 2,
+        "type": "bounded_context",
+        "text": "Provider Management",
+        "color": null,
+        "deleted": false,
+        "createdAt": "2025-12-01T12:00:11.898Z"
+      },
+      {
+        "id": 3,
+        "type": "bounded_context",
+        "text": "Tool Execution",
+        "color": null,
+        "deleted": false,
+        "createdAt": "2025-12-01T12:00:17.808Z"
+      },
+      {
+        "id": 4,
+        "type": "bounded_context",
+        "text": "Context Management",
+        "color": null,
+        "deleted": false,
+        "createdAt": "2025-12-01T12:00:24.954Z"
+      },
+      {
+        "id": 5,
+        "type": "bounded_context",
+        "text": "CLI Interface",
+        "color": null,
+        "deleted": false,
+        "createdAt": "2025-12-01T12:00:30.361Z"
+      },
+      {
+        "id": 6,
+        "type": "aggregate",
+        "text": "Runner",
+        "boundedContextId": 1,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2025-12-01T12:00:37.489Z"
+      },
+      {
+        "id": 7,
+        "type": "aggregate",
+        "text": "MessageHistory",
+        "boundedContextId": 1,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2025-12-01T12:00:38.205Z"
+      },
+      {
+        "id": 8,
+        "type": "aggregate",
+        "text": "InputManager",
+        "boundedContextId": 1,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2025-12-01T12:00:38.928Z"
+      },
+      {
+        "id": 9,
+        "type": "aggregate",
+        "text": "ProviderManager",
+        "boundedContextId": 2,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2025-12-01T12:00:46.413Z"
+      },
+      {
+        "id": 10,
+        "type": "aggregate",
+        "text": "ClaudeProvider",
+        "boundedContextId": 2,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2025-12-01T12:00:47.161Z"
+      },
+      {
+        "id": 11,
+        "type": "aggregate",
+        "text": "OpenAIProvider",
+        "boundedContextId": 2,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2025-12-01T12:00:47.908Z"
+      },
+      {
+        "id": 12,
+        "type": "aggregate",
+        "text": "GeminiProvider",
+        "boundedContextId": 2,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2025-12-01T12:00:48.680Z"
+      },
+      {
+        "id": 13,
+        "type": "aggregate",
+        "text": "ToolRegistry",
+        "boundedContextId": 3,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2025-12-01T12:00:57.500Z"
+      },
+      {
+        "id": 14,
+        "type": "aggregate",
+        "text": "BashTool",
+        "boundedContextId": 3,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2025-12-01T12:00:58.284Z"
+      },
+      {
+        "id": 15,
+        "type": "aggregate",
+        "text": "ReadTool",
+        "boundedContextId": 3,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2025-12-01T12:00:59.075Z"
+      },
+      {
+        "id": 16,
+        "type": "aggregate",
+        "text": "WriteTool",
+        "boundedContextId": 3,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2025-12-01T12:00:59.862Z"
+      },
+      {
+        "id": 17,
+        "type": "aggregate",
+        "text": "EditTool",
+        "boundedContextId": 3,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2025-12-01T12:01:00.641Z"
+      },
+      {
+        "id": 18,
+        "type": "aggregate",
+        "text": "GrepTool",
+        "boundedContextId": 3,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2025-12-01T12:01:01.412Z"
+      },
+      {
+        "id": 19,
+        "type": "aggregate",
+        "text": "GlobTool",
+        "boundedContextId": 3,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2025-12-01T12:01:02.205Z"
+      },
+      {
+        "id": 20,
+        "type": "aggregate",
+        "text": "TokenTracker",
+        "boundedContextId": 4,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2025-12-01T12:01:09.359Z"
+      },
+      {
+        "id": 21,
+        "type": "aggregate",
+        "text": "Compaction",
+        "boundedContextId": 4,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2025-12-01T12:01:10.155Z"
+      },
+      {
+        "id": 22,
+        "type": "aggregate",
+        "text": "PromptCache",
+        "boundedContextId": 4,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2025-12-01T12:01:10.958Z"
+      },
+      {
+        "id": 23,
+        "type": "aggregate",
+        "text": "ProjectContext",
+        "boundedContextId": 4,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2025-12-01T12:01:11.745Z"
+      },
+      {
+        "id": 24,
+        "type": "aggregate",
+        "text": "Cli",
+        "boundedContextId": 5,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2025-12-01T12:01:18.284Z"
+      },
+      {
+        "id": 25,
+        "type": "aggregate",
+        "text": "ConfigOverrides",
+        "boundedContextId": 5,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2025-12-01T12:01:19.106Z"
+      },
+      {
+        "id": 26,
+        "type": "aggregate",
+        "text": "Config",
+        "boundedContextId": 5,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2025-12-01T12:01:19.928Z"
+      },
+      {
+        "id": 27,
+        "type": "event",
+        "text": "AgentStarted",
+        "boundedContextId": 1,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2025-12-01T12:01:27.015Z"
+      },
+      {
+        "id": 28,
+        "type": "event",
+        "text": "PromptReceived",
+        "boundedContextId": 1,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2025-12-01T12:01:27.873Z"
+      },
+      {
+        "id": 29,
+        "type": "event",
+        "text": "ResponseStreaming",
+        "boundedContextId": 1,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2025-12-01T12:01:28.711Z"
+      },
+      {
+        "id": 30,
+        "type": "event",
+        "text": "ResponseCompleted",
+        "boundedContextId": 1,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2025-12-01T12:01:29.536Z"
+      },
+      {
+        "id": 31,
+        "type": "event",
+        "text": "AgentInterrupted",
+        "boundedContextId": 1,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2025-12-01T12:01:30.380Z"
+      },
+      {
+        "id": 32,
+        "type": "event",
+        "text": "ProviderSelected",
+        "boundedContextId": 2,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2025-12-01T12:01:37.401Z"
+      },
+      {
+        "id": 33,
+        "type": "event",
+        "text": "ProviderSwitched",
+        "boundedContextId": 2,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2025-12-01T12:01:38.226Z"
+      },
+      {
+        "id": 34,
+        "type": "event",
+        "text": "ApiKeyValidated",
+        "boundedContextId": 2,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2025-12-01T12:01:39.073Z"
+      },
+      {
+        "id": 35,
+        "type": "event",
+        "text": "CompletionRequested",
+        "boundedContextId": 2,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2025-12-01T12:01:39.943Z"
+      },
+      {
+        "id": 36,
+        "type": "event",
+        "text": "StreamChunkReceived",
+        "boundedContextId": 2,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2025-12-01T12:01:40.782Z"
+      },
+      {
+        "id": 37,
+        "type": "event",
+        "text": "ToolInvoked",
+        "boundedContextId": 3,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2025-12-01T12:01:48.028Z"
+      },
+      {
+        "id": 38,
+        "type": "event",
+        "text": "ToolExecuted",
+        "boundedContextId": 3,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2025-12-01T12:01:48.878Z"
+      },
+      {
+        "id": 39,
+        "type": "event",
+        "text": "ToolOutputTruncated",
+        "boundedContextId": 3,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2025-12-01T12:01:49.732Z"
+      },
+      {
+        "id": 40,
+        "type": "event",
+        "text": "ToolFailed",
+        "boundedContextId": 3,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2025-12-01T12:01:50.611Z"
+      },
+      {
+        "id": 41,
+        "type": "event",
+        "text": "TokensTracked",
+        "boundedContextId": 4,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2025-12-01T12:01:58.556Z"
+      },
+      {
+        "id": 42,
+        "type": "event",
+        "text": "CompactionTriggered",
+        "boundedContextId": 4,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2025-12-01T12:01:59.415Z"
+      },
+      {
+        "id": 43,
+        "type": "event",
+        "text": "ConversationCompacted",
+        "boundedContextId": 4,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2025-12-01T12:02:00.279Z"
+      },
+      {
+        "id": 44,
+        "type": "event",
+        "text": "AnchorPointDetected",
+        "boundedContextId": 4,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2025-12-01T12:02:01.171Z"
+      },
+      {
+        "id": 45,
+        "type": "event",
+        "text": "CacheHit",
+        "boundedContextId": 4,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2025-12-01T12:02:02.047Z"
+      },
+      {
+        "id": 46,
+        "type": "event",
+        "text": "ContextFileLoaded",
+        "boundedContextId": 4,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2025-12-01T12:02:02.944Z"
+      },
+      {
+        "id": 47,
+        "type": "event",
+        "text": "CommandParsed",
+        "boundedContextId": 5,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2025-12-01T12:02:10.100Z"
+      },
+      {
+        "id": 48,
+        "type": "event",
+        "text": "ConfigLoaded",
+        "boundedContextId": 5,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2025-12-01T12:02:10.997Z"
+      },
+      {
+        "id": 49,
+        "type": "event",
+        "text": "ConfigOverrideApplied",
+        "boundedContextId": 5,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2025-12-01T12:02:11.898Z"
+      },
+      {
+        "id": 50,
+        "type": "command",
+        "text": "RunAgent",
+        "boundedContextId": 1,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2025-12-01T12:02:19.220Z"
+      },
+      {
+        "id": 51,
+        "type": "command",
+        "text": "SendPrompt",
+        "boundedContextId": 1,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2025-12-01T12:02:20.096Z"
+      },
+      {
+        "id": 52,
+        "type": "command",
+        "text": "InterruptAgent",
+        "boundedContextId": 1,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2025-12-01T12:02:21.021Z"
+      },
+      {
+        "id": 53,
+        "type": "command",
+        "text": "ResumeSession",
+        "boundedContextId": 1,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2025-12-01T12:02:21.945Z"
+      },
+      {
+        "id": 54,
+        "type": "command",
+        "text": "SelectProvider",
+        "boundedContextId": 2,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2025-12-01T12:02:28.437Z"
+      },
+      {
+        "id": 55,
+        "type": "command",
+        "text": "SwitchProvider",
+        "boundedContextId": 2,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2025-12-01T12:02:29.362Z"
+      },
+      {
+        "id": 56,
+        "type": "command",
+        "text": "RequestCompletion",
+        "boundedContextId": 2,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2025-12-01T12:02:30.283Z"
+      },
+      {
+        "id": 57,
+        "type": "command",
+        "text": "InvokeTool",
+        "boundedContextId": 3,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2025-12-01T12:02:38.273Z"
+      },
+      {
+        "id": 58,
+        "type": "command",
+        "text": "ExecuteBash",
+        "boundedContextId": 3,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2025-12-01T12:02:39.183Z"
+      },
+      {
+        "id": 59,
+        "type": "command",
+        "text": "ReadFile",
+        "boundedContextId": 3,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2025-12-01T12:02:40.113Z"
+      },
+      {
+        "id": 60,
+        "type": "command",
+        "text": "WriteFile",
+        "boundedContextId": 3,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2025-12-01T12:02:41.027Z"
+      },
+      {
+        "id": 61,
+        "type": "command",
+        "text": "EditFile",
+        "boundedContextId": 3,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2025-12-01T12:02:41.945Z"
+      },
+      {
+        "id": 62,
+        "type": "command",
+        "text": "SearchFiles",
+        "boundedContextId": 3,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2025-12-01T12:02:42.885Z"
+      },
+      {
+        "id": 63,
+        "type": "command",
+        "text": "TrackTokens",
+        "boundedContextId": 4,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2025-12-01T12:02:49.878Z"
+      },
+      {
+        "id": 64,
+        "type": "command",
+        "text": "TriggerCompaction",
+        "boundedContextId": 4,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2025-12-01T12:02:50.808Z"
+      },
+      {
+        "id": 65,
+        "type": "command",
+        "text": "LoadProjectContext",
+        "boundedContextId": 4,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2025-12-01T12:02:51.735Z"
+      },
+      {
+        "id": 66,
+        "type": "command",
+        "text": "ParseCommand",
+        "boundedContextId": 5,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2025-12-01T12:02:58.540Z"
+      },
+      {
+        "id": 67,
+        "type": "command",
+        "text": "LoadConfig",
+        "boundedContextId": 5,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2025-12-01T12:02:59.489Z"
+      },
+      {
+        "id": 68,
+        "type": "command",
+        "text": "ApplyOverrides",
+        "boundedContextId": 5,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2025-12-01T12:03:00.452Z"
+      }
+    ],
+    "nextItemId": 69
+  }
+}

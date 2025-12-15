@@ -1,0 +1,352 @@
+{
+  "scenarios": [
+    {
+      "name": "Automatic Claude provider selection with API key",
+      "testMappings": [
+        {
+          "file": "tests/provider_manager_test.rs",
+          "lines": "62-83",
+          "implMappings": [
+            {
+              "file": "src/providers/manager.rs",
+              "lines": [
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Explicit Codex provider selection via CLI flag",
+      "testMappings": [
+        {
+          "file": "tests/provider_manager_test.rs",
+          "lines": "86-104",
+          "implMappings": [
+            {
+              "file": "src/providers/manager.rs",
+              "lines": [
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Error when no credentials available",
+      "testMappings": [
+        {
+          "file": "tests/provider_manager_test.rs",
+          "lines": "107-130",
+          "implMappings": [
+            {
+              "file": "src/providers/manager.rs",
+              "lines": [
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Error when requested provider unavailable",
+      "testMappings": [
+        {
+          "file": "tests/provider_manager_test.rs",
+          "lines": "133-155",
+          "implMappings": [
+            {
+              "file": "src/providers/manager.rs",
+              "lines": [
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Priority-based provider selection",
+      "testMappings": [
+        {
+          "file": "tests/provider_manager_test.rs",
+          "lines": "158-176",
+          "implMappings": [
+            {
+              "file": "src/providers/manager.rs",
+              "lines": [
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Claude Code OAuth fallback",
+      "testMappings": [
+        {
+          "file": "tests/provider_manager_test.rs",
+          "lines": "179-200",
+          "implMappings": [
+            {
+              "file": "src/providers/credentials.rs",
+              "lines": [
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Gemini provider selection",
+      "testMappings": [
+        {
+          "file": "tests/provider_manager_test.rs",
+          "lines": "203-217",
+          "implMappings": [
+            {
+              "file": "src/providers/manager.rs",
+              "lines": [
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "OpenAI provider selection",
+      "testMappings": [
+        {
+          "file": "tests/provider_manager_test.rs",
+          "lines": "220-234",
+          "implMappings": [
+            {
+              "file": "src/providers/manager.rs",
+              "lines": [
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 8,
+    "coveredScenarios": 8,
+    "coveragePercent": 100,
+    "testFiles": [
+      "tests/provider_manager_test.rs"
+    ],
+    "implFiles": [
+      "src/providers/manager.rs",
+      "src/providers/credentials.rs"
+    ],
+    "totalLinesCovered": 366
+  }
+}

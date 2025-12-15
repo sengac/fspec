@@ -1,0 +1,141 @@
+{
+  "scenarios": [
+    {
+      "name": "Extract cache read tokens from Anthropic SSE MessageStart",
+      "testMappings": [
+        {
+          "file": "tests/cache_token_extraction_test.rs",
+          "lines": "14-26",
+          "implMappings": [
+            {
+              "file": "src/cli/interactive.rs",
+              "lines": [
+                571,
+                572,
+                573,
+                574,
+                575,
+                576,
+                577,
+                578,
+                579,
+                580,
+                581,
+                582
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Extract cache creation tokens from Anthropic SSE MessageStart",
+      "testMappings": [
+        {
+          "file": "tests/cache_token_extraction_test.rs",
+          "lines": "32-44",
+          "implMappings": [
+            {
+              "file": "src/cli/interactive.rs",
+              "lines": [
+                571,
+                572,
+                573,
+                574,
+                575,
+                576,
+                577,
+                578,
+                579,
+                580,
+                581,
+                582
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Effective tokens calculation applies 90% cache discount",
+      "testMappings": [
+        {
+          "file": "tests/cache_token_extraction_test.rs",
+          "lines": "50-66",
+          "implMappings": [
+            {
+              "file": "src/agent/compaction.rs",
+              "lines": [
+                54,
+                55,
+                56,
+                57,
+                58
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Non-Anthropic providers default to no cache tokens",
+      "testMappings": [
+        {
+          "file": "tests/cache_token_extraction_test.rs",
+          "lines": "72-98",
+          "implMappings": [
+            {
+              "file": "src/cli/interactive.rs",
+              "lines": [
+                571,
+                572,
+                573,
+                574,
+                575,
+                576,
+                577,
+                578,
+                579,
+                580,
+                581,
+                582
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Accumulate cache tokens into session tracker after turn",
+      "testMappings": [
+        {
+          "file": "tests/cache_token_extraction_test.rs",
+          "lines": "104-126",
+          "implMappings": [
+            {
+              "file": "src/cli/interactive.rs",
+              "lines": [
+                621,
+                622,
+                623
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "tests/cache_token_extraction_test.rs"
+    ],
+    "implFiles": [
+      "src/cli/interactive.rs",
+      "src/agent/compaction.rs"
+    ],
+    "totalLinesCovered": 137
+  }
+}

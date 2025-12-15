@@ -1,0 +1,28 @@
+{
+  "epics": {
+    "provider-management": {
+      "id": "provider-management",
+      "title": "Provider Management",
+      "createdAt": "2025-12-02T00:55:31.624Z",
+      "description": "LLM provider implementations (Claude, OpenAI, Gemini) for AI completions",
+      "workUnits": [
+        "PROV-001",
+        "REFAC-007",
+        "PROV-004",
+        "PROV-005"
+      ]
+    },
+    "interactive-tui": {
+      "id": "interactive-tui",
+      "title": "Interactive TUI",
+      "createdAt": "2025-12-02T11:42:52.503Z",
+      "description": "Interactive terminal UI features including tool display, interruption, status updates",
+      "workUnits": [
+        "CLI-003",
+        "CLI-004",
+        "CLI-006",
+        "CLI-007"
+      ]
+    }
+  }
+}

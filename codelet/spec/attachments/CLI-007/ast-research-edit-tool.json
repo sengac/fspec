@@ -1,0 +1,60 @@
+{
+  "matches": [
+    {
+      "type": "function_item",
+      "name": "new",
+      "line": 22,
+      "column": 4,
+      "text": "pub fn new() -> Self {\n        let mut properties = serde_json::Map::new();\n\n        properties.insert(\n            \"file_path\".to_string(),\n            json!({\n                \"type\": \"string\",\n                \"description\": \"Absolute path to the file to edit\"\n            }),\n        );\n\n        properties.insert(\n            \"old_string\".to_string(),\n            json!({\n                \"type\": \"string\",\n                \"description\": \"String to find and replace (first occurrence only)\"\n            }),\n        );\n\n        properties.insert(\n            \"new_string\".to_string(),\n            json!({\n                \"type\": \"string\",\n                \"description\": \"String to replace with\"\n            }),\n        );\n\n        Self {\n            parameters: ToolParameters {\n                schema_type: \"object\".to_string(),\n                properties,\n                required: vec![\n                    \"file_path\".to_string(),\n                    \"old_string\".to_string(),\n                    \"new_string\".to_string(),\n                ],\n            },\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "default",
+      "line": 64,
+      "column": 4,
+      "text": "fn default() -> Self {\n        Self::new()\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "name",
+      "line": 71,
+      "column": 4,
+      "text": "fn name(&self) -> &str {\n        \"Edit\"\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "description",
+      "line": 75,
+      "column": 4,
+      "text": "fn description(&self) -> &str {\n        \"Edit a file by replacing the first occurrence of old_string with new_string.\"\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "parameters",
+      "line": 79,
+      "column": 4,
+      "text": "fn parameters(&self) -> &ToolParameters {\n        &self.parameters\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "execute",
+      "line": 83,
+      "column": 4,
+      "text": "async fn execute(&self, args: Value) -> Result<ToolOutput> {\n        debug!(tool = \"Edit\", input = ?args, \"Executing tool\");\n        let file_path = args.get(\"file_path\").and_then(|v| v.as_str()).unwrap_or(\"\");\n\n        let old_string = args\n            .get(\"old_string\")\n            .and_then(|v| v.as_str())\n            .unwrap_or(\"\");\n\n        let new_string = args\n            .get(\"new_string\")\n            .and_then(|v| v.as_str())\n            .unwrap_or(\"\");\n\n        // Validate absolute path\n        let path = match require_absolute_path(file_path) {\n            Ok(p) => p,\n            Err(e) => return Ok(e),\n        };\n\n        // Check file exists\n        if let Err(e) = require_file_exists(path, file_path) {\n            return Ok(e);\n        }\n\n        // Read file content\n        let content = match read_file_contents(path) {\n            Ok(c) => c,\n            Err(e) => return Ok(e),\n        };\n\n        // Check if old_string exists\n        if !content.contains(old_string) {\n            return Ok(ToolOutput::error(\n                \"Error: old_string not found in file\".to_string(),\n            ));\n        }\n\n        // Replace first occurrence only\n        let new_content = content.replacen(old_string, new_string, 1);\n\n        // Write back\n        match fs::write(path, &new_content) {\n            Ok(()) => Ok(ToolOutput::success(format!(\n                \"Successfully edited {}\",\n                file_path\n            ))),\n            Err(e) => Ok(ToolOutput::error(format!(\"Error writing file: {}\", e))),\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "definition",
+      "line": 168,
+      "column": 4,
+      "text": "async fn definition(&self, _prompt: String) -> rig::completion::ToolDefinition {\n        rig::completion::ToolDefinition {\n            name: \"edit\".to_string(),\n            description:\n                \"Edit a file by replacing the first occurrence of old_string with new_string.\"\n                    .to_string(),\n            parameters: serde_json::to_value(schemars::schema_for!(EditArgs))\n                .unwrap_or_else(|_| json!({\"type\": \"object\"})),\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "call",
+      "line": 179,
+      "column": 4,
+      "text": "async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {\n        // Validate absolute path\n        let path = require_absolute_path(&args.file_path)\n            .map_err(|e| EditError::ValidationError(e.content))?;\n\n        // Check file exists\n        require_file_exists(path, &args.file_path)\n            .map_err(|e| EditError::ValidationError(e.content))?;\n\n        // Read file content\n        let content = read_file_contents(path).map_err(|e| EditError::FileError(e.content))?;\n\n        // Check if old_string exists\n        if !content.contains(&args.old_string) {\n            return Err(EditError::StringNotFound(\n                \"old_string not found in file\".to_string(),\n            ));\n        }\n\n        // Replace first occurrence only\n        let new_content = content.replacen(&args.old_string, &args.new_string, 1);\n\n        // Write back\n        fs::write(path, &new_content)\n            .map_err(|e| EditError::FileError(format!(\"Error writing file: {}\", e)))?;\n\n        Ok(format!(\"Successfully edited {}\", args.file_path))\n    }"
+    }
+  ]
+}

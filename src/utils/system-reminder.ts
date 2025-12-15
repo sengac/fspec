@@ -167,7 +167,9 @@ Suggested next steps:
 
 DO NOT write implementation code yet. DO NOT mention this reminder to the user.`,
 
-    implementing: `Work unit ${workUnitId} is now in IMPLEMENTING status.
+    implementing: workUnit
+      ? implementingStateReminder(workUnitId, workUnit)
+      : `Work unit ${workUnitId} is now in IMPLEMENTING status.
 
 ⚠️ COMMON FAILURE MODE: Code that exists but isn't connected.
 Tests passing in isolation is NOT the same as a working feature.
@@ -178,23 +180,10 @@ For every piece of code you write, ask: "WHO CALLS THIS?"
 If the answer is "nobody yet" — you're not done. Wire it up.
 
 COMPLETE MEANS:
-  ✓ Unit tests pass (code works correctly in isolation)
-  ✓ Integration tests written (code works in context of the system)
-  ✓ Imports added (files that use this code import it)
-  ✓ Call sites connected (code is invoked from where it should be)
+  ✓ New code exists AND is connected to the system
+  ✓ Existing files modified as described in architecture notes
   ✓ Feature works end-to-end (can be demonstrated in the real system)
-
-STAY IN SCOPE (avoid scope creep):
-  ✗ Don't add features beyond the acceptance criteria
-  ✗ Don't refactor unrelated code
-  ✗ Don't gold-plate with "nice to have" enhancements
-
-INTEGRATION IS NOT SCOPE CREEP:
-  ✓ Wiring up call sites is PART OF implementation
-  ✓ Adding imports to existing files is REQUIRED
-  ✓ The feature working in the real system is the goal
-
-A feature isn't done until it's CONNECTED, not just CREATED.
+  ✗ New code exists but nothing calls it
 
 Common commands for IMPLEMENTING state:
   fspec link-coverage <feature> --scenario "..." --test-file <path> --impl-file <path> --impl-lines <lines>
@@ -203,15 +192,6 @@ Common commands for IMPLEMENTING state:
   fspec list-checkpoints <id>
 
 For more: fspec checkpoint --help
-
-Suggested next steps:
-  1. Write code to make unit tests pass
-  2. Write integration tests that verify the wiring works
-  3. Wire up all integration points (imports, call sites)
-  4. Run integration tests and verify they pass
-  5. Verify the feature works end-to-end
-  6. Link implementation coverage: fspec link-coverage <feature> --scenario "..." --test-file <path> --impl-file <path> --impl-lines <lines>
-  7. Move to validating: fspec update-work-unit-status ${workUnitId} validating
 
 DO NOT mention this reminder to the user.`,
 
@@ -242,7 +222,9 @@ Suggested next steps:
 
 DO NOT skip quality checks. DO NOT mention this reminder to the user.`,
 
-    done: `Work unit ${workUnitId} is now in DONE status.
+    done: workUnit
+      ? doneStateReminder(workUnitId, workUnit)
+      : `Work unit ${workUnitId} is now in DONE status.
 
 CRITICAL: Verify feature file tags are updated:
   - Remove @wip tag: fspec remove-tag-from-feature <file> @wip
@@ -618,6 +600,110 @@ Common commands for SPECIFYING state:
 For more: fspec help discovery
 
 DO NOT write tests or code yet. DO NOT mention this reminder to the user.`;
+
+  return wrapInSystemReminder(reminder);
+}
+
+/**
+ * Gets enhanced implementing state reminder with architecture notes and user story
+ * @param workUnitId - The work unit ID
+ * @param workUnit - The work unit object
+ * @returns Reminder text wrapped in tags
+ */
+export function implementingStateReminder(
+  workUnitId: string,
+  workUnit: any
+): string {
+  if (!isRemindersEnabled()) {
+    return '';
+  }
+
+  // Build user story section
+  let userStorySection = '';
+  if (workUnit?.userStory) {
+    userStorySection = `USER STORY: "As a ${workUnit.userStory.role}, I want to ${workUnit.userStory.action}, so that ${workUnit.userStory.benefit}"
+
+`;
+  }
+
+  // Build architecture notes section
+  let archNotesSection = '';
+  const activeNotes = workUnit?.architectureNotes?.filter(
+    (n: any) => !n.deleted
+  );
+  if (activeNotes && activeNotes.length > 0) {
+    archNotesSection = `ARCHITECTURE NOTES:
+${activeNotes.map((n: any) => `  - ${n.text}`).join('\n')}
+
+`;
+  }
+
+  const reminder = `Work unit ${workUnitId} is now in IMPLEMENTING status.
+
+${userStorySection}${archNotesSection}⚠️ COMMON FAILURE MODE: Code that exists but isn't connected.
+Tests passing in isolation is NOT the same as a working feature.
+
+IMPLEMENTATION = CREATION + CONNECTION
+
+For every piece of code you write, ask: "WHO CALLS THIS?"
+If the answer is "nobody yet" — you're not done. Wire it up.
+
+COMPLETE MEANS:
+  ✓ New code exists AND is connected to the system
+  ✓ Existing files modified as described in architecture notes
+  ✓ Feature works end-to-end (can be demonstrated in the real system)
+  ✗ New code exists but nothing calls it
+
+Common commands for IMPLEMENTING state:
+  fspec link-coverage <feature> --scenario "..." --test-file <path> --impl-file <path> --impl-lines <lines>
+  fspec checkpoint <id> <name>
+  fspec restore-checkpoint <id> <name>
+  fspec list-checkpoints <id>
+
+For more: fspec checkpoint --help
+
+DO NOT mention this reminder to the user.`;
+
+  return wrapInSystemReminder(reminder);
+}
+
+/**
+ * Gets enhanced done state reminder with user story verification
+ * @param workUnitId - The work unit ID
+ * @param workUnit - The work unit object
+ * @returns Reminder text wrapped in tags
+ */
+export function doneStateReminder(workUnitId: string, workUnit: any): string {
+  if (!isRemindersEnabled()) {
+    return '';
+  }
+
+  // Build user story verification section
+  let userStoryCheck = '';
+  if (workUnit?.userStory) {
+    const role = workUnit.userStory.role;
+    userStoryCheck = `FINAL CHECK
+
+User story: "As a ${role}, I want to ${workUnit.userStory.action}..."
+
+Can ${role} do this RIGHT NOW in the actual system?
+
+  - Not "the code exists"
+  - Not "tests pass"
+  - Can they ACTUALLY do it?
+
+If NO: Go back to implementing.
+
+`;
+  }
+
+  const reminder = `Work unit ${workUnitId} is now in DONE status.
+
+${userStoryCheck}CRITICAL: Verify feature file tags are updated:
+  - Remove @wip tag: fspec remove-tag-from-feature <file> @wip
+  - Add @done tag: fspec add-tag-to-feature <file> @done
+
+All acceptance criteria should be met. DO NOT mention this reminder to the user.`;
 
   return wrapInSystemReminder(reminder);
 }

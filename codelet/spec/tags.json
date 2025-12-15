@@ -1,0 +1,226 @@
+{
+  "categories": [
+    {
+      "name": "Phase Tags",
+      "description": "Phase identification tags",
+      "required": true,
+      "tags": [
+        {
+          "name": "@high",
+          "description": "High priority features"
+        }
+      ]
+    },
+    {
+      "name": "Component Tags",
+      "description": "Architectural component tags",
+      "required": true,
+      "tags": [
+        {
+          "name": "@agent",
+          "description": "Agent execution and scaffolding"
+        },
+        {
+          "name": "@agent-execution",
+          "description": "Agent execution bounded context - runner, message history, input management"
+        },
+        {
+          "name": "@cli",
+          "description": "CLI interface and command-line interaction features"
+        },
+        {
+          "name": "@cli-interface",
+          "description": "CLI interface bounded context - command parsing, config loading"
+        },
+        {
+          "name": "@context-management",
+          "description": "Context management bounded context - token tracking, compaction, caching"
+        },
+        {
+          "name": "@provider-management",
+          "description": "Provider management bounded context - multi-provider LLM abstraction"
+        },
+        {
+          "name": "@session",
+          "description": "Session management and state handling"
+        },
+        {
+          "name": "@tool-execution",
+          "description": "Tool execution bounded context - bash, read, write, edit, grep, glob tools"
+        }
+      ]
+    },
+    {
+      "name": "Feature Group Tags",
+      "description": "Functional area tags",
+      "required": true,
+      "tags": [
+        {
+          "name": "@bash-execution",
+          "description": "Bash command execution and output handling"
+        },
+        {
+          "name": "@code-search",
+          "description": "Code search and file pattern matching tools (grep, glob)"
+        },
+        {
+          "name": "@interactive",
+          "description": "Interactive user interface features requiring user interaction"
+        },
+        {
+          "name": "@llm-provider",
+          "description": "LLM provider implementations for AI completions"
+        },
+        {
+          "name": "@providers",
+          "description": "Provider-related features"
+        },
+        {
+          "name": "@rendering",
+          "description": "Markdown rendering and terminal display features"
+        },
+        {
+          "name": "@scaffold",
+          "description": "Project scaffold and foundation setup"
+        },
+        {
+          "name": "@session-management",
+          "description": "Session and context management features including message persistence and state handling"
+        },
+        {
+          "name": "@tool-display",
+          "description": "Features related to displaying tool execution information"
+        }
+      ]
+    },
+    {
+      "name": "Technical Tags",
+      "description": "Technical concern tags",
+      "required": false,
+      "tags": [
+        {
+          "name": "@compaction",
+          "description": "Context compaction and anchor point strategies"
+        },
+        {
+          "name": "@infrastructure",
+          "description": "Core infrastructure and system setup"
+        },
+        {
+          "name": "@logging",
+          "description": "Logging and observability features"
+        },
+        {
+          "name": "@markdown",
+          "description": "Markdown parsing and rendering"
+        },
+        {
+          "name": "@ratatui",
+          "description": "TUI framework for terminal rendering with styled text"
+        },
+        {
+          "name": "@streaming",
+          "description": "Real-time data streaming and buffering"
+        },
+        {
+          "name": "@system-reminders",
+          "description": "System reminder infrastructure and dynamic context injection"
+        },
+        {
+          "name": "@terminal",
+          "description": "Terminal/TTY specific functionality"
+        },
+        {
+          "name": "@tracing",
+          "description": "Tracing library integration and instrumentation"
+        },
+        {
+          "name": "@tui",
+          "description": "Terminal User Interface (TUI) features using ratatui/crossterm"
+        }
+      ]
+    },
+    {
+      "name": "Platform Tags",
+      "description": "Platform-specific tags",
+      "required": false,
+      "tags": []
+    },
+    {
+      "name": "Priority Tags",
+      "description": "Implementation priority tags",
+      "required": false,
+      "tags": [
+        {
+          "name": "@critical",
+          "description": "Critical priority work that must be completed"
+        }
+      ]
+    },
+    {
+      "name": "Status Tags",
+      "description": "Development status tags",
+      "required": false,
+      "tags": [
+        {
+          "name": "@done",
+          "description": "Completed features"
+        }
+      ]
+    },
+    {
+      "name": "Testing Tags",
+      "description": "Test-related tags",
+      "required": false,
+      "tags": []
+    },
+    {
+      "name": "Automation Tags",
+      "description": "Automation integration tags",
+      "required": false,
+      "tags": []
+    }
+  ],
+  "combinationExamples": [],
+  "usageGuidelines": {
+    "requiredCombinations": {
+      "title": "",
+      "requirements": [],
+      "minimumExample": ""
+    },
+    "recommendedCombinations": {
+      "title": "",
+      "includes": [],
+      "recommendedExample": ""
+    },
+    "orderingConvention": {
+      "title": "",
+      "order": [],
+      "example": ""
+    }
+  },
+  "addingNewTags": {
+    "process": [],
+    "namingConventions": [],
+    "antiPatterns": {
+      "dont": [],
+      "do": []
+    }
+  },
+  "queries": {
+    "title": "",
+    "examples": []
+  },
+  "statistics": {
+    "lastUpdated": "2025-12-03T09:36:15.358Z",
+    "phaseStats": [],
+    "componentStats": [],
+    "featureGroupStats": [],
+    "updateCommand": "fspec tag-stats"
+  },
+  "validation": {
+    "rules": [],
+    "commands": []
+  },
+  "references": []
+}

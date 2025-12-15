@@ -1,0 +1,429 @@
+{
+  "scenarios": [
+    {
+      "name": "Trigger compaction at 90% context window using effective tokens",
+      "testMappings": [
+        {
+          "file": "tests/context_compaction_test.rs",
+          "lines": "55-96",
+          "implMappings": [
+            {
+              "file": "tests/context_compaction_test.rs",
+              "lines": [
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Detect error-resolution anchor with high confidence",
+      "testMappings": [
+        {
+          "file": "tests/context_compaction_test.rs",
+          "lines": "102-149",
+          "implMappings": [
+            {
+              "file": "tests/context_compaction_test.rs",
+              "lines": [
+                445,
+                446,
+                447,
+                448,
+                449,
+                450,
+                451,
+                452,
+                453,
+                454,
+                455,
+                456,
+                457,
+                458,
+                459,
+                460,
+                461,
+                462,
+                463,
+                464,
+                465,
+                466,
+                467,
+                468,
+                469,
+                470,
+                471,
+                472,
+                473,
+                474,
+                475,
+                476,
+                477,
+                478,
+                479,
+                480,
+                481,
+                482,
+                483,
+                484,
+                485,
+                486,
+                487,
+                488,
+                489,
+                490,
+                491,
+                492,
+                493,
+                494,
+                495,
+                496,
+                497,
+                498,
+                499,
+                500,
+                501
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Detect task-completion anchor with high confidence",
+      "testMappings": [
+        {
+          "file": "tests/context_compaction_test.rs",
+          "lines": "155-202",
+          "implMappings": [
+            {
+              "file": "tests/context_compaction_test.rs",
+              "lines": [
+                445,
+                446,
+                447,
+                448,
+                449,
+                450,
+                451,
+                452,
+                453,
+                454,
+                455,
+                456,
+                457,
+                458,
+                459,
+                460,
+                461,
+                462,
+                463,
+                464,
+                465,
+                466,
+                467,
+                468,
+                469,
+                470,
+                471,
+                472,
+                473,
+                474,
+                475,
+                476,
+                477,
+                478,
+                479,
+                480,
+                481,
+                482,
+                483,
+                484,
+                485,
+                486,
+                487,
+                488,
+                489,
+                490,
+                491,
+                492,
+                493,
+                494,
+                495,
+                496,
+                497,
+                498,
+                499,
+                500,
+                501
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Select turns for compaction using anchor-based strategy",
+      "testMappings": [
+        {
+          "file": "tests/context_compaction_test.rs",
+          "lines": "208-258",
+          "implMappings": [
+            {
+              "file": "tests/context_compaction_test.rs",
+              "lines": [
+                503,
+                504,
+                505,
+                506,
+                507,
+                508,
+                509,
+                510,
+                511,
+                512,
+                513,
+                514,
+                515,
+                516,
+                517,
+                518,
+                519,
+                520,
+                521,
+                522,
+                523,
+                524,
+                525,
+                526,
+                527,
+                528,
+                529,
+                530,
+                531,
+                532,
+                533,
+                534,
+                535,
+                536,
+                537,
+                538,
+                539,
+                540,
+                541,
+                542,
+                543,
+                544,
+                545,
+                546,
+                547,
+                548,
+                549,
+                550,
+                551,
+                552,
+                553,
+                554,
+                555,
+                556,
+                557,
+                558,
+                559,
+                560
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Emit warning for low compression ratio",
+      "testMappings": [
+        {
+          "file": "tests/context_compaction_test.rs",
+          "lines": "264-295",
+          "implMappings": [
+            {
+              "file": "tests/context_compaction_test.rs",
+              "lines": [
+                573,
+                574,
+                575,
+                576,
+                577,
+                578,
+                579,
+                580,
+                581,
+                582,
+                583,
+                584,
+                585,
+                586,
+                587,
+                588,
+                589,
+                590,
+                591,
+                592,
+                593,
+                594,
+                595,
+                596,
+                597,
+                598,
+                599,
+                600
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Retry LLM summary generation with exponential backoff",
+      "testMappings": [
+        {
+          "file": "tests/context_compaction_test.rs",
+          "lines": "301-342",
+          "implMappings": [
+            {
+              "file": "tests/context_compaction_test.rs",
+              "lines": [
+                608,
+                609,
+                610,
+                611,
+                612,
+                613,
+                614,
+                615,
+                616,
+                617,
+                618,
+                619,
+                620,
+                621,
+                622,
+                623,
+                624,
+                625,
+                626,
+                627,
+                628
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Reconstruct messages after compaction",
+      "testMappings": [
+        {
+          "file": "tests/context_compaction_test.rs",
+          "lines": "348-440",
+          "implMappings": [
+            {
+              "file": "tests/context_compaction_test.rs",
+              "lines": [
+                630,
+                631,
+                632,
+                633,
+                634,
+                635,
+                636,
+                637,
+                638,
+                639,
+                640,
+                641,
+                642,
+                643,
+                644,
+                645,
+                646,
+                647,
+                648,
+                649,
+                650,
+                651,
+                652,
+                653,
+                654,
+                655,
+                656,
+                657,
+                658,
+                659,
+                660,
+                661,
+                662,
+                663
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": [
+      "tests/context_compaction_test.rs"
+    ],
+    "implFiles": [
+      "tests/context_compaction_test.rs"
+    ],
+    "totalLinesCovered": 657
+  }
+}

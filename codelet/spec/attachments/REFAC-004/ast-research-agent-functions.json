@@ -1,0 +1,102 @@
+{
+  "matches": [
+    {
+      "type": "function_item",
+      "name": "user",
+      "line": 67,
+      "column": 4,
+      "text": "pub fn user(text: impl Into<String>) -> Self {\n        Self {\n            role: MessageRole::User,\n            content: MessageContent::Text(text.into()),\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "assistant",
+      "line": 75,
+      "column": 4,
+      "text": "pub fn assistant(text: impl Into<String>) -> Self {\n        Self {\n            role: MessageRole::Assistant,\n            content: MessageContent::Text(text.into()),\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "system",
+      "line": 83,
+      "column": 4,
+      "text": "pub fn system(text: impl Into<String>) -> Self {\n        Self {\n            role: MessageRole::System,\n            content: MessageContent::Text(text.into()),\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "new",
+      "line": 103,
+      "column": 4,
+      "text": "pub fn new() -> Self {\n        Self {\n            messages: Vec::new(),\n            tools: ToolRegistry::default(),\n            provider: None,\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "with_tools",
+      "line": 112,
+      "column": 4,
+      "text": "pub fn with_tools(tools: ToolRegistry) -> Self {\n        Self {\n            messages: Vec::new(),\n            tools,\n            provider: None,\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "with_provider",
+      "line": 121,
+      "column": 4,
+      "text": "pub fn with_provider(provider: Box<dyn LlmProvider>) -> Self {\n        Self {\n            messages: Vec::new(),\n            tools: ToolRegistry::default(),\n            provider: Some(provider),\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "messages",
+      "line": 130,
+      "column": 4,
+      "text": "pub fn messages(&self) -> &[Message] {\n        &self.messages\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "add_message",
+      "line": 135,
+      "column": 4,
+      "text": "pub fn add_message(&mut self, message: Message) {\n        self.messages.push(message);\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "tools",
+      "line": 140,
+      "column": 4,
+      "text": "pub fn tools(&self) -> &ToolRegistry {\n        &self.tools\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "tools_mut",
+      "line": 145,
+      "column": 4,
+      "text": "pub fn tools_mut(&mut self) -> &mut ToolRegistry {\n        &mut self.tools\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "execute_tool",
+      "line": 150,
+      "column": 4,
+      "text": "pub async fn execute_tool(&self, name: &str, args: Value) -> Result<ToolOutput> {\n        self.tools.execute(name, args).await\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "available_tools",
+      "line": 155,
+      "column": 4,
+      "text": "pub fn available_tools(&self) -> Vec<&str> {\n        self.tools.list()\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "run",
+      "line": 167,
+      "column": 4,
+      "text": "pub async fn run(&mut self, user_input: &str) -> Result<Vec<Message>> {\n        let Some(ref provider) = self.provider else {\n            return Err(anyhow!(\"No provider configured\"));\n        };\n\n        // Add user message\n        self.messages.push(Message::user(user_input));\n\n        // Agent loop\n        loop {\n            // Get tool definitions\n            let tool_defs = self.tools.definitions();\n\n            // Call LLM with tool definitions\n            let response = provider\n                .complete_with_tools(&self.messages, &tool_defs)\n                .await?;\n\n            // Add assistant response to history\n            self.messages.push(Message {\n                role: MessageRole::Assistant,\n                content: response.content.clone(),\n            });\n\n            // Extract tool calls from response\n            let tool_calls: Vec<(String, String, Value)> = match &response.content {\n                MessageContent::Parts(parts) => parts\n                    .iter()\n                    .filter_map(|part| {\n                        if let ContentPart::ToolUse { id, name, input } = part {\n                            Some((id.clone(), name.clone(), input.clone()))\n                        } else {\n                            None\n                        }\n                    })\n                    .collect(),\n                MessageContent::Text(_) => Vec::new(),\n            };\n\n            // If no tool calls, exit loop\n            if tool_calls.is_empty() {\n                break;\n            }\n\n            // Execute tools and inject results\n            for (tool_id, tool_name, input) in tool_calls {\n                let result = self.tools.execute(&tool_name, input).await;\n\n                let tool_result = match result {\n                    Ok(output) => ContentPart::ToolResult {\n                        tool_use_id: tool_id,\n                        content: output.content,\n                        is_error: output.is_error,\n                    },\n                    Err(e) => ContentPart::ToolResult {\n                        tool_use_id: tool_id,\n                        content: e.to_string(),\n                        is_error: true,\n                    },\n                };\n\n                // Add tool result as user message\n                self.messages.push(Message {\n                    role: MessageRole::User,\n                    content: MessageContent::Parts(vec![tool_result]),\n                });\n            }\n        }\n\n        Ok(self.messages.clone())\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "default",
+      "line": 241,
+      "column": 4,
+      "text": "fn default() -> Self {\n        Self::new()\n    }"
+    }
+  ]
+}

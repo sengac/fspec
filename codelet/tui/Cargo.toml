@@ -1,0 +1,44 @@
+[package]
+name = "codelet-tui"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Terminal UI components for codelet - markdown rendering, diff display, interactive mode"
+
+[dependencies]
+codelet-common.workspace = true
+
+# Async
+tokio.workspace = true
+futures.workspace = true
+tokio-stream.workspace = true
+async-stream.workspace = true
+
+# Terminal & UI
+crossterm.workspace = true
+
+# Syntax Highlighting
+tree-sitter-highlight.workspace = true
+tree-sitter-bash.workspace = true
+
+# Serialization
+serde.workspace = true
+serde_json.workspace = true
+
+# Error handling
+anyhow.workspace = true
+thiserror.workspace = true
+
+# Logging
+tracing.workspace = true
+
+# Utilities
+regex.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true
+tokio-test.workspace = true
+
+[lints]
+workspace = true

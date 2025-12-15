@@ -1,0 +1,39 @@
+{
+  "matches": [
+    {
+      "type": "function_item",
+      "name": "run_interactive_mode",
+      "line": 22,
+      "column": 0,
+      "text": "pub async fn run_interactive_mode(provider_name: Option<&str>) -> Result<()> {\n    // Initialize provider manager\n    let mut manager = if let Some(name) = provider_name {\n        ProviderManager::with_provider(name)?\n    } else {\n        ProviderManager::new()?\n    };\n\n    // Display startup card\n    display_startup_card(&manager)?;\n\n    // Main REPL loop (raw mode is enabled/disabled per-request, not globally)\n    let result = repl_loop(&mut manager).await;\n\n    result\n}"
+    },
+    {
+      "type": "function_item",
+      "name": "display_startup_card",
+      "line": 40,
+      "column": 0,
+      "text": "fn display_startup_card(manager: &ProviderManager) -> Result<()> {\n    let version = env!(\"CARGO_PKG_VERSION\");\n    println!(\"\\nCodelet v{}\", version);\n\n    if !manager.has_any_provider() {\n        println!(\"Available models: No providers configured\");\n        println!(\"Please set ANTHROPIC_API_KEY, OPENAI_API_KEY, or other credentials\\n\");\n    } else {\n        let providers = manager.list_available_providers();\n        println!(\"Available models: {}\\n\", providers.join(\", \"));\n    }\n\n    Ok(())\n}"
+    },
+    {
+      "type": "function_item",
+      "name": "repl_loop",
+      "line": 56,
+      "column": 0,
+      "text": "async fn repl_loop(manager: &mut ProviderManager) -> Result<()> {\n    let mut input_queue = InputQueue::new();\n    let is_interrupted = Arc::new(AtomicBool::new(false));\n\n    println!(\"Enter your prompt (or 'exit' to quit):\");\n\n    loop {\n        // Read user input with provider-prefixed prompt\n        print!(\"{}\", manager.get_prompt_prefix());\n        std::io::stdout().flush()?;\n\n        let mut input = String::new();\n        std::io::stdin().read_line(&mut input)?;\n        let input = input.trim();\n\n        // Check for exit\n        if matches!(input, \"exit\" | \"/quit\" | \"quit\") {\n            println!(\"Goodbye!\");\n            break;\n        }\n\n        // Check for provider switch\n        if input.starts_with('/') {\n            let provider = input.trim_start_matches('/');\n            match manager.switch_provider(provider) {\n                Ok(()) => {\n                    println!(\"Switched to {} provider\\n\", provider);\n                    continue;\n                }\n                Err(e) => {\n                    eprintln!(\"Error switching provider: {}\\n\", e);\n                    continue;\n                }\n            }\n        }\n\n        if input.is_empty() {\n            continue;\n        }\n\n        // Run agent with interruption support\n        // Enable raw mode only during agent execution for ESC key detection\n        is_interrupted.store(false, Ordering::Relaxed);\n        enable_raw_mode()?;\n        let mut event_stream = create_event_stream();\n\n        let agent_result = run_agent_with_interruption(\n            manager,\n            input,\n            &mut event_stream,\n            &mut input_queue,\n            is_interrupted.clone(),\n        )\n        .await;\n\n        // Always disable raw mode after agent completes\n        disable_raw_mode()?;\n\n        match agent_result {\n            Ok(()) => println!(\"\\n\"),\n            Err(e) => eprintln!(\"Error: {}\\n\", e),\n        }\n    }\n\n    Ok(())\n}"
+    },
+    {
+      "type": "function_item",
+      "name": "run_agent_with_interruption",
+      "line": 124,
+      "column": 0,
+      "text": "async fn run_agent_with_interruption(\n    manager: &mut ProviderManager,\n    prompt: &str,\n    event_stream: &mut (dyn futures::Stream<Item = TuiEvent> + Unpin + Send),\n    input_queue: &mut InputQueue,\n    is_interrupted: Arc<AtomicBool>,\n) -> Result<()> {\n    // Macro to eliminate code duplication across provider branches (DRY principle)\n    macro_rules! run_with_provider {\n        ($get_provider:ident) => {{\n            let provider = manager.$get_provider()?;\n            let rig_agent = provider.create_rig_agent();\n            let agent = RigAgent::with_default_depth(rig_agent);\n            run_agent_stream_with_interruption(\n                agent,\n                prompt,\n                event_stream,\n                input_queue,\n                is_interrupted,\n            )\n            .await\n        }};\n    }\n\n    // Dispatch to provider-specific agent\n    match manager.current_provider_name() {\n        \"claude\" => run_with_provider!(get_claude),\n        \"openai\" => run_with_provider!(get_openai),\n        \"codex\" => run_with_provider!(get_codex),\n        \"gemini\" => run_with_provider!(get_gemini),\n        _ => Err(anyhow::anyhow!(\"Unknown provider\")),\n    }\n}"
+    },
+    {
+      "type": "function_item",
+      "name": "run_agent_stream_with_interruption",
+      "line": 159,
+      "column": 0,
+      "text": "async fn run_agent_stream_with_interruption<M>(\n    agent: RigAgent<M>,\n    prompt: &str,\n    event_stream: &mut (dyn futures::Stream<Item = TuiEvent> + Unpin + Send),\n    input_queue: &mut InputQueue,\n    is_interrupted: Arc<AtomicBool>,\n) -> Result<()>\nwhere\n    M: CompletionModel,\n{\n    let mut stream = agent.prompt_streaming(prompt).await;\n    let status = StatusDisplay::new();\n    let mut status_interval = interval(Duration::from_secs(1));\n\n    loop {\n        tokio::select! {\n            // Agent streaming\n            chunk = stream.next() => {\n                if is_interrupted.load(Ordering::Relaxed) {\n                    // Interrupted - show queued inputs\n                    println!(\"\\n⚠️ Agent interrupted\");\n                    let queued = input_queue.dequeue_all();\n                    if queued.is_empty() {\n                        println!(\"Queued inputs: (none)\");\n                    } else {\n                        println!(\"Queued inputs:\\n{}\", queued.join(\"\\n\\n\"));\n                    }\n                    break;\n                }\n\n                match chunk {\n                    Some(Ok(MultiTurnStreamItem::StreamAssistantItem(StreamedAssistantContent::Text(text)))) => {\n                        // In raw mode, convert \\n to \\r\\n for proper formatting\n                        let formatted = text.text.replace('\\n', \"\\r\\n\");\n                        print!(\"{}\", formatted);\n                        std::io::stdout().flush()?;\n                    }\n                    Some(Ok(MultiTurnStreamItem::FinalResponse(_))) => {\n                        // Stream complete\n                        break;\n                    }\n                    Some(Err(e)) => {\n                        return Err(anyhow::anyhow!(\"Agent error: {}\", e));\n                    }\n                    _ => {\n                        // Other stream items (tool calls, etc)\n                    }\n                }\n            }\n\n            // Terminal events\n            event = event_stream.next() => {\n                match event {\n                    Some(TuiEvent::Key(key)) if key.code == KeyCode::Esc => {\n                        is_interrupted.store(true, Ordering::Relaxed);\n                    }\n                    _ => {}\n                }\n            }\n\n            // Status display updates\n            _ = status_interval.tick() => {\n                // Update status (in real implementation, would render to UI)\n                // For now, just track elapsed time\n                let _ = status.format_status();\n            }\n        }\n    }\n\n    Ok(())\n}"
+    }
+  ]
+}

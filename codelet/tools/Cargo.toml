@@ -1,0 +1,56 @@
+[package]
+name = "codelet-tools"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Tool implementations for codelet - file ops, code search, bash execution"
+
+[dependencies]
+codelet-common.workspace = true
+
+# LLM Integration (for rig::tool::Tool trait)
+rig-core.workspace = true
+
+# Async
+tokio.workspace = true
+futures.workspace = true
+async-trait.workspace = true
+
+# Serialization
+serde.workspace = true
+serde_json.workspace = true
+schemars.workspace = true
+
+# Error handling
+anyhow.workspace = true
+thiserror.workspace = true
+
+# Logging
+tracing.workspace = true
+
+# File Operations
+glob.workspace = true
+ignore.workspace = true
+globset.workspace = true
+
+# Ripgrep Core
+grep-regex.workspace = true
+grep-searcher.workspace = true
+grep-matcher.workspace = true
+
+# AST-based Code Search
+ast-grep-core.workspace = true
+ast-grep-language.workspace = true
+
+# Utilities
+regex.workspace = true
+uuid.workspace = true
+chrono.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true
+tokio-test.workspace = true
+
+[lints]
+workspace = true

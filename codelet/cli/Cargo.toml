@@ -1,0 +1,68 @@
+[package]
+name = "codelet-cli"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "CLI interface for codelet - command parsing, configuration, entry points"
+
+[[bin]]
+name = "codelet"
+path = "src/main.rs"
+
+[dependencies]
+codelet-common.workspace = true
+codelet-tools.workspace = true
+codelet-providers.workspace = true
+codelet-core.workspace = true
+codelet-tui.workspace = true
+
+# CLI Framework
+clap.workspace = true
+clap_complete.workspace = true
+
+# Async
+tokio.workspace = true
+futures.workspace = true
+tokio-stream.workspace = true
+async-stream.workspace = true
+
+# LLM Integration
+rig-core.workspace = true
+
+# Terminal & UI
+crossterm.workspace = true
+tree-sitter-highlight.workspace = true
+tree-sitter-bash.workspace = true
+
+# Serialization
+serde.workspace = true
+serde_json.workspace = true
+toml.workspace = true
+
+# Error handling
+anyhow.workspace = true
+thiserror.workspace = true
+
+# Configuration
+dotenvy.workspace = true
+dirs.workspace = true
+
+# Logging
+tracing.workspace = true
+tracing-subscriber.workspace = true
+
+# Utilities
+uuid.workspace = true
+chrono.workspace = true
+regex.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true
+assert_cmd.workspace = true
+predicates.workspace = true
+tokio-test.workspace = true
+serial_test.workspace = true
+
+[lints]
+workspace = true

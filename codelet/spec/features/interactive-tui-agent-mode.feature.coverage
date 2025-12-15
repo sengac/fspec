@@ -1,0 +1,339 @@
+{
+  "scenarios": [
+    {
+      "name": "Start interactive mode and see startup card",
+      "testMappings": [
+        {
+          "file": "src/cli/tests.rs",
+          "lines": "16-40",
+          "implMappings": [
+            {
+              "file": "src/providers/manager.rs",
+              "lines": [
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Stream agent response in real-time",
+      "testMappings": [
+        {
+          "file": "src/cli/tests.rs",
+          "lines": "46-70",
+          "implMappings": [
+            {
+              "file": "src/cli/interactive.rs",
+              "lines": [
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Interrupt agent with ESC key",
+      "testMappings": [
+        {
+          "file": "src/cli/tests.rs",
+          "lines": "76-109",
+          "implMappings": [
+            {
+              "file": "src/cli/interactive.rs",
+              "lines": [
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Queue input while agent is processing",
+      "testMappings": [
+        {
+          "file": "src/cli/tests.rs",
+          "lines": "115-141",
+          "implMappings": [
+            {
+              "file": "src/tui/input_queue.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Display status with elapsed time",
+      "testMappings": [
+        {
+          "file": "src/cli/tests.rs",
+          "lines": "147-170",
+          "implMappings": [
+            {
+              "file": "src/tui/status.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Exit agent cleanly",
+      "testMappings": [
+        {
+          "file": "src/cli/tests.rs",
+          "lines": "176-199",
+          "implMappings": [
+            {
+              "file": "src/cli/interactive.rs",
+              "lines": [
+                78,
+                79,
+                80,
+                81
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Switch provider during session",
+      "testMappings": [
+        {
+          "file": "src/cli/tests.rs",
+          "lines": "205-231",
+          "implMappings": [
+            {
+              "file": "src/providers/manager.rs",
+              "lines": [
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/cli/tests.rs"
+    ],
+    "implFiles": [
+      "src/providers/manager.rs",
+      "src/cli/interactive.rs",
+      "src/tui/input_queue.rs",
+      "src/tui/status.rs"
+    ],
+    "totalLinesCovered": 394
+  }
+}
