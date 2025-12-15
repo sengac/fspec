@@ -1,0 +1,156 @@
+{
+  "scenarios": [
+    {
+      "name": "Output mutator source files are removed",
+      "testMappings": [
+        {
+          "file": "codelet/cli/tests/remove_output_mutators_test.rs",
+          "lines": "27-65",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/lib.rs",
+              "lines": [
+                5,
+                6,
+                7,
+                8,
+                9,
+                10
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Interactive mode displays tool results without colored formatting",
+      "testMappings": [
+        {
+          "file": "codelet/cli/tests/remove_output_mutators_test.rs",
+          "lines": "70-108",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/interactive.rs",
+              "lines": [
+                6,
+                7,
+                8,
+                9,
+                10
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Edit tool returns simplified plain text output",
+      "testMappings": [
+        {
+          "file": "codelet/cli/tests/remove_output_mutators_test.rs",
+          "lines": "107-137",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/edit.rs",
+              "lines": [
+                125,
+                126,
+                127,
+                128,
+                129,
+                130
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Write tool returns simplified plain text output",
+      "testMappings": [
+        {
+          "file": "codelet/cli/tests/remove_output_mutators_test.rs",
+          "lines": "139-169",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/write.rs",
+              "lines": [
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Tree-sitter dependencies are removed from Cargo.toml",
+      "testMappings": [
+        {
+          "file": "codelet/cli/tests/remove_output_mutators_test.rs",
+          "lines": "175-218",
+          "implMappings": [
+            {
+              "file": "codelet/Cargo.toml",
+              "lines": [
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Project builds successfully without output mutator modules",
+      "testMappings": [
+        {
+          "file": "codelet/cli/tests/remove_output_mutators_test.rs",
+          "lines": "216-264",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/lib.rs",
+              "lines": [
+                5,
+                6,
+                7,
+                8,
+                9,
+                10
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/cli/tests/remove_output_mutators_test.rs"
+    ],
+    "implFiles": [
+      "codelet/cli/src/lib.rs",
+      "codelet/cli/src/interactive.rs",
+      "codelet/tools/src/edit.rs",
+      "codelet/tools/src/write.rs",
+      "codelet/Cargo.toml"
+    ],
+    "totalLinesCovered": 273
+  }
+}

@@ -32,8 +32,6 @@ rig-core.workspace = true
 
 # Terminal & UI
 crossterm.workspace = true
-tree-sitter-highlight.workspace = true
-tree-sitter-bash.workspace = true
 
 # Serialization
 serde.workspace = true

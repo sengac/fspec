@@ -18,10 +18,6 @@ async-stream.workspace = true
 # Terminal & UI
 crossterm.workspace = true
 
-# Syntax Highlighting
-tree-sitter-highlight.workspace = true
-tree-sitter-bash.workspace = true
-
 # Serialization
 serde.workspace = true
 serde_json.workspace = true

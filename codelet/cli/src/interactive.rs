@@ -3,8 +3,6 @@
 //! Main REPL loop coordinating terminal events, agent streaming, and user input.
 //! Based on OpenAI codex architecture with tokio::select! pattern.
 
-use crate::diff::render_diff_line;
-use crate::highlight::highlight_bash_command;
 use crate::interactive_helpers::{
     create_conversation_turn_from_last_interaction, execute_compaction,
 };
@@ -418,7 +416,7 @@ fn handle_tool_call(
         }
     }
 
-    // Store tool name for diff rendering (CLI-007)
+    // Store tool name for debug logging
     *last_tool_name = Some(tool_name.clone());
 
     // CRITICAL: Track tool call for message history (CLI-008)
@@ -430,21 +428,13 @@ fn handle_tool_call(
     // Display tool name
     print!("\r\n[Planning to use tool: {tool_name}]");
 
-    // Display arguments with bash syntax highlighting for Bash tool (CLI-006)
+    // Display arguments
     if let Some(obj) = args.as_object() {
         if !obj.is_empty() {
             for (key, value) in obj.iter() {
                 // Format value based on type
                 let formatted_value = match value {
-                    serde_json::Value::String(s) => {
-                        // Apply bash highlighting for Bash tool command parameter
-                        if tool_name == "Bash" && key == "command" {
-                            let highlighted = highlight_bash_command(s);
-                            highlighted.join("\r\n  ")
-                        } else {
-                            s.clone()
-                        }
-                    }
+                    serde_json::Value::String(s) => s.clone(),
                     serde_json::Value::Number(n) => n.to_string(),
                     serde_json::Value::Bool(b) => b.to_string(),
                     serde_json::Value::Array(_) => format!("{value}"),
@@ -540,36 +530,6 @@ fn handle_tool_result(
         .replace("\\r", "\r")
         .replace("\\\"", "\"")
         .replace("\\\\", "\\");
-
-    // Apply diff rendering for Edit/Write tools (CLI-007)
-    if let Some(ref tool) = last_tool_name {
-        if tool == "Edit" || tool == "Write" {
-            // Parse result for file changes and apply diff rendering
-            let lines: Vec<&str> = result_text.lines().collect();
-            let mut formatted_lines = Vec::new();
-
-            for (i, line) in lines.iter().enumerate() {
-                // Detect additions/deletions/context
-                let (prefix, content) = if let Some(stripped) = line.strip_prefix('+') {
-                    ('+', stripped)
-                } else if let Some(stripped) = line.strip_prefix('-') {
-                    ('-', stripped)
-                } else if line.starts_with("File:") {
-                    // Keep file headers as-is
-                    formatted_lines.push(line.to_string());
-                    continue;
-                } else {
-                    (' ', *line)
-                };
-
-                // Apply diff rendering
-                let diff_line = render_diff_line(i + 1, prefix, content);
-                formatted_lines.push(diff_line);
-            }
-
-            result_text = formatted_lines.join("\n");
-        }
-    }
 
     // Truncate result if too long (like codelet does at 500 chars)
     const MAX_PREVIEW_LENGTH: usize = 500;
@@ -698,7 +658,7 @@ where
     let mut assistant_text = String::new();
     let mut tool_calls_buffer: Vec<rig::message::AssistantContent> = Vec::new();
 
-    // Track last tool call for diff rendering (CLI-007)
+    // Track last tool call for debug logging
     let mut last_tool_name: Option<String> = None;
 
     // CLI-010: Track token usage for compaction
