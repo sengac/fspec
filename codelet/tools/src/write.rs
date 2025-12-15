@@ -95,12 +95,10 @@ impl Tool for WriteTool {
         // Write file
         match fs::write(path, content) {
             Ok(()) => {
-                // Format diff output for CLI-007 diff rendering
-                // Show each line as an addition
-                let diff_lines: Vec<String> =
-                    content.lines().map(|line| format!("+ {line}")).collect();
-                let diff_output = format!("File: {}\n{}", file_path, diff_lines.join("\n"));
-                Ok(ToolOutput::success(diff_output))
+                // Simplified output format (CLEAN-005: removed diff rendering)
+                let line_count = content.lines().count();
+                let output = format!("Wrote file: {file_path} ({line_count} lines)");
+                Ok(ToolOutput::success(output))
             }
             Err(e) => Ok(ToolOutput::error(format!("Error writing file: {e}"))),
         }

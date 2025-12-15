@@ -77,10 +77,6 @@ grep-matcher = "0.1"
 ast-grep-core = "0.40"
 ast-grep-language = "0.40"
 
-# === Syntax Highlighting ===
-tree-sitter-highlight = "0.25"
-tree-sitter-bash = "0.25"
-
 # === Utilities ===
 async-trait = "0.1"
 uuid = { version = "1", features = ["v4"] }

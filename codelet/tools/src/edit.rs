@@ -124,10 +124,9 @@ impl Tool for EditTool {
         // Write back
         match fs::write(path, &new_content) {
             Ok(()) => {
-                // Format diff output for CLI-007 diff rendering
-                let diff_output =
-                    format!("File: {file_path}\n- {old_string}\n+ {new_string}");
-                Ok(ToolOutput::success(diff_output))
+                // Simplified output format (CLEAN-005: removed diff rendering)
+                let output = format!("Edited file: {file_path}");
+                Ok(ToolOutput::success(output))
             }
             Err(e) => Ok(ToolOutput::error(format!("Error writing file: {e}"))),
         }

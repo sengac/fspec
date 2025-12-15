@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-12-04T02:09:32.610Z"
+    "lastUpdated": "2025-12-15T03:04:35.938Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -52349,6 +52349,227 @@
       ],
       "nextNoteId": 1,
       "updated": "2025-12-04T02:09:32.633Z"
+    },
+    "CLEAN-005": {
+      "id": "CLEAN-005",
+      "title": "Remove output mutators (highlighting and diff)",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-12-15T02:40:06.964Z",
+      "updatedAt": "2025-12-15T03:04:35.968Z",
+      "description": "Remove the highlighting and diff output mutators from the codelet CLI. Files to remove: codelet/cli/src/highlight.rs, codelet/cli/src/diff.rs, and associated tests/examples. Update interactive.rs to remove usage of these modules.",
+      "children": [],
+      "userStory": {
+        "role": "codelet maintainer",
+        "action": "remove output mutators (highlighting and diff modules)",
+        "benefit": "the codebase is simpler with less unused functionality"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-12-15T02:40:56.260Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-12-15T02:48:40.487Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-15T02:59:10.350Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-15T03:03:40.596Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-15T03:04:35.969Z"
+        }
+      ],
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: Should the interactive mode still function after removal, just without colored diff/highlight output?",
+          "deleted": false,
+          "createdAt": "2025-12-15T02:41:05.220Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Yes, interactive mode should still function after removal, just without colored diff/highlight output"
+        },
+        {
+          "id": 1,
+          "text": "@human: Should I also remove any feature files and coverage files related to diff rendering (CLI-006, CLI-007)?",
+          "deleted": false,
+          "createdAt": "2025-12-15T02:41:06.786Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Yes, remove all feature files and coverage files related to diff rendering (CLI-006, CLI-007)"
+        },
+        {
+          "id": 2,
+          "text": "@human: Are there any other consumers of highlight.rs or diff.rs besides interactive.rs that I should be aware of?",
+          "deleted": false,
+          "createdAt": "2025-12-15T02:41:08.221Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Complete inventory found: SOURCE FILES (delete): codelet/cli/src/highlight.rs, codelet/cli/src/diff.rs. TEST FILES (delete): codelet/tests/diff_rendering_integration_test.rs, codelet/tests/diff_rendering_e2e_test.rs, codelet/tests/text_styling_test.rs. EXAMPLES (delete): codelet/examples/demo_diff_rendering.rs, codelet/examples/test_text_styling.rs. FEATURE FILES (delete): codelet/spec/features/enhanced-text-styling-with-bash-highlighting-and-diff-rendering.feature (+.coverage), codelet/spec/features/integrate-diff-rendering-for-file-change-visualization.feature (+.coverage). ATTACHMENTS (delete): codelet/spec/attachments/CLI-006/, codelet/spec/attachments/CLI-007/. FILES TO MODIFY: codelet/cli/src/lib.rs (remove module declarations), codelet/cli/src/interactive.rs (remove imports/usage), codelet/tools/src/edit.rs (simplify output), codelet/tools/src/write.rs (simplify output), codelet/cli/Cargo.toml (remove tree-sitter deps), codelet/Cargo.toml (remove workspace tree-sitter deps)."
+        }
+      ],
+      "nextQuestionId": 3,
+      "rules": [
+        {
+          "id": 0,
+          "text": "All source files for highlight.rs and diff.rs modules must be deleted",
+          "deleted": false,
+          "createdAt": "2025-12-15T02:43:20.618Z"
+        },
+        {
+          "id": 1,
+          "text": "All test files related to diff rendering and text styling must be deleted",
+          "deleted": false,
+          "createdAt": "2025-12-15T02:43:22.170Z"
+        },
+        {
+          "id": 2,
+          "text": "All example files demonstrating diff rendering must be deleted",
+          "deleted": false,
+          "createdAt": "2025-12-15T02:43:23.550Z"
+        },
+        {
+          "id": 3,
+          "text": "All feature files and coverage files for CLI-006 and CLI-007 must be deleted",
+          "deleted": false,
+          "createdAt": "2025-12-15T02:43:25.626Z"
+        },
+        {
+          "id": 4,
+          "text": "All attachment directories for CLI-006 and CLI-007 must be deleted",
+          "deleted": false,
+          "createdAt": "2025-12-15T02:43:27.030Z"
+        },
+        {
+          "id": 5,
+          "text": "Interactive mode must continue to function, displaying tool results without colored diff/highlight formatting",
+          "deleted": false,
+          "createdAt": "2025-12-15T02:43:28.585Z"
+        },
+        {
+          "id": 6,
+          "text": "Edit and Write tools must return plain text output instead of diff-formatted output",
+          "deleted": false,
+          "createdAt": "2025-12-15T02:43:30.214Z"
+        },
+        {
+          "id": 7,
+          "text": "Tree-sitter dependencies (tree-sitter-highlight, tree-sitter-bash) must be removed from Cargo.toml files",
+          "deleted": false,
+          "createdAt": "2025-12-15T02:43:31.775Z"
+        }
+      ],
+      "nextRuleId": 8,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Delete codelet/cli/src/highlight.rs and codelet/cli/src/diff.rs source modules",
+          "deleted": false,
+          "createdAt": "2025-12-15T02:43:45.959Z"
+        },
+        {
+          "id": 1,
+          "text": "Delete codelet/tests/diff_rendering_integration_test.rs, diff_rendering_e2e_test.rs, and text_styling_test.rs",
+          "deleted": false,
+          "createdAt": "2025-12-15T02:43:47.280Z"
+        },
+        {
+          "id": 2,
+          "text": "Delete codelet/examples/demo_diff_rendering.rs and test_text_styling.rs",
+          "deleted": false,
+          "createdAt": "2025-12-15T02:43:48.691Z"
+        },
+        {
+          "id": 3,
+          "text": "Remove 'pub mod diff' and 'pub mod highlight' declarations from codelet/cli/src/lib.rs",
+          "deleted": false,
+          "createdAt": "2025-12-15T02:43:50.259Z"
+        },
+        {
+          "id": 4,
+          "text": "Remove 'use crate::diff::render_diff_line' and 'use crate::highlight::highlight_bash_command' imports from interactive.rs",
+          "deleted": false,
+          "createdAt": "2025-12-15T02:43:52.291Z"
+        },
+        {
+          "id": 5,
+          "text": "Simplify Edit tool output from 'File: path\\n- old\\n+ new' to just 'Edited file: path (replaced old_string with new_string)'",
+          "deleted": false,
+          "createdAt": "2025-12-15T02:43:53.852Z"
+        },
+        {
+          "id": 6,
+          "text": "Simplify Write tool output from 'File: path\\n+ line1\\n+ line2' to just 'Wrote file: path (N lines)'",
+          "deleted": false,
+          "createdAt": "2025-12-15T02:43:55.543Z"
+        },
+        {
+          "id": 7,
+          "text": "Remove diff rendering logic from interactive.rs handle_tool_result function (lines 544-572)",
+          "deleted": false,
+          "createdAt": "2025-12-15T02:43:57.025Z"
+        },
+        {
+          "id": 8,
+          "text": "Remove bash highlighting logic from interactive.rs handle_tool_call function (lines 440-443)",
+          "deleted": false,
+          "createdAt": "2025-12-15T02:43:58.408Z"
+        },
+        {
+          "id": 9,
+          "text": "Remove tree-sitter-highlight and tree-sitter-bash from codelet/cli/Cargo.toml and codelet/Cargo.toml workspace dependencies",
+          "deleted": false,
+          "createdAt": "2025-12-15T02:44:00.513Z"
+        }
+      ],
+      "nextExampleId": 10,
+      "estimate": 3,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Remove highlight.rs and diff.rs modules from codelet/cli/src/, update lib.rs to remove module declarations",
+          "deleted": false,
+          "createdAt": "2025-12-15T02:47:50.094Z"
+        },
+        {
+          "id": 1,
+          "text": "Update interactive.rs to remove imports (use crate::diff::render_diff_line, use crate::highlight::highlight_bash_command) and all usage of these functions",
+          "deleted": false,
+          "createdAt": "2025-12-15T02:47:51.632Z"
+        },
+        {
+          "id": 2,
+          "text": "Simplify Edit tool output in tools/src/edit.rs from diff format to plain 'Edited file: path (replaced X with Y)'",
+          "deleted": false,
+          "createdAt": "2025-12-15T02:47:53.305Z"
+        },
+        {
+          "id": 3,
+          "text": "Simplify Write tool output in tools/src/write.rs from diff format to plain 'Wrote file: path (N lines)'",
+          "deleted": false,
+          "createdAt": "2025-12-15T02:47:55.030Z"
+        },
+        {
+          "id": 4,
+          "text": "Remove tree-sitter-highlight and tree-sitter-bash from codelet/cli/Cargo.toml and codelet/Cargo.toml workspace dependencies",
+          "deleted": false,
+          "createdAt": "2025-12-15T02:47:57.030Z"
+        }
+      ],
+      "nextNoteId": 5,
+      "attachments": [
+        "spec/attachments/CLEAN-005/ast-research-interactive-functions.json",
+        "spec/attachments/CLEAN-005/ast-research-edit-functions.json",
+        "spec/attachments/CLEAN-005/ast-research-write-functions.json"
+      ],
+      "updated": "2025-12-15T03:04:35.968Z"
     }
   },
   "states": {
@@ -52417,6 +52638,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "CLEAN-005",
       "REMIND-015",
       "BUG-093",
       "BUG-092",
@@ -52867,6 +53089,6 @@
     "EXMAP": 16,
     "FOUND": 43,
     "DOCS": 3,
-    "CLEAN": 4
+    "CLEAN": 5
   }
 }
