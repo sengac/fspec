@@ -40,7 +40,7 @@ pub const AUTOCOMPACT_BUFFER: u64 = 50_000;
 /// Example: For a 200k context window
 /// - Threshold = 200k * 0.9 = 180k tokens (when compaction triggers)
 /// - Budget = 200k - 50k = 150k tokens (target size after compaction)
-pub const COMPACTION_THRESHOLD_RATIO: f64 = 0.9;
+pub const COMPACTION_THRESHOLD_RATIO: f64 = 0.8;
 
 /// Calculate the compaction threshold for a given context window
 ///

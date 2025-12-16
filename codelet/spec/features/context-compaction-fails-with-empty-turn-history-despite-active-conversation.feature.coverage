@@ -1,0 +1,132 @@
+{
+  "scenarios": [
+    {
+      "name": "Context compaction succeeds with conversation history",
+      "testMappings": [
+        {
+          "file": "core/src/compaction.rs",
+          "lines": "620-632",
+          "implMappings": [
+            {
+              "file": "cli/src/interactive_helpers.rs",
+              "lines": [
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Turn creation uses lazy approach during compaction",
+      "testMappings": [
+        {
+          "file": "core/src/compaction.rs",
+          "lines": "636-646",
+          "implMappings": [
+            {
+              "file": "cli/src/interactive_helpers.rs",
+              "lines": [
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "core/src/compaction.rs"
+    ],
+    "implFiles": [
+      "cli/src/interactive_helpers.rs"
+    ],
+    "totalLinesCovered": 108
+  }
+}

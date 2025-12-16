@@ -3,9 +3,7 @@
 //! Main REPL loop coordinating terminal events, agent streaming, and user input.
 //! Based on OpenAI codex architecture with tokio::select! pattern.
 
-use crate::interactive_helpers::{
-    create_conversation_turn_from_last_interaction, execute_compaction,
-};
+use crate::interactive_helpers::execute_compaction;
 use crate::session::Session;
 use anyhow::Result;
 use codelet_common::debug_capture::{
@@ -763,15 +761,8 @@ where
             session.token_tracker.cache_creation_input_tokens = Some(current + cache_create);
         }
 
-        // Convert messages to ConversationTurn
-        // For simplicity, assume last user message + tool calls + assistant response = 1 turn
-        let turn = create_conversation_turn_from_last_interaction(
-            &session.messages,
-            turn_input_tokens + turn_output_tokens,
-        );
-        if let Some(turn) = turn {
-            session.turns.push(turn);
-        }
+        // CTX-002: Removed eager turn creation - now done lazily during compaction
+        // Turns are created from session.messages inside execute_compaction() following TypeScript implementation
 
         // Check if compaction should trigger
         // CLI-015: Use model-specific context window instead of hardcoded value

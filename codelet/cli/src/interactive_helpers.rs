@@ -2,70 +2,105 @@
 
 use crate::session::Session;
 use anyhow::Result;
-use codelet_core::compaction::{
-    CompactionMetrics, ContextCompactor, ConversationTurn, ToolCall, ToolResult,
-};
+use codelet_core::compaction::{CompactionMetrics, ContextCompactor, ConversationTurn};
 use rig::message::{Message, UserContent};
 use rig::OneOrMany;
 use std::time::SystemTime;
 
-/// Convert the last user/assistant interaction into a ConversationTurn
-pub fn create_conversation_turn_from_last_interaction(
-    messages: &[Message],
-    tokens: u64,
-) -> Option<ConversationTurn> {
-    if messages.len() < 2 {
-        return None;
-    }
+/// Approximate bytes per token for estimation (matches codelet's APPROX_BYTES_PER_TOKEN)
+const APPROX_BYTES_PER_TOKEN: usize = 4;
 
-    // Find the last user message and assistant message
-    let mut user_message = String::new();
-    let mut assistant_response = String::new();
-    let mut tool_calls: Vec<ToolCall> = Vec::new();
-    let mut tool_results: Vec<ToolResult> = Vec::new();
-    let mut previous_error: Option<bool> = None;
+/// Estimate token count from text length
+///
+/// Used when exact token counts aren't available.
+/// Based on codelet's estimateTokens function.
+fn estimate_tokens(text: &str) -> u64 {
+    (text.len() / APPROX_BYTES_PER_TOKEN) as u64
+}
 
-    // Walk messages backward to find last complete turn
-    let mut found_assistant = false;
+/// Convert messages to conversation turns using lazy approach (following TypeScript implementation)
+///
+/// This follows the TypeScript implementation in compaction.ts:100-141
+/// - Forward iteration through message pairs
+/// - Simple content extraction (just text)
+/// - Token estimation matching TypeScript (sum of user + assistant)
+/// - No complex backward iteration or content extraction failures
+pub fn convert_messages_to_turns(messages: &[Message]) -> Vec<ConversationTurn> {
+    let mut turns = Vec::new();
 
-    for msg in messages.iter().rev() {
-        match msg {
-            Message::Assistant { content, .. } => {
-                if !found_assistant {
-                    // Extract text and tool calls from assistant message
-                    assistant_response = extract_text_from_assistant(content);
-                    tool_calls = extract_tool_calls_from_assistant(content);
-                    found_assistant = true;
-                }
-            }
-            Message::User { content } => {
-                if found_assistant {
-                    // Extract text and tool results from user message
-                    user_message = extract_text_from_user(content);
-                    tool_results = extract_tool_results_from_user(content);
+    // Forward iteration through message pairs (like TypeScript)
+    let mut i = 0;
+    while i < messages.len() {
+        if let Some(user_msg) = messages.get(i) {
+            if matches!(user_msg, Message::User { .. }) {
+                if let Some(assistant_msg) = messages.get(i + 1) {
+                    if matches!(assistant_msg, Message::Assistant { .. }) {
+                        // Extract simple text content (like TypeScript)
+                        let user_text = extract_message_text(user_msg);
+                        let assistant_text = extract_message_text(assistant_msg);
 
-                    // Check if there were errors in tool results
-                    previous_error = Some(tool_results.iter().any(|tr| !tr.success));
+                        // Calculate tokens like TypeScript: userMsg.tokens + assistantMsg.tokens
+                        let user_tokens = estimate_tokens(&user_text);
+                        let assistant_tokens = estimate_tokens(&assistant_text);
+                        let total_tokens = user_tokens + assistant_tokens;
 
-                    break;
+                        // Create turn (simple approach like TypeScript)
+                        turns.push(ConversationTurn {
+                            user_message: user_text,
+                            tool_calls: vec![],   // Simplified for now
+                            tool_results: vec![], // Simplified for now
+                            assistant_response: assistant_text,
+                            tokens: total_tokens, // Match TypeScript: sum of user + assistant tokens
+                            timestamp: SystemTime::now(),
+                            previous_error: None,
+                        });
+
+                        i += 2; // Skip both messages (like TypeScript's i++)
+                        continue;
+                    }
                 }
             }
         }
+        i += 1;
     }
 
-    if user_message.is_empty() || assistant_response.is_empty() {
-        return None;
-    }
+    turns
+}
 
-    Some(ConversationTurn {
-        user_message,
-        tool_calls,
-        tool_results,
-        assistant_response,
-        tokens,
-        timestamp: SystemTime::now(),
-        previous_error,
-    })
+/// Extract/serialize message content to string (matches TypeScript toCompactionMessages)
+///
+/// TypeScript logic (runner.ts:487-489):
+///   contentString = typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content)
+///
+/// Rust equivalent:
+///   - Single text item → extract just the text (like TS string content)
+///   - Multiple items OR non-text items → serialize as JSON (like TS JSON.stringify)
+fn extract_message_text(message: &Message) -> String {
+    match message {
+        Message::User { content } => {
+            // Check if single text item (equivalent to TypeScript string content)
+            if content.rest().is_empty() {
+                if let UserContent::Text(t) = content.first() {
+                    return t.text.clone();
+                }
+            }
+            // Multiple items or non-text: serialize as JSON (like TypeScript JSON.stringify)
+            let items = collect_items(content);
+            serde_json::to_string(&items).unwrap_or_else(|_| "[]".to_string())
+        }
+        Message::Assistant { content, .. } => {
+            use rig::message::AssistantContent;
+            // Check if single text item (equivalent to TypeScript string content)
+            if content.rest().is_empty() {
+                if let AssistantContent::Text(t) = content.first() {
+                    return t.text.clone();
+                }
+            }
+            // Multiple items or non-text: serialize as JSON (like TypeScript JSON.stringify)
+            let items = collect_items(content);
+            serde_json::to_string(&items).unwrap_or_else(|_| "[]".to_string())
+        }
+    }
 }
 
 /// Helper to collect all items from OneOrMany
@@ -73,84 +108,6 @@ fn collect_items<T: Clone>(content: &OneOrMany<T>) -> Vec<T> {
     let mut items = vec![content.first()];
     items.extend(content.rest());
     items
-}
-
-/// Extract text content from assistant message
-fn extract_text_from_assistant(content: &OneOrMany<rig::message::AssistantContent>) -> String {
-    use rig::message::AssistantContent;
-
-    collect_items(content)
-        .iter()
-        .filter_map(|item| match item {
-            AssistantContent::Text(t) => Some(t.text.clone()),
-            _ => None,
-        })
-        .collect::<Vec<_>>()
-        .join("\n")
-}
-
-/// Extract tool calls from assistant message
-fn extract_tool_calls_from_assistant(
-    content: &OneOrMany<rig::message::AssistantContent>,
-) -> Vec<ToolCall> {
-    use rig::message::AssistantContent;
-
-    collect_items(content)
-        .iter()
-        .filter_map(|item| match item {
-            AssistantContent::ToolCall(tc) => Some(ToolCall {
-                tool: tc.function.name.clone(),
-                id: tc.id.clone(),
-                input: tc.function.arguments.clone(),
-            }),
-            _ => None,
-        })
-        .collect()
-}
-
-/// Extract text content from user message
-fn extract_text_from_user(content: &OneOrMany<UserContent>) -> String {
-    collect_items(content)
-        .iter()
-        .filter_map(|item| match item {
-            UserContent::Text(t) => Some(t.text.clone()),
-            _ => None,
-        })
-        .collect::<Vec<_>>()
-        .join("\n")
-}
-
-/// Extract tool results from user message
-fn extract_tool_results_from_user(content: &OneOrMany<UserContent>) -> Vec<ToolResult> {
-    use rig::message::ToolResultContent;
-
-    collect_items(content)
-        .iter()
-        .filter_map(|item| match item {
-            UserContent::ToolResult(tr) => {
-                // Extract text from ToolResultContent
-                let output_text = collect_items(&tr.content)
-                    .iter()
-                    .filter_map(|c| match c {
-                        ToolResultContent::Text(t) => Some(t.text.clone()),
-                        _ => None,
-                    })
-                    .collect::<Vec<_>>()
-                    .join("\n");
-
-                let success = !output_text.contains("error")
-                    && !output_text.contains("Error")
-                    && !output_text.contains("failed")
-                    && !output_text.contains("Failed");
-
-                Some(ToolResult {
-                    success,
-                    output: output_text,
-                })
-            }
-            _ => None,
-        })
-        .collect()
 }
 
 /// Execute compaction and reconstruct messages
@@ -199,11 +156,13 @@ pub async fn execute_compaction(session: &mut Session) -> Result<CompactionMetri
     let context_window = provider_manager.context_window() as u64;
     let budget = calculate_summarization_budget(context_window);
 
-    // Step 3: Create compactor and run compaction
+    // Step 3: Convert messages to turns using lazy approach (CTX-002)
+    // This follows the TypeScript implementation - create turns during compaction, not after each interaction
+    let turns = convert_messages_to_turns(&session.messages);
+
+    // Step 4: Create compactor and run compaction
     let compactor = ContextCompactor::new();
-    let result = compactor
-        .compact(&session.turns, budget, llm_prompt)
-        .await?;
+    let result = compactor.compact(&turns, budget, llm_prompt).await?;
 
     // Step 4: Preserve system messages (rig Message doesn't have System variant, only in Anthropic)
     // For now, we'll just preserve the first message if it looks like a system message
@@ -227,7 +186,8 @@ pub async fn execute_compaction(session: &mut Session) -> Result<CompactionMetri
         )),
     });
 
-    // Add kept turn messages
+    // Add kept turn messages (unconditionally, matching TypeScript compaction.ts:143-162)
+    // Content is never empty because extract_message_text() serializes non-text as JSON
     for turn in &result.kept_turns {
         // Add user message
         session.messages.push(Message::User {

@@ -2,7 +2,7 @@
   "version": "0.7.1",
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-12-16T04:58:21.847Z"
+    "lastUpdated": "2025-12-16T05:58:54.412Z"
   },
   "workUnits": {
     "FOUND-001": {
@@ -6303,6 +6303,116 @@
       "questions": [],
       "nextQuestionId": 0,
       "updated": "2025-12-16T04:58:21.859Z"
+    },
+    "CTX-002": {
+      "id": "CTX-002",
+      "title": "Context compaction fails with empty turn history despite active conversation",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2025-12-16T05:46:21.144Z",
+      "updatedAt": "2025-12-16T05:59:21.884Z",
+      "description": "The create_conversation_turn_from_last_interaction function returns None, leaving session.turns empty, causing compaction to fail with misleading error message despite 800K+ tokens and 81 messages in conversation history.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-12-16T05:46:43.719Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-12-16T05:50:21.066Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-16T05:54:55.481Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-16T05:58:13.953Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-16T05:58:54.426Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using codelet Rust port",
+        "action": "have context compaction work correctly during long conversations",
+        "benefit": "memory is managed efficiently and conversations don't fail with misleading errors"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "The create_conversation_turn_from_last_interaction function must successfully extract text from rig message structures (OneOrMany<Content>) without returning None",
+          "deleted": false,
+          "createdAt": "2025-12-16T05:46:58.112Z"
+        },
+        {
+          "id": 1,
+          "text": "Conversation turns must be created and stored in session.turns vector for compaction to access them",
+          "deleted": false,
+          "createdAt": "2025-12-16T05:47:00.215Z"
+        },
+        {
+          "id": 2,
+          "text": "Error messages must be accurate and actionable - empty turn history error is misleading when messages exist but extraction fails",
+          "deleted": false,
+          "createdAt": "2025-12-16T05:47:02.029Z"
+        },
+        {
+          "id": 3,
+          "text": "SOLUTION: Follow TypeScript implementation exactly - use lazy turn creation during compaction (like convertToConversationFlow in compaction.ts) instead of eager creation after each interaction",
+          "deleted": false,
+          "createdAt": "2025-12-16T05:48:09.884Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Session with 5 conversation turns, 81 messages, 800K+ tokens triggers compaction at sequence 645, 848, 1169 but fails with 'Cannot compact empty turn history'",
+          "deleted": false,
+          "createdAt": "2025-12-16T05:47:14.585Z"
+        },
+        {
+          "id": 1,
+          "text": "Debug logs show session.messages contains 81 messages with substantial content, but session.turns vector is empty because create_conversation_turn_from_last_interaction returns None",
+          "deleted": false,
+          "createdAt": "2025-12-16T05:47:16.453Z"
+        },
+        {
+          "id": 2,
+          "text": "TypeScript version uses lazy turn creation during compaction (convertToConversationFlow) with forward iteration, while Rust uses eager creation after each interaction with backward iteration",
+          "deleted": false,
+          "createdAt": "2025-12-16T05:47:19.233Z"
+        },
+        {
+          "id": 3,
+          "text": "Root cause: extract_text_from_assistant and extract_text_from_user functions fail to extract content from OneOrMany<Content> structures, returning empty strings, causing line 56 check to fail and return None",
+          "deleted": false,
+          "createdAt": "2025-12-16T05:47:21.336Z"
+        },
+        {
+          "id": 4,
+          "text": "TypeScript compaction.ts lines 99-140: convertToConversationFlow creates turns lazily during compaction using simple forward iteration through message pairs - this is what Rust should replicate",
+          "deleted": false,
+          "createdAt": "2025-12-16T05:48:11.783Z"
+        }
+      ],
+      "nextExampleId": 5,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "ARCHITECTURAL MISMATCH: Rust port uses eager turn creation (after each interaction) while TypeScript uses lazy turn creation (during compaction only). This causes extraction failures to silently fail in Rust, leaving session.turns empty.",
+          "deleted": false,
+          "createdAt": "2025-12-16T05:47:33.194Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2025-12-16T05:58:54.426Z",
+      "estimate": 3
     }
   },
   "states": {
@@ -6317,6 +6427,7 @@
     ],
     "validating": [],
     "done": [
+      "CTX-002",
       "CORE-008",
       "REFAC-009",
       "REFAC-008",
@@ -6366,7 +6477,7 @@
     "CORE": 8,
     "PROV": 5,
     "AGENT": 1,
-    "CTX": 1,
+    "CTX": 2,
     "REFAC": 9,
     "CLI": 23
   }
