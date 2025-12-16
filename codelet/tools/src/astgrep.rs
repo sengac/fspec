@@ -6,68 +6,23 @@
 use crate::{
     limits::OutputLimits,
     truncation::{format_truncation_warning, process_output_lines, truncate_output},
-    Tool, ToolOutput, ToolParameters,
+    ToolOutput,
 };
 use anyhow::Result;
 use ast_grep_language::{LanguageExt, SupportLang};
-use async_trait::async_trait;
 use ignore::WalkBuilder;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::path::Path;
-use tracing::debug;
 
 /// AstGrepTool for AST-based code pattern matching
-pub struct AstGrepTool {
-    parameters: ToolParameters,
-}
+pub struct AstGrepTool;
 
 impl AstGrepTool {
     /// Create a new AstGrepTool
     pub fn new() -> Self {
-        let mut properties = serde_json::Map::new();
-
-        properties.insert(
-            "pattern".to_string(),
-            json!({
-                "type": "string",
-                "description": "AST pattern to search for. Use $VAR for single node capture, $$$VAR for multiple nodes."
-            }),
-        );
-
-        properties.insert(
-            "language".to_string(),
-            json!({
-                "type": "string",
-                "description": "Programming language (typescript, javascript, rust, python, go, java, c, cpp, etc.)"
-            }),
-        );
-
-        properties.insert(
-            "path".to_string(),
-            json!({
-                "type": "string",
-                "description": "Directory to search in (default: current directory)"
-            }),
-        );
-
-        properties.insert(
-            "paths".to_string(),
-            json!({
-                "type": "array",
-                "items": { "type": "string" },
-                "description": "List of specific paths to search"
-            }),
-        );
-
-        Self {
-            parameters: ToolParameters {
-                schema_type: "object".to_string(),
-                properties,
-                required: vec!["pattern".to_string(), "language".to_string()],
-            },
-        }
+        Self
     }
 
     /// Parse language string to SupportLang
@@ -138,38 +93,9 @@ impl AstGrepTool {
 
         results
     }
-}
 
-impl Default for AstGrepTool {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-/// A single match result
-struct MatchResult {
-    file: String,
-    line: usize,
-    column: usize,
-    text: String,
-}
-
-#[async_trait]
-impl Tool for AstGrepTool {
-    fn name(&self) -> &str {
-        "AstGrep"
-    }
-
-    fn description(&self) -> &str {
-        "Search code using AST-based pattern matching. Uses meta-variables ($VAR, $$$VAR) for structural patterns."
-    }
-
-    fn parameters(&self) -> &ToolParameters {
-        &self.parameters
-    }
-
+    /// Internal execute method for rig tool delegation
     async fn execute(&self, args: Value) -> Result<ToolOutput> {
-        debug!(tool = "AstGrep", input = ?args, "Executing tool");
         // Extract required parameters
         let pattern = match args.get("pattern").and_then(|v| v.as_str()) {
             Some(p) if !p.is_empty() => p,
@@ -313,17 +239,32 @@ impl Tool for AstGrepTool {
     }
 }
 
-// ========================================
-// Rig Tool Implementation (REFAC-004)
-// ========================================
+impl Default for AstGrepTool {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+/// A single match result
+struct MatchResult {
+    file: String,
+    line: usize,
+    column: usize,
+    text: String,
+}
+
+// rig::tool::Tool implementation
 
 /// Arguments for AstGrep tool (rig::tool::Tool)
 #[derive(Debug, Deserialize, Serialize, JsonSchema)]
 pub struct AstGrepArgs {
-    /// The AST pattern to search for
+    /// The AST pattern to search for (must be valid syntax for the target language).
+    /// Use $NAME for single-node wildcards, $$$ARGS for multi-node wildcards.
+    /// Examples: 'fn $NAME($_)' for Rust functions, 'function $NAME($$$ARGS)' for JS functions.
     pub pattern: String,
-    /// Language to parse (e.g., "rust", "typescript", "python")
-    pub lang: String,
+    /// Programming language to search. Supported: rust, typescript, tsx, javascript, python,
+    /// go, java, c, cpp, ruby, kotlin, swift, scala, php, bash, html, css, json, yaml, lua, elixir, haskell.
+    pub language: String,
     /// Directory or file to search in (optional, defaults to current directory)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub path: Option<String>,
@@ -350,9 +291,21 @@ impl rig::tool::Tool for AstGrepTool {
     async fn definition(&self, _prompt: String) -> rig::completion::ToolDefinition {
         rig::completion::ToolDefinition {
             name: "astgrep".to_string(),
-            description:
-                "Search for code patterns using AST-based matching. Supports 27+ languages."
-                    .to_string(),
+            description: "AST-based code search that finds code by syntax structure, not text. \
+                Far fewer false positives than grep for structural searches.\n\n\
+                PATTERN SYNTAX:\n\
+                - Pattern must be valid syntax in the target language\n\
+                - Use $NAME for single-node wildcard (matches one AST node)\n\
+                - Use $$$ARGS for multi-node wildcard (matches zero or more nodes)\n\n\
+                EXAMPLES:\n\
+                - Rust functions: pattern='fn $NAME($_)' language='rust'\n\
+                - Rust structs: pattern='struct $NAME' language='rust'\n\
+                - JS functions: pattern='function $NAME($$$ARGS)' language='javascript'\n\
+                - TS async: pattern='async function $NAME($$$ARGS)' language='typescript'\n\
+                - Python def: pattern='def $NAME($$$ARGS):' language='python'\n\
+                - Method calls: pattern='$OBJ.$METHOD($$$ARGS)' language='typescript'\n\n\
+                Returns file:line:column:matched_text format."
+                .to_string(),
             parameters: serde_json::to_value(schemars::schema_for!(AstGrepArgs))
                 .unwrap_or_else(|_| json!({"type": "object"})),
         }
@@ -365,7 +318,10 @@ impl rig::tool::Tool for AstGrepTool {
             "pattern".to_string(),
             serde_json::Value::String(args.pattern),
         );
-        value_map.insert("lang".to_string(), serde_json::Value::String(args.lang));
+        value_map.insert(
+            "language".to_string(),
+            serde_json::Value::String(args.language),
+        );
         if let Some(path) = args.path {
             value_map.insert("path".to_string(), serde_json::Value::String(path));
         }

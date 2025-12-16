@@ -25,9 +25,11 @@ Architectural component tags
 | `@cli` | CLI interface and command-line interaction features |
 | `@cli-interface` | CLI interface bounded context - command parsing, config loading |
 | `@context-management` | Context management bounded context - token tracking, compaction, caching |
+| `@core` | Core bounded context - agent execution, message history, streaming |
 | `@provider-management` | Provider management bounded context - multi-provider LLM abstraction |
 | `@session` | Session management and state handling |
 | `@tool-execution` | Tool execution bounded context - bash, read, write, edit, grep, glob tools |
+| `@tools` | Tools bounded context - file operations, code search, bash execution |
 
 ### Feature Group Tags (Required)
 
@@ -56,6 +58,7 @@ Technical concern tags
 | `@logging` | Logging and observability features |
 | `@markdown` | Markdown parsing and rendering |
 | `@ratatui` | TUI framework for terminal rendering with styled text |
+| `@refactoring` | Code refactoring and technical debt reduction |
 | `@streaming` | Real-time data streaming and buffering |
 | `@system-reminders` | System reminder infrastructure and dynamic context injection |
 | `@terminal` | Terminal/TTY specific functionality |
@@ -104,7 +107,7 @@ Automation integration tags
 
 ## Tag Statistics
 
-_Last updated: 2025-12-03T09:36:15.358Z_
+_Last updated: 2025-12-16T09:00:50.881Z_
 
 **Update Command**: `fspec tag-stats`
 

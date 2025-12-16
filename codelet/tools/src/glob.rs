@@ -6,53 +6,23 @@
 use crate::{
     limits::OutputLimits,
     truncation::{format_truncation_warning, process_output_lines, truncate_output},
-    Tool, ToolOutput, ToolParameters,
 };
-use anyhow::Result;
-use async_trait::async_trait;
 use globset::GlobBuilder;
 use ignore::WalkBuilder;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+use serde_json::json;
 use std::fs;
 use std::path::PathBuf;
 use std::time::SystemTime;
-use tracing::debug;
 
 /// GlobTool for gitignore-aware file pattern matching
-pub struct GlobTool {
-    parameters: ToolParameters,
-}
+pub struct GlobTool;
 
 impl GlobTool {
     /// Create a new GlobTool
     pub fn new() -> Self {
-        let mut properties = serde_json::Map::new();
-
-        properties.insert(
-            "pattern".to_string(),
-            json!({
-                "type": "string",
-                "description": "The glob pattern to match files (e.g., '**/*.ts', '*.{js,ts}')"
-            }),
-        );
-
-        properties.insert(
-            "path".to_string(),
-            json!({
-                "type": "string",
-                "description": "Directory to search in (default: current directory)"
-            }),
-        );
-
-        Self {
-            parameters: ToolParameters {
-                schema_type: "object".to_string(),
-                properties,
-                required: vec!["pattern".to_string()],
-            },
-        }
+        Self
     }
 
     /// Get file modification time for sorting
@@ -69,118 +39,7 @@ impl Default for GlobTool {
     }
 }
 
-#[async_trait]
-impl Tool for GlobTool {
-    fn name(&self) -> &str {
-        "Glob"
-    }
-
-    fn description(&self) -> &str {
-        "Find files by glob pattern. Respects .gitignore by default. Returns matching file paths sorted by modification time (newest first)."
-    }
-
-    fn parameters(&self) -> &ToolParameters {
-        &self.parameters
-    }
-
-    async fn execute(&self, args: Value) -> Result<ToolOutput> {
-        debug!(tool = "Glob", input = ?args, "Executing tool");
-        // Extract parameters
-        let pattern = args.get("pattern").and_then(|v| v.as_str()).unwrap_or("");
-
-        if pattern.is_empty() {
-            return Ok(ToolOutput::error(
-                "Error: pattern parameter is required".to_string(),
-            ));
-        }
-
-        let path = args.get("path").and_then(|v| v.as_str()).unwrap_or(".");
-
-        // Build glob matcher
-        let glob_matcher = match GlobBuilder::new(pattern).literal_separator(true).build() {
-            Ok(g) => g.compile_matcher(),
-            Err(e) => {
-                return Ok(ToolOutput::error(format!(
-                    "Error: Invalid glob pattern: {e}"
-                )));
-            }
-        };
-
-        // Build walker with gitignore support
-        let walker = WalkBuilder::new(path)
-            .hidden(false)
-            .git_ignore(true)
-            .build();
-
-        // Collect matching files
-        let mut files: Vec<(PathBuf, SystemTime)> = Vec::new();
-
-        for entry in walker.flatten() {
-            if !entry.file_type().is_some_and(|ft| ft.is_file()) {
-                continue;
-            }
-
-            let file_path = entry.path();
-
-            // Match against the pattern - try both full path and relative path
-            let matches = glob_matcher.is_match(file_path)
-                || file_path
-                    .strip_prefix(path)
-                    .map(|p| glob_matcher.is_match(p))
-                    .unwrap_or(false)
-                || file_path
-                    .file_name()
-                    .map(|n| glob_matcher.is_match(n))
-                    .unwrap_or(false);
-
-            if matches {
-                let mtime = Self::get_mtime(&file_path.to_path_buf());
-                files.push((file_path.to_path_buf(), mtime));
-            }
-        }
-
-        // Sort by modification time (newest first)
-        files.sort_by(|a, b| b.1.cmp(&a.1));
-
-        // Format output
-        if files.is_empty() {
-            return Ok(ToolOutput::success("No matches found".to_string()));
-        }
-
-        let output: String = files
-            .iter()
-            .map(|(p, _)| p.to_string_lossy().to_string())
-            .collect::<Vec<_>>()
-            .join("\n");
-
-        // Apply truncation
-        let lines = process_output_lines(&output);
-        let truncate_result = truncate_output(&lines, OutputLimits::MAX_OUTPUT_CHARS);
-
-        let mut final_output = truncate_result.output;
-        let was_truncated = truncate_result.char_truncated || truncate_result.remaining_count > 0;
-
-        if was_truncated {
-            let warning = format_truncation_warning(
-                truncate_result.remaining_count,
-                "files",
-                truncate_result.char_truncated,
-                OutputLimits::MAX_OUTPUT_CHARS,
-            );
-            final_output.push_str(&warning);
-        }
-
-        Ok(ToolOutput {
-            content: final_output,
-            truncated: was_truncated,
-            is_error: false,
-        })
-    }
-}
-
-// ========================================
-// Rig Tool Implementation (REFAC-004)
-// ========================================
+// rig::tool::Tool implementation
 
 /// Arguments for Glob tool (rig::tool::Tool)
 #[derive(Debug, Deserialize, Serialize, JsonSchema)]
@@ -211,7 +70,15 @@ impl rig::tool::Tool for GlobTool {
     async fn definition(&self, _prompt: String) -> rig::completion::ToolDefinition {
         rig::completion::ToolDefinition {
             name: "glob".to_string(),
-            description: "Find files by glob pattern. Respects .gitignore by default. Returns matching file paths sorted by modification time (newest first).".to_string(),
+            description: "Fast file pattern matching tool that works with any codebase size. \
+                Supports glob patterns like \"**/*.js\" or \"src/**/*.ts\". \
+                Returns matching file paths one per line.\n\n\
+                Usage:\n\
+                - Pattern supports glob syntax: *, **, ?, {a,b}, [abc]\n\
+                - Respects .gitignore by default\n\
+                - Returns \"No matches found\" for patterns with no matching files\n\
+                - Output is truncated at 30000 characters with truncation warning"
+                .to_string(),
             parameters: serde_json::to_value(schemars::schema_for!(GlobArgs))
                 .unwrap_or_else(|_| json!({"type": "object"})),
         }

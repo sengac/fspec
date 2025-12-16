@@ -3,60 +3,18 @@
 //! Edits files by replacing the first occurrence of a string.
 
 use super::validation::{read_file_contents, require_absolute_path, require_file_exists};
-use super::{Tool, ToolOutput, ToolParameters};
-use anyhow::Result;
-use async_trait::async_trait;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+use serde_json::json;
 use std::fs;
-use tracing::debug;
 
 /// Edit tool for modifying file contents
-pub struct EditTool {
-    parameters: ToolParameters,
-}
+pub struct EditTool;
 
 impl EditTool {
     /// Create a new Edit tool instance
     pub fn new() -> Self {
-        let mut properties = serde_json::Map::new();
-
-        properties.insert(
-            "file_path".to_string(),
-            json!({
-                "type": "string",
-                "description": "Absolute path to the file to edit"
-            }),
-        );
-
-        properties.insert(
-            "old_string".to_string(),
-            json!({
-                "type": "string",
-                "description": "String to find and replace (first occurrence only)"
-            }),
-        );
-
-        properties.insert(
-            "new_string".to_string(),
-            json!({
-                "type": "string",
-                "description": "String to replace with"
-            }),
-        );
-
-        Self {
-            parameters: ToolParameters {
-                schema_type: "object".to_string(),
-                properties,
-                required: vec![
-                    "file_path".to_string(),
-                    "old_string".to_string(),
-                    "new_string".to_string(),
-                ],
-            },
-        }
+        Self
     }
 }
 
@@ -66,76 +24,7 @@ impl Default for EditTool {
     }
 }
 
-#[async_trait]
-impl Tool for EditTool {
-    fn name(&self) -> &str {
-        "Edit"
-    }
-
-    fn description(&self) -> &str {
-        "Edit a file by replacing the first occurrence of old_string with new_string."
-    }
-
-    fn parameters(&self) -> &ToolParameters {
-        &self.parameters
-    }
-
-    async fn execute(&self, args: Value) -> Result<ToolOutput> {
-        debug!(tool = "Edit", input = ?args, "Executing tool");
-        let file_path = args.get("file_path").and_then(|v| v.as_str()).unwrap_or("");
-
-        let old_string = args
-            .get("old_string")
-            .and_then(|v| v.as_str())
-            .unwrap_or("");
-
-        let new_string = args
-            .get("new_string")
-            .and_then(|v| v.as_str())
-            .unwrap_or("");
-
-        // Validate absolute path
-        let path = match require_absolute_path(file_path) {
-            Ok(p) => p,
-            Err(e) => return Ok(e),
-        };
-
-        // Check file exists
-        if let Err(e) = require_file_exists(path, file_path) {
-            return Ok(e);
-        }
-
-        // Read file content
-        let content = match read_file_contents(path) {
-            Ok(c) => c,
-            Err(e) => return Ok(e),
-        };
-
-        // Check if old_string exists
-        if !content.contains(old_string) {
-            return Ok(ToolOutput::error(
-                "Error: old_string not found in file".to_string(),
-            ));
-        }
-
-        // Replace first occurrence only
-        let new_content = content.replacen(old_string, new_string, 1);
-
-        // Write back
-        match fs::write(path, &new_content) {
-            Ok(()) => {
-                // Simplified output format (CLEAN-005: removed diff rendering)
-                let output = format!("Edited file: {file_path}");
-                Ok(ToolOutput::success(output))
-            }
-            Err(e) => Ok(ToolOutput::error(format!("Error writing file: {e}"))),
-        }
-    }
-}
-
-// ========================================
-// Rig Tool Implementation (REFAC-004)
-// ========================================
+// rig::tool::Tool implementation
 
 /// Arguments for Edit tool (rig::tool::Tool)
 #[derive(Debug, Deserialize, Serialize, JsonSchema)]
@@ -170,7 +59,8 @@ impl rig::tool::Tool for EditTool {
         rig::completion::ToolDefinition {
             name: "edit".to_string(),
             description:
-                "Edit a file by replacing the first occurrence of old_string with new_string."
+                "Edit a file by replacing old_string with new_string (first occurrence only). \
+                Requires absolute path."
                     .to_string(),
             parameters: serde_json::to_value(schemars::schema_for!(EditArgs))
                 .unwrap_or_else(|_| json!({"type": "object"})),

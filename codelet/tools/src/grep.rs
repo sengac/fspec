@@ -6,10 +6,9 @@
 use crate::{
     limits::OutputLimits,
     truncation::{format_truncation_warning, process_output_lines, truncate_output},
-    Tool, ToolOutput, ToolParameters,
+    ToolOutput,
 };
 use anyhow::Result;
-use async_trait::async_trait;
 use grep_regex::RegexMatcherBuilder;
 use grep_searcher::{SearcherBuilder, Sink, SinkContext, SinkContextKind, SinkMatch};
 use ignore::WalkBuilder;
@@ -17,7 +16,6 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::path::Path;
-use tracing::debug;
 
 /// Output mode for grep results
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -41,103 +39,12 @@ impl OutputMode {
 }
 
 /// GrepTool for content search using ripgrep crates
-pub struct GrepTool {
-    parameters: ToolParameters,
-}
+pub struct GrepTool;
 
 impl GrepTool {
     /// Create a new GrepTool
     pub fn new() -> Self {
-        let mut properties = serde_json::Map::new();
-
-        properties.insert(
-            "pattern".to_string(),
-            json!({
-                "type": "string",
-                "description": "The regex pattern to search for"
-            }),
-        );
-
-        properties.insert(
-            "path".to_string(),
-            json!({
-                "type": "string",
-                "description": "Directory or file to search in (default: current directory)"
-            }),
-        );
-
-        properties.insert(
-            "output_mode".to_string(),
-            json!({
-                "type": "string",
-                "enum": ["files_with_matches", "content", "count"],
-                "description": "Output format: files_with_matches (default), content (with line numbers), count (match counts per file)"
-            }),
-        );
-
-        properties.insert(
-            "-i".to_string(),
-            json!({
-                "type": "boolean",
-                "description": "Case-insensitive search"
-            }),
-        );
-
-        properties.insert(
-            "multiline".to_string(),
-            json!({
-                "type": "boolean",
-                "description": "Enable multiline mode where patterns can span lines"
-            }),
-        );
-
-        properties.insert(
-            "-A".to_string(),
-            json!({
-                "type": "integer",
-                "description": "Number of lines to show after each match (content mode only)"
-            }),
-        );
-
-        properties.insert(
-            "-B".to_string(),
-            json!({
-                "type": "integer",
-                "description": "Number of lines to show before each match (content mode only)"
-            }),
-        );
-
-        properties.insert(
-            "-C".to_string(),
-            json!({
-                "type": "integer",
-                "description": "Number of lines to show before and after each match (content mode only)"
-            }),
-        );
-
-        properties.insert(
-            "glob".to_string(),
-            json!({
-                "type": "string",
-                "description": "Glob pattern to filter files (e.g., '*.ts', '*.{js,ts}')"
-            }),
-        );
-
-        properties.insert(
-            "type".to_string(),
-            json!({
-                "type": "string",
-                "description": "File type filter (e.g., 'rust', 'js', 'py')"
-            }),
-        );
-
-        Self {
-            parameters: ToolParameters {
-                schema_type: "object".to_string(),
-                properties,
-                required: vec!["pattern".to_string()],
-            },
-        }
+        Self
     }
 
     /// Build the regex matcher with options
@@ -245,45 +152,9 @@ impl GrepTool {
             }
         }
     }
-}
 
-impl Default for GrepTool {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-/// Search result for a single file
-struct FileSearchResult {
-    path: String,
-    matches: Vec<MatchLine>,
-    count: u64,
-}
-
-/// A single matching line
-struct MatchLine {
-    line_num: u64,
-    content: String,
-    #[allow(dead_code)] // Reserved for future context line formatting
-    is_context: bool,
-}
-
-#[async_trait]
-impl Tool for GrepTool {
-    fn name(&self) -> &str {
-        "Grep"
-    }
-
-    fn description(&self) -> &str {
-        "Search file contents using regex patterns. Uses ripgrep crates for fast, gitignore-aware searching."
-    }
-
-    fn parameters(&self) -> &ToolParameters {
-        &self.parameters
-    }
-
+    /// Internal execute method for rig tool delegation
     async fn execute(&self, args: Value) -> Result<ToolOutput> {
-        debug!(tool = "Grep", input = ?args, "Executing tool");
         // Extract parameters
         let pattern = args.get("pattern").and_then(|v| v.as_str()).unwrap_or("");
 
@@ -452,9 +323,28 @@ impl Tool for GrepTool {
     }
 }
 
-// ========================================
-// Rig Tool Implementation (REFAC-004)
-// ========================================
+impl Default for GrepTool {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+/// Search result for a single file
+struct FileSearchResult {
+    path: String,
+    matches: Vec<MatchLine>,
+    count: u64,
+}
+
+/// A single matching line
+struct MatchLine {
+    line_num: u64,
+    content: String,
+    #[allow(dead_code)] // Reserved for future context line formatting
+    is_context: bool,
+}
+
+// rig::tool::Tool implementation
 
 /// Arguments for Grep tool (rig::tool::Tool)
 #[derive(Debug, Deserialize, Serialize, JsonSchema)]
@@ -488,7 +378,10 @@ impl rig::tool::Tool for GrepTool {
     async fn definition(&self, _prompt: String) -> rig::completion::ToolDefinition {
         rig::completion::ToolDefinition {
             name: "grep".to_string(),
-            description: "Search for regex pattern in files. Supports multiple output modes and respects .gitignore.".to_string(),
+            description: "Search for text patterns using ripgrep. Use for searching file contents by regex pattern. \
+                Returns file paths by default, or matching lines with line numbers in content mode. \
+                Supports glob filters, file type filters, case-insensitive search, multiline patterns, and context lines. \
+                Respects .gitignore.".to_string(),
             parameters: serde_json::to_value(schemars::schema_for!(GrepArgs))
                 .unwrap_or_else(|_| json!({"type": "object"})),
         }

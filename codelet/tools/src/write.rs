@@ -3,48 +3,18 @@
 //! Writes content to files, creating parent directories as needed.
 
 use super::validation::require_absolute_path;
-use super::{Tool, ToolOutput, ToolParameters};
-use anyhow::Result;
-use async_trait::async_trait;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+use serde_json::json;
 use std::fs;
-use tracing::debug;
 
 /// Write tool for writing file contents
-pub struct WriteTool {
-    parameters: ToolParameters,
-}
+pub struct WriteTool;
 
 impl WriteTool {
     /// Create a new Write tool instance
     pub fn new() -> Self {
-        let mut properties = serde_json::Map::new();
-
-        properties.insert(
-            "file_path".to_string(),
-            json!({
-                "type": "string",
-                "description": "Absolute path to the file to write"
-            }),
-        );
-
-        properties.insert(
-            "content".to_string(),
-            json!({
-                "type": "string",
-                "description": "Content to write to the file"
-            }),
-        );
-
-        Self {
-            parameters: ToolParameters {
-                schema_type: "object".to_string(),
-                properties,
-                required: vec!["file_path".to_string(), "content".to_string()],
-            },
-        }
+        Self
     }
 }
 
@@ -54,60 +24,7 @@ impl Default for WriteTool {
     }
 }
 
-#[async_trait]
-impl Tool for WriteTool {
-    fn name(&self) -> &str {
-        "Write"
-    }
-
-    fn description(&self) -> &str {
-        "Write content to a file. Creates parent directories if they don't exist."
-    }
-
-    fn parameters(&self) -> &ToolParameters {
-        &self.parameters
-    }
-
-    async fn execute(&self, args: Value) -> Result<ToolOutput> {
-        debug!(tool = "Write", input = ?args, "Executing tool");
-
-        let file_path = args.get("file_path").and_then(|v| v.as_str()).unwrap_or("");
-
-        let content = args.get("content").and_then(|v| v.as_str()).unwrap_or("");
-
-        // Validate absolute path
-        let path = match require_absolute_path(file_path) {
-            Ok(p) => p,
-            Err(e) => return Ok(e),
-        };
-
-        // Create parent directories if needed
-        if let Some(parent) = path.parent() {
-            if !parent.exists() {
-                if let Err(e) = fs::create_dir_all(parent) {
-                    return Ok(ToolOutput::error(format!(
-                        "Error creating directories: {e}"
-                    )));
-                }
-            }
-        }
-
-        // Write file
-        match fs::write(path, content) {
-            Ok(()) => {
-                // Simplified output format (CLEAN-005: removed diff rendering)
-                let line_count = content.lines().count();
-                let output = format!("Wrote file: {file_path} ({line_count} lines)");
-                Ok(ToolOutput::success(output))
-            }
-            Err(e) => Ok(ToolOutput::error(format!("Error writing file: {e}"))),
-        }
-    }
-}
-
-// ========================================
-// Rig Tool Implementation (REFAC-004)
-// ========================================
+// rig::tool::Tool implementation
 
 /// Arguments for Write tool (rig::tool::Tool)
 #[derive(Debug, Deserialize, Serialize, JsonSchema)]
@@ -137,8 +54,10 @@ impl rig::tool::Tool for WriteTool {
     async fn definition(&self, _prompt: String) -> rig::completion::ToolDefinition {
         rig::completion::ToolDefinition {
             name: "write".to_string(),
-            description: "Write content to a file. Creates parent directories if they don't exist."
-                .to_string(),
+            description:
+                "Write content to a file (creates or overwrites). Requires absolute path. \
+                Creates parent directories if they don't exist."
+                    .to_string(),
             parameters: serde_json::to_value(schemars::schema_for!(WriteArgs))
                 .unwrap_or_else(|_| json!({"type": "object"})),
         }

@@ -253,11 +253,11 @@ impl ClaudeProvider {
     /// Returns a fully configured rig::agent::Agent ready for use with RigAgent.
     pub fn create_rig_agent(&self) -> rig::agent::Agent<anthropic::completion::CompletionModel> {
         use codelet_tools::{
-            AstGrepTool, BashTool, EditTool, GlobTool, GrepTool, ReadTool, WriteTool,
+            AstGrepTool, BashTool, EditTool, GlobTool, GrepTool, LsTool, ReadTool, WriteTool,
         };
         use rig::client::CompletionClient;
 
-        // Build agent with all 7 tools using rig's builder pattern
+        // Build agent with all 8 tools using rig's builder pattern
         let mut agent_builder = self
             .rig_client
             .agent(DEFAULT_MODEL)
@@ -268,6 +268,7 @@ impl ClaudeProvider {
             .tool(BashTool::new())
             .tool(GrepTool::new())
             .tool(GlobTool::new())
+            .tool(LsTool::new())
             .tool(AstGrepTool::new());
 
         // For OAuth mode, add the Claude Code system prompt prefix

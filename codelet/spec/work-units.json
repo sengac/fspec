@@ -2,7 +2,7 @@
   "version": "0.7.1",
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-12-16T05:58:54.412Z"
+    "lastUpdated": "2025-12-16T09:41:07.750Z"
   },
   "workUnits": {
     "FOUND-001": {
@@ -6413,20 +6413,330 @@
       "nextQuestionId": 0,
       "updated": "2025-12-16T05:58:54.426Z",
       "estimate": 3
+    },
+    "REFAC-010": {
+      "id": "REFAC-010",
+      "title": "Remove legacy Tool trait and ToolRegistry - complete rig migration",
+      "type": "task",
+      "status": "implementing",
+      "createdAt": "2025-12-16T08:52:55.598Z",
+      "updatedAt": "2025-12-16T09:01:16.594Z",
+      "description": "Complete the rig migration by removing the vestigial custom Tool trait, ToolRegistry, and Runner that are no longer used in production. The CLI exclusively uses RigAgent with rig::tool::Tool, making the legacy system dead code maintained only for tests.",
+      "children": [],
+      "attachments": [
+        "spec/attachments/REFAC-010/legacy-tool-system-removal-analysis.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-12-16T08:58:22.844Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-16T09:01:16.594Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer maintaining codelet",
+        "action": "have a single tool implementation per tool using only rig::tool::Tool",
+        "benefit": "I eliminate code duplication and align tests with production code paths"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "The custom Tool trait in tools/src/lib.rs must be removed",
+          "deleted": false,
+          "createdAt": "2025-12-16T08:58:53.194Z"
+        },
+        {
+          "id": 1,
+          "text": "The ToolRegistry struct in tools/src/lib.rs must be removed",
+          "deleted": false,
+          "createdAt": "2025-12-16T08:58:55.910Z"
+        },
+        {
+          "id": 2,
+          "text": "The ToolParameters struct in tools/src/lib.rs must be removed",
+          "deleted": false,
+          "createdAt": "2025-12-16T08:58:58.303Z"
+        },
+        {
+          "id": 3,
+          "text": "The Runner struct in core/src/lib.rs must be removed",
+          "deleted": false,
+          "createdAt": "2025-12-16T08:59:00.839Z"
+        },
+        {
+          "id": 4,
+          "text": "Each tool file must only have impl rig::tool::Tool, not impl Tool (custom trait)",
+          "deleted": false,
+          "createdAt": "2025-12-16T08:59:02.700Z"
+        },
+        {
+          "id": 5,
+          "text": "All existing tests must pass after refactoring",
+          "deleted": false,
+          "createdAt": "2025-12-16T08:59:04.531Z"
+        },
+        {
+          "id": 6,
+          "text": "Tests must be updated to use rig::tool::Tool::call() instead of ToolRegistry::execute()",
+          "deleted": false,
+          "createdAt": "2025-12-16T08:59:06.819Z"
+        }
+      ],
+      "nextRuleId": 7,
+      "examples": [
+        {
+          "id": 0,
+          "text": "ReadTool only has impl rig::tool::Tool with call() method, no impl Tool with execute() method",
+          "deleted": false,
+          "createdAt": "2025-12-16T08:59:18.730Z"
+        },
+        {
+          "id": 1,
+          "text": "tools/src/lib.rs exports ReadTool, WriteTool, etc. but NOT Tool trait or ToolRegistry",
+          "deleted": false,
+          "createdAt": "2025-12-16T08:59:21.034Z"
+        },
+        {
+          "id": 2,
+          "text": "core/src/lib.rs exports RigAgent and compaction module but NOT Runner",
+          "deleted": false,
+          "createdAt": "2025-12-16T08:59:23.225Z"
+        },
+        {
+          "id": 3,
+          "text": "Test for ReadTool uses: let tool = ReadTool::new(); tool.call(args).await instead of ToolRegistry::execute()",
+          "deleted": false,
+          "createdAt": "2025-12-16T08:59:25.150Z"
+        },
+        {
+          "id": 4,
+          "text": "cargo test passes with all tests updated to use rig trait",
+          "deleted": false,
+          "createdAt": "2025-12-16T08:59:27.598Z"
+        },
+        {
+          "id": 5,
+          "text": "cargo clippy -- -D warnings passes with no warnings about unused code",
+          "deleted": false,
+          "createdAt": "2025-12-16T08:59:30.058Z"
+        }
+      ],
+      "nextExampleId": 6
+    },
+    "REFAC-011": {
+      "id": "REFAC-011",
+      "title": "Fix blocking I/O in async tool implementations",
+      "type": "task",
+      "status": "backlog",
+      "createdAt": "2025-12-16T08:55:31.194Z",
+      "updatedAt": "2025-12-16T08:56:39.020Z",
+      "description": "Several tool implementations use blocking std::fs operations inside async functions. While not critical for a CLI tool, this can block the async runtime under heavy load. Should migrate to tokio::fs for proper async I/O.",
+      "children": [],
+      "attachments": [
+        "spec/attachments/REFAC-011/async-io-analysis.md"
+      ]
+    },
+    "CLI-024": {
+      "id": "CLI-024",
+      "title": "Complete REPL interactive features - ESC interruption and /continue command",
+      "type": "task",
+      "status": "backlog",
+      "createdAt": "2025-12-16T08:55:34.533Z",
+      "updatedAt": "2025-12-16T08:56:39.538Z",
+      "description": "The REPL has partial implementations for ESC key interruption and workflow continuation. The UI shows 'ESC to interrupt' and is_interrupted AtomicBool exists, but the action wiring may be incomplete. The /continue command for resuming interrupted work also needs verification and completion.",
+      "children": [],
+      "attachments": [
+        "spec/attachments/CLI-024/repl-interactive-features-analysis.md"
+      ]
+    },
+    "CORE-009": {
+      "id": "CORE-009",
+      "title": "Enhance tool descriptions with detailed usage instructions",
+      "type": "task",
+      "status": "done",
+      "createdAt": "2025-12-16T09:24:09.141Z",
+      "updatedAt": "2025-12-16T09:30:09.119Z",
+      "description": "The Rust port has minimal one-liner tool descriptions (e.g., 'Search for code patterns using AST-based matching'). The TypeScript original has rich multi-line descriptions with usage instructions, examples, and guidance on when to use each tool. Update all tool definition() methods to match the detail level of the TypeScript version for: ReadTool, WriteTool, EditTool, BashTool, GrepTool, GlobTool, AstGrepTool.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-12-16T09:25:25.733Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-16T09:25:33.668Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-16T09:30:08.170Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-16T09:30:09.119Z"
+        }
+      ],
+      "rules": [],
+      "examples": [],
+      "questions": [],
+      "architectureNotes": [],
+      "nextRuleId": 0,
+      "nextExampleId": 0,
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-12-16T09:30:09.119Z"
+    },
+    "CORE-010": {
+      "id": "CORE-010",
+      "title": "Add LS Tool for directory listing",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-12-16T09:24:19.272Z",
+      "updatedAt": "2025-12-16T09:41:07.764Z",
+      "description": "The TypeScript original has an LS tool for directory listing that is missing from the Rust port. Implement LsTool following the same pattern as other tools (GlobTool, GrepTool, etc.) - implement rig::tool::Tool trait with proper Args struct, description, and call method. The tool should list directory contents respecting .gitignore.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-12-16T09:31:15.039Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-12-16T09:34:33.505Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-16T09:36:28.220Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-16T09:41:06.782Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-16T09:41:07.764Z"
+        }
+      ],
+      "userStory": {
+        "role": "AI coding agent",
+        "action": "list directory contents with file metadata",
+        "benefit": "I can explore the codebase structure and understand file organization"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Directories are listed first, then files, alphabetically within each group",
+          "deleted": false,
+          "createdAt": "2025-12-16T09:32:04.388Z"
+        },
+        {
+          "id": 1,
+          "text": "Output format shows permissions, size, modification time, and name for each entry",
+          "deleted": false,
+          "createdAt": "2025-12-16T09:32:06.093Z"
+        },
+        {
+          "id": 2,
+          "text": "Directory names are suffixed with forward slash (dirname/)",
+          "deleted": false,
+          "createdAt": "2025-12-16T09:32:08.372Z"
+        },
+        {
+          "id": 3,
+          "text": "Returns 'Directory not found' for non-existent paths",
+          "deleted": false,
+          "createdAt": "2025-12-16T09:32:10.588Z"
+        },
+        {
+          "id": 4,
+          "text": "Returns 'Not a directory' when path points to a file",
+          "deleted": false,
+          "createdAt": "2025-12-16T09:32:12.386Z"
+        },
+        {
+          "id": 5,
+          "text": "Defaults to current working directory when no path provided",
+          "deleted": false,
+          "createdAt": "2025-12-16T09:32:14.846Z"
+        }
+      ],
+      "nextRuleId": 6,
+      "examples": [
+        {
+          "id": 0,
+          "text": "List directory with mixed files and folders shows: drwxr-xr-x 4096 2025-01-15 10:30 src/ then -rw-r--r-- 1234 2025-01-15 10:30 README.md",
+          "deleted": false,
+          "createdAt": "2025-12-16T09:32:26.173Z"
+        },
+        {
+          "id": 1,
+          "text": "Empty directory returns '(empty directory)'",
+          "deleted": false,
+          "createdAt": "2025-12-16T09:32:27.861Z"
+        },
+        {
+          "id": 2,
+          "text": "Non-existent path /does/not/exist returns 'Directory not found: /does/not/exist'",
+          "deleted": false,
+          "createdAt": "2025-12-16T09:32:30.023Z"
+        },
+        {
+          "id": 3,
+          "text": "Path pointing to file returns 'Not a directory: /path/to/file.txt'",
+          "deleted": false,
+          "createdAt": "2025-12-16T09:32:32.408Z"
+        }
+      ],
+      "nextExampleId": 4,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Implements rig::tool::Tool trait like other tools (GlobTool, GrepTool)",
+          "deleted": false,
+          "createdAt": "2025-12-16T09:33:38.514Z"
+        },
+        {
+          "id": 1,
+          "text": "Uses std::fs for directory reading and file metadata (mode, size, mtime)",
+          "deleted": false,
+          "createdAt": "2025-12-16T09:33:40.843Z"
+        },
+        {
+          "id": 2,
+          "text": "Output format: permissions size mtime name (e.g., drwxr-xr-x 4096 2025-01-15 10:30 src/)",
+          "deleted": false,
+          "createdAt": "2025-12-16T09:33:43.214Z"
+        }
+      ],
+      "nextNoteId": 3,
+      "attachments": [
+        "spec/attachments/CORE-010/ast-research-glob-tool-pattern.md"
+      ],
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2025-12-16T09:41:07.764Z"
     }
   },
   "states": {
     "backlog": [
-      "CLI-016"
+      "CLI-016",
+      "REFAC-011",
+      "CLI-024"
     ],
     "specifying": [],
     "testing": [],
     "implementing": [
       "CLI-010",
-      "CLI-021"
+      "CLI-021",
+      "REFAC-010"
     ],
     "validating": [],
     "done": [
+      "CORE-010",
+      "CORE-009",
       "CTX-002",
       "CORE-008",
       "REFAC-009",
@@ -6474,11 +6784,11 @@
     "blocked": []
   },
   "prefixCounters": {
-    "CORE": 8,
+    "CORE": 10,
     "PROV": 5,
     "AGENT": 1,
     "CTX": 2,
-    "REFAC": 9,
-    "CLI": 23
+    "REFAC": 11,
+    "CLI": 24
   }
 }

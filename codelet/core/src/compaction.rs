@@ -100,9 +100,8 @@ impl ToolCall {
     /// Extract just the filename from file_path
     /// Matches TypeScript: path.split('/').pop() || path
     pub fn filename(&self) -> Option<String> {
-        self.file_path().map(|path| {
-            path.split('/').next_back().unwrap_or(&path).to_string()
-        })
+        self.file_path()
+            .map(|path| path.split('/').next_back().unwrap_or(&path).to_string())
     }
 }
 
