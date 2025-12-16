@@ -34,8 +34,7 @@ pub fn require_file_exists(path: &Path, file_path: &str) -> Result<(), ToolOutpu
 ///
 /// Returns the file contents on success, or a ToolOutput error on failure.
 pub fn read_file_contents(path: &Path) -> Result<String, ToolOutput> {
-    std::fs::read_to_string(path)
-        .map_err(|e| ToolOutput::error(format!("Error reading file: {e}")))
+    std::fs::read_to_string(path).map_err(|e| ToolOutput::error(format!("Error reading file: {e}")))
 }
 
 #[cfg(test)]

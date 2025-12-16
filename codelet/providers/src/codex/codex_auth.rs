@@ -6,7 +6,7 @@
 use anyhow::{anyhow, Result};
 use serde::{Deserialize, Serialize};
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 /// OAuth constants from Codex CLI
 const CODEX_ISSUER: &str = "https://auth.openai.com";
@@ -70,12 +70,12 @@ pub fn get_auth_path() -> PathBuf {
 /// Compute the keyring store key from codex home path
 /// Format: cli|{first 16 chars of sha256 hash}
 #[cfg(target_os = "macos")]
-fn compute_store_key(codex_home: &PathBuf) -> String {
+fn compute_store_key(codex_home: &Path) -> String {
     use sha2::{Digest, Sha256};
 
     let canonical_path = codex_home
         .canonicalize()
-        .unwrap_or_else(|_| codex_home.clone());
+        .unwrap_or_else(|_| codex_home.to_path_buf());
     let mut hasher = Sha256::new();
     hasher.update(canonical_path.to_string_lossy().as_bytes());
     let hash = format!("{:x}", hasher.finalize());
