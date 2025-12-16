@@ -770,10 +770,14 @@ where
         // Check if compaction should trigger
         // CLI-015: Use model-specific context window instead of hardcoded value
         // CLI-020: Apply autocompact buffer to leave headroom after compaction
+        // FIX: Use message estimation instead of rig's aggregated_usage, because rig
+        // accumulates tokens across all tool call iterations in a multi-turn agent call.
+        // For compaction, we need the CURRENT context size, not accumulated API usage.
         use crate::compaction_threshold::calculate_compaction_threshold;
+        use crate::interactive_helpers::estimate_message_tokens;
         let context_window = session.provider_manager().context_window() as u64;
         let threshold = calculate_compaction_threshold(context_window);
-        let effective = session.token_tracker.effective_tokens();
+        let effective = estimate_message_tokens(&session.messages);
 
         if effective > threshold {
             // CLI-022: Capture compaction.triggered event
