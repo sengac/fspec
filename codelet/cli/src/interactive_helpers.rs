@@ -6,6 +6,7 @@ use codelet_core::compaction::{CompactionMetrics, ContextCompactor, Conversation
 use rig::message::{Message, UserContent};
 use rig::OneOrMany;
 use std::time::SystemTime;
+use tracing::warn;
 
 /// Approximate bytes per token for estimation (matches codelet's APPROX_BYTES_PER_TOKEN)
 const APPROX_BYTES_PER_TOKEN: usize = 4;
@@ -13,9 +14,9 @@ const APPROX_BYTES_PER_TOKEN: usize = 4;
 /// Estimate token count from text length
 ///
 /// Used when exact token counts aren't available.
-/// Based on codelet's estimateTokens function.
+/// Matches TypeScript: Math.ceil(text.length / APPROX_BYTES_PER_TOKEN)
 fn estimate_tokens(text: &str) -> u64 {
-    (text.len() / APPROX_BYTES_PER_TOKEN) as u64
+    text.len().div_ceil(APPROX_BYTES_PER_TOKEN) as u64
 }
 
 /// Convert messages to conversation turns using lazy approach (following TypeScript implementation)
@@ -81,7 +82,7 @@ fn extract_message_text(message: &Message) -> String {
             // Check if single text item (equivalent to TypeScript string content)
             if content.rest().is_empty() {
                 if let UserContent::Text(t) = content.first() {
-                    return t.text.clone();
+                    return t.text;
                 }
             }
             // Multiple items or non-text: serialize as JSON (like TypeScript JSON.stringify)
@@ -93,7 +94,7 @@ fn extract_message_text(message: &Message) -> String {
             // Check if single text item (equivalent to TypeScript string content)
             if content.rest().is_empty() {
                 if let AssistantContent::Text(t) = content.first() {
-                    return t.text.clone();
+                    return t.text;
                 }
             }
             // Multiple items or non-text: serialize as JSON (like TypeScript JSON.stringify)
@@ -164,30 +165,13 @@ pub async fn execute_compaction(session: &mut Session) -> Result<CompactionMetri
     let compactor = ContextCompactor::new();
     let result = compactor.compact(&turns, budget, llm_prompt).await?;
 
-    // Step 4: Preserve system messages (rig Message doesn't have System variant, only in Anthropic)
-    // For now, we'll just preserve the first message if it looks like a system message
-    let system_messages: Vec<Message> = Vec::new(); // No System variant in rig
-
     // Step 5: Reconstruct messages array
+    // Order matches TypeScript: [system] + [kept turns] + [summary] + [continuation]
     session.messages.clear();
 
-    // Add system messages first
-    session.messages.extend(system_messages);
+    // Note: rig Message doesn't have System variant - system messages handled separately by provider
 
-    // Add summary as user message
-    session.messages.push(Message::User {
-        content: OneOrMany::one(UserContent::text(&result.summary)),
-    });
-
-    // Add continuation message
-    session.messages.push(Message::User {
-        content: OneOrMany::one(UserContent::text(
-            "[Previous conversation has been summarized above. Continue from here.]",
-        )),
-    });
-
-    // Add kept turn messages (unconditionally, matching TypeScript compaction.ts:143-162)
-    // Content is never empty because extract_message_text() serializes non-text as JSON
+    // Add kept turn messages FIRST (matching TypeScript order)
     for turn in &result.kept_turns {
         // Add user message
         session.messages.push(Message::User {
@@ -204,15 +188,41 @@ pub async fn execute_compaction(session: &mut Session) -> Result<CompactionMetri
         });
     }
 
+    // Add summary as user message (after kept turns, matching TypeScript)
+    session.messages.push(Message::User {
+        content: OneOrMany::one(UserContent::text(&result.summary)),
+    });
+
+    // Add continuation message (last, matching TypeScript)
+    session.messages.push(Message::User {
+        content: OneOrMany::one(UserContent::text(
+            "This session is being continued from a previous conversation that ran out of context.",
+        )),
+    });
+
     // Step 6: Update session.turns to only contain kept turns
     session.turns = result.kept_turns.clone();
 
-    // Step 7: Recalculate token tracker
-    // Reset token counts and set to compacted value
-    session.token_tracker.input_tokens = result.metrics.compacted_tokens;
+    // Step 7: Recalculate token tracker from ACTUAL messages (matches TypeScript)
+    // TypeScript: newTotalTokens = messages.reduce(calculateMessageTokens, 0)
+    let new_total_tokens: u64 = session
+        .messages
+        .iter()
+        .map(|msg| {
+            let text = extract_message_text(msg);
+            estimate_tokens(&text)
+        })
+        .sum();
+
+    session.token_tracker.input_tokens = new_total_tokens;
     session.token_tracker.output_tokens = 0;
-    session.token_tracker.cache_read_input_tokens = None;
-    session.token_tracker.cache_creation_input_tokens = None;
+    // Keep cache metrics (TypeScript does ...tokenTracker spread which preserves them)
+    // But since cache was just cleared, they'll be updated on next API call anyway
+
+    // Log warnings if any (matches TypeScript behavior - uses logger, not console)
+    for warning in &result.warnings {
+        warn!("{}", warning);
+    }
 
     Ok(result.metrics)
 }
