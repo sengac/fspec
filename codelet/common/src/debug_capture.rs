@@ -523,7 +523,9 @@ cat {} | head -50
             ),
             "session.end" => format!(
                 "Duration: {}ms",
-                data.get("duration").and_then(serde_json::Value::as_u64).unwrap_or(0)
+                data.get("duration")
+                    .and_then(serde_json::Value::as_u64)
+                    .unwrap_or(0)
             ),
             "api.request" => format!(
                 "{} request",
@@ -533,7 +535,9 @@ cat {} | head -50
             ),
             "api.response.end" => format!(
                 "Duration: {}ms",
-                data.get("duration").and_then(serde_json::Value::as_u64).unwrap_or(0)
+                data.get("duration")
+                    .and_then(serde_json::Value::as_u64)
+                    .unwrap_or(0)
             ),
             "tool.call" => format!(
                 "Tool: {}",
@@ -546,7 +550,9 @@ cat {} | head -50
                 data.get("toolName")
                     .and_then(|v| v.as_str())
                     .unwrap_or("unknown"),
-                data.get("duration").and_then(serde_json::Value::as_u64).unwrap_or(0)
+                data.get("duration")
+                    .and_then(serde_json::Value::as_u64)
+                    .unwrap_or(0)
             ),
             "log.entry" => {
                 let level = data.get("level").and_then(|v| v.as_str()).unwrap_or("info");

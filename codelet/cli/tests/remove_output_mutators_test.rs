@@ -52,8 +52,7 @@ fn test_output_mutator_source_files_are_removed() {
 
     // @step Then codelet/cli/src/lib.rs should not contain 'pub mod diff' or 'pub mod highlight'
     let lib_path = root.join("cli/src/lib.rs");
-    let lib_content = fs::read_to_string(&lib_path)
-        .expect("Should be able to read lib.rs");
+    let lib_content = fs::read_to_string(&lib_path).expect("Should be able to read lib.rs");
     assert!(
         !lib_content.contains("pub mod diff"),
         "lib.rs should not contain 'pub mod diff'"
@@ -80,8 +79,8 @@ fn test_interactive_mode_without_colored_formatting() {
     // @step Then the tool result should display without ANSI color codes
     // @step Then the tool result should display without diff formatting prefixes
     let interactive_path = root.join("cli/src/interactive.rs");
-    let interactive_content = fs::read_to_string(&interactive_path)
-        .expect("Should be able to read interactive.rs");
+    let interactive_content =
+        fs::read_to_string(&interactive_path).expect("Should be able to read interactive.rs");
 
     // Verify imports are removed
     assert!(
@@ -120,8 +119,7 @@ fn test_edit_tool_simplified_output() {
     // @step Then the output should be 'Edited file: path (replaced old_string with new_string)'
     // @step Then the output should not contain diff prefixes like '+' or '-'
     let edit_path = root.join("tools/src/edit.rs");
-    let edit_content = fs::read_to_string(&edit_path)
-        .expect("Should be able to read edit.rs");
+    let edit_content = fs::read_to_string(&edit_path).expect("Should be able to read edit.rs");
 
     // Verify diff format is not used - check for the specific pattern
     assert!(
@@ -152,8 +150,7 @@ fn test_write_tool_simplified_output() {
     // @step Then the output should be 'Wrote file: path (10 lines)'
     // @step Then the output should not list each line with '+' prefix
     let write_path = root.join("tools/src/write.rs");
-    let write_content = fs::read_to_string(&write_path)
-        .expect("Should be able to read write.rs");
+    let write_content = fs::read_to_string(&write_path).expect("Should be able to read write.rs");
 
     // Verify diff format is not used - lines with '+' prefix
     assert!(
@@ -199,8 +196,8 @@ fn test_tree_sitter_dependencies_removed() {
 
     // @step Then codelet/cli/Cargo.toml should not contain 'tree-sitter-highlight'
     let cli_cargo_path = root.join("cli/Cargo.toml");
-    let cli_cargo = fs::read_to_string(&cli_cargo_path)
-        .expect("Should be able to read cli Cargo.toml");
+    let cli_cargo =
+        fs::read_to_string(&cli_cargo_path).expect("Should be able to read cli Cargo.toml");
     assert!(
         !cli_cargo.contains("tree-sitter-highlight"),
         "CLI Cargo.toml should not contain tree-sitter-highlight"

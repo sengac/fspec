@@ -248,41 +248,6 @@ async fn run_agent_with_interruption(
     }
 }
 
-/// Commit complete lines from buffer (plain text output)
-fn commit_complete_lines(buffer: &str, committed_line_count: &mut usize) -> Vec<String> {
-    // Find last newline to get complete lines only
-    let last_newline_idx = buffer.rfind('\n');
-    let source = if let Some(idx) = last_newline_idx {
-        &buffer[..=idx]
-    } else {
-        return Vec::new();
-    };
-
-    // Split into lines and return new ones
-    let lines: Vec<String> = source.lines().map(std::string::ToString::to_string).collect();
-    let complete_line_count = lines.len();
-
-    if *committed_line_count >= complete_line_count {
-        return Vec::new();
-    }
-
-    let new_lines = lines[*committed_line_count..complete_line_count].to_vec();
-    *committed_line_count = complete_line_count;
-    new_lines
-}
-
-/// Finalize and drain remaining text (plain text output)
-fn finalize_and_drain(buffer: &str, committed_line_count: &mut usize) -> Vec<String> {
-    // Return all remaining lines
-    let lines: Vec<String> = buffer.lines().map(std::string::ToString::to_string).collect();
-
-    if *committed_line_count >= lines.len() {
-        return Vec::new();
-    }
-
-    lines[*committed_line_count..].to_vec()
-}
-
 /// Add assistant text message to message history (CLI-008)
 /// Extracted helper to eliminate code duplication
 fn add_assistant_text_message(messages: &mut Vec<rig::message::Message>, text: String) {
@@ -320,9 +285,7 @@ fn add_assistant_tool_calls_message(
 /// Handle text chunk from agent stream
 fn handle_text_chunk(
     text: &str,
-    text_buffer: &mut String,
     assistant_text: &mut String,
-    committed_line_count: &mut usize,
     request_id: Option<&str>,
 ) -> Result<()> {
     // CLI-022: Capture api.response.chunk event
@@ -342,27 +305,14 @@ fn handle_text_chunk(
         }
     }
 
-    // Accumulate text (like codex MarkdownStreamCollector.push_delta)
-    text_buffer.push_str(text);
-
-    // CRITICAL: Also accumulate for message history (CLI-008)
+    // CRITICAL: Accumulate for message history (CLI-008)
     assistant_text.push_str(text);
 
-    // If chunk contains newline, commit complete lines (like codex)
-    if text.contains('\n') {
-        debug!("Text buffer before commit: {:?}", text_buffer);
-        let new_lines = commit_complete_lines(text_buffer, committed_line_count);
-        debug!("Committed {} new lines", new_lines.len());
-        for (i, line) in new_lines.iter().enumerate() {
-            debug!("Line {}: {:?}", i, line);
-        }
-
-        // Print new lines
-        for line in &new_lines {
-            print!("{line}\r\n");
-        }
-        std::io::stdout().flush()?;
-    }
+    // Print text immediately for real-time streaming
+    // Replace \n with \r\n for proper terminal display in raw mode
+    let display_text = text.replace('\n', "\r\n");
+    print!("{display_text}");
+    std::io::stdout().flush()?;
 
     Ok(())
 }
@@ -371,23 +321,11 @@ fn handle_text_chunk(
 fn handle_tool_call(
     tool_call: &rig::message::ToolCall,
     messages: &mut Vec<rig::message::Message>,
-    text_buffer: &mut String,
     assistant_text: &mut String,
     tool_calls_buffer: &mut Vec<rig::message::AssistantContent>,
     last_tool_name: &mut Option<String>,
-    committed_line_count: &mut usize,
 ) -> Result<()> {
     use rig::message::AssistantContent;
-
-    // Finalize any remaining text before tool call (like codex finalize_and_drain)
-    if !text_buffer.is_empty() {
-        let remaining_lines = finalize_and_drain(text_buffer, committed_line_count);
-        for line in remaining_lines {
-            print!("{line}\r\n");
-        }
-        text_buffer.clear();
-        *committed_line_count = 0;
-    }
 
     // CRITICAL: Add assistant text to messages if we have any (CLI-008)
     if !assistant_text.is_empty() {
@@ -544,9 +482,7 @@ fn handle_tool_result(
     let indented_lines: Vec<String> = preview.lines().map(|line| format!("  {line}")).collect();
     let formatted_preview = indented_lines.join("\r\n");
 
-    print!(
-        "\r\n[Tool result preview]\r\n-------\r\n{formatted_preview}\r\n-------\r\n"
-    );
+    print!("\r\n[Tool result preview]\r\n-------\r\n{formatted_preview}\r\n-------\r\n");
     std::io::stdout().flush()?;
 
     Ok(())
@@ -554,20 +490,9 @@ fn handle_tool_result(
 
 /// Handle final response from agent stream
 fn handle_final_response(
-    text_buffer: &str,
     assistant_text: &str,
     messages: &mut Vec<rig::message::Message>,
-    committed_line_count: &mut usize,
 ) -> Result<()> {
-    // Finalize any remaining text (like codex finalize_and_drain)
-    if !text_buffer.is_empty() {
-        let remaining_lines = finalize_and_drain(text_buffer, committed_line_count);
-        for line in remaining_lines {
-            print!("{line}\r\n");
-        }
-        std::io::stdout().flush()?;
-    }
-
     // CRITICAL: Add final assistant text to message history (CLI-008)
     if !assistant_text.is_empty() {
         add_assistant_text_message(messages, assistant_text.to_owned());
@@ -650,10 +575,6 @@ where
     let status = StatusDisplay::new();
     let mut status_interval = interval(Duration::from_secs(1));
 
-    // Line-gated markdown streaming (like codex MarkdownStreamCollector)
-    let mut text_buffer = String::new();
-    let mut committed_line_count = 0;
-
     // Track assistant response content for adding to messages (CLI-008)
     let mut assistant_text = String::new();
     let mut tool_calls_buffer: Vec<rig::message::AssistantContent> = Vec::new();
@@ -687,9 +608,7 @@ where
                     Some(Ok(MultiTurnStreamItem::StreamAssistantItem(StreamedAssistantContent::Text(text)))) => {
                         handle_text_chunk(
                             &text.text,
-                            &mut text_buffer,
                             &mut assistant_text,
-                            &mut committed_line_count,
                             Some(&request_id),
                         )?;
                     }
@@ -697,11 +616,9 @@ where
                         handle_tool_call(
                             &tool_call,
                             &mut session.messages,
-                            &mut text_buffer,
                             &mut assistant_text,
                             &mut tool_calls_buffer,
                             &mut last_tool_name,
-                            &mut committed_line_count,
                         )?;
                     }
                     Some(Ok(MultiTurnStreamItem::StreamUserItem(StreamedUserContent::ToolResult(tool_result)))) => {
@@ -778,10 +695,8 @@ where
                         }
 
                         handle_final_response(
-                            &text_buffer,
                             &assistant_text,
                             &mut session.messages,
-                            &mut committed_line_count,
                         )?;
                         // Stream complete
                         break;

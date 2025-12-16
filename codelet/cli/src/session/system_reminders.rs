@@ -77,9 +77,7 @@ const TYPE_MARKER_SUFFIX: &str = " -->";
 /// # Returns
 /// Text wrapped in system-reminder tags
 pub fn create_system_reminder(text: &str) -> String {
-    format!(
-        "{SYSTEM_REMINDER_TAG}\n{text}\n{SYSTEM_REMINDER_TAG_END}"
-    )
+    format!("{SYSTEM_REMINDER_TAG}\n{text}\n{SYSTEM_REMINDER_TAG_END}")
 }
 
 /// Creates a supersession marker for replacement reminders.

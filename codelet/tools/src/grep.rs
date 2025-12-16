@@ -301,7 +301,10 @@ impl Tool for GrepTool {
             .map(OutputMode::from_str)
             .unwrap_or(OutputMode::FilesWithMatches);
 
-        let case_insensitive = args.get("-i").and_then(serde_json::Value::as_bool).unwrap_or(false);
+        let case_insensitive = args
+            .get("-i")
+            .and_then(serde_json::Value::as_bool)
+            .unwrap_or(false);
 
         let multiline = args
             .get("multiline")
