@@ -10,6 +10,7 @@ use super::{
     claude, codex, gemini, openai, ClaudeProvider, CodexProvider, GeminiProvider, OpenAIProvider,
 };
 use anyhow::{anyhow, Result};
+use std::str::FromStr;
 
 /// Provider type enum
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -20,9 +21,10 @@ pub enum ProviderType {
     Gemini,
 }
 
-impl ProviderType {
-    /// Parse provider name from string
-    pub fn from_str(name: &str) -> Result<Self> {
+impl FromStr for ProviderType {
+    type Err = anyhow::Error;
+
+    fn from_str(name: &str) -> Result<Self> {
         match name.to_lowercase().as_str() {
             "claude" => Ok(ProviderType::Claude),
             "openai" => Ok(ProviderType::OpenAI),
@@ -31,7 +33,9 @@ impl ProviderType {
             _ => Err(anyhow!("Unknown provider: {name}")),
         }
     }
+}
 
+impl ProviderType {
     /// Get provider name as string
     pub fn as_str(self) -> &'static str {
         match self {
@@ -46,7 +50,6 @@ impl ProviderType {
 /// Provider Manager for dynamic provider selection
 #[derive(Debug)]
 pub struct ProviderManager {
-    #[allow(dead_code)]
     credentials: ProviderCredentials,
     current_provider: ProviderType,
 }

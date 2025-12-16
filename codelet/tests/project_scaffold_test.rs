@@ -15,7 +15,7 @@ fn test_project_compiles_with_all_bounded_context_modules() {
     use codelet::tools::ToolRegistry;
 
     // Verify types are accessible
-    let _ = ProviderType::Anthropic;
+    let _ = ProviderType::Claude;
     let _ = ToolRegistry::new();
     let _ = TokenTracker {
         input_tokens: 0,
@@ -93,9 +93,9 @@ fn test_provider_management_module_exports() {
     }
 
     // @step And the ProviderType enum should be available
-    let _anthropic = ProviderType::Anthropic;
+    let _claude = ProviderType::Claude;
     let _openai = ProviderType::OpenAI;
-    let _google = ProviderType::Google;
+    let _gemini = ProviderType::Gemini;
 }
 
 /// Scenario: Agent Execution module exports Runner and Message types
