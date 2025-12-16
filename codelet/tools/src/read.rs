@@ -72,16 +72,19 @@ impl rig::tool::Tool for ReadTool {
     }
 
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
-        // Validate absolute path
+        // Validate absolute path (sync - no I/O)
         let path = require_absolute_path(&args.file_path)
             .map_err(|e| ReadError::ValidationError(e.content))?;
 
-        // Check file exists
+        // Check file exists (async)
         require_file_exists(path, &args.file_path)
+            .await
             .map_err(|e| ReadError::ValidationError(e.content))?;
 
-        // Read file content
-        let content = read_file_contents(path).map_err(|e| ReadError::FileError(e.content))?;
+        // Read file content (async)
+        let content = read_file_contents(path)
+            .await
+            .map_err(|e| ReadError::FileError(e.content))?;
 
         let lines: Vec<&str> = content.lines().collect();
         let total_lines = lines.len();

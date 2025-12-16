@@ -2,6 +2,7 @@
 //!
 //! Uses ignore crate for gitignore-aware file walking
 //! and globset for glob pattern matching.
+//! Uses tokio::fs for non-blocking async I/O.
 
 use crate::{
     limits::OutputLimits,
@@ -12,7 +13,6 @@ use ignore::WalkBuilder;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use std::fs;
 use std::path::PathBuf;
 use std::time::SystemTime;
 
@@ -25,9 +25,10 @@ impl GlobTool {
         Self
     }
 
-    /// Get file modification time for sorting
-    fn get_mtime(path: &PathBuf) -> SystemTime {
-        fs::metadata(path)
+    /// Get file modification time for sorting (async, non-blocking)
+    async fn get_mtime(path: &PathBuf) -> SystemTime {
+        tokio::fs::metadata(path)
+            .await
             .and_then(|m| m.modified())
             .unwrap_or(SystemTime::UNIX_EPOCH)
     }
@@ -96,13 +97,20 @@ impl rig::tool::Tool for GlobTool {
         let search_path = args.path.as_deref().unwrap_or(".");
         let path = PathBuf::from(search_path);
 
-        if !path.exists() {
-            return Err(GlobError::PathError(format!(
-                "Path does not exist: {search_path}"
-            )));
+        // Check if path exists (async, non-blocking)
+        match tokio::fs::try_exists(&path).await {
+            Ok(true) => {}
+            Ok(false) => {
+                return Err(GlobError::PathError(format!(
+                    "Path does not exist: {search_path}"
+                )));
+            }
+            Err(e) => {
+                return Err(GlobError::PathError(format!("Error checking path: {e}")));
+            }
         }
 
-        // Collect matching files
+        // Collect matching files (sync walker is fast for directory traversal)
         let mut matches: Vec<PathBuf> = Vec::new();
         for entry in WalkBuilder::new(&path)
             .hidden(false)
@@ -115,15 +123,21 @@ impl rig::tool::Tool for GlobTool {
             }
         }
 
+        // Fetch modification times asynchronously for all files
+        let mut files_with_mtime: Vec<(PathBuf, SystemTime)> = Vec::with_capacity(matches.len());
+        for path in matches {
+            let mtime = Self::get_mtime(&path).await;
+            files_with_mtime.push((path, mtime));
+        }
+
         // Sort by modification time (newest first)
-        matches.sort_by(|a, b| {
-            let a_time = GlobTool::get_mtime(a);
-            let b_time = GlobTool::get_mtime(b);
-            b_time.cmp(&a_time)
-        });
+        files_with_mtime.sort_by(|a, b| b.1.cmp(&a.1));
 
         // Format output
-        let lines: Vec<String> = matches.iter().map(|p| p.display().to_string()).collect();
+        let lines: Vec<String> = files_with_mtime
+            .iter()
+            .map(|(p, _)| p.display().to_string())
+            .collect();
 
         // Process and truncate output
         let output_lines = process_output_lines(&lines.join("\n"));

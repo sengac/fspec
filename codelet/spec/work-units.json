@@ -2,7 +2,7 @@
   "version": "0.7.1",
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-12-16T09:41:07.750Z"
+    "lastUpdated": "2025-12-16T13:07:50.748Z"
   },
   "workUnits": {
     "FOUND-001": {
@@ -6418,9 +6418,9 @@
       "id": "REFAC-010",
       "title": "Remove legacy Tool trait and ToolRegistry - complete rig migration",
       "type": "task",
-      "status": "implementing",
+      "status": "done",
       "createdAt": "2025-12-16T08:52:55.598Z",
-      "updatedAt": "2025-12-16T09:01:16.594Z",
+      "updatedAt": "2025-12-16T13:07:50.760Z",
       "description": "Complete the rig migration by removing the vestigial custom Tool trait, ToolRegistry, and Runner that are no longer used in production. The CLI exclusively uses RigAgent with rig::tool::Tool, making the legacy system dead code maintained only for tests.",
       "children": [],
       "attachments": [
@@ -6434,6 +6434,14 @@
         {
           "state": "implementing",
           "timestamp": "2025-12-16T09:01:16.594Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-16T13:07:01.671Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-16T13:07:50.760Z"
         }
       ],
       "userStory": {
@@ -6524,20 +6532,52 @@
           "createdAt": "2025-12-16T08:59:30.058Z"
         }
       ],
-      "nextExampleId": 6
+      "nextExampleId": 6,
+      "questions": [],
+      "architectureNotes": [],
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-12-16T13:07:50.760Z"
     },
     "REFAC-011": {
       "id": "REFAC-011",
       "title": "Fix blocking I/O in async tool implementations",
       "type": "task",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2025-12-16T08:55:31.194Z",
-      "updatedAt": "2025-12-16T08:56:39.020Z",
+      "updatedAt": "2025-12-16T11:41:11.305Z",
       "description": "Several tool implementations use blocking std::fs operations inside async functions. While not critical for a CLI tool, this can block the async runtime under heavy load. Should migrate to tokio::fs for proper async I/O.",
       "children": [],
       "attachments": [
         "spec/attachments/REFAC-011/async-io-analysis.md"
-      ]
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-12-16T11:34:25.130Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-16T11:34:47.826Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-16T11:40:58.422Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-16T11:41:11.305Z"
+        }
+      ],
+      "rules": [],
+      "examples": [],
+      "questions": [],
+      "architectureNotes": [],
+      "nextRuleId": 0,
+      "nextExampleId": 0,
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-12-16T11:41:11.305Z"
     },
     "CLI-024": {
       "id": "CLI-024",
@@ -6723,18 +6763,18 @@
   "states": {
     "backlog": [
       "CLI-016",
-      "REFAC-011",
       "CLI-024"
     ],
     "specifying": [],
     "testing": [],
     "implementing": [
       "CLI-010",
-      "CLI-021",
-      "REFAC-010"
+      "CLI-021"
     ],
     "validating": [],
     "done": [
+      "REFAC-010",
+      "REFAC-011",
       "CORE-010",
       "CORE-009",
       "CTX-002",
