@@ -61,17 +61,22 @@ impl AstGrepTool {
         }
     }
 
-    /// Search a single file for pattern matches
-    fn search_file(&self, path: &Path, pattern: &str, lang: SupportLang) -> Vec<MatchResult> {
+    /// Search a single file for pattern matches (async, non-blocking file read)
+    /// Returns (matches, was_skipped) - was_skipped is true if file couldn't be read
+    async fn search_file(
+        path: &Path,
+        pattern: &str,
+        lang: SupportLang,
+    ) -> (Vec<MatchResult>, bool) {
         let mut results = Vec::new();
 
-        // Read file content
-        let source = match std::fs::read_to_string(path) {
+        // Read file content (async, non-blocking)
+        let source = match tokio::fs::read_to_string(path).await {
             Ok(content) => content,
-            Err(_) => return results, // Skip files that can't be read
+            Err(_) => return (results, true), // File was skipped due to read error
         };
 
-        // Create AST and search for pattern
+        // Create AST and search for pattern (CPU-bound, but fast enough to not need spawn_blocking)
         let ast_grep = lang.ast_grep(&source);
         let root = ast_grep.root();
         let matches = root.find_all(pattern);
@@ -91,7 +96,7 @@ impl AstGrepTool {
             });
         }
 
-        results
+        (results, false)
     }
 
     /// Internal execute method for rig tool delegation
@@ -157,21 +162,29 @@ impl AstGrepTool {
         // Get valid extensions for this language
         let extensions = Self::get_extensions(lang);
 
-        // Collect all matches
-        let mut all_matches: Vec<MatchResult> = Vec::new();
+        // Collect all file paths to search (sync walker is fast, respects gitignore)
+        let mut files_to_search: Vec<std::path::PathBuf> = Vec::new();
 
         for search_path in &search_paths {
             let path = Path::new(search_path);
-            if !path.exists() {
-                continue;
+
+            // Check if path exists (async)
+            match tokio::fs::try_exists(path).await {
+                Ok(true) => {}
+                Ok(false) | Err(_) => continue,
             }
 
-            if path.is_file() {
-                // Search single file
-                let matches = self.search_file(path, pattern, lang);
-                all_matches.extend(matches);
+            // Check if it's a file or directory (async)
+            let metadata = match tokio::fs::metadata(path).await {
+                Ok(m) => m,
+                Err(_) => continue,
+            };
+
+            if metadata.is_file() {
+                // Single file
+                files_to_search.push(path.to_path_buf());
             } else {
-                // Walk directory
+                // Walk directory (sync walker is optimized for this)
                 let walker = WalkBuilder::new(path)
                     .hidden(false)
                     .git_ignore(true)
@@ -191,15 +204,31 @@ impl AstGrepTool {
                         continue;
                     }
 
-                    let matches = self.search_file(file_path, pattern, lang);
-                    all_matches.extend(matches);
+                    files_to_search.push(file_path.to_path_buf());
                 }
+            }
+        }
+
+        // Search all files (async file reads)
+        let mut all_matches: Vec<MatchResult> = Vec::new();
+        let mut skipped_count: usize = 0;
+        for file_path in &files_to_search {
+            let (matches, was_skipped) = Self::search_file(file_path, pattern, lang).await;
+            all_matches.extend(matches);
+            if was_skipped {
+                skipped_count += 1;
             }
         }
 
         // Format output
         if all_matches.is_empty() {
-            return Ok(ToolOutput::success("No matches found".to_string()));
+            let mut msg = "No matches found".to_string();
+            if skipped_count > 0 {
+                msg.push_str(&format!(
+                    "\n(Note: {skipped_count} files skipped due to read errors)"
+                ));
+            }
+            return Ok(ToolOutput::success(msg));
         }
 
         // Format as file:line:column:text
@@ -229,6 +258,13 @@ impl AstGrepTool {
                 OutputLimits::MAX_OUTPUT_CHARS,
             );
             final_output.push_str(&warning);
+        }
+
+        // Report skipped files if any
+        if skipped_count > 0 {
+            final_output.push_str(&format!(
+                "\n(Note: {skipped_count} files skipped due to read errors)"
+            ));
         }
 
         Ok(ToolOutput {

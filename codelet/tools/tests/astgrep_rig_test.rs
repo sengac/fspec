@@ -26,8 +26,14 @@ async fn test_astgrep_rig_tool_language_parameter() {
 
     assert!(result.is_ok(), "Expected Ok, got error: {:?}", result.err());
     let content = result.unwrap();
-    assert!(!content.contains("language parameter is required"), 
-        "Bug: language parameter was not passed correctly. Got: {}", content);
-    assert!(content.contains("test.rs") || content.contains("hello"),
-        "Expected to find the function. Got: {}", content);
+    assert!(
+        !content.contains("language parameter is required"),
+        "Bug: language parameter was not passed correctly. Got: {}",
+        content
+    );
+    assert!(
+        content.contains("test.rs") || content.contains("hello"),
+        "Expected to find the function. Got: {}",
+        content
+    );
 }

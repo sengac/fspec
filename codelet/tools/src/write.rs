@@ -1,12 +1,12 @@
 //! Write tool implementation
 //!
 //! Writes content to files, creating parent directories as needed.
+//! Uses tokio::fs for non-blocking async I/O.
 
-use super::validation::require_absolute_path;
+use super::validation::{create_parent_dirs, require_absolute_path, write_file_contents};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use std::fs;
 
 /// Write tool for writing file contents
 pub struct WriteTool;
@@ -64,22 +64,19 @@ impl rig::tool::Tool for WriteTool {
     }
 
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
-        // Validate absolute path
+        // Validate absolute path (sync - no I/O)
         let path = require_absolute_path(&args.file_path)
             .map_err(|e| WriteError::ValidationError(e.content))?;
 
-        // Create parent directories if needed
-        if let Some(parent) = path.parent() {
-            if !parent.exists() {
-                fs::create_dir_all(parent).map_err(|e| {
-                    WriteError::FileError(format!("Error creating directories: {e}"))
-                })?;
-            }
-        }
+        // Create parent directories if needed (async)
+        create_parent_dirs(path)
+            .await
+            .map_err(|e| WriteError::FileError(e.content))?;
 
-        // Write file
-        fs::write(path, &args.content)
-            .map_err(|e| WriteError::FileError(format!("Error writing file: {e}")))?;
+        // Write file (async)
+        write_file_contents(path, &args.content)
+            .await
+            .map_err(|e| WriteError::FileError(e.content))?;
 
         Ok(format!("Successfully wrote to {}", args.file_path))
     }

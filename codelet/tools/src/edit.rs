@@ -1,12 +1,14 @@
 //! Edit tool implementation
 //!
 //! Edits files by replacing the first occurrence of a string.
+//! Uses tokio::fs for non-blocking async I/O.
 
-use super::validation::{read_file_contents, require_absolute_path, require_file_exists};
+use super::validation::{
+    read_file_contents, require_absolute_path, require_file_exists, write_file_contents,
+};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use std::fs;
 
 /// Edit tool for modifying file contents
 pub struct EditTool;
@@ -68,16 +70,19 @@ impl rig::tool::Tool for EditTool {
     }
 
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
-        // Validate absolute path
+        // Validate absolute path (sync - no I/O)
         let path = require_absolute_path(&args.file_path)
             .map_err(|e| EditError::ValidationError(e.content))?;
 
-        // Check file exists
+        // Check file exists (async)
         require_file_exists(path, &args.file_path)
+            .await
             .map_err(|e| EditError::ValidationError(e.content))?;
 
-        // Read file content
-        let content = read_file_contents(path).map_err(|e| EditError::FileError(e.content))?;
+        // Read file content (async)
+        let content = read_file_contents(path)
+            .await
+            .map_err(|e| EditError::FileError(e.content))?;
 
         // Check if old_string exists
         if !content.contains(&args.old_string) {
@@ -89,9 +94,10 @@ impl rig::tool::Tool for EditTool {
         // Replace first occurrence only
         let new_content = content.replacen(&args.old_string, &args.new_string, 1);
 
-        // Write back
-        fs::write(path, &new_content)
-            .map_err(|e| EditError::FileError(format!("Error writing file: {e}")))?;
+        // Write back (async)
+        write_file_contents(path, &new_content)
+            .await
+            .map_err(|e| EditError::FileError(e.content))?;
 
         Ok(format!("Successfully edited {}", args.file_path))
     }

@@ -2,6 +2,11 @@
 //!
 //! Uses grep-regex and grep-searcher for content search,
 //! and ignore crate for gitignore-aware file walking.
+//!
+//! NOTE: The grep-searcher crate uses blocking file I/O internally.
+//! This is a known limitation - the crate doesn't provide async variants.
+//! The blocking operations are fast enough for typical use cases and
+//! acceptable given the search performance benefits of ripgrep's implementation.
 
 use crate::{
     limits::OutputLimits,

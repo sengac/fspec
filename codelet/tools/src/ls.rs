@@ -1,6 +1,7 @@
 //! LS tool implementation
 //!
 //! Lists directory contents with file metadata (permissions, size, modification time).
+//! Uses tokio::fs for non-blocking async I/O.
 
 use crate::{
     limits::OutputLimits,
@@ -9,7 +10,6 @@ use crate::{
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use std::fs;
 use std::os::unix::fs::PermissionsExt;
 use std::path::Path;
 
@@ -136,27 +136,47 @@ impl rig::tool::Tool for LsTool {
         let dir_path = args.path.as_deref().unwrap_or(".");
         let path = Path::new(dir_path);
 
-        // Check if path exists
-        if !path.exists() {
-            return Err(LsError::NotFound(dir_path.to_string()));
+        // Check if path exists (async)
+        match tokio::fs::try_exists(path).await {
+            Ok(true) => {}
+            Ok(false) => return Err(LsError::NotFound(dir_path.to_string())),
+            Err(e) => return Err(LsError::IoError(e.to_string())),
         }
 
-        // Check if path is a directory
-        if !path.is_dir() {
+        // Check if path is a directory (async)
+        let metadata = tokio::fs::metadata(path)
+            .await
+            .map_err(|e| LsError::IoError(e.to_string()))?;
+        if !metadata.is_dir() {
             return Err(LsError::NotDirectory(dir_path.to_string()));
         }
 
-        // Read directory entries
-        let entries = fs::read_dir(path).map_err(|e| LsError::IoError(e.to_string()))?;
+        // Read directory entries (async)
+        let mut read_dir = tokio::fs::read_dir(path)
+            .await
+            .map_err(|e| LsError::IoError(e.to_string()))?;
 
         // Collect entries with metadata (or None for permission errors)
-        let mut dirs: Vec<(String, Option<fs::Metadata>)> = Vec::new();
-        let mut files: Vec<(String, Option<fs::Metadata>)> = Vec::new();
+        let mut dirs: Vec<(String, Option<std::fs::Metadata>)> = Vec::new();
+        let mut files: Vec<(String, Option<std::fs::Metadata>)> = Vec::new();
+        let mut skipped_count: usize = 0;
 
-        for entry in entries.flatten() {
+        loop {
+            let entry = match read_dir.next_entry().await {
+                Ok(Some(e)) => e,
+                Ok(None) => break, // No more entries
+                Err(_) => {
+                    skipped_count += 1;
+                    continue; // Skip entries we can't read
+                }
+            };
             let name = entry.file_name().to_string_lossy().to_string();
-            let is_dir = entry.file_type().map(|ft| ft.is_dir()).unwrap_or(false);
-            let metadata = entry.metadata().ok();
+            let is_dir = entry
+                .file_type()
+                .await
+                .map(|ft| ft.is_dir())
+                .unwrap_or(false);
+            let metadata = entry.metadata().await.ok();
 
             if is_dir {
                 dirs.push((name, metadata));
@@ -223,6 +243,13 @@ impl rig::tool::Tool for LsTool {
                 OutputLimits::MAX_OUTPUT_CHARS,
             );
             final_output.push_str(&warning);
+        }
+
+        // Report skipped entries if any
+        if skipped_count > 0 {
+            final_output.push_str(&format!(
+                "\n(Note: {skipped_count} entries skipped due to permission errors)"
+            ));
         }
 
         Ok(final_output)
