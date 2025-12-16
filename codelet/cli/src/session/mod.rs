@@ -42,9 +42,6 @@ pub struct Session {
     /// Token tracker for cache-aware compaction (CLI-009)
     /// Tracks cumulative token usage across conversation
     pub token_tracker: TokenTracker,
-
-    /// Snapshot of messages before interruption (for 'continue' command)
-    messages_before_interruption: Option<Vec<rig::message::Message>>,
 }
 
 impl Session {
@@ -72,7 +69,6 @@ impl Session {
                 cache_read_input_tokens: Some(0),
                 cache_creation_input_tokens: Some(0),
             },
-            messages_before_interruption: None,
         })
     }
 
@@ -100,7 +96,6 @@ impl Session {
             cache_read_input_tokens: Some(0),
             cache_creation_input_tokens: Some(0),
         };
-        self.messages_before_interruption = None;
 
         // Switch provider
         self.provider_manager.switch_provider(provider_name)?;
@@ -116,18 +111,6 @@ impl Session {
     /// Get mutable provider manager reference
     pub fn provider_manager_mut(&mut self) -> &mut ProviderManager {
         &mut self.provider_manager
-    }
-
-    /// Snapshot messages before interruption (for 'continue' command support)
-    pub fn snapshot_before_interruption(&mut self) {
-        self.messages_before_interruption = Some(self.messages.clone());
-    }
-
-    /// Restore messages from interruption snapshot
-    pub fn restore_from_interruption(&mut self) {
-        if let Some(snapshot) = self.messages_before_interruption.take() {
-            self.messages = snapshot;
-        }
     }
 
     /// Add system-reminder to messages array
