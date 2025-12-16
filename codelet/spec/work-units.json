@@ -6579,19 +6579,6 @@
       "nextNoteId": 0,
       "updated": "2025-12-16T11:41:11.305Z"
     },
-    "CLI-024": {
-      "id": "CLI-024",
-      "title": "Complete REPL interactive features - ESC interruption and /continue command",
-      "type": "task",
-      "status": "backlog",
-      "createdAt": "2025-12-16T08:55:34.533Z",
-      "updatedAt": "2025-12-16T08:56:39.538Z",
-      "description": "The REPL has partial implementations for ESC key interruption and workflow continuation. The UI shows 'ESC to interrupt' and is_interrupted AtomicBool exists, but the action wiring may be incomplete. The /continue command for resuming interrupted work also needs verification and completion.",
-      "children": [],
-      "attachments": [
-        "spec/attachments/CLI-024/repl-interactive-features-analysis.md"
-      ]
-    },
     "CORE-009": {
       "id": "CORE-009",
       "title": "Enhance tool descriptions with detailed usage instructions",
@@ -6762,8 +6749,7 @@
   },
   "states": {
     "backlog": [
-      "CLI-016",
-      "CLI-024"
+      "CLI-016"
     ],
     "specifying": [],
     "testing": [],
