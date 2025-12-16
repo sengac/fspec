@@ -193,15 +193,23 @@ pub async fn execute_compaction(session: &mut Session) -> Result<CompactionMetri
         }
     };
 
-    // Step 2: Create compactor and run compaction
-    let compactor = ContextCompactor::new();
-    let result = compactor.compact(&session.turns, llm_prompt).await?;
+    // Step 2: Calculate summarization budget
+    // CLI-020: Matches TypeScript implementation in compaction.ts:calculateSummarizationBudget()
+    use crate::compaction_threshold::calculate_summarization_budget;
+    let context_window = provider_manager.context_window() as u64;
+    let budget = calculate_summarization_budget(context_window);
 
-    // Step 3: Preserve system messages (rig Message doesn't have System variant, only in Anthropic)
+    // Step 3: Create compactor and run compaction
+    let compactor = ContextCompactor::new();
+    let result = compactor
+        .compact(&session.turns, budget, llm_prompt)
+        .await?;
+
+    // Step 4: Preserve system messages (rig Message doesn't have System variant, only in Anthropic)
     // For now, we'll just preserve the first message if it looks like a system message
     let system_messages: Vec<Message> = Vec::new(); // No System variant in rig
 
-    // Step 4: Reconstruct messages array
+    // Step 5: Reconstruct messages array
     session.messages.clear();
 
     // Add system messages first
@@ -236,10 +244,10 @@ pub async fn execute_compaction(session: &mut Session) -> Result<CompactionMetri
         });
     }
 
-    // Step 5: Update session.turns to only contain kept turns
+    // Step 6: Update session.turns to only contain kept turns
     session.turns = result.kept_turns.clone();
 
-    // Step 6: Recalculate token tracker
+    // Step 7: Recalculate token tracker
     // Reset token counts and set to compacted value
     session.token_tracker.input_tokens = result.metrics.compacted_tokens;
     session.token_tracker.output_tokens = 0;

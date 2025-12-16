@@ -1,0 +1,53 @@
+{
+  "matches": [
+    {
+      "type": "function_item",
+      "name": "calculate_compaction_threshold",
+      "line": 61,
+      "column": 0,
+      "text": "pub fn calculate_compaction_threshold(context_window: u64) -> u64 {\n    let summarization_budget = context_window.saturating_sub(AUTOCOMPACT_BUFFER);\n    (summarization_budget as f64 * COMPACTION_THRESHOLD_RATIO) as u64\n}"
+    },
+    {
+      "type": "function_item",
+      "name": "test_constants_defined",
+      "line": 71,
+      "column": 4,
+      "text": "fn test_constants_defined() {\n        assert_eq!(AUTOCOMPACT_BUFFER, 50_000);\n        assert!((COMPACTION_THRESHOLD_RATIO - 0.9).abs() < f64::EPSILON);\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_calculate_threshold_claude",
+      "line": 77,
+      "column": 4,
+      "text": "fn test_calculate_threshold_claude() {\n        // Claude: 200k context\n        let threshold = calculate_compaction_threshold(200_000);\n        assert_eq!(threshold, 135_000);\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_calculate_threshold_openai",
+      "line": 84,
+      "column": 4,
+      "text": "fn test_calculate_threshold_openai() {\n        // OpenAI: 128k context\n        let threshold = calculate_compaction_threshold(128_000);\n        assert_eq!(threshold, 70_200);\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_calculate_threshold_small_context",
+      "line": 91,
+      "column": 4,
+      "text": "fn test_calculate_threshold_small_context() {\n        // Small context: 60k\n        let threshold = calculate_compaction_threshold(60_000);\n        assert_eq!(threshold, 9_000); // (60k - 50k) * 0.9\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_calculate_threshold_equal_to_buffer",
+      "line": 98,
+      "column": 4,
+      "text": "fn test_calculate_threshold_equal_to_buffer() {\n        // Context equals buffer: 50k\n        let threshold = calculate_compaction_threshold(50_000);\n        assert_eq!(threshold, 0);\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_calculate_threshold_smaller_than_buffer",
+      "line": 105,
+      "column": 4,
+      "text": "fn test_calculate_threshold_smaller_than_buffer() {\n        // Context smaller than buffer: 30k\n        let threshold = calculate_compaction_threshold(30_000);\n        assert_eq!(threshold, 0); // saturating_sub prevents underflow\n    }"
+    }
+  ]
+}

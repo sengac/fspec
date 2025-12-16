@@ -2,7 +2,7 @@
   "version": "0.7.1",
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-12-15T01:18:18.128Z"
+    "lastUpdated": "2025-12-16T04:58:21.847Z"
   },
   "workUnits": {
     "FOUND-001": {
@@ -6193,6 +6193,116 @@
       "questions": [],
       "nextQuestionId": 0,
       "updated": "2025-12-15T01:18:18.136Z"
+    },
+    "CORE-008": {
+      "id": "CORE-008",
+      "title": "Fix Compaction Threshold Calculation to Match TypeScript Original",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-12-16T01:39:21.115Z",
+      "updatedAt": "2025-12-16T04:58:21.859Z",
+      "description": "The Rust port calculates compaction threshold as (contextWindow - AUTOCOMPACT_BUFFER) * 0.9, while TypeScript original uses contextWindow * 0.9. This causes Rust to trigger compaction 45,000 tokens earlier (135k vs 180k for 200k window). Need to align implementations to ensure identical behavior.",
+      "children": [],
+      "userStory": {
+        "role": "developer porting codelet to Rust",
+        "action": "ensure compaction triggers at the same token threshold as TypeScript original",
+        "benefit": "both implementations have identical behavior and avoid confusing differences"
+      },
+      "attachments": [
+        "spec/attachments/CORE-008/compaction-system-comparison-report.md",
+        "spec/attachments/CORE-008/ast-research-typescript-threshold.json",
+        "spec/attachments/CORE-008/ast-research-typescript-budget.json",
+        "spec/attachments/CORE-008/ast-research-rust-threshold.json"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-12-16T01:40:02.769Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-12-16T04:46:58.881Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-16T04:51:22.214Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-16T04:56:05.837Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-16T04:58:21.859Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "Compaction threshold must match TypeScript: contextWindow * 0.9",
+          "deleted": false,
+          "createdAt": "2025-12-16T01:40:14.103Z"
+        },
+        {
+          "id": 1,
+          "text": "Summarization budget calculation must remain separate from threshold calculation",
+          "deleted": false,
+          "createdAt": "2025-12-16T01:40:14.756Z"
+        },
+        {
+          "id": 2,
+          "text": "All existing tests for anchor detection, weighting, and turn selection must continue to pass",
+          "deleted": false,
+          "createdAt": "2025-12-16T01:40:16.474Z"
+        }
+      ],
+      "nextRuleId": 3,
+      "examples": [
+        {
+          "id": 0,
+          "text": "For 200k context window: threshold should be 180,000 (200k * 0.9), not 135,000",
+          "deleted": false,
+          "createdAt": "2025-12-16T01:40:17.128Z"
+        },
+        {
+          "id": 1,
+          "text": "For 128k context window: threshold should be 115,200 (128k * 0.9), not 70,200",
+          "deleted": false,
+          "createdAt": "2025-12-16T01:40:17.781Z"
+        },
+        {
+          "id": 2,
+          "text": "Summarization budget for 200k window should be 150,000 (200k - 50k buffer)",
+          "deleted": false,
+          "createdAt": "2025-12-16T01:40:19.572Z"
+        }
+      ],
+      "nextExampleId": 3,
+      "estimate": 3,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Split calculate_compaction_threshold into two functions: calculate_compaction_threshold (contextWindow * 0.9) and calculate_summarization_budget (contextWindow - AUTOCOMPACT_BUFFER or contextWindow * 0.8)",
+          "deleted": false,
+          "createdAt": "2025-12-16T04:45:59.456Z"
+        },
+        {
+          "id": 1,
+          "text": "Update cli/src/compaction_threshold.rs to match TypeScript runner.ts and compaction.ts exactly",
+          "deleted": false,
+          "createdAt": "2025-12-16T04:46:01.664Z"
+        },
+        {
+          "id": 2,
+          "text": "Update cli/src/interactive.rs to use new calculate_compaction_threshold function",
+          "deleted": false,
+          "createdAt": "2025-12-16T04:46:03.233Z"
+        }
+      ],
+      "nextNoteId": 3,
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2025-12-16T04:58:21.859Z"
     }
   },
   "states": {
@@ -6207,6 +6317,7 @@
     ],
     "validating": [],
     "done": [
+      "CORE-008",
       "REFAC-009",
       "REFAC-008",
       "CLI-023",
@@ -6252,7 +6363,7 @@
     "blocked": []
   },
   "prefixCounters": {
-    "CORE": 7,
+    "CORE": 8,
     "PROV": 5,
     "AGENT": 1,
     "CTX": 1,

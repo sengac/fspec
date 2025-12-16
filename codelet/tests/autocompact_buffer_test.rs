@@ -28,7 +28,8 @@ fn test_compaction_threshold_ratio_constant_defined() {
 // THRESHOLD CALCULATION TESTS
 // ==========================================
 
-/// Scenario: Compaction threshold accounts for autocompact buffer (Claude)
+/// Scenario: Compaction threshold matches TypeScript (Claude)
+/// UPDATED: Now matches TypeScript implementation (threshold = contextWindow * 0.9)
 #[test]
 fn test_compaction_threshold_with_buffer_claude() {
     // @step Given the provider has a context window of 200,000 tokens
@@ -37,17 +38,17 @@ fn test_compaction_threshold_with_buffer_claude() {
     // @step When calculating the compaction threshold
     let threshold = calculate_compaction_threshold(context_window);
 
-    // @step Then the summarization budget should be 150,000 tokens (context_window - buffer)
-    let expected_budget = context_window - AUTOCOMPACT_BUFFER;
-    assert_eq!(expected_budget, 150_000);
-
-    // @step And the threshold should be 135,000 tokens (budget * 0.9)
-    let expected_threshold = (expected_budget as f64 * COMPACTION_THRESHOLD_RATIO) as u64;
-    assert_eq!(expected_threshold, 135_000);
+    // @step Then the threshold should be 180,000 tokens (context_window * 0.9)
+    let expected_threshold = (context_window as f64 * COMPACTION_THRESHOLD_RATIO) as u64;
+    assert_eq!(expected_threshold, 180_000);
     assert_eq!(threshold, expected_threshold);
+
+    // Note: Summarization budget is now calculated separately
+    // Budget would be 150,000 (context_window - buffer)
 }
 
-/// Scenario: Buffer scales appropriately for OpenAI
+/// Scenario: Threshold matches TypeScript for OpenAI
+/// UPDATED: Now matches TypeScript implementation (threshold = contextWindow * 0.9)
 #[test]
 fn test_compaction_threshold_with_buffer_openai() {
     // @step Given the provider has a context window of 128,000 tokens
@@ -56,13 +57,13 @@ fn test_compaction_threshold_with_buffer_openai() {
     // @step When calculating the compaction threshold
     let threshold = calculate_compaction_threshold(context_window);
 
-    // @step Then threshold should be (128,000 - 50,000) * 0.9 = 70,200
-    let expected_budget = 128_000 - 50_000; // 78,000
-    let expected_threshold = (expected_budget as f64 * 0.9) as u64; // 70,200
+    // @step Then threshold should be 128,000 * 0.9 = 115,200
+    let expected_threshold = (context_window as f64 * 0.9) as u64; // 115,200
     assert_eq!(threshold, expected_threshold);
 }
 
-/// Scenario: Buffer scales appropriately for Codex
+/// Scenario: Threshold matches TypeScript for Codex
+/// UPDATED: Now matches TypeScript implementation (threshold = contextWindow * 0.9)
 #[test]
 fn test_compaction_threshold_with_buffer_codex() {
     // @step Given the provider has a context window of 272,000 tokens
@@ -71,13 +72,13 @@ fn test_compaction_threshold_with_buffer_codex() {
     // @step When calculating the compaction threshold
     let threshold = calculate_compaction_threshold(context_window);
 
-    // @step Then threshold should be (272,000 - 50,000) * 0.9 = 199,800
-    let expected_budget = 272_000 - 50_000; // 222,000
-    let expected_threshold = (expected_budget as f64 * 0.9) as u64; // 199,800
+    // @step Then threshold should be 272,000 * 0.9 = 244,800
+    let expected_threshold = (context_window as f64 * 0.9) as u64; // 244,800
     assert_eq!(threshold, expected_threshold);
 }
 
-/// Scenario: Buffer scales appropriately for Gemini
+/// Scenario: Threshold matches TypeScript for Gemini
+/// UPDATED: Now matches TypeScript implementation (threshold = contextWindow * 0.9)
 #[test]
 fn test_compaction_threshold_with_buffer_gemini() {
     // @step Given the provider has a context window of 1,000,000 tokens
@@ -86,13 +87,13 @@ fn test_compaction_threshold_with_buffer_gemini() {
     // @step When calculating the compaction threshold
     let threshold = calculate_compaction_threshold(context_window);
 
-    // @step Then threshold should be (1,000,000 - 50,000) * 0.9 = 855,000
-    let expected_budget = 1_000_000 - 50_000; // 950,000
-    let expected_threshold = (expected_budget as f64 * 0.9) as u64; // 855,000
+    // @step Then threshold should be 1,000,000 * 0.9 = 900,000
+    let expected_threshold = (context_window as f64 * 0.9) as u64; // 900,000
     assert_eq!(threshold, expected_threshold);
 }
 
-/// Scenario: Buffer handles edge case where context window is small
+/// Scenario: Threshold matches TypeScript for small context window
+/// UPDATED: Now matches TypeScript implementation (threshold = contextWindow * 0.9)
 #[test]
 fn test_compaction_threshold_small_context_window() {
     // @step Given the provider has a context window of 60,000 tokens
@@ -101,14 +102,13 @@ fn test_compaction_threshold_small_context_window() {
     // @step When calculating the compaction threshold
     let threshold = calculate_compaction_threshold(context_window);
 
-    // @step Then the summarization budget should be 10,000 tokens (using saturating subtraction)
-    // @step And the threshold should be 9,000 tokens (budget * 0.9)
-    let expected_budget = 60_000_u64.saturating_sub(50_000); // 10,000
-    let expected_threshold = (expected_budget as f64 * 0.9) as u64; // 9,000
+    // @step Then the threshold should be 60,000 * 0.9 = 54,000
+    let expected_threshold = (context_window as f64 * 0.9) as u64; // 54,000
     assert_eq!(threshold, expected_threshold);
 }
 
-/// Scenario: Buffer handles edge case where context window equals buffer
+/// Scenario: Threshold matches TypeScript when context window equals buffer
+/// UPDATED: Now matches TypeScript implementation (threshold = contextWindow * 0.9)
 #[test]
 fn test_compaction_threshold_context_equals_buffer() {
     // @step Given the provider has a context window equal to buffer
@@ -117,11 +117,13 @@ fn test_compaction_threshold_context_equals_buffer() {
     // @step When calculating the compaction threshold
     let threshold = calculate_compaction_threshold(context_window);
 
-    // @step Then threshold should be 0 (saturating subtraction yields 0)
-    assert_eq!(threshold, 0);
+    // @step Then threshold should be 50,000 * 0.9 = 45,000
+    let expected_threshold = (context_window as f64 * 0.9) as u64;
+    assert_eq!(threshold, expected_threshold);
 }
 
-/// Scenario: Buffer handles edge case where context window is smaller than buffer
+/// Scenario: Threshold matches TypeScript for very small context window
+/// UPDATED: Now matches TypeScript implementation (threshold = contextWindow * 0.9)
 #[test]
 fn test_compaction_threshold_context_smaller_than_buffer() {
     // @step Given the provider has a context window smaller than buffer
@@ -130,15 +132,17 @@ fn test_compaction_threshold_context_smaller_than_buffer() {
     // @step When calculating the compaction threshold
     let threshold = calculate_compaction_threshold(context_window);
 
-    // @step Then threshold should be 0 (saturating subtraction prevents underflow)
-    assert_eq!(threshold, 0);
+    // @step Then threshold should be 30,000 * 0.9 = 27,000
+    let expected_threshold = (context_window as f64 * 0.9) as u64;
+    assert_eq!(threshold, expected_threshold);
 }
 
 // ==========================================
 // TRIGGER DECISION TESTS
 // ==========================================
 
-/// Scenario: Buffer does not cause premature compaction for small contexts
+/// Scenario: Compaction does not trigger when below threshold
+/// UPDATED: Now matches TypeScript implementation (threshold = contextWindow * 0.9)
 #[test]
 fn test_no_premature_compaction() {
     // @step Given the provider has a context window of 128,000 tokens
@@ -148,45 +152,47 @@ fn test_no_premature_compaction() {
     let effective_tokens: u64 = 60_000;
 
     // @step When checking if compaction should trigger
-    let threshold = calculate_compaction_threshold(context_window);
+    let threshold = calculate_compaction_threshold(context_window); // Now 115,200
     let should_trigger = effective_tokens > threshold;
 
     // @step Then compaction should NOT trigger
-    // @step Because 60,000 < 70,200 (threshold)
+    // @step Because 60,000 < 115,200 (threshold)
     assert!(!should_trigger);
     assert!(threshold > effective_tokens);
 }
 
 /// Scenario: Compaction triggers when tokens exceed threshold
+/// UPDATED: Now matches TypeScript implementation (threshold = contextWindow * 0.9)
 #[test]
 fn test_compaction_triggers_above_threshold() {
     // @step Given the provider has a context window of 200,000 tokens
     let context_window: u64 = 200_000;
 
-    // @step And the session has accumulated 140,000 effective tokens
-    let effective_tokens: u64 = 140_000;
+    // @step And the session has accumulated 185,000 effective tokens (above threshold)
+    let effective_tokens: u64 = 185_000;
 
     // @step When checking if compaction should trigger
-    let threshold = calculate_compaction_threshold(context_window); // 135,000
+    let threshold = calculate_compaction_threshold(context_window); // Now 180,000
 
     // @step Then compaction SHOULD trigger
-    // @step Because 140,000 > 135,000 (threshold)
+    // @step Because 185,000 > 180,000 (threshold)
     assert!(effective_tokens > threshold);
 }
 
 /// Scenario: Compaction does not trigger just below threshold
+/// UPDATED: Now matches TypeScript implementation (threshold = contextWindow * 0.9)
 #[test]
 fn test_compaction_does_not_trigger_below_threshold() {
     // @step Given the provider has a context window of 200,000 tokens
     let context_window: u64 = 200_000;
 
-    // @step And the session has accumulated 130,000 effective tokens
-    let effective_tokens: u64 = 130_000;
+    // @step And the session has accumulated 175,000 effective tokens (below threshold)
+    let effective_tokens: u64 = 175_000;
 
     // @step When checking if compaction should trigger
-    let threshold = calculate_compaction_threshold(context_window); // 135,000
+    let threshold = calculate_compaction_threshold(context_window); // Now 180,000
 
     // @step Then compaction should NOT trigger
-    // @step Because 130,000 < 135,000 (threshold)
+    // @step Because 175,000 < 180,000 (threshold)
     assert!(effective_tokens < threshold);
 }
