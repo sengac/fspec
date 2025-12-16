@@ -11,19 +11,6 @@
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use std::time::SystemTime;
-use tracing::warn;
-
-// ==========================================
-// RETRY CONFIGURATION (CLI-018)
-// ==========================================
-
-/// Retry configuration for LLM summary generation
-///
-/// Implements exponential backoff: 0ms, 1000ms, 2000ms
-const RETRY_DELAYS_MS: [u64; 3] = [0, 1000, 2000];
-
-/// Fallback summary when all retries fail
-const FALLBACK_SUMMARY: &str = "[Summary generation failed after multiple attempts. Conversation context has been preserved but not summarized.]";
 
 // ==========================================
 // TOKEN TRACKING
@@ -96,8 +83,27 @@ pub struct ToolCall {
     pub tool: String,
     /// Tool call ID
     pub id: String,
-    /// Tool input parameters
-    pub input: serde_json::Value,
+    /// Tool input parameters (matches TypeScript's 'parameters' field)
+    pub parameters: serde_json::Value,
+}
+
+impl ToolCall {
+    /// Extract file_path from parameters if present
+    /// Matches TypeScript: call.parameters.file_path as string
+    pub fn file_path(&self) -> Option<String> {
+        self.parameters
+            .get("file_path")
+            .and_then(|v| v.as_str())
+            .map(str::to_string)
+    }
+
+    /// Extract just the filename from file_path
+    /// Matches TypeScript: path.split('/').pop() || path
+    pub fn filename(&self) -> Option<String> {
+        self.file_path().map(|path| {
+            path.split('/').next_back().unwrap_or(&path).to_string()
+        })
+    }
 }
 
 /// Tool execution result
@@ -105,8 +111,10 @@ pub struct ToolCall {
 pub struct ToolResult {
     /// Whether tool execution succeeded
     pub success: bool,
-    /// Tool output or error message
+    /// Tool output
     pub output: String,
+    /// Optional error message (matches TypeScript interface)
+    pub error: Option<String>,
 }
 
 // ==========================================
@@ -259,25 +267,25 @@ impl ContextCompactor {
     ///
     /// Returns CompactionResult containing:
     /// - Kept turns (preserved from anchor point)
-    /// - Summary message (LLM-generated summary of old turns)
+    /// - Summary message (template-based, matches TypeScript WeightedSummaryProvider)
     /// - Metrics (compression ratio, token counts)
+    /// - Warnings (if compression ratio below threshold)
     ///
     /// # Arguments
     /// * `turns` - Conversation turns to compact
     /// * `target_tokens` - Target token count after compaction (budget)
-    ///   Note: Currently not used in anchor-based selection, but accepted for API compatibility
-    /// * `llm_prompt` - Function to generate summaries via LLM
+    /// * `_llm_prompt` - UNUSED: Kept for API compatibility, summary is now template-based
     pub async fn compact<F, Fut>(
         &self,
         turns: &[ConversationTurn],
         target_tokens: u64,
-        llm_prompt: F,
+        _llm_prompt: F,
     ) -> Result<CompactionResult>
     where
         F: Fn(String) -> Fut,
         Fut: std::future::Future<Output = Result<String>>,
     {
-        // Validate budget parameter (even though not currently used in selection)
+        // Validate parameters
         if target_tokens == 0 {
             anyhow::bail!("Target tokens must be positive");
         }
@@ -295,24 +303,28 @@ impl ContextCompactor {
             }
         }
 
-        // Step 2: Select turns based on anchor (use last/strongest anchor if multiple)
+        // Step 2: Select turns using TypeScript-matching logic
         let selector = TurnSelector::new();
-        let selected_anchor = anchors.last();
-        let selection = selector.select_turns(turns, selected_anchor)?;
+        let selection = selector.select_turns_with_recent(turns, &anchors)?;
 
         // Step 3: Calculate original token count
         let original_tokens: u64 = turns.iter().map(|t| t.tokens).sum();
 
-        // Step 4: Generate summary for turns that will be summarized
-        let summary = if !selection.summarized_turns.is_empty() {
-            self.generate_summary(turns, &selection.summarized_turns, &llm_prompt)
-                .await?
+        // Step 4: Generate template-based summary (matches TypeScript WeightedSummaryProvider)
+        let summarized_turns: Vec<&ConversationTurn> = selection
+            .summarized_turns
+            .iter()
+            .map(|info| &turns[info.turn_index])
+            .collect();
+
+        let summary = if !summarized_turns.is_empty() {
+            self.generate_weighted_summary(&summarized_turns, &anchors)
         } else {
             "No turns summarized.".to_string()
         };
 
         // Estimate summary tokens (rough approximation: 1 token ≈ 4 characters)
-        let summary_tokens = (summary.len() / 4) as u64;
+        let summary_tokens = summary.len().div_ceil(4) as u64;
 
         // Step 5: Collect kept turns
         let kept_turns: Vec<ConversationTurn> = selection
@@ -339,91 +351,91 @@ impl ContextCompactor {
             turns_kept: selection.kept_turns.len(),
         };
 
-        // Check if compression meets minimum threshold
+        // Step 7: Check compression ratio - WARN instead of FAIL (matches TypeScript)
+        let mut warnings = Vec::new();
         if !metrics.meets_threshold(self.min_compression_ratio) {
-            anyhow::bail!(
-                "Compaction did not meet minimum compression ratio: {:.1}% < {:.1}%",
-                compression_ratio * 100.0,
-                self.min_compression_ratio * 100.0
-            );
+            warnings.push(format!(
+                "Compression ratio below {:.0}% ({:.1}%) - consider starting fresh conversation",
+                self.min_compression_ratio * 100.0,
+                compression_ratio * 100.0
+            ));
         }
 
         Ok(CompactionResult {
             kept_turns,
+            warnings,
             summary,
             metrics,
-            anchor: selected_anchor.cloned(),
+            anchor: selection.preserved_anchor,
         })
     }
 
-    /// Generate LLM summary of turns being compacted
+    /// Generate template-based summary (matches TypeScript WeightedSummaryProvider.generateWeightedSummary)
     ///
-    /// CLI-018: Implements retry logic with exponential backoff (0ms, 1000ms, 2000ms)
-    /// and fallback behavior if all retries fail.
-    async fn generate_summary<F, Fut>(
+    /// This is a fast, synchronous, template-based summary - NO LLM CALL.
+    /// Matches TypeScript behavior exactly.
+    fn generate_weighted_summary(
         &self,
-        turns: &[ConversationTurn],
-        summarized_turn_infos: &[TurnInfo],
-        llm_prompt: &F,
-    ) -> Result<String>
-    where
-        F: Fn(String) -> Fut,
-        Fut: std::future::Future<Output = Result<String>>,
-    {
-        // Build prompt for summarization
-        let mut prompt = String::from(
-            "Summarize the following conversation turns concisely, preserving key information:\n\n",
-        );
+        turns: &[&ConversationTurn],
+        anchors: &[AnchorPoint],
+    ) -> String {
+        // Transform turns to outcome descriptions (matches TypeScript turnToOutcome)
+        let outcomes: Vec<String> = turns
+            .iter()
+            .map(|turn| self.turn_to_outcome(turn, anchors))
+            .collect();
 
-        for turn_info in summarized_turn_infos {
-            let turn = &turns[turn_info.turn_index];
-            prompt.push_str(&format!("User: {}\n", turn.user_message));
+        // Build context summary (matches TypeScript preserveContext)
+        // Note: We don't have full PreservationContext, so we use a simplified version
+        let context_summary =
+            "Active files: [from conversation]\nGoals: Continue development\nBuild: unknown";
 
-            if !turn.tool_calls.is_empty() {
-                prompt.push_str("Tools used: ");
-                let tools: Vec<String> = turn.tool_calls.iter().map(|tc| tc.tool.clone()).collect();
-                prompt.push_str(&tools.join(", "));
-                prompt.push('\n');
-            }
+        format!(
+            "{}\n\nKey outcomes:\n{}",
+            context_summary,
+            outcomes.join("\n")
+        )
+    }
 
-            prompt.push_str(&format!("Assistant: {}\n\n", turn.assistant_response));
+    /// Convert turn to outcome description (matches TypeScript turnToOutcome)
+    fn turn_to_outcome(&self, turn: &ConversationTurn, anchors: &[AnchorPoint]) -> String {
+        // Check if this turn is an anchor point
+        let is_anchor = anchors.iter().any(|a| {
+            // Compare by timestamp (TypeScript uses timestamp comparison)
+            a.timestamp == turn.timestamp
+        });
+
+        if is_anchor {
+            // Anchor points get detailed preservation
+            return format!("[ANCHOR] {}", turn.assistant_response);
         }
 
-        prompt.push_str(
-            "Provide a concise summary (2-3 paragraphs) that captures the essential information.",
-        );
+        // Regular turns get compressed to outcomes
+        // Extract modified files (matches TypeScript extractFilesFromTurn)
+        let files: Vec<String> = turn
+            .tool_calls
+            .iter()
+            .filter(|call| call.tool == "Edit" || call.tool == "Write")
+            .filter_map(ToolCall::filename)
+            .collect();
 
-        // CLI-018: Retry logic with exponential backoff
-        let mut last_error = None;
+        let success = turn.tool_results.iter().any(|r| r.success);
+        let success_marker = if success { "✓" } else { "✗" };
 
-        for (attempt, &delay_ms) in RETRY_DELAYS_MS.iter().enumerate() {
-            // Apply delay before retry (skip delay on first attempt)
-            if delay_ms > 0 {
-                tokio::time::sleep(tokio::time::Duration::from_millis(delay_ms)).await;
-            }
+        let file_info = if !files.is_empty() {
+            format!("Modified {}: ", files.join(", "))
+        } else {
+            String::new()
+        };
 
-            match llm_prompt(prompt.clone()).await {
-                Ok(response) => {
-                    return Ok(response);
-                }
-                Err(e) => {
-                    warn!(
-                        attempt = attempt + 1,
-                        max_attempts = RETRY_DELAYS_MS.len(),
-                        error = %e,
-                        "LLM summary generation failed, retrying..."
-                    );
-                    last_error = Some(e);
-                }
-            }
-        }
+        // Get first sentence of assistant response
+        let first_sentence = turn
+            .assistant_response
+            .split('.')
+            .next()
+            .unwrap_or(&turn.assistant_response);
 
-        // CLI-018: All retries exhausted - use fallback summary
-        warn!(
-            error = ?last_error,
-            "All LLM summary retries exhausted, using fallback summary"
-        );
-        Ok(FALLBACK_SUMMARY.to_string())
+        format!("{success_marker} {file_info}{first_sentence}")
     }
 }
 
@@ -438,6 +450,8 @@ impl Default for ContextCompactor {
 pub struct CompactionResult {
     /// Turns that were kept (from anchor point forward)
     pub kept_turns: Vec<ConversationTurn>,
+    /// Warnings generated during compaction (matches TypeScript behavior)
+    pub warnings: Vec<String>,
     /// LLM-generated summary of summarized turns
     pub summary: String,
     /// Compaction metrics
@@ -532,58 +546,91 @@ impl TurnSelector {
         Self
     }
 
-    /// Select turns to keep vs summarize based on anchor point
+    /// Select turns using TypeScript-matching logic
     ///
-    /// If anchor exists: keep from anchor forward, summarize before
-    /// If no anchor: keep last 2-3 turns, summarize the rest
-    pub fn select_turns(
+    /// Matches TypeScript selectTurnsForCompaction() exactly:
+    /// 1. ALWAYS split into recentTurns (last 2-3) and olderTurns
+    /// 2. Only look for anchors in olderTurns
+    /// 3. If anchor found in olderTurns: keep anchor→end of older + all recent
+    /// 4. If no anchor in olderTurns: keep only recent turns
+    pub fn select_turns_with_recent(
         &self,
         turns: &[ConversationTurn],
-        anchor: Option<&AnchorPoint>,
+        anchors: &[AnchorPoint],
     ) -> Result<TurnSelection> {
         if turns.is_empty() {
             return Ok(TurnSelection {
                 kept_turns: Vec::new(),
                 summarized_turns: Vec::new(),
+                preserved_anchor: None,
             });
         }
 
-        match anchor {
-            Some(anchor_point) => {
-                // Keep turns from anchor point forward (inclusive)
-                let kept_turns: Vec<TurnInfo> = (anchor_point.turn_index..turns.len())
-                    .map(|idx| TurnInfo { turn_index: idx })
-                    .collect();
+        let total_turns = turns.len();
 
-                // Summarize turns before anchor point
-                let summarized_turns: Vec<TurnInfo> = (0..anchor_point.turn_index)
-                    .map(|idx| TurnInfo { turn_index: idx })
-                    .collect();
+        // ALWAYS preserve last 2-3 complete conversation turns (matches TypeScript)
+        let turns_to_always_keep = 3.min(total_turns);
+        let older_turns_count = total_turns.saturating_sub(turns_to_always_keep);
 
-                Ok(TurnSelection {
-                    kept_turns,
-                    summarized_turns,
-                })
+        // Find most recent anchor point in older turns only (matches TypeScript)
+        // TypeScript: .filter(anchor => anchor.turnIndex < totalTurns - turnsToAlwaysKeep)
+        let anchor_in_older = anchors
+            .iter()
+            .filter(|a| a.turn_index < older_turns_count)
+            .max_by_key(|a| a.turn_index); // Get most recent (highest index)
+
+        if let Some(anchor) = anchor_in_older {
+            // Keep anchor + everything after it + recent turns
+            // TypeScript: [...olderTurns.slice(anchorPointInOlderTurns.turnIndex), ...recentTurns]
+            let mut kept_turns: Vec<TurnInfo> = Vec::new();
+
+            // Add from anchor to end of older turns
+            for idx in anchor.turn_index..older_turns_count {
+                kept_turns.push(TurnInfo { turn_index: idx });
             }
-            None => {
-                // No anchor: keep last 2-3 turns, summarize the rest
-                let keep_count = 3.min(turns.len());
-                let summarize_count = turns.len().saturating_sub(keep_count);
 
-                let kept_turns: Vec<TurnInfo> = (summarize_count..turns.len())
-                    .map(|idx| TurnInfo { turn_index: idx })
-                    .collect();
-
-                let summarized_turns: Vec<TurnInfo> = (0..summarize_count)
-                    .map(|idx| TurnInfo { turn_index: idx })
-                    .collect();
-
-                Ok(TurnSelection {
-                    kept_turns,
-                    summarized_turns,
-                })
+            // Add all recent turns
+            for idx in older_turns_count..total_turns {
+                kept_turns.push(TurnInfo { turn_index: idx });
             }
+
+            // Summarize turns before anchor point
+            let summarized_turns: Vec<TurnInfo> = (0..anchor.turn_index)
+                .map(|idx| TurnInfo { turn_index: idx })
+                .collect();
+
+            Ok(TurnSelection {
+                kept_turns,
+                summarized_turns,
+                preserved_anchor: Some(anchor.clone()),
+            })
+        } else {
+            // No anchor found in older turns - keep only recent turns, summarize the rest
+            let kept_turns: Vec<TurnInfo> = (older_turns_count..total_turns)
+                .map(|idx| TurnInfo { turn_index: idx })
+                .collect();
+
+            let summarized_turns: Vec<TurnInfo> = (0..older_turns_count)
+                .map(|idx| TurnInfo { turn_index: idx })
+                .collect();
+
+            Ok(TurnSelection {
+                kept_turns,
+                summarized_turns,
+                preserved_anchor: None,
+            })
         }
+    }
+
+    /// Legacy method - kept for backwards compatibility
+    #[allow(dead_code)]
+    pub fn select_turns(
+        &self,
+        turns: &[ConversationTurn],
+        anchor: Option<&AnchorPoint>,
+    ) -> Result<TurnSelection> {
+        let anchors: Vec<AnchorPoint> = anchor.cloned().into_iter().collect();
+        self.select_turns_with_recent(turns, &anchors)
     }
 }
 
@@ -596,10 +643,12 @@ impl Default for TurnSelector {
 /// Result of turn selection
 #[derive(Debug)]
 pub struct TurnSelection {
-    /// Turns to keep (from anchor forward)
+    /// Turns to keep (from anchor forward + recent turns)
     pub kept_turns: Vec<TurnInfo>,
     /// Turns to summarize (before anchor)
     pub summarized_turns: Vec<TurnInfo>,
+    /// Preserved anchor point (if any found in older turns)
+    pub preserved_anchor: Option<AnchorPoint>,
 }
 
 /// Information about a turn in selection result
