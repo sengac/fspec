@@ -62,41 +62,50 @@ impl AstGrepTool {
     }
 
     /// Search a single file for pattern matches (async, non-blocking file read)
-    /// Returns (matches, was_skipped) - was_skipped is true if file couldn't be read
+    /// Returns (matches, was_skipped) - was_skipped is true if file couldn't be read or pattern failed
     async fn search_file(
         path: &Path,
         pattern: &str,
         lang: SupportLang,
     ) -> (Vec<MatchResult>, bool) {
-        let mut results = Vec::new();
-
         // Read file content (async, non-blocking)
         let source = match tokio::fs::read_to_string(path).await {
             Ok(content) => content,
-            Err(_) => return (results, true), // File was skipped due to read error
+            Err(_) => return (Vec::new(), true), // File was skipped due to read error
         };
 
-        // Create AST and search for pattern (CPU-bound, but fast enough to not need spawn_blocking)
-        let ast_grep = lang.ast_grep(&source);
-        let root = ast_grep.root();
-        let matches = root.find_all(pattern);
+        // Wrap AST operations in catch_unwind to prevent panics from crashing the runtime
+        // ast-grep can panic on certain malformed patterns or edge cases
+        let path_str = path.to_string_lossy().to_string();
+        let pattern_owned = pattern.to_string();
 
-        for node_match in matches {
-            // Get position (0-based, convert to 1-based)
-            let start_pos = node_match.start_pos();
-            let line = start_pos.line() + 1; // Convert to 1-based
-            let column = start_pos.column(&node_match) + 1; // Convert to 1-based
-            let text = node_match.text().to_string();
+        let search_result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            let mut results = Vec::new();
+            let ast_grep = lang.ast_grep(&source);
+            let root = ast_grep.root();
+            let matches = root.find_all(pattern_owned.as_str());
 
-            results.push(MatchResult {
-                file: path.to_string_lossy().to_string(),
-                line,
-                column,
-                text,
-            });
+            for node_match in matches {
+                // Get position (0-based, convert to 1-based)
+                let start_pos = node_match.start_pos();
+                let line = start_pos.line() + 1; // Convert to 1-based
+                let column = start_pos.column(&node_match) + 1; // Convert to 1-based
+                let text = node_match.text().to_string();
+
+                results.push(MatchResult {
+                    file: path_str.clone(),
+                    line,
+                    column,
+                    text,
+                });
+            }
+            results
+        }));
+
+        match search_result {
+            Ok(results) => (results, false),
+            Err(_) => (Vec::new(), true), // Pattern matching panicked - skip this file
         }
-
-        (results, false)
     }
 
     /// Internal execute method for rig tool delegation
@@ -156,6 +165,21 @@ impl AstGrepTool {
                 - Pattern must be valid {language_str} syntax\n\
                 - Meta-variables must start with $ and uppercase letter\n\n\
                 Try the ast-grep playground: https://ast-grep.github.io/playground.html"
+            )));
+        }
+
+        // Check for multi-line patterns - ast-grep doesn't support patterns spanning multiple statements
+        if pattern.contains('\n') {
+            return Ok(ToolOutput::error(format!(
+                "Error: Multi-line patterns are not supported. Pattern: \"{}\"\n\n\
+                ast-grep patterns must match a single AST node. Multi-line patterns \
+                that span multiple statements (like struct with attributes) cannot be matched.\n\n\
+                Suggestions:\n\
+                - Search for just the struct: 'struct $NAME'\n\
+                - Search for just the derive: '#[derive($_)]'\n\
+                - Use grep for multi-line text searches\n\n\
+                Try the ast-grep playground: https://ast-grep.github.io/playground.html",
+                pattern.replace('\n', "\\n")
             )));
         }
 
