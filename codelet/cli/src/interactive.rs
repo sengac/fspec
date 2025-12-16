@@ -678,13 +678,14 @@ where
                                     );
 
                                     // CLI-022: Capture token.update event
+                                    // Note: totalInputTokens = inputTokens since we REPLACE (not accumulate)
                                     manager.capture(
                                         "token.update",
                                         serde_json::json!({
                                             "inputTokens": turn_input_tokens,
                                             "outputTokens": turn_output_tokens,
-                                            "totalInputTokens": session.token_tracker.input_tokens + turn_input_tokens,
-                                            "totalOutputTokens": session.token_tracker.output_tokens + turn_output_tokens,
+                                            "totalInputTokens": turn_input_tokens,
+                                            "totalOutputTokens": turn_output_tokens,
                                         }),
                                         None,
                                     );
@@ -744,11 +745,13 @@ where
         }
     }
 
-    // CLI-010: After stream completes, accumulate tokens and check compaction
+    // CLI-010: After stream completes, update tokens and check compaction
     if !is_interrupted.load(Ordering::Relaxed) {
-        // Accumulate tokens into session tracker
-        session.token_tracker.input_tokens += turn_input_tokens;
-        session.token_tracker.output_tokens += turn_output_tokens;
+        // Replace token tracker with API usage values (matches TypeScript runner.ts:1143)
+        // TypeScript: inputTokens: usage.inputTokens ?? tokenTracker.inputTokens
+        // The API reports total input tokens for the current context, not incremental
+        session.token_tracker.input_tokens = turn_input_tokens;
+        session.token_tracker.output_tokens = turn_output_tokens;
         if let Some(cache_read) = turn_cache_read_tokens {
             let current = session.token_tracker.cache_read_input_tokens.unwrap_or(0);
             session.token_tracker.cache_read_input_tokens = Some(current + cache_read);
