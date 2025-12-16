@@ -187,7 +187,12 @@ impl Session {
         // Step 1: Extract system-reminders from messages Vec
         let (system_reminders, _compactable) = partition_for_compaction(&self.messages);
 
-        // Step 2: Compact turns (operates on self.turns, not messages)
+        // Step 2: Calculate summarization budget
+        use crate::compaction_threshold::calculate_summarization_budget;
+        let context_window = self.provider_manager.context_window() as u64;
+        let budget = calculate_summarization_budget(context_window);
+
+        // Step 3: Compact turns (operates on self.turns, not messages)
         let compactor = ContextCompactor::new();
 
         // If we have no turns, nothing to compact
@@ -195,9 +200,9 @@ impl Session {
             return Ok(());
         }
 
-        let result = compactor.compact(&self.turns, llm_prompt).await?;
+        let result = compactor.compact(&self.turns, budget, llm_prompt).await?;
 
-        // Step 3: Reconstruct messages Vec:
+        // Step 4: Reconstruct messages Vec:
         //    - System-reminders FIRST (maintains prefix stability for prompt caching)
         //    - Compacted summary as user message
         //    - Kept turns converted back to messages

@@ -261,15 +261,26 @@ impl ContextCompactor {
     /// - Kept turns (preserved from anchor point)
     /// - Summary message (LLM-generated summary of old turns)
     /// - Metrics (compression ratio, token counts)
+    ///
+    /// # Arguments
+    /// * `turns` - Conversation turns to compact
+    /// * `target_tokens` - Target token count after compaction (budget)
+    ///   Note: Currently not used in anchor-based selection, but accepted for API compatibility
+    /// * `llm_prompt` - Function to generate summaries via LLM
     pub async fn compact<F, Fut>(
         &self,
         turns: &[ConversationTurn],
+        target_tokens: u64,
         llm_prompt: F,
     ) -> Result<CompactionResult>
     where
         F: Fn(String) -> Fut,
         Fut: std::future::Future<Output = Result<String>>,
     {
+        // Validate budget parameter (even though not currently used in selection)
+        if target_tokens == 0 {
+            anyhow::bail!("Target tokens must be positive");
+        }
         if turns.is_empty() {
             anyhow::bail!("Cannot compact empty turn history");
         }

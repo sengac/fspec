@@ -1,0 +1,111 @@
+{
+  "scenarios": [
+    {
+      "name": "Calculate threshold for 200k context window matching TypeScript",
+      "testMappings": [
+        {
+          "file": "cli/tests/threshold_calculation_typescript_match_test.rs",
+          "lines": "14-35",
+          "implMappings": [
+            {
+              "file": "cli/src/compaction_threshold.rs",
+              "lines": [
+                62,
+                63
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Calculate threshold for 128k context window matching TypeScript",
+      "testMappings": [
+        {
+          "file": "cli/tests/threshold_calculation_typescript_match_test.rs",
+          "lines": "38-56",
+          "implMappings": [
+            {
+              "file": "cli/src/compaction_threshold.rs",
+              "lines": [
+                62,
+                63
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Summarization budget remains separate from threshold",
+      "testMappings": [
+        {
+          "file": "cli/tests/threshold_calculation_typescript_match_test.rs",
+          "lines": "59-83",
+          "implMappings": [
+            {
+              "file": "cli/src/compaction_threshold.rs",
+              "lines": [
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Existing anchor detection tests continue to pass",
+      "testMappings": [
+        {
+          "file": "cli/tests/threshold_calculation_typescript_match_test.rs",
+          "lines": "86-105",
+          "implMappings": [
+            {
+              "file": "cli/src/compaction_threshold.rs",
+              "lines": [
+                62,
+                63
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Existing turn selection tests continue to pass",
+      "testMappings": [
+        {
+          "file": "cli/tests/threshold_calculation_typescript_match_test.rs",
+          "lines": "108-127",
+          "implMappings": [
+            {
+              "file": "cli/src/compaction_threshold.rs",
+              "lines": [
+                62,
+                63
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "cli/tests/threshold_calculation_typescript_match_test.rs"
+    ],
+    "implFiles": [
+      "cli/src/compaction_threshold.rs"
+    ],
+    "totalLinesCovered": 121
+  }
+}

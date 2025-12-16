@@ -1,0 +1,32 @@
+{
+  "scenarios": [
+    {
+      "name": "Remove ratatui from workspace Cargo.toml",
+      "testMappings": []
+    },
+    {
+      "name": "Remove ratatui from tui crate Cargo.toml",
+      "testMappings": []
+    },
+    {
+      "name": "Remove ratatui from cli crate Cargo.toml",
+      "testMappings": []
+    },
+    {
+      "name": "Simplify terminal.rs to remove unused TuiTerminal type",
+      "testMappings": []
+    },
+    {
+      "name": "All existing tests pass after changes",
+      "testMappings": []
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 0,
+    "coveragePercent": 0,
+    "testFiles": [],
+    "implFiles": [],
+    "totalLinesCovered": 0
+  }
+}
