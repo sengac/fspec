@@ -37,6 +37,10 @@
           "description": "Context management bounded context - token tracking, compaction, caching"
         },
         {
+          "name": "@core",
+          "description": "Core bounded context - agent execution, message history, streaming"
+        },
+        {
           "name": "@provider-management",
           "description": "Provider management bounded context - multi-provider LLM abstraction"
         },
@@ -47,6 +51,10 @@
         {
           "name": "@tool-execution",
           "description": "Tool execution bounded context - bash, read, write, edit, grep, glob tools"
+        },
+        {
+          "name": "@tools",
+          "description": "Tools bounded context - file operations, code search, bash execution"
         }
       ]
     },
@@ -117,6 +125,10 @@
         {
           "name": "@ratatui",
           "description": "TUI framework for terminal rendering with styled text"
+        },
+        {
+          "name": "@refactoring",
+          "description": "Code refactoring and technical debt reduction"
         },
         {
           "name": "@streaming",
@@ -212,7 +224,7 @@
     "examples": []
   },
   "statistics": {
-    "lastUpdated": "2025-12-03T09:36:15.358Z",
+    "lastUpdated": "2025-12-16T09:00:50.881Z",
     "phaseStats": [],
     "componentStats": [],
     "featureGroupStats": [],

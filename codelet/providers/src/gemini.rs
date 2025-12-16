@@ -70,13 +70,13 @@ impl GeminiProvider {
         &self.rig_client
     }
 
-    /// Create a rig Agent with all 7 tools configured for this provider
+    /// Create a rig Agent with all 8 tools configured for this provider
     pub fn create_rig_agent(&self) -> rig::agent::Agent<gemini::completion::CompletionModel> {
         use codelet_tools::{
-            AstGrepTool, BashTool, EditTool, GlobTool, GrepTool, ReadTool, WriteTool,
+            AstGrepTool, BashTool, EditTool, GlobTool, GrepTool, LsTool, ReadTool, WriteTool,
         };
 
-        // Build agent with all 7 tools using rig's builder pattern
+        // Build agent with all 8 tools using rig's builder pattern
         self.rig_client
             .agent(&self.model_name)
             .max_tokens(MAX_OUTPUT_TOKENS as u64)
@@ -86,6 +86,7 @@ impl GeminiProvider {
             .tool(BashTool::new())
             .tool(GrepTool::new())
             .tool(GlobTool::new())
+            .tool(LsTool::new())
             .tool(AstGrepTool::new())
             .build()
     }

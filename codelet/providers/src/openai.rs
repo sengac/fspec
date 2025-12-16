@@ -95,11 +95,11 @@ impl OpenAIProvider {
     /// Returns a fully configured rig::agent::Agent ready for use with RigAgent.
     pub fn create_rig_agent(&self) -> rig::agent::Agent<openai::completion::CompletionModel> {
         use codelet_tools::{
-            AstGrepTool, BashTool, EditTool, GlobTool, GrepTool, ReadTool, WriteTool,
+            AstGrepTool, BashTool, EditTool, GlobTool, GrepTool, LsTool, ReadTool, WriteTool,
         };
         use rig::client::CompletionClient;
 
-        // Build agent with all 7 tools using rig's builder pattern
+        // Build agent with all 8 tools using rig's builder pattern
         self.rig_client
             .agent(&self.model_name)
             .max_tokens(MAX_OUTPUT_TOKENS as u64)
@@ -109,6 +109,7 @@ impl OpenAIProvider {
             .tool(BashTool::new())
             .tool(GrepTool::new())
             .tool(GlobTool::new())
+            .tool(LsTool::new())
             .tool(AstGrepTool::new())
             .build()
     }
