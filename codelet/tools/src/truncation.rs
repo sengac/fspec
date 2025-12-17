@@ -90,11 +90,6 @@ pub fn format_truncation_warning(
     }
 }
 
-/// Truncate output with default limits
-pub fn truncate_output_default(lines: &[String]) -> TruncateResult {
-    truncate_output(lines, OutputLimits::MAX_OUTPUT_CHARS)
-}
-
 /// Truncate line with default limit
 pub fn truncate_line_default(line: &str) -> String {
     truncate_line(line, OutputLimits::MAX_LINE_LENGTH)

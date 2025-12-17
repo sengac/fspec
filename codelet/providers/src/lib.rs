@@ -16,32 +16,11 @@ pub use claude::{build_cached_system_prompt, AuthMode, CacheControl, ClaudeProvi
 pub use codex::CodexProvider;
 pub use credentials::ProviderCredentials;
 pub use gemini::GeminiProvider;
-pub use manager::ProviderManager;
+pub use manager::{ProviderManager, ProviderType};
 pub use openai::OpenAIProvider;
 
 use codelet_common::MessageContent;
 use codelet_tools::ToolDefinition;
-
-/// Available LLM provider types
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum ProviderType {
-    /// Anthropic Claude
-    Anthropic,
-    /// OpenAI GPT
-    OpenAI,
-    /// Google Gemini
-    Google,
-}
-
-impl std::fmt::Display for ProviderType {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            ProviderType::Anthropic => write!(f, "anthropic"),
-            ProviderType::OpenAI => write!(f, "openai"),
-            ProviderType::Google => write!(f, "google"),
-        }
-    }
-}
 
 /// Response from an LLM completion with tool support
 #[derive(Debug, Clone)]
