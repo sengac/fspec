@@ -295,12 +295,40 @@
           ]
         }
       ]
+    },
+    {
+      "name": "ClaudeProvider uses CachingHttpClient for API requests",
+      "testMappings": []
+    },
+    {
+      "name": "ClaudeProvider with OAuth uses CachingHttpClient with OAuth mode",
+      "testMappings": []
+    },
+    {
+      "name": "CachingHttpClient transforms outgoing request body",
+      "testMappings": []
+    },
+    {
+      "name": "Streaming response handler extracts cache tokens from SSE",
+      "testMappings": []
+    },
+    {
+      "name": "Cache tokens flow from SSE to session token tracker",
+      "testMappings": []
+    },
+    {
+      "name": "Multiple turns accumulate cache tokens in token tracker",
+      "testMappings": []
+    },
+    {
+      "name": "Non-Anthropic providers do not have cache tokens extracted",
+      "testMappings": []
     }
   ],
   "stats": {
-    "totalScenarios": 8,
+    "totalScenarios": 15,
     "coveredScenarios": 8,
-    "coveragePercent": 100,
+    "coveragePercent": 53,
     "testFiles": [
       "providers/tests/caching_http_middleware_test.rs"
     ],

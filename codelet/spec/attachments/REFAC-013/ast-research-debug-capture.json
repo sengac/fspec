@@ -1,0 +1,151 @@
+{
+  "matches": [
+    {
+      "type": "function_item",
+      "name": "sanitize_headers",
+      "line": 100,
+      "column": 0,
+      "text": "fn sanitize_headers(headers: &Value) -> Value {\n    if let Some(obj) = headers.as_object() {\n        let mut redacted = serde_json::Map::new();\n        for (key, value) in obj {\n            if SENSITIVE_HEADERS.contains(&key.to_lowercase().as_str()) {\n                redacted.insert(key.clone(), Value::String(\"[REDACTED]\".to_string()));\n            } else {\n                redacted.insert(key.clone(), value.clone());\n            }\n        }\n        Value::Object(redacted)\n    } else {\n        headers.clone()\n    }\n}"
+    },
+    {
+      "type": "function_item",
+      "name": "new",
+      "line": 135,
+      "column": 4,
+      "text": "fn new() -> Result<Self, DebugCaptureError> {\n        let home_dir = dirs::home_dir().ok_or(DebugCaptureError::NoHomeDirectory)?;\n        let codelet_dir = home_dir.join(\".codelet\");\n        let debug_dir = codelet_dir.join(\"debug\");\n\n        Ok(Self {\n            enabled: false,\n            session_id: None,\n            session_file: None,\n            sequence: 0,\n            turn_id: 0,\n            start_time: None,\n            start_datetime: None,\n            event_count: 0,\n            error_count: 0,\n            warning_count: 0,\n            session_metadata: SessionMetadata::default(),\n            debug_dir,\n            codelet_dir,\n        })\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "is_enabled",
+      "line": 158,
+      "column": 4,
+      "text": "pub fn is_enabled(&self) -> bool {\n        self.enabled\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "set_session_metadata",
+      "line": 163,
+      "column": 4,
+      "text": "pub fn set_session_metadata(&mut self, metadata: SessionMetadata) {\n        if let Some(provider) = metadata.provider {\n            self.session_metadata.provider = Some(provider);\n        }\n        if let Some(model) = metadata.model {\n            self.session_metadata.model = Some(model);\n        }\n        if let Some(context_window) = metadata.context_window {\n            self.session_metadata.context_window = Some(context_window);\n        }\n        if let Some(max_output_tokens) = metadata.max_output_tokens {\n            self.session_metadata.max_output_tokens = Some(max_output_tokens);\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "start_capture",
+      "line": 179,
+      "column": 4,
+      "text": "pub fn start_capture(&mut self) -> Result<String, DebugCaptureError> {\n        // Ensure directory exists with secure permissions\n        if !self.codelet_dir.exists() {\n            fs::create_dir_all(&self.codelet_dir)?;\n        }\n        if !self.debug_dir.exists() {\n            fs::create_dir_all(&self.debug_dir)?;\n            // Set permissions to 0o700 on Unix\n            #[cfg(unix)]\n            {\n                use std::os::unix::fs::PermissionsExt;\n                let perms = fs::Permissions::from_mode(0o700);\n                fs::set_permissions(&self.debug_dir, perms)?;\n            }\n        }\n\n        // Generate session filename\n        self.session_id = Some(Uuid::new_v4().to_string());\n        let now = Utc::now();\n        let timestamp = now.format(\"%Y-%m-%dT%H-%M-%S\").to_string();\n        let filename = format!(\"session-{timestamp}.jsonl\");\n        self.session_file = Some(self.debug_dir.join(&filename));\n\n        // Initialize empty file\n        let session_path = self\n            .session_file\n            .as_ref()\n            .ok_or(DebugCaptureError::NoSessionFile)?;\n        File::create(session_path)?;\n\n        self.sequence = 0;\n        self.turn_id = 0;\n        self.start_time = Some(Instant::now());\n        self.start_datetime = Some(now);\n        self.event_count = 0;\n        self.error_count = 0;\n        self.warning_count = 0;\n        self.enabled = true;\n\n        // Update latest symlink\n        self.update_latest_symlink();\n\n        // Write session start event\n        self.capture_session_start();\n\n        Ok(self\n            .session_file\n            .as_ref()\n            .ok_or(DebugCaptureError::NoSessionFile)?\n            .to_string_lossy()\n            .to_string())\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "stop_capture",
+      "line": 233,
+      "column": 4,
+      "text": "pub fn stop_capture(&mut self) -> Result<String, DebugCaptureError> {\n        if !self.enabled {\n            return Ok(String::new());\n        }\n\n        // Write session end event\n        self.capture_session_end();\n\n        self.enabled = false;\n\n        let session_file = self\n            .session_file\n            .as_ref()\n            .ok_or(DebugCaptureError::NoSessionFile)?\n            .to_string_lossy()\n            .to_string();\n\n        // Generate summary\n        self.generate_summary(&session_file);\n\n        // Reset state\n        self.session_id = None;\n        self.session_file = None;\n        self.start_time = None;\n        self.start_datetime = None;\n\n        Ok(session_file)\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "capture",
+      "line": 265,
+      "column": 4,
+      "text": "pub fn capture(&mut self, event_type: &str, data: Value, options: Option<CaptureOptions>) {\n        if !self.enabled {\n            return;\n        }\n\n        // Silently return if session file is not set\n        let session_path = match self.session_file.as_ref() {\n            Some(path) => path,\n            None => return,\n        };\n\n        // Auto-redact headers if present\n        let processed_data = if let Some(headers) = data.get(\"headers\") {\n            let mut new_data = data.clone();\n            if let Some(obj) = new_data.as_object_mut() {\n                obj.insert(\"headers\".to_string(), sanitize_headers(headers));\n            }\n            new_data\n        } else {\n            data\n        };\n\n        let event = DebugEvent {\n            timestamp: Utc::now().to_rfc3339(),\n            sequence: self.sequence,\n            event_type: event_type.to_string(),\n            turn_id: Some(self.turn_id),\n            request_id: options.and_then(|o| o.request_id),\n            data: processed_data,\n        };\n\n        self.sequence += 1;\n\n        // Append to file - silently fail if file operations fail\n        let file_result = OpenOptions::new().append(true).open(session_path);\n\n        let mut file = match file_result {\n            Ok(f) => f,\n            Err(_) => return,\n        };\n\n        let line = match serde_json::to_string(&event) {\n            Ok(l) => l,\n            Err(_) => return,\n        };\n\n        if writeln!(file, \"{line}\").is_err() {\n            return;\n        }\n\n        self.event_count += 1;\n\n        // Track errors and warnings\n        if event_type.contains(\"error\") {\n            self.error_count += 1;\n        }\n        if event_type == \"log.entry\" {\n            if let Some(level) = event.data.get(\"level\").and_then(|l| l.as_str()) {\n                if level == \"warn\" || level == \"warning\" {\n                    self.warning_count += 1;\n                }\n            }\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "increment_turn",
+      "line": 331,
+      "column": 4,
+      "text": "pub fn increment_turn(&mut self) {\n        self.turn_id += 1;\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "update_latest_symlink",
+      "line": 336,
+      "column": 4,
+      "text": "fn update_latest_symlink(&self) {\n        let latest_path = self.debug_dir.join(\"latest.jsonl\");\n\n        // Remove existing symlink if present\n        if latest_path.exists() || latest_path.is_symlink() {\n            let _ = fs::remove_file(&latest_path);\n        }\n\n        // Create new symlink (Unix only, ignore errors on other platforms)\n        #[cfg(unix)]\n        {\n            use std::os::unix::fs::symlink;\n            if let Some(session_path) = self.session_file.as_ref() {\n                let _ = symlink(session_path, &latest_path);\n            }\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "capture_session_start",
+      "line": 355,
+      "column": 4,
+      "text": "fn capture_session_start(&mut self) {\n        let env_info = serde_json::json!({\n            \"platform\": std::env::consts::OS,\n            \"arch\": std::env::consts::ARCH,\n            \"cwd\": std::env::current_dir().map(|p| p.to_string_lossy().to_string()).unwrap_or_default(),\n            \"shell\": std::env::var(\"SHELL\").unwrap_or_else(|_| \"unknown\".to_string()),\n            \"user\": std::env::var(\"USER\").or_else(|_| std::env::var(\"USERNAME\")).unwrap_or_else(|_| \"unknown\".to_string()),\n        });\n\n        let data = serde_json::json!({\n            \"sessionId\": self.session_id,\n            \"startTime\": self.start_datetime.map(|dt| dt.to_rfc3339()),\n            \"version\": env!(\"CARGO_PKG_VERSION\"),\n            \"provider\": self.session_metadata.provider.as_deref().unwrap_or(\"unknown\"),\n            \"model\": self.session_metadata.model.as_deref().unwrap_or(\"unknown\"),\n            \"environment\": env_info,\n            \"contextWindow\": self.session_metadata.context_window.unwrap_or(DEFAULT_CONTEXT_WINDOW),\n            \"maxOutputTokens\": self.session_metadata.max_output_tokens.unwrap_or(DEFAULT_MAX_OUTPUT_TOKENS),\n        });\n\n        self.capture(\"session.start\", data, None);\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "get_session_duration",
+      "line": 379,
+      "column": 4,
+      "text": "fn get_session_duration(&self) -> u64 {\n        self.start_time\n            .map(|t| t.elapsed().as_millis() as u64)\n            .unwrap_or(0)\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "capture_session_end",
+      "line": 386,
+      "column": 4,
+      "text": "fn capture_session_end(&mut self) {\n        let end_time = Utc::now();\n        let duration = self.get_session_duration();\n\n        let data = serde_json::json!({\n            \"endTime\": end_time.to_rfc3339(),\n            \"duration\": duration,\n            \"turnCount\": self.turn_id,\n            \"eventCount\": self.event_count,\n            \"exitReason\": \"user\",\n        });\n\n        self.capture(\"session.end\", data, None);\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "generate_summary",
+      "line": 402,
+      "column": 4,
+      "text": "fn generate_summary(&self, session_file: &str) {\n        let summary_path = session_file.replace(\".jsonl\", \".summary.md\");\n        let duration = self.get_session_duration();\n        let duration_formatted = self.format_duration(duration);\n\n        // Read events for timeline\n        let timeline = match fs::read_to_string(session_file) {\n            Ok(content) => {\n                let events: Vec<String> = content\n                    .trim()\n                    .lines()\n                    .take(TIMELINE_EVENT_LIMIT)\n                    .filter_map(|line| {\n                        serde_json::from_str::<DebugEvent>(line).ok().map(|event| {\n                            let time = event\n                                .timestamp\n                                .split('T')\n                                .nth(1)\n                                .and_then(|t| t.split('.').next())\n                                .unwrap_or(\"-\");\n                            let details = self.summarize_event_data(&event);\n                            format!(\"| {} | {} | {} |\", time, event.event_type, details)\n                        })\n                    })\n                    .collect();\n                events.join(\"\\n\")\n            }\n            Err(_) => \"| - | - | Unable to read events |\".to_string(),\n        };\n\n        let summary = format!(\n            r#\"# Debug Session Summary\n\n**Session ID:** {}\n**Duration:** {} ({}ms)\n**File:** {}\n\n## Environment\n- **Platform:** {} ({})\n- **CWD:** {}\n- **Provider:** {}\n- **Model:** {}\n\n## Session Statistics\n- **Turns:** {}\n- **Events:** {}\n- **Errors:** {}\n- **Warnings:** {}\n\n## Event Timeline Summary\n| Time | Event | Details |\n|------|-------|---------|\n{}\n\n## Errors & Warnings\n{}\n\n## To Analyze This Session\nLoad the JSONL file and examine events:\n```bash\ncat {} | head -50\n```\n\"#,\n            self.session_id.as_deref().unwrap_or(\"unknown\"),\n            duration_formatted,\n            duration,\n            session_file,\n            std::env::consts::OS,\n            std::env::consts::ARCH,\n            std::env::current_dir()\n                .map(|p| p.to_string_lossy().to_string())\n                .unwrap_or_default(),\n            self.session_metadata\n                .provider\n                .as_deref()\n                .unwrap_or(\"unknown\"),\n            self.session_metadata.model.as_deref().unwrap_or(\"unknown\"),\n            self.turn_id,\n            self.event_count,\n            self.error_count,\n            self.warning_count,\n            timeline,\n            if self.error_count > 0 || self.warning_count > 0 {\n                format!(\n                    \"- {} error(s), {} warning(s) recorded\",\n                    self.error_count, self.warning_count\n                )\n            } else {\n                \"- No errors or warnings recorded\".to_string()\n            },\n            session_file,\n        );\n\n        // Silently ignore errors when writing summary (non-critical)\n        let _ = fs::write(&summary_path, summary);\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "format_duration",
+      "line": 500,
+      "column": 4,
+      "text": "fn format_duration(&self, ms: u64) -> String {\n        let seconds = ms / 1000;\n        let minutes = seconds / 60;\n        let hours = minutes / 60;\n\n        if hours > 0 {\n            format!(\"{}h {}m {}s\", hours, minutes % 60, seconds % 60)\n        } else if minutes > 0 {\n            format!(\"{}m {}s\", minutes, seconds % 60)\n        } else {\n            format!(\"{seconds}s\")\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "summarize_event_data",
+      "line": 515,
+      "column": 4,
+      "text": "fn summarize_event_data(&self, event: &DebugEvent) -> String {\n        let data = &event.data;\n        match event.event_type.as_str() {\n            \"session.start\" => format!(\n                \"Provider: {}\",\n                data.get(\"provider\")\n                    .and_then(|v| v.as_str())\n                    .unwrap_or(\"unknown\")\n            ),\n            \"session.end\" => format!(\n                \"Duration: {}ms\",\n                data.get(\"duration\")\n                    .and_then(serde_json::Value::as_u64)\n                    .unwrap_or(0)\n            ),\n            \"api.request\" => format!(\n                \"{} request\",\n                data.get(\"provider\")\n                    .and_then(|v| v.as_str())\n                    .unwrap_or(\"api\")\n            ),\n            \"api.response.end\" => format!(\n                \"Duration: {}ms\",\n                data.get(\"duration\")\n                    .and_then(serde_json::Value::as_u64)\n                    .unwrap_or(0)\n            ),\n            \"tool.call\" => format!(\n                \"Tool: {}\",\n                data.get(\"toolName\")\n                    .and_then(|v| v.as_str())\n                    .unwrap_or(\"unknown\")\n            ),\n            \"tool.result\" => format!(\n                \"Tool: {}, {}ms\",\n                data.get(\"toolName\")\n                    .and_then(|v| v.as_str())\n                    .unwrap_or(\"unknown\"),\n                data.get(\"duration\")\n                    .and_then(serde_json::Value::as_u64)\n                    .unwrap_or(0)\n            ),\n            \"log.entry\" => {\n                let level = data.get(\"level\").and_then(|v| v.as_str()).unwrap_or(\"info\");\n                let message = data.get(\"message\").and_then(|v| v.as_str()).unwrap_or(\"\");\n                let truncated: String = message.chars().take(SUMMARY_TRUNCATION_LENGTH).collect();\n                format!(\"[{level}] {truncated}...\")\n            }\n            \"user.input\" => {\n                let input = data.get(\"input\").and_then(|v| v.as_str()).unwrap_or(\"\");\n                let truncated: String = input.chars().take(SUMMARY_TRUNCATION_LENGTH).collect();\n                format!(\"{truncated}...\")\n            }\n            _ => event.event_type.clone(),\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "new",
+      "line": 583,
+      "column": 4,
+      "text": "pub fn new(value: T) -> Self {\n        Self {\n            inner: std::sync::Mutex::new(value),\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "lock",
+      "line": 590,
+      "column": 4,
+      "text": "pub fn lock(&self) -> Result<std::sync::MutexGuard<'_, T>, DebugCaptureError> {\n        match self.inner.lock() {\n            Ok(guard) => Ok(guard),\n            Err(poisoned) => {\n                // Recover from poison - the data may be in an inconsistent state\n                // but for debug capture this is acceptable (we might lose events)\n                Ok(poisoned.into_inner())\n            }\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "get_debug_capture_manager",
+      "line": 612,
+      "column": 0,
+      "text": "pub fn get_debug_capture_manager(\n) -> Result<Arc<PoisonRecoveryMutex<DebugCaptureManager>>, DebugCaptureError> {\n    // Note: get_or_init requires infallible initialization. If home directory\n    // cannot be determined, this is a fundamental system issue and panic is appropriate.\n    let manager = DEBUG_CAPTURE_MANAGER.get_or_init(|| {\n        let mgr = DebugCaptureManager::new().expect(\"Failed to create DebugCaptureManager\");\n        Arc::new(PoisonRecoveryMutex::new(mgr))\n    });\n\n    Ok(manager.clone())\n}"
+    },
+    {
+      "type": "function_item",
+      "name": "handle_debug_command",
+      "line": 625,
+      "column": 0,
+      "text": "pub fn handle_debug_command() -> DebugCommandResult {\n    let manager_arc = match get_debug_capture_manager() {\n        Ok(m) => m,\n        Err(e) => {\n            return DebugCommandResult {\n                enabled: false,\n                session_file: None,\n                message: format!(\"Failed to initialize debug capture: {e}\"),\n            }\n        }\n    };\n\n    let mut manager = match manager_arc.lock() {\n        Ok(m) => m,\n        Err(_) => {\n            return DebugCommandResult {\n                enabled: false,\n                session_file: None,\n                message: \"Failed to acquire lock on debug capture manager\".to_string(),\n            }\n        }\n    };\n\n    if manager.is_enabled() {\n        // Turn off\n        match manager.stop_capture() {\n            Ok(session_file) => DebugCommandResult {\n                enabled: false,\n                session_file: Some(session_file.clone()),\n                message: format!(\"Debug capture stopped. Session saved to: {session_file}\"),\n            },\n            Err(e) => DebugCommandResult {\n                enabled: false,\n                session_file: None,\n                message: format!(\"Failed to stop debug capture: {e}\"),\n            },\n        }\n    } else {\n        // Turn on\n        match manager.start_capture() {\n            Ok(session_file) => DebugCommandResult {\n                enabled: true,\n                session_file: Some(session_file.clone()),\n                message: format!(\"Debug capture started. Writing to: {session_file}\"),\n            },\n            Err(e) => DebugCommandResult {\n                enabled: false,\n                session_file: None,\n                message: format!(\"Failed to start debug capture: {e}\"),\n            },\n        }\n    }\n}"
+    },
+    {
+      "type": "function_item",
+      "name": "test_sanitize_headers_redacts_sensitive",
+      "line": 684,
+      "column": 4,
+      "text": "fn test_sanitize_headers_redacts_sensitive() {\n        let headers = serde_json::json!({\n            \"authorization\": \"Bearer secret\",\n            \"x-api-key\": \"key123\",\n            \"content-type\": \"application/json\"\n        });\n\n        let sanitized = sanitize_headers(&headers);\n\n        assert_eq!(\n            sanitized.get(\"authorization\").unwrap().as_str().unwrap(),\n            \"[REDACTED]\"\n        );\n        assert_eq!(\n            sanitized.get(\"x-api-key\").unwrap().as_str().unwrap(),\n            \"[REDACTED]\"\n        );\n        assert_eq!(\n            sanitized.get(\"content-type\").unwrap().as_str().unwrap(),\n            \"application/json\"\n        );\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_format_duration",
+      "line": 708,
+      "column": 4,
+      "text": "fn test_format_duration() {\n        let manager = DebugCaptureManager::new().expect(\"Failed to create manager\");\n\n        assert_eq!(manager.format_duration(500), \"0s\");\n        assert_eq!(manager.format_duration(5000), \"5s\");\n        assert_eq!(manager.format_duration(65000), \"1m 5s\");\n        assert_eq!(manager.format_duration(3665000), \"1h 1m 5s\");\n    }"
+    }
+  ]
+}

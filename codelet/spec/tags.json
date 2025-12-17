@@ -72,6 +72,10 @@
           "description": "Code search and file pattern matching tools (grep, glob)"
         },
         {
+          "name": "@documentation",
+          "description": "Documentation and specification management features"
+        },
+        {
           "name": "@interactive",
           "description": "Interactive user interface features requiring user interaction"
         },
@@ -107,8 +111,16 @@
       "required": false,
       "tags": [
         {
+          "name": "@architecture",
+          "description": "Features related to system architecture and DDD"
+        },
+        {
           "name": "@compaction",
           "description": "Context compaction and anchor point strategies"
+        },
+        {
+          "name": "@ddd",
+          "description": "Domain-Driven Design related features"
         },
         {
           "name": "@infrastructure",
@@ -233,7 +245,7 @@
     "examples": []
   },
   "statistics": {
-    "lastUpdated": "2025-12-17T00:14:12.969Z",
+    "lastUpdated": "2025-12-17T02:39:21.260Z",
     "phaseStats": [],
     "componentStats": [],
     "featureGroupStats": [],

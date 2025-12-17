@@ -39,6 +39,7 @@ Functional area tags
 |-----|-------------|
 | `@bash-execution` | Bash command execution and output handling |
 | `@code-search` | Code search and file pattern matching tools (grep, glob) |
+| `@documentation` | Documentation and specification management features |
 | `@interactive` | Interactive user interface features requiring user interaction |
 | `@llm-provider` | LLM provider implementations for AI completions |
 | `@providers` | Provider-related features |
@@ -53,7 +54,9 @@ Technical concern tags
 
 | Tag | Description |
 |-----|-------------|
+| `@architecture` | Features related to system architecture and DDD |
 | `@compaction` | Context compaction and anchor point strategies |
+| `@ddd` | Domain-Driven Design related features |
 | `@infrastructure` | Core infrastructure and system setup |
 | `@logging` | Logging and observability features |
 | `@markdown` | Markdown parsing and rendering |
@@ -112,7 +115,7 @@ Automation integration tags
 
 ## Tag Statistics
 
-_Last updated: 2025-12-17T00:14:12.969Z_
+_Last updated: 2025-12-17T02:39:21.260Z_
 
 **Update Command**: `fspec tag-stats`
 

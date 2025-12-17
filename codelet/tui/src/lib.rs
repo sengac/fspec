@@ -1,6 +1,7 @@
-//! TUI (Terminal User Interface) bounded context
+//! TUI (Terminal User Interface) - part of CLI Interface bounded context
 //!
-//! Interactive terminal interface for codelet agent using crossterm.
+//! Infrastructure module for terminal rendering and input handling.
+//! Used by the cli crate's interactive mode.
 //! Based on OpenAI codex architecture: inline viewport with preserved scrollback.
 
 pub mod events;

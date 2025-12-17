@@ -1,0 +1,36 @@
+{
+  "scenarios": [
+    {
+      "name": "Core crate maps to Agent Execution bounded context",
+      "testMappings": []
+    },
+    {
+      "name": "Providers crate maps to Provider Management bounded context",
+      "testMappings": []
+    },
+    {
+      "name": "Tools crate maps to Tool Execution bounded context",
+      "testMappings": []
+    },
+    {
+      "name": "CLI and TUI crates map to CLI Interface bounded context",
+      "testMappings": []
+    },
+    {
+      "name": "Common crate is not a bounded context",
+      "testMappings": []
+    },
+    {
+      "name": "Each crate lib.rs identifies its bounded context",
+      "testMappings": []
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 0,
+    "coveragePercent": 0,
+    "testFiles": [],
+    "implFiles": [],
+    "totalLinesCovered": 0
+  }
+}
