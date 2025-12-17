@@ -8,6 +8,7 @@
 pub mod debug_capture;
 pub mod logging;
 pub mod types;
+pub mod web_search;
 
 // Re-export common types for convenience
 pub use types::{ContentPart, Message, MessageContent, MessageRole};

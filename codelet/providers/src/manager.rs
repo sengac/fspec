@@ -30,7 +30,10 @@ impl FromStr for ProviderType {
             "openai" => Ok(ProviderType::OpenAI),
             "codex" => Ok(ProviderType::Codex),
             "gemini" => Ok(ProviderType::Gemini),
-            _ => Err(ProviderError::config("manager", format!("Unknown provider: {name}"))),
+            _ => Err(ProviderError::config(
+                "manager",
+                format!("Unknown provider: {name}"),
+            )),
         }
     }
 }
@@ -109,7 +112,9 @@ impl ProviderManager {
     }
 
     /// Detect default provider based on priority
-    fn detect_default_provider(credentials: &ProviderCredentials) -> Result<ProviderType, ProviderError> {
+    fn detect_default_provider(
+        credentials: &ProviderCredentials,
+    ) -> Result<ProviderType, ProviderError> {
         // Priority: Claude > Gemini > Codex > OpenAI
         if credentials.has_claude() {
             return Ok(ProviderType::Claude);
@@ -124,7 +129,10 @@ impl ProviderManager {
             return Ok(ProviderType::OpenAI);
         }
 
-        Err(ProviderError::auth("manager", "No provider credentials available"))
+        Err(ProviderError::auth(
+            "manager",
+            "No provider credentials available",
+        ))
     }
 
     /// Get current provider name
@@ -137,7 +145,10 @@ impl ProviderManager {
         if self.current_provider == ProviderType::Claude {
             ClaudeProvider::new()
         } else {
-            Err(ProviderError::config("manager", "Current provider is not Claude"))
+            Err(ProviderError::config(
+                "manager",
+                "Current provider is not Claude",
+            ))
         }
     }
 
@@ -146,7 +157,10 @@ impl ProviderManager {
         if self.current_provider == ProviderType::OpenAI {
             OpenAIProvider::new()
         } else {
-            Err(ProviderError::config("manager", "Current provider is not OpenAI"))
+            Err(ProviderError::config(
+                "manager",
+                "Current provider is not OpenAI",
+            ))
         }
     }
 
@@ -155,7 +169,10 @@ impl ProviderManager {
         if self.current_provider == ProviderType::Codex {
             CodexProvider::new()
         } else {
-            Err(ProviderError::config("manager", "Current provider is not Codex"))
+            Err(ProviderError::config(
+                "manager",
+                "Current provider is not Codex",
+            ))
         }
     }
 
@@ -164,7 +181,10 @@ impl ProviderManager {
         if self.current_provider == ProviderType::Gemini {
             GeminiProvider::new()
         } else {
-            Err(ProviderError::config("manager", "Current provider is not Gemini"))
+            Err(ProviderError::config(
+                "manager",
+                "Current provider is not Gemini",
+            ))
         }
     }
 

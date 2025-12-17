@@ -2,25 +2,30 @@
 //!
 //! Handles the main agent streaming loop including token tracking,
 //! debug capture, and compaction triggering.
+//!
+//! Uses rig's StreamingPromptHook to capture per-request token usage and
+//! check compaction thresholds before each internal API call, matching
+//! TypeScript's approach exactly.
 
-use super::estimate_tokens;
 use super::stream_handlers::{
     handle_final_response, handle_text_chunk, handle_tool_call, handle_tool_result,
 };
+use crate::compaction_threshold::calculate_compaction_threshold;
 use crate::interactive_helpers::execute_compaction;
 use crate::session::Session;
 use anyhow::Result;
 use codelet_common::debug_capture::get_debug_capture_manager;
-use codelet_core::RigAgent;
+use codelet_core::{CompactionHook, RigAgent, TokenState};
 use codelet_tui::{InputQueue, StatusDisplay, TuiEvent};
 use crossterm::event::KeyCode;
 use futures::StreamExt;
 use rig::agent::MultiTurnStreamItem;
-use rig::completion::CompletionModel;
+use rig::completion::{CompletionModel, GetTokenUsage};
 use rig::streaming::{StreamedAssistantContent, StreamedUserContent};
+use rig::wasm_compat::WasmCompatSend;
 use std::io::Write;
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use tokio::time::interval;
 
@@ -34,6 +39,7 @@ pub(super) async fn run_agent_stream_with_interruption<M>(
 ) -> Result<()>
 where
     M: CompletionModel,
+    M::StreamingResponse: WasmCompatSend + GetTokenUsage,
 {
     use rig::message::{Message, UserContent};
     use rig::OneOrMany;
@@ -43,6 +49,55 @@ where
     // CLI-022: Generate request ID for correlation
     let request_id = Uuid::new_v4().to_string();
     let api_start_time = Instant::now();
+
+    // CRITICAL: Add user prompt to message history for persistence (CLI-008)
+    session.messages.push(Message::User {
+        content: OneOrMany::one(UserContent::text(prompt)),
+    });
+
+    // HOOK-BASED COMPACTION (matches TypeScript runner.ts:829-836 exactly)
+    // Uses rig's StreamingPromptHook to capture per-request API token usage
+    // and check thresholds before each internal API call (including tool iterations).
+    //
+    // The hook:
+    // - on_completion_call: Called BEFORE each API call - checks threshold, cancels if exceeded
+    // - on_stream_completion_response_finish: Called AFTER each API call - captures per-request usage
+    //
+    // This matches TypeScript which checks shouldTriggerCompaction() before each streamText() call.
+    let context_window = session.provider_manager().context_window() as u64;
+    let threshold = calculate_compaction_threshold(context_window);
+
+    // Initialize TokenState with values from last API call (from session.token_tracker)
+    // This is what TypeScript does - it uses tokenTracker values from the previous call
+    let token_state = Arc::new(Mutex::new(TokenState {
+        input_tokens: session.token_tracker.input_tokens,
+        cache_read_input_tokens: session.token_tracker.cache_read_input_tokens.unwrap_or(0),
+        cache_creation_input_tokens: session.token_tracker.cache_creation_input_tokens.unwrap_or(0),
+        compaction_needed: false,
+    }));
+
+    let hook = CompactionHook::new(Arc::clone(&token_state), threshold);
+
+    // DEBUG: Log compaction check setup
+    if let Ok(manager_arc) = get_debug_capture_manager() {
+        if let Ok(mut manager) = manager_arc.lock() {
+            if manager.is_enabled() {
+                let state = token_state.lock().unwrap();
+                manager.capture(
+                    "compaction.check",
+                    serde_json::json!({
+                        "timing": "hook-setup",
+                        "inputTokens": state.input_tokens,
+                        "cacheReadInputTokens": state.cache_read_input_tokens,
+                        "threshold": threshold,
+                        "contextWindow": context_window,
+                        "messageCount": session.messages.len(),
+                    }),
+                    None,
+                );
+            }
+        }
+    }
 
     // CLI-022: Capture api.request event
     if let Ok(manager_arc) = get_debug_capture_manager() {
@@ -65,14 +120,10 @@ where
         }
     }
 
-    // CRITICAL: Add user prompt to message history for persistence (CLI-008)
-    session.messages.push(Message::User {
-        content: OneOrMany::one(UserContent::text(prompt)),
-    });
-
-    // CRITICAL FIX: Pass conversation history to rig for context persistence (CLI-008)
+    // CRITICAL FIX: Pass conversation history AND hook to rig for context persistence (CLI-008)
+    // The hook captures per-request token usage and triggers compaction when needed
     let mut stream = agent
-        .prompt_streaming_with_history(prompt, &mut session.messages)
+        .prompt_streaming_with_history_and_hook(prompt, &mut session.messages, hook)
         .await;
 
     // CLI-022: Capture api.response.start event
@@ -102,11 +153,8 @@ where
     // Track last tool call for debug logging
     let mut last_tool_name: Option<String> = None;
 
-    // CLI-010: Track token usage for compaction
-    let mut turn_input_tokens: u64 = 0;
+    // CLI-010: Track output tokens (input/cache tokens come from hook's TokenState)
     let mut turn_output_tokens: u64 = 0;
-    let mut turn_cache_read_tokens: Option<u64> = None;
-    let mut turn_cache_creation_tokens: Option<u64> = None;
 
     loop {
         tokio::select! {
@@ -150,48 +198,26 @@ where
                         )?;
                     }
                     Some(Ok(MultiTurnStreamItem::FinalResponse(final_resp))) => {
-                        // CLI-010: Extract token usage from FinalResponse
+                        // Output tokens come from FinalResponse (aggregated across all tool iterations)
                         let usage = final_resp.usage();
-
-                        // Use API values if available, otherwise estimate (matches codelet fallback pattern)
-                        turn_input_tokens = if usage.input_tokens > 0 {
-                            usage.input_tokens
-                        } else {
-                            estimate_tokens(prompt)
-                        };
-
-                        turn_output_tokens = if usage.output_tokens > 0 {
-                            usage.output_tokens
-                        } else {
-                            estimate_tokens(&assistant_text)
-                        };
-
-                        // PROV-006: Cache token extraction from Anthropic API
-                        //
-                        // REQUEST-SIDE (WORKING): ClaudeProvider.create_rig_agent() uses additional_params
-                        // to transform system prompts to array format with cache_control metadata.
-                        // This enables Anthropic's prompt caching on outgoing requests.
-                        //
-                        // RESPONSE-SIDE (NOW WORKING): Patched rig-core exposes cache tokens in Usage.
-                        // The patch adds cache_read_input_tokens and cache_creation_input_tokens fields
-                        // to rig's generic Usage struct, and extracts them from MessageStart SSE events.
-                        turn_cache_read_tokens = usage.cache_read_input_tokens;
-                        turn_cache_creation_tokens = usage.cache_creation_input_tokens;
+                        turn_output_tokens = usage.output_tokens;
 
                         // CLI-022: Capture api.response.end event with token usage
+                        // Get per-request values from hook's TokenState
                         if let Ok(manager_arc) = get_debug_capture_manager() {
                             if let Ok(mut manager) = manager_arc.lock() {
                                 if manager.is_enabled() {
+                                    let state = token_state.lock().unwrap();
                                     let duration_ms = api_start_time.elapsed().as_millis() as u64;
                                     manager.capture(
                                         "api.response.end",
                                         serde_json::json!({
                                             "duration": duration_ms,
                                             "usage": {
-                                                "inputTokens": turn_input_tokens,
+                                                "inputTokens": state.input_tokens,
                                                 "outputTokens": turn_output_tokens,
-                                                "cacheReadInputTokens": turn_cache_read_tokens,
-                                                "cacheCreationInputTokens": turn_cache_creation_tokens,
+                                                "cacheReadInputTokens": state.cache_read_input_tokens,
+                                                "cacheCreationInputTokens": state.cache_creation_input_tokens,
                                             },
                                             "responseLength": assistant_text.len(),
                                         }),
@@ -201,15 +227,14 @@ where
                                     );
 
                                     // CLI-022: Capture token.update event
-                                    // Note: totalInputTokens = inputTokens since we REPLACE (not accumulate)
                                     manager.capture(
                                         "token.update",
                                         serde_json::json!({
-                                            "inputTokens": turn_input_tokens,
+                                            "inputTokens": state.input_tokens,
                                             "outputTokens": turn_output_tokens,
-                                            "cacheReadInputTokens": turn_cache_read_tokens,
-                                            "cacheCreationInputTokens": turn_cache_creation_tokens,
-                                            "totalInputTokens": turn_input_tokens,
+                                            "cacheReadInputTokens": state.cache_read_input_tokens,
+                                            "cacheCreationInputTokens": state.cache_creation_input_tokens,
+                                            "totalInputTokens": state.input_tokens,
                                             "totalOutputTokens": turn_output_tokens,
                                         }),
                                         None,
@@ -270,94 +295,88 @@ where
         }
     }
 
-    // CLI-010: After stream completes, update tokens and check compaction
-    if !is_interrupted.load(Ordering::Relaxed) {
-        // Replace token tracker with API usage values (matches TypeScript runner.ts:1143)
-        // TypeScript: inputTokens: usage.inputTokens ?? tokenTracker.inputTokens
-        // The API reports total input tokens for the current context, not incremental
-        session.token_tracker.input_tokens = turn_input_tokens;
-        session.token_tracker.output_tokens = turn_output_tokens;
-        if let Some(cache_read) = turn_cache_read_tokens {
-            let current = session.token_tracker.cache_read_input_tokens.unwrap_or(0);
-            session.token_tracker.cache_read_input_tokens = Some(current + cache_read);
-        }
-        if let Some(cache_create) = turn_cache_creation_tokens {
-            let current = session
-                .token_tracker
-                .cache_creation_input_tokens
-                .unwrap_or(0);
-            session.token_tracker.cache_creation_input_tokens = Some(current + cache_create);
-        }
+    // Check if hook triggered compaction (cancelled before API call could proceed)
+    let compaction_needed = {
+        let state = token_state.lock().unwrap();
+        state.compaction_needed
+    };
 
-        // CTX-002: Removed eager turn creation - now done lazily during compaction
-        // Turns are created from session.messages inside execute_compaction() following TypeScript implementation
-
-        // Check if compaction should trigger
-        // CLI-015: Use model-specific context window instead of hardcoded value
-        // CLI-020: Apply autocompact buffer to leave headroom after compaction
-        // FIX: Use message estimation instead of rig's aggregated_usage, because rig
-        // accumulates tokens across all tool call iterations in a multi-turn agent call.
-        // For compaction, we need the CURRENT context size, not accumulated API usage.
-        use crate::compaction_threshold::calculate_compaction_threshold;
-        use crate::interactive_helpers::estimate_message_tokens;
-        let context_window = session.provider_manager().context_window() as u64;
-        let threshold = calculate_compaction_threshold(context_window);
-        let effective = estimate_message_tokens(&session.messages);
-
-        if effective > threshold {
-            // CLI-022: Capture compaction.triggered event
-            if let Ok(manager_arc) = get_debug_capture_manager() {
-                if let Ok(mut manager) = manager_arc.lock() {
-                    if manager.is_enabled() {
-                        manager.capture(
-                            "compaction.triggered",
-                            serde_json::json!({
-                                "effectiveTokens": effective,
-                                "threshold": threshold,
-                                "contextWindow": context_window,
-                            }),
-                            None,
-                        );
-                    }
-                }
-            }
-
-            println!("\n[Generating summary...]");
-            std::io::stdout().flush()?;
-
-            // Execute compaction
-            match execute_compaction(session).await {
-                Ok(metrics) => {
-                    // CLI-022: Capture context.update event after compaction
-                    if let Ok(manager_arc) = get_debug_capture_manager() {
-                        if let Ok(mut manager) = manager_arc.lock() {
-                            if manager.is_enabled() {
-                                manager.capture(
-                                    "context.update",
-                                    serde_json::json!({
-                                        "type": "compaction",
-                                        "originalTokens": metrics.original_tokens,
-                                        "compactedTokens": metrics.compacted_tokens,
-                                        "compressionRatio": metrics.compression_ratio,
-                                    }),
-                                    None,
-                                );
-                            }
-                        }
-                    }
-
-                    println!(
-                        "[Context compacted: {}→{} tokens, {:.0}% compression]\n",
-                        metrics.original_tokens,
-                        metrics.compacted_tokens,
-                        metrics.compression_ratio * 100.0
+    if compaction_needed && !is_interrupted.load(Ordering::Relaxed) {
+        // Capture compaction.triggered event
+        if let Ok(manager_arc) = get_debug_capture_manager() {
+            if let Ok(mut manager) = manager_arc.lock() {
+                if manager.is_enabled() {
+                    let state = token_state.lock().unwrap();
+                    manager.capture(
+                        "compaction.triggered",
+                        serde_json::json!({
+                            "timing": "hook-triggered",
+                            "inputTokens": state.input_tokens,
+                            "cacheReadInputTokens": state.cache_read_input_tokens,
+                            "threshold": threshold,
+                            "contextWindow": context_window,
+                        }),
+                        None,
                     );
                 }
-                Err(e) => {
-                    eprintln!("Warning: Compaction failed: {e}");
-                }
             }
         }
+
+        println!("\n[Generating summary...]");
+        std::io::stdout().flush()?;
+
+        // Execute compaction
+        match execute_compaction(session).await {
+            Ok(metrics) => {
+                // Capture context.update event after compaction
+                if let Ok(manager_arc) = get_debug_capture_manager() {
+                    if let Ok(mut manager) = manager_arc.lock() {
+                        if manager.is_enabled() {
+                            manager.capture(
+                                "context.update",
+                                serde_json::json!({
+                                    "type": "compaction",
+                                    "originalTokens": metrics.original_tokens,
+                                    "compactedTokens": metrics.compacted_tokens,
+                                    "compressionRatio": metrics.compression_ratio,
+                                }),
+                                None,
+                            );
+                        }
+                    }
+                }
+
+                println!(
+                    "[Context compacted: {}→{} tokens, {:.0}% compression]",
+                    metrics.original_tokens,
+                    metrics.compacted_tokens,
+                    metrics.compression_ratio * 100.0
+                );
+                println!("[Please resend your message - context was compacted]\n");
+            }
+            Err(e) => {
+                eprintln!("Warning: Compaction failed: {e}");
+            }
+        }
+
+        // Reset token tracker after compaction
+        session.token_tracker.input_tokens = 0;
+        session.token_tracker.output_tokens = 0;
+        session.token_tracker.cache_read_input_tokens = None;
+        session.token_tracker.cache_creation_input_tokens = None;
+
+        return Ok(());
+    }
+
+    // CLI-010: After stream completes, update tokens from hook's TokenState
+    // The hook captures per-request values in on_stream_completion_response_finish
+    if !is_interrupted.load(Ordering::Relaxed) {
+        // Get final token values from hook state (per-request, not accumulated)
+        let state = token_state.lock().unwrap();
+        session.token_tracker.input_tokens = state.input_tokens;
+        session.token_tracker.output_tokens = turn_output_tokens;
+        session.token_tracker.cache_read_input_tokens = Some(state.cache_read_input_tokens);
+        session.token_tracker.cache_creation_input_tokens = Some(state.cache_creation_input_tokens);
     }
 
     Ok(())

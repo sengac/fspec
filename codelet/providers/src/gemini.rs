@@ -65,8 +65,9 @@ impl GeminiProvider {
         validate_api_key_static("gemini", api_key)?;
 
         // Build rig gemini client
-        let rig_client = gemini::Client::new(api_key)
-            .map_err(|e| ProviderError::config("gemini", format!("Failed to build Gemini client: {e}")))?;
+        let rig_client = gemini::Client::new(api_key).map_err(|e| {
+            ProviderError::config("gemini", format!("Failed to build Gemini client: {e}"))
+        })?;
 
         // Create completion model using the client
         let completion_model = rig_client.completion_model(model);
@@ -92,10 +93,11 @@ impl GeminiProvider {
         preamble: Option<&str>,
     ) -> rig::agent::Agent<gemini::completion::CompletionModel> {
         use codelet_tools::{
-            AstGrepTool, BashTool, EditTool, GlobTool, GrepTool, LsTool, ReadTool, WriteTool,
+            AstGrepTool, BashTool, EditTool, GlobTool, GrepTool, LsTool, ReadTool, WebSearchTool,
+            WriteTool,
         };
 
-        // Build agent with all 8 tools using rig's builder pattern
+        // Build agent with all 9 tools using rig's builder pattern (WEB-001: Added WebSearchTool)
         let mut agent_builder = self
             .rig_client
             .agent(&self.model_name)
@@ -107,7 +109,8 @@ impl GeminiProvider {
             .tool(GrepTool::new())
             .tool(GlobTool::new())
             .tool(LsTool::new())
-            .tool(AstGrepTool::new());
+            .tool(AstGrepTool::new())
+            .tool(WebSearchTool::new()); // WEB-001: Added WebSearchTool with consistent new() pattern
 
         // Set preamble if provided
         if let Some(p) = preamble {

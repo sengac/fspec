@@ -2,7 +2,7 @@
   "version": "0.7.1",
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-12-17T05:29:57.065Z"
+    "lastUpdated": "2025-12-17T08:22:27.482Z"
   },
   "workUnits": {
     "FOUND-001": {
@@ -7300,6 +7300,161 @@
       "nextQuestionId": 0,
       "nextNoteId": 0,
       "updated": "2025-12-17T05:13:36.004Z"
+    },
+    "WEB-001": {
+      "id": "WEB-001",
+      "title": "Web Search and Fetch Tool Integration",
+      "type": "story",
+      "status": "validating",
+      "createdAt": "2025-12-17T07:30:51.323Z",
+      "updatedAt": "2025-12-17T08:58:35.425Z",
+      "description": "Implement native web search and fetch capabilities similar to Codex, allowing AI agents to search the web and retrieve content from URLs",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-12-17T07:30:57.735Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-12-17T08:05:05.087Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-17T08:08:05.125Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-17T08:20:05.789Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-17T08:22:27.498Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-17T08:58:35.425Z"
+        }
+      ],
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: Do you want to implement custom web search logic (using search APIs like Bing/Google) or leverage OpenAI's native web_search tool like Codex does?",
+          "deleted": false,
+          "createdAt": "2025-12-17T07:31:43.442Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Use OpenAI's native web_search tool exactly like Codex - copy their implementation using astgrep tool"
+        },
+        {
+          "id": 1,
+          "text": "@human: Should we implement just web search or also web fetch/scraping capabilities? Codex has both Search, OpenPage, and FindInPage actions.",
+          "deleted": false,
+          "createdAt": "2025-12-17T07:31:49.537Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Copy ALL THREE web actions exactly as Codex has them: Search, OpenPage, FindInPage - 100% the same implementation"
+        },
+        {
+          "id": 2,
+          "text": "@human: What should be our approach for handling web content? Should we parse HTML, extract text, or return raw content?",
+          "deleted": false,
+          "createdAt": "2025-12-17T07:31:55.580Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Copy Codex's exact approach - use their WebSearchAction enum, event handling, and tool registration exactly as they implemented it"
+        },
+        {
+          "id": 3,
+          "text": "@human: Should we implement all three web actions (Search, OpenPage, FindInPage) that Codex has, or start with just Search?",
+          "deleted": false,
+          "createdAt": "2025-12-17T08:00:34.225Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Copy all three web actions exactly as Codex has them: Search, OpenPage, FindInPage"
+        }
+      ],
+      "nextQuestionId": 4,
+      "rules": [
+        {
+          "id": 0,
+          "text": "Web search must be implemented as native OpenAI tool type exactly like Codex",
+          "deleted": false,
+          "createdAt": "2025-12-17T08:01:29.485Z"
+        },
+        {
+          "id": 1,
+          "text": "Must copy WebSearchAction enum with Search/OpenPage/FindInPage variants exactly from Codex",
+          "deleted": false,
+          "createdAt": "2025-12-17T08:01:36.106Z"
+        },
+        {
+          "id": 2,
+          "text": "Must copy WebSearchBeginEvent and WebSearchEndEvent structures from Codex",
+          "deleted": false,
+          "createdAt": "2025-12-17T08:01:42.931Z"
+        },
+        {
+          "id": 3,
+          "text": "Must copy tool registration logic exactly - ToolSpec::WebSearch {} from client_common.rs",
+          "deleted": false,
+          "createdAt": "2025-12-17T08:01:48.739Z"
+        },
+        {
+          "id": 4,
+          "text": "Must copy configuration system - web_search_request feature flag from Codex",
+          "deleted": false,
+          "createdAt": "2025-12-17T08:01:55.847Z"
+        }
+      ],
+      "nextRuleId": 5,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Copy WebSearchAction enum from /tmp/codex/codex-rs/protocol/src/models.rs using astgrep",
+          "deleted": false,
+          "createdAt": "2025-12-17T08:02:01.530Z"
+        },
+        {
+          "id": 1,
+          "text": "Agent can perform web search by calling 'search for weather in Seattle' and get search results",
+          "deleted": false,
+          "createdAt": "2025-12-17T08:02:08.327Z"
+        },
+        {
+          "id": 2,
+          "text": "Agent can fetch page content by calling 'open page https://example.com' and get page content",
+          "deleted": false,
+          "createdAt": "2025-12-17T08:02:13.913Z"
+        },
+        {
+          "id": 3,
+          "text": "Agent can search within page content by calling 'find in page' with URL and pattern",
+          "deleted": false,
+          "createdAt": "2025-12-17T08:02:19.397Z"
+        }
+      ],
+      "nextExampleId": 4,
+      "userStory": {
+        "role": "AI agent user",
+        "action": "use web search and content fetching capabilities",
+        "benefit": "I can access real-time web information during conversations"
+      },
+      "estimate": 8,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Implementation will copy exact code patterns from Codex using astgrep tool to extract and adapt their WebSearchAction enum, event structures, and tool registration logic",
+          "deleted": false,
+          "createdAt": "2025-12-17T08:04:01.352Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "attachments": [
+        "spec/attachments/WEB-001/ast-research-web-search-structures.json",
+        "spec/attachments/WEB-001/codex-websearch-action.rs"
+      ],
+      "updated": "2025-12-17T08:22:27.497Z"
     }
   },
   "states": {
@@ -7313,7 +7468,9 @@
       "CLI-021",
       "REFAC-013"
     ],
-    "validating": [],
+    "validating": [
+      "WEB-001"
+    ],
     "done": [
       "REFAC-015",
       "PROV-006",
@@ -7375,6 +7532,7 @@
     "AGENT": 1,
     "CTX": 2,
     "REFAC": 15,
-    "CLI": 24
+    "CLI": 24,
+    "WEB": 1
   }
 }

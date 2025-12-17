@@ -13,12 +13,6 @@ use crate::session::Session;
 use anyhow::Result;
 use repl_loop::repl_loop;
 
-const APPROX_BYTES_PER_TOKEN: usize = 4;
-
-fn estimate_tokens(text: &str) -> u64 {
-    (text.len() / APPROX_BYTES_PER_TOKEN) as u64
-}
-
 pub async fn run_interactive_mode(provider_name: Option<&str>) -> Result<()> {
     // Initialize session with persistent context (CLI-008)
     let mut session = Session::new(provider_name)?;

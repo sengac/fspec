@@ -14,6 +14,7 @@ pub mod ls;
 pub mod read;
 pub mod truncation;
 pub mod validation;
+pub mod web_search;
 pub mod write;
 
 pub use error::ToolError;
@@ -28,6 +29,7 @@ pub use glob::GlobTool;
 pub use grep::GrepTool;
 pub use ls::LsTool;
 pub use read::ReadTool;
+pub use web_search::WebSearchTool;
 pub use write::WriteTool;
 
 /// Tool definition for API requests

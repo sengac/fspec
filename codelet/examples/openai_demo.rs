@@ -26,7 +26,7 @@ async fn main() {
 
             // Test 3: Can create rig agent
             let _agent = provider.create_rig_agent(None);
-            println!("✓ Rig agent created with all 8 tools configured");
+            println!("✓ Rig agent created with all 9 tools configured");
 
             println!("\n=== Integration Demo Complete ===");
             println!("All public API endpoints are properly wired and accessible.");
