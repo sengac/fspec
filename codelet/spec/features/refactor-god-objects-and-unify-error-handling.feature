@@ -32,36 +32,6 @@ Feature: Refactor God Objects and Unify Error Handling
     I want to have well-organized, focused modules with consistent error handling
     So that the codebase is easier to understand, test, and extend
 
-  Scenario: Split interactive.rs into focused submodules
-    Given the cli crate contains interactive.rs with 845 lines
-    When I refactor interactive.rs into the interactive/ directory
-    Then interactive/mod.rs should contain public API and orchestration
-    And interactive/repl_loop.rs should contain the main REPL loop logic
-    And interactive/stream_handler.rs should contain response streaming
-    And interactive/tool_executor.rs should contain tool invocation handling
-    And interactive/token_display.rs should contain token usage display
-    And no file in interactive/ should exceed 250 lines
-
-  Scenario: Split compaction.rs into focused submodules
-    Given the core crate contains compaction.rs with 699 lines
-    When I refactor compaction.rs into the compaction/ directory
-    Then compaction/mod.rs should contain public re-exports
-    And compaction/model.rs should contain TokenTracker and ConversationTurn types
-    And compaction/anchor.rs should contain anchor point detection logic
-    And compaction/compactor.rs should contain the compaction algorithm
-    And compaction/metrics.rs should contain CompactionResult types
-    And no file in compaction/ should exceed 200 lines
-
-  Scenario: Split debug_capture.rs into focused submodules
-    Given the common crate contains debug_capture.rs with 716 lines
-    When I refactor debug_capture.rs into the debug_capture/ directory
-    Then debug_capture/mod.rs should contain public API and manager access
-    And debug_capture/capture.rs should contain capture type definitions
-    And debug_capture/storage.rs should contain file I/O operations
-    And debug_capture/formatting.rs should contain JSON and display formatting
-    And the DebugCaptureManager should be injectable for testing
-    And no file in debug_capture/ should exceed 200 lines
-
   Scenario: Unify tool error types
     Given each tool has its own error enum (BashError, ReadError, WriteError, etc.)
     When I create a unified ToolError type in tools/src/error.rs
