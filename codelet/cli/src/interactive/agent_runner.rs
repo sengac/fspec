@@ -47,5 +47,3 @@ pub(super) async fn run_agent_with_interruption(
         _ => Err(anyhow::anyhow!("Unknown provider")),
     }
 }
-
-

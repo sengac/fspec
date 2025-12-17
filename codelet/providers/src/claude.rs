@@ -3,10 +3,13 @@
 //! Implements the LlmProvider trait for Claude API communication.
 //! Uses rig::providers::anthropic for HTTP communication.
 
-use crate::{CompletionResponse, LlmProvider, StopReason};
-use anyhow::{anyhow, Result};
+use crate::{
+    convert_assistant_content, convert_tools_to_rig, detect_credential_from_env,
+    extract_text_from_content, validate_api_key_static, CompletionResponse, LlmProvider,
+    ProviderAdapter, ProviderError, StopReason,
+};
 use async_trait::async_trait;
-use codelet_common::{ContentPart, Message, MessageContent, MessageRole};
+use codelet_common::{Message, MessageContent, MessageRole};
 use codelet_tools::ToolDefinition as OurToolDefinition;
 use reqwest::header::{HeaderValue, AUTHORIZATION};
 use rig::completion::CompletionRequestBuilder;
@@ -126,38 +129,49 @@ impl std::fmt::Debug for ClaudeProvider {
     }
 }
 
+impl ProviderAdapter for ClaudeProvider {
+    fn provider_name(&self) -> &'static str {
+        "claude"
+    }
+}
+
 impl ClaudeProvider {
     /// Create a new ClaudeProvider using API key from environment
     ///
     /// Checks for API key in order of preference:
     /// 1. ANTHROPIC_API_KEY (uses standard x-api-key header)
     /// 2. CLAUDE_CODE_OAUTH_TOKEN (uses Bearer auth with special headers)
-    pub fn new() -> Result<Self> {
-        // Check for API key first (takes precedence)
-        if let Ok(api_key) = std::env::var("ANTHROPIC_API_KEY") {
+    ///
+    /// Uses shared detect_credential_from_env() helper (REFAC-013).
+    pub fn new() -> Result<Self, ProviderError> {
+        // Check for API key first (takes precedence) using shared helper
+        if let Ok(api_key) = detect_credential_from_env("claude", &["ANTHROPIC_API_KEY"]) {
             return Self::from_api_key_with_mode(&api_key, AuthMode::ApiKey);
         }
 
-        // Fall back to OAuth token
-        if let Ok(oauth_token) = std::env::var("CLAUDE_CODE_OAUTH_TOKEN") {
+        // Fall back to OAuth token using shared helper
+        if let Ok(oauth_token) = detect_credential_from_env("claude", &["CLAUDE_CODE_OAUTH_TOKEN"])
+        {
             return Self::from_api_key_with_mode(&oauth_token, AuthMode::OAuth);
         }
 
-        Err(anyhow!(
-            "No API key found. Set ANTHROPIC_API_KEY or CLAUDE_CODE_OAUTH_TOKEN environment variable"
+        Err(ProviderError::auth(
+            "claude",
+            "No API key found. Set ANTHROPIC_API_KEY or CLAUDE_CODE_OAUTH_TOKEN environment variable",
         ))
     }
 
     /// Create a new ClaudeProvider with an explicit API key (defaults to ApiKey mode)
-    pub fn from_api_key(api_key: &str) -> Result<Self> {
+    pub fn from_api_key(api_key: &str) -> Result<Self, ProviderError> {
         Self::from_api_key_with_mode(api_key, AuthMode::ApiKey)
     }
 
     /// Create a new ClaudeProvider with an explicit API key and auth mode
-    pub fn from_api_key_with_mode(api_key: &str, auth_mode: AuthMode) -> Result<Self> {
-        if api_key.is_empty() {
-            return Err(anyhow!("API key cannot be empty"));
-        }
+    ///
+    /// Uses shared validate_api_key_static() helper (REFAC-013).
+    pub fn from_api_key_with_mode(api_key: &str, auth_mode: AuthMode) -> Result<Self, ProviderError> {
+        // Use shared validation helper (REFAC-013)
+        validate_api_key_static("claude", api_key)?;
 
         // Parse beta headers for rig client
         let beta_features: Vec<&str> = ANTHROPIC_BETA_HEADER.split(',').collect();
@@ -167,7 +181,7 @@ impl ClaudeProvider {
             .api_key(api_key)
             .anthropic_betas(&beta_features)
             .build()
-            .map_err(|e| anyhow!("Failed to build Anthropic client: {e}"))?;
+            .map_err(|e| ProviderError::config("claude", format!("Failed to build Anthropic client: {e}")))?;
 
         // For OAuth mode, replace x-api-key header with Bearer auth
         if auth_mode == AuthMode::OAuth {
@@ -180,7 +194,7 @@ impl ClaudeProvider {
             headers.insert(
                 AUTHORIZATION,
                 HeaderValue::from_str(&format!("Bearer {api_key}"))
-                    .map_err(|e| anyhow!("Invalid OAuth token: {e}"))?,
+                    .map_err(|e| ProviderError::auth("claude", format!("Invalid OAuth token: {e}")))?,
             );
 
             // Rebuild client with modified headers
@@ -331,25 +345,11 @@ impl ClaudeProvider {
         agent_builder.build()
     }
 
-    /// Extract text content from a message (DRY helper)
-    fn extract_text_from_content(content: &MessageContent) -> String {
-        match content {
-            MessageContent::Text(t) => t.clone(),
-            MessageContent::Parts(parts) => parts
-                .iter()
-                .filter_map(|p| {
-                    if let ContentPart::Text { text } = p {
-                        Some(text.as_str())
-                    } else {
-                        None
-                    }
-                })
-                .collect::<Vec<_>>()
-                .join("\n"),
-        }
-    }
-
     /// Extract preamble and last user prompt from messages
+    ///
+    /// Note: Claude requires custom handling for OAuth mode prefix, so this
+    /// method doesn't use the shared extract_prompt_data() helper.
+    /// It does use the shared extract_text_from_content() helper (REFAC-013).
     fn extract_prompt_data(&self, messages: &[Message]) -> (Option<String>, String) {
         let mut system_prompt: Option<String> = None;
         let mut user_messages: Vec<String> = Vec::new();
@@ -357,7 +357,8 @@ impl ClaudeProvider {
         for msg in messages {
             match msg.role {
                 MessageRole::System => {
-                    let text = Self::extract_text_from_content(&msg.content);
+                    // Use shared helper (REFAC-013)
+                    let text = extract_text_from_content(&msg.content);
 
                     // OAuth mode requires prefix (but don't duplicate if already present)
                     system_prompt = if self.auth_mode == AuthMode::OAuth {
@@ -373,14 +374,12 @@ impl ClaudeProvider {
                     };
                 }
                 MessageRole::User => {
-                    let text = Self::extract_text_from_content(&msg.content);
+                    // Use shared helper (REFAC-013)
+                    let text = extract_text_from_content(&msg.content);
                     user_messages.push(text);
                 }
                 MessageRole::Assistant => {
-                    // Multi-turn conversation history (including assistant messages) is out of
-                    // scope for REFAC-003. Multi-turn support will be added in REFAC-004 using
-                    // rig::agent::Agent which handles conversation history automatically.
-                    // For now, we only extract the last user message for single-turn completions.
+                    // Multi-turn conversation history handled by rig
                 }
             }
         }
@@ -398,43 +397,16 @@ impl ClaudeProvider {
     fn rig_response_to_completion(
         &self,
         response: rig::completion::CompletionResponse<anthropic::completion::CompletionResponse>,
-    ) -> Result<CompletionResponse> {
-        // Convert rig AssistantContent to our ContentPart format
-        let mut content_parts: Vec<ContentPart> = vec![];
+    ) -> Result<CompletionResponse, ProviderError> {
+        // Convert rig AssistantContent to our ContentPart format using shared helper (REFAC-013)
+        let content_parts = convert_assistant_content(response.choice, "claude")?;
 
-        for content in response.choice.into_iter() {
-            match content {
-                rig::completion::AssistantContent::Text(text) => {
-                    content_parts.push(ContentPart::Text { text: text.text });
-                }
-                rig::completion::AssistantContent::ToolCall(tool_call) => {
-                    content_parts.push(ContentPart::ToolUse {
-                        id: tool_call.id,
-                        name: tool_call.function.name,
-                        input: tool_call.function.arguments,
-                    });
-                }
-                rig::completion::AssistantContent::Reasoning(reasoning) => {
-                    // Rig returns reasoning separately, we can include it as text
-                    // or handle it specially if needed
-                    for r in reasoning.reasoning {
-                        content_parts.push(ContentPart::Text { text: r });
-                    }
-                }
-                rig::completion::AssistantContent::Image(_) => {
-                    // Anthropic doesn't support assistant images
-                    return Err(anyhow!("Assistant images not supported"));
-                }
-            }
-        }
-
-        // Map Anthropic's stop_reason to our StopReason enum
+        // Map Anthropic's stop_reason to our StopReason enum (provider-specific)
         let stop_reason = match response.raw_response.stop_reason.as_deref() {
             Some("tool_use") => StopReason::ToolUse,
             Some("max_tokens") => StopReason::MaxTokens,
             Some("end_turn") | Some("stop_sequence") | None => StopReason::EndTurn,
             Some(other) => {
-                // Unknown stop reason - log and default to EndTurn
                 warn!(stop_reason = %other, "Unknown stop_reason from Anthropic API");
                 StopReason::EndTurn
             }
@@ -473,31 +445,24 @@ impl LlmProvider for ClaudeProvider {
         true // Streaming support via rig (REFAC-003)
     }
 
-    async fn complete(&self, messages: &[Message]) -> Result<String> {
+    async fn complete(&self, messages: &[Message]) -> Result<String, ProviderError> {
         // Reuse complete_with_tools with no tools to avoid code duplication
         let response = self.complete_with_tools(messages, &[]).await?;
 
-        // Extract text using helper method to maintain DRY
-        Ok(Self::extract_text_from_content(&response.content))
+        // Extract text using shared helper (REFAC-013)
+        Ok(extract_text_from_content(&response.content))
     }
 
     async fn complete_with_tools(
         &self,
         messages: &[Message],
         tools: &[OurToolDefinition],
-    ) -> Result<CompletionResponse> {
+    ) -> Result<CompletionResponse, ProviderError> {
         // Extract prompt data
         let (preamble, prompt) = self.extract_prompt_data(messages);
 
-        // Convert tools to rig format
-        let rig_tools: Vec<rig::completion::ToolDefinition> = tools
-            .iter()
-            .map(|t| rig::completion::ToolDefinition {
-                name: t.name.clone(),
-                description: t.description.clone(),
-                parameters: t.input_schema.clone(),
-            })
-            .collect();
+        // Convert tools to rig format using shared helper (REFAC-013)
+        let rig_tools = convert_tools_to_rig(tools);
 
         // Build and send completion request using rig's builder pattern
         let mut builder = CompletionRequestBuilder::new(self.completion_model.clone(), prompt)
@@ -512,7 +477,7 @@ impl LlmProvider for ClaudeProvider {
         let response = builder
             .send()
             .await
-            .map_err(|e| anyhow!("Rig completion with tools failed: {e}"))?;
+            .map_err(|e| ProviderError::api("claude", format!("Rig completion failed: {e}")))?;
 
         // Convert rig response to our CompletionResponse format
         self.rig_response_to_completion(response)

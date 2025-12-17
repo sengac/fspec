@@ -2,16 +2,23 @@
 //!
 //! Multi-provider LLM abstraction.
 
+pub mod adapter;
 pub mod cache_token_extractor;
 pub mod caching_client;
 pub mod claude;
 pub mod codex;
 mod credentials;
+pub mod error;
 pub mod gemini;
 mod manager;
 pub mod openai;
 
-use anyhow::Result;
+pub use adapter::{
+    convert_assistant_content, convert_tools_to_rig, detect_credential_from_env,
+    extract_prompt_data, extract_text_from_content, validate_api_key_static, ProviderAdapter,
+};
+pub use error::ProviderError;
+
 use async_trait::async_trait;
 
 pub use cache_token_extractor::{extract_cache_tokens_from_sse, CacheTokenExtractor};
@@ -50,6 +57,10 @@ pub enum StopReason {
 }
 
 /// LLM Provider trait for multi-provider abstraction
+///
+/// All methods return `Result<_, ProviderError>` for typed error handling.
+/// This enables automatic retry logic for rate limit errors and proper
+/// error categorization (authentication, API, rate limit, etc.).
 #[async_trait]
 pub trait LlmProvider: Send + Sync {
     /// Provider name
@@ -71,12 +82,15 @@ pub trait LlmProvider: Send + Sync {
     fn supports_streaming(&self) -> bool;
 
     /// Send a completion request
-    async fn complete(&self, messages: &[codelet_common::Message]) -> Result<String>;
+    async fn complete(
+        &self,
+        messages: &[codelet_common::Message],
+    ) -> Result<String, ProviderError>;
 
     /// Send a completion request with tool definitions
     async fn complete_with_tools(
         &self,
         messages: &[codelet_common::Message],
         tools: &[ToolDefinition],
-    ) -> Result<CompletionResponse>;
+    ) -> Result<CompletionResponse, ProviderError>;
 }

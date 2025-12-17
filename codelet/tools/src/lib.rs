@@ -6,6 +6,7 @@
 pub mod astgrep;
 pub mod bash;
 pub mod edit;
+pub mod error;
 pub mod glob;
 pub mod grep;
 pub mod limits;
@@ -14,6 +15,8 @@ pub mod read;
 pub mod truncation;
 pub mod validation;
 pub mod write;
+
+pub use error::ToolError;
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;

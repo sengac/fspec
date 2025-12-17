@@ -7,7 +7,6 @@ use std::path::PathBuf;
 use std::time::Instant;
 use uuid::Uuid;
 
-
 /// Headers that should be redacted for security
 const SENSITIVE_HEADERS: &[&str] = &[
     "authorization",
@@ -179,11 +178,6 @@ impl DebugCaptureManager {
 
         Ok(session_file)
     }
-
-    /// Capture a debug event
-    ///
-    /// This method silently fails if an error occurs to avoid disrupting the main application.
-    
 
     /// Increment the conversation turn counter
     pub fn increment_turn(&mut self) {

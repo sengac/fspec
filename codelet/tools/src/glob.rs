@@ -5,6 +5,7 @@
 //! Uses tokio::fs for non-blocking async I/O.
 
 use crate::{
+    error::ToolError,
     limits::OutputLimits,
     truncation::{format_truncation_warning, process_output_lines, truncate_output},
 };
@@ -52,19 +53,10 @@ pub struct GlobArgs {
     pub path: Option<String>,
 }
 
-/// Error type for Glob tool
-#[derive(Debug, thiserror::Error)]
-pub enum GlobError {
-    #[error("Pattern error: {0}")]
-    PatternError(String),
-    #[error("Path error: {0}")]
-    PathError(String),
-}
-
 impl rig::tool::Tool for GlobTool {
     const NAME: &'static str = "glob";
 
-    type Error = GlobError;
+    type Error = ToolError;
     type Args = GlobArgs;
     type Output = String;
 
@@ -91,7 +83,10 @@ impl rig::tool::Tool for GlobTool {
             .literal_separator(false)
             .build()
             .map(|g| g.compile_matcher())
-            .map_err(|e| GlobError::PatternError(e.to_string()))?;
+            .map_err(|e| ToolError::Pattern {
+                tool: "glob",
+                message: e.to_string(),
+            })?;
 
         // Get search path
         let search_path = args.path.as_deref().unwrap_or(".");
@@ -101,12 +96,16 @@ impl rig::tool::Tool for GlobTool {
         match tokio::fs::try_exists(&path).await {
             Ok(true) => {}
             Ok(false) => {
-                return Err(GlobError::PathError(format!(
-                    "Path does not exist: {search_path}"
-                )));
+                return Err(ToolError::NotFound {
+                    tool: "glob",
+                    message: format!("Path does not exist: {search_path}"),
+                });
             }
             Err(e) => {
-                return Err(GlobError::PathError(format!("Error checking path: {e}")));
+                return Err(ToolError::File {
+                    tool: "glob",
+                    message: format!("Error checking path: {e}"),
+                });
             }
         }
 

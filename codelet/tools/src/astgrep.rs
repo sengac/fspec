@@ -4,6 +4,7 @@
 //! and ignore crate for gitignore-aware file walking.
 
 use crate::{
+    error::ToolError,
     limits::OutputLimits,
     truncation::{format_truncation_warning, process_output_lines, truncate_output},
     ToolOutput,
@@ -330,21 +331,10 @@ pub struct AstGrepArgs {
     pub path: Option<String>,
 }
 
-/// Error type for AstGrep tool
-#[derive(Debug, thiserror::Error)]
-pub enum AstGrepError {
-    #[error("Language error: {0}")]
-    LanguageError(String),
-    #[error("Pattern error: {0}")]
-    PatternError(String),
-    #[error("Search error: {0}")]
-    SearchError(String),
-}
-
 impl rig::tool::Tool for AstGrepTool {
     const NAME: &'static str = "astgrep";
 
-    type Error = AstGrepError;
+    type Error = ToolError;
     type Args = AstGrepArgs;
     type Output = String;
 
@@ -389,10 +379,16 @@ impl rig::tool::Tool for AstGrepTool {
         let result = self
             .execute(serde_json::Value::Object(value_map))
             .await
-            .map_err(|e| AstGrepError::SearchError(e.to_string()))?;
+            .map_err(|e| ToolError::Execution {
+                tool: "astgrep",
+                message: e.to_string(),
+            })?;
 
         if result.is_error {
-            Err(AstGrepError::SearchError(result.content))
+            Err(ToolError::Execution {
+                tool: "astgrep",
+                message: result.content,
+            })
         } else {
             Ok(result.content)
         }

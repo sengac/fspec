@@ -3,6 +3,7 @@
 //! Writes content to files, creating parent directories as needed.
 //! Uses tokio::fs for non-blocking async I/O.
 
+use super::error::ToolError;
 use super::validation::{create_parent_dirs, require_absolute_path, write_file_contents};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -35,19 +36,10 @@ pub struct WriteArgs {
     pub content: String,
 }
 
-/// Error type for Write tool
-#[derive(Debug, thiserror::Error)]
-pub enum WriteError {
-    #[error("File error: {0}")]
-    FileError(String),
-    #[error("Validation error: {0}")]
-    ValidationError(String),
-}
-
 impl rig::tool::Tool for WriteTool {
     const NAME: &'static str = "write";
 
-    type Error = WriteError;
+    type Error = ToolError;
     type Args = WriteArgs;
     type Output = String;
 
@@ -65,18 +57,26 @@ impl rig::tool::Tool for WriteTool {
 
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
         // Validate absolute path (sync - no I/O)
-        let path = require_absolute_path(&args.file_path)
-            .map_err(|e| WriteError::ValidationError(e.content))?;
+        let path = require_absolute_path(&args.file_path).map_err(|e| ToolError::Validation {
+            tool: "write",
+            message: e.content,
+        })?;
 
         // Create parent directories if needed (async)
         create_parent_dirs(path)
             .await
-            .map_err(|e| WriteError::FileError(e.content))?;
+            .map_err(|e| ToolError::File {
+                tool: "write",
+                message: e.content,
+            })?;
 
         // Write file (async)
         write_file_contents(path, &args.content)
             .await
-            .map_err(|e| WriteError::FileError(e.content))?;
+            .map_err(|e| ToolError::File {
+                tool: "write",
+                message: e.content,
+            })?;
 
         Ok(format!("Successfully wrote to {}", args.file_path))
     }
