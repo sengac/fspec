@@ -65,41 +65,50 @@ fn test_output_mutator_source_files_are_removed() {
 
 /// Scenario: Interactive mode displays tool results without colored formatting
 ///
-/// Verifies that interactive.rs no longer imports or uses diff/highlight functions.
+/// Verifies that the interactive module no longer imports or uses diff/highlight functions.
 #[test]
 fn test_interactive_mode_without_colored_formatting() {
     let root = workspace_root();
 
     // @step Given interactive mode is running
-    // (Verified by checking interactive.rs code)
+    // (Verified by checking interactive module code)
 
     // @step When the agent executes an Edit or Write tool
     // (Verified by checking that the rendering code is removed)
 
     // @step Then the tool result should display without ANSI color codes
     // @step Then the tool result should display without diff formatting prefixes
-    let interactive_path = root.join("cli/src/interactive.rs");
-    let interactive_content =
-        fs::read_to_string(&interactive_path).expect("Should be able to read interactive.rs");
+    let interactive_dir = root.join("cli/src/interactive");
+
+    // Read all files in the interactive module directory
+    let mut interactive_content = String::new();
+    for entry in fs::read_dir(&interactive_dir).expect("Should be able to read interactive directory") {
+        let entry = entry.expect("Should be able to read directory entry");
+        let path = entry.path();
+        if path.extension().map_or(false, |ext| ext == "rs") {
+            interactive_content.push_str(&fs::read_to_string(&path)
+                .unwrap_or_else(|_| panic!("Should be able to read {}", path.display())));
+        }
+    }
 
     // Verify imports are removed
     assert!(
         !interactive_content.contains("use crate::diff::"),
-        "interactive.rs should not import from crate::diff"
+        "interactive module should not import from crate::diff"
     );
     assert!(
         !interactive_content.contains("use crate::highlight::"),
-        "interactive.rs should not import from crate::highlight"
+        "interactive module should not import from crate::highlight"
     );
 
     // Verify function calls are removed
     assert!(
         !interactive_content.contains("render_diff_line"),
-        "interactive.rs should not call render_diff_line"
+        "interactive module should not call render_diff_line"
     );
     assert!(
         !interactive_content.contains("highlight_bash_command"),
-        "interactive.rs should not call highlight_bash_command"
+        "interactive module should not call highlight_bash_command"
     );
 }
 

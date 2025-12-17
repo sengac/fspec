@@ -62,7 +62,6 @@ An engineer who integrates AI coding assistance into CI/CD pipelines and automat
 - Agent Execution
 - Provider Management
 - Tool Execution
-- Context Management
 - CLI Interface
 
 ## Bounded Context Map
@@ -72,8 +71,7 @@ graph TB
   BC1["Agent Execution"]
   BC2["Provider Management"]
   BC3["Tool Execution"]
-  BC4["Context Management"]
-  BC5["CLI Interface"]
+  BC4["CLI Interface"]
 
 ```
 
@@ -84,24 +82,23 @@ graph TB
 ```mermaid
 flowchart TB
   subgraph Commands["⚡ Commands"]
-    C50[RunAgent]
-    C51[SendPrompt]
-    C52[InterruptAgent]
-    C53[ResumeSession]
+    C49[RunAgent]
+    C50[SendPrompt]
+    C51[TriggerCompaction]
   end
 
   subgraph Aggregates["📦 Aggregates"]
-    A6[Runner]
-    A7[MessageHistory]
-    A8[InputManager]
+    A5[RigAgent]
+    A6[Compaction]
   end
 
   subgraph Events["📢 Events"]
-    E27[AgentStarted]
-    E28[PromptReceived]
-    E29[ResponseStreaming]
-    E30[ResponseCompleted]
-    E31[AgentInterrupted]
+    E28[AgentStarted]
+    E29[PromptReceived]
+    E30[ResponseStreaming]
+    E31[ResponseCompleted]
+    E32[CompactionTriggered]
+    E33[ConversationCompacted]
   end
 
   Commands -.-> Aggregates
@@ -109,22 +106,21 @@ flowchart TB
 ```
 
 **Aggregates:**
-- Runner
-- MessageHistory
-- InputManager
+- RigAgent - Orchestrates LLM communication and multi-turn tool execution
+- Compaction - Manages conversation history size through summarization and anchor points
 
 **Domain Events:**
-- AgentStarted
-- PromptReceived
-- ResponseStreaming
-- ResponseCompleted
-- AgentInterrupted
+- AgentStarted - Agent begins execution loop
+- PromptReceived - User submits a prompt to the agent
+- ResponseStreaming - Agent is streaming response chunks
+- ResponseCompleted - Agent finished generating response
+- CompactionTriggered - Conversation compaction process initiated
+- ConversationCompacted - Conversation history successfully summarized and reduced
 
 **Commands:**
-- RunAgent
-- SendPrompt
-- InterruptAgent
-- ResumeSession
+- RunAgent - Start the agent execution loop
+- SendPrompt - Submit a prompt to the agent
+- TriggerCompaction - Force conversation compaction
 
 ## Provider Management Context
 
@@ -133,24 +129,25 @@ flowchart TB
 ```mermaid
 flowchart TB
   subgraph Commands["⚡ Commands"]
-    C54[SelectProvider]
-    C55[SwitchProvider]
-    C56[RequestCompletion]
+    C52[SelectProvider]
+    C53[RequestCompletion]
   end
 
   subgraph Aggregates["📦 Aggregates"]
-    A9[ProviderManager]
-    A10[ClaudeProvider]
-    A11[OpenAIProvider]
-    A12[GeminiProvider]
+    A7[ProviderManager]
+    A8[ClaudeProvider]
+    A9[OpenAIProvider]
+    A10[GeminiProvider]
+    A11[CodexProvider]
+    A12[CachingClient]
   end
 
   subgraph Events["📢 Events"]
-    E32[ProviderSelected]
-    E33[ProviderSwitched]
-    E34[ApiKeyValidated]
+    E34[ProviderSelected]
     E35[CompletionRequested]
     E36[StreamChunkReceived]
+    E37[CacheHit]
+    E38[CacheTokensExtracted]
   end
 
   Commands -.-> Aggregates
@@ -158,22 +155,23 @@ flowchart TB
 ```
 
 **Aggregates:**
-- ProviderManager
-- ClaudeProvider
-- OpenAIProvider
-- GeminiProvider
+- ProviderManager - Selects and manages LLM provider instances
+- ClaudeProvider - Anthropic Claude API integration with prompt caching support
+- OpenAIProvider - OpenAI GPT API integration
+- GeminiProvider - Google Gemini API integration
+- CodexProvider - OpenAI Codex/ChatGPT backend with OAuth authentication
+- CachingClient - HTTP middleware for Anthropic prompt cache control
 
 **Domain Events:**
-- ProviderSelected
-- ProviderSwitched
-- ApiKeyValidated
-- CompletionRequested
-- StreamChunkReceived
+- ProviderSelected - LLM provider chosen for use
+- CompletionRequested - Completion request sent to LLM provider
+- StreamChunkReceived - Streaming response chunk received from provider
+- CacheHit - Prompt cache was reused, reducing token costs
+- CacheTokensExtracted - Cache token counts parsed from API response
 
 **Commands:**
-- SelectProvider
-- SwitchProvider
-- RequestCompletion
+- SelectProvider - Choose which LLM provider to use
+- RequestCompletion - Send completion request to LLM
 
 ## Tool Execution Context
 
@@ -182,29 +180,30 @@ flowchart TB
 ```mermaid
 flowchart TB
   subgraph Commands["⚡ Commands"]
-    C57[InvokeTool]
-    C58[ExecuteBash]
-    C59[ReadFile]
-    C60[WriteFile]
-    C61[EditFile]
-    C62[SearchFiles]
+    C54[InvokeTool]
+    C55[ExecuteBash]
+    C56[ReadFile]
+    C57[WriteFile]
+    C58[EditFile]
+    C59[SearchFiles]
   end
 
   subgraph Aggregates["📦 Aggregates"]
-    A13[ToolRegistry]
-    A14[BashTool]
-    A15[ReadTool]
-    A16[WriteTool]
-    A17[EditTool]
-    A18[GrepTool]
-    A19[GlobTool]
+    A13[BashTool]
+    A14[ReadTool]
+    A15[WriteTool]
+    A16[EditTool]
+    A17[GrepTool]
+    A18[GlobTool]
+    A19[AstGrepTool]
+    A20[LsTool]
   end
 
   subgraph Events["📢 Events"]
-    E37[ToolInvoked]
-    E38[ToolExecuted]
-    E39[ToolOutputTruncated]
-    E40[ToolFailed]
+    E39[ToolInvoked]
+    E40[ToolExecuted]
+    E41[ToolFailed]
+    E42[OutputTruncated]
   end
 
   Commands -.-> Aggregates
@@ -212,78 +211,28 @@ flowchart TB
 ```
 
 **Aggregates:**
-- ToolRegistry
-- BashTool
-- ReadTool
-- WriteTool
-- EditTool
-- GrepTool
-- GlobTool
+- BashTool - Executes shell commands with timeout and output handling
+- ReadTool - Reads file contents with line range support
+- WriteTool - Writes content to files
+- EditTool - Performs search-and-replace edits on files
+- GrepTool - Searches file contents using ripgrep
+- GlobTool - Finds files matching glob patterns
+- AstGrepTool - AST-based code search using tree-sitter
+- LsTool - Lists directory contents
 
 **Domain Events:**
-- ToolInvoked
-- ToolExecuted
-- ToolOutputTruncated
-- ToolFailed
+- ToolInvoked - Tool called by the agent
+- ToolExecuted - Tool completed execution successfully
+- ToolFailed - Tool execution encountered an error
+- OutputTruncated - Tool output exceeded limits and was truncated
 
 **Commands:**
-- InvokeTool
-- ExecuteBash
-- ReadFile
-- WriteFile
-- EditFile
-- SearchFiles
-
-## Context Management Context
-
-### Event Flow
-
-```mermaid
-flowchart TB
-  subgraph Commands["⚡ Commands"]
-    C63[TrackTokens]
-    C64[TriggerCompaction]
-    C65[LoadProjectContext]
-  end
-
-  subgraph Aggregates["📦 Aggregates"]
-    A20[TokenTracker]
-    A21[Compaction]
-    A22[PromptCache]
-    A23[ProjectContext]
-  end
-
-  subgraph Events["📢 Events"]
-    E41[TokensTracked]
-    E42[CompactionTriggered]
-    E43[ConversationCompacted]
-    E44[AnchorPointDetected]
-    E45[CacheHit]
-    E46[ContextFileLoaded]
-  end
-
-  Commands -.-> Aggregates
-  Aggregates -.-> Events
-```
-
-**Aggregates:**
-- TokenTracker
-- Compaction
-- PromptCache
-- ProjectContext
-
-**Domain Events:**
-- TokensTracked
-- CompactionTriggered
-- ConversationCompacted
-- AnchorPointDetected
-- CacheHit
-- ContextFileLoaded
-
-**Commands:**
-- TrackTokens
-- TriggerCompaction
-- LoadProjectContext
+- InvokeTool - Call a tool by name with parameters
+- ExecuteBash - Run a shell command
+- ReadFile - Read contents of a file
+- WriteFile - Write content to a file
+- EditFile - Apply search-and-replace edit to a file
+- SearchFiles - Search file contents or find files by pattern
 
 ## CLI Interface Context
 
@@ -292,21 +241,30 @@ flowchart TB
 ```mermaid
 flowchart TB
   subgraph Commands["⚡ Commands"]
-    C66[ParseCommand]
-    C67[LoadConfig]
-    C68[ApplyOverrides]
+    C60[ParseCommand]
+    C61[StartInteractiveMode]
+    C62[CreateSession]
+    C63[GatherContext]
+    C64[InjectSystemReminder]
   end
 
   subgraph Aggregates["📦 Aggregates"]
-    A24[Cli]
-    A25[ConfigOverrides]
-    A26[Config]
+    A21[Cli]
+    A22[InteractiveMode]
+    A23[Session]
+    A24[CompactionThreshold]
+    A25[Terminal]
+    A26[InputQueue]
+    A27[StatusDisplay]
   end
 
   subgraph Events["📢 Events"]
-    E47[CommandParsed]
-    E48[ConfigLoaded]
-    E49[ConfigOverrideApplied]
+    E43[CommandParsed]
+    E44[InteractiveModeStarted]
+    E45[SessionCreated]
+    E46[ContextGathered]
+    E47[SystemReminderInjected]
+    E48[UserInputReceived]
   end
 
   Commands -.-> Aggregates
@@ -314,18 +272,27 @@ flowchart TB
 ```
 
 **Aggregates:**
-- Cli
-- ConfigOverrides
-- Config
+- Cli - Command-line argument parsing using clap
+- InteractiveMode - REPL orchestration for interactive agent sessions
+- Session - Session state including context gathering and system reminders
+- CompactionThreshold - Calculates when conversation compaction should trigger
+- Terminal - Terminal setup, teardown, and panic handling
+- InputQueue - Manages user input buffering during agent execution
+- StatusDisplay - Displays status information in the terminal
 
 **Domain Events:**
-- CommandParsed
-- ConfigLoaded
-- ConfigOverrideApplied
+- CommandParsed - CLI arguments parsed and validated
+- InteractiveModeStarted - Interactive REPL session began
+- SessionCreated - New conversation session initialized
+- ContextGathered - Project context files (CLAUDE.md) loaded
+- SystemReminderInjected - System reminder added to conversation
+- UserInputReceived - User typed input in interactive mode
 
 **Commands:**
-- ParseCommand
-- LoadConfig
-- ApplyOverrides
+- ParseCommand - Parse and validate CLI arguments
+- StartInteractiveMode - Launch the interactive REPL
+- CreateSession - Initialize a new conversation session
+- GatherContext - Load project context files (CLAUDE.md)
+- InjectSystemReminder - Add system reminder to conversation
 
 ---

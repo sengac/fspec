@@ -1,0 +1,76 @@
+{
+  "scenarios": [
+    {
+      "name": "Split interactive.rs into focused submodules",
+      "testMappings": [
+        {
+          "file": "tests/refactoring_verification_test.rs",
+          "lines": "17-54",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Split compaction.rs into focused submodules",
+      "testMappings": [
+        {
+          "file": "tests/refactoring_verification_test.rs",
+          "lines": "57-85",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Split debug_capture.rs into focused submodules",
+      "testMappings": [
+        {
+          "file": "tests/refactoring_verification_test.rs",
+          "lines": "88-116",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Unify tool error types",
+      "testMappings": []
+    },
+    {
+      "name": "Unify provider error types",
+      "testMappings": []
+    },
+    {
+      "name": "Extract common provider patterns into adapter trait",
+      "testMappings": []
+    },
+    {
+      "name": "Verify no code is lost during file splitting",
+      "testMappings": [
+        {
+          "file": "tests/refactoring_verification_test.rs",
+          "lines": "119-153",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Public API remains backwards compatible",
+      "testMappings": [
+        {
+          "file": "tests/refactoring_verification_test.rs",
+          "lines": "156-180",
+          "implMappings": []
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 8,
+    "coveredScenarios": 5,
+    "coveragePercent": 63,
+    "testFiles": [
+      "tests/refactoring_verification_test.rs"
+    ],
+    "implFiles": [],
+    "totalLinesCovered": 156
+  }
+}

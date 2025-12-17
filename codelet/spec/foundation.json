@@ -60,7 +60,7 @@
         "text": "Agent Execution",
         "color": null,
         "deleted": false,
-        "createdAt": "2025-12-01T12:00:06.267Z"
+        "createdAt": "2025-12-17T02:30:15.727Z"
       },
       {
         "id": 2,
@@ -68,7 +68,7 @@
         "text": "Provider Management",
         "color": null,
         "deleted": false,
-        "createdAt": "2025-12-01T12:00:11.898Z"
+        "createdAt": "2025-12-17T02:30:18.408Z"
       },
       {
         "id": 3,
@@ -76,284 +76,315 @@
         "text": "Tool Execution",
         "color": null,
         "deleted": false,
-        "createdAt": "2025-12-01T12:00:17.808Z"
+        "createdAt": "2025-12-17T02:30:21.210Z"
       },
       {
         "id": 4,
         "type": "bounded_context",
-        "text": "Context Management",
-        "color": null,
-        "deleted": false,
-        "createdAt": "2025-12-01T12:00:24.954Z"
-      },
-      {
-        "id": 5,
-        "type": "bounded_context",
         "text": "CLI Interface",
         "color": null,
         "deleted": false,
-        "createdAt": "2025-12-01T12:00:30.361Z"
+        "createdAt": "2025-12-17T02:30:23.913Z"
+      },
+      {
+        "id": 5,
+        "type": "aggregate",
+        "text": "RigAgent",
+        "boundedContextId": 1,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2025-12-17T02:30:42.196Z",
+        "description": "Orchestrates LLM communication and multi-turn tool execution"
       },
       {
         "id": 6,
         "type": "aggregate",
-        "text": "Runner",
+        "text": "Compaction",
         "boundedContextId": 1,
         "color": "yellow",
         "deleted": false,
-        "createdAt": "2025-12-01T12:00:37.489Z"
+        "createdAt": "2025-12-17T02:30:44.885Z",
+        "description": "Manages conversation history size through summarization and anchor points"
       },
       {
         "id": 7,
-        "type": "aggregate",
-        "text": "MessageHistory",
-        "boundedContextId": 1,
-        "color": "yellow",
-        "deleted": false,
-        "createdAt": "2025-12-01T12:00:38.205Z"
-      },
-      {
-        "id": 8,
-        "type": "aggregate",
-        "text": "InputManager",
-        "boundedContextId": 1,
-        "color": "yellow",
-        "deleted": false,
-        "createdAt": "2025-12-01T12:00:38.928Z"
-      },
-      {
-        "id": 9,
         "type": "aggregate",
         "text": "ProviderManager",
         "boundedContextId": 2,
         "color": "yellow",
         "deleted": false,
-        "createdAt": "2025-12-01T12:00:46.413Z"
+        "createdAt": "2025-12-17T02:30:54.695Z",
+        "description": "Selects and manages LLM provider instances"
       },
       {
-        "id": 10,
+        "id": 8,
         "type": "aggregate",
         "text": "ClaudeProvider",
         "boundedContextId": 2,
         "color": "yellow",
         "deleted": false,
-        "createdAt": "2025-12-01T12:00:47.161Z"
+        "createdAt": "2025-12-17T02:30:57.439Z",
+        "description": "Anthropic Claude API integration with prompt caching support"
       },
       {
-        "id": 11,
+        "id": 9,
         "type": "aggregate",
         "text": "OpenAIProvider",
         "boundedContextId": 2,
         "color": "yellow",
         "deleted": false,
-        "createdAt": "2025-12-01T12:00:47.908Z"
+        "createdAt": "2025-12-17T02:31:01.225Z",
+        "description": "OpenAI GPT API integration"
       },
       {
-        "id": 12,
+        "id": 10,
         "type": "aggregate",
         "text": "GeminiProvider",
         "boundedContextId": 2,
         "color": "yellow",
         "deleted": false,
-        "createdAt": "2025-12-01T12:00:48.680Z"
+        "createdAt": "2025-12-17T02:31:04.669Z",
+        "description": "Google Gemini API integration"
+      },
+      {
+        "id": 11,
+        "type": "aggregate",
+        "text": "CodexProvider",
+        "boundedContextId": 2,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2025-12-17T02:31:07.448Z",
+        "description": "OpenAI Codex/ChatGPT backend with OAuth authentication"
+      },
+      {
+        "id": 12,
+        "type": "aggregate",
+        "text": "CachingClient",
+        "boundedContextId": 2,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2025-12-17T02:31:10.397Z",
+        "description": "HTTP middleware for Anthropic prompt cache control"
       },
       {
         "id": 13,
-        "type": "aggregate",
-        "text": "ToolRegistry",
-        "boundedContextId": 3,
-        "color": "yellow",
-        "deleted": false,
-        "createdAt": "2025-12-01T12:00:57.500Z"
-      },
-      {
-        "id": 14,
         "type": "aggregate",
         "text": "BashTool",
         "boundedContextId": 3,
         "color": "yellow",
         "deleted": false,
-        "createdAt": "2025-12-01T12:00:58.284Z"
+        "createdAt": "2025-12-17T02:31:22.939Z",
+        "description": "Executes shell commands with timeout and output handling"
       },
       {
-        "id": 15,
+        "id": 14,
         "type": "aggregate",
         "text": "ReadTool",
         "boundedContextId": 3,
         "color": "yellow",
         "deleted": false,
-        "createdAt": "2025-12-01T12:00:59.075Z"
+        "createdAt": "2025-12-17T02:31:26.790Z",
+        "description": "Reads file contents with line range support"
       },
       {
-        "id": 16,
+        "id": 15,
         "type": "aggregate",
         "text": "WriteTool",
         "boundedContextId": 3,
         "color": "yellow",
         "deleted": false,
-        "createdAt": "2025-12-01T12:00:59.862Z"
+        "createdAt": "2025-12-17T02:31:29.554Z",
+        "description": "Writes content to files"
       },
       {
-        "id": 17,
+        "id": 16,
         "type": "aggregate",
         "text": "EditTool",
         "boundedContextId": 3,
         "color": "yellow",
         "deleted": false,
-        "createdAt": "2025-12-01T12:01:00.641Z"
+        "createdAt": "2025-12-17T02:31:32.143Z",
+        "description": "Performs search-and-replace edits on files"
       },
       {
-        "id": 18,
+        "id": 17,
         "type": "aggregate",
         "text": "GrepTool",
         "boundedContextId": 3,
         "color": "yellow",
         "deleted": false,
-        "createdAt": "2025-12-01T12:01:01.412Z"
+        "createdAt": "2025-12-17T02:31:34.834Z",
+        "description": "Searches file contents using ripgrep"
       },
       {
-        "id": 19,
+        "id": 18,
         "type": "aggregate",
         "text": "GlobTool",
         "boundedContextId": 3,
         "color": "yellow",
         "deleted": false,
-        "createdAt": "2025-12-01T12:01:02.205Z"
+        "createdAt": "2025-12-17T02:31:37.328Z",
+        "description": "Finds files matching glob patterns"
+      },
+      {
+        "id": 19,
+        "type": "aggregate",
+        "text": "AstGrepTool",
+        "boundedContextId": 3,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2025-12-17T02:31:39.997Z",
+        "description": "AST-based code search using tree-sitter"
       },
       {
         "id": 20,
         "type": "aggregate",
-        "text": "TokenTracker",
-        "boundedContextId": 4,
+        "text": "LsTool",
+        "boundedContextId": 3,
         "color": "yellow",
         "deleted": false,
-        "createdAt": "2025-12-01T12:01:09.359Z"
+        "createdAt": "2025-12-17T02:31:42.382Z",
+        "description": "Lists directory contents"
       },
       {
         "id": 21,
         "type": "aggregate",
-        "text": "Compaction",
+        "text": "Cli",
         "boundedContextId": 4,
         "color": "yellow",
         "deleted": false,
-        "createdAt": "2025-12-01T12:01:10.155Z"
+        "createdAt": "2025-12-17T02:31:54.634Z",
+        "description": "Command-line argument parsing using clap"
       },
       {
         "id": 22,
         "type": "aggregate",
-        "text": "PromptCache",
+        "text": "InteractiveMode",
         "boundedContextId": 4,
         "color": "yellow",
         "deleted": false,
-        "createdAt": "2025-12-01T12:01:10.958Z"
+        "createdAt": "2025-12-17T02:31:56.876Z",
+        "description": "REPL orchestration for interactive agent sessions"
       },
       {
         "id": 23,
         "type": "aggregate",
-        "text": "ProjectContext",
+        "text": "Session",
         "boundedContextId": 4,
         "color": "yellow",
         "deleted": false,
-        "createdAt": "2025-12-01T12:01:11.745Z"
+        "createdAt": "2025-12-17T02:31:59.349Z",
+        "description": "Session state including context gathering and system reminders"
       },
       {
         "id": 24,
         "type": "aggregate",
-        "text": "Cli",
-        "boundedContextId": 5,
+        "text": "CompactionThreshold",
+        "boundedContextId": 4,
         "color": "yellow",
         "deleted": false,
-        "createdAt": "2025-12-01T12:01:18.284Z"
+        "createdAt": "2025-12-17T02:32:01.514Z",
+        "description": "Calculates when conversation compaction should trigger"
       },
       {
         "id": 25,
         "type": "aggregate",
-        "text": "ConfigOverrides",
-        "boundedContextId": 5,
+        "text": "Terminal",
+        "boundedContextId": 4,
         "color": "yellow",
         "deleted": false,
-        "createdAt": "2025-12-01T12:01:19.106Z"
+        "createdAt": "2025-12-17T02:32:04.321Z",
+        "description": "Terminal setup, teardown, and panic handling"
       },
       {
         "id": 26,
         "type": "aggregate",
-        "text": "Config",
-        "boundedContextId": 5,
+        "text": "InputQueue",
+        "boundedContextId": 4,
         "color": "yellow",
         "deleted": false,
-        "createdAt": "2025-12-01T12:01:19.928Z"
+        "createdAt": "2025-12-17T02:32:06.937Z",
+        "description": "Manages user input buffering during agent execution"
       },
       {
         "id": 27,
+        "type": "aggregate",
+        "text": "StatusDisplay",
+        "boundedContextId": 4,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2025-12-17T02:32:09.371Z",
+        "description": "Displays status information in the terminal"
+      },
+      {
+        "id": 28,
         "type": "event",
         "text": "AgentStarted",
         "boundedContextId": 1,
         "color": "orange",
         "deleted": false,
-        "createdAt": "2025-12-01T12:01:27.015Z"
+        "createdAt": "2025-12-17T02:32:35.881Z",
+        "description": "Agent begins execution loop"
       },
       {
-        "id": 28,
+        "id": 29,
         "type": "event",
         "text": "PromptReceived",
         "boundedContextId": 1,
         "color": "orange",
         "deleted": false,
-        "createdAt": "2025-12-01T12:01:27.873Z"
+        "createdAt": "2025-12-17T02:32:38.613Z",
+        "description": "User submits a prompt to the agent"
       },
       {
-        "id": 29,
+        "id": 30,
         "type": "event",
         "text": "ResponseStreaming",
         "boundedContextId": 1,
         "color": "orange",
         "deleted": false,
-        "createdAt": "2025-12-01T12:01:28.711Z"
+        "createdAt": "2025-12-17T02:32:41.661Z",
+        "description": "Agent is streaming response chunks"
       },
       {
-        "id": 30,
+        "id": 31,
         "type": "event",
         "text": "ResponseCompleted",
         "boundedContextId": 1,
         "color": "orange",
         "deleted": false,
-        "createdAt": "2025-12-01T12:01:29.536Z"
-      },
-      {
-        "id": 31,
-        "type": "event",
-        "text": "AgentInterrupted",
-        "boundedContextId": 1,
-        "color": "orange",
-        "deleted": false,
-        "createdAt": "2025-12-01T12:01:30.380Z"
+        "createdAt": "2025-12-17T02:32:43.943Z",
+        "description": "Agent finished generating response"
       },
       {
         "id": 32,
+        "type": "event",
+        "text": "CompactionTriggered",
+        "boundedContextId": 1,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2025-12-17T02:32:46.539Z",
+        "description": "Conversation compaction process initiated"
+      },
+      {
+        "id": 33,
+        "type": "event",
+        "text": "ConversationCompacted",
+        "boundedContextId": 1,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2025-12-17T02:32:50.328Z",
+        "description": "Conversation history successfully summarized and reduced"
+      },
+      {
+        "id": 34,
         "type": "event",
         "text": "ProviderSelected",
         "boundedContextId": 2,
         "color": "orange",
         "deleted": false,
-        "createdAt": "2025-12-01T12:01:37.401Z"
-      },
-      {
-        "id": 33,
-        "type": "event",
-        "text": "ProviderSwitched",
-        "boundedContextId": 2,
-        "color": "orange",
-        "deleted": false,
-        "createdAt": "2025-12-01T12:01:38.226Z"
-      },
-      {
-        "id": 34,
-        "type": "event",
-        "text": "ApiKeyValidated",
-        "boundedContextId": 2,
-        "color": "orange",
-        "deleted": false,
-        "createdAt": "2025-12-01T12:01:39.073Z"
+        "createdAt": "2025-12-17T02:32:59.868Z",
+        "description": "LLM provider chosen for use"
       },
       {
         "id": 35,
@@ -362,7 +393,8 @@
         "boundedContextId": 2,
         "color": "orange",
         "deleted": false,
-        "createdAt": "2025-12-01T12:01:39.943Z"
+        "createdAt": "2025-12-17T02:33:02.695Z",
+        "description": "Completion request sent to LLM provider"
       },
       {
         "id": 36,
@@ -371,297 +403,290 @@
         "boundedContextId": 2,
         "color": "orange",
         "deleted": false,
-        "createdAt": "2025-12-01T12:01:40.782Z"
+        "createdAt": "2025-12-17T02:33:05.551Z",
+        "description": "Streaming response chunk received from provider"
       },
       {
         "id": 37,
+        "type": "event",
+        "text": "CacheHit",
+        "boundedContextId": 2,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2025-12-17T02:33:08.402Z",
+        "description": "Prompt cache was reused, reducing token costs"
+      },
+      {
+        "id": 38,
+        "type": "event",
+        "text": "CacheTokensExtracted",
+        "boundedContextId": 2,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2025-12-17T02:33:12.487Z",
+        "description": "Cache token counts parsed from API response"
+      },
+      {
+        "id": 39,
         "type": "event",
         "text": "ToolInvoked",
         "boundedContextId": 3,
         "color": "orange",
         "deleted": false,
-        "createdAt": "2025-12-01T12:01:48.028Z"
+        "createdAt": "2025-12-17T02:33:21.966Z",
+        "description": "Tool called by the agent"
       },
       {
-        "id": 38,
+        "id": 40,
         "type": "event",
         "text": "ToolExecuted",
         "boundedContextId": 3,
         "color": "orange",
         "deleted": false,
-        "createdAt": "2025-12-01T12:01:48.878Z"
+        "createdAt": "2025-12-17T02:33:24.930Z",
+        "description": "Tool completed execution successfully"
       },
       {
-        "id": 39,
-        "type": "event",
-        "text": "ToolOutputTruncated",
-        "boundedContextId": 3,
-        "color": "orange",
-        "deleted": false,
-        "createdAt": "2025-12-01T12:01:49.732Z"
-      },
-      {
-        "id": 40,
+        "id": 41,
         "type": "event",
         "text": "ToolFailed",
         "boundedContextId": 3,
         "color": "orange",
         "deleted": false,
-        "createdAt": "2025-12-01T12:01:50.611Z"
-      },
-      {
-        "id": 41,
-        "type": "event",
-        "text": "TokensTracked",
-        "boundedContextId": 4,
-        "color": "orange",
-        "deleted": false,
-        "createdAt": "2025-12-01T12:01:58.556Z"
+        "createdAt": "2025-12-17T02:33:27.712Z",
+        "description": "Tool execution encountered an error"
       },
       {
         "id": 42,
         "type": "event",
-        "text": "CompactionTriggered",
-        "boundedContextId": 4,
+        "text": "OutputTruncated",
+        "boundedContextId": 3,
         "color": "orange",
         "deleted": false,
-        "createdAt": "2025-12-01T12:01:59.415Z"
+        "createdAt": "2025-12-17T02:33:31.631Z",
+        "description": "Tool output exceeded limits and was truncated"
       },
       {
         "id": 43,
         "type": "event",
-        "text": "ConversationCompacted",
+        "text": "CommandParsed",
         "boundedContextId": 4,
         "color": "orange",
         "deleted": false,
-        "createdAt": "2025-12-01T12:02:00.279Z"
+        "createdAt": "2025-12-17T02:33:42.511Z",
+        "description": "CLI arguments parsed and validated"
       },
       {
         "id": 44,
         "type": "event",
-        "text": "AnchorPointDetected",
+        "text": "InteractiveModeStarted",
         "boundedContextId": 4,
         "color": "orange",
         "deleted": false,
-        "createdAt": "2025-12-01T12:02:01.171Z"
+        "createdAt": "2025-12-17T02:33:44.833Z",
+        "description": "Interactive REPL session began"
       },
       {
         "id": 45,
         "type": "event",
-        "text": "CacheHit",
+        "text": "SessionCreated",
         "boundedContextId": 4,
         "color": "orange",
         "deleted": false,
-        "createdAt": "2025-12-01T12:02:02.047Z"
+        "createdAt": "2025-12-17T02:33:47.009Z",
+        "description": "New conversation session initialized"
       },
       {
         "id": 46,
         "type": "event",
-        "text": "ContextFileLoaded",
+        "text": "ContextGathered",
         "boundedContextId": 4,
         "color": "orange",
         "deleted": false,
-        "createdAt": "2025-12-01T12:02:02.944Z"
+        "createdAt": "2025-12-17T02:33:50.047Z",
+        "description": "Project context files (CLAUDE.md) loaded"
       },
       {
         "id": 47,
         "type": "event",
-        "text": "CommandParsed",
-        "boundedContextId": 5,
+        "text": "SystemReminderInjected",
+        "boundedContextId": 4,
         "color": "orange",
         "deleted": false,
-        "createdAt": "2025-12-01T12:02:10.100Z"
+        "createdAt": "2025-12-17T02:33:52.431Z",
+        "description": "System reminder added to conversation"
       },
       {
         "id": 48,
         "type": "event",
-        "text": "ConfigLoaded",
-        "boundedContextId": 5,
+        "text": "UserInputReceived",
+        "boundedContextId": 4,
         "color": "orange",
         "deleted": false,
-        "createdAt": "2025-12-01T12:02:10.997Z"
+        "createdAt": "2025-12-17T02:33:55.169Z",
+        "description": "User typed input in interactive mode"
       },
       {
         "id": 49,
-        "type": "event",
-        "text": "ConfigOverrideApplied",
-        "boundedContextId": 5,
-        "color": "orange",
-        "deleted": false,
-        "createdAt": "2025-12-01T12:02:11.898Z"
-      },
-      {
-        "id": 50,
         "type": "command",
         "text": "RunAgent",
         "boundedContextId": 1,
         "color": "blue",
         "deleted": false,
-        "createdAt": "2025-12-01T12:02:19.220Z"
+        "createdAt": "2025-12-17T02:34:16.342Z",
+        "description": "Start the agent execution loop"
       },
       {
-        "id": 51,
+        "id": 50,
         "type": "command",
         "text": "SendPrompt",
         "boundedContextId": 1,
         "color": "blue",
         "deleted": false,
-        "createdAt": "2025-12-01T12:02:20.096Z"
+        "createdAt": "2025-12-17T02:34:18.971Z",
+        "description": "Submit a prompt to the agent"
+      },
+      {
+        "id": 51,
+        "type": "command",
+        "text": "TriggerCompaction",
+        "boundedContextId": 1,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2025-12-17T02:34:21.806Z",
+        "description": "Force conversation compaction"
       },
       {
         "id": 52,
-        "type": "command",
-        "text": "InterruptAgent",
-        "boundedContextId": 1,
-        "color": "blue",
-        "deleted": false,
-        "createdAt": "2025-12-01T12:02:21.021Z"
-      },
-      {
-        "id": 53,
-        "type": "command",
-        "text": "ResumeSession",
-        "boundedContextId": 1,
-        "color": "blue",
-        "deleted": false,
-        "createdAt": "2025-12-01T12:02:21.945Z"
-      },
-      {
-        "id": 54,
         "type": "command",
         "text": "SelectProvider",
         "boundedContextId": 2,
         "color": "blue",
         "deleted": false,
-        "createdAt": "2025-12-01T12:02:28.437Z"
+        "createdAt": "2025-12-17T02:34:29.766Z",
+        "description": "Choose which LLM provider to use"
       },
       {
-        "id": 55,
-        "type": "command",
-        "text": "SwitchProvider",
-        "boundedContextId": 2,
-        "color": "blue",
-        "deleted": false,
-        "createdAt": "2025-12-01T12:02:29.362Z"
-      },
-      {
-        "id": 56,
+        "id": 53,
         "type": "command",
         "text": "RequestCompletion",
         "boundedContextId": 2,
         "color": "blue",
         "deleted": false,
-        "createdAt": "2025-12-01T12:02:30.283Z"
+        "createdAt": "2025-12-17T02:34:33.199Z",
+        "description": "Send completion request to LLM"
       },
       {
-        "id": 57,
+        "id": 54,
         "type": "command",
         "text": "InvokeTool",
         "boundedContextId": 3,
         "color": "blue",
         "deleted": false,
-        "createdAt": "2025-12-01T12:02:38.273Z"
+        "createdAt": "2025-12-17T02:34:43.781Z",
+        "description": "Call a tool by name with parameters"
       },
       {
-        "id": 58,
+        "id": 55,
         "type": "command",
         "text": "ExecuteBash",
         "boundedContextId": 3,
         "color": "blue",
         "deleted": false,
-        "createdAt": "2025-12-01T12:02:39.183Z"
+        "createdAt": "2025-12-17T02:34:47.096Z",
+        "description": "Run a shell command"
       },
       {
-        "id": 59,
+        "id": 56,
         "type": "command",
         "text": "ReadFile",
         "boundedContextId": 3,
         "color": "blue",
         "deleted": false,
-        "createdAt": "2025-12-01T12:02:40.113Z"
+        "createdAt": "2025-12-17T02:34:49.875Z",
+        "description": "Read contents of a file"
       },
       {
-        "id": 60,
+        "id": 57,
         "type": "command",
         "text": "WriteFile",
         "boundedContextId": 3,
         "color": "blue",
         "deleted": false,
-        "createdAt": "2025-12-01T12:02:41.027Z"
+        "createdAt": "2025-12-17T02:34:52.586Z",
+        "description": "Write content to a file"
       },
       {
-        "id": 61,
+        "id": 58,
         "type": "command",
         "text": "EditFile",
         "boundedContextId": 3,
         "color": "blue",
         "deleted": false,
-        "createdAt": "2025-12-01T12:02:41.945Z"
+        "createdAt": "2025-12-17T02:34:55.531Z",
+        "description": "Apply search-and-replace edit to a file"
       },
       {
-        "id": 62,
+        "id": 59,
         "type": "command",
         "text": "SearchFiles",
         "boundedContextId": 3,
         "color": "blue",
         "deleted": false,
-        "createdAt": "2025-12-01T12:02:42.885Z"
+        "createdAt": "2025-12-17T02:34:58.371Z",
+        "description": "Search file contents or find files by pattern"
+      },
+      {
+        "id": 60,
+        "type": "command",
+        "text": "ParseCommand",
+        "boundedContextId": 4,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2025-12-17T02:35:07.805Z",
+        "description": "Parse and validate CLI arguments"
+      },
+      {
+        "id": 61,
+        "type": "command",
+        "text": "StartInteractiveMode",
+        "boundedContextId": 4,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2025-12-17T02:35:10.682Z",
+        "description": "Launch the interactive REPL"
+      },
+      {
+        "id": 62,
+        "type": "command",
+        "text": "CreateSession",
+        "boundedContextId": 4,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2025-12-17T02:35:13.394Z",
+        "description": "Initialize a new conversation session"
       },
       {
         "id": 63,
         "type": "command",
-        "text": "TrackTokens",
+        "text": "GatherContext",
         "boundedContextId": 4,
         "color": "blue",
         "deleted": false,
-        "createdAt": "2025-12-01T12:02:49.878Z"
+        "createdAt": "2025-12-17T02:35:15.717Z",
+        "description": "Load project context files (CLAUDE.md)"
       },
       {
         "id": 64,
         "type": "command",
-        "text": "TriggerCompaction",
+        "text": "InjectSystemReminder",
         "boundedContextId": 4,
         "color": "blue",
         "deleted": false,
-        "createdAt": "2025-12-01T12:02:50.808Z"
-      },
-      {
-        "id": 65,
-        "type": "command",
-        "text": "LoadProjectContext",
-        "boundedContextId": 4,
-        "color": "blue",
-        "deleted": false,
-        "createdAt": "2025-12-01T12:02:51.735Z"
-      },
-      {
-        "id": 66,
-        "type": "command",
-        "text": "ParseCommand",
-        "boundedContextId": 5,
-        "color": "blue",
-        "deleted": false,
-        "createdAt": "2025-12-01T12:02:58.540Z"
-      },
-      {
-        "id": 67,
-        "type": "command",
-        "text": "LoadConfig",
-        "boundedContextId": 5,
-        "color": "blue",
-        "deleted": false,
-        "createdAt": "2025-12-01T12:02:59.489Z"
-      },
-      {
-        "id": 68,
-        "type": "command",
-        "text": "ApplyOverrides",
-        "boundedContextId": 5,
-        "color": "blue",
-        "deleted": false,
-        "createdAt": "2025-12-01T12:03:00.452Z"
+        "createdAt": "2025-12-17T02:35:18.750Z",
+        "description": "Add system reminder to conversation"
       }
     ],
-    "nextItemId": 69
+    "nextItemId": 65
   }
 }

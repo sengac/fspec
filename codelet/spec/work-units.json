@@ -2,7 +2,7 @@
   "version": "0.7.1",
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-12-17T00:00:49.325Z"
+    "lastUpdated": "2025-12-17T04:02:30.420Z"
   },
   "workUnits": {
     "FOUND-001": {
@@ -6981,6 +6981,277 @@
       "questions": [],
       "nextQuestionId": 0,
       "updated": "2025-12-17T00:00:49.337Z"
+    },
+    "REFAC-012": {
+      "id": "REFAC-012",
+      "title": "Align DDD Architecture with Actual Codebase",
+      "type": "task",
+      "status": "done",
+      "createdAt": "2025-12-17T02:22:47.757Z",
+      "updatedAt": "2025-12-17T02:47:00.514Z",
+      "description": "Review and update the Event Storm and DDD model in foundation.json to reflect the actual codebase structure. Ensure naming conventions, bounded contexts, aggregates, and domain events accurately represent the implemented code.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-12-17T02:23:39.139Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-17T02:37:47.016Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-17T02:38:55.617Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-17T02:39:32.242Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-17T02:47:00.515Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer maintaining the codelet codebase",
+        "action": "have the DDD model in foundation.json accurately reflect the actual code structure",
+        "benefit": "the architecture documentation serves as reliable reference for understanding system boundaries"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Each Rust crate that represents a domain boundary must have a corresponding bounded context in foundation.json",
+          "deleted": false,
+          "createdAt": "2025-12-17T02:36:04.801Z"
+        },
+        {
+          "id": 1,
+          "text": "Aggregates in foundation.json must correspond to actual structs/modules in the codebase",
+          "deleted": false,
+          "createdAt": "2025-12-17T02:36:07.225Z"
+        },
+        {
+          "id": 2,
+          "text": "Each crate lib.rs must have a doc comment identifying its bounded context",
+          "deleted": false,
+          "createdAt": "2025-12-17T02:36:09.067Z"
+        },
+        {
+          "id": 3,
+          "text": "Shared infrastructure (common crate) is not a bounded context - it is a Shared Kernel",
+          "deleted": false,
+          "createdAt": "2025-12-17T02:36:11.272Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "examples": [
+        {
+          "id": 0,
+          "text": "core crate -> Agent Execution bounded context with RigAgent, Compaction aggregates",
+          "deleted": false,
+          "createdAt": "2025-12-17T02:36:21.492Z"
+        },
+        {
+          "id": 1,
+          "text": "providers crate -> Provider Management bounded context with ProviderManager, ClaudeProvider, OpenAIProvider, GeminiProvider, CodexProvider aggregates",
+          "deleted": false,
+          "createdAt": "2025-12-17T02:36:24.035Z"
+        },
+        {
+          "id": 2,
+          "text": "tools crate -> Tool Execution bounded context with BashTool, ReadTool, WriteTool, EditTool, GrepTool, GlobTool, AstGrepTool, LsTool aggregates",
+          "deleted": false,
+          "createdAt": "2025-12-17T02:36:26.222Z"
+        },
+        {
+          "id": 3,
+          "text": "cli + tui crates -> CLI Interface bounded context with Cli, InteractiveMode, Session, Terminal, InputQueue, StatusDisplay aggregates",
+          "deleted": false,
+          "createdAt": "2025-12-17T02:36:27.921Z"
+        },
+        {
+          "id": 4,
+          "text": "common crate is Shared Kernel (not a bounded context) - contains Message types, logging, debug utilities",
+          "deleted": false,
+          "createdAt": "2025-12-17T02:36:30.052Z"
+        }
+      ],
+      "nextExampleId": 5,
+      "questions": [],
+      "architectureNotes": [],
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-12-17T02:47:00.514Z"
+    },
+    "REFAC-013": {
+      "id": "REFAC-013",
+      "title": "Refactor God Objects and Unify Error Handling",
+      "type": "story",
+      "status": "testing",
+      "createdAt": "2025-12-17T02:54:30.413Z",
+      "updatedAt": "2025-12-17T03:26:24.973Z",
+      "description": "Split large monolithic modules (interactive.rs, debug_capture.rs, compaction.rs) into focused submodules and create unified error types for tools and providers",
+      "children": [],
+      "userStory": {
+        "role": "developer maintaining the codelet codebase",
+        "action": "have well-organized, focused modules with consistent error handling",
+        "benefit": "the codebase is easier to understand, test, and extend"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-12-17T02:56:15.140Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-12-17T03:26:24.973Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "No source file should exceed 250 lines of code",
+          "deleted": false,
+          "createdAt": "2025-12-17T02:56:25.497Z"
+        },
+        {
+          "id": 1,
+          "text": "Each module must have a single, clear responsibility",
+          "deleted": false,
+          "createdAt": "2025-12-17T02:56:26.169Z"
+        },
+        {
+          "id": 2,
+          "text": "All tools must use the unified ToolError type",
+          "deleted": false,
+          "createdAt": "2025-12-17T02:56:26.817Z"
+        },
+        {
+          "id": 3,
+          "text": "All providers must use the unified ProviderError type",
+          "deleted": false,
+          "createdAt": "2025-12-17T02:56:27.526Z"
+        },
+        {
+          "id": 4,
+          "text": "Public API must remain backwards compatible",
+          "deleted": false,
+          "createdAt": "2025-12-17T02:56:28.199Z"
+        },
+        {
+          "id": 5,
+          "text": "Provider implementations must use shared adapter patterns to reduce duplication",
+          "deleted": false,
+          "createdAt": "2025-12-17T02:56:31.111Z"
+        },
+        {
+          "id": 6,
+          "text": "Post-refactoring line count across split files must equal or exceed original file line count",
+          "deleted": false,
+          "createdAt": "2025-12-17T03:20:40.171Z"
+        }
+      ],
+      "nextRuleId": 7,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Detailed refactoring plan documented in spec/docs/REFAC-013-architectural-refactoring-plan.md with phased approach: (1) Split god objects, (2) Unify error handling, (3) Extract provider patterns, (4) Additional improvements",
+          "deleted": false,
+          "createdAt": "2025-12-17T02:56:38.903Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "examples": [
+        {
+          "id": 0,
+          "text": "interactive.rs (845 lines) is split into interactive/mod.rs, repl_loop.rs, stream_handler.rs, tool_executor.rs, token_display.rs - each under 250 lines",
+          "deleted": false,
+          "createdAt": "2025-12-17T02:56:55.384Z"
+        },
+        {
+          "id": 1,
+          "text": "BashTool returns ToolError::Timeout { tool: bash, seconds: 30 } instead of BashError::TimeoutError(30)",
+          "deleted": false,
+          "createdAt": "2025-12-17T02:56:57.189Z"
+        },
+        {
+          "id": 2,
+          "text": "ClaudeProvider implements ProviderAdapter trait, reusing detect_env_credential() default for API key detection",
+          "deleted": false,
+          "createdAt": "2025-12-17T02:56:59.164Z"
+        },
+        {
+          "id": 3,
+          "text": "interactive.rs (845 lines) splits into 5 files totaling 860+ lines (mod.rs overhead), cargo build passes, cargo test passes",
+          "deleted": false,
+          "createdAt": "2025-12-17T03:20:41.609Z"
+        }
+      ],
+      "nextExampleId": 4,
+      "estimate": 13,
+      "attachments": [
+        "spec/attachments/REFAC-013/ast-research-interactive.json",
+        "spec/attachments/REFAC-013/ast-research-compaction.json",
+        "spec/attachments/REFAC-013/ast-research-debug-capture.json"
+      ]
+    },
+    "REFAC-014": {
+      "id": "REFAC-014",
+      "title": "Split compaction.rs into submodules using ast-grep",
+      "type": "task",
+      "status": "done",
+      "createdAt": "2025-12-17T03:49:19.357Z",
+      "updatedAt": "2025-12-17T04:02:30.434Z",
+      "description": "Use ast-grep to extract types and functions from core/src/compaction.rs (699 lines) into focused submodules: model.rs (data types), anchor.rs (anchor detection), compactor.rs (compaction algorithm), metrics.rs (result types). All code movement via ast-grep rewrite rules - no manual editing.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-12-17T03:49:34.581Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-17T03:49:42.648Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-17T04:02:23.249Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-17T04:02:30.434Z"
+        }
+      ],
+      "rules": [],
+      "examples": [],
+      "questions": [],
+      "architectureNotes": [],
+      "nextRuleId": 0,
+      "nextExampleId": 0,
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-12-17T04:02:30.434Z"
+    },
+    "REFAC-015": {
+      "id": "REFAC-015",
+      "title": "Split interactive.rs into submodules using ast-grep",
+      "type": "task",
+      "status": "implementing",
+      "createdAt": "2025-12-17T04:05:57.013Z",
+      "updatedAt": "2025-12-17T04:06:07.157Z",
+      "description": "Use ast-grep to extract functions from cli/src/interactive.rs (845 lines) into focused submodules: repl_loop.rs (main loop), stream_handler.rs (response streaming), tool_executor.rs (tool handling), token_display.rs (token tracking). All code movement via ast-grep - no manual editing.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-12-17T04:06:05.488Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-17T04:06:07.157Z"
+        }
+      ]
     }
   },
   "states": {
@@ -6988,14 +7259,19 @@
       "CLI-016"
     ],
     "specifying": [],
-    "testing": [],
+    "testing": [
+      "REFAC-013"
+    ],
     "implementing": [
       "CLI-010",
       "CLI-021",
-      "PROV-006"
+      "PROV-006",
+      "REFAC-015"
     ],
     "validating": [],
     "done": [
+      "REFAC-014",
+      "REFAC-012",
       "REFAC-010",
       "REFAC-011",
       "CORE-010",
@@ -7051,7 +7327,7 @@
     "PROV": 6,
     "AGENT": 1,
     "CTX": 2,
-    "REFAC": 11,
+    "REFAC": 15,
     "CLI": 24
   }
 }

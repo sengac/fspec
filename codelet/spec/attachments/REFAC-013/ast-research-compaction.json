@@ -1,0 +1,158 @@
+{
+  "matches": [
+    {
+      "type": "function_item",
+      "name": "effective_tokens",
+      "line": 41,
+      "column": 4,
+      "text": "pub fn effective_tokens(&self) -> u64 {\n        let cache_read = self.cache_read_input_tokens.unwrap_or(0);\n        let cache_discount = (cache_read as f64 * 0.9) as u64;\n        self.input_tokens.saturating_sub(cache_discount)\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "total_tokens",
+      "line": 48,
+      "column": 4,
+      "text": "pub fn total_tokens(&self) -> u64 {\n        self.input_tokens + self.output_tokens\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "file_path",
+      "line": 93,
+      "column": 4,
+      "text": "pub fn file_path(&self) -> Option<String> {\n        self.parameters\n            .get(\"file_path\")\n            .and_then(|v| v.as_str())\n            .map(str::to_string)\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "filename",
+      "line": 102,
+      "column": 4,
+      "text": "pub fn filename(&self) -> Option<String> {\n        self.file_path()\n            .map(|path| path.split('/').next_back().unwrap_or(&path).to_string())\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "weight",
+      "line": 146,
+      "column": 4,
+      "text": "pub fn weight(&self) -> f64 {\n        match self {\n            AnchorType::ErrorResolution => 0.9,\n            AnchorType::TaskCompletion => 0.8,\n            AnchorType::FeatureMilestone => 0.75,\n            AnchorType::UserCheckpoint => 0.7,\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "meets_threshold",
+      "line": 196,
+      "column": 4,
+      "text": "pub fn meets_threshold(&self, min_ratio: f64) -> bool {\n        self.compression_ratio >= min_ratio\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "new",
+      "line": 239,
+      "column": 4,
+      "text": "pub fn new() -> Self {\n        Self {\n            confidence_threshold: 0.9,\n            min_compression_ratio: 0.6,\n            strategy: CompactionStrategy::AnchorBased,\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "with_confidence_threshold",
+      "line": 248,
+      "column": 4,
+      "text": "pub fn with_confidence_threshold(mut self, threshold: f64) -> Self {\n        self.confidence_threshold = threshold;\n        self\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "with_compression_threshold",
+      "line": 254,
+      "column": 4,
+      "text": "pub fn with_compression_threshold(mut self, threshold: f64) -> Self {\n        self.min_compression_ratio = threshold;\n        self\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "with_strategy",
+      "line": 260,
+      "column": 4,
+      "text": "pub fn with_strategy(mut self, strategy: CompactionStrategy) -> Self {\n        self.strategy = strategy;\n        self\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "compact",
+      "line": 277,
+      "column": 4,
+      "text": "pub async fn compact<F, Fut>(\n        &self,\n        turns: &[ConversationTurn],\n        target_tokens: u64,\n        _llm_prompt: F,\n    ) -> Result<CompactionResult>\n    where\n        F: Fn(String) -> Fut,\n        Fut: std::future::Future<Output = Result<String>>,\n    {\n        // Validate parameters\n        if target_tokens == 0 {\n            anyhow::bail!(\"Target tokens must be positive\");\n        }\n        if turns.is_empty() {\n            anyhow::bail!(\"Cannot compact empty turn history\");\n        }\n\n        // Step 1: Detect anchor points\n        let detector = AnchorDetector::new(self.confidence_threshold);\n        let mut anchors: Vec<AnchorPoint> = Vec::new();\n\n        for (idx, turn) in turns.iter().enumerate() {\n            if let Some(anchor) = detector.detect(turn, idx)? {\n                anchors.push(anchor);\n            }\n        }\n\n        // Step 2: Select turns using TypeScript-matching logic\n        let selector = TurnSelector::new();\n        let selection = selector.select_turns_with_recent(turns, &anchors)?;\n\n        // Step 3: Calculate original token count\n        let original_tokens: u64 = turns.iter().map(|t| t.tokens).sum();\n\n        // Step 4: Generate template-based summary (matches TypeScript WeightedSummaryProvider)\n        let summarized_turns: Vec<&ConversationTurn> = selection\n            .summarized_turns\n            .iter()\n            .map(|info| &turns[info.turn_index])\n            .collect();\n\n        let summary = if !summarized_turns.is_empty() {\n            self.generate_weighted_summary(&summarized_turns, &anchors)\n        } else {\n            \"No turns summarized.\".to_string()\n        };\n\n        // Estimate summary tokens (rough approximation: 1 token ≈ 4 characters)\n        let summary_tokens = summary.len().div_ceil(4) as u64;\n\n        // Step 5: Collect kept turns\n        let kept_turns: Vec<ConversationTurn> = selection\n            .kept_turns\n            .iter()\n            .map(|info| turns[info.turn_index].clone())\n            .collect();\n\n        let kept_tokens: u64 = kept_turns.iter().map(|t| t.tokens).sum();\n        let compacted_tokens = summary_tokens + kept_tokens;\n\n        // Step 6: Calculate metrics\n        let compression_ratio = if original_tokens > 0 {\n            1.0 - (compacted_tokens as f64 / original_tokens as f64)\n        } else {\n            0.0\n        };\n\n        let metrics = CompactionMetrics {\n            original_tokens,\n            compacted_tokens,\n            compression_ratio,\n            turns_summarized: selection.summarized_turns.len(),\n            turns_kept: selection.kept_turns.len(),\n        };\n\n        // Step 7: Check compression ratio - WARN instead of FAIL (matches TypeScript)\n        let mut warnings = Vec::new();\n        if !metrics.meets_threshold(self.min_compression_ratio) {\n            warnings.push(format!(\n                \"Compression ratio below {:.0}% ({:.1}%) - consider starting fresh conversation\",\n                self.min_compression_ratio * 100.0,\n                compression_ratio * 100.0\n            ));\n        }\n\n        Ok(CompactionResult {\n            kept_turns,\n            warnings,\n            summary,\n            metrics,\n            anchor: selection.preserved_anchor,\n        })\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "generate_weighted_summary",
+      "line": 376,
+      "column": 4,
+      "text": "fn generate_weighted_summary(\n        &self,\n        turns: &[&ConversationTurn],\n        anchors: &[AnchorPoint],\n    ) -> String {\n        // Transform turns to outcome descriptions (matches TypeScript turnToOutcome)\n        let outcomes: Vec<String> = turns\n            .iter()\n            .map(|turn| self.turn_to_outcome(turn, anchors))\n            .collect();\n\n        // Build context summary (matches TypeScript preserveContext)\n        // Note: We don't have full PreservationContext, so we use a simplified version\n        let context_summary =\n            \"Active files: [from conversation]\\nGoals: Continue development\\nBuild: unknown\";\n\n        format!(\n            \"{}\\n\\nKey outcomes:\\n{}\",\n            context_summary,\n            outcomes.join(\"\\n\")\n        )\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "turn_to_outcome",
+      "line": 400,
+      "column": 4,
+      "text": "fn turn_to_outcome(&self, turn: &ConversationTurn, anchors: &[AnchorPoint]) -> String {\n        // Check if this turn is an anchor point\n        let is_anchor = anchors.iter().any(|a| {\n            // Compare by timestamp (TypeScript uses timestamp comparison)\n            a.timestamp == turn.timestamp\n        });\n\n        if is_anchor {\n            // Anchor points get detailed preservation\n            return format!(\"[ANCHOR] {}\", turn.assistant_response);\n        }\n\n        // Regular turns get compressed to outcomes\n        // Extract modified files (matches TypeScript extractFilesFromTurn)\n        let files: Vec<String> = turn\n            .tool_calls\n            .iter()\n            .filter(|call| call.tool == \"Edit\" || call.tool == \"Write\")\n            .filter_map(ToolCall::filename)\n            .collect();\n\n        let success = turn.tool_results.iter().any(|r| r.success);\n        let success_marker = if success { \"✓\" } else { \"✗\" };\n\n        let file_info = if !files.is_empty() {\n            format!(\"Modified {}: \", files.join(\", \"))\n        } else {\n            String::new()\n        };\n\n        // Get first sentence of assistant response\n        let first_sentence = turn\n            .assistant_response\n            .split('.')\n            .next()\n            .unwrap_or(&turn.assistant_response);\n\n        format!(\"{success_marker} {file_info}{first_sentence}\")\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "default",
+      "line": 442,
+      "column": 4,
+      "text": "fn default() -> Self {\n        Self::new()\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "new",
+      "line": 473,
+      "column": 4,
+      "text": "pub fn new(confidence_threshold: f64) -> Self {\n        Self {\n            confidence_threshold,\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "detect",
+      "line": 482,
+      "column": 4,
+      "text": "pub fn detect(\n        &self,\n        turn: &ConversationTurn,\n        turn_index: usize,\n    ) -> Result<Option<AnchorPoint>> {\n        // Analyze completion patterns (matches codelet's analyzeCompletionPatterns)\n        let has_test_success = turn.tool_results.iter().any(|result| {\n            result.success\n                && result.output.to_lowercase().contains(\"test\")\n                && (result.output.contains(\"pass\") || result.output.contains(\"success\"))\n        });\n\n        let has_file_modification = turn\n            .tool_calls\n            .iter()\n            .any(|call| call.tool == \"Edit\" || call.tool == \"Write\");\n\n        let has_previous_error = turn.previous_error.unwrap_or(false);\n\n        // Error resolution pattern: Previous error + Fix + Success\n        if has_previous_error && has_file_modification && has_test_success {\n            let confidence = 0.95;\n            if confidence >= self.confidence_threshold {\n                return Ok(Some(AnchorPoint {\n                    turn_index,\n                    anchor_type: AnchorType::ErrorResolution,\n                    weight: 0.9,\n                    confidence,\n                    description: \"Build error fixed and tests now pass\".to_string(),\n                    timestamp: turn.timestamp,\n                }));\n            }\n        }\n\n        // Task completion pattern: Modify + Test + Success (without previous error)\n        if !has_previous_error && has_file_modification && has_test_success {\n            let confidence = 0.92;\n            if confidence >= self.confidence_threshold {\n                return Ok(Some(AnchorPoint {\n                    turn_index,\n                    anchor_type: AnchorType::TaskCompletion,\n                    weight: 0.8,\n                    confidence,\n                    description: \"File changes implemented and tests pass\".to_string(),\n                    timestamp: turn.timestamp,\n                }));\n            }\n        }\n\n        Ok(None)\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "new",
+      "line": 544,
+      "column": 4,
+      "text": "pub fn new() -> Self {\n        Self\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "select_turns_with_recent",
+      "line": 555,
+      "column": 4,
+      "text": "pub fn select_turns_with_recent(\n        &self,\n        turns: &[ConversationTurn],\n        anchors: &[AnchorPoint],\n    ) -> Result<TurnSelection> {\n        if turns.is_empty() {\n            return Ok(TurnSelection {\n                kept_turns: Vec::new(),\n                summarized_turns: Vec::new(),\n                preserved_anchor: None,\n            });\n        }\n\n        let total_turns = turns.len();\n\n        // ALWAYS preserve last 2-3 complete conversation turns (matches TypeScript)\n        let turns_to_always_keep = 3.min(total_turns);\n        let older_turns_count = total_turns.saturating_sub(turns_to_always_keep);\n\n        // Find most recent anchor point in older turns only (matches TypeScript)\n        // TypeScript: .filter(anchor => anchor.turnIndex < totalTurns - turnsToAlwaysKeep)\n        let anchor_in_older = anchors\n            .iter()\n            .filter(|a| a.turn_index < older_turns_count)\n            .max_by_key(|a| a.turn_index); // Get most recent (highest index)\n\n        if let Some(anchor) = anchor_in_older {\n            // Keep anchor + everything after it + recent turns\n            // TypeScript: [...olderTurns.slice(anchorPointInOlderTurns.turnIndex), ...recentTurns]\n            let mut kept_turns: Vec<TurnInfo> = Vec::new();\n\n            // Add from anchor to end of older turns\n            for idx in anchor.turn_index..older_turns_count {\n                kept_turns.push(TurnInfo { turn_index: idx });\n            }\n\n            // Add all recent turns\n            for idx in older_turns_count..total_turns {\n                kept_turns.push(TurnInfo { turn_index: idx });\n            }\n\n            // Summarize turns before anchor point\n            let summarized_turns: Vec<TurnInfo> = (0..anchor.turn_index)\n                .map(|idx| TurnInfo { turn_index: idx })\n                .collect();\n\n            Ok(TurnSelection {\n                kept_turns,\n                summarized_turns,\n                preserved_anchor: Some(anchor.clone()),\n            })\n        } else {\n            // No anchor found in older turns - keep only recent turns, summarize the rest\n            let kept_turns: Vec<TurnInfo> = (older_turns_count..total_turns)\n                .map(|idx| TurnInfo { turn_index: idx })\n                .collect();\n\n            let summarized_turns: Vec<TurnInfo> = (0..older_turns_count)\n                .map(|idx| TurnInfo { turn_index: idx })\n                .collect();\n\n            Ok(TurnSelection {\n                kept_turns,\n                summarized_turns,\n                preserved_anchor: None,\n            })\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "select_turns",
+      "line": 626,
+      "column": 4,
+      "text": "pub fn select_turns(\n        &self,\n        turns: &[ConversationTurn],\n        anchor: Option<&AnchorPoint>,\n    ) -> Result<TurnSelection> {\n        let anchors: Vec<AnchorPoint> = anchor.cloned().into_iter().collect();\n        self.select_turns_with_recent(turns, &anchors)\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "default",
+      "line": 637,
+      "column": 4,
+      "text": "fn default() -> Self {\n        Self::new()\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_context_compaction_succeeds_with_conversation_history",
+      "line": 666,
+      "column": 4,
+      "text": "async fn test_context_compaction_succeeds_with_conversation_history() {\n        // @step Given I have a session with 81 messages in conversation history\n        // @step And the session has accumulated 800000 tokens\n        // @step And compaction threshold has been exceeded\n        // @step When the compaction system attempts to compress the conversation\n        // @step Then conversation turns should be created successfully from message history\n        // @step And the compaction should succeed without errors\n        // @step And the effective token count should be reduced\n\n        // This test will be implemented during the implementation phase\n        // For now, we're just creating the test structure to satisfy coverage requirements\n        assert!(\n            true,\n            \"Test placeholder - will be implemented with lazy turn creation\"\n        );\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_turn_creation_uses_lazy_approach_during_compaction",
+      "line": 685,
+      "column": 4,
+      "text": "async fn test_turn_creation_uses_lazy_approach_during_compaction() {\n        // @step Given I have multiple user and assistant message pairs in session history\n        // @step When the compaction system converts messages to conversation turns\n        // @step Then turns should be created using forward iteration through message pairs\n        // @step And each user-assistant pair should become a single conversation turn\n        // @step And turn creation should happen during compaction not after each interaction\n\n        // This test will be implemented during the implementation phase\n        // For now, we're just creating the test structure to satisfy coverage requirements\n        assert!(\n            true,\n            \"Test placeholder - will be implemented with lazy turn creation\"\n        );\n    }"
+    }
+  ]
+}
