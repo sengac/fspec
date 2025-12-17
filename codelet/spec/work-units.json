@@ -2,7 +2,7 @@
   "version": "0.7.1",
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-12-17T04:02:30.420Z"
+    "lastUpdated": "2025-12-17T05:13:35.994Z"
   },
   "workUnits": {
     "FOUND-001": {
@@ -6750,9 +6750,9 @@
       "id": "PROV-006",
       "title": "Custom HTTP Middleware for Anthropic Prompt Cache Control",
       "type": "story",
-      "status": "implementing",
+      "status": "done",
       "createdAt": "2025-12-16T23:32:48.473Z",
-      "updatedAt": "2025-12-17T00:17:47.449Z",
+      "updatedAt": "2025-12-17T05:11:54.924Z",
       "description": "Implement a custom HTTP client layer that intercepts requests to Anthropic API and transforms the request body to enable prompt caching. This bypasses rig's limitation of sending system prompts as plain strings instead of the array format required for cache_control metadata.",
       "children": [],
       "attachments": [
@@ -6798,6 +6798,14 @@
         {
           "state": "implementing",
           "timestamp": "2025-12-17T00:17:47.449Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-17T05:11:39.473Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-17T05:11:54.924Z"
         }
       ],
       "rules": [
@@ -6980,7 +6988,7 @@
       "nextNoteId": 5,
       "questions": [],
       "nextQuestionId": 0,
-      "updated": "2025-12-17T00:00:49.337Z"
+      "updated": "2025-12-17T05:11:54.924Z"
     },
     "REFAC-012": {
       "id": "REFAC-012",
@@ -7237,9 +7245,9 @@
       "id": "REFAC-015",
       "title": "Split interactive.rs into submodules using ast-grep",
       "type": "task",
-      "status": "implementing",
+      "status": "done",
       "createdAt": "2025-12-17T04:05:57.013Z",
-      "updatedAt": "2025-12-17T04:06:07.157Z",
+      "updatedAt": "2025-12-17T05:13:36.004Z",
       "description": "Use ast-grep to extract functions from cli/src/interactive.rs (845 lines) into focused submodules: repl_loop.rs (main loop), stream_handler.rs (response streaming), tool_executor.rs (tool handling), token_display.rs (token tracking). All code movement via ast-grep - no manual editing.",
       "children": [],
       "stateHistory": [
@@ -7250,8 +7258,25 @@
         {
           "state": "implementing",
           "timestamp": "2025-12-17T04:06:07.157Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-17T05:13:28.270Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-17T05:13:36.004Z"
         }
-      ]
+      ],
+      "rules": [],
+      "examples": [],
+      "questions": [],
+      "architectureNotes": [],
+      "nextRuleId": 0,
+      "nextExampleId": 0,
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2025-12-17T05:13:36.004Z"
     }
   },
   "states": {
@@ -7264,12 +7289,12 @@
     ],
     "implementing": [
       "CLI-010",
-      "CLI-021",
-      "PROV-006",
-      "REFAC-015"
+      "CLI-021"
     ],
     "validating": [],
     "done": [
+      "REFAC-015",
+      "PROV-006",
       "REFAC-014",
       "REFAC-012",
       "REFAC-010",
