@@ -1,0 +1,107 @@
+[package]
+name = "rig-core"
+version = "0.25.0"
+edition = "2024"
+license = "MIT"
+readme = "README.md"
+description = "An opinionated library for building LLM powered applications."
+repository = "https://github.com/0xPlaygrounds/rig"
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
+
+[lib]
+name = "rig"
+path = "src/lib.rs"
+doctest = false
+
+[dependencies]
+as-any = "0.3.2"
+async-stream = "0.3.6"
+base64 = "0.22.1"
+bytes = "1.10.1"
+epub = { version = "2.1.4", optional = true }
+futures = "0.3.31"
+glob = "0.3.2"
+lopdf = { version = "0.36.0", optional = true }
+mime_guess = "2.0.5"
+ordered-float = "5.0.0"
+quick-xml = { version = "0.38.0", optional = true }
+rayon = { version = "1.10.0", optional = true }
+reqwest = { version = "0.12.20", default-features = false, features = ["json", "stream", "multipart"] }
+schemars = "1.0.4"
+serde = { version = "1.0.219", features = ["derive"] }
+serde_json = "1.0.140"
+thiserror = "2.0.12"
+tracing = "0.1.41"
+url = "2.5"
+worker = { version = "0.6", optional = true }
+rmcp = { version = "0.9", optional = true, features = ["client"] }
+tokio = { version = "1.45.1", features = ["rt", "sync"] }
+http = "1.3.1"
+tracing-futures = { version = "0.2.5", features = ["futures-03"] }
+serenity = { version = "0.12.4", optional = true }
+eventsource-stream = "0.2.3"
+pin-project-lite = "0.2.16"
+futures-timer = "3.0.3"
+wasm-bindgen-futures = { version = "0.4.54", optional = true }
+
+[dev-dependencies]
+anyhow = "1.0.98"
+assert_fs = "1.1.3"
+tokio = { version = "1.45.1", features = ["full"] }
+tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
+tokio-test = "0.4.4"
+serde_path_to_error = "0.1.17"
+base64 = "0.22.1"
+
+# Required for `rmcp` example
+hyper-util = { version = "0.1.14", features = ["service", "server"] }
+rmcp = { version = "0.9", features = [
+  "client",
+  "macros",
+  "reqwest",
+  "transport-streamable-http-client",
+  "transport-streamable-http-client-reqwest",
+  "transport-streamable-http-server-session",
+  "transport-streamable-http-server",
+  "transport-worker",
+] }
+axum = "0.8.4"
+
+# required for otel
+opentelemetry = "0.30.0"
+opentelemetry_sdk = { version = "0.30.0", features = ["rt-tokio"] }
+opentelemetry-otlp = "0.30.0"
+tracing-opentelemetry = "0.31.0"
+
+
+[features]
+default = ["reqwest-tls"]
+all = ["derive", "pdf", "rayon"]
+audio = []
+image = []
+derive = []
+experimental = []
+discord-bot = ["dep:serenity"]
+pdf = ["dep:lopdf"]
+epub = ["dep:epub", "dep:quick-xml"]
+rayon = ["dep:rayon"]
+worker = [
+  "dep:worker",
+  "dep:wasm-bindgen-futures",
+  "futures-timer/wasm-bindgen",
+]
+rmcp = ["dep:rmcp"]
+socks = ["reqwest/socks"]
+reqwest-tls = ["reqwest/default"]
+reqwest-rustls = [
+  "reqwest/rustls-tls",
+  "reqwest/charset",
+  "reqwest/http2",
+  "reqwest/macos-system-configuration",
+]
+
+# Empty workspace table to exclude from parent workspace
+[workspace]

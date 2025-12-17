@@ -90,17 +90,24 @@ impl OpenAIProvider {
     /// This method encapsulates all OpenAI-specific configuration:
     /// - Model name (gpt-4-turbo or custom)
     /// - Max tokens (4096)
-    /// - All 7 tools (Read, Write, Edit, Bash, Grep, Glob, AstGrep)
+    /// - All 8 tools (Read, Write, Edit, Bash, Grep, Glob, Ls, AstGrep)
+    ///
+    /// # Arguments
+    /// * `preamble` - Optional system prompt/preamble for the agent
     ///
     /// Returns a fully configured rig::agent::Agent ready for use with RigAgent.
-    pub fn create_rig_agent(&self) -> rig::agent::Agent<openai::completion::CompletionModel> {
+    pub fn create_rig_agent(
+        &self,
+        preamble: Option<&str>,
+    ) -> rig::agent::Agent<openai::completion::CompletionModel> {
         use codelet_tools::{
             AstGrepTool, BashTool, EditTool, GlobTool, GrepTool, LsTool, ReadTool, WriteTool,
         };
         use rig::client::CompletionClient;
 
         // Build agent with all 8 tools using rig's builder pattern
-        self.rig_client
+        let mut agent_builder = self
+            .rig_client
             .agent(&self.model_name)
             .max_tokens(MAX_OUTPUT_TOKENS as u64)
             .tool(ReadTool::new())
@@ -110,8 +117,14 @@ impl OpenAIProvider {
             .tool(GrepTool::new())
             .tool(GlobTool::new())
             .tool(LsTool::new())
-            .tool(AstGrepTool::new())
-            .build()
+            .tool(AstGrepTool::new());
+
+        // Set preamble if provided
+        if let Some(p) = preamble {
+            agent_builder = agent_builder.preamble(p);
+        }
+
+        agent_builder.build()
     }
 
     /// Extract text content from a message (DRY helper)

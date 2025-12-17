@@ -219,10 +219,11 @@ async fn run_agent_with_interruption(
     let manager = session.provider_manager_mut();
 
     // Macro to eliminate code duplication across provider branches (DRY principle)
+    // PROV-006: Pass preamble to enable cache_control for API key mode
     macro_rules! run_with_provider {
-        ($get_provider:ident) => {{
+        ($get_provider:ident, $preamble:expr) => {{
             let provider = manager.$get_provider()?;
-            let rig_agent = provider.create_rig_agent();
+            let rig_agent = provider.create_rig_agent($preamble);
             let agent = RigAgent::with_default_depth(rig_agent);
             run_agent_stream_with_interruption(
                 agent,
@@ -237,11 +238,13 @@ async fn run_agent_with_interruption(
     }
 
     // Dispatch to provider-specific agent
+    // PROV-006: For now pass None - preamble comes from session.messages as user messages
+    // Future enhancement: extract CLAUDE.md content as preamble for API key mode
     match provider_name.as_str() {
-        "claude" => run_with_provider!(get_claude),
-        "openai" => run_with_provider!(get_openai),
-        "codex" => run_with_provider!(get_codex),
-        "gemini" => run_with_provider!(get_gemini),
+        "claude" => run_with_provider!(get_claude, None),
+        "openai" => run_with_provider!(get_openai, None),
+        "codex" => run_with_provider!(get_codex, None),
+        "gemini" => run_with_provider!(get_gemini, None),
         _ => Err(anyhow::anyhow!("Unknown provider")),
     }
 }
@@ -644,18 +647,17 @@ where
                             estimate_tokens(&assistant_text)
                         };
 
-                        // CLI-014: Cache token extraction from Anthropic API
-                        // LIMITATION: rig 0.25+ streaming abstracts away Anthropic-specific cache fields.
-                        // The MessageStart SSE event has full Usage with cache_read_input_tokens and
-                        // cache_creation_input_tokens, but rig only extracts input_tokens (line 236 in
-                        // rig-core/src/providers/anthropic/streaming.rs). The cache fields are lost when
-                        // converting to PartialUsage and StreamingCompletionResponse.
+                        // PROV-006: Cache token extraction from Anthropic API
                         //
-                        // Infrastructure ready: TokenTracker, effective_tokens(), accumulation logic.
-                        // When rig exposes cache tokens, update here to extract from FinalResponse.
-                        // For non-Anthropic providers, cache tokens correctly remain None.
-                        turn_cache_read_tokens = None;
-                        turn_cache_creation_tokens = None;
+                        // REQUEST-SIDE (WORKING): ClaudeProvider.create_rig_agent() uses additional_params
+                        // to transform system prompts to array format with cache_control metadata.
+                        // This enables Anthropic's prompt caching on outgoing requests.
+                        //
+                        // RESPONSE-SIDE (NOW WORKING): Patched rig-core exposes cache tokens in Usage.
+                        // The patch adds cache_read_input_tokens and cache_creation_input_tokens fields
+                        // to rig's generic Usage struct, and extracts them from MessageStart SSE events.
+                        turn_cache_read_tokens = usage.cache_read_input_tokens;
+                        turn_cache_creation_tokens = usage.cache_creation_input_tokens;
 
                         // CLI-022: Capture api.response.end event with token usage
                         if let Ok(manager_arc) = get_debug_capture_manager() {
@@ -669,6 +671,8 @@ where
                                             "usage": {
                                                 "inputTokens": turn_input_tokens,
                                                 "outputTokens": turn_output_tokens,
+                                                "cacheReadInputTokens": turn_cache_read_tokens,
+                                                "cacheCreationInputTokens": turn_cache_creation_tokens,
                                             },
                                             "responseLength": assistant_text.len(),
                                         }),
@@ -684,6 +688,8 @@ where
                                         serde_json::json!({
                                             "inputTokens": turn_input_tokens,
                                             "outputTokens": turn_output_tokens,
+                                            "cacheReadInputTokens": turn_cache_read_tokens,
+                                            "cacheCreationInputTokens": turn_cache_creation_tokens,
                                             "totalInputTokens": turn_input_tokens,
                                             "totalOutputTokens": turn_output_tokens,
                                         }),

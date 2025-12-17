@@ -156,7 +156,7 @@ async fn test_create_rig_agent_with_all_tools_configured() {
     let provider = OpenAIProvider::new().expect("Provider should initialize");
 
     // @step When I call create_rig_agent()
-    let _agent = provider.create_rig_agent();
+    let _agent = provider.create_rig_agent(None);
 
     // @step Then a rig Agent should be created
     // Agent is created successfully (compilation proves this)

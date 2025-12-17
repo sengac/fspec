@@ -177,6 +177,10 @@
         {
           "name": "@done",
           "description": "Completed features"
+        },
+        {
+          "name": "@wip",
+          "description": "Work in progress - feature not yet complete"
         }
       ]
     },
@@ -184,7 +188,12 @@
       "name": "Testing Tags",
       "description": "Test-related tags",
       "required": false,
-      "tags": []
+      "tags": [
+        {
+          "name": "@integration",
+          "description": "Integration test scenarios that verify end-to-end wiring"
+        }
+      ]
     },
     {
       "name": "Automation Tags",
@@ -224,7 +233,7 @@
     "examples": []
   },
   "statistics": {
-    "lastUpdated": "2025-12-16T09:00:50.881Z",
+    "lastUpdated": "2025-12-17T00:14:12.969Z",
     "phaseStats": [],
     "componentStats": [],
     "featureGroupStats": [],

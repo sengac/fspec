@@ -2,6 +2,8 @@
 //!
 //! Multi-provider LLM abstraction.
 
+pub mod cache_token_extractor;
+pub mod caching_client;
 pub mod claude;
 pub mod codex;
 mod credentials;
@@ -12,6 +14,11 @@ pub mod openai;
 use anyhow::Result;
 use async_trait::async_trait;
 
+pub use cache_token_extractor::{extract_cache_tokens_from_sse, CacheTokenExtractor};
+pub use caching_client::{
+    should_transform_request, transform_request_body, transform_system_prompt,
+    transform_user_message_cache_control,
+};
 pub use claude::{build_cached_system_prompt, AuthMode, CacheControl, ClaudeProvider};
 pub use codex::CodexProvider;
 pub use credentials::ProviderCredentials;

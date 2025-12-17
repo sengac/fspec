@@ -136,6 +136,10 @@ unnecessary_lazy_evaluations = "deny"
 unnecessary_sort_by = "deny"
 unnecessary_to_owned = "deny"
 
+# Use patched rig-core with cache token support in streaming responses
+[patch.crates-io]
+rig-core = { path = "patches/rig-core" }
+
 [profile.release]
 lto = "fat"
 strip = "symbols"

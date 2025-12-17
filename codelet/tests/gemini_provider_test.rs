@@ -75,7 +75,7 @@ async fn test_provider_has_create_rig_agent_method() {
 
     // @step Then the provider should have a create_rig_agent method
     // This test verifies the method exists by calling it
-    let _agent = provider.create_rig_agent();
+    let _agent = provider.create_rig_agent(None);
 
     cleanup_test_env();
 }
@@ -151,7 +151,7 @@ async fn test_tool_calling_with_gemini_provider() {
     // @step Then the tool call should be processed correctly
     // @step And the tool result should be returned to the model
     // This is an integration test - verify agent has tools configured
-    let agent = provider.create_rig_agent();
+    let agent = provider.create_rig_agent(None);
     // Agent is successfully created with tools
     drop(agent); // Verify it compiles and can be dropped
 

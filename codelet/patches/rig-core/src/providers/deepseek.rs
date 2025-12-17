@@ -1,0 +1,1000 @@
+//! DeepSeek API client and Rig integration
+//!
+//! # Example
+//! ```
+//! use rig::providers::deepseek;
+//!
+//! let client = deepseek::Client::new("DEEPSEEK_API_KEY");
+//!
+//! let deepseek_chat = client.completion_model(deepseek::DEEPSEEK_CHAT);
+//! ```
+
+use crate::json_utils::empty_or_none;
+use async_stream::stream;
+use bytes::Bytes;
+use futures::StreamExt;
+use http::Request;
+use std::collections::HashMap;
+use tracing::{Instrument, info_span};
+
+use crate::client::{
+    self, BearerAuth, Capabilities, Capable, DebugExt, Nothing, Provider, ProviderBuilder,
+    ProviderClient,
+};
+use crate::completion::GetTokenUsage;
+use crate::http_client::sse::{Event, GenericEventSource};
+use crate::http_client::{self, HttpClientExt};
+use crate::message::{Document, DocumentSourceKind};
+use crate::{
+    OneOrMany,
+    completion::{self, CompletionError, CompletionRequest},
+    json_utils, message,
+};
+use serde::{Deserialize, Serialize};
+
+use super::openai::StreamingToolCall;
+
+// ================================================================
+// Main DeepSeek Client
+// ================================================================
+const DEEPSEEK_API_BASE_URL: &str = "https://api.deepseek.com";
+
+#[derive(Debug, Default, Clone, Copy)]
+pub struct DeepSeekExt;
+#[derive(Debug, Default, Clone, Copy)]
+pub struct DeepSeekExtBuilder;
+
+type DeepSeekApiKey = BearerAuth;
+
+impl Provider for DeepSeekExt {
+    type Builder = DeepSeekExtBuilder;
+
+    const VERIFY_PATH: &'static str = "/user/balance";
+
+    fn build<H>(
+        _: &crate::client::ClientBuilder<
+            Self::Builder,
+            <Self::Builder as crate::client::ProviderBuilder>::ApiKey,
+            H,
+        >,
+    ) -> http_client::Result<Self> {
+        Ok(Self)
+    }
+}
+
+impl<H> Capabilities<H> for DeepSeekExt {
+    type Completion = Capable<CompletionModel<H>>;
+    type Embeddings = Nothing;
+    type Transcription = Nothing;
+    #[cfg(feature = "image")]
+    type ImageGeneration = Nothing;
+    #[cfg(feature = "audio")]
+    type AudioGeneration = Nothing;
+}
+
+impl DebugExt for DeepSeekExt {}
+
+impl ProviderBuilder for DeepSeekExtBuilder {
+    type Output = DeepSeekExt;
+    type ApiKey = DeepSeekApiKey;
+
+    const BASE_URL: &'static str = DEEPSEEK_API_BASE_URL;
+}
+
+pub type Client<H = reqwest::Client> = client::Client<DeepSeekExt, H>;
+pub type ClientBuilder<H = reqwest::Client> = client::ClientBuilder<DeepSeekExtBuilder, String, H>;
+
+impl ProviderClient for Client {
+    type Input = DeepSeekApiKey;
+
+    // If you prefer the environment variable approach:
+    fn from_env() -> Self {
+        let api_key = std::env::var("DEEPSEEK_API_KEY").expect("DEEPSEEK_API_KEY not set");
+        Self::new(&api_key).unwrap()
+    }
+
+    fn from_val(input: Self::Input) -> Self {
+        Self::new(input).unwrap()
+    }
+}
+
+#[derive(Debug, Deserialize)]
+struct ApiErrorResponse {
+    message: String,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(untagged)]
+enum ApiResponse<T> {
+    Ok(T),
+    Err(ApiErrorResponse),
+}
+
+impl From<ApiErrorResponse> for CompletionError {
+    fn from(err: ApiErrorResponse) -> Self {
+        CompletionError::ProviderError(err.message)
+    }
+}
+
+/// The response shape from the DeepSeek API
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct CompletionResponse {
+    // We'll match the JSON:
+    pub choices: Vec<Choice>,
+    pub usage: Usage,
+    // you may want other fields
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, Default)]
+pub struct Usage {
+    pub completion_tokens: u32,
+    pub prompt_tokens: u32,
+    pub prompt_cache_hit_tokens: u32,
+    pub prompt_cache_miss_tokens: u32,
+    pub total_tokens: u32,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub completion_tokens_details: Option<CompletionTokensDetails>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub prompt_tokens_details: Option<PromptTokensDetails>,
+}
+
+impl Usage {
+    fn new() -> Self {
+        Self {
+            completion_tokens: 0,
+            prompt_tokens: 0,
+            prompt_cache_hit_tokens: 0,
+            prompt_cache_miss_tokens: 0,
+            total_tokens: 0,
+            completion_tokens_details: None,
+            prompt_tokens_details: None,
+        }
+    }
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, Default)]
+pub struct CompletionTokensDetails {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reasoning_tokens: Option<u32>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, Default)]
+pub struct PromptTokensDetails {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub cached_tokens: Option<u32>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+pub struct Choice {
+    pub index: usize,
+    pub message: Message,
+    pub logprobs: Option<serde_json::Value>,
+    pub finish_reason: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
+#[serde(tag = "role", rename_all = "lowercase")]
+pub enum Message {
+    System {
+        content: String,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        name: Option<String>,
+    },
+    User {
+        content: String,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        name: Option<String>,
+    },
+    Assistant {
+        content: String,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        name: Option<String>,
+        #[serde(
+            default,
+            deserialize_with = "json_utils::null_or_vec",
+            skip_serializing_if = "Vec::is_empty"
+        )]
+        tool_calls: Vec<ToolCall>,
+    },
+    #[serde(rename = "tool")]
+    ToolResult {
+        tool_call_id: String,
+        content: String,
+    },
+}
+
+impl Message {
+    pub fn system(content: &str) -> Self {
+        Message::System {
+            content: content.to_owned(),
+            name: None,
+        }
+    }
+}
+
+impl From<message::ToolResult> for Message {
+    fn from(tool_result: message::ToolResult) -> Self {
+        let content = match tool_result.content.first() {
+            message::ToolResultContent::Text(text) => text.text,
+            message::ToolResultContent::Image(_) => String::from("[Image]"),
+        };
+
+        Message::ToolResult {
+            tool_call_id: tool_result.id,
+            content,
+        }
+    }
+}
+
+impl From<message::ToolCall> for ToolCall {
+    fn from(tool_call: message::ToolCall) -> Self {
+        Self {
+            id: tool_call.id,
+            // TODO: update index when we have it
+            index: 0,
+            r#type: ToolType::Function,
+            function: Function {
+                name: tool_call.function.name,
+                arguments: tool_call.function.arguments,
+            },
+        }
+    }
+}
+
+impl TryFrom<message::Message> for Vec<Message> {
+    type Error = message::MessageError;
+
+    fn try_from(message: message::Message) -> Result<Self, Self::Error> {
+        match message {
+            message::Message::User { content } => {
+                // extract tool results
+                let mut messages = vec![];
+
+                let tool_results = content
+                    .clone()
+                    .into_iter()
+                    .filter_map(|content| match content {
+                        message::UserContent::ToolResult(tool_result) => {
+                            Some(Message::from(tool_result))
+                        }
+                        _ => None,
+                    })
+                    .collect::<Vec<_>>();
+
+                messages.extend(tool_results);
+
+                // extract text results
+                let text_messages = content
+                    .into_iter()
+                    .filter_map(|content| match content {
+                        message::UserContent::Text(text) => Some(Message::User {
+                            content: text.text,
+                            name: None,
+                        }),
+                        message::UserContent::Document(Document {
+                            data:
+                                DocumentSourceKind::Base64(content)
+                                | DocumentSourceKind::String(content),
+                            ..
+                        }) => Some(Message::User {
+                            content,
+                            name: None,
+                        }),
+                        _ => None,
+                    })
+                    .collect::<Vec<_>>();
+                messages.extend(text_messages);
+
+                Ok(messages)
+            }
+            message::Message::Assistant { content, .. } => {
+                let mut messages: Vec<Message> = vec![];
+
+                // extract text
+                let text_content = content
+                    .clone()
+                    .into_iter()
+                    .filter_map(|content| match content {
+                        message::AssistantContent::Text(text) => Some(Message::Assistant {
+                            content: text.text,
+                            name: None,
+                            tool_calls: vec![],
+                        }),
+                        _ => None,
+                    })
+                    .collect::<Vec<_>>();
+
+                messages.extend(text_content);
+
+                // extract tool calls
+                let tool_calls = content
+                    .clone()
+                    .into_iter()
+                    .filter_map(|content| match content {
+                        message::AssistantContent::ToolCall(tool_call) => {
+                            Some(ToolCall::from(tool_call))
+                        }
+                        _ => None,
+                    })
+                    .collect::<Vec<_>>();
+
+                // if we have tool calls, we add a new Assistant message with them
+                if !tool_calls.is_empty() {
+                    messages.push(Message::Assistant {
+                        content: "".to_string(),
+                        name: None,
+                        tool_calls,
+                    });
+                }
+
+                Ok(messages)
+            }
+        }
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
+pub struct ToolCall {
+    pub id: String,
+    pub index: usize,
+    #[serde(default)]
+    pub r#type: ToolType,
+    pub function: Function,
+}
+
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
+pub struct Function {
+    pub name: String,
+    #[serde(with = "json_utils::stringified_json")]
+    pub arguments: serde_json::Value,
+}
+
+#[derive(Default, Debug, Serialize, Deserialize, PartialEq, Clone)]
+#[serde(rename_all = "lowercase")]
+pub enum ToolType {
+    #[default]
+    Function,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct ToolDefinition {
+    pub r#type: String,
+    pub function: completion::ToolDefinition,
+}
+
+impl From<crate::completion::ToolDefinition> for ToolDefinition {
+    fn from(tool: crate::completion::ToolDefinition) -> Self {
+        Self {
+            r#type: "function".into(),
+            function: tool,
+        }
+    }
+}
+
+impl TryFrom<CompletionResponse> for completion::CompletionResponse<CompletionResponse> {
+    type Error = CompletionError;
+
+    fn try_from(response: CompletionResponse) -> Result<Self, Self::Error> {
+        let choice = response.choices.first().ok_or_else(|| {
+            CompletionError::ResponseError("Response contained no choices".to_owned())
+        })?;
+        let content = match &choice.message {
+            Message::Assistant {
+                content,
+                tool_calls,
+                ..
+            } => {
+                let mut content = if content.trim().is_empty() {
+                    vec![]
+                } else {
+                    vec![completion::AssistantContent::text(content)]
+                };
+
+                content.extend(
+                    tool_calls
+                        .iter()
+                        .map(|call| {
+                            completion::AssistantContent::tool_call(
+                                &call.id,
+                                &call.function.name,
+                                call.function.arguments.clone(),
+                            )
+                        })
+                        .collect::<Vec<_>>(),
+                );
+                Ok(content)
+            }
+            _ => Err(CompletionError::ResponseError(
+                "Response did not contain a valid message or tool call".into(),
+            )),
+        }?;
+
+        let choice = OneOrMany::many(content).map_err(|_| {
+            CompletionError::ResponseError(
+                "Response contained no message or tool call (empty)".to_owned(),
+            )
+        })?;
+
+        let usage = completion::Usage {
+            input_tokens: response.usage.prompt_tokens as u64,
+            output_tokens: response.usage.completion_tokens as u64,
+            total_tokens: response.usage.total_tokens as u64,
+            ..Default::default()
+        };
+
+        Ok(completion::CompletionResponse {
+            choice,
+            usage,
+            raw_response: response,
+        })
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub(super) struct DeepseekCompletionRequest {
+    model: String,
+    pub messages: Vec<Message>,
+    #[serde(flatten, skip_serializing_if = "Option::is_none")]
+    temperature: Option<f64>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    tools: Vec<ToolDefinition>,
+    #[serde(flatten, skip_serializing_if = "Option::is_none")]
+    tool_choice: Option<crate::providers::openrouter::ToolChoice>,
+    #[serde(flatten, skip_serializing_if = "Option::is_none")]
+    pub additional_params: Option<serde_json::Value>,
+}
+
+impl TryFrom<(&str, CompletionRequest)> for DeepseekCompletionRequest {
+    type Error = CompletionError;
+
+    fn try_from((model, req): (&str, CompletionRequest)) -> Result<Self, Self::Error> {
+        let mut full_history: Vec<Message> = match &req.preamble {
+            Some(preamble) => vec![Message::system(preamble)],
+            None => vec![],
+        };
+
+        if let Some(docs) = req.normalized_documents() {
+            let docs: Vec<Message> = docs.try_into()?;
+            full_history.extend(docs);
+        }
+
+        let chat_history: Vec<Message> = req
+            .chat_history
+            .clone()
+            .into_iter()
+            .map(|message| message.try_into())
+            .collect::<Result<Vec<Vec<Message>>, _>>()?
+            .into_iter()
+            .flatten()
+            .collect();
+
+        full_history.extend(chat_history);
+
+        let tool_choice = req
+            .tool_choice
+            .clone()
+            .map(crate::providers::openrouter::ToolChoice::try_from)
+            .transpose()?;
+
+        Ok(Self {
+            model: model.to_string(),
+            messages: full_history,
+            temperature: req.temperature,
+            tools: req
+                .tools
+                .clone()
+                .into_iter()
+                .map(ToolDefinition::from)
+                .collect::<Vec<_>>(),
+            tool_choice,
+            additional_params: req.additional_params,
+        })
+    }
+}
+
+/// The struct implementing the `CompletionModel` trait
+#[derive(Clone)]
+pub struct CompletionModel<T = reqwest::Client> {
+    pub client: Client<T>,
+    pub model: String,
+}
+
+impl<T> completion::CompletionModel for CompletionModel<T>
+where
+    T: HttpClientExt + Clone + Default + std::fmt::Debug + Send + 'static,
+{
+    type Response = CompletionResponse;
+    type StreamingResponse = StreamingCompletionResponse;
+
+    type Client = Client<T>;
+
+    fn make(client: &Self::Client, model: impl Into<String>) -> Self {
+        Self {
+            client: client.clone(),
+            model: model.into().to_string(),
+        }
+    }
+
+    #[cfg_attr(feature = "worker", worker::send)]
+    async fn completion(
+        &self,
+        completion_request: CompletionRequest,
+    ) -> Result<
+        completion::CompletionResponse<CompletionResponse>,
+        crate::completion::CompletionError,
+    > {
+        let preamble = completion_request.preamble.clone();
+        let request =
+            DeepseekCompletionRequest::try_from((self.model.as_ref(), completion_request))?;
+
+        let span = if tracing::Span::current().is_disabled() {
+            info_span!(
+                target: "rig::completions",
+                "chat",
+                gen_ai.operation.name = "chat",
+                gen_ai.provider.name = "deepseek",
+                gen_ai.request.model = self.model,
+                gen_ai.system_instructions = preamble,
+                gen_ai.response.id = tracing::field::Empty,
+                gen_ai.response.model = tracing::field::Empty,
+                gen_ai.usage.output_tokens = tracing::field::Empty,
+                gen_ai.usage.input_tokens = tracing::field::Empty,
+                gen_ai.input.messages = serde_json::to_string(&request.messages)?,
+                gen_ai.output.messages = tracing::field::Empty,
+            )
+        } else {
+            tracing::Span::current()
+        };
+
+        tracing::debug!("DeepSeek completion request: {request:?}");
+
+        let body = serde_json::to_vec(&request)?;
+        let req = self
+            .client
+            .post("/chat/completions")?
+            .body(body)
+            .map_err(|e| CompletionError::HttpError(e.into()))?;
+
+        async move {
+            let response = self.client.send::<_, Bytes>(req).await?;
+            let status = response.status();
+            let response_body = response.into_body().into_future().await?.to_vec();
+
+            if status.is_success() {
+                match serde_json::from_slice::<ApiResponse<CompletionResponse>>(&response_body)? {
+                    ApiResponse::Ok(response) => {
+                        let span = tracing::Span::current();
+                        span.record(
+                            "gen_ai.output.messages",
+                            serde_json::to_string(&response.choices).unwrap(),
+                        );
+                        span.record("gen_ai.usage.input_tokens", response.usage.prompt_tokens);
+                        span.record(
+                            "gen_ai.usage.output_tokens",
+                            response.usage.completion_tokens,
+                        );
+                        tracing::trace!(
+                            target: "rig::completions",
+                            "DeepSeek completion output: {}",
+                            serde_json::to_string_pretty(&response_body)?
+                        );
+                        response.try_into()
+                    }
+                    ApiResponse::Err(err) => Err(CompletionError::ProviderError(err.message)),
+                }
+            } else {
+                Err(CompletionError::ProviderError(
+                    String::from_utf8_lossy(&response_body).to_string(),
+                ))
+            }
+        }
+        .instrument(span)
+        .await
+    }
+
+    #[cfg_attr(feature = "worker", worker::send)]
+    async fn stream(
+        &self,
+        completion_request: CompletionRequest,
+    ) -> Result<
+        crate::streaming::StreamingCompletionResponse<Self::StreamingResponse>,
+        CompletionError,
+    > {
+        let preamble = completion_request.preamble.clone();
+        let mut request =
+            DeepseekCompletionRequest::try_from((self.model.as_ref(), completion_request))?;
+
+        let params = json_utils::merge(
+            request.additional_params.unwrap_or(serde_json::json!({})),
+            serde_json::json!({"stream": true, "stream_options": {"include_usage": true} }),
+        );
+
+        request.additional_params = Some(params);
+
+        let body = serde_json::to_vec(&request)?;
+
+        let req = self
+            .client
+            .post("/chat/completions")?
+            .body(body)
+            .map_err(|e| CompletionError::HttpError(e.into()))?;
+
+        let span = if tracing::Span::current().is_disabled() {
+            info_span!(
+                target: "rig::completions",
+                "chat_streaming",
+                gen_ai.operation.name = "chat_streaming",
+                gen_ai.provider.name = "deepseek",
+                gen_ai.request.model = self.model,
+                gen_ai.system_instructions = preamble,
+                gen_ai.response.id = tracing::field::Empty,
+                gen_ai.response.model = tracing::field::Empty,
+                gen_ai.usage.output_tokens = tracing::field::Empty,
+                gen_ai.usage.input_tokens = tracing::field::Empty,
+                gen_ai.input.messages = serde_json::to_string(&request.messages)?,
+                gen_ai.output.messages = tracing::field::Empty,
+            )
+        } else {
+            tracing::Span::current()
+        };
+
+        tracing::Instrument::instrument(
+            send_compatible_streaming_request(self.client.http_client().clone(), req),
+            span,
+        )
+        .await
+    }
+}
+
+#[derive(Deserialize, Debug)]
+pub struct StreamingDelta {
+    #[serde(default)]
+    content: Option<String>,
+    #[serde(default, deserialize_with = "json_utils::null_or_vec")]
+    tool_calls: Vec<StreamingToolCall>,
+    reasoning_content: Option<String>,
+}
+
+#[derive(Deserialize, Debug)]
+struct StreamingChoice {
+    delta: StreamingDelta,
+}
+
+#[derive(Deserialize, Debug)]
+struct StreamingCompletionChunk {
+    choices: Vec<StreamingChoice>,
+    usage: Option<Usage>,
+}
+
+#[derive(Clone, Deserialize, Serialize, Debug)]
+pub struct StreamingCompletionResponse {
+    pub usage: Usage,
+}
+
+impl GetTokenUsage for StreamingCompletionResponse {
+    fn token_usage(&self) -> Option<crate::completion::Usage> {
+        let mut usage = crate::completion::Usage::new();
+        usage.input_tokens = self.usage.prompt_tokens as u64;
+        usage.output_tokens = self.usage.completion_tokens as u64;
+        usage.total_tokens = self.usage.total_tokens as u64;
+
+        Some(usage)
+    }
+}
+
+pub async fn send_compatible_streaming_request<T>(
+    http_client: T,
+    req: Request<Vec<u8>>,
+) -> Result<
+    crate::streaming::StreamingCompletionResponse<StreamingCompletionResponse>,
+    CompletionError,
+>
+where
+    T: HttpClientExt + Clone + 'static,
+{
+    let span = tracing::Span::current();
+    let mut event_source = GenericEventSource::new(http_client, req);
+
+    let stream = stream! {
+        let mut final_usage = Usage::new();
+        let mut text_response = String::new();
+        let mut calls: HashMap<usize, (String, String, String)> = HashMap::new();
+
+        while let Some(event_result) = event_source.next().await {
+            match event_result {
+                Ok(Event::Open) => {
+                    tracing::trace!("SSE connection opened");
+                    continue;
+                }
+                Ok(Event::Message(message)) => {
+                    if message.data.trim().is_empty() || message.data == "[DONE]" {
+                        continue;
+                    }
+
+                    let parsed = serde_json::from_str::<StreamingCompletionChunk>(&message.data);
+                    let Ok(data) = parsed else {
+                        let err = parsed.unwrap_err();
+                        tracing::debug!("Couldn't parse SSE payload as StreamingCompletionChunk: {:?}", err);
+                        continue;
+                    };
+
+                    if let Some(choice) = data.choices.first() {
+                        let delta = &choice.delta;
+
+                        if !delta.tool_calls.is_empty() {
+                            for tool_call in &delta.tool_calls {
+                                let function = &tool_call.function;
+
+                                // Start of tool call
+                                if function.name.as_ref().map(|s| !s.is_empty()).unwrap_or(false)
+                                    && empty_or_none(&function.arguments)
+                                {
+                                    let id = tool_call.id.clone().unwrap_or_default();
+                                    let name = function.name.clone().unwrap();
+                                    calls.insert(tool_call.index, (id, name, String::new()));
+                                }
+                                // Continuation of tool call
+                                else if function.name.as_ref().map(|s| s.is_empty()).unwrap_or(true)
+                                    && let Some(arguments) = &function.arguments
+                                    && !arguments.is_empty()
+                                {
+                                    if let Some((id, name, existing_args)) = calls.get(&tool_call.index) {
+                                        let combined = format!("{}{}", existing_args, arguments);
+                                        calls.insert(tool_call.index, (id.clone(), name.clone(), combined));
+                                    } else {
+                                        tracing::debug!("Partial tool call received but tool call was never started.");
+                                    }
+                                }
+                                // Complete tool call
+                                else {
+                                    let id = tool_call.id.clone().unwrap_or_default();
+                                    let name = function.name.clone().unwrap_or_default();
+                                    let arguments_str = function.arguments.clone().unwrap_or_default();
+
+                                    let Ok(arguments_json) = serde_json::from_str::<serde_json::Value>(&arguments_str) else {
+                                        tracing::debug!("Couldn't parse tool call args '{}'", arguments_str);
+                                        continue;
+                                    };
+
+                                    yield Ok(crate::streaming::RawStreamingChoice::ToolCall {
+                                        id,
+                                        name,
+                                        arguments: arguments_json,
+                                        call_id: None,
+                                    });
+                                }
+                            }
+                        }
+
+                        // DeepSeek-specific reasoning stream
+                        if let Some(content) = &delta.reasoning_content {
+                            yield Ok(crate::streaming::RawStreamingChoice::Reasoning {
+                                reasoning: content.to_string(),
+                                id: None,
+                                signature: None,
+                            });
+                        }
+
+                        if let Some(content) = &delta.content {
+                            text_response += content;
+                            yield Ok(crate::streaming::RawStreamingChoice::Message(content.clone()));
+                        }
+                    }
+
+                    if let Some(usage) = data.usage {
+                        final_usage = usage.clone();
+                    }
+                }
+                Err(crate::http_client::Error::StreamEnded) => {
+                    break;
+                }
+                Err(err) => {
+                    tracing::error!(?err, "SSE error");
+                    yield Err(CompletionError::ResponseError(err.to_string()));
+                    break;
+                }
+            }
+        }
+
+        event_source.close();
+
+        let mut tool_calls = Vec::new();
+        // Flush accumulated tool calls
+        for (index, (id, name, arguments)) in calls {
+            let Ok(arguments_json) = serde_json::from_str::<serde_json::Value>(&arguments) else {
+                continue;
+            };
+
+            tool_calls.push(ToolCall {
+                id: id.clone(),
+                index,
+                r#type: ToolType::Function,
+                function: Function {
+                    name: name.clone(),
+                    arguments: arguments_json.clone()
+                }
+            });
+            yield Ok(crate::streaming::RawStreamingChoice::ToolCall {
+                id,
+                name,
+                arguments: arguments_json,
+                call_id: None,
+            });
+        }
+
+        let message = Message::Assistant {
+            content: text_response,
+            name: None,
+            tool_calls
+        };
+
+        span.record("gen_ai.output.messages", serde_json::to_string(&message).unwrap());
+
+        yield Ok(crate::streaming::RawStreamingChoice::FinalResponse(
+            StreamingCompletionResponse { usage: final_usage.clone() }
+        ));
+    };
+
+    Ok(crate::streaming::StreamingCompletionResponse::stream(
+        Box::pin(stream),
+    ))
+}
+
+// ================================================================
+// DeepSeek Completion API
+// ================================================================
+pub const DEEPSEEK_CHAT: &str = "deepseek-chat";
+pub const DEEPSEEK_REASONER: &str = "deepseek-reasoner";
+
+// Tests
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+
+    #[test]
+    fn test_deserialize_vec_choice() {
+        let data = r#"[{
+            "finish_reason": "stop",
+            "index": 0,
+            "logprobs": null,
+            "message":{"role":"assistant","content":"Hello, world!"}
+            }]"#;
+
+        let choices: Vec<Choice> = serde_json::from_str(data).unwrap();
+        assert_eq!(choices.len(), 1);
+        match &choices.first().unwrap().message {
+            Message::Assistant { content, .. } => assert_eq!(content, "Hello, world!"),
+            _ => panic!("Expected assistant message"),
+        }
+    }
+
+    #[test]
+    fn test_deserialize_deepseek_response() {
+        let data = r#"{
+            "choices":[{
+                "finish_reason": "stop",
+                "index": 0,
+                "logprobs": null,
+                "message":{"role":"assistant","content":"Hello, world!"}
+            }],
+            "usage": {
+                "completion_tokens": 0,
+                "prompt_tokens": 0,
+                "prompt_cache_hit_tokens": 0,
+                "prompt_cache_miss_tokens": 0,
+                "total_tokens": 0
+            }
+        }"#;
+
+        let jd = &mut serde_json::Deserializer::from_str(data);
+        let result: Result<CompletionResponse, _> = serde_path_to_error::deserialize(jd);
+        match result {
+            Ok(response) => match &response.choices.first().unwrap().message {
+                Message::Assistant { content, .. } => assert_eq!(content, "Hello, world!"),
+                _ => panic!("Expected assistant message"),
+            },
+            Err(err) => {
+                panic!("Deserialization error at {}: {}", err.path(), err);
+            }
+        }
+    }
+
+    #[test]
+    fn test_deserialize_example_response() {
+        let data = r#"
+        {
+            "id": "e45f6c68-9d9e-43de-beb4-4f402b850feb",
+            "object": "chat.completion",
+            "created": 0,
+            "model": "deepseek-chat",
+            "choices": [
+                {
+                    "index": 0,
+                    "message": {
+                        "role": "assistant",
+                        "content": "Why don’t skeletons fight each other?  \nBecause they don’t have the guts! 😄"
+                    },
+                    "logprobs": null,
+                    "finish_reason": "stop"
+                }
+            ],
+            "usage": {
+                "prompt_tokens": 13,
+                "completion_tokens": 32,
+                "total_tokens": 45,
+                "prompt_tokens_details": {
+                    "cached_tokens": 0
+                },
+                "prompt_cache_hit_tokens": 0,
+                "prompt_cache_miss_tokens": 13
+            },
+            "system_fingerprint": "fp_4b6881f2c5"
+        }
+        "#;
+        let jd = &mut serde_json::Deserializer::from_str(data);
+        let result: Result<CompletionResponse, _> = serde_path_to_error::deserialize(jd);
+
+        match result {
+            Ok(response) => match &response.choices.first().unwrap().message {
+                Message::Assistant { content, .. } => assert_eq!(
+                    content,
+                    "Why don’t skeletons fight each other?  \nBecause they don’t have the guts! 😄"
+                ),
+                _ => panic!("Expected assistant message"),
+            },
+            Err(err) => {
+                panic!("Deserialization error at {}: {}", err.path(), err);
+            }
+        }
+    }
+
+    #[test]
+    fn test_serialize_deserialize_tool_call_message() {
+        let tool_call_choice_json = r#"
+            {
+              "finish_reason": "tool_calls",
+              "index": 0,
+              "logprobs": null,
+              "message": {
+                "content": "",
+                "role": "assistant",
+                "tool_calls": [
+                  {
+                    "function": {
+                      "arguments": "{\"x\":2,\"y\":5}",
+                      "name": "subtract"
+                    },
+                    "id": "call_0_2b4a85ee-b04a-40ad-a16b-a405caf6e65b",
+                    "index": 0,
+                    "type": "function"
+                  }
+                ]
+              }
+            }
+        "#;
+
+        let choice: Choice = serde_json::from_str(tool_call_choice_json).unwrap();
+
+        let expected_choice: Choice = Choice {
+            finish_reason: "tool_calls".to_string(),
+            index: 0,
+            logprobs: None,
+            message: Message::Assistant {
+                content: "".to_string(),
+                name: None,
+                tool_calls: vec![ToolCall {
+                    id: "call_0_2b4a85ee-b04a-40ad-a16b-a405caf6e65b".to_string(),
+                    function: Function {
+                        name: "subtract".to_string(),
+                        arguments: serde_json::from_str(r#"{"x":2,"y":5}"#).unwrap(),
+                    },
+                    index: 0,
+                    r#type: ToolType::Function,
+                }],
+            },
+        };
+
+        assert_eq!(choice, expected_choice);
+    }
+}

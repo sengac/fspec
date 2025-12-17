@@ -84,10 +84,15 @@ Development status tags
 | Tag | Description |
 |-----|-------------|
 | `@done` | Completed features |
+| `@wip` | Work in progress - feature not yet complete |
 
 ### Testing Tags
 
 Test-related tags
+
+| Tag | Description |
+|-----|-------------|
+| `@integration` | Integration test scenarios that verify end-to-end wiring |
 
 ### Automation Tags
 
@@ -107,7 +112,7 @@ Automation integration tags
 
 ## Tag Statistics
 
-_Last updated: 2025-12-16T09:00:50.881Z_
+_Last updated: 2025-12-17T00:14:12.969Z_
 
 **Update Command**: `fspec tag-stats`
 
