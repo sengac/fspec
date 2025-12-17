@@ -2,6 +2,7 @@
 //!
 //! Executes shell commands with output truncation and timeout support.
 
+use super::error::ToolError;
 use super::limits::OutputLimits;
 use super::truncation::{format_truncation_warning, process_output_lines, truncate_output};
 use schemars::JsonSchema;
@@ -46,19 +47,10 @@ pub struct BashArgs {
     pub command: String,
 }
 
-/// Error type for Bash tool
-#[derive(Debug, thiserror::Error)]
-pub enum BashError {
-    #[error("Command execution error: {0}")]
-    ExecutionError(String),
-    #[error("Timeout error: {0}")]
-    TimeoutError(String),
-}
-
 impl rig::tool::Tool for BashTool {
     const NAME: &'static str = "bash";
 
-    type Error = BashError;
+    type Error = ToolError;
     type Args = BashArgs;
     type Output = String;
 
@@ -75,9 +67,10 @@ impl rig::tool::Tool for BashTool {
 
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
         if args.command.is_empty() {
-            return Err(BashError::ExecutionError(
-                "command parameter is required".to_string(),
-            ));
+            return Err(ToolError::Validation {
+                tool: "bash",
+                message: "command parameter is required".to_string(),
+            });
         }
 
         // Execute command with timeout
@@ -115,19 +108,25 @@ impl rig::tool::Tool for BashTool {
                     Ok(final_output)
                 } else {
                     // Command failed
-                    Err(BashError::ExecutionError(format!(
-                        "exit code {}\nStdout: {}\nStderr: {}",
-                        output.status.code().unwrap_or(-1),
-                        stdout.trim(),
-                        stderr.trim()
-                    )))
+                    Err(ToolError::Execution {
+                        tool: "bash",
+                        message: format!(
+                            "exit code {}\nStdout: {}\nStderr: {}",
+                            output.status.code().unwrap_or(-1),
+                            stdout.trim(),
+                            stderr.trim()
+                        ),
+                    })
                 }
             }
-            Ok(Err(e)) => Err(BashError::ExecutionError(e.to_string())),
-            Err(_) => Err(BashError::TimeoutError(format!(
-                "Command timed out after {} seconds",
-                self.timeout.as_secs()
-            ))),
+            Ok(Err(e)) => Err(ToolError::Execution {
+                tool: "bash",
+                message: e.to_string(),
+            }),
+            Err(_) => Err(ToolError::Timeout {
+                tool: "bash",
+                seconds: self.timeout.as_secs(),
+            }),
         }
     }
 }

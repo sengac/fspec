@@ -2,6 +2,7 @@
 //!
 //! Reads file contents with line numbers, supporting offset and limit.
 
+use super::error::ToolError;
 use super::limits::OutputLimits;
 use super::truncation::{format_truncation_warning, truncate_line_default};
 use super::validation::{read_file_contents, require_absolute_path, require_file_exists};
@@ -40,19 +41,10 @@ pub struct ReadArgs {
     pub limit: Option<usize>,
 }
 
-/// Error type for Read tool
-#[derive(Debug, thiserror::Error)]
-pub enum ReadError {
-    #[error("File error: {0}")]
-    FileError(String),
-    #[error("Validation error: {0}")]
-    ValidationError(String),
-}
-
 impl rig::tool::Tool for ReadTool {
     const NAME: &'static str = "read";
 
-    type Error = ReadError;
+    type Error = ToolError;
     type Args = ReadArgs;
     type Output = String;
 
@@ -73,18 +65,26 @@ impl rig::tool::Tool for ReadTool {
 
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
         // Validate absolute path (sync - no I/O)
-        let path = require_absolute_path(&args.file_path)
-            .map_err(|e| ReadError::ValidationError(e.content))?;
+        let path = require_absolute_path(&args.file_path).map_err(|e| ToolError::Validation {
+            tool: "read",
+            message: e.content,
+        })?;
 
         // Check file exists (async)
         require_file_exists(path, &args.file_path)
             .await
-            .map_err(|e| ReadError::ValidationError(e.content))?;
+            .map_err(|e| ToolError::Validation {
+                tool: "read",
+                message: e.content,
+            })?;
 
         // Read file content (async)
         let content = read_file_contents(path)
             .await
-            .map_err(|e| ReadError::FileError(e.content))?;
+            .map_err(|e| ToolError::File {
+                tool: "read",
+                message: e.content,
+            })?;
 
         let lines: Vec<&str> = content.lines().collect();
         let total_lines = lines.len();

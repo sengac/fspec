@@ -82,12 +82,16 @@ fn test_interactive_mode_without_colored_formatting() {
 
     // Read all files in the interactive module directory
     let mut interactive_content = String::new();
-    for entry in fs::read_dir(&interactive_dir).expect("Should be able to read interactive directory") {
+    for entry in
+        fs::read_dir(&interactive_dir).expect("Should be able to read interactive directory")
+    {
         let entry = entry.expect("Should be able to read directory entry");
         let path = entry.path();
         if path.extension().map_or(false, |ext| ext == "rs") {
-            interactive_content.push_str(&fs::read_to_string(&path)
-                .unwrap_or_else(|_| panic!("Should be able to read {}", path.display())));
+            interactive_content.push_str(
+                &fs::read_to_string(&path)
+                    .unwrap_or_else(|_| panic!("Should be able to read {}", path.display())),
+            );
         }
     }
 

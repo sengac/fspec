@@ -4,6 +4,7 @@
 //! Uses tokio::fs for non-blocking async I/O.
 
 use crate::{
+    error::ToolError,
     limits::OutputLimits,
     truncation::{format_truncation_warning, process_output_lines, truncate_output},
 };
@@ -98,21 +99,10 @@ pub struct LsArgs {
     pub path: Option<String>,
 }
 
-/// Error type for LS tool
-#[derive(Debug, thiserror::Error)]
-pub enum LsError {
-    #[error("Directory not found: {0}")]
-    NotFound(String),
-    #[error("Not a directory: {0}")]
-    NotDirectory(String),
-    #[error("IO error: {0}")]
-    IoError(String),
-}
-
 impl rig::tool::Tool for LsTool {
     const NAME: &'static str = "ls";
 
-    type Error = LsError;
+    type Error = ToolError;
     type Args = LsArgs;
     type Output = String;
 
@@ -139,22 +129,41 @@ impl rig::tool::Tool for LsTool {
         // Check if path exists (async)
         match tokio::fs::try_exists(path).await {
             Ok(true) => {}
-            Ok(false) => return Err(LsError::NotFound(dir_path.to_string())),
-            Err(e) => return Err(LsError::IoError(e.to_string())),
+            Ok(false) => {
+                return Err(ToolError::NotFound {
+                    tool: "ls",
+                    message: format!("Directory not found: {dir_path}"),
+                })
+            }
+            Err(e) => {
+                return Err(ToolError::File {
+                    tool: "ls",
+                    message: e.to_string(),
+                })
+            }
         }
 
         // Check if path is a directory (async)
         let metadata = tokio::fs::metadata(path)
             .await
-            .map_err(|e| LsError::IoError(e.to_string()))?;
+            .map_err(|e| ToolError::File {
+                tool: "ls",
+                message: e.to_string(),
+            })?;
         if !metadata.is_dir() {
-            return Err(LsError::NotDirectory(dir_path.to_string()));
+            return Err(ToolError::Validation {
+                tool: "ls",
+                message: format!("Not a directory: {dir_path}"),
+            });
         }
 
         // Read directory entries (async)
         let mut read_dir = tokio::fs::read_dir(path)
             .await
-            .map_err(|e| LsError::IoError(e.to_string()))?;
+            .map_err(|e| ToolError::File {
+                tool: "ls",
+                message: e.to_string(),
+            })?;
 
         // Collect entries with metadata (or None for permission errors)
         let mut dirs: Vec<(String, Option<std::fs::Metadata>)> = Vec::new();

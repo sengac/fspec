@@ -8,8 +8,8 @@
 use super::credentials::ProviderCredentials;
 use super::{
     claude, codex, gemini, openai, ClaudeProvider, CodexProvider, GeminiProvider, OpenAIProvider,
+    ProviderError,
 };
-use anyhow::{anyhow, Result};
 use std::str::FromStr;
 
 /// Provider type enum
@@ -22,15 +22,15 @@ pub enum ProviderType {
 }
 
 impl FromStr for ProviderType {
-    type Err = anyhow::Error;
+    type Err = ProviderError;
 
-    fn from_str(name: &str) -> Result<Self> {
+    fn from_str(name: &str) -> Result<Self, ProviderError> {
         match name.to_lowercase().as_str() {
             "claude" => Ok(ProviderType::Claude),
             "openai" => Ok(ProviderType::OpenAI),
             "codex" => Ok(ProviderType::Codex),
             "gemini" => Ok(ProviderType::Gemini),
-            _ => Err(anyhow!("Unknown provider: {name}")),
+            _ => Err(ProviderError::config("manager", format!("Unknown provider: {name}"))),
         }
     }
 }
@@ -58,13 +58,14 @@ impl ProviderManager {
     /// Create new ProviderManager with automatic provider selection
     ///
     /// Priority order: Claude API > Claude OAuth > Gemini > Codex > OpenAI
-    pub fn new() -> Result<Self> {
+    pub fn new() -> Result<Self, ProviderError> {
         let credentials = ProviderCredentials::detect();
 
         if !credentials.has_any() {
-            return Err(anyhow!(
+            return Err(ProviderError::auth(
+                "manager",
                 "No provider credentials found. Set ANTHROPIC_API_KEY, OPENAI_API_KEY, \
-                 GOOGLE_GENERATIVE_AI_API_KEY, or run 'codex auth login' to authenticate."
+                 GOOGLE_GENERATIVE_AI_API_KEY, or run 'codex auth login' to authenticate.",
             ));
         }
 
@@ -77,7 +78,7 @@ impl ProviderManager {
     }
 
     /// Create ProviderManager with explicit provider selection
-    pub fn with_provider(provider_name: &str) -> Result<Self> {
+    pub fn with_provider(provider_name: &str) -> Result<Self, ProviderError> {
         let credentials = ProviderCredentials::detect();
         let requested_provider = ProviderType::from_str(provider_name)?;
 
@@ -91,10 +92,13 @@ impl ProviderManager {
 
         if !has_credentials {
             let available = credentials.available_providers();
-            return Err(anyhow!(
-                "Provider {} not available. Available providers: {}",
+            return Err(ProviderError::auth(
                 provider_name,
-                available.join(", ")
+                format!(
+                    "Provider {} not available. Available providers: {}",
+                    provider_name,
+                    available.join(", ")
+                ),
             ));
         }
 
@@ -105,7 +109,7 @@ impl ProviderManager {
     }
 
     /// Detect default provider based on priority
-    fn detect_default_provider(credentials: &ProviderCredentials) -> Result<ProviderType> {
+    fn detect_default_provider(credentials: &ProviderCredentials) -> Result<ProviderType, ProviderError> {
         // Priority: Claude > Gemini > Codex > OpenAI
         if credentials.has_claude() {
             return Ok(ProviderType::Claude);
@@ -120,7 +124,7 @@ impl ProviderManager {
             return Ok(ProviderType::OpenAI);
         }
 
-        Err(anyhow!("No provider credentials available"))
+        Err(ProviderError::auth("manager", "No provider credentials available"))
     }
 
     /// Get current provider name
@@ -129,38 +133,38 @@ impl ProviderManager {
     }
 
     /// Get Claude provider (if selected)
-    pub fn get_claude(&self) -> Result<ClaudeProvider> {
+    pub fn get_claude(&self) -> Result<ClaudeProvider, ProviderError> {
         if self.current_provider == ProviderType::Claude {
             ClaudeProvider::new()
         } else {
-            Err(anyhow!("Current provider is not Claude"))
+            Err(ProviderError::config("manager", "Current provider is not Claude"))
         }
     }
 
     /// Get OpenAI provider (if selected)
-    pub fn get_openai(&self) -> Result<OpenAIProvider> {
+    pub fn get_openai(&self) -> Result<OpenAIProvider, ProviderError> {
         if self.current_provider == ProviderType::OpenAI {
             OpenAIProvider::new()
         } else {
-            Err(anyhow!("Current provider is not OpenAI"))
+            Err(ProviderError::config("manager", "Current provider is not OpenAI"))
         }
     }
 
     /// Get Codex provider (if selected)
-    pub fn get_codex(&self) -> Result<CodexProvider> {
+    pub fn get_codex(&self) -> Result<CodexProvider, ProviderError> {
         if self.current_provider == ProviderType::Codex {
             CodexProvider::new()
         } else {
-            Err(anyhow!("Current provider is not Codex"))
+            Err(ProviderError::config("manager", "Current provider is not Codex"))
         }
     }
 
     /// Get Gemini provider (if selected)
-    pub fn get_gemini(&self) -> Result<GeminiProvider> {
+    pub fn get_gemini(&self) -> Result<GeminiProvider, ProviderError> {
         if self.current_provider == ProviderType::Gemini {
             GeminiProvider::new()
         } else {
-            Err(anyhow!("Current provider is not Gemini"))
+            Err(ProviderError::config("manager", "Current provider is not Gemini"))
         }
     }
 
@@ -188,7 +192,7 @@ impl ProviderManager {
     }
 
     /// Switch to a different provider
-    pub fn switch_provider(&mut self, provider_name: &str) -> Result<()> {
+    pub fn switch_provider(&mut self, provider_name: &str) -> Result<(), ProviderError> {
         let requested_provider = ProviderType::from_str(provider_name)?;
 
         // Validate requested provider has credentials
@@ -200,8 +204,9 @@ impl ProviderManager {
         };
 
         if !has_credentials {
-            return Err(anyhow!(
-                "Provider {provider_name} not available. No credentials found."
+            return Err(ProviderError::auth(
+                provider_name,
+                format!("Provider {provider_name} not available. No credentials found."),
             ));
         }
 

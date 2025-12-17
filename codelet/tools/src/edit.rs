@@ -3,6 +3,7 @@
 //! Edits files by replacing the first occurrence of a string.
 //! Uses tokio::fs for non-blocking async I/O.
 
+use super::error::ToolError;
 use super::validation::{
     read_file_contents, require_absolute_path, require_file_exists, write_file_contents,
 };
@@ -39,21 +40,10 @@ pub struct EditArgs {
     pub new_string: String,
 }
 
-/// Error type for Edit tool
-#[derive(Debug, thiserror::Error)]
-pub enum EditError {
-    #[error("File error: {0}")]
-    FileError(String),
-    #[error("Validation error: {0}")]
-    ValidationError(String),
-    #[error("String not found: {0}")]
-    StringNotFound(String),
-}
-
 impl rig::tool::Tool for EditTool {
     const NAME: &'static str = "edit";
 
-    type Error = EditError;
+    type Error = ToolError;
     type Args = EditArgs;
     type Output = String;
 
@@ -71,24 +61,33 @@ impl rig::tool::Tool for EditTool {
 
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
         // Validate absolute path (sync - no I/O)
-        let path = require_absolute_path(&args.file_path)
-            .map_err(|e| EditError::ValidationError(e.content))?;
+        let path = require_absolute_path(&args.file_path).map_err(|e| ToolError::Validation {
+            tool: "edit",
+            message: e.content,
+        })?;
 
         // Check file exists (async)
         require_file_exists(path, &args.file_path)
             .await
-            .map_err(|e| EditError::ValidationError(e.content))?;
+            .map_err(|e| ToolError::Validation {
+                tool: "edit",
+                message: e.content,
+            })?;
 
         // Read file content (async)
         let content = read_file_contents(path)
             .await
-            .map_err(|e| EditError::FileError(e.content))?;
+            .map_err(|e| ToolError::File {
+                tool: "edit",
+                message: e.content,
+            })?;
 
         // Check if old_string exists
         if !content.contains(&args.old_string) {
-            return Err(EditError::StringNotFound(
-                "old_string not found in file".to_string(),
-            ));
+            return Err(ToolError::StringNotFound {
+                tool: "edit",
+                message: "old_string not found in file".to_string(),
+            });
         }
 
         // Replace first occurrence only
@@ -97,7 +96,10 @@ impl rig::tool::Tool for EditTool {
         // Write back (async)
         write_file_contents(path, &new_content)
             .await
-            .map_err(|e| EditError::FileError(e.content))?;
+            .map_err(|e| ToolError::File {
+                tool: "edit",
+                message: e.content,
+            })?;
 
         Ok(format!("Successfully edited {}", args.file_path))
     }

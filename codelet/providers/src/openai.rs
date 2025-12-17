@@ -3,10 +3,13 @@
 //! Implements the LlmProvider trait for OpenAI API communication.
 //! Uses rig::providers::openai for HTTP communication.
 
-use crate::{CompletionResponse, LlmProvider, StopReason};
-use anyhow::{anyhow, Result};
+use crate::{
+    convert_assistant_content, convert_tools_to_rig, detect_credential_from_env,
+    extract_prompt_data, extract_text_from_content, validate_api_key_static, CompletionResponse,
+    LlmProvider, ProviderAdapter, ProviderError, StopReason,
+};
 use async_trait::async_trait;
-use codelet_common::{ContentPart, Message, MessageContent, MessageRole};
+use codelet_common::{Message, MessageContent};
 use codelet_tools::ToolDefinition as OurToolDefinition;
 use rig::completion::CompletionRequestBuilder;
 use rig::providers::openai;
@@ -37,14 +40,22 @@ impl std::fmt::Debug for OpenAIProvider {
     }
 }
 
+impl ProviderAdapter for OpenAIProvider {
+    fn provider_name(&self) -> &'static str {
+        "openai"
+    }
+}
+
 impl OpenAIProvider {
     /// Create a new OpenAIProvider using API key from environment
     ///
     /// Checks for API key in OPENAI_API_KEY environment variable.
     /// Model can be overridden via OPENAI_MODEL environment variable.
-    pub fn new() -> Result<Self> {
-        let api_key = std::env::var("OPENAI_API_KEY")
-            .map_err(|_| anyhow!("OPENAI_API_KEY environment variable not set"))?;
+    ///
+    /// Uses shared detect_credential_from_env() helper (REFAC-013).
+    pub fn new() -> Result<Self, ProviderError> {
+        // Use shared credential detection helper (REFAC-013)
+        let api_key = detect_credential_from_env("openai", &["OPENAI_API_KEY"])?;
 
         // Allow model override via OPENAI_MODEL env var
         let model_name =
@@ -54,16 +65,17 @@ impl OpenAIProvider {
     }
 
     /// Create a new OpenAIProvider with an explicit API key and model
-    pub fn from_api_key(api_key: &str, model: &str) -> Result<Self> {
-        if api_key.is_empty() {
-            return Err(anyhow!("API key cannot be empty"));
-        }
+    ///
+    /// Uses shared validate_api_key_static() helper (REFAC-013).
+    pub fn from_api_key(api_key: &str, model: &str) -> Result<Self, ProviderError> {
+        // Use shared validation helper (REFAC-013)
+        validate_api_key_static("openai", api_key)?;
 
         // Build rig completions client (standard OpenAI Chat Completions API)
         let rig_client = openai::CompletionsClient::builder()
             .api_key(api_key)
             .build()
-            .map_err(|e| anyhow!("Failed to build OpenAI client: {e}"))?;
+            .map_err(|e| ProviderError::config("openai", format!("Failed to build OpenAI client: {e}")))?;
 
         // Create completion model using the client
         let completion_model = openai::completion::CompletionModel::new(rig_client.clone(), model);
@@ -127,100 +139,21 @@ impl OpenAIProvider {
         agent_builder.build()
     }
 
-    /// Extract text content from a message (DRY helper)
-    fn extract_text_from_content(content: &MessageContent) -> String {
-        match content {
-            MessageContent::Text(t) => t.clone(),
-            MessageContent::Parts(parts) => parts
-                .iter()
-                .filter_map(|p| {
-                    if let ContentPart::Text { text } = p {
-                        Some(text.as_str())
-                    } else {
-                        None
-                    }
-                })
-                .collect::<Vec<_>>()
-                .join("\n"),
-        }
-    }
-
-    /// Extract preamble and last user prompt from messages
-    fn extract_prompt_data(&self, messages: &[Message]) -> (Option<String>, String) {
-        let mut system_prompt: Option<String> = None;
-        let mut user_messages: Vec<String> = Vec::new();
-
-        for msg in messages {
-            match msg.role {
-                MessageRole::System => {
-                    let text = Self::extract_text_from_content(&msg.content);
-                    system_prompt = Some(text);
-                }
-                MessageRole::User => {
-                    let text = Self::extract_text_from_content(&msg.content);
-                    user_messages.push(text);
-                }
-                MessageRole::Assistant => {
-                    // Multi-turn conversation history (including assistant messages) is out of
-                    // scope for PROV-003. Multi-turn support will be added in REFAC-004 using
-                    // rig::agent::Agent which handles conversation history automatically.
-                    // For now, we only extract the last user message for single-turn completions.
-                }
-            }
-        }
-
-        let prompt = if user_messages.is_empty() {
-            String::new()
-        } else {
-            user_messages.join("\n\n")
-        };
-
-        (system_prompt, prompt)
-    }
-
     /// Convert rig response to our CompletionResponse format
     fn rig_response_to_completion(
         &self,
         response: rig::completion::CompletionResponse<openai::completion::CompletionResponse>,
-    ) -> Result<CompletionResponse> {
-        // Convert rig AssistantContent to our ContentPart format
-        let mut content_parts: Vec<ContentPart> = vec![];
+    ) -> Result<CompletionResponse, ProviderError> {
+        // Convert rig AssistantContent to our ContentPart format using shared helper (REFAC-013)
+        let content_parts = convert_assistant_content(response.choice, "openai")?;
 
-        for content in response.choice.into_iter() {
-            match content {
-                rig::completion::AssistantContent::Text(text) => {
-                    content_parts.push(ContentPart::Text { text: text.text });
-                }
-                rig::completion::AssistantContent::ToolCall(tool_call) => {
-                    content_parts.push(ContentPart::ToolUse {
-                        id: tool_call.id,
-                        name: tool_call.function.name,
-                        input: tool_call.function.arguments,
-                    });
-                }
-                rig::completion::AssistantContent::Reasoning(reasoning) => {
-                    // Rig returns reasoning separately, we can include it as text
-                    // or handle it specially if needed
-                    for r in reasoning.reasoning {
-                        content_parts.push(ContentPart::Text { text: r });
-                    }
-                }
-                rig::completion::AssistantContent::Image(_) => {
-                    // OpenAI doesn't support assistant images in chat completions
-                    return Err(anyhow!("Assistant images not supported"));
-                }
-            }
-        }
-
-        // Map OpenAI's finish_reason to our StopReason enum
-        // OpenAI CompletionResponse has choices[].finish_reason field
+        // Map OpenAI's finish_reason to our StopReason enum (provider-specific)
         let stop_reason = match response.raw_response.choices.first() {
             Some(choice) => match choice.finish_reason.as_str() {
                 "tool_calls" => StopReason::ToolUse,
                 "length" => StopReason::MaxTokens,
                 "stop" | "end_turn" => StopReason::EndTurn,
                 other => {
-                    // Unknown stop reason - log and default to EndTurn
                     warn!(finish_reason = %other, "Unknown finish_reason from OpenAI API");
                     StopReason::EndTurn
                 }
@@ -264,31 +197,24 @@ impl LlmProvider for OpenAIProvider {
         true // Streaming support via rig
     }
 
-    async fn complete(&self, messages: &[Message]) -> Result<String> {
+    async fn complete(&self, messages: &[Message]) -> Result<String, ProviderError> {
         // Reuse complete_with_tools with no tools to avoid code duplication
         let response = self.complete_with_tools(messages, &[]).await?;
 
-        // Extract text using helper method to maintain DRY
-        Ok(Self::extract_text_from_content(&response.content))
+        // Extract text using shared helper (REFAC-013)
+        Ok(extract_text_from_content(&response.content))
     }
 
     async fn complete_with_tools(
         &self,
         messages: &[Message],
         tools: &[OurToolDefinition],
-    ) -> Result<CompletionResponse> {
-        // Extract prompt data
-        let (preamble, prompt) = self.extract_prompt_data(messages);
+    ) -> Result<CompletionResponse, ProviderError> {
+        // Extract prompt data using shared helper (REFAC-013)
+        let (preamble, prompt) = extract_prompt_data(messages);
 
-        // Convert tools to rig format
-        let rig_tools: Vec<rig::completion::ToolDefinition> = tools
-            .iter()
-            .map(|t| rig::completion::ToolDefinition {
-                name: t.name.clone(),
-                description: t.description.clone(),
-                parameters: t.input_schema.clone(),
-            })
-            .collect();
+        // Convert tools to rig format using shared helper (REFAC-013)
+        let rig_tools = convert_tools_to_rig(tools);
 
         // Build and send completion request using rig's builder pattern
         let mut builder = CompletionRequestBuilder::new(self.completion_model.clone(), prompt)
@@ -303,7 +229,7 @@ impl LlmProvider for OpenAIProvider {
         let response = builder
             .send()
             .await
-            .map_err(|e| anyhow!("Rig completion with tools failed: {e}"))?;
+            .map_err(|e| ProviderError::api("openai", format!("Rig completion failed: {e}")))?;
 
         // Convert rig response to our CompletionResponse format
         self.rig_response_to_completion(response)

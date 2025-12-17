@@ -9,6 +9,7 @@
 //! acceptable given the search performance benefits of ripgrep's implementation.
 
 use crate::{
+    error::ToolError,
     limits::OutputLimits,
     truncation::{format_truncation_warning, process_output_lines, truncate_output},
     ToolOutput,
@@ -364,19 +365,10 @@ pub struct GrepArgs {
     pub output_mode: Option<String>,
 }
 
-/// Error type for Grep tool
-#[derive(Debug, thiserror::Error)]
-pub enum GrepError {
-    #[error("Pattern error: {0}")]
-    PatternError(String),
-    #[error("Search error: {0}")]
-    SearchError(String),
-}
-
 impl rig::tool::Tool for GrepTool {
     const NAME: &'static str = "grep";
 
-    type Error = GrepError;
+    type Error = ToolError;
     type Args = GrepArgs;
     type Output = String;
 
@@ -409,10 +401,16 @@ impl rig::tool::Tool for GrepTool {
         let result = self
             .execute(serde_json::Value::Object(value_map))
             .await
-            .map_err(|e| GrepError::SearchError(e.to_string()))?;
+            .map_err(|e| ToolError::Execution {
+                tool: "grep",
+                message: e.to_string(),
+            })?;
 
         if result.is_error {
-            Err(GrepError::SearchError(result.content))
+            Err(ToolError::Execution {
+                tool: "grep",
+                message: result.content,
+            })
         } else {
             Ok(result.content)
         }
