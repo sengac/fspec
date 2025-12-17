@@ -1,93 +1,6 @@
 {
   "scenarios": [
     {
-      "name": "List directory with mixed files and folders",
-      "testMappings": [
-        {
-          "file": "tools/tests/ls_tool_test.rs",
-          "lines": "12-60",
-          "implMappings": [
-            {
-              "file": "tools/src/ls.rs",
-              "lines": [
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190,
-                191,
-                192,
-                193,
-                194,
-                195,
-                196,
-                197,
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
       "name": "List empty directory",
       "testMappings": [
         {
@@ -103,29 +16,6 @@
                 168,
                 169,
                 170
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "List non-existent directory",
-      "testMappings": [
-        {
-          "file": "tools/tests/ls_tool_test.rs",
-          "lines": "82-99",
-          "implMappings": [
-            {
-              "file": "tools/src/ls.rs",
-              "lines": [
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146
               ]
             }
           ]
@@ -168,12 +58,40 @@
           ]
         }
       ]
+    },
+    {
+      "name": "List directory returns files and subdirectories with metadata",
+      "testMappings": []
+    },
+    {
+      "name": "List specific path returns only contents of that directory",
+      "testMappings": []
+    },
+    {
+      "name": "List non-existent directory returns error",
+      "testMappings": []
+    },
+    {
+      "name": "Large directory listings are truncated at character limit",
+      "testMappings": []
+    },
+    {
+      "name": "Output format shows permissions, size, mtime, and name",
+      "testMappings": []
+    },
+    {
+      "name": "Handle files with special characters in names",
+      "testMappings": []
+    },
+    {
+      "name": "Show file sizes in bytes",
+      "testMappings": []
     }
   ],
   "stats": {
-    "totalScenarios": 5,
-    "coveredScenarios": 5,
-    "coveragePercent": 100,
+    "totalScenarios": 10,
+    "coveredScenarios": 3,
+    "coveragePercent": 30,
     "testFiles": [
       "tools/tests/ls_tool_test.rs"
     ],

@@ -92,14 +92,21 @@ impl CodexProvider {
     }
 
     /// Create a rig Agent with all 8 tools configured for this provider
-    pub fn create_rig_agent(&self) -> rig::agent::Agent<openai::completion::CompletionModel> {
+    ///
+    /// # Arguments
+    /// * `preamble` - Optional system prompt/preamble for the agent
+    pub fn create_rig_agent(
+        &self,
+        preamble: Option<&str>,
+    ) -> rig::agent::Agent<openai::completion::CompletionModel> {
         use codelet_tools::{
             AstGrepTool, BashTool, EditTool, GlobTool, GrepTool, LsTool, ReadTool, WriteTool,
         };
         use rig::client::CompletionClient;
 
         // Build agent with all 8 tools using rig's builder pattern
-        self.rig_client
+        let mut agent_builder = self
+            .rig_client
             .agent(&self.model_name)
             .max_tokens(MAX_OUTPUT_TOKENS as u64)
             .tool(ReadTool::new())
@@ -109,8 +116,14 @@ impl CodexProvider {
             .tool(GrepTool::new())
             .tool(GlobTool::new())
             .tool(LsTool::new())
-            .tool(AstGrepTool::new())
-            .build()
+            .tool(AstGrepTool::new());
+
+        // Set preamble if provided
+        if let Some(p) = preamble {
+            agent_builder = agent_builder.preamble(p);
+        }
+
+        agent_builder.build()
     }
 
     /// Extract text content from a message (DRY helper)

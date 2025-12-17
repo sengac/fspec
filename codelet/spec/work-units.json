@@ -2,7 +2,7 @@
   "version": "0.7.1",
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-12-16T13:07:50.748Z"
+    "lastUpdated": "2025-12-17T00:00:49.325Z"
   },
   "workUnits": {
     "FOUND-001": {
@@ -6745,6 +6745,242 @@
       "questions": [],
       "nextQuestionId": 0,
       "updated": "2025-12-16T09:41:07.764Z"
+    },
+    "PROV-006": {
+      "id": "PROV-006",
+      "title": "Custom HTTP Middleware for Anthropic Prompt Cache Control",
+      "type": "story",
+      "status": "implementing",
+      "createdAt": "2025-12-16T23:32:48.473Z",
+      "updatedAt": "2025-12-17T00:17:47.449Z",
+      "description": "Implement a custom HTTP client layer that intercepts requests to Anthropic API and transforms the request body to enable prompt caching. This bypasses rig's limitation of sending system prompts as plain strings instead of the array format required for cache_control metadata.",
+      "children": [],
+      "attachments": [
+        "spec/attachments/PROV-006/custom-http-middleware-implementation-plan.md",
+        "spec/attachments/PROV-006/ast-research-claude-provider.json",
+        "spec/attachments/PROV-006/ast-research-compaction.json",
+        "spec/attachments/PROV-006/ast-research-interactive.json"
+      ],
+      "userStory": {
+        "role": "developer using codelet with Claude provider",
+        "action": "have prompt caching work automatically when using the Anthropic API",
+        "benefit": "I get reduced latency and lower API costs for repeated context"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-12-16T23:45:56.534Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-12-16T23:51:30.336Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-16T23:55:04.464Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-16T23:59:32.545Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-17T00:00:49.337Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-12-17T00:12:44.506Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-12-17T00:14:22.526Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-17T00:17:47.449Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "System prompts must be sent as array of content blocks with cache_control metadata, not plain strings",
+          "deleted": false,
+          "createdAt": "2025-12-16T23:46:19.268Z"
+        },
+        {
+          "id": 1,
+          "text": "OAuth mode: first block is Claude Code prefix WITHOUT cache_control, second block has cache_control",
+          "deleted": false,
+          "createdAt": "2025-12-16T23:46:20.903Z"
+        },
+        {
+          "id": 2,
+          "text": "API key mode: single block with cache_control",
+          "deleted": false,
+          "createdAt": "2025-12-16T23:46:21.553Z"
+        },
+        {
+          "id": 3,
+          "text": "Middleware must only intercept requests to /v1/messages endpoint",
+          "deleted": false,
+          "createdAt": "2025-12-16T23:46:22.203Z"
+        },
+        {
+          "id": 4,
+          "text": "Cache tokens (cache_read_input_tokens, cache_creation_input_tokens) must be extracted from message_start SSE event",
+          "deleted": false,
+          "createdAt": "2025-12-16T23:46:24.138Z"
+        },
+        {
+          "id": 5,
+          "text": "effective_tokens() must apply 90% discount to cache_read_input_tokens",
+          "deleted": false,
+          "createdAt": "2025-12-16T23:46:25.689Z"
+        },
+        {
+          "id": 6,
+          "text": "Non-Anthropic providers must be unaffected by middleware",
+          "deleted": false,
+          "createdAt": "2025-12-16T23:46:27.734Z"
+        },
+        {
+          "id": 7,
+          "text": "CachingHttpClient MUST wrap reqwest::Client and be used by ClaudeProvider for all API requests",
+          "deleted": false,
+          "createdAt": "2025-12-17T00:12:55.151Z"
+        },
+        {
+          "id": 8,
+          "text": "ClaudeProvider.client() MUST return a client that automatically transforms /v1/messages requests",
+          "deleted": false,
+          "createdAt": "2025-12-17T00:12:56.652Z"
+        },
+        {
+          "id": 9,
+          "text": "CacheTokenExtractor MUST be wired into the streaming response handler in interactive.rs",
+          "deleted": false,
+          "createdAt": "2025-12-17T00:12:58.236Z"
+        },
+        {
+          "id": 10,
+          "text": "After streaming completes, cache tokens from SSE MUST be accumulated into session.token_tracker",
+          "deleted": false,
+          "createdAt": "2025-12-17T00:13:00.181Z"
+        }
+      ],
+      "nextRuleId": 11,
+      "examples": [
+        {
+          "id": 0,
+          "text": "API key mode: system='You are helpful' → system=[{type:text, text:'You are helpful', cache_control:{type:ephemeral}}]",
+          "deleted": false,
+          "createdAt": "2025-12-16T23:46:42.312Z"
+        },
+        {
+          "id": 1,
+          "text": "OAuth mode: system='Claude Code prefix...Additional text' → system=[{type:text,text:'Claude Code prefix'},{type:text,text:'Additional text',cache_control:{type:ephemeral}}]",
+          "deleted": false,
+          "createdAt": "2025-12-16T23:46:44.119Z"
+        },
+        {
+          "id": 2,
+          "text": "Request to /v1/models is NOT transformed (passthrough)",
+          "deleted": false,
+          "createdAt": "2025-12-16T23:46:45.978Z"
+        },
+        {
+          "id": 3,
+          "text": "SSE event 'message_start' with usage.cache_read_input_tokens=5000 → turn_cache_read_tokens=5000",
+          "deleted": false,
+          "createdAt": "2025-12-16T23:46:48.473Z"
+        },
+        {
+          "id": 4,
+          "text": "SSE event 'message_start' with usage.cache_creation_input_tokens=2000 → turn_cache_creation_tokens=2000",
+          "deleted": false,
+          "createdAt": "2025-12-16T23:46:50.806Z"
+        },
+        {
+          "id": 5,
+          "text": "TokenTracker with input_tokens=10000, cache_read_input_tokens=5000 → effective_tokens()=5500 (10000 - 4500 discount)",
+          "deleted": false,
+          "createdAt": "2025-12-16T23:46:52.641Z"
+        },
+        {
+          "id": 6,
+          "text": "OpenAI provider request is passed through without transformation",
+          "deleted": false,
+          "createdAt": "2025-12-16T23:46:54.093Z"
+        },
+        {
+          "id": 7,
+          "text": "First user message content gets cache_control added for context caching",
+          "deleted": false,
+          "createdAt": "2025-12-16T23:46:56.037Z"
+        },
+        {
+          "id": 8,
+          "text": "INTEGRATION: ClaudeProvider sends request → CachingHttpClient intercepts → body is transformed with cache_control before reaching Anthropic API",
+          "deleted": false,
+          "createdAt": "2025-12-17T00:13:11.536Z"
+        },
+        {
+          "id": 9,
+          "text": "INTEGRATION: Streaming response arrives → CacheTokenExtractor parses message_start SSE → cache_read_input_tokens=5000 flows to session.token_tracker.cache_read_input_tokens",
+          "deleted": false,
+          "createdAt": "2025-12-17T00:13:13.003Z"
+        },
+        {
+          "id": 10,
+          "text": "INTEGRATION: After turn completes with cache_read_input_tokens=5000, session.token_tracker.effective_tokens() returns discounted value",
+          "deleted": false,
+          "createdAt": "2025-12-17T00:13:14.594Z"
+        },
+        {
+          "id": 11,
+          "text": "INTEGRATION: ClaudeProvider created with OAuth mode → CachingHttpClient.is_oauth=true → system prompt split into 2 blocks (prefix without cache_control, rest with cache_control)",
+          "deleted": false,
+          "createdAt": "2025-12-17T00:13:16.168Z"
+        }
+      ],
+      "nextExampleId": 12,
+      "estimate": 5,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Creates CachingHttpClient wrapper in providers/src/caching_client.rs that wraps reqwest::Client",
+          "deleted": false,
+          "createdAt": "2025-12-16T23:50:43.333Z"
+        },
+        {
+          "id": 1,
+          "text": "Transforms system prompt from string to array format with cache_control in request body",
+          "deleted": false,
+          "createdAt": "2025-12-16T23:50:45.253Z"
+        },
+        {
+          "id": 2,
+          "text": "Creates CacheTokenExtractor in providers/src/cache_token_extractor.rs to parse SSE message_start events",
+          "deleted": false,
+          "createdAt": "2025-12-16T23:50:46.632Z"
+        },
+        {
+          "id": 3,
+          "text": "Integrates with existing TokenTracker.effective_tokens() in core/src/compaction.rs",
+          "deleted": false,
+          "createdAt": "2025-12-16T23:50:48.716Z"
+        },
+        {
+          "id": 4,
+          "text": "Only intercepts Anthropic /v1/messages requests - other providers pass through unchanged",
+          "deleted": false,
+          "createdAt": "2025-12-16T23:50:50.841Z"
+        }
+      ],
+      "nextNoteId": 5,
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2025-12-17T00:00:49.337Z"
     }
   },
   "states": {
@@ -6755,7 +6991,8 @@
     "testing": [],
     "implementing": [
       "CLI-010",
-      "CLI-021"
+      "CLI-021",
+      "PROV-006"
     ],
     "validating": [],
     "done": [
@@ -6811,7 +7048,7 @@
   },
   "prefixCounters": {
     "CORE": 10,
-    "PROV": 5,
+    "PROV": 6,
     "AGENT": 1,
     "CTX": 2,
     "REFAC": 11,

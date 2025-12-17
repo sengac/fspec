@@ -112,28 +112,29 @@ async fn run_agent(prompt: &str, provider_name: Option<&str>) -> Result<()> {
 
     // Create rig agent and stream based on selected provider type
     // Each provider has a different agent type, so we handle them separately
+    // PROV-006: Pass None for preamble - single-shot mode doesn't use persistent context
     match manager.current_provider_name() {
         "claude" => {
             let provider = manager.get_claude()?;
-            let rig_agent = provider.create_rig_agent();
+            let rig_agent = provider.create_rig_agent(None);
             let agent = RigAgent::with_default_depth(rig_agent);
             run_agent_stream(agent, prompt).await
         }
         "openai" => {
             let provider = manager.get_openai()?;
-            let rig_agent = provider.create_rig_agent();
+            let rig_agent = provider.create_rig_agent(None);
             let agent = RigAgent::with_default_depth(rig_agent);
             run_agent_stream(agent, prompt).await
         }
         "codex" => {
             let provider = manager.get_codex()?;
-            let rig_agent = provider.create_rig_agent();
+            let rig_agent = provider.create_rig_agent(None);
             let agent = RigAgent::with_default_depth(rig_agent);
             run_agent_stream(agent, prompt).await
         }
         "gemini" => {
             let provider = manager.get_gemini()?;
-            let rig_agent = provider.create_rig_agent();
+            let rig_agent = provider.create_rig_agent(None);
             let agent = RigAgent::with_default_depth(rig_agent);
             run_agent_stream(agent, prompt).await
         }

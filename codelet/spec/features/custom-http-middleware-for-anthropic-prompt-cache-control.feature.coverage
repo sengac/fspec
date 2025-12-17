@@ -1,0 +1,314 @@
+{
+  "scenarios": [
+    {
+      "name": "Transform system prompt to array format in API key mode",
+      "testMappings": [
+        {
+          "file": "providers/tests/caching_http_middleware_test.rs",
+          "lines": "55-78",
+          "implMappings": [
+            {
+              "file": "providers/src/caching_client.rs",
+              "lines": [
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Transform system prompt with OAuth prefix separation",
+      "testMappings": [
+        {
+          "file": "providers/tests/caching_http_middleware_test.rs",
+          "lines": "84-110",
+          "implMappings": [
+            {
+              "file": "providers/src/caching_client.rs",
+              "lines": [
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Passthrough non-messages endpoint requests",
+      "testMappings": [
+        {
+          "file": "providers/tests/caching_http_middleware_test.rs",
+          "lines": "116-128",
+          "implMappings": [
+            {
+              "file": "providers/src/caching_client.rs",
+              "lines": [
+                18,
+                19,
+                20,
+                21
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Extract cache_read_input_tokens from SSE message_start",
+      "testMappings": [
+        {
+          "file": "providers/tests/caching_http_middleware_test.rs",
+          "lines": "148-160",
+          "implMappings": [
+            {
+              "file": "providers/src/cache_token_extractor.rs",
+              "lines": [
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Extract cache_creation_input_tokens from SSE message_start",
+      "testMappings": [
+        {
+          "file": "providers/tests/caching_http_middleware_test.rs",
+          "lines": "166-178",
+          "implMappings": [
+            {
+              "file": "providers/src/cache_token_extractor.rs",
+              "lines": [
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Calculate effective tokens with 90 percent cache discount",
+      "testMappings": [
+        {
+          "file": "providers/tests/caching_http_middleware_test.rs",
+          "lines": "184-204",
+          "implMappings": [
+            {
+              "file": "core/src/compaction.rs",
+              "lines": [
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Passthrough OpenAI provider requests without transformation",
+      "testMappings": [
+        {
+          "file": "providers/tests/caching_http_middleware_test.rs",
+          "lines": "210-223",
+          "implMappings": [
+            {
+              "file": "providers/src/caching_client.rs",
+              "lines": [
+                18,
+                19,
+                20,
+                21
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Add cache_control to first user message content",
+      "testMappings": [
+        {
+          "file": "providers/tests/caching_http_middleware_test.rs",
+          "lines": "229-255",
+          "implMappings": [
+            {
+              "file": "providers/src/caching_client.rs",
+              "lines": [
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 8,
+    "coveredScenarios": 8,
+    "coveragePercent": 100,
+    "testFiles": [
+      "providers/tests/caching_http_middleware_test.rs"
+    ],
+    "implFiles": [
+      "providers/src/caching_client.rs",
+      "providers/src/cache_token_extractor.rs",
+      "core/src/compaction.rs"
+    ],
+    "totalLinesCovered": 320
+  }
+}

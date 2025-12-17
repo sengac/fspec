@@ -427,6 +427,7 @@ dependencies = [
  "async-trait",
  "chrono",
  "codelet-common",
+ "codelet-core",
  "codelet-tools",
  "dotenvy",
  "futures",
@@ -1757,8 +1758,6 @@ dependencies = [
 [[package]]
 name = "rig-core"
 version = "0.25.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9bebec2ed450ae89ff9748eb41f47710718d9dbfe7e8fb2345424f6013807cd1"
 dependencies = [
  "as-any",
  "async-stream",

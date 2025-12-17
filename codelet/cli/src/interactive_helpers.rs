@@ -139,28 +139,29 @@ pub async fn execute_compaction(session: &mut Session) -> Result<CompactionMetri
         let manager = codelet_providers::ProviderManager::with_provider(provider_name)?;
 
         // Call appropriate provider
+        // PROV-006: Pass None for preamble - compaction uses separate summarization prompt
         match provider_name {
             "claude" => {
                 let provider = manager.get_claude()?;
-                let rig_agent = provider.create_rig_agent();
+                let rig_agent = provider.create_rig_agent(None);
                 let agent = codelet_core::RigAgent::with_default_depth(rig_agent);
                 agent.prompt(&prompt).await
             }
             "openai" => {
                 let provider = manager.get_openai()?;
-                let rig_agent = provider.create_rig_agent();
+                let rig_agent = provider.create_rig_agent(None);
                 let agent = codelet_core::RigAgent::with_default_depth(rig_agent);
                 agent.prompt(&prompt).await
             }
             "codex" => {
                 let provider = manager.get_codex()?;
-                let rig_agent = provider.create_rig_agent();
+                let rig_agent = provider.create_rig_agent(None);
                 let agent = codelet_core::RigAgent::with_default_depth(rig_agent);
                 agent.prompt(&prompt).await
             }
             "gemini" => {
                 let provider = manager.get_gemini()?;
-                let rig_agent = provider.create_rig_agent();
+                let rig_agent = provider.create_rig_agent(None);
                 let agent = codelet_core::RigAgent::with_default_depth(rig_agent);
                 agent.prompt(&prompt).await
             }

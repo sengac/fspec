@@ -25,8 +25,8 @@ async fn main() {
             println!("  - Supports streaming: {}", provider.supports_streaming());
 
             // Test 3: Can create rig agent
-            let _agent = provider.create_rig_agent();
-            println!("✓ Rig agent created with all 7 tools configured");
+            let _agent = provider.create_rig_agent(None);
+            println!("✓ Rig agent created with all 8 tools configured");
 
             println!("\n=== Integration Demo Complete ===");
             println!("All public API endpoints are properly wired and accessible.");

@@ -242,16 +242,30 @@ impl ClaudeProvider {
         ANTHROPIC_BETA_HEADER
     }
 
-    /// Create a rig Agent with all 7 tools configured for this provider
+    /// Create a rig Agent with all 8 tools configured for this provider
     ///
     /// This method encapsulates all Claude-specific configuration:
     /// - Model name (claude-sonnet-4-20250514)
     /// - Max tokens (8192)
-    /// - OAuth system prompt prefix (if using OAuth)
-    /// - All 7 tools (Read, Write, Edit, Bash, Grep, Glob, AstGrep)
+    /// - System prompt with cache_control metadata (PROV-006)
+    /// - All 8 tools (Read, Write, Edit, Bash, Grep, Glob, Ls, AstGrep)
+    /// - Prompt caching via cache_control metadata (PROV-006)
+    ///
+    /// # Arguments
+    /// * `preamble` - Optional system prompt/preamble. For API key mode, this should
+    ///   contain CLAUDE.md content and other context. For OAuth mode, this is combined
+    ///   with the required Claude Code prefix.
+    ///
+    /// # Cache Control Behavior (PROV-006)
+    /// - OAuth mode: 2 blocks - Claude Code prefix WITHOUT cache_control, preamble WITH cache_control
+    /// - API key mode: 1 block - preamble WITH cache_control
     ///
     /// Returns a fully configured rig::agent::Agent ready for use with RigAgent.
-    pub fn create_rig_agent(&self) -> rig::agent::Agent<anthropic::completion::CompletionModel> {
+    pub fn create_rig_agent(
+        &self,
+        preamble: Option<&str>,
+    ) -> rig::agent::Agent<anthropic::completion::CompletionModel> {
+        use crate::caching_client::transform_system_prompt;
         use codelet_tools::{
             AstGrepTool, BashTool, EditTool, GlobTool, GrepTool, LsTool, ReadTool, WriteTool,
         };
@@ -271,10 +285,47 @@ impl ClaudeProvider {
             .tool(LsTool::new())
             .tool(AstGrepTool::new());
 
-        // For OAuth mode, add the Claude Code system prompt prefix
-        // This is required by Claude Code OAuth authentication
-        if let Some(preamble) = self.system_prompt() {
-            agent_builder = agent_builder.preamble(preamble);
+        // PROV-006: Apply cache_control to system prompt for BOTH auth modes
+        // OAuth mode: built-in prefix + optional additional preamble
+        // API key mode: just the provided preamble
+        let is_oauth = self.is_oauth_mode();
+
+        // Determine the effective preamble based on auth mode
+        let effective_preamble = if is_oauth {
+            // OAuth mode: Claude Code prefix is required, optionally combined with additional preamble
+            match preamble {
+                Some(p) if !p.is_empty() => {
+                    // Combine prefix with additional preamble
+                    Some(format!("{CLAUDE_CODE_PROMPT_PREFIX}\n\n{p}"))
+                }
+                _ => {
+                    // Just the required prefix
+                    Some(CLAUDE_CODE_PROMPT_PREFIX.to_string())
+                }
+            }
+        } else {
+            // API key mode: use provided preamble as-is
+            preamble.map(str::to_string)
+        };
+
+        // Apply cache_control transformation if we have a preamble
+        if let Some(ref preamble_text) = effective_preamble {
+            // Set preamble for rig's internal handling
+            agent_builder = agent_builder.preamble(preamble_text);
+
+            // Override system field with array format containing cache_control (PROV-006)
+            let cached_system = transform_system_prompt(
+                preamble_text,
+                is_oauth,
+                if is_oauth {
+                    Some(CLAUDE_CODE_PROMPT_PREFIX)
+                } else {
+                    None
+                },
+            );
+            agent_builder = agent_builder.additional_params(json!({
+                "system": cached_system
+            }));
         }
 
         agent_builder.build()
