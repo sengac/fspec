@@ -169,7 +169,10 @@ impl ClaudeProvider {
     /// Create a new ClaudeProvider with an explicit API key and auth mode
     ///
     /// Uses shared validate_api_key_static() helper (REFAC-013).
-    pub fn from_api_key_with_mode(api_key: &str, auth_mode: AuthMode) -> Result<Self, ProviderError> {
+    pub fn from_api_key_with_mode(
+        api_key: &str,
+        auth_mode: AuthMode,
+    ) -> Result<Self, ProviderError> {
         // Use shared validation helper (REFAC-013)
         validate_api_key_static("claude", api_key)?;
 
@@ -181,7 +184,9 @@ impl ClaudeProvider {
             .api_key(api_key)
             .anthropic_betas(&beta_features)
             .build()
-            .map_err(|e| ProviderError::config("claude", format!("Failed to build Anthropic client: {e}")))?;
+            .map_err(|e| {
+                ProviderError::config("claude", format!("Failed to build Anthropic client: {e}"))
+            })?;
 
         // For OAuth mode, replace x-api-key header with Bearer auth
         if auth_mode == AuthMode::OAuth {
@@ -193,8 +198,9 @@ impl ClaudeProvider {
             // Add Authorization: Bearer header
             headers.insert(
                 AUTHORIZATION,
-                HeaderValue::from_str(&format!("Bearer {api_key}"))
-                    .map_err(|e| ProviderError::auth("claude", format!("Invalid OAuth token: {e}")))?,
+                HeaderValue::from_str(&format!("Bearer {api_key}")).map_err(|e| {
+                    ProviderError::auth("claude", format!("Invalid OAuth token: {e}"))
+                })?,
             );
 
             // Rebuild client with modified headers
@@ -256,13 +262,13 @@ impl ClaudeProvider {
         ANTHROPIC_BETA_HEADER
     }
 
-    /// Create a rig Agent with all 8 tools configured for this provider
+    /// Create a rig Agent with all 9 tools configured for this provider
     ///
     /// This method encapsulates all Claude-specific configuration:
     /// - Model name (claude-sonnet-4-20250514)
     /// - Max tokens (8192)
     /// - System prompt with cache_control metadata (PROV-006)
-    /// - All 8 tools (Read, Write, Edit, Bash, Grep, Glob, Ls, AstGrep)
+    /// - All 9 tools (Read, Write, Edit, Bash, Grep, Glob, Ls, AstGrep, WebSearchTool)
     /// - Prompt caching via cache_control metadata (PROV-006)
     ///
     /// # Arguments
@@ -274,6 +280,10 @@ impl ClaudeProvider {
     /// - OAuth mode: 2 blocks - Claude Code prefix WITHOUT cache_control, preamble WITH cache_control
     /// - API key mode: 1 block - preamble WITH cache_control
     ///
+    /// # WEB-001 Note
+    /// WebSearchTool is now included as a rig tool that provides web search capabilities
+    /// with Search, OpenPage, and FindInPage actions.
+    ///
     /// Returns a fully configured rig::agent::Agent ready for use with RigAgent.
     pub fn create_rig_agent(
         &self,
@@ -281,11 +291,12 @@ impl ClaudeProvider {
     ) -> rig::agent::Agent<anthropic::completion::CompletionModel> {
         use crate::caching_client::transform_system_prompt;
         use codelet_tools::{
-            AstGrepTool, BashTool, EditTool, GlobTool, GrepTool, LsTool, ReadTool, WriteTool,
+            AstGrepTool, BashTool, EditTool, GlobTool, GrepTool, LsTool, ReadTool, WebSearchTool,
+            WriteTool,
         };
         use rig::client::CompletionClient;
 
-        // Build agent with all 8 tools using rig's builder pattern
+        // Build agent with all 9 tools using rig's builder pattern (WEB-001: Added WebSearchTool)
         let mut agent_builder = self
             .rig_client
             .agent(DEFAULT_MODEL)
@@ -297,7 +308,8 @@ impl ClaudeProvider {
             .tool(GrepTool::new())
             .tool(GlobTool::new())
             .tool(LsTool::new())
-            .tool(AstGrepTool::new());
+            .tool(AstGrepTool::new())
+            .tool(WebSearchTool::new()); // WEB-001: Added WebSearchTool with consistent new() pattern
 
         // PROV-006: Apply cache_control to system prompt for BOTH auth modes
         // OAuth mode: built-in prefix + optional additional preamble

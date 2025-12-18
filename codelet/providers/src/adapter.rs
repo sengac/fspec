@@ -51,7 +51,10 @@ pub fn detect_credential_from_env(
 /// * `Err(ProviderError)` - If the key is empty
 pub fn validate_api_key_static(provider_name: &str, api_key: &str) -> Result<(), ProviderError> {
     if api_key.is_empty() {
-        return Err(ProviderError::auth(provider_name, "API key cannot be empty"));
+        return Err(ProviderError::auth(
+            provider_name,
+            "API key cannot be empty",
+        ));
     }
     Ok(())
 }

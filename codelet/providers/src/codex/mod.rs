@@ -88,7 +88,9 @@ impl CodexProvider {
         let rig_client = openai::CompletionsClient::builder()
             .api_key(api_key)
             .build()
-            .map_err(|e| ProviderError::config("codex", format!("Failed to build Codex client: {e}")))?;
+            .map_err(|e| {
+                ProviderError::config("codex", format!("Failed to build Codex client: {e}"))
+            })?;
 
         // Create completion model using the client
         let completion_model = openai::completion::CompletionModel::new(rig_client.clone(), model);
@@ -105,20 +107,28 @@ impl CodexProvider {
         &self.rig_client
     }
 
-    /// Create a rig Agent with all 8 tools configured for this provider
+    /// Create a rig Agent with all 9 tools configured for this provider (WEB-001: Added WebSearchTool)
+    ///
+    /// This method encapsulates all Codex-specific configuration:
+    /// - Model name (GPT or compatible)
+    /// - Max tokens (4096)
+    /// - All 9 tools (Read, Write, Edit, Bash, Grep, Glob, Ls, AstGrep, WebSearchTool)
     ///
     /// # Arguments
     /// * `preamble` - Optional system prompt/preamble for the agent
+    ///
+    /// Returns a fully configured rig::agent::Agent ready for use with RigAgent.
     pub fn create_rig_agent(
         &self,
         preamble: Option<&str>,
     ) -> rig::agent::Agent<openai::completion::CompletionModel> {
         use codelet_tools::{
-            AstGrepTool, BashTool, EditTool, GlobTool, GrepTool, LsTool, ReadTool, WriteTool,
+            AstGrepTool, BashTool, EditTool, GlobTool, GrepTool, LsTool, ReadTool, WebSearchTool,
+            WriteTool,
         };
         use rig::client::CompletionClient;
 
-        // Build agent with all 8 tools using rig's builder pattern
+        // Build agent with all 9 tools using rig's builder pattern (WEB-001: Added WebSearchTool)
         let mut agent_builder = self
             .rig_client
             .agent(&self.model_name)
@@ -130,7 +140,8 @@ impl CodexProvider {
             .tool(GrepTool::new())
             .tool(GlobTool::new())
             .tool(LsTool::new())
-            .tool(AstGrepTool::new());
+            .tool(AstGrepTool::new())
+            .tool(WebSearchTool::new()); // WEB-001: Added WebSearchTool with consistent new() pattern
 
         // Set preamble if provided
         if let Some(p) = preamble {

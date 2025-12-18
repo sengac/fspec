@@ -4,9 +4,10 @@
 //! multi-turn tool calling automatically with configurable depth control.
 
 use anyhow::{anyhow, Result};
-use rig::agent::Agent;
-use rig::completion::{CompletionModel, Prompt};
+use rig::agent::{Agent, StreamingPromptHook};
+use rig::completion::{CompletionModel, GetTokenUsage, Prompt};
 use rig::streaming::StreamingPrompt;
+use rig::wasm_compat::WasmCompatSend;
 use tracing::info;
 
 /// Default maximum depth for multi-turn tool execution
@@ -135,6 +136,46 @@ where
             .await
             .map(|result| result.map_err(|e| anyhow::anyhow!("Streaming error: {e}")))
     }
+
+    /// Execute a prompt in streaming mode WITH conversation history AND a hook
+    ///
+    /// This version accepts a StreamingPromptHook that is called:
+    /// - `on_completion_call`: BEFORE each API call (for compaction checks)
+    /// - `on_stream_completion_response_finish`: AFTER each API call (to capture per-request usage)
+    ///
+    /// This matches TypeScript's approach where compaction is checked before each
+    /// API call using actual token values from the previous call.
+    pub async fn prompt_streaming_with_history_and_hook<P>(
+        &self,
+        prompt: &str,
+        history: &mut [rig::message::Message],
+        hook: P,
+    ) -> impl futures::Stream<
+        Item = Result<rig::agent::MultiTurnStreamItem<M::StreamingResponse>, anyhow::Error>,
+    > + '_
+    where
+        P: StreamingPromptHook<M> + 'static,
+        M::StreamingResponse: WasmCompatSend + GetTokenUsage,
+    {
+        use futures::StreamExt;
+
+        info!(
+            prompt = %prompt,
+            history_len = history.len(),
+            "Starting streaming agent execution with history and hook"
+        );
+
+        // Clone history for rig (rig takes ownership and manages it internally)
+        let history_for_rig = history.to_vec();
+
+        self.agent
+            .stream_prompt(prompt)
+            .with_history(history_for_rig)
+            .with_hook(hook)
+            .multi_turn(self.max_depth)
+            .await
+            .map(|result| result.map_err(|e| anyhow::anyhow!("Streaming error: {e}")))
+    }
 }
 
 impl<M> std::fmt::Debug for RigAgent<M>
@@ -144,7 +185,7 @@ where
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("RigAgent")
             .field("max_depth", &self.max_depth)
-            .field("tools", &7) // We know we have 7 tools
+            .field("tools", &9) // We have 9 tools including WebSearchTool (WEB-001)
             .finish()
     }
 }

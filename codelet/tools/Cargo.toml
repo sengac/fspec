@@ -9,6 +9,12 @@ description = "Tool implementations for codelet - file ops, code search, bash ex
 [dependencies]
 codelet-common.workspace = true
 
+# HTTP client for web search
+reqwest.workspace = true
+
+# URL encoding for search queries
+urlencoding = "2.1"
+
 # LLM Integration (for rig::tool::Tool trait)
 rig-core.workspace = true
 

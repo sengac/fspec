@@ -70,7 +70,7 @@ fn test_all_tools_registered_in_default_registry() {
     let registry = ToolRegistry::default();
     let tools = registry.list();
 
-    assert_eq!(tools.len(), 7, "Should have exactly 7 tools");
+    assert_eq!(tools.len(), 9, "Should have exactly 9 tools including WebSearchTool");
 
     // Verify each tool is present
     assert!(tools.contains(&"Read"), "Should have Read tool");

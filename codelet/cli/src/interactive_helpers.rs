@@ -13,27 +13,9 @@ const APPROX_BYTES_PER_TOKEN: usize = 4;
 
 /// Estimate token count from text length
 ///
-/// Used when exact token counts aren't available.
-/// Matches TypeScript: Math.ceil(text.length / APPROX_BYTES_PER_TOKEN)
+/// Used internally for compaction logic when calculating turn tokens.
 fn estimate_tokens(text: &str) -> u64 {
     text.len().div_ceil(APPROX_BYTES_PER_TOKEN) as u64
-}
-
-/// Estimate total tokens from session messages
-///
-/// This should be used for compaction threshold checks instead of rig's aggregated_usage,
-/// because rig accumulates tokens across all tool call iterations in a multi-turn agent call.
-/// For compaction, we need the CURRENT context size, not accumulated API usage.
-///
-/// Matches TypeScript's approach: estimates from message content before API call.
-pub fn estimate_message_tokens(messages: &[Message]) -> u64 {
-    messages
-        .iter()
-        .map(|msg| {
-            let text = extract_message_text(msg);
-            estimate_tokens(&text)
-        })
-        .sum()
 }
 
 /// Convert messages to conversation turns using lazy approach (following TypeScript implementation)

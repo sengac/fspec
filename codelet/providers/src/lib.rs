@@ -82,10 +82,8 @@ pub trait LlmProvider: Send + Sync {
     fn supports_streaming(&self) -> bool;
 
     /// Send a completion request
-    async fn complete(
-        &self,
-        messages: &[codelet_common::Message],
-    ) -> Result<String, ProviderError>;
+    async fn complete(&self, messages: &[codelet_common::Message])
+        -> Result<String, ProviderError>;
 
     /// Send a completion request with tool definitions
     async fn complete_with_tools(

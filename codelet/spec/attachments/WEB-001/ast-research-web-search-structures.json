@@ -1,0 +1,7 @@
+{
+  "research_type": "ast_search",
+  "target": "WebSearchAction enum and web search structures from Codex",
+  "query": "find-identifiers with pattern WebSearchAction",
+  "file": "/tmp/codex/codex-rs/protocol/src/models.rs",
+  "results": "Pattern not matched - need to extract the full WebSearchAction enum definition"
+}
