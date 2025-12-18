@@ -2,7 +2,7 @@
   "version": "0.7.1",
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-12-17T08:22:27.482Z"
+    "lastUpdated": "2025-12-18T00:30:01.560Z"
   },
   "workUnits": {
     "FOUND-001": {
@@ -7455,6 +7455,156 @@
         "spec/attachments/WEB-001/codex-websearch-action.rs"
       ],
       "updated": "2025-12-17T08:22:27.497Z"
+    },
+    "WEB-002": {
+      "id": "WEB-002",
+      "title": "Chrome DevTools Web Search Implementation",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-12-17T23:57:49.321Z",
+      "updatedAt": "2025-12-18T00:30:01.573Z",
+      "description": "Replace DuckDuckGo Instant Answer API and naive HTML stripping with rust-headless-chrome for full browser-based web search, page fetching, and content extraction with JavaScript support",
+      "children": [],
+      "attachments": [
+        "spec/attachments/WEB-002/implementation-plan.md",
+        "spec/attachments/WEB-002/ast-research-current-web-search.json"
+      ],
+      "userStory": {
+        "role": "AI agent using codelet",
+        "action": "perform web searches and fetch page content with full JavaScript rendering",
+        "benefit": "I can access modern web content including SPAs, dynamic pages, and get clean extracted content without navigation/ads"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-12-18T00:00:55.447Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-12-18T00:05:27.997Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-18T00:14:06.407Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-18T00:28:04.277Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-18T00:30:01.574Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "Must use rust-headless-chrome crate WITHOUT the 'fetch' feature to avoid auto-downloading Chrome",
+          "deleted": false,
+          "createdAt": "2025-12-18T00:01:07.817Z"
+        },
+        {
+          "id": 1,
+          "text": "Must support connecting to existing Chrome via Browser::connect(ws_url) for users with Chrome already running",
+          "deleted": false,
+          "createdAt": "2025-12-18T00:01:08.476Z"
+        },
+        {
+          "id": 2,
+          "text": "Must support auto-detecting locally installed Chrome/Chromium via LaunchOptions::path",
+          "deleted": false,
+          "createdAt": "2025-12-18T00:01:09.128Z"
+        },
+        {
+          "id": 3,
+          "text": "Content extraction must filter out nav, header, footer, sidebar, ads, and script/style elements",
+          "deleted": false,
+          "createdAt": "2025-12-18T00:01:09.782Z"
+        },
+        {
+          "id": 4,
+          "text": "Search must return actual result URLs with titles and snippets, not just instant answers",
+          "deleted": false,
+          "createdAt": "2025-12-18T00:01:10.446Z"
+        },
+        {
+          "id": 5,
+          "text": "Browser must be lazily initialized - don't spawn Chrome until first web search request",
+          "deleted": false,
+          "createdAt": "2025-12-18T00:01:11.110Z"
+        }
+      ],
+      "nextRuleId": 6,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Agent searches for 'rust async programming' and gets 10 results with titles, URLs, and snippets from DuckDuckGo HTML",
+          "deleted": false,
+          "createdAt": "2025-12-18T00:01:24.316Z"
+        },
+        {
+          "id": 1,
+          "text": "Agent opens a React SPA page and gets the rendered content (not the empty HTML shell)",
+          "deleted": false,
+          "createdAt": "2025-12-18T00:01:26.657Z"
+        },
+        {
+          "id": 2,
+          "text": "Agent opens a news article and gets only the article content, not navigation/sidebar/footer",
+          "deleted": false,
+          "createdAt": "2025-12-18T00:01:28.673Z"
+        },
+        {
+          "id": 3,
+          "text": "Agent finds pattern 'installation' in documentation page and gets 5 matches with surrounding context",
+          "deleted": false,
+          "createdAt": "2025-12-18T00:01:30.757Z"
+        },
+        {
+          "id": 4,
+          "text": "Agent connects to existing Chrome on ws://127.0.0.1:9222 instead of launching new browser",
+          "deleted": false,
+          "createdAt": "2025-12-18T00:01:32.430Z"
+        },
+        {
+          "id": 5,
+          "text": "Agent uses locally installed Chrome at /Applications/Google Chrome.app without downloading anything",
+          "deleted": false,
+          "createdAt": "2025-12-18T00:01:34.675Z"
+        }
+      ],
+      "nextExampleId": 6,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Uses rust-headless-chrome crate to control Chrome via DevTools Protocol, replacing reqwest+naive HTML stripping",
+          "deleted": false,
+          "createdAt": "2025-12-18T00:04:40.650Z"
+        },
+        {
+          "id": 1,
+          "text": "Three connection modes: Browser::connect(ws_url) for existing Chrome, LaunchOptions::path for specific binary, or auto-detect",
+          "deleted": false,
+          "createdAt": "2025-12-18T00:04:42.936Z"
+        },
+        {
+          "id": 2,
+          "text": "Content extraction uses JavaScript injection via Runtime.evaluate() with Readability-like algorithm",
+          "deleted": false,
+          "createdAt": "2025-12-18T00:04:44.920Z"
+        },
+        {
+          "id": 3,
+          "text": "Search scrapes DuckDuckGo HTML (html.duckduckgo.com) for actual results instead of Instant Answer API",
+          "deleted": false,
+          "createdAt": "2025-12-18T00:04:46.601Z"
+        }
+      ],
+      "nextNoteId": 4,
+      "estimate": 8,
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2025-12-18T00:30:01.573Z"
     }
   },
   "states": {
@@ -7472,6 +7622,7 @@
       "WEB-001"
     ],
     "done": [
+      "WEB-002",
       "REFAC-015",
       "PROV-006",
       "REFAC-014",
@@ -7533,6 +7684,6 @@
     "CTX": 2,
     "REFAC": 15,
     "CLI": 24,
-    "WEB": 1
+    "WEB": 2
   }
 }

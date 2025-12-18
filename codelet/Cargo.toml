@@ -87,6 +87,10 @@ regex = "1"
 keyring = "3.3"
 sha2 = "0.10"
 
+# === Chrome DevTools (WEB-002) ===
+# Note: WITHOUT "fetch" feature to avoid auto-downloading Chrome
+headless_chrome = "1.0"
+
 # === Testing ===
 tempfile = "3"
 assert_cmd = "2"

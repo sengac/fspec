@@ -102,6 +102,10 @@
         {
           "name": "@tool-display",
           "description": "Features related to displaying tool execution information"
+        },
+        {
+          "name": "@web-search",
+          "description": "Web search and content fetching functionality"
         }
       ]
     },
@@ -113,6 +117,10 @@
         {
           "name": "@architecture",
           "description": "Features related to system architecture and DDD"
+        },
+        {
+          "name": "@chrome",
+          "description": "Chrome DevTools Protocol integration via rust-headless-chrome"
         },
         {
           "name": "@compaction",
@@ -245,7 +253,7 @@
     "examples": []
   },
   "statistics": {
-    "lastUpdated": "2025-12-17T02:39:21.260Z",
+    "lastUpdated": "2025-12-18T00:04:08.902Z",
     "phaseStats": [],
     "componentStats": [],
     "featureGroupStats": [],

@@ -5,13 +5,16 @@
 
 pub mod astgrep;
 pub mod bash;
+pub mod chrome_browser;
 pub mod edit;
 pub mod error;
 pub mod glob;
 pub mod grep;
 pub mod limits;
 pub mod ls;
+pub mod page_fetcher;
 pub mod read;
+pub mod search_engine;
 pub mod truncation;
 pub mod validation;
 pub mod web_search;
@@ -24,11 +27,14 @@ use serde_json::Value;
 
 pub use astgrep::AstGrepTool;
 pub use bash::BashTool;
+pub use chrome_browser::{ChromeBrowser, ChromeConfig, ChromeError};
 pub use edit::EditTool;
 pub use glob::GlobTool;
 pub use grep::GrepTool;
 pub use ls::LsTool;
+pub use page_fetcher::{Heading, Link, PageContent, PageFetcher};
 pub use read::ReadTool;
+pub use search_engine::{SearchEngine, SearchResult};
 pub use web_search::WebSearchTool;
 pub use write::WriteTool;
 

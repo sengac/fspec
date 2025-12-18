@@ -1,22 +1,79 @@
 // Web Search Tool Implementation
 // Implements web search capabilities with Search, OpenPage, and FindInPage actions
-// Uses HTTP requests to perform actual web searches
+// Uses Chrome DevTools Protocol via rust-headless-chrome for full JavaScript support
 
 use rig::{completion::ToolDefinition, tool::Tool};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use reqwest;
+use std::sync::{Arc, Mutex};
 
+use crate::chrome_browser::{ChromeBrowser, ChromeConfig, ChromeError};
+use crate::page_fetcher::PageFetcher;
+use crate::search_engine::SearchEngine;
 use crate::ToolError;
 use codelet_common::web_search::WebSearchAction;
 
+/// Global browser instance - lazily initialized on first use, can be recreated on error
+static BROWSER: Mutex<Option<Arc<ChromeBrowser>>> = Mutex::new(None);
+
+/// Create a new browser instance
+fn create_browser() -> Result<Arc<ChromeBrowser>, ChromeError> {
+    let config = ChromeConfig::default();
+    let browser = ChromeBrowser::new(config)?;
+    Ok(Arc::new(browser))
+}
+
+/// Get or initialize the global browser instance
+/// If the browser connection has closed, creates a new one
+fn get_browser() -> Result<Arc<ChromeBrowser>, ChromeError> {
+    let mut guard = BROWSER
+        .lock()
+        .map_err(|e| ChromeError::LaunchError(format!("Failed to acquire browser lock: {e}")))?;
+
+    // If we have a browser, return it
+    if let Some(ref browser) = *guard {
+        return Ok(Arc::clone(browser));
+    }
+
+    // Create a new browser
+    let browser = create_browser()?;
+    *guard = Some(Arc::clone(&browser));
+    Ok(browser)
+}
+
+/// Clear the cached browser instance (called on connection errors)
+fn clear_browser() {
+    if let Ok(mut guard) = BROWSER.lock() {
+        *guard = None;
+    }
+}
+
+/// Execute a browser operation with automatic retry on connection failure
+fn with_browser_retry<T, F>(operation: F) -> Result<T, ChromeError>
+where
+    F: Fn(Arc<ChromeBrowser>) -> Result<T, ChromeError>,
+{
+    // First attempt
+    let browser = get_browser()?;
+    match operation(Arc::clone(&browser)) {
+        Ok(result) => Ok(result),
+        Err(ChromeError::TabError(msg)) if msg.contains("connection is closed") => {
+            // Browser connection died, clear cache and retry once
+            clear_browser();
+            let new_browser = get_browser()?;
+            operation(new_browser)
+        }
+        Err(e) => Err(e),
+    }
+}
+
 /// Web Search Tool
-/// 
+///
 /// This tool implements web search and web content access capabilities
 /// with three main actions: Search, OpenPage, and FindInPage.
-/// 
-/// Unlike the original stub implementation, this actually performs HTTP requests
-/// to search the web and fetch page content.
+///
+/// Uses Chrome DevTools Protocol for full JavaScript rendering support,
+/// enabling access to SPAs and dynamically-generated content.
 #[derive(Clone, Debug)]
 pub struct WebSearchTool;
 
@@ -28,7 +85,7 @@ pub struct WebSearchRequest {
 }
 
 /// Custom deserializer that handles both JSON object and JSON string formats
-/// 
+///
 /// This handles the case where Claude passes the action as a JSON string instead of an object
 fn deserialize_web_search_action<'de, D>(deserializer: D) -> Result<WebSearchAction, D::Error>
 where
@@ -36,20 +93,18 @@ where
 {
     use serde::de::Error;
     use serde_json::Value;
-    
+
     let value = Value::deserialize(deserializer)?;
-    
+
     match value {
         // If it's already an object, deserialize directly
-        Value::Object(_) => {
-            WebSearchAction::deserialize(value).map_err(D::Error::custom)
-        }
+        Value::Object(_) => WebSearchAction::deserialize(value).map_err(D::Error::custom),
         // If it's a string, parse it as JSON first
         Value::String(s) => {
             let parsed: Value = serde_json::from_str(&s).map_err(D::Error::custom)?;
             WebSearchAction::deserialize(parsed).map_err(D::Error::custom)
         }
-        _ => Err(D::Error::custom("Expected object or string for action"))
+        _ => Err(D::Error::custom("Expected object or string for action")),
     }
 }
 
@@ -59,6 +114,12 @@ pub struct WebSearchResult {
     pub success: bool,
     pub message: String,
     pub action: WebSearchAction,
+}
+
+impl Default for WebSearchTool {
+    fn default() -> Self {
+        Self
+    }
 }
 
 impl WebSearchTool {
@@ -79,7 +140,7 @@ impl Tool for WebSearchTool {
         // This matches the schema structure that was working in the previous implementation
         ToolDefinition {
             name: "web_search".to_string(),
-            description: "Perform web search, open web pages, or find content within pages using web scraping capabilities".to_string(),
+            description: "Perform web search, open web pages, or find content within pages using Chrome-based web scraping with full JavaScript support".to_string(),
             parameters: json!({
                 "additionalProperties": false,
                 "properties": {
@@ -145,16 +206,16 @@ impl Tool for WebSearchTool {
     }
 
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
-        // Implement actual web search functionality using HTTP requests
+        // Implement web search functionality using Chrome
         let (success, message) = match &args.action {
             WebSearchAction::Search { query } => {
                 let query = query.as_deref().unwrap_or("");
                 if query.is_empty() {
                     (false, "No search query provided".to_string())
                 } else {
-                    match perform_web_search(query).await {
-                        Ok(results) => (true, format!("Search results for '{}': {}", query, results)),
-                        Err(e) => (false, format!("Search failed: {}", e)),
+                    match perform_web_search(query) {
+                        Ok(results) => (true, format!("Search results for '{query}':\n{results}")),
+                        Err(e) => (false, format!("Search failed: {e}")),
                     }
                 }
             }
@@ -163,9 +224,9 @@ impl Tool for WebSearchTool {
                 if url.is_empty() {
                     (false, "No URL provided".to_string())
                 } else {
-                    match fetch_page_content(url).await {
-                        Ok(content) => (true, format!("Page content from {}: {}", url, content)),
-                        Err(e) => (false, format!("Failed to fetch page: {}", e)),
+                    match fetch_page_content(url) {
+                        Ok(content) => (true, format!("Page content from {url}:\n{content}")),
+                        Err(e) => (false, format!("Failed to fetch page: {e}")),
                     }
                 }
             }
@@ -175,9 +236,12 @@ impl Tool for WebSearchTool {
                 if url.is_empty() || pattern.is_empty() {
                     (false, "URL or pattern not provided".to_string())
                 } else {
-                    match find_pattern_in_page(url, pattern).await {
-                        Ok(found) => (true, format!("Pattern '{}' found in {}: {}", pattern, url, found)),
-                        Err(e) => (false, format!("Pattern search failed: {}", e)),
+                    match find_pattern_in_page(url, pattern) {
+                        Ok(found) => (
+                            true,
+                            format!("Pattern '{pattern}' search results in {url}:\n{found}"),
+                        ),
+                        Err(e) => (false, format!("Pattern search failed: {e}")),
                     }
                 }
             }
@@ -192,124 +256,116 @@ impl Tool for WebSearchTool {
     }
 }
 
-/// Perform a web search using DuckDuckGo Instant Answer API
-async fn perform_web_search(query: &str) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
-    let client = reqwest::Client::new();
-    
-    // Use DuckDuckGo Instant Answer API as a simple search option
-    let url = format!("https://api.duckduckgo.com/?q={}&format=json&no_redirect=1&no_html=1&skip_disambig=1", 
-                     urlencoding::encode(query));
-    
-    let response = client.get(&url).send().await?;
-    let text = response.text().await?;
-    
-    // Parse the JSON response
-    let json: serde_json::Value = serde_json::from_str(&text)?;
-    
-    let mut results = Vec::new();
-    
-    // Extract instant answer if available
-    if let Some(answer) = json.get("Answer").and_then(|v| v.as_str()) {
-        if !answer.is_empty() {
-            results.push(format!("Answer: {}", answer));
+/// Perform a web search using DuckDuckGo via Chrome
+fn perform_web_search(query: &str) -> Result<String, ChromeError> {
+    let query = query.to_string();
+    with_browser_retry(|browser| {
+        let search_engine = SearchEngine::new(browser);
+        let results = search_engine.search(&query)?;
+
+        if results.is_empty() {
+            return Ok("No search results found".to_string());
         }
-    }
-    
-    // Extract abstract if available
-    if let Some(abstract_text) = json.get("Abstract").and_then(|v| v.as_str()) {
-        if !abstract_text.is_empty() {
-            results.push(format!("Summary: {}", abstract_text));
+
+        let mut output = Vec::new();
+        for (i, result) in results.iter().enumerate() {
+            output.push(format!(
+                "{}. {}\n   URL: {}\n   {}",
+                i + 1,
+                result.title,
+                result.url,
+                result.snippet
+            ));
         }
-    }
-    
-    // Extract definition if available
-    if let Some(definition) = json.get("Definition").and_then(|v| v.as_str()) {
-        if !definition.is_empty() {
-            results.push(format!("Definition: {}", definition));
+
+        Ok(output.join("\n\n"))
+    })
+}
+
+/// Fetch content from a web page using Chrome
+fn fetch_page_content(url: &str) -> Result<String, ChromeError> {
+    let url = url.to_string();
+    with_browser_retry(|browser| {
+        let page_fetcher = PageFetcher::new(browser);
+        let content = page_fetcher.fetch(&url)?;
+
+        let mut output = Vec::new();
+
+        if let Some(title) = &content.title {
+            output.push(format!("# {title}"));
         }
-    }
-    
-    // Extract related topics
-    if let Some(related) = json.get("RelatedTopics").and_then(|v| v.as_array()) {
-        for (i, topic) in related.iter().take(3).enumerate() {
-            if let Some(text) = topic.get("Text").and_then(|v| v.as_str()) {
-                results.push(format!("Result {}: {}", i + 1, text));
+
+        if let Some(desc) = &content.meta_description {
+            output.push(format!("*{desc}*"));
+        }
+
+        if !content.main_content.is_empty() {
+            output.push(String::new());
+            output.push(content.main_content.clone());
+        }
+
+        if !content.links.is_empty() {
+            output.push(String::new());
+            output.push("## Links found:".to_string());
+            for link in content.links.iter().take(10) {
+                if !link.text.is_empty() {
+                    output.push(format!("- [{}]({})", link.text, link.href));
+                }
             }
         }
-    }
-    
-    if results.is_empty() {
-        Ok("No search results found".to_string())
-    } else {
-        Ok(results.join("\n"))
-    }
+
+        Ok(output.join("\n"))
+    })
 }
 
-/// Fetch content from a web page
-async fn fetch_page_content(url: &str) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
-    let client = reqwest::Client::builder()
-        .timeout(std::time::Duration::from_secs(10))
-        .build()?;
-    
-    let response = client.get(url).send().await?;
-    
-    if !response.status().is_success() {
-        return Err(format!("HTTP error: {}", response.status()).into());
-    }
-    
-    let text = response.text().await?;
-    
-    // Basic HTML stripping - extract text content
-    let stripped = strip_html_tags(&text);
-    
-    // Limit content size to avoid overwhelming responses
-    let truncated = if stripped.len() > 2000 {
-        format!("{}... [truncated]", &stripped[..2000])
-    } else {
-        stripped
-    };
-    
-    Ok(truncated)
-}
+/// Find a pattern in a web page using Chrome
+fn find_pattern_in_page(url: &str, pattern: &str) -> Result<String, ChromeError> {
+    let url = url.to_string();
+    let pattern = pattern.to_string();
+    with_browser_retry(|browser| {
+        let page_fetcher = PageFetcher::new(browser);
+        let matches = page_fetcher.find_in_page(&url, &pattern)?;
 
-/// Find a pattern in a web page
-async fn find_pattern_in_page(url: &str, pattern: &str) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
-    let content = fetch_page_content(url).await?;
-    
-    // Simple case-insensitive search
-    let lower_content = content.to_lowercase();
-    let lower_pattern = pattern.to_lowercase();
-    
-    if lower_content.contains(&lower_pattern) {
-        // Find context around the match
-        if let Some(start) = lower_content.find(&lower_pattern) {
-            let context_start = if start >= 100 { start - 100 } else { 0 };
-            let context_end = std::cmp::min(start + pattern.len() + 100, content.len());
-            
-            let context = &content[context_start..context_end];
-            Ok(format!("Found match: ...{}...", context))
-        } else {
-            Ok("Pattern found in page".to_string())
+        if matches.is_empty() {
+            return Ok(format!("Pattern '{pattern}' not found on page"));
         }
-    } else {
-        Ok("Pattern not found".to_string())
-    }
+
+        let mut output = Vec::new();
+        output.push(format!("Found {} matches:", matches.len()));
+
+        for (i, context) in matches.iter().enumerate() {
+            output.push(format!("{}. ...{}...", i + 1, context));
+        }
+
+        Ok(output.join("\n"))
+    })
 }
 
-/// Basic HTML tag stripping
-fn strip_html_tags(html: &str) -> String {
-    let mut result = String::new();
-    let mut inside_tag = false;
-    
-    for ch in html.chars() {
-        match ch {
-            '<' => inside_tag = true,
-            '>' => inside_tag = false,
-            _ if !inside_tag => result.push(ch),
-            _ => {}
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_deserialize_web_search_action_from_object() {
+        let json = r#"{"action": {"type": "search", "query": "test"}}"#;
+        let request: WebSearchRequest = serde_json::from_str(json).expect("Should parse object");
+        match request.action {
+            WebSearchAction::Search { query } => {
+                assert_eq!(query, Some("test".to_string()));
+            }
+            _ => panic!("Expected Search action"),
         }
     }
-    
-    // Clean up whitespace
-    result.split_whitespace().collect::<Vec<_>>().join(" ")
+
+    #[test]
+    fn test_deserialize_web_search_action_from_string() {
+        let json = r#"{"action": "{\"type\": \"search\", \"query\": \"test\"}"}"#;
+        let request: WebSearchRequest = serde_json::from_str(json).expect("Should parse string");
+        match request.action {
+            WebSearchAction::Search { query } => {
+                assert_eq!(query, Some("test".to_string()));
+            }
+            _ => panic!("Expected Search action"),
+        }
+    }
 }
