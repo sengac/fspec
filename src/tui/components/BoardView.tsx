@@ -20,6 +20,7 @@ import { VirtualList } from './VirtualList';
 import { CheckpointViewer } from './CheckpointViewer';
 import { ChangedFilesViewer } from './ChangedFilesViewer';
 import { AttachmentDialog } from './AttachmentDialog';
+import { AgentModal } from './AgentModal';
 import { createIPCServer, cleanupIPCServer, getIPCPath } from '../../utils/ipc';
 import type { Server } from 'net';
 import type { Server as HttpServer } from 'http';
@@ -57,6 +58,7 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
   const [selectedWorkUnit, setSelectedWorkUnit] = useState<any>(null);
   const [focusedPanel, setFocusedPanel] = useState<'board' | 'stash' | 'files'>(initialFocusedPanel);
   const [showAttachmentDialog, setShowAttachmentDialog] = useState(false);
+  const [showAgentModal, setShowAgentModal] = useState(false);
   const [attachmentServerPort, setAttachmentServerPort] = useState<number | null>(null);
 
   // Fix: Call useStdout unconditionally at top level (Rules of Hooks)
@@ -311,6 +313,12 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
       return;
     }
 
+    // G key to open AI agent modal (NAPI-002)
+    if (input === 'g' || input === 'G') {
+      setShowAgentModal(true);
+      return;
+    }
+
     // Tab key to switch panels (BOARD-003)
     if (key.tab) {
       if (focusedPanel === 'board') {
@@ -322,7 +330,7 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
       }
       return;
     }
-  }, { isActive: viewMode === 'board' && !showAttachmentDialog });
+  }, { isActive: viewMode === 'board' && !showAttachmentDialog && !showAgentModal });
 
   // Checkpoint viewer (GIT-004)
   if (viewMode === 'checkpoint-viewer') {
@@ -467,7 +475,7 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
         terminalWidth={terminalWidth}
         terminalHeight={terminalHeight}
         cwd={cwd}
-        isDialogOpen={showAttachmentDialog}
+        isDialogOpen={showAttachmentDialog || showAgentModal}
         onColumnChange={(delta) => {
           setFocusedColumnIndex(prev => {
             const newIndex = prev + delta;
@@ -522,6 +530,14 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
           }
         }}
       />
+
+      {/* NAPI-002: AI Agent modal overlay */}
+      {showAgentModal && (
+        <AgentModal
+          isOpen={showAgentModal}
+          onClose={() => setShowAgentModal(false)}
+        />
+      )}
 
       {/* TUI-019: Attachment selection dialog */}
       {showAttachmentDialog && hasAttachments() && (

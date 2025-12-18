@@ -33,6 +33,7 @@ export default defineConfig({
         'jsdom',
         'mermaid',
         'ink',
+        '@inkjs/ui',
         'react',
         'proper-lockfile',
         'isomorphic-git',

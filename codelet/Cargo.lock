@@ -463,6 +463,7 @@ dependencies = [
  "codelet-core",
  "codelet-providers",
  "codelet-tools",
+ "dotenvy",
  "futures",
  "napi",
  "napi-build",
