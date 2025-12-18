@@ -1,0 +1,42 @@
+{
+  "name": "codelet-napi",
+  "version": "0.1.0",
+  "description": "NAPI-RS bindings for codelet AI agent",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "napi": {
+    "name": "codelet-napi",
+    "triples": {
+      "defaults": false,
+      "additional": [
+        "aarch64-apple-darwin",
+        "x86_64-apple-darwin",
+        "aarch64-unknown-linux-gnu",
+        "x86_64-unknown-linux-gnu",
+        "aarch64-pc-windows-msvc",
+        "x86_64-pc-windows-msvc"
+      ]
+    }
+  },
+  "scripts": {
+    "artifacts": "napi artifacts",
+    "build": "napi build --platform --release",
+    "build:debug": "napi build --platform",
+    "prepublishOnly": "napi prepublish -t npm",
+    "universal": "napi universal -t codelet-napi",
+    "version": "napi version"
+  },
+  "files": [
+    "index.js",
+    "index.d.ts"
+  ],
+  "devDependencies": {
+    "@napi-rs/cli": "^2.18.4"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rquast/fspec"
+  },
+  "private": true
+}

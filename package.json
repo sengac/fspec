@@ -8,7 +8,8 @@
     "fspec": "./dist/index.js"
   },
   "scripts": {
-    "build": "vite build && npx esbuild src/git/diff-worker.ts --bundle --platform=node --target=node18 --format=esm --outfile=dist/git/diff-worker.js --external:worker_threads --external:isomorphic-git && chmod +x dist/index.js",
+    "build:codelet-napi": "cd codelet/napi && npm run build",
+    "build": "npm run build:codelet-napi && vite build && npx esbuild src/git/diff-worker.ts --bundle --platform=node --target=node18 --format=esm --outfile=dist/git/diff-worker.js --external:worker_threads --external:isomorphic-git && chmod +x dist/index.js",
     "dev": "vite build --watch",
     "install:local": "./scripts/install-local.sh",
     "lint": "eslint 'src/**/*.ts'",
@@ -62,6 +63,7 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
+    "codelet-napi": "file:codelet/napi",
     "@cucumber/gherkin": "^29.0.0",
     "@cucumber/messages": "^25.0.1",
     "@inkjs/ui": "^2.0.0",

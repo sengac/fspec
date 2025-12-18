@@ -15,6 +15,7 @@ Tags that identify which architectural component a feature belongs to.
 | `@agent-registry` | Agent registry and configuration management |
 | `@algorithm` | Algorithmic components - similarity matching, scoring, deduplication algorithms |
 | `@cli` | Command-Line Interface |
+| `@codelet` | Codelet AI agent integration |
 | `@demos` | Demo script functionality and video recording infrastructure |
 | `@dialog` | Dialog and modal UI components in TUI |
 | `@file-ops` | File Operations |
@@ -198,6 +199,7 @@ Tags for specific technical concerns or architectural patterns.
 
 | Tag | Description |
 |-----|-------------|
+| `@ai-agent` | AI agent integration features |
 | `@ai-assisted` | Features using AI-driven analysis and interaction |
 | `@ai-driven` | AI-driven interactive and conversational commands |
 | `@ai-guidance` | Features that provide contextual guidance to AI agents |
@@ -270,6 +272,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@modal` | Modal overlay and dialog components |
 | `@mouse-events` | Features that handle mouse and trackpad events |
 | `@multi-agent` | Multi-agent compatibility features and agent-specific customizations |
+| `@napi` | NAPI-RS native module bindings for Node.js |
 | `@outside-in-bdd` | Outside-in BDD approach using personas and behavior-first thinking |
 | `@pattern-detection` | Features involving pattern detection and analysis from historical data |
 | `@performance` | Performance optimization and efficiency features |
@@ -285,6 +288,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@reverse-engineering` | Reverse engineering existing code to create specifications |
 | `@review` | Code review and quality analysis |
 | `@runtime` | Runtime behavior and dynamic configuration |
+| `@rust` | Rust implementation components |
 | `@schema-validation` | JSON Schema validation features and commands |
 | `@search` | Search and query functionality for finding scenarios, work units, and code patterns |
 | `@server` | Server-side components and HTTP endpoints |
@@ -650,7 +654,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-11-18T02:38:59.960Z_
+_Last updated: 2025-12-18T04:11:54.192Z_
 
 **Update Command**: `fspec tag-stats`
 

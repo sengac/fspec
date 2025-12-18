@@ -1,0 +1,42 @@
+[package]
+name = "codelet-napi"
+version = "0.1.0"
+edition = "2021"
+description = "NAPI-RS bindings for codelet AI agent"
+license = "MIT"
+publish = false
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+# NAPI-RS
+napi = { version = "2", default-features = false, features = ["napi4", "async", "tokio_rt"] }
+napi-derive = "2"
+
+# Codelet crates
+codelet-cli = { path = "../cli" }
+codelet-core = { path = "../core" }
+codelet-providers = { path = "../providers" }
+codelet-tools = { path = "../tools" }
+codelet-common = { path = "../common" }
+
+# Rig - LLM framework (workspace version with patch)
+rig-core = { version = "0.25.0", default-features = false }
+
+# Async runtime
+tokio = { version = "1", features = ["full"] }
+futures = "0.3"
+
+# Error handling
+anyhow = "1"
+
+# Serialization (for converting types)
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Logging
+tracing = "0.1"
+
+[build-dependencies]
+napi-build = "2"

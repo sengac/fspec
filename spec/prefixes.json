@@ -259,6 +259,11 @@
       "prefix": "PERF",
       "description": "Performance optimization and refactoring",
       "createdAt": "2025-11-15T05:08:35.768Z"
+    },
+    "NAPI": {
+      "prefix": "NAPI",
+      "description": "NAPI-RS native bindings for codelet integration",
+      "createdAt": "2025-12-18T03:29:21.233Z"
     }
   }
 }
